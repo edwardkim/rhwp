@@ -2,7 +2,7 @@
 
 ## Metadata
 
-2026-09-20 작성 시점 참고값이다. merge 전 최신 head와 CI를 다시 확인한다.
+2026-09-20 재조회한 아래 검증 head의 참고값이다. merge 전 최신 head와 CI를 다시 확인한다.
 
 | 항목 | 값 |
 | --- | --- |
@@ -11,9 +11,10 @@
 | Issue | [#6988](https://github.com/edwardkim/rhwp/issues/6988) |
 | Base | devel, `a3de5826c3b404bba8d7f3383d55c947f5a35aef` |
 | 제출 후보 head | `a0784fe5e16689b5c2f876081efdc9f932baa512` |
+| CI 통과 확인 head | `70d6f4cfa6265062ef0e15f43898722ec2a1f881` (최초 self-review 문서 포함) |
 | 검증한 구현 | `cf76f3120a89745fd39fe1f31b48ddeba10e28e4` |
 | 최초 제출 규모 | 8 files, +401 / -27. 이 리뷰와 보고서 상태 갱신은 후속 문서 commit이다. |
-| GitHub 상태 | Open, isDraft=false, MERGEABLE / BLOCKED, CI 진행 중 |
+| GitHub 상태 | 위 CI 확인 head에서 Open, isDraft=false, MERGEABLE / CLEAN, 필수 Build & Test 성공 |
 
 ## 변경과 검토
 
@@ -56,11 +57,35 @@ Git blob/LFS oid와 비교해 일치함을 확인했다. 제출 후보까지 fix
 확장 실행용 WASM은 최신 기준 Rust로 native `--no-opt` 빌드했다. 실제 worker suspend/resume,
 자연 발생 빈도, Edge/Firefox/Safari 실행은 미검증이다. 영구 storage 장애 복구는 변경 범위 밖이다.
 
+## GitHub CI 완료 확인
+
+2026-09-20에 `70d6f4cfa6265062ef0e15f43898722ec2a1f881`의 완료 결과를 재조회했다.
+`gh pr checks 7279 --required`에서 필수 체크 Build & Test의 성공을 확인했고,
+CI run의 `headSha`가 위 commit과 일치했다. 실패·진행 중인 체크는 없었다.
+
+| 확인 대상 | 결과·근거 |
+| --- | --- |
+| CI | [run 35465872830](https://github.com/edwardkim/rhwp/actions/runs/35465872830) 성공. Frontend package gates와 최종 Build & Test 통과 |
+| CodeQL | [run 35465872964](https://github.com/edwardkim/rhwp/actions/runs/35465872964) 성공. 변경 범위에 해당하는 JavaScript/TypeScript 분석 통과 |
+| Adapter inter-diff | [run 35465872980](https://github.com/edwardkim/rhwp/actions/runs/35465872980) 성공 |
+| Proptest roundtrip | [run 35465872840](https://github.com/edwardkim/rhwp/actions/runs/35465872840) 성공 |
+| CI Impact Policy | [run 35466408103](https://github.com/edwardkim/rhwp/actions/runs/35466408103)에 연결된 status SUCCESS |
+
+변경 범위에 해당하지 않는 Rust lint·Native Skia·WASM 등의 CI job은 skipped다.
+GHAS CodeQL 집계 체크는 Rust/Python 구성 제외 안내로 neutral이며, preflight가
+`javascript-typescript`만 선택한 결과와 일치한다. 전체 언어 분석 통과로 해석하지 않는다.
+
+이 완료 기록을 추가하는 문서 commit은 별도의 새 head다. 위 성공을 새 head의 결과로 간주하지 않으며,
+push 뒤 새 head의 required check와 mergeability를 별도로 확인한다. 완료 증적은 검증한 SHA에 고정해
+보존하고, 문서가 자기 자신의 CI 결과를 포함하도록 반복 commit하지 않는다.
+
 ## 최종 판정
 
 - 판정: 승인
 - 근거: 해당 변경 범위의 로컬 검증과 코드 리뷰를 완료했고 수정이 필요한 결함이 없다.
+  최초 self-review 문서를 포함한 위 head의 GitHub CI도 완료·성공했다.
 - merge 전 조건: 문서 후속 commit을 포함한 최신 PR head의 required CI 통과와 작업지시자 merge 승인.
 - self-review 문서 기록이며 GitHub 원격 APPROVE 또는 merge 실행을 뜻하지 않는다. reviewer는 지정하지 않았다.
 - 소형 단일 PR이며 추가 코드 보정·통합·분리 단계가 없어 별도 review_impl은 생략한다.
-  이 기록을 같은 branch의 후속 commit으로 제출한 뒤 CI를 확인하고, merge는 별도 지시에 따른다.
+  최초 기록은 같은 branch의 후속 commit으로 제출해 CI 통과를 확인했다. 이번 CI 완료 기록의
+  후속 head도 별도로 확인하고, merge는 별도 지시에 따른다.

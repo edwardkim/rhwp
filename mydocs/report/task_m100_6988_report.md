@@ -6,7 +6,9 @@
 - 브랜치: `codex/issue-6988-download-event-race`
 - 환경: macOS arm64, Node 24.15.0, Google Chrome 153.0.8010.48, Rust 1.93.1
 - 상태: 구현·로컬 검증 완료. [PR #7279](https://github.com/edwardkim/rhwp/pull/7279)를 Open으로 제출했다.
-  문서 작성 시점 CI 진행 중이며 merge·이슈 close는 미실행이다.
+  최초 self-review 문서를 포함한 `70d6f4cfa6265062ef0e15f43898722ec2a1f881`의
+  [CI](https://github.com/edwardkim/rhwp/actions/runs/35465872830) 완료·성공을 확인했다.
+  이 상태 기록 이후 head의 CI는 별도 확인 대상이며 merge·이슈 close는 미실행이다.
 - 번호 기반 self-review: [PR #7279 리뷰](../pr/archives/pr_7279_review.md)
 
 ## 변경과 근거
