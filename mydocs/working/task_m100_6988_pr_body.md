@@ -27,4 +27,4 @@ Closes #6988
 실제 worker suspend/resume과 자연 발생 빈도는 미검증입니다. 지연은 테스트에서 storage write에만
 주입하며 다운로드·이벤트는 실제 Chrome API를 사용합니다.
 
-상세 근거: [#6988 검증 보고서](https://github.com/postmelee/rhwp/blob/codex/issue-6988-download-event-race/mydocs/report/task_m100_6988_report.md)
+상세 근거: [#6988 검증·로컬 리뷰 보고서](https://github.com/edwardkim/rhwp/blob/codex/issue-6988-download-event-race/mydocs/report/task_m100_6988_report.md)

@@ -61,14 +61,45 @@ Rust/Studio source와 Rust 검증 입력은 변경하지 않았다. Cargo 전체
 실행 결과는 이번 검증에 포함하지 않는다. Node의 worker 재시작 mock과 실제 브라우저의 실행 중
 경합 검증을 구분한다. 저장 자체가 영구 실패할 때 자동 복구하는 기능을 추가한 변경은 아니다.
 
-검증한 구현 이후 변경은 보고서·PR 초안뿐이다. 승인 후 `origin` 작업 브랜치에 push하고
+검증한 구현 이후 변경은 보고서·PR 초안뿐이다. collaborator의 원본 저장소 WRITE 권한을 확인했으므로,
+[self-merge 절차 8.3](../manual/pr_review/collaborator_self_merge.md#83-remote-push)에 따라 승인 후
+`upstream` 작업 브랜치에 push하고
 `edwardkim/rhwp:devel` 대상 PR을 생성한다. 최신 required CI와 검토는 PR 생성 후 확인한다.
 
 승인 후 사용할 PR 제목: `fix(chrome): 최초 상태 저장 중 다운로드 완료 이벤트 보존 (#6988)`
 
 ```sh
-git push origin codex/issue-6988-download-event-race
-gh pr create --repo edwardkim/rhwp --base devel --head postmelee:codex/issue-6988-download-event-race \
+git push upstream HEAD:codex/issue-6988-download-event-race
+gh pr create --repo edwardkim/rhwp --base devel --head codex/issue-6988-download-event-race \
   --title 'fix(chrome): 최초 상태 저장 중 다운로드 완료 이벤트 보존 (#6988)' \
   --body-file mydocs/working/task_m100_6988_pr_body.md
 ```
+
+## PR 생성 전 로컬 리뷰 — 2026-09-20
+
+- 검토 대상: `c61cc983e3fc347b0db655890ebb300af58e46bb`, 구현 SHA는 위 `cf76f3120`과 동일.
+- 판정: 변경 코드에서 수정이 필요한 결함을 발견하지 못했다. GitHub PR은 아직 없으므로
+  원격 APPROVE 또는 merge 승인이 아닌 로컬 제출 후보 검토 결과다.
+- 사용자가 Chrome 수동 재현·확인 이후 리뷰를 요청했다. 자동 검증의 관측값은 위 로그를 근거로 한다.
+
+| 검토 항목 | 근거·결과 |
+| --- | --- |
+| 최초 상태 저장과 complete 경합 | 이벤트 listener에서 첫 await 이전에 ID별 Promise를 등록한다. `handleCreated`의 최초 조회·저장까지 같은 큐에 포함되어 `handleChanged`가 미추적 상태를 먼저 읽지 않는다. |
+| 큐 오류·정리·독립성 | rejection을 처리한 Promise를 다음 이벤트가 이어받는다. `finally`는 Map의 현재 Promise가 자기 자신일 때만 제거한다. ID마다 별도 체인이므로 다른 다운로드를 막지 않는다. 최초 read/write 보류·초기 write 실패 후 후속 created 복구·다른 ID 진행 계약이 이를 검증한다. |
+| 기존 제외와 중복 처리 | 미추적·과거 항목 제외, XLSX·자체 Blob·autoOpen=false 분기는 유지된다. handled 기록 후 viewer를 열고, 후속 이벤트가 기록을 읽으므로 중복 created/complete로 탭을 추가하지 않는다. |
+| 회귀 검사의 검출력 | 수정 전 Node 실패 3건과 실제 Chrome delayed 사례 실패를 확인한 로그가 있다. 실제 Chrome에서는 storage만 지연시키고 download complete 이벤트·다운로드 파일·실제 viewer 탭을 관찰한다. 수정 후 대조군/지연군 각각 3회 통과했다. |
+| 검증 코드 일치 | `git diff cf76f3120..c61cc983e -- rhwp-chrome scripts src`가 비어 있다. 현재 adapter와 검증한 dist adapter가 바이트 단위로 일치한다. 코드 변경이 없어 기존 170개 테스트와 E2E 결과를 재사용한다. |
+| fixture 공급 | 두 E2E 입력의 실제 바이트 SHA-256이 검토 HEAD의 Git blob 또는 LFS oid와 일치한다. 새 fixture 또는 baseline 변경은 없다. |
+| 통합 가능성 | 기준 `a3de5826c`에 대해 `git merge-tree --write-tree HEAD upstream/devel` 통과, tree `8515330a998d870970c33533a8af05b83328dba9`. `git diff --check upstream/devel...HEAD` 통과. |
+| 조판 원칙·시각 검증 | 비해당. Chrome 다운로드 이벤트 순서와 뷰어 실행만 변경하며 측정·배치·분할·paint·출력 backend를 변경하지 않는다. |
+
+fixture 공급 확인값:
+
+- `samples/re-font-dotum-empty-hancom.hwp`: 8,704 bytes,
+  `1ee8871f37bec2e97d0928709dc411c0eacad656f35aa3d92c5cf89f61c5761b`
+- `samples/hwp3-pagedef-1915.hwp`: 2,460 bytes,
+  `b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0`
+
+리뷰 중 제출 문서의 push 대상과 보고서 링크를 collaborator 절차에 맞게 원본 저장소로 수정했다.
+제품 코드·테스트는 수정하지 않았다. 실제 worker suspend/resume과 자연 발생 빈도는 계속 미검증이며,
+PR 생성 후 최종 head의 required CI 확인과 정식 PR 번호의 self-review 기록이 남아 있다.
