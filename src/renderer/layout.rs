@@ -1542,72 +1542,11 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
             .is_some_and(|height| height <= declared_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO)
 }
 
-/// 저장 host 기준의 표 윗변과 흐름 점유 끝(HU).
-/// 다음 저장 anchor가 높이+양쪽 여백만큼 전진하면 host는 전체 흐름 상자의
-/// 원점이다. 그 경우 위여백을 빼면 paint의 문단 원점과 예약 원점이 달라져
-/// 후속 표에 여백이 다시 누적된다. 그 외 수용된 저장 anchor는 위여백 뒤다.
-fn stored_topbottom_object_span(
-    para: &Paragraph,
-    next_para: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> (i64, i64) {
-    let first_vpos = |paragraph: &Paragraph| {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            })
-            .map(|seg| i64::from(seg.vertical_pos))
-    };
-    let outer_box_height = i64::from(table.common.height)
-        + i64::from(table.outer_margin_top)
-        + i64::from(table.outer_margin_bottom);
-    let stored_outer_box = first_vpos(para)
-        .zip(next_para.and_then(first_vpos))
-        .is_some_and(|(current, next)| next - current == outer_box_height);
-    if stored_outer_box {
-        (0, outer_box_height)
-    } else {
-        let top = -i64::from(table.outer_margin_top);
-        (
-            top,
-            top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
-        )
-    }
-}
-
-/// 저장 host vpos를 physical paint anchor로 쓸 수 있는지 판별한다.
-///
-/// 빈 TopAndBottom RowBreak 표는 host와 다음 문단의 저장 사다리가 **표 선언 높이와
-/// outer margin만큼** 실제로 전진한 경우에만 raw vpos가 물리 위치다. 이 증거가
-/// 없으면 raw vpos는 같은 쪽의 문단 좌표일 수 있다. 렌더 경로가 이를 무시하면
-/// typeset이 선택한 일반 흐름 위치와 달라져, p172 `pi=1804`처럼 표가 수백 px 아래로
-/// 그려지고 다음 table fragment가 각주 아래로 밀린다.
-fn stored_ladder_leaves_object_room(
-    para: &Paragraph,
-    next_para: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> bool {
-    // [#7203 실험 A] 앵커 vpos 는 표 상자 상단이 아니라 **위 바깥여백 뒤**를 가리킨다
-    // (정본 실측: 윗변 = 앵커 − 위여백). 그러면 앵커 아래로 필요한 공간은
-    // 높이 + 아래여백 − 위여백 이다.
-    let (_, occupied_bottom) = stored_topbottom_object_span(para, next_para, table);
-    let need = occupied_bottom.max(0);
-    let first_vpos = |paragraph: &Paragraph| {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            })
-            .map(|seg| seg.vertical_pos as i64)
-    };
-    match (first_vpos(para), next_para.and_then(first_vpos)) {
-        (Some(current), Some(next)) => next - current >= need,
-        _ => false,
-    }
-}
+// [#7203] `stored_topbottom_object_span` · `stored_ladder_leaves_object_room` 은
+// `renderer::stored_float_anchor` 가 정본이다 — 조판(typeset)과 렌더가 같은 값을 쓴다.
+use crate::renderer::stored_float_anchor::{
+    stored_ladder_leaves_object_room, stored_single_topbottom_top_px, stored_topbottom_object_span,
+};
 
 /// empty-host TopAndBottom 그림 표가 native HWP의 raw page vpos와 선언 높이로
 /// 현재 본문 안에 완전히 들어가는 경우의 paint anchor.
@@ -1635,29 +1574,14 @@ fn native_empty_single_topbottom_table_saved_top(
             .filter(|control| matches!(control, Control::Table(_)))
             .count()
             != 1
-        || !stored_ladder_leaves_object_room(para, next_para, table)
     {
         return None;
     }
-    let seg = para
-        .line_segs
-        .iter()
-        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
-    let next_seg = next_para?
-        .line_segs
-        .iter()
-        .find(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)?;
-    // vpos가 다음 문단에서 되감기면 이 표는 다음 물리 페이지의 첫 anchor일 수 있다.
-    // raw vpos를 현재 페이지 좌표로 강제하면 p14의 그림 8처럼 상단 그림이 하단에
-    // 떨어져 본문·각주와 충돌한다.
-    if next_seg.vertical_pos <= seg.vertical_pos {
-        return None;
-    }
-    let (top_offset, _) = stored_topbottom_object_span(para, next_para, table);
-    let top = col_area.y + (seg.vertical_pos as f64 + top_offset as f64) * dpi / 7200.0;
-    let bottom = top + hwpunit_to_px(table.common.height as i32, dpi);
-    (top >= col_area.y + col_area.height * 0.5 && bottom <= col_area.y + col_area.height + 0.5)
-        .then_some(top)
+    // [#7203] 원점·수용 조건은 `stored_float_anchor` 한 곳이 정한다. 종전에는 여기와
+    // typeset 이 각자 판정해, 같은 표를 두고 렌더는 저장 앵커를 쓰고 조판은 안 쓰는
+    // 구간이 생겼다.
+    stored_single_topbottom_top_px(para, next_para, table, col_area.height, dpi)
+        .map(|top| col_area.y + top)
 }
 
 /// [#6032] 직전 문단에서 저장 vpos가 **되감기면** 이 빈-host 자리차지 표는 한글이

@@ -3339,34 +3339,11 @@ fn is_single_noninline_picture_table(table: &crate::model::table::Table) -> bool
 /// `LINE_SEG`에 물리 페이지 좌표를 남기는 형상이다. 후자의 내부 그림은 TAC여도
 /// 표 자체가 비-TAC float이므로 허용한다. 그림이 아닌 단순 1×1 표는 별도의 선언
 /// 높이 신뢰 판정을 통과한 native HWP5에서만 raw anchor를 허용한다.
-/// 다음 저장 `vpos` 사다리가 이 개체 높이를 실제로 비우는가 [#3925].
-///
-/// 비우지 않는 호스트의 raw `vpos` 를 물리 anchor 로 해석하면 개체가 저장 사다리보다 훨씬
-/// 아래에 놓여 쪽 소비가 부풀고 뒤 문단이 다음 쪽으로 밀린다 —
-/// `36324768_결재문서본문.hwpx` pi=11 은 호스트 `lh` 가 14.7px 인데 표는 253.1px 라
-/// 쪽 소비가 187px 늘어 2→3쪽이 됐다. host 줄 높이만으로는 #3738 표적을 223쪽으로
-/// 악화시키므로, 다음 문단과의 `vpos` 간격만 저장 사다리 증거로 쓴다.
-fn stored_ladder_leaves_object_room(
-    para: &Paragraph,
-    next_para: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> bool {
-    let need = table.common.height as i64
-        + table.outer_margin_top as i64
-        + table.outer_margin_bottom as i64;
-    let first = |p: &Paragraph| {
-        p.line_segs
-            .iter()
-            .find(|seg| !is_synthetic_line_seg(seg))
-            .map(|seg| seg.vertical_pos as i64)
-    };
-    // 다음 문단의 저장 vpos가 개체와 바깥 여백만큼 진행했을 때만 raw anchor를
-    // 물리 page anchor로 믿는다. host 줄 높이는 이 형상에서 독립 증거가 아니다.
-    match (first(para), next_para.and_then(first)) {
-        (Some(cur), Some(next)) => next - cur >= need,
-        _ => false,
-    }
-}
+// [#7203] `stored_ladder_leaves_object_room` 은 `renderer::stored_float_anchor` 가
+// 정본이다 — 조판과 렌더가 같은 판정·같은 원점을 쓴다.
+use crate::renderer::stored_float_anchor::{
+    stored_ladder_leaves_object_room, stored_single_topbottom_top_px,
+};
 
 fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
     !table.common.treat_as_char
@@ -21460,36 +21437,19 @@ impl TypesetEngine {
         let is_stored_anchor_table = is_stored_anchor_picture_table(table)
             || (st.profile.hwp5_stored_pagination_layout()
                 && single_rowbreak_declared_height_is_trustworthy);
+        // [#3820 Stage 11/#3925] raw anchor는 원본 종류가 아니라 저장 사다리가 표 선언
+        // 높이를 실제로 비울 때만 물리 flow anchor다. 비우지 않는 native HWP5 host
+        // (pi=1797)도 raw vpos를 쓰면 논리 flow가 300px 이상 부풀어 뒤 본문이 다음 쪽으로
+        // 밀린다. HWPX의 같은 형상(36324768)과 동일한 저장 계약으로 묶는다.
+        //
+        // [#7203] 판정과 원점은 `stored_float_anchor` 가 정본이다. 종전에는 이 자리가
+        // `need = 높이 + 위여백 + 아래여백`, 윗변 = raw `vpos` 였고 렌더는 각각
+        // `높이 + 아래여백 − 위여백`, `vpos − 위여백` 이라 같은 표에서 두 경로가 갈렸다.
         let stored_single_topbottom_top = (is_topbottom_para_float
             && topbottom_float_count == 1
-            && is_stored_anchor_table
-            // [#3820 Stage 11/#3925] raw anchor는 원본 종류가 아니라 저장 사다리가
-            // 표 선언 높이를 실제로 비울 때만 물리 flow anchor다. 비우지 않는 native
-            // HWP5 host(pi=1797)도 raw vpos를 쓰면 논리 flow가 300px 이상 부풀어
-            // 뒤 본문이 다음 쪽으로 밀린다. HWPX의 같은 형상(36324768)과 동일한
-            // 저장 계약으로 묶어, 두 형식 모두 다음 문단 vpos 간격을 확인한다.
-            && stored_ladder_leaves_object_room(para, next_para, table))
-        .then(|| {
-            let current = para
-                .line_segs
-                .iter()
-                .find(|seg| !is_synthetic_line_seg(seg))?;
-            let next = next_para?
-                .line_segs
-                .iter()
-                .find(|seg| !is_synthetic_line_seg(seg))?;
-            let top = hwpunit_to_px(current.vertical_pos, self.dpi);
-            let bottom = top + hwpunit_to_px(table.common.height as i32, self.dpi);
-            // page-top의 빈 host 표는 일반 flow가 이미 새 쪽 상단을 복원한다. 그것까지
-            // raw anchor로 우회하면 이전 문단의 partial tail과 결합해 표·본문 순서가
-            // 뒤집힌다(1351000 p23). 일반 flow가 놓치고 표를 다음 쪽에 고립시키는 것은
-            // 본문 하단 절반의 anchor뿐이다.
-            (next.vertical_pos > current.vertical_pos
-                && top >= available * 0.5
-                && bottom <= available + 0.5)
-                .then_some(top)
-        })
-        .flatten();
+            && is_stored_anchor_table)
+            .then(|| stored_single_topbottom_top_px(para, next_para, table, available, self.dpi))
+            .flatten();
         if is_topbottom_para_float
             && topbottom_float_count < 2
             && stored_single_topbottom_top.is_none()
