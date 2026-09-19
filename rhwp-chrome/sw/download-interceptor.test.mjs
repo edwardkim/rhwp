@@ -95,11 +95,13 @@ function createChromeMock(options = {}) {
       session: {
         async get(query) {
           calls.sessionGet.push(query);
+          await options.beforeSessionGet?.(query);
           return getStorageValues(sessionItems, query);
         },
         async set(items) {
           const setIndex = calls.sessionSet.length;
           calls.sessionSet.push(items);
+          await options.beforeSessionSet?.(items);
           const delayMs = options.sessionSetDelaysMs?.[setIndex] ?? 0;
           if (delayMs > 0) {
             await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -178,6 +180,139 @@ async function flushAsyncWork() {
 function lastListener(list) {
   return list[list.length - 1];
 }
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+for (const scenario of [
+  { name: 'extensionless HWP', filename: 'extensionless', expected: 1 },
+  { name: 'final HWP filename', filename: 'final.hwp', expected: 1 },
+  { name: 'XLSX despite HWP URL', filename: 'final.xlsx', expected: 0 },
+  { name: 'own Blob', filename: 'save.hwp', url: 'blob:chrome-extension://rhwp/save', expected: 0 },
+  { name: 'autoOpen=false', filename: 'extensionless', autoOpen: false, expected: 0 },
+]) {
+  test(`initial tracking write racing filename/complete: ${scenario.name} (#6988)`, async () => {
+    const held = deferred();
+    const release = deferred();
+    let blocked = false;
+    const env = createChromeMock({
+      settings: { autoOpen: scenario.autoOpen ?? true },
+      async beforeSessionSet(items) {
+        if (!blocked && Object.values(items).some(state => state.lastReason === 'fresh-created')) {
+          blocked = true;
+          held.resolve();
+          await release.promise;
+        }
+      },
+    });
+    await withChromeMock(env, async ({ listeners, calls, searchItems, sessionItems }) => {
+      const item = {
+        id: 6988, url: scenario.url ?? 'https://example.com/document.hwp',
+        filename: '', mime: 'application/x-hwp', startTime: new Date().toISOString(),
+      };
+      const created = listeners.onCreated[0](item);
+      await held.promise;
+      searchItems.set(item.id, { ...item, filename: scenario.filename, state: 'complete' });
+      const changed = [
+        listeners.onChanged[0]({ id: item.id, filename: { current: scenario.filename } }),
+        listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } }),
+      ];
+      await flushAsyncWork(); // deliver both changes while the first write is still held
+      release.resolve();
+      await Promise.all([created, ...changed]);
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, scenario.expected);
+      if (scenario.expected || scenario.autoOpen === false) {
+        assert.ok(sessionItems.get(`rhwpDownloadState:${item.id}`).handledAt);
+      }
+      // Duplicate created/complete must not erase the handled marker or open another tab.
+      await listeners.onCreated[0](item);
+      await listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, scenario.expected);
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
+    });
+  });
+}
+
+test('a held first write does not block a different download ID (#6988)', async () => {
+  const held = deferred();
+  const release = deferred();
+  const env = createChromeMock({
+    async beforeSessionSet(items) {
+      if (items['rhwpDownloadState:6988']?.lastReason === 'fresh-created') {
+        held.resolve();
+        await release.promise;
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    const created = listeners.onCreated[0]({ id: 6988, filename: '', url: 'https://example.com/held.hwp' });
+    await held.promise;
+    const other = listeners.onCreated[0]({ id: 6989, filename: 'other.hwp', url: 'https://example.com/other.hwp' });
+    try {
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, 1);
+      assert.match(calls.tabsCreate[0].url, /other\.hwp/);
+    } finally {
+      release.resolve();
+      await Promise.all([created, other]);
+      await flushAsyncWork();
+    }
+  });
+});
+
+test('changes wait even while the initial state read is pending (#6988)', async () => {
+  const held = deferred();
+  const release = deferred();
+  let first = true;
+  const env = createChromeMock({
+    async beforeSessionGet() {
+      if (first) {
+        first = false;
+        held.resolve();
+        await release.promise;
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = { id: 6990, filename: '', url: 'https://example.com/document.hwp', startTime: new Date().toISOString() };
+    const created = listeners.onCreated[0](item);
+    await held.promise;
+    searchItems.set(item.id, { ...item, filename: 'extensionless', state: 'complete' });
+    const changed = listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+    await flushAsyncWork();
+    release.resolve();
+    await Promise.all([created, changed]);
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
+test('failed event does not poison later events for the same ID (#6988)', async t => {
+  const errors = t.mock.method(console, 'error', () => {});
+  let first = true;
+  const env = createChromeMock({
+    async beforeSessionSet() {
+      if (first) {
+        first = false;
+        throw new Error('first tracking write failed');
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    const item = { id: 6991, filename: 'retry.hwp', url: 'https://example.com/retry.hwp' };
+    await Promise.all([listeners.onCreated[0](item), listeners.onCreated[0](item)]);
+    assert.equal(errors.mock.callCount(), 1);
+    assert.equal(calls.tabsCreate.length, 1);
+    await listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
 
 test('Chrome interceptor registers observers, not onDeterminingFilename', async () => {
   const env = createChromeMock();

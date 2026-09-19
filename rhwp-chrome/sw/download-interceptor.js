@@ -27,7 +27,7 @@ import {
 const STORAGE_PREFIX = 'rhwpDownloadState:';
 const TERMINAL_CLEANUP_MS = 30_000;
 const memoryStateFallback = new Map();
-const processingDownloadPromises = new Map();
+const downloadEventPromises = new Map();
 
 /** 다운로드 항목이 로컬 file:// 인지 판별. */
 function isLocalFileDownload(item) {
@@ -43,16 +43,33 @@ function isLocalFileDownload(item) {
  */
 export function setupDownloadInterceptor() {
   chrome.downloads.onCreated.addListener((item) => {
-    void handleCreated(item);
+    const receivedAt = Date.now();
+    return enqueueDownloadEvent(item?.id, () => handleCreated(item, receivedAt));
   });
 
-  chrome.downloads.onChanged.addListener(async (delta) => {
-    await handleChanged(delta);
+  chrome.downloads.onChanged.addListener((delta) => {
+    return enqueueDownloadEvent(delta?.id, () => handleChanged(delta));
   });
 }
 
-async function handleCreated(item) {
-  const now = Date.now();
+// #6988: 최초 조회·저장을 포함해 같은 ID의 이벤트 전체를 수신 순서로 처리한다.
+// 후보 처리만 잠그면 저장 전에 도착한 complete가 미추적 상태로 소진된다.
+// session은 재시작 후에도 상태의 정본이며, 이 큐는 실행 중인 이벤트만 보관한다.
+function enqueueDownloadEvent(id, operation) {
+  if (typeof id !== 'number') return Promise.resolve();
+  const previous = downloadEventPromises.get(id) || Promise.resolve();
+  const processing = previous.then(operation).catch(err => {
+    console.error('[rhwp] 다운로드 이벤트 처리 오류:', err);
+  }).finally(() => {
+    if (downloadEventPromises.get(id) === processing) {
+      downloadEventPromises.delete(id);
+    }
+  });
+  downloadEventPromises.set(id, processing);
+  return processing;
+}
+
+async function handleCreated(item, now) {
   const previousState = await getDownloadState(item?.id, now);
   const decision = evaluateDownloadCreated(item, previousState, now);
 
@@ -93,18 +110,7 @@ async function processDownloadCandidate(item, state, context) {
   if (!item || state?.handledAt) return state;
   if (isOwnExtensionBlobDownload(item, chrome.runtime.getURL(''))) return state;
   if (classifyDownload(item, context).action !== 'intercept') return state;
-  const existingProcessing = processingDownloadPromises.get(item.id);
-  if (existingProcessing) return existingProcessing;
-
-  const processing = processDownloadCandidateOnce(item, state);
-  processingDownloadPromises.set(item.id, processing);
-  try {
-    return await processing;
-  } finally {
-    if (processingDownloadPromises.get(item.id) === processing) {
-      processingDownloadPromises.delete(item.id);
-    }
-  }
+  return processDownloadCandidateOnce(item, state);
 }
 
 async function processDownloadCandidateOnce(item, state) {
