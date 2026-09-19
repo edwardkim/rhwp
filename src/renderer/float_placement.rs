@@ -1405,6 +1405,38 @@ pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> 
     Some(i32::from(table.outer_margin_left))
 }
 
+/// [#7063] 왼쪽 정렬 **자리차지(TopAndBottom)** 표의 왼쪽 바깥여백 (HU).
+///
+/// 위 [`para_relative_left_aligned_outer_margin_left_hu`] 와 같은 규칙이지만 **다른
+/// 갈래**다. 그쪽은 어울림(Square) 표의 `#6887` 계약이고 `layout.rs` 의 Square 전용
+/// 분기 하나만 소비한다. 그 술어를 넓히면 Square 표가 이 조건에서 탈락해
+/// `#6887` 이 깨지므로(`left_and_inside_apply_the_declared_margin_once`), 자리차지
+/// 갈래는 여기서 따로 판정한다.
+///
+/// 정본 실측(`hwpx_sample2` engine 2020, 자리차지 표 20여 개): 좌단 차가 선언
+/// `outMargin.left` 와 같다 — 141HU→1.86px · 283HU→3.78px · 0HU→0. 같은 쪽에서
+/// 글줄 참여 표는 이미 이 여백을 받아 형제끼리 갈렸다(19쪽 표1 39.70 / 표2 37.80,
+/// 정본은 둘 다 39.66).
+///
+/// 범위를 자리차지로 묶는 이유: 흐름 표(block)의 바깥여백은 `HostSpacing`
+/// (`spacing_before`)이 이미 흐름에 싣고 있어 여기서 또 실으면 두 번 든다
+/// (`byeolpyo1` 의 이미 맞던 표가 1.9px 내려간다 — 실측).
+/// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 열지 않는다.
+pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32> {
+    if !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || table.common.treat_as_char
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Para | HorzRelTo::Column
+        )
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || table.outer_margin_left <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
+}
+
 /// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
 ///
 /// `hwp5_stored_pagination_layout` 이 꺼진 원본 HWPX 는 native HWP5 빈-host
@@ -1642,7 +1674,6 @@ pub(crate) fn native_empty_host_physical_outer_box_paint_inset(
 /// height contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct NativeStoredResetFragmentPaintGeometry {
-    pub(crate) outer_left_hu: i32,
     pub(crate) outer_top_hu: i32,
     /// `Some` only for the first fragment.  A successor receives the same origin inset but keeps
     /// its measured fragment height.
@@ -1754,7 +1785,6 @@ pub(crate) fn native_hwp5_stored_reset_fragment_paint_geometry(
     }
 
     Some(NativeStoredResetFragmentPaintGeometry {
-        outer_left_hu: i32::from(table.outer_margin_left),
         outer_top_hu: i32::from(table.outer_margin_top),
         first_fragment_height_hu: is_first_fragment.then_some(declared_height_hu),
     })
@@ -2228,7 +2258,6 @@ mod tests {
         assert_eq!(
             native_hwp5_stored_reset_fragment_paint_geometry(true, &host, &table, false, &[], &[2],),
             Some(NativeStoredResetFragmentPaintGeometry {
-                outer_left_hu: 283,
                 outer_top_hu: 283,
                 first_fragment_height_hu: Some(2_282),
             })
@@ -2236,7 +2265,6 @@ mod tests {
         assert_eq!(
             native_hwp5_stored_reset_fragment_paint_geometry(true, &host, &table, true, &[2], &[],),
             Some(NativeStoredResetFragmentPaintGeometry {
-                outer_left_hu: 283,
                 outer_top_hu: 283,
                 first_fragment_height_hu: None,
             })

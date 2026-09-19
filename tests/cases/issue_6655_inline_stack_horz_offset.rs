@@ -10,8 +10,12 @@
 //! `horzOffset` 만 다르다(0 / 1580 / 2092 / 1550 / 1432 HWPUNIT).
 //!
 //! 한글 2022 PDF(`pdf/issue2004_cell_image_stack-2022.pdf`) 실측 x 는 각각
-//! 86.0 / 107.1 / 113.9 / 106.7 / 105.1 이다. 여기서 공통으로 빠지는 3.6px 은
-//! 표 자체의 바깥 여백 283HWPUNIT 이고 #6643 의 몫이라 이 계약에서는 뺀다.
+//! 86.0 / 107.1 / 113.9 / 106.7 / 105.1 이다.
+//!
+//! [#7063] 종전에는 이 다섯 값에서 공통으로 3.6px 이 빠졌고(표 자체의 바깥 여백
+//! 283HWPUNIT), `#6643` 의 몫이라 계약에서 뺐다. 자리차지 표가 자기 `outMargin.left`
+//! 만큼 안으로 들어가면서 그 몫이 채워져, 이제 기대값을 **한/글 실측 그대로** 쓴다
+//! (남은 차이는 다섯 장 모두 0.16px).
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -61,11 +65,11 @@ fn image_x_with_width(svg: &str, w: f64) -> Option<f64> {
 fn reclassified_stack_pictures_keep_their_paragraph_horizontal_offset() {
     // (0-기준 쪽, 그림 폭 px, 기대 x px, 한글 x px)
     let cases = [
-        (3u32, 601.5, 82.4, 86.0),
-        (4, 579.3, 103.5, 107.1),
-        (5, 592.1, 110.3, 113.9),
-        (6, 580.1, 103.1, 106.7),
-        (7, 604.9, 101.5, 105.1),
+        (3u32, 601.5, 86.0, 86.0),
+        (4, 579.3, 107.1, 107.1),
+        (5, 592.1, 113.9, 113.9),
+        (6, 580.1, 106.7, 106.7),
+        (7, 604.9, 105.1, 105.1),
     ];
     let mut seen = Vec::new();
     for (page, width, expected_x, hancom_x) in cases {
@@ -74,7 +78,7 @@ fn reclassified_stack_pictures_keep_their_paragraph_horizontal_offset() {
             .unwrap_or_else(|| panic!("{}쪽 폭 {width}px 그림", page + 1));
         assert!(
             (x - expected_x).abs() < 0.5,
-            "{}쪽 그림 x {expected_x} (한글 {hancom_x} − 표 바깥 여백 3.6): {x}",
+            "{}쪽 그림 x {expected_x} (한글 {hancom_x}): {x}",
             page + 1
         );
         seen.push(x);

@@ -18,6 +18,7 @@ use crate::model::style::{Alignment, BorderLine, CenterLine};
 use crate::model::table::{TablePageBreak, VerticalAlign};
 use crate::renderer::float_placement::{
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    topbottom_float_outer_margin_left_hu,
 };
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
@@ -3246,9 +3247,13 @@ impl LayoutEngine {
                 }
             }
         }
-        if physical_outer_box_paint_inset {
-            table_x += hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
-        }
+        // [#7063] 가로 inset 은 여기서 더하지 않는다 — `compute_table_x_position` 의
+        // 단 기준 분기가 `topbottom_float_outer_margin_left_hu` 로 이미 싣는다.
+        // `native_empty_host_physical_outer_box_paint_inset` 의 술어(자리차지 T&B ·
+        // `HorzRelTo::Column` · `HorzAlign::Left` · 오프셋 0 · `outer_margin_left > 0`)는
+        // 그 일반 규칙의 **부분집합**이라, 둘 다 실으면 여백이 두 번 든다
+        // (`tac-img-02.hwp` 1쪽 표가 본문 75.6 에서 79.4 가 아니라 83.1 로 갔다).
+        // 세로 inset(`table_y`)은 저장 사다리가 세로 outer box 만 증명하므로 그대로 둔다.
 
         let table_text_wrap = if depth == 0 {
             table.common.text_wrap
@@ -5087,10 +5092,19 @@ impl LayoutEngine {
                         (col_area.x, col_area.width)
                     }
                 }
-                HorzRelTo::Para => (
-                    col_area.x + host_margin_left,
-                    col_area.width - host_margin_left,
-                ),
+                HorzRelTo::Para => {
+                    // [#7063] 왼쪽 정렬 자리차지 표의 저장 `horzOffset` 은 **바깥
+                    // 여백 상자**의 왼끝을 가리킨다 — 표 자신의 왼끝은 거기서
+                    // `outMargin.left` 만큼 안쪽이다. `#6887` 이 어울림(Square) 표
+                    // 경로에서 확정한 규칙이고 이 경로만 빠져 있었다.
+                    let om_l = topbottom_float_outer_margin_left_hu(table)
+                        .map(|hu| hwpunit_to_px(hu, self.dpi))
+                        .unwrap_or(0.0);
+                    (
+                        col_area.x + host_margin_left + om_l,
+                        col_area.width - host_margin_left - om_l,
+                    )
+                }
                 _ => {
                     // [#6378] 원본 HWPX 단 기준 RowBreak 1열 자리차지 표만
                     // outMargin.left 를 싣는다. 같은 문서 HWP 경로는 283HU=
@@ -5101,6 +5115,9 @@ impl LayoutEngine {
                         !self.profile.get().hwp5_stored_pagination_layout(),
                         table,
                     )
+                    // [#7063] 단 기준 왼쪽 정렬 자리차지 표도 같은 여백을 받는다 —
+                    // 위 `#6378` 술어는 그 부분집합(원본 HWPX·RowBreak·사방 균등)이다.
+                    .or_else(|| topbottom_float_outer_margin_left_hu(table))
                     .map(|hu| hwpunit_to_px(hu, self.dpi))
                     .unwrap_or(0.0);
                     (col_area.x + om_l, col_area.width)
