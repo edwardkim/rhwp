@@ -5524,6 +5524,7 @@ impl DocumentCore {
                                 start_cut,
                                 end_cut,
                                 is_block_split,
+                                start_cut_is_block,
                                 ..
                             } if *para_index == parent_para_idx
                                 && *control_index == control_idx =>
@@ -5538,6 +5539,7 @@ impl DocumentCore {
                                         start_cut,
                                         end_cut,
                                         *is_block_split,
+                                        *start_cut_is_block,
                                         line_target,
                                         &self.styles,
                                     );

@@ -18,6 +18,7 @@ use crate::model::style::{Alignment, BorderLine, CenterLine};
 use crate::model::table::{TablePageBreak, VerticalAlign};
 use crate::renderer::float_placement::{
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    topbottom_float_outer_margin_left_hu,
 };
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
@@ -1894,6 +1895,9 @@ pub(crate) struct NestedTableCut {
     pub start_cut: RowCut,
     pub end_cut: RowCut,
     pub is_block_split: bool,
+    /// [#6935] 시작 컷의 인덱스 공간 — 끝 컷과 다를 수 있다. 중첩 표 컷은 단일 행
+    /// 공간이라 언제나 `false` 지만, 소비자가 두 공간을 구별해 읽도록 함께 싣는다.
+    pub start_cut_is_block: bool,
 }
 
 /// 중첩 표 부분 렌더링을 위한 행 범위 정보
@@ -2832,29 +2836,18 @@ impl LayoutEngine {
                         } else {
                             nested_w + pad_l + pad_r
                         };
-                        // The recursive caller already includes the child's outer margin
-                        // in inner_area. Only the first native block wrapper owns this
-                        // missing inset (#6643); do not add it again while unwrapping.
-                        // Inline, cell-relative, and original HWPX placement keep their
-                        // existing margin owners. Vertical placement is independent.
+                        // [#7063] 상자 테두리는 공통 원점 계산에서 여백을 받는다.
+                        // 안쪽 표의 기준 영역에도 같은 몫을 전달하되, 부모가 이미
+                        // 적용했다면 다시 더하지 않는다. 아래 inner_area에는 자식의
+                        // 여백도 포함하므로 재귀 호출은 그 소유 사실을 넘긴다.
+                        // 테두리와 자식의 여백을 따로 재가산하면 #6643이 회귀한다.
                         let wrapper_left_inset = if !wrapper_margin_already_applied
                             && depth == 0
-                            && self.profile.get().hwp5_stored_pagination_layout()
                             && inline_x_override.is_none()
-                            && !table.common.treat_as_char
-                            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-                            && matches!(table.common.vert_rel_to, VertRelTo::Para)
-                            && matches!(
-                                table.common.horz_rel_to,
-                                HorzRelTo::Column | HorzRelTo::Para
-                            )
-                            && matches!(
-                                table.common.horz_align,
-                                HorzAlign::Left | HorzAlign::Inside
-                            )
-                            && signed_hwpunit(table.common.horizontal_offset) == 0
                         {
-                            hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                            topbottom_float_outer_margin_left_hu(table)
+                                .map(|hu| hwpunit_to_px(hu, self.dpi))
+                                .unwrap_or(0.0)
                         } else {
                             0.0
                         };
@@ -2867,8 +2860,9 @@ impl LayoutEngine {
                             host_margin_left,
                             host_margin_right,
                             inline_x_override,
+                            wrapper_margin_already_applied,
                             paper_w,
-                        ) + wrapper_left_inset;
+                        );
                         // [#6648] 안쪽 표의 바깥 여백도 셀 안 여백 안쪽에 그대로 남는다. 아래
                         // `layout_table` 호출은 상자와 같은 depth(본문이면 0)·inline 위치로 안쪽
                         // 표를 놓아 `compute_table_y_position` 의 중첩 표 분기(om_top)와
@@ -3218,6 +3212,7 @@ impl LayoutEngine {
             host_margin_left,
             host_margin_right,
             inline_x_override,
+            wrapper_margin_already_applied,
             paper_w,
         );
 
@@ -3243,9 +3238,13 @@ impl LayoutEngine {
                 }
             }
         }
-        if physical_outer_box_paint_inset {
-            table_x += hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
-        }
+        // [#7063] 가로 inset 은 여기서 더하지 않는다 — `compute_table_x_position` 의
+        // 단 기준 분기가 `topbottom_float_outer_margin_left_hu` 로 이미 싣는다.
+        // `native_empty_host_physical_outer_box_paint_inset` 의 술어(자리차지 T&B ·
+        // `HorzRelTo::Column` · `HorzAlign::Left` · 오프셋 0 · `outer_margin_left > 0`)는
+        // 그 일반 규칙의 **부분집합**이라, 둘 다 실으면 여백이 두 번 든다
+        // (`tac-img-02.hwp` 1쪽 표가 본문 75.6 에서 79.4 가 아니라 83.1 로 갔다).
+        // 세로 inset(`table_y`)은 저장 사다리가 세로 outer box 만 증명하므로 그대로 둔다.
 
         let table_text_wrap = if depth == 0 {
             table.common.text_wrap
@@ -5024,7 +5023,9 @@ impl LayoutEngine {
         }
     }
 
-    /// 표 수평 위치 결정
+    /// 표 수평 위치 결정.
+    /// unwrap의 기준 영역에 이미 포함된 자리차지 표 여백은 다시 더하지 않는다.
+    /// 중첩 표 자체 배치와 달리 unwrap은 부모와 같은 depth를 사용하므로 소유를 명시한다.
     pub(crate) fn compute_table_x_position(
         &self,
         table: &crate::model::table::Table,
@@ -5035,6 +5036,7 @@ impl LayoutEngine {
         host_margin_left: f64,
         host_margin_right: f64,
         inline_x_override: Option<f64>,
+        topbottom_outer_margin_already_applied: bool,
         paper_width: Option<f64>,
     ) -> f64 {
         if let Some(ix) = inline_x_override {
@@ -5084,10 +5086,20 @@ impl LayoutEngine {
                         (col_area.x, col_area.width)
                     }
                 }
-                HorzRelTo::Para => (
-                    col_area.x + host_margin_left,
-                    col_area.width - host_margin_left,
-                ),
+                HorzRelTo::Para => {
+                    // [#7063] 왼쪽 정렬 자리차지 표의 저장 `horzOffset` 은 **바깥
+                    // 여백 상자**의 왼끝을 가리킨다 — 표 자신의 왼끝은 거기서
+                    // `outMargin.left` 만큼 안쪽이다. `#6887` 이 어울림(Square) 표
+                    // 경로에서 확정한 규칙이고 이 경로만 빠져 있었다.
+                    let om_l = topbottom_float_outer_margin_left_hu(table)
+                        .filter(|_| !topbottom_outer_margin_already_applied)
+                        .map(|hu| hwpunit_to_px(hu, self.dpi))
+                        .unwrap_or(0.0);
+                    (
+                        col_area.x + host_margin_left + om_l,
+                        col_area.width - host_margin_left - om_l,
+                    )
+                }
                 _ => {
                     // [#6378] 원본 HWPX 단 기준 RowBreak 1열 자리차지 표만
                     // outMargin.left 를 싣는다. 같은 문서 HWP 경로는 283HU=
@@ -5098,6 +5110,10 @@ impl LayoutEngine {
                         !self.profile.get().hwp5_stored_pagination_layout(),
                         table,
                     )
+                    // [#7063] 단 기준 왼쪽 정렬 자리차지 표도 같은 여백을 받는다 —
+                    // 위 `#6378` 술어는 그 부분집합(원본 HWPX·RowBreak·사방 균등)이다.
+                    .or_else(|| topbottom_float_outer_margin_left_hu(table))
+                    .filter(|_| !topbottom_outer_margin_already_applied)
                     .map(|hu| hwpunit_to_px(hu, self.dpi))
                     .unwrap_or(0.0);
                     (col_area.x + om_l, col_area.width)
@@ -5962,6 +5978,20 @@ impl LayoutEngine {
                         stored_square_picture_empty_anchor_advance(cell, cp_idx, styles, self.dpi)
                     {
                         para_y += hwpunit_to_px(step, self.dpi);
+                    }
+                }
+
+                // [#6923] 겹침 걸음 사다리의 빈 줄은 측정이 접지 않고 저장 전진량을
+                // 점유로 쓴다(`cell_units`). 배치도 **같은 결과**를 소비해야 뒤따르는
+                // 중첩 표·문단이 측정과 같은 자리에 놓인다 — 그러지 않으면 조각 상자는
+                // 늘고 내용은 제자리라 아래 테두리가 마지막 줄을 가로지른다.
+                if self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs)
+                {
+                    if let Some(step) =
+                        crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, cp_idx)
+                    {
+                        para_y = para_y_before_compose + hwpunit_to_px(step, self.dpi);
                     }
                 }
 
@@ -10485,24 +10515,9 @@ impl LayoutEngine {
         // 전역으로 세우면 게이트 8건이 깨진다(`overflow_cell` 2 · `off_canvas` 3 ·
         // `issue_2097` · row-cut 단위시험) — 되감김이 우연히 `[앞 줄 시작, 앞 줄 바닥)`
         // 구간에 떨어지는 문서가 있다. 그래서 **겹침 걸음이 계통적인 셀**에서만 좁힌다.
-        let cell_overlapping_line_steps = {
-            let mut segs: Vec<&crate::model::paragraph::LineSeg> = Vec::new();
-            for para in &cell.paragraphs {
-                for seg in &para.line_segs {
-                    if !line_seg_is_synthetic(seg) {
-                        segs.push(seg);
-                    }
-                }
-            }
-            segs.windows(2)
-                .filter(|w| {
-                    let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
-                    w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
-                })
-                .count()
-        };
         // 셋 이상이면 "겹치는 줄 상자" 가 이 사다리의 서명이다. 한두 건은 우연이다.
-        let cell_uses_overlapping_line_boxes = cell_overlapping_line_steps >= 3;
+        let cell_uses_overlapping_line_boxes =
+            crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs);
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
@@ -10873,6 +10888,18 @@ impl LayoutEngine {
             }
             let para_style = styles.para_styles.get(p.para_shape_id as usize);
             let is_empty_spacer_para = p.text.trim().is_empty() && p.controls.is_empty();
+            // [#6923] 겹침 걸음 사다리(음수 line_spacing)의 빈 줄은 접지 않는다 — 저장
+            // 사다리가 그 줄의 점유를 직접 말한다. 규칙과 근거는
+            // `crate::renderer::stored_overlap_spacer_advance_hu` 에 한 곳으로 있고,
+            // 배치(`layout_horizontal_cell_paragraphs`)가 같은 결과를 소비한다.
+            let stored_overlap_spacer_advance_px: Option<f64> = if cell_uses_overlapping_line_boxes
+                && self.profile.get().hwp5_stored_pagination_layout()
+            {
+                crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, pi)
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+            } else {
+                None
+            };
             let preserve_forward_stored_empty_spacer = {
                 let profile = self.profile.get();
                 // [#5880] 직접 HWPX 는 여러 쪽에 걸쳐 조각나는 1×1 RowBreak 본문
@@ -11033,9 +11060,14 @@ impl LayoutEngine {
             let collapse_stored_square_picture_empty_run = is_block_rowbreak
                 && cell_has_stored_square_picture_flow
                 && stored_nested_table_empty_wrap_spacer(cell, pi);
-            let collapse_empty_rowbreak_spacer = legacy_single_cell_empty_spacer
+            // [#6923] 저장 전진량이 있는 겹침 걸음 빈 줄은 접지 않는다 — 접으면 유닛의
+            // 가시 범위가 비어 배치 루프가 이 문단을 통째로 건너뛰고(`start_line >=
+            // end_line`) 흐름이 전진하지 않는다. 그러면 측정만 커지고 내용은 제자리라
+            // 조각 상자와 내용이 갈린다.
+            let collapse_empty_rowbreak_spacer = (legacy_single_cell_empty_spacer
                 || collapse_native_float_ladder_spacer
-                || collapse_stored_square_picture_empty_run;
+                || collapse_stored_square_picture_empty_run)
+                && stored_overlap_spacer_advance_px.is_none();
             let is_last_para = pi + 1 == para_count;
             // [Task #1488] 가시 텍스트 문단 여부 — 비가시(빈) 오버레이 스페이서 문단이 만든
             // vpos 리셋을 하드 브레이크(강제 페이지 분할)에서 제외하기 위한 게이트.
@@ -12181,7 +12213,9 @@ impl LayoutEngine {
                         _ => 0.0,
                     })
                     .sum();
-                let para_h = if collapse_empty_rowbreak_spacer {
+                let para_h = if let Some(advance) = stored_overlap_spacer_advance_px {
+                    advance
+                } else if collapse_empty_rowbreak_spacer {
                     0.0
                 } else if line_count == 0 {
                     let h = if nested_h > 0.0 {
@@ -12345,7 +12379,10 @@ impl LayoutEngine {
                     } else {
                         h
                     };
-                    if collapse_empty_rowbreak_spacer {
+                    if let Some(advance) = stored_overlap_spacer_advance_px {
+                        // 접기 대신 저장 전진량을 그대로 점유로 쓴다 (위 #6923 주석).
+                        lh = advance;
+                    } else if collapse_empty_rowbreak_spacer {
                         lh = 0.0;
                     } else {
                         if li == 0 {
@@ -15840,6 +15877,7 @@ impl LayoutEngine {
                     vec![recursive_end]
                 },
                 is_block_split: false,
+                start_cut_is_block: false,
             })
         } else {
             None
@@ -16308,6 +16346,7 @@ impl LayoutEngine {
                 start_cut,
                 end_cut,
                 is_block_split: false,
+                start_cut_is_block: false,
             }),
         })
     }

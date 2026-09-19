@@ -603,10 +603,22 @@ pub enum PageItem {
         /// [Task #993] `end_row-1`행의 끝 컷 — 이 페이지에서 보일 마지막 유닛
         /// 까지의 셀별 소비 유닛 수. 빈 Vec = 끝까지.
         end_cut: Vec<usize>,
-        /// [Task #1025] true 이면 컷이 rowspan 블록-셀 `(row,col)` 인덱스
-        /// (`advance_row_block_cut`). false 이면 단일 행 `row_span==1` col 인덱스
-        /// (`advance_row_cut`, 기존). page-larger 셀 내부 분할에서만 true.
+        /// [Task #1025] 기존 블록 조각 게이트: 시작 또는 끝 분할이 rowspan 블록
+        /// 경로를 사용했으면 true다. 끝 컷 소비 지점은 이 legacy 게이트와 행-지역
+        /// fallback을 유지한다. 끝 컷만의 인덱스 공간이라고 해석하면 안 된다.
+        ///
+        /// [#6935] 시작 컷은 `start_cut_is_block`이 명시한 공간으로만 해석한다.
+        /// 시작이 행 공간이고 끝이 블록 공간인 조각에서 이 게이트를 시작 쪽에도
+        /// 적용하면 앞 조각 내용을 다시 소비한다. 반대 방향의 끝 컷 전용 전환은
+        /// block→row 예약/배치 계약과 함께 검증해야 하므로 이 변경에 포함하지 않는다.
         is_block_split: bool,
+        /// [#6935] true 이면 **`start_cut`** 이 블록-셀 `(row,col)` 인덱스다.
+        ///
+        /// 종전에는 `is_block_split` 하나가 두 사실을 OR 로 합쳐, 시작이 행 공간인데
+        /// 끝이 블록 공간인 조각에서 시작 쪽이 블록 서수로 읽혔다. 걸친 rowspan 셀은
+        /// 행 공간에 자리가 없어 `su = 0` 으로 떨어져 **앞 조각이 그린 내용을 처음부터
+        /// 다시 그렸다**(같은 문서 2쪽 +341자, 본문 +232.3px).
+        start_cut_is_block: bool,
         /// [Issue #4326] `start_row`/`end_row`/`start_cut`/`end_cut`이 가리키는 좌표계.
         /// true면 투명 1×1 래퍼를 벗긴 중첩 표(측정기·`row_geometry_table`이 실제로 쓰는
         /// 표) 기준이고, false면 이 항목이 참조하는 바깥 `para_index`/`control_index`
@@ -797,6 +809,7 @@ impl PageItem {
                 start_cut,
                 end_cut,
                 is_block_split,
+                start_cut_is_block,
                 row_cursor_is_nested,
                 end_row_height_override,
                 start_row_height_override,
@@ -809,6 +822,7 @@ impl PageItem {
                 start_cut: start_cut.clone(),
                 end_cut: end_cut.clone(),
                 is_block_split: *is_block_split,
+                start_cut_is_block: *start_cut_is_block,
                 row_cursor_is_nested: *row_cursor_is_nested,
                 end_row_height_override: *end_row_height_override,
                 start_row_height_override: *start_row_height_override,
