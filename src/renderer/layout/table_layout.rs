@@ -5965,6 +5965,20 @@ impl LayoutEngine {
                     }
                 }
 
+                // [#6923] 겹침 걸음 사다리의 빈 줄은 측정이 접지 않고 저장 전진량을
+                // 점유로 쓴다(`cell_units`). 배치도 **같은 결과**를 소비해야 뒤따르는
+                // 중첩 표·문단이 측정과 같은 자리에 놓인다 — 그러지 않으면 조각 상자는
+                // 늘고 내용은 제자리라 아래 테두리가 마지막 줄을 가로지른다.
+                if self.profile.get().hwp5_stored_pagination_layout()
+                    && crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs)
+                {
+                    if let Some(step) =
+                        crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, cp_idx)
+                    {
+                        para_y = para_y_before_compose + hwpunit_to_px(step, self.dpi);
+                    }
+                }
+
                 let has_visible_text = composed
                     .lines
                     .iter()
@@ -10485,24 +10499,9 @@ impl LayoutEngine {
         // 전역으로 세우면 게이트 8건이 깨진다(`overflow_cell` 2 · `off_canvas` 3 ·
         // `issue_2097` · row-cut 단위시험) — 되감김이 우연히 `[앞 줄 시작, 앞 줄 바닥)`
         // 구간에 떨어지는 문서가 있다. 그래서 **겹침 걸음이 계통적인 셀**에서만 좁힌다.
-        let cell_overlapping_line_steps = {
-            let mut segs: Vec<&crate::model::paragraph::LineSeg> = Vec::new();
-            for para in &cell.paragraphs {
-                for seg in &para.line_segs {
-                    if !line_seg_is_synthetic(seg) {
-                        segs.push(seg);
-                    }
-                }
-            }
-            segs.windows(2)
-                .filter(|w| {
-                    let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
-                    w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
-                })
-                .count()
-        };
         // 셋 이상이면 "겹치는 줄 상자" 가 이 사다리의 서명이다. 한두 건은 우연이다.
-        let cell_uses_overlapping_line_boxes = cell_overlapping_line_steps >= 3;
+        let cell_uses_overlapping_line_boxes =
+            crate::renderer::cell_uses_overlapping_line_boxes(&cell.paragraphs);
         let preserve_linear_single_cell_vpos = is_block_rowbreak_table
             && table.row_count == 1
             && table.col_count == 1
@@ -10873,6 +10872,18 @@ impl LayoutEngine {
             }
             let para_style = styles.para_styles.get(p.para_shape_id as usize);
             let is_empty_spacer_para = p.text.trim().is_empty() && p.controls.is_empty();
+            // [#6923] 겹침 걸음 사다리(음수 line_spacing)의 빈 줄은 접지 않는다 — 저장
+            // 사다리가 그 줄의 점유를 직접 말한다. 규칙과 근거는
+            // `crate::renderer::stored_overlap_spacer_advance_hu` 에 한 곳으로 있고,
+            // 배치(`layout_horizontal_cell_paragraphs`)가 같은 결과를 소비한다.
+            let stored_overlap_spacer_advance_px: Option<f64> = if cell_uses_overlapping_line_boxes
+                && self.profile.get().hwp5_stored_pagination_layout()
+            {
+                crate::renderer::stored_overlap_spacer_advance_hu(&cell.paragraphs, pi)
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+            } else {
+                None
+            };
             let preserve_forward_stored_empty_spacer = {
                 let profile = self.profile.get();
                 // [#5880] 직접 HWPX 는 여러 쪽에 걸쳐 조각나는 1×1 RowBreak 본문
@@ -11033,9 +11044,14 @@ impl LayoutEngine {
             let collapse_stored_square_picture_empty_run = is_block_rowbreak
                 && cell_has_stored_square_picture_flow
                 && stored_nested_table_empty_wrap_spacer(cell, pi);
-            let collapse_empty_rowbreak_spacer = legacy_single_cell_empty_spacer
+            // [#6923] 저장 전진량이 있는 겹침 걸음 빈 줄은 접지 않는다 — 접으면 유닛의
+            // 가시 범위가 비어 배치 루프가 이 문단을 통째로 건너뛰고(`start_line >=
+            // end_line`) 흐름이 전진하지 않는다. 그러면 측정만 커지고 내용은 제자리라
+            // 조각 상자와 내용이 갈린다.
+            let collapse_empty_rowbreak_spacer = (legacy_single_cell_empty_spacer
                 || collapse_native_float_ladder_spacer
-                || collapse_stored_square_picture_empty_run;
+                || collapse_stored_square_picture_empty_run)
+                && stored_overlap_spacer_advance_px.is_none();
             let is_last_para = pi + 1 == para_count;
             // [Task #1488] 가시 텍스트 문단 여부 — 비가시(빈) 오버레이 스페이서 문단이 만든
             // vpos 리셋을 하드 브레이크(강제 페이지 분할)에서 제외하기 위한 게이트.
@@ -12181,7 +12197,9 @@ impl LayoutEngine {
                         _ => 0.0,
                     })
                     .sum();
-                let para_h = if collapse_empty_rowbreak_spacer {
+                let para_h = if let Some(advance) = stored_overlap_spacer_advance_px {
+                    advance
+                } else if collapse_empty_rowbreak_spacer {
                     0.0
                 } else if line_count == 0 {
                     let h = if nested_h > 0.0 {
@@ -12345,7 +12363,10 @@ impl LayoutEngine {
                     } else {
                         h
                     };
-                    if collapse_empty_rowbreak_spacer {
+                    if let Some(advance) = stored_overlap_spacer_advance_px {
+                        // 접기 대신 저장 전진량을 그대로 점유로 쓴다 (위 #6923 주석).
+                        lh = advance;
+                    } else if collapse_empty_rowbreak_spacer {
                         lh = 0.0;
                     } else {
                         if li == 0 {
