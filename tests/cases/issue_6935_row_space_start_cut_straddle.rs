@@ -199,3 +199,57 @@ fn a_row_space_start_cut_does_not_restart_a_straddling_cell() {
          su = 0 으로 떨어뜨리지 말고 높이 기반 구제가 이어받아야 한다"
     );
 }
+
+/// 한컴 engine 2020의 같은 원본 3쪽에는 비공백 글자가 총 1958개다.
+/// 실제 로드→pagination→paint의 글자 총량을 검사한다. 글자별 누락·추가는 별도 PDF 대조로 확인한다.
+#[test]
+fn real_collision_document_preserves_text_across_fragments() {
+    let core = collision_core();
+    assert_eq!(core.page_count(), 3, "한컴 기준 PDF와 같은 3쪽");
+    let mut count = 0;
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("실물 페이지");
+        let mut nodes = Vec::new();
+        walk(&tree.root, &mut nodes);
+        for node in nodes {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                count += run.text.chars().filter(|c| !c.is_whitespace()).count();
+            }
+        }
+    }
+    assert_eq!(count, 1958, "기준 PDF의 문서 전체 글자 총량 보존");
+}
+
+fn collision_core() -> rhwp::document_core::DocumentCore {
+    let file = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/issue6935/18179365_high_voltage_collision.hwp");
+    rhwp::document_core::DocumentCore::from_bytes(&std::fs::read(file).expect("실물 HWP fixture"))
+        .expect("실물 HWP 로드")
+}
+
+/// 기준 PDF의 세 쪽 모두 본문과 표가 용지 안에 있다. 작은 컷 불변식의
+/// 통과만으로 표/글자 bottom의 130px 넘침을 놓치지 않는다.
+#[test]
+fn real_collision_document_fragment_stays_on_paper() {
+    let core = collision_core();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("실물 페이지");
+        let paper_bottom = tree.root.bbox.y + tree.root.bbox.height;
+        let mut nodes = Vec::new();
+        walk(&tree.root, &mut nodes);
+        for node in nodes {
+            if matches!(
+                node.node_type,
+                RenderNodeType::Table(_) | RenderNodeType::TextRun(_)
+            ) {
+                let bottom = node.bbox.y + node.bbox.height;
+                assert!(
+                    bottom <= paper_bottom + 1.0,
+                    "page {} {:?}: bottom {bottom} > paper {paper_bottom}",
+                    page + 1,
+                    node.node_type
+                );
+            }
+        }
+    }
+}

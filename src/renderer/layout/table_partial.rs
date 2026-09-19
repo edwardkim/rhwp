@@ -797,7 +797,7 @@ impl LayoutEngine {
         }
         // 비블록 컷 모델은 row_span==1 셀만 부기 — rowspan 걸침 셀은 보수적 포함
         // (straddle 높이 컷 경로는 페이지 후보를 좁힐 권위가 아니다).
-        if !is_block_split && cell.row_span > 1 {
+        if !start_cut_is_block && !is_block_split && cell.row_span > 1 {
             return true;
         }
         let Some(ord) = self.cell_unit_ordinal_for(cell, table, styles, cell_para_idx, target_line)
@@ -4095,7 +4095,7 @@ impl LayoutEngine {
             // [Task #1025] page-larger 블록 분할(is_block_split)이면 컷이 rowspan
             // 블록-셀 인덱스 → 블록 범위(rowspan-확장)로 per-row 컷 매핑. 그 외(일반
             // 분할)는 기존 per-row(row_span==1) 경로 유지(rowspan 행은 atomic).
-            let start_block = if is_block_split && !start_cut.is_empty() {
+            let start_block = if start_cut_is_block && !start_cut.is_empty() {
                 Some(rowspan_block_range(table, start_row))
             } else {
                 None
@@ -4114,9 +4114,19 @@ impl LayoutEngine {
                         && (c.row as usize) <= r
                         && r < c.row as usize + c.row_span as usize
                 });
-                if is_block_split {
-                    let in_start = start_block.is_some_and(|(s, e)| s <= r && r < e);
-                    let in_end = end_block.is_some_and(|(s, e)| s <= r && r < e);
+                if start_cut_is_block || is_block_split {
+                    // 시작/끝 컷은 독립적인 공간이다. 행 공간 컷을 블록 전체의
+                    // 높이로 해석하면 이미 소비한 rowspan 내용을 다시 예약한다.
+                    let in_start = if start_cut_is_block {
+                        start_block.is_some_and(|(s, e)| s <= r && r < e)
+                    } else {
+                        !start_cut.is_empty() && r == start_row
+                    };
+                    let in_end = if is_block_split {
+                        end_block.is_some_and(|(s, e)| s <= r && r < e)
+                    } else {
+                        !end_cut.is_empty() && r == split_last_row
+                    };
                     // 분할 블록 밖 rowspan 행은 컷 모델 밖 — resolve_row_heights 유지.
                     if rowspan_touched && !in_start && !in_end {
                         continue;
@@ -4147,8 +4157,8 @@ impl LayoutEngine {
                         let (su, eu) = cell_cut_window(
                             table,
                             c,
-                            true,
-                            true,
+                            start_cut_is_block,
+                            is_block_split,
                             in_start,
                             start_block,
                             in_end,
@@ -4228,7 +4238,7 @@ impl LayoutEngine {
             // 블록 마지막 행에 차액을 가산한다 — rowspan 셀 bbox 가 컷 가시
             // 높이와 정합해야 클립/valign 이 컷 의미대로 동작한다 (typeset 의
             // consumed_height 와 동일 좌표계).
-            if is_block_split {
+            if start_cut_is_block || is_block_split {
                 let mut blocks: Vec<(usize, usize)> = Vec::new();
                 for b in [start_block, end_block].into_iter().flatten() {
                     if !blocks.contains(&b) {
@@ -4293,7 +4303,7 @@ impl LayoutEngine {
             // `선언문 작성` 이 11.4px 밖으로 나가 사라졌다.
             //
             // 요구 높이는 조판과 **같은 출처**(`straddle_continuation_demand`)에서 낸다.
-            if !is_block_split {
+            if !start_cut_is_block && !is_block_split {
                 for r in start_row..end_row.min(row_count) {
                     let Some(need) = self.straddle_continuation_demand(
                         table,
