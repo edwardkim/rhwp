@@ -5,7 +5,9 @@
 - 검증한 구현 SHA: `cf76f3120a89745fd39fe1f31b48ddeba10e28e4`
 - 브랜치: `codex/issue-6988-download-event-race`
 - 환경: macOS arm64, Node 24.15.0, Google Chrome 153.0.8010.48, Rust 1.93.1
-- 상태: 구현·로컬 검증 완료. 원격 push·PR 생성·CI·merge·이슈 close 미실행.
+- 상태: 구현·로컬 검증 완료. [PR #7279](https://github.com/edwardkim/rhwp/pull/7279)를 Open으로 제출했다.
+  문서 작성 시점 CI 진행 중이며 merge·이슈 close는 미실행이다.
+- 번호 기반 self-review: [PR #7279 리뷰](../pr/archives/pr_7279_review.md)
 
 ## 변경과 근거
 
@@ -61,12 +63,14 @@ Rust/Studio source와 Rust 검증 입력은 변경하지 않았다. Cargo 전체
 실행 결과는 이번 검증에 포함하지 않는다. Node의 worker 재시작 mock과 실제 브라우저의 실행 중
 경합 검증을 구분한다. 저장 자체가 영구 실패할 때 자동 복구하는 기능을 추가한 변경은 아니다.
 
-검증한 구현 이후 변경은 보고서·PR 초안뿐이다. collaborator의 원본 저장소 WRITE 권한을 확인했으므로,
-[self-merge 절차 8.3](../manual/pr_review/collaborator_self_merge.md#83-remote-push)에 따라 승인 후
-`upstream` 작업 브랜치에 push하고
-`edwardkim/rhwp:devel` 대상 PR을 생성한다. 최신 required CI와 검토는 PR 생성 후 확인한다.
+검증한 구현 이후 변경은 문서뿐이다. collaborator의 원본 저장소 WRITE 권한과 사용자 제출 승인을
+확인하고 [self-merge 절차 8.3](../manual/pr_review/collaborator_self_merge.md#83-remote-push)에 따라
+`upstream` 작업 브랜치에 push해 `edwardkim/rhwp:devel` 대상 PR #7279를 생성했다.
+merge 전 최신 head의 required CI 확인과 작업지시자 승인이 남아 있다.
 
-승인 후 사용할 PR 제목: `fix(chrome): 최초 상태 저장 중 다운로드 완료 이벤트 보존 (#6988)`
+제출한 PR 제목: `fix(chrome): 최초 상태 저장 중 다운로드 완료 이벤트 보존 (#6988)`
+
+실행한 제출 명령:
 
 ```sh
 git push upstream HEAD:codex/issue-6988-download-event-race
