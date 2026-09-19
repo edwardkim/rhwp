@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-01
+last_verified: 2026-09-20
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -200,6 +200,7 @@ directory를 사용해 다음 계약을 검증한다.
 | URL은 `.hwp`, 최종 filename/MIME은 XLSX | 파일 저장, rhwp 탭 0 |
 | 확정 `.hwp` | 파일 저장, 해당 download의 rhwp 탭 1 |
 | extensionless URL + HWP MIME/body | terminal 뒤 파일 저장, 해당 download의 rhwp 탭 1 |
+| 최초 추적 저장 대조군/지연군 각 3회 (#6988) | 실제 complete 이벤트 뒤 저장을 재개해도 ID별 탭 1, 원본 바이트 보존 |
 
 E2E는 CDP `Browser.downloadWillBegin`/`Browser.downloadProgress`, 저장 파일의 존재·크기와
 `chrome.downloads.search()`의 완료된 download id를 교차 확인한다. 사용자 Chrome profile과 외부
@@ -216,6 +217,12 @@ RHWP_EXTENSION_DOWNLOAD_CASE=misleading-hwp-url \
 기본 30초이며 느린 환경에서만 `RHWP_EXTENSION_DOWNLOAD_TIMEOUT_MS`를 양의 밀리초 값으로 늘린다.
 timeout이나 retry로 제품 실패를 숨기지 말고, 특정 사례 단독 실행과 전체 순차 실행을 비교해 fixture tab
 활성화·정리 같은 하네스 문제를 제품 판정과 분리한다.
+
+#6988 경합 사례의 id는 `initial-state-control-1`~`3`, `initial-state-delayed-1`~`3`이다.
+`samples/re-font-dotum-empty-hancom.hwp`를 HWP URL/MIME과 확장자 없는 최종 filename으로 내려준다.
+테스트는 worker의 최초 `storage.session.set`만 보류하며 다운로드와 filename/complete 이벤트는
+Chrome이 발생시킨다. 실제 complete 수신 후 저장을 재개하고 1.5초 동안 ID당 탭이 하나임을 확인한다.
+이는 지연을 주입한 회귀 검증이며 자연 발생 빈도나 worker suspend/resume을 보증하지 않는다.
 
 ---
 
