@@ -97,10 +97,10 @@ export class SectionSettingsDialog extends ModalDialog {
     etcSection.appendChild(this.checkRow(this.hideEmptyLineCheck, i18nText('dialog.sectionSettings.checkRow.label.xc7fefc')));
 
     this.columnSpacingInput = this.numberInput();
-    etcSection.appendChild(this.labeledRowSimple('단 사이 간격(G):', this.columnSpacingInput, 'pt'));
+    etcSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label'), this.columnSpacingInput, 'pt'));
 
     this.defaultTabSpacingInput = this.numberInput();
-    etcSection.appendChild(this.labeledRowSimple('기본 탭 간격(I):', this.defaultTabSpacingInput, 'pt'));
+    etcSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label.x8e1910'), this.defaultTabSpacingInput, 'pt'));
 
     body.appendChild(etcSection);
 
@@ -110,9 +110,9 @@ export class SectionSettingsDialog extends ModalDialog {
     this.applyScopeSelect.className = 'dialog-select';
     this.applyScopeSelect.style.width = '160px';
     for (const [label, value] of [
-      ['선택된 문자열', 'selection'],
-      ['현재 구역', 'current'],
-      ['문서 전체', 'all'],
+      [i18nText('dialog.sectionSettings.createBody.label'), 'selection'],
+      [i18nText('dialog.sectionSettings.createBody.label.xa4076c'), 'current'],
+      [i18nText('dialog.sectionSettings.createBody.label.x7c2737'), 'all'],
     ] as const) {
       const opt = document.createElement('option');
       opt.value = value;
@@ -120,7 +120,7 @@ export class SectionSettingsDialog extends ModalDialog {
       this.applyScopeSelect.appendChild(opt);
     }
     this.applyScopeSelect.value = 'current';
-    scopeSection.appendChild(this.labeledRowSimple('적용 범위(Y):', this.applyScopeSelect));
+    scopeSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label.x50fdb4'), this.applyScopeSelect));
     body.appendChild(scopeSection);
 
     return body;
@@ -329,10 +329,10 @@ export class SectionSettingsDialog extends ModalDialog {
     sel.className = 'dialog-select';
     sel.style.width = '80px';
     for (const [label, value] of [
-      ['이어서', 'continue'],
-      ['홀수', 'odd'],
-      ['짝수', 'even'],
-      ['사용자', 'custom'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label'), 'continue'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.xb4edee'), 'odd'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.x86e8dd'), 'even'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.x2f0255'), 'custom'],
     ] as const) {
       const opt = document.createElement('option');
       opt.value = value;
@@ -361,7 +361,7 @@ export class SectionSettingsDialog extends ModalDialog {
     const sel = document.createElement('select');
     sel.className = 'dialog-select';
     sel.style.width = '80px';
-    for (const [label, value] of [['이어서', 'continue'], ['사용자', 'custom']] as const) {
+    for (const [label, value] of [[i18nText('dialog.sectionSettings.createObjNumCombo.label'), 'continue'], [i18nText('dialog.sectionSettings.createObjNumCombo.label.x2f0255'), 'custom']] as const) {
       const opt = document.createElement('option');
       opt.value = value;
       opt.textContent = label;

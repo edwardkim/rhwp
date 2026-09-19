@@ -34,7 +34,7 @@ export class HyperlinkDialog extends ModalDialog {
       body.append(row);
       return field;
     };
-    this.textInput = input('표시할 문자열', 'hyperlink-text');
+    this.textInput = input(t('dialog.hyperlink.input.label'), 'hyperlink-text');
     this.textInput.value = this.initial.text;
     const targets = document.createElement('fieldset');
     targets.className = 'dialog-hyperlink-target';

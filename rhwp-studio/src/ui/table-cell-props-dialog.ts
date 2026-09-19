@@ -723,7 +723,7 @@ export class TableCellPropsDialog extends ModalDialog {
     this.captionDirSelect.className = 'dialog-select';
     this.captionDirSelect.style.display = 'none';
     const capDirs = [
-      [0, '왼쪽'], [1, '오른쪽'], [2, '위쪽'], [3, '아래쪽'],
+      [0, i18nText('dialog.tableCellProps.buildMarginTab.label')], [1, i18nText('dialog.tableCellProps.buildMarginTab.label.x19b0fb')], [2, i18nText('dialog.tableCellProps.buildMarginTab.label.xa0991a')], [3, i18nText('dialog.tableCellProps.buildMarginTab.label.x5f4a61')],
     ] as const;
     for (const [val, text] of capDirs) {
       const opt = document.createElement('option');
@@ -1118,7 +1118,7 @@ export class TableCellPropsDialog extends ModalDialog {
     this.bgNoneRadio.checked = true;
     this.bgNoneRadio.addEventListener('change', () => this.updateBgPreview());
     noneRow.appendChild(this.bgNoneRadio);
-    noneRow.appendChild(document.createTextNode(' 채우기 없음'));
+    noneRow.appendChild(document.createTextNode(i18nText('dialog.tableCellProps.buildBackgroundTab.text')));
     fillSection.appendChild(noneRow);
 
     const colorRow = this.row();
@@ -1127,7 +1127,7 @@ export class TableCellPropsDialog extends ModalDialog {
     this.bgColorRadio.name = 'bgFill';
     this.bgColorRadio.addEventListener('change', () => this.updateBgPreview());
     colorRow.appendChild(this.bgColorRadio);
-    colorRow.appendChild(document.createTextNode(' 색(Q)'));
+    colorRow.appendChild(document.createTextNode(i18nText('dialog.tableCellProps.buildBackgroundTab.text.xfec1dd')));
     fillSection.appendChild(colorRow);
 
     // 면색 + 무늬색 + 무늬모양

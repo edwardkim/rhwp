@@ -147,7 +147,7 @@ export class FormulaDialog extends ModalDialog {
     this.commaCheck.type = 'checkbox';
     this.commaCheck.checked = true;
     commaLabel.appendChild(this.commaCheck);
-    commaLabel.appendChild(document.createTextNode(' 세 자리마다 쉼표로 자리 구분(C)'));
+    commaLabel.appendChild(document.createTextNode(t('dialog.formula.createBody.text')));
     commaRow.appendChild(commaLabel);
     body.appendChild(commaRow);
 

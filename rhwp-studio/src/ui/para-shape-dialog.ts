@@ -487,7 +487,7 @@ export class ParaShapeDialog {
       if (val === 'Outline') {
         const span = document.createElement('span');
         span.style.marginLeft = '12px';
-        span.appendChild(document.createTextNode('수준(L): '));
+        span.appendChild(document.createTextNode(i18nText('dialog.paraShape.buildExtendedPanel.text')));
         span.appendChild(this.paraLevelSelect);
         row.appendChild(span);
       }
@@ -519,14 +519,14 @@ export class ParaShapeDialog {
       return cb;
     };
 
-    this.widowOrphanCb = makeCb('외톨이줄 보호(K)');
-    this.keepWithNextCb = makeCb('다음 문단과 함께(N)');
-    this.keepLinesCb = makeCb('문단 보호(P)');
-    this.pageBreakBeforeCb = makeCb('문단 앞에서 항상 쪽 나눔(E)');
-    this.fontLineHeightCb = makeCb('글꼴에 어울리는 줄 높이(H)');
-    this.singleLineCb = makeCb('한 줄로 입력(W)');
-    this.autoSpaceKrEnCb = makeCb('한글과 영어 간격을 자동 조절(G)');
-    this.autoSpaceKrNumCb = makeCb('한글과 숫자 간격을 자동 조절(R)');
+    this.widowOrphanCb = makeCb(i18nText('dialog.paraShape.makeCb.label'));
+    this.keepWithNextCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x5299ca'));
+    this.keepLinesCb = makeCb(i18nText('dialog.paraShape.makeCb.label.xb53572'));
+    this.pageBreakBeforeCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x3d7811'));
+    this.fontLineHeightCb = makeCb(i18nText('dialog.paraShape.makeCb.label.xec1296'));
+    this.singleLineCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x509636'));
+    this.autoSpaceKrEnCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x79dbd2'));
+    this.autoSpaceKrNumCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x9beab1'));
 
     // 세로 정렬
     const vaRow = document.createElement('div');
@@ -560,7 +560,7 @@ export class ParaShapeDialog {
     this.koreanBreakSelect = document.createElement('select');
     this.koreanBreakSelect.className = 'dialog-select';
     this.koreanBreakSelect.style.width = '100px';
-    for (const [v, t] of [['0', '어절'], ['1', '글자']] as const) {
+    for (const [v, t] of [['0', i18nText('dialog.paraShape.buildExtendedPanel.label')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.xe09d1a')]] as const) {
       const o = document.createElement('option');
       o.value = v; o.textContent = t;
       this.koreanBreakSelect.appendChild(o);
@@ -573,7 +573,7 @@ export class ParaShapeDialog {
     this.englishBreakSelect = document.createElement('select');
     this.englishBreakSelect.className = 'dialog-select';
     this.englishBreakSelect.style.width = '100px';
-    for (const [v, t] of [['0', '단어'], ['1', '하이픈'], ['2', '글자']] as const) {
+    for (const [v, t] of [['0', i18nText('dialog.paraShape.buildExtendedPanel.label.x88aa1c')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.x87dbf5')], ['2', i18nText('dialog.paraShape.buildExtendedPanel.label.xe09d1a')]] as const) {
       const o = document.createElement('option');
       o.value = v; o.textContent = t;
       this.englishBreakSelect.appendChild(o);

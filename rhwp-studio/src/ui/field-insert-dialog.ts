@@ -108,7 +108,7 @@ export class FieldInsertDialog extends ModalDialog {
     this.editableCheckbox.type = 'checkbox';
     this.editableCheckbox.checked = true;
     editableRow.appendChild(this.editableCheckbox);
-    editableRow.appendChild(document.createTextNode(' 양식 모드에서 편집 가능(F)'));
+    editableRow.appendChild(document.createTextNode(t('dialog.fieldInsert.createBody.text')));
     panel.appendChild(editableRow);
 
     body.appendChild(panel);

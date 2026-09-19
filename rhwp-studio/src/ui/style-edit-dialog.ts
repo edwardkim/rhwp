@@ -140,7 +140,7 @@ export class StyleEditDialog extends ModalDialog {
       this.typePara.checked = true;
       this.typePara.addEventListener('change', () => this.onTypeChange());
       lblPara.appendChild(this.typePara);
-      lblPara.appendChild(document.createTextNode(' 문단(P)'));
+      lblPara.appendChild(document.createTextNode(t('dialog.styleEdit.createBody.text')));
 
       const lblChar = document.createElement('label');
       this.typeChar = document.createElement('input');
@@ -149,7 +149,7 @@ export class StyleEditDialog extends ModalDialog {
       this.typeChar.value = '1';
       this.typeChar.addEventListener('change', () => this.onTypeChange());
       lblChar.appendChild(this.typeChar);
-      lblChar.appendChild(document.createTextNode(' 글자(C)'));
+      lblChar.appendChild(document.createTextNode(t('dialog.styleEdit.createBody.text.xfe37f2')));
 
       radioGroup.appendChild(lblPara);
       radioGroup.appendChild(lblChar);

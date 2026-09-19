@@ -216,19 +216,19 @@ export class EquationPropertiesDialog {
     const sizeFs = this.fieldset(t('dialog.equationProps.fieldset.label'));
     this.widthInput = this.textInput('', true);
     this.heightInput = this.textInput('', true);
-    sizeFs.appendChild(this.row('너비', this.select(['고정값'], true), this.widthInput, this.unit('mm')));
-    sizeFs.appendChild(this.row('높이', this.select(['고정값'], true), this.heightInput, this.unit('mm'), this.checkbox(t('dialog.equationProps.checkbox.label'), true, true)));
+    sizeFs.appendChild(this.row(t('dialog.equationProps.row.label'), this.select(['고정값'], true), this.widthInput, this.unit('mm')));
+    sizeFs.appendChild(this.row(t('dialog.equationProps.row.label.x3cc869'), this.select(['고정값'], true), this.heightInput, this.unit('mm'), this.checkbox(t('dialog.equationProps.checkbox.label'), true, true)));
     panel.appendChild(sizeFs);
 
     const posFs = this.fieldset(t('dialog.equationProps.fieldset.label.x2c24e8'));
     const treatAsChar = this.checkboxWithInput('글자처럼 취급', true, true);
     this.treatAsCharInput = treatAsChar.input;
     posFs.appendChild(this.row('', treatAsChar.label));
-    posFs.appendChild(this.row('본문과의 배치', this.wrapButton(), this.wrapButton(), this.wrapButton(), this.wrapButton(), this.label(t('dialog.equationProps.label.label')), this.select(['양쪽'], true)));
+    posFs.appendChild(this.row(t('dialog.equationProps.row.label.x6f3ec0'), this.wrapButton(), this.wrapButton(), this.wrapButton(), this.wrapButton(), this.label(t('dialog.equationProps.label.label')), this.select(['양쪽'], true)));
     this.horzOffsetInput = this.textInput('0.00', true);
     this.vertOffsetInput = this.textInput('0.00', true);
-    posFs.appendChild(this.row('가로', this.select(['문단'], true), this.unit(t('dialog.equationProps.unit.label')), this.select(['왼쪽'], true), this.label(t('dialog.equationProps.label.label.x63402b')), this.horzOffsetInput, this.unit('mm')));
-    posFs.appendChild(this.row('세로', this.select(['문단'], true), this.unit(t('dialog.equationProps.unit.label')), this.select(['위'], true), this.label(t('dialog.equationProps.label.label.x63402b')), this.vertOffsetInput, this.unit('mm')));
+    posFs.appendChild(this.row(t('dialog.equationProps.row.label.x1b155a'), this.select(['문단'], true), this.unit(t('dialog.equationProps.unit.label')), this.select(['왼쪽'], true), this.label(t('dialog.equationProps.label.label.x63402b')), this.horzOffsetInput, this.unit('mm')));
+    posFs.appendChild(this.row(t('dialog.equationProps.row.label.xe59031'), this.select(['문단'], true), this.unit(t('dialog.equationProps.unit.label')), this.select(['위'], true), this.label(t('dialog.equationProps.label.label.x63402b')), this.vertOffsetInput, this.unit('mm')));
     posFs.appendChild(this.row('', this.checkbox(t('dialog.equationProps.checkbox.label.xc8379d'), true, true)));
     posFs.appendChild(this.row('', this.checkbox(t('dialog.equationProps.checkbox.label.xd5104e'), false, true)));
     posFs.appendChild(this.row('', this.checkbox(t('dialog.equationProps.checkbox.label.x28299f'), false, true)));
@@ -237,15 +237,15 @@ export class EquationPropertiesDialog {
     const bottomGrid = document.createElement('div');
     bottomGrid.className = 'eq-props-two-col';
     const rotateFs = this.fieldset(t('dialog.equationProps.fieldset.label.xd09312'));
-    rotateFs.appendChild(this.row('회전각', this.textInput('', true)));
+    rotateFs.appendChild(this.row(t('dialog.equationProps.row.label.xc9feb9'), this.textInput('', true)));
     const skewFs = this.fieldset(t('dialog.equationProps.fieldset.label.xa3bed3'));
-    skewFs.appendChild(this.row('가로', this.textInput('', true)));
-    skewFs.appendChild(this.row('세로', this.textInput('', true)));
+    skewFs.appendChild(this.row(t('dialog.equationProps.row.label.x1b155a'), this.textInput('', true)));
+    skewFs.appendChild(this.row(t('dialog.equationProps.row.label.xe59031'), this.textInput('', true)));
     bottomGrid.append(rotateFs, skewFs);
     panel.appendChild(bottomGrid);
 
     const etcFs = this.fieldset(t('dialog.equationProps.fieldset.label.x5babec'));
-    etcFs.appendChild(this.row('번호 종류', this.select(['수식'], true)));
+    etcFs.appendChild(this.row(t('dialog.equationProps.row.label.x04fd63'), this.select(['수식'], true)));
     etcFs.appendChild(this.row('', this.checkbox(t('dialog.equationProps.checkbox.label.xec9cd5'), false, true)));
     panel.appendChild(etcFs);
 
@@ -260,16 +260,16 @@ export class EquationPropertiesDialog {
     this.outerMarginRightInput = this.textInput('0.00', true);
     this.outerMarginTopInput = this.textInput('0.00', true);
     this.outerMarginBottomInput = this.textInput('0.00', true);
-    marginFs.appendChild(this.row('왼쪽', this.outerMarginLeftInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x19b0fb')), this.outerMarginRightInput, this.unit('mm')));
-    marginFs.appendChild(this.row('위쪽', this.outerMarginTopInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x5f4a61')), this.outerMarginBottomInput, this.unit('mm')));
+    marginFs.appendChild(this.row(t('dialog.equationProps.row.label.x8d60c4'), this.outerMarginLeftInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x19b0fb')), this.outerMarginRightInput, this.unit('mm')));
+    marginFs.appendChild(this.row(t('dialog.equationProps.row.label.xa0991a'), this.outerMarginTopInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x5f4a61')), this.outerMarginBottomInput, this.unit('mm')));
     panel.appendChild(marginFs);
 
     const captionFs = this.fieldset(t('dialog.equationProps.fieldset.label.xdadfcc'));
     this.captionPositionSelect = this.select(['없음', '위', '아래', '왼쪽', '오른쪽'], true);
     this.captionWidthInput = this.textInput('', true);
     this.captionSpacingInput = this.textInput('', true);
-    captionFs.appendChild(this.row('위치', this.captionPositionSelect));
-    captionFs.appendChild(this.row('폭', this.captionWidthInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x0ad57d')), this.captionSpacingInput, this.unit('mm')));
+    captionFs.appendChild(this.row(t('dialog.equationProps.row.label.x2c24e8'), this.captionPositionSelect));
+    captionFs.appendChild(this.row(t('dialog.equationProps.row.label.x76c241'), this.captionWidthInput, this.unit('mm'), this.label(t('dialog.equationProps.label.label.x0ad57d')), this.captionSpacingInput, this.unit('mm')));
     panel.appendChild(captionFs);
 
     return panel;
@@ -280,7 +280,7 @@ export class EquationPropertiesDialog {
 
     const styleFs = this.fieldset(t('dialog.equationProps.fieldset.label.x1d74f5'));
     this.fontNameInput = this.textInput('', false);
-    styleFs.appendChild(this.row('글꼴', this.fontNameInput));
+    styleFs.appendChild(this.row(t('dialog.equationProps.row.label.x7c16df'), this.fontNameInput));
 
     this.fontSizeInput = document.createElement('input');
     this.fontSizeInput.type = 'number';
@@ -288,18 +288,18 @@ export class EquationPropertiesDialog {
     this.fontSizeInput.min = '1';
     this.fontSizeInput.max = '127';
     this.fontSizeInput.step = '1';
-    styleFs.appendChild(this.row('크기', this.fontSizeInput, this.unit('pt')));
+    styleFs.appendChild(this.row(t('dialog.equationProps.row.label.x76905b'), this.fontSizeInput, this.unit('pt')));
 
     this.colorInput = document.createElement('input');
     this.colorInput.type = 'color';
     this.colorInput.className = 'eq-props-color';
-    styleFs.appendChild(this.row('색', this.colorInput));
+    styleFs.appendChild(this.row(t('dialog.equationProps.row.label.xa002ac'), this.colorInput));
 
     this.baselineInput = document.createElement('input');
     this.baselineInput.type = 'number';
     this.baselineInput.className = 'dialog-input';
     this.baselineInput.step = '1';
-    styleFs.appendChild(this.row('기준선', this.baselineInput));
+    styleFs.appendChild(this.row(t('dialog.equationProps.row.label.x4317fb'), this.baselineInput));
     panel.appendChild(styleFs);
 
     const scriptFs = this.fieldset(t('dialog.equationProps.fieldset.label.xcfd3ad'));
