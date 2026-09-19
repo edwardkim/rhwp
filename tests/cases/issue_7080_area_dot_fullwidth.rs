@@ -38,7 +38,8 @@ use rhwp::document_core::DocumentCore;
 /// 정본 `pdf/80168_regulatory_analysis-2022.pdf` 외 2판. `ㆍ` 를 사용자 슬롯 글꼴
 /// `명조`(메트릭 없음)와 `맑은 고딕`에 태운다.
 const SAMPLE_80168: &str = "samples/80168_regulatory_analysis.hwp";
-/// 정본 `pdf/86712_regulatory_analysis-hwp-2024.pdf`. 정본 face 는 `Batang`(0.992 em).
+/// 정상 원본의 `pdf/86712_regulatory_analysis-hwp-2024.pdf`: MalgunGothic 45개와
+/// BatangChe 1개에서 다음 글리프 원점까지 1.0 em을 확인했다(2026-09-17).
 const SAMPLE_86712: &str = "samples/86712_regulatory_analysis.hwp";
 /// 정본 `pdf/3249937_asset_management_rules-2020.pdf`. 정본 face 는 `휴먼명조`(1.001 em, n=40).
 const SAMPLE_3249937: &str = "samples/issue6031/3249937_asset_management_rules.hwpx";

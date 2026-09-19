@@ -153,7 +153,9 @@ impl CanvasRenderer {
             }
             RenderNodeType::Image(img) => {
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                let eff_bbox = img.transform.effective_image_bbox(&node.bbox);
+                let eff_bbox = img
+                    .transform
+                    .effective_image_bbox(&img.paint_bbox(&node.bbox));
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 if let Some(ref data) = img.data {
                     self.draw_image(
@@ -264,7 +266,9 @@ impl CanvasRenderer {
                             resolved,
                         } => {
                             // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                            let eff_bbox = image.transform.effective_image_bbox(bbox);
+                            let eff_bbox = image
+                                .transform
+                                .effective_image_bbox(&image.paint_bbox(bbox));
                             self.open_shape_transform(&image.transform, &eff_bbox);
                             let data = resolved
                                 .as_deref()

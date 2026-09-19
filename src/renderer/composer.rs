@@ -911,6 +911,12 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
     }
 }
 
+// 저장 줄의 실제 점유 높이. 줄 구성과 저장 줄 소속 재사용 판정이 같은
+// 메트릭을 비교해야 글자 테두리로 높아진 정상 줄을 재조판 줄로 오인하지 않는다.
+fn stored_line_box_height(seg: &LineSeg) -> i32 {
+    seg.line_height.max(seg.text_height)
+}
+
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
 fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
     if para.line_segs.is_empty() {
@@ -1147,7 +1153,10 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             {
                 line_seg.text_height
             } else {
-                line_seg.line_height
+                // 글자 테두리 등으로 텍스트 점유 높이가 명목 줄 높이를 넘을 수
+                // 있다. 한컴 저장 줄(1000/1056/632)은 1688HU씩 전진한다.
+                // 공통 구성 결과에 점유 높이를 싣고 측정과 paint가 함께 소비한다.
+                stored_line_box_height(line_seg)
             };
 
             let mut push_segment = |segment_start: usize, segment_end: usize, has_break: bool| {
@@ -1563,7 +1572,7 @@ pub(crate) fn stored_tac_line_assignment(
             .enumerate()
             .any(|(i, (line, seg))| {
                 seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                    || line.line_height != seg.line_height
+                    || line.line_height != stored_line_box_height(seg)
                     || line.segment_width != seg.segment_width
                     || line.char_start
                         != para
@@ -2010,10 +2019,11 @@ pub(crate) fn no_ls_short_label_cell(
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
 /// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
 ///
-/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 각 `segment_width`에서 셀
-/// 내폭과 같지만 합성 행이 ×1.10을 넘으면 Hangul 분할을 복원한다. 행정업무운영
-/// 편람 61쪽의 유의사항 상자가 그 경우다. 일반 다중행 본문, 끝의 빈 저장 행,
-/// 단순한 폭 불일치는 저장 분할을 보존한다.
+/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 한 줄로 합성되었고 각
+/// `segment_width`가 셀 내폭과 같지만 합성 행이 ×1.10을 넘으면 분할을 복원한다.
+/// [#6389] 이미 다중행인 결과에는 개입하지 않는다. 대체 글꼴의 추정 폭 차이를
+/// 저장 줄 붕괴로 오인하면 정상 줄 경계를 파괴한다. 저장 정보의 유효성 판단은
+/// 선행 프레임 경로, 보존한 줄의 폭 조정은 paragraph layout의 공통 경로가 맡는다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -2039,7 +2049,7 @@ fn recompose_stored_single_line_if_overflowing_cached(
     dpi: f64,
     cache: Option<&SingleLineOverflowCache>,
 ) {
-    if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
+    if composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
         return;
     }
     let authentic_stored = !para.line_segs.is_empty()
@@ -2068,9 +2078,6 @@ fn recompose_stored_single_line_if_overflowing_cached(
         if over {
             reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
         }
-        return;
-    }
-    if composed.lines.len() != 1 {
         return;
     }
     let stored_single = para.line_segs.len() == 1 && authentic_stored;
@@ -2127,7 +2134,148 @@ fn recompose_stored_single_line_if_overflowing_cached(
     if !over {
         return;
     }
+    // [#6802] 넘친 것이 점 채움(리더)뿐이면 저장 한 줄이 옳다 — 한/글도 자른다.
+    if composed
+        .lines
+        .first()
+        .is_some_and(|line| line_overflow_is_leader_fill(line, styles, cell_inner_width_px))
+    {
+        return;
+    }
     reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+}
+
+/// 차례 점 채움(리더)에 쓰이는 문자. 마침표·가운뎃점 계열만 본다.
+fn is_leader_char(c: char) -> bool {
+    matches!(
+        c,
+        '.' | '\u{00B7}' | '\u{2024}' | '\u{2025}' | '\u{2026}' | '\u{2027}' | '\u{22EF}'
+    )
+}
+
+/// 채움으로 인정하는 최소 연속 길이 — 문장의 마침표·말줄임표를 채움으로 오인하지 않는다.
+const MIN_LEADER_RUN: usize = 4;
+
+/// 판정과 출력이 같은 문자 구간을 사용한다. 인덱스는 Unicode scalar 기준이다.
+fn leader_fill_spans(chars: &[char]) -> Vec<std::ops::Range<usize>> {
+    let mut spans = Vec::new();
+    let mut start = 0;
+    while start < chars.len() {
+        if !is_leader_char(chars[start]) {
+            start += 1;
+            continue;
+        }
+        let mut end = start + 1;
+        while end < chars.len() && is_leader_char(chars[end]) {
+            end += 1;
+        }
+        if end - start >= MIN_LEADER_RUN {
+            spans.push(start..end);
+        }
+        start = end;
+    }
+    spans
+}
+
+/// [#6802] 저장 한 줄을 지킨 뒤, 상자를 넘는 **채움 글자만** 한/글처럼 잘라 낸다.
+///
+/// 한/글 2020 정본(`1400000-200600006` 2쪽)은 차례 줄을 한 줄로 두고 점을 상자 안에서
+/// 끊는다 — 점이 쪽 번호 칸이나 용지 밖으로 이어지지 않는다. 자르는 것은 `display_text`
+/// 뿐이라 `text`(문서 좌표·추출·편집)는 그대로 남는다. 채움이 아닌 글자는 건드리지 않는다.
+fn trim_leader_fill_overflow(
+    composed: &mut ComposedParagraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) {
+    if inner_width_px <= 0.0 {
+        return;
+    }
+    for line in &mut composed.lines {
+        let mut width = estimate_composed_line_width(line, styles);
+        if width <= inner_width_px || !line_overflow_is_leader_fill(line, styles, inner_width_px) {
+            continue;
+        }
+        for run_idx in (0..line.runs.len()).rev() {
+            if width <= inner_width_px {
+                break;
+            }
+            let style = line.runs[run_idx].text_style(styles);
+            let run = &mut line.runs[run_idx];
+            let mut chars: Vec<char> = effective_text_for_metrics(run).chars().collect();
+            // 뒤쪽부터 처리하면 앞쪽 구간의 인덱스는 변하지 않는다.
+            for span in leader_fill_spans(&chars).into_iter().rev() {
+                if width <= inner_width_px {
+                    break;
+                }
+                let current: String = chars.iter().collect();
+                let current_width = estimate_text_width(&current, &style);
+                let without = |drop: usize| -> String {
+                    chars[..span.end - drop]
+                        .iter()
+                        .chain(&chars[span.end..])
+                        .collect()
+                };
+                // 제목/쪽번호/다른 run은 그대로 두고 필요한 최소 채움만 줄인다.
+                // 서로 다른 리더 글리프나 자간도 전체 run 재측정으로 반영한다.
+                let mut low = 0;
+                let mut high = span.len();
+                while low < high {
+                    let middle = (low + high) / 2;
+                    let candidate_width = estimate_text_width(&without(middle), &style);
+                    if width - current_width + candidate_width <= inner_width_px {
+                        high = middle;
+                    } else {
+                        low = middle + 1;
+                    }
+                }
+                let kept = without(low);
+                width += estimate_text_width(&kept, &style) - current_width;
+                chars.drain(span.end - low..span.end);
+                run.display_text = Some(kept);
+            }
+        }
+    }
+}
+
+/// [#6802] 점 채움(리더)만 넘치는 저장 한 줄은 **부실 저장이 아니다**.
+///
+/// 옛 차례 표는 제목 뒤를 점 문자로 직접 채워 한 줄을 만든다
+/// (`1400000-200600006` 2쪽: `Ⅰ. 사업개요 ․․․․․…`, `․` = U+2024). 그 점 개수는
+/// **한/글의 메트릭으로** 줄을 꽉 채우도록 정해져 있어서, 우리 추정 폭이 조금만 넓어도
+/// 저장 한 줄이 셀 폭을 크게 넘는 것처럼 보인다. 그때 `#2291` 의 부실 저장 재래핑이
+/// 발동하면 한 줄짜리 문단이 네 줄로 접히고, 뒤 문단들의 저장 `vertical_pos` 위에
+/// 그대로 겹쳐 그려진다(그 문서: text-overlap 4건 · 표가 본문을 362.9px 초과).
+///
+/// 한/글은 그 줄을 한 줄로 두고 **넘치는 점을 자른다**. 채움 문자를 걷어낸 내용 폭이
+/// 셀 안에 들어가면 저장 줄이 옳다고 보고 종전의 `segment_width` 클립에 맡긴다.
+///
+/// `#2291` 의 반례(`task2287` r183 c8: 점 없는 본문 76자가 저장 1줄)는 채움 런이 없어
+/// 이 갈래를 타지 않는다 — 그쪽은 종전대로 재래핑한다.
+pub(crate) fn line_overflow_is_leader_fill(
+    line: &ComposedLine,
+    styles: &ResolvedStyleSet,
+    inner_width_px: f64,
+) -> bool {
+    fn strip_leader_runs(text: &str) -> (String, bool) {
+        let mut chars: Vec<char> = text.chars().collect();
+        let spans = leader_fill_spans(&chars);
+        let found = !spans.is_empty();
+        for span in spans.into_iter().rev() {
+            chars.drain(span);
+        }
+        (chars.iter().collect(), found)
+    }
+
+    let mut found_leader = false;
+    let mut content_width = 0.0f64;
+    for run in &line.runs {
+        let (kept, found) = strip_leader_runs(effective_text_for_metrics(run));
+        found_leader |= found;
+        if !kept.is_empty() {
+            content_width += estimate_text_width(&kept, &run.text_style(styles));
+        }
+    }
+    found_leader && content_width <= inner_width_px
 }
 
 fn reflow_cell_line_ignoring_stored_segs(
@@ -2259,11 +2407,18 @@ pub(crate) fn stored_rows_are_stale(
     // 1줄 ≈4.5× 과밀). **이 경계는 압축 상한에서 나온 값이지 맞춰 넣은 상수가
     // 아니다.** 빈 문단은 run 이 없어 이 판정이 발화하지 않는데, 폭을 넘길 텍스트
     // 자체가 없으므로 정상이다(전체 run-less 조합 8,345건 중 99.6%가 빈 문단).
-    if composed
-        .lines
-        .iter()
-        .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
-    {
+    // [#6802] 넘친 것이 **점 채움(리더)** 뿐인 줄은 부실 저장이 아니다 — 옛 차례 표는
+    // 제목 뒤를 점 문자로 직접 채워 한 줄을 만들고(`1400000-200600006` 2쪽:
+    // `Ⅰ. 사업개요 ․․․․․…`), 그 점 개수는 한/글 메트릭 기준이라 우리 추정 폭에서는
+    // 쉽게 1.8× 를 넘는다. 여기서 재래핑하면 저장이 한 줄로 둔 문단이 네 줄로 접혀
+    // 뒤 문단들의 저장 `vertical_pos` 위에 겹쳐 그려진다(그 문서 2쪽 text-overlap 4건).
+    // 한/글은 그 줄을 한 줄로 두고 넘치는 점을 자른다. 채움을 걷어낸 내용이 상자 안에
+    // 들어갈 때만 저장을 믿는다 — `#2525`(hwpx-02 p5 135자)·`#2291`(task2287 r183c8
+    // 76자)처럼 채움 없이 넘치는 줄은 종전대로 부실 저장이다.
+    if composed.lines.iter().any(|l| {
+        estimate_composed_line_width(l, styles) > inner_width_px * 1.8
+            && !line_overflow_is_leader_fill(l, styles, inner_width_px)
+    }) {
         return true;
     }
     // [#6102] **비말미** 저장 줄의 과밀: 이어지는 줄이 있는데도 자기 폭(저장
@@ -2784,6 +2939,11 @@ pub fn recompose_cell_lines_in_frame(
     if let Some(rebuilt) = rebuilt {
         *composed = rebuilt;
     }
+    // [#6802] 저장 한 줄을 지킨 줄의 넘치는 채움(리더)은 여기서 끊는다 — 측정(높이)과
+    // 배치(페인트)가 같은 이 함수를 타므로 두 경로가 같은 줄을 본다.
+    if has_authoritative_line_segs && !para.stored_text_partition_is_dirty() {
+        trim_leader_fill_overflow(composed, inner_width_px, styles);
+    }
 }
 
 /// 저장 `LINE_SEG`가 없는 들여쓴 셀 문단의 구간별 자간을 안전하게
@@ -2840,21 +3000,10 @@ pub(crate) fn missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(
 
 /// [#2279 axis B] 셀 텍스트 오버플로 시 좌우 패딩 축소 — 렌더/측정 공용 코어.
 ///
-/// 렌더(`layout_table_cells`)는 단일줄 오버플로 셀의 좌우 패딩을 축소한 뒤
-/// `recompose_cell_lines_in_frame` 으로 재래핑한다. 측정(cut `cell_units` / mt
-/// `HeightMeasurer`)이 원 패딩 폭(더 좁음)으로 래핑하면 같은 문단이
-/// 렌더 4줄/측정 5줄로 갈라져 행높이가 과대해진다 (86712 pi=172 산식 셀
-/// 106.5px vs 한글 86.3px, #2237 axis B). 규칙 본체를 단일 출처로 공유한다.
-/// 의미는 종전 `LayoutEngine::shrink_cell_padding_for_overflow` 와 동일.
-///
-/// **[#5193] 이 발산은 이 함수가 없애는 것이 아니라 좁히는 것이고, 아직 열려
-/// 있다.** 실측(86712 산식 표 r23~r26 c2): 측정 내폭 **192.85px** vs 렌더 내폭
-/// **204.45px** — 같은 셀에 대해 측정이 11.6px 더 좁다. 그 11.6px 안에서 줄바꿈
-/// 판정이 갈린다: 측정 폭에서 `-` 토큰이 pen 13457 + glyph 667 = 14124 로 상자
-/// 14464 HWPUNIT 에 340 여유로 들어가느냐 마느냐가 행높이 85.7px 과 106.5px 을
-/// 가른다. 한컴 PDF p27 은 이 셀을 4줄로 찍으므로 85.7px 이 맞다. 폭 두 개가 남아
-/// 있는 한 "측정에서만 갈리는 줄바꿈"은 계속 가능하다 — 선행 결함이며 #5193 의
-/// 소관이 아니다 (`issue_2279_nested_cell_units_split_r27_not_r26` 주석 참조).
+/// 측정과 배치는 동일한 최소 셀 너비 규칙을 사용한다.
+/// 과거 #2237/#2279의 86712 5줄/4줄 진단은 저장 LineSeg가 누락된 잘못된
+/// 파생 입력을 근거로 삼았다. 정상 한컴 저장본은 측정·재조판 모두 4줄이다.
+/// 그 진단 수치를 현재 정상 원본의 조판 계약으로 사용하지 않는다.
 /// 한/글이 셀 안 줄에 보장하는 최소 너비 (HWPUNIT). 1440 = 정확히 0.2 인치.
 ///
 /// 안 여백 합이 셀 폭에 육박하면 남는 폭이 0 에 가까워진다. 한/글은 그 폭으로 줄을 만들지

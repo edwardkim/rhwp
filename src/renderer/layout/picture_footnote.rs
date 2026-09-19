@@ -388,6 +388,7 @@ impl LayoutEngine {
                 text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
+                content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 header_footer_ref: header_footer_ref.clone(),
                 cell_index: cei,
                 cell_para_index: cpi,
@@ -730,6 +731,7 @@ impl LayoutEngine {
                 text_wrap: Some(picture.common.text_wrap),
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
+                content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 ..ImageNode::new(bin_data_id, image_data)
             })
         };

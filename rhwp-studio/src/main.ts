@@ -1573,6 +1573,13 @@ async function loadBytes(
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
     plugins.notifyDocumentSwap();
+    // [#7194] 같은 사실을 앱 안쪽에도 알린다. 종전에는 문서 교체 신호가
+    // `open-document-bytes` 이벤트뿐이었는데, 그 이벤트를 거치는 열기 경로는 여섯 중
+    // 하나(`open-document-bytes` 핸들러)뿐이다 — 드롭·파일 input·`?url=`·자동저장 복구·
+    // 호스트 API 는 이 깔때기를 직접 부른다. 그래서 표 resize 런타임 캐시가 이전 문서의
+    // 칸 좌표를 그대로 들고 살아남았다(`cachedTableRef` 는 `{sec, ppi, ci}` 라 문서가
+    // 바뀌어도 신선도 검사를 통과한다 — 3184241).
+    eventBus.emit('document-swapped');
     await updateLoadProgress(45, '자동 저장 준비 중...');
     forgetConvertedHmlSaveHandle(fileHandle);
     wasm.currentFileHandle = fileHandle;

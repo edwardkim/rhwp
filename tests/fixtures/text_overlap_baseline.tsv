@@ -4,7 +4,6 @@
 3-09월_교육_통합_2023.hwpx	7
 76076_regulatory_analysis.hwp	6
 80168_regulatory_analysis.hwp	9
-86712_regulatory_analysis.hwp	3
 HWP5-nopassword-123456.hwpx	6
 SO-SUEOP.hwp	34
 SO-SUEOP.hwpx	34
@@ -17,8 +16,16 @@ exam_science.hwp	3
 exam_social.hwp	4
 group-drawing-02.hwp	5
 hwp-multi-001.hwp	97
-hwp3-sample10-hwp5.hwp	147
-hwp3-sample10-hwpx.hwpx	132
+# [#7254] 배치·정렬 run 폭의 정수 반올림을 걷어낸 천장 조정 — 2행.
+#   새로 세는 짝은 전부 **수정 전에도 겹쳐 있던 짝**이다. 같은 노드 쌍을
+#   `--overlap-tolerance 0.01` 로 다시 재면 수정 전 겹침이 0.79~1.79px 로, 이 게이트의
+#   보고 기준 2.0px 아래라 세지 않았을 뿐이다(수정 후 2.03~2.83px). 수정 전 0px 이던
+#   짝이 새로 겹친 건 0건, 사라진 짝도 0건이다.
+#   같은 A/B 에서 samples 전수 1,139문서의 쪽수·overflow·off-canvas·overlap·empty-page 는
+#   한 건도 바뀌지 않았고(유일한 차이는 base 에서 TIMEOUT 이던 issue2063 가 cand 에서
+#   완주한 것), text-overlap 은 3문서가 줄고 이 2문서만 늘었다.
+hwp3-sample10-hwp5.hwp	188
+hwp3-sample10-hwpx.hwpx	173
 hwp3-sample10.hwp	189
 hwp3-sample11-hwp5.hwp	9
 hwp3-sample11-hwpx.hwpx	2
@@ -77,7 +84,6 @@ issue1880_takeplace_host_before.hwpx	1
 issue1891/76076_regulatory_analysis.hwpx	7
 issue1891/80168_regulatory_analysis.hwpx	9
 issue1891/80250_regulatory_analysis.hwpx	2
-issue1891/86712_regulatory_analysis.hwpx	3
 issue1891_external_bindata_link.hwpx	3
 issue1921/59043_regulatory_analysis.hwp	3
 issue1937_rowbreak_footnote_overpagination.hwp	135
@@ -161,10 +167,19 @@ task2093/1192000_hydrogen_policy_research.hwp	1
 task2097/21217935_simsa_jipyo.hwp	75
 task2097/75544_pii_bunseok.hwpx	8
 task2279/36404953_gyeoljae.hwpx	1
-task2287/1342000_edu_curriculum_map.hwp	94
+# #7226: 걸침 전용 행의 이중 소유를 없애 이 문서의 겹침이 29건 줄었다
+# (devel 236a601da 실측 68 → 수정 후 39). 천장은 같은 여유를 두고 94 → 65.
+task2287/1342000_edu_curriculum_map.hwp	65
 task2430/1382000_domestic_violence_survey.hwp	18
 task3307/issue3307_outline_number.hwpx	3
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	58
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	223
 # New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
 issue6924/148751598-briefing.hwp	1
+# [#6923] 감싼 1칸 표의 저장 쪽 프레임 컷이 이 문서의 쪽 구성을 한/글 정본에 맞추면서
+# (10쪽 첫머리 '⑨ 금융지주의 해외법인…' → 'Ⅲ. 향후 계획' = pdf/tac_object_host_line_height-2020.pdf
+# 10쪽과 일치) 그 쪽으로 옮겨 온 내용에서 **기존 축**의 겹침 2건이 드러났다.
+# 겹치는 것은 감싼 표의 마지막 줄(847.8..867.8)과 뒤따르는 별도 표(Table2, 859.7)로,
+# 이 PR 이 다루는 컷 축이 아니라 조각 말미와 다음 블록의 배치 축이다.
+# 문서 SHA-256 2cf764c89943a23eff17fb8a…
+issue7062/tac_object_host_line_height.hwp	2

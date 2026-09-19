@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-09-16
+last_verified: 2026-09-17
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -77,6 +77,27 @@ raw SVG만 붙이면 macOS의 legacy `휴먼명조` 등의 설치 폰트가 잘�
 패키지와 exporter 해시를 기록한다. 패키지가 바뀌면 `--resume`은 이전 증적을 거부한다.
 WASM의 쪽 수가 Native와 달라도 Native의 페이지 구성을 강제하지 않으며, 실제 WASM SVG와
 render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패키지 빌드는 Sweep 실행 전에 완료한다.
+
+## 원 글꼴을 명시적으로 공급하는 진단
+
+로컬 글꼴 이름이 존재해도 Chrome이 실제로 같은 face를 사용하는지는 별도 확인한다.
+글꼴 굵기 검토에서 대체 face를 원 face의 증거로 세지 않는다. 필요한 경우 CLI와 같은
+`--embed-fonts[=subset|full] --font-path <디렉터리>`를 sweep에 전달한다. Native와 WASM에
+같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
+mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
+
+```bash
+venv/bin/python scripts/visual_sweep.py \
+  --file-target bold samples/issue2470/36382471_masked.hwpx pdf/issue2470/36382471_masked-2022.pdf \
+  --rhwp-bin target/pr-review/release-test/rhwp --pages 1,2 \
+  --embed-fonts=full --font-path /path/to/private/validated-font-subsets --out /tmp/bold-review
+```
+
+폰트 소유·사용 범위가 확인된 파일만 검증용 scratch에 둔다. embedded SVG/폰트 바이너리를
+공개 증적에 추가하지 않고 PNG와 source font/subset 해시·실제 선택 face를 기록한다.
+사용 glyph의 outline/advance를 유지한 유효한 subset은 full 모드로 전달할 수 있다. 브라우저
+OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
+실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
 
 ## 필수 도구
 

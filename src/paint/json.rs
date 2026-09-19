@@ -944,7 +944,8 @@ impl PaintOp {
             } => {
                 buf.push('{');
                 buf.push_str("\"type\":\"image\",\"bbox\":");
-                write_bbox(buf, *bbox);
+                // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
+                write_bbox(buf, image.paint_bbox(bbox));
                 // [#3315] 키가 있는 op 만 base64 를 생략할 수 있다 — 소비자가 그 키로
                 // `getSourceImageBytes` 를 불러 같은 바이트를 받는다. 키를 낼 수 없는 합성
                 // 그림(`bin_data_id == 0`)은 되찾을 길이 없으므로 종전대로 싣는다.

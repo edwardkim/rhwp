@@ -1040,7 +1040,15 @@ impl SkiaLayerRenderer {
                                 let rendered = draw_image(
                                     &image.data,
                                     *bbox,
-                                    Some(image.fill_mode),
+                                    Some(
+                                        if image.fill_mode
+                                            == crate::model::style::ImageFillMode::None
+                                        {
+                                            crate::model::style::ImageFillMode::FitToSize
+                                        } else {
+                                            image.fill_mode
+                                        },
+                                    ),
                                     None,
                                     None,
                                     None,
@@ -1382,7 +1390,9 @@ impl SkiaLayerRenderer {
                             image,
                             resolved,
                         } => {
-                            let effective_bbox = image.transform.effective_image_bbox(bbox);
+                            let effective_bbox = image
+                                .transform
+                                .effective_image_bbox(&image.paint_bbox(bbox));
                             if image.transform.has_transform() {
                                 open_shape_transform(image.transform, &effective_bbox);
                             }

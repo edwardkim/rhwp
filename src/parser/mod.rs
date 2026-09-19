@@ -538,7 +538,7 @@ fn parse_hwp_with_cfb(
     assign_auto_numbers(&mut doc);
 
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
-    apply_hwp3_origin_fixup(&mut doc);
+    apply_hwp3_origin_fixup(&mut doc, summary_hwp3_era);
 
     // [Task #1001] HwpSummary HWP3 시대 년 AND PS/CS 비율 작음 → 변환본 확정.
     // 두 신호 결합으로 false positive 차단 (exam_eng 등 일반 HWP5 가 본문에
@@ -688,7 +688,7 @@ fn fixup_line_segs_for_variant(paragraphs: &mut [crate::model::paragraph::Paragr
     }
 }
 
-fn apply_hwp3_origin_fixup(doc: &mut Document) {
+fn apply_hwp3_origin_fixup(doc: &mut Document, summary_hwp3_era: bool) {
     // [#1880 v2] rhwp HWPX→HWP 변환본(is_hwpx_variant, #1886 마커)은 한컴
     // HWP3→HWP5 변환본이 아니다 — 결정론 마커가 비율 휴리스틱에 우선한다.
     // 미게이트 시 저-스타일 대형 문서(2959953)가 비율에 걸려 margin_bottom
@@ -732,6 +732,25 @@ fn apply_hwp3_origin_fixup(doc: &mut Document) {
 
     let total_paragraphs: usize = doc.sections.iter().map(|s| s.paragraphs.len()).sum();
     if total_paragraphs <= 50 {
+        return;
+    }
+    // [#7035] 비율 휴리스틱에 **결정론 신호를 함께 요구한다.**
+    //
+    // 바로 아래 `is_hwp3_variant` 판정([Task #1001])은 같은 질문에 `summary_hwp3_era`
+    // (HwpSummary 의 1990~2003년 표기) **AND** 비율을 쓰는데, 여기는 비율만 봤다. 더 약한
+    // 쪽이 조판 예산(`pagination_bottom_tolerance` = 한글97 마지막 줄 허용치 21.3px)을
+    // 쥐고 있었다.
+    //
+    // 실측: 속기자료 4문서(148733091 · 148737458 · 148759033 · 148762372)는 진짜 HWP5
+    // (version 5.0.0.6 · 저장 5.7.9.3051 · HWP3 출처 마커 없음)인데 비율에 걸린다
+    // (ps 0.034~0.040 · cs 0.038~0.045). 그 허용치가 typeset 예산을 본문보다 21.3px 크게
+    // 만들어 쪽마다 마지막 한 줄이 본문 바닥을 +2.9~+11.4px 넘겨 그려졌다(#7035).
+    // 한/글 2020 정본은 그 줄들을 다음 쪽 첫머리에 둔다.
+    //
+    // 결정론 신호는 두 무리를 완전히 가른다 — 저장소의 HWP3 to HWP5 변환본 16건은 전부
+    // `summary_hwp3_era = true`, 위 속기자료 4건은 전부 `false` 다. 종전 주석이 적어 둔
+    // "추정이라 오탐 비용이 특히 크다"(02600 사례)를 이 신호로 막는다.
+    if !summary_hwp3_era {
         return;
     }
     let ps_ratio = doc.doc_info.para_shapes.len() as f64 / total_paragraphs as f64;
@@ -1034,7 +1053,16 @@ fn parse_hwp_with_lenient(
 
     // [Task #554] HWP3 → HWP5 변환본 식별 + page_def margin_bottom 보정
     // [Task #1001] 변환본 식별 시 doc.is_hwp3_variant = true 설정
-    apply_hwp3_origin_fixup(&mut doc);
+    // [#7035] lenient 경로도 정상 경로와 **같은 결정론 신호**를 쓴다 — 한쪽만 신호를
+    // 갖고 다른 쪽이 비율만 보면 같은 문서가 파싱 경로에 따라 다른 조판 예산을 받는다.
+    let summary_hwp3_era = [
+        "/\u{0005}HwpSummaryInformation",
+        "\u{0005}HwpSummaryInformation",
+    ]
+    .iter()
+    .find_map(|path| lenient.read_stream(path).ok())
+    .is_some_and(|raw| cfb_reader::hwp_summary_indicates_hwp3_era(&raw));
+    apply_hwp3_origin_fixup(&mut doc, summary_hwp3_era);
 
     // [Task #873] BinData Link 타입 의 외부 file path 영역 Picture.external_path 전달.
     // 이후 model::document::populate_external_images_from_dir (Task #741) 가 같은
@@ -2331,7 +2359,9 @@ mod tests {
         doc.doc_info.para_shapes = vec![ParaShape::default()];
         doc.doc_info.char_shapes = vec![CharShape::default()];
 
-        apply_hwp3_origin_fixup(&mut doc);
+        // [#7035] 종전 의도 유지 — 이 시험들이 세운 전제는 "HWP3 변환본" 이므로
+        // 결정론 신호가 있는 문서로 넘긴다. 신호가 없을 때의 새 계약은 tests/cases 에 둔다.
+        apply_hwp3_origin_fixup(&mut doc, true);
 
         let pd = &doc.sections[0].section_def.page_def;
         assert_eq!(
@@ -2359,7 +2389,9 @@ mod tests {
         doc.doc_info.para_shapes = vec![ParaShape::default()];
         doc.doc_info.char_shapes = vec![CharShape::default()];
 
-        apply_hwp3_origin_fixup(&mut doc);
+        // [#7035] 종전 의도 유지 — 이 시험들이 세운 전제는 "HWP3 변환본" 이므로
+        // 결정론 신호가 있는 문서로 넘긴다. 신호가 없을 때의 새 계약은 tests/cases 에 둔다.
+        apply_hwp3_origin_fixup(&mut doc, true);
 
         let pd = &doc.sections[0].section_def.page_def;
         assert_eq!(pd.margin_bottom, 900);
@@ -2382,7 +2414,9 @@ mod tests {
         doc.doc_info.para_shapes = (0..60).map(|_| ParaShape::default()).collect();
         doc.doc_info.char_shapes = (0..60).map(|_| CharShape::default()).collect();
 
-        apply_hwp3_origin_fixup(&mut doc);
+        // [#7035] 종전 의도 유지 — 이 시험들이 세운 전제는 "HWP3 변환본" 이므로
+        // 결정론 신호가 있는 문서로 넘긴다. 신호가 없을 때의 새 계약은 tests/cases 에 둔다.
+        apply_hwp3_origin_fixup(&mut doc, true);
 
         let pd = &doc.sections[0].section_def.page_def;
         assert_eq!(pd.margin_bottom, 4252);
@@ -2712,7 +2746,9 @@ mod tests {
     fn issue1880v2_hwp3_fixup_applies_to_native() {
         let mut doc = hwp3_ratio_suspect_doc();
         assert!(!doc.is_hwpx_variant);
-        apply_hwp3_origin_fixup(&mut doc);
+        // [#7035] 종전 의도 유지 — 이 시험들이 세운 전제는 "HWP3 변환본" 이므로
+        // 결정론 신호가 있는 문서로 넘긴다. 신호가 없을 때의 새 계약은 tests/cases 에 둔다.
+        apply_hwp3_origin_fixup(&mut doc, true);
         let pd = &doc.sections[0].section_def.page_def;
         // 보정은 그대로 적용되지만 **파일 값이 아니라 렌더러 내부 값**에 실린다.
         // 종전에는 `margin_bottom` 을 4252 - 1600 으로 깎았다 — 추정이 빗나가면 저장본의
@@ -2731,7 +2767,9 @@ mod tests {
     fn issue1880v2_hwp3_fixup_skipped_for_hwpx_variant() {
         let mut doc = hwp3_ratio_suspect_doc();
         doc.is_hwpx_variant = true;
-        apply_hwp3_origin_fixup(&mut doc);
+        // [#7035] 종전 의도 유지 — 이 시험들이 세운 전제는 "HWP3 변환본" 이므로
+        // 결정론 신호가 있는 문서로 넘긴다. 신호가 없을 때의 새 계약은 tests/cases 에 둔다.
+        apply_hwp3_origin_fixup(&mut doc, true);
         let pd = &doc.sections[0].section_def.page_def;
         assert_eq!(pd.margin_bottom, 4252);
         // 보정이 tolerance 로 옮겨간 뒤로는 여백만 봐서는 오발동을 잡을 수 없다 —

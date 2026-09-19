@@ -885,14 +885,41 @@ fn hwp3_para_flow_spacing(
 }
 
 /// HWP3 스펙 offset 111 각주 분리선 길이 종류(0=5cm, 1=본문 폭의 1/3, 2=단 너비,
-/// 3 이상=없음)를 HWPUNIT 길이로 변환한다.
+/// 3 이상=없음)를 HWP5/OWPML 의 구분선 길이로 변환한다.
+///
+/// [#7174] `0`(5cm)은 고정 HWPUNIT 이 아니라 **OWPML sentinel `-1`(5cm)** 이다.
+/// 한/글 자신의 HWP3 변환본이 그렇게 적는다 — HWP5 `FOOTNOTE_SHAPE` 는 이 자리가
+/// `FF FF FF FF`(i32 −1)이고, 같은 문서의 HWPX 변환본은 `<hp:noteLine length="-1">` 이다
+/// (`samples/SO-SUEOP.hwp` · `samples/hwp3-sample10.hwp`, 한/글 2020 11.0.0.9136).
+/// 종전의 `14160` 은 같은 5cm 를 고정값으로 적은 것이라 그려지는 길이는 같지만
+/// (`note_separator_length_px`: −1 → `dpi*5/2.54`, 14160 → 188.80px vs 188.98px)
+/// 저장 계약이 정본과 달랐다.
+///
+/// `1`·`2`(본문 폭 1/3 · 단 너비)는 정본 표본이 없어 종전의 계산값을 유지한다 —
+/// OWPML 의 상대 sentinel(−3·−4)은 각주 경로에서 1/3 폭으로만 해석되므로
+/// (`footnote_separator_length_px`) 지금 바꾸면 `2`(단 너비)가 좁아진다.
 fn hwp3_footnote_separator_length(footnote_line_width: u8, column_width_hu: i32) -> i32 {
     match footnote_line_width {
-        0 => 14160, // 5cm ≈ 283.2 HWPUNIT/mm * 50mm
+        0 => HWP3_SEPARATOR_LENGTH_5CM,
         1 => column_width_hu / 3,
         2 => column_width_hu,
         _ => 0,
     }
+}
+
+/// OWPML `noteLine length` 의 5cm sentinel.
+const HWP3_SEPARATOR_LENGTH_5CM: i32 = -1;
+
+/// HWP5 `FOOTNOTE_SHAPE` 의 구분선 길이는 **4바이트**다 — 우리 IR 은 그것을
+/// `separator_length`(하위 워드)와 `separator_margin_top`(상위 워드) 두 i16 슬롯으로
+/// 나눠 읽고 그대로 되쓴다(`parse_footnote_shape_record` · `serialize_footnote_shape`).
+/// 그래서 음수 sentinel 은 두 슬롯을 **함께** 채워야 한/글이 `-1` 로 읽는다. 한 쪽만
+/// `-1` 로 두면 바이트가 `FF FF 00 00` = 65535 가 되어 5cm 대신 폭 전체로 잘린다.
+///
+/// 양수 길이는 상위 워드가 0 이므로 종전대로 `separator_length` 만 채운다.
+fn hwp3_apply_separator_length(shape: &mut crate::model::footnote::FootnoteShape, length: i32) {
+    shape.separator_length = length;
+    shape.separator_margin_top = if length < 0 { -1 } else { 0 };
 }
 
 fn hwp3_note_column_width_hu(column_width_hu: i32) -> i32 {
@@ -939,23 +966,27 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
         FootnoteNumbering, FootnotePlacement, FootnoteShape, NumberFormat,
     };
 
-    // [Task #2772] doc_info.footnote_line_margin(오프셋 104, "각주 분리선과 본문
-    // 사이의 간격")을 separator_margin_top 으로 배선한다. 미배선 시 항상
-    // 하드코딩된 864 값이 쓰여 문서가 지정한 간격이 무시됐다.
-    let separator_margin_top = if doc_info.footnote_line_margin != 0 {
-        (doc_info.footnote_line_margin as i16).saturating_mul(4)
-    } else {
-        864
-    };
-
-    // [Task #3054] doc_info.footnote_text_margin(각주 분리선과 각주 본문 사이의
-    // 간격)을 note_spacing 으로 배선한다. 미배선 시 항상 하드코딩된 576 값이
-    // 쓰여 문서가 지정한 간격이 무시됐다.
-    let note_spacing = if doc_info.footnote_text_margin != 0 {
-        (doc_info.footnote_text_margin as i16).saturating_mul(4)
-    } else {
-        576
-    };
+    // [#7174] 미주 구분선 여백은 **한/글 기본값**이고 각주 값을 물려받지 않는다.
+    //
+    // HWP3 문서 정보에는 미주 전용 여백 필드가 없다(`Hwp3DocInfo` 는 각주만 갖는다).
+    // 그래서 한/글은 변환할 때 자기 기본값을 쓴다 — `samples/SO-SUEOP.hwp` 는 각주
+    // 여백이 213·142 hunit(×4 = 852·568)인데, 같은 파일의 한/글 2020 변환본은
+    // 미주를 852/568 이 아니라 **864/576** 으로 적는다.
+    //
+    // ```text
+    //   HWPX  <hp:footNotePr><hp:noteSpacing betweenNotes="284" belowLine="568" aboveLine="852"/>
+    //         <hp:endNotePr> <hp:noteSpacing betweenNotes="0"   belowLine="576" aboveLine="864"/>
+    //   HWP5  FOOTNOTE_SHAPE(각주) 852/568 · FOOTNOTE_SHAPE(미주) 864/576
+    // ```
+    //
+    // 종전에는 Task #2772·#3054 가 각주 값을 미주에 배선했고(그래서 852/568),
+    // 게다가 "구분선 위"를 HWPX 슬롯(`separator_margin_top`)에 넣어 HWP5 저장본에서는
+    // 통째로 0 이 됐다 — 각주 쪽 슬롯 결함(#7181)과 같은 모양이다. 위 정본에 맞춘다.
+    //
+    // 코퍼스 대조: 저장소 HWP5 표본에서 미주 `(margin_top|margin_bottom|note_spacing)`
+    // 분포의 둘째 최빈값이 정확히 `0|864|576`(30건)이다.
+    const HANCOM_ENDNOTE_SEPARATOR_ABOVE_HU: i16 = 864;
+    const HANCOM_ENDNOTE_SEPARATOR_BELOW_HU: i16 = 576;
 
     let mut shape = FootnoteShape {
         number_format: NumberFormat::Digit,
@@ -968,8 +999,10 @@ fn hwp3_default_endnote_shape(doc_info: &Hwp3DocInfo) -> crate::model::footnote:
             '\0'
         },
         start_number: 1,
-        separator_margin_top,
-        note_spacing,
+        // HWP5 슬롯: `separator_margin_bottom` 이 한컴 UI "구분선 위",
+        // `note_spacing` 이 "구분선 아래"다(`FootnoteShape` 모델 주석).
+        separator_margin_bottom: HANCOM_ENDNOTE_SEPARATOR_ABOVE_HU,
+        note_spacing: HANCOM_ENDNOTE_SEPARATOR_BELOW_HU,
         separator_line_width: 1,
         separator_color: 0x00000000,
         numbering: FootnoteNumbering::Continue,
@@ -2720,15 +2753,21 @@ fn parse_simple_control_char(
             let tab_width_hunit = (&buf[0..2]).read_u16::<LittleEndian>().unwrap_or(0);
             let tab_dot_fill = (&buf[2..4]).read_u16::<LittleEndian>().unwrap_or(0);
             let tab_width_hwpunit = (tab_width_hunit as u32).saturating_mul(4);
-            tab_extended.push([
-                (tab_width_hwpunit & 0xFFFF) as u16,
-                (tab_width_hwpunit >> 16) as u16,
-                if tab_dot_fill != 0 { 3 } else { 0 },
-                0,
-                0,
-                0,
-                0x0009,
-            ]);
+            // [#7170] 폭·채움이 둘 다 비면 저장값이 없는 탭이다 — 자리표로 실어 순번을
+            // 지키고, 소비자가 `TabDef` 기준으로 다시 계산한다.
+            tab_extended.push(if tab_width_hwpunit == 0 && tab_dot_fill == 0 {
+                crate::model::paragraph::TAB_EXT_PLACEHOLDER
+            } else {
+                [
+                    (tab_width_hwpunit & 0xFFFF) as u16,
+                    (tab_width_hwpunit >> 16) as u16,
+                    if tab_dot_fill != 0 { 3 } else { 0 },
+                    0,
+                    0,
+                    0,
+                    0x0009,
+                ]
+            });
             i += 3;
             char_offsets.push(utf16_len);
             // [Task #1950] HWP5 시멘틱: 탭은 PARA_TEXT 에서 8 code-unit
@@ -3224,19 +3263,11 @@ pub(crate) fn parse_paragraph_list(
         para.control_mask = para_control_mask;
         para.title_marks = para_title_marks;
         // [#7170] 폭과 채움이 **둘 다 비면** 그 확장은 직렬화기의 "데이터 없음"
-        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. HWP5 파서는 그 마커를 일부러
-        // IR 에 싣지 않으므로(#1892), 그런 탭을 실으면 재파스에서 확장 하나가 사라지고
-        // **뒤 탭의 확장이 순번으로 밀린다** — 직렬화는 `	` 순번으로 확장을 꺼낸다.
-        //
-        // 그래서 그런 탭이 하나라도 있는 문단은 통째로 싣지 않고 종전 동작을 유지한다.
-        // 한 문단 안에서 일부만 싣는 절충은 순번 계약을 깬다. 표본 264쪽 문서의 탭
-        // 112개는 전부 폭이 0 이 아니라 이 갈래를 타지 않는다.
-        if para_tab_extended
-            .iter()
-            .any(|ext| ext[..6].iter().all(|&v| v == 0))
-        {
-            para_tab_extended.clear();
-        }
+        // 마커(`[0,…,0,0x0009]`)와 글자 그대로 같아진다. 종전에는 재파스에서 그 항목이
+        // 사라져 뒤 탭의 확장이 순번으로 밀렸고, 그래서 그런 탭이 하나라도 있는 문단은
+        // 통째로 싣지 않았다 — 같은 문단의 **멀쩡한 탭까지** 폭·채움을 잃었다.
+        // 이제 두 파서가 마커를 자리표로 실어 순번을 지키므로(`tab_ext_is_placeholder`)
+        // 문단을 버리지 않고 그대로 싣는다.
         para.tab_extended = para_tab_extended;
         para.has_para_text =
             !para.text.is_empty() || !para.controls.is_empty() || !para.title_marks.is_empty();
@@ -4345,8 +4376,10 @@ fn parse_hwp3_inner(
     // HWP3 스펙(한글문서파일구조3.0.md:245) offset 111 각주 분리선 길이 종류.
     // 기존 코드는 doc_info.footnote_line_width 를 파싱만 하고 버려 항상
     // separator_length=0(선 없음)으로 렌더링했다.
-    section_def.footnote_shape.separator_length =
-        hwp3_footnote_separator_length(doc_info.footnote_line_width, column_width_hu);
+    hwp3_apply_separator_length(
+        &mut section_def.footnote_shape,
+        hwp3_footnote_separator_length(doc_info.footnote_line_width, column_width_hu),
+    );
     section_def.footnote_shape.separator_line_type = if doc_info.footnote_line_width == 3 {
         0
     } else {
@@ -4545,9 +4578,17 @@ fn fixup_hwp3_notes(doc: &mut crate::model::document::Document, doc_info: &Hwp3D
         ensure_hwp3_initial_body_column_def(&mut section.paragraphs);
     }
 
+    // [#7174] 미주 모양은 **미주가 없어도** 적는다 — 한/글 변환본이 그렇다.
+    // `samples/hwp3-sample10.hwp`(미주 0개)의 한/글 2020 HWP5 변환본도 미주 모양에
+    // 864/576 · 시작 번호 1 · 뒤 장식 `)` 를 채운다. 종전처럼 비워 두면 그 문서에
+    // 미주를 하나 넣는 순간 구분선 굵기 0 · 시작 번호 0 인 모양이 쓰인다.
+    // 미주 단 보정(`fixup_hwp3_answer_column_def`)은 종전대로 미주가 있을 때만 한다.
+    for section in &mut doc.sections {
+        section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
+    }
+
     if state.has_endnote {
         for section in &mut doc.sections {
-            section.section_def.endnote_shape = hwp3_default_endnote_shape(doc_info);
             let page_def = &section.section_def.page_def;
             let body_width_hu = page_def
                 .width
@@ -5701,7 +5742,10 @@ mod tests {
         // doc_info.footnote_line_width(스펙 offset 111, 각주 분리선 길이 종류)를
         // 파싱만 하고 버리던 기존 버그: section_def.footnote_shape.separator_length 가
         // 값과 무관하게 항상 0(선 없음)으로 남았다.
-        assert_eq!(hwp3_footnote_separator_length(0, 9999), 14160); // 5cm 고정
+        // [#7174] 5cm 는 고정 HWPUNIT(종전 14160)이 아니라 OWPML sentinel −1 이다 —
+        // 한/글 2020 변환본이 그렇게 적는다(`samples/issue7174/SO-SUEOP-hancom2020.hwpx`
+        // 의 `<hp:noteLine length="-1">`).
+        assert_eq!(hwp3_footnote_separator_length(0, 9999), -1); // 5cm sentinel
         assert_eq!(hwp3_footnote_separator_length(1, 9000), 3000); // 본문 폭의 1/3
         assert_eq!(hwp3_footnote_separator_length(2, 9000), 9000); // 단 너비
         assert_eq!(hwp3_footnote_separator_length(3, 9000), 0); // 없음
@@ -5760,18 +5804,18 @@ mod tests {
     }
 
     #[test]
-    fn task3054_hwp3_default_endnote_shape_wires_footnote_text_margin() {
-        // [Task #3054] doc_info.footnote_text_margin 이 note_spacing 으로
-        // 배선돼야 한다. 값이 0이면 기존 하드코딩 기본값(576)을 유지한다.
+    fn task3054_hwp3_endnote_separator_below_is_the_hancom_default() {
+        // [Task #3054 → #7174] 위와 같은 축의 "구분선 아래"다. 한/글 2020 변환본의
+        // 미주는 각주 값(142 hunit ×4 = 568)이 아니라 **576** 을 적는다
+        // (HWPX: endNotePr belowLine="576" · footNotePr belowLine="568").
         let doc_info = Hwp3DocInfo {
             footnote_text_margin: 50,
             ..Default::default()
         };
         let shape = hwp3_default_endnote_shape(&doc_info);
-        assert_eq!(shape.note_spacing, 200);
+        assert_eq!(shape.note_spacing, 576);
 
-        let default_doc_info = Hwp3DocInfo::default();
-        let default_shape = hwp3_default_endnote_shape(&default_doc_info);
+        let default_shape = hwp3_default_endnote_shape(&Hwp3DocInfo::default());
         assert_eq!(default_shape.note_spacing, 576);
     }
 
@@ -6188,19 +6232,23 @@ mod tests {
     }
 
     #[test]
-    fn task2772_hwp3_default_endnote_shape_wires_footnote_line_margin() {
-        // [Task #2772] doc_info.footnote_line_margin 이 separator_margin_top 으로
-        // 배선돼야 한다. 값이 0이면 기존 하드코딩 기본값(864)을 유지한다.
+    fn task2772_hwp3_endnote_separator_above_is_the_hancom_default() {
+        // [Task #2772 → #7174] 종전에는 각주 여백(doc_info.footnote_line_margin)을
+        // 미주 `separator_margin_top` 에 배선했다. 한/글 자신의 변환본이 그렇지 않다 —
+        // `samples/SO-SUEOP.hwp` 는 각주 여백이 213 hunit(×4 = 852)인데 한/글 2020
+        // 변환본의 미주는 852 가 아니라 **864** 이고, HWP5 의 "구분선 위" 슬롯은
+        // `separator_margin_bottom` 이다(HWPX: endNotePr aboveLine="864").
+        // HWP3 문서 정보에는 미주 전용 여백 필드가 없어 한/글이 기본값을 쓴다.
         let doc_info = Hwp3DocInfo {
             footnote_line_margin: 50,
             ..Default::default()
         };
         let shape = hwp3_default_endnote_shape(&doc_info);
-        assert_eq!(shape.separator_margin_top, 200);
+        assert_eq!(shape.separator_margin_bottom, 864);
+        assert_eq!(shape.separator_margin_top, 0);
 
-        let default_doc_info = Hwp3DocInfo::default();
-        let default_shape = hwp3_default_endnote_shape(&default_doc_info);
-        assert_eq!(default_shape.separator_margin_top, 864);
+        let default_shape = hwp3_default_endnote_shape(&Hwp3DocInfo::default());
+        assert_eq!(default_shape.separator_margin_bottom, 864);
     }
 
     #[test]

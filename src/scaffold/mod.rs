@@ -13,7 +13,9 @@ pub mod builder;
 pub mod schema;
 
 pub use builder::build_scaffold;
-pub use schema::{Block, PageSize, ScaffoldSpec, SCAFFOLD_SCHEMA_VERSION};
+pub use schema::{
+    Block, CellAlign, CellAlignSpec, PageSize, ScaffoldSpec, SCAFFOLD_SCHEMA_VERSION,
+};
 
 use crate::error::HwpError;
 
@@ -22,6 +24,7 @@ pub fn parse_scaffold_bytes(bytes: &[u8]) -> Result<ScaffoldSpec, HwpError> {
     let spec: ScaffoldSpec = serde_json::from_slice(bytes)
         .map_err(|e| HwpError::InvalidFile(format!("scaffold JSON 파싱 실패: {e}")))?;
     validate_version(&spec)?;
+    validate_blocks(&spec)?;
     Ok(spec)
 }
 
@@ -30,6 +33,7 @@ pub fn parse_scaffold_str(s: &str) -> Result<ScaffoldSpec, HwpError> {
     let spec: ScaffoldSpec = serde_json::from_str(s)
         .map_err(|e| HwpError::InvalidFile(format!("scaffold JSON 파싱 실패: {e}")))?;
     validate_version(&spec)?;
+    validate_blocks(&spec)?;
     Ok(spec)
 }
 
@@ -39,6 +43,30 @@ fn validate_version(spec: &ScaffoldSpec) -> Result<(), HwpError> {
             "지원하지 않는 scaffold 스키마 버전 '{}' (지원: \"{}\")",
             spec.version, SCAFFOLD_SCHEMA_VERSION
         )));
+    }
+    Ok(())
+}
+
+/// [#7232] 열 단위 `cell_align` 의 길이는 그 표의 열 수와 같아야 한다.
+///
+/// 열 수는 행 중 가장 긴 것이다(빌더의 직사각 정규화와 같은 규칙). 길이가 어긋나면
+/// 어느 열이 무슨 정렬을 받는지가 호출자의 의도와 조용히 달라지므로 즉시 거부한다.
+fn validate_blocks(spec: &ScaffoldSpec) -> Result<(), HwpError> {
+    for (i, block) in spec.blocks.iter().enumerate() {
+        let Block::Table { rows, cell_align } = block else {
+            continue;
+        };
+        let Some(CellAlignSpec::PerColumn(list)) = cell_align else {
+            continue;
+        };
+        let col_count = rows.iter().map(|r| r.len()).max().unwrap_or(0).max(1);
+        if list.len() != col_count {
+            return Err(HwpError::InvalidFile(format!(
+                "blocks[{i}] (table): cell_align 목록 길이 {} 가 열 수 {col_count} 와 다릅니다 \
+                 (표 전체에 같은 정렬을 주려면 목록 대신 값 하나를 쓰세요)",
+                list.len()
+            )));
+        }
     }
     Ok(())
 }

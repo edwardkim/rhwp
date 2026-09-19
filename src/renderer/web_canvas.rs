@@ -861,7 +861,11 @@ impl WebCanvasRenderer {
             self.draw_image_with_fill_mode(
                 render_data.as_ref(),
                 bbox,
-                Some(img.fill_mode),
+                Some(if img.fill_mode == ImageFillMode::None {
+                    ImageFillMode::FitToSize
+                } else {
+                    img.fill_mode
+                }),
                 None,
                 None,
                 None,
@@ -1040,7 +1044,8 @@ impl WebCanvasRenderer {
     }
 
     fn render_image(&mut self, bbox: &BoundingBox, img: &ImageNode, restore_transform: bool) {
-        let eff_bbox = img.transform.effective_image_bbox(bbox);
+        // [#7193] 그림은 틀(bbox)에서 안쪽 여백을 뺀 자리에 그린다.
+        let eff_bbox = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
         self.open_shape_transform(&img.transform, &eff_bbox);
         if img.data.is_none() && img.external_path.is_some() {
             self.ctx.set_fill_style_str("#f0f0f0");
@@ -3463,7 +3468,8 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
-            ImageFillMode::Zoom => {
+            // [#7235] 채우기 유형 15(NONE)도 종횡비를 지켜 영역에 맞춘다.
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 let (img_w, img_h) = match parse_image_dimensions_canvas(data) {
                     Some((w, h)) if w > 0 && h > 0 => (w as f64, h as f64),
                     _ => {
@@ -3471,19 +3477,29 @@ impl WebCanvasRenderer {
                         return;
                     }
                 };
-                let scale = (bbox.width / img_w).min(bbox.height / img_h);
-                let w = img_w * scale;
-                let h = img_h * scale;
+                let (sx, sy, sw, sh) = crop
+                    .map(|rect| {
+                        crate::renderer::svg::compute_image_crop_src(
+                            rect,
+                            original_size_hu,
+                            img_w,
+                            img_h,
+                        )
+                    })
+                    .unwrap_or((0.0, 0.0, img_w, img_h));
+                let scale = (bbox.width / sw).min(bbox.height / sh);
+                let w = sw * scale;
+                let h = sh * scale;
                 let x = bbox.x + (bbox.width - w) / 2.0;
                 let y = bbox.y + (bbox.height - h) / 2.0;
                 self.ctx.save();
                 self.ctx.begin_path();
                 self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
                 self.ctx.clip();
-                self.draw_image(data, x, y, w, h);
+                self.draw_image_cropped(data, sx, sy, sw, sh, x, y, w, h);
                 self.ctx.restore();
             }
-            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
+            ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions_canvas(data) {

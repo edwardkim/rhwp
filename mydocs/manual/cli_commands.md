@@ -1193,7 +1193,10 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 구역 정의(머리말 감추기·시작 번호 등)를 바꾼다. 코어 `set_section_def_native`. `--props` 필수.
 
 ### `edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4993)
-문단을 지정 오프셋에서 가르고 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
+문단을 지정 오프셋에서 가르고 새 문단에 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
+`--offset 0`(문단 시작)이면 문단을 가르지 않고 그 문단에만 쪽 나눔을 건다(#7218) — 가르면 원 문단 모양(개요 수준 포함)을
+물려받은 빈 문단이 앞에 남아 개요 번호가 비어 보인다. 이미 쪽·구역 나눔이 있는 문단에는 아무것도 하지 않는다.
+`--json` 봉투는 `paragraphDelta`(문단 수 변화: offset 0 이면 0, 아니면 1)와 `pageBreakParagraph`(쪽 나눔이 걸린 문단 번호)를 싣는다.
 
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
 문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
@@ -1680,6 +1683,48 @@ rhwp export-svg output/poc/ingest/sample_minimal.hwpx \
 - 수식/도형/손글씨처럼 PDF 텍스트 레이어가 의미 정보를 잃는 항목은 `build-from-ingest` 단독으로
   복원할 수 없다. 이 경우 ingest 단계에서 이미지/media 또는 전용 구조로 분류하고,
   결함 유형을 hotfix/follow-up 으로 나누어 기록한다.
+
+### `scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]`
+구조화된 명세(JSON) → HWPX 생성. `build-from-ingest` 와 같은 **무(無)에서 생성** 축이며,
+입력은 문서가 아니라 호출자가 쓴 계획서다(그래서 봉투에 신뢰 불가 표지가 붙지 않는다).
+
+명세 모델의 정본은 `src/scaffold/schema.rs` 다. 미지 필드는 조용히 버리지 않고 즉시 거부한다.
+
+| 필드 | 필수 | 설명 |
+| --- | --- | --- |
+| `version` | ✓ | `"1"` 고정 (`schema_registry::SCAFFOLD_SCHEMA_VERSION`) |
+| `title` |  | 있으면 본문 최상단 가운데 정렬 제목 문단 |
+| `font` |  | 기본 글꼴 이름 (기본값 `함초롬바탕`) |
+| `page_size` |  | `{"width_mm":210,"height_mm":297}` (기본 A4) |
+| `blocks` |  | `heading`(level 1~7) · `paragraph` · `table` 블록의 나열 |
+
+`table` 블록:
+
+| 필드 | 필수 | 설명 |
+| --- | --- | --- |
+| `rows` | ✓ | 행마다 셀 텍스트 목록. 길이가 다르면 최대 열 수에 맞춰 빈 칸으로 채운다 |
+| `cell_align` |  | [#7232] 셀 문단의 가로 정렬 — `"justify"`(기본) · `"left"` · `"center"` · `"right"`, 또는 **열 수와 길이가 같은 목록** |
+
+`cell_align` 의 낱말과 열 단위 축은 편집 경로 `edit insert-table --alignments` 와 같다.
+생략하면 종전과 같은 양쪽 정렬이며, 좁은 열에 긴 영문 토큰(코드명·경로·SQL)이 오면 한/글이
+폭을 채우려 글자 사이를 벌리므로 그런 표에는 `"left"` 를 지정한다.
+
+```bash
+rhwp scaffold spec.json -o out.hwpx --json
+```
+
+```json
+{"version":"1","title":"점검표","blocks":[
+  {"type":"heading","level":1,"text":"1. 개요"},
+  {"type":"paragraph","text":"본문 문단"},
+  {"type":"table","cell_align":["center","left","right"],
+   "rows":[["No","항목","금액"],["1","INSERT…VALUES APPEND","1,000"]]}
+]}
+```
+
+- `--json` 봉투: `schemaVersion`·`source`·`output`·`format`·`bytes`·`blockCount`·
+  `paragraphCount`·`tableCount`.
+- 지원 요소는 왕복 검증을 통과한 것만 노출한다 — 제목, 개요 수준 제목, 본문 문단, 단순 표.
 
 ### `hwpx-roundtrip <파일.hwpx | --batch 폴더> [-o <출력폴더>] [--lineseg-report]`
 HWPX → IR → HWPX roundtrip 검증(**구조 보존 게이트**, #1315 baseline). 재조립 `.rt.hwpx` 와

@@ -1855,13 +1855,20 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   const pageY = (contentY - pageOffset) / zoom;
 
   // hitTest로 표 셀 위인지 확인
-  let tableRef: { sec: number; ppi: number; ci: number } | null = null;
+  let tableRef: { sec: number; ppi: number; ci: number; path?: any[] } | null = null;
   let tableHit: any = null;
   try {
     const hit = this.wasm.hitTest(pageIdx, pageX, pageY);
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
       tableHit = hit;
-      tableRef = { sec: hit.sectionIndex, ppi: hit.parentParaIndex, ci: hit.controlIndex };
+      // [#7189] 셀 경로를 함께 싣는다. `sec/ppi/ci` 는 경로의 첫 마디(= 최외곽 표)라,
+      // 중첩 표 위에서도 바깥 표만 가리켜 안쪽 괘선이 캐시에 아예 들어오지 않았다.
+      tableRef = {
+        sec: hit.sectionIndex,
+        ppi: hit.parentParaIndex,
+        ci: hit.controlIndex,
+        path: Array.isArray(hit.cellPath) ? hit.cellPath : undefined,
+      };
     }
   } catch { /* hitTest 실패 시 표 밖 */ }
 

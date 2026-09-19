@@ -654,7 +654,24 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
     return svg[:end] + "<style>" + "\n".join(rules) + "</style>" + svg[end:]
 
 
-def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None) -> None:
+def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
+    """명시적 검증 폰트 공급과 hash를 고정한다. 폰트 파일은 scratch SVG에만 포함한다."""
+    if paths and mode is None:
+        raise SystemExit("--font-path는 --embed-fonts와 함께 사용해야 합니다.")
+    args = [f"--embed-fonts={mode}"] if mode == "full" else ["--embed-fonts"] if mode else ["--font-style"]
+    files = []
+    for directory in paths:
+        directory = resolve_input_path(root, directory)
+        if not directory.is_dir():
+            raise SystemExit(f"폰트 디렉터리가 없습니다: {directory}")
+        args.extend(["--font-path", str(directory)])
+        for path in sorted(directory.rglob("*")):
+            if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
+                files.append({"path": str(path), "sha256": sha256_file(path)})
+    return args, {"mode": mode or "local", "files": files}
+
+
+def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None) -> None:
     environment_args = ["--font-environment", str(font_environment)] if font_environment else []
     wasm_dir = base / "wasm"
     policy_dir = base / "font_policy"
@@ -668,7 +685,7 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
         cwd=root, log_path=base / "wasm-export.log",
     )
     run(
-        [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(policy_dir), *environment_args],
+        [rhwp_bin, "export-svg", str(hwp), *(font_args or ["--font-style"]), "-o", str(policy_dir), *environment_args],
         cwd=root, log_path=base / "font-policy.log",
     )
     policies = {page_num(path): path for path in policy_dir.glob("*.svg")}
@@ -1160,6 +1177,8 @@ def render_target(
     svg_rasterizer: str,
     wasm_pkg: Path | None = None,
     font_environment: Path | None = None,
+    embed_fonts: str | None = None,
+    font_paths: list[Path] | None = None,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1212,6 +1231,10 @@ def render_target(
         }
     if wasm_pkg is not None:
         provenance["wasm"] = wasm_package_provenance(root, wasm_pkg)
+    font_args, font_supply = svg_font_export_options(root, embed_fonts, font_paths or [])
+    provenance["font_supply"] = font_supply
+    if wasm_pkg is not None:
+        provenance["wasm"]["font_policy"] = "same-input native " + " ".join(font_args) + "; font-face CSS only"
     run_manifest = run_manifest_for_target(
         base,
         target,
@@ -1231,7 +1254,7 @@ def render_target(
     tree_log = base / "render_tree.log"
     if wasm_pkg is not None:
         if not (base / "wasm-export-complete.json").is_file():
-            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment)
+            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args)
     elif not any(svg_dir.glob("*.svg")):
         # 증적 SVG는 원 문서의 legacy face를 그대로 쓰되, `--font-style`이
         # `한양중고딕 → HY중고딕/HYGothic-Medium` 같은 설치명 alias를 @font-face
@@ -1240,7 +1263,7 @@ def render_target(
         # rasterize되는 것을 막는다. 실제 폰트 데이터는 저작권 폰트를 증적에 복제하지
         # 않도록 넣지 않고, portable 판정본은 아래 PNG review/compare로 보관한다.
         run(
-            [rhwp_bin, "export-svg", str(hwp), "--font-style", "-o", str(svg_dir), *environment_args],
+            [rhwp_bin, "export-svg", str(hwp), *font_args, "-o", str(svg_dir), *environment_args],
             cwd=root,
             log_path=export_log,
         )
@@ -4943,6 +4966,8 @@ def main() -> None:
         ),
     )
     parser.add_argument("--dpi", type=int, default=96)
+    parser.add_argument("--embed-fonts", nargs="?", const="subset", choices=("subset", "full"), help="진단 SVG에 검증 글꼴을 명시적으로 공급합니다. 공개 증적은 PNG로 보존합니다.")
+    parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
     parser.add_argument(
         "--wasm-pkg", type=Path,
@@ -5032,6 +5057,8 @@ def main() -> None:
             svg_rasterizer=args.svg_rasterizer,
             wasm_pkg=args.wasm_pkg,
             font_environment=args.font_environment,
+            embed_fonts=args.embed_fonts,
+            font_paths=args.font_path,
         )
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")

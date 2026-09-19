@@ -3088,6 +3088,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
@@ -3205,6 +3206,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             *is_block_split,
+            *start_cut_is_block,
             &self.styles,
             cell_para_idx,
         );
@@ -3330,6 +3332,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             *is_block_split,
+            *start_cut_is_block,
             *row_cursor_is_nested,
             *end_row_height_override,
             *start_row_height_override,
@@ -6917,6 +6920,7 @@ mod tests {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             ..
         }) = col.items.first()
         {
@@ -6929,6 +6933,7 @@ mod tests {
                 start_cut,
                 end_cut,
                 *is_block_split,
+                *start_cut_is_block,
                 &core.styles,
                 6,
             );

@@ -40,7 +40,7 @@ samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.h
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	21	21
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx	21	21
 samples/80168_regulatory_analysis.hwp	157	157
-samples/86712_regulatory_analysis.hwp	65	64
+samples/86712_regulatory_analysis.hwp	64	64
 samples/SO-SUEOP.hwp	46	46
 samples/SO-SUEOP.hwpx	46	46
 samples/[2027] 온새미로 1 본교재.hwp	47	47
@@ -236,7 +236,7 @@ samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
 samples/issue1853_caption_precedes_body_split.hwpx	52	52
 samples/issue1891/80168_regulatory_analysis.hwpx	157	157
-samples/issue1891/86712_regulatory_analysis.hwpx	65	64
+samples/issue1891/86712_regulatory_analysis.hwpx	64	64
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	115	115
@@ -396,6 +396,7 @@ samples/issue6037/원형대원형-계열추가-데이터추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가-데이터추가.hwpx	1	1
 samples/issue6037/원형대원형-계열추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가.hwpx	1	1
+samples/issue6111/56345_regulatory_impact_analysis.hwp	21	20
 samples/issue6929/148776468_search_ad_terms_press_release.hwp	17	18
 samples/issue6936/bold-faces.hwp	1	1
 samples/issue6946/44529-logistics-policy-rule-amendment.hwp	13	13
@@ -494,6 +495,7 @@ samples/rowbreak-problem-pages.hwp	18	18
 samples/rowbreak-problem-pages.hwpx	18	18
 samples/shape-group-02.hwp	1	1
 samples/shift-return.hwp	1	1
+samples/stored-table-text-tail/native-8-0.hwpx	1	1
 samples/synam-001.hwp	35	35
 samples/ta-pic-001-r-쪽영역안제한.hwp	1	1
 samples/ta-pic-001-r-쪽영역안제한.hwpx	1	1

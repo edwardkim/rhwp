@@ -1131,7 +1131,10 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
         .line_segs
         .iter()
         .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)?;
-    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    // [#7198] 저장 사다리는 줄간격을 **부호 그대로** 담는다. 음수 줄간격을 0 으로 깎으면
+    // `next - host == lh + ls` 인 사다리가 등식에서 떨어져, host 줄 전진과 양수 offset 이
+    // 흐름에서 빠진다(156467175 1쪽: 448 != 1500, 제목이 한글보다 11.7px 위).
+    let advance = host_seg.line_height + host_seg.line_spacing;
     if advance <= 0 {
         return None;
     }
@@ -1160,7 +1163,7 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
 /// 이미 갭을 인코딩한다는 전제), 그래서 밴드 바로 아래 첫 본문 문단이 개체에 딱 붙는다.
 ///
 /// 억제가 옳은 문단과 아닌 문단은 **저장 사다리가 가른다** — `next.vpos - host.vpos` 가
-/// 정확히 `lh + max(ls, 0)` 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
+/// 정확히 `lh + ls`(줄간격 부호 그대로, #7198) 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
 /// 계상했다는 뜻이라, 그 줄은 별도로 더해야 할 실 흐름이다(= #1147 의 "vpos 가 이미
 /// 갭을 인코딩" 전제가 성립하지 않는 문단). 델타가 개체 높이를 품은 일반 물리 사다리는
 /// 등식이 깨져 자연 배제된다 — #2439 의 [#2808] 판별자와 같은 축이다.
@@ -1297,7 +1300,8 @@ fn stored_anchor_band_host_line_from_ladder(
         .iter()
         .enumerate()
         .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
-    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    // [#7198] 줄간격은 부호 그대로 — `native_empty_host_rowbreak_line_advance_hu` 와 같은 축.
+    let advance = host_seg.line_height + host_seg.line_spacing;
     if advance <= 0 {
         return None;
     }
@@ -1393,6 +1397,38 @@ pub(crate) fn single_cell_page_fragment_bottom(table: &Table, body_bottom: f64, 
 pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> Option<i32> {
     if table.common.treat_as_char
         || !matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || table.outer_margin_left <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
+}
+
+/// [#7063] 왼쪽 정렬 **자리차지(TopAndBottom)** 표의 왼쪽 바깥여백 (HU).
+///
+/// 위 [`para_relative_left_aligned_outer_margin_left_hu`] 와 같은 규칙이지만 **다른
+/// 갈래**다. 그쪽은 어울림(Square) 표의 `#6887` 계약이고 `layout.rs` 의 Square 전용
+/// 분기 하나만 소비한다. 그 술어를 넓히면 Square 표가 이 조건에서 탈락해
+/// `#6887` 이 깨지므로(`left_and_inside_apply_the_declared_margin_once`), 자리차지
+/// 갈래는 여기서 따로 판정한다.
+///
+/// 정본 실측(`hwpx_sample2` engine 2020, 자리차지 표 20여 개): 좌단 차가 선언
+/// `outMargin.left` 와 같다 — 141HU→1.86px · 283HU→3.78px · 0HU→0. 같은 쪽에서
+/// 글줄 참여 표는 이미 이 여백을 받아 형제끼리 갈렸다(19쪽 표1 39.70 / 표2 37.80,
+/// 정본은 둘 다 39.66).
+///
+/// 범위를 자리차지로 묶는 이유: 흐름 표(block)의 바깥여백은 `HostSpacing`
+/// (`spacing_before`)이 이미 흐름에 싣고 있어 여기서 또 실으면 두 번 든다
+/// (`byeolpyo1` 의 이미 맞던 표가 1.9px 내려간다 — 실측).
+/// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 열지 않는다.
+pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32> {
+    if !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || table.common.treat_as_char
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Para | HorzRelTo::Column
+        )
         || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
         || table.outer_margin_left <= 0
     {
@@ -1638,7 +1674,6 @@ pub(crate) fn native_empty_host_physical_outer_box_paint_inset(
 /// height contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct NativeStoredResetFragmentPaintGeometry {
-    pub(crate) outer_left_hu: i32,
     pub(crate) outer_top_hu: i32,
     /// `Some` only for the first fragment.  A successor receives the same origin inset but keeps
     /// its measured fragment height.
@@ -1750,7 +1785,6 @@ pub(crate) fn native_hwp5_stored_reset_fragment_paint_geometry(
     }
 
     Some(NativeStoredResetFragmentPaintGeometry {
-        outer_left_hu: i32::from(table.outer_margin_left),
         outer_top_hu: i32::from(table.outer_margin_top),
         first_fragment_height_hu: is_first_fragment.then_some(declared_height_hu),
     })
@@ -2224,7 +2258,6 @@ mod tests {
         assert_eq!(
             native_hwp5_stored_reset_fragment_paint_geometry(true, &host, &table, false, &[], &[2],),
             Some(NativeStoredResetFragmentPaintGeometry {
-                outer_left_hu: 283,
                 outer_top_hu: 283,
                 first_fragment_height_hu: Some(2_282),
             })
@@ -2232,7 +2265,6 @@ mod tests {
         assert_eq!(
             native_hwp5_stored_reset_fragment_paint_geometry(true, &host, &table, true, &[2], &[],),
             Some(NativeStoredResetFragmentPaintGeometry {
-                outer_left_hu: 283,
                 outer_top_hu: 283,
                 first_fragment_height_hu: None,
             })

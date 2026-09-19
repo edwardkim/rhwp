@@ -3618,7 +3618,9 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
 /// [#2243] 익명화·부분 편집으로 저장 seg 가 빠진 문단이 저장 문단들 사이에 끼어 있는
 /// 문서다. 개체만 있는 줄의 줄간격 기준을 글자모양 크기로 올리면(한컴 규칙) 그 구역의
 /// 절대 vpos 스냅과 맞물려 쪽 경계 여유를 넘긴다 — 한컴 쪽수 핀이 어긋난다. 이런 구역은
-/// 종전 기준(12px)을 유지한다. 전면 합성 문서는 `reflow_line_segs` 를 쓴다.
+/// 양수 간격은 종전 기준(12px)을 유지한다. 음수 Percent 간격은 겹침 해제용 여백이
+/// 아니라 글자 크기에 따른 전진 감소량이므로 실제 글자 크기를 쓴다.
+/// 전면 합성 문서는 `reflow_line_segs` 를 쓴다.
 pub(crate) fn reflow_line_segs_in_stored_section(
     para: &mut Paragraph,
     paragraph_box: ParagraphBox,
@@ -3726,7 +3728,17 @@ fn reflow_line_segs_impl(
                 }
                 Some((start, ctrl))
             })
-            .filter_map(|(start, ctrl)| inline_control_size_hwp(ctrl).map(|size| (start, size)))
+            .filter_map(|(start, ctrl)| {
+                inline_control_size_hwp(ctrl).map(|(width, height)| {
+                    let height = match ctrl {
+                        Control::Table(table) => height
+                            .saturating_add(i32::from(table.outer_margin_top))
+                            .saturating_add(i32::from(table.outer_margin_bottom)),
+                        _ => height,
+                    };
+                    (start, (width, height))
+                })
+            })
             .collect::<Vec<_>>();
         if !inline_sizes.is_empty() {
             let max_line_width = seg_width_hwp.max(1);
@@ -3754,12 +3766,12 @@ fn reflow_line_segs_impl(
             // 165%·14pt 문단의 표 줄 spacing 912 = 1400×0.65, 160%·10pt 문단의 그림 줄 600 = 1000×0.6).
             // 0.0 을 넘기면 내부 기본 12px(900 HU)로 떨어져 585 가 되고, 쪽마다 327 HU 씩 덜 쌓인다.
             //
-            // 🔴 저장 LINE_SEG 사다리가 배치 권위를 갖는 구역(`object_line_font_basis == false`)에서는
-            // 종전 기준(0.0 → 12px)을 그대로 둔다. 그 구역의 합성 문단은 저장 문단들 사이에 끼어
-            // 절대 vpos 스냅과 맞물리므로, 한컴 값으로 올리면 쪽 경계 여유(실측 1~114 HU)를 넘겨
-            // 한컴 쪽수 핀이 어긋난다(`issue_2243`·`oracle_page_count_baseline`). 전면 합성 문서
-            // (붙여넣기·hwpjson·생성계)에는 스냅 상대가 없어 이 값이 곧 한컴 조판이 된다.
-            let paragraph_font_px = if object_line_font_basis {
+            // 음수 Percent 간격은 글자 크기에 대한 줄 전진 감소량이다.
+            // 저장 줄 사이의 보충 줄에서도 실제 글자 크기로 환산해야 한다.
+            // 양수 간격의 저장-사다리 호환 경로는 이번 압축 간격 보정과 분리한다.
+            let negative_percent_spacing =
+                matches!(ls_type, LineSpacingType::Percent) && ls_value < 100.0;
+            let paragraph_font_px = if object_line_font_basis || negative_percent_spacing {
                 paragraph_font_size_px(para, styles).unwrap_or(12.0)
             } else {
                 0.0

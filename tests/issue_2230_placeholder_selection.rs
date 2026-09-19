@@ -59,9 +59,11 @@ fn missing_picture_placeholder_emitted_as_selectable_image_control() {
     );
 
     let ctrl = missing[0];
-    // 실측 좌표(x≈646.2, y≈54.9) — hit-test bbox 성립 확인
+    // 실측 좌표(x≈648.0, y≈54.9) — hit-test bbox 성립 확인.
+    // [#7063] x 646.2 → 648.0: 감싼 자리차지 표가 자기 `outMargin.left`(141HU=1.88px)
+    // 만큼 안으로 들어가면서 칸 안 개체가 따라갔다. 같은 이동의 정본 근거는 아래 로고.
     assert!(
-        ctrl.contains("\"x\":646.") && ctrl.contains("\"y\":54."),
+        ctrl.contains("\"x\":648.") && ctrl.contains("\"y\":54."),
         "심볼 placeholder bbox 좌표 불일치: {ctrl}"
     );
     // 문서 좌표 + 셀 경로 — enterPictureObjectSelectionDirect/커맨드 대상 특정에 필요
@@ -88,14 +90,16 @@ fn normal_image_control_has_no_missing_marker() {
         .filter(|c| c.starts_with("{\"type\":\"image\"") && !c.contains("\"missing\":true"))
         .collect();
 
-    // 좌측 기관 로고 1건 (실측 x≈84.1)
+    // 좌측 기관 로고 1건.
+    // [#7063] x 84.1 → 86.0. 이 문서 정본(`pdf/36389312_…-2024.pdf`) 1쪽의 로고 그림은
+    // x=85.87 이다 — 종전 84.1 이 1.8px 짧았고 지금은 0.13px 안이다.
     assert_eq!(
         normal.len(),
         1,
         "일반 image 컨트롤 1건이어야 한다. json={json}"
     );
     assert!(
-        normal[0].contains("\"x\":84."),
+        normal[0].contains("\"x\":86."),
         "로고 컨트롤 좌표 불일치: {}",
         normal[0]
     );
@@ -147,11 +151,12 @@ fn assign_picture_image_converts_placeholder_to_image() {
         "지정 후 image 컨트롤 2건이어야 한다: {json}"
     );
 
-    // 지정된 그림이 placeholder 자리(실측 x≈646.2, 틀 크기 유지)에 배치된다
+    // 지정된 그림이 placeholder 자리(실측 x≈648.0, 틀 크기 유지)에 배치된다.
+    // [#7063] 위 placeholder bbox 와 같은 +1.88px(141HU) 이동.
     assert!(
         images
             .iter()
-            .any(|c| c.contains("\"x\":646.") && c.contains("\"w\":75.6")),
+            .any(|c| c.contains("\"x\":648.") && c.contains("\"w\":75.6")),
         "심볼 자리의 image 컨트롤 부재(틀 크기 유지 실패): {json}"
     );
 }

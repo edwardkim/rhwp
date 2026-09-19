@@ -230,18 +230,27 @@ fn expected_line_starts(label: &str, inserted: usize) -> &'static [usize] {
     }
 }
 
+/// [#7063] 두 변형 모두 x 가 +3.77px(283HU) 이동했다. caret 이 아니라 caret 이 속한
+/// 자리차지 표가 옮겨진 것이다 — 이 문서 정본(`pdf/issue1949_giant_cell_nested_tables_
+/// perf-hwp-2024.pdf`) 1쪽의 `1.1.1` 은 x=87.79 인데 수정 전 rhwp 는 84.1 이었다.
+/// 표가 자기 `outMargin.left` 만큼 안으로 들어가면서 안의 글자·caret 이 같이 따라간다.
 fn expected_56_path_caret(label: &str) -> (f64, f64) {
     match label {
-        "hwp" => (573.9, 344.8),
-        "hwpx" => (671.6, 319.2),
+        "hwp" => (577.6, 344.8),
+        // [#7254] hwpx 의 x 가 671.6 → 670.9 로 0.7px 왼쪽이다. 배치 run 폭의 정수
+        // 반올림을 걷어내면서 이 줄의 run 원점이 같은 양만큼 옮겨졌고, caret 은 그 원점을
+        // 그대로 따라간다(글자와 caret 이 여전히 같은 값을 소비한다는 뜻이다). hwp 변형은
+        // 줄 구성이 달라 값이 그대로다.
+        "hwpx" => (674.7, 319.2),
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
 
 fn expected_56_direct_caret(label: &str) -> (f64, f64) {
     match label {
-        "hwp" => (573.9, 345.6),
-        "hwpx" => (671.6, 320.0),
+        "hwp" => (577.6, 345.6),
+        // [#7254] 위 path caret 과 같은 0.7px 이동.
+        "hwpx" => (674.7, 320.0),
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
@@ -322,8 +331,16 @@ fn issue_2214_cold_representative_queries_are_exact() {
         assert_eq!(target_tree_end(&direct44), INSERT_OFFSET + 56);
         assert_eq!(direct.page_index, 0, "{label}: cold 56 direct page");
         let (expected_x, expected_y) = expected_56_direct_caret(label);
-        assert!(approx_eq(direct.x, expected_x), "{label}: cold 56 direct x");
-        assert!(approx_eq(direct.y, expected_y), "{label}: cold 56 direct y");
+        assert!(
+            approx_eq(direct.x, expected_x),
+            "{label}: cold 56 direct x = {:.1} (기대 {expected_x:.1})",
+            direct.x
+        );
+        assert!(
+            approx_eq(direct.y, expected_y),
+            "{label}: cold 56 direct y = {:.1} (기대 {expected_y:.1})",
+            direct.y
+        );
         assert!(
             approx_eq(direct.cell_bounds.h, 945.9),
             "{label}: cold 56 direct pre-flush bounds"
@@ -336,8 +353,17 @@ fn issue_2214_cold_representative_queries_are_exact() {
         let path = path_rect(&path50, INSERT_OFFSET + 62);
         assert_eq!(target_tree_end(&path50), INSERT_OFFSET + 62);
         assert_eq!(path.page_index, 0, "{label}: cold 62 path page");
-        assert!(approx_eq(path.x, 621.5), "{label}: cold 62 path x");
-        assert!(approx_eq(path.y, 344.8), "{label}: cold 62 path y");
+        assert!(
+            // [#7063] 621.5 → 625.3. 위 56자 caret 과 같은 +3.77px(283HU) 이동이다.
+            approx_eq(path.x, 625.3),
+            "{label}: cold 62 path x = {:.1} (기대 625.3)",
+            path.x
+        );
+        assert!(
+            approx_eq(path.y, 344.8),
+            "{label}: cold 62 path y = {:.1} (기대 344.8)",
+            path.y
+        );
         assert!(
             approx_eq(path.cell_bounds.h, 945.9),
             "{label}: cold 62 path pre-flush bounds"

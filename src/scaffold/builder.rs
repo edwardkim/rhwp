@@ -10,12 +10,13 @@
 
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
+use crate::model::identity::{used_instance_ids, Allocator};
 use crate::model::page::PageDef;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{common_obj_offsets, CommonObjAttr};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::scaffold::schema::{Block, PageSize, ScaffoldSpec};
+use crate::scaffold::schema::{Block, CellAlignSpec, PageSize, ScaffoldSpec};
 
 // 글자 모양 ID (doc_info.char_shapes 인덱스).
 const CS_NORMAL: u32 = 0;
@@ -48,6 +49,13 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
 
     let content_width = content_width_of(&doc.sections[0].section_def.page_def);
 
+    // [#7231] 개체 id 할당기 — 커서를 문서 전체에서 공유해 표마다 1 부터 재검색하지 않는다
+    // (`model/identity.rs` 의 계약). scaffold 는 무에서 만들므로 처음 사용 집합은 비어 있다.
+    let mut ids = Allocator {
+        used: used_instance_ids(&doc),
+        next: 1,
+    };
+
     // 문서 제목 — 가운데 정렬 제목 문단.
     if let Some(title) = spec
         .title
@@ -74,8 +82,28 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
                     .paragraphs
                     .push(make_text_para(text, PS_NORMAL, CS_NORMAL));
             }
-            Block::Table { rows } => {
-                if let Some(table_para) = build_table_paragraph(rows, content_width) {
+            Block::Table { rows, cell_align } => {
+                // [#7232] 셀 문단의 정렬은 열마다 정한다. 편집 경로
+                // `DocumentCore::create_table_native` 가 `column_alignments` 를
+                // `find_or_create_para_shape` 로 옮기는 것과 같은 방식이다 —
+                // 지정이 없으면 본문과 같은 `PS_NORMAL`(양쪽 정렬)을 그대로 쓴다.
+                let instance_id = ids.id().unwrap_or(0);
+                let col_count = rows.iter().map(|r| r.len()).max().unwrap_or(0).max(1);
+                let cell_para_shape_ids: Vec<u16> = (0..col_count)
+                    .map(|col| match cell_align {
+                        None => PS_NORMAL,
+                        Some(spec) => doc.find_or_create_para_shape(
+                            PS_NORMAL,
+                            &crate::model::style::ParaShapeMods {
+                                alignment: Some(spec.for_column(col).to_alignment()),
+                                ..Default::default()
+                            },
+                        ),
+                    })
+                    .collect();
+                if let Some(table_para) =
+                    build_table_paragraph(rows, content_width, instance_id, &cell_para_shape_ids)
+                {
                     doc.sections[0].paragraphs.push(table_para);
                     // 표 문단 뒤에는 평문 문단이 온다(한컴 표준 구조 + 다음 표와의 경계).
                     doc.sections[0].paragraphs.push(Paragraph::new_empty());
@@ -252,7 +280,7 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
 
 /// 셀 내부 문단을 만든다. `create_table_native` 의 셀 문단 보정과 정합
 /// (char_count_msb=true, raw_header_extra 10바이트, seg_width=셀폭-좌우패딩).
-fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
+fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
     let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
     let mut raw_header_extra = vec![0u8; 10];
@@ -277,7 +305,7 @@ fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
             tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         }],
-        para_shape_id: PS_NORMAL,
+        para_shape_id,
         style_id: 0,
         has_para_text: !text.is_empty(),
         raw_header_extra,
@@ -290,7 +318,14 @@ fn make_cell_para(text: &str, col_width: u32) -> Paragraph {
 ///
 /// 구조 조립은 `DocumentCore::create_table_native`
 /// (`src/document_core/commands/object_ops/table.rs`)의 균일 그리드 경로와 정합한다.
-fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Paragraph> {
+/// `instance_id` 는 호출자가 공용 할당기(`model/identity.rs`)로 받은 고유 개체 id 다.
+/// `0` 은 "배정 없음" 을 뜻한다 — id 공간이 소진된 경우만 그렇게 들어온다.
+fn build_table_paragraph(
+    rows: &[Vec<String>],
+    content_width: u32,
+    instance_id: u32,
+    cell_para_shape_ids: &[u16],
+) -> Option<Paragraph> {
     let row_count = rows.len();
     if row_count == 0 {
         return None;
@@ -306,8 +341,8 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         bottom: 141,
     };
     let col_width = (content_width / col_count as u32).max(1);
-    let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
     let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+    let cell_height: u32 = rendered_row_height;
     let total_width = col_width * col_count as u32;
     let total_height = rendered_row_height * row_count as u32;
 
@@ -323,7 +358,11 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
             let mut cell = Cell::new_empty(c, r, col_width, cell_height, BF_SOLID);
             cell.padding = cell_pad;
             cell.vertical_align = VerticalAlign::Center;
-            cell.paragraphs = vec![make_cell_para(text, col_width)];
+            let para_shape_id = cell_para_shape_ids
+                .get(c as usize)
+                .copied()
+                .unwrap_or(PS_NORMAL);
+            cell.paragraphs = vec![make_cell_para(text, col_width, para_shape_id)];
             cell.raw_list_extra = Vec::new();
             cells.push(cell);
         }
@@ -342,17 +381,9 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
     raw_ctrl_data[common_obj_offsets::MARGIN_RIGHT].copy_from_slice(&outer_margin.to_le_bytes());
     raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
     raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM].copy_from_slice(&outer_margin.to_le_bytes());
-    let instance_id: u32 = {
-        let mut h: u32 = 0x7c15_0000;
-        h = h.wrapping_add(row_count_u16 as u32 * 0x1000);
-        h = h.wrapping_add(col_count_u16 as u32 * 0x100);
-        h = h.wrapping_add(total_width);
-        h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-        if h == 0 {
-            h = 0x7c15_4b69;
-        }
-        h
-    };
+    // [#7231] IR 과 raw 가 같은 값을 갖는다 — HWPX 저장기는 `common.instance_id` 를,
+    // HWP5 쪽은 `raw_ctrl_data` 를 읽는다. 두 곳이 어긋나면 같은 표가 형식마다 다른 id 로
+    // 저장된다(`model/identity.rs` 가 두 namespace 를 함께 예약하는 이유다).
     raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
     let mut table = Table {
@@ -366,8 +397,14 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         zones: Vec::new(),
         cells,
         cell_grid: Vec::new(),
-        page_break: TablePageBreak::None,
-        repeat_header: false,
+        // [#7216] scaffold 는 내용 길이를 모른 채 표를 만든다 — 쪽 경계에서 나뉘어야 한다.
+        // `None`(나누지 않음)이면 한글이 긴 표를 통째로 두어 본문 아래로 넘친 행이 사라진다
+        // (한글 2020 PDF 실측: 60행 표가 '설명 53' 에서 끊김). 한글 새 표의 사실상 기본값인
+        // HWPX `pageBreak="CELL" repeatHeader="1"`(코퍼스 HWPX 표 20,405개 중 13,299개)을
+        // 따른다. HWPX `CELL` 은 IR `RowBreak` 이고 HWP5 TABLE attr 0x02, 제목 반복은 0x04 —
+        // 아래 `raw_table_record_attr` 0x06 과 같은 값이다.
+        page_break: TablePageBreak::RowBreak,
+        repeat_header: true,
         caption: None,
         common: CommonObjAttr {
             treat_as_char: false,
@@ -378,6 +415,7 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
             horz_align: crate::model::shape::HorzAlign::Left,
             width: total_width,
             height: total_height,
+            instance_id,
             ..Default::default()
         },
         outer_margin_left: outer_margin,
@@ -386,7 +424,7 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         outer_margin_bottom: outer_margin,
         raw_ctrl_data,
         raw_ctrl_seal: None,
-        raw_table_record_attr: 0x0000_0006, // bit1=셀분리금지, bit2=repeat_header
+        raw_table_record_attr: 0x0000_0006, // bits 0-1 = 2(나눔, 행 단위 = HWPX CELL), bit2 = repeat_header
         raw_table_record_extra: Vec::new(),
     };
     table.rebuild_grid();

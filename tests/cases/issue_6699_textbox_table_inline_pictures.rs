@@ -48,7 +48,14 @@ fn first_page_inline_pictures_follow_their_text_line() {
     }).expect("text after logo");
     // Preserve the existing text origin instead of shifting the whole centered
     // table to hide the remaining font-metric difference from the PDF.
-    assert!((text.bbox.x - 334.40).abs() < 0.1, "text x={}", text.bbox.x);
+    //
+    // [#7254] 334.40 -> 334.73. 배치 run 폭의 정수 반올림을 걷어내면서 이 줄의 앞선
+    // 내용이 0.33px 오른쪽으로 갔다. 한/글 정본(pdf/table-in-tbox-hwp-2020.pdf)의
+    // 같은 글자 origin 은 334.24px 이므로 이 문서에서는 오차가 +0.16 -> +0.49px 로
+    // 늘어난다 — 반올림이 글꼴 메트릭 차를 반대부호로 상쇄하고 있던 자리다. 그 잔차는
+    // 메트릭 축(#6389)이고, 여기서 반올림을 되살려 가리지 않는다. 아래 공백 한 칸
+    // 간격 계약은 그대로 유지된다.
+    assert!((text.bbox.x - 334.73).abs() < 0.1, "text x={}", text.bbox.x);
     let logo = nodes.iter().find(|node| {
         matches!(&node.node_type, RenderNodeType::Image(image) if image.bin_data_id == 8)
     }).unwrap();

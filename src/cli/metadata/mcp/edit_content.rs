@@ -190,7 +190,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_insert_page_break",
-            "[#4993] 문단을 지정 오프셋에서 가르고 새 문단에 쪽 나눔을 넣는다. 코어 insert_page_break_native 배선.",
+            "[#4993·#7218] 문단을 지정 오프셋에서 가르고 새 문단에 쪽 나눔을 넣는다. offset 0(문단 시작)이면 가르지 않고 그 문단에 쪽 나눔만 건다. 봉투 paragraphDelta·pageBreakParagraph 로 문단 좌표 변화를 알린다. 코어 insert_page_break_native·mark_page_break_at_paragraph_start_native 배선.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -212,11 +212,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "section", "paragraph", "offset", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+            &["schemaVersion", "source", "section", "paragraph", "offset", "paragraphDelta", "pageBreakParagraph", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_insert_column_break",
-            "[#5019] 문단을 지정 오프셋에서 가르고 새 문단에 단 나눔을 넣는다. 코어 insert_column_break_native 배선.",
+            "[#5019·#7218] 문단을 지정 오프셋에서 가르고 새 문단에 단 나눔을 넣는다. offset 0이면 문단을 가르지 않고 그 문단 앞 단 나눔 속성을 설정한다. 봉투 paragraphDelta·columnBreakParagraph로 문단 좌표 변화를 알린다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {

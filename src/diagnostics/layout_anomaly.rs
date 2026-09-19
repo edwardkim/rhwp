@@ -671,14 +671,35 @@ fn check_overflow(
     }
 }
 
+/// [#7190] off-canvas 심층 가로 합집합에 넣는 **그리는 개체** 자손.
+///
+/// 컨테이너(`TextLine`·`Cell`·`Column`)는 넣지 않는다 — 그 상자는 단·칸 폭이라
+/// 내용의 이탈을 말하지 않는다. 글자는 `TextRun` 잉크 상자로 따로 들어온다.
+fn is_horizontal_union_object(t: &RenderNodeType) -> bool {
+    matches!(
+        t,
+        RenderNodeType::Table(_)
+            | RenderNodeType::Image(_)
+            | RenderNodeType::TextBox
+            | RenderNodeType::Equation(_)
+            | RenderNodeType::Group(_)
+            | RenderNodeType::FormObject(_)
+            | RenderNodeType::Placeholder(_)
+            | RenderNodeType::RawSvg(_)
+            | RenderNodeType::Line(_)
+            | RenderNodeType::Rectangle(_)
+            | RenderNodeType::Ellipse(_)
+            | RenderNodeType::Path(_)
+    )
+}
+
 /// [#5586] 노드와 그 가시 자손 전체의 **세로** 범위를 합친 bbox.
 ///
 /// off-canvas 판정용 — 컨테이너(표 등)가 선언 크기로 배치되고 내용이 그 아래로
 /// 흘러나온 경우, 자기 bbox 는 쪽 안이라도 심층 세로 범위는 쪽 밖이다(00365).
-/// 가로는 자기 bbox 를 유지한다 — TextRun 의 말미 공백 advance 등 측정 폭이
-/// 쪽 우측을 스치는 무해한 초과가 흔해(표본 100문서에서 62건 위양성 실측),
-/// 가로까지 합치면 검출기의 신호가 잠긴다. 이 결함군(#5586·#4889)의 본질은
-/// 세로 유출이다.
+/// 가로는 [#7051] 이후 **자손 `TextRun` 의 잉크 상자**로, [#7190] 이후 **그리는 개체
+/// 자손의 상자**로 합친다(아래 `horizontal_ink_extent`). 컨테이너 상자(단·줄·칸)는
+/// 넣지 않는다 — 그 폭은 내용의 이탈을 말하지 않는다.
 fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
     fn vertical_extent(node: &RenderNode, min_y: &mut f64, max_bottom: &mut f64) {
         for child in &node.children {
@@ -705,8 +726,20 @@ fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
     // 566.9px 를 238.1px 넘어 글자가 **용지 밖 124.7px** 까지 그려지는데, `TextLine` 의
     // bbox 는 단 폭 그대로라 검출기가 763쪽 내내 `offCanvas=0` 이었다.
     //
-    // `TextRun` 이 아닌 자손(표 셀·도형 등)은 가로를 합치지 않는다. 그쪽은 자기 노드가 이미
-    // 검사 대상이라 따로 잡히고, 여기서 합치면 같은 초과를 두 번 세게 된다.
+    // [#7190] 그리는 개체 자손(그림·도형·표 등)도 합친다.
+    //
+    // 종전 주석은 *"그쪽은 자기 노드가 이미 검사 대상이라 따로 잡히고, 여기서 합치면 같은
+    // 초과를 두 번 세게 된다"* 고 적었다. 앞말이 off-canvas 에서는 성립하지 않는다 —
+    // 아래 `walk` 는 검사 대상 노드를 한 번 재고 `next_off_canvas_suppress = true` 로
+    // **자손 검사를 접는다**. 그래서 조상이 먼저 검사되면 그 안의 개체는 자기 검사를
+    // 영영 받지 못한다. 접히므로 두 번 세지도 않는다.
+    //
+    // 그래서 놓치고 있던 것: `#7190` 의 3011411 1쪽은 글줄 참여 그림이 첫째 줄에 붙어
+    // 우변 834.7px — 용지(793.7) 밖 41.0px — 까지 나갔는데, 바깥 `TextLine` 이 단 폭
+    // 상자로 먼저 검사되며 자손을 접어 `offCanvas = 0` 이었다.
+    //
+    // 컨테이너 자손(`TextLine`·`Cell`)은 넣지 않는다. 그 상자는 단 폭·칸 폭이라
+    // 내용의 이탈을 말하지 않고, 내용 쪽은 개체와 `TextRun` 잉크로 이미 들어온다.
     fn horizontal_ink_extent(node: &RenderNode, min_x: &mut f64, max_right: &mut f64) {
         for child in &node.children {
             if !child.visible || child.editor_only {
@@ -723,6 +756,12 @@ fn deep_vertical_union_bbox(node: &RenderNode) -> BoundingBox {
                 let ink = glyph_band_bbox(child);
                 *min_x = min_x.min(ink.x);
                 *max_right = max_right.max(ink.x + ink.width);
+            } else if is_horizontal_union_object(&child.node_type)
+                && child.bbox.height > 0.0
+                && child.bbox.width > 0.0
+            {
+                *min_x = min_x.min(child.bbox.x);
+                *max_right = max_right.max(child.bbox.x + child.bbox.width);
             }
             horizontal_ink_extent(child, min_x, max_right);
         }

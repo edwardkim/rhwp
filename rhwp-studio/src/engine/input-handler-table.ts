@@ -6,6 +6,7 @@ import { MoveTableCommand, MovePictureCommand, MoveShapeCommand } from './comman
 import { getObjectProperties, setObjectProperties } from './input-handler-picture';
 import type { CellBbox } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
+import type { TableRef } from './table-bbox-cache';
 import type { BorderEdge } from './table-resize-renderer';
 import {
   buildColumnResizeUpdates,
@@ -182,24 +183,27 @@ function findAlignedLogicalResizeAffectedCells(
 
 function clampCompensatedResizeDelta(
   wasm: any,
-  tableRef: { sec: number; ppi: number; ci: number },
+  tableRef: TableRef,
   edge: BorderEdge,
   pairs: Array<{ targetCellIdx: number; neighborCellIdxs: number[] }>,
   requestedDelta: number,
 ): number {
   if (requestedDelta === 0) return 0;
   const finiteLimits: number[] = [];
+  const properties = (cellIdx: number) => tableRef.path && tableRef.path.length > 1
+    ? wasm.getCellPropertiesByPath(tableRef.sec, tableRef.ppi, JSON.stringify(tableRef.path), cellIdx)
+    : wasm.getCellProperties(tableRef.sec, tableRef.ppi, tableRef.ci, cellIdx);
 
   for (const pair of pairs) {
     try {
-      const targetProps = wasm.getCellProperties(tableRef.sec, tableRef.ppi, tableRef.ci, pair.targetCellIdx);
+      const targetProps = properties(pair.targetCellIdx);
       const targetSize = edge.type === 'col' ? targetProps.width : targetProps.height;
       if (requestedDelta < 0 && Number.isFinite(targetSize)) {
         finiteLimits.push(Math.max(0, Math.round(targetSize - MIN_TABLE_CELL_SIZE_HWP)));
       }
 
       for (const neighborCellIdx of pair.neighborCellIdxs) {
-        const neighborProps = wasm.getCellProperties(tableRef.sec, tableRef.ppi, tableRef.ci, neighborCellIdx);
+        const neighborProps = properties(neighborCellIdx);
         const neighborSize = edge.type === 'col' ? neighborProps.width : neighborProps.height;
         if (requestedDelta > 0 && Number.isFinite(neighborSize)) {
           finiteLimits.push(Math.max(0, Math.round(neighborSize - MIN_TABLE_CELL_SIZE_HWP)));
@@ -453,12 +457,24 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
       kind: 'snapshot',
       operationType: 'resizeTableCells',
       operation: (wasm: any) => {
-        wasm.resizeTableCells(
-          state.tableRef.sec,
-          state.tableRef.ppi,
-          state.tableRef.ci,
-          updates,
-        );
+        // [#7189] 중첩 표는 경로로 확정한다. 평면 API 는 `(sec, ppi, ci)` 로 최외곽 표만
+        // 가리켜, 안쪽 표에서 얻은 셀 번호가 **바깥 표에 적용**된다.
+        const path = state.tableRef.path;
+        if (path && path.length > 1) {
+          wasm.resizeTableCellsByPath(
+            state.tableRef.sec,
+            state.tableRef.ppi,
+            JSON.stringify(path),
+            updates,
+          );
+        } else {
+          wasm.resizeTableCells(
+            state.tableRef.sec,
+            state.tableRef.ppi,
+            state.tableRef.ci,
+            updates,
+          );
+        }
         return this.cursor.getPosition();
       },
     });

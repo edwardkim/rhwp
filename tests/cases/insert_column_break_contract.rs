@@ -36,17 +36,26 @@ fn para_count(path: &Path) -> usize {
         .len()
 }
 
+/// 문단 **중간** 커서에서는 문단이 갈린다.
+///
+/// [#7218] 종전 이 시험은 `--offset 0` 으로 분할을 확인했다. 그 자리는 분할하는 자리가
+/// 아니다 — HWPX `columnBreak` 와 HWP5 break 비트는 break-before 속성이라 문단 시작의
+/// 단 나눔은 그 문단 자신의 속성이고, 분할하면 원 서식을 물려받은 빈 문단이 남는다.
+/// offset 0 계약은 `issue_7218_column_break_at_paragraph_start.rs` 가 맡는다.
 #[test]
 fn insert_column_break_splits_paragraph() {
     let src = sample();
     let before = para_count(Path::new(&src));
     let out = temp("out");
+    // samples/field-01.hwp 문단 3 = "전략 기획서" → 오프셋 2 에서 "전략" / " 기획서".
     let args = [
         "edit",
         "insert-column-break",
         src.as_str(),
+        "--para",
+        "3",
         "--offset",
-        "0",
+        "2",
         "-o",
         out.to_str().unwrap(),
         "--json",
@@ -84,4 +93,34 @@ fn mcp_declared() {
         .unwrap()
         .iter()
         .any(|t| t["name"] == "hwp_insert_column_break"));
+}
+
+#[test]
+fn cli_start_sets_a_property_without_inserting_a_paragraph() {
+    let src = sample();
+    let before = para_count(Path::new(&src));
+    let out = temp("start");
+    let output = run(&[
+        "edit",
+        "insert-column-break",
+        &src,
+        "--para",
+        "3",
+        "--offset",
+        "0",
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ]);
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(para_count(&out), before);
+    let doc = HwpDocument::from_bytes(&std::fs::read(&out).unwrap()).unwrap();
+    assert_eq!(
+        doc.document().sections[0].paragraphs[3].raw_break_type & 8,
+        8
+    );
+    let envelope: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(envelope["paragraphDelta"], 0, "{envelope}");
+    assert_eq!(envelope["columnBreakParagraph"], 3, "{envelope}");
+    std::fs::remove_file(out).unwrap();
 }

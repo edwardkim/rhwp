@@ -501,9 +501,7 @@ impl DocumentCore {
                 if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
-                    // [#2243] 저장 lineseg 사다리가 권위를 갖는 구역이면 개체 줄의 줄간격
-                    // 기준을 종전(12px)대로 둔다 — 그 구역의 절대 vpos 스냅과 맞물려
-                    // 한컴 쪽수 핀이 어긋난다. 전면 합성 문서는 한컴 규칙(글자모양 크기).
+                    // 개체 여백은 공통으로 계상하고, 저장 구역의 간격 호환은 전용 진입점에 둔다.
                     if section_sized {
                         reflow_line_segs_in_stored_section(
                             para,

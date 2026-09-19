@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-07-30
+last_verified: 2026-09-17
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -16,7 +16,7 @@ last_verified: 2026-07-30
    아니다. **PR 의 수정 목적과 검증해야 할 사용자-visible 동작**에 맞춰 수행 여부와 도구를
    선택한다.
 2. **자동 도구는 보조, 판정은 사람.** sweep/OVR/게이트류는 후보 검출·범위 축소·무회귀
-   증명용이다. **최종 시각 판정 권위는 작업지시자(한컴 2020/2022 편집기·PDF 정답지)** 이며
+   증명용이다. **최종 시각 판정 권위는 작업지시자(확인한 한컴 편집기·동일 원문 기준 PDF)** 이며
    어떤 도구 통과도 이를 대체하지 않는다 (자기검증 ≠ 한컴 호환).
 3. **원인과 발동 범위가 이미 정해진 렌더링 PR**은 [visual_sweep_guide.md](visual_sweep_guide.md)를
    기본 진입점으로 사용한다. 독립 정답지와 실제 사용자-visible 실패에서 결함을 찾고 원인·범위를

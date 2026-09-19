@@ -255,11 +255,31 @@ pub fn draw_image_bytes(
         }
     };
 
-    if matches!(
-        mode,
-        ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None
-    ) {
+    if matches!(mode, ImageFillMode::FitToSize | ImageFillMode::Total) {
         draw_image_rect(crop_src, dst);
+        return true;
+    }
+    if matches!(mode, ImageFillMode::None | ImageFillMode::Zoom) {
+        // [#7235] 채우기 유형 15(NONE): 종횡비를 지켜 영역 가운데에 맞춘다.
+        let (source_width, source_height) = crop_src
+            .map(|src| (src.width(), src.height()))
+            .unwrap_or((decoded_width, decoded_height));
+        if !is_valid_image_size(source_width, source_height) {
+            draw_missing_image_placeholder(x, y, width, height);
+            return false;
+        }
+        let scale = (width / source_width).min(height / source_height);
+        let fit_width = source_width * scale;
+        let fit_height = source_height * scale;
+        draw_image_rect(
+            crop_src,
+            Rect::from_xywh(
+                x + (width - fit_width) / 2.0,
+                y + (height - fit_height) / 2.0,
+                fit_width,
+                fit_height,
+            ),
+        );
         return true;
     }
 

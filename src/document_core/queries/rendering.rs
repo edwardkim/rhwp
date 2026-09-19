@@ -27,7 +27,7 @@ use crate::renderer::kerning::{
     ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
 use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{estimate_text_width, CellContext};
+use crate::renderer::layout::{estimate_text_width_exact, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{
     HeaderFooterRef, MasterPageRef, PageContent, PaginationResult, Paginator,
@@ -2434,7 +2434,15 @@ impl DocumentCore {
                             if key.is_none() {
                                 self.cacheable = false;
                             }
-                            self.write_image(*bbox, clip, image, resolved.as_deref(), data, key);
+                            // [#7193] 그리는 자리는 틀에서 그림 안쪽 여백을 뺀 사각형이다.
+                            self.write_image(
+                                image.paint_bbox(bbox),
+                                clip,
+                                image,
+                                resolved.as_deref(),
+                                data,
+                                key,
+                            );
                         }
                     }
                 }
@@ -2636,7 +2644,8 @@ impl DocumentCore {
 
             buf.push('{');
             buf.push_str("\"bbox\":");
-            write_bbox(buf, bbox);
+            // [#7193] 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
+            write_bbox(buf, image.paint_bbox(&bbox));
             buf.push_str(",\"mime\":");
             write_json_str(buf, mime);
             buf.push_str(",\"base64\":");
@@ -7187,7 +7196,9 @@ impl DocumentCore {
             style.extra_char_spacing = 0.0;
             style.extra_dash_advance = 0.0;
 
-            let width = estimate_text_width(&run.text, &style);
+            // [#7254] 부분 재페인트도 전체 조판과 같은 폭을 쓴다 — 여기서만
+            // 반올림하면 패치한 줄이 새로 만든 쪽과 달라진다(`#3137`·`#2214`).
+            let width = estimate_text_width_exact(&run.text, &style);
             if !width.is_finite() || width < 0.0 {
                 return None;
             }

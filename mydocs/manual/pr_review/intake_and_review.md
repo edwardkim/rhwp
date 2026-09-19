@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-16
+last_verified: 2026-09-17
 ---
 
 # PR 접수와 리뷰 기록
@@ -74,8 +74,10 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 
 이 경우 review 문서의 최종 판정을 `승인`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
 
-- `rhwp info --json`으로 원본 HWP/HWPX의 저장 버전을 확인하고, 버전에 맞는 MCP 기준 PDF를 만든 뒤,
-  visual sweep 대표 PNG와 요약 지표를 실제로 열어 확인한다.
+- 기존 기준 PDF를 [재사용 규칙](visual_fixture_evidence.md#35-시각-검증-원칙)에 따라 먼저 확인한다.
+  PDF 형식 버전·Creator의 연도/빌드만으로 제외하거나 MCP 재변환을 요구하지 않는다. 기존 기준이
+  없을 때 `rhwp info --json`으로 MCP engine을 선택해 보완 산출하고, visual sweep 대표 PNG와
+  요약 지표를 실제로 열어 확인한다.
 - 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
   해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
 - 직접 시각 검증을 수행하지 못하면 최종 판정은 `머지 보류`로 적고, "원 PR 제공

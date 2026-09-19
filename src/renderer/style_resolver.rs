@@ -202,6 +202,8 @@ pub struct ResolvedParaStyle {
     pub border_fill_id: u16,
     /// 테두리 안쪽 간격 (좌, 우, 상, 하) (px)
     pub border_spacing: [f64; 4],
+    /// 같은 테두리를 가진 이웃 문단과 연결 (ParaShape attr1 bit 28).
+    pub border_connect: bool,
     /// 기본 탭 간격 (px)
     pub default_tab_width: f64,
     /// 커스텀 탭 정지 목록 (position 오름차순)
@@ -241,6 +243,7 @@ impl Default for ResolvedParaStyle {
             numbering_id: 0,
             border_fill_id: 0,
             border_spacing: [0.0; 4],
+            border_connect: false,
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
             auto_tab_right: false,
@@ -933,6 +936,7 @@ fn resolve_single_para_style(
             hwpunit_to_px(ps.border_spacing[2] as i32, dpi),
             hwpunit_to_px(ps.border_spacing[3] as i32, dpi),
         ],
+        border_connect: ps.attr1 & (1 << 28) != 0,
         default_tab_width,
         tab_stops,
         auto_tab_right,

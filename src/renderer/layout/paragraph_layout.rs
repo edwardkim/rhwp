@@ -16,8 +16,9 @@ use super::super::{
 };
 use super::border_rendering::create_border_line_nodes;
 use super::text_measurement::{
-    compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
-    extract_tab_leaders_with_extended, find_next_tab_stop, resolved_to_text_style,
+    compute_char_positions, estimate_text_width, estimate_text_width_exact,
+    estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
+    resolved_to_text_style,
 };
 use super::utils::{
     expand_numbering_format, extract_shape_transform, find_bin_data_bytes,
@@ -1496,7 +1497,11 @@ pub(crate) fn resolve_last_tab_pending(
     available_width: f64,
 ) -> Option<(f64, u8, u8)> {
     // 1) inline_tabs 가 마지막 \t 를 커버하는 경우: ext[2] 고바이트로 종류 판정
-    if last_inline_idx < tab_extended.len() {
+    //    [#7170] 자리표는 저장 데이터가 아니다 — 커버하지 않는 것으로 보고 2)로 내려간다.
+    if tab_extended
+        .get(last_inline_idx)
+        .is_some_and(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext))
+    {
         let inline_type = ((tab_extended[last_inline_idx][2] >> 8) & 0xFF) as u8;
         match inline_type {
             // 1=LEFT (explicit), 0=unspecified → cross-run pending 없음 (본 수정의 핵심)
@@ -1575,7 +1580,11 @@ pub(crate) fn resolve_intra_run_right_tab(
     // inline_tabs 가 LEFT 를 명시하면 대상이 아니다 (`resolve_last_tab_pending` 과 같은 규칙).
     let tab_ordinal = chars[..tab_idx].iter().filter(|c| **c == '\t').count();
     let inline_idx = inline_tab_base + tab_ordinal;
-    if inline_idx < tab_extended.len() {
+    // [#7170] 자리표는 저장 데이터가 아니다 — 위와 같은 규칙으로 건너뛴다.
+    if tab_extended
+        .get(inline_idx)
+        .is_some_and(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext))
+    {
         match ((tab_extended[inline_idx][2] >> 8) & 0xFF) as u8 {
             2 | 3 => {}
             _ => return (full_width, layout_positions),
@@ -2424,6 +2433,7 @@ impl LayoutEngine {
                         false,
                         false,
                         None,
+                        Self::standalone_table_char_border_fill(Some(para), table, styles),
                     );
                 }
             }
@@ -3267,6 +3277,7 @@ impl LayoutEngine {
                     false,
                     false,
                     None,
+                    Self::standalone_table_char_border_fill(Some(para), tbl, styles),
                 );
                 if table_bottom > max_table_bottom {
                     max_table_bottom = table_bottom;
@@ -3324,6 +3335,7 @@ impl LayoutEngine {
                 false,
                 false,
                 None,
+                Self::standalone_table_char_border_fill(Some(para), tbl, styles),
             );
             if table_bottom > max_table_bottom {
                 max_table_bottom = table_bottom;
@@ -4244,9 +4256,18 @@ impl LayoutEngine {
                 // para_index==0 클램프를 저장 증거 기반으로 일반화하되, 누적축 vpos
                 // 인코딩(vpos ≫ sb)은 쪽-상대 증거가 아니므로 종전(트림) 유지.
                 let vpos0_px = para
-                    .and_then(|p| p.line_segs.first())
-                    .filter(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-                    .map(|ls| hwpunit_to_px(ls.vertical_pos, self.dpi))
+                    .and_then(|p| p.line_segs.first().map(|ls| (p, ls)))
+                    .filter(|(_, ls)| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                    .map(|(p, ls)| {
+                        // 누락 개체 줄 보충 때문에 재사다리화한 좌표는 쪽-상대 증거가
+                        // 아니다. 정규화 전에 보존한 원본 첫 줄 위치로 간격을 판독한다.
+                        let source_vpos = p
+                            .source_line_seg_vertical_pos
+                            .as_ref()
+                            .and_then(|positions| positions.first().copied())
+                            .unwrap_or(ls.vertical_pos);
+                        hwpunit_to_px(source_vpos, self.dpi)
+                    })
                     .unwrap_or(0.0);
                 if vpos0_px > 0.0 && vpos0_px <= spacing_before + 0.5 {
                     y += vpos0_px;
@@ -4563,6 +4584,7 @@ impl LayoutEngine {
         // 올라가, 테두리가 글자를 가로지른다(3143955 제목: 줄 상자 아래 171.6px, 전진 y
         // 162.0px, 실제로 그려진 선 159.7/163.7).
         let mut last_line_box_bottom: Option<f64> = None;
+        let mut last_line_border_bottom: Option<f64> = None;
         let stored_tac_assignment =
             para.and_then(|p| crate::renderer::composer::stored_tac_line_assignment(p, composed));
         for line_idx in start_line..end {
@@ -5668,6 +5690,18 @@ impl LayoutEngine {
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
                 // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
                 ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+            } else if runs_all_whitespace
+                && !is_last_line_of_para
+                && !has_forced_break
+                && line_tac_offsets_for_width.is_empty()
+                && !needs_justify
+                && !needs_distribute
+            {
+                // Soft wrapping can consume a row of separator spaces beyond
+                // the frame. Keep their decoration advances instead of fitting
+                // them like glyphs. Paragraph-end/forced-break spaces remain
+                // authored content and retain the normal line-fit contract.
+                (0.0, 0.0, 0.0)
             } else {
                 compute_line_extra_spacing(
                     comp_line,
@@ -5957,6 +5991,7 @@ impl LayoutEngine {
                 &cell_ctx,
                 &tab_stops,
                 tac_offsets_px,
+                &line_tac_offsets_for_width,
                 &shape_markers,
                 fn_positions,
                 &mut fn_marker_inserted,
@@ -6400,6 +6435,11 @@ impl LayoutEngine {
                 }
                 y = next_y;
             } else if is_cell_last_line && cell_ctx.is_some() {
+                // 셀 정렬의 점유 높이에서 마지막 줄간격을 빼더라도 문단 테두리는
+                // 원래 줄 상자와 후행 간격을 둘러싼다. paint 영역을 흐름 전진에
+                // 다시 가산하지 않는다 (한컴 저장 1056+632HU 문단 테두리).
+                last_line_border_bottom =
+                    Some(y + line_flow_height + render_line_spacing_px.max(0.0));
                 last_line_box_bottom = Some(y + line_flow_height);
                 y += line_flow_height;
             } else if skip_advance_empty_line {
@@ -6426,11 +6466,13 @@ impl LayoutEngine {
         // Task #463: 셀 안 단락은 본문 큐에 leakage 하지 않도록 cell_ctx 게이팅.
         // 셀 외곽선은 별도 경로(table_layout/border_rendering)에서 처리되므로
         // 본문 단락의 연속 외곽선 merge 가 셀 단락 좌표/시그니처에 의해 깨지지 않게 한다.
-        if para_border_fill_id > 0 && cell_ctx.is_none() {
+        if para_border_fill_id > 0 && (cell_ctx.is_none() || self.collect_cell_para_borders.get()) {
             // [#5711] 줄간격이 음수인 문단은 전진값 `y` 가 마지막 줄 상자 아래보다 위에
             // 있다. 그 값을 테두리 아래 변으로 쓰면 테두리가 글자를 가로지른다. 다음 문단
             // 시작 y 는 종전대로 두어 문단 간 간격 계약은 바꾸지 않는다.
-            let border_bottom = last_line_box_bottom.map_or(y, |bottom| y.max(bottom));
+            let border_bottom = last_line_border_bottom
+                .or(last_line_box_bottom)
+                .map_or(y, |bottom| y.max(bottom));
             let bg_height = border_bottom - bg_y_start;
             if bg_height > 0.0 {
                 // margin_left/margin_right는 이미 px 단위 (style_resolver에서 변환됨)
@@ -6606,6 +6648,7 @@ impl LayoutEngine {
         cell_ctx: &Option<CellContext>,
         tab_stops: &[TabStop],
         tac_offsets_px: &[(usize, f64, usize)],
+        line_tac_offsets: &[(usize, f64, usize)],
         shape_markers: &[(usize, String)],
         fn_positions: &[(usize, u16, usize)],
         fn_marker_inserted: &mut [bool],
@@ -6654,6 +6697,26 @@ impl LayoutEngine {
             mut pending_right_leader_digit_render,
             mut current_line_reserved_tac_picture_height,
         } = st;
+        // [#7150] 정렬·방출이 사용하는 줄별 TAC 집합에서 표 앵커를 한 번 선택한다.
+        // 저장 UTF-16 줄 경계에서는 이전 줄 끝 표와 다음 줄 첫 개체가 같은 가시
+        // 문자 위치에 투영된다. composed.tac_controls를 문자 구간으로 다시 나누면
+        // 다른 줄의 표가 소유자로 섞인다. caller가 복원한 저장 줄 배정과 마지막
+        // run 끝 TAC를 포함한 공통 집합을 그대로 소비한다.
+        let line_table_owner = para.and_then(|p| {
+            line_tac_offsets
+                .iter()
+                .find_map(|(_, _, ci)| match p.controls.get(*ci) {
+                    Some(Control::Table(table)) if table.common.treat_as_char => {
+                        let h = hwpunit_to_px(table.common.height as i32, self.dpi);
+                        let mt = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                        let mb = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                        ((mt > 0.0 || mb > 0.0)
+                            && (h + mt + mb - 0.2..=h + mt + mb + 0.2).contains(&raw_lh))
+                        .then_some((h, mt))
+                    }
+                    _ => None,
+                })
+        });
         let is_last_run_of_line = |idx: usize| idx == comp_line.runs.len() - 1;
         // [#5679] 줄-말미 공백에 배정된 배분 여분(extra_word_sp) 회수분.
         // 배분 몫은 **내부 공백 수**로 나눈다(위 needs_justify 분기의
@@ -6963,7 +7026,12 @@ impl LayoutEngine {
                 // 비반올림 폭을 써서 모델 한 글자 경계와 표시 끝을 같은 좌표에 둔다.
                 estimate_text_width_unrounded(effective_text_for_metrics(run), &text_style)
             } else {
-                estimate_text_width(effective_text_for_metrics(run), &text_style)
+                // [#7254] 배치 폭은 반올림하지 않는다 — 바로 위 field run 예외가 적어 둔
+                // 사유(`#3216`·`#1100`: 정수 반올림이 뒤 앵커를 실제 glyph advance 보다
+                // 앞세운다)가 일반 run 에도 그대로 적용된다. 줄 나눔은 이미 반올림하지
+                // 않은 폭으로 줄을 짜므로, 여기서 반올림하면 같은 줄을 측정과 배치가 다른
+                // 폭으로 소비한다.
+                estimate_text_width_exact(effective_text_for_metrics(run), &text_style)
             };
             // [#5679] 줄-말미 공백의 배분 여분 회수 — 자연 폭은 유지한다(한글도
             // 말미 공백 자체는 줄 상자를 넘길 수 있다). 여분이 음수(압축)여도
@@ -7347,7 +7415,8 @@ impl LayoutEngine {
                             if rel_pos > seg_start {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
-                                let seg_w = estimate_text_width(&seg_text, &text_style);
+                                // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                                let seg_w = estimate_text_width_exact(&seg_text, &text_style);
                                 let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                                     kerning_layout_session,
                                     ExactFontSlot::new(run.char_style_id, run.lang_index),
@@ -7427,7 +7496,8 @@ impl LayoutEngine {
                         // 마지막 세그먼트 (각주 뒤 나머지 텍스트)
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
-                            let seg_w = estimate_text_width(&seg_text, &text_style);
+                            // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                            let seg_w = estimate_text_width_exact(&seg_text, &text_style);
                             let trailing_space_count = line_trailing_space_by_run[run_idx]
                                 .min(run_chars.len().saturating_sub(seg_start));
                             let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
@@ -7546,7 +7616,8 @@ impl LayoutEngine {
                                 &composed.tab_extended,
                             );
                         }
-                        let seg_w = estimate_text_width(&seg_text, &seg_style);
+                        // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
+                        let seg_w = estimate_text_width_exact(&seg_text, &seg_style);
                         let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
                             kerning_layout_session,
                             ExactFontSlot::new(run.char_style_id, run.lang_index),
@@ -7899,41 +7970,28 @@ impl LayoutEngine {
                                 // 줄 높이를 정하는 가장 높은 표는 `lh == 밴드` 라 그대로
                                 // 이 분기에 남고, `#3386` 의 표본(`156678235` 4쪽: 한/글
                                 // 536.69 vs rhwp 537.30)도 표가 하나뿐이라 불변이다.
-                                // 그리고 그 줄이 **이 표 전용**이어야 한다 — 같은 줄에
-                                // TAC 표가 둘 이상이면 그 줄은 어느 한 표의 것이 아니다.
-                                // 세로 위치가 바깥여백과 무관하다는 것이 실측이다
-                                // (`21_언어_기출` 1쪽: 여백 283/283 과 0/0 인 두 표를 한/글이
-                                // **같은 y** 에 놓는다 — 여백이 관여하면 3.8px 벌어져야 한다).
-                                // 그러니 여백을 쓰는 이 분기는 줄을 독점한 표에만 준다.
-                                // 소속은 **이 줄** 로 센다 — `composed.lines[line_idx]` 의
-                                // char 구간은 텍스트·표 순서, 명시적 개행, 가용 너비가
-                                // 이미 반영된 줄 나눔 결과이고, 배치가 지금 소비하고 있는
-                                // 바로 그 구성이다. 문단 단위로 세면 다른 줄의 표까지
-                                // 끌어들여 이 줄의 사실을 왜곡한다.
-                                let line_start = comp_line.char_start;
-                                let line_end = composed
-                                    .lines
-                                    .get(line_idx + 1)
-                                    .map_or(usize::MAX, |next| next.char_start);
-                                let line_tac_table_count = composed
-                                    .tac_controls
-                                    .iter()
-                                    .filter(|(pos, _, ci)| {
-                                        (line_start..line_end).contains(pos)
-                                            && matches!(
-                                                p.controls.get(*ci),
-                                                Some(Control::Table(t))
-                                                    if t.common.treat_as_char
-                                            )
-                                    })
-                                    .count();
+                                // [#7150] 같은 줄에 여러 표가 있어도 저장 lh가 자기
+                                // 높이와 상하 여백의 합이면 자기 바깥여백에 앉힌다.
+                                // 동반 표는 위에서 한 번 선택한 줄별 앵커를 공유한다.
                                 let stored_lh_covers_om = (om_top > 0.0 || om_bottom > 0.0)
-                                    && line_tac_table_count <= 1
                                     && (table_h + om_top + om_bottom - 0.2
                                         ..=table_h + om_top + om_bottom + 0.2)
                                         .contains(&raw_lh);
                                 let table_y = if stored_lh_covers_om {
                                     y + om_top
+                                } else if let Some((owner_h, owner_om_top)) = line_table_owner {
+                                    // [#7150] 소유자가 `y + owner_om_top` 에 앉으면 그 상자
+                                    // 하단이 `기준선 + 0.15×owner_h` 이므로 공유 기준선은
+                                    // `y + owner_om_top + 0.85×owner_h` 다. 이 표를 거기에
+                                    // 앉히면 `y + owner_om_top + 0.85×(owner_h − table_h)`.
+                                    // 자기 여백이 들어가지 않는 것이 실측과 맞는다
+                                    // (#7049 의 `21_언어_기출`: 여백 283/283 과 0/0 인 두
+                                    // 상자를 한/글이 같은 y 에 놓는다).
+                                    //
+                                    // 저장 기준선을 쓰던 종전 식은 소유자의 om_top 을
+                                    // 잃어 줄 전체가 `0.85×(om_top+om_bottom) − om_top`
+                                    // 만큼 내려앉았다 — issue2470 1쪽 결재표 1.31px.
+                                    (y + owner_om_top + (owner_h - table_h) * 0.85).max(y)
                                 } else {
                                     // [#7049] 글자처럼 취급되는 표는 글자처럼 기준선에
                                     // 앉는다 — 높이의 85% 가 기준선 위, 15% 가 아래다.
@@ -7990,6 +8048,7 @@ impl LayoutEngine {
                                     false,
                                     false,
                                     None,
+                                    Self::standalone_table_char_border_fill(Some(p), t, styles),
                                 );
                                 // 스킵 마커 등록 (별도 Table PageItem에서 중복 렌더 방지)
                                 tree.set_inline_shape_position(
@@ -8635,6 +8694,11 @@ impl LayoutEngine {
     /// [#1925 추출] 정렬/탭 계산용 est 사전 폭 추정 run 패스.
     /// 렌더 노드를 만들지 않고 run 폭·탭 진행만 시뮬레이션해, 줄의 점유 폭
     /// (`est_x`)과 추정에 포함된 tac 개체 폭 합(`included_tac_width`)을 구한다.
+    ///
+    /// [#7254] 여기서 쓰는 폭은 실제 배치가 쓰는 폭과 같아야 한다 — 이 추정은 정렬
+    /// (가운데·오른쪽·배분)의 기준 폭이다. 배치를 비반올림으로 바꾸면서 이쪽도 같이
+    /// 바꾼다. 한쪽만 바꾸면 오른쪽 정렬 줄의 우단이 반올림 잔여만큼 어긋난다
+    /// (`#1285` 답안지 수험번호 표).
     #[allow(clippy::too_many_arguments)]
     fn estimate_line_run_widths(
         &self,
@@ -8684,7 +8748,7 @@ impl LayoutEngine {
                             .rev()
                             .find(|tab| tab.tab_type == 1 && tab.fill_type != 0)
                         {
-                            let digit_w = estimate_text_width(run.text.trim(), &ts);
+                            let digit_w = estimate_text_width_exact(run.text.trim(), &ts);
                             let target =
                                 if composed.tab_extended.is_empty() && available_width > 0.0 {
                                     effective_margin_left + available_width
@@ -8799,7 +8863,7 @@ impl LayoutEngine {
                 if seg_start_est < tac_rel {
                     let seg: String = run_chars_est[seg_start_est..tac_rel].iter().collect();
                     ts.line_x_offset = est_x;
-                    est_x += estimate_text_width(&seg, &ts);
+                    est_x += estimate_text_width_exact(&seg, &ts);
                 }
                 est_x += tac_w;
                 included_tac_width_in_est += tac_w;
@@ -8833,7 +8897,7 @@ impl LayoutEngine {
                 if no_more_tabs_after_in_run && no_tabs_in_subsequent {
                     let mut ts_measure = ts.clone();
                     ts_measure.right_tab_block_width_override = None;
-                    let post_tab_w = estimate_text_width(&post_tab, &ts_measure);
+                    let post_tab_w = estimate_text_width_exact(&post_tab, &ts_measure);
                     let subsequent_w = right_tab_block_width(
                         &comp_line.runs,
                         run_idx_est + 1,
@@ -8847,7 +8911,7 @@ impl LayoutEngine {
                 }
             }
             if !remaining_est.is_empty() {
-                est_x += estimate_text_width(&remaining_est, &ts);
+                est_x += estimate_text_width_exact(&remaining_est, &ts);
             }
             // run이 \t로 끝나면 다음 run에 오른쪽/가운데 탭 조정 필요 — Task #290:
             // inline_tabs(composed.tab_extended) 가 LEFT 를 명시하면 cross-run pending 을 설정하지 않는다.
@@ -8923,7 +8987,7 @@ impl LayoutEngine {
                         font_family: ts.font_family.clone(),
                         ..Default::default()
                     };
-                    est_x += estimate_text_width(&fn_text, &sup_ts);
+                    est_x += estimate_text_width_exact(&fn_text, &sup_ts);
                 }
             }
             run_char_pos_est = run_char_end_est;
@@ -9062,6 +9126,7 @@ impl LayoutEngine {
                                         false,
                                         false,
                                         None,
+                                        Self::standalone_table_char_border_fill(Some(p), t, styles),
                                     );
                                 }
                                 tree.set_inline_shape_position(
@@ -9590,6 +9655,7 @@ fn make_picture_image_node(
             text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
             transform: extract_shape_transform(&pic.shape_attr),
             external_path: pic.image_attr.external_path.clone(),
+            content_inset: crate::renderer::layout::utils::picture_content_inset(pic),
             ..ImageNode::new(bin_data_id, image_data)
         }),
         bbox,

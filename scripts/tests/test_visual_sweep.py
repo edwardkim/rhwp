@@ -152,6 +152,28 @@ class WasmSweepTests(unittest.TestCase):
         result = SWEEP.apply_svg_font_policy(source, policy + policy)
         self.assertEqual(result, source.replace('width="100">', f'width="100"><style>{face}</style>'))
 
+    def test_explicit_font_change_invalidates_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fonts = root / 'fonts'
+            fonts.mkdir()
+            font = fonts / 'source.ttf'
+            font.write_bytes(b'original font')
+            args, before = SWEEP.svg_font_export_options(root, 'full', [fonts])
+            self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
+            target = SWEEP.Target('input', Path('input.hwp'), Path('reference.pdf'))
+            SWEEP.run_manifest_for_target(root / 'out', target, {'font_supply': before}, 96, 32, resume=False)
+            font.write_bytes(b'changed font')
+            _, after = SWEEP.svg_font_export_options(root, 'full', [fonts])
+            with self.assertRaises(SystemExit):
+                SWEEP.run_manifest_for_target(root / 'out', target, {'font_supply': after}, 96, 32, resume=True)
+
+    def test_embedded_font_policy_does_not_replace_wasm_text_or_coordinates(self) -> None:
+        source = '<svg><text x="12" y="34">original</text></svg>'
+        face = '@font-face {font-family:"Source";src:url("data:font/ttf;base64,AAAA");}'
+        result = SWEEP.apply_svg_font_policy(source, '<svg><style>' + face + '</style><text x="99">native</text></svg>')
+        self.assertEqual(result, source.replace('<svg>', '<svg><style>' + face + '</style>'))
+
     def test_font_policy_does_not_replace_a_wasm_owned_face(self) -> None:
         source = '<svg><style>@font-face {font-family:"Owned";src:url("wasm.woff2")}</style></svg>'
         self.assertEqual(SWEEP.apply_svg_font_policy(source, '@font-face {font-family:"Owned";src:local("Other")}'), source)

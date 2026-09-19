@@ -356,8 +356,14 @@ fn compute_char_positions_walk(
             continue;
         }
         if c == '\t' {
-            if tab_char_idx < style.inline_tabs.len() {
-                let ext = &style.inline_tabs[tab_char_idx];
+            // [#7170] 자리표(저장 폭 없음)는 저장값이 아니다 — 순번만 소비하고 아래
+            // `TabDef` 기준 재계산으로 내려간다. 폭 0 을 결과 위치로 읽으면 탭이
+            // 무폭이 된다(#1892).
+            let stored_ext = style
+                .inline_tabs
+                .get(tab_char_idx)
+                .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+            if let Some(ext) = stored_ext {
                 x = inline_tab_x(i, x, ext, &chars, &cluster_len, &char_width);
                 tab_char_idx += 1;
             } else if has_custom_tabs {
@@ -436,8 +442,15 @@ fn compute_char_positions_walk(
 
 pub struct EmbeddedTextMeasurer;
 
-impl TextMeasurer for EmbeddedTextMeasurer {
-    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+impl EmbeddedTextMeasurer {
+    /// 반올림 없는 폭 — 본 구현 전체(사용자 탭 스톱·인라인 탭 ext 포함)를 그대로 쓰고
+    /// 마지막 `round()` 만 하지 않는다.
+    ///
+    /// [#7254] `estimate_text_width` 는 이 값을 `round()` 해서 돌려준다. 곧 둘은 같은
+    /// 계산이고 차이는 마지막 반올림 하나다. `estimate_text_width_unrounded` 와 혼동하지
+    /// 말 것 — 그쪽은 줄바꿈 엔진 전용의 **다른 구현**이라 사용자 탭 스톱과 인라인 탭 ext
+    /// 데이터를 읽지 않는다.
+    fn estimate_text_width_exact(&self, text: &str, style: &TextStyle) -> f64 {
         let (font_size, _, tab_w) = style_params(style);
         let chars: Vec<char> = text.chars().collect();
         let cluster_len = build_cluster_len(&chars);
@@ -596,7 +609,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             }
             total += char_width(i);
         }
-        total.round()
+        total
+    }
+}
+
+impl TextMeasurer for EmbeddedTextMeasurer {
+    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+        self.estimate_text_width_exact(text, style).round()
     }
 
     fn compute_char_positions(&self, text: &str, style: &TextStyle) -> Vec<f64> {
@@ -1160,7 +1179,27 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             };
         };
         let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}');
-        let is_narrow_unicode_punct = matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}');
+        // [#7092] 고정폭 표의 작은따옴표는 글꼴이 지닌 전각이 진짜 값이다. `·` 는 이미
+        // `is_monospace_metric` 으로 이 갈래를 빼 두었는데, `‘`·`’` 는 face 를 보지 않고
+        // 전부 0.3em 으로 눌러 왔다. 저장소 한컴 정본 623개 전수(앞 6쪽·리더 반복 제외,
+        // 같은 줄 한글 전진폭 대비 비율)와 글꼴 파일이 같은 값을 말한다.
+        //
+        // ```text
+        //   정본 비율   GulimChe  ‘ n=10 1.011 · ’ n=6  1.000
+        //               BatangChe ‘ n=12 1.000 · ’ n=8  1.000
+        //               DotumChe  ‘ n=12 1.000 · ’ n=12 1.000   (34건 전부 0.98 이상)
+        //   글꼴 파일   ttfs/windows/{gulim,batang}.ttc 의 GulimChe·BatangChe
+        //               `quoteleft`·`quoteright` = 1024/1024 = 1.000 em
+        //   같은 문서   1730000_selection_report(돋움체) 한/글 1.000 ↔ 수정 전 rhwp 0.299
+        //               rowbreak_cell_picture_only_paragraph(굴림체) 1.009 ↔ 0.299
+        // ```
+        //
+        // 비고정폭 face 는 이 변경의 범위 밖이다 — 같은 이름이 TrueType/HFT 두 realization 으로
+        // 갈리고(휴먼명조 `‘` 1.010 ↔ 0.24), 기호 슬롯 선택 축이 따로 있다(#7092 잔여).
+        let quote_width_is_authentic =
+            matches!(c, '\u{2018}' | '\u{2019}') && is_monospace_metric(mm.metric);
+        let is_narrow_unicode_punct =
+            matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
         // DB 가 0 으로 적는다. 다만 한/글 정본으로 입증된 범위는 TTF 로 선언되고 대체되지
         // 않은 글꼴뿐이라, 그 밖(HFT · 종류 불명 · 대체됨)과 폭 정보 없는 표는 종전대로 좁힌다.
@@ -1173,7 +1212,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
+        } else if is_halfwidth_punct && !quote_width_is_authentic && glyph_w >= mm.metric.em_size {
             (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
@@ -1386,6 +1425,22 @@ fn measure_char_width_embedded(
 /// native/WASM 공통 — SVG byte 패리티의 전제다 (#4046).
 pub(crate) fn estimate_text_width(text: &str, style: &TextStyle) -> f64 {
     default_measurer().estimate_text_width(text, style)
+}
+
+/// 텍스트 폭 — 본 구현 그대로, **마지막 반올림만 하지 않는다**.
+///
+/// [#7254] 줄 나눔(`renderer/composer/line_breaking.rs`)은 이미 반올림하지 않은 폭으로
+/// 줄을 짜는데 배치는 `estimate_text_width` 의 정수 폭을 쓰고 있었다. 그러면 같은 줄을
+/// 측정과 배치가 다른 폭으로 소비한다(`AGENTS.md` 의 "측정과 배치의 공통 결과"). run 이
+/// 한 글자면 그 글자의 전진폭 자체가 반올림 대상이라 run 경계마다 최대 ±0.5px 가 붙고,
+/// 뒤 run 들이 그만큼 밀린다. 정답지(한/글 PDF)도 소수 전진폭을 그대로 쓴다 —
+/// `Haansoft Batang` 9.952pt(13.269px)에서 `【` 전진은 13.273 = 1.0003 em 이다.
+///
+/// `estimate_text_width_unrounded` 를 대신 쓰면 안 된다. 그쪽은 줄바꿈 엔진 전용의 다른
+/// 구현이라 사용자 탭 스톱·인라인 탭 ext 데이터를 읽지 않아, 탭이 있는 줄에서 정렬 위치가
+/// 통째로 사라진다.
+pub(crate) fn estimate_text_width_exact(text: &str, style: &TextStyle) -> f64 {
+    default_measurer().estimate_text_width_exact(text, style)
 }
 
 /// 텍스트 폭 추정 (round 없이 raw px 반환)
@@ -2770,8 +2825,10 @@ mod tests {
     ///   표를 믿는다.
     /// - **신명 신신명조(HFT → HY신명조로 대체)** — 점선 리더 26점이 150.6px 칸에 들어간다
     ///   (`samples/issues/2809/jubo_20260104.hwp`). 전각이면 381px 라 불가능하다 → 좁힌다.
-    /// - **휴먼명조** — 선행 가드가 한/글 PDF 로 0.33em 을 실측했다. 이 글꼴 오버레이는
-    ///   HY신명조 표를 공유했으므로 슬롯 하나(`HUMANMYEONGJO_LATIN_1`)를 갈라 그 값을 준다.
+    /// - **휴먼명조** — 이 글꼴의 `·` 슬롯은 오버레이가 307(0.3em)로 갈라 두었고, 정본이
+    ///   TrueType 1.000 ↔ Type3 0.384 로 갈려 이 변경에서는 움직이지 않는다. 표 값이
+    ///   em 미만이라 신뢰 여부와 무관하게 적힌 폭 그대로다(`font_metrics_overlays.rs` 주석).
+    ///   같은 face 의 작은따옴표는 갈리지 않아 아래 따옴표 시험이 따로 잠근다.
     ///
     /// 대체 안 된 HFT 가 전각이라는 정본은 아직 없어 그 경우는 종전대로 좁힌다.
     #[test]
@@ -2793,6 +2850,8 @@ mod tests {
             ("HY신명조", true, 1.0),
             ("HY신명조", false, 0.3),
             ("휴먼명조", true, 0.3),
+            ("휴먼명조", false, 0.3),
+            ("한양신명조", true, 0.384),
         ] {
             let em = advance(family, trusted);
             assert!(

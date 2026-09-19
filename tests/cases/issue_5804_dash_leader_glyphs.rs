@@ -5,7 +5,7 @@
 //! `- - - -` 는 "현행과 같음"을 뜻하는 **의미 있는 표기**라, 실선이 되면 읽는 사람이
 //! 생략인지 밑줄 그은 빈칸인지 구분할 수 없다.
 //!
-//! 오라클은 한글 2022 정본 `pdf/issue1921/86712_regulatory_analysis-2024.pdf` 다.
+//! 오라클은 한컴 2024 정본 `pdf/86712_regulatory_analysis-hwpx-2024.pdf` 다.
 //! 정본은 하이픈을 낱글자로 그리며, 글자당 advance 는 런마다 달라지고 끝점이
 //! 오른쪽 여백에 수렴한다(탄력 leader). 그 분배는 이미 레이아웃이 만든다
 //! (`compute_line_extra_spacing` 의 `extra_dash_sp` → `TextStyle::extra_dash_advance`).
@@ -28,9 +28,7 @@ fn repo_root() -> std::path::PathBuf {
 /// 저장소에 한글 정본 PDF 가 짝으로 있다.
 const SAMPLE: &str = "samples/issue1891/86712_regulatory_analysis.hwpx";
 
-/// `-p` 는 0 기준이라 이 값은 문서 35 쪽(정본 p35)을 가리킨다.
-// [#6389] KoPub돋움체 한글 폭을 임베드 실측 872/1000em 으로 되돌리면 앞쪽
-// 본문이 조밀해져 신구조문대비표가 한 쪽 당겨진다(문서 65→64쪽, 표는 0기준 33).
+/// `-p`는 0 기준. 정상 HWP에서 재생성한 HWPX와 직접 변환 PDF의 34쪽.
 const PAGE_ARG: &str = "33";
 
 /// 새 의존성을 들이지 않으려고 표준 라이브러리만 쓴다 — 프로세스 id 와 호출 순번으로
@@ -157,8 +155,8 @@ fn dash_leader_is_drawn_as_glyphs_not_a_line() {
 
 #[test]
 fn dash_leader_run_keeps_the_elastic_advance() {
-    // 정본(한글 2022) p35 의 26 자 런: x 324.00 → 528.72 pt, 글자당 advance 8.16~8.28 pt,
-    // font-size 14.04 pt → 0.581~0.590 em. SVG 는 96dpi 라 pt 로 환산해 비교한다.
+    // 새 정본 p34의 28자 런: x 311.88 → 528.94pt, advance 약 8.04pt,
+    // font-size 14.04pt → 0.573em. SVG는 96dpi, em 비율로 비교한다.
     let svg = render_page_svg();
     let runs = hyphen_runs(&svg);
     assert!(!runs.is_empty(), "하이픈 런을 하나도 못 찾았다");

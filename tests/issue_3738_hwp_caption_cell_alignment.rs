@@ -22,8 +22,11 @@ fn find_picture_21_and_caption(
     caption_y: &mut Option<f64>,
 ) {
     match &node.node_type {
+        // [#7063] 그림 x 101.9 → 105.7. 이 문서 정본(`pdf/정책연구용역사업 …-hwp-2024.pdf`)
+        // 23쪽의 그림 21 은 x=105.70, caption `그림 21` 은 x=105.76 이다 — 종전 101.9 가
+        // 3.8px(283HU) 짧았다. 감싼 자리차지 표가 자기 바깥여백 안으로 들어간 결과다.
         RenderNodeType::Image(_)
-            if (node.bbox.x - 101.9).abs() < 2.0 && node.bbox.width > 250.0 =>
+            if (node.bbox.x - 105.7).abs() < 2.0 && node.bbox.width > 250.0 =>
         {
             *image_y = Some(node.bbox.y);
         }

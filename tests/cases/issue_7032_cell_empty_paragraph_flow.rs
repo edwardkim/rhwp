@@ -220,6 +220,7 @@ fn fragment(
         start_cut: cut.map(|(s, _)| vec![s; 2]).unwrap_or_default(),
         end_cut: cut.map(|(_, e)| vec![e; 2]).unwrap_or_default(),
         is_block_split: false,
+        start_cut_is_block: false,
         row_cursor_is_nested: false,
         // Hold the physical frame constant when comparing alignment. A natural
         // cut otherwise sizes the fragment to consumed content, unlike uncut.
