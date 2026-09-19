@@ -221,7 +221,9 @@ issue6924/148751598-briefing.hwp	1
 # (초과 108.9px) 수정 뒤 17.7px 로 줄었다 — 이 래칫은 px 이 아니라 노드 수를 세므로 개선이
 # 이 행에 나타나지 않는다. 남는 17.7px 은 #6923(예산 대 실측) 축이다. 기존 상한은 올리지 않았다.
 issue6973/83818-appraisal-rules-amendment.hwpx	1
-# #7216 scaffold 60행 표 증적(수정 전/후 산출물): base fcbd00e0f 와 수정본의 overflow 가 동일(각 1건, 1쪽 첫 조각 +91.1px).
-# 한/글 2020 PDF 는 47행에서 쪽을 나눠 넘침이 없다 — rhwp 조판의 별도 결함이며 이 행은 그 값을 고정만 한다.
-issue7216/tall_table_before.hwpx	1
-issue7216/tall_table_after.hwpx	1
+# #7216 scaffold 60행 표 증적(수정 전/후 산출물). base fcbd00e0f 에서는 1쪽 첫 조각이 53행을 받아
+# 본문 바닥을 +91.1px 넘었다(각 1건). 18a9fa85e(#7263 묶음, `Refs #7234`)가 중첩 표 실제 점유 높이
+# 예약을 보정해 컷이 한/글 2020 정본과 같은 47행으로 옮겨졌고 두 행 모두 실측 0 이 됐다 — 조인다.
+# 컷 위치 자체는 tests/cases/issue_7234_scaffold_tall_table_row_split.rs 가 정본에 묶어 잠근다.
+issue7216/tall_table_before.hwpx	0
+issue7216/tall_table_after.hwpx	0
