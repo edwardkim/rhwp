@@ -11,8 +11,8 @@
 | 작성자·경로 | `jangster77`, collaborator self-review |
 | 관련 이슈 | [#7105](https://github.com/edwardkim/rhwp/issues/7105) |
 | base | `devel` / `c01c9f4972c395efa45e38597f2cdfe7f88d7579` |
-| 검토한 code candidate | `f68acc019fce536e12bd1aa0ba087f48b4beb2f3` |
-| 최초 제출 규모 | 12 files, +238 / -18 |
+| 검토한 code candidate | `0f1fa2f72ff9e01d5244e11e9c58aabd8ee9e584` |
+| 최초 제출 규모 | 13 files, +239 / -19 |
 | GitHub 상태 | code candidate에서 Open, non-draft, MERGEABLE / BLOCKED(CI 대기). 최종 head는 다시 확인 필요 |
 | reviewer | self-review이므로 지정하지 않음 |
 
@@ -36,6 +36,10 @@ Studio는 OLE 수식의 문맥 메뉴와 더블 클릭을 전환·편집 명령�
 응답 전에 viewer 생성이 완료되게 했다. 특정 문서 ID, 좌표, 폰트에 의존하는 예외나 출력 은폐는
 추가하지 않았다.
 
+최초 CI의 Studio unit gate는 `promoteOleEquation`가 `MUTATING_METHODS`에는 있으나
+`MUTATING_VERB` 감사 동사에는 없는 누락을 검출했다. `promote`를 감사 동사에 추가한
+`0f1fa2f72` 뒤 같은 가드와 #7105 Studio 검사를 다시 실행했다.
+
 ## 조판 원칙 준수 검토
 
 | 검토 항목 | 판정 | 근거 |
@@ -54,6 +58,7 @@ Studio는 OLE 수식의 문맥 메뉴와 더블 클릭을 전환·편집 명령�
 | --- | --- |
 | #7105 Core focused 회귀 | Windows 10 `issue_7105_legacy_ole_equation_promotes_to_editable_native_equation_and_survives_hwp_save`: 1 passed / 0 failed |
 | Studio 명령 경계 | `node --test rhwp-studio/tests/issue-7105-ole-context-menu-delete.test.ts`: 3 passed / 0 failed |
+| mutation routing guard | `node --test rhwp-studio/tests/mutation-routing-guard.test.ts`: 10 passed / 0 failed |
 | Studio 패키지 | `npm --prefix rhwp-studio run build` 통과 |
 | Firefox service worker | `node --test rhwp-firefox/sw/download-interceptor.test.mjs`: 26 passed / 0 failed |
 | Rust 품질 게이트 | Windows 10에서 `CARGO_BUILD_JOBS=8`: fmt, native Clippy, WASM32 Clippy, workspace build, all-target Clippy 통과 |
@@ -77,7 +82,8 @@ extension viewer의 화면 캡처를 지원하지 않았지만, 두 OS에서 실
 - 판정: **승인**
 - 근거: 레거시 OLE 수식이 native equation으로 전환된 같은 control slot에서 일반 편집을 받고,
   HWP 저장·재열기 뒤 script가 유지되는 focused 회귀를 확인했다. Studio와 Firefox의 연결 경계도
-  별도로 통과했고, 두 Firefox 환경에서 실제 문서 열기를 확인했다.
+  별도로 통과했고, 두 Firefox 환경에서 실제 문서 열기를 확인했다. CI가 검출한 mutation audit
+  누락도 보정 뒤 가드 전체 통과로 해소했다.
 - merge 전 조건: 이 review·오늘할일 trailing commit을 포함한 최신 PR head의 required CI 통과,
   mergeable/CLEAN 재확인, 작업지시자의 merge 승인.
 - 이 문서는 self-review 기록이며 GitHub APPROVE, issue close, comment 또는 merge를 실행하지 않는다.
