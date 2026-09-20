@@ -1,9 +1,11 @@
 //! 조판 상태의 조회 입력과 확정 결과 반영 경계.
 //! inline 흐름, 문단 fit의 1회성 보정 소비와 일반 전체/분할 배치 반영을 소유한다.
 //! 지연 표 큐의 인출·복원과 배치 후 vpos 반영도 이 경계에서 수행한다.
+//! 빈 호스트 float의 예산 조회와 항목·lane·흐름 확정도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::deferred::DeferredTableControl;
+use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::tac_fit::TacFitPage;
 use super::inline_flow::plan::InlineFlowInput;
@@ -13,11 +15,61 @@ use super::paragraph::placement::ParagraphFragment;
 use super::paragraph::scan::LineScanPage;
 use super::paragraph::split_entry::SplitEntryPage;
 use super::TypesetState;
+use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::inline_flow::InlineFlowPlan;
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// Lane 조회용 페이지 관측값. 예산은 별도 지연 조회로 제공한다.
+    pub(super) fn empty_float_page(&self) -> EmptyFloatPage<'_> {
+        EmptyFloatPage {
+            layout: &self.layout,
+            current_column: self.current_column,
+            profile: self.profile,
+            current_height: self.current_height,
+            current_items: &self.current_items,
+        }
+    }
+
+    pub(super) fn empty_float_available_height(
+        &self,
+        note_content_height: f64,
+        note_count: usize,
+    ) -> f64 {
+        let total_footnote = self.projected_footnote_height(note_content_height, note_count);
+        let fn_margin = if total_footnote > 0.0 {
+            self.footnote_safety_margin
+        } else {
+            0.0
+        };
+
+        (self.base_available_height() - total_footnote - fn_margin - self.current_zone_y_offset)
+            .max(0.0)
+    }
+
+    /// 항목 추가 → lane 예약 → 흐름 높이 반영 순서를 보존한다.
+    pub(super) fn commit_empty_float_table(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        placement: EmptyFloatPlacement,
+        lanes: &mut FloatLaneSet,
+    ) {
+        let EmptyFloatPlacement {
+            x_start,
+            x_end,
+            raw_top,
+            reserved_height,
+        } = placement;
+        self.current_items.push(PageItem::Table {
+            para_index: para_idx,
+            control_index: ctrl_idx,
+        });
+        lanes.place(Some(ctrl_idx), x_start, x_end, raw_top, reserved_height);
+        self.current_height = self.current_height.max(lanes.max_bottom());
+    }
+
     /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
     pub(super) fn commit_deferred_table_anchor(&mut self, para_index: usize) {
         if self.col_count == 1 {

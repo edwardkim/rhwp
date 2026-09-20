@@ -5,18 +5,60 @@
 //! 컨트롤 순서와 첫/마지막 표 선택은 order가 소유한다.
 //! 같은 문단의 형제 표 이월 판별·후보 선택·flush 시점 조회는 deferred가 소유한다.
 //! 지연 큐 순회는 이 모듈이, 큐·vpos 상태 반영은 state가 소유한다.
-//! float, 개별 지연 표의 측정·배치와 표 분할 경로는 아직 상위 구현에 남아 있다.
+//! 빈 호스트 float lane 조회는 empty_float가, 확정 예약은 state가 소유한다.
+//! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 pub(super) mod deferred;
+pub(super) mod empty_float;
 pub(super) mod order;
 pub(super) mod stored_tac;
 pub(super) mod tac_fit;
 pub(super) mod tac_flow;
 
 use super::paragraph::metrics::FormattedParagraph;
-use super::TypesetState;
+use super::{FormattedTable, TypesetState};
 use crate::model::paragraph::Paragraph;
+use crate::renderer::composer::ComposedParagraph;
+use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
+use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 조회가 후보를 수용한 경우에만 표 항목·lane·흐름 상태를 함께 반영한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn try_place_empty_para_float_table(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    ft: &FormattedTable,
+    composed: Option<&ComposedParagraph>,
+    next_para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    para_start_height: f64,
+    lanes: &mut FloatLaneSet,
+    dpi: f64,
+) -> bool {
+    let Some(placement) = empty_float::prepare(
+        para_idx,
+        ctrl_idx,
+        para,
+        table,
+        ft,
+        composed,
+        next_para,
+        styles,
+        para_start_height,
+        lanes,
+        st.empty_float_page(),
+        || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
+        dpi,
+    ) else {
+        return false;
+    };
+    st.commit_empty_float_table(para_idx, ctrl_idx, placement, lanes);
+    true
+}
 
 /// 큐 처리 순서만 조정한다. 표 하나의 측정·배치는 기존 엔진 경로가 담당한다.
 pub(super) fn flush_deferred_tables(
