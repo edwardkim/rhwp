@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2n](task_m100_7280_stage16.md), 시작 head `e3d807627`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 후 고정 SHA 집중 검증 준비. R2 전체 완료나 제출 준비 완료가 아니다.
+- 상태: R2o 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -44,3 +44,50 @@ native Clippy → 집중 nextest를 순차 실행한다. R2n의 179개에 기존
 미주·잘못된 조각 범위 등 모든 입력 조합의 실행 검증이나 한컴 출력 일치를 주장하지 않는다.
 전체 회귀·WASM/workspace lint·workspace build·Native Skia·fresh Docker WASM/직접 시각
 대조는 통합 게이트에 남긴다. 원격 push·PR·댓글은 이번 범위가 아니다.
+
+## 3. 고정 head 검증
+
+- 제품 SHA: `a7f7b8b24b5628a18539b151b0bf72052d3d3d21`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2o`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 복원 비교: `verify-columns.mjs` / `extraction-proof.json` 통과.
+  두 경계 helper, 분기 조건, 조각 계산·루프 종료, 단 전환과 trim 상태 보존,
+  흐름 관측값 세 개 및 나머지 parent/기존 조정자/기존 메트릭의 불변을 확인했다.
+- `node scripts/rust-test-suite-manifest.mjs --prepare` 뒤
+  `--check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db` 통과:
+  1,382 sources / 5,965 static attrs / 48 targets.
+- `node scripts/rust-unit-test-tiers.mjs --check --base-ref
+  722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db` 통과:
+  4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- `cargo fmt --all -- --check` 통과.
+- `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir
+  /home/edward/mygithub/rhwp/target/pr-review -- -D warnings` 통과(exit 0, 56.68초).
+- 로그: `output/7280/stage17/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+집중 테스트는 R2n의 동일 target/profile/14 binaries 선택에 기존
+`issue_2320_vpos_rewind_page_break::` 필터를 추가한다. 추가 계약은 다음과 같다.
+
+- `issue_2320_last_column_rewind_splits_to_next_page`: 마지막 단에서 문단 29를
+  0..1 / 1..로 나누어 다음 쪽으로 이월하고, 문단 30이 이전 쪽에 남지 않음.
+- `issue_2320_mid_page_rewind_is_not_boundary`: 본문 중간 높이 되감김의 비적용 대조.
+  이 테스트의 assertion은 쪽수에 한정되므로 시각 일치 증거로 해석하지 않는다.
+- `issue_2320_existing_column_zero_split_unchanged`: 단 0에서 시작한 문단 21의
+  0..2 / 2..5 조각 소속 보존.
+
+결과: **182건 통과 / 실패 0건**, 14 binaries, 필터 비선택 5,986건, exit 0.
+빌드 5분 43초, 테스트 0.717초. 로그: `output/7280/stage17/nextest-focused.log`.
+실행 ID: `7aa431b4-6266-4cad-9603-357add51c83c`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행 중
+동일 필터의 182개 PASS 이름과 일치함을 확인했다. 필터 비선택은 기존 ignore 50건과
+별개이며, 이번 절편에서는 전체 회귀를 다시 실행하지 않았다.
+
+nextest 0.9.137(권장 0.9.140)과 observation profile 설정 경고는 기준 실행과 동일하다.
+전체 CI 통과나 한컴 시각 정확성을 주장하지 않는다. review worktree의 tracked 변경은
+없으며 파생 suite/manifest는 커밋하지 않았다. 제품 검증 후에는 계획과 결과 기록만 수정했다.
+
+## 4. 후속
+
+일반 문단의 진입 예산 → 조기 반환 → 강제 경계 → 흐름 관측값 → 전체 fit/넘침/분할
+선택이 이제 책임별 함수 호출로 드러난다. 다음 절편은 남은 표 문단/컨트롤 흐름의
+진입·배치 선택 책임을 분리한다. 표 컷/연속 배치, 각주 의존, 최종 상태 캡슐화 및
+전체 통합 검증은 남아 있으며 이번 절편에서 완료로 승격하지 않는다.
