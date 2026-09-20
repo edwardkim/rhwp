@@ -271,7 +271,8 @@ CI preflight의 `chrome_extension_e2e_required`와 이유를 사용한다. Chrom
 
 Chrome이 필요하면 기존 Frontend package gates를 실행하고, 그 job의 fresh WASM 기반 dist를
 압축 artifact로 브라우저 job에 전달한다. 소비자는 생산자가 반환한 artifact ID를 사용하므로
-실패한 소비자만 재실행해도 다른 attempt의 이름을 추측하지 않는다. 전달 artifact는 1일 보존한다.
+소비자만 재실행해도 다른 attempt의 이름을 추측하지 않는다. 전달 artifact는 1일 보존한다.
+Chrome job은 harness와 실제 입력 3개만 sparse checkout해 큰 PDF/source 사본의 준비 시간을 피한다.
 `Build & Test`와 CI Impact Policy가 Chrome의 success/skip을 함께 확인하며 기존 required check
 이름과 top-level trigger는 유지한다.
 
@@ -293,6 +294,10 @@ CI를 `contracts-only` adapter로 사용한다. Frontend package gates의 cache 
 잠긴 브라우저 설치·실행 성공을 요구한다. 이 증거를 shared cache 저장 성공으로 보고하지 않는다.
 cache가 아직 없으면 PR에서 다운로드하여 실행할 수 있다. 이 cache 준비는 branch push 전체 CI를
 되살리지 않는다. main 반영·cache hit와 GitHub runner 시간은 실제 run 확인 전에는 미검증이다.
+Ubuntu CI에서는 설치된 Chrome for Testing의 실행 경로를 확인하고 그 파일 하나에만 user namespace를
+허용하는 AppArmor profile을 적용한다. [Chromium의 실행 경로별 profile 절차](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md)를
+따르며, job 종료 때 해당 profile을 제거한다. `No usable sandbox`는 브라우저 시작 실패이며 제품
+시나리오 실패와 구분한다. 경로 조회는 잠긴 Puppeteer의 비동기 `executablePath()`를 기다린다.
 warm-cache 목표 90초와 job hard timeout 5분은 브라우저 job의 기준이며, 선행 WASM·확장 빌드 시간은
 따로 본다. 세 browser suite에는 합계 220초의 실행 예산을 두고 timeout을 실패로 남긴다.
 

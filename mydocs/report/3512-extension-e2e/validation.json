@@ -1,13 +1,13 @@
 {
   "baseSha": "517df04ba110dc108fbbb203e72229c51819b591",
-  "browserSourceSha": "d6b4e704c6281f892b15ba78bb35b03224136963",
+  "browserSourceSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
   "policySourceSha": "1bba134e8cc451581b40d188eeac57ad2702bb49",
   "versions": {
     "puppeteer": "25.10.0",
     "chrome": "152.0.7977.75",
     "extension": "0.8.6",
     "manifest": 3,
-    "sourceSha": "d6b4e704c6281f892b15ba78bb35b03224136963"
+    "sourceSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5"
   },
   "platform": "macOS arm64",
   "node": "24.15.0",
@@ -16,70 +16,72 @@
       {
         "iteration": 1,
         "exit": 0,
-        "seconds": 47.688,
-        "diskFreeBytesBefore": 14192431104
+        "seconds": 47.785,
+        "diskFreeBytesBefore": 33610760192
       },
       {
         "iteration": 2,
         "exit": 0,
-        "seconds": 47.26,
-        "diskFreeBytesBefore": 14341390336
+        "seconds": 46.812,
+        "diskFreeBytesBefore": 33613803520
       },
       {
         "iteration": 3,
         "exit": 0,
-        "seconds": 46.989,
-        "diskFreeBytesBefore": 14127603712
+        "seconds": 46.772,
+        "diskFreeBytesBefore": 33610293248
       },
       {
         "iteration": 4,
         "exit": 0,
-        "seconds": 46.905,
-        "diskFreeBytesBefore": 14119755776
+        "seconds": 46.667,
+        "diskFreeBytesBefore": 33605853184
       },
       {
         "iteration": 5,
         "exit": 0,
-        "seconds": 47.309,
-        "diskFreeBytesBefore": 14111039488
+        "seconds": 46.729,
+        "diskFreeBytesBefore": 33604501504
       },
       {
         "iteration": 6,
         "exit": 0,
-        "seconds": 48.232,
-        "diskFreeBytesBefore": 14092226560
+        "seconds": 46.842,
+        "diskFreeBytesBefore": 33607049216
       },
       {
         "iteration": 7,
         "exit": 0,
-        "seconds": 47.742,
-        "diskFreeBytesBefore": 9985216512
+        "seconds": 46.5,
+        "diskFreeBytesBefore": 33615441920
       },
       {
         "iteration": 8,
         "exit": 0,
-        "seconds": 47.576,
-        "diskFreeBytesBefore": 11749044224
+        "seconds": 48.315,
+        "diskFreeBytesBefore": 33612300288
       },
       {
         "iteration": 9,
         "exit": 0,
-        "seconds": 47.203,
-        "diskFreeBytesBefore": 11764809728
+        "seconds": 46.126,
+        "diskFreeBytesBefore": 33730617344
       },
       {
         "iteration": 10,
         "exit": 0,
-        "seconds": 47.082,
-        "diskFreeBytesBefore": 11754311680
+        "seconds": 46.194,
+        "diskFreeBytesBefore": 33738399744
       }
     ],
     "automaticRetries": 0,
     "lifecycleScenarios": 100,
-    "meanSeconds": 47.399,
+    "meanSeconds": 46.874,
     "legacyExtensionNodeTests": 174,
-    "ciAndHarnessNodeTests": 172,
-    "workflowPythonTests": 91
+    "ciAndHarnessNodeTests": 174,
+    "workflowPythonTests": 91,
+    "workflowPythonTestsAfterCiWiringFix": 94,
+    "allWorkflowContractTests": 248
   },
   "artifactFingerprints": {
     "rhwp-chrome/dist/manifest.json": {
@@ -126,9 +128,458 @@
     "countedAsPass": false
   },
   "remoteValidation": {
-    "actionsConsecutiveRuns": 0,
-    "linuxBrowserJob": "not run",
-    "sharedCacheHit": "unverified",
-    "warmCache90SecondGoal": "unverified"
-  }
+    "actionsConsecutiveRuns": 3,
+    "linuxBrowserJob": "PASS",
+    "sharedCacheHit": "unverified; all three runs missed shared browser cache",
+    "warmCache90SecondGoal": "not measured; actual cold job times recorded separately",
+    "precedingFailures": [
+      {
+        "runId": 35490767626,
+        "head": "5632e555eef572c2a0f25e5a7e8df08b1f7d8198",
+        "failure": "central contract wiring omissions",
+        "runConclusion": "cancelled after corrective push; lint job failed",
+        "fixedBy": "970e22d791e153dd39d5a60b81ae9178b4787e12"
+      },
+      {
+        "runId": 35491118060,
+        "head": "970e22d791e153dd39d5a60b81ae9178b4787e12",
+        "failure": "runner unit test assumed cross-pipe stdout/stderr order",
+        "runConclusion": "failure",
+        "browserJourneysStarted": false,
+        "fixedBy": "3e948d8de12b129e93e38cb48282889897406979"
+      },
+      {
+        "runId": 35493391043,
+        "head": "3e948d8de12b129e93e38cb48282889897406979",
+        "failure": "Chrome launch: No usable sandbox on Ubuntu 24.04",
+        "browserJourneysStarted": false,
+        "fixedBy": "17886c336cc982d0ce47eaa62e0be1b2b58b1d85"
+      },
+      {
+        "runId": 35493967034,
+        "head": "17886c336cc982d0ce47eaa62e0be1b2b58b1d85",
+        "failure": "installed Chrome sandbox helper prerequisite check failed; exact failed predicate not logged",
+        "browserJourneysStarted": false,
+        "replacedBy": "fcb630d5e5e89ba04e173ff968941d479c39b9b3"
+      },
+      {
+        "runId": 35494638744,
+        "head": "fcb630d5e5e89ba04e173ff968941d479c39b9b3",
+        "failure": "past-downloads: two console resource errors emitted in Chrome downloads UI; original listener omitted source URL",
+        "passedSuites": [
+          "extension-smoke",
+          "download-interceptor"
+        ],
+        "passedLifecycleScenarios": 9,
+        "historyVisibleAndZeroViewerAssertions": "passed before final console-error assertion",
+        "sandboxSetupAndCleanup": "success",
+        "sourceAttributionAddedBy": "cb2b4eea0f3fd3fb7d08b1efbae81a01ee4a91a7",
+        "countedAsPass": false
+      }
+    ],
+    "actualFailureArtifact": {
+      "id": 10600081753,
+      "bytes": 2322,
+      "sha256": "f54a6e6891ea374608b4680375e7fad493cb01a0436beed0dcdf2862abf82d10",
+      "files": [
+        "extension-smoke.log",
+        "result.json",
+        "smoke.json"
+      ],
+      "allowlistVerified": true
+    },
+    "sandboxConfiguration": "AppArmor userns profile for one validated installed CfT executable; remove on job completion",
+    "runs": [
+      {
+        "runId": 35496249526,
+        "attempt": 1,
+        "headSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
+        "checkoutSha": "45756375aff53a0047a25c4a3e0ec7e2ce07b47e",
+        "jobId": 106040698962,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/35496249526/job/106040698962",
+        "jobSeconds": 68.0,
+        "browserSeconds": 49.008,
+        "versions": {
+          "puppeteer": "25.10.0",
+          "chrome": "152.0.7977.75",
+          "extension": "0.8.6",
+          "manifest": 3
+        },
+        "suites": [
+          {
+            "name": "extension-smoke",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 1890
+          },
+          {
+            "name": "download-interceptor",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 15167
+          },
+          {
+            "name": "extension-lifecycle",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 31948
+          }
+        ],
+        "browserCache": "miss",
+        "distArtifactId": 10601400592,
+        "distArtifactSha256": "sha256:2e881361e8f44d06707660915a9a9ac984c75365a874d957e9bcc1c549885df2",
+        "sandboxProfileSetupAndCleanup": "success",
+        "automaticRetries": 0,
+        "browserUiDiagnostics": [
+          {
+            "scenario": "past-downloads",
+            "browserUiErrors": [
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-Bcbe3V%2Frhwp-lifecycle-tPrsqC%2Fdownloads%2Fpast-downloads-73cfbd62-6381-41ea-a9d9-3f8fed54c0c2.hwpx&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              },
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-Bcbe3V%2Frhwp-lifecycle-tPrsqC%2Fdownloads%2Fpast-downloads-69ba050d-80e6-4a9d-b6b8-50124e0bde86.hwp&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "runId": 35496249526,
+        "attempt": 2,
+        "headSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
+        "checkoutSha": "45756375aff53a0047a25c4a3e0ec7e2ce07b47e",
+        "jobId": 106041526394,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/35496249526/job/106041526394",
+        "jobSeconds": 77.0,
+        "browserSeconds": 54.848,
+        "versions": {
+          "puppeteer": "25.10.0",
+          "chrome": "152.0.7977.75",
+          "extension": "0.8.6",
+          "manifest": 3
+        },
+        "suites": [
+          {
+            "name": "extension-smoke",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 1765
+          },
+          {
+            "name": "download-interceptor",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 15669
+          },
+          {
+            "name": "extension-lifecycle",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 37318
+          }
+        ],
+        "browserCache": "miss",
+        "distArtifactId": 10601400592,
+        "distArtifactSha256": "sha256:2e881361e8f44d06707660915a9a9ac984c75365a874d957e9bcc1c549885df2",
+        "sandboxProfileSetupAndCleanup": "success",
+        "automaticRetries": 0,
+        "browserUiDiagnostics": [
+          {
+            "scenario": "past-downloads",
+            "browserUiErrors": [
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-VEiQfU%2Frhwp-lifecycle-ffKvvk%2Fdownloads%2Fpast-downloads-98eb0042-32c8-4662-b331-1d2dc7071f47.hwpx&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              },
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-VEiQfU%2Frhwp-lifecycle-ffKvvk%2Fdownloads%2Fpast-downloads-d26866bc-e834-4203-89e6-50818aeed7f4.hwp&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "runId": 35496249526,
+        "attempt": 3,
+        "headSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
+        "checkoutSha": "45756375aff53a0047a25c4a3e0ec7e2ce07b47e",
+        "jobId": 106041813670,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/35496249526/job/106041813670",
+        "jobSeconds": 67.0,
+        "browserSeconds": 50.999,
+        "versions": {
+          "puppeteer": "25.10.0",
+          "chrome": "152.0.7977.75",
+          "extension": "0.8.6",
+          "manifest": 3
+        },
+        "suites": [
+          {
+            "name": "extension-smoke",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 2015
+          },
+          {
+            "name": "download-interceptor",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 15038
+          },
+          {
+            "name": "extension-lifecycle",
+            "status": 0,
+            "signal": null,
+            "timedOut": false,
+            "durationMs": 33940
+          }
+        ],
+        "browserCache": "miss",
+        "distArtifactId": 10601400592,
+        "distArtifactSha256": "sha256:2e881361e8f44d06707660915a9a9ac984c75365a874d957e9bcc1c549885df2",
+        "sandboxProfileSetupAndCleanup": "success",
+        "automaticRetries": 0,
+        "browserUiDiagnostics": [
+          {
+            "scenario": "past-downloads",
+            "browserUiErrors": [
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-NUd7uB%2Frhwp-lifecycle-i3SjzW%2Fdownloads%2Fpast-downloads-22b8e6d2-ec34-4108-a305-c43deda7b2ce.hwpx&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              },
+              {
+                "stage": "verify-persisted-history",
+                "type": "error",
+                "text": "Failed to load resource: net::ERR_FAILED",
+                "url": "chrome://fileicon/?path=%2Ftmp%2Frhwp-e2e-runner-NUd7uB%2Frhwp-lifecycle-i3SjzW%2Fdownloads%2Fpast-downloads-7ae28c9b-7521-4c33-a6ca-71b952535767.hwp&scale=1x",
+                "pageUrl": "chrome://downloads/"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "method": "One full CI run, followed by two deliberate repetitions of the already successful Chrome job. Same source and immutable dist artifact; different job IDs. Stop on failure; no automatic retry."
+  },
+  "ciCandidateSha": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
+  "linuxProducedArtifactLocalProbe": {
+    "artifactId": 10599237830,
+    "producerRunId": 35491118060,
+    "producerHead": "970e22d791e153dd39d5a60b81ae9178b4787e12",
+    "artifactSha256": "ed9f391c9c121d77ae3c57061bce97af4a9778b886d2f9d51fb04b50a2c40f72",
+    "platform": "macOS arm64",
+    "seconds": 49.407,
+    "fullSuite": "PASS",
+    "originalDistRestored": true,
+    "precedingSandboxFailure": "loopback listen EPERM before browser launch; not a test pass"
+  },
+  "committedFixtures": [
+    {
+      "path": "samples/hwp3-pagedef-1915.hwp",
+      "sha256": "b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0",
+      "commit": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5"
+    },
+    {
+      "path": "samples/hwpx_sample2.hwpx",
+      "sha256": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+      "commit": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5"
+    },
+    {
+      "path": "samples/re-font-dotum-empty-hancom.hwp",
+      "sha256": "1ee8871f37bec2e97d0928709dc411c0eacad656f35aa3d92c5cf89f61c5761b",
+      "commit": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5"
+    }
+  ],
+  "consoleErrorBoundaryProbe": {
+    "negativeExit": 1,
+    "positiveExit": 0,
+    "distRestored": true,
+    "assertion": "extension console error remains fatal"
+  },
+  "precedingGreenChromeBeforeSecurityFix": {
+    "runId": 35495528465,
+    "head": "cb2b4eea0f3fd3fb7d08b1efbae81a01ee4a91a7",
+    "jobId": 106038714425,
+    "ciConclusion": "success",
+    "browserSeconds": 51.192,
+    "jobSeconds": 75,
+    "cache": "miss",
+    "chromeUiResource": "chrome://fileicon/",
+    "finalValidationCredit": false,
+    "reason": "CodeQL alert 206 required fixture HTML source hardening in next commit"
+  },
+  "codeqlFixtureHardening": {
+    "codeqlRunId": 35495528420,
+    "alert": 206,
+    "rule": "js/reflected-xss",
+    "location": "rhwp-chrome/e2e/extension-lifecycle.test.mjs:318",
+    "observed": "CodeQL warning on direct reflection of query value despite registered-name membership assertion",
+    "fix": "render server-owned registered name with URI encoding; unknown request gets 404",
+    "fixedBy": "8d1eb08a4f87cb54bccb6897c84f9d877bfe8fa5",
+    "securityRecheck": "PASS; final CodeQL workflow and PR code-scanning check",
+    "focusedPastDownloads": "PASS",
+    "alertInstanceState": "fixed",
+    "recheckedRunId": 35496249622
+  },
+  "previousLocalValidations": [
+    {
+      "browserSourceSha": "d6b4e704c6281f892b15ba78bb35b03224136963",
+      "runs": [
+        {
+          "iteration": 1,
+          "exit": 0,
+          "seconds": 47.688,
+          "diskFreeBytesBefore": 14192431104
+        },
+        {
+          "iteration": 2,
+          "exit": 0,
+          "seconds": 47.26,
+          "diskFreeBytesBefore": 14341390336
+        },
+        {
+          "iteration": 3,
+          "exit": 0,
+          "seconds": 46.989,
+          "diskFreeBytesBefore": 14127603712
+        },
+        {
+          "iteration": 4,
+          "exit": 0,
+          "seconds": 46.905,
+          "diskFreeBytesBefore": 14119755776
+        },
+        {
+          "iteration": 5,
+          "exit": 0,
+          "seconds": 47.309,
+          "diskFreeBytesBefore": 14111039488
+        },
+        {
+          "iteration": 6,
+          "exit": 0,
+          "seconds": 48.232,
+          "diskFreeBytesBefore": 14092226560
+        },
+        {
+          "iteration": 7,
+          "exit": 0,
+          "seconds": 47.742,
+          "diskFreeBytesBefore": 9985216512
+        },
+        {
+          "iteration": 8,
+          "exit": 0,
+          "seconds": 47.576,
+          "diskFreeBytesBefore": 11749044224
+        },
+        {
+          "iteration": 9,
+          "exit": 0,
+          "seconds": 47.203,
+          "diskFreeBytesBefore": 11764809728
+        },
+        {
+          "iteration": 10,
+          "exit": 0,
+          "seconds": 47.082,
+          "diskFreeBytesBefore": 11754311680
+        }
+      ],
+      "meanSeconds": 47.399
+    },
+    {
+      "browserSourceSha": "cb2b4eea0f3fd3fb7d08b1efbae81a01ee4a91a7",
+      "runs": [
+        {
+          "iteration": 1,
+          "exit": 0,
+          "seconds": 47.692,
+          "diskFreeBytesBefore": 33953562624
+        },
+        {
+          "iteration": 2,
+          "exit": 0,
+          "seconds": 46.994,
+          "diskFreeBytesBefore": 33950232576
+        },
+        {
+          "iteration": 3,
+          "exit": 0,
+          "seconds": 47.184,
+          "diskFreeBytesBefore": 33956855808
+        },
+        {
+          "iteration": 4,
+          "exit": 0,
+          "seconds": 47.044,
+          "diskFreeBytesBefore": 33946890240
+        },
+        {
+          "iteration": 5,
+          "exit": 0,
+          "seconds": 46.971,
+          "diskFreeBytesBefore": 34034286592
+        },
+        {
+          "iteration": 6,
+          "exit": 0,
+          "seconds": 47.078,
+          "diskFreeBytesBefore": 34012536832
+        },
+        {
+          "iteration": 7,
+          "exit": 0,
+          "seconds": 47.464,
+          "diskFreeBytesBefore": 34011500544
+        },
+        {
+          "iteration": 8,
+          "exit": 0,
+          "seconds": 47.769,
+          "diskFreeBytesBefore": 33996750848
+        },
+        {
+          "iteration": 9,
+          "exit": 0,
+          "seconds": 47.372,
+          "diskFreeBytesBefore": 33997672448
+        },
+        {
+          "iteration": 10,
+          "exit": 0,
+          "seconds": 47.903,
+          "diskFreeBytesBefore": 34012520448
+        }
+      ],
+      "meanSeconds": 47.347
+    }
+  ]
 }
