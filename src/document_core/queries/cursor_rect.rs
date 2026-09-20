@@ -1025,6 +1025,19 @@ impl DocumentCore {
                         is_inline_cursor_control(ctrl)
                             || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
                     })
+                    // 빈 ClickHere는 TextRun이 아니라 renderer가 만든 zero-width anchor로
+                    // 캐럿 위치를 보존한다. 빈 호스트 문단 최적화가 이 anchor를 찾는
+                    // 페이지 scan까지 건너뛰면 TextLine 좌단 fallback으로 떨어져 문단
+                    // 가운데·오른쪽 정렬이 사라진다 (#6766).
+                    || p.field_ranges.iter().any(|range| {
+                        range.start_char_idx == range.end_char_idx
+                            && matches!(
+                                p.controls.get(range.control_idx),
+                                Some(Control::Field(field))
+                                    if field.field_type
+                                        == crate::model::control::FieldType::ClickHere
+                            )
+                    })
             })
             .unwrap_or(true);
 
