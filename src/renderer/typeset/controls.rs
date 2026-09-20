@@ -14,6 +14,7 @@
 //! 일반/TAC 표의 포맷·배치 선택과 후행 표 지연 등록은 flow_table이 조정한다.
 //! 표 소유 문단 전체의 진입·컨트롤 순회·후처리는 paragraph_flow가 연결한다.
 //! 개별 지연 표의 재조회·포맷·배치는 deferred_placement가 조정한다.
+//! 표 없는 host 밴드 준비는 host_wrap의 조회와 state 적용을 순서대로 연결한다.
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
@@ -22,6 +23,7 @@ pub(super) mod deferred;
 pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
+pub(super) mod host_wrap;
 pub(super) mod order;
 pub(super) mod paragraph_flow;
 pub(super) mod shape_flow;
@@ -41,6 +43,36 @@ use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 저장 밴드 적용 → 자기 anchor 등록 → 비활성 상태의 유도 lane 준비.
+pub(super) fn prepare_no_table_host_wrap(
+    st: &mut TypesetState,
+    page_def: &crate::model::page::PageDef,
+    para: &Paragraph,
+    para_idx: usize,
+    has_table: bool,
+) {
+    if !has_table {
+        if let Some(band) = host_wrap::stored_candidate(para) {
+            let col_w_hu = st.host_wrap_column_width_hu();
+            if host_wrap::can_arm(band, col_w_hu) {
+                st.arm_stored_host_wrap(para_idx, band);
+                if let Some(anchor) = host_wrap::host_anchor(para, page_def, para_idx, band) {
+                    st.register_host_wrap_anchor(para_idx, anchor);
+                }
+            }
+        }
+
+        // [#6175] 저장 밴드를 적용하지 못했고 기존 밴드도 없을 때만 자기 기하로 유도한다.
+        // 저장 cs/sw와 달리 any_seg를 켜지 않으며, 그룹 개체도 기존 helper가 판별한다.
+        if st.host_wrap_needs_derived_lane() {
+            let col_w_hu = st.host_wrap_column_width_hu();
+            if let Some(lane) = super::square_float_left_lane_width(para, col_w_hu) {
+                st.arm_derived_host_wrap(para_idx, lane);
+            }
+        }
+    }
+}
 
 /// Shape 발행 → 포맷 → 컷 조회/진단 → 대기열·앵커 확정 순서를 보존한다.
 #[allow(clippy::too_many_arguments)]

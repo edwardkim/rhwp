@@ -13,6 +13,7 @@
 use super::controls::decoration_table::OverlayContinuation;
 use super::controls::deferred::DeferredTableControl;
 use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
+use super::controls::host_wrap::StoredHostBand;
 use super::controls::shape_flow::{TableHostShapeFlow, TableHostShapePage};
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::table_entry::TableControlPage;
@@ -31,6 +32,38 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn host_wrap_column_width_hu(&self) -> i32 {
+        self.layout.column_width_hu()
+    }
+
+    pub(super) fn host_wrap_needs_derived_lane(&self) -> bool {
+        self.wrap_around_cs < 0
+    }
+
+    pub(super) fn arm_stored_host_wrap(&mut self, para_idx: usize, band: StoredHostBand) {
+        self.wrap_around_cs = band.anchor_cs;
+        self.wrap_around_sw = band.anchor_sw;
+        self.wrap_around_table_para = para_idx;
+        self.wrap_around_any_seg = true;
+        self.wrap_around_derived_band = false;
+    }
+
+    pub(super) fn register_host_wrap_anchor(
+        &mut self,
+        para_idx: usize,
+        anchor: crate::renderer::pagination::WrapAnchorRef,
+    ) {
+        self.current_column_wrap_anchors.insert(para_idx, anchor);
+    }
+
+    pub(super) fn arm_derived_host_wrap(&mut self, para_idx: usize, lane: i32) {
+        self.wrap_around_cs = 0;
+        self.wrap_around_sw = lane;
+        self.wrap_around_table_para = para_idx;
+        self.wrap_around_any_seg = false;
+        self.wrap_around_derived_band = true;
+    }
+
     /// 강제 경계 준비 뒤의 문단 흐름 힌트에 사용할 현재 상태의 profile.
     pub(super) fn paragraph_flow_profile(
         &self,
