@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 시작 head: `c6b79c260`. 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: R2a 구현 후 검증 대기. R2 전체 완료나 제출 준비 완료가 아니다.
+- 상태: R2a 구현·절편 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 
 ## 1. 책임 경계
 
@@ -41,16 +41,69 @@ endnote 측정 부수효과, #5801 저장 간격, #6031 간격 누락, #6753 laz
 
 ## 3. 검증 기록
 
-검증은 제품 commit을 고정한 review worktree에서 suite를 준비한 뒤 순차 실행한다.
-현재 테스트 실행 전이며 다음 자료를 남긴다.
+검증 worktree: `/home/edward/mygithub/rhwp-review-7280-r2a`.
+제품 commit: `cece33921d2bd12fc6f444437cbf58c763cdea73`.
+suite 준비 후 Cargo 검증은 공유 `target/pr-review`에서 순차 실행한다.
 
 - 이동 전후 본문 9개 및 나머지 typeset.rs 동일성:
   `output/7280/stage3/verify-extraction.mjs`, `extraction-proof.json`.
 - manifest/source test 정책, fmt, 위 소비 경로 focused tests, native Clippy.
 - 최종 통합의 전체 회귀·WASM/workspace lint·Native Skia·fresh Docker WASM/시각 검증은 별도다.
 
+정적 동일성 검사는 통과했다. 9개 본문은 문자열 동일하며, 결과 선언은 가시성·타입 경로와
+formatter의 줄바꿈/후행 쉼표만 다르다. 이동/import를 제외한 typeset.rs 전체도 동일하다.
+따라서 기존 호출부·테스트 본문은 변경하지 않았다. 이 검사는 실제 출력의 시각 판정이 아니다.
+
+초기 제품 commit `178fc11a5`의 fmt 검사에서 import 줄바꿈 한 곳을 발견했다.
+그 SHA로 시작했던 집중 빌드는 중단(exit 130)했으며 테스트 결과로 사용하지 않는다.
+`cece33921`에서 수정 후 fmt·manifest·unit-tier를 재확인했고 모두 통과했다.
+
+- manifest: 1,382 sources / 5,965 static test attrs / 28 suites + 20 exceptions.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- 로그: `output/7280/stage3/{prepare,manifest-final,unit-tier-final,fmt-final}.log`.
+
+집중 검증 명령(기본 feature, 로컬 nextest default profile):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked -p rhwp --lib \
+  --test regression_suite_006 --test regression_suite_011 \
+  --test regression_suite_012 --test regression_suite_020 --test regression_suite_026 \
+  --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(endnote) | test(issue_5801) | test(issue_6031) | test(issue_6753) | test(issue_6970) | test(issue_7196)' \
+  --no-fail-fast
+```
+
+위 suite 번호는 이번 SHA의 생성 결과에서 원본 계약 위치를 조회한 것이다. 이후 절편에서
+고정 번호로 재사용하지 않는다. 로그는 `focused-final.log`다.
+
+집중 테스트는 exit 0, **237건 실행 / 237건 통과 / 실패 0건**, 6 binaries다.
+빌드 시간 5분 01초, 실행 시간 1.141초.
+필터/기존 설정으로 제외된 4,661건은 이번에 실행하지 않은 범위이며 새 ignore가 아니다.
+기준 전체 회귀의 제외 50건과 다른 범위다. 이번 결과를 전체 회귀 통과로 해석하지 않는다.
+
+nextest 0.9.137은 저장소 권장 0.9.140보다 낮고, 사용하지 않은 observation profile의
+`junit.report-skipped` 경고가 있다. 도구 버전까지 CI와 동일한 검증으로 주장하지 않는다.
+
+같은 제품 SHA/worktree에서 집중 테스트 종료 후 native lint를 순차 실행하여 통과했다
+(exit 0, 55.24초). 로그: `output/7280/stage3/clippy-native.log`.
+
+```bash
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+```
+
+검증 worktree의 tracked 변경은 없고 generated suite/manifest는 stage하지 않았다.
+검증 후 변경은 완료 기록 문서뿐이다. WASM/workspace Clippy를 포함한 전체 lint 묶음과
+전체 회귀·출력 비교는 미실행이며 최종 통합 게이트로 남아 있다. 원격 쓰기는 수행하지 않았다.
+
 ## 4. 잔여 작업
 
 R2의 `format_paragraph_for_flow`, `typeset_paragraph`, `typeset_table_paragraph` 및 컨트롤/inline
 흐름 조정은 아직 분리하지 않았다. 이들의 상태 변경 지점과 좁은 입력 경계를 이어서 정리한다.
 거대 함수의 단순 파일 이동을 R2 완료로 판정하지 않는다. 원격 push·PR·댓글은 하지 않는다.
+
+후속 경계 조사에서 `format_paragraph_for_flow`는 dpi 외에 `profile: Cell`,
+`uniform_filler_ladder: Cell`, `float_carve_evidence: RefCell`을 읽으며 환경 변수도 조회한다.
+다음 분리에서는 이 관측·borrow 시점과 저장/reflow 경로를 보존해야 한다. 전체 TypesetEngine을
+하위 Query의 의존으로 넘긴 채 책임 분리가 끝났다고 보지 않는다.
