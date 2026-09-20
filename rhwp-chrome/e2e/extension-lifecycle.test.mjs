@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 import { chromeArgs, rejectProxyConnect } from './extension-smoke.test.mjs';
 import { monitorTabs } from './tab-monitor.mjs';
+import { recordConsoleMessage } from './failure-diagnostics.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DIST = path.resolve(process.env.RHWP_EXTENSION_DIST_DIR ?? path.join(ROOT, 'rhwp-chrome/dist'));
@@ -75,10 +76,7 @@ async function runScenario(scenario, iteration) {
     page.setDefaultTimeout(TIMEOUT);
     page.setDefaultNavigationTimeout(TIMEOUT);
     observe(0);
-    page.on('console', msg => {
-      diagnostic.console.push({ stage: diagnostic.stage, type: msg.type(), text: msg.text() });
-      if (msg.type() === 'error') diagnostic.errors.push(msg.text());
-    });
+    page.on('console', msg => recordConsoleMessage(diagnostic, msg, page.url()));
     page.on('pageerror', error => diagnostic.errors.push(error.message));
     page.on('request', request => {
       if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== fixture.origin) {
@@ -228,6 +226,9 @@ async function runScenario(scenario, iteration) {
       await download(scenario.format, scenario.autoOpen ? 1 : 0);
     }
     assert.deepEqual(diagnostic.errors, [], 'page errors');
+    if (diagnostic.browserUiErrors?.length) {
+      process.stdout.write(`${JSON.stringify({ scenario: scenario.id, browserUiErrors: diagnostic.browserUiErrors })}\n`);
+    }
   } catch (error) {
     failure = error;
     diagnostic.error = error.stack;

@@ -1566,7 +1566,7 @@ jobs:
       - name: Extract this run's packaged extension
         run: tar -xzf "$RUNNER_TEMP/chrome-extension-input/chrome-extension-dist.tar.gz" -C rhwp-chrome
       - name: Verify tab guards
-        run: node --test rhwp-chrome/e2e/page-budget.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs rhwp-chrome/e2e/run-ci.test.mjs
+        run: node --test rhwp-chrome/e2e/page-budget.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs rhwp-chrome/e2e/run-ci.test.mjs rhwp-chrome/e2e/failure-diagnostics.test.mjs
       - name: Run packaged Chrome journeys
         run: node rhwp-chrome/e2e/run-ci.mjs
       - name: Upload minimal failure diagnostics

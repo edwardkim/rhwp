@@ -1,6 +1,24 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+export function recordConsoleMessage(diagnostic, message, pageUrl) {
+  const sourceUrl = message.location().url;
+  const entry = {
+    stage: diagnostic.stage, type: message.type(), text: message.text(),
+    url: sourceUrl || pageUrl, pageUrl,
+  };
+  diagnostic.console.push(entry);
+  if (entry.type !== 'error') return;
+  // chrome://downloads is browser-owned UI. Preserve its resource diagnostics;
+  // the history's visible filenames and zero-viewer assertions remain mandatory.
+  // Attribute by source URL so a late extension/fixture error still fails.
+  if (sourceUrl?.startsWith('chrome://')) {
+    (diagnostic.browserUiErrors ??= []).push(entry);
+  } else {
+    diagnostic.errors.push(entry.text);
+  }
+}
+
 export async function observePageDiagnostics(browser, diagnostic) {
   const seen = new WeakSet();
   const append = (key, value) => {
