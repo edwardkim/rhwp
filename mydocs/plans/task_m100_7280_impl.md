@@ -111,6 +111,10 @@
   매칭·흡수·꼬리 배치 순서를 wrap_flow로 연결하고 직접 상태 읽기를 좁은 관측 메서드로 분리했다.
   밴드 종료 전후 fit/진단 순서를 보존했고 고정 head 집중 검사 325건 통과.
   지연 그림 후보 조회와 R2 책임 묶음 통합 검증은 남아 있다. 페이지 전이 본체는 R5에 유지한다.
+- 후속 절편: [R2ak 지연 그림 소유 후보 조회 분리·집중 검증 완료](../working/task_m100_7280_stage40.md).
+  다음 쪽 Square 그림 후보·연속 밴드 문단 조회를 deferred_picture로, 불변 관측을 state로 분리했다.
+  가용 높이의 지연 조회·캡션 측정 순서와 큐/쪽 전이는 유지했다. 신규 cfg support 검출을
+  기준선 완화 없이 해소한 고정 head에서 집중 검사 327건 통과. R2 책임 묶음 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -157,6 +161,7 @@ renderer/typeset/
   controls/wrap_absorption.rs         표 옆 문단/접두 줄의 흡수 기록과 저장 끝점 조회
   controls/wrap_tail.rs               전폭 꼬리의 안정 형상/높이·매칭 실패의 저장 쪽 경계 조회
   controls/wrap_flow.rs               후속 어울림의 매칭·흡수·꼬리 배치 Query/Command 연결
+  controls/deferred_picture.rs        다음 쪽 Square 그림 소유 후보·연속 저장 밴드 문단 조회
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료
@@ -291,6 +296,10 @@ suite 번호를 고정하지 않고 실제 원본과 테스트 이름으로 찾�
 모듈별 문서만 만드는 대신 Rust 접근 제어와 명시적 입출력으로 가능한 경계를 강제한다.
 
 ## 7. 검증 및 중단 기준
+
+테스트 분리 지침: 새 회귀 테스트는 제품 `src/**`에 추가하지 않고 `tests/cases/` 원본으로
+작성해 별도 integration suite에서 실행한다. 기존 private white-box 계약의 crate 이전은
+제품 내부 경계와 함께 검토하며, 테스트를 위해 public API나 cfg support 기준선을 늘리지 않는다.
 
 1. 각 절편: 원본/변경 함수·호출자 비교, fmt·관련 focused test, 적용되는 source-side 정책 확인.
 2. 책임 묶음 완료: 동일 입력·설정의 baseline과 변경본에서 내용 소유권, 컷, 기하 및
