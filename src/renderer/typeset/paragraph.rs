@@ -4,7 +4,7 @@
 //! 문단 구성은 필요한 관측값을 읽고 결과만 반환한다.
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
-//! 일반 전체 배치와 줄 분할/페이지 전환을 조정한다. 진입 fit/특수 배치/표 문단은 상위에 남아 있다.
+//! 전체/넘침/빈 구성 결과 배치와 분할 진입·페이지 전환을 조정한다. 진입 fit/표 문단은 상위에 남아 있다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod context;
@@ -16,9 +16,10 @@ pub(super) mod overflow;
 pub(super) mod placement;
 pub(super) mod scan;
 pub(super) mod split;
+pub(super) mod split_entry;
 pub(super) mod stored_lines;
 
-use super::TypesetState;
+use super::{para_has_visible_text, para_is_treat_as_char_picture_only, TypesetState};
 use crate::model::paragraph::Paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
@@ -202,7 +203,7 @@ pub(super) fn place_fitted_paragraph(
                 ),
             st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
         );
-    st.apply_fitted_paragraph_flow(
+    st.apply_full_paragraph_flow(
         advance,
         fmt.total_height,
         trimmed_spacing_before,
@@ -270,4 +271,131 @@ pub(super) fn try_place_overflow_paragraph(
         }
     }
     false
+}
+
+/// 일반 fit/넘침 허용 실패 뒤 빈 구성 결과 또는 분할 진입을 조정한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn place_after_failed_fit(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    trim_spacing_before_for_flow: bool,
+    trimmed_sb_gate: f64,
+    body_bottom_vpos: Option<i32>,
+    available: f64,
+    layout_drift_safety_px: f64,
+    stored_vpos_rewind_overflow_break: bool,
+    forced_page_break_line: Option<usize>,
+    native_hwp5_existing_footnote_reset_line: Option<usize>,
+    current_page_vpos_base: Option<i32>,
+    dpi: f64,
+) {
+    // split: 줄 단위 분할
+    let line_count = fmt.line_heights.len();
+    // [#2004] tac(글자처럼) 전면 그림이 줄마다 하나씩 쌓인 "이미지 스택" 문단은 저장
+    // LINE_SEG 가 각 줄 vpos=0(각자 쪽 상단)으로 인코딩되어, 아래 hwp_authoritative
+    // (다음 줄 vpos==0 이고 현재 줄 bottom 이 본문 안이면 현재 쪽 유지) 가 모든 줄을 한
+    // 쪽에 쌓아 버린다. 이 문단만 hwp_authoritative 를 끄고 줄별 fit 분할(쪽당 1장)로
+    // 되돌린다. 게이트는 formatter 의 stacked_tac_picture_heights 와 동일 의미.
+    let tac_picture_only_para = para_is_treat_as_char_picture_only(para);
+    let is_tac_picture_stack = tac_picture_only_para
+        && line_count >= 2
+        && fmt
+            .line_heights
+            .iter()
+            .all(|h| *h > st.base_available_height() * 0.5);
+    if line_count == 0 {
+        st.begin_empty_line_paragraph(para_idx);
+        // [Task #391] 다단/단단 분기:
+        //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
+        //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
+        // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
+        // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
+        let advance = fmt.flow_advance_height(
+            para,
+            st.col_count,
+            trim_spacing_before_for_flow,
+            st.vpos_ladder_dirty
+                || !spacing_trim_restorable(paragraphs, para_idx)
+                || next_boundary_reverts_spacing_trim(
+                    st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                    paragraphs,
+                    styles,
+                    para_idx,
+                    dpi,
+                ),
+            false,
+        );
+        let trimmed_spacing_before = trimmed_sb_gate
+            * fmt.flow_trimmed_spacing_before(
+                para,
+                st.col_count,
+                trim_spacing_before_for_flow,
+                st.vpos_ladder_dirty
+                    || !spacing_trim_restorable(paragraphs, para_idx)
+                    || next_boundary_reverts_spacing_trim(
+                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                        paragraphs,
+                        styles,
+                        para_idx,
+                        dpi,
+                    ),
+                false,
+            );
+        st.apply_full_paragraph_flow(
+            advance,
+            fmt.total_height,
+            trimmed_spacing_before,
+            body_bottom_vpos,
+        );
+        return;
+    }
+
+    // Task #332 Stage 4a: partial split 시에도 동일 마진 적용
+    let base_available = (st.base_available_height() - layout_drift_safety_px).max(0.0);
+
+    let entry_fit = split_entry::inspect_entry(
+        para,
+        fmt,
+        paragraphs,
+        styles,
+        para_idx,
+        line_count,
+        available,
+        &st.paragraph_split_entry_page(),
+        dpi,
+    );
+    if entry_fit.hangul2024_split_refit && !para_has_visible_text(para) && para.controls.is_empty()
+    {
+        st.mark_blank_paragraph_spill(para_idx);
+    }
+    if split_entry::should_advance(
+        para,
+        &entry_fit,
+        available,
+        stored_vpos_rewind_overflow_break,
+        &st.paragraph_split_entry_page(),
+        dpi,
+    ) {
+        st.advance_column_or_new_page();
+    }
+
+    place_split_paragraph(
+        st,
+        para_idx,
+        para,
+        fmt,
+        paragraphs,
+        line_count,
+        base_available,
+        layout_drift_safety_px,
+        forced_page_break_line,
+        native_hwp5_existing_footnote_reset_line,
+        current_page_vpos_base,
+        is_tac_picture_stack,
+        dpi,
+    );
 }

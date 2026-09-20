@@ -7,12 +7,37 @@ use super::paragraph::fit::saved_tail_overflow_to_fit;
 use super::paragraph::overflow::OverflowPage;
 use super::paragraph::placement::ParagraphFragment;
 use super::paragraph::scan::LineScanPage;
+use super::paragraph::split_entry::SplitEntryPage;
 use super::TypesetState;
 use crate::renderer::inline_flow::InlineFlowPlan;
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 구성된 줄이 없더라도 원래 FullParagraph 항목을 보존한 뒤 높이를 계산한다.
+    pub(super) fn begin_empty_line_paragraph(&mut self, para_idx: usize) {
+        self.current_items.push(PageItem::FullParagraph {
+            para_index: para_idx,
+        });
+    }
+
+    pub(super) fn paragraph_split_entry_page(&self) -> SplitEntryPage<'_> {
+        SplitEntryPage {
+            profile: self.profile,
+            col_count: self.col_count,
+            current_height: self.current_height,
+            current_items: &self.current_items,
+            body_height: self.base_available_height(),
+            stored_ladder_spacing_omitted: self.stored_ladder_spacing_omitted,
+            hangul2024_reclaimed: self.hangul2024_reclaimed,
+        }
+    }
+
+    /// 호환성 재수용을 택한 빈 문단의 spill 소유만 기록한다. 쪽 전환은 별도다.
+    pub(super) fn mark_blank_paragraph_spill(&mut self, para_idx: usize) {
+        self.hangul2024_spill_para = Some(para_idx);
+    }
+
     /// 넘침 판단에 필요한 읽기 전용 값만 전달한다. base 높이 조회에는 부수효과가 없다.
     pub(super) fn paragraph_overflow_page(&self) -> OverflowPage {
         OverflowPage {
@@ -82,8 +107,8 @@ impl TypesetState {
         }
     }
 
-    /// 같은 전체 배치 경로에서 계산한 trim, 높이, underrun, 저장 하단을 순서대로 반영한다.
-    pub(super) fn apply_fitted_paragraph_flow(
+    /// 일반 전체/빈 구성 결과 경로에서 계산한 trim, 높이, underrun, 저장 하단을 순서대로 반영한다.
+    pub(super) fn apply_full_paragraph_flow(
         &mut self,
         advance: f64,
         total_height: f64,
