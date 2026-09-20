@@ -279,7 +279,7 @@ async function runOnce(prefix) {
   if (failure) throw failure;
 }
 
-function chromeArgs(fixtureOrigin) {
+export function chromeArgs(fixtureOrigin) {
   const args = [
     '--disable-background-networking',
     '--disable-breakpad',
