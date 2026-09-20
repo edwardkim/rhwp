@@ -14,6 +14,48 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// hide_empty_line 경로에 진입했을 때만 페이지별 횟수를 초기화한다.
+    pub(super) fn begin_empty_paragraph_page(&mut self) {
+        let current_page_idx = self.pages.len();
+        if current_page_idx != self.hidden_empty_page_idx {
+            self.hidden_empty_lines = 0;
+            self.hidden_empty_page_idx = current_page_idx;
+        }
+    }
+
+    /// guide와 앞선 빈 문단 drift 경로: 항목·높이·횟수는 변경하지 않는다.
+    pub(super) fn hide_empty_paragraph(&mut self, para_idx: usize) {
+        self.hidden_empty_paras.insert(para_idx);
+    }
+
+    /// 옵션에 의해 감춘 빈 문단은 횟수 → 숨김 표시 → 항목 순으로 기록한다.
+    pub(super) fn commit_counted_hidden_paragraph(&mut self, para_idx: usize) {
+        self.hidden_empty_lines += 1;
+        self.hidden_empty_paras.insert(para_idx);
+        // height=0 으로 page 진행 — fit 분기에서 추가 처리하지 않음
+        self.current_items.push(PageItem::FullParagraph {
+            para_index: para_idx,
+        });
+    }
+
+    /// 구역 끝 안전여백/각주 예산 흡수는 항목만 남기며 숨김 표시를 추가하지 않는다.
+    pub(super) fn place_unadvanced_empty_paragraph(&mut self, para_idx: usize) {
+        self.current_items.push(PageItem::FullParagraph {
+            para_index: para_idx,
+        });
+    }
+
+    pub(super) fn paragraph_empty_tail_page(&self) -> super::paragraph::empty::EmptyTailPage<'_> {
+        super::paragraph::empty::EmptyTailPage {
+            col_count: self.col_count,
+            current_items: &self.current_items,
+            current_height: self.current_height,
+            body_height: self.base_available_height(),
+            current_zone_y_offset: self.current_zone_y_offset,
+            current_footnote_height: self.current_footnote_height,
+        }
+    }
+
     /// 저장 꼬리가 쪽 끝을 채운 경우에만 호출한다. 판정 이후 가용 높이를 다시 조회한다.
     pub(super) fn fill_paragraph_entry_page_tail(&mut self) {
         self.current_height = self.current_height.max(self.available_height());

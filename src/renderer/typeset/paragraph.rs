@@ -9,6 +9,7 @@
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod context;
+pub(super) mod empty;
 mod entry;
 pub(super) mod fit;
 pub(super) mod format;
@@ -480,5 +481,71 @@ pub(super) fn prepare_fit_budget(
         layout_drift_safety_px,
         prev_is_partial_table,
         available,
+    }
+}
+
+/// 다단 분기 전에만 검사한다. 흡수 시 항목이나 숨김 횟수를 추가하지 않는다.
+pub(super) fn try_absorb_rowbreak_guide(
+    st: &mut TypesetState,
+    prev_is_partial_table: bool,
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+) -> bool {
+    if empty::hide_rowbreak_guide(prev_is_partial_table, para, paragraphs, para_idx) {
+        st.hide_empty_paragraph(para_idx);
+        return true;
+    }
+    false
+}
+
+/// 다단 조판의 조기 반환 뒤에서만 실행한다. 숨김 옵션의 페이지 수명과 구역 끝 처리를 구분한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn try_absorb_empty_paragraph(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    is_last_in_section: bool,
+    available: f64,
+    layout_drift_safety_px: f64,
+) -> bool {
+    // [Task #362] 한컴 빈 줄 감추기 (SectionDef bit 19, hide_empty_line):
+    // 빈 paragraph 가 현재 공간을 overflow 시키면 height=0 으로 처리 (페이지 당 최대 2개).
+    // Paginator (engine.rs:85-106) 와 동일 시멘틱.
+    // (kps-ai p67~70 case: PartialTable 후속 빈 paragraphs 가 다수 발생, 한컴은 표시 안 함.)
+    if st.hide_empty_line {
+        st.begin_empty_paragraph_page();
+        if empty::hide_overflowing_empty(
+            para,
+            fmt,
+            !st.current_items.is_empty(),
+            st.current_height,
+            available,
+            st.hidden_empty_lines,
+        ) {
+            st.commit_counted_hidden_paragraph(para_idx);
+            return true;
+        }
+    }
+    match empty::trailing_disposition(
+        para,
+        fmt,
+        paragraphs,
+        is_last_in_section,
+        available,
+        layout_drift_safety_px,
+        &st.paragraph_empty_tail_page(),
+    ) {
+        empty::TailDisposition::Continue => false,
+        empty::TailDisposition::Hidden => {
+            st.hide_empty_paragraph(para_idx);
+            true
+        }
+        empty::TailDisposition::Unadvanced => {
+            st.place_unadvanced_empty_paragraph(para_idx);
+            true
+        }
     }
 }

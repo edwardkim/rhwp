@@ -16975,29 +16975,14 @@ impl TypesetEngine {
             self.dpi,
         );
 
-        // [Task #1686] RowBreak 표 조각 뒤에 남는 빈 guide 문단 흡수.
-        // pr-1674처럼 표 셀 내부 vpos reset으로 페이지가 갈린 뒤, 뒤따르는 빈 문단들이
-        // 이전 좌표계의 큰 vpos(페이지 하단)를 그대로 갖고 다음 실질 앵커 표보다 아래에
-        // 기록될 수 있다. 이 빈 줄들을 flow 높이로 누적하면 다음 RowBreak 표가 한컴/PDF보다
-        // 늦게 시작해 page 5 내용과 총 페이지 수가 밀린다.
-        if prev_is_partial_table
-            && para.controls.is_empty()
-            && !para_has_visible_text(para)
-            && para.line_segs.len() == 1
-        {
-            let curr_vpos = para.line_segs.first().map(|s| s.vertical_pos);
-            let next_anchor_vpos = paragraphs
-                .iter()
-                .skip(para_idx + 1)
-                .find(|p| para_has_visible_text(p) || !p.controls.is_empty())
-                .and_then(|p| p.line_segs.first().map(|s| s.vertical_pos));
-            if let (Some(curr), Some(next)) = (curr_vpos, next_anchor_vpos) {
-                const EMPTY_GUIDE_RESET_GAP_HU: i32 = 2000;
-                if curr > next + EMPTY_GUIDE_RESET_GAP_HU {
-                    st.hidden_empty_paras.insert(para_idx);
-                    return;
-                }
-            }
+        if paragraph::try_absorb_rowbreak_guide(
+            st,
+            prev_is_partial_table,
+            para,
+            paragraphs,
+            para_idx,
+        ) {
+            return;
         }
 
         // 다단 레이아웃에서 문단 내 단 경계 감지
@@ -17022,76 +17007,17 @@ impl TypesetEngine {
             return;
         }
 
-        // [Task #362] 한컴 빈 줄 감추기 (SectionDef bit 19, hide_empty_line):
-        // 빈 paragraph 가 현재 공간을 overflow 시키면 height=0 으로 처리 (페이지 당 최대 2개).
-        // Paginator (engine.rs:85-106) 와 동일 시멘틱.
-        // (kps-ai p67~70 case: PartialTable 후속 빈 paragraphs 가 다수 발생, 한컴은 표시 안 함.)
-        if st.hide_empty_line {
-            let current_page_idx = st.pages.len();
-            if current_page_idx != st.hidden_empty_page_idx {
-                st.hidden_empty_lines = 0;
-                st.hidden_empty_page_idx = current_page_idx;
-            }
-            let trimmed = para.text.replace(|c: char| c.is_control(), "");
-            let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
-            if is_empty_para
-                && !st.current_items.is_empty()
-                && st.current_height + fmt.height_for_fit > available
-                && st.hidden_empty_lines < 2
-            {
-                st.hidden_empty_lines += 1;
-                st.hidden_empty_paras.insert(para_idx);
-                // height=0 으로 page 진행 — fit 분기에서 추가 처리하지 않음
-                st.current_items.push(PageItem::FullParagraph {
-                    para_index: para_idx,
-                });
-                return;
-            }
-        }
-
-        // [Task #676] trailing empty paragraph 가드 (단단 전용):
-        // 섹션 마지막 빈 paragraph 가 현재 safety 영역 내 미세 overflow 로 fit 실패 시
-        // height=0 흡수 — 단독 빈 페이지 차단. 한컴2022 정합 시멘틱.
-        // (통합재정통계 2010.11/2011.10: 과거 safety_margin 운용 시
-        //  pi=14 의 0.8px overflow 를 흡수한 사례.)
-        // hide_empty_line (Task #362) 분기와 달리 SectionDef bit 무관, 섹션 마지막 1개만 흡수.
-        if is_last_in_section && st.col_count == 1 && !st.current_items.is_empty() {
-            let trimmed = para.text.replace(|c: char| c.is_control(), "");
-            let is_empty_para = trimmed.trim().is_empty() && para.controls.is_empty();
-            if is_empty_para {
-                let total_h = st.current_height + fmt.height_for_fit;
-                let fit_fail_within_safety =
-                    total_h > available && total_h <= available + layout_drift_safety_px;
-                let base_available = st.base_available_height() - st.current_zone_y_offset;
-                let fit_fail_only_after_footnote_reserve = st.current_footnote_height > 0.0
-                    && total_h > available
-                    && total_h <= base_available;
-                let prior_trailing_drift = st.current_height > available
-                    && st.current_height <= available + layout_drift_safety_px + 0.5;
-                let previous_item_is_empty_para = st
-                    .current_items
-                    .last()
-                    .and_then(|item| match item {
-                        PageItem::FullParagraph { para_index } => Some(*para_index),
-                        _ => None,
-                    })
-                    .and_then(|prev_idx| paragraphs.get(prev_idx))
-                    .map(|prev_para| {
-                        let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
-                        trimmed.trim().is_empty() && prev_para.controls.is_empty()
-                    })
-                    .unwrap_or(false);
-                if prior_trailing_drift && previous_item_is_empty_para {
-                    st.hidden_empty_paras.insert(para_idx);
-                    return;
-                }
-                if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
-                    st.current_items.push(PageItem::FullParagraph {
-                        para_index: para_idx,
-                    });
-                    return;
-                }
-            }
+        if paragraph::try_absorb_empty_paragraph(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            is_last_in_section,
+            available,
+            layout_drift_safety_px,
+        ) {
+            return;
         }
 
         // native HWP5 본문은 기존 각주가 있는 page tail에서도 `vpos=0` reset으로
