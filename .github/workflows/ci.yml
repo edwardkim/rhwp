@@ -999,6 +999,7 @@ jobs:
 
       - name: Validate CI impact classifier
         run: |
+          node --test scripts/tests/chrome-extension-impact.test.cjs
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
           node --test scripts/tests/ci-impact-controller-contract.test.cjs
@@ -1094,6 +1095,7 @@ jobs:
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_chrome_extension_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
@@ -1514,6 +1516,16 @@ jobs:
       RHWP_EXTENSION_E2E_OUTPUT_DIR: ${{ github.workspace }}/output/chrome-extension-e2e
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Consume the packaged dist; the rest of the large source/PDF corpus
+          # is unnecessary for this five-minute browser job.
+          sparse-checkout: |
+            /rhwp-chrome/
+            /samples/hwp3-pagedef-1915.hwp
+            /samples/hwpx_sample2.hwpx
+            /samples/re-font-dotum-empty-hancom.hwp
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'

@@ -29,6 +29,16 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         self.assertNotIn('npm run build', consumer)
         self.assertIn('timeout-minutes: 5', consumer)
         self.assertIn('node rhwp-chrome/e2e/run-ci.mjs', consumer)
+        # This job receives a prebuilt dist and needs only the harness and its
+        # three committed inputs; fetching the PDF corpus consumes its budget.
+        sparse = re.search(r'sparse-checkout: \|\n(.*?)          sparse-checkout-cone-mode:', consumer, re.S)
+        self.assertIsNotNone(sparse)
+        self.assertEqual([line.strip() for line in sparse.group(1).splitlines() if line.strip()], [
+            '/rhwp-chrome/', '/samples/hwp3-pagedef-1915.hwp',
+            '/samples/hwpx_sample2.hwpx', '/samples/re-font-dotum-empty-hancom.hwp',
+        ])
+        for fixture in re.findall(r'/samples/[^\s]+', sparse.group(1)):
+            self.assertTrue((ROOT / fixture.lstrip('/')).is_file())
 
     def test_pr_restores_exact_browser_cache_and_only_default_branch_seeds(self):
         consumer = self.job('chrome-extension-e2e')
