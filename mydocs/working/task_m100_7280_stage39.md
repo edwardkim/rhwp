@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2ai](task_m100_7280_stage38.md), 시작 head `677732269`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구조 이동 구현. 고정 head 검증 대기.
+- 상태: R2aj 구조 분리와 고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 책임과 보존 계약
 
@@ -40,7 +40,47 @@ Clippy → Stage38과 동일한 325건 집중 nextest → baseline PASS 이름 �
 전체 회귀·WASM/workspace lint/build·Native Skia·fresh Docker WASM·직접 출력 대조는
 구현계획 §7의 책임 묶음/제출 전 게이트에 남긴다. 원격 push·PR·댓글은 범위 밖이다.
 
+## 고정 head 검증
+
+- 제품 SHA: `ebf162af3f4d551c678099b1fdcda44b58ccb453`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2aj`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+  host 16 logical CPUs / RAM 31 GiB, 시작 시 가용 약 19 GiB. 다른 Cargo 없음 확인.
+- 정적 대조 통과: `output/7280/stage39/{verify-wrap-flow.mjs,extraction-proof.json}`.
+- manifest: 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support 28 통과.
+- fmt 통과, native Clippy `-D warnings` 통과(exit 0, 56.60초).
+- 로그: `output/7280/stage39/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+아래 명령을 고정 review worktree에서 순차 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage39/run-focused.sh
+```
+
+결과: **325 passed / 0 failed**, 24 binaries, 필터 비선택 7,884건, exit 0.
+빌드 6분 48초, 테스트 2.809초. run ID: `23132c39-33ab-4344-89c9-7fc5890e44b9`.
+정확한 선택·명령은 `output/7280/stage39/run-focused.sh`, 실행 로그는 `nextest-focused.log`,
+baseline PASS 이름 대조는 `compare-focused.mjs`와 `regression-comparison.json`에 보존했다.
+Stage38과 동일한 기존 325건이며 baseline 전수 로그의 같은 선택 이름들과 일치한다.
+비선택 수는 기존 ignore 50건과 별개다. 전체 회귀나 직접 시각 일치의 증거는 아니다.
+nextest 0.9.137 권장 버전 및 observation 설정 경고는 이전과 동일하다.
+
+review worktree는 tracked 변경이 없으며 파생 suite/manifest는 커밋하지 않았다.
+제품 SHA 이후 코드 변경은 없고 결과 기록과 구현계획만 갱신했다. 두 Markdown의 로컬 파일
+링크 존재 및 `git diff --check`를 확인했다. 원격 작업은 실행하지 않았다.
+
 ## 후속
 
-R2 잔여 진입/호출 경계를 점검하고 책임 묶음 통합 검증을 진행한다. R3 표 분할/이어받기,
+Stage34에서 R2로 분류한 `native_hwp5_square_picture_next_page_owner`의 지연 그림 후보
+Query가 부모에 남아 있다. 다음 절편은 이 후보 조회와 필요한 상태 관측 경계의 분리이며,
+큐 materialize·페이지 전이는 R5에 유지한다. 이후 R2 책임 묶음 통합 검증으로 이어간다.
+R3 표 분할/이어받기,
 R4 각주/미주 본체, R5 구역 수명/최종 상태 캡슐화와 R6 기여자 안내는 별도 책임으로 유지한다.

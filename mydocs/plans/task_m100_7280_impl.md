@@ -107,6 +107,10 @@
   접두부·꼬리 높이·매칭 실패의 저장 쪽 경계 판정을 wrap_tail로, 종료/꼬리 기록을 state로 분리했다.
   포맷과 밴드 종료 전후 가용 높이 조회 순서를 보존했고 고정 head 집중 검사 325건 통과.
   후속 어울림 조정자 연결·잔여 상태 읽기와 책임 묶음 통합 검증은 남아 있다.
+- 후속 절편: [R2aj 후속 어울림 흐름 조정자 연결·집중 검증 완료](../working/task_m100_7280_stage39.md).
+  매칭·흡수·꼬리 배치 순서를 wrap_flow로 연결하고 직접 상태 읽기를 좁은 관측 메서드로 분리했다.
+  밴드 종료 전후 fit/진단 순서를 보존했고 고정 head 집중 검사 325건 통과.
+  지연 그림 후보 조회와 R2 책임 묶음 통합 검증은 남아 있다. 페이지 전이 본체는 R5에 유지한다.
 
 ## 1. 구현 목표와 비범위
 
@@ -152,6 +156,7 @@ renderer/typeset/
   controls/wrap_match.rs              후속 본문 문단의 저장 어울림 매칭·그림 anchor 조회
   controls/wrap_absorption.rs         표 옆 문단/접두 줄의 흡수 기록과 저장 끝점 조회
   controls/wrap_tail.rs               전폭 꼬리의 안정 형상/높이·매칭 실패의 저장 쪽 경계 조회
+  controls/wrap_flow.rs               후속 어울림의 매칭·흡수·꼬리 배치 Query/Command 연결
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료
