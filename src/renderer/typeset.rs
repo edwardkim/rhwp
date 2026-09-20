@@ -47,7 +47,8 @@ use self::paragraph::line_queries::{
 };
 use self::paragraph::metrics::FormattedParagraph;
 use self::paragraph::stored_lines::{
-    next_boundary_reverts_spacing_trim, spacing_trim_restorable, stored_ladder_encodes_spacing_before,
+    next_boundary_reverts_spacing_trim, spacing_trim_restorable,
+    stored_ladder_encodes_spacing_before,
 };
 use super::pagination::{
     estimate_footnote_note_height, footnote_between_notes_margin_px,
