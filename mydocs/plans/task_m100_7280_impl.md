@@ -1,7 +1,7 @@
 # Task #7280 — 조판 코드 책임 분리 및 변경 관리 구현계획
 
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
-- 상태: 2026-09-20 작업지시자 승인. R1 줄 조회 책임 분리 착수.
+- 상태: 2026-09-20 작업지시자 승인. [R1 구현·절편 검증 완료](../working/task_m100_7280_stage2.md), R2 미착수.
 - 수행계획: [task_m100_7280.md](task_m100_7280.md)
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
