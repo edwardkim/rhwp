@@ -19,6 +19,7 @@ use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::table_entry::TableControlPage;
 use super::controls::tac_fit::TacFitPage;
 use super::controls::tac_reconcile::TacHeightPage;
+use super::controls::wrap_match::WrapBand;
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
 use super::paragraph::overflow::OverflowPage;
@@ -32,6 +33,24 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 활성 여부를 확인한 후, 상태 변경 없는 매칭 구간에서만 사용하는 관측값.
+    pub(super) fn following_wrap_band(&self) -> WrapBand {
+        WrapBand {
+            cs: self.wrap_around_cs,
+            sw: self.wrap_around_sw,
+            anchor_para: self.wrap_around_table_para,
+            any_seg: self.wrap_around_any_seg,
+        }
+    }
+
+    pub(super) fn register_following_wrap_anchor(
+        &mut self,
+        para_idx: usize,
+        anchor: crate::renderer::pagination::WrapAnchorRef,
+    ) {
+        self.current_column_wrap_anchors.insert(para_idx, anchor);
+    }
+
     pub(super) fn host_wrap_column_width_hu(&self) -> i32 {
         self.layout.column_width_hu()
     }
