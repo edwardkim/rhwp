@@ -2498,6 +2498,11 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).insertEquation(sec, para, charOffset, script, fontSizeHwpunit, color));
   }
 
+  promoteOleEquation(sec: number, para: number, ci: number): { ok: boolean; paraIdx: number; controlIdx: number; script: string } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).promoteOleEquation(sec, para, ci));
+  }
+
   insertFootnote(sec: number, para: number, charOffset: number): { ok: boolean; paraIdx: number; controlIdx: number; footnoteNumber: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse((this.doc as any).insertFootnote(sec, para, charOffset));
