@@ -17449,7 +17449,6 @@ impl TypesetEngine {
             last_placed_table,
         } = controls::order::for_paragraph(para, &fmt, self.tac_flow_query());
 
-        let mut break_after_current_table = false;
         // [#703 잔여] 데코레이션(글앞/글뒤) 표 단축은 표만 방출하고 흐름을 0
         // 소비했다. host 문단에 제목 등 가시 텍스트가 있으면 그 텍스트가
         // 발행되지 않아 렌더에서 통째로 사라지고(제목 미노출), 텍스트 높이가
@@ -17519,110 +17518,30 @@ impl TypesetEngine {
                     // their deferred emission and layout fallback. Do not add a
                     // second full-range PartialParagraph for mixed controls.
                     flow_table_owns_host_text = true;
-                    let is_column_top = st.current_height < 1.0;
-                    let ft = self.format_table(
-                        para,
-                        para_idx,
-                        ctrl_idx,
-                        table,
-                        measured_tables,
-                        styles,
-                        composed,
-                        next_para,
-                        is_column_top,
-                    );
-
-                    let issue2439_para_start_height = if ft.strict_following_plain_text_fit {
-                        let natural_top_lead =
-                            hwpunit_to_px(
-                                signed_hwpunit(table.common.vertical_offset).max(0),
-                                self.dpi,
-                            ) + hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                        st.apply_visible_float_exclusions_for_para_float(natural_top_lead);
-                        st.current_height
-                    } else {
-                        para_start_height
-                    };
-
-                    let mt = measured_tables
-                        .iter()
-                        .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
-                    let is_first_placed = first_placed_table == Some(ctrl_idx);
-                    let is_last_placed = last_placed_table == Some(ctrl_idx);
-                    if self.is_effective_tac_table(para, table, &fmt) {
-                        self.typeset_tac_table(
-                            st,
-                            para_idx,
-                            ctrl_idx,
-                            para,
-                            table,
-                            &ft,
-                            &fmt,
-                            tac_count,
-                            is_first_placed,
-                            is_last_placed,
-                            styles,
-                            preceding_stored_vpos(paragraphs_all, para_idx),
-                        );
-                    } else if self.try_typeset_empty_para_float_table(
+                    let break_after_current_table = controls::flow_table::place(
+                        self,
                         st,
-                        para_idx,
-                        ctrl_idx,
-                        para,
-                        table,
-                        &ft,
-                        composed,
-                        next_para,
-                        styles,
-                        para_start_height,
-                        &mut para_float_lanes,
-                    ) {
-                        // Empty host para-float table placed by horizontal lane reservation.
-                    } else {
-                        let pages_before_block_table = st.pages.len();
-                        self.typeset_block_table(
-                            st,
+                        controls::flow_table::FlowTableInput {
                             para_idx,
                             ctrl_idx,
                             para,
                             table,
-                            &ft,
-                            &fmt,
-                            mt,
+                            fmt: &fmt,
+                            measured_tables,
                             styles,
-                            issue2439_para_start_height,
-                            // [Task #1860] 비지연 경로: para_start_height 가 곧 참 para_start.
-                            issue2439_para_start_height,
-                            is_first_placed,
-                            is_last_placed,
+                            composed,
+                            next_para,
+                            tac_count,
+                            first_placed_table,
+                            last_placed_table,
+                            para_start_height,
                             paragraphs_all,
                             composed_all,
-                        );
-                        let deferred_query = controls::deferred::CoanchoredTableQuery::new(
-                            para,
-                            &fmt,
-                            self.tac_flow_query(),
-                        );
-                        if deferred_query.should_defer_remaining_coanchored_rowbreak_tables(
-                            table,
-                            st.pages.len(),
-                            &st.current_items,
-                            pages_before_block_table,
-                        ) {
-                            let deferred = deferred_query.remaining_controls(
-                                para_idx,
-                                &ctrl_order,
-                                order_pos,
-                                first_placed_table,
-                                last_placed_table,
-                                para_start_height,
-                            );
-                            if !deferred.is_empty() {
-                                st.enqueue_deferred_table_controls(deferred);
-                                break_after_current_table = true;
-                            }
-                        }
-                    }
+                            ctrl_order: &ctrl_order,
+                            order_pos,
+                        },
+                        &mut para_float_lanes,
+                    );
 
                     // 표 셀 내 각주 수집 (Paginator engine.rs:679-701 동일)
                     if !st

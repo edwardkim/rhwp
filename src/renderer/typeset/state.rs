@@ -6,6 +6,7 @@
 //! 배치 후 TAC 높이 보정의 사다리 상태와 최종 높이 확정도 담당한다.
 //! 데코레이션 host 텍스트는 trim 상태를 바꾸지 않고 항목/전진량만 반영한다.
 //! 장식 표의 Shape 발행과 이어받기 예약/현재 단 컷·앵커 확정도 담당한다.
+//! 일반 표 배치 전 float 배타 영역 소비와 배치 후 지연 판단의 페이지 관측도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::decoration_table::OverlayContinuation;
@@ -29,6 +30,31 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn flow_table_column_top(&self) -> bool {
+        self.current_height < 1.0
+    }
+
+    pub(super) fn prepare_flow_table_anchor(
+        &mut self,
+        natural_top_lead: Option<f64>,
+        para_start_height: f64,
+    ) -> f64 {
+        if let Some(natural_top_lead) = natural_top_lead {
+            self.apply_visible_float_exclusions_for_para_float(natural_top_lead);
+            self.current_height
+        } else {
+            para_start_height
+        }
+    }
+
+    pub(super) fn flow_table_page_count(&self) -> usize {
+        self.pages.len()
+    }
+
+    pub(super) fn coanchored_table_page(&self) -> (usize, &[PageItem]) {
+        (self.pages.len(), &self.current_items)
+    }
+
     pub(super) fn decoration_table_flow_height(&self) -> f64 {
         self.current_height
     }
