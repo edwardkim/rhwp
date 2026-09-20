@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import sys
 import unittest
 import zipfile
 from datetime import datetime, timezone
@@ -152,6 +153,7 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         import importlib.util
         spec = importlib.util.spec_from_file_location("promotion_verifier", REPO_ROOT / "scripts/workflow_promotion_preflight.py")
         verifier = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = verifier
         spec.loader.exec_module(verifier)
         inventory = verifier.apply_execution_policy(inventory, json.loads(
             (REPO_ROOT / "scripts/workflow_promotion_policy.json").read_text(),
