@@ -1,5 +1,6 @@
 //! 본문 inline의 측정·fit·배치 결과 소유자.
 
+#[path = "inline_flow/plan.rs"]
 pub(super) mod plan;
 
 use super::{TypesetEngine, TypesetState};
