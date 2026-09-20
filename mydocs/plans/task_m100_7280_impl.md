@@ -95,6 +95,10 @@
   저장 후보/전폭/host anchor 조회를 host_wrap으로, 상태 적용을 state로 분리했다.
   기존 상태 보존과 저장 적용 후 유도 lane 판단 순서를 유지했으며 집중 검사 323건 통과.
   후속 문단 매칭·흡수·prefix/tail 조정과 책임 묶음 통합 검증은 남아 있다.
+- 후속 절편: [R2ag 후속 어울림 매칭·그림 anchor 조회 분리·집중 검증 완료](../working/task_m100_7280_stage36.md).
+  저장 줄 매칭과 그림 anchor 조회를 wrap_match로, snapshot/등록 명령을 state로 분리했다.
+  guard·조건·반환·조회 순서를 보존했고 고정 head 집중 검사 323건 통과.
+  표 anchor 흡수·소급 기록·prefix/tail 조정과 책임 묶음 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -137,6 +141,7 @@ renderer/typeset/
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   controls/host_wrap.rs               표 없는 host의 저장 어울림 밴드·자기 anchor 준비 조회
+  controls/wrap_match.rs              후속 본문 문단의 저장 어울림 매칭·그림 anchor 조회
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료

@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2af](task_m100_7280_stage35.md), 시작 head `50ac14a22`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 완료, 고정 제품 SHA 검증 예정. R2 전체/PR 준비 완료가 아니다.
+- 상태: Query 분리와 고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 이번 분리와 후속 경계
 
@@ -39,7 +39,44 @@ native Clippy → Stage35와 같은 323건 집중 nextest를 순차 실행한다
 전체 회귀·WASM/workspace lint·workspace build·Native Skia·fresh Docker WASM·직접 시각 대조는
 구현계획 §7의 통합 게이트에 남긴다. 원격 push·PR·댓글은 범위 밖이다.
 
-## 3. 후속
+## 3. 고정 head 검증
+
+- 제품 SHA: `646a5c4b80840cce6a41a0d60500852fa7820081`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2ag`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 대조 통과: `output/7280/stage36/extraction-proof.json`.
+- manifest: 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support 28 통과. source-side test 변경은 없다.
+- fmt 통과, native Clippy `-D warnings` 통과(exit 0, 55.93초).
+- 로그: `output/7280/stage36/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+위 고정 review worktree에서 아래 명령을 순차 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage36/run-focused.sh
+```
+
+정확한 집중 명령과 필터는 `run-focused.sh`에 보존했다. Stage35와 동일한 선택이며
+테스트 원본·assertion·기준값은 변경하지 않았다.
+
+결과: **323 passed / 0 failed**, 24 binaries, 필터 비선택 7,886건, exit 0.
+빌드 6분 41초, 테스트 2.809초. run ID: `c41650b8-12b3-41c9-b0ec-07cf7bc86d10`.
+`nextest-focused.log`, `compare-focused.mjs`, `regression-comparison.json`에 증적을 보존했다.
+baseline 전수 로그에서 동일 필터로 고른 323개 PASS 이름과 일치한다.
+비선택 수는 기존 ignore 50건과 별개다. 전체 회귀 재실행·출력 픽셀 동일성·한컴 시각 일치를
+뜻하지 않는다. nextest 0.9.137 권장 버전 및 observation 설정 경고는 기존과 동일하다.
+
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 후 제품 코드를 변경하지 않았으며 구현계획과 결과 기록만 갱신했다.
+
+## 4. 후속
 
 표 anchor의 전체 문단 흡수·소급 기록과 prefix/tail 배치의 조회/명령 경계를 계속 분리한다.
 밴드 종료가 높이를 바꾸는 점과 그 뒤 쪽 전환 재판정 순서를 보존한다.
