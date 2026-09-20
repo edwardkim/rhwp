@@ -5443,6 +5443,7 @@ pub(crate) struct DumpFormattedParagraphHeight {
 mod controls;
 #[path = "typeset/inline_flow.rs"]
 mod inline_flow;
+mod notes;
 mod paragraph;
 mod state;
 
@@ -17342,30 +17343,15 @@ impl TypesetEngine {
             composed,
         );
 
-        if !st
-            .fragment_queued_table_footnotes
-            .contains(&(deferred.para_index, deferred.control_index))
-        {
-            for (cell_idx, cell) in table.cells.iter().enumerate() {
-                for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                    for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                        if let Control::Footnote(fn_ctrl) = cc {
-                            self.register_unqueued_table_footnote(
-                                st,
-                                fn_ctrl,
-                                FootnoteSource::TableCell {
-                                    para_index: deferred.para_index,
-                                    table_control_index: deferred.control_index,
-                                    cell_index: cell_idx,
-                                    cell_para_index: cp_idx,
-                                    cell_control_index: cc_idx,
-                                },
-                            );
-                        }
-                    }
-                }
-            }
-        }
+        notes::register_unqueued_table_cells(
+            st,
+            table,
+            deferred.para_index,
+            deferred.control_index,
+            |st, footnote, source| {
+                self.register_unqueued_table_footnote(st, footnote, source);
+            },
+        );
 
         st.commit_deferred_table_anchor(deferred.para_index);
     }
@@ -17543,31 +17529,15 @@ impl TypesetEngine {
                         &mut para_float_lanes,
                     );
 
-                    // 표 셀 내 각주 수집 (Paginator engine.rs:679-701 동일)
-                    if !st
-                        .fragment_queued_table_footnotes
-                        .contains(&(para_idx, ctrl_idx))
-                    {
-                        for (cell_idx, cell) in table.cells.iter().enumerate() {
-                            for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                                for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                                    if let Control::Footnote(fn_ctrl) = cc {
-                                        self.register_unqueued_table_footnote(
-                                            st,
-                                            fn_ctrl,
-                                            FootnoteSource::TableCell {
-                                                para_index: para_idx,
-                                                table_control_index: ctrl_idx,
-                                                cell_index: cell_idx,
-                                                cell_para_index: cp_idx,
-                                                cell_control_index: cc_idx,
-                                            },
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    notes::register_unqueued_table_cells(
+                        st,
+                        table,
+                        para_idx,
+                        ctrl_idx,
+                        |st, footnote, source| {
+                            self.register_unqueued_table_footnote(st, footnote, source);
+                        },
+                    );
                     if break_after_current_table {
                         break;
                     }

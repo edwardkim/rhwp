@@ -30,6 +30,15 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn has_fragment_queued_table_footnotes(
+        &self,
+        para_idx: usize,
+        ctrl_idx: usize,
+    ) -> bool {
+        self.fragment_queued_table_footnotes
+            .contains(&(para_idx, ctrl_idx))
+    }
+
     pub(super) fn flow_table_column_top(&self) -> bool {
         self.current_height < 1.0
     }
