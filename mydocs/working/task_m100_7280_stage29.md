@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2z](task_m100_7280_stage28.md), 시작 head `718eebe66`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: R2aa 구조 이동 완료, 고정 제품 SHA 검증 대기. R2 전체/PR 준비 완료가 아니다.
+- 상태: R2aa 구현·고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -36,6 +36,9 @@
   그 뒤 중단한다. 원래 반복 밖 bool은 true가 되면 같은 회차 끝에서 반드시 break했으므로
   다음 회차로 true가 전달되지 않는다. 회차별 반환값으로 옮겨도 각주와 후행 컨트롤 순서는 같다.
 - 장식 표 continue, 비표 컨트롤 배치, 루프 뒤 host 텍스트 발행과 TAC 높이 정산은 그대로 둔다.
+- 지역 `FormattedTable`은 조정자 반환 때 해제되어 부모 각주 순회보다 수명이 짧아진다.
+  이 결과는 소유 수치/벡터이며 사용자 정의 Drop이 없다. 뒤 각주 순회는 이를 참조하지 않고
+  원본 `table.cells`와 상태의 등록 여부를 읽으므로 배치/각주 데이터 소유권은 바뀌지 않는다.
 
 기존 분기·수치의 타당성을 새로 승인하거나 조판 문제를 수정한 것으로 보고하지 않는다.
 테스트 source/assertion/ID, baseline/golden/ignore 및 CI는 변경하지 않는다.
@@ -65,7 +68,46 @@ native Clippy → 집중 nextest를 순차 수행한다. R2z 275건에 다음 �
 
 ## 3. 고정 head 검증
 
-제품 커밋 후 별도 review worktree에서 검증하고 실제 결과를 기록한다.
+- 제품 SHA: `d55263bf54b426562a120d31ecdb3d3d11e9c02d`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2aa`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 대조 통과: `output/7280/stage29/extraction-proof.json`.
+- 파생 suite 준비 후 manifest 고정 baseline 비교 통과:
+  1,382 sources / 5,965 static attrs / 48 targets.
+- unit-tier 고정 baseline 비교 통과:
+  4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy `-D warnings` 통과(exit 0, 56.41초).
+- 로그: `output/7280/stage29/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+위 review worktree에서 다음 순서로 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage29/run-focused.sh
+```
+
+집중 명령은 [R2z의 명령](task_m100_7280_stage28.md#3-고정-head-검증)에서 worktree를 R2aa로
+바꾸고 `-E` 필터에 `test(issue_2439::)`와
+`test(issue_2322_fullpage_form_table_pair::)`를 OR 추가했다.
+두 모듈의 suite 026/002는 기존 대상에 포함되어 있어 target은 그대로다.
+`--locked --cargo-profile release-test --lib --no-fail-fast`와 고정 target도 동일하다.
+
+결과: **281건 통과 / 실패 0건**, 24 binaries, 필터 비선택 7,928건, exit 0.
+빌드 6분 43초, 테스트 1.566초. 실행 ID: `d50c1982-f565-4655-84cb-890eed550989`.
+로그: `output/7280/stage29/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서 동일 필터로
+선택한 281개 PASS 이름과 일치함을 확인했다. 이번에 전체 회귀를 재실행하지 않았으며,
+필터 비선택은 기존 ignore 50건과 별개다. 출력 픽셀 동일성이나 전체 시각 일치 판정은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 뒤에는 계획과 결과 기록만 수정했으며 제품 코드 변경은 없다.
 
 ## 4. 후속
 
