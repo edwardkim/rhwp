@@ -18,6 +18,9 @@
 - 후속 절편: [R2i 문단 넘침 허용 경로 분리·집중 검증 완료](../working/task_m100_7280_stage11.md).
   atomic/tail의 읽기 전용 판단과 서로 다른 상태 적용을 분리했다. 문단 진입 fit·빈 구성 결과와
   표 문단 흐름, 최종 통합 검증은 후속에 남아 있다.
+- 후속 절편: [R2j 빈 구성 결과·줄 분할 진입 분리·집중 검증 완료](../working/task_m100_7280_stage12.md).
+  일반 fit 실패 뒤의 조정과 첫 줄/저장 경계 판단을 분리했다. 앞단 fit/예산·저장 경계 조정과
+  표 문단/컨트롤 흐름, 최종 통합 검증은 아직 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -51,6 +54,7 @@ renderer/typeset/
   paragraph/fit.rs                    문단 fit 보정의 읽기 전용 계산
   paragraph/scan.rs                   페이지 관측값으로 줄 수용 후보·저장 꼬리 증거 계산
   paragraph/split.rs                  줄 스캔 후보의 분할 경계 보정
+  paragraph/split_entry.rs            첫 줄 요구 높이·저장 경계와 분할 전 이월 판단
   paragraph/placement.rs              보정된 컷의 항목/높이 계획과 전체 fit 재확인
   paragraph/overflow.rs               일반 fit 실패 뒤 atomic/tail 넘침 허용의 읽기 전용 판정
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
