@@ -33,6 +33,33 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 저장 어울림 자격을 비운 뒤 밴드 바닥을 흐름 높이에 반영한다.
+    /// 뒤따르는 fit은 종료 후의 높이/예산을 다시 조회해야 한다.
+    pub(super) fn end_following_wrap(&mut self) {
+        self.wrap_around_cs = -1;
+        self.wrap_around_sw = -1;
+        self.wrap_around_any_seg = false;
+        self.wrap_around_derived_band = false;
+        self.close_square_band();
+    }
+
+    /// 꼬리 항목 → 높이 전진 → 사다리 dirty 순서를 보존한다. 쪽 전환은 호출자 책임이다.
+    pub(super) fn commit_wrap_tail(
+        &mut self,
+        para_idx: usize,
+        wrap_prefix_len: usize,
+        end_line: usize,
+        suffix_height: f64,
+    ) {
+        self.current_items.push(PageItem::PartialParagraph {
+            para_index: para_idx,
+            start_line: wrap_prefix_len,
+            end_line,
+        });
+        self.current_height += suffix_height;
+        self.vpos_ladder_dirty = true;
+    }
+
     /// 저장 끝점으로 밴드를 먼저 늘린 뒤 표의 첫 조각 소유 단에 기록한다.
     pub(super) fn commit_wrap_absorption(
         &mut self,

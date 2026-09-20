@@ -6541,26 +6541,8 @@ impl TypesetEngine {
                     // 문단 전체를 일반 흐름으로 두면 띠와 전폭 줄을 함께 다시 소비해
                     // 이후 페이지가 과도하게 늘어난다. 저장 LINE_SEG와 조판 줄이 1:1이고
                     // 전폭 꼬리가 정확히 한 줄인 안정적인 형상만 분리한다.
-                    let wrap_prefix_len = para
-                        .line_segs
-                        .iter()
-                        .take_while(|seg| {
-                            seg.column_start == st.wrap_around_cs
-                                && seg.segment_width as i32 == st.wrap_around_sw
-                        })
-                        .count();
-                    // [#4650 · #4599 ⑩] 종전에는 전폭 꼬리 '정확히 한 줄'만 분리했으나, 반폭
-                    // Square 표 옆 문단이 여러 전폭 꼬리 줄을 갖는 형상(156714641 p1
-                    // pi13: 표 옆 prefix 4줄 + 전폭 꼬리 5줄)이 일반 배치로 떨어져
-                    // prefix 가 표 하단 아래(952.9)로 밀렸다 — 한글 2022 캐시 PDF 는
-                    // 표 옆 747.9. 꼬리 전 줄이 전폭이고 저장 seg 와 조판 줄이 1:1 인
-                    // 경우로 확장한다(#4090 의 안정 형상 판별은 유지).
-                    let suffix_is_full_width =
-                        para.line_segs[wrap_prefix_len..].iter().all(|seg| {
-                            seg.column_start == 0
-                                && (seg.segment_width as i32 - st.layout.column_width_hu()).abs()
-                                    <= 3_000
-                        }) && wrap_prefix_len < para.line_segs.len();
+                    let prefix = controls::wrap_tail::classify_prefix(para, band, &st.layout);
+                    let wrap_prefix_len = prefix.len;
                     let col_width = st
                         .layout
                         .column_areas
@@ -6568,15 +6550,9 @@ impl TypesetEngine {
                         .map(|area| area.width)
                         .unwrap_or(st.layout.body_area.width);
                     let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
-                    let can_split_prefix = !is_empty_para
-                        && wrap_prefix_len > 0
-                        && wrap_prefix_len < para.line_segs.len()
-                        && suffix_is_full_width
-                        && formatted.line_count() == para.line_segs.len();
-                    if can_split_prefix {
-                        let suffix_height = formatted
-                            .line_advances_sum(wrap_prefix_len..formatted.line_count())
-                            + formatted.spacing_after;
+                    if let Some(suffix_height) =
+                        prefix.suffix_height(para, &formatted, is_empty_para)
+                    {
                         if suffix_height <= st.available_height() + 0.5 {
                             let absorption = controls::wrap_absorption::prefix(
                                 para,
@@ -6587,63 +6563,43 @@ impl TypesetEngine {
                                 self.dpi,
                             );
                             st.commit_wrap_absorption(absorption);
-                            st.wrap_around_cs = -1;
-                            st.wrap_around_sw = -1;
-                            st.wrap_around_any_seg = false;
-                            st.wrap_around_derived_band = false;
-                            st.close_square_band();
+                            st.end_following_wrap();
                             if !st.current_items.is_empty()
                                 && st.current_height + suffix_height > st.available_height() + 0.5
                             {
                                 st.advance_column_or_new_page();
                             }
-                            st.current_items.push(PageItem::PartialParagraph {
-                                para_index: para_idx,
-                                start_line: wrap_prefix_len,
-                                end_line: formatted.line_count(),
-                            });
-                            st.current_height += suffix_height;
-                            st.vpos_ladder_dirty = true;
+                            st.commit_wrap_tail(
+                                para_idx,
+                                wrap_prefix_len,
+                                formatted.line_count(),
+                                suffix_height,
+                            );
                             return true;
                         }
                     }
-                    st.wrap_around_cs = -1;
-                    st.wrap_around_sw = -1;
-                    st.wrap_around_any_seg = false;
-                    st.wrap_around_derived_band = false;
                     // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                     // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
                     // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
-                    st.close_square_band();
+                    st.end_following_wrap();
                     // fall through → 일반 paragraph 배치
                 }
             } else {
                 // 매칭 실패 → wrap zone 종료, 정상 처리 진행
-                st.wrap_around_cs = -1;
-                st.wrap_around_sw = -1;
-                st.wrap_around_any_seg = false;
-                st.wrap_around_derived_band = false;
-                st.close_square_band();
+                st.end_following_wrap();
                 // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
                 // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
                 // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
                 // paragraph 22 anchor (cs=11084) active 유지로 line 419 vpos-reset 가드
                 // 미발현 → 매칭 실패 후 추가 vpos-reset 가드로 페이지 break 정합.
-                if para_idx > 0 && !st.current_items.is_empty() {
-                    let prev_para = &paragraphs[para_idx - 1];
-                    let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
-                    let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
-                    if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
-                        let trigger = if st.col_count > 1 {
-                            cv < pv && pv > 5000
-                        } else {
-                            // [#2098] 쪽-하단 고정 틀 앵커(vpos=0 절대배치)는 흐름 리셋 신호가 아니다.
-                            cv == 0 && pv > 5000 && !para_is_page_bottom_fixed_table_anchor(para)
-                        };
-                        if trigger {
-                            st.advance_column_or_new_page();
-                        }
-                    }
+                if controls::wrap_tail::mismatch_starts_new_page(
+                    para,
+                    paragraphs,
+                    para_idx,
+                    !st.current_items.is_empty(),
+                    st.col_count,
+                ) {
+                    st.advance_column_or_new_page();
                 }
             }
         }
