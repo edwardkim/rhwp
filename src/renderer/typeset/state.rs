@@ -3,12 +3,29 @@
 
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
+use super::paragraph::scan::LineScanPage;
 use super::TypesetState;
 use crate::renderer::inline_flow::InlineFlowPlan;
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 줄 후보 계산에 필요한 값만 관측한다. 페이지 전환 뒤 다시 호출해야 한다.
+    pub(super) fn paragraph_line_scan_page(&self) -> LineScanPage {
+        LineScanPage {
+            profile: self.profile,
+            col_count: self.col_count,
+            body_height: self.base_available_height(),
+            current_height: self.current_height,
+            has_items: !self.current_items.is_empty(),
+            vpos_ladder_dirty: self.vpos_ladder_dirty,
+            current_footnote_height: self.current_footnote_height,
+            footnote_safety_margin: self.footnote_safety_margin,
+            current_zone_y_offset: self.current_zone_y_offset,
+            current_bottom_fixed_exclusion: self.current_bottom_fixed_exclusion,
+        }
+    }
+
     pub(super) fn inline_flow_column(&self) -> LayoutRect {
         let layout = self.current_zone_layout.as_ref().unwrap_or(&self.layout);
         let mut column = layout
