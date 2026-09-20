@@ -103,6 +103,10 @@
   전체/접두 줄의 흡수 기록과 저장 끝점 계산을 wrap_absorption으로, 밴드 확장과 첫 조각 단의
   소급 기록을 state로 분리했다. 적용 순서와 반환을 보존했고 고정 head 집중 검사 324건 통과.
   prefix/tail 조정·밴드 종료/쪽 전환과 책임 묶음 통합 검증은 남아 있다.
+- 후속 절편: [R2ai 어울림 꼬리 조회·종료/배치 명령 분리·집중 검증 완료](../working/task_m100_7280_stage38.md).
+  접두부·꼬리 높이·매칭 실패의 저장 쪽 경계 판정을 wrap_tail로, 종료/꼬리 기록을 state로 분리했다.
+  포맷과 밴드 종료 전후 가용 높이 조회 순서를 보존했고 고정 head 집중 검사 325건 통과.
+  후속 어울림 조정자 연결·잔여 상태 읽기와 책임 묶음 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -147,6 +151,7 @@ renderer/typeset/
   controls/host_wrap.rs               표 없는 host의 저장 어울림 밴드·자기 anchor 준비 조회
   controls/wrap_match.rs              후속 본문 문단의 저장 어울림 매칭·그림 anchor 조회
   controls/wrap_absorption.rs         표 옆 문단/접두 줄의 흡수 기록과 저장 끝점 조회
+  controls/wrap_tail.rs               전폭 꼬리의 안정 형상/높이·매칭 실패의 저장 쪽 경계 조회
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료

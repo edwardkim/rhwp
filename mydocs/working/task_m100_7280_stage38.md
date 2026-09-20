@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2ah](task_m100_7280_stage37.md), 시작 head `62648b2c2`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 완료, 고정 제품 SHA 집중 검증 예정. R2 전체/PR 준비 완료가 아니다.
+- 상태: 꼬리 Query/종료·배치 Command 분리와 고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 책임과 실제 호출 경로
 
@@ -54,7 +54,45 @@ scalar 읽기가 앞서지만 부수효과·상태 변경은 없으며 이전 �
 전체 회귀·WASM/workspace lint·workspace build·Native Skia·fresh Docker WASM·직접 시각 대조는
 구현계획 §7의 책임 묶음/제출 전 게이트에 남긴다. 원격 push·PR·댓글은 범위 밖이다.
 
-## 3. 후속
+## 3. 고정 head 검증
+
+- 제품 SHA: `6e2ec2c30249f1295f89ae95bb69c78cf49995c6`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2ai`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+  host 16 logical CPUs / RAM 31 GiB, 시작 시 가용 약 19 GiB, 다른 Cargo 없음 확인.
+- 정적 대조 통과: `output/7280/stage38/{verify-wrap-tail.mjs,extraction-proof.json}`.
+- manifest: 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support 28 통과.
+- fmt 통과, native Clippy `-D warnings` 통과(exit 0, 57.91초).
+- 로그: `output/7280/stage38/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+아래 명령을 고정 review worktree에서 순차 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage38/run-focused.sh
+```
+
+정확한 필터와 명령은 `run-focused.sh`에 보존했다. Stage37의 324건에 기존 #2098 계약 1건을
+추가한 선택이며 Rust 테스트 원본·assertion·기준값 변경은 없다.
+
+결과: **325 passed / 0 failed**, 24 binaries, 필터 비선택 7,884건, exit 0.
+빌드 6분 41초, 테스트 2.811초. run ID: `82300ca6-3136-406b-acf8-fc0ddf9dac3e`.
+`output/7280/stage38/{nextest-focused.log,compare-focused.mjs,regression-comparison.json}`에
+증적을 보존했다. baseline 전수 로그에서 동일 필터로 고른 325개 PASS 이름과 일치한다.
+비선택 수는 기존 ignore 50건과 별개다. 전체 회귀 재실행·출력 픽셀 동일성·한컴 시각 일치를
+뜻하지 않는다. nextest 0.9.137 권장 버전 및 observation 설정 경고는 기존과 동일하다.
+
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 후 제품 코드를 변경하지 않았으며 구현계획과 결과 기록만 갱신했다.
+
+## 4. 후속
 
 후속 어울림 전체 조정자를 새 Query/Command 경계에 연결하고 남은 상태 읽기 경계를 정리한다.
 이후 R2 책임 묶음 통합 검증 범위를 확정한다. R3 표 분할, R4 각주/미주, R5 구역·페이지 수명과
