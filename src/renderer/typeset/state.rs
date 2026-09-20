@@ -2,6 +2,7 @@
 //! inline 흐름, 문단 fit의 1회성 보정 소비와 일반 전체/분할 배치 반영을 소유한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
+use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
 use super::paragraph::overflow::OverflowPage;
@@ -14,6 +15,33 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 저장 TAC 줄 수용에 필요한 읽기 전용 페이지 관측값.
+    pub(super) fn stored_tac_page(&self) -> StoredTacPage {
+        StoredTacPage {
+            profile: self.profile,
+            current_height: self.current_height,
+            vpos_col_anchor: self.vpos_col_anchor,
+            vpos_page_base: self.vpos_page_base,
+            vpos_lazy_base: self.vpos_lazy_base,
+            side_wrap_empty: self.side_wrap_exclusions.is_empty(),
+        }
+    }
+
+    /// 확정 좌표 → 표 항목 → 흐름 끝점의 기존 적용 순서를 유지한다.
+    pub(super) fn commit_stored_tac_control(
+        &mut self,
+        para_idx: usize,
+        placement: StoredTacControlPlacement,
+    ) {
+        self.inline_placements
+            .insert((para_idx, placement.control_index), placement.inline);
+        self.current_items.push(PageItem::Table {
+            para_index: para_idx,
+            control_index: placement.control_index,
+        });
+        self.current_height = placement.end;
+    }
+
     /// 전체 fit의 관측값을 빌린다. 가용 높이의 진단 조회는 Query의 기존 단락 위치에 남긴다.
     pub(super) fn paragraph_whole_fit_page(&self) -> super::paragraph::whole_fit::WholeFitPage<'_> {
         super::paragraph::whole_fit::WholeFitPage {

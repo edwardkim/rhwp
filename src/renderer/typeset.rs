@@ -5511,6 +5511,7 @@ pub(crate) struct DumpFormattedParagraphHeight {
     pub line_spacing_sum: f64,
 }
 
+mod controls;
 #[path = "typeset/inline_flow.rs"]
 mod inline_flow;
 mod paragraph;
@@ -17555,74 +17556,15 @@ impl TypesetEngine {
             .map(|a| a.width)
             .unwrap_or(st.layout.body_area.width);
         let fmt = self.format_paragraph(para, composed, styles, Some(host_col_w));
-        // 완전한 저장 줄 계약은 표별 높이를 합산하지 않고, 같은 pen/end를 배치에도 전달한다.
-        if !st.profile.session_edited()
-            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
-            && st.side_wrap_exclusions.is_empty()
-        {
-            if let Some(lines) = super::composer::stored_tac_lines(para) {
-                let flow_origin = st.current_height
-                    + if st.current_height < 1.0 {
-                        0.0
-                    } else {
-                        fmt.spacing_before
-                    };
-                // 앞 문단의 저장 사다리가 누적 높이보다 앞서 있으면 그 앵커를
-                // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
-                let saved_origin = st.vpos_col_anchor
-                    + hwpunit_to_px(
-                        para.line_segs[0]
-                            .vertical_pos
-                            .saturating_sub(st.vpos_page_base.or(st.vpos_lazy_base).unwrap_or(0)),
-                        self.dpi,
-                    );
-                let origin = flow_origin.max(saved_origin);
-                let measured_fits = lines.iter().all(|line| {
-                    let Some(Control::Table(table)) = para.controls.get(line.control) else {
-                        return false;
-                    };
-                    measured_tables
-                        .iter()
-                        .find(|m| m.para_index == para_idx && m.control_index == line.control)
-                        .is_some_and(|m| {
-                            (m.total_height - hwpunit_to_px(table.common.height as i32, self.dpi))
-                                .abs()
-                                <= 0.5
-                        })
-                });
-                let fits = lines.iter().all(|line| {
-                    origin
-                        + hwpunit_to_px(line.occupied_end.max(line.end), self.dpi)
-                        + fmt.spacing_after
-                        <= st.available_height()
-                });
-                if measured_fits && fits {
-                    for line in &lines {
-                        let end = origin
-                            + hwpunit_to_px(line.end, self.dpi)
-                            + if line.control == lines.last().unwrap().control {
-                                fmt.spacing_after
-                            } else {
-                                0.0
-                            };
-                        st.inline_placements.insert(
-                            (para_idx, line.control),
-                            super::float_placement::InlineBoxPlacement {
-                                x: 0.0,
-                                y: origin + hwpunit_to_px(line.top, self.dpi),
-                                clearance: 0.0,
-                                advance_end: Some(end),
-                            },
-                        );
-                        st.current_items.push(PageItem::Table {
-                            para_index: para_idx,
-                            control_index: line.control,
-                        });
-                        st.current_height = end;
-                    }
-                    return;
-                }
-            }
+        if controls::try_place_stored_tac_paragraph(
+            st,
+            para_idx,
+            para,
+            &fmt,
+            measured_tables,
+            self.dpi,
+        ) {
+            return;
         }
         // TAC 표 카운트 및 플러시 판단
         let tac_count = para
