@@ -5255,18 +5255,6 @@ impl TypesetState {
         }
     }
 
-    fn inline_flow_column(&self) -> super::page_layout::LayoutRect {
-        let layout = self.current_zone_layout.as_ref().unwrap_or(&self.layout);
-        let mut column = layout
-            .column_areas
-            .get(self.current_column as usize)
-            .copied()
-            .unwrap_or(layout.body_area);
-        column.y += self.current_zone_y_offset;
-        column.height = (column.height - self.current_zone_y_offset).max(0.0);
-        column
-    }
-
     /// 실제로 현재 단에 방출한 그림만 등록한다. 미래/다른 쪽의 그림은 예약하지 않는다.
     fn register_side_wrap_picture(
         &mut self,
@@ -5752,6 +5740,7 @@ pub(crate) struct DumpFormattedParagraphHeight {
 #[path = "typeset/inline_flow.rs"]
 mod inline_flow;
 mod paragraph;
+mod state;
 
 /// [#2279 OMIT-eager] 저장 ladder 의 spacing-누락(OMIT) 서명 사전 판별.
 ///
