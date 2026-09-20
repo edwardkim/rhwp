@@ -2,10 +2,12 @@
 //! inline 흐름, 문단 fit의 1회성 보정 소비와 일반 전체/분할 배치 반영을 소유한다.
 //! 지연 표 큐의 인출·복원과 배치 후 vpos 반영도 이 경계에서 수행한다.
 //! 빈 호스트 float의 예산 조회와 항목·lane·흐름 확정도 담당한다.
+//! 표 문단의 비표 개체 조회 입력과 항목·흐름 확정도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::deferred::DeferredTableControl;
 use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
+use super::controls::shape_flow::{TableHostShapeFlow, TableHostShapePage};
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::tac_fit::TacFitPage;
 use super::inline_flow::plan::InlineFlowInput;
@@ -21,6 +23,36 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn has_spilled_page_tail_float(&self, para_idx: usize, ctrl_idx: usize) -> bool {
+        self.page_tail_spilled_floats
+            .contains(&(para_idx, ctrl_idx))
+    }
+
+    pub(super) fn table_host_shape_page(&self) -> TableHostShapePage {
+        TableHostShapePage {
+            has_items: !self.current_items.is_empty(),
+            current_height: self.current_height,
+        }
+    }
+
+    /// 단/쪽 전환 뒤 현재 페이지에 항목을 추가하고 기존 우선순위대로 높이를 반영한다.
+    pub(super) fn commit_table_host_shape(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        flow: TableHostShapeFlow,
+    ) {
+        self.current_items.push(PageItem::Shape {
+            para_index: para_idx,
+            control_index: ctrl_idx,
+        });
+        if let Some(line_h) = flow.tac_separate_line_h {
+            self.current_height += line_h;
+        } else if let Some(extra) = flow.non_tac_pushdown_h {
+            self.current_height += extra;
+        }
+    }
+
     /// Lane 조회용 페이지 관측값. 예산은 별도 지연 조회로 제공한다.
     pub(super) fn empty_float_page(&self) -> EmptyFloatPage<'_> {
         EmptyFloatPage {

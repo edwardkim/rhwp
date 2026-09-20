@@ -6,22 +6,50 @@
 //! 같은 문단의 형제 표 이월 판별·후보 선택·flush 시점 조회는 deferred가 소유한다.
 //! 지연 큐 순회는 이 모듈이, 큐·vpos 상태 반영은 state가 소유한다.
 //! 빈 호스트 float lane 조회는 empty_float가, 확정 예약은 state가 소유한다.
+//! 표 문단의 그림·도형·수식 흐름 조회는 shape_flow가 소유하고 이 모듈이 배치를 조정한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 pub(super) mod deferred;
 pub(super) mod empty_float;
 pub(super) mod order;
+pub(super) mod shape_flow;
 pub(super) mod stored_tac;
 pub(super) mod tac_fit;
 pub(super) mod tac_flow;
 
 use super::paragraph::metrics::FormattedParagraph;
 use super::{FormattedTable, TypesetState};
+use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 표 문단의 비표 개체 배치 순서만 조정한다. 뒤쪽 문단 높이 보정은 호출자에 남는다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn place_table_host_shape(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    ctrl: &Control,
+    para: &Paragraph,
+    para_start_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
+    // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
+    // 놓은 자리차지 밴드는 다시 배치하지 않는다.
+    if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
+        return;
+    }
+    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    if flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
+        st.advance_column_or_new_page();
+    }
+    st.commit_table_host_shape(para_idx, ctrl_idx, flow);
+    st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
+}
 
 /// 조회가 후보를 수용한 경우에만 표 항목·lane·흐름 상태를 함께 반영한다.
 #[allow(clippy::too_many_arguments)]
