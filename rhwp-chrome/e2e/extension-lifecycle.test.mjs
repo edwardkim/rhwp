@@ -312,10 +312,12 @@ async function fixtureServer(diagnostic) {
     const url = new URL(request.url, `http://${request.headers.host}`);
     const name = url.pathname.slice(1);
     if (url.pathname === '/fixture.html') {
-      const file = url.searchParams.get('file');
-      assert.ok(files.has(file), 'only registered fixture names may be served');
+      // Render only the server-owned name, never reflect the request value.
+      const file = [...files.keys()].find(registered => registered === url.searchParams.get('file'));
+      if (!file) { response.writeHead(404).end(); return; }
+      const encodedFile = encodeURIComponent(file);
       response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      response.end(`<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><a id="download" href="/${file}" download="${file}">Download fixture</a>`);
+      response.end(`<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><a id="download" href="/${encodedFile}" download="${encodedFile}">Download fixture</a>`);
     } else if (files.has(name)) {
       const bytes = files.get(name);
       response.writeHead(200, {
