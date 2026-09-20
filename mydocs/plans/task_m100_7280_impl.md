@@ -83,6 +83,10 @@
   후보 재검증·포맷·블록 배치·각주·앵커 확정을 deferred_placement로 연결하고
   현재 렌더 앵커와 원 배치 시점 예산 앵커를 보존했다. 기존 집중 검사 313건 통과.
   일반 문단 최상위 조정·R2 책임 묶음 검증, 표/각주 본체와 최종 상태 캡슐화는 남아 있다.
+- 후속 절편: [R2ae 일반 문단 최상위 흐름 분리·집중 검증 완료](../working/task_m100_7280_stage33.md).
+  예산·조기 반환·fit/배치 담당자를 paragraph/flow로 연결하고 최초 예산과 두 profile의 조회 시점을 보존했다.
+  import 오류 수정 후 고정 head의 집중 검사 313건 통과. R2 잔여 어울림/구역 경계 점검과
+  책임 묶음 통합 검증, 표/각주 본체 및 최종 상태 캡슐화는 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -115,6 +119,7 @@ renderer/typeset/
   paragraph/entry.rs                  진입 저장 꼬리·편집 그림의 공간 요구 판단
   paragraph/empty.rs                  빈 guide·옵션 숨김·구역 끝 빈 문단의 조기 반환 판단
   paragraph/format.rs                 재구성 선택·줄 메트릭·구성 결과 조립
+  paragraph/flow.rs                   일반 문단의 예산·조기 반환·fit/배치 담당자 연결
   paragraph/fit.rs                    문단 fit 보정의 읽기 전용 계산
   paragraph/scan.rs                   페이지 관측값으로 줄 수용 후보·저장 꼬리 증거 계산
   paragraph/split.rs                  줄 스캔 후보의 분할 경계 보정
