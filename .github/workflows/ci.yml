@@ -1545,7 +1545,7 @@ jobs:
         run: |
           # Scope the user-namespace permission to this exact CfT binary.
           # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
-          chrome_binary="$(node --input-type=module -e 'import puppeteer from "puppeteer"; process.stdout.write(puppeteer.executablePath())')"
+          chrome_binary="$(node --input-type=module -e 'import puppeteer from "puppeteer"; process.stdout.write(await puppeteer.executablePath())')"
           case "$chrome_binary" in
             "$PUPPETEER_CACHE_DIR"/chrome/linux-*/chrome-linux64/chrome) ;;
             *) echo '::error::Chrome executable is outside the expected cache'; exit 1 ;;
