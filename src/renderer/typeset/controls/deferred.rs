@@ -2,10 +2,50 @@
 //! 판별·후보 순서만 소유하며 큐·페이지·각주 상태를 변경하지 않는다.
 
 use super::super::paragraph::metrics::FormattedParagraph;
-use super::super::{para_has_visible_text, signed_hwpunit, DeferredTableControl};
+use super::super::{para_has_visible_text, signed_hwpunit};
 use super::tac_flow::TacFlowQuery;
 use crate::model::{control::Control, paragraph::Paragraph};
 use crate::renderer::pagination::PageItem;
+
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct DeferredTableControl {
+    pub(in crate::renderer::typeset) para_index: usize,
+    pub(in crate::renderer::typeset) control_index: usize,
+    pub(in crate::renderer::typeset) is_first_placed: bool,
+    pub(in crate::renderer::typeset) is_last_placed: bool,
+    /// [Task #1860] 이 float 이 속한 문단의 **참 시작 흐름 높이**(선행 형제 control 이
+    /// current_height 를 전진시키기 전). 지연 배치 시점의 current_height 는 이미 선행
+    /// inline(캡션)을 반영해 out-of-flow float 예산을 과소평가하므로, 분할 예산 기준용
+    /// para_start 를 원 배치 시점 값으로 보존한다.
+    pub(in crate::renderer::typeset) para_start_height: f64,
+}
+
+#[derive(Clone, Copy)]
+pub(in crate::renderer::typeset) enum DeferredTableFlushPoint {
+    BeforeTableParagraph(usize),
+    AfterTableParagraph(usize),
+    SectionEnd,
+}
+
+impl DeferredTableFlushPoint {
+    /// 문단 사이 가시 본문과 원래 문단 순서로 큐 유지 여부만 조회한다.
+    pub(in crate::renderer::typeset) fn keeps_pending(
+        self,
+        deferred: &DeferredTableControl,
+        paragraphs: &[Paragraph],
+    ) -> bool {
+        match self {
+            Self::BeforeTableParagraph(idx) => {
+                idx <= deferred.para_index
+                    || paragraphs[deferred.para_index + 1..idx]
+                        .iter()
+                        .any(para_has_visible_text)
+            }
+            Self::AfterTableParagraph(idx) => idx <= deferred.para_index,
+            Self::SectionEnd => false,
+        }
+    }
+}
 
 pub(in crate::renderer::typeset) struct CoanchoredTableQuery<'a> {
     para: &'a Paragraph,

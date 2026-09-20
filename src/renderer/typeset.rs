@@ -41,6 +41,7 @@ use crate::renderer::{
 
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
+use self::controls::deferred::{DeferredTableControl, DeferredTableFlushPoint};
 use self::paragraph::boundary::hwpx_explicit_page_break_tail_line;
 use self::paragraph::line_queries::{
     composed_line_char_end, line_has_strict_tac_control, line_has_text_span, line_has_visible_text,
@@ -745,26 +746,6 @@ struct VisibleFloatExclusion {
     /// visible host 문단의 자리차지 float 표가 후속 본문을 피하게 만드는 y 구간.
     top: f64,
     bottom: f64,
-}
-
-#[derive(Debug, Clone)]
-struct DeferredTableControl {
-    para_index: usize,
-    control_index: usize,
-    is_first_placed: bool,
-    is_last_placed: bool,
-    /// [Task #1860] 이 float 이 속한 문단의 **참 시작 흐름 높이**(선행 형제 control 이
-    /// current_height 를 전진시키기 전). 지연 배치 시점의 current_height 는 이미 선행
-    /// inline(캡션)을 반영해 out-of-flow float 예산을 과소평가하므로, 분할 예산 기준용
-    /// para_start 를 원 배치 시점 값으로 보존한다.
-    para_start_height: f64,
-}
-
-#[derive(Clone, Copy)]
-enum DeferredTableFlushPoint {
-    BeforeTableParagraph(usize),
-    AfterTableParagraph(usize),
-    SectionEnd,
 }
 
 /// 다음 physical page의 본문 시작에 배치할 non-TAC Square picture control.
@@ -7214,7 +7195,7 @@ impl TypesetEngine {
             // 이전 문단의 후행 표를 먼저 완료한다. 새 문단의 명시적 쪽/단 나눔과
             // 저장 vpos를 적용하기 전이어야 이전 표가 새 문단 뒤로 밀리지 않는다.
             // 제목/본문이 사이에 있는 float 흐름은 기존 후행 flush 계약을 유지한다.
-            if !st.deferred_table_controls.is_empty() && self.paragraph_has_table(para) {
+            if st.has_deferred_table_controls() && self.paragraph_has_table(para) {
                 self.flush_deferred_table_controls(
                     &mut st,
                     paragraphs,
@@ -17330,128 +17311,115 @@ impl TypesetEngine {
         measured_tables: &[MeasuredTable],
         flush_point: DeferredTableFlushPoint,
     ) {
-        if st.deferred_table_controls.is_empty() {
+        controls::flush_deferred_tables(st, paragraphs, flush_point, |st, deferred| {
+            self.place_deferred_table_control(
+                st,
+                deferred,
+                paragraphs,
+                composed,
+                styles,
+                measured_tables,
+            );
+        });
+    }
+
+    /// 지연 큐에서 선택된 표 하나를 현재 열에서 다시 측정하고 배치한다.
+    #[allow(clippy::too_many_arguments)]
+    fn place_deferred_table_control(
+        &self,
+        st: &mut TypesetState,
+        deferred: DeferredTableControl,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        measured_tables: &[MeasuredTable],
+    ) {
+        let Some(para) = paragraphs.get(deferred.para_index) else {
+            return;
+        };
+        let Some(Control::Table(table)) = para.controls.get(deferred.control_index) else {
+            return;
+        };
+
+        let host_col_w = st
+            .layout
+            .column_areas
+            .get(st.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(st.layout.body_area.width);
+        let composed_para = composed.get(deferred.para_index);
+        let fmt = self.format_paragraph(para, composed_para, styles, Some(host_col_w));
+        if !controls::deferred::CoanchoredTableQuery::new(para, &fmt, self.tac_flow_query())
+            .is_deferred_coanchored_rowbreak_table(table)
+        {
             return;
         }
 
-        let pending = std::mem::take(&mut st.deferred_table_controls);
-        let mut remaining = Vec::new();
-        for deferred in pending {
-            let keep_pending = match flush_point {
-                DeferredTableFlushPoint::BeforeTableParagraph(idx) => {
-                    idx <= deferred.para_index
-                        || paragraphs[deferred.para_index + 1..idx]
-                            .iter()
-                            .any(para_has_visible_text)
-                }
-                DeferredTableFlushPoint::AfterTableParagraph(idx) => idx <= deferred.para_index,
-                DeferredTableFlushPoint::SectionEnd => false,
-            };
-            if keep_pending {
-                remaining.push(deferred);
-                continue;
-            }
+        let is_column_top = st.current_height < 1.0;
+        let ft = self.format_table(
+            para,
+            deferred.para_index,
+            deferred.control_index,
+            table,
+            measured_tables,
+            styles,
+            composed_para,
+            paragraphs.get(deferred.para_index + 1),
+            is_column_top,
+        );
+        let mt = measured_tables.iter().find(|mt| {
+            mt.para_index == deferred.para_index && mt.control_index == deferred.control_index
+        });
+        let para_start_height = st.current_height;
 
-            let Some(para) = paragraphs.get(deferred.para_index) else {
-                continue;
-            };
-            let Some(Control::Table(table)) = para.controls.get(deferred.control_index) else {
-                continue;
-            };
+        self.typeset_block_table(
+            st,
+            deferred.para_index,
+            deferred.control_index,
+            para,
+            table,
+            &ft,
+            &fmt,
+            mt,
+            styles,
+            para_start_height,
+            // [Task #1860] 예산 전용 참 para_start(원 배치 시점). 지연 배치의
+            // current_height 는 선행 캡션을 이미 반영하므로 out-of-flow float
+            // 예산이 이중차감된다. 렌더 위치(para_start_height)는 불변 유지하고
+            // 예산 계산에만 이 값을 쓴다.
+            deferred.para_start_height,
+            deferred.is_first_placed,
+            deferred.is_last_placed,
+            paragraphs,
+            composed,
+        );
 
-            let host_col_w = st
-                .layout
-                .column_areas
-                .get(st.current_column as usize)
-                .map(|a| a.width)
-                .unwrap_or(st.layout.body_area.width);
-            let composed_para = composed.get(deferred.para_index);
-            let fmt = self.format_paragraph(para, composed_para, styles, Some(host_col_w));
-            if !controls::deferred::CoanchoredTableQuery::new(para, &fmt, self.tac_flow_query())
-                .is_deferred_coanchored_rowbreak_table(table)
-            {
-                continue;
-            }
-
-            let is_column_top = st.current_height < 1.0;
-            let ft = self.format_table(
-                para,
-                deferred.para_index,
-                deferred.control_index,
-                table,
-                measured_tables,
-                styles,
-                composed_para,
-                paragraphs.get(deferred.para_index + 1),
-                is_column_top,
-            );
-            let mt = measured_tables.iter().find(|mt| {
-                mt.para_index == deferred.para_index && mt.control_index == deferred.control_index
-            });
-            let para_start_height = st.current_height;
-
-            self.typeset_block_table(
-                st,
-                deferred.para_index,
-                deferred.control_index,
-                para,
-                table,
-                &ft,
-                &fmt,
-                mt,
-                styles,
-                para_start_height,
-                // [Task #1860] 예산 전용 참 para_start(원 배치 시점). 지연 배치의
-                // current_height 는 선행 캡션을 이미 반영하므로 out-of-flow float
-                // 예산이 이중차감된다. 렌더 위치(para_start_height)는 불변 유지하고
-                // 예산 계산에만 이 값을 쓴다.
-                deferred.para_start_height,
-                deferred.is_first_placed,
-                deferred.is_last_placed,
-                paragraphs,
-                composed,
-            );
-
-            if !st
-                .fragment_queued_table_footnotes
-                .contains(&(deferred.para_index, deferred.control_index))
-            {
-                for (cell_idx, cell) in table.cells.iter().enumerate() {
-                    for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                        for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                            if let Control::Footnote(fn_ctrl) = cc {
-                                self.register_unqueued_table_footnote(
-                                    st,
-                                    fn_ctrl,
-                                    FootnoteSource::TableCell {
-                                        para_index: deferred.para_index,
-                                        table_control_index: deferred.control_index,
-                                        cell_index: cell_idx,
-                                        cell_para_index: cp_idx,
-                                        cell_control_index: cc_idx,
-                                    },
-                                );
-                            }
+        if !st
+            .fragment_queued_table_footnotes
+            .contains(&(deferred.para_index, deferred.control_index))
+        {
+            for (cell_idx, cell) in table.cells.iter().enumerate() {
+                for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+                    for (cc_idx, cc) in cp.controls.iter().enumerate() {
+                        if let Control::Footnote(fn_ctrl) = cc {
+                            self.register_unqueued_table_footnote(
+                                st,
+                                fn_ctrl,
+                                FootnoteSource::TableCell {
+                                    para_index: deferred.para_index,
+                                    table_control_index: deferred.control_index,
+                                    cell_index: cell_idx,
+                                    cell_para_index: cp_idx,
+                                    cell_control_index: cc_idx,
+                                },
+                            );
                         }
                     }
                 }
             }
-
-            if st.col_count == 1 {
-                st.vpos_prev_layout_para = Some(deferred.para_index);
-                if matches!(
-                    st.current_items.last(),
-                    Some(PageItem::Table { .. } | PageItem::PartialTable { .. })
-                ) {
-                    st.vpos_page_base = None;
-                    st.vpos_lazy_base = None;
-                    st.vpos_prev_partial_table =
-                        matches!(st.current_items.last(), Some(PageItem::PartialTable { .. }));
-                }
-            }
         }
 
-        st.deferred_table_controls = remaining;
+        st.commit_deferred_table_anchor(deferred.para_index);
     }
 
     /// 표가 포함된 문단을 처리한다.
@@ -17890,7 +17858,7 @@ impl TypesetEngine {
                                 para_start_height,
                             );
                             if !deferred.is_empty() {
-                                st.deferred_table_controls.extend(deferred);
+                                st.enqueue_deferred_table_controls(deferred);
                                 break_after_current_table = true;
                             }
                         }

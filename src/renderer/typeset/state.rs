@@ -1,7 +1,9 @@
 //! 조판 상태의 조회 입력과 확정 결과 반영 경계.
 //! inline 흐름, 문단 fit의 1회성 보정 소비와 일반 전체/분할 배치 반영을 소유한다.
+//! 지연 표 큐의 인출·복원과 배치 후 vpos 반영도 이 경계에서 수행한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
+use super::controls::deferred::DeferredTableControl;
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::tac_fit::TacFitPage;
 use super::inline_flow::plan::InlineFlowInput;
@@ -16,6 +18,41 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
+    pub(super) fn commit_deferred_table_anchor(&mut self, para_index: usize) {
+        if self.col_count == 1 {
+            self.vpos_prev_layout_para = Some(para_index);
+            if matches!(
+                self.current_items.last(),
+                Some(PageItem::Table { .. } | PageItem::PartialTable { .. })
+            ) {
+                self.vpos_page_base = None;
+                self.vpos_lazy_base = None;
+                self.vpos_prev_partial_table = matches!(
+                    self.current_items.last(),
+                    Some(PageItem::PartialTable { .. })
+                );
+            }
+        }
+    }
+
+    pub(super) fn has_deferred_table_controls(&self) -> bool {
+        !self.deferred_table_controls.is_empty()
+    }
+
+    pub(super) fn enqueue_deferred_table_controls(&mut self, deferred: Vec<DeferredTableControl>) {
+        self.deferred_table_controls.extend(deferred);
+    }
+
+    pub(super) fn take_deferred_table_controls(&mut self) -> Vec<DeferredTableControl> {
+        std::mem::take(&mut self.deferred_table_controls)
+    }
+
+    /// flush에서 남은 후보를 기존 순서로 복원한다. 종전처럼 교체하며 추가 병합하지 않는다.
+    pub(super) fn restore_deferred_table_controls(&mut self, remaining: Vec<DeferredTableControl>) {
+        self.deferred_table_controls = remaining;
+    }
+
     /// 일반 TAC 배치 전 판단에 필요한 읽기 전용 상태만 전달한다.
     pub(super) fn tac_fit_page(&self) -> TacFitPage<'_> {
         TacFitPage {
