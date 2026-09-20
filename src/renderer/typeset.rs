@@ -42,6 +42,9 @@ use crate::renderer::{
 
 // [Task #836] 미주 paragraph의 가상 para_index = paragraphs.len() + endnote 내 순번.
 // rendering.rs에서 paragraphs + endnote_paragraphs를 합쳐서 전달.
+use self::paragraph::line_queries::{
+    composed_line_char_end, line_has_strict_tac_control, line_has_text_span, line_has_visible_text,
+};
 use super::pagination::{
     estimate_footnote_note_height, footnote_between_notes_margin_px,
     footnote_separator_overhead_px, ColumnContent, EndnoteDeferral, EndnoteParaSource, EndnoteRef,
@@ -2189,35 +2192,6 @@ fn activate_square_picture_wrap_for_para(
     }
 }
 
-fn composed_line_char_end(comp: &ComposedParagraph, line_idx: usize) -> usize {
-    if let Some(next) = comp.lines.get(line_idx + 1) {
-        return next.char_start;
-    }
-    let Some(line) = comp.lines.get(line_idx) else {
-        return 0;
-    };
-    line.char_start
-        + line
-            .runs
-            .iter()
-            .map(|run| run.text.chars().count())
-            .sum::<usize>()
-        + usize::from(line.has_line_break)
-}
-
-fn line_has_strict_tac_control(comp: &ComposedParagraph, line_idx: usize) -> bool {
-    let Some(line) = comp.lines.get(line_idx) else {
-        return false;
-    };
-    let start = line.char_start;
-    let end = composed_line_char_end(comp, line_idx);
-    end > start
-        && comp
-            .tac_controls
-            .iter()
-            .any(|(pos, _, _)| *pos >= start && *pos < end)
-}
-
 fn line_has_strict_equation_tac_control(
     para: &Paragraph,
     comp: &ComposedParagraph,
@@ -2387,24 +2361,6 @@ fn line_has_tac_equation_control(
     tac_control_indices_for_line(para, comp, line_idx)
         .iter()
         .any(|ci| is_treat_as_char_equation_control(para.controls.get(*ci)))
-}
-
-fn line_has_visible_text(comp: &ComposedParagraph, line_idx: usize) -> bool {
-    comp.lines
-        .get(line_idx)
-        .map(|line| {
-            line.runs
-                .iter()
-                .flat_map(|run| run.text.chars())
-                .any(|c| c > '\u{001F}' && c != '\u{FFFC}')
-        })
-        .unwrap_or(false)
-}
-
-fn line_has_text_span(comp: &ComposedParagraph, line_idx: usize) -> bool {
-    comp.lines
-        .get(line_idx)
-        .is_some_and(|line| composed_line_char_end(comp, line_idx) > line.char_start)
 }
 
 fn line_leading_tac_equation_count(
@@ -5815,6 +5771,7 @@ struct FormattedParagraph {
 
 #[path = "typeset/inline_flow.rs"]
 mod inline_flow;
+mod paragraph;
 
 impl FormattedParagraph {
     /// 특정 줄의 advance 높이 (콘텐츠 + 줄간격)
