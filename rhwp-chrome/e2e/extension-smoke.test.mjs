@@ -8,6 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { saveFailureDiagnostics } from './failure-diagnostics.mjs';
 
 const CURRENT_FILE = fileURLToPath(import.meta.url);
 const HERE = path.dirname(CURRENT_FILE);
@@ -258,6 +259,9 @@ async function runOnce(prefix) {
     assert.equal(diagnostics.unexpectedPageTargets.length, 0, formatDiagnostics(diagnostics));
     process.stdout.write(`${prefix}extension=${extensionId} worker=${workerTarget.url()}\n`);
   } catch (error) {
+    await saveFailureDiagnostics(browser, 'smoke', diagnostics).catch(diagnosticError => {
+      process.stderr.write(`Could not save smoke diagnostics: ${diagnosticError.message}\n`);
+    });
     failure = new Error(`${error.message ?? error}\n${formatDiagnostics(diagnostics)}`, { cause: error });
   } finally {
     const cleanupErrors = [];

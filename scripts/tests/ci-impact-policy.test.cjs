@@ -10,6 +10,7 @@ const test = require('node:test');
 const { classifyChanges } = require('../ci-impact-classifier.cjs');
 const {
   CI_AUDITED_JOB_IDS,
+  CI_CHROME_JOB,
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
@@ -134,7 +135,7 @@ function ciJobs(classification, fastPass = false) {
   ];
   if (fastPass) {
     return jobs.concat(
-      [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS]
+      [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS, CI_CHROME_JOB]
         .map((name) => job(name, 'skipped')),
     );
   }
@@ -154,6 +155,7 @@ function ciJobs(classification, fastPass = false) {
   }[classification.frontend_mode];
   jobs.push(job(CI_FRONTEND_JOBS[0], frontend[0]));
   jobs.push(job(CI_FRONTEND_JOBS[1], frontend[1]));
+  jobs.push(job(CI_CHROME_JOB, classification.chrome_extension_e2e_required === 'true' ? 'success' : 'skipped'));
   return jobs;
 }
 
@@ -460,11 +462,40 @@ test('invalid classifier output and API collection failure both close to full', 
   ));
 });
 
+test('Chrome audit agrees with the package override and requires exact execution or skip', () => {
+  for (const [filename, required] of [
+    ['rhwp-studio/src/ui/about-dialog.ts', true],
+    ['rhwp-chrome/sw/settings-store.mjs', true],
+    ['rhwp-firefox/background.js', false],
+    ['rhwp-studio/tests/a.test.ts', false],
+  ]) {
+    const input = policyInput({ files: [{ filename, status: 'modified' }] });
+    const policy = determinePolicy(input);
+    assert.equal(policy.classification.chrome_extension_e2e_required, String(required), filename);
+    if (required) assert.equal(policy.classification.frontend_mode, 'package', filename);
+    const workflows = workflowEvidence(policy);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
+    const chrome = workflows.CI.jobs.find(item => item.name === CI_CHROME_JOB);
+    for (const conclusion of ['success', 'skipped', 'failure', 'cancelled']) {
+      chrome.conclusion = conclusion;
+      const audit = auditPolicyRuns({ ...input, policy, workflows });
+      assert.equal(audit.conclusion === 'success', conclusion === (required ? 'success' : 'skipped'), `${filename}: ${conclusion}`);
+    }
+    workflows.CI.jobs = workflows.CI.jobs.filter(item => item !== chrome);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'failure');
+  }
+  const files = [{ filename: 'scripts/chrome-extension-impact.cjs', status: 'modified' }];
+  const input = policyInput({ files });
+  input.pullRequest.headRepository = 'external/rhwp';
+  input.pullRequest.authorPermission = 'read';
+  assert.equal(determinePolicy(input).decision, 'blocked');
+});
+
 test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '6',
+    v: '7',
     cv: '7',
     mode: 'selective',
     rfp: '0',
@@ -558,7 +589,7 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
   const conditioned = [...CI_WORKFLOW.matchAll(
     /^  ([A-Za-z0-9_-]+):\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)/gm,
   )].filter(([, , body]) => (
-    /needs\.preflight\.outputs\.(?:rust_required|native_skia_required|frontend_mode)/.test(body)
+    /needs\.preflight\.outputs\.(?:rust_required|native_skia_required|frontend_mode|chrome_extension_e2e_required)/.test(body)
   )).map(([, jobId]) => jobId).sort();
   assert.deepEqual(conditioned, Object.keys(CI_AUDITED_JOB_IDS).sort());
 
@@ -566,6 +597,7 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     ...CI_RUST_JOBS,
     CI_NATIVE_JOB,
     ...CI_FRONTEND_JOBS,
+    CI_CHROME_JOB,
     'Build & Test',
     'resolve-nextest-duration-policy',
   ]);
@@ -1104,7 +1136,7 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '7');
 });
 
 test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {

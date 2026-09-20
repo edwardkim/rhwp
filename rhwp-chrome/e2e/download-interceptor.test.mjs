@@ -8,6 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { observePageDiagnostics, saveFailureDiagnostics } from './failure-diagnostics.mjs';
 
 const CURRENT_FILE = fileURLToPath(import.meta.url);
 const HERE = path.dirname(CURRENT_FILE);
@@ -96,6 +97,7 @@ async function main() {
       userDataDir,
       args: chromeArgs(fixture.origin),
     });
+    await observePageDiagnostics(browser, downloads);
 
     const pages = await browser.pages();
     const fixturePage = pages[0] ?? await browser.newPage();
@@ -132,6 +134,7 @@ async function main() {
 
     const results = [];
     for (const testCase of CASES) {
+      downloads.stage = testCase.id;
       process.stdout.write(`START ${testCase.id}\n`);
       const result = await runDownloadCase({
         browser,
@@ -160,9 +163,15 @@ async function main() {
         '각 HWP 다운로드 ID에 viewer 탭이 하나씩 생성되어야 합니다.',
       );
       process.stdout.write('PASS: XLSX 2건 탭 0, HWP 8건 download id별 탭 1 (초기 저장 지연 3건 포함)\n');
+      downloads.stage = 'own-blob-save';
       await runOwnBlobSaveCase({ browser, downloads, downloadDir, extensionId });
     }
   } catch (error) {
+    await saveFailureDiagnostics(browser, 'download', {
+      ...downloads, error: error.message, progress: [...downloads.progress],
+    }).catch(diagnosticError => {
+      process.stderr.write(`Could not save download diagnostics: ${diagnosticError.message}\n`);
+    });
     failure = new Error(`${error.message ?? error}\n${formatDownloadDiagnostics(downloads)}`, { cause: error });
   } finally {
     const cleanupErrors = [];
@@ -470,7 +479,7 @@ function chromeArgs(fixtureOrigin) {
 }
 
 function createDownloadDiagnostics() {
-  return { begun: [], progress: new Map() };
+  return { stage: 'launch', begun: [], progress: new Map() };
 }
 
 function formatDownloadDiagnostics(downloads) {

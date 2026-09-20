@@ -22,6 +22,9 @@ Studio production source·필수 정적 surface·WASM·빌드 입력이 영향�
 editor 전용 코드와 문서·Studio tests/e2e만 바뀌면 건너뛴다. 불명확한 production 경로는 실행한다.
 
 필수 Build & Test 집계는 expected run의 success와 expected skip의 skipped를 각각 검증한다.
+독립 CI Impact Policy도 같은 Chrome 분류기를 trusted base에서 읽고 실제 package 승격과 새 job을
+검사한다. 정책 의미가 추가되므로 protocol v7 producer/세 consumer를 함께 갱신하며, 기존 v6
+증거는 review-only 재사용에 쓰지 않는다. Rust/render/CodeQL의 영향 축 자체는 유지한다.
 실패 시 console·worker·다운로드·단계·extension URL·screenshot만 artifact로 남기며 profile과
 fixture 원본은 제외한다. 성공 시 작은 결과 summary만 남기고 진단 artifact는 올리지 않는다.
 
@@ -29,7 +32,7 @@ fixture 원본은 제외한다. 성공 시 작은 결과 summary만 남기고 �
 
 - 영향 경로·rename·목록 잘림·tag/manual/fallback의 Node 계약.
 - YAML/actionlint·생산자/소비자·required 집계의 실행/skip/failure/cancelled 계약.
-- 실제 production dist에서 smoke/download/lifecycle 전체 실행, #3513 10회 연속 결과 연결.
+- 실제 production dist에서 smoke/download/lifecycle 전체를 10회 연속 실행, #3513 10회 결과도 연결.
 - 실패를 의도적으로 발생시켜 제한된 진단 파일과 오류 exit code 확인.
 - GitHub Actions retry 없는 3회와 cache 로그는 원격 게시 승인 후 실제 run으로 확인한다.
 - Firefox Phase 2는 Chrome CI의 Linux/CfT 안정화 결과를 확인할 때까지 구현 보류 근거를 Epic에 남긴다.

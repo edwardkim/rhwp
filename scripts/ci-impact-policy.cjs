@@ -1,8 +1,9 @@
 'use strict';
 
 const fs = require('node:fs');
+const { classifyChromeExtension } = require('./chrome-extension-impact.cjs');
 
-const POLICY_VERSION = '6';
+const POLICY_VERSION = '7';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -150,6 +151,7 @@ const CI_JOB_ALIASES = {
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
 const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
+const CI_CHROME_JOB = 'Chrome extension E2E';
 // Job ids are the stable YAML-side identities. Values are the REST job names audited
 // below. Tests derive every impact-conditioned ci.yml job and require this map to stay
 // complete, so adding a new selectable lane cannot silently escape the controller.
@@ -167,6 +169,7 @@ const CI_AUDITED_JOB_IDS = {
   'native-skia-tests': CI_NATIVE_JOB,
   'frontend-unit-gates': CI_FRONTEND_JOBS[0],
   'frontend-package-gates': CI_FRONTEND_JOBS[1],
+  'chrome-extension-e2e': CI_CHROME_JOB,
   'build-and-test': 'Build & Test',
 };
 const CODEQL_JOBS = {
@@ -260,6 +263,7 @@ function changesEnforcementSurface(files) {
     filename.startsWith('.github/workflows/')
     || filename.startsWith('.github/actions/')
     || filename === 'scripts/ci-impact-classifier.cjs'
+    || filename === 'scripts/chrome-extension-impact.cjs'
     || filename === 'scripts/ci-impact-policy.cjs'
     || filename === 'scripts/ci-workflow-evidence.cjs'
     || filename === 'scripts/collect-postmerge-duration-data.mjs'
@@ -565,6 +569,14 @@ function determinePolicy(input = {}) {
     );
   }
   const forceAllWorkflows = Boolean(forceFullReason || !controllerAvailable);
+  const chromeImpact = classifyChromeExtension({
+    eventName: 'pull_request', files: Array.isArray(input.files) ? input.files.map(normalizeFile) : input.files,
+    expectedFileCount: input.expectedFileCount, forceFullReason,
+  });
+  // Match CI preflight's effective package lane, while retaining the independent
+  // Rust/render/CodeQL classification and trusted-base execution boundary.
+  classification = { ...classification, ...chromeImpact };
+  if (chromeImpact.chrome_extension_e2e_required === 'true') classification.frontend_mode = 'package';
   const policy = {
     policy_version: POLICY_VERSION,
     policy_context: POLICY_CONTEXT,
@@ -741,7 +753,7 @@ function auditCi(policy, jobs) {
       const failure = requireSafeAliasedJobConclusion(byName, name, 'skipped');
       if (failure) return failure;
     }
-    return '';
+    return requireJobConclusion(byName, CI_CHROME_JOB, 'skipped');
   }
 
   const rustConclusion = policy.classification.rust_required === 'true' ? 'success' : 'skipped';
@@ -766,7 +778,8 @@ function auditCi(policy, jobs) {
     );
     if (failure) return failure;
   }
-  return '';
+  return requireJobConclusion(byName, CI_CHROME_JOB,
+    policy.classification.chrome_extension_e2e_required === 'true' ? 'success' : 'skipped');
 }
 
 function auditCodeql(policy, jobs) {
@@ -1055,6 +1068,7 @@ function flatOutputs(policy, audit) {
     status_description: policy.status_description,
     rust_required: policy.classification.rust_required,
     frontend_mode: policy.classification.frontend_mode,
+    chrome_extension_e2e_required: policy.classification.chrome_extension_e2e_required,
     render_required: policy.classification.render_required,
     native_skia_required: policy.classification.native_skia_required,
     codeql_languages: policy.classification.codeql_languages,
@@ -1101,6 +1115,7 @@ if (require.main === module) {
 
 module.exports = {
   CI_AUDITED_JOB_IDS,
+  CI_CHROME_JOB,
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
