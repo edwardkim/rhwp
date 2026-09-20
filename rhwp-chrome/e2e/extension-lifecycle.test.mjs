@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, statfs, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -154,7 +154,11 @@ async function runScenario(scenario, iteration) {
     observe(expected);
     await guard(page.click('#download'));
     const record = await guard(poll(() => diagnostic.downloads.find(item => item.suggestedFilename === name)));
-    await guard(poll(() => record.progress.some(event => event.state === 'completed')));
+    await guard(poll(() => {
+      assert.ok(!record.progress.some(event => event.state === 'canceled'),
+        `Chrome canceled download ${record.guid}: ${record.suggestedFilename}`);
+      return record.progress.some(event => event.state === 'completed');
+    }));
     assert.deepEqual(await readFile(path.join(downloadsDir, name)), fixtures[format]);
     if (expected) await guard(browser.waitForTarget(target => target.type() === 'page'
       && target.url().startsWith(`chrome-extension://${extensionId}/viewer.html?`)));
@@ -230,8 +234,27 @@ async function runScenario(scenario, iteration) {
     diagnostic.openTabs = browser?.targets().filter(target => target.type() === 'page').map(target => target.url());
     diagnostic.workers = browser?.targets().filter(isWorker).map(target => target.url());
     // Reading extension internals is reserved for failure diagnostics.
+    const disk = await statfs(downloadsDir).catch(() => null);
+    if (disk) diagnostic.downloadDiskFreeBytes = disk.bavail * disk.bsize;
+    const workerTarget = browser?.targets().find(isWorker);
+    if (workerTarget) {
+      // Query only URLs served by this scenario's own loopback fixture. Retain
+      // error codes and IDs, never a browser-wide download list or preferences.
+      const urls = diagnostic.downloads.map(item => item.url).filter(url => new URL(url).origin === fixture.origin);
+      diagnostic.fixtureDownloadErrors = await within((async () => {
+        const worker = await workerTarget.worker();
+        return worker.evaluate(async fixtureUrls => {
+          const result = [];
+          for (const url of fixtureUrls) {
+            const items = await chrome.downloads.search({ url });
+            result.push(...items.map(item => ({ id: item.id, state: item.state, error: item.error || null })));
+          }
+          return result;
+        }, urls);
+      })(), 2_000).catch(String);
+    }
     if (page?.url().startsWith('chrome-extension://')) {
-      diagnostic.settings = await within(page.evaluate(() => chrome.storage.sync.get(null)), 2_000).catch(String);
+      diagnostic.settings = await within(page.evaluate(() => chrome.storage.sync.get('autoOpen')), 2_000).catch(String);
     }
     const output = process.env.RHWP_EXTENSION_E2E_OUTPUT_DIR;
     if (output) {
