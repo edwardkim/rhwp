@@ -29,10 +29,14 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         self.assertNotIn('npm run build', consumer)
         self.assertIn('timeout-minutes: 5', consumer)
         self.assertIn('node rhwp-chrome/e2e/run-ci.mjs', consumer)
-        self.assertIn('CHROME_DEVEL_SANDBOX: /opt/google/chrome/chrome-sandbox', consumer)
-        self.assertIn('test -u "$CHROME_DEVEL_SANDBOX"', consumer)
-        self.assertIn("= '0:4755'", consumer)
-        self.assertLess(consumer.index('Verify installed Linux sandbox helper'),
+        self.assertIn('"$PUPPETEER_CACHE_DIR"/chrome/linux-*/chrome-linux64/chrome)', consumer)
+        self.assertIn('[[ "$chrome_binary" =~ ^/[a-zA-Z0-9/_.-]+$ ]]', consumer)
+        self.assertIn('profile rhwp-chrome-e2e "%s" flags=(unconfined)', consumer)
+        self.assertIn('sudo apparmor_parser --replace /etc/apparmor.d/rhwp-chrome-e2e', consumer)
+        self.assertIn('sudo apparmor_parser --remove /etc/apparmor.d/rhwp-chrome-e2e', consumer)
+        self.assertNotIn('--no-sandbox', consumer)
+        self.assertNotIn('sysctl', consumer)
+        self.assertLess(consumer.index('Allow the installed Chrome sandbox on Ubuntu'),
                         consumer.index('Run packaged Chrome journeys'))
         # This job receives a prebuilt dist and needs only the harness and its
         # three committed inputs; fetching the PDF corpus consumes its budget.
