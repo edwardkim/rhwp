@@ -3,7 +3,9 @@
 //! fit 높이·전체 높이·줄 전진량은 서로 다른 의미를 유지한다. 원본 IR이나
 //! 페이지 상태를 변경하지 않는다. 기존 환경 변수 기반 진단 출력은 유지한다.
 
-use crate::model::paragraph::Paragraph;
+use super::super::para_near_rowbreak_table;
+use super::stored_lines::stored_ladder_encodes_spacing_before;
+use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile};
 
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
@@ -163,5 +165,64 @@ impl FormattedParagraph {
             return self.height_for_fit.min(self.total_height);
         }
         self.total_height
+    }
+}
+
+/// 흐름 누적에 사용하는 독립 관측값. 전체 fit 높이와 섞지 않는다.
+pub(in crate::renderer::typeset) struct ParagraphFlowHints {
+    pub body_bottom_vpos: Option<i32>,
+    pub trim_spacing_before_for_flow: bool,
+    pub trimmed_sb_gate: f64,
+}
+
+pub(in crate::renderer::typeset) fn flow_hints(
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    profile: LayoutCompatibilityProfile,
+    dpi: f64,
+) -> ParagraphFlowHints {
+    // fits: 문단 전체가 현재 공간에 들어가는가?
+    // [Task #359] fit 판정은 height_for_fit (trailing_ls 제외) 으로,
+    // 누적은 total_height (full) 로 분리. 각 항목별 trailing_ls 가
+    // 누적에서 빠지면 N items 누적 시 N × trailing_ls 만큼 drift 발생
+    // (k-water-rfp p3 case: 36 items × 평균 ~9px = ~311px LAYOUT_OVERFLOW).
+    // trailing_ls 는 페이지 마지막 항목의 fit 판정에만 의미가 있음
+    // (페이지 끝에는 다음 줄이 없으니 line_spacing 미적용).
+    // [Task #1082] 본문 para 의 bottom offset vpos — 미주 vpos-delta 시드용.
+    let body_bottom_vpos: Option<i32> = para.line_segs.last().map(|s| {
+        s.vertical_pos
+            .saturating_add(s.line_height)
+            .saturating_add(s.line_spacing)
+    });
+    // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
+    // 실제 한컴 줄 흐름이 유지된다(#1116).
+    let trim_spacing_before_for_flow = !profile.hwp3_layout()
+        && !para_near_rowbreak_table(paragraphs, para_idx)
+        // [#5801] 저장 사다리가 문단 위 간격을 안 담았으면 트림의 전제가 깨진다 —
+        // 트림하면 쪽 채움을 문단마다 sb 만큼 짧게 센다.
+        && stored_ladder_encodes_spacing_before(
+            paragraphs,
+            para_idx,
+            fmt.spacing_before,
+            dpi,
+        );
+    // [#6753] 트림된 `sb` 되돌리기는 **저장 사다리가 권위인 네이티브 HWP5** 에 한정한다.
+    //
+    // HWPX 의 `vpos` 리셋은 writer-local 재시작일 수 있어 별도 기계(`#5801` 의 HWPX 전용
+    // dirty 철회 · `#6063` · `hwpx_saved_reset_fragment_matches_current_flow`)가 따로 다룬다.
+    // 전 포맷에 켠 판은 `samples/` 전수에서 `issue1880_*.hwpx` 2건을 악화시켰다
+    // (5쪽 넘침 1 → 4, 최대 +82.65px). 같은 판에서 HWP5 문서는 3건 전부 개선이었다.
+    let trimmed_sb_gate = if profile.hwp5_stored_pagination_layout() {
+        1.0
+    } else {
+        0.0
+    };
+
+    ParagraphFlowHints {
+        body_bottom_vpos,
+        trim_spacing_before_for_flow,
+        trimmed_sb_gate,
     }
 }

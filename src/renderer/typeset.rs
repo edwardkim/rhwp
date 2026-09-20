@@ -16833,25 +16833,7 @@ impl TypesetEngine {
             return;
         }
 
-        // 다단 레이아웃에서 문단 내 단 경계 감지
-        // [Task #459] on_first_multicolumn_page 가드 제거: 다단 구역이 여러 페이지에 걸칠 때
-        // 후속 페이지에서도 LINE_SEG vpos-reset 으로 인코딩된 단 경계를 인식해야 함.
-        // [Task #2320] current_column == 0 한정 해제: 비-0 단(마지막 단 포함)에서 시작하는
-        // 문단의 문단 내 vpos 되감김은 단/쪽 경계 인코딩이다 — 마지막 단이면 "다음 쪽
-        // 단 0 으로 계속" (treatise p2 pi=29 라인1 되감김 67050→4926, 한컴 2022 PDF 정합).
-        // 가드 2종: ①미주 흐름은 한 단 안에서도 vpos 가 크게 되감기므로 제외
-        // (ColumnContent.endnote_flow 계약) ②되감김 목표가 단 상단 근방일 때만 인정
-        // (detect_near_top_rewind_breaks — 페이지 중간 되감김은 어울림 흐름 잔재).
-        let col_breaks = if st.col_count > 1 && st.current_column == 0 {
-            Self::detect_column_breaks_in_paragraph(para)
-        } else if st.col_count > 1 && st.current_column > 0 && !st.current_endnote_flow {
-            Self::detect_near_top_rewind_breaks(para, st.layout.available_body_height(), self.dpi)
-        } else {
-            vec![0]
-        };
-
-        if col_breaks.len() > 1 {
-            self.typeset_multicolumn_paragraph(st, para_idx, para, fmt, &col_breaks);
+        if paragraph::try_place_multicolumn_paragraph(st, para_idx, para, fmt, self.dpi) {
             return;
         }
 
@@ -16875,42 +16857,11 @@ impl TypesetEngine {
         } = paragraph::prepare_forced_page_boundary(
             st, para_idx, para, fmt, paragraphs, available, self.dpi,
         );
-        // fits: 문단 전체가 현재 공간에 들어가는가?
-        // [Task #359] fit 판정은 height_for_fit (trailing_ls 제외) 으로,
-        // 누적은 total_height (full) 로 분리. 각 항목별 trailing_ls 가
-        // 누적에서 빠지면 N items 누적 시 N × trailing_ls 만큼 drift 발생
-        // (k-water-rfp p3 case: 36 items × 평균 ~9px = ~311px LAYOUT_OVERFLOW).
-        // trailing_ls 는 페이지 마지막 항목의 fit 판정에만 의미가 있음
-        // (페이지 끝에는 다음 줄이 없으니 line_spacing 미적용).
-        // [Task #1082] 본문 para 의 bottom offset vpos — 미주 vpos-delta 시드용.
-        let body_bottom_vpos: Option<i32> = para.line_segs.last().map(|s| {
-            s.vertical_pos
-                .saturating_add(s.line_height)
-                .saturating_add(s.line_spacing)
-        });
-        // HWP3-origin 변환본은 spacing_before 누적을 보존해야 dump-pages 요약과
-        // 실제 한컴 줄 흐름이 유지된다(#1116).
-        let trim_spacing_before_for_flow = !st.profile.hwp3_layout()
-            && !para_near_rowbreak_table(paragraphs, para_idx)
-            // [#5801] 저장 사다리가 문단 위 간격을 안 담았으면 트림의 전제가 깨진다 —
-            // 트림하면 쪽 채움을 문단마다 sb 만큼 짧게 센다.
-            && stored_ladder_encodes_spacing_before(
-                paragraphs,
-                para_idx,
-                fmt.spacing_before,
-                self.dpi,
-            );
-        // [#6753] 트림된 `sb` 되돌리기는 **저장 사다리가 권위인 네이티브 HWP5** 에 한정한다.
-        //
-        // HWPX 의 `vpos` 리셋은 writer-local 재시작일 수 있어 별도 기계(`#5801` 의 HWPX 전용
-        // dirty 철회 · `#6063` · `hwpx_saved_reset_fragment_matches_current_flow`)가 따로 다룬다.
-        // 전 포맷에 켠 판은 `samples/` 전수에서 `issue1880_*.hwpx` 2건을 악화시켰다
-        // (5쪽 넘침 1 → 4, 최대 +82.65px). 같은 판에서 HWP5 문서는 3건 전부 개선이었다.
-        let trimmed_sb_gate = if st.profile.hwp5_stored_pagination_layout() {
-            1.0
-        } else {
-            0.0
-        };
+        let paragraph::metrics::ParagraphFlowHints {
+            body_bottom_vpos,
+            trim_spacing_before_for_flow,
+            trimmed_sb_gate,
+        } = paragraph::metrics::flow_hints(para, fmt, paragraphs, para_idx, st.profile, self.dpi);
 
         let paragraph::WholeFitDecision {
             fits,
@@ -25924,107 +25875,6 @@ impl TypesetEngine {
                 issue2424_tl::ISSUE2424_CELL_UNITS_MISSES.load(Relaxed),
                 issue2424_tl::ISSUE2424_CELL_UNITS_MISS_NANOS.load(Relaxed) as f64 / 1e6,
             );
-        }
-    }
-
-    // ========================================================
-    // 다단 문단 처리
-    // ========================================================
-
-    /// [Task #2320] 비-0 단 시작 문단의 쪽/단 경계 되감김 감지.
-    ///
-    /// 마지막 단에서 시작하는 문단의 문단 내 되감김은 "다음 쪽 단 0 으로 계속"의
-    /// 쪽 경계 인코딩이다 — 단, **되감김 목표가 단 상단 근방**일 때만 인정한다
-    /// (treatise pi=29: 4926HU ≈ 본문 높이 7%). 목표가 페이지 중간에 머무는
-    /// 되감김(143E 신문 스크랩 pi=9: ≈40%)은 경계가 아니라 개체 어울림 흐름의
-    /// 잔재이므로 제외한다. 단 0 시작 경로(`detect_column_breaks_in_paragraph`,
-    /// 임계값 없는 any-decrease)는 건드리지 않는다.
-    fn detect_near_top_rewind_breaks(
-        para: &Paragraph,
-        body_height_px: f64,
-        dpi: f64,
-    ) -> Vec<usize> {
-        const NEAR_TOP_RATIO: f64 = 0.15;
-        let mut breaks = vec![0usize];
-        if para.line_segs.len() <= 1 {
-            return breaks;
-        }
-        for i in 1..para.line_segs.len() {
-            let prev = &para.line_segs[i - 1];
-            let curr = &para.line_segs[i];
-            if curr.vertical_pos < prev.vertical_pos
-                && crate::renderer::hwpunit_to_px(curr.vertical_pos, dpi)
-                    <= body_height_px * NEAR_TOP_RATIO
-            {
-                breaks.push(i);
-            }
-        }
-        breaks
-    }
-
-    /// 다단 레이아웃에서 문단 내 단 경계를 감지한다.
-    fn detect_column_breaks_in_paragraph(para: &Paragraph) -> Vec<usize> {
-        let mut breaks = vec![0usize];
-        if para.line_segs.len() <= 1 {
-            return breaks;
-        }
-        for i in 1..para.line_segs.len() {
-            if para.line_segs[i].vertical_pos < para.line_segs[i - 1].vertical_pos {
-                breaks.push(i);
-            }
-        }
-        breaks
-    }
-
-    /// 다단 문단의 단별 분할
-    fn typeset_multicolumn_paragraph(
-        &self,
-        st: &mut TypesetState,
-        para_idx: usize,
-        para: &Paragraph,
-        fmt: &FormattedParagraph,
-        col_breaks: &[usize],
-    ) {
-        let line_count = fmt.line_heights.len();
-        for (bi, &break_start) in col_breaks.iter().enumerate() {
-            let break_end = if bi + 1 < col_breaks.len() {
-                col_breaks[bi + 1]
-            } else {
-                line_count
-            };
-
-            if break_start >= line_count || break_end > line_count {
-                break;
-            }
-
-            let part_height = fmt.line_advances_sum(break_start..break_end);
-
-            if break_start == 0 && break_end >= line_count {
-                st.current_items.push(PageItem::FullParagraph {
-                    para_index: para_idx,
-                });
-            } else {
-                st.current_items.push(PageItem::PartialParagraph {
-                    para_index: para_idx,
-                    start_line: break_start,
-                    end_line: break_end,
-                });
-            }
-            st.current_height += part_height;
-
-            // 마지막 조각이 아니면 다음 단으로 진행.
-            // [Task #2320] 마지막 단에서의 분할은 새 페이지 단 0 으로 진행한다
-            // (advance_column_or_new_page). 종전 코드는 마지막 단에서 flush 만 하고
-            // 단/높이를 갱신하지 않아 잔여 조각이 같은 단 좌표에 눌러앉았다.
-            if bi + 1 < col_breaks.len() {
-                if st.current_column + 1 < st.col_count {
-                    st.flush_column();
-                    st.current_column += 1;
-                    st.current_height = 0.0;
-                } else {
-                    st.advance_column_or_new_page();
-                }
-            }
         }
     }
 

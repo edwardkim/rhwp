@@ -203,6 +203,24 @@ impl TypesetState {
         self.current_height += fragment.height;
     }
 
+    /// 저장 다단 조각은 일반 split과 달리 trim 복원값을 초기화하지 않는다.
+    pub(super) fn commit_multicolumn_paragraph_fragment(&mut self, fragment: ParagraphFragment) {
+        self.current_items.push(fragment.item);
+        self.current_height += fragment.height;
+    }
+
+    /// [Task #2320] 마지막 단에서의 분할은 새 페이지 단 0으로 진행한다.
+    /// 중간 단에서는 기존 flush → 단 증가 → 높이 초기화 순서를 유지한다.
+    pub(super) fn advance_after_multicolumn_fragment(&mut self) {
+        if self.current_column + 1 < self.col_count {
+            self.flush_column();
+            self.current_column += 1;
+            self.current_height = 0.0;
+        } else {
+            self.advance_column_or_new_page();
+        }
+    }
+
     /// 줄 후보 계산에 필요한 값만 관측한다. 페이지 전환 뒤 다시 호출해야 한다.
     pub(super) fn paragraph_line_scan_page(&self) -> LineScanPage {
         LineScanPage {

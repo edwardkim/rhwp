@@ -9,6 +9,7 @@
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod boundary;
+mod columns;
 pub(super) mod context;
 pub(super) mod empty;
 mod entry;
@@ -733,4 +734,45 @@ pub(super) fn prepare_forced_page_boundary(
         current_page_vpos_base,
         forced_page_break_line,
     }
+}
+
+/// 일반 줄 분할과 구분되는 저장 다단 경로. 선택된 경계가 있으면 기존처럼 이 경로가
+/// 문단을 소비한다. 유효 조각이 없어 루프를 종료해도 일반 fit 경로로 재진입하지 않는다.
+pub(super) fn try_place_multicolumn_paragraph(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    dpi: f64,
+) -> bool {
+    let col_breaks = columns::detect_breaks(
+        para,
+        st.col_count,
+        st.current_column,
+        st.current_endnote_flow,
+        st.layout.available_body_height(),
+        dpi,
+    );
+    if col_breaks.len() <= 1 {
+        return false;
+    }
+    let line_count = fmt.line_heights.len();
+    for (bi, &break_start) in col_breaks.iter().enumerate() {
+        let break_end = if bi + 1 < col_breaks.len() {
+            col_breaks[bi + 1]
+        } else {
+            line_count
+        };
+        let Some(fragment) =
+            columns::plan_fragment(para_idx, fmt, break_start, break_end, line_count)
+        else {
+            break;
+        };
+        st.commit_multicolumn_paragraph_fragment(fragment);
+        // 마지막 조각이 아니면 다음 단으로 진행.
+        if bi + 1 < col_breaks.len() {
+            st.advance_after_multicolumn_fragment();
+        }
+    }
+    true
 }
