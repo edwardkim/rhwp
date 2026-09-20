@@ -5,7 +5,8 @@
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
 //! 진입 예산과 전체/넘침/빈 구성 결과 배치, 분할 진입·페이지 전환을 조정한다.
-//! 강제 경계 후보의 우선순위와 전체 fit 선택·호환성 spill을 조정한다. 표 문단은 상위에 남아 있다.
+//! flow는 일반 문단의 최상위 순서를, controls::paragraph_flow는 표 소유 문단을 조정한다.
+//! 강제 경계 후보의 우선순위와 전체 fit 선택·호환성 spill을 조정한다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod boundary;
@@ -14,6 +15,7 @@ pub(super) mod context;
 pub(super) mod empty;
 mod entry;
 pub(super) mod fit;
+pub(super) mod flow;
 pub(super) mod format;
 pub(super) mod line_queries;
 pub(super) mod metrics;

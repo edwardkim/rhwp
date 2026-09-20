@@ -31,6 +31,13 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 강제 경계 준비 뒤의 문단 흐름 힌트에 사용할 현재 상태의 profile.
+    pub(super) fn paragraph_flow_profile(
+        &self,
+    ) -> crate::model::provenance::LayoutCompatibilityProfile {
+        self.profile
+    }
+
     /// 지연 배치는 새 문단 진입이 아니므로 float 배타 영역을 추가로 소비하지 않는다.
     pub(super) fn deferred_table_column_width(&self) -> f64 {
         self.layout
