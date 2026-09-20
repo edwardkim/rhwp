@@ -216,7 +216,6 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             scripts/ci-impact-classifier.cjs
-            scripts/chrome-extension-impact.cjs
             scripts/ci-impact-policy.cjs
             scripts/ci-workflow-evidence.cjs
             scripts/ci-impact-report.cjs

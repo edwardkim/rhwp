@@ -2,6 +2,15 @@
   "schemaVersion": 1,
   "repository": "edwardkim/rhwp",
   "workflows": {
+    ".github/workflows/chrome-browser-cache.yml": {
+      "executionMode": "verify-only",
+      "sensitiveSurfaces": ["cache"],
+      "requiredJobs": ["Verify locked Chrome installation"],
+      "requiredSkippedJobs": ["Seed shared Chrome browser cache"],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
     ".github/workflows/adapter-diff.yml": {
       "executionMode": "direct",
       "sensitiveSurfaces": ["cache"],

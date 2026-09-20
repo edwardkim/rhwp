@@ -1,5 +1,6 @@
 """Protect the Chrome CI trust boundary and artifact producer/consumer contract."""
 import pathlib
+import json
 import re
 import unittest
 
@@ -46,6 +47,19 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         key = "key: chrome-extension-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rhwp-chrome/package-lock.json') }}"
         self.assertIn(key, consumer)
         self.assertEqual(self.seed.count(key), 2)
+
+    def test_cache_promotion_verifies_installation_without_saving_shared_cache(self):
+        verify, prepare = self.seed.split('  prepare:\n', maxsplit=1)
+        self.assertIn('default: true', verify)
+        self.assertIn('if: ${{ inputs.verify_only }}', verify)
+        self.assertIn('puppeteer browsers install chrome', verify)
+        self.assertNotIn('actions/cache/save@', verify)
+        self.assertIn('!inputs.verify_only && github.ref', prepare)
+        policy = json.loads((ROOT / 'scripts/workflow_promotion_policy.json').read_text())
+        adapter = policy['workflows']['.github/workflows/chrome-browser-cache.yml']
+        self.assertEqual(adapter['executionMode'], 'verify-only')
+        self.assertEqual(adapter['requiredJobs'], ['Verify locked Chrome installation'])
+        self.assertEqual(adapter['requiredSkippedJobs'], ['Seed shared Chrome browser cache'])
 
     def test_failure_artifact_is_allowlisted_and_success_only_has_summary(self):
         consumer = self.job('chrome-extension-e2e')

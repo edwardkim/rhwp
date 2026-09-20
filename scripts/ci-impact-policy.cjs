@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('node:fs');
-const { classifyChromeExtension } = require('./chrome-extension-impact.cjs');
+const { classifyChromeExtension } = require('./ci-impact-classifier.cjs');
 
 const POLICY_VERSION = '7';
 const POLICY_CONTEXT = 'CI Impact Policy';

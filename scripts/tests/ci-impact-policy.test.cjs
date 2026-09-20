@@ -491,6 +491,19 @@ test('Chrome audit agrees with the package override and requires exact execution
   assert.equal(determinePolicy(input).decision, 'blocked');
 });
 
+test('policy still loads with the existing controller sparse checkout file set', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-policy-sparse-'));
+  try {
+    for (const file of ['ci-impact-classifier.cjs', 'ci-impact-policy.cjs']) {
+      fs.copyFileSync(path.join(__dirname, '..', file), path.join(directory, file));
+    }
+    const output = execFileSync(process.execPath, ['-e',
+      `const {determinePolicy} = require('./ci-impact-policy.cjs'); console.log(determinePolicy().classification.chrome_extension_e2e_required);`,
+    ], { cwd: directory, encoding: 'utf8' });
+    assert.equal(output.trim(), 'true');
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
 test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
