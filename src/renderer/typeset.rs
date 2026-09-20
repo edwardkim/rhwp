@@ -17320,68 +17320,6 @@ impl TypesetEngine {
         }
     }
 
-    fn is_deferred_coanchored_rowbreak_table(
-        &self,
-        para: &Paragraph,
-        table: &crate::model::table::Table,
-        fmt: &FormattedParagraph,
-    ) -> bool {
-        use crate::model::shape::{TextWrap, VertRelTo};
-
-        !para_has_visible_text(para)
-            && !self.is_effective_tac_table(para, table, fmt)
-            && !table.common.treat_as_char
-            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-            && matches!(table.common.vert_rel_to, VertRelTo::Para)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-            && signed_hwpunit(table.common.vertical_offset) > 0
-    }
-
-    fn is_coanchored_rowbreak_split_trigger_table(
-        &self,
-        para: &Paragraph,
-        table: &crate::model::table::Table,
-        fmt: &FormattedParagraph,
-    ) -> bool {
-        use crate::model::shape::{TextWrap, VertRelTo};
-
-        !para_has_visible_text(para)
-            && !self.is_effective_tac_table(para, table, fmt)
-            && !table.common.treat_as_char
-            && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-            && matches!(table.common.vert_rel_to, VertRelTo::Para)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-    }
-
-    fn should_defer_remaining_coanchored_rowbreak_tables(
-        &self,
-        st: &TypesetState,
-        para: &Paragraph,
-        table: &crate::model::table::Table,
-        fmt: &FormattedParagraph,
-        pages_before_block_table: usize,
-    ) -> bool {
-        if !self.is_coanchored_rowbreak_split_trigger_table(para, table, fmt) {
-            return false;
-        }
-        if st.pages.len() <= pages_before_block_table {
-            return false;
-        }
-        matches!(
-            st.current_items.last(),
-            Some(PageItem::PartialTable {
-                is_continuation: true,
-                ..
-            })
-        )
-    }
-
     #[allow(clippy::too_many_arguments)]
     fn flush_deferred_table_controls(
         &self,
@@ -17429,7 +17367,9 @@ impl TypesetEngine {
                 .unwrap_or(st.layout.body_area.width);
             let composed_para = composed.get(deferred.para_index);
             let fmt = self.format_paragraph(para, composed_para, styles, Some(host_col_w));
-            if !self.is_deferred_coanchored_rowbreak_table(para, table, &fmt) {
+            if !controls::deferred::CoanchoredTableQuery::new(para, &fmt, self.tac_flow_query())
+                .is_deferred_coanchored_rowbreak_table(table)
+            {
                 continue;
             }
 
@@ -17930,40 +17870,25 @@ impl TypesetEngine {
                             paragraphs_all,
                             composed_all,
                         );
-                        if self.should_defer_remaining_coanchored_rowbreak_tables(
-                            st,
+                        let deferred_query = controls::deferred::CoanchoredTableQuery::new(
                             para,
-                            table,
                             &fmt,
+                            self.tac_flow_query(),
+                        );
+                        if deferred_query.should_defer_remaining_coanchored_rowbreak_tables(
+                            table,
+                            st.pages.len(),
+                            &st.current_items,
                             pages_before_block_table,
                         ) {
-                            let deferred: Vec<DeferredTableControl> = ctrl_order
-                                .iter()
-                                .skip(order_pos + 1)
-                                .copied()
-                                .filter_map(|next_ctrl_idx| {
-                                    let Control::Table(next_table) =
-                                        para.controls.get(next_ctrl_idx)?
-                                    else {
-                                        return None;
-                                    };
-                                    self.is_deferred_coanchored_rowbreak_table(
-                                        para, next_table, &fmt,
-                                    )
-                                    .then(|| {
-                                        DeferredTableControl {
-                                            para_index: para_idx,
-                                            control_index: next_ctrl_idx,
-                                            is_first_placed: first_placed_table
-                                                == Some(next_ctrl_idx),
-                                            is_last_placed: last_placed_table
-                                                == Some(next_ctrl_idx),
-                                            // [Task #1860] 원 배치 시점의 참 para_start.
-                                            para_start_height,
-                                        }
-                                    })
-                                })
-                                .collect();
+                            let deferred = deferred_query.remaining_controls(
+                                para_idx,
+                                &ctrl_order,
+                                order_pos,
+                                first_placed_table,
+                                last_placed_table,
+                                para_start_height,
+                            );
                             if !deferred.is_empty() {
                                 st.deferred_table_controls.extend(deferred);
                                 break_after_current_table = true;
