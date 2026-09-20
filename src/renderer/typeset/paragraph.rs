@@ -4,10 +4,12 @@
 //! 문단 구성은 필요한 관측값을 읽고 결과만 반환한다.
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
-//! 전체/넘침/빈 구성 결과 배치와 분할 진입·페이지 전환을 조정한다. 진입 fit/표 문단은 상위에 남아 있다.
+//! 진입 예산과 전체/넘침/빈 구성 결과 배치, 분할 진입·페이지 전환을 조정한다.
+//! 저장 강제 경계와 최종 fit 선택, 표 문단은 상위에 남아 있다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod context;
+mod entry;
 pub(super) mod fit;
 pub(super) mod format;
 pub(super) mod line_queries;
@@ -21,6 +23,7 @@ pub(super) mod stored_lines;
 
 use super::{para_has_visible_text, para_is_treat_as_char_picture_only, TypesetState};
 use crate::model::paragraph::Paragraph;
+use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
 use stored_lines::{next_boundary_reverts_spacing_trim, spacing_trim_restorable};
@@ -398,4 +401,84 @@ pub(super) fn place_after_failed_fit(
         is_tac_picture_stack,
         dpi,
     );
+}
+
+/// 문단 진입 조정과 1회성 fit 예산 소비 결과. 실제 분할 경계는 이후에 계산한다.
+pub(super) struct FitBudget {
+    pub strict_after_empty_host_float: bool,
+    pub layout_drift_safety_px: f64,
+    pub prev_is_partial_table: bool,
+    pub available: f64,
+}
+
+/// 저장 꼬리 → 진단 → 편집 그림 이월 → 보정 소비 → float 배제 → 예산 순서를 보존한다.
+pub(super) fn prepare_fit_budget(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    session_edited: bool,
+    dpi: f64,
+) -> FitBudget {
+    if entry::stored_tail_fills_page(
+        para_idx,
+        para,
+        paragraphs,
+        st.profile.hwp5_stored_pagination_layout(),
+        st.current_height,
+        dpi,
+        || st.available_height(),
+    ) {
+        st.fill_paragraph_entry_page_tail();
+    }
+
+    // [#2243 진단] 문단 진입 시 누적 높이 — 항목별 실소비 델타 추적용. 동작 불변.
+    if std::env::var("RHWP_DIAG_FLOW").is_ok() {
+        eprintln!(
+            "DIAG_FLOW pi={} cur_h={:.1} page={} items={} ct={:?}",
+            para_idx,
+            st.current_height,
+            st.pages.len(),
+            st.current_items.len(),
+            para.column_type,
+        );
+    }
+
+    if entry::edited_picture_requires_transition(
+        para,
+        fmt,
+        session_edited,
+        !st.current_items.is_empty(),
+        st.current_height,
+        dpi,
+        || st.available_height(),
+    ) {
+        st.advance_column_or_new_page();
+    }
+
+    let strict_after_empty_host_float = st.take_strict_paragraph_fit(para);
+    let layout_drift_safety_px = fit::layout_drift_safety_px(paragraphs);
+    let prev_is_partial_table =
+        matches!(st.current_items.last(), Some(PageItem::PartialTable { .. }));
+    let safety = st.take_paragraph_safety_margin(
+        strict_after_empty_host_float,
+        prev_is_partial_table,
+        layout_drift_safety_px,
+    );
+    let exclusion_probe_height = fit::exclusion_probe_height(fmt, st.profile.hwpx_stored_layout());
+    st.apply_visible_float_exclusions(exclusion_probe_height);
+    let footnote_margin_addback =
+        st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
+    let tail_overflow =
+        st.take_paragraph_tail_overflow(strict_after_empty_host_float, fmt.height_for_fit);
+    let available =
+        (st.available_height() - safety + footnote_margin_addback + tail_overflow).max(0.0);
+
+    FitBudget {
+        strict_after_empty_host_float,
+        layout_drift_safety_px,
+        prev_is_partial_table,
+        available,
+    }
 }

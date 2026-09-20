@@ -14,6 +14,22 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 저장 꼬리가 쪽 끝을 채운 경우에만 호출한다. 판정 이후 가용 높이를 다시 조회한다.
+    pub(super) fn fill_paragraph_entry_page_tail(&mut self) {
+        self.current_height = self.current_height.max(self.available_height());
+    }
+
+    /// 빈 host float 뒤의 엄격 fit 자격을 기존 조건으로 한 번 소비한다.
+    pub(super) fn take_strict_paragraph_fit(
+        &mut self,
+        para: &crate::model::paragraph::Paragraph,
+    ) -> bool {
+        super::take_strict_plain_text_fit_after_empty_host_float_once(
+            &mut self.strict_plain_text_fit_after_empty_host_float_once,
+            para,
+        )
+    }
+
     /// 구성된 줄이 없더라도 원래 FullParagraph 항목을 보존한 뒤 높이를 계산한다.
     pub(super) fn begin_empty_line_paragraph(&mut self, para_idx: usize) {
         self.current_items.push(PageItem::FullParagraph {

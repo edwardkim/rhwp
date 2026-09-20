@@ -16960,146 +16960,20 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         is_last_in_section: bool,
     ) {
-        // [#6793] 앞 문단의 **저장 꼬리가 쪽을 채우고** 이 문단의 첫 저장 줄이
-        // `vpos == 0` 이면, 한글은 이 문단을 **다음 쪽 상단**에 둔 것이다. 쪽을 닫는다.
-        //
-        // 1611000-201000141 표지 실측:
-        //
-        // ```text
-        //   pi=0  ls[0] vpos=0     lh=61600 th=1000     ← 앵커 줄
-        //         ls[1] vpos=1600  lh=61600 gap=36960   ← 표 줄 + 꼬리
-        //         저장 꼬리 끝 = (1600 + 61600 + 36960)/75 = 1335.5px  > 예산 876.9
-        //   pi=1  ls[0] vpos=0                          ← 새 쪽 상단
-        // ```
-        //
-        // 종전에는 흐름 계상이 842.7 에서 멈춰 `pi=1`(`< 차 례 >`)이 1쪽 꼬리에
-        // 붙었고, 렌더가 그 꼬리 간격을 더해 용지 밖 363.9px 로 내보냈다.
-        // 보이게만 고치면 **쪽 귀속이 여전히 틀리다** — 한/글은 2쪽 첫 줄이다.
-        //
-        // ⭐ 판정은 저장 사다리 둘이 함께 준다 — 크기 문턱이 없다.
-        //   ① 이 문단의 첫 **비합성** 저장 줄이 `vpos == 0`.
-        //   ② 앞 문단의 마지막 비합성 저장 줄이 `vpos + lh + gap` 으로 **이 쪽
-        //      예산을 넘는다** — 그 꼬리가 쪽-끝 채움이라는 뜻이다.
-        //
-        // ⚠ ② 가 없으면 안 된다. `vpos == 0` 은 새 쪽 상단인 동시에 **"앵커 없음"
-        // 센티널**이기도 하다(`#6753` 이 남긴 함정 — 조각 시작 `vpos == 0` 을 무조건
-        // 쪽 경계로 읽은 선행 시도가 242쪽을 243쪽으로 늘려 기각됐다).
-        // 저장 사다리가 권위인 **네이티브 HWP5** 조판에 한정한다.
-        if st.profile.hwp5_stored_pagination_layout()
-            && para_idx > 0
-            && st.current_height > 0.5
-            && para
-                .line_segs
-                .iter()
-                .find(|seg| !is_synthetic_line_seg(seg))
-                .is_some_and(|seg| seg.vertical_pos == 0)
-        {
-            // 이 문단의 첫 저장 줄 높이 — 아래 검사의 허용오차다.
-            let this_line_px = para
-                .line_segs
-                .iter()
-                .find(|seg| !is_synthetic_line_seg(seg))
-                .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
-                .unwrap_or(0.0);
-            let prev_tail_fills_the_page = paragraphs
-                .get(para_idx - 1)
-                .and_then(|prev| {
-                    prev.line_segs
-                        .iter()
-                        .rev()
-                        .find(|s| !is_synthetic_line_seg(s))
-                })
-                .is_some_and(|seg| {
-                    let without_gap =
-                        hwpunit_to_px(seg.vertical_pos.saturating_add(seg.line_height), self.dpi);
-                    let with_gap = without_gap + hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
-                    // ⚠ **흐름이 사다리가 앞 문단을 남겨 둔 자리에 있어야 한다.**
-                    // 어긋나 있으면 이미 쪽 경계가 지나간 것이라, 여기서 또 닫으면
-                    // 쪽이 하나 늘어난다 (`#5941` 1490000-201600081 `pi=1201`:
-                    // 사다리 867.3 대 흐름 28.4 — 이미 다음 쪽이다. 304 → 305).
-                    let flow_matches_ladder =
-                        (st.current_height - without_gap).abs() <= this_line_px + 0.5;
-                    // 꼬리 **없이는** 쪽 안에 들어가는데 꼬리를 실으면 넘는다 —
-                    // 그 꼬리가 흐름 간격이 아니라 쪽-끝 채움이라는 뜻이다.
-                    flow_matches_ladder
-                        && without_gap <= st.available_height() + 0.5
-                        && with_gap > st.available_height() - 0.5
-                });
-            if prev_tail_fills_the_page {
-                st.current_height = st.current_height.max(st.available_height());
-            }
-        }
-
-        // [#2243 진단] 문단 진입 시 누적 높이 — 항목별 실소비 델타 추적용. 동작 불변.
-        if std::env::var("RHWP_DIAG_FLOW").is_ok() {
-            eprintln!(
-                "DIAG_FLOW pi={} cur_h={:.1} page={} items={} ct={:?}",
-                para_idx,
-                st.current_height,
-                st.pages.len(),
-                st.current_items.len(),
-                para.column_type,
-            );
-        }
-        // [편집 세션] vert=Para 자리차지 그림의 하단 요구를 문단 fit 에 반영한다.
-        // 그림은 문단 y + vertical_offset + 높이까지 차지하는데, 줄 기반 fit 은
-        // 이를 모른 채 문단을 쪽 말미에 배정하고, 렌더의 쪽-안 클램프(#2032)가
-        // 그림을 끌어올려 앞 표에 겹친다(셀 Enter 재현: 그림이 커진 표 하단
-        // 위에 얹힘). 한글은 문단 블록째 다음 쪽으로 보낸다.
-        if self.profile.get().session_edited() && !st.current_items.is_empty() {
-            let para_float_bottom_req = para
-                .controls
-                .iter()
-                .filter_map(|c| match c {
-                    Control::Picture(p)
-                        if !p.common.treat_as_char
-                            && matches!(
-                                p.common.text_wrap,
-                                crate::model::shape::TextWrap::TopAndBottom
-                            )
-                            && matches!(
-                                p.common.vert_rel_to,
-                                crate::model::shape::VertRelTo::Para
-                            ) =>
-                    {
-                        Some(hwpunit_to_px(
-                            signed_hwpunit(p.common.vertical_offset)
-                                .saturating_add(p.common.height.min(i32::MAX as u32) as i32),
-                            self.dpi,
-                        ))
-                    }
-                    _ => None,
-                })
-                .fold(0.0_f64, f64::max);
-            if para_float_bottom_req > 0.0
-                && st.current_height + para_float_bottom_req.max(fmt.total_height)
-                    > st.available_height()
-            {
-                st.advance_column_or_new_page();
-            }
-        }
-
-        let strict_after_empty_host_float = take_strict_plain_text_fit_after_empty_host_float_once(
-            &mut st.strict_plain_text_fit_after_empty_host_float_once,
-            para,
-        );
-        let layout_drift_safety_px = paragraph::fit::layout_drift_safety_px(paragraphs);
-        let prev_is_partial_table =
-            matches!(st.current_items.last(), Some(PageItem::PartialTable { .. }));
-        let safety = st.take_paragraph_safety_margin(
+        let paragraph::FitBudget {
             strict_after_empty_host_float,
-            prev_is_partial_table,
             layout_drift_safety_px,
+            prev_is_partial_table,
+            available,
+        } = paragraph::prepare_fit_budget(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            self.profile.get().session_edited(),
+            self.dpi,
         );
-        let exclusion_probe_height =
-            paragraph::fit::exclusion_probe_height(fmt, st.profile.hwpx_stored_layout());
-        st.apply_visible_float_exclusions(exclusion_probe_height);
-        let footnote_margin_addback =
-            st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
-        let tail_overflow =
-            st.take_paragraph_tail_overflow(strict_after_empty_host_float, fmt.height_for_fit);
-        let available =
-            (st.available_height() - safety + footnote_margin_addback + tail_overflow).max(0.0);
 
         // [Task #1686] RowBreak 표 조각 뒤에 남는 빈 guide 문단 흡수.
         // pr-1674처럼 표 셀 내부 vpos reset으로 페이지가 갈린 뒤, 뒤따르는 빈 문단들이
