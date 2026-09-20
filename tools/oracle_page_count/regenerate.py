@@ -245,6 +245,25 @@ def rhwp_info(rhwp, path):
         return None, False, None
 
 
+#: 특정 표본 **바로 위**에 남길 주석. 재생성이 파일을 통째로 다시 쓰므로 주석을
+#: fixture 에 직접 적으면 다음 재생성에서 사라진다 — 남길 설명은 여기에 둔다.
+ROW_NOTES = {
+    'samples/2025 행정업무운영 편람(최종).hwp': [
+        '# 편람 두 행 — 정답지가 383 과 384 로 갈리는 것은 정답지가 모호해서가 아니라 KoPub 설치 여부다.',
+        '# pdf/ 의 편람 PDF 10종 전수 실측(쪽수 · 용지 · 내장 글꼴, 앞 60쪽 수집):',
+        '#   KoPub 미설치  -hwp-2020 · -hwp-2024 · -hwpx-2020 · -hwpx-2024   384쪽  555x754pt  Haansoft only',
+        '#   KoPub 설치    -2020-kopub · -hwp-kopub-2020 · -hwpx-kopub-2020  383쪽',
+        '#   형식 미표기    -2024                                             383쪽  555x752pt  내장 글꼴 0 (다른 환경)',
+        '#   2010 엔진     -2010-kopub 388쪽 · -2010-no-ttf 389쪽             (다른 세대)',
+        '# 위 머리말의 "kopub/no-ttf 는 섞지 않는다" 규칙대로 384 가 canonical 이고, 이 저장소의',
+        '# 실행 환경도 KoPub 미설치다(tests/fixtures/issue_6389/kopub-unavailable.json 참조).',
+        '# "지금 새로 뽑으면 383" 은 재현 불가가 아니라 뽑은 장비에 KoPub 이 있었다는 뜻이다 — #7009.',
+        '# hwpx 382 는 미해결 격차다(제5장 질의 상자가 선언 셀 높이보다 +7~+27px 크다, #6842).',
+        '# 이 문서의 쪽수는 제5장 끝 한 경계의 간발의 차에 걸려 있어 조판 수리가 들어오면 움직인다.',
+    ],
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--rhwp', default='target/release-test/rhwp.exe')
@@ -351,6 +370,7 @@ def main():
         '# 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.',
     ]
     for sample, counts, got in rows:
+        lines.extend(ROW_NOTES.get(sample, ()))
         lines.append('%s\t%s\t%d' % (sample, ','.join(str(c) for c in counts), got))
     with open(FIXTURE, 'w', encoding='utf-8', newline='\n') as fh:
         fh.write('\n'.join(lines) + '\n')
