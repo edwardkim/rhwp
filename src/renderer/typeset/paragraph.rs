@@ -5,7 +5,7 @@
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
 //! 진입 예산과 전체/넘침/빈 구성 결과 배치, 분할 진입·페이지 전환을 조정한다.
-//! 저장 강제 경계와 최종 fit 선택, 표 문단은 상위에 남아 있다.
+//! 전체 fit 선택과 호환성 spill을 조정한다. 저장 강제 경계와 표 문단은 상위에 남아 있다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod context;
@@ -21,8 +21,12 @@ pub(super) mod scan;
 pub(super) mod split;
 pub(super) mod split_entry;
 pub(super) mod stored_lines;
+pub(super) mod whole_fit;
 
-use super::{para_has_visible_text, para_is_treat_as_char_picture_only, TypesetState};
+use super::{
+    para_has_visible_text, para_is_treat_as_char_picture_only, preceding_stored_vpos,
+    stored_vpos_rewinds, TypesetState,
+};
 use crate::model::paragraph::Paragraph;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -547,5 +551,85 @@ pub(super) fn try_absorb_empty_paragraph(
             st.place_unadvanced_empty_paragraph(para_idx);
             true
         }
+    }
+}
+
+pub(super) struct WholeFitDecision {
+    pub fits: bool,
+    pub stored_vpos_rewind_overflow_break: bool,
+}
+
+/// 저장 근거 조회 → 진단 → 빈 문단 spill 기록 → 전체 fit 선택 순서를 보존한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn decide_whole_fit(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    strict_after_empty_host_float: bool,
+    forced_page_break_line: Option<usize>,
+    current_page_vpos_base: Option<i32>,
+    available: f64,
+    dpi: f64,
+) -> WholeFitDecision {
+    let whole_fit::WholeFitEvidence {
+        saved_single_line_bottom_fits,
+        saved_list_tail_body_vpos_fits,
+        page_end_fit_height,
+        stored_vpos_rewind_break,
+        stored_vpos_rewind_overflow_break,
+        hangul2024_rewind_override,
+    } = whole_fit::inspect(
+        para_idx,
+        para,
+        fmt,
+        paragraphs,
+        strict_after_empty_host_float,
+        forced_page_break_line,
+        current_page_vpos_base,
+        available,
+        &st.paragraph_whole_fit_page(),
+        dpi,
+        || st.available_height(),
+    );
+    if std::env::var("RHWP_DIAG_COMPAT24").is_ok()
+        && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para)
+    {
+        eprintln!(
+            "DIAG_COMPAT24 rewind-site pi={para_idx} break={stored_vpos_rewind_break} \
+             cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} \
+             reclaimed={:.1} items={} forced={:?}",
+            st.current_height,
+            st.hangul2024_reclaimed,
+            st.current_items.len(),
+            forced_page_break_line,
+        );
+    }
+    // [compat 2024] 저장 신호를 덮은 그 빈 문단만 한글 2024 처럼 쪽 하단
+    // 여백으로 흘린다(place 적합 우회). 이웃 빈 문단까지 흘리면 2024 보다
+    // 한 문단 과적재된다(idx22 실측). 되감김 덮음도 같은 자격을 준다.
+    if hangul2024_rewind_override && !para_has_visible_text(para) && para.controls.is_empty() {
+        st.mark_blank_paragraph_spill(para_idx);
+    }
+    let hangul2024_blank_spill = st.profile.hangul2024_layout()
+        && st.hangul2024_spill_para == Some(para_idx)
+        && !st.current_items.is_empty();
+    if std::env::var("RHWP_DIAG_6031").is_ok()
+        && st.current_height + page_end_fit_height > available
+    {
+        eprintln!(
+            "DIAG_6031 pi={para_idx} cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} single={saved_single_line_bottom_fits} list_tail={saved_list_tail_body_vpos_fits} base={:?}",
+            st.current_height, current_page_vpos_base,
+        );
+    }
+    WholeFitDecision {
+        fits: forced_page_break_line.is_none()
+            && !stored_vpos_rewind_break
+            && (hangul2024_blank_spill
+                || st.current_height + page_end_fit_height <= available
+                || saved_single_line_bottom_fits
+                || saved_list_tail_body_vpos_fits),
+        stored_vpos_rewind_overflow_break,
     }
 }

@@ -17132,189 +17132,22 @@ impl TypesetEngine {
             0.0
         };
 
-        // [#2279 OMIT-fit] spacing-누락 문서군에서 **저장 리셋 직전의 페이지말
-        // 빈 문단**은 다음 쪽 상단 귀속이다 — 한글 fresh 는 누락 spacing 을
-        // 재가산해 이 빈 문단을 다음 쪽으로 넘긴다(36392557 pi14: 저장 bottom
-        // 910.6px 는 본문 안이지만 한글 PDF 는 p3 상단 36px 로 실측). 저장
-        // page-last 신뢰와 h4f 트림을 함께 철회한다. 리셋이 뒤따르지 않는
-        // 빈 문단(156652332 pi22 누적 구간)과 본문/개체 문단(156577742 footer
-        // 표·그림)의 저장 증거·트림은 유지 — 전면 철회는 +1 회귀 실측.
-        let omit_untrusted_empty = st.omit_fresh_recalc_doc
-            && para.controls.is_empty()
-            && !para_has_visible_text(para)
-            && para
-                .line_segs
-                .last()
-                .filter(|cs| {
-                    cs.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                })
-                .zip(paragraphs.get(para_idx + 1).and_then(|next| {
-                    next.line_segs.first().filter(|ns| {
-                        ns.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    })
-                }))
-                .is_some_and(|(cs, ns)| ns.vertical_pos < cs.vertical_pos);
-        let saved_single_line_bottom_fits = !strict_after_empty_host_float
-            && forced_page_break_line.is_none()
-            && !omit_untrusted_empty
-            && st.col_count == 1
-            && fmt.line_heights.len() == 1
-            // [#2137] 비-TAC 자리차지(TopAndBottom) float 만 가진 앵커도 저장
-            // page-last 증거가 있으면 신뢰 — 개체는 하단 여백 스필(한컴 정합).
-            && (para.controls.is_empty()
-                || para_controls_only_topbottom_floats(para)
-                || para_controls_only_tac_topbottom_objects(para))
-            && !st.current_items.is_empty()
-            // [Task #1749] 저장 flow 가 이 줄을 페이지 마지막으로 인코딩한 경우에만
-            // bounds 신뢰 — 누적좌표 문서의 쪽 경계 overfill 차단.
-            // [#2093] spacing_after 게이트(#1733) 제거: 신뢰 판정은 저장 줄의 시각
-            // 경계(vpos~vpos+lh)로 하며, 한글은 쪽 마지막 줄의 아래 간격을 쪽 하단에서
-            // 소비하지 않으므로 sa 는 배제 사유가 아니다 (1192000 해양수산 17→16쪽).
-            && saved_flow_marks_page_last(paragraphs, para_idx)
-            && current_page_vpos_base
-                .and_then(|base| single_line_visible_bounds_px(para, base, self.dpi))
-                .is_some_and(|bounds| {
-                    // [#2137] tac TopAndBottom 소형 개체 줄은 한컴이 하단 여백으로
-                    // 스필해 현재 쪽에 유지한다 (156637323 pi=19: 저장 vpos+lh
-                    // 956.6 > 본문 933.6 인데 한글 1쪽). 저장 page-last 증거가
-                    // 있을 때만 발동하므로 스필 허용폭은 하단 여백 급(40px)로 한정.
-                    let spill = if para_controls_only_tac_topbottom_objects(para) {
-                        40.0
-                    } else {
-                        0.0
-                    };
-                    let (top, bottom) = bounds;
-                    saved_bounds_fit_at_flow_tail(
-                        (top, bottom),
-                        st.current_height,
-                        st.available_height(),
-                        spill,
-                    )
-                });
-        let saved_list_tail_body_vpos_fits = !strict_after_empty_host_float
-            && forced_page_break_line.is_none()
-            && !omit_untrusted_empty
-            && st.col_count == 1
-            && fmt.line_heights.len() == 1
-            && fmt.spacing_after <= 0.5
-            && para.controls.is_empty()
-            && !st.current_items.is_empty()
-            && paragraph_text_looks_like_list_continuation_tail(para)
-            && saved_flow_marks_page_last(paragraphs, para_idx)
-            && para
-                .line_segs
-                .first()
-                .and_then(|seg| line_seg_visible_bounds_px(seg, 0, self.dpi))
-                .is_some_and(|bounds| {
-                    saved_bounds_fit_at_flow_tail(
-                        bounds,
-                        st.current_height,
-                        st.base_available_height(),
-                        0.0,
-                    )
-                });
-
-        // 위 omit_untrusted_empty(저장 리셋 직전 빈 문단)는 트림 혜택도 잃는다
-        // — 전량(lh+ls) 부족 시 다음 쪽 상단으로 넘긴다(36392557 pi14 36px).
-        // 텍스트 문단은 종전 h4f 트림 유지(36392757 pi19: 전량 요구 시 +1 실측).
-        let page_end_fit_height = paragraph_page_end_fit_height(
-            fmt.total_height,
-            fmt.height_for_fit,
-            omit_untrusted_empty || strict_after_empty_host_float,
+        let paragraph::WholeFitDecision {
+            fits,
+            stored_vpos_rewind_overflow_break,
+        } = paragraph::decide_whole_fit(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            strict_after_empty_host_float,
+            forced_page_break_line,
+            current_page_vpos_base,
+            available,
+            self.dpi,
         );
-        // [#6855] "이 쪽이 찼는가"를 `current_height` 로만 물으면 **자리차지 밴드가
-        // 차지한 쪽을 빈 쪽으로 읽는다.** 1613000-202200037 182쪽은 29×3 표가
-        // `184.3..960.6` 을 이미 그려 놓았는데 흐름 계상은 118.0 에 머문다 — 자리차지
-        // 표는 흐름에 host 줄만 계상하기 때문이다(그 규칙 자체는 바꾸지 않는다).
-        // 그 118.0 으로 재니 아래 `#3837` 되감김 관문이 열리지 않아, 한/글이 쪽을 끊은
-        // 자리에서 계속 담고 `pi=3`(`과목 2: 인적 요소`)을 **용지 45.5px 아래**에
-        // 그렸다. 문턱(`MIN_FILL`)은 그대로 두고 **재는 양만** 실제 점유로 바꾼다.
-        let page_occupied_height = st
-            .visible_float_exclusions
-            .iter()
-            .map(|zone| zone.bottom)
-            .fold(st.current_height, f64::max);
-        // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
-        let stored_vpos_rewind_base = st.col_count == 1
-            && !st.current_items.is_empty()
-            // 같은 문단이 이미 이 쪽에 놓였으면 걸지 않는다 — 되돌아감은 문단 시작 신호라
-            // 이미 시작한 뒤 걸면 문단을 쪼갠다.
-            && !st
-                .current_items
-                .iter()
-                .any(|it| page_item_para_index(it) == Some(para_idx))
-            && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
-        let stored_vpos_rewind_break = stored_vpos_rewind_base
-            && page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL;
-        // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
-        // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
-        // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).
-        // 한글은 이 문단을 통째로 다음 쪽에 둔다(2쪽 925.1≤933.6 정확 재현). 실제
-        // 넘침이 있을 때만 발동하므로 MIN_FILL 완화의 연쇄(+3쪽) 부작용과 무관하다.
-        // ⚠ [#6855] 여기까지 `page_occupied_height` 로 넓히면 안 된다 — 코퍼스 실측에서
-        // `1480000-201600147` 의 **글자 겹침이 33 → 37** 로 는다. 이 술어는 종전대로
-        // 흐름 계상으로 잰다.
-        let stored_vpos_rewind_overflow_break =
-            stored_vpos_rewind_base && st.current_height + page_end_fit_height > available;
-        // [compat 2024] 앵커 줄 회수분이 있거나 앞선 경계를 이미 덮은 상태에서
-        // 이 문단의 첫 줄이 (회수 보너스 포함) 들어가면 저장 되감김(=2022 조판의
-        // 쪽 경계)을 덮는다. 회수도 선행 덮음도 없으면 종전 동작 그대로.
-        let hangul2024_rewind_override = stored_vpos_rewind_break
-            && st.profile.hangul2024_layout()
-            && st.hangul2024_reclaimed > 0.0
-            && {
-                // 빈 문단 need=0 / 실문단 첫 줄 (위 reset-trigger 와 같은 규칙).
-                let need: f64 = if !para_has_visible_text(para) && para.controls.is_empty() {
-                    0.0
-                } else {
-                    para.line_segs
-                        .first()
-                        .map(|s| {
-                            hwpunit_to_px(s.line_height.saturating_add(s.line_spacing), self.dpi)
-                        })
-                        .unwrap_or(page_end_fit_height)
-                        .min(page_end_fit_height)
-                };
-                st.current_height + need <= available + st.hangul2024_reclaimed
-            };
-        let stored_vpos_rewind_break = stored_vpos_rewind_break && !hangul2024_rewind_override;
-        if std::env::var("RHWP_DIAG_COMPAT24").is_ok()
-            && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para)
-        {
-            eprintln!(
-                "DIAG_COMPAT24 rewind-site pi={para_idx} break={stored_vpos_rewind_break} \
-                 cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} \
-                 reclaimed={:.1} items={} forced={:?}",
-                st.current_height,
-                st.hangul2024_reclaimed,
-                st.current_items.len(),
-                forced_page_break_line,
-            );
-        }
-        // [compat 2024] 저장 신호를 덮은 그 빈 문단만 한글 2024 처럼 쪽 하단
-        // 여백으로 흘린다(place 적합 우회). 이웃 빈 문단까지 흘리면 2024 보다
-        // 한 문단 과적재된다(idx22 실측). 되감김 덮음도 같은 자격을 준다.
-        if hangul2024_rewind_override && !para_has_visible_text(para) && para.controls.is_empty() {
-            st.hangul2024_spill_para = Some(para_idx);
-        }
-        let hangul2024_blank_spill = st.profile.hangul2024_layout()
-            && st.hangul2024_spill_para == Some(para_idx)
-            && !st.current_items.is_empty();
-        if std::env::var("RHWP_DIAG_6031").is_ok()
-            && st.current_height + page_end_fit_height > available
-        {
-            eprintln!(
-                "DIAG_6031 pi={para_idx} cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} single={saved_single_line_bottom_fits} list_tail={saved_list_tail_body_vpos_fits} base={:?}",
-                st.current_height, current_page_vpos_base,
-            );
-        }
-        if forced_page_break_line.is_none()
-            && !stored_vpos_rewind_break
-            && (hangul2024_blank_spill
-                || st.current_height + page_end_fit_height <= available
-                || saved_single_line_bottom_fits
-                || saved_list_tail_body_vpos_fits)
-        {
+        if fits {
             paragraph::place_fitted_paragraph(
                 st,
                 para_idx,

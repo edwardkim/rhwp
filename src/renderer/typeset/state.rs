@@ -14,6 +14,20 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 전체 fit의 관측값을 빌린다. 가용 높이의 진단 조회는 Query의 기존 단락 위치에 남긴다.
+    pub(super) fn paragraph_whole_fit_page(&self) -> super::paragraph::whole_fit::WholeFitPage<'_> {
+        super::paragraph::whole_fit::WholeFitPage {
+            profile: self.profile,
+            omit_fresh_recalc_doc: self.omit_fresh_recalc_doc,
+            col_count: self.col_count,
+            current_items: &self.current_items,
+            current_height: self.current_height,
+            body_height: self.base_available_height(),
+            visible_float_exclusions: &self.visible_float_exclusions,
+            hangul2024_reclaimed: self.hangul2024_reclaimed,
+        }
+    }
+
     /// hide_empty_line 경로에 진입했을 때만 페이지별 횟수를 초기화한다.
     pub(super) fn begin_empty_paragraph_page(&mut self) {
         let current_page_idx = self.pages.len();
