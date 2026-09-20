@@ -1,7 +1,7 @@
 # Task #7280 — 조판 코드 책임 분리 및 변경 관리 구현계획
 
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
-- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2a 결과·조회 분리 및 절편 검증 완료](../working/task_m100_7280_stage3.md). R2 구성·흐름 조정 분리는 남아 있다.
+- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2a 완료](../working/task_m100_7280_stage3.md), [R2b 문단 구성 분리·검증 진행](../working/task_m100_7280_stage4.md). R2 흐름 조정 분리는 남아 있다.
 - 수행계획: [task_m100_7280.md](task_m100_7280.md)
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
@@ -34,6 +34,8 @@ renderer/typeset/
   paragraph.rs                       문단 구성·fit/분할의 조정
   paragraph/line_queries.rs           구성된 줄의 범위·텍스트/컨트롤 참여 조회
   paragraph/metrics.rs                문단 구성 결과와 기존 높이/전진량 조회
+  paragraph/context.rs                문단 구성에 허용된 엔진 관측 인터페이스
+  paragraph/format.rs                 재구성 선택·줄 메트릭·구성 결과 조립
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   table.rs                           표 진입·준비와 기존 결과 타입
