@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2j](task_m100_7280_stage12.md), 시작 head `da9e67b4f`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현·집중 검증 진행 중. 제출 준비 완료가 아니다.
+- 상태: R2k 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -35,3 +35,51 @@ typeset/composer와 진입 저장 꼬리·빈 host float 및 기존 문단 fit �
 전체 회귀·WASM/workspace lint·Native Skia·fresh Docker WASM/직접 시각 대조는 최종 통합
 게이트에 남긴다. 집중 PASS를 전체 CI나 한컴 시각 일치로 보고하지 않는다.
 원격 push·PR·댓글은 수행하지 않는다.
+
+## 3. 고정 head 검증
+
+- 제품 SHA: `08b248bc367a0b03c703c62ee6d11f99ad0c88a1`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2k`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 복원 비교: `output/7280/stage13/verify-entry.mjs` / `extraction-proof.json` 통과.
+  Query의 지연 조회·연산, 예산 준비 순서, state command와 이동 외 parent/기존 조정자 불변을 확인했다.
+- manifest: 고정 baseline 대비 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 고정 baseline 대비 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support 28 통과.
+- `cargo fmt --all -- --check` 통과.
+- `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review
+  -- -D warnings` 통과(exit 0, 56.50초).
+- 로그: `output/7280/stage13/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+집중 테스트(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review --lib \
+  --test regression_suite_003 --test regression_suite_005 \
+  --test regression_suite_011 --test regression_suite_012 \
+  --test regression_suite_013 --test regression_suite_022 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(issue_6568_para_start_first_line_fit::) | test(issue_5755_rewind_overflow_page_break::) | test(issue_5921_neartop_reset_fits::) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before::) | test(issue_6793_tac_host_page_tail_padding::) | test(issue_5870_empty_host_float_flow_advance::)' \
+  --no-fail-fast
+```
+
+`#6793`는 차례의 쪽 귀속·본문 상단·용지 밖 출력, `#5870`은 본표와 결재란의 실제 위치 및
+정상 대조 페이지를 검사한다. typeset의 1회성 엄격 fit 검사는 기존 private helper의
+flag 소비 계약이며 새 조정자 전체를 직접 검사한 것으로 확대 해석하지 않는다.
+편집 세션 그림 이월의 모든 조건 조합은 이번 집중 테스트에서 직접 입증하지 못한다.
+
+결과: **160건 통과 / 실패 0건**, 10 binaries, 필터 비선택 5,200건, exit 0.
+빌드 5분 18초, 테스트 0.267초. 실행 ID: `6208f030-ba6e-44bb-ba8c-157ca193a970`.
+로그: `output/7280/stage13/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행 중 같은 필터의
+160개 PASS 이름과 일치함을 확인했다. 필터 비선택은 기존 ignore 50건과 별개이며,
+이번 절편에서 전체 회귀를 재실행하지 않았다.
+
+nextest 0.9.137(권장 0.9.140)과 observation profile 미사용 설정 경고는 기준 실행과 동일하다.
+CI 도구 버전 일치나 전체 CI 통과를 주장하지 않는다. review worktree의 tracked 변경은 없고
+파생 suite·manifest를 커밋하지 않았다. 제품 검증 후에는 계획과 결과 기록만 변경했다.
+
+## 4. 후속
+
+빈 문단의 조기 반환, 강제 저장 경계와 최종 fit 선택, 표 문단/컨트롤 흐름 분리를 계속한다.
+R2 전체와 최종 통합 게이트는 남아 있으며, 이번 절편은 외부 push·PR 없이 로컬 커밋으로 닫는다.
