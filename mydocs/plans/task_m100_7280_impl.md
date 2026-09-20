@@ -15,6 +15,9 @@
 - 후속 절편: [R2h 전체 문단 배치 책임 분리·집중 검증 완료](../working/task_m100_7280_stage10.md).
   일반 전체 배치의 순서 판단, 메트릭 조정, 상태 반영을 분리했다. 진입 fit·특수 배치와
   표 문단 흐름, 최종 통합 검증은 아직 남아 있다.
+- 후속 절편: [R2i 문단 넘침 허용 경로 분리·집중 검증 완료](../working/task_m100_7280_stage11.md).
+  atomic/tail의 읽기 전용 판단과 서로 다른 상태 적용을 분리했다. 문단 진입 fit·빈 구성 결과와
+  표 문단 흐름, 최종 통합 검증은 후속에 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -49,6 +52,7 @@ renderer/typeset/
   paragraph/scan.rs                   페이지 관측값으로 줄 수용 후보·저장 꼬리 증거 계산
   paragraph/split.rs                  줄 스캔 후보의 분할 경계 보정
   paragraph/placement.rs              보정된 컷의 항목/높이 계획과 전체 fit 재확인
+  paragraph/overflow.rs               일반 fit 실패 뒤 atomic/tail 넘침 허용의 읽기 전용 판정
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   table.rs                           표 진입·준비와 기존 결과 타입
