@@ -1,0 +1,134 @@
+{
+  "baseSha": "517df04ba110dc108fbbb203e72229c51819b591",
+  "browserSourceSha": "d6b4e704c6281f892b15ba78bb35b03224136963",
+  "policySourceSha": "1bba134e8cc451581b40d188eeac57ad2702bb49",
+  "versions": {
+    "puppeteer": "25.10.0",
+    "chrome": "152.0.7977.75",
+    "extension": "0.8.6",
+    "manifest": 3,
+    "sourceSha": "d6b4e704c6281f892b15ba78bb35b03224136963"
+  },
+  "platform": "macOS arm64",
+  "node": "24.15.0",
+  "results": {
+    "browserFullRuns": [
+      {
+        "iteration": 1,
+        "exit": 0,
+        "seconds": 47.688,
+        "diskFreeBytesBefore": 14192431104
+      },
+      {
+        "iteration": 2,
+        "exit": 0,
+        "seconds": 47.26,
+        "diskFreeBytesBefore": 14341390336
+      },
+      {
+        "iteration": 3,
+        "exit": 0,
+        "seconds": 46.989,
+        "diskFreeBytesBefore": 14127603712
+      },
+      {
+        "iteration": 4,
+        "exit": 0,
+        "seconds": 46.905,
+        "diskFreeBytesBefore": 14119755776
+      },
+      {
+        "iteration": 5,
+        "exit": 0,
+        "seconds": 47.309,
+        "diskFreeBytesBefore": 14111039488
+      },
+      {
+        "iteration": 6,
+        "exit": 0,
+        "seconds": 48.232,
+        "diskFreeBytesBefore": 14092226560
+      },
+      {
+        "iteration": 7,
+        "exit": 0,
+        "seconds": 47.742,
+        "diskFreeBytesBefore": 9985216512
+      },
+      {
+        "iteration": 8,
+        "exit": 0,
+        "seconds": 47.576,
+        "diskFreeBytesBefore": 11749044224
+      },
+      {
+        "iteration": 9,
+        "exit": 0,
+        "seconds": 47.203,
+        "diskFreeBytesBefore": 11764809728
+      },
+      {
+        "iteration": 10,
+        "exit": 0,
+        "seconds": 47.082,
+        "diskFreeBytesBefore": 11754311680
+      }
+    ],
+    "automaticRetries": 0,
+    "lifecycleScenarios": 100,
+    "meanSeconds": 47.399,
+    "legacyExtensionNodeTests": 174,
+    "ciAndHarnessNodeTests": 172,
+    "workflowPythonTests": 91
+  },
+  "artifactFingerprints": {
+    "rhwp-chrome/dist/manifest.json": {
+      "bytes": 1216,
+      "sha256": "b69fa0f6895bb7430f437cea265ead3c06e96d20e21505b24bcffa8f00cbf70c"
+    },
+    "rhwp-chrome/dist/wasm/rhwp_bg.wasm": {
+      "bytes": 13123053,
+      "sha256": "49c1df076d7f5aee8218b2cf77072e4f3f546e6f93fc793b33c3329902eeee78"
+    },
+    "rhwp-chrome/dist/print.html": {
+      "bytes": 1436,
+      "sha256": "930907863afbafcc76099d386f6a995bc6c69387cb56838b18e4cdaf6eea6b79"
+    }
+  },
+  "mutations": {
+    "freshness": {
+      "baselinePass": 14,
+      "mutantFailures": 3,
+      "layer": "Node state contract"
+    },
+    "duplicates": {
+      "baseline": "PASS",
+      "mutant": "Tab budget exceeded: expected 1, created 2",
+      "layer": "actual Chrome"
+    }
+  },
+  "failureArtifactProbe": {
+    "exit": 1,
+    "surface": "print",
+    "json": true,
+    "png": true,
+    "originalRestored": true
+  },
+  "interruptedEarlierSeries": {
+    "sourceSha": "d9d7e23b3ee3ad4a6b23b98a130361045a605131",
+    "passedRuns": 8,
+    "failedRun": 9,
+    "scenario": "wake-download-hwp",
+    "viewerTabs": 1,
+    "downloadState": "canceled",
+    "freeSpaceAfterFailure": "df reported approximately 122 MiB",
+    "rootCause": "unconfirmed; Chrome error code was not captured in that run",
+    "countedAsPass": false
+  },
+  "remoteValidation": {
+    "actionsConsecutiveRuns": 0,
+    "linuxBrowserJob": "not run",
+    "sharedCacheHit": "unverified",
+    "warmCache90SecondGoal": "unverified"
+  }
+}

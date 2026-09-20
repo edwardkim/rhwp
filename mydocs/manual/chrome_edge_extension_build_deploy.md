@@ -15,7 +15,7 @@ last_verified: 2026-09-20
 
 | 항목 | 요구사항 |
 |------|---------|
-| Node.js | v20 이상 |
+| Node.js | v22.12 이상 (잠긴 Puppeteer의 최소 버전, CI는 Node 22) |
 | npm | v10 이상 |
 | WASM 빌드 | `pkg/` 폴더에 WASM 빌드 완료 상태 |
 | 웹폰트 | `assets/fonts/`에 canonical WOFF2 36개 존재 |
