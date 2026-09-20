@@ -5697,9 +5697,6 @@ impl Issue2424TypesetProfile {
     }
 }
 
-#[cfg(test)]
-use self::controls::deferred_picture::square_picture_wrap_band_target_paragraphs;
-
 impl TypesetEngine {
     pub fn new(dpi: f64) -> Self {
         Self {
@@ -26855,7 +26852,14 @@ mod tests {
         ];
 
         assert_eq!(
-            square_picture_wrap_band_target_paragraphs(&paragraphs, 0, 0, 23231, 0, 25139),
+            controls::deferred_picture::square_picture_wrap_band_target_paragraphs(
+                &paragraphs,
+                0,
+                0,
+                23231,
+                0,
+                25139,
+            ),
             vec![0, 1, 2, 3, 4],
             "actual image band must include p1693..p1697 and stop before p1698",
         );
