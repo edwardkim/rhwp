@@ -233,7 +233,19 @@ fn downstream_table_split_and_body_follow_the_oracle_pages() {
     );
     assert!((fragment16.bbox.height - (981.01 - 956.39)).abs() <= 1.5);
     assert!((fragment17.bbox.height - (406.75 - 136.01)).abs() <= 1.5);
-    assert!((table_top(&page17, 309) - 472.76).abs() <= 1.5);
+    // [#7203] 종전 핀 472.76 은 **안쪽 괘선**에 맞춘 값이었다. 정본 17쪽의 그 구간에는
+    // 가로 괘선이 둘 있고, 폭으로 가르면 표 외곽은 아래쪽이다.
+    //
+    // ```text
+    //   y=472.76  x=182.62  w=469.35   ← 칸 안쪽 괘선
+    //   y=476.28  x=177.03  w=480.70   ← 표 외곽 (rhwp 표 x=177.1 w=480.5 와 일치)
+    // ```
+    //
+    // pi=309 는 사다리 advance 가 `높이+위+아래`(17848 HU)와 **정확히** 같은 갈래라
+    // 저장 `vpos` 가 바깥 여백 상자의 위끝이고, 표 윗변은 거기서 `outMargin.top`
+    // 283HU(3.77px) 아래다. 같은 문서 같은 갈래 18건의 정본 잔차가 이 수정으로
+    // +3.41px → +0.3px 로 모인다.
+    assert!((table_top(&page17, 309) - 476.28).abs() <= 1.5);
 
     let page18 = page_root(SAMPLE, 17);
     let example = find(&page18, &mut |node| {
