@@ -99,6 +99,10 @@
   저장 줄 매칭과 그림 anchor 조회를 wrap_match로, snapshot/등록 명령을 state로 분리했다.
   guard·조건·반환·조회 순서를 보존했고 고정 head 집중 검사 323건 통과.
   표 anchor 흡수·소급 기록·prefix/tail 조정과 책임 묶음 통합 검증은 남아 있다.
+- 후속 절편: [R2ah 표 옆 문단 흡수 조회·소급 기록 분리·집중 검증 완료](../working/task_m100_7280_stage37.md).
+  전체/접두 줄의 흡수 기록과 저장 끝점 계산을 wrap_absorption으로, 밴드 확장과 첫 조각 단의
+  소급 기록을 state로 분리했다. 적용 순서와 반환을 보존했고 고정 head 집중 검사 324건 통과.
+  prefix/tail 조정·밴드 종료/쪽 전환과 책임 묶음 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -142,6 +146,7 @@ renderer/typeset/
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   controls/host_wrap.rs               표 없는 host의 저장 어울림 밴드·자기 anchor 준비 조회
   controls/wrap_match.rs              후속 본문 문단의 저장 어울림 매칭·그림 anchor 조회
+  controls/wrap_absorption.rs         표 옆 문단/접두 줄의 흡수 기록과 저장 끝점 조회
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료
