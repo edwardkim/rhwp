@@ -36,5 +36,10 @@ native Clippy → 이전 절편과 동일한 313건 집중 nextest를 순차 실
 
 ## 3. 후속
 
+초기 제품 `97eab495bb52512b4af563ed5decbc26208ccdc8` 검증에서
+`use super::{self as paragraph, ...}`가 E0432를 일으켜 Clippy가 종료되었다.
+import를 절대 모듈 경로로 고쳤으며 수정 head에서 검증을 다시 수행한다.
+이 실패는 회귀 테스트 실행 결과가 아니다. 초기 로그는 `clippy-native-initial.log`로 보존한다.
+
 R2 문단/컨트롤 책임 묶음의 잔여 경계와 통합 검증 대상을 점검한다.
 표 포맷·분할·이어받기, 각주 등록 본체 및 최종 state 캡슐화는 후속 책임 묶음이다.

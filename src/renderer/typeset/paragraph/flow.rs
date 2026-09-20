@@ -2,9 +2,9 @@
 //! 판별 알고리즘은 각 Query에, 페이지 상태 변경은 기존 Command에 남긴다.
 //! 엔진 profile은 예산 준비 시, state profile은 강제 경계 준비 후에 각각 읽는다.
 
-use super::{self as paragraph, metrics::FormattedParagraph};
 use crate::model::paragraph::Paragraph;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+use crate::renderer::typeset::paragraph::{self, metrics::FormattedParagraph};
 use crate::renderer::typeset::TypesetState;
 
 pub(in crate::renderer::typeset) struct ParagraphFlowInput<'a> {
