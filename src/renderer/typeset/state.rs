@@ -4,6 +4,7 @@
 //! 빈 호스트 float의 예산 조회와 항목·lane·흐름 확정도 담당한다.
 //! 표 문단의 비표 개체 조회 입력과 항목·흐름 확정도 담당한다.
 //! 배치 후 TAC 높이 보정의 사다리 상태와 최종 높이 확정도 담당한다.
+//! 데코레이션 host 텍스트는 trim 상태를 바꾸지 않고 항목/전진량만 반영한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::deferred::DeferredTableControl;
@@ -25,6 +26,11 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn commit_decoration_host_text(&mut self, fragment: ParagraphFragment) {
+        self.current_items.push(fragment.item);
+        self.current_height += fragment.height;
+    }
+
     pub(super) fn tac_height_page(&self) -> TacHeightPage<'_> {
         TacHeightPage {
             profile: self.profile,

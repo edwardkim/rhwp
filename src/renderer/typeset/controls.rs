@@ -8,8 +8,10 @@
 //! 빈 호스트 float lane 조회는 empty_float가, 확정 예약은 state가 소유한다.
 //! 표 문단의 그림·도형·수식 흐름 조회는 shape_flow가 소유하고 이 모듈이 배치를 조정한다.
 //! 배치 후 TAC 높이 보정은 tac_reconcile 조회와 state 확정을 이 모듈에서 조정한다.
+//! 데코레이션 host 텍스트의 항목/전진량은 decoration_host가 조회하고 state가 확정한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
+mod decoration_host;
 pub(super) mod deferred;
 pub(super) mod empty_float;
 pub(super) mod order;
@@ -28,6 +30,35 @@ use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 모든 컨트롤 앵커 확정 뒤, TAC 높이 정산 전에 host 텍스트를 한 번 반영한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn place_decoration_host_text(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    fmt: &FormattedParagraph,
+    decoration_host_text_pending: bool,
+    flow_table_owns_host_text: bool,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    stored_layout: impl FnOnce() -> bool,
+) {
+    if let Some(fragment) = decoration_host::plan(
+        para_idx,
+        para,
+        next_para,
+        fmt,
+        decoration_host_text_pending,
+        flow_table_owns_host_text,
+        styles,
+        dpi,
+        stored_layout,
+    ) {
+        st.commit_decoration_host_text(fragment);
+    }
+}
 
 /// TAC 높이 조회 → 누락 표시/진단/무효화 → 앵커·상한 확정 순서를 보존한다.
 #[allow(clippy::too_many_arguments)]
