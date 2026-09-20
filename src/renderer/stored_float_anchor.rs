@@ -41,16 +41,43 @@ fn stored_vpos(para: &Paragraph) -> Option<i64> {
 
 /// 저장 host 기준의 표 윗변 offset 과 흐름 점유 끝(HWPUNIT).
 ///
-/// 다음 저장 앵커가 `높이 + 양쪽 여백`만큼 정확히 전진하면 host 가 **전체 흐름 상자**의
-/// 원점이다. 그때 위여백을 빼면 paint 원점과 예약 원점이 갈려 후속 표에 여백이 다시
-/// 누적된다. 그 밖의 수용된 저장 앵커는 위여백 **뒤**를 가리킨다.
+/// 저장 사다리가 무엇을 쟀는지에 따라 `vpos` 의 뜻이 갈린다.
+///
+/// - 다음 앵커가 `높이 + 양쪽 여백`만큼 **정확히** 전진하면 `vpos` 는 **바깥 여백 상자의
+///   위끝**이다. 표 자신의 윗변은 거기서 `outMargin.top` 만큼 아래고, 점유 끝은
+///   `vpos + 상자 높이` 그대로다(`om_top + 높이 + om_bottom` 과 같다).
+/// - 그 밖의 수용된 저장 앵커는 위여백 **뒤**를 가리키므로 윗변이 `vpos − om_top` 이다.
+///
+/// [#7203] 앞 갈래는 종전에 offset 0 이었다 — paint 와 예약을 맞추려는 값이었지 기하가
+/// 아니었다. `pdf/hwpctl_API_v2.4-hwp-2020.pdf` 전수 대조가 두 갈래를 갈라 준다.
+///
+/// ```text
+///   사다리 advance == 높이+위+아래  (18건)  정본 − rhwp = +3.41px  ← 위여백 한 개만큼 위였다
+///   사다리 advance == 높이 + 66HU   (16건)  정본 − rhwp = +0.55px  ← 이미 맞다
+/// ```
+///
+/// 두 코호트는 같은 문서·같은 선언 여백(283HU)이고 사다리 간격만 다르다. 점유 끝은
+/// 양쪽 모두 바뀌지 않으므로 예약 높이는 그대로다.
 pub(crate) fn stored_topbottom_object_span(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     table: &Table,
 ) -> (i64, i64) {
     if let Some(outer_box_height) = stored_topbottom_flow_advance_hu(para, next_para, table) {
-        (0, outer_box_height)
+        // 사방 균등일 때만 `vpos` 를 상자 위끝으로 읽는다. 저장소의 좁은 술어 셋
+        // (`#6378` · `#3820 Stage 120` · `native_empty_host_physical_outer_box_paint_inset`)
+        // 이 모두 같은 조건을 쓰고, 정본도 같은 말을 한다 —
+        // `76076_regulatory_analysis.hwp` pi=323·324 는 (**0**/**0**/566/566) 이고
+        // 한/글이 여백을 싣지 않는다(정본 괘선 400.52 로 확인).
+        let uniform = table.outer_margin_top == table.outer_margin_bottom
+            && table.outer_margin_top == table.outer_margin_left
+            && table.outer_margin_top == table.outer_margin_right;
+        let top = if uniform {
+            i64::from(table.outer_margin_top)
+        } else {
+            0
+        };
+        (top, outer_box_height)
     } else {
         let top = -i64::from(table.outer_margin_top);
         (
