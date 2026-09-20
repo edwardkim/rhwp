@@ -5,8 +5,10 @@
 //! 표 문단의 비표 개체 조회 입력과 항목·흐름 확정도 담당한다.
 //! 배치 후 TAC 높이 보정의 사다리 상태와 최종 높이 확정도 담당한다.
 //! 데코레이션 host 텍스트는 trim 상태를 바꾸지 않고 항목/전진량만 반영한다.
+//! 장식 표의 Shape 발행과 이어받기 예약/현재 단 컷·앵커 확정도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
+use super::controls::decoration_table::OverlayContinuation;
 use super::controls::deferred::DeferredTableControl;
 use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
 use super::controls::shape_flow::{TableHostShapeFlow, TableHostShapePage};
@@ -27,6 +29,37 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn decoration_table_flow_height(&self) -> f64 {
+        self.current_height
+    }
+
+    pub(super) fn emit_decoration_table(&mut self, para_idx: usize, ctrl_idx: usize) {
+        self.current_items.push(PageItem::Shape {
+            para_index: para_idx,
+            control_index: ctrl_idx,
+        });
+    }
+
+    pub(super) fn finish_decoration_table(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        continuation: Option<OverlayContinuation>,
+    ) {
+        if let Some(continuation) = continuation {
+            self.pending_overlay_continuations.push((
+                para_idx,
+                ctrl_idx,
+                continuation.first_unfit,
+                continuation.reserve_px,
+            ));
+            self.current_column_overlay_cuts
+                .push((para_idx, ctrl_idx, continuation.first_unfit));
+        }
+        // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
+        self.overlay_shape_shortcut_para = Some(para_idx);
+    }
+
     pub(super) fn table_control_page(&self) -> TableControlPage {
         TableControlPage {
             has_items: !self.current_items.is_empty(),

@@ -10,9 +10,11 @@
 //! 배치 후 TAC 높이 보정은 tac_reconcile 조회와 state 확정을 이 모듈에서 조정한다.
 //! 데코레이션 host 텍스트의 항목/전진량은 decoration_host가 조회하고 state가 확정한다.
 //! 표 진입의 저장 줄 이월·데코레이션 선택은 table_entry가 조회하고 이 모듈이 순서를 조정한다.
+//! 장식 표의 컷/예약량은 decoration_table이 조회하고 이 모듈이 발행·포맷·확정을 조정한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
+pub(super) mod decoration_table;
 pub(super) mod deferred;
 pub(super) mod empty_float;
 pub(super) mod order;
@@ -33,6 +35,47 @@ use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// Shape 발행 → 포맷 → 컷 조회/진단 → 대기열·앵커 확정 순서를 보존한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn place_decoration_table(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+    dpi: f64,
+    format: impl FnOnce(bool) -> FormattedTable,
+) {
+    st.emit_decoration_table(para_idx, ctrl_idx);
+    // [#4568] 현재 쪽을 넘는 잔여 행만 다음 쪽 대기열에 남긴다.
+    // 포맷은 Shape 발행 뒤, 앵커/가용 영역 조회 전에 수행한다.
+    let ft = format(st.decoration_table_flow_height() < 1.0);
+    let continuation = decoration_table::continuation(
+        para,
+        table,
+        next_para,
+        &ft,
+        st.decoration_table_flow_height(),
+        dpi,
+        || st.base_available_height(),
+    );
+    if let Some(ref continuation) = continuation {
+        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
+            eprintln!(
+                "OVERLAY_CONT: pi={} ci={} start_row={} remaining={:.1} reserve={:.1} room={:.1}",
+                para_idx,
+                ctrl_idx,
+                continuation.first_unfit,
+                continuation.remaining_px,
+                continuation.reserve_px,
+                continuation.room,
+            );
+        }
+    }
+    st.finish_decoration_table(para_idx, ctrl_idx, continuation);
+}
 
 /// 저장 줄 경계의 이월을 먼저 적용한 뒤, 갱신된 단 상태로 장식 표 경로를 선택한다.
 #[allow(clippy::too_many_arguments)]

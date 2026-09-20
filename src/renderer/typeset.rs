@@ -17475,90 +17475,28 @@ impl TypesetEngine {
                         self.dpi,
                         || !self.profile.get().hwp5_stored_pagination_layout(),
                     ) {
-                        st.current_items.push(PageItem::Shape {
-                            para_index: para_idx,
-                            control_index: ctrl_idx,
-                        });
-                        // [#4568] 이 표가 쪽 하단을 넘으면 잘린 행을 다음 쪽에 이어
-                        // 그리도록 대기열에 남긴다. 앵커 y 는 흐름 위치 + 개체 세로
-                        // 오프셋이고, 남은 쪽 공간에 들어가는 행 수를 누적 행 높이로
-                        // 센다. 행 하나도 넘치지 않으면(=표 전체가 쪽 안) 아무것도
-                        // 남기지 않는다.
-                        let ft = self.format_table(
-                            para,
+                        controls::place_decoration_table(
+                            st,
                             para_idx,
                             ctrl_idx,
+                            para,
                             table,
-                            measured_tables,
-                            styles,
-                            composed,
                             next_para,
-                            st.current_height < 1.0,
+                            self.dpi,
+                            |is_column_top| {
+                                self.format_table(
+                                    para,
+                                    para_idx,
+                                    ctrl_idx,
+                                    table,
+                                    measured_tables,
+                                    styles,
+                                    composed,
+                                    next_para,
+                                    is_column_top,
+                                )
+                            },
                         );
-                        let anchor_y = st.current_height
-                            + hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
-                        let room = st.base_available_height() - anchor_y;
-                        if room > 0.0 && ft.effective_height > room {
-                            // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
-                            // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는
-                            // 인덱스 i 는 "행 i-1 이 안 들어간다"는 뜻이다.
-                            let first_unfit = ft
-                                .cumulative_heights
-                                .iter()
-                                .position(|cum| *cum > room)
-                                .map(|i| i.saturating_sub(1))
-                                .unwrap_or(ft.row_heights.len());
-                            if first_unfit > 0 && first_unfit < ft.row_heights.len() {
-                                let remaining_px = (ft.effective_height
-                                    - ft.cumulative_heights
-                                        .get(first_unfit)
-                                        .copied()
-                                        .unwrap_or(0.0))
-                                .max(0.0);
-                                // [#5792] 잔여 행이 놓일 자리를 뒤따르는 흐름이 스스로
-                                // 만드는가? #4514 형상은 앵커 뒤 빈 필러 문단들이 표
-                                // 높이만큼 흐름을 만들므로(저장 사다리가 앵커 → 필러로
-                                // 연속 전진) 다음 쪽에 잔여 높이를 다시 예약하면 이중
-                                // 계상이다. 반대로 뒤 문단의 저장 vpos 가 앵커보다
-                                // **되감기면**(쪽 리셋) 그 문단은 새 쪽 상단에서 다시
-                                // 시작하는 좌표라 잔여 행의 자리가 어디에도 없다. 그때
-                                // 예약하지 않으면 다음 쪽 본문이 잔여 행 위에 겹쳐
-                                // 그려지고(2700727 3쪽 'Ⅱ. 곤충이용'·'1. 설치기준'),
-                                // 그 본문 표가 잔여 행의 페인트 상한을 깎아 행이 통째로
-                                // 사라진다(42행 중 17행 소실).
-                                let ladder_resets_after_anchor = next_para
-                                    .and_then(|np| np.line_segs.first().map(|seg| seg.vertical_pos))
-                                    .zip(para.line_segs.first().map(|seg| seg.vertical_pos))
-                                    .is_some_and(|(next_vpos, anchor_vpos)| {
-                                        next_vpos < anchor_vpos
-                                    });
-                                let reserve_px = if ladder_resets_after_anchor {
-                                    remaining_px
-                                } else {
-                                    0.0
-                                };
-                                if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
-                                    eprintln!(
-                                        "OVERLAY_CONT: pi={} ci={} start_row={} remaining={:.1} reserve={:.1} room={:.1}",
-                                        para_idx, ctrl_idx, first_unfit, remaining_px, reserve_px,
-                                        room,
-                                    );
-                                }
-                                st.pending_overlay_continuations.push((
-                                    para_idx,
-                                    ctrl_idx,
-                                    first_unfit,
-                                    reserve_px,
-                                ));
-                                st.current_column_overlay_cuts.push((
-                                    para_idx,
-                                    ctrl_idx,
-                                    first_unfit,
-                                ));
-                            }
-                        }
-                        // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
-                        st.overlay_shape_shortcut_para = Some(para_idx);
                         // [#703 잔여] host 문단의 가시 텍스트(제목 등)를 흐름 문단으로
                         // 방출한다. 종전에는 표만 방출하고 `continue` 해서 이 텍스트를
                         // 위한 PageItem 이 어디에서도 발행되지 않아 렌더에서 통째로
