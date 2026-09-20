@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2f](task_m100_7280_stage8.md), 시작 head `aeadea675`.
-- 상태: R2g 구현, 고정 SHA 집중 검증 전. R2 전체 완료가 아니다.
+- 상태: R2g 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 
 ## 1. 책임과 범위
@@ -52,3 +52,51 @@ fit 재계산이나 페이지 전환을 하지 않는다. 범용 setter와 새 r
 review worktree에서 파생 suite 준비 → fmt·고정 baseline 정책 → native Clippy → 집중 nextest를
 순차 실행한다. 전체 회귀·최종 WASM/workspace lint·workspace build·Native Skia·fresh Docker
 WASM/직접 시각 검증은 통합 게이트에 남는다. 원격 push·PR·댓글은 하지 않는다.
+
+### 고정 SHA와 선행 검사
+
+- 제품 SHA: `effbb71cae60c1aeff1fc54367ffba1985b4bccd`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2g`.
+- 정적 보존: `output/7280/stage9/extraction-proof.json` 통과.
+- manifest: baseline 대비 1,382 sources / 5,965 static attrs / 48 integration targets 통과.
+- unit-tier: baseline 대비 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support items 28 통과.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy(`--locked -- -D warnings`): exit 0, 56.18초.
+- 로그: `output/7280/stage9/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+고정 review target `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`로
+순차 실행했다. 파생 suite는 review worktree에서만 준비했으며 stage하지 않는다.
+
+집중 실행 명령(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --lib --test regression_suite_011 --test regression_suite_019 --test regression_suite_028 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(issue_6031_ladder_sb_omitted_tail_overrun::) | test(issue_6542_mid_para_vpos_rewind_breaks_page::) | test(issue_6718_native_hwp5_zero_vpos_rewind::) | test(issue_6718_zero_rewind_in_split_paragraph::)' \
+  --no-fail-fast
+```
+
+선택한 기존 `test_typeset_page_overflow`는 가시 문단 100개의 전량/순서 보존을 검사한다.
+`test_typeset_line_split`/`test_typeset_mixed_paragraphs`는 기존 Paginator와의 호환 검사이며
+독립적인 한컴 oracle로 취급하지 않는다. #6031은 SVG 본문 하단/다음 쪽 첫 줄,
+#6542/#6718은 render tree의 본문 경계를 검사한다. 실제 PageItem 소비와 paint 경로 자체는
+변경하지 않았다. 전체 수용 재시도/표 직후 분기 조합 전부를 별도 실행으로 입증했다는 뜻은 아니다.
+
+집중 결과: **154건 통과 / 실패 0건**, 필터 비선택 4,539건, 7 binaries, exit 0.
+빌드 4분 57초, 테스트 0.333초. 실행 ID: `211592d1-badd-4b2b-8c36-71bdeaa5e124`.
+로그: `output/7280/stage9/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서 같은
+필터로 선택한 154개 PASS 이름과 일치함을 확인했다. 필터 비선택은 기존 ignore 50건과 별개이며
+이번에 전체 회귀를 재실행한 것은 아니다.
+
+nextest 0.9.137(권장 0.9.140), 미사용 observation profile 설정 경고는 기준 실행과 동일하다.
+현재 CI 도구 버전까지 동일하다는 주장은 하지 않는다. review worktree의 tracked 변경은 없고
+제품 검증 후에는 계획/완료 기록만 갱신했다. 테스트와 파생 suite/manifest는 커밋하지 않았다.
+
+## 4. 다음 절편
+
+문단 분할 루프의 계산·조정·확정 경계는 분리됐다. 남은 진입 fit/전체 배치 조정과
+`typeset_table_paragraph`의 문단/컨트롤 흐름 책임 분리를 이어간다. state의 나머지 직접 쓰기,
+공유 helper 소유권 및 최종 통합 검증은 아직 남아 있으므로 R2 전체와 #7280 완료로 판정하지 않는다.

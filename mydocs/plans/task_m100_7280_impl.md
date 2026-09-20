@@ -10,6 +10,8 @@
   R2 줄 스캔·배치 및 표 문단 흐름 조정 분리는 계속 진행한다.
 - 현재 절편: [R2f 줄 후보 스캔 분리·집중 검증 완료](../working/task_m100_7280_stage8.md).
   페이지 관측값과 읽기 전용 후보 계산을 분리하며 실제 배치·이월 조정은 후속에 남긴다.
+- 후속 절편: [R2g 문단 분할 배치·이월 조정 분리·집중 검증 완료](../working/task_m100_7280_stage9.md).
+  줄 분할 반복의 조정과 배치 계획/상태 적용을 구분한다. 진입 fit와 표 문단 흐름은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -43,6 +45,7 @@ renderer/typeset/
   paragraph/fit.rs                    문단 fit 보정의 읽기 전용 계산
   paragraph/scan.rs                   페이지 관측값으로 줄 수용 후보·저장 꼬리 증거 계산
   paragraph/split.rs                  줄 스캔 후보의 분할 경계 보정
+  paragraph/placement.rs              보정된 컷의 항목/높이 계획과 전체 fit 재확인
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   table.rs                           표 진입·준비와 기존 결과 타입
