@@ -5,9 +5,10 @@
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
 //! 진입 예산과 전체/넘침/빈 구성 결과 배치, 분할 진입·페이지 전환을 조정한다.
-//! 전체 fit 선택과 호환성 spill을 조정한다. 저장 강제 경계와 표 문단은 상위에 남아 있다.
+//! 강제 경계 후보의 우선순위와 전체 fit 선택·호환성 spill을 조정한다. 표 문단은 상위에 남아 있다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
+pub(super) mod boundary;
 pub(super) mod context;
 pub(super) mod empty;
 mod entry;
@@ -24,6 +25,10 @@ pub(super) mod stored_lines;
 pub(super) mod whole_fit;
 
 use super::{
+    hwpx_saved_reset_fragment_matches_current_flow, missing_lineseg_trailing_line_break,
+    native_hwp5_existing_footnote_reset_overlap_break_line,
+    native_hwp5_first_footnote_overlap_break_line,
+    native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line, page_item_vpos_base,
     para_has_visible_text, para_is_treat_as_char_picture_only, preceding_stored_vpos,
     stored_vpos_rewinds, TypesetState,
 };
@@ -631,5 +636,101 @@ pub(super) fn decide_whole_fit(
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits),
         stored_vpos_rewind_overflow_break,
+    }
+}
+
+/// 기존 각주 경계는 선택된 강제 경계와 별도로 후속 줄 스캔에서도 소비한다.
+pub(super) struct ForcedPageBoundary {
+    pub native_hwp5_existing_footnote_reset_line: Option<usize>,
+    pub current_page_vpos_base: Option<i32>,
+    pub forced_page_break_line: Option<usize>,
+}
+
+/// 기존 각주 경계를 먼저 조회하고, 저장/각주/그림 후보를 원래 단락 순서로 선택한다.
+/// 이 조정자는 읽기 전용이다. 각주 측정 helper의 좁은 관측 경계 분리는 R4에 남긴다.
+pub(super) fn prepare_forced_page_boundary(
+    st: &TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    available: f64,
+    dpi: f64,
+) -> ForcedPageBoundary {
+    // native HWP5 본문은 기존 각주가 있는 page tail에서도 `vpos=0` reset으로
+    // 다음 physical page를 기록할 수 있다. 일반 reset은 과분할 위험이 있으므로,
+    // 실제 FootnoteArea 경계와 source/flow가 함께 맞을 때만 강제 경계로 쓴다.
+    let native_hwp5_existing_footnote_reset_line =
+        native_hwp5_existing_footnote_reset_overlap_break_line(st, para, fmt, paragraphs, dpi);
+    let current_page_vpos_base = st.vpos_page_base.or_else(|| {
+        st.current_items
+            .first()
+            .and_then(|item| page_item_vpos_base(item, paragraphs))
+    });
+    let hwp3_converted_hwp5 = st.profile.hwp3_layout()
+        && !st.profile.hwp3_native_layout()
+        && !st.profile.hwpx_container();
+    let internal_forced_page_break_line = boundary::internal_vpos_page_break_line(
+        para,
+        fmt.line_heights.len(),
+        st.layout.body_area.height,
+        dpi,
+        st.profile.hwpx_stored_layout() || st.profile.hwp3_native_layout() || hwp3_converted_hwp5,
+        st.profile.hwp5_stored_pagination_layout(),
+        hwp3_converted_hwp5,
+    )
+    .filter(|break_line| {
+        // HWPX의 reset은 local writer cursor도 재사용한다. 현재 flow와
+        // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
+        !st.profile.hwpx_stored_layout()
+            || st.current_items.is_empty()
+            || hwpx_saved_reset_fragment_matches_current_flow(
+                st,
+                para,
+                0,
+                *break_line,
+                current_page_vpos_base.unwrap_or(0),
+                dpi,
+            )
+    });
+    let forced_page_break_line = internal_forced_page_break_line
+        .or_else(|| {
+            st.profile.hwpx_stored_layout().then(|| {
+                boundary::hwpx_explicit_page_break_tail_line(
+                    para,
+                    paragraphs.get(para_idx + 1),
+                    fmt.line_heights.len(),
+                    st.layout.body_area.height,
+                    dpi,
+                )
+            })?
+        })
+        .or_else(|| {
+            native_hwp5_first_footnote_overlap_break_line(st, para, fmt, dpi)
+                .map(|footnote_break| footnote_break.body_break_line)
+        })
+        .or_else(|| {
+            missing_lineseg_trailing_line_break(
+                para,
+                fmt.line_heights.len(),
+                st.current_height,
+                available,
+                fmt.line_spacings.last().copied().unwrap_or(0.0),
+                st.profile.hwpx_stored_layout() || hwp3_converted_hwp5,
+                hwp3_converted_hwp5,
+            )
+        })
+        .or_else(|| {
+            native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line(
+                st, para, fmt, paragraphs, para_idx, dpi,
+            )
+        })
+        // full-fit early return보다 앞의 같은 chain에 넣어야 reset tail을 통째로
+        // 배치해 separator와 겹치는 우회가 없다.
+        .or(native_hwp5_existing_footnote_reset_line);
+    ForcedPageBoundary {
+        native_hwp5_existing_footnote_reset_line,
+        current_page_vpos_base,
+        forced_page_break_line,
     }
 }
