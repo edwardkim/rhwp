@@ -9,6 +9,7 @@
 //! 표 문단의 그림·도형·수식 흐름 조회는 shape_flow가 소유하고 이 모듈이 배치를 조정한다.
 //! 배치 후 TAC 높이 보정은 tac_reconcile 조회와 state 확정을 이 모듈에서 조정한다.
 //! 데코레이션 host 텍스트의 항목/전진량은 decoration_host가 조회하고 state가 확정한다.
+//! 표 진입의 저장 줄 이월·데코레이션 선택은 table_entry가 조회하고 이 모듈이 순서를 조정한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
@@ -17,6 +18,7 @@ pub(super) mod empty_float;
 pub(super) mod order;
 pub(super) mod shape_flow;
 pub(super) mod stored_tac;
+pub(super) mod table_entry;
 pub(super) mod tac_fit;
 pub(super) mod tac_flow;
 pub(super) mod tac_reconcile;
@@ -25,11 +27,53 @@ use super::paragraph::metrics::FormattedParagraph;
 use super::{FormattedTable, TypesetState};
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
+use crate::model::table::Table;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 저장 줄 경계의 이월을 먼저 적용한 뒤, 갱신된 단 상태로 장식 표 경로를 선택한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn prepare_table_control(
+    st: &mut TypesetState,
+    para: &Paragraph,
+    table: &Table,
+    para_idx: usize,
+    ctrl_idx: usize,
+    order_pos: usize,
+    next_para: Option<&Paragraph>,
+    measured_tables: &[MeasuredTable],
+    has_tac: bool,
+    host_col_w: f64,
+    dpi: f64,
+    original_hwpx: impl FnOnce() -> bool,
+) -> bool {
+    if table_entry::needs_stored_line_advance(
+        para,
+        table,
+        order_pos,
+        st.table_control_page().has_items,
+        dpi,
+    ) {
+        st.advance_column_or_new_page();
+    }
+    table_entry::uses_decoration_placement(
+        para,
+        table,
+        para_idx,
+        ctrl_idx,
+        next_para,
+        measured_tables,
+        st.table_control_page().col_count,
+        has_tac,
+        host_col_w,
+        dpi,
+        || st.base_available_height(),
+        original_hwpx,
+    )
+}
 
 /// 모든 컨트롤 앵커 확정 뒤, TAC 높이 정산 전에 host 텍스트를 한 번 반영한다.
 #[allow(clippy::too_many_arguments)]

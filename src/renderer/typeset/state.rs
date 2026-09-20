@@ -11,6 +11,7 @@ use super::controls::deferred::DeferredTableControl;
 use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
 use super::controls::shape_flow::{TableHostShapeFlow, TableHostShapePage};
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
+use super::controls::table_entry::TableControlPage;
 use super::controls::tac_fit::TacFitPage;
 use super::controls::tac_reconcile::TacHeightPage;
 use super::inline_flow::plan::InlineFlowInput;
@@ -26,6 +27,13 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn table_control_page(&self) -> TableControlPage {
+        TableControlPage {
+            has_items: !self.current_items.is_empty(),
+            col_count: self.col_count,
+        }
+    }
+
     pub(super) fn commit_decoration_host_text(&mut self, fragment: ParagraphFragment) {
         self.current_items.push(fragment.item);
         self.current_height += fragment.height;
