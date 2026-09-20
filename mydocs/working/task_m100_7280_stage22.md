@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2s](task_m100_7280_stage21.md), 시작 head `489141f96`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: R2t 구현 완료, 고정 제품 SHA 집중 검증 예정. R2 전체 완료가 아니다.
+- 상태: R2t 구현·고정 제품 SHA 집중 검증 완료. R2 전체 완료나 PR 준비 완료가 아니다.
 
 ## 1. 책임 경계와 보존 계약
 
@@ -54,3 +54,53 @@ native Clippy, 집중 nextest를 순차 실행한다. R2s의 228건에 후속 �
 
 전체 회귀·WASM/workspace lint·workspace build·Native Skia·fresh Docker WASM 및 직접 시각 대조는
 통합 게이트에 남긴다. 원격 push·PR·댓글은 이번 승인 범위가 아니다.
+
+## 3. 고정 head 검증
+
+- 제품 SHA: `4dd8da5e4ba195df2548cc92d4152b783fa34dc9`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2t`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 제품 SHA 기준 정적 복원 비교 통과: `output/7280/stage22/extraction-proof.json`.
+- 파생 suite 준비 후 manifest 고정 baseline 비교 통과:
+  1,382 sources / 5,965 static attrs / 48 targets.
+- unit-tier 고정 baseline 비교 통과:
+  4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy `-D warnings` 통과(exit 0, 55.63초).
+- 로그: `output/7280/stage22/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+정책 검사는 `node scripts/rust-test-suite-manifest.mjs --check --base-ref
+722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`와 `node scripts/rust-unit-test-tiers.mjs
+--check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`로 실행했다.
+Clippy 명령은 `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir
+/home/edward/mygithub/rhwp/target/pr-review -- -D warnings`다.
+
+집중 테스트(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review --lib \
+  --test regression_suite_001 --test regression_suite_004 --test regression_suite_006 \
+  --test regression_suite_007 --test regression_suite_008 --test regression_suite_009 \
+  --test regression_suite_012 --test regression_suite_015 --test regression_suite_018 \
+  --test regression_suite_019 --test regression_suite_027 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(renderer::float_placement::) | test(issue_7103_tac_table_rewind::) | test(issue_7150_tac_line_owner_anchor::) | test(issue_6601_inline_tac_tables_share_a_line::) | test(issue_6812_square_picture_tac_table::) | test(maintainer_nested_table_lines::) | test(issue_5700_tac_reset_tail_above_flow::) | test(issue_5807_coanchored_float_tac_order::) | test(issue_7049_inline_tac_table_baseline::) | test(issue_7062_tac_object_host_line_height::) | test(tac_group_page_bottom_overflow::) | test(issue_6879_tac_sibling_float_anchor_line::) | test(issue_6929_float_table_para_offset::) | test(issue_1686::) | test(issue_6795_split_float_sibling_gets_its_own_page::) | test(issue_5906_float_stack_declared_tail::) | test(issue_1753_deferred_table_fill_ahead::) | test(=issue_3738_rowbreak_table_footnote_fragment::rowbreak_table_cell_footnotes_keep_the_pdf_fragment_boundary)' \
+  --no-fail-fast
+```
+
+결과: **230건 통과 / 실패 0건**, 15 binaries, 필터 비선택 6,113건, exit 0.
+빌드 5분 51초, 테스트 0.597초. 실행 ID: `377a7931-df05-41a5-8f61-0efcf5fd8e94`.
+로그: `output/7280/stage22/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서
+동일 필터로 선택한 230개 PASS 이름과 일치함을 확인했다. 이번에 전체 회귀를
+재실행하지 않았으며 필터 비선택은 기존 ignore 50건과 별개다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+제품 검증 뒤에는 계획과 결과 기록만 수정했다. 전체 CI·WASM 및 직접 시각 판독 완료로
+해석하지 않는다.
+
+## 4. 후속
+
+일반 표 문단의 실제 컨트롤 배치·float 흐름 조정 책임 분리를 이어간다.
+표 컷/continuation과 각주 책임 분리, 최종 상태 캡슐화 및 통합 게이트는 남아 있다.
