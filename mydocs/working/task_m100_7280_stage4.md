@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2a](task_m100_7280_stage3.md), 시작 head `125df2eba`.
-- 상태: 구현 후 검증 대기. R2 전체 완료나 제출 준비 완료가 아니다.
+- 상태: R2b 구현·기본 feature 전체 회귀 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db` 유지.
 
 ## 1. 소유권과 입력 경계
@@ -50,8 +50,49 @@ formatter 공백/후행 쉼표 및 식 하나짜리 closure의 중괄호 차이�
 정적 동일성은 통과했지만 출력 피델리티 판정을 대체하지 않는다.
 
 source-side/통합 테스트, baseline/golden/ignore/pin/정책은 수정하지 않았다.
-고정 제품 SHA의 review worktree에서 파생 suite를 준비하고 fmt·정책·회귀 및 lint를 실행한다.
-실행 결과는 완료 후 추가하며 이전 절편의 PASS를 현재 결과로 대체하지 않는다.
+고정 제품 SHA의 review worktree에서 파생 suite를 준비하고 fmt·정책·회귀 및 native lint를 실행했다.
+아래 결과는 이번 SHA에서 새로 실행한 것이며 이전 절편의 PASS를 재사용하지 않았다.
+
+- 제품 SHA: `8370be9a41f5a8ad8975e4cdb0de34c4e0a5f460`.
+- 검증 worktree: `/home/edward/mygithub/rhwp-review-7280-r2b`.
+- 정적 보존 증거: `output/7280/stage4/extraction-proof.json`.
+- suite `--prepare` 후 manifest `--check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db` 통과:
+  1,382 sources / 5,965 static attrs / 28 suites + 20 exceptions.
+- unit-tier 동일 base 검사 통과: 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support items 28.
+- `cargo fmt --all -- --check` 통과.
+- `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings`
+  통과(exit 0, 54.96초).
+- 로그: `output/7280/stage4/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+기본 feature 전체 회귀는 Stage 1과 동일 명령·target·로컬 nextest default profile로 실행한다.
+본문/빈 줄/TAC/어울림/미주 관련 집중 계약도 이 전수 실행에 포함된다.
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --tests --no-fail-fast
+```
+
+로그: `output/7280/stage4/nextest-full.log`.
+
+전체 회귀 결과: exit 0, **10,096건 통과 / 실패 0건 / 기존 제외 50건**, 78 binaries, slow 11건.
+빌드 8분 01초, 테스트 448.710초. 실행 ID: `4a7a9307-7e34-4ebf-858e-9daa20389226`.
+Stage 1의 10,096건과 PASS 테스트 이름 전체도 일치한다.
+대조 스크립트/결과: `output/7280/stage4/compare-regression.mjs`, `regression-comparison.json`.
+이 실행 시간 차이만으로 성능 개선/회귀를 판정하지 않는다. 본문 넘침·텍스트 겹침·시각 roundtrip
+등 자동 baseline 통과는 직접 시각 판정 또는 한컴과의 일치 증거로 승격하지 않는다.
+
+nextest 0.9.137(권장 0.9.140), 미사용 observation profile의 `junit.report-skipped` 경고는
+기준 실행과 동일하다. 현재 CI 최신 base 및 도구 버전까지 동일한 검증으로 주장하지 않는다.
 
 최종 제출의 전체 lint 묶음, Native Skia, fresh Docker WASM/직접 시각 검증은 별도 통합 게이트다.
 이번 절편의 통과를 #7280 전체 또는 PR 제출 준비 완료로 보고하지 않는다. 원격 쓰기는 하지 않는다.
+검증 worktree의 tracked 변경은 없으며 generated suite/manifest를 stage하지 않았다.
+검증 후 제품 코드 변경 없이 완료 기록만 갱신했다.
+
+## 4. 다음 절편
+
+R2의 문단 fit/분할과 컨트롤 흐름 조정(`typeset_paragraph`, `typeset_table_paragraph`, inline flow)
+책임 분리를 이어간다. 줄 메트릭 내부 세부 정책과 상위 helper 의존도 후속 정리 대상이다.
+현재 구성 경계가 생긴 것을 전체 조판 상태 캡슐화 완료로 보고하지 않는다.
