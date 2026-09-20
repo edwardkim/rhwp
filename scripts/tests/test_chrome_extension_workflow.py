@@ -29,6 +29,11 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         self.assertNotIn('npm run build', consumer)
         self.assertIn('timeout-minutes: 5', consumer)
         self.assertIn('node rhwp-chrome/e2e/run-ci.mjs', consumer)
+        self.assertIn('CHROME_DEVEL_SANDBOX: /opt/google/chrome/chrome-sandbox', consumer)
+        self.assertIn('test -u "$CHROME_DEVEL_SANDBOX"', consumer)
+        self.assertIn("= '0:4755'", consumer)
+        self.assertLess(consumer.index('Verify installed Linux sandbox helper'),
+                        consumer.index('Run packaged Chrome journeys'))
         # This job receives a prebuilt dist and needs only the harness and its
         # three committed inputs; fetching the PDF corpus consumes its budget.
         sparse = re.search(r'sparse-checkout: \|\n(.*?)          sparse-checkout-cone-mode:', consumer, re.S)
