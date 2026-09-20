@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2d](task_m100_7280_stage6.md), 시작 head `178667990`.
-- 상태: 구현 완료, 고정 SHA 집중 검증 대기. R2 전체 완료가 아니다.
+- 상태: R2e 구현·집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 
 ## 1. 책임과 범위
@@ -53,3 +53,43 @@ formatter 공백/후행 쉼표와 짧아진 변수명 때문에 생긴 단일 �
 고정 SHA review worktree에서 suite 준비, fmt·manifest/unit-tier 정책·native Clippy와 집중 검사를
 순차 실행한다. 전체 회귀, 최종 WASM/workspace lint와 native build, Native Skia,
 fresh Docker WASM·직접 시각 검증은 최종 통합 게이트에 남는다. 원격 쓰기는 하지 않는다.
+
+### 고정 SHA 실행 기록
+
+- 제품 SHA: `ca7534500cdd1b8410ac1e6b4c8fdb96e0185f8c`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2e`.
+- 정적 보존 검사: `output/7280/stage7/extraction-proof.json` 통과.
+- manifest 고정 baseline 검사: 1,382 sources / 5,965 static attrs / 48 integration targets 통과.
+- unit-tier 고정 baseline 검사: 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support items 28 통과.
+- `cargo fmt --all -- --check` 통과.
+- `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings`
+  통과(exit 0, 55.36초).
+- 로그: `output/7280/stage7/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+review worktree에서 준비한 suite 매핑에 따라 다음 집중 검사를 실행한다.
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --lib --test regression_suite_011 --test regression_suite_019 --test regression_suite_028 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(issue_6542_mid_para_vpos_rewind_breaks_page::) | test(issue_6718_native_hwp5_zero_vpos_rewind::) | test(issue_6718_zero_rewind_in_split_paragraph::)' \
+  --no-fail-fast
+```
+
+집중 테스트 결과: **153건 통과 / 실패 0건**, 필터 비선택 4,540건, 7 binaries, exit 0.
+빌드 4분 56초, 테스트 0.369초. 실행 ID: `cbdc3c48-3d31-4194-aa08-b99626e5b89d`.
+로그: `output/7280/stage7/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 결과에서
+동일 필터로 선택한 153개 PASS 이름과 일치함을 확인했다. 필터 비선택 건수는 기존 ignore
+50건과 다른 수치이며 이번에 전체 회귀를 재실행한 것은 아니다.
+
+nextest 0.9.137(권장 0.9.140), 미사용 observation profile 설정 경고는 기준 실행과 같다.
+현재 CI 도구 버전까지 동일한 검증으로 주장하지 않는다. review worktree의 tracked 변경은 없고
+파생 suite/manifest는 stage하지 않았다. 제품 검증 후에는 완료 기록만 갱신했다.
+
+## 4. 다음 절편
+
+줄 스캔의 저장 꼬리/각주 판단과 실제 분할·배치 조정, 표 문단 흐름의 책임 분리를 이어간다.
+이번 경계 Query는 상태를 변경하지 않지만, 전체 상태 캡슐화와 R2 전체 분해는 아직 남아 있다.
+최종 전체 회귀·WASM·시각 증적 없이 #7280 완료 또는 제출 준비 완료로 보고하지 않는다.

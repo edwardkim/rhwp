@@ -6,6 +6,8 @@
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 - 기준 회귀: 10,096건 통과 / 실패 0건 / 제외 50건. 기본 feature 로컬 nextest 결과이며 전체 CI·시각 정확성 판정은 아니다.
+- 후속 진행: [R2e 분할 경계 보정 분리·집중 검증 완료](../working/task_m100_7280_stage7.md).
+  R2 줄 스캔·배치 및 표 문단 흐름 조정 분리는 계속 진행한다.
 
 ## 1. 구현 목표와 비범위
 
@@ -36,6 +38,8 @@ renderer/typeset/
   paragraph/metrics.rs                문단 구성 결과와 기존 높이/전진량 조회
   paragraph/context.rs                문단 구성에 허용된 엔진 관측 인터페이스
   paragraph/format.rs                 재구성 선택·줄 메트릭·구성 결과 조립
+  paragraph/fit.rs                    문단 fit 보정의 읽기 전용 계산
+  paragraph/split.rs                  줄 스캔 후보의 분할 경계 보정
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
   table.rs                           표 진입·준비와 기존 결과 타입
