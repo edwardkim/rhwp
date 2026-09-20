@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2aa](task_m100_7280_stage29.md), 시작 head `75b37eb89`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 완료, 고정 제품 SHA 집중 검증 준비.
+- 상태: R2ab 구현·고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -44,9 +44,48 @@ R2aa 281건을 유지하고 기존 `issue_3738_rowbreak_table_footnote_fragment`
 
 ## 3. 고정 head 검증
 
-검증 완료 후 제품 SHA·명령·결과·증적을 기록한다.
+- 제품 SHA: `7fd2aa07e18a40bd582779bb4d2f17b7a97234c9`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2ab`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 대조 통과: `output/7280/stage30/extraction-proof.json`.
+- manifest: 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support 28 통과. 고정 baseline과 비교했으며 source-side test 변경은 없다.
+- fmt 통과, native Clippy `-D warnings` 통과(exit 0, 55.89초).
+- 로그: `output/7280/stage30/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+위 review worktree에서 다음 명령을 순차 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage30/run-focused.sh
+```
+
+집중 명령은 [R2aa](task_m100_7280_stage29.md#3-고정-head-검증)와 같은 target/옵션에서
+worktree를 R2ab로 변경하고, #3738 각주 모듈의 정확한 단일 테스트 필터를
+`test(issue_3738_rowbreak_table_footnote_fragment::)`로 확장했다.
+이 모듈은 기존 대상 suite에 있어 대상 바이너리는 늘리지 않는다.
+기존 1건에서 33건으로 확장하므로 전체 선택은 281 + 32 = 313건이다.
+
+결과: **313건 통과 / 실패 0건**, 24 binaries, 필터 비선택 7,896건, exit 0.
+빌드 6분 48초, 테스트 2.824초. 실행 ID: `53d29405-4015-45f7-88c3-fd880fd8c14d`.
+로그: `output/7280/stage30/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서 같은
+필터로 선택한 313개 PASS 이름과 일치함을 확인했다. 전체 회귀를 재실행한 결과가 아니며,
+필터 비선택 수는 기존 ignore 50건과 별개다. 출력 픽셀 동일성이나 직접 시각 판정은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 뒤에는 계획과 결과 기록만 수정했으며 제품 코드 변경은 없다.
 
 ## 4. 후속
 
-표 문단 루프의 잔여 진입/배치/후처리 조정 경계를 점검한다.
+표 문단 루프의 진입/배치/후처리 조정을 하나의 문단 coordinator로 연결하는 경계를 점검한다.
+특히 진입 진단·가용 단 너비·배치 전 높이/쪽 수 snapshot과 루프 뒤 TAC 정산 조건의
+상태 접근을 기존 시점대로 옮겨, 부모는 조정 진입점으로 남기는 범위를 검토한다.
 표 포맷/TAC·블록 배치/이어받기 본체, 각주 등록 알고리즘과 전체 통합 게이트는 남아 있다.
