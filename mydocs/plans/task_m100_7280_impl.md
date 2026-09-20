@@ -24,6 +24,9 @@
 - 후속 절편: [R2k 문단 진입·fit 예산 준비 분리·집중 검증 완료](../working/task_m100_7280_stage13.md).
   저장 꼬리/편집 그림 판단과 예산 준비 순서를 분리했다. 빈 문단 조기 반환·강제 저장 경계와
   최종 fit 선택, 표 문단/컨트롤 흐름, 최종 통합 검증은 아직 남아 있다.
+- 후속 절편: [R2l 빈 문단 조기 반환 분리·집중 검증 완료](../working/task_m100_7280_stage14.md).
+  guide/옵션 숨김/구역 끝 빈 문단의 서로 다른 판단과 상태 효과를 분리했다.
+  강제 저장 경계·최종 fit 선택, 표 문단/컨트롤 흐름과 최종 통합 검증은 아직 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -54,6 +57,7 @@ renderer/typeset/
   paragraph/metrics.rs                문단 구성 결과와 기존 높이/전진량 조회
   paragraph/context.rs                문단 구성에 허용된 엔진 관측 인터페이스
   paragraph/entry.rs                  진입 저장 꼬리·편집 그림의 공간 요구 판단
+  paragraph/empty.rs                  빈 guide·옵션 숨김·구역 끝 빈 문단의 조기 반환 판단
   paragraph/format.rs                 재구성 선택·줄 메트릭·구성 결과 조립
   paragraph/fit.rs                    문단 fit 보정의 읽기 전용 계산
   paragraph/scan.rs                   페이지 관측값으로 줄 수용 후보·저장 꼬리 증거 계산
