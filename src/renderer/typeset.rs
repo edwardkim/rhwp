@@ -17989,123 +17989,21 @@ impl TypesetEngine {
             st.advance_column_or_new_page();
         }
 
-        // 줄 단위 분할 루프
-        let mut cursor_line: usize = 0;
-        while cursor_line < line_count {
-            let fn_margin = if st.current_footnote_height > 0.0 {
-                st.footnote_safety_margin
-            } else {
-                0.0
-            };
-            let page_avail = if cursor_line == 0 {
-                (base_available
-                    - st.current_footnote_height
-                    - fn_margin
-                    - st.current_height
-                    - st.current_zone_y_offset)
-                    .max(0.0)
-            } else {
-                base_available
-            };
-
-            let sp_b = if cursor_line == 0 {
-                fmt.spacing_before
-            } else {
-                0.0
-            };
-            // Task #332 Stage 4b: partial split 의 줄 단위 fit 검사에도 layout drift 마진 적용
-            let avail_for_lines = (page_avail - sp_b - layout_drift_safety_px).max(0.0);
-
-            let paragraph::scan::LineScanResult {
-                end_line,
-                cumulative,
-                used_saved_tail_vpos_fit,
-            } = paragraph::scan::scan_lines(
-                para,
-                fmt,
-                paragraphs,
-                para_idx,
-                cursor_line,
-                line_count,
-                avail_for_lines,
-                forced_page_break_line,
-                native_hwp5_existing_footnote_reset_line,
-                current_page_vpos_base,
-                is_tac_picture_stack,
-                &st.paragraph_line_scan_page(),
-                self.dpi,
-            );
-
-            let paragraph::split::SplitBoundary {
-                end_line,
-                cumulative,
-            } = paragraph::split::refine_split_boundary(
-                para,
-                fmt,
-                paragraphs.get(para_idx + 1),
-                cursor_line,
-                line_count,
-                avail_for_lines,
-                st.base_available_height(),
-                st.profile.hwp5_stored_pagination_layout(),
-                self.dpi,
-                paragraph::split::SplitBoundary {
-                    end_line,
-                    cumulative,
-                },
-            );
-
-            let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
-            let part_sp_after = if end_line >= line_count {
-                fmt.spacing_after
-            } else {
-                0.0
-            };
-            let part_height = sp_b + part_line_height + part_sp_after;
-
-            if cursor_line == 0 && end_line >= line_count {
-                // 전체가 배치됨 — overflow 재확인
-                let prev_is_table = st.current_items.last().map_or(false, |item| {
-                    matches!(item, PageItem::Table { .. } | PageItem::PartialTable { .. })
-                });
-                let overflow_threshold = if prev_is_table {
-                    let trailing_ls = fmt
-                        .line_spacings
-                        .get(end_line.saturating_sub(1))
-                        .copied()
-                        .unwrap_or(0.0);
-                    cumulative - trailing_ls
-                } else {
-                    cumulative
-                };
-                if overflow_threshold > avail_for_lines
-                    && !st.current_items.is_empty()
-                    && !used_saved_tail_vpos_fit
-                {
-                    st.advance_column_or_new_page();
-                    continue;
-                }
-                st.current_items.push(PageItem::FullParagraph {
-                    para_index: para_idx,
-                });
-            } else {
-                st.current_items.push(PageItem::PartialParagraph {
-                    para_index: para_idx,
-                    start_line: cursor_line,
-                    end_line,
-                });
-            }
-            st.vpos_prev_trimmed_sb_px = 0.0;
-            st.current_height += part_height;
-
-            if end_line >= line_count {
-                break;
-            }
-
-            // move: 나머지 줄 → 다음 단/페이지
-            st.advance_column_or_new_page();
-            cursor_line = end_line;
-        }
+        paragraph::place_split_paragraph(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            line_count,
+            base_available,
+            layout_drift_safety_px,
+            forced_page_break_line,
+            native_hwp5_existing_footnote_reset_line,
+            current_page_vpos_base,
+            is_tac_picture_stack,
+            self.dpi,
+        );
     }
 
     // ========================================================
