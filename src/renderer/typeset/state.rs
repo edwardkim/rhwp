@@ -3,6 +3,7 @@
 //! 지연 표 큐의 인출·복원과 배치 후 vpos 반영도 이 경계에서 수행한다.
 //! 빈 호스트 float의 예산 조회와 항목·lane·흐름 확정도 담당한다.
 //! 표 문단의 비표 개체 조회 입력과 항목·흐름 확정도 담당한다.
+//! 배치 후 TAC 높이 보정의 사다리 상태와 최종 높이 확정도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::deferred::DeferredTableControl;
@@ -10,6 +11,7 @@ use super::controls::empty_float::{EmptyFloatPage, EmptyFloatPlacement};
 use super::controls::shape_flow::{TableHostShapeFlow, TableHostShapePage};
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
 use super::controls::tac_fit::TacFitPage;
+use super::controls::tac_reconcile::TacHeightPage;
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
 use super::paragraph::overflow::OverflowPage;
@@ -23,6 +25,30 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn tac_height_page(&self) -> TacHeightPage<'_> {
+        TacHeightPage {
+            profile: self.profile,
+            current_height: self.current_height,
+            vpos_page_base: self.vpos_page_base,
+            vpos_col_anchor: self.vpos_col_anchor,
+            inline_placements: &self.inline_placements,
+            inline_box_flow_bottom: self.inline_box_flow_bottom,
+        }
+    }
+
+    /// 두 상태 변경 사이의 기존 진단 시점을 유지한다.
+    pub(super) fn commit_tac_spacing_omission(&mut self, trace: impl FnOnce()) {
+        self.stored_ladder_spacing_omitted = true;
+        trace();
+        self.vpos_ladder_dirty = true;
+    }
+
+    pub(super) fn commit_tac_capped_bottom(&mut self, capped_bottom: f64) {
+        if self.current_height > capped_bottom {
+            self.current_height = capped_bottom;
+        }
+    }
+
     pub(super) fn has_spilled_page_tail_float(&self, para_idx: usize, ctrl_idx: usize) -> bool {
         self.page_tail_spilled_floats
             .contains(&(para_idx, ctrl_idx))

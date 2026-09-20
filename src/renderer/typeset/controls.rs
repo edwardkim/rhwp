@@ -7,6 +7,7 @@
 //! 지연 큐 순회는 이 모듈이, 큐·vpos 상태 반영은 state가 소유한다.
 //! 빈 호스트 float lane 조회는 empty_float가, 확정 예약은 state가 소유한다.
 //! 표 문단의 그림·도형·수식 흐름 조회는 shape_flow가 소유하고 이 모듈이 배치를 조정한다.
+//! 배치 후 TAC 높이 보정은 tac_reconcile 조회와 state 확정을 이 모듈에서 조정한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 pub(super) mod deferred;
@@ -16,6 +17,7 @@ pub(super) mod shape_flow;
 pub(super) mod stored_tac;
 pub(super) mod tac_fit;
 pub(super) mod tac_flow;
+pub(super) mod tac_reconcile;
 
 use super::paragraph::metrics::FormattedParagraph;
 use super::{FormattedTable, TypesetState};
@@ -24,7 +26,105 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::FloatLaneSet;
 use crate::renderer::height_measurer::MeasuredTable;
+use crate::renderer::hwpunit_to_px;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// TAC 높이 조회 → 누락 표시/진단/무효화 → 앵커·상한 확정 순서를 보존한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn reconcile_tac_height(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    fmt: &FormattedParagraph,
+    measured_tables: &[MeasuredTable],
+    tac_count: usize,
+    height_before: f64,
+    session_grown_tac_total: Option<f64>,
+    flow: tac_flow::TacFlowQuery<'_>,
+) {
+    let dpi = flow.dpi();
+    let tac_reconcile::TacHeightCap {
+        tac_seg_total,
+        cap,
+        stored_step_px,
+        ladder_total,
+        ladder_omits_spacing,
+    } = tac_reconcile::measure(
+        para_idx,
+        para,
+        next_para,
+        fmt,
+        measured_tables,
+        tac_count,
+        height_before,
+        st.tac_height_page().profile,
+        &flow,
+        |ci, prior_tac_count, lh, ls_extra| {
+            if std::env::var("RHWP_DIAG_TACSIB").is_ok() {
+                eprintln!(
+                    "DIAG_TACSIB pi={} ci={} line_idx={} add={:.1} first_seg={:.1}",
+                    para_idx,
+                    ci,
+                    prior_tac_count,
+                    lh + ls_extra,
+                    para.line_segs
+                        .first()
+                        .map(|s0| hwpunit_to_px(
+                            s0.line_height.saturating_add(s0.line_spacing),
+                            dpi
+                        ))
+                        .unwrap_or(0.0),
+                );
+            }
+        },
+    );
+    if ladder_omits_spacing {
+        st.commit_tac_spacing_omission(|| {
+            if std::env::var("RHWP_DIAG_LADSP").is_ok() {
+                eprintln!(
+                    "DIAG_LADSP pi={} OMIT step={:.1} cap={:.1} fmt_total={:.1} sb={:.1} sa={:.1}",
+                    para_idx,
+                    stored_step_px.unwrap_or(0.0),
+                    cap,
+                    fmt.total_height,
+                    fmt.spacing_before,
+                    fmt.spacing_after
+                );
+            }
+        });
+    }
+    let snapped_base = tac_reconcile::snapped_base(
+        para,
+        height_before,
+        ladder_omits_spacing,
+        st.tac_height_page(),
+        dpi,
+    );
+    let cap = tac_reconcile::effective_cap(
+        cap,
+        ladder_total,
+        ladder_omits_spacing,
+        session_grown_tac_total,
+    );
+    if std::env::var("RHWP_DIAG_TACCAP").is_ok() {
+        eprintln!(
+            "DIAG_TACCAP pi={} tac_seg_total={:.1} cap={:.1} fmt_total={:.1} sb={:.1} cur_h={:.1} snapped_base={:.1} clamp={}",
+            para_idx,
+            tac_seg_total,
+            cap,
+            fmt.total_height,
+            fmt.spacing_before,
+            st.tac_height_page().current_height,
+            snapped_base,
+            st.tac_height_page().current_height - snapped_base > cap
+        );
+    }
+
+    let capped_bottom =
+        tac_reconcile::capped_bottom(para_idx, snapped_base, cap, st.tac_height_page());
+    st.commit_tac_capped_bottom(capped_bottom);
+}
 
 /// 표 문단의 비표 개체 배치 순서만 조정한다. 뒤쪽 문단 높이 보정은 호출자에 남는다.
 #[allow(clippy::too_many_arguments)]
