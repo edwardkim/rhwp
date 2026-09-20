@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2c](task_m100_7280_stage5.md), 시작 head `c3fb3c41f`.
-- 상태: 구현 완료, 고정 제품 SHA 검증 대기. R2 전체 완료가 아니다.
+- 상태: R2d 구현·집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 - 고정 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 
 ## 1. 범위와 기존 실행 순서
@@ -61,3 +61,51 @@ baseline/golden/ignore·CI 정책은 수정하지 않는다. 고정 SHA review w
 native/WASM/workspace lint 묶음, Native Skia, fresh Docker WASM/직접 시각 검증은
 별도 통합 게이트에 남는다. 이전 절편의 실행 결과를 이번 제품 SHA의 PASS로 재사용하지 않는다.
 원격 push·PR·댓글은 수행하지 않는다.
+
+### 고정 SHA와 실행 기록
+
+- 제품 SHA: `5cb89418ccf76ed617fee368596fec7d9e7ec332`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2d`.
+- 정적 보존 비교: `output/7280/stage6/extraction-proof.json` 통과. 이전 inline state 메서드도 동일하다.
+- manifest 고정 baseline 검사 통과: 1,382 sources / 5,965 static attrs / 48 integration targets.
+- unit-tier 고정 baseline 검사 통과: 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support items 28.
+- `cargo fmt --all -- --check` 통과.
+- `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings`
+  통과(exit 0, 56.00초).
+- 로그: `output/7280/stage6/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+집중 검사 명령:
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --lib --test regression_suite_011 --test regression_suite_012 --test regression_suite_016 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(renderer::float_placement::) | test(issue_5941_tail_overflow_drift_gate::) | test(issue_6031_ladder_sb_omitted_tail_overrun::) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before::)' \
+  --no-fail-fast
+```
+
+suite 번호는 review worktree에서 `--prepare`한 실제 원본 매핑을 조회해 선택했다.
+`issue_5941` 계약의 페이지 수 assertion은 보존 여부의 한 축이며 시각 정확성을 뜻하지 않는다.
+`issue_6031`은 SVG 본문 하단 baseline 및 다음 페이지 첫 글줄,
+`issue_6753`은 render tree 하단과 다음 페이지의 `비용` 문구를 확인한다.
+기존 typeset의 `issue2439_strict_following_plain_text_fit_is_consumed_once`도 실행 대상이다.
+3개 상태 보정의 모든 flag 조합을 새로 실행 검증했다고 주장하지 않는다.
+
+집중 테스트 결과: **165건 통과 / 실패 0건**, 필터 비선택 4,533건, 7 binaries, exit 0.
+빌드 4분 53초, 테스트 0.583초. 실행 ID: `ed5c3266-b192-4a1e-8f53-89ff00c14458`.
+로그: `output/7280/stage6/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline의 전수 결과에서
+동일 필터로 선택한 165개 PASS 이름이 일치함을 확인했다. 이번 필터 비선택 4,533건을
+기존 ignore 50건과 혼동하지 않는다. 전체 회귀 재실행 결과는 아니다.
+
+nextest 0.9.137(권장 0.9.140), 미사용 observation profile의 `junit.report-skipped` 경고는
+기준 실행과 동일하다. 현재 CI 도구 버전까지 동일한 검증으로 주장하지 않는다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 stage하지 않았다.
+검증 후 제품 코드 변경 없이 완료 기록만 갱신했다.
+
+## 4. 다음 절편
+
+문단의 전체 fit 판정/줄 분할과 표 문단 흐름 조정의 책임 분리를 이어간다.
+기존 state helper를 다시 광범위한 가변 context로 감싸지 않고, 실제 호출 순서와
+확정 항목·커서 소유권을 확인한 뒤 분리한다. 최종 전체 검증과 시각 증거는 통합 게이트다.
