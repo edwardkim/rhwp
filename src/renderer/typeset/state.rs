@@ -4,6 +4,7 @@
 
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
+use super::paragraph::overflow::OverflowPage;
 use super::paragraph::placement::ParagraphFragment;
 use super::paragraph::scan::LineScanPage;
 use super::TypesetState;
@@ -12,6 +13,56 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 넘침 판단에 필요한 읽기 전용 값만 전달한다. base 높이 조회에는 부수효과가 없다.
+    pub(super) fn paragraph_overflow_page(&self) -> OverflowPage {
+        OverflowPage {
+            col_count: self.col_count,
+            current_height: self.current_height,
+            has_items: !self.current_items.is_empty(),
+            body_height: self.base_available_height(),
+            body_area_height: self.layout.body_area.height,
+            hwp3_layout: self.profile.hwp3_layout(),
+        }
+    }
+
+    /// atomic 항목을 먼저 넣고 조정자가 기존 flow 메트릭을 계산하게 한다.
+    pub(super) fn begin_atomic_overflow_paragraph(&mut self, para_idx: usize) {
+        self.current_items.push(PageItem::FullParagraph {
+            para_index: para_idx,
+        });
+    }
+
+    /// atomic 넘침은 기존 trimmed spacing을 덮지 않는다.
+    pub(super) fn advance_atomic_overflow_paragraph(
+        &mut self,
+        advance: f64,
+        total_height: f64,
+        body_bottom_vpos: Option<i32>,
+    ) {
+        self.current_height += advance;
+        self.flow_underrun += (total_height - advance).max(0.0);
+        if let Some(v) = body_bottom_vpos {
+            self.prev_body_bottom_vpos = Some(v);
+        }
+    }
+
+    /// tail 넘침은 total_height를 그대로 전진하며 underrun을 누적하지 않는다.
+    pub(super) fn commit_tail_overflow_paragraph(
+        &mut self,
+        para_idx: usize,
+        total_height: f64,
+        body_bottom_vpos: Option<i32>,
+    ) {
+        self.current_items.push(PageItem::FullParagraph {
+            para_index: para_idx,
+        });
+        self.vpos_prev_trimmed_sb_px = 0.0;
+        self.current_height += total_height;
+        if let Some(v) = body_bottom_vpos {
+            self.prev_body_bottom_vpos = Some(v);
+        }
+    }
+
     /// 항목 순서만 확정한다. 높이 계산과 진단은 이 변경 뒤 조정자가 실행한다.
     pub(super) fn insert_fitted_paragraph(&mut self, para_idx: usize, defer_preceding_float: bool) {
         let paragraph_item = PageItem::FullParagraph {

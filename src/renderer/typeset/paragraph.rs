@@ -12,6 +12,7 @@ pub(super) mod fit;
 pub(super) mod format;
 pub(super) mod line_queries;
 pub(super) mod metrics;
+pub(super) mod overflow;
 pub(super) mod placement;
 pub(super) mod scan;
 pub(super) mod split;
@@ -207,4 +208,66 @@ pub(super) fn place_fitted_paragraph(
         trimmed_spacing_before,
         body_bottom_vpos,
     );
+}
+
+/// 일반 fit 실패 뒤 atomic → tail 순서로 시도한다. 성공 시 호출자는 즉시 반환한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn try_place_overflow_paragraph(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    trim_spacing_before_for_flow: bool,
+    body_bottom_vpos: Option<i32>,
+    available: f64,
+    forced_page_break_line: Option<usize>,
+    dpi: f64,
+) -> bool {
+    let page = st.paragraph_overflow_page();
+    if overflow::atomic_overflow_fits(para, fmt, paragraphs, para_idx, &page, available, dpi) {
+        st.begin_atomic_overflow_paragraph(para_idx);
+        let advance = fmt.flow_advance_height(
+            para,
+            st.col_count,
+            trim_spacing_before_for_flow,
+            st.vpos_ladder_dirty
+                || !spacing_trim_restorable(paragraphs, para_idx)
+                || next_boundary_reverts_spacing_trim(
+                    st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                    paragraphs,
+                    styles,
+                    para_idx,
+                    dpi,
+                ),
+            false,
+        );
+        st.advance_atomic_overflow_paragraph(advance, fmt.total_height, body_bottom_vpos);
+        return true;
+    }
+    if overflow::tail_overflow_candidate(
+        para,
+        fmt,
+        paragraphs,
+        para_idx,
+        &page,
+        forced_page_break_line,
+    ) {
+        let first_line_advance = fmt.line_advance(0);
+        // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
+        // 막으려던 LAYOUT_DRIFT_SAFETY_PX(현재 페이지 한정) 여유는 이 경우 의미가 없다.
+        // 따라서 safety 를 뺀 `available` 이 아니라 진짜 본문 하단(각주/존 차감 포함)인
+        // available_height() 를 기준으로 초과량을 잰다.
+        let true_available = st.available_height();
+        // 초과량이 한 줄 미만(폰트 drift)일 때만 통째 배치.
+        // (full-place 체크를 이미 통과 못 했으므로 overflow > -safety. 진짜 본문 하단
+        //  기준으로 한 줄 미만 초과면 마지막 줄 spill 대신 통째 배치.)
+        let overflow = st.current_height + fmt.height_for_fit - true_available;
+        if overflow < first_line_advance {
+            st.commit_tail_overflow_paragraph(para_idx, fmt.total_height, body_bottom_vpos);
+            return true;
+        }
+    }
+    false
 }
