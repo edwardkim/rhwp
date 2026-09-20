@@ -7,6 +7,7 @@
 //! 데코레이션 host 텍스트는 trim 상태를 바꾸지 않고 항목/전진량만 반영한다.
 //! 장식 표의 Shape 발행과 이어받기 예약/현재 단 컷·앵커 확정도 담당한다.
 //! 일반 표 배치 전 float 배타 영역 소비와 배치 후 지연 판단의 페이지 관측도 담당한다.
+//! 표 소유 문단의 진입 진단·배타 영역 소비 후 너비·배치 전 흐름 관측도 담당한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::decoration_table::OverlayContinuation;
@@ -30,6 +31,36 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 표 문단 진입의 관측은 float 배타 영역 소비보다 먼저 수행한다.
+    pub(super) fn trace_table_paragraph_entry(&self, para_idx: usize) {
+        // [#2243 진단] 표 문단 진입 누적 — 동작 불변.
+        if std::env::var("RHWP_DIAG_TAC").is_ok() {
+            eprintln!(
+                "DIAG_TBLP pi={} cur_h={:.1} items={} page_base={:?} anchor={:.1}",
+                para_idx,
+                self.current_height,
+                self.current_items.len(),
+                self.vpos_page_base,
+                self.vpos_col_anchor,
+            );
+        }
+    }
+
+    /// 기존 배타 영역을 소비한 뒤 그 시점의 가용 단 너비를 반환한다.
+    pub(super) fn prepare_table_paragraph_column(&mut self) -> f64 {
+        self.apply_visible_float_exclusions(0.0);
+        self.layout
+            .column_areas
+            .get(self.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(self.layout.body_area.width)
+    }
+
+    /// 배치가 시작되기 전 문단 앵커와 완료 쪽 수를 함께 관측한다.
+    pub(super) fn table_paragraph_flow_position(&self) -> (f64, usize) {
+        (self.current_height, self.pages.len())
+    }
+
     pub(super) fn has_fragment_queued_table_footnotes(
         &self,
         para_idx: usize,

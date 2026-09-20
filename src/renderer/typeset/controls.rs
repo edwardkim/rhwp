@@ -12,6 +12,7 @@
 //! 표 진입의 저장 줄 이월·데코레이션 선택은 table_entry가 조회하고 이 모듈이 순서를 조정한다.
 //! 장식 표의 컷/예약량은 decoration_table이 조회하고 이 모듈이 발행·포맷·확정을 조정한다.
 //! 일반/TAC 표의 포맷·배치 선택과 후행 표 지연 등록은 flow_table이 조정한다.
+//! 표 소유 문단 전체의 진입·컨트롤 순회·후처리는 paragraph_flow가 연결한다.
 //! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
@@ -20,6 +21,7 @@ pub(super) mod deferred;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
 pub(super) mod order;
+pub(super) mod paragraph_flow;
 pub(super) mod shape_flow;
 pub(super) mod stored_tac;
 pub(super) mod table_entry;
