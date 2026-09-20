@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2w](task_m100_7280_stage25.md), 시작 head `1d66e82fa`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: R2x 구현, 고정 제품 SHA 집중 검증 예정. R2 전체/PR 준비 완료가 아니다.
+- 상태: R2x 구현·고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -63,7 +63,48 @@ native Clippy → 집중 nextest를 순차 수행한다. R2w 255건에 다음 �
 
 ## 3. 고정 head 검증
 
-제품 커밋 후 실제 결과를 기록한다. 예정 265건을 실행 결과로 간주하지 않는다.
+- 제품 SHA: `5537d7cad11c75a04d400483f07a1ddad24b0ce0`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2x`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 대조 통과: `output/7280/stage26/extraction-proof.json`.
+- 파생 suite 준비 후 manifest 고정 baseline 비교 통과:
+  1,382 sources / 5,965 static attrs / 48 targets.
+- unit-tier 고정 baseline 비교 통과:
+  4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy `-D warnings` 통과(exit 0, 56.65초).
+- 로그: `output/7280/stage26/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+정책 검사는 `node scripts/rust-test-suite-manifest.mjs --check --base-ref
+722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`와 `node scripts/rust-unit-test-tiers.mjs
+--check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`로 실행했다.
+Clippy 명령은 `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir
+/home/edward/mygithub/rhwp/target/pr-review -- -D warnings`다.
+
+집중 테스트는 `bash output/7280/stage26/run-focused.sh`로 실행했다. 전체 명령은 다음과 같다.
+
+```bash
+cd /home/edward/mygithub/rhwp-review-7280-r2x
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review --lib \
+  --test regression_suite_005 --test regression_suite_017 --test regression_suite_002 --test regression_suite_020 --test regression_suite_001 --test regression_suite_004 --test regression_suite_006 \
+  --test regression_suite_007 --test regression_suite_008 --test regression_suite_009 \
+  --test regression_suite_012 --test regression_suite_015 --test regression_suite_018 \
+  --test regression_suite_019 --test regression_suite_027 --test regression_suite_016 --test regression_suite_021 --test regression_suite_028 \
+  -E 'test(issue_1755_host_heading_pre_emit::) | test(issue_7047_textless_host_ladder_spacing::) | test(issue_703::) | test(issue_2319_no_lineseg_tac_table_height::) | test(issue_1835_tac_stale_height::) | test(issue_2220_tac_host_line_outer_margin::) | test(renderer::typeset::) | test(renderer::composer::) | test(renderer::float_placement::) | test(issue_7103_tac_table_rewind::) | test(issue_7150_tac_line_owner_anchor::) | test(issue_6601_inline_tac_tables_share_a_line::) | test(issue_6812_square_picture_tac_table::) | test(maintainer_nested_table_lines::) | test(issue_5700_tac_reset_tail_above_flow::) | test(issue_5807_coanchored_float_tac_order::) | test(issue_7049_inline_tac_table_baseline::) | test(issue_7062_tac_object_host_line_height::) | test(tac_group_page_bottom_overflow::) | test(issue_6879_tac_sibling_float_anchor_line::) | test(issue_6929_float_table_para_offset::) | test(issue_1686::) | test(issue_6795_split_float_sibling_gets_its_own_page::) | test(issue_5906_float_stack_declared_tail::) | test(issue_1753_deferred_table_fill_ahead::) | test(=issue_3738_rowbreak_table_footnote_fragment::rowbreak_table_cell_footnotes_keep_the_pdf_fragment_boundary) | test(issue_6946_block_seated_float_sibling_gets_its_own_page::) | test(issue_7203_float_table_stored_anchor_top::) | test(issue_7203_float_table_top_uses_stored_anchor::) | test(issue_5585_sibling_table_anchor_offset::) | test(issue_3738_tac_sibling_shape_line_advance::) | test(issue_1156_chart_column_flow::) | test(issue_6146_page_tail_float_band_spill::)' \
+  --no-fail-fast
+```
+
+결과: **265건 통과 / 실패 0건**, 22 binaries, 필터 비선택 7,544건, exit 0.
+빌드 6분 32초, 테스트 1.520초. 실행 ID: `572847ab-d158-4692-87a1-a2a2295024e7`.
+로그: `output/7280/stage26/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서 동일 필터로
+선택한 265개 PASS 이름과 일치함을 확인했다. 이번에 전체 회귀를 재실행하지 않았으며,
+필터 비선택은 기존 ignore 50건과 별개다. 출력 픽셀 동일성이나 전체 시각 일치 판정은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 뒤에는 계획과 결과 기록만 수정했으며 제품 코드 변경은 없다.
 
 ## 4. 후속
 
