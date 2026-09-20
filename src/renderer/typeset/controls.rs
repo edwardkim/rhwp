@@ -13,11 +13,13 @@
 //! 장식 표의 컷/예약량은 decoration_table이 조회하고 이 모듈이 발행·포맷·확정을 조정한다.
 //! 일반/TAC 표의 포맷·배치 선택과 후행 표 지연 등록은 flow_table이 조정한다.
 //! 표 소유 문단 전체의 진입·컨트롤 순회·후처리는 paragraph_flow가 연결한다.
-//! 나머지 float, 개별 지연 표의 측정·배치와 표 분할 경로는 상위 구현에 남아 있다.
+//! 개별 지연 표의 재조회·포맷·배치는 deferred_placement가 조정한다.
+//! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
 pub(super) mod decoration_table;
 pub(super) mod deferred;
+pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
 pub(super) mod order;

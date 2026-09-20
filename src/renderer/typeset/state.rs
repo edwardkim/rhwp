@@ -31,6 +31,20 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 지연 배치는 새 문단 진입이 아니므로 float 배타 영역을 추가로 소비하지 않는다.
+    pub(super) fn deferred_table_column_width(&self) -> f64 {
+        self.layout
+            .column_areas
+            .get(self.current_column as usize)
+            .map(|a| a.width)
+            .unwrap_or(self.layout.body_area.width)
+    }
+
+    /// 원 배치 시점의 예산 앵커와 구분되는, 현재 지연 배치의 렌더 앵커.
+    pub(super) fn deferred_table_anchor_height(&self) -> f64 {
+        self.current_height
+    }
+
     /// 표 문단 진입의 관측은 float 배타 영역 소비보다 먼저 수행한다.
     pub(super) fn trace_table_paragraph_entry(&self, para_idx: usize) {
         // [#2243 진단] 표 문단 진입 누적 — 동작 불변.

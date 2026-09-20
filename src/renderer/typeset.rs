@@ -17283,77 +17283,15 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         measured_tables: &[MeasuredTable],
     ) {
-        let Some(para) = paragraphs.get(deferred.para_index) else {
-            return;
-        };
-        let Some(Control::Table(table)) = para.controls.get(deferred.control_index) else {
-            return;
-        };
-
-        let host_col_w = st
-            .layout
-            .column_areas
-            .get(st.current_column as usize)
-            .map(|a| a.width)
-            .unwrap_or(st.layout.body_area.width);
-        let composed_para = composed.get(deferred.para_index);
-        let fmt = self.format_paragraph(para, composed_para, styles, Some(host_col_w));
-        if !controls::deferred::CoanchoredTableQuery::new(para, &fmt, self.tac_flow_query())
-            .is_deferred_coanchored_rowbreak_table(table)
-        {
-            return;
-        }
-
-        let is_column_top = st.current_height < 1.0;
-        let ft = self.format_table(
-            para,
-            deferred.para_index,
-            deferred.control_index,
-            table,
-            measured_tables,
-            styles,
-            composed_para,
-            paragraphs.get(deferred.para_index + 1),
-            is_column_top,
-        );
-        let mt = measured_tables.iter().find(|mt| {
-            mt.para_index == deferred.para_index && mt.control_index == deferred.control_index
-        });
-        let para_start_height = st.current_height;
-
-        self.typeset_block_table(
+        controls::deferred_placement::place(
+            self,
             st,
-            deferred.para_index,
-            deferred.control_index,
-            para,
-            table,
-            &ft,
-            &fmt,
-            mt,
-            styles,
-            para_start_height,
-            // [Task #1860] 예산 전용 참 para_start(원 배치 시점). 지연 배치의
-            // current_height 는 선행 캡션을 이미 반영하므로 out-of-flow float
-            // 예산이 이중차감된다. 렌더 위치(para_start_height)는 불변 유지하고
-            // 예산 계산에만 이 값을 쓴다.
-            deferred.para_start_height,
-            deferred.is_first_placed,
-            deferred.is_last_placed,
+            deferred,
             paragraphs,
             composed,
+            styles,
+            measured_tables,
         );
-
-        notes::register_unqueued_table_cells(
-            st,
-            table,
-            deferred.para_index,
-            deferred.control_index,
-            |st, footnote, source| {
-                self.register_unqueued_table_footnote(st, footnote, source);
-            },
-        );
-
-        st.commit_deferred_table_anchor(deferred.para_index);
     }
 
     /// 표가 포함된 문단을 처리한다.
