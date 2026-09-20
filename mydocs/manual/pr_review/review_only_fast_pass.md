@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-14
+last_verified: 2026-09-20
 ---
 
 # Review-only fast-pass
@@ -108,7 +108,7 @@ PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른�
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
 
 이 경로는 devel 대상 same-repository PR 전용이다. main 대상 PR은 Controller를 기다리거나
-해당 status로 검증을 생략하지 않는다. 발행 v6과 CI·CodeQL·Render Diff 소비 계약은 실제 발행
+해당 status로 검증을 생략하지 않는다. 발행 v7과 CI·CodeQL·Render Diff 소비 계약은 실제 발행
 출력을 소비하는 연결 테스트로 검증하며, 구버전·중복/누락 필드를 허용하여 우회하지 않는다.
 Controller의 운영 배선 반영 여부와 비대상 이벤트 경계는
 [GitHub 운영 매뉴얼](../github_operations.md#75-workflow-pr의-후행-review-기록)을 따른다.

@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-14
+last_verified: 2026-09-20
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -316,7 +316,10 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 전부 Full 실행으로 fallback한다. 상세 허용 범위와 merge bridge 규칙은
 [review-only fast-pass](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)를 따른다.
 
-발행 v6과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. main 대상 PR은 trusted reuse
+발행 v7과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. Chrome E2E의 실행/skip과 frontend
+package 승격도 같은 trusted 분류 결과로 감사한다. Chrome 분류 함수는 기존 sparse checkout에
+포함되는 `ci-impact-classifier.cjs`에 두므로, main의 이전 controller 배선으로 새 devel 정책을 읽어도
+새 의존 파일 누락으로 중단되지 않는다. main 대상 PR은 trusted reuse
 조회 자체를 생략하며, devel 대상이라도 중복/누락 필드·다른 base·미지원 버전은 재사용하지 않는다.
 
 `workflow_run`의 branch 필터는 PR base가 아니다. 연결 PR이 하나이고 명확한 비devel 대상이면
@@ -365,6 +368,7 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | --- | --- | --- |
 | Adapter inter-diff | `gh workflow run adapter-diff.yml --ref devel` | direct |
 | CI | `gh workflow run ci.yml --ref devel -f release_grade=false` | direct |
+| Chrome browser cache | 위 CI 실행의 exact 후보 SHA 증거를 공유 | contracts-only adapter: Frontend package gates의 cache 분기 계약 + Chrome extension E2E 설치·실행, shared cache 저장은 미검증 |
 | CodeQL | `gh workflow run codeql.yml --ref devel` | direct |
 | Pages | `gh workflow run deploy-pages.yml --ref devel` | verify-only, Deploy job skipped |
 | Gym | `gh workflow run gym-release-gate.yml --ref devel -f mode=contracts` | contracts-only, full benchmark skipped |
