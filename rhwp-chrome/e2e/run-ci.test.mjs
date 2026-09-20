@@ -8,8 +8,9 @@ test('runner preserves failures, bounds diagnostic text and cleans its temporary
     const fs = require('node:fs');
     const os = require('node:os');
     fs.writeFileSync(os.tmpdir() + '/owned-download', 'fixture');
-    process.stdout.write('x'.repeat(300000));
-    process.stderr.write('\\n' + os.tmpdir() + '\\n');
+    // One pipe preserves the marker after the large payload on every OS.
+    // stdout/stderr are independent pipes and their delivery order may differ.
+    process.stdout.write('x'.repeat(300000) + '\\n' + os.tmpdir() + '\\n');
     process.exitCode = 7;
   `], { timeoutMs: 5_000 });
   assert.equal(result.status, 7);
