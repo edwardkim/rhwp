@@ -91,6 +91,10 @@
   같은 제품 SHA에서 기존 집중 선택 밖의 어울림 계약 10건을 추가 실행해 모두 통과했다.
   R2af는 표 없는 host 밴드 준비의 Query/Command 분리부터 진행한다. 구역 순회·페이지 전이는
   R5, 미주 연결은 R4로 유지하며 이번 점검은 제품 변경이나 R2 통합 검증 완료가 아니다.
+- 후속 절편: [R2af 표 없는 host 어울림 준비 분리·집중 검증 완료](../working/task_m100_7280_stage35.md).
+  저장 후보/전폭/host anchor 조회를 host_wrap으로, 상태 적용을 state로 분리했다.
+  기존 상태 보존과 저장 적용 후 유도 lane 판단 순서를 유지했으며 집중 검사 323건 통과.
+  후속 문단 매칭·흡수·prefix/tail 조정과 책임 묶음 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -132,6 +136,7 @@ renderer/typeset/
   paragraph/overflow.rs               일반 fit 실패 뒤 atomic/tail 넘침 허용의 읽기 전용 판정
   paragraph/stored_lines.rs           기존 저장 줄 정보 선택·해석 정책
   controls.rs                        소유 문단 내 TAC/float 경로 선택·지연 배치 조정
+  controls/host_wrap.rs               표 없는 host의 저장 어울림 밴드·자기 anchor 준비 조회
   table.rs                           표 진입·준비와 기존 결과 타입
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료
