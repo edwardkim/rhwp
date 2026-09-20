@@ -15,6 +15,7 @@ test('unrelated products, documents and Studio tests do not require Chrome', () 
   assert.equal(classify(input('rhwp-firefox/background.js', 'rhwp-safari/manifest.json',
     'rhwp-vscode/src/extension.ts', 'npm/editor/src/index.ts', 'mydocs/plan.md',
     'rhwp-studio/tests/test.ts', 'rhwp-studio/e2e/foo.mjs', 'rhwp-chrome/README.md',
+    'rhwp-studio/public/samples/demo.hwpx',
     'scripts/tests/test_gym_work_receipt_pack.py')).chrome_extension_e2e_required, 'false');
 });
 test('renames evaluate both sides and missing old path runs conservatively', () => {

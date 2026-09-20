@@ -57,9 +57,11 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         self.assertIn('!inputs.verify_only && github.ref', prepare)
         policy = json.loads((ROOT / 'scripts/workflow_promotion_policy.json').read_text())
         adapter = policy['workflows']['.github/workflows/chrome-browser-cache.yml']
-        self.assertEqual(adapter['executionMode'], 'verify-only')
-        self.assertEqual(adapter['requiredJobs'], ['Verify locked Chrome installation'])
-        self.assertEqual(adapter['requiredSkippedJobs'], ['Seed shared Chrome browser cache'])
+        self.assertEqual(adapter['executionMode'], 'contracts-only')
+        self.assertEqual(adapter['evidencePath'], '.github/workflows/ci.yml')
+        self.assertEqual(adapter['requiredJobs'], ['Frontend package gates', 'Chrome extension E2E'])
+        self.assertEqual(adapter['requiredSkippedJobs'], [])
+        self.assertIn('scripts/tests/test_chrome_extension_workflow.py', self.job('frontend-package-gates'))
 
     def test_failure_artifact_is_allowlisted_and_success_only_has_summary(self):
         consumer = self.job('chrome-extension-e2e')

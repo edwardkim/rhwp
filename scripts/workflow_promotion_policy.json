@@ -3,10 +3,11 @@
   "repository": "edwardkim/rhwp",
   "workflows": {
     ".github/workflows/chrome-browser-cache.yml": {
-      "executionMode": "verify-only",
+      "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
       "sensitiveSurfaces": ["cache"],
-      "requiredJobs": ["Verify locked Chrome installation"],
-      "requiredSkippedJobs": ["Seed shared Chrome browser cache"],
+      "requiredJobs": ["Frontend package gates", "Chrome extension E2E"],
+      "requiredSkippedJobs": [],
       "requiredArtifacts": [],
       "allowedEvents": ["workflow_dispatch"],
       "allowedActors": ["edwardkim"]

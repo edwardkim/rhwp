@@ -449,7 +449,7 @@ const requiredFiles = new Set([
   'samples/hwp3-pagedef-1915.hwp', 'samples/hwpx_sample2.hwpx', 'samples/re-font-dotum-empty-hancom.hwp',
 ]);
 const unrelatedPrefixes = ['mydocs/', 'rhwp-firefox/', 'rhwp-safari/', 'rhwp-vscode/', 'npm/editor/',
-  'rhwp-studio/tests/', 'rhwp-studio/e2e/', 'samples/', 'pdf/', 'tests/', 'gym/', 'assets/screenshots/',
+  'rhwp-studio/tests/', 'rhwp-studio/e2e/', 'rhwp-studio/public/', 'samples/', 'pdf/', 'tests/', 'gym/', 'assets/screenshots/',
   'assets/chrome/', 'assets/edge/', 'assets/logo/'];
 function result(required, reason) {
   return { chrome_extension_e2e_required: String(required), chrome_extension_e2e_reason: reason };
