@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2q](task_m100_7280_stage19.md), 시작 head `56139c729`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: R2r 구현, 고정 SHA 집중 검증 예정. R2 전체 완료나 PR 준비 완료가 아니다.
+- 상태: R2r 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 PR 준비 완료가 아니다.
 
 ## 1. 분리한 책임과 보존 계약
 
@@ -48,7 +48,51 @@ native Clippy, 집중 nextest를 순차 수행한다. R2q의 211건에 #6879와 
 전체 회귀, WASM/workspace lint, workspace build, Native Skia, fresh Docker WASM 및 직접
 시각 대조는 통합 게이트에 남긴다. 원격 push·PR·댓글은 이번 승인 범위에 포함하지 않는다.
 
-## 3. 후속
+## 3. 고정 head 검증
+
+- 제품 SHA: `ae983e461f37ba9eaefff354e6e29af7ab9bc495`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2r`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 제품 SHA를 입력한 정적 복원 비교 통과: `extraction-proof.json`.
+- 파생 suite 준비 후 manifest 고정 baseline 비교 통과:
+  1,382 sources / 5,965 static attrs / 48 targets.
+- unit-tier 고정 baseline 비교 통과:
+  4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 / cfg support 28.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy `-D warnings` 통과(exit 0, 56.13초).
+- 로그: `output/7280/stage20/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+정책 검사는 `node scripts/rust-test-suite-manifest.mjs --check --base-ref
+722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`와 `node scripts/rust-unit-test-tiers.mjs
+--check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`로 실행했다.
+Clippy 명령은 `CARGO_BUILD_JOBS=4 cargo clippy --locked --target-dir
+/home/edward/mygithub/rhwp/target/pr-review -- -D warnings`다.
+
+집중 테스트(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review --lib \
+  --test regression_suite_004 --test regression_suite_006 --test regression_suite_007 \
+  --test regression_suite_009 --test regression_suite_015 --test regression_suite_018 \
+  --test regression_suite_019 --test regression_suite_027 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(renderer::float_placement::) | test(issue_7103_tac_table_rewind::) | test(issue_7150_tac_line_owner_anchor::) | test(issue_6601_inline_tac_tables_share_a_line::) | test(issue_6812_square_picture_tac_table::) | test(maintainer_nested_table_lines::) | test(issue_5700_tac_reset_tail_above_flow::) | test(issue_5807_coanchored_float_tac_order::) | test(issue_7049_inline_tac_table_baseline::) | test(issue_7062_tac_object_host_line_height::) | test(tac_group_page_bottom_overflow::) | test(issue_6879_tac_sibling_float_anchor_line::) | test(issue_6929_float_table_para_offset::)' \
+  --no-fail-fast
+```
+
+결과: **218건 통과 / 실패 0건**, 12 binaries, 필터 비선택 5,514건, exit 0.
+빌드 5분 31초, 테스트 0.470초. 실행 ID: `b09a6fd8-b286-4124-9d56-bb527672fa6c`.
+로그: `output/7280/stage20/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서
+동일 필터로 선택한 218개 PASS 이름과 일치함을 확인했다. 이번 절편에서 전체 회귀를
+재실행하지 않았으며, 필터 비선택은 기존 ignore 50건과 별개다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+제품 검증 뒤에는 계획과 결과 기록만 수정했다. 전체 CI·WASM 및 직접 시각 판독 완료로
+해석하지 않는다.
+
+## 4. 후속
 
 표 컨트롤의 실제 배치·float/지연 이월 조정과 표 컷/continuation 책임 분리를 이어간다.
 R2 전체 및 최종 통합 검증은 아직 남아 있다.
