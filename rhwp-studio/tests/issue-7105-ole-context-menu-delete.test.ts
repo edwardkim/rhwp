@@ -19,6 +19,8 @@ import { balancedFrom, functionBodyFrom } from './support/source-guard.ts';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const insertSrc = readFileSync(join(rootDir, 'src/command/commands/insert.ts'), 'utf8');
 const pictureSrc = readFileSync(join(rootDir, 'src/engine/input-handler-picture.ts'), 'utf8');
+const inputSrc = readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8');
+const mouseSrc = readFileSync(join(rootDir, 'src/engine/input-handler-mouse.ts'), 'utf8');
 
 /** `if (<조건>) { … wasm.deleteShapeControl(` 의 조건식에서 `ref.type === '<종류>'` 들을 뽑는다. */
 function shapeDeleteTypes(block: string, label: string): string[] {
@@ -53,4 +55,25 @@ test('메뉴 삭제와 키보드 삭제가 같은 종류를 도형 삭제로 보
     keyboard,
     '#7105: 메뉴 삭제(insert:picture-delete)와 키보드 삭제(deleteObjectControl)의 도형 삭제 대상이 갈리면 한쪽에서만 지워진다',
   );
+});
+
+test('레거시 수식 OLE는 메뉴와 더블클릭에서 native 수식 전환 뒤 편집기로 간다', () => {
+  const commandStart = insertSrc.indexOf("id: 'insert:equation-edit'");
+  assert.ok(commandStart >= 0, 'insert:equation-edit 명령이 있어야 한다');
+  const command = balancedFrom(insertSrc.slice(commandStart), 'execute(services)', '{');
+  assert.match(command, /ref\.type !== 'equation' && ref\.type !== 'ole'/,
+    '#7105: 수식 편집 명령은 legacy OLE를 받아야 한다');
+  assert.match(command, /recordObjectMutation\(ih, 'promoteOleEquation'/,
+    '#7105: OLE → native 전환은 undo 가능한 snapshot 뮤테이션이어야 한다');
+  assert.match(command, /wasm\.promoteOleEquation\(oleRef\.sec, oleRef\.ppi, oleRef\.ci\)/,
+    '#7105: 선택한 정확한 OLE 슬롯을 전환해야 한다');
+  assert.match(command, /selectPictureObject\([^\n]*'equation'\)/,
+    '#7105: 전환 뒤 편집기는 native equation 선택을 받아야 한다');
+
+  assert.match(inputSrc, /ref\?\.type === 'equation' \|\| ref\?\.type === 'ole'/,
+    '#7105: OLE 선택 메뉴에도 수식 전환·편집 항목이 있어야 한다');
+  assert.match(inputSrc, /수식으로 변환하여 편집\.\.\./,
+    '#7105: OLE 편집은 변환 동작임을 메뉴에서 알려야 한다');
+  assert.match(mouseSrc, /if \(ref && ref\.type === 'ole'\)[\s\S]{0,1200}this\.eventBus\.emit\('equation-edit-request'/,
+    '#7105: 차트가 아닌 OLE를 더블클릭하면 같은 수식 편집 요청으로 가야 한다');
 });
