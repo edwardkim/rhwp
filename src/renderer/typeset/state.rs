@@ -3,6 +3,7 @@
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::controls::stored_tac::{StoredTacControlPlacement, StoredTacPage};
+use super::controls::tac_fit::TacFitPage;
 use super::inline_flow::plan::InlineFlowInput;
 use super::paragraph::fit::saved_tail_overflow_to_fit;
 use super::paragraph::overflow::OverflowPage;
@@ -15,6 +16,16 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 일반 TAC 배치 전 판단에 필요한 읽기 전용 상태만 전달한다.
+    pub(super) fn tac_fit_page(&self) -> TacFitPage<'_> {
+        TacFitPage {
+            profile: self.profile,
+            current_height: self.current_height,
+            vpos_page_base: self.vpos_page_base,
+            current_items: &self.current_items,
+        }
+    }
+
     /// 저장 TAC 줄 수용에 필요한 읽기 전용 페이지 관측값.
     pub(super) fn stored_tac_page(&self) -> StoredTacPage {
         StoredTacPage {

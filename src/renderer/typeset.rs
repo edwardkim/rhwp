@@ -17566,178 +17566,19 @@ impl TypesetEngine {
         ) {
             return;
         }
-        // TAC 표 카운트 및 플러시 판단
-        let tac_count = para
-            .controls
-            .iter()
-            .filter(
-                |c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, &fmt)),
-            )
-            .count();
-
-        let has_tac = tac_count > 0;
-        let first_line_tac_height = if tac_count == 1 && fmt.line_heights.len() > 1 {
-            para.controls.iter().find_map(|ctrl| match ctrl {
-                Control::Table(t)
-                    if self.is_effective_tac_table(para, t, &fmt)
-                        && self.tac_table_line_index(para, t, &fmt) == Some(0) =>
-                {
-                    Some(
-                        fmt.line_heights
-                            .first()
-                            .copied()
-                            .unwrap_or_else(|| fmt.line_advance(0)),
-                    )
-                }
-                _ => None,
-            })
-        } else {
-            None
-        };
-        // [편집 세션] TAC 표가 셀 편집으로 자라면 저장 줄높이(표 선언 인코딩)
-        // 기반 fit 은 과소가 된다 — 실측(mt)을 하한으로 써야 넘친 표가 pre-flush
-        // 로 새 쪽에 간다(셀 Enter 재현: 실측이 선언 fit 으로 1쪽에 남아 하단이
-        // 잘림). 저장 bounds 특례도 성장 표에는 무효다(저장 좌표는 편집 전 형상).
-        let session_grown_tac_total = (has_tac && self.profile.get().session_edited())
-            .then(|| {
-                para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
-                    let Control::Table(t) = ctrl else { return None };
-                    if !self.is_effective_tac_table(para, t, &fmt) {
-                        return None;
-                    }
-                    let declared = hwpunit_to_px(t.common.height as i32, self.dpi);
-                    measured_tables
-                        .iter()
-                        .find(|m| m.para_index == para_idx && m.control_index == ci)
-                        .filter(|m| m.total_height > declared + 8.0)
-                        .map(|m| m.total_height)
-                })
-            })
-            .flatten();
-        // 실제 TAC 배치가 사용하는 소유 줄 상자는 바깥여백을 이미 포함한다.
-        // pre-flush에서 fmt와 여백을 다시 더하면 실제로 들어가는 표를 먼저 이월한다.
-        let owned_single_tac_frame =
-            (st.profile.hwpx_stored_layout() && tac_count == 1 && fmt.line_heights.len() == 1)
-                .then(|| {
-                    para.controls.iter().enumerate().find_map(|(ci, control)| {
-                        let Control::Table(table) = control else {
-                            return None;
-                        };
-                        crate::renderer::composer::owned_rowbreak_tac_height(para, ci).filter(
-                            |height| {
-                                i64::from(*height)
-                                    >= i64::from(table.common.height)
-                                        + i64::from(table.outer_margin_top)
-                                        + i64::from(table.outer_margin_bottom)
-                            },
-                        )
-                    })
-                })
-                .flatten()
-                .map(|height| hwpunit_to_px(height, self.dpi));
-        let height_for_fit = if let Some(height) = owned_single_tac_frame {
-            let base = height + fmt.spacing_before;
-            session_grown_tac_total.map_or(base, |grown| base.max(grown))
-        } else if has_tac {
-            // 글자처럼 취급되는 표는 **바깥 여백(위·아래)까지 쪽 예산을 차지**한다.
-            // 한컴 저장 lineseg 의 vertsize 가 `표 선언높이 + outMargin.top + outMargin.bottom`
-            // 이다(본 문서 TAC 개체 18/18 일치, 2248+283+283=2814). 이 항이 빠져 쪽마다
-            // 566 HU 씩 덜 쌓였고, 소제목 표가 앞 쪽 바닥에 남아 이후 쪽이 통째로 밀렸다.
-            // 소유 줄이 상하 여백까지 담는 경로는 위에서 한 번만 계상한다.
-            // 그 증거가 없는 저장 줄은 기존 수용 판정의 여백 보충을 유지한다.
-            let tac_outer_margin_px: f64 = para
-                .controls
-                .iter()
-                .filter_map(|ctrl| match ctrl {
-                    Control::Table(t) if self.is_effective_tac_table(para, t, &fmt) => {
-                        Some(crate::renderer::hwpunit_to_px(
-                            i32::from(t.common.margin.top) + i32::from(t.common.margin.bottom),
-                            self.dpi,
-                        ))
-                    }
-                    _ => None,
-                })
-                .fold(0.0f64, f64::max);
-            let base = first_line_tac_height.unwrap_or(fmt.height_for_fit) + tac_outer_margin_px;
-            session_grown_tac_total.map_or(base, |grown| base.max(grown))
-        } else {
-            fmt.total_height
-        };
-        let saved_single_tac_bottom_fits = if has_tac
-            && tac_count <= 1
-            && session_grown_tac_total.is_none()
-        {
-            para.controls
-                .iter()
-                .find_map(|ctrl| match ctrl {
-                    Control::Table(table) if self.is_effective_tac_table(para, table, &fmt) => {
-                        Some((
-                            self.tac_table_line_index(para, table, &fmt).unwrap_or(0),
-                            stored_tac_table_frame_height(table, self.dpi, height_for_fit),
-                        ))
-                    }
-                    _ => None,
-                })
-                .and_then(|(line_idx, frame_height)| {
-                    para.line_segs.get(line_idx).and_then(|seg| {
-                        line_seg_visible_bounds_px(seg, st.vpos_page_base.unwrap_or(0), self.dpi)
-                            .map(|bounds| (bounds, frame_height))
-                    })
-                })
-                .is_some_and(|(bounds, frame_height)| {
-                    saved_table_bounds_fit_at_flow_tail(
-                        bounds,
-                        st.current_height,
-                        st.available_height(),
-                        frame_height,
-                    )
-                })
-        } else {
-            false
-        };
-        // [#2311] 단일 TAC 표가 후행 줄(ctrl 1:1 lineseg, vpos==0 저장 리셋)에 있고
-        // 선행 줄이 전부 TAC 그림/도형이면, 표는 아래 #1152 intra-para reset 가드가
-        // 자체적으로 새 쪽 이동한다. 이때 pre-flush 를 문단 전체 높이로 판정하면
-        // 잔여 공간에 들어가는 선행 전면 그림까지 통째로 밀려 한글 대비 +1쪽씩
-        // 벌어진다 (10k r15 156744475: 붙임 포스터+차기 붙임 헤더 표 문단 ×2 →
-        // rhwp 5쪽 vs 한글 3쪽, 저장 ls[0] vpos=5435 는 같은 쪽 배치를 명시).
-        // 리셋 이전 줄들의 높이만 fit 기준으로 삼는다.
-        let pre_reset_height_for_fit = if has_tac
-            && tac_count == 1
-            && first_line_tac_height.is_none()
-            && para.text.is_empty()
-            && para.line_segs.len() == para.controls.len()
-        {
-            para.controls
-                .iter()
-                .position(|c| {
-                    matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, &fmt))
-                })
-                .filter(|&ti| {
-                    ti > 0
-                        && ti <= fmt.line_heights.len()
-                        && para.line_segs.get(ti).map(|s| s.vertical_pos) == Some(0)
-                        && para.controls[..ti].iter().all(|c| match c {
-                            Control::Picture(p) => p.common.treat_as_char,
-                            Control::Shape(s) => s.common().treat_as_char,
-                            _ => false,
-                        })
-                })
-                .map(|ti| (0..ti).map(|li| fmt.line_advance(li)).sum::<f64>())
-        } else {
-            None
-        };
-        let height_for_fit = pre_reset_height_for_fit.unwrap_or(height_for_fit);
-
-        // 넘치면 flush (단일 TAC 표만)
-        if st.current_height + height_for_fit > st.available_height()
-            && !st.current_items.is_empty()
-            && has_tac
-            && tac_count <= 1
-            && !saved_single_tac_bottom_fits
-        {
-            st.advance_column_or_new_page();
-        }
+        let controls::tac_fit::TacFitPlan {
+            tac_count,
+            has_tac,
+            session_grown_tac_total,
+            ..
+        } = controls::prepare_tac_paragraph(
+            st,
+            para_idx,
+            para,
+            &fmt,
+            measured_tables,
+            self.tac_flow_query(),
+        );
 
         st.ensure_page();
 
@@ -19978,42 +19819,17 @@ impl TypesetEngine {
         }
     }
 
+    fn tac_flow_query(&self) -> controls::tac_flow::TacFlowQuery<'_> {
+        controls::tac_flow::TacFlowQuery::new(self.dpi, &self.profile)
+    }
+
     fn tac_table_line_index(
         &self,
         para: &Paragraph,
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> Option<usize> {
-        if !table.common.treat_as_char || fmt.line_heights.len() <= 1 {
-            return None;
-        }
-
-        let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-        let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
-        let table_line_h = hwpunit_to_px(table.common.height as i32, self.dpi) + om_top + om_bot;
-
-        // [#2287 후속/1.hwpx p58] text_height(th) 매칭 우선 — 한컴은 문단의
-        // 모든 줄에 최대 줄높이를 lh 로 저장하는 관례가 있어(1.hwpx pi=322:
-        // 텍스트 줄 ls[0] lh=69085/th=1300, 표 줄 ls[1] lh=th=69085), lh 만으로
-        // 는 텍스트 줄이 먼저 오매칭되어 917px TAC 표의 소비가 17.3px 로
-        // 붕괴(fmt.line_heights[0] 채택)했다. th 가 표 높이와 일치하는 줄이
-        // 있으면 그 줄이 표 줄의 확정 증거이고, 없으면 종전 lh 매칭 유지.
-        let th_match = para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
-            let th = hwpunit_to_px(seg.text_height, self.dpi);
-            ((th - table_line_h).abs() < 1.0).then_some(idx)
-        });
-        if th_match.is_some() {
-            return th_match;
-        }
-
-        para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
-            let line_h = hwpunit_to_px(seg.line_height, self.dpi);
-            if (line_h - table_line_h).abs() < 1.0 {
-                Some(idx)
-            } else {
-                None
-            }
-        })
+        self.tac_flow_query().tac_table_line_index(para, table, fmt)
     }
 
     fn is_effective_tac_table(
@@ -20022,19 +19838,12 @@ impl TypesetEngine {
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> bool {
-        self.uses_tac_table_flow(table) || self.tac_table_line_index(para, table, fmt) == Some(0)
+        self.tac_flow_query()
+            .is_effective_tac_table(para, table, fmt)
     }
 
-    /// HWPX 계보 HWP는 HWP5 CTRL_HEADER를 다시 읽으면서 `table.attr` bit 0을
-    /// `treatAsChar`로 채운다. 하지만 HWPX의 inline 의미는 `treatAsChar`와
-    /// `flowWithText`가 모두 참일 때만 성립한다. 후자가 거짓인 표를 TAC으로
-    /// 오인하면 큰 표가 통째로 배치되어 저장 직후 쪽 경계가 압축된다 (#3930).
     fn uses_tac_table_flow(&self, table: &crate::model::table::Table) -> bool {
-        if self.profile.get().hwpx_stored_layout() {
-            table.common.treat_as_char && table.common.flow_with_text
-        } else {
-            table.attr & 0x01 != 0
-        }
+        self.tac_flow_query().uses_tac_table_flow(table)
     }
 
     /// 비-TAC 블록 표의 조판: fits → place / split(Break Token 기반).
