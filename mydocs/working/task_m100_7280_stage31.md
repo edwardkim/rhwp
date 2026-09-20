@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2ab](task_m100_7280_stage30.md), 시작 head `d32e1df64`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 완료, 고정 제품 SHA 집중 검증 준비.
+- 상태: R2ac 구현·고정 제품 SHA 집중 검증 완료. R2 전체/PR 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -52,7 +52,41 @@ native Clippy → R2ab와 동일한 313건 집중 nextest를 순차 수행한다
 
 ## 3. 고정 head 검증
 
-검증 완료 후 제품 SHA·명령·결과·증적을 기록한다.
+- 제품 SHA: `c4b0dc5b802845d67a1076a5f15b713f1d4d6a9e`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2ac`.
+- target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+- 정적 대조 통과: `output/7280/stage31/extraction-proof.json`.
+- manifest: 1,382 sources / 5,965 static attrs / 48 targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support 28 통과. 고정 baseline과 비교했으며 source-side test 변경은 없다.
+- fmt 통과, native Clippy `-D warnings` 통과(exit 0, 56.32초).
+- 로그: `output/7280/stage31/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+위 review worktree에서 다음 명령을 순차 실행했다.
+
+```bash
+node scripts/rust-test-suite-manifest.mjs --prepare
+node scripts/rust-test-suite-manifest.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+node scripts/rust-unit-test-tiers.mjs --check --base-ref 722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db
+cargo fmt --all -- --check
+CARGO_BUILD_JOBS=4 cargo clippy --locked \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review -- -D warnings
+bash /home/edward/mygithub/rhwp/output/7280/stage31/run-focused.sh
+```
+
+집중 명령은 [R2ab](task_m100_7280_stage30.md#3-고정-head-검증)와 같은
+target/옵션/선택 필터이며 worktree만 R2ac로 바꾸었다. `run-focused.sh`에 정확한 전체 명령을 보존한다.
+
+결과: **313건 통과 / 실패 0건**, 24 binaries, 필터 비선택 7,896건, exit 0.
+빌드 6분 45초, 테스트 2.717초. 실행 ID: `7402da00-9a5a-41b0-89f9-d0ccb319fbaf`.
+로그: `output/7280/stage31/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행에서 같은
+필터로 선택한 313개 PASS 이름과 일치함을 확인했다. 전체 회귀를 재실행한 결과가 아니며,
+필터 비선택 수는 기존 ignore 50건과 별개다. 출력 픽셀 동일성이나 직접 시각 판정은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile 설정 경고는 기준 실행과 동일하다.
+review worktree의 tracked 변경은 없고 파생 suite/manifest는 커밋하지 않았다.
+검증 뒤에는 계획과 결과 기록만 수정했으며 제품 코드 변경은 없다.
 
 ## 4. 후속
 
