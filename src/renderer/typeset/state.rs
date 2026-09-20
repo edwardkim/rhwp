@@ -33,6 +33,19 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 지연 그림 조회의 불변 관측값. 가용 높이는 이 snapshot에 넣지 않는다.
+    pub(super) fn deferred_picture_page(
+        &self,
+    ) -> super::controls::deferred_picture::DeferredPicturePage<'_> {
+        super::controls::deferred_picture::DeferredPicturePage {
+            profile: self.profile,
+            col_count: self.col_count,
+            current_items: &self.current_items,
+            current_footnote_height: self.current_footnote_height,
+            current_height: self.current_height,
+        }
+    }
+
     pub(super) fn following_wrap_active(&self) -> bool {
         self.wrap_around_cs >= 0
     }

@@ -19,11 +19,13 @@
 //! 표 옆 문단의 흡수 기록·저장 끝점 조회는 wrap_absorption이, 적용은 state가 소유한다.
 //! 전폭 꼬리와 매칭 실패의 저장 쪽 경계는 wrap_tail이 조회한다.
 //! 후속 문단의 매칭·흡수·꼬리 배치 연결 순서는 wrap_flow가 조정한다.
+//! 다음 쪽 Square 그림 후보와 저장 밴드 소유 문단 조회는 deferred_picture가 담당한다.
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
 pub(super) mod decoration_table;
 pub(super) mod deferred;
+pub(super) mod deferred_picture;
 pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
