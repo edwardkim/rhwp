@@ -3,7 +3,7 @@
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2e](task_m100_7280_stage7.md), 시작 head `1806b25ad`.
-- 상태: R2f 구현, 고정 SHA 집중 검증 전. R2 전체 완료가 아니다.
+- 상태: R2f 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 
 ## 1. 책임과 범위
@@ -51,3 +51,50 @@ profile은 Copy인 불변 값이며, body 높이는 기존 read-only layout 조�
 집중 테스트를 순차 실행한다. 최종 전체 회귀·WASM/workspace lint·workspace build·Native Skia·
 fresh Docker WASM/직접 시각 검증은 통합 게이트에 남는다. 정적 보존/집중 통과를 시각 판정이나
 #7280 제출 준비 완료로 승격하지 않는다. 원격 push·PR·댓글은 하지 않는다.
+
+### 고정 SHA와 선행 검사
+
+- 제품 SHA: `a17d342d8435722aefafc81601196b97800ea4f2`.
+- review worktree: `/home/edward/mygithub/rhwp-review-7280-r2f`.
+- 정적 보존 검사: `output/7280/stage8/extraction-proof.json` 통과.
+- manifest: 고정 baseline 대비 1,382 sources / 5,965 static attrs / 48 integration targets 통과.
+- unit-tier: 고정 baseline 대비 4,205 tests / 298 modules / ready 0 / support 87 /
+  white-box 4,114 / cfg support items 28 통과.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy(`--locked -- -D warnings`): exit 0, 54.78초.
+- 로그: `output/7280/stage8/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+실행 환경은 기존 고정 review target, `CARGO_BUILD_JOBS=4`다. 파생 suite는 review worktree에서만
+준비했다. 테스트를 옮기거나 추가하지 않았으며 제품 검증 이후 변경은 이 문서/계획 기록뿐이다.
+
+집중 테스트 명령(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review \
+  --lib --test regression_suite_011 --test regression_suite_019 --test regression_suite_028 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(issue_6031_ladder_sb_omitted_tail_overrun::) | test(issue_6542_mid_para_vpos_rewind_breaks_page::) | test(issue_6718_native_hwp5_zero_vpos_rewind::) | test(issue_6718_zero_rewind_in_split_paragraph::)' \
+  --no-fail-fast
+```
+
+실제 prepare 결과의 suite 매핑으로 선택했다. #6031은 dirty 저장 사다리의 3/6쪽 하단 및
+4쪽 첫 줄 소유, #6542/#6718은 render tree의 본문 하단과 저장 되감김 경계를 확인한다.
+typeset 기존 테스트에는 saved-tail chain의 중단·각주 여백 허용/비허용 경계도 포함된다.
+모든 포맷/다단/각주/그림 조합을 이번 집중 실행이 전수 검증한다는 뜻은 아니다.
+
+집중 결과: **154건 통과 / 실패 0건**, 필터 비선택 4,539건, 7 binaries, exit 0.
+빌드 4분 52초, 테스트 0.344초. 실행 ID: `ef26a9f0-efed-42dd-ae97-f147609a8725`.
+로그: `output/7280/stage8/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`에서 baseline 전체 실행 중 같은 필터로
+선택한 154개 PASS 이름과 일치했다. 필터 비선택은 기존 ignore 50건과 별개이며, 이번에
+전체 회귀를 재실행한 것은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 미사용 observation profile 설정 경고는 기준 실행과 같다.
+현재 CI 도구 버전까지 같은 결과로 주장하지 않는다. review worktree의 tracked 변경은 없고,
+파생 suite/manifest는 stage하지 않았다. 제품 SHA 이후 제품/테스트 변경은 없다.
+
+## 4. 다음 절편
+
+문단 후보 스캔과 경계 보정은 읽기 전용 계산으로 분리됐다. 실제 분할·배치 확정과 단/쪽 전환의
+조정, 표 문단 흐름, state의 나머지 직접 쓰기 분리를 이어간다. 최종 전체 검증·직접 시각 증적을
+남기기 전에는 R2 전체 또는 #7280을 완료로 판정하지 않는다.
