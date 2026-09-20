@@ -6478,7 +6478,7 @@ impl TypesetEngine {
         ))
     }
 
-    /// [Task #2094] wrap-around(어울림) zone 문단 처리 — 원본 무변경 통이동.
+    /// 후속 어울림 문단 처리는 Query/Command를 연결하는 조정자에 위임한다.
     /// 반환 true = 원본의 `continue`(이 문단은 흡수/기록 완료, 배치 생략) 신호.
     #[allow(clippy::too_many_arguments)]
     fn typeset_wrap_around_paragraph(
@@ -6492,118 +6492,9 @@ impl TypesetEngine {
         composed: Option<&ComposedParagraph>,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        if st.wrap_around_cs >= 0 && !has_table {
-            let band = st.following_wrap_band();
-            let controls::wrap_match::WrapMatch {
-                matched,
-                is_empty_para,
-            } = controls::wrap_match::classify(para, paragraphs, page_def, band);
-            if matched {
-                // [Task #604 R3] wrap_around 매칭 분기를 anchor 종류 기반으로 본질화.
-                //
-                // - Picture (그림 Square wrap) anchor: wrap text 가 LineSeg cs/sw 로
-                //   사전 인코딩됨 → wrap_anchors 등록 + FullParagraph 통과
-                //   (layout 이 LineSeg cs/sw 정합 렌더)
-                // - Table (표 Square wrap) anchor: wrap text 는 표 옆 빈 ↵ 표시용
-                //   → 흡수 (current_column_wrap_around_paras)
-                //
-                // Stage 2b: Paragraph.wrap_precomputed (HWP3 휴리스틱 IR 누설) 제거.
-                // anchor paragraph 의 controls 검사로 본질 정합 대체.
-                let anchor_is_picture = controls::wrap_match::anchor_is_picture(paragraphs, band);
-                // [#6175] 유도 밴드의 앵커는 묶음(GroupShape)일 수 있다 — 개체
-                // 종류로 흡수/통과를 가르는 이 판정에서 묶음 그림을 표로 오인하면
-                // 밴드 옆 본문 문단이 통째로 흡수된다.
-                if anchor_is_picture || st.wrap_around_derived_band {
-                    let anchor = controls::wrap_match::picture_anchor(paragraphs, band);
-                    st.register_following_wrap_anchor(para_idx, anchor);
-                } else {
-                    // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음.
-                    // [Task #855] 단, 첫 줄만 표 옆이고 나머지 줄이 본문 전체 폭으로
-                    // 흐르는 문단(= 마지막 LINE_SEG 가 wrap zone cs/sw 와 불일치)은
-                    // 0-높이 흡수 대상이 아니다. 첫 LINE_SEG 만 보고 흡수하면 그런 문단이
-                    // 통째로 페이지 흐름에서 누락된다. 이 경우 wrap zone 을 종료하고
-                    // 일반 텍스트 배치로 폴백한다 (LINE_SEG cs/sw 가 이미 wrap 형상을
-                    // 인코딩하므로 layout 이 첫 줄을 표 옆에, 나머지를 표 아래에 렌더).
-                    if let Some(absorption) = controls::wrap_absorption::whole_paragraph(
-                        para,
-                        paragraphs,
-                        para_idx,
-                        is_empty_para,
-                        band,
-                        self.dpi,
-                    ) {
-                        st.commit_wrap_absorption(absorption);
-                        return true;
-                    }
-
-                    // [#4090] 빈 표 호스트 뒤의 문단은 처음 몇 줄만 표 왼쪽 띠에
-                    // 놓이고 마지막 한 줄은 표 아래 전폭으로 돌아올 수 있다. 이 경우
-                    // 문단 전체를 일반 흐름으로 두면 띠와 전폭 줄을 함께 다시 소비해
-                    // 이후 페이지가 과도하게 늘어난다. 저장 LINE_SEG와 조판 줄이 1:1이고
-                    // 전폭 꼬리가 정확히 한 줄인 안정적인 형상만 분리한다.
-                    let prefix = controls::wrap_tail::classify_prefix(para, band, &st.layout);
-                    let wrap_prefix_len = prefix.len;
-                    let col_width = st
-                        .layout
-                        .column_areas
-                        .get(st.current_column as usize)
-                        .map(|area| area.width)
-                        .unwrap_or(st.layout.body_area.width);
-                    let formatted = self.format_paragraph(para, composed, styles, Some(col_width));
-                    if let Some(suffix_height) =
-                        prefix.suffix_height(para, &formatted, is_empty_para)
-                    {
-                        if suffix_height <= st.available_height() + 0.5 {
-                            let absorption = controls::wrap_absorption::prefix(
-                                para,
-                                paragraphs,
-                                para_idx,
-                                wrap_prefix_len,
-                                band,
-                                self.dpi,
-                            );
-                            st.commit_wrap_absorption(absorption);
-                            st.end_following_wrap();
-                            if !st.current_items.is_empty()
-                                && st.current_height + suffix_height > st.available_height() + 0.5
-                            {
-                                st.advance_column_or_new_page();
-                            }
-                            st.commit_wrap_tail(
-                                para_idx,
-                                wrap_prefix_len,
-                                formatted.line_count(),
-                                suffix_height,
-                            );
-                            return true;
-                        }
-                    }
-                    // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
-                    // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
-                    // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
-                    st.end_following_wrap();
-                    // fall through → 일반 paragraph 배치
-                }
-            } else {
-                // 매칭 실패 → wrap zone 종료, 정상 처리 진행
-                st.end_following_wrap();
-                // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
-                // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
-                // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
-                // paragraph 22 anchor (cs=11084) active 유지로 line 419 vpos-reset 가드
-                // 미발현 → 매칭 실패 후 추가 vpos-reset 가드로 페이지 break 정합.
-                if controls::wrap_tail::mismatch_starts_new_page(
-                    para,
-                    paragraphs,
-                    para_idx,
-                    !st.current_items.is_empty(),
-                    st.col_count,
-                ) {
-                    st.advance_column_or_new_page();
-                }
-            }
-        }
-        false
+        controls::wrap_flow::place(
+            self, st, para, paragraphs, para_idx, has_table, page_def, composed, styles,
+        )
     }
 
     /// [Task #1007] HWP3 → HWP5 변환본 인지 typeset.

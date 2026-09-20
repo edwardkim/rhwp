@@ -33,6 +33,40 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    pub(super) fn following_wrap_active(&self) -> bool {
+        self.wrap_around_cs >= 0
+    }
+
+    pub(super) fn following_wrap_is_derived(&self) -> bool {
+        self.wrap_around_derived_band
+    }
+
+    pub(super) fn following_wrap_layout(&self) -> &crate::renderer::page_layout::PageLayoutInfo {
+        &self.layout
+    }
+
+    pub(super) fn following_wrap_column_width(&self) -> f64 {
+        self.layout
+            .column_areas
+            .get(self.current_column as usize)
+            .map(|area| area.width)
+            .unwrap_or(self.layout.body_area.width)
+    }
+
+    pub(super) fn following_wrap_has_items(&self) -> bool {
+        !self.current_items.is_empty()
+    }
+
+    pub(super) fn following_wrap_column_count(&self) -> u16 {
+        self.col_count
+    }
+
+    /// 밴드 종료 후 호출한다. 빈 단에서는 가용 높이 진단을 실행하지 않는다.
+    pub(super) fn wrap_tail_needs_advance(&self, suffix_height: f64) -> bool {
+        !self.current_items.is_empty()
+            && self.current_height + suffix_height > self.available_height() + 0.5
+    }
+
     /// 저장 어울림 자격을 비운 뒤 밴드 바닥을 흐름 높이에 반영한다.
     /// 뒤따르는 fit은 종료 후의 높이/예산을 다시 조회해야 한다.
     pub(super) fn end_following_wrap(&mut self) {
