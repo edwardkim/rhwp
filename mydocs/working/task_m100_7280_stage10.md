@@ -4,7 +4,7 @@
 - 구현계획: [task_m100_7280_impl.md](../plans/task_m100_7280_impl.md)
 - 이전 절편: [R2g](task_m100_7280_stage9.md), 시작 head `158574ba0`.
 - 고정 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
-- 상태: 구현 후 고정 SHA 검증 준비. R2 전체 완료가 아니다.
+- 상태: R2h 구현·고정 SHA 집중 검증 완료. R2 전체 완료나 제출 준비 완료가 아니다.
 
 ## 1. 책임과 보존 범위
 
@@ -38,5 +38,46 @@ native Clippy를 순차 수행한 뒤 typeset/composer와 float host/spacing 관
 
 ## 3. 결과와 다음 절편
 
-고정 SHA 실행 뒤 결과를 기록한다. 남은 진입 fit·특수 배치, 표 문단/컨트롤 흐름,
-나머지 state 직접 쓰기와 규칙/기여자 안내를 계속 분리해야 한다.
+제품 SHA: `ce3b30c1247cf814129644961ee4d995ebe060fa`.
+review worktree: `/home/edward/mygithub/rhwp-review-7280-r2h`.
+고정 target: `/home/edward/mygithub/rhwp/target/pr-review`, `CARGO_BUILD_JOBS=4`.
+
+- 정적 복원 비교 통과: `output/7280/stage10/extraction-proof.json`.
+- manifest: 1,382 sources / 5,965 static test attrs / 48 integration targets 통과.
+- unit-tier: 4,205 tests / 298 modules / ready 0 / support 87 / white-box 4,114 /
+  cfg support items 28 통과. 두 정책 검사는 고정 baseline 대비 실행했다.
+- `cargo fmt --all -- --check` 통과.
+- native Clippy: `cargo clippy --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review
+  -- -D warnings`, exit 0, 55.52초.
+- 로그: `output/7280/stage10/{prepare,manifest,unit-tier,fmt,clippy-native}.log`.
+
+집중 실행 명령(review worktree):
+
+```bash
+CARGO_BUILD_JOBS=4 cargo nextest run --locked --cargo-profile release-test \
+  --target-dir /home/edward/mygithub/rhwp/target/pr-review --lib \
+  --test regression_suite_003 --test regression_suite_011 --test regression_suite_012 \
+  --test regression_suite_014 --test regression_suite_015 \
+  -E 'test(renderer::typeset::) | test(renderer::composer::) | test(issue_5870_empty_host_float_flow_advance::) | test(issue_6133_host_line_above_offset_float::) | test(issue_6147_empty_anchor_band_host_line::) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before::) | test(issue_6031_ladder_sb_omitted_tail_overrun::)' \
+  --no-fail-fast
+```
+
+#5870은 본표 상단과 결재란의 간격을 SVG에서, #6133/#6147은 host와 offset float/anchor band의
+실제 render tree 위치를 확인한다. #6753은 trimmed spacing 복원과 본문 하단/다음 쪽 첫 줄을,
+#6031은 저장 줄 사다리의 하단 넘침을 검사한다. 기존 typeset/composer 계약도 포함한다.
+이들 관련 계약이 defer Query의 모든 조건 조합을 직접 커버한다는 뜻은 아니다.
+조판 규칙의 정확성 승인 대신 이번 구조 이동 전후의 보존 여부를 검증한다.
+
+집중 결과: **156건 통과 / 실패 0건**, 필터 비선택 4,954건, 9 binaries, exit 0.
+빌드 5분 7초, 테스트 0.256초. 실행 ID: `4749c516-43cf-43f0-ace0-121c3fffd2cb`.
+로그: `output/7280/stage10/nextest-focused.log`.
+`compare-focused.mjs` / `regression-comparison.json`으로 고정 baseline 전수 실행의 같은
+필터에서 선택한 156개 PASS 이름과 일치함을 확인했다. 필터 비선택은 기존 ignore 50건과
+별개이며 이번에 전체 회귀를 재실행한 것은 아니다.
+
+nextest 0.9.137(권장 0.9.140) 및 observation profile의 미사용 설정 경고는 기준 실행과 같다.
+CI 도구 버전까지 동일하다고 주장하지 않는다. review worktree의 tracked 변경은 없고,
+제품 검증 이후에는 계획/완료 기록만 갱신했다. 파생 suite·manifest는 커밋하지 않았다.
+
+남은 진입 fit·특수 배치, 표 문단/컨트롤 흐름, 나머지 state 직접 쓰기와 규칙/기여자 안내를
+계속 분리해야 한다.
