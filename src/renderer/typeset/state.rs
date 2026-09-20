@@ -33,6 +33,59 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 저장 끝점으로 밴드를 먼저 늘린 뒤 표의 첫 조각 소유 단에 기록한다.
+    pub(super) fn commit_wrap_absorption(
+        &mut self,
+        absorption: super::controls::wrap_absorption::WrapAbsorption,
+    ) {
+        if let Some(source_offset_px) = absorption.source_offset_px {
+            self.extend_square_band_to_source_bottom(source_offset_px);
+        }
+        self.record_wrap_around_para(absorption.paragraph);
+    }
+
+    /// Square 표 옆으로 흐른 문단이 표보다 아래까지 이어지면, 그 저장 좌표의 마지막
+    /// 줄까지 배제 밴드를 확장한다. 표 자체만 예약하면 전폭 복귀 뒤의 fit 경로가 그
+    /// 텍스트 높이를 잃어 뒤쪽 본문을 과도하게 같은 쪽에 배치한다.
+    fn extend_square_band_to_source_bottom(&mut self, source_offset_px: f64) {
+        if source_offset_px <= 0.0 {
+            return;
+        }
+        if let Some(top) = self.square_band_top {
+            self.square_band_bottom = self.square_band_bottom.max(top + source_offset_px);
+        }
+    }
+
+    /// [Task #1745] 흡수된 어울림 문단 기록 — 다쪽 분할 표는 첫 fragment column 에 소급.
+    ///
+    /// 한글은 어울림 문단을 anchor 표의 시작 쪽(첫 fragment) 옆 wrap 띠에 배치한다.
+    /// RowBreak 분할 표는 흡수 시점에 첫 fragment column 이 이미 flush 되어 있으므로,
+    /// 현재 column 에 anchor 의 첫 fragment(비연속 PartialTable/Table)가 없으면
+    /// `pages` 에서 찾아 그 column 의 wrap_around_paras 에 push 한다.
+    fn record_wrap_around_para(&mut self, wrap_para: crate::renderer::pagination::WrapAroundPara) {
+        let anchor = wrap_para.table_para_index;
+        let is_first_fragment = |it: &PageItem| match it {
+            PageItem::Table { para_index, .. } => *para_index == anchor,
+            PageItem::PartialTable {
+                para_index,
+                is_continuation,
+                ..
+            } => *para_index == anchor && !*is_continuation,
+            _ => false,
+        };
+        if !self.current_items.iter().any(is_first_fragment) {
+            for page in self.pages.iter_mut() {
+                for col in page.column_contents.iter_mut() {
+                    if col.items.iter().any(is_first_fragment) {
+                        col.wrap_around_paras.push(wrap_para);
+                        return;
+                    }
+                }
+            }
+        }
+        self.current_column_wrap_around_paras.push(wrap_para);
+    }
+
     /// 활성 여부를 확인한 후, 상태 변경 없는 매칭 구간에서만 사용하는 관측값.
     pub(super) fn following_wrap_band(&self) -> WrapBand {
         WrapBand {

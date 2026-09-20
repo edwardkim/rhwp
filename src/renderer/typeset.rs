@@ -5012,18 +5012,6 @@ impl TypesetState {
         }
     }
 
-    /// Square 표 옆으로 흐른 문단이 표보다 아래까지 이어지면, 그 저장 좌표의 마지막
-    /// 줄까지 배제 밴드를 확장한다. 표 자체만 예약하면 전폭 복귀 뒤의 fit 경로가 그
-    /// 텍스트 높이를 잃어 뒤쪽 본문을 과도하게 같은 쪽에 배치한다.
-    fn extend_square_band_to_source_bottom(&mut self, source_offset_px: f64) {
-        if source_offset_px <= 0.0 {
-            return;
-        }
-        if let Some(top) = self.square_band_top {
-            self.square_band_bottom = self.square_band_bottom.max(top + source_offset_px);
-        }
-    }
-
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     fn flush_column(&mut self) {
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
@@ -5087,36 +5075,6 @@ impl TypesetState {
             .collect::<Vec<_>>();
         items.append(&mut self.current_items);
         items
-    }
-
-    /// [Task #1745] 흡수된 어울림 문단 기록 — 다쪽 분할 표는 첫 fragment column 에 소급.
-    ///
-    /// 한글은 어울림 문단을 anchor 표의 시작 쪽(첫 fragment) 옆 wrap 띠에 배치한다.
-    /// RowBreak 분할 표는 흡수 시점에 첫 fragment column 이 이미 flush 되어 있으므로,
-    /// 현재 column 에 anchor 의 첫 fragment(비연속 PartialTable/Table)가 없으면
-    /// `pages` 에서 찾아 그 column 의 wrap_around_paras 에 push 한다.
-    fn record_wrap_around_para(&mut self, wrap_para: crate::renderer::pagination::WrapAroundPara) {
-        let anchor = wrap_para.table_para_index;
-        let is_first_fragment = |it: &PageItem| match it {
-            PageItem::Table { para_index, .. } => *para_index == anchor,
-            PageItem::PartialTable {
-                para_index,
-                is_continuation,
-                ..
-            } => *para_index == anchor && !*is_continuation,
-            _ => false,
-        };
-        if !self.current_items.iter().any(is_first_fragment) {
-            for page in self.pages.iter_mut() {
-                for col in page.column_contents.iter_mut() {
-                    if col.items.iter().any(is_first_fragment) {
-                        col.wrap_around_paras.push(wrap_para);
-                        return;
-                    }
-                }
-            }
-        }
-        self.current_column_wrap_around_paras.push(wrap_para);
     }
 
     /// 비어있어도 flush
@@ -6566,48 +6524,15 @@ impl TypesetEngine {
                     // 통째로 페이지 흐름에서 누락된다. 이 경우 wrap zone 을 종료하고
                     // 일반 텍스트 배치로 폴백한다 (LINE_SEG cs/sw 가 이미 wrap 형상을
                     // 인코딩하므로 layout 이 첫 줄을 표 옆에, 나머지를 표 아래에 렌더).
-                    let last_seg_match = para
-                        .line_segs
-                        .last()
-                        .map(|s| {
-                            s.column_start == st.wrap_around_cs
-                                && s.segment_width as i32 == st.wrap_around_sw
-                        })
-                        .unwrap_or(false);
-                    if last_seg_match || is_empty_para {
-                        let source_offset_to_text_bottom = (!is_empty_para)
-                            .then(|| {
-                                let anchor_top = paragraphs
-                                    .get(st.wrap_around_table_para)?
-                                    .line_segs
-                                    .iter()
-                                    .find(|seg| !is_synthetic_line_seg(seg))?
-                                    .vertical_pos;
-                                let text_bottom = para
-                                    .line_segs
-                                    .iter()
-                                    .filter(|seg| !is_synthetic_line_seg(seg))
-                                    .map(|seg| {
-                                        seg.vertical_pos
-                                            .saturating_add(seg.line_height)
-                                            .saturating_add(seg.line_spacing)
-                                    })
-                                    .max()?;
-                                (text_bottom > anchor_top)
-                                    .then(|| hwpunit_to_px(text_bottom - anchor_top, self.dpi))
-                            })
-                            .flatten();
-                        if let Some(source_offset_px) = source_offset_to_text_bottom {
-                            st.extend_square_band_to_source_bottom(source_offset_px);
-                        }
-                        // [Task #1745] 다쪽 분할 표는 첫 fragment column 에 소급 기록.
-                        st.record_wrap_around_para(crate::renderer::pagination::WrapAroundPara {
-                            para_index: para_idx,
-                            table_para_index: st.wrap_around_table_para,
-                            has_text: !is_empty_para,
-                            start_line: 0,
-                            end_line: usize::MAX,
-                        });
+                    if let Some(absorption) = controls::wrap_absorption::whole_paragraph(
+                        para,
+                        paragraphs,
+                        para_idx,
+                        is_empty_para,
+                        band,
+                        self.dpi,
+                    ) {
+                        st.commit_wrap_absorption(absorption);
                         return true;
                     }
 
@@ -6653,41 +6578,15 @@ impl TypesetEngine {
                             .line_advances_sum(wrap_prefix_len..formatted.line_count())
                             + formatted.spacing_after;
                         if suffix_height <= st.available_height() + 0.5 {
-                            let source_offset_to_prefix_bottom = paragraphs
-                                .get(st.wrap_around_table_para)
-                                .and_then(|anchor| {
-                                    let anchor_top = anchor
-                                        .line_segs
-                                        .iter()
-                                        .find(|seg| !is_synthetic_line_seg(seg))?
-                                        .vertical_pos;
-                                    let prefix_bottom = para
-                                        .line_segs
-                                        .iter()
-                                        .take(wrap_prefix_len)
-                                        .filter(|seg| !is_synthetic_line_seg(seg))
-                                        .map(|seg| {
-                                            seg.vertical_pos
-                                                .saturating_add(seg.line_height)
-                                                .saturating_add(seg.line_spacing)
-                                        })
-                                        .max()?;
-                                    (prefix_bottom > anchor_top).then(|| {
-                                        hwpunit_to_px(prefix_bottom - anchor_top, self.dpi)
-                                    })
-                                });
-                            if let Some(source_offset_px) = source_offset_to_prefix_bottom {
-                                st.extend_square_band_to_source_bottom(source_offset_px);
-                            }
-                            st.record_wrap_around_para(
-                                crate::renderer::pagination::WrapAroundPara {
-                                    para_index: para_idx,
-                                    table_para_index: st.wrap_around_table_para,
-                                    has_text: true,
-                                    start_line: 0,
-                                    end_line: wrap_prefix_len,
-                                },
+                            let absorption = controls::wrap_absorption::prefix(
+                                para,
+                                paragraphs,
+                                para_idx,
+                                wrap_prefix_len,
+                                band,
+                                self.dpi,
                             );
+                            st.commit_wrap_absorption(absorption);
                             st.wrap_around_cs = -1;
                             st.wrap_around_sw = -1;
                             st.wrap_around_any_seg = false;

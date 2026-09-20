@@ -16,6 +16,7 @@
 //! 개별 지연 표의 재조회·포맷·배치는 deferred_placement가 조정한다.
 //! 표 없는 host 밴드 준비는 host_wrap의 조회와 state 적용을 순서대로 연결한다.
 //! 후속 문단의 저장 어울림 매칭·그림 anchor 조회는 wrap_match가 소유한다.
+//! 표 옆 문단의 흡수 기록·저장 끝점 조회는 wrap_absorption이, 적용은 state가 소유한다.
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod decoration_host;
@@ -33,6 +34,7 @@ pub(super) mod table_entry;
 pub(super) mod tac_fit;
 pub(super) mod tac_flow;
 pub(super) mod tac_reconcile;
+pub(super) mod wrap_absorption;
 pub(super) mod wrap_match;
 
 use super::paragraph::metrics::FormattedParagraph;
