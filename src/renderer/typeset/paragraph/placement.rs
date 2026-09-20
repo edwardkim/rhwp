@@ -1,7 +1,9 @@
-//! 보정된 문단 줄 경계로 배치 항목과 전진 높이를 준비한다. 상태 변경은 하지 않는다.
+//! 전체 문단의 항목 순서와 분할 문단의 항목/전진 높이를 판정한다. 상태 변경은 하지 않는다.
 
 use super::metrics::FormattedParagraph;
 use super::split::SplitBoundary;
+use crate::model::{control::Control, paragraph::Paragraph};
+use crate::renderer::float_placement::empty_offset_float_deferred_text_ladder_hu;
 use crate::renderer::pagination::PageItem;
 
 /// 기존 컷으로 만든 항목과 그 항목의 흐름 전진량. state는 다시 측정하지 않고 적용한다.
@@ -71,4 +73,25 @@ pub(in crate::renderer::typeset) fn plan_fragment(
         item,
         height: part_height,
     })
+}
+
+/// 빈 host의 float 뒤 본문이 표 위 공간을 먼저 채우는 기존 순서를 판정한다.
+pub(in crate::renderer::typeset) fn defer_preceding_float(
+    current_items: &[PageItem],
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    para: &Paragraph,
+) -> bool {
+    matches!(
+        current_items.last(),
+        Some(PageItem::Table {
+            para_index: host_para_idx,
+            control_index,
+        }) if *host_para_idx + 1 == para_idx
+            && paragraphs
+                .get(*host_para_idx)
+                .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
+                .is_some_and(|(host, control)| matches!(control, Control::Table(table)
+                    if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
+    )
 }

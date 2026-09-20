@@ -4,7 +4,7 @@
 //! 문단 구성은 필요한 관측값을 읽고 결과만 반환한다.
 //! fit 예산의 읽기 전용 계산은 fit에, 1회성 보정 소비는 state에 있다.
 //! 줄 후보 계산은 scan, 그 뒤의 경계 보정은 split에 있다.
-//! 줄 분할 반복과 페이지 전환은 이 모듈이 조정한다. 진입 fit/표 문단은 아직 상위에 남아 있다.
+//! 일반 전체 배치와 줄 분할/페이지 전환을 조정한다. 진입 fit/특수 배치/표 문단은 상위에 남아 있다.
 //! 하위 Query는 원본 IR이나 페이지 상태를 변경하지 않으며, 확정 조각 적용은 state가 맡는다.
 
 pub(super) mod context;
@@ -19,7 +19,9 @@ pub(super) mod stored_lines;
 
 use super::TypesetState;
 use crate::model::paragraph::Paragraph;
+use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
+use stored_lines::{next_boundary_reverts_spacing_trim, spacing_trim_restorable};
 
 /// 진입 fit 판단 뒤의 줄 분할을 조정한다. 쪽 전환 후 후보를 다시 계산하며,
 /// 전체 문단 재시도와 조각 배치 후 이월을 구분한다. 진입 시 고정한 기준 예산은 유지한다.
@@ -132,4 +134,77 @@ pub(super) fn place_split_paragraph(
         st.advance_column_or_new_page();
         cursor_line = end_line;
     }
+}
+
+/// 진입 fit을 통과한 전체 문단을 배치한다. 항목 순서 확정 뒤 흐름 메트릭을 계산한다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn place_fitted_paragraph(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    trim_spacing_before_for_flow: bool,
+    trimmed_sb_gate: f64,
+    body_bottom_vpos: Option<i32>,
+    dpi: f64,
+) {
+    let defer_preceding_float =
+        placement::defer_preceding_float(&st.current_items, paragraphs, para_idx, para);
+    st.insert_fitted_paragraph(para_idx, defer_preceding_float);
+    // [Task #391] 다단/단단 분기:
+    //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
+    //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
+    // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
+    // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
+    let advance = fmt.flow_advance_height(
+        para,
+        st.col_count,
+        trim_spacing_before_for_flow,
+        st.vpos_ladder_dirty
+            || !spacing_trim_restorable(paragraphs, para_idx)
+            || next_boundary_reverts_spacing_trim(
+                st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                paragraphs,
+                styles,
+                para_idx,
+                dpi,
+            ),
+        st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
+    );
+    if std::env::var("RHWP_DIAG_ADV").is_ok() {
+        eprintln!(
+            "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1}",
+            para_idx,
+            advance,
+            fmt.total_height,
+            fmt.height_for_fit,
+            fmt.spacing_before,
+            fmt.spacing_after,
+            st.current_height,
+        );
+    }
+    let trimmed_spacing_before = trimmed_sb_gate
+        * fmt.flow_trimmed_spacing_before(
+            para,
+            st.col_count,
+            trim_spacing_before_for_flow,
+            st.vpos_ladder_dirty
+                || !spacing_trim_restorable(paragraphs, para_idx)
+                || next_boundary_reverts_spacing_trim(
+                    st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
+                    paragraphs,
+                    styles,
+                    para_idx,
+                    dpi,
+                ),
+            st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
+        );
+    st.apply_fitted_paragraph_flow(
+        advance,
+        fmt.total_height,
+        trimmed_spacing_before,
+        body_bottom_vpos,
+    );
 }

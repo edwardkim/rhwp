@@ -17,10 +17,9 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    empty_offset_float_deferred_text_ladder_hu, horizontal_range, is_page_bottom_fixed_float,
-    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
-    original_hwpx_infront_para_flow_paginates, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu,
+    horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
+    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
+    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
@@ -17516,84 +17515,18 @@ impl TypesetEngine {
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits)
         {
-            // place: 전체 배치
-            let defer_preceding_float = matches!(
-                st.current_items.last(),
-                Some(PageItem::Table {
-                    para_index: host_para_idx,
-                    control_index,
-                }) if *host_para_idx + 1 == para_idx
-                    && paragraphs
-                        .get(*host_para_idx)
-                        .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
-                        .is_some_and(|(host, control)| matches!(control, Control::Table(table)
-                            if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
-            );
-            let paragraph_item = PageItem::FullParagraph {
-                para_index: para_idx,
-            };
-            if defer_preceding_float {
-                // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
-                // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
-                let table_item = st.current_items.pop().expect("checked trailing table item");
-                st.current_items.push(paragraph_item);
-                st.current_items.push(table_item);
-            } else {
-                st.current_items.push(paragraph_item);
-            }
-            // [Task #391] 다단/단단 분기:
-            //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
-            //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
-            // 다단에서는 layout 이 vpos 기반으로 항목을 단별로 stacking 하므로
-            // typeset 누적 시 trailing_ls 인플레이션이 단을 조기 종료시킴.
-            let advance = fmt.flow_advance_height(
+            paragraph::place_fitted_paragraph(
+                st,
+                para_idx,
                 para,
-                st.col_count,
+                fmt,
+                paragraphs,
+                styles,
                 trim_spacing_before_for_flow,
-                st.vpos_ladder_dirty
-                    || !spacing_trim_restorable(paragraphs, para_idx)
-                    || next_boundary_reverts_spacing_trim(
-                        st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                        paragraphs,
-                        styles,
-                        para_idx,
-                        self.dpi,
-                    ),
-                st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
+                trimmed_sb_gate,
+                body_bottom_vpos,
+                self.dpi,
             );
-            if std::env::var("RHWP_DIAG_ADV").is_ok() {
-                eprintln!(
-                    "DIAG_ADV pi={} adv={:.1} total={:.1} h4f={:.1} sb={:.1} sa={:.1} cur={:.1}",
-                    para_idx,
-                    advance,
-                    fmt.total_height,
-                    fmt.height_for_fit,
-                    fmt.spacing_before,
-                    fmt.spacing_after,
-                    st.current_height,
-                );
-            }
-            st.vpos_prev_trimmed_sb_px = trimmed_sb_gate
-                * fmt.flow_trimmed_spacing_before(
-                    para,
-                    st.col_count,
-                    trim_spacing_before_for_flow,
-                    st.vpos_ladder_dirty
-                        || !spacing_trim_restorable(paragraphs, para_idx)
-                        || next_boundary_reverts_spacing_trim(
-                            st.profile.hwpx_stored_layout() && !st.profile.hwp3_layout(),
-                            paragraphs,
-                            styles,
-                            para_idx,
-                            self.dpi,
-                        ),
-                    st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
-                );
-            st.current_height += advance;
-            st.flow_underrun += (fmt.total_height - advance).max(0.0);
-            if let Some(v) = body_bottom_vpos {
-                st.prev_body_bottom_vpos = Some(v);
-            }
             return;
         }
 

@@ -1,5 +1,5 @@
 //! 조판 상태의 조회 입력과 확정 결과 반영 경계.
-//! inline 흐름, 문단 fit의 1회성 보정 소비와 분할 조각 반영을 소유한다.
+//! inline 흐름, 문단 fit의 1회성 보정 소비와 일반 전체/분할 배치 반영을 소유한다.
 //! 나머지 상태 변경은 상위 구현에 남아 있다.
 
 use super::inline_flow::plan::InlineFlowInput;
@@ -12,6 +12,41 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 항목 순서만 확정한다. 높이 계산과 진단은 이 변경 뒤 조정자가 실행한다.
+    pub(super) fn insert_fitted_paragraph(&mut self, para_idx: usize, defer_preceding_float: bool) {
+        let paragraph_item = PageItem::FullParagraph {
+            para_index: para_idx,
+        };
+        if defer_preceding_float {
+            // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
+            // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
+            let table_item = self
+                .current_items
+                .pop()
+                .expect("checked trailing table item");
+            self.current_items.push(paragraph_item);
+            self.current_items.push(table_item);
+        } else {
+            self.current_items.push(paragraph_item);
+        }
+    }
+
+    /// 같은 전체 배치 경로에서 계산한 trim, 높이, underrun, 저장 하단을 순서대로 반영한다.
+    pub(super) fn apply_fitted_paragraph_flow(
+        &mut self,
+        advance: f64,
+        total_height: f64,
+        trimmed_spacing_before: f64,
+        body_bottom_vpos: Option<i32>,
+    ) {
+        self.vpos_prev_trimmed_sb_px = trimmed_spacing_before;
+        self.current_height += advance;
+        self.flow_underrun += (total_height - advance).max(0.0);
+        if let Some(v) = body_bottom_vpos {
+            self.prev_body_bottom_vpos = Some(v);
+        }
+    }
+
     /// 확정된 조각을 항목 추가 → trim 초기화 → 높이 전진 순서로 반영한다.
     /// 페이지 전환과 다음 컷 선택은 조정자의 책임이다.
     pub(super) fn commit_split_paragraph_fragment(&mut self, fragment: ParagraphFragment) {
