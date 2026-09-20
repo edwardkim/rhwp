@@ -7,6 +7,7 @@ import io
 import json
 import unittest
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -119,6 +120,55 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         source.jobs_complete = False
         evidence = self.module.collect_evidence(self.inventory(), source)
         self.assertFalse(evidence["runs"][0]["paginationComplete"])
+
+    def test_one_ci_run_preserves_distinct_cache_adapter_and_ci_bindings(self) -> None:
+        source = FakeSource()
+        original_runs = source.list_runs
+        def ci_runs(candidate_sha):
+            runs, complete = original_runs(candidate_sha)
+            runs[0]["path"] = ".github/workflows/ci.yml"
+            return runs, complete
+        source.list_runs = ci_runs
+        source.list_jobs = lambda run_id: ([{
+            "name": name, "status": "completed", "conclusion": "success",
+        } for name in ["CI preflight", "Build & Test", "Frontend package gates", "Chrome extension E2E"]], True)
+        source.list_artifacts = lambda run_id: ([], True)
+        inventory = self.inventory()
+        inventory["entries"] = [
+            {"path": ".github/workflows/chrome-browser-cache.yml", "evidencePath": ".github/workflows/ci.yml",
+             "classification": "executable", "after": {"sha256": "d" * 64}, "executionMode": "contracts-only"},
+            {"path": ".github/workflows/ci.yml", "classification": "executable",
+             "after": {"sha256": "e" * 64}, "executionMode": "direct"},
+        ]
+        evidence = self.module.collect_evidence(inventory, source)
+        self.assertEqual(len(evidence["runs"]), 2)
+        self.assertEqual({(run["workflowSha256"], run["executionMode"]) for run in evidence["runs"]}, {
+            ("d" * 64, "contracts-only"), ("e" * 64, "direct"),
+        })
+        self.assertEqual({run["id"] for run in evidence["runs"]}, {42})
+        inventory["entries"].reverse()
+        self.assertEqual(self.module.collect_evidence(inventory, source)["runs"], evidence["runs"])
+
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("promotion_verifier", REPO_ROOT / "scripts/workflow_promotion_preflight.py")
+        verifier = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(verifier)
+        inventory = verifier.apply_execution_policy(inventory, json.loads(
+            (REPO_ROOT / "scripts/workflow_promotion_policy.json").read_text(),
+        ))
+        def verify(runs):
+            return verifier.verify_evidence(inventory, runs, now=datetime.now(timezone.utc),
+                trusted_maintainers=frozenset({"edwardkim"}))
+        self.assertTrue(verify(evidence["runs"])["ok"])
+        bad = json.loads(json.dumps(evidence["runs"]))
+        bad[0]["workflowSha256"] = "f" * 64
+        self.assertFalse(verify(bad)["ok"], "the other binding cannot replace a missing subject hash")
+        bad = json.loads(json.dumps(evidence["runs"]))
+        for run in bad:
+            for job in run["jobs"]:
+                if job["name"] == "Chrome extension E2E":
+                    job["conclusion"] = "skipped"
+        self.assertFalse(verify(bad)["ok"], "the cache adapter requires the browser to execute")
 
     def test_verdict_archive_digest_must_match_api(self) -> None:
         source = FakeSource()
