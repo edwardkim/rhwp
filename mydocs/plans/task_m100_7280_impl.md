@@ -1,7 +1,7 @@
 # Task #7280 — 조판 코드 책임 분리 및 변경 관리 구현계획
 
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
-- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2a 완료](../working/task_m100_7280_stage3.md), [R2b 문단 구성 분리·기본 feature 전체 회귀 완료](../working/task_m100_7280_stage4.md). R2 흐름 조정 분리는 남아 있다.
+- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2a 완료](../working/task_m100_7280_stage3.md), [R2b 문단 구성 분리·기본 feature 전체 회귀 완료](../working/task_m100_7280_stage4.md), [R2c inline 계획/상태 분리](../working/task_m100_7280_stage5.md). [R2d fit 보정 조회/소비 분리](../working/task_m100_7280_stage6.md) 진행 중이며 R2 전체 흐름 조정 분리는 남아 있다.
 - 수행계획: [task_m100_7280.md](task_m100_7280.md)
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
