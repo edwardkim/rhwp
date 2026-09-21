@@ -640,25 +640,39 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     }
 }
 
+/// HWPTAG_TABLE attr — 원본 비트는 보존하고, IR 이 가진 bit 0-1(쪽 경계에서 나눔)·
+/// bit 2(제목 줄 자동 반복)만 IR 값으로 맞춘다. 원본 attr 를 통째로 재사용하면
+/// `setTableProperties` 로 바꾼 두 값이 저장·재파싱 뒤 원래 값으로 돌아간다.
+/// bit 0-1 은 파서가 원본에서 읽은 값과 IR 이 다를 때만 덮는다(비표준 값 3 무손실).
+/// 원본이 없으면(0) IR 에서 재구성하는 것과 같다.
+fn table_record_attr(table: &Table) -> u32 {
+    let raw = table.raw_table_record_attr;
+    let raw_page_break = match raw & 0x03 {
+        1 | 3 => TablePageBreak::CellBreak,
+        2 => TablePageBreak::RowBreak,
+        _ => TablePageBreak::None,
+    };
+    let mut attr = raw;
+    if raw_page_break != table.page_break {
+        let bits = match table.page_break {
+            TablePageBreak::None => 0x00,
+            TablePageBreak::CellBreak => 0x01,
+            TablePageBreak::RowBreak => 0x02,
+        };
+        attr = (attr & !0x03) | bits;
+    }
+    if table.repeat_header {
+        attr |= 0x04;
+    } else {
+        attr &= !0x04;
+    }
+    attr
+}
+
 fn serialize_table_record(table: &Table) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // attr (원본이 있으면 그대로, 없으면 재구성)
-    let attr = if table.raw_table_record_attr != 0 {
-        table.raw_table_record_attr
-    } else {
-        let mut a: u32 = 0;
-        match table.page_break {
-            TablePageBreak::CellBreak => a |= 0x01,
-            TablePageBreak::RowBreak => a |= 0x02,
-            TablePageBreak::None => {}
-        }
-        if table.repeat_header {
-            a |= 0x04;
-        }
-        a
-    };
-    w.write_u32(attr).unwrap();
+    w.write_u32(table_record_attr(table)).unwrap();
 
     w.write_u16(table.row_count).unwrap();
     w.write_u16(table.col_count).unwrap();
