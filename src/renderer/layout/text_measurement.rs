@@ -217,6 +217,25 @@ pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> 
 /// 탭 리더 추출 (tab_extended 지원)
 /// tab_extended: HWPX 인라인 탭 또는 HWP 탭 확장 데이터
 /// (ext[0..2] = 탭 폭(UINT32), ext[2] = (탭 종류 << 8) | 채움 종류)
+/// [#7292] 점끌기 앞 여백 — 뒤 여백과 같은 `0.25em`.
+///
+/// 한/글은 탭 채움을 앞 글자에 붙이지 않고 한 칸 비우고 시작한다. 두 정본에서 같은
+/// 비율이 나온다(`pdftotext -bbox` 의 advance 상자 기준).
+///
+/// ```text
+///   문서                              앞 여백    그 줄 em    비율
+///   1170000-200500003 (한/글 2020)   2.8~2.9pt  11.5~12.5pt  0.23~0.24 em
+///   samples/KTX.hwp   (한/글 2022)   3.7pt      15.0pt       0.247 em
+/// ```
+///
+/// 종전에는 이 여백이 **0**(탭 시작에 바로 붙임)이라 같은 줄에 점이 3~4개 더 들어가고
+/// 글자에 붙어 보였다(정본 63·92개 ↔ 우리 66·96개).
+///
+/// ⚠ 뒤 여백은 규칙이 아니다 — 점은 항상 같은 x 에서 끝나고(탭 정지점) 쪽번호가 오른쪽
+/// 정렬되므로, 그 사이 간격은 번호 폭에 따라 달라진다(정본 실측 5.76pt ↔ 9.2pt).
+/// 그래서 종전 `0.25em` 을 그대로 둔다.
+pub const TAB_LEADER_HEAD_GAP_EM: f64 = 0.25;
+
 pub fn extract_tab_leaders_with_extended(
     text: &str,
     positions: &[f64],
@@ -278,6 +297,8 @@ pub fn extract_tab_leaders_with_extended(
             // 오른쪽 정렬 텍스트 앞에 공백 1개 간격 확보
             let fill_type = if ext_fill > 0 { ext_fill } else { tabdef_fill };
             if fill_type > 0 && after_x > before_x + 1.0 {
+                // [#7292] 앞 여백은 종전에 0 이었다 — 상수 주석의 정본 실측을 본다.
+                let head_gap = style.font_size * TAB_LEADER_HEAD_GAP_EM;
                 let space_gap = style.font_size * 0.25;
                 let content_x = text.chars().enumerate().skip(i + 1).find_map(|(j, ch)| {
                     if ch != '\t' && !ch.is_whitespace() && j < positions.len() {
@@ -290,9 +311,10 @@ pub fn extract_tab_leaders_with_extended(
                     .map(|x| x - space_gap)
                     .unwrap_or(after_x - space_gap)
                     .min(after_x - space_gap);
+                let start_x = (before_x + head_gap).min(after_x);
                 leaders.push(TabLeaderInfo {
-                    start_x: before_x,
-                    end_x: end_x.max(before_x),
+                    start_x,
+                    end_x: end_x.max(start_x),
                     fill_type,
                 });
             }
