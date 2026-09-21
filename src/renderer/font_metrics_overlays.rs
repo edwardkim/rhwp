@@ -402,7 +402,46 @@ static HANYOONGOTHIC760_HANGUL: HangulMetric = HangulMetric {
     jong_map: &FONT_0_HANGUL_JONG,
     widths: &HANYOONGOTHIC760_HANGUL_WIDTHS,
 };
-static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 8] = [
+// [#7293] 신명 중명조 — 한/글 2020 정본(engine 2020)의 Type3 `/Widths` 실측.
+//
+// 이 face 는 `layout-name`·`paint` 평면에는 규칙이 있는데 **metric 평면에만 없어서**,
+// 측정이 미등록 글꼴 폴백(라틴 `font_size * 0.5`)으로 떨어졌다. 차례 줄
+// `Ⅲ. EU법` 에서 `E`·`U` 전진이 정확히 0.5em 이 되어 줄 글자부가 좁았다.
+//
+// 근거: `1170000-200500003_…(최종본).hwp`(HWP3·법제처, 이 face 가 197,257자 = 98.6%)의
+// 정본 PDF. 한/글은 이 글꼴을 Type3 로 그리므로 `/Widths`(FontMatrix .001)가 실측 폭
+// 표 그 자체다. 문서 안 Type3 25개 중 이 face 의 것 2개(공유 ASCII 51자 일치율 0.98,
+// 한글 전부 1000/1000)를 병합해 66자를 얻었다.
+//
+// ⚠ `U+0020`(공백)은 **뺐다** — `/Widths` 는 1000 이라고 적지만 실제 배치 전진은
+// 241/1000 이다(표본 68). 나머지 52자는 배치 전진과 2% 안에서 일치한다.
+// ⚠ 실측하지 않은 글자는 구간에 넣지 않았다 — 조회가 `None` 으로 떨어져 종전 폴백을
+// 그대로 쓴다(없는 값을 지어내지 않는다).
+// ⚠ 한글은 `hangul: None` 이다. 정본이 전부 1000/1000(=1.0em)이고 그것은 미등록
+// 폴백과 같은 값이라, 별도 표를 만들 근거가 없다.
+static SINMYEONG_JUNGMYEONGJO_L0: [u16; 3] = [410, 512, 512];
+static SINMYEONG_JUNGMYEONGJO_L1: [u16; 15] = [410, 512, 410, 512, 635, 635, 635, 635, 635, 635, 635, 635, 635, 635, 512];
+static SINMYEONG_JUNGMYEONGJO_L2: [u16; 1] = [635];
+static SINMYEONG_JUNGMYEONGJO_L3: [u16; 14] = [841, 836, 843, 909, 839, 808, 900, 961, 473, 663, 882, 788, 1082, 941];
+static SINMYEONG_JUNGMYEONGJO_L4: [u16; 1] = [788];
+static SINMYEONG_JUNGMYEONGJO_L5: [u16; 6] = [849, 745, 783, 940, 841, 1110];
+static SINMYEONG_JUNGMYEONGJO_L6: [u16; 1] = [725];
+static SINMYEONG_JUNGMYEONGJO_L7: [u16; 9] = [670, 670, 552, 690, 608, 395, 642, 727, 389];
+static SINMYEONG_JUNGMYEONGJO_L8: [u16; 16] = [714, 391, 1022, 726, 611, 690, 664, 527, 574, 498, 727, 651, 899, 651, 650, 594];
+
+static SINMYEONG_JUNGMYEONGJO_LATIN_RANGES: [LatinRange; 9] = [
+    LatinRange { start: 0x0027, end: 0x0029, widths: &SINMYEONG_JUNGMYEONGJO_L0 },
+    LatinRange { start: 0x002C, end: 0x003A, widths: &SINMYEONG_JUNGMYEONGJO_L1 },
+    LatinRange { start: 0x003F, end: 0x003F, widths: &SINMYEONG_JUNGMYEONGJO_L2 },
+    LatinRange { start: 0x0041, end: 0x004E, widths: &SINMYEONG_JUNGMYEONGJO_L3 },
+    LatinRange { start: 0x0050, end: 0x0050, widths: &SINMYEONG_JUNGMYEONGJO_L4 },
+    LatinRange { start: 0x0052, end: 0x0057, widths: &SINMYEONG_JUNGMYEONGJO_L5 },
+    LatinRange { start: 0x005A, end: 0x005A, widths: &SINMYEONG_JUNGMYEONGJO_L6 },
+    LatinRange { start: 0x0061, end: 0x0069, widths: &SINMYEONG_JUNGMYEONGJO_L7 },
+    LatinRange { start: 0x006B, end: 0x007A, widths: &SINMYEONG_JUNGMYEONGJO_L8 },
+];
+
+static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 9] = [
     FontMetric {
         name: "HanyangSinMyeongJo",
         bold: false,
@@ -468,5 +507,13 @@ static MEASURED_FONT_METRIC_OVERLAYS: [FontMetric; 8] = [
         em_size: 1000,
         latin_ranges: &HANYOONGOTHIC760_LATIN_RANGES,
         hangul: Some(&HANYOONGOTHIC760_HANGUL),
+    },
+    FontMetric {
+        name: "신명 중명조",
+        bold: false,
+        italic: false,
+        em_size: 1024,
+        latin_ranges: &SINMYEONG_JUNGMYEONGJO_LATIN_RANGES,
+        hangul: None,
     },
 ];

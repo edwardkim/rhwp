@@ -12,8 +12,8 @@ use super::float_placement::{
     native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu,
     para_relative_left_aligned_outer_margin_left_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
-    FloatLaneSet, FloatPlacementContext,
+    square_float_outer_margin_top_hu, stored_empty_anchor_band_host_line_advance_hu,
+    stored_visible_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -10830,6 +10830,18 @@ impl LayoutEngine {
                             self.dpi,
                         ) {
                             tail_top
+                        } else if let Some(om_top) = square_float_outer_margin_top_hu(t)
+                            .filter(|_| !para_has_visible_text(para))
+                        {
+                            // [#7287] **빈 host** 어울림 자리차지 표에는 전용 갈래가 없어 여기
+                            // 폴백까지 떨어졌고, 그래서 위쪽 바깥여백을 아무도 내지 않았다.
+                            // 저장 앵커 경로도 `compute_table_y_position` 의 절대 배치 분기도
+                            // 모두 자리차지(T&B) 전용이다. 흐름 위치에서 그 여백만큼 넣는다.
+                            //
+                            // 가시 host 는 제외한다 — 그쪽은 host 줄의 흐름이 이미 자리를
+                            // 정한다. `hwp_table_test-m.hwp` 1쪽 표(가시 host·`vOff>0`)는
+                            // 정본 250.77 에 대해 251.0 으로 이미 맞고, 여백을 더하면 벗어난다.
+                            y_offset + hwpunit_to_px(om_top, self.dpi)
                         } else {
                             y_offset
                         };
