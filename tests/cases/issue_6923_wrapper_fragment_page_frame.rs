@@ -33,12 +33,25 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame.hwp";
+/// `valign=Center`인 1×1 RowBreak 표의 쪽 중간 조각 제어군.
+///
+/// 한/글 2020 정본은 19쪽에서 이 표의 위·아래 괘선을 96dpi 기준
+/// `217.3 .. 1013.5px`에 그린다. 쪽 프레임까지 상자를 늘리면 아래 괘선이
+/// 약 1023px로 내려가므로, Top 앵커 보정의 비적용 경계를 이 실물 문서로 잠근다.
+const CENTER_CONTROL: &str =
+    "tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp";
 /// 정본 1쪽 감싼 표 바닥 가로선(96dpi 환산).
 const ORACLE_WRAPPER_BOTTOM_PX: f64 = 1021.9;
 
 fn core() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     DocumentCore::from_bytes(&std::fs::read(&path).expect("정식 원본")).expect("문서 로드")
+}
+
+fn center_control_core() -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(CENTER_CONTROL);
+    DocumentCore::from_bytes(&std::fs::read(&path).expect("정식 Center 제어 원본"))
+        .expect("Center 제어 문서 로드")
 }
 
 /// 폭이 가장 넓은 최상위 표 = 본문을 감싼 1×1 표.
@@ -99,5 +112,45 @@ fn extending_the_box_does_not_move_the_top_anchored_content() {
     assert!(
         first - top < 6.0,
         "감싼 칸 내용은 칸 상단 + 안여백(1.9px)에 붙어야 한다 — top={top:.1} first_line={first:.1}"
+    );
+}
+
+/// 쪽 중간에서 시작하는 Center 제어군은 쪽 프레임을 자기 상자로 주장하지 않는다.
+///
+/// 기준은 `156645214...-2020.pdf` 19쪽(96dpi)이다. 이 테스트는 새 Top 갈래의
+/// red-to-green 검출용이 아니라, 그 갈래를 Center까지 넓히는 회귀를 막는 음성 대조군이다.
+#[test]
+fn midpage_center_control_does_not_claim_the_page_frame() {
+    let core = center_control_core();
+    assert_eq!(core.page_count(), 20, "한/글 2020 정본과 같은 20쪽");
+    let page19 = core
+        .build_page_render_tree(18)
+        .expect("19쪽 렌더 트리")
+        .root;
+
+    fn walk(node: &RenderNode, tables: &mut Vec<(f64, f64, f64)>) {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.para_index == Some(204) && table.row_count == 1 && table.col_count == 1 {
+                tables.push((node.bbox.y, node.bbox.y + node.bbox.height, node.bbox.width));
+            }
+        }
+        for child in &node.children {
+            walk(child, tables);
+        }
+    }
+
+    let mut tables = Vec::new();
+    walk(&page19, &mut tables);
+    let (top, bottom, width) = tables
+        .into_iter()
+        .max_by(|a, b| a.2.total_cmp(&b.2))
+        .expect("19쪽 본문 1×1 표");
+    assert!(
+        (top - 217.3).abs() < 1.0,
+        "Center 제어 표의 위 괘선은 PDF 217.3px 근처여야 한다 — got {top:.1}"
+    );
+    assert!(
+        (bottom - 1013.5).abs() < 2.0,
+        "Center 제어 표는 PDF 1013.5px에서 끝나야 하며 쪽 프레임(≈1023px)을 주장하면 안 된다 — got {bottom:.1}"
     );
 }
