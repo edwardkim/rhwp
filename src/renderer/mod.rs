@@ -1070,7 +1070,7 @@ pub(crate) fn source_line_metrics_need_reflow(
 /// `LINE_SEG.line_height`는 그림·표를 덮는 상자일 수 있지만, 한/글의 다음 줄 위치는
 /// 저장 사다리(`next.vertical_pos - current.vertical_pos`)가 정한다. 다만 재조판된
 /// 상자, 역행·동일 좌표, 글자 또는 글자처럼 취급되는 개체보다 작은 advance에는 저장
-/// 좌표를 섞지 않는다. layout, typeset, fallback measurement가 이 판별자를 공유한다.
+/// 좌표를 섞지 않는다. layout과 fallback measurement가 이 판별자를 공유한다.
 #[inline]
 pub(crate) fn stored_line_flow_height(
     current: &LineSeg,

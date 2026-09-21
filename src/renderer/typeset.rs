@@ -17708,36 +17708,12 @@ impl TypesetEngine {
                     )
                     .map(|flow| flow.extra_rows)
                     .unwrap_or(0);
-                let line_has_as_char_object = comp.inline_controls.iter().any(|control| {
-                    control.line_index == line_idx
-                        && matches!(
-                            control.control_type,
-                            crate::renderer::composer::InlineControlType::Table
-                                | crate::renderer::composer::InlineControlType::Shape
-                        )
-                });
-                let flow_floor = if line_has_as_char_object {
-                    max_fs.max(lh)
-                } else {
-                    max_fs
-                };
-                let stored_flow_lh = para
-                    .line_segs
-                    .get(line_idx)
-                    .zip(para.line_segs.get(line_idx + 1))
-                    .and_then(|(current, next)| {
-                        crate::renderer::stored_line_flow_height(
-                            current,
-                            next,
-                            lh,
-                            line_spacing_px,
-                            flow_floor,
-                            self.dpi,
-                            false,
-                        )
-                    })
-                    .unwrap_or(lh);
-                let flow_lh = stored_flow_lh + extra_rows as f64 * (lh + line_spacing_px);
+                // Pagination은 배치 cursor와 다른 예약 계약을 사용한다. 저장 사다리의
+                // 짧은 text advance를 여기에도 적용하면 미주·글자처럼 취급되는 개체의
+                // page budget이 줄어들어 이전 줄에 과적재된다. #6656은
+                // HeightMeasurer의 fallback 측정 정합 범위이므로 typeset 예약 높이는
+                // 종전 줄 상자를 유지한다.
+                let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
                 pairs.push((flow_lh, line_spacing_px));
                 prev_line_reserved_tac_picture_height = tac_picture_height;
             }

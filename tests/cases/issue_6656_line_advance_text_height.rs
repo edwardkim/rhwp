@@ -96,7 +96,7 @@ fn measurement_uses_the_same_saved_ladder_step_as_layout() {
     let styles = resolve_styles(&document.doc_info, 96.0);
     let measured = HeightMeasurer::new(96.0)
         .with_native_hwp5(true)
-        .measure_section(&[para.clone()], &[composed], &styles, None);
+        .measure_section(std::slice::from_ref(&para), &[composed], &styles, None);
     let paragraph = measured.get_measured_paragraph(0).expect("문단 측정");
 
     let current = &para.line_segs[2];
