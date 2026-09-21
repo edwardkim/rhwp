@@ -3219,13 +3219,29 @@ impl LayoutEngine {
                             self.dpi,
                         ),
                 );
+                // [#7312] 저장 밴드가 `om_top + 선언높이 + om_bottom` 로 **이 표 하나를**
+                // 담고 있다고 증명하면(`tac_stored_band_is_outer_box`) 중간앵커 줄바꿈을
+                // 적용하지 않는다. 그 술어는 바로 아래 `tac_table_stored_outer_band_top` 의
+                // 게이트이기도 하고, `#5729` 가 "참이면 한글은 표 상단을 줄 상단 + om_top 에
+                // 앉힌다" 로 계약을 세운 자리다. 곧 **저장 사다리가 "이 표가 이 줄을 통째로
+                // 차지한다" 고 말하는데** 폭 판정이 표를 다음 줄로 내려보내면 그 계약이
+                // 무력화된다 — 내려간 `current_y` 를 그 함수가 그대로 받기 때문이다.
+                //
+                // 실측 `36494702_결재문서본문.hwpx` pi=2 (한/글 2022 정본 대조):
+                //   저장 ls[0].lh 6896 == om_top 283 + 선언 6330 + om_bottom 283  (오차 0)
+                //   occupied 294.00 + footprint 362.09 > line_w 642.53  → 줄바꿈 발동
+                //   표 상단   종전 237.5 (= 140.4 + line_step 93.28 + om_top 3.77)
+                //             수정 144.2 (= 140.4 + om_top 3.77)        정본 145.7
+                //   표 좌단   종전  79.4 (줄 시작으로 되돌림)  수정 373.4  정본 373.9
+                //   그 문단 뒤 본문 전체가 181.4px 내려가 있었다(`pi=11` 1050.3 → 868.9,
+                //   정본 869.6).
                 let table_wrapped = should_wrap_middle_anchored_table(
                     control_positions.get(*ctrl_idx).copied(),
                     text_chars.len(),
                     inline_x - line_start_x,
                     table_footprint,
                     right_margin - line_start_x,
-                );
+                ) && !Self::tac_stored_band_is_outer_box(para, tbl);
                 if table_wrapped {
                     current_y += line_step;
                     inline_x = line_start_x;
