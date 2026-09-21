@@ -4094,6 +4094,18 @@ fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
     prev_vpos.is_some_and(|cl| nv < cl && cl > 5000)
 }
 
+/// 저장 사다리가 **쪽 위쪽 띠에서 다시 시작**하는가 — 쪽 경계 되감김의 표지.
+///
+/// [`stored_vpos_rewinds`] 는 값이 줄기만 하면 참이라 같은 쪽 안의 부분 후퇴도 포함한다.
+/// 쪽을 실제로 넘긴 자리는 새 쪽 상단에서 다시 시작하므로, 앞 값에 쓰는 `> 5000` 의
+/// 거울로 새 값에 `<= 5000`(= 66.7px @96dpi)을 요구한다.
+fn stored_vpos_restarts_near_body_top(para: &Paragraph) -> bool {
+    para.line_segs
+        .iter()
+        .find(|s| !is_synthetic_line_seg(s))
+        .is_some_and(|s| s.vertical_pos <= 5000)
+}
+
 /// 값이 있는 가장 가까운 앞 문단의 마지막 저장 `vpos` — 직전 문단이 비어 line_segs 가
 /// 없을 수 있다.
 fn preceding_stored_vpos(paragraphs: &[Paragraph], para_idx: usize) -> Option<i32> {
@@ -19042,7 +19054,17 @@ impl TypesetEngine {
             || (stored_whole_para_reset && !hangul2024_split_refit)
             // [#5755] 저장 되감김 + 전체 fit 실패 = 한글이 이 문단을 통째로 다음 쪽에
             // 둔 배치 — split 로 현재 쪽에 걸치지 말고 먼저 쪽을 넘긴다.
-            || stored_vpos_rewind_overflow_break)
+            || stored_vpos_rewind_overflow_break
+            // [#6761] 되감김 판정(`stored_vpos_rewind_break`)이 서면 전체 배치 분기는
+            // 이미 건너뛴다. 그런데 분할 경로가 그 값을 안 봐서, 남은 여백에 첫 줄이
+            // 들어가면 같은 쪽에 얹고 만다 — 되감김이 말한 쪽 경계가 무시된다.
+            //
+            // 다만 되감김 자체는 **부분 후퇴**도 포함한다(같은 쪽 안에서 표 아래 주석이
+            // 앞 문단보다 위에서 시작하는 형상 — 1342000 pi=219 70880 -> pi=220 66140).
+            // 쪽 경계의 되감김은 사다리가 **쪽 위쪽 띠에서 다시 시작**한다는 뜻이므로,
+            // 이 분기는 `cl > 5000` 의 거울인 `nv <= 5000` 까지 요구한다
+            // (1130000 pi=41 53956 -> pi=42 500 이 그 형상이다).
+            || (stored_vpos_rewind_break && stored_vpos_restarts_near_body_top(para)))
             && !st.current_items.is_empty()
             && !hwp_first_line_before_reset_fits
         {
