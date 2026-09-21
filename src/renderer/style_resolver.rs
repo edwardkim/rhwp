@@ -32,6 +32,9 @@ pub struct ResolvedCharStyle {
     /// 이름을 바꾸지 않았을 때뿐이다. HFT 는 한/글이 자기 글리프로 그리고, 대체된 이름은
     /// 다른 글꼴의 표를 빌려 오므로 표에 적힌 폭이 그 글꼴의 폭이라는 보장이 없다.
     pub font_families_metric_trusted: Vec<bool>,
+    /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
+    /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
+    pub font_families_hft_hangul: Vec<bool>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -94,6 +97,7 @@ impl Default for ResolvedCharStyle {
             font_family: String::new(),
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
+            font_families_hft_hangul: Vec::new(),
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -149,6 +153,22 @@ impl ResolvedCharStyle {
             0
         };
         self.font_families_metric_trusted
+            .get(slot)
+            .copied()
+            .unwrap_or(false)
+    }
+
+    /// [#7051] 지정 언어 카테고리의 글꼴이 HFT 한글 전용 face 라서 치환됐는지.
+    /// `font_family_for_lang` 과 같은 폴백(이름이 비면 한국어 0번)을 따른다.
+    pub fn hft_hangul_face_for_lang(&self, lang_index: usize) -> bool {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_hft_hangul
             .get(slot)
             .copied()
             .unwrap_or(false)
@@ -439,6 +459,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     // 7개 언어 카테고리별 폰트 이름, 자간, 장평 해소
     let mut font_families = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
 
@@ -455,6 +476,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                     .as_deref()
                     .is_some_and(metric_widths_verified_face),
         );
+        font_families_hft_hangul
+            .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families.push(decision.css_family_chain.join(","));
 
         let spacing_percent = cs.spacings[lang] as f64;
@@ -472,6 +495,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_family,
         font_families,
         font_families_metric_trusted,
+        font_families_hft_hangul,
         font_size,
         bold: cs.bold,
         italic: cs.italic,

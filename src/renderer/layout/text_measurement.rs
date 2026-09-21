@@ -828,6 +828,7 @@ pub(crate) fn resolved_to_text_style(
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
+            hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size,
             color: cs.text_color,
             bold: cs.bold,
@@ -1136,7 +1137,15 @@ fn measure_char_width_embedded_decision<'a>(
     c: char,
     font_size: f64,
 ) -> EmbeddedWidthDecision<'a> {
-    measure_char_width_embedded_decision_for_font(font_family, bold, italic, c, font_size, false)
+    measure_char_width_embedded_decision_for_font(
+        font_family,
+        bold,
+        italic,
+        c,
+        font_size,
+        false,
+        false,
+    )
 }
 
 /// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
@@ -1148,6 +1157,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     c: char,
     font_size: f64,
     font_metric_trusted: bool,
+    hft_hangul_face: bool,
 ) -> EmbeddedWidthDecision<'a> {
     let primary_name = font_family
         .split(',')
@@ -1200,6 +1210,38 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 character_match: "miss",
             };
         };
+        // [#7051] HWP3 변환본의 HFT 한글 전용 face 는 ASCII 를 반각(`em/2`)으로 전진시킨다.
+        //
+        // HWP3 시절 HFT 글꼴(`명조`·`신명 세명조`·`한양신명조` 등)은 한글 전용이고 ASCII
+        // 글리프를 한글 em 의 절반 폭으로 그린다. rhwp 는 이 글꼴을 TTF(`명조`→`HY견명조`)로
+        // 치환한 뒤 **치환 글꼴의 비례 폭**을 그대로 쓰므로 ASCII 가 42% 넓어진다.
+        //
+        // 한컴 정본은 `pdf/pr7268/`의 추적 분할본으로 보존한다(MCP engine 2024 /
+        // 13.0.0.3901, 763쪽). `hwp3-sample10-hwp5-p301-600-2024.pdf`의 189쪽은
+        // 이 문서의 489쪽이며, 생성·분할 provenance는 `mydocs/pr/archives/pr_7268_review.md`에
+        // 있다. 그 쪽 실측이 값을 말한다(9pt, em=12px):
+        //
+        // ```text
+        //   'TABLESPACE(ROLLBACK_DATA),'          26자  156.64px  자당 6.025  = 0.502 em
+        //   'TEMPORARY'                            9자   54.13px  자당 6.015  = 0.501 em
+        //   'TABLESPACE(TEMPORARY_DATA),USER'     31자  186.70px  자당 6.023  = 0.502 em
+        //   420·198·491쪽 ASCII 낱말 중위값       6.017 · 6.023 · 6.021        = 0.502 em
+        // ```
+        //
+        // 그래서 놓치고 있던 것: 같은 문단의 저장 LineSeg 는 `ts=0/93/157` 로 3줄이고 줄폭은
+        // 42520HU(566.9px)다. 반각이면 93자가 546.0px 로 들어가지만 rhwp 의 0.737em 로는
+        // 804.7px 이 되어 글자가 **용지 밖 136.4px** 까지 나갔다(저장 끊음은 지켰다).
+        //
+        // 적용 경계는 둘을 **함께** 본다.
+        //
+        //  · `FontSubstitutionBoundary::Hft` — 한글 전용 HFT face 만. 진짜 영문 HFT
+        //    (`LegacyLatin` 경계 — HCI Poppy·BT 계열·영문 안상수체)는 비례 글꼴이라 제외한다.
+        //  · `ResolvedStyleSet::hwp3_variant` — HWP3→HWP5 변환본만. **이 게이트가 없으면
+        //    안 된다**: `samples/exam_kor.hwp` 는 legacy HFT 이름(`신명 견명조` 등)을 쓰는
+        //    진짜 HWP5 문서인데, 그 6쪽 큰 숫자 `6` 은 한컴 정본(`pdf/exam_kor-2022.pdf`)에서
+        //    26.93px = 0.645 em 이다(반각 20.87px 이 아니다). 같은 HFT 이름이라도
+        //    HWP3 시대 저장본만 반각으로 조판된다.
+        let hft_hangul_halfwidth_ascii = hft_hangul_face && c.is_ascii_graphic();
         let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}');
         // [#7092] 고정폭 표의 작은따옴표는 글꼴이 지닌 전각이 진짜 값이다. `·` 는 이미
         // `is_monospace_metric` 으로 이 갈래를 빼 두었는데, `‘`·`’` 는 face 를 보지 않고
@@ -1229,7 +1271,10 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             && glyph_w >= mm.metric.em_size
             && !is_monospace_metric(mm.metric)
             && (!font_metric_trusted || latin1_table_is_uninformative(mm.metric));
-        if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact {
+        if hft_hangul_halfwidth_ascii {
+            (mm.metric.em_size / 2, "metricHftHangulHalfwidthAscii")
+        } else if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact
+        {
             (
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
@@ -1335,6 +1380,7 @@ pub(crate) fn char_width_decision<'a>(
             c,
             font_size,
             style.font_metric_trusted,
+            style.hft_hangul_face,
         );
         if let Some(w) = embedded.width_px {
             (

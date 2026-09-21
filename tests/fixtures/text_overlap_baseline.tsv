@@ -29,7 +29,7 @@ hwp-multi-001.hwp	91
 #   같은 A/B 에서 samples 전수 1,139문서의 쪽수·overflow·off-canvas·overlap·empty-page 는
 #   한 건도 바뀌지 않았고(유일한 차이는 base 에서 TIMEOUT 이던 issue2063 가 cand 에서
 #   완주한 것), text-overlap 은 3문서가 줄고 이 2문서만 늘었다.
-hwp3-sample10-hwp5.hwp	188
+hwp3-sample10-hwp5.hwp	187
 hwp3-sample10-hwpx.hwpx	173
 hwp3-sample10.hwp	189
 hwp3-sample11-hwp5.hwp	9
