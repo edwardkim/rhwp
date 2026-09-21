@@ -531,7 +531,7 @@ export class PicturePropsDialog {
     wrapRow.classList.add('pp-pos-detail');
     wrapRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb6a301')));
     const wrapIcons = ['⬒', '⬓', '⬔', '⬕', '⬖'];
-    const wrapTitles = ['자리 차지', '어울림', '빈 공간 채움', '글 뒤로', '글 앞으로'];
+    const wrapTitles = [i18nText('dialog.pictureProps.buildBasicPanel.label'), i18nText('dialog.pictureProps.buildBasicPanel.label.x82560f'), i18nText('dialog.pictureProps.buildBasicPanel.label.x5d5721'), i18nText('dialog.pictureProps.buildBasicPanel.label.x03fc93'), i18nText('dialog.pictureProps.buildBasicPanel.label.x8f15c1')];
     this.wrapBtns = [];
     wrapTitles.forEach((title, i) => {
       const btn = document.createElement('button');
@@ -545,8 +545,8 @@ export class PicturePropsDialog {
     // 본문 위치(P)
     wrapRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xdcba02')));
     this.bodyPosSelect = this.selectEl([
-      ['Both', '양쪽'], ['Left', '왼쪽'], ['Right', '오른쪽'],
-      ['Larger', '큰 쪽'], ['Smaller', '작은 쪽'],
+      ['Both', i18nText('dialog.pictureProps.selectEl.label')], ['Left', i18nText('dialog.pictureProps.selectEl.label.x8d60c4')], ['Right', i18nText('dialog.pictureProps.selectEl.label.x19b0fb')],
+      ['Larger', i18nText('dialog.pictureProps.selectEl.label.x59769c')], ['Smaller', i18nText('dialog.pictureProps.buildBasicPanel.label.x24be6e')],
     ]);
     this.bodyPosSelect.disabled = true;
     wrapRow.appendChild(this.bodyPosSelect);
@@ -561,13 +561,13 @@ export class PicturePropsDialog {
     // 실제 HorzRelTo 대신 "자리 차지"를 표시한다. 저장값은 textWrap 이므로
     // OK 시에는 HorzRelTo 로 넘기지 않는다.
     this.horzRelSelect = this.selectEl([
-      ['TakePlace', '자리 차지'],
-      ['Paper', '종이'], ['Page', '쪽'], ['Column', '단'], ['Para', '문단'],
+      ['TakePlace', i18nText('dialog.pictureProps.selectEl.label.xf9d03e')],
+      ['Paper', i18nText('dialog.pictureProps.selectEl.label.xd3445e')], ['Page', i18nText('dialog.pictureProps.selectEl.label.xc8cbf2')], ['Column', i18nText('dialog.pictureProps.selectEl.label.x0a2ddb')], ['Para', i18nText('dialog.pictureProps.buildBasicPanel.label.x7d1c86')],
     ]);
     hPosRow.appendChild(this.horzRelSelect);
     hPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label')));
     this.horzAlignSelect = this.selectEl([
-      ['Left', '왼쪽'], ['Center', '가운데'], ['Right', '오른쪽'], ['Outside', '바깥쪽'],
+      ['Left', i18nText('dialog.pictureProps.selectEl.label.x8d60c4')], ['Center', i18nText('dialog.pictureProps.selectEl.label.x55b22e')], ['Right', i18nText('dialog.pictureProps.selectEl.label.x19b0fb')], ['Outside', i18nText('dialog.pictureProps.selectEl.label.x634f07')],
     ]);
     hPosRow.appendChild(this.horzAlignSelect);
     hPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label.x63402b')));
@@ -582,12 +582,12 @@ export class PicturePropsDialog {
     vPosRow.classList.add('pp-pos-detail');
     vPosRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x541874')));
     this.vertRelSelect = this.selectEl([
-      ['Paper', '종이'], ['Page', '쪽'], ['Para', '문단'],
+      ['Paper', i18nText('dialog.pictureProps.selectEl.label.xd3445e')], ['Page', i18nText('dialog.pictureProps.selectEl.label.xc8cbf2')], ['Para', i18nText('dialog.pictureProps.selectEl.label.x7d1c86')],
     ]);
     vPosRow.appendChild(this.vertRelSelect);
     vPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label')));
     this.vertAlignSelect = this.selectEl([
-      ['Top', '위'], ['Center', '가운데'], ['Bottom', '아래'],
+      ['Top', i18nText('dialog.pictureProps.selectEl.label.x2c954b')], ['Center', i18nText('dialog.pictureProps.selectEl.label.x55b22e')], ['Bottom', i18nText('dialog.pictureProps.selectEl.label.x313c9d')],
     ]);
     vPosRow.appendChild(this.vertAlignSelect);
     vPosRow.appendChild(this.unit(i18nText('dialog.pictureProps.unit.label.x63402b')));
@@ -677,7 +677,7 @@ export class PicturePropsDialog {
     panel.appendChild(etcFs);
     const etcRow = this.row();
     etcRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x7cfc6a')));
-    const numTypeSelect = this.selectEl([['Picture', '그림']]);
+    const numTypeSelect = this.selectEl([['Picture', i18nText('dialog.pictureProps.selectEl.label.x2634ad')]]);
     numTypeSelect.disabled = true;
     etcRow.appendChild(numTypeSelect);
     // 개체 보호하기
@@ -779,14 +779,14 @@ export class PicturePropsDialog {
     grid.className = 'pp-caption-grid';
     this.captionBtns = [];
     const capTitles = [
-      '왼쪽 위', '위', '오른쪽 위',
-      '왼쪽', '가운데', '오른쪽',
-      '왼쪽 아래', '아래', '오른쪽 아래',
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x2c954b'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x4fa1c1'),
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x8d60c4'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x55b22e'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x19b0fb'),
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.xe7a0c1'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x313c9d'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x9c3317'),
     ];
     const capIcons = [
-      '┌가1', '가1─', '가1┐',
-      '│가1', '□', '가1│',
-      '└가1', '가1─', '가1┘',
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x31e569'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x7ac64d'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x600108'),
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x9f72f4'), '□', i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.xd4c35a'),
+      i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.xea56fb'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x7ac64d'), i18nText('dialog.pictureProps.buildMarginCaptionPanel.label.x3aa84b'),
     ];
     capTitles.forEach((title, i) => {
       const btn = document.createElement('button');
@@ -861,9 +861,9 @@ export class PicturePropsDialog {
     row1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x169f35')));
     // HWP 선 종류: attr bits 0-5 (0~17)
     this.lineTypeSelect = this.selectEl([
-      ['0', '선 없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
-      ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '원형 점선'],
-      ['8', '2중선'], ['9', '가는선-굵은선'], ['10', '굵은선-가는선'], ['11', '3중선'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x48f5ab')], ['1', i18nText('dialog.pictureProps.selectEl.label.x4a9e5f')], ['2', i18nText('dialog.pictureProps.selectEl.label.x83e6b8')], ['3', i18nText('dialog.pictureProps.selectEl.label.x982113')],
+      ['4', i18nText('dialog.pictureProps.selectEl.label.xcff873')], ['5', i18nText('dialog.pictureProps.buildLinePanel.label')], ['6', i18nText('dialog.pictureProps.buildLinePanel.label.x951654')], ['7', i18nText('dialog.pictureProps.buildLinePanel.label.xf82fe5')],
+      ['8', i18nText('dialog.pictureProps.buildLinePanel.label.x7708ea')], ['9', i18nText('dialog.pictureProps.buildLinePanel.label.xcaa098')], ['10', i18nText('dialog.pictureProps.buildLinePanel.label.xfb6f60')], ['11', i18nText('dialog.pictureProps.buildLinePanel.label.xa3d9ea')],
     ]);
     row1.appendChild(this.lineTypeSelect);
     lineFs.appendChild(row1);
@@ -872,7 +872,7 @@ export class PicturePropsDialog {
     row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x63c00f')));
     // HWP 끝 모양: attr bits 6-9
     this.lineEndSelect = this.selectEl([
-      ['0', '둥근'], ['1', '평면'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x711fec')], ['1', i18nText('dialog.pictureProps.selectEl.label.x823d91')],
     ]);
     row2.appendChild(this.lineEndSelect);
     row2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb55042')));
@@ -892,14 +892,14 @@ export class PicturePropsDialog {
     aRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf0248e')));
     // HWP 화살표 모양: attr bits 10-15 / 16-21
     this.arrowStartSelect = this.selectEl([
-      ['0', '없음'], ['1', '화살표'], ['2', '열린 화살표'],
-      ['3', '꼬리 화살표'], ['4', '마름모'], ['5', '원형'], ['6', '사각형'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x696251')], ['1', i18nText('dialog.pictureProps.selectEl.label.xef18fc')], ['2', i18nText('dialog.pictureProps.selectEl.label.x97e977')],
+      ['3', i18nText('dialog.pictureProps.selectEl.label.x401b77')], ['4', i18nText('dialog.pictureProps.selectEl.label.xe916ca')], ['5', i18nText('dialog.pictureProps.buildLinePanel.label.x9bf2e8')], ['6', i18nText('dialog.pictureProps.buildLinePanel.label.x397378')],
     ]);
     aRow1.appendChild(this.arrowStartSelect);
     aRow1.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x2fe41a')));
     this.arrowEndSelect = this.selectEl([
-      ['0', '없음'], ['1', '화살표'], ['2', '열린 화살표'],
-      ['3', '꼬리 화살표'], ['4', '마름모'], ['5', '원형'], ['6', '사각형'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x696251')], ['1', i18nText('dialog.pictureProps.selectEl.label.xef18fc')], ['2', i18nText('dialog.pictureProps.selectEl.label.x97e977')],
+      ['3', i18nText('dialog.pictureProps.selectEl.label.x401b77')], ['4', i18nText('dialog.pictureProps.selectEl.label.xe916ca')], ['5', i18nText('dialog.pictureProps.buildLinePanel.label.x9bf2e8')], ['6', i18nText('dialog.pictureProps.buildLinePanel.label.x397378')],
     ]);
     aRow1.appendChild(this.arrowEndSelect);
     arrowFs.appendChild(aRow1);
@@ -908,16 +908,16 @@ export class PicturePropsDialog {
     aRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xf8ba95')));
     // HWP 화살표 크기: attr bits 22-25 / 26-29 (0~8)
     this.arrowStartSizeSelect = this.selectEl([
-      ['0', '작은×작은'], ['1', '작은×중간'], ['2', '작은×큰'],
-      ['3', '중간×작은'], ['4', '중간×중간'], ['5', '중간×큰'],
-      ['6', '큰×작은'], ['7', '큰×중간'], ['8', '큰×큰'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x74d594')], ['1', i18nText('dialog.pictureProps.selectEl.label.x04b8c5')], ['2', i18nText('dialog.pictureProps.selectEl.label.xfe0cfd')],
+      ['3', i18nText('dialog.pictureProps.selectEl.label.x2c2865')], ['4', i18nText('dialog.pictureProps.buildLinePanel.label.x628309')], ['5', i18nText('dialog.pictureProps.buildLinePanel.label.x28dbf2')],
+      ['6', i18nText('dialog.pictureProps.buildLinePanel.label.xec1b3d')], ['7', i18nText('dialog.pictureProps.buildLinePanel.label.xbceff0')], ['8', i18nText('dialog.pictureProps.buildLinePanel.label.x7e01b7')],
     ]);
     aRow2.appendChild(this.arrowStartSizeSelect);
     aRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xaab0ab')));
     this.arrowEndSizeSelect = this.selectEl([
-      ['0', '작은×작은'], ['1', '작은×중간'], ['2', '작은×큰'],
-      ['3', '중간×작은'], ['4', '중간×중간'], ['5', '중간×큰'],
-      ['6', '큰×작은'], ['7', '큰×중간'], ['8', '큰×큰'],
+      ['0', i18nText('dialog.pictureProps.selectEl.label.x74d594')], ['1', i18nText('dialog.pictureProps.selectEl.label.x04b8c5')], ['2', i18nText('dialog.pictureProps.selectEl.label.xfe0cfd')],
+      ['3', i18nText('dialog.pictureProps.selectEl.label.x2c2865')], ['4', i18nText('dialog.pictureProps.buildLinePanel.label.x628309')], ['5', i18nText('dialog.pictureProps.buildLinePanel.label.x28dbf2')],
+      ['6', i18nText('dialog.pictureProps.buildLinePanel.label.xec1b3d')], ['7', i18nText('dialog.pictureProps.buildLinePanel.label.xbceff0')], ['8', i18nText('dialog.pictureProps.buildLinePanel.label.x7e01b7')],
     ]);
     aRow2.appendChild(this.arrowEndSizeSelect);
     arrowFs.appendChild(aRow2);
@@ -929,7 +929,7 @@ export class PicturePropsDialog {
     const cRow = this.row();
     this.cornerBtns = [];
     const cornerIcons = ['▢', '▢̤', '⬭'];
-    const cornerTitles = ['직각(G)', '둥근 모양(O)', '반원(M)'];
+    const cornerTitles = [i18nText('dialog.pictureProps.buildLinePanel.label.xc8af2e'), i18nText('dialog.pictureProps.buildLinePanel.label.x39e89e'), i18nText('dialog.pictureProps.buildLinePanel.label.x03d971')];
     cornerTitles.forEach((title, i) => {
       const btn = document.createElement('button');
       btn.className = 'pp-wrap-btn pp-corner-btn';
@@ -968,7 +968,7 @@ export class PicturePropsDialog {
 
     const arcRow = this.row();
     this.arcBtns = [];
-    const arcTitles = ['호(A)', '부채꼴(B)', '활 모양(I)'];
+    const arcTitles = [i18nText('dialog.pictureProps.buildLinePanel.label.x1db810'), i18nText('dialog.pictureProps.buildLinePanel.label.x16c54a'), i18nText('dialog.pictureProps.buildLinePanel.label.xae28b4')];
     const arcIcons = ['⌒', '◔', '⌢'];
     arcTitles.forEach((title, i) => {
       const btn = document.createElement('button');
@@ -1053,8 +1053,8 @@ export class PicturePropsDialog {
     sRow.appendChild(this.solidPatColor);
     sRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.xb8c7cc')));
     this.solidPatternSelect = this.selectEl([
-      ['none', '없음'], ['hline', '수평선'], ['vline', '수직선'],
-      ['dline1', '대각선1'], ['dline2', '대각선2'], ['cross', '격자'],
+      ['none', i18nText('dialog.pictureProps.selectEl.label.x696251')], ['hline', i18nText('dialog.pictureProps.selectEl.label.x0079b9')], ['vline', i18nText('dialog.pictureProps.selectEl.label.x83e6e5')],
+      ['dline1', i18nText('dialog.pictureProps.selectEl.label.x6b9a12')], ['dline2', i18nText('dialog.pictureProps.buildFillPanel.label')], ['cross', i18nText('dialog.pictureProps.buildFillPanel.label.x2dbb01')],
     ]);
     sRow.appendChild(this.solidPatternSelect);
     this.solidArea.appendChild(sRow);
@@ -1088,9 +1088,9 @@ export class PicturePropsDialog {
     const gRow2 = this.row();
     gRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x335bfa')));
     this.gradTypeSelect = this.selectEl([
-      ['linear', '소라'], ['horizontal', '수평'], ['rdiag', '오른쪽 대각선'],
-      ['ldiag', '왼쪽 대각선'], ['center', '가운데에서'], ['classic', '클래식'],
-      ['narcissus', '나르시스'],
+      ['linear', i18nText('dialog.pictureProps.selectEl.label.x0e094c')], ['horizontal', i18nText('dialog.pictureProps.selectEl.label.xdd02d7')], ['rdiag', i18nText('dialog.pictureProps.selectEl.label.xbba5a5')],
+      ['ldiag', i18nText('dialog.pictureProps.buildFillPanel.label.xd39edd')], ['center', i18nText('dialog.pictureProps.buildFillPanel.label.x35a7db')], ['classic', i18nText('dialog.pictureProps.buildFillPanel.label.x6cae66')],
+      ['narcissus', i18nText('dialog.pictureProps.buildFillPanel.label.xc60936')],
     ]);
     gRow2.appendChild(this.gradTypeSelect);
     // 6방향 아이콘
@@ -1171,7 +1171,7 @@ export class PicturePropsDialog {
     const iRow2 = this.row();
     iRow2.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x686996')));
     this.imageFillTypeSelect = this.selectEl([
-      ['tile', '바둑판식으로-모두'], ['stretch', '크기에 맞추어'], ['center', '가운데로'],
+      ['tile', i18nText('dialog.pictureProps.selectEl.label.xbee543')], ['stretch', i18nText('dialog.pictureProps.selectEl.label.x63b824')], ['center', i18nText('dialog.pictureProps.selectEl.label.x19a537')],
     ]);
     this.imageFillTypeSelect.disabled = true;
     iRow2.appendChild(this.imageFillTypeSelect);
@@ -1186,7 +1186,7 @@ export class PicturePropsDialog {
     const iRow3 = this.row();
     iRow3.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x7f5940')));
     this.imageEffectSelect = this.selectEl([
-      ['none', '효과 없음'], ['gray', '회색조'], ['bw', '흑백'],
+      ['none', i18nText('dialog.pictureProps.selectEl.label.x393c8f')], ['gray', i18nText('dialog.pictureProps.selectEl.label.xb248c9')], ['bw', i18nText('dialog.pictureProps.selectEl.label.xea58ad')],
     ]);
     this.imageEffectSelect.disabled = true;
     iRow3.appendChild(this.imageEffectSelect);
@@ -1294,7 +1294,7 @@ export class PicturePropsDialog {
     vaRow.appendChild(this.label(i18nText('dialog.pictureProps.label.label.x329463')));
     this.tbVertAlignBtns = [];
     const vaIcons = ['⬆', '⬌', '⬇'];
-    const vaTitles = ['위', '가운데', '아래'];
+    const vaTitles = [i18nText('dialog.pictureProps.buildTextboxPanel.label'), i18nText('dialog.pictureProps.buildTextboxPanel.label.x55b22e'), i18nText('dialog.pictureProps.buildTextboxPanel.label.x313c9d')];
     const vaValues = ['Top', 'Center', 'Bottom'];
     vaTitles.forEach((title, i) => {
       const btn = document.createElement('button');
@@ -1382,8 +1382,8 @@ export class PicturePropsDialog {
     this.shadowTypeBtns = [];
     // 10개 그림자 유형 (2×5): 없음 + 9가지 방향/스타일
     const shadowLabels = [
-      '없음', '왼쪽 위', '위', '오른쪽 위', '오른쪽',
-      '왼쪽', '왼쪽 아래', '아래', '오른쪽 아래', '양쪽',
+      i18nText('dialog.pictureProps.buildShadowPanel.label'), i18nText('dialog.pictureProps.buildShadowPanel.label.x04627f'), i18nText('dialog.pictureProps.buildShadowPanel.label.x2c954b'), i18nText('dialog.pictureProps.buildShadowPanel.label.x4fa1c1'), i18nText('dialog.pictureProps.buildShadowPanel.label.x19b0fb'),
+      i18nText('dialog.pictureProps.buildShadowPanel.label.x8d60c4'), i18nText('dialog.pictureProps.buildShadowPanel.label.xe7a0c1'), i18nText('dialog.pictureProps.buildShadowPanel.label.x313c9d'), i18nText('dialog.pictureProps.buildShadowPanel.label.x9c3317'), i18nText('dialog.pictureProps.buildShadowPanel.label.xac51a1'),
     ];
     const shadowIcons = [
       '□', '◰', '◱', '◲', '◳',
@@ -2649,7 +2649,7 @@ export class PicturePropsDialog {
   }
 
   private sizeTypeSelect(): HTMLSelectElement {
-    return this.selectEl([['fixed', '고정 값']]);
+    return this.selectEl([['fixed', i18nText('dialog.pictureProps.selectEl.label.xa82cae')]]);
   }
 
   private checkboxLabel(text: string): HTMLLabelElement {

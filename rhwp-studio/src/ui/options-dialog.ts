@@ -265,9 +265,9 @@ export class OptionsDialog extends ModalDialog {
 
     saveSection.appendChild(createAutosaveNumberRow({
       checkbox: this.recoveryEnabledCheck,
-      labelText: '복구용 자동 저장',
+      labelText: i18nText('dialog.options.createFilePanel.label'),
       numberInput: this.recoveryIntervalInput,
-      unitText: '분',
+      unitText: i18nText('dialog.options.createFilePanel.label.x3f334d'),
     }));
 
     this.idleSaveEnabledCheck = document.createElement('input');
@@ -284,9 +284,9 @@ export class OptionsDialog extends ModalDialog {
 
     saveSection.appendChild(createAutosaveNumberRow({
       checkbox: this.idleSaveEnabledCheck,
-      labelText: '쉴 때 자동 저장',
+      labelText: i18nText('dialog.options.createFilePanel.label.xa5fe57'),
       numberInput: this.idleDelayInput,
-      unitText: '초',
+      unitText: i18nText('dialog.options.createFilePanel.label.xa1f9e7'),
     }));
 
     const syncDisabled = (): void => {
@@ -385,12 +385,12 @@ function formatLocalFontStatus(state: LocalFontState): string {
   }
   if (!state.stored) {
     if (state.method === 'font-presence-probe') {
-      return '저장된 감지 결과가 없습니다. Firefox에서는 문서를 열 때 필요한 글꼴만 확인합니다.';
+      return i18nText('dialog.options.localStatus.noStoredFirefox');
     }
     if (!state.supported) {
-      return '이 브라우저는 로컬 글꼴 감지를 지원하지 않습니다.';
+      return i18nText('dialog.options.localStatus.unsupported');
     }
-    return '저장된 감지 결과가 없습니다.';
+    return i18nText('dialog.options.localStatus.noStored');
   }
 
   const detectedAt = formatDetectedAt(state.detectedAt);

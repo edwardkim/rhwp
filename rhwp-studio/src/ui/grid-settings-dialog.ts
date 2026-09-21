@@ -53,21 +53,21 @@ export class GridSettingsDialog extends ModalDialog {
     body.appendChild(this.checkboxRow(this.visibleInput, t('dialog.gridSettings.checkboxRow.label')));
 
     body.appendChild(this.radioGroup<GridPattern>(t('dialog.gridSettings.radioGroup.label'), 'grid-pattern', [
-      ['dots', '점'],
-      ['horizontal', '가로선'],
-      ['vertical', '세로선'],
-      ['both', '가로/세로선'],
+      ['dots', t('dialog.gridSettings.createBody.label')],
+      ['horizontal', t('dialog.gridSettings.createBody.label.x2a4d89')],
+      ['vertical', t('dialog.gridSettings.createBody.label.x0f5636')],
+      ['both', t('dialog.gridSettings.createBody.label.x9d73bc')],
     ], this.currentSettings.pattern));
 
     body.appendChild(this.radioGroup<GridLayer>(t('dialog.gridSettings.radioGroup.label.xaa4389'), 'grid-layer', [
-      ['behindText', '글 뒤'],
-      ['inFrontOfText', '글 앞'],
+      ['behindText', t('dialog.gridSettings.createBody.label.x8c9027')],
+      ['inFrontOfText', t('dialog.gridSettings.createBody.label.x476f90')],
     ], this.currentSettings.layer));
 
     body.appendChild(this.radioGroup<GridSnapMode>(t('dialog.gridSettings.radioGroup.label.x4ff439'), 'grid-snap-mode', [
-      ['free', '상관 없이'],
-      ['magnetic', '자석 효과'],
-      ['gridOnly', '격자에만 붙이기'],
+      ['free', t('dialog.gridSettings.createBody.label.x607281')],
+      ['magnetic', t('dialog.gridSettings.createBody.label.xe7dc60')],
+      ['gridOnly', t('dialog.gridSettings.createBody.label.xf9d295')],
     ], this.currentSettings.snapMode));
 
     const spacing = this.group(t('dialog.gridSettings.group.label'));
