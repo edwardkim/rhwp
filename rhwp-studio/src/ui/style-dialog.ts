@@ -190,7 +190,7 @@ export class StyleDialog extends ModalDialog {
       // 번호/글머리표 정보
       const headType = detail.paraProps?.headType ?? 'None';
       const headLabel: Record<string, string> = {
-        None: '없음', Outline: '개요', Number: '번호', Bullet: '글머리표',
+        None: t('dialog.style.headLabel.none'), Outline: t('dialog.style.headLabel.outline'), Number: t('dialog.style.headLabel.number'), Bullet: t('dialog.style.headLabel.bullet'),
       };
       this.addInfoSection(t('dialog.style.addInfoSection.label.xbf2f06'), t('dialog.style.addInfoSection.label.xaea26f', { p1: headLabel[headType] ?? headType }));
     } catch {

@@ -77,7 +77,7 @@ function appendTableCell(tr: HTMLTableRowElement, text: string): void {
 }
 
 export function buildTabSettingsTab(state: TabState): TabSettingsResult {
-  const TAB_TYPE_NAMES = ['왼쪽', '오른쪽', '가운데', '소수점'];
+  const TAB_TYPE_NAMES = [i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x8d60c4'), i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x19b0fb'), i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x55b22e'), i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x2c05e5')];
 
   const panel = document.createElement('div');
   panel.className = 'dialog-tab-panel';
@@ -181,7 +181,7 @@ export function buildTabSettingsTab(state: TabState): TabSettingsResult {
   const tabTable = document.createElement('table');
   tabTable.className = 'ps-tab-table';
   const thead = document.createElement('thead');
-  appendHeaderRow(thead, ['위치', '종류']);
+  appendHeaderRow(thead, [i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x2c24e8'), i18nText('dialog.paraShapeTabBuilders.appendHeaderRow.label')]);
   tabTable.appendChild(thead);
   const tabListBody = document.createElement('tbody');
   tabTable.appendChild(tabListBody);
@@ -216,7 +216,7 @@ export function buildTabSettingsTab(state: TabState): TabSettingsResult {
   const delTable = document.createElement('table');
   delTable.className = 'ps-tab-table';
   const dThead = document.createElement('thead');
-  appendHeaderRow(dThead, ['위치', '종류']);
+  appendHeaderRow(dThead, [i18nText('dialog.paraShapeTabBuilders.appendTableCell.label.x2c24e8'), i18nText('dialog.paraShapeTabBuilders.appendHeaderRow.label')]);
   delTable.appendChild(dThead);
   const deletedTabListBody = document.createElement('tbody');
   delTable.appendChild(deletedTabListBody);
@@ -495,11 +495,11 @@ export function buildBorderTab(
   const presetRow = document.createElement('div');
   presetRow.className = 'ps-border-presets';
   const presets: [string, string, () => void][] = [
-    ['┄', '테두리 없음', () => applyBorderPreset('none')],
-    ['□', '상자형', () => applyBorderPreset('box')],
-    ['╬', '격자형', () => applyBorderPreset('box')],
-    ['▣', '사용자 정의', () => {}],
-    ['全', '모두 적용/해제', () => applyBorderPreset('toggleAll')],
+    ['┄', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xaf5c2a'), () => applyBorderPreset('none')],
+    ['□', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xd654a1'), () => applyBorderPreset('box')],
+    ['╬', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.xb1c517'), () => applyBorderPreset('box')],
+    ['▣', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x0b64ca'), () => {}],
+    ['全', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x44ed75'), () => applyBorderPreset('toggleAll')],
   ];
   for (const [icon, title, handler] of presets) {
     const btn = document.createElement('button');

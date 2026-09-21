@@ -451,8 +451,8 @@ export class ParaShapeDialog {
 
     this.headTypeRadios = [];
     const headTypes: [string, string][] = [
-      ['None', '없음(O)'], ['Outline', '개요 문단(U)'],
-      ['Number', '번호 문단(M)'], ['Bullet', '글머리표 문단(B)'],
+      ['None', i18nText('dialog.paraShape.buildExtendedPanel.label.x5da145')], ['Outline', i18nText('dialog.paraShape.buildExtendedPanel.label.xaec369')],
+      ['Number', i18nText('dialog.paraShape.buildExtendedPanel.label.x300e3a')], ['Bullet', i18nText('dialog.paraShape.buildExtendedPanel.label.xd555b2')],
     ];
 
     // 수준 드롭다운 (개요/번호 선택 시만 활성)
@@ -540,7 +540,7 @@ export class ParaShapeDialog {
     this.verticalAlignSelect.className = 'dialog-select';
     this.verticalAlignSelect.style.width = '100px';
     const vaOptions: [string, string][] = [
-      ['0', '글꼴 기준'], ['1', '위쪽'], ['2', '가운데'], ['3', '아래쪽'],
+      ['0', i18nText('dialog.paraShape.buildExtendedPanel.label.xa403c3')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.xa0991a')], ['2', i18nText('dialog.paraShape.buildExtendedPanel.label.x55b22e')], ['3', i18nText('dialog.paraShape.buildExtendedPanel.label.x5f4a61')],
     ];
     vaOptions.forEach(([v, t]) => {
       const opt = document.createElement('option');
@@ -748,8 +748,8 @@ export class ParaShapeDialog {
 
     this.previewEl.replaceChildren();
     const sampleLines = [
-      '이것은 문단 미리보기입니다. 이렇게 문단의 정렬과 여백, 들여쓰기가 적용된 모습을 확인할 수 있습니다.',
-      '두 번째 줄은 보통 여백만 적용됩니다.',
+      i18nText('dialog.paraShape.updatePreview.label'),
+      i18nText('dialog.paraShape.updatePreview.label.x9db5eb'),
     ];
     sampleLines.forEach((text, i) => {
       const p = document.createElement('div');
