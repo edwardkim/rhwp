@@ -6,6 +6,7 @@
 use serde::Serialize;
 
 use crate::model::control::Control;
+use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub mod canvas;
@@ -1062,6 +1063,35 @@ pub(crate) fn source_line_metrics_need_reflow(
 
     raw_lh > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
         && raw_text_height > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
+}
+
+/// 저장된 다음 줄 좌표를 현재 줄의 흐름 높이로 쓸 수 있으면 그 콘텐츠 높이를 반환한다.
+///
+/// `LINE_SEG.line_height`는 그림·표를 덮는 상자일 수 있지만, 한/글의 다음 줄 위치는
+/// 저장 사다리(`next.vertical_pos - current.vertical_pos`)가 정한다. 다만 재조판된
+/// 상자, 역행·동일 좌표, 글자 또는 글자처럼 취급되는 개체보다 작은 advance에는 저장
+/// 좌표를 섞지 않는다. layout과 fallback measurement가 이 판별자를 공유한다.
+#[inline]
+pub(crate) fn stored_line_flow_height(
+    current: &LineSeg,
+    next: &LineSeg,
+    rendered_line_height: f64,
+    line_spacing: f64,
+    flow_floor: f64,
+    dpi: f64,
+    source_metrics_reflowed: bool,
+) -> Option<f64> {
+    if source_metrics_reflowed
+        || (hwpunit_to_px(current.line_height, dpi) - rendered_line_height).abs() >= 0.5
+        || current.vertical_pos < 0
+        || next.vertical_pos <= current.vertical_pos
+    {
+        return None;
+    }
+
+    let step = hwpunit_to_px(next.vertical_pos - current.vertical_pos, dpi) - line_spacing;
+    (step > 0.0 && step < rendered_line_height && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
+        .then_some(step)
 }
 
 /// [#5821] 압축 장평(ratio r < 1) 글자의 그리기 파라미터.

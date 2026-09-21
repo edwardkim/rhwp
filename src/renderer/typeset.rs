@@ -17708,6 +17708,11 @@ impl TypesetEngine {
                     )
                     .map(|flow| flow.extra_rows)
                     .unwrap_or(0);
+                // Pagination은 배치 cursor와 다른 예약 계약을 사용한다. 저장 사다리의
+                // 짧은 text advance를 여기에도 적용하면 미주·글자처럼 취급되는 개체의
+                // page budget이 줄어들어 이전 줄에 과적재된다. #6656은
+                // HeightMeasurer의 fallback 측정 정합 범위이므로 typeset 예약 높이는
+                // 종전 줄 상자를 유지한다.
                 let flow_lh = lh + extra_rows as f64 * (lh + line_spacing_px);
                 pairs.push((flow_lh, line_spacing_px));
                 prev_line_reserved_tac_picture_height = tac_picture_height;
