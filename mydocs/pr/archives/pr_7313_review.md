@@ -56,3 +56,23 @@ Native와 WASM 모두 문서 489쪽을 한컴 2024 기준 PDF와 대조했다. �
 **메인터너 보정 후 수용 가능.** 원 contributor 구현의 측정 범위와 HWP5 반례 보호는 적절하며,
 PDF oracle provenance 보류 사유는 `7c51a07d3`의 주석 보정으로 해소했다. 이 기록만 포함한 trailing
 head의 fast-pass CI, `MERGEABLE`/`CLEAN` 재확인과 작업지시자의 merge 지시가 남았다.
+
+## Merge 후 contributor PR comment 계획
+
+`494bf5a80cf1b78f6cfe844b8bcd9fdc5377e065` 병합과 최종 head `ffc618013`의 fast-pass CI가
+완료된 뒤, 원 PR에는 다음을 한국어로 게시한다.
+
+- 실제 merge SHA와 code candidate [Full CI #35584051980](https://github.com/edwardkim/rhwp/actions/runs/35584051980),
+  trailing [CI #35585864477](https://github.com/edwardkim/rhwp/actions/runs/35585864477)를 명시한다.
+- #7051 focused 3개, Native·fresh WASM 489쪽 Visual Sweep의 구조 flag 0, 문제 런 554.9px / 저장 폭
+  566.9px을 실제 검증 범위로 적는다.
+- [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을
+  연결하고, merge commit에 존재하는 다음 4장을 모두 보이게 넣는다.
+
+  - `https://raw.githubusercontent.com/edwardkim/rhwp/494bf5a80cf1b78f6cfe844b8bcd9fdc5377e065/mydocs/pr/assets/pr7313_review/native_review_489.png`
+  - `https://raw.githubusercontent.com/edwardkim/rhwp/494bf5a80cf1b78f6cfe844b8bcd9fdc5377e065/mydocs/pr/assets/pr7313_review/native_overlay_489.png`
+  - `https://raw.githubusercontent.com/edwardkim/rhwp/494bf5a80cf1b78f6cfe844b8bcd9fdc5377e065/mydocs/pr/assets/pr7313_review/wasm_review_489.png`
+  - `https://raw.githubusercontent.com/edwardkim/rhwp/494bf5a80cf1b78f6cfe844b8bcd9fdc5377e065/mydocs/pr/assets/pr7313_review/wasm_overlay_489.png`
+
+이슈 #7051은 HWPX 변형의 off-canvas 49건이 남아 있어 close하지 않고, 병합 범위와 잔여 조건을
+같은 근거로 issue comment에 남긴다.
