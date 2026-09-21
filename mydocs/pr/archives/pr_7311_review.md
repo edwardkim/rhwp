@@ -16,7 +16,7 @@ PR에 포함하지 않아 적용 경계와 검증 입력 커밋 확인이 미충
 
 이 판정은 GitHub APPROVE·push·comment·merge를 뜻하지 않는다. 이 기록은 로컬 trailing commit으로만
 준비했으며, push는 작업지시자의 별도 승인 뒤에만 수행한다. merge 전에는 push된 최신 head의
-review-only CI, `MERGEABLE`/`CLEAN`, reviewer 지정 및 작업지시자의 merge 승인을 다시 확인한다.
+review-only CI, `MERGEABLE`/`CLEAN` 및 작업지시자의 merge 승인을 다시 확인한다. reviewer `jangster77` 지정은 이 기록을 push한 뒤 병합 전에 완료했다.
 
 ## 접수와 경로
 
@@ -29,7 +29,7 @@ review-only CI, `MERGEABLE`/`CLEAN`, reviewer 지정 및 작업지시자의 merg
 | 보정 head | `cb107e299ecc61438c66f3b0fc0755f52980be22` |
 | 보정 소유자 | `jangster77`, `test(layout): Center 조각 표 반례를 fixture로 고정` |
 | 원격 상태 참고값 | Open, non-draft, `MERGEABLE` / `CLEAN`, `maintainerCanModify=true` |
-| reviewer | 아직 원격 지정하지 않음. 이 문서는 push 승인 전 로컬 기록이며, merge 전에 별도 확인 필요 |
+| reviewer | `jangster77` 지정 완료. 원 contributor 작성자가 아닌 collaborator가 review 기록과 병합 전 check를 확인 |
 | 관련 이슈 | [#6923](https://github.com/edwardkim/rhwp/issues/6923) — 원 PR 설명대로 부분 개선이며 이 review가 이슈 상태를 바꾸지 않음 |
 
 - base route: `collaborator_external_pr.md`의 contributor head 직접 보정 경로.
