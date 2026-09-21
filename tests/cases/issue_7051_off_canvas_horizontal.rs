@@ -33,11 +33,24 @@
 //! SVG 글리프로 교차 확인했다 — `156757920` 1쪽은 용지 793.7px 인데 글자가 `x=879.1`
 //! 까지 그려진다(**용지 밖 +85.4px**, 그런 글자 10개).
 //!
+//! ## 표본이 바뀐 이유 (`#7051` 조판 축 수정 뒤)
+//!
+//! 종전 표본은 `samples/hwp3-sample10-hwp5.hwp` 였고, 이 파일의 비범위 절은 그 문서의
+//! 저장 사다리를 *"ASCII 반각(0.508 em)을 가정했지만 우리 메트릭(0.737 em)으로는 재현되지
+//! 않는 **부실 저장**(`#2279` 계열)"* 으로 판정했다. **그 판정이 틀렸다.**
+//!
+//! 한컴 정본이 그 문서를 0.502 em 으로 그린다(MCP engine 2024 / 13.0.0.3901 변환 763쪽,
+//! 489쪽 실측 — `issue_7051_hft_hangul_latin_halfwidth.rs` 의 표). 저장 사다리가 맞았고
+//! 우리 메트릭이 틀렸다. 조판 축을 고치자(HFT 한글 face 의 ASCII = `em/2`) 그 문서의
+//! 가로 초과 49건은 **0건**이 됐다.
+//!
+//! 그래서 검출 보증의 표본을 같은 델타 목록의 다른 문서로 옮긴다 — 이쪽은 HFT 치환 축이
+//! 아니라서 지금도 용지 밖 103.9px 까지 나간다. 검출기 자체의 계약은 그대로다.
+//!
 //! ## 비범위
 //!
-//! 줄을 왜 안 끊는가(`#7051` 본체)는 이 변경이 다루지 않는다. 그쪽은 저장 사다리가 ASCII
-//! 반각(0.508 em)을 가정한 HWP3 분할이고 우리 메트릭(0.737 em)으로는 재현되지 않는
-//! **부실 저장**(`#2279` 계열)이라 따로 판정이 필요하다.
+//! 새 표본이 왜 넘치는지(그쪽 조판 원인)는 이 파일이 다루지 않는다. 여기서 지키는 것은
+//! **가로 초과가 지표에 나타난다**는 검출기 계약 하나다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -46,8 +59,9 @@ use std::path::Path;
 use rhwp::diagnostics::layout_anomaly::{scan_document, AnomalyOptions};
 use rhwp::document_core::DocumentCore;
 
-/// `#7051` 이 신고한 문서 — 489쪽 한 줄이 단을 238.1px 넘긴다.
-const SAMPLE: &str = "samples/hwp3-sample10-hwp5.hwp";
+/// 가로 초과가 남아 있는 문서 — 1쪽 글자가 용지(793.7px) 밖 103.9px 까지 나간다.
+/// 종전 표본(`hwp3-sample10-hwp5.hwp`)은 조판 축 수정으로 49건 → 0건이 됐다(위 절).
+const SAMPLE: &str = "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp";
 
 /// 가로 초과가 off-canvas 로 잡힌다.
 ///
@@ -74,7 +88,7 @@ fn off_canvas_sees_horizontal_overflow() {
     let worst = right.iter().map(|a| a.over_right).fold(0.0_f64, f64::max);
     assert!(
         worst > 100.0,
-        "이 문서의 최대 우측 초과는 124.7px 다(SVG 글리프 실측). got {worst:.1}px"
+        "이 문서의 최대 우측 초과는 103.9px 다(SVG 글리프 실측). got {worst:.1}px"
     );
 }
 
