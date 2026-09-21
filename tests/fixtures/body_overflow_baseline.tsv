@@ -8,11 +8,28 @@
 # #6921 신규 공개 샘플: base 37bd46a72f9f와 통합 bb5dc4b00fc1의 전 페이지 overflow가 동일(6건).
 # 기존 세 문서의 증가분은 기준선을 올리지 않고 #6924 클립의 본문 하단 경계를 보정한다.
 # 그 6건은 #7035(한글97 마지막 줄 허용치가 진짜 HWP5 에 새던 것) 수정으로 0 이 됐다 — #6920 종결분.
+#
+# 조이기 2 (#6976 단계 0 유지보수): devel a4b8731ca 실측으로 9행을 내렸다 — 원장 전체
+# 1,005 -> 876. 증가·신규 0 이라 완화가 아니다(게이트 16/16 PASS). 측정은 위와 같은
+# RHWP_BODY_OVERFLOW_DUMP(공차 2.0px, over_bottom, samples 전수 16파티션)다.
+# 조인 행: 편람 hwp 91->34 · 편람 hwpx 103->43 · issue1937 12->7 · 75544.hwpx 3->1 ·
+# 59043 4->3 · 37787 8->7 · 1490000 48->47 · 18095317 2->1 · 148751598-briefing 1->0.
+#
+# 위 "유보 2행"(편람 hwp/hwpx)을 이번에 푼다 — 그 값이 환경 분기(#6325)인지 코드 개선분인지
+# 같은 기계에서 커밋 A/B 로 갈랐다. 래칫을 만든 커밋으로 되돌려 재면 원장 값이 그대로 나온다.
+#   bb5dc4b00(래칫 신설, 2026-09-10) 빌드: 편람 hwp 91 · hwpx 103   <- 원장 값과 동일
+#   a4b8731ca(현행 devel)            빌드: 편람 hwp 34 · hwpx 43
+# 곧 이 기계의 측정이 원장 값의 출처와 일치하므로 -57/-60 은 그 사이 머지된 수정의 결과다.
+# #6325 가 적은 분기는 Windows 로컬 vs ubuntu CI 관측이고, 이 A/B 는 같은 리눅스 기계의
+# 커밋 간 비교다. 위 규약대로 **상한의 권위는 여전히 CI** 이므로 CI 실측이 더 크면 그
+# 값으로 올려 적는다.
+#
+# 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
 issue6921/148733091-briefing-stenographic-record.hwp	0
 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
 2022년 국립국어원 업무계획.hwp	1
-2025 행정업무운영 편람(최종).hwp	91
-2025 행정업무운영 편람(최종).hwpx	103
+2025 행정업무운영 편람(최종).hwp	34
+2025 행정업무운영 편람(최종).hwpx	43
 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	3
 21_언어_기출_편집가능본.hwp	2
 253E164F57A1BC6934-empty.hwp	1
@@ -97,8 +114,8 @@ issue1858_paper_anchor_float_stack.hwpx	1
 issue1891/76076_regulatory_analysis.hwpx	2
 issue1891/80168_regulatory_analysis.hwpx	1
 issue1891_external_bindata_link.hwpx	7
-issue1921/59043_regulatory_analysis.hwp	4
-issue1937_rowbreak_footnote_overpagination.hwp	12
+issue1921/59043_regulatory_analysis.hwp	3
+issue1937_rowbreak_footnote_overpagination.hwp	7
 issue1949_giant_cell_nested_tables_perf.hwp	9
 issue1949_giant_cell_nested_tables_perf.hwpx	9
 issue2006/1790387_prep_final_report.hwpx	4
@@ -124,7 +141,7 @@ issue5169_viewtext_changetracking.hwp	1
 issue5679/10857_delegation_rules.hwp	2
 issue5699/16758113_pruning_forms.hwp	0
 issue5699/20099369_yeongwol_forms.hwp	2
-issue5699/37787_regulatory_impact.hwp	8
+issue5699/37787_regulatory_impact.hwp	7
 issue5701/1270000-202200012_slice_p76_rewound_host.hwp	10
 issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp	2
 issue5712/3184241_medical_exam_equipment.hwpx	0
@@ -136,7 +153,7 @@ issue5866/memo_field_hwp5.hwp	1
 issue5870/empty_host_float_flow_advance.hwp	1
 issue5877/fragment_ghost_vrules.hwp	2
 issue5941/1480000-201900698-native-neartop-reset.hwp	19
-issue5941/1490000-201600081_roadmap_research.hwp	48
+issue5941/1490000-201600081_roadmap_research.hwp	47
 issue5941/3240179_efficiency_test_orgs.hwpx	4
 issue5966/1130000-202100008_franchise_review_report.hwp	8
 issue6031/3249937_asset_management_rules.hwpx	1
@@ -197,11 +214,11 @@ task1768/distribution_doc.hwpx	1
 task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	27
 task2070/hy_ladder3.hwpx	2
 task2093/1192000_hydrogen_policy_research.hwp	1
-task2097/18095317_eogu_geumji.hwp	2
+task2097/18095317_eogu_geumji.hwp	1
 task2097/21217935_simsa_jipyo.hwp	2
 task2097/21298295_byeolpyo5_disaster.hwp	1
 task2097/3023771_wichokjang.hwpx	2
-task2097/75544_pii_bunseok.hwpx	3
+task2097/75544_pii_bunseok.hwpx	1
 task2097/none_table_declared_fits.hwpx	1
 task2097/rowbreak_midpage_declared_fits.hwpx	1
 task2105/rowbreak_table_declared_fits.hwpx	1
@@ -216,7 +233,7 @@ task3307/issue3307_outline_number.hwpx	2
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	1
 한글문서파일형식_5.0_revision1.3.hwp	8
 # New fixture: devel 37bd46a72f9fd9ffd709e35244df79c00e789780 measured count; no existing ceiling raised.
-issue6924/148751598-briefing.hwp	1
+issue6924/148751598-briefing.hwp	0
 # #6973 신규 공개 샘플: 이 PR 이 추가한 fixture 의 측정값이다. 수정 전에도 같은 1건이었고
 # (초과 108.9px) 수정 뒤 17.7px 로 줄었다 — 이 래칫은 px 이 아니라 노드 수를 세므로 개선이
 # 이 행에 나타나지 않는다. 남는 17.7px 은 #6923(예산 대 실측) 축이다. 기존 상한은 올리지 않았다.
