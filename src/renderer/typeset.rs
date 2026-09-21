@@ -4106,6 +4106,44 @@ fn stored_vpos_restarts_near_body_top(para: &Paragraph) -> bool {
         .is_some_and(|s| s.vertical_pos <= 5000)
 }
 
+/// 저장 되감김 **직전 자리**가 지금 조판 위치와 같은가 — 그 쪽 경계가 이 쪽의 경계인가.
+///
+/// `stored_vpos_rewind_break` 의 기존 관문은 "쪽이 90% 이상 찼는가"(`STORED_VPOS_REWIND_MIN_FILL`)
+/// 다. 그런데 한글은 **덜 찬 쪽도** 끊는다 — 다음 블록(그림·표)이 남은 여백에 안 들어가면
+/// 그렇다. 그 결정이 바로 저장 사다리의 되감김이고, 채움률 관문이 그걸 막는다.
+///
+/// 채움률 대신 **위치 일치**를 본다. 되감김 직전 문단의 저장 끝(`vpos + line_height +
+/// line_spacing`)이 지금 흐름 위치와 한 줄 안에서 같으면, 사다리가 말한 그 경계가 지금
+/// 이 자리다. 어긋나면 사다리의 그 쪽과 지금 쪽이 다른 쪽이므로 경계를 빌려 쓰면 안 된다.
+///
+/// 1480000-201900042 실측(96dpi):
+///
+/// ```text
+///   pi=132 저장끝 496.3px  →  pi=133(vpos 600) 조판 481.6px   Δ  14.7px  ← 같은 자리
+///   pi=202 저장끝 886.3px  →  pi=203(vpos 600) 조판  12.8px   Δ 873.5px  ← 다른 쪽
+/// ```
+///
+/// 앞쪽은 한/글도 거기서 끊고(정본 14쪽이 `최종안 제시 및 보고 자료` 로 시작), 뒤쪽은
+/// 한/글이 쪽 중간에 둔다. 허용치는 그 문단 자신의 줄 전진폭이라 글꼴·크기에 따라 같이 큰다.
+fn stored_rewind_boundary_matches_current_flow(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    current_height_px: f64,
+    dpi: f64,
+) -> bool {
+    let Some(prev_seg) = paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rev()
+        .find_map(|p| p.line_segs.iter().rev().find(|s| !is_synthetic_line_seg(s)))
+    else {
+        return false;
+    };
+    let advance_hu = prev_seg.line_height.saturating_add(prev_seg.line_spacing);
+    let stored_end_px = hwpunit_to_px(prev_seg.vertical_pos.saturating_add(advance_hu), dpi);
+    let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi);
+    (current_height_px - stored_end_px).abs() <= tolerance_px
+}
+
 /// 값이 있는 가장 가까운 앞 문단의 마지막 저장 `vpos` — 직전 문단이 비어 line_segs 가
 /// 없을 수 있다.
 fn preceding_stored_vpos(paragraphs: &[Paragraph], para_idx: usize) -> Option<i32> {
@@ -18517,8 +18555,19 @@ impl TypesetEngine {
                 .iter()
                 .any(|it| page_item_para_index(it) == Some(para_idx))
             && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
+        // [#6761] 채움률 관문만으로는 "덜 찼는데 한글이 끊은 쪽"을 놓친다. 되감김이
+        // **쪽 위쪽 띠에서 다시 시작**하고 되감김 직전 자리가 지금 흐름 위치와 같으면,
+        // 사다리가 적은 그 쪽 경계가 지금 이 자리다 — 채움률과 무관하게 인정한다.
+        let stored_rewind_at_matching_flow_position = stored_vpos_restarts_near_body_top(para)
+            && stored_rewind_boundary_matches_current_flow(
+                paragraphs,
+                para_idx,
+                page_occupied_height,
+                self.dpi,
+            );
         let stored_vpos_rewind_break = stored_vpos_rewind_base
-            && page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL;
+            && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
+                || stored_rewind_at_matching_flow_position);
         // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
         // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
         // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).

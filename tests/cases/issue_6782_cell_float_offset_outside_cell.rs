@@ -38,6 +38,20 @@
 //! vpos 가 0이라 같은 폴백 갈래로 오는데 `-1,079HU`(14.4px)는 **적용되는 것이 정답**이고
 //! `issue_5734_cell_float_stack_stored_vpos` 가 그 값을 잠근다. 여기서는 같은 쪽의 **다른
 //! 그림 10장**이 자기 칸 안에 그대로 남는지로 그 축을 함께 잠근다.
+//!
+//! ## [#6761] 쪽 번호가 하나 밀렸다 — 기하 계약은 그대로다
+//!
+//! 이 fixture 는 `#6761` 이 다루는 바로 그 문서다. `#6761` 수정은 저장 사다리가 적어 둔
+//! 쪽 경계 하나를 복원한다 — 한/글 정본 14쪽(`최종안 제시 및 보고 자료: Design B 최종 제안
+//! 및 결정`)을 rhwp 가 13쪽에 얹고 있었다. 그 쪽이 제자리로 가면서 **뒤쪽 전부가 +1** 밀렸다.
+//!
+//! 그래서 이 파일의 `PAGE_INDEX` 를 76 → 77 로, `page_count` 를 104 → 105 로 옮긴다.
+//! **검사 항목은 하나도 완화하지 않았다** — 칸 안 그림 11개, `row4/col3` 의 CCC, 한/글
+//! 2020 기준 `y = 235.9 ± 3.0` 이 새 쪽 번호에서 그대로 성립한다(실측 `y = 238.7`).
+//!
+//! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
+//! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
+//! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -46,7 +60,7 @@ use rhwp::wasm_api::HwpDocument;
 const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp";
 
 /// 0-based — 대상 그림이 있는 물리 77쪽(한/글 2020 정본도 같은 인덱스).
-const PAGE_INDEX: u32 = 76;
+const PAGE_INDEX: u32 = 77;
 const PAGE_HEIGHT_PX: f64 = 1122.5;
 const TOLERANCE_PX: f64 = 1.0;
 
@@ -96,7 +110,11 @@ fn page_cell_images() -> Vec<CellImage> {
     let bytes = std::fs::read(&path)
         .unwrap_or_else(|error| panic!("#6782 공개 fixture 읽기 {}: {error}", path.display()));
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
-    assert_eq!(document.page_count(), 104, "쪽수는 104쪽이어야 한다");
+    assert_eq!(
+        document.page_count(),
+        105,
+        "쪽수는 105쪽이어야 한다 (#6761 로 정본 14쪽이 복원됐다)"
+    );
     let tree = document
         .build_page_render_tree(PAGE_INDEX)
         .expect("render p77");
@@ -212,7 +230,7 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
     let bytes = std::fs::read(&original_path)
         .unwrap_or_else(|error| panic!("전체 원본 읽기 {}: {error}", original_path.display()));
     let original = HwpDocument::from_bytes(&bytes).expect("parse full original");
-    assert_eq!(original.page_count(), 104);
+    assert_eq!(original.page_count(), 105);
     let tree = original
         .build_page_render_tree(PAGE_INDEX)
         .expect("render full original p77");
