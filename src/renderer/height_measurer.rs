@@ -1393,17 +1393,7 @@ impl HeightMeasurer {
                 .enumerate()
                 .map(|(line_idx, line)| {
                     let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
-                    let max_fs = line
-                        .runs
-                        .iter()
-                        .map(|r| {
-                            styles
-                                .char_styles
-                                .get(r.char_style_id as usize)
-                                .map(|cs| cs.font_size)
-                                .unwrap_or(0.0)
-                        })
-                        .fold(0.0f64, f64::max);
+                    let max_fs = crate::renderer::composed_line_max_font_size(line, para, styles);
                     // [Task #1042 Stage 6c] line_segs.empty path (raw_lh < max_fs) 의 lh/ls
                     // 분해 — HWP3/HWP5 line_segs 의 (line_height=base, line_spacing=extra)
                     // 의미와 정합. 종전 처럼 ls_val/100 전체를 line_height 에 baking 하면
@@ -1440,8 +1430,37 @@ impl HeightMeasurer {
                         )
                         .map(|flow| flow.extra_rows)
                         .unwrap_or(0);
+                    let line_has_as_char_object = comp.inline_controls.iter().any(|control| {
+                        control.line_index == line_idx
+                            && matches!(
+                                control.control_type,
+                                crate::renderer::composer::InlineControlType::Table
+                                    | crate::renderer::composer::InlineControlType::Shape
+                            )
+                    });
+                    let flow_floor = if line_has_as_char_object {
+                        max_fs.max(lh)
+                    } else {
+                        max_fs
+                    };
+                    let flow_lh = para
+                        .line_segs
+                        .get(line_idx)
+                        .zip(para.line_segs.get(line_idx + 1))
+                        .and_then(|(current, next)| {
+                            crate::renderer::stored_line_flow_height(
+                                current,
+                                next,
+                                lh,
+                                line_spacing_px,
+                                flow_floor,
+                                self.dpi,
+                                false,
+                            )
+                        })
+                        .unwrap_or(lh);
                     (
-                        lh + extra_rows as f64 * (lh + line_spacing_px),
+                        flow_lh + extra_rows as f64 * (lh + line_spacing_px),
                         line_spacing_px,
                     )
                 })

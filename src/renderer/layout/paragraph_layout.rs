@@ -5483,17 +5483,9 @@ impl LayoutEngine {
             // 높이가 저장 `lh` 그대로일 것 — 재조판된 상자에 저장 전진을 섞으면 사다리도
             // 상자도 아닌 값이 된다. ③ 전진이 실제 글자(`max_fs`)를 담을 것 — HWP3 변환본
             // 처럼 낡은 값이면 다음 줄이 글자 위로 올라온다(hwp3-empty-cell 겹침 1건).
-            let stored_line_advance = para.filter(|_| !source_metrics_reflowed).and_then(|p| {
+            let stored_line_advance = para.and_then(|p| {
                 let seg = p.line_segs.get(line_idx)?;
                 let next = p.line_segs.get(line_idx + 1)?;
-                if (hwpunit_to_px(seg.line_height, self.dpi) - line_height).abs() >= 0.5 {
-                    return None;
-                }
-                if seg.vertical_pos < 0 || next.vertical_pos <= seg.vertical_pos {
-                    return None;
-                }
-                let step =
-                    hwpunit_to_px(next.vertical_pos - seg.vertical_pos, self.dpi) - line_spacing_px;
                 // [#6928] 줄 바닥은 **글자 높이**(`max_fs`)로 지켜 왔는데, 글자처럼 취급
                 // 개체(그림·표)가 줄 높이를 정하는 줄에는 글리프가 없어 `max_fs` 가 0 이다.
                 // 그래서 저장 사다리가 주는 작은 걸음이 무방비로 통과하고, 뒤 내용이 그
@@ -5515,10 +5507,15 @@ impl LayoutEngine {
                 } else {
                     max_fs
                 };
-                (step > 0.0
-                    && step < line_height
-                    && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
-                    .then_some(step)
+                crate::renderer::stored_line_flow_height(
+                    seg,
+                    next,
+                    line_height,
+                    line_spacing_px,
+                    flow_floor,
+                    self.dpi,
+                    source_metrics_reflowed,
+                )
             });
             let flow_step = stored_line_advance.unwrap_or(line_height);
             let line_flow_height =
