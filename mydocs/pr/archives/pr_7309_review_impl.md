@@ -24,7 +24,7 @@ last_verified: 2026-09-21
    갱신하지 않았으므로 `@types/chrome 0.3.0`과 `puppeteer-core 25.11.0` 및 그 각각의 lockfile node를
    함께 유지했다. `npm ci --ignore-scripts`로 결합 lockfile을 설치해 확인했다.
 4. #7308까지 적용한 결과의 merge-tree와 `git diff --check`가 통과했다.
-5. code candidate의 Full CI 성공 뒤 review 기록만 single-parent trailing commit으로 추가한다.
+5. code candidate의 Full CI 성공 뒤 review·implementation·오늘할일 기록을 code 변경과 분리한 trailing commit으로 추가한다.
 
 ## 검증 단계
 

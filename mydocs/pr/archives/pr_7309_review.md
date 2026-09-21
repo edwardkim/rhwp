@@ -89,6 +89,6 @@ license 미동의로 linker가 시작 전에 exit 69를 반환해 수용 근거�
 - 근거: 8개 원 PR의 exact head를 최신 `upstream/devel` 위에 provenance를 남겨 적용했다. 유일한
   통합 충돌은 두 Studio dependency 갱신을 모두 보존한 lockfile로 해소했고, 각 package의 설치·빌드·행동
   경계와 Windows Rust lockfile 해석을 확인했다. code candidate `6f709298c`의 Full CI도 성공했다.
-- merge 전 조건: 이 review/implementation trailing commit을 포함한 최신 PR head의 required CI 성공,
+- merge 전 조건: review·implementation·오늘할일 trailing commit을 포함한 최신 PR head의 required CI 성공,
   `MERGEABLE`/`CLEAN` 재확인, 작업지시자의 merge 승인.
 - 이 문서는 self-review 기록이며 GitHub approve, 원 PR close/comment 또는 merge를 수행하지 않는다.
