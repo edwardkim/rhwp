@@ -18,10 +18,14 @@
 //!
 //! ## 기대값의 독립 근거
 //!
-//! 한컴 정본 PDF(MCP engine 2024 / `13.0.0.3901` 변환, 763쪽 — rhwp 쪽수와 동일,
-//! sha256 `1b04b75be86572625034f283dc24cbf08a33c4f19dabd8d3b4c062fbdf917bf4`, 90.8MB 라
-//! 저장소에 넣지 않는다 — 아래 수치가 그 PDF 에서 읽은 전부다)의 489쪽
-//! 낱말 상자를 `pdftotext -bbox` 로 재면 ASCII 전진폭이 em 의 절반이다(9pt → em 12px).
+//! 한컴 정본 PDF는 저장소의 `pdf/pr7268/` 분할본 세 개로 보존한다. MCP engine 2024 /
+//! `13.0.0.3901` 변환 763쪽 원본의 SHA-256은
+//! `92b6625272c34db068a2ae273449c76caac008ce77ce46c9e228b4546b2aad76`이며, 생성·분할
+//! provenance는 `mydocs/pr/archives/pr_7268_review.md`에 있다. 이 문서 489쪽은
+//! `pdf/pr7268/hwp3-sample10-hwp5-p301-600-2024.pdf`의 189쪽이다(분할본 SHA-256
+//! `ee223ef5a83e1349ed24af1a56fc3c786221df6c0f45c0100d65acd64d824e25`). 그 쪽의 낱말
+//! 상자를 `pdftotext -f 189 -l 189 -bbox`로 재면 ASCII 전진폭이 em의 절반이다
+//! (9pt → em 12px).
 //!
 //! ```text
 //!   'TABLESPACE(ROLLBACK_DATA),'        26자  156.64px  자당 6.025px = 0.502 em

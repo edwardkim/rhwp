@@ -1216,8 +1216,10 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         // 글리프를 한글 em 의 절반 폭으로 그린다. rhwp 는 이 글꼴을 TTF(`명조`→`HY견명조`)로
         // 치환한 뒤 **치환 글꼴의 비례 폭**을 그대로 쓰므로 ASCII 가 42% 넓어진다.
         //
-        // 한컴 정본(`pdf` 미보존 — MCP engine 2024 / 13.0.0.3901 변환, 763쪽)의
-        // `samples/hwp3-sample10-hwp5.hwp` 489쪽 실측이 값을 말한다(9pt, em=12px):
+        // 한컴 정본은 `pdf/pr7268/`의 추적 분할본으로 보존한다(MCP engine 2024 /
+        // 13.0.0.3901, 763쪽). `hwp3-sample10-hwp5-p301-600-2024.pdf`의 189쪽은
+        // 이 문서의 489쪽이며, 생성·분할 provenance는 `mydocs/pr/archives/pr_7268_review.md`에
+        // 있다. 그 쪽 실측이 값을 말한다(9pt, em=12px):
         //
         // ```text
         //   'TABLESPACE(ROLLBACK_DATA),'          26자  156.64px  자당 6.025  = 0.502 em
