@@ -1025,8 +1025,8 @@ function setupZoomControls(): void {
   const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
   const platform = detectPlatformKind();
 
-  zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
-  zoomOut.title = zoomPercentShortcutTitle('축소', 'Ctrl+-', platform);
+  zoomIn.title = zoomPercentShortcutTitle('zoomIn', 'Ctrl++', platform);
+  zoomOut.title = zoomPercentShortcutTitle('zoomOut', 'Ctrl+-', platform);
   zoomIn.addEventListener('click', () => {
     dispatcher.dispatch('view:zoom-in');
   });

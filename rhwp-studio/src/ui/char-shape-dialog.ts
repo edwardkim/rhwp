@@ -33,7 +33,7 @@ import { getLocalFonts } from '@/core/local-fonts';
 import { enableDialogDrag } from './dialog-drag';
 
 import { t as i18nText } from '../i18n/index.ts';
-const LANG_NAMES = ['대표', '한글', '영문', '한자', '일어', '외국어', '기호', '사용자'];
+const LANG_NAMES = [i18nText('dialog.charShape.label'), i18nText('dialog.charShape.label.x885288'), i18nText('dialog.charShape.label.x8a6f8c'), i18nText('dialog.charShape.label.xd19d19'), i18nText('dialog.charShape.label.xfeeb82'), i18nText('dialog.charShape.label.x6a36a4'), i18nText('dialog.charShape.label.x35b98e'), i18nText('dialog.charShape.label.x2f0255')];
 
 /** 웹폰트 + 로컬 글꼴을 합친 목록 (정렬됨) */
 function buildFontList(): string[] {
@@ -449,7 +449,7 @@ export class CharShapeDialog {
     const radioRow = this.row();
     this.shadowRadios = [];
     const shadowOpts: [string, string, string][] = [
-      ['0', '없음(N)', 'N'], ['1', '비연속(U)', 'U'], ['2', '연속(T)', 'T'],
+      ['0', i18nText('dialog.charShape.buildExtendedPanel.label.x3515a5'), 'N'], ['1', i18nText('dialog.charShape.buildExtendedPanel.label.xb20bd5'), 'U'], ['2', i18nText('dialog.charShape.buildExtendedPanel.label.xb5bc99'), 'T'],
     ];
     shadowOpts.forEach(([val, lbl, key]) => {
       const lb = document.createElement('label');

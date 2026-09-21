@@ -104,10 +104,10 @@ export class LocalFontsModal {
     summary.style.fontSize = '13px';
     summary.style.color = 'var(--color-text-secondary)';
     const rows: Array<[string, number]> = [
-      ['사용 가능', this.report.summary.available],
-      ['로컬 확인 필요', this.report.summary.needsLocalCheck],
-      ['대체 글꼴 사용', this.report.summary.webSubstitute],
-      ['누락', this.report.summary.missing],
+      [t('dialog.localFontsModal.build.label'), this.report.summary.available],
+      [t('dialog.localFontsModal.build.label.x65a9e1'), this.report.summary.needsLocalCheck],
+      [t('dialog.localFontsModal.build.label.x5e6b16'), this.report.summary.webSubstitute],
+      [t('dialog.localFontsModal.build.label.x2caa28'), this.report.summary.missing],
     ];
     for (const [label, count] of rows) {
       if (count === 0) continue;
