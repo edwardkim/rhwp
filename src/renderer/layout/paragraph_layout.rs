@@ -2305,6 +2305,14 @@ impl LayoutEngine {
         if declared <= 0 {
             return false;
         }
+        // 이 헬퍼에는 control 위치가 전달되지 않는다. 저장 밴드가 첫 줄이라는 사실만으로
+        // 문단 안의 모든 TAC 표가 그 줄을 소유한다고 확대하면, 뒤 segment의 표까지
+        // 줄바꿈을 건너뛰게 된다. 단일 segment에서는 그 소유 관계가 자명하고, 다중
+        // segment는 control별 line-seg 조회가 가능한 별도 경로가 생길 때까지 종전 배치를
+        // 유지한다.
+        if para.line_segs.len() != 1 {
+            return false;
+        }
         let Some(ls) = para.line_segs.first() else {
             return false;
         };
