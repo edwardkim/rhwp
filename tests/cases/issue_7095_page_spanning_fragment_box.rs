@@ -385,3 +385,126 @@ fn stored_midpage_cut_keeps_its_last_source_unit() {
         );
     }
 }
+
+/// 쪽 트리에서 `prefix` 로 시작하는 글줄(공백 무시)의 기준선 y.
+fn line_baseline(nodes: &[RenderNode], prefix: &str) -> Option<f64> {
+    let key: String = prefix.chars().filter(|c| !c.is_whitespace()).collect();
+    nodes.iter().find_map(|line| {
+        if !matches!(line.node_type, RenderNodeType::TextLine(_)) {
+            return None;
+        }
+        let runs: Vec<_> = line
+            .children
+            .iter()
+            .filter_map(|child| match &child.node_type {
+                RenderNodeType::TextRun(run) => Some((child.bbox, run)),
+                _ => None,
+            })
+            .collect();
+        let text: String = runs
+            .iter()
+            .flat_map(|(_, run)| run.text.chars())
+            .filter(|c| !c.is_whitespace())
+            .collect();
+        if !text.starts_with(&key) {
+            return None;
+        }
+        runs.first().map(|(bbox, run)| bbox.y + run.baseline)
+    })
+}
+
+#[test]
+fn issue_7095_pinned_fragment_centres_its_own_content_in_the_box() {
+    // 쪽이 정한 비끝 조각 상자(47.2..1043.7) 안에서 칸(`valign=Center`)의 내용은 **그 조각의
+    // 내용 높이**로 가운데 정렬된다. 정본 3~9쪽의 줄은 모두 `칸 내용 위 + 저장 vpos` 에 쪽별
+    // 상수 하나를 더한 자리에 있고(쪽 안 편차 0.6px 이하), 그 상수가 `(상자 안 높이 − 조각
+    // 내용 높이) / 2` 와 맞는다. 조각 내용은 꼬리 빈 문단의 줄 상자까지 센다(4·5·6쪽).
+    //
+    // 기대값은 한/글 2020 정본 PDF 의 글줄 기준선이다(PyMuPDF span origin, 96dpi, 쪽 척도
+    // 841/841.88 을 걷은 값). 수정 전 rhwp 는 내용을 상자 위에 붙여 첫 줄이 4쪽 13.8 ·
+    // 6쪽 3.9 · 7쪽 7.6 · 9쪽 5.4px 위에 있었다. 5·8쪽은 내용이 상자를 거의 채워 여유가
+    // 1px 안팎이라 수정 전에도 맞는 대조군이다.
+    let core = load();
+    //
+    // 2·3쪽은 표 host(p18, 저장 LINE_SEG 없음) 뒤 빈 문단 p19 의 저장 되감김(vpos 0)이 한/글
+    // 쪽 경계다. 그 되감김을 못 알아보면 p19 가 2쪽 끝에 남아 2쪽은 4.3px, 3쪽은 7.0px 어긋난다.
+    let cases: [(u32, &str, f64, &str, f64); 8] = [
+        (1, "◈금융지주가", 175.70, "중장기 과제는", 1025.07),
+        (
+            2,
+            "업무위탁과 겸직 관련",
+            93.06,
+            "* 금융지주그룹 소속",
+            1036.60,
+        ),
+        (
+            3,
+            "❶은행대출이 어려운",
+            92.74,
+            "* (현행) 59개 금융업무",
+            1005.69,
+        ),
+        (4, "①핵심업무(28개", 66.47, "사전에 겸직승인을", 1021.55),
+        (5, "그룹내 정보공유와", 78.16, "②이용기간 적정성의", 1005.21),
+        (
+            6,
+            "(6) 고객정보 제공내역",
+            74.80,
+            "대출을 상환하거나",
+            1014.50,
+        ),
+        (
+            7,
+            "□자회사등이 해외법인에",
+            78.96,
+            "* 영국, 미국, 호주",
+            1039.17,
+        ),
+        (
+            8,
+            "신사업 진출 및 투자",
+            93.22,
+            "보유할 수 없기 때문에",
+            1035.32,
+        ),
+    ];
+    for (page, first, first_pdf, last, last_pdf) in cases {
+        let nodes = page_nodes(&core, page);
+        for (label, prefix, expected) in [("첫", first, first_pdf), ("끝", last, last_pdf)] {
+            let actual = line_baseline(&nodes, prefix)
+                .unwrap_or_else(|| panic!("{}쪽 {label} 줄 `{prefix}`", page + 1));
+            assert!(
+                (actual - expected).abs() < 1.5,
+                "#7095: {}쪽 {label} 줄 `{prefix}` 기준선은 정본 {expected:.2} 이어야 한다: {actual:.2}",
+                page + 1
+            );
+        }
+    }
+}
+
+#[test]
+fn issue_7095_stale_cell_height_keeps_content_fitted_box_top_anchored() {
+    // 반례: 1382000 `pi=90` 은 칸 `valign=Center` 이지만 저장 칸 높이가 282HU(칸 여백뿐)다.
+    // 한/글은 분할 칸의 저장 높이를 조각 상자 높이의 합으로 적는데(`pi=95` 4335px ↔ 정본 합
+    // 4338px), 이 칸은 그렇지 않고 정본 16~19쪽 상자도 모두 내용에 맞춘다(아래 977·980·970·897).
+    // 정본 17쪽 칸 내용은 상자 위 3px 에서 시작한다. 쪽 상자로 늘린 뒤 가운데 정렬하면 14px 내려간다.
+    let core = load_sample("samples/task2430/1382000_domestic_violence_survey.hwp");
+    let nodes = page_nodes(&core, 16);
+    let cell = nodes
+        .iter()
+        .filter(|n| matches!(n.node_type, RenderNodeType::TableCell(_)))
+        .max_by(|a, b| a.bbox.height.total_cmp(&b.bbox.height))
+        .expect("17쪽 1×1 조각 칸")
+        .bbox;
+    let first_line = nodes
+        .iter()
+        .filter(|n| matches!(n.node_type, RenderNodeType::TextLine(_)))
+        .filter(|n| n.bbox.y >= cell.y - 0.5)
+        .map(|n| n.bbox.y)
+        .fold(f64::INFINITY, f64::min);
+    assert!(
+        first_line - cell.y < 4.0,
+        "#7095: 저장 높이가 쪽을 덮지 않는 칸은 내용을 상자 위에 둔다: cell_y={:.1} first_line={first_line:.1}",
+        cell.y
+    );
+}
