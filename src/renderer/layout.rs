@@ -11855,10 +11855,10 @@ impl LayoutEngine {
                 })
         });
         // #7333: 글앞 장식 도형 뒤의 TAC 화면표는 도형이 붙은 첫 저장 줄이 아니라
-        // 표 제어문자가 놓인 줄의 `vpos`에서 시작한다. 같은 host를 뒤늦게 그리는
-        // 도형 pass도 `para_start_y`를 읽으므로, 흐름 cursor와 host 원점을 함께
-        // 옮겨야 도형·표가 서로 어긋나지 않는다. 표 줄이 실제 table frame을 품는
-        // 경우에만 채택해 #4622의 가시 개체 이중 가산 반증을 피한다.
+        // 표 제어문자가 놓인 줄의 `vpos`에서 시작한다. 앞선 글앞 도형은 첫 저장 줄을
+        // 기준으로 별도 배치하므로 문단 원점(`para_start_y`)은 그대로 두고 표만
+        // 소유 줄로 내린다. 표 줄이 실제 table frame을 품는 경우에만 채택해 #4622의
+        // 가시 개체 이중 가산 반증을 피한다.
         let tac_in_front_decoration_line_shift = paragraphs.get(para_index).and_then(|para| {
             let Control::Table(table) = para.controls.get(control_index)? else {
                 return None;
@@ -11882,6 +11882,7 @@ impl LayoutEngine {
                 .saturating_sub(table.outer_margin_top as i32);
             (delta_hu > 0).then(|| hwpunit_to_px(delta_hu as i32, self.dpi))
         });
+        let y_offset_before_tac_in_front_decoration_shift = y_offset;
         if let Some(shift) = tac_in_front_decoration_line_shift {
             y_offset += shift;
         }
@@ -11890,13 +11891,25 @@ impl LayoutEngine {
             // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
             para_start_y.insert(para_index, anchor_y);
         } else if let Some(existing_y) = para_start_y.get(&para_index) {
-            if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
+            if tac_in_front_decoration_line_shift.is_none()
+                && is_current_tac
+                && y_offset > *existing_y + 1.0
+                && !tac_line_fits_above_offset_float
+            {
                 para_start_y.insert(para_index, y_offset);
             }
         } else {
-            para_start_y.insert(para_index, y_offset);
+            para_start_y.insert(
+                para_index,
+                tac_in_front_decoration_line_shift
+                    .map(|_| y_offset_before_tac_in_front_decoration_shift)
+                    .unwrap_or(y_offset),
+            );
         }
         let mut para_y_for_table = *para_start_y.get(&para_index).unwrap_or(&y_offset);
+        if let Some(shift) = tac_in_front_decoration_line_shift {
+            para_y_for_table += shift;
+        }
         if let Some(para) = paragraphs.get(para_index) {
             let is_tac = para
                 .controls

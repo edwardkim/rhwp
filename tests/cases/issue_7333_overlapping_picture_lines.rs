@@ -26,6 +26,26 @@ fn find_table(node: &serde_json::Value, para_index: u64) -> Option<(f64, f64)> {
         .find_map(|child| find_table(child, para_index))
 }
 
+fn rectangles(node: &serde_json::Value, out: &mut Vec<(f64, f64, f64, f64)>) {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Rect") {
+        if let Some(bbox) = node.get("bbox") {
+            if let (Some(x), Some(y), Some(width), Some(height)) = (
+                bbox.get("x").and_then(|value| value.as_f64()),
+                bbox.get("y").and_then(|value| value.as_f64()),
+                bbox.get("w").and_then(|value| value.as_f64()),
+                bbox.get("h").and_then(|value| value.as_f64()),
+            ) {
+                out.push((x, y, width, height));
+            }
+        }
+    }
+    if let Some(children) = node.get("children").and_then(|value| value.as_array()) {
+        for child in children {
+            rectangles(child, out);
+        }
+    }
+}
+
 #[test]
 fn overlapping_picture_lines_occupy_one_declared_table_frame() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -96,5 +116,17 @@ fn in_front_decoration_keeps_character_table_on_its_saved_line() {
     assert!(
         (height - 426.4).abs() < 1.0,
         "pi=220 표 높이={height:.1}px — 스크린샷 frame 높이를 유지해야 한다"
+    );
+
+    let mut rects = Vec::new();
+    rectangles(&tree, &mut rects);
+    let callout = rects
+        .iter()
+        .find(|(_, _, width, height)| (width - 22.9).abs() < 0.5 && (height - 21.3).abs() < 0.5)
+        .expect("14쪽 번호 1 사각형 주석");
+    assert!(
+        (callout.1 - 353.9).abs() < 1.0,
+        "pi=220 번호 1 주석 y={:.1}px — 주석은 첫 저장 줄에 남아야 한다",
+        callout.1
     );
 }
