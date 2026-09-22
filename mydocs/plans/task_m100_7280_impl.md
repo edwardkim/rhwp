@@ -148,6 +148,11 @@
   컷 복사·측정·누적 순서를 보존했다. 고정 제품 `cfbff473f`에서 정책·fmt·native Clippy와
   기존 집중 계약 368건 통과. 일반 행/rowspan 끝행·스캔 상태/continuation과 R3 통합 검증은 남아 있다.
 
+- 최신 절편: [Stage47 R3f 행 요구 높이·rowspan 잔여 밴드 Query 분리·집중 검증 완료](../working/task_m100_7280_stage47.md).
+  `table/scan/row.rs`로 두 행 경로의 공통 요구 높이와 밴드 조회를 분리하고 실제 컷·예약·
+  진단 순서를 보존했다. 고정 제품 `c8436d6b5`에서 정책·fmt·native Clippy와 기존 집중 계약
+  380건 통과. 일반 행의 저장 프레임/fit·가로 용지/행 내부 컷·continuation 및 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -199,6 +204,7 @@ renderer/typeset/
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/scan/block_fit.rs            블록 컷의 저장 완결 밴드·분할 허용·재시도 조회
   table/scan/block_fragment.rs       채택한 컷의 끝 행·점유 높이 조회, 부모 상태 반영과 분리
+  table/scan/row.rs                  일반/rowspan 행 요구 높이·잔여 밴드 컷/표시 높이 조회
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
