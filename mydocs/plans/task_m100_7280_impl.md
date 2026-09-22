@@ -127,6 +127,11 @@
   고정 제품 `17a378136f`에서 정책·fmt·native Clippy와 기존 집중 계약 352건 통과.
   host 간격/결과 조립·행 스캔/분할·continuation 본체와 R3 통합 검증은 후속에 남아 있다.
 
+- 최신 절편: [Stage43 R3b 표 호스트 간격 Query·포맷 조립 분리·집중 검증 완료](../working/task_m100_7280_stage43.md).
+  `table::format`과 `table/host_spacing.rs`로 읽기 전용 준비를 분리하고 흐름/fit 간격 및
+  측정 clone·각주 수집 순서를 보존했다. 고정 제품 `1f3a8c1e4`에서 정책·fmt·native Clippy와
+  기존 집중 계약 353건 통과. 행 스캔/분할·continuation 본체와 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -174,6 +179,7 @@ renderer/typeset/
   controls/wrap_flow.rs               후속 어울림의 매칭·흡수·꼬리 배치 Query/Command 연결
   controls/deferred_picture.rs        다음 쪽 Square 그림 소유 후보·연속 저장 밴드 문단 조회
   table.rs                           표 진입·준비와 기존 결과 타입
+  table/host_spacing.rs              표 소유 문단의 흐름/fit 간격과 strict 후속 fit 조회
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
