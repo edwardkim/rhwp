@@ -52,6 +52,17 @@
 //! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
 //! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
 //! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
+//!
+//! ## [#6761 후속] 빈 조각 쪽이 사라져 쪽수가 105 → 104 다
+//!
+//! 같은 이슈의 개체 칸 회계 수정(`빈 개체 줄을 그림 위에 쌓지 않는다`)으로 이 문서의
+//! `<표 4-1> 국내외 유사 마크 현황` 이 한 쪽에 들어간다. 수정 전에는 마지막 `덴마크` 행의
+//! 그림만 이어받는 **여분 쪽**이 78쪽 뒤에 끼어 있었다. 정본은 그 표를 55쪽 한 장에 담는다.
+//!
+//! - `PAGE_INDEX`(77) 는 그대로다 — 없어진 쪽은 그 **뒤**(0-기반 78)였다.
+//! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
+//! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
+//!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -112,8 +123,8 @@ fn page_cell_images() -> Vec<CellImage> {
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
     assert_eq!(
         document.page_count(),
-        105,
-        "쪽수는 105쪽이어야 한다 (#6761 로 정본 14쪽이 복원됐다)"
+        104,
+        "쪽수는 104쪽이어야 한다 (#6761 후속: 빈 조각 쪽이 사라졌다)"
     );
     let tree = document
         .build_page_render_tree(PAGE_INDEX)
@@ -141,13 +152,13 @@ fn target(images: &[CellImage]) -> CellImage {
 
 /// 표본 고정 — 대상이 통째로 사라지면 여기서 먼저 걸린다.
 #[test]
-fn the_page_still_holds_all_eleven_cell_images() {
+fn the_page_still_holds_all_twelve_cell_images() {
     let images = page_cell_images();
     assert_eq!(
         images.len(),
-        11,
-        "77쪽 표의 칸 안 그림은 11장이어야 한다 — 종전 시험은 `>= 10` 이라 \
-         대상 한 장이 없어져도 통과했다. got {}",
+        12,
+        "77쪽 표의 칸 안 그림은 12장이어야 한다 (정본 55쪽도 12장) — 종전 시험은 `>= 10` \
+         이라 대상 한 장이 없어져도 통과했다. got {}",
         images.len()
     );
 }
@@ -196,7 +207,7 @@ fn the_target_image_sits_inside_its_own_cell_at_the_hangul_position() {
 /// 같은 쪽·같은 표·같은 폴백 갈래인데 오프셋 결과가 칸 안에 남으므로 그대로 적용돼야 한다.
 /// 「음수면 0」이나 「결과 바닥을 칸 상단으로」 같은 넓은 판으로 바꾸면 여기가 깨진다.
 #[test]
-fn the_other_ten_images_keep_their_offsets() {
+fn the_other_eleven_images_keep_their_offsets() {
     let images = page_cell_images();
     let (.., (_, target_y, ..)) = target(&images);
 
@@ -204,7 +215,7 @@ fn the_other_ten_images_keep_their_offsets() {
         .iter()
         .filter(|(.., (_, y, ..))| (y - target_y).abs() > f64::EPSILON)
         .collect();
-    assert_eq!(others.len(), 10, "대상 외 그림은 10장이어야 한다");
+    assert_eq!(others.len(), 11, "대상 외 그림은 11장이어야 한다");
 
     for (row, col, (cell_y, cell_h), (_, image_y, _, image_h)) in &others {
         assert!(
@@ -230,7 +241,7 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
     let bytes = std::fs::read(&original_path)
         .unwrap_or_else(|error| panic!("전체 원본 읽기 {}: {error}", original_path.display()));
     let original = HwpDocument::from_bytes(&bytes).expect("parse full original");
-    assert_eq!(original.page_count(), 105);
+    assert_eq!(original.page_count(), 104);
     let tree = original
         .build_page_render_tree(PAGE_INDEX)
         .expect("render full original p77");
@@ -238,7 +249,7 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
     collect_cell_images(&tree.root, None, &mut original_images);
 
     let reduced_images = page_cell_images();
-    assert_eq!(original_images.len(), 11);
+    assert_eq!(original_images.len(), 12);
     assert_eq!(reduced_images.len(), original_images.len());
     for (index, (reduced, full)) in reduced_images.iter().zip(&original_images).enumerate() {
         assert_eq!((reduced.0, reduced.1), (full.0, full.1), "image {index}");
