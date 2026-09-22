@@ -8,6 +8,7 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(in crate::renderer::typeset) mod block_fit;
 pub(in crate::renderer::typeset) mod block_fragment;
+pub(in crate::renderer::typeset) mod landscape;
 pub(in crate::renderer::typeset) mod row;
 pub(in crate::renderer::typeset) mod source_frame;
 

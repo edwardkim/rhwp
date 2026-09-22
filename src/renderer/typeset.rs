@@ -17908,19 +17908,25 @@ impl TypesetEngine {
             // 돌린 행 — 아래 고아 가드가 이 행의 정상 컷(첫 줄 유지)을 content
             // 높이 미달로 기각해 행 통째 이월로 되돌리지 않도록 표시한다.
             let mut landscape_boundary_splittable = false;
-            let landscape_whole_row_shape = landscape_rowbreak_bleed
-                && mt.allows_row_break_split()
-                && is_continuation
-                && header_overhead > 0.0
-                && row_start_cut.is_empty()
-                && r > cursor_row
-                // [#5828] 같은 높이 행의 연속 흡수 금지는 아래 short-row 분기와
-                // 공유한다 — 균일 pitch 기계 표가 두 분기를 번갈아 타며 행을
-                // 계속 받는 것을 막는다.
-                && !bleed_absorbed_row_height
-                    .is_some_and(|prev| (prev - row_total).abs() < 0.5)
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + landscape_whole_row_tolerance;
+            let landscape_query = table::scan::landscape::LandscapeRowQuery {
+                row: &row_query,
+                row_start_cut,
+                profile: &st.profile,
+                landscape_rowbreak_bleed,
+                is_continuation,
+                header_overhead,
+                bleed_absorbed_row_height,
+                can_intra_split,
+                table_storage_declares_splits,
+                budget: table::scan::landscape::LandscapeRowBudget {
+                    consumed,
+                    cs_before,
+                    row_total,
+                    avail_for_rows,
+                },
+            };
+            let landscape_whole_row_shape =
+                landscape_query.whole_row_shape(landscape_whole_row_tolerance);
             if landscape_whole_row_shape
                 // [#6307] 행내 분할 가능한 다줄 행은 얹지 않는다 — 한컴 2022 는 이런 행을
                 // 본문 하한에서 가른다 (hwpctl_ParameterSetID p11 실측: 2줄 행
@@ -17928,9 +17934,7 @@ impl TypesetEngine {
                 // 가를 수 없는 행(단일 줄·이미지 셀)의 경계 구제만 맡고,
                 // 가를 수 있는 행은 아래 인트라-분할이 한컴처럼 첫 줄(들)만
                 // 남긴다 (landscape_boundary_band_keep).
-                && !(can_intra_split
-                    && mt.is_row_splittable(r)
-                    && !table_storage_declares_splits)
+                && !landscape_query.boundary_splittable()
             {
                 bleed_absorbed_row_height = Some(row_total);
                 consumed += cs_before + row_total;
@@ -17938,44 +17942,14 @@ impl TypesetEngine {
                 end_row = r;
                 continue;
             }
-            if landscape_rowbreak_bleed
-                && mt.allows_row_break_split()
-                && is_continuation
-                && header_overhead > 0.0
-                && row_start_cut.is_empty()
-                && r > cursor_row
-                && !rowspan_touched[r]
-                // Direct HWPX의 local reset은 physical frame이 아니다. 선언 cell 안에
-                // source frame이 완결될 때만 short-row bleed를 막아 source owner를
-                // 보존한다.
-                && !(((st.profile.hwp5_stored_pagination_layout() || st.profile.hwp5_origin_hwpx())
-                    && rowbreak_row_has_internal_saved_vpos_reset(table, r))
-                    || (st.profile.hwpx_stored_layout()
-                        && !st.profile.hwp5_origin_hwpx()
-                        && layout_engine.row_has_stored_vpos_frame_rewind(table, r)))
-                && row_total <= landscape_short_row_max_height
-                // [#5828] 이 흡수는 **경계에 걸친 행 하나**를 위한 것이다(#1672 의
-                // 의도). 종전에는 tolerance 가 누적 consumed 에 계속 적용돼 경계를
-                // 넘어선 뒤에도 행을 받았다 — 156505020 구역3(가용 604.8px)에서
-                // 쪽마다 26행(843px, 용지 +121px)을 얹어 한글 43쪽 vs rhwp 33쪽.
-                // 직전까지의 consumed 가 예산 안일 때만 이 행으로 경계를 한 번
-                // 넘고, 그 다음 행부터는 이 분기가 닫힌다(한글 실측: 쪽당 17행).
-                // [#5828] 이 흡수는 경계에 걸친 짧은 잔여 행을 위한 것이다
-                // (#1672). 종전에는 tolerance 가 누적 consumed 에 계속 적용돼 균일
-                // 32.4px 행 기계 표에서 8행을 연속 흡수했다 — 156505020 구역3:
-                // 쪽마다 26행(843px, 용지 +121px), 한글 43쪽 vs rhwp 33쪽. 한글
-                // 정합이 확인된 이종 행 문서(편람 383쪽 핀, #4763)의 연속 흡수는
-                // 전부 서로 다른 높이(38.7~280.2px)이므로, **같은 높이 행의 연속
-                // 흡수**만 막는다 — 균일 pitch 기계 표는 쪽당 1행에서 닫히고
-                // 이종 행 수동 문서의 계약은 그대로 유지된다.
-                && !bleed_absorbed_row_height
-                    .is_some_and(|prev| (prev - row_total).abs() < 0.5)
-                && consumed + cs_before + row_total
-                    <= avail_for_rows + landscape_short_row_tolerance
-            {
+            if landscape_query.short_row_shape(
+                landscape_short_row_max_height,
+                landscape_short_row_tolerance,
+                || rowbreak_row_has_internal_saved_vpos_reset(table, r),
+            ) {
                 // [#6307] 행내 분할 가능한 다줄 행은 whole-row 분기와 같은 이유로 얹지
                 // 않는다 — 한컴은 본문 하한에서 가른다 (hwpctl_ParameterSetID p11).
-                if !(can_intra_split && mt.is_row_splittable(r) && !table_storage_declares_splits) {
+                if !landscape_query.boundary_splittable() {
                     bleed_absorbed_row_height = Some(row_total);
                     consumed += cs_before + row_total;
                     r += 1;
@@ -17984,11 +17958,7 @@ impl TypesetEngine {
                 }
                 landscape_boundary_splittable = true;
             }
-            if landscape_whole_row_shape
-                && can_intra_split
-                && mt.is_row_splittable(r)
-                && !table_storage_declares_splits
-            {
+            if landscape_whole_row_shape && landscape_query.boundary_splittable() {
                 landscape_boundary_splittable = true;
             }
             if landscape_boundary_splittable && std::env::var("RHWP_DIAG_6307").is_ok() {
