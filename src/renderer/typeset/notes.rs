@@ -1,6 +1,11 @@
-//! 표 배치 뒤 각주 연결 조정.
-//! fragment 큐가 소유하지 않은 직접 셀 각주를 원래 순서로 즉시 등록한다.
-//! 각주 높이·쪽 배분과 큐 예약 알고리즘은 아직 상위 엔진에 남아 있다.
+//! 문단/표에서 참조한 각주와 구역/문서 끝 미주의 처리 경계.
+//! footnotes는 내용 측정·소유 쪽 선택, reservation은 쪽 예산 반영,
+//! endnotes는 참조 순서·준비·측정·수용 Query·배치를 담당한다.
+//! 표 fragment 큐의 수명은 table/continuation이 계속 소유한다.
+
+pub(super) mod endnotes;
+pub(super) mod footnotes;
+mod reservation;
 
 use super::TypesetState;
 use crate::model::control::Control;
