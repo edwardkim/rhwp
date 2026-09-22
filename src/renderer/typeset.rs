@@ -6530,6 +6530,7 @@ mod tests {
             source_next_positive_rewind: false,
             first_fragment_saved_offset: None,
             source_cellbreak_row_end: None,
+            next_para_stored_top: None,
             relax_terminal_table_footnote_fit: false,
         };
         let flow_layout =
