@@ -25,6 +25,10 @@
   `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
 - `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
   그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
+- `rhwp-studio` 개발 서버에서 Rust/WASM 변경을 확인할 때는 공용 target으로 `pkg/`를
+  다시 빌드한 뒤 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을 `rhwp-studio/public/`에도 복사한다.
+  SHA-256 일치와 브라우저 새로고침 뒤의 실제 동작을 확인한다. target 산출물만 만든 상태는
+  Studio 반영 검증이 아니다.
 
 ## 수정 전에 확정할 것
 
