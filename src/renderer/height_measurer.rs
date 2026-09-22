@@ -1040,6 +1040,64 @@ pub(crate) fn stored_seg_is_row_fragment(para: &Paragraph, idx: usize) -> bool {
         && cur.column_start != prev.column_start
 }
 
+/// 그림만 담은 셀에서 서로 겹쳐 기록된 저장 줄의 실제 세로 범위를 반환한다.
+///
+/// 한/글은 스크린샷을 넣은 1×1 셀에서 같은 그림 높이의 LINE_SEG를 둘 기록할 수
+/// 있다. 두 번째 줄의 vpos는 첫 그림 상자 안에 있으므로 실제로는 새 줄이 아니라
+/// 같은 그림의 후속 control 범위다. 이를 줄 수만큼 합산하면 셀과 표가 거의 두 배로
+/// 자라며, 뒤의 본문과 꼬리말이 용지 밖으로 밀린다 (#7333).
+///
+/// 텍스트가 없고, 글자처럼 취급되는 그림이 그 범위를 소유하며, 모든 저장 줄이 첫
+/// 그림 상자 안에서 서로 겹친다는 세 조건을 요구한다. 일반 다줄 셀·겹친 도형·표는
+/// 이 경로를 사용하지 않는다.
+fn object_only_tac_picture_line_extent_px(para: &Paragraph, dpi: f64) -> Option<f64> {
+    if !para.text.trim().is_empty() {
+        return None;
+    }
+
+    let picture_height = para
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Picture(picture) if picture.common.treat_as_char => {
+                Some(i64::from(picture.common.height))
+            }
+            _ => None,
+        })
+        .max()?;
+    if picture_height <= 0 {
+        return None;
+    }
+
+    let segs: Vec<&LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    let first = *segs.first()?;
+    if segs.len() < 2 || first.line_height <= 0 {
+        return None;
+    }
+
+    let first_top = i64::from(first.vertical_pos);
+    let first_bottom = first_top + i64::from(first.line_height);
+    if i64::from(first.line_height) < picture_height
+        || !segs.iter().all(|seg| {
+            let top = i64::from(seg.vertical_pos);
+            let bottom = top + i64::from(seg.line_height);
+            top >= first_top && top < first_bottom && bottom <= first_bottom + picture_height / 20
+        })
+    {
+        return None;
+    }
+
+    let bottom = segs
+        .iter()
+        .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+        .max()?;
+    Some(hwpunit_to_px((bottom - first_top) as i32, dpi))
+}
+
 impl HeightMeasurer {
     pub fn new(dpi: f64) -> Self {
         Self {
@@ -2378,6 +2436,10 @@ impl HeightMeasurer {
                                     0.0
                                 };
                                 return spacing_before + row_advance + spacing_after;
+                            }
+                            if let Some(extent) = object_only_tac_picture_line_extent_px(p, self.dpi)
+                            {
+                                return spacing_before + extent + spacing_after;
                             }
                             if comp.lines.is_empty() {
                                 // [#2169] NO_LS 순수 빈 문단 = em 줄박스 (한글 공식).
@@ -3913,6 +3975,7 @@ impl HeightMeasurer {
                     let para_count = cell.paragraphs.len();
 
                     for (pi, p) in cell.paragraphs.iter().enumerate() {
+                        let line_start = line_heights.len();
                         let comp =
                             crate::renderer::composer::compose_paragraph_in_context(p, styles);
                         let para_style = styles.para_styles.get(p.para_shape_id as usize);
@@ -4013,7 +4076,15 @@ impl HeightMeasurer {
                                 }
                                 line_heights.push(line_h);
                             }
-                            para_line_counts.push(line_count);
+                            if let Some(extent) =
+                                object_only_tac_picture_line_extent_px(p, self.dpi)
+                            {
+                                line_heights.truncate(line_start);
+                                line_heights.push(extent);
+                                para_line_counts.push(1);
+                            } else {
+                                para_line_counts.push(line_count);
+                            }
                         }
                     }
 

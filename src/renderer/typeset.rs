@@ -2517,7 +2517,10 @@ fn stored_rewind_boundary_matches_current_flow(
     };
     let advance_hu = prev_seg.line_height.saturating_add(prev_seg.line_spacing);
     let stored_end_px = hwpunit_to_px(prev_seg.vertical_pos.saturating_add(advance_hu), dpi);
-    let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi);
+    // 저장 줄과 실제 글꼴 측정의 차이가 한 줄보다 약간 커질 수 있다. #7333의
+    // 38→39쪽 경계는 20.8px 차이로, 한 줄 공차 16px만으로는 실제 저장 쪽 경계를 놓쳤다.
+    // 되감김과 새 쪽 상단이라는 소유 조건은 호출부에서 그대로 확인한다.
+    let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi) * 1.5;
     (current_height_px - stored_end_px).abs() <= tolerance_px
 }
 
