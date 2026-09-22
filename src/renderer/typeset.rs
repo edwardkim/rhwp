@@ -17981,36 +17981,17 @@ impl TypesetEngine {
             // `cell_units`가 fragment를 만들더라도 그 값이 1이라 atomic으로 남는다.
             // 동일 storage/physical-height gate와 실제 multi-unit 확인을 통해서만
             // 해당 행을 `advance_row_cut`에 전달한다 (76076 p81→82).
-            let terminal_single_source_note_row = !strict_painted_bottom_fit
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && r + 1 == row_count
-                && row_start_cut.is_empty()
-                && !rowspan_touched[r]
-                && {
-                    let mut cells = table
-                        .cells
-                        .iter()
-                        .filter(|cell| cell.row as usize == r && cell.row_span == 1);
-                    cells.next().is_some_and(|cell| {
-                        cells.next().is_none()
-                            && cell.col_span as usize == table.col_count as usize
-                            && cell.paragraphs.iter().all(|paragraph| {
-                                paragraph.controls.is_empty()
-                                    && para_has_visible_text(paragraph)
-                                    && paragraph
-                                        .line_segs
-                                        .iter()
-                                        .filter(|seg| !is_synthetic_line_seg(seg))
-                                        .count()
-                                        == 1
-                            })
-                    })
-                };
+            let row_entry = table::scan::row_entry::RowEntryQuery {
+                row: &row_query,
+                row_start_cut,
+            };
+            let terminal_single_source_note_row =
+                row_entry.terminal_note_shape(strict_painted_bottom_fit, row_count);
             if terminal_single_source_note_row {
-                let remaining_band = (avail_for_rows - consumed - cs_before).max(0.0);
-                let source_cut =
-                    layout_engine.advance_row_cut(table, r, row_start_cut, remaining_band, styles);
+                let table::scan::row_entry::TerminalNoteProbe {
+                    remaining_band,
+                    source_cut,
+                } = row_entry.terminal_note_probe(avail_for_rows, consumed, cs_before);
                 if remaining_band > 0.0
                     && source_cut.fully_consumed
                     && source_cut.consumed_height > 0.0
@@ -18024,10 +18005,10 @@ impl TypesetEngine {
                     continue;
                 }
             }
-            let native_short_parent_child_splittable =
-                layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
-            let splittable = can_intra_split
-                && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
+            let table::scan::row_entry::RowSplitGate {
+                native_short_parent_child_splittable,
+                splittable,
+            } = row_entry.split_gate(can_intra_split);
             if !splittable {
                 // [#2236 진단] 분할 불가 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -18048,18 +18029,9 @@ impl TypesetEngine {
                 }
                 break;
             }
-            let padding = if mt.allows_row_break_split() {
-                layout_engine.row_remaining_visible_padding_height(table, r, row_start_cut, styles)
-            } else {
-                mt.max_padding_for_row(r)
-            };
+            let padding = row_entry.padding();
             let content_budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
-            let native_hwp5_internal_reset_row_tail = st.profile.hwp5_stored_pagination_layout()
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && r > cursor_row
-                && row_start_cut.is_empty()
-                && layout_engine.row_block_has_internal_hard_break(table, r, r + 1, styles);
+            let native_hwp5_internal_reset_row_tail = row_entry.native_reset_tail(&st.profile);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
             // response carries the stored page frame. A direct HWPX opening

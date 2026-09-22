@@ -10,6 +10,7 @@ pub(in crate::renderer::typeset) mod block_fit;
 pub(in crate::renderer::typeset) mod block_fragment;
 pub(in crate::renderer::typeset) mod landscape;
 pub(in crate::renderer::typeset) mod row;
+pub(in crate::renderer::typeset) mod row_entry;
 pub(in crate::renderer::typeset) mod source_frame;
 
 /// 원본 측정 행과 컷용 행 높이의 구분을 유지한 읽기 전용 스캔 입력.
