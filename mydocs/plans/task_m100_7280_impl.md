@@ -153,6 +153,12 @@
   진단 순서를 보존했다. 고정 제품 `c8436d6b5`에서 정책·fmt·native Clippy와 기존 집중 계약
   380건 통과. 일반 행의 저장 프레임/fit·가로 용지/행 내부 컷·continuation 및 R3 통합 검증은 남아 있다.
 
+- 최신 절편: [Stage48 R3g 일반 행 저장 프레임·통째 수용 Query 분리·집중 검증 완료](../working/task_m100_7280_stage48.md).
+  `table/scan/source_frame.rs`에 저장 프레임/후속 컷 조건과 통째 수용 판단을 분리했다.
+  profile·reflow 조회의 단락 평가 순서, 컷 소유권, 부모의 예약·이월은 보존했다.
+  고정 제품 `4a9804d05`에서 정책·fmt·native Clippy와 기존 집중 계약 387건 통과.
+  가로 용지/행 내부 컷·스캔 상태/continuation 본체 및 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -205,6 +211,7 @@ renderer/typeset/
   table/scan/block_fit.rs            블록 컷의 저장 완결 밴드·분할 허용·재시도 조회
   table/scan/block_fragment.rs       채택한 컷의 끝 행·점유 높이 조회, 부모 상태 반영과 분리
   table/scan/row.rs                  일반/rowspan 행 요구 높이·잔여 밴드 컷/표시 높이 조회
+  table/scan/source_frame.rs         일반 행 저장 프레임·후속 컷 조건·통째 수용 조회
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
