@@ -192,12 +192,12 @@
   실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
   `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
 - **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
-  같은 `rhwp-studio` 개발 서버에서 확인할 때는 `CARGO_TARGET_DIR=target/pr-review
-  scripts/wasm-pack-locked.sh --target web --out-dir pkg`로 `pkg/`를 먼저 갱신한다.
-  이어 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을 `rhwp-studio/public/`에도 복사해 public
-  경로와 Vite alias가 같은 엔진을 가리키게 하고, SHA-256 일치 및 브라우저 새로고침 후
-  실제 동작을 확인한다. Rust target만 빌드하거나 `pkg/`만 갱신한 상태를 Studio 검증으로
-  보고하지 않는다.
+  같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시
+  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  쓴다. 이 wrapper는 성공한 기본 `pkg/` web package의 `rhwp.js`·`rhwp_bg.wasm`을
+  `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치 및 브라우저 새로고침 뒤 실제
+  동작을 확인한다. Rust target만 빌드하거나 wrapper 밖에서 `pkg/`만 갱신한 상태를 Studio
+  검증으로 보고하지 않는다.
 - **Rust source 또는 Rust test/baseline helper를 바꾼 모든 PR·push 직전 필수**: 포맷만 확인하고
   Clippy를 CI에 넘기지 않는다. PR review worktree에서 파생 integration suite를 준비한 뒤 아래
   Rust lint 묶음을 **순차로** 모두 통과시킨다. `cargo clippy -- -D warnings`만으로는
