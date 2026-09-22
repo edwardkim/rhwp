@@ -263,6 +263,37 @@ fn japan_mixed_wrap_marks_stay_inside_their_cell() {
     }
 }
 
+/// 일본 PS 두 마크는 빈 문단의 마지막 글줄 위에 놓인다.
+///
+/// 아래쪽으로 내보내던 회귀를 막기 위해 셀 content bottom에 그림을 붙이면, 이번에는
+/// 한/글이 남겨 둔 빈 문단 한 줄(1000 HU = 13.33px)을 덮어 PDF보다 아래로 내려간다.
+/// 한/글 PDF(물리 77쪽, 인쇄 쪽번호 55)의 두 그림 frame top은 각각 318.2px,
+/// 319.0px이다. 첫 그림과 둘째 그림의 세로 offset 차이(82 HU = 1.09px)를 보존한
+/// 값이며, 원본 HWP와 축소 fixture 양쪽에서 고정한다.
+#[test]
+fn japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom() {
+    let images = page_cell_images();
+    let mut japan: Vec<&CellImage> = images
+        .iter()
+        .filter(|(row, col, _, _)| (*row, *col) == (5, 3))
+        .collect();
+    japan.sort_by(|a, b| a.3 .0.total_cmp(&b.3 .0));
+    assert_eq!(
+        japan.len(),
+        2,
+        "일본 인증마크 셀에는 그림 두 장이 있어야 한다"
+    );
+
+    let expected_tops = [318.2, 319.0];
+    for (image, expected_top) in japan.iter().zip(expected_tops) {
+        let (_, _, _, (_, image_y, _, _)) = image;
+        assert!(
+            (image_y - expected_top).abs() <= TOLERANCE_PX,
+            "일본 PS 마크의 빈 글줄 예약 위치가 한/글 PDF와 다르다: y={image_y:.1}, expected={expected_top:.1}"
+        );
+    }
+}
+
 /// 축소 과정이 전체 원본의 칸과 그림 배치를 바꾸지 않는지 공개 입력끼리 대조한다.
 #[test]
 fn the_reduced_fixture_preserves_original_cell_image_geometry() {
