@@ -1,7 +1,7 @@
 # Task #7280 — 조판 코드 책임 분리 및 변경 관리 구현계획
 
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
-- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2a 완료](../working/task_m100_7280_stage3.md), [R2b 문단 구성 분리·기본 feature 전체 회귀 완료](../working/task_m100_7280_stage4.md), [R2c inline 계획/상태 분리](../working/task_m100_7280_stage5.md), [R2d fit 보정 조회/소비 분리·집중 검증 완료](../working/task_m100_7280_stage6.md). R2 전체 흐름 조정 분리는 남아 있다.
+- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2 구조 분리·책임 묶음 통합 검증 완료](../working/task_m100_7280_stage41.md). R3–R6 및 최종 제출 게이트는 남아 있다. 아래 절편별 잔여 목록은 각 단계 당시의 기록이다.
 - 수행계획: [task_m100_7280.md](task_m100_7280.md)
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
@@ -115,6 +115,12 @@
   다음 쪽 Square 그림 후보·연속 밴드 문단 조회를 deferred_picture로, 불변 관측을 state로 분리했다.
   가용 높이의 지연 조회·캡션 측정 순서와 큐/쪽 전이는 유지했다. 신규 cfg support 검출을
   기준선 완화 없이 해소한 고정 head에서 집중 검사 327건 통과. R2 책임 묶음 통합 검증은 남아 있다.
+
+- 최신 검증: [Stage41 R2 책임 묶음 통합 검증 완료](../working/task_m100_7280_stage41.md).
+  고정 제품 `99d144e3f`에서 전체 회귀 10,096건 통과 / 실패 0건 / 기존 제외 50건.
+  Native 262쪽·fresh Docker WASM 238쪽의 출력 데이터와 선택 12쪽 PNG가 baseline 대비 동일하다.
+  대표 시각 경계를 직접 확인했고 기존 PDF 차이는 유지했다. 제품·테스트·기준값·ignore 변경 없음.
+  다음은 R3 표 분할/이어받기 책임 분리이며 전체 리팩토링·최종 PR 게이트 완료는 아니다.
 
 ## 1. 구현 목표와 비범위
 
