@@ -22575,14 +22575,23 @@ impl TypesetEngine {
                     if *para_index == para_idx && *start_line == 0)
                 }));
         let has_substantive_text = para_has_non_whitespace_text(para);
-        let whitespace_only_single_tac_host_line = !has_substantive_text
-            && !para.text.is_empty()
-            && table.common.treat_as_char
-            && pre_table_end_line == 0
-            && total_lines <= 1;
+        // [#7330] 공백만 있는 **단일** host 줄은 표 뒤 본문으로 내보내지 않는다.
+        //
+        // 종전 게이트는 `treat_as_char && pre_table_end_line == 0` 으로 좁혀 있었다.
+        // 같은 문단에 표가 둘 있고 마지막 표가 비-TAC 이면 위 `post_table_start` 가
+        // `is_last_table && !is_first_table` 갈래로 **0** 이 되어, 공백뿐인 host 줄
+        // 전체가 "표 뒤 본문" 으로 나간다. 그 줄은 저장 vpos 가 아니라 흐름 꼬리를
+        // 받으므로 float 표 아래에 그려지고 그만큼 뒤 문단이 밀린다.
+        //
+        // 실측 `36374873_결재문서본문_야간방호일지` pi=3 (공백 42칸, 줄 1개):
+        //   host 줄  978.2 (13×8 표가 끝나는 976.9 뒤)  → 수정 후 251.5 (그 표 앞)
+        //   pi=5..7  1125.5 / 1146.8 / 1168.1  → 용지(1122.5) 밖
+        //   수정 후  pi=5..7  1030.6 / 1052.0 / 1073.3 (줄 하나 93.5px 이 흐름에서 빠져 -94.9px)
+        let whitespace_only_single_host_line =
+            !has_substantive_text && !para.text.is_empty() && total_lines <= 1;
         let has_post_text = !para.text.is_empty()
             && total_lines > post_table_start
-            && !whitespace_only_single_tac_host_line;
+            && !whitespace_only_single_host_line;
         let should_add_post_text =
             is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
         if should_add_post_text {
