@@ -2812,9 +2812,21 @@ impl DocumentCore {
                 2 => crate::model::table::TablePageBreak::RowBreak,
                 _ => crate::model::table::TablePageBreak::None,
             };
+            // [#7288] HWP5 저장기는 `raw_table_record_attr` 가 0 이 아니면 그 값을 그대로
+            // 쓴다(원본 보존 계약). 같은 레코드의 bit 0~1 을 함께 갱신하지 않으면 설정이
+            // 메모리에만 남고 저장본에는 옛 값이 나간다.
+            let bits = match table.page_break {
+                crate::model::table::TablePageBreak::CellBreak => 0x01,
+                crate::model::table::TablePageBreak::RowBreak => 0x02,
+                crate::model::table::TablePageBreak::None => 0x00,
+            };
+            table.raw_table_record_attr = (table.raw_table_record_attr & !0x03) | bits;
         }
         if let Some(v) = json_bool(json, "repeatHeader") {
             table.repeat_header = v;
+            // [#7288] 제목 줄 자동 반복은 같은 레코드의 bit 2 다.
+            table.raw_table_record_attr =
+                (table.raw_table_record_attr & !0x04) | (u32::from(v) << 2);
         }
         if let Some(v) = json_bool(json, "treatAsChar") {
             if v {
@@ -3045,14 +3057,15 @@ impl DocumentCore {
                 table.caption = Some(cap);
                 caption_created = true;
                 // attr bit 29: 캡션 존재 플래그 (한컴 호환성)
+                // [#7288] 이것은 **개체 공통 속성**이다. `raw_table_record_attr`(HWPTAG_TABLE
+                // 레코드 첫 UINT32)은 bit 0~1 «쪽 경계에서» · bit 2 제목 줄 반복으로 비트
+                // 배치가 전혀 달라, 여기에 대입하면 그 두 속성이 통째로 뭉개진다.
                 table.attr |= 1 << 29;
                 table.common.attr = table.attr;
-                table.raw_table_record_attr = table.attr;
             } else if !has_cap && table.caption.is_some() {
                 table.caption = None;
                 table.attr &= !(1 << 29);
                 table.common.attr = table.attr;
-                table.raw_table_record_attr = table.attr;
                 caption_changed = true;
             }
         }
