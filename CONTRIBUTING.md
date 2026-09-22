@@ -226,7 +226,7 @@ rhwp_source_dir="$(git rev-parse --show-toplevel)" &&
 rhwp_review_sha="$(git rev-parse HEAD)" &&
 rhwp_review_base_sha="$(git rev-parse upstream/devel)" &&
 rhwp_review_dir="${rhwp_source_dir}-rust-review" &&
-rhwp_review_target_dir="${rhwp_source_dir}-review-target" &&
+rhwp_review_target_dir="${rhwp_source_dir}/target/pr-review" &&
 (
   set -eu
   git -C "$rhwp_source_dir" status --short
@@ -252,10 +252,12 @@ merge/rebase는 하지 않습니다.
 PASS로 바꾸지 말고 준비된 worktree에서 같은 검사를 다시 실행하세요. 실제 포맷 diff가 나오면 아래
 [포맷 정책](#포맷-정책)에 따라 원본을 보정하고 새 commit을 다시 검증합니다.
 
-target은 source checkout 옆의 이 작업 전용 절대 경로에 둡니다. worktree 이름을 바꾸는 재검증에서도
-`rhwp_review_target_dir`는 유지해 Cargo 캐시를 재사용합니다. 모든 Cargo `--target-dir`과 host WASM의
-`CARGO_TARGET_DIR`가 같은 경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다.
-캐시는 이전 검증 결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다.
+target은 source checkout의 공용 절대 경로 `target/pr-review`에 둡니다. worktree 이름을 바꾸는
+재검증에서도 `rhwp_review_target_dir`가 같은 공용 cache를 가리키도록 하며, issue별·검토별 target
+디렉터리를 새로 만들지 않습니다. 모든 Cargo `--target-dir`과 host WASM의 `CARGO_TARGET_DIR`가 같은
+경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다. 캐시는 이전 검증
+결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다. 공유 경로를 삭제·초기화하기 전에는
+실행 중인 Cargo/Rust 작업과 소유자를 확인합니다.
 
 #### 2. Rust lint
 
@@ -440,7 +442,7 @@ head의 required checks를 확인하세요.
 )
 ```
 
-source checkout과 외부 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
+source checkout과 공용 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
 다시 시작하세요. 정상 제거 뒤에는 `git worktree prune`을 추가로 실행할 필요가 없습니다.
 
 ### 프런트엔드 변경 검증
@@ -508,11 +510,19 @@ macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니
 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
 ```
 
-혼합 변경에서 host WASM 캐시를 재사용하려면 위 명령의 `target/pr-review` 대신
-`"${rhwp_review_target_dir:?}"`를 지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요.
+이 wrapper는 성공한 기본 web package의 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을
+`rhwp-studio/public/`에도 자동 동기화합니다. 따라서 개발 서버 검증을 위해 별도 `cp`를 실행하지
+마세요. `npx vite --host 0.0.0.0 --port 7700`으로 확인할 때는 두 경로의 SHA-256이 같은지 확인하고,
+브라우저를 새로고침한 뒤 실제 변경 흐름을 검사합니다. Rust target만 만들거나 wrapper 밖에서 `pkg/`만
+갱신한 결과는 Studio 반영 검증이 아닙니다.
+
+혼합 변경에서도 `rhwp_review_target_dir`는 source checkout의 같은 `target/pr-review`를 가리킵니다.
+worktree에서 명령을 실행할 때는 상대 경로 대신 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}"`를
+지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
+직접 확인할 때는 `--dev` 없이 아래 표준 alias를 사용합니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev'
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
