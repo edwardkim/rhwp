@@ -8,6 +8,7 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(in crate::renderer::typeset) mod block_fit;
 pub(in crate::renderer::typeset) mod block_fragment;
+pub(in crate::renderer::typeset) mod row;
 
 /// 원본 측정 행과 컷용 행 높이의 구분을 유지한 읽기 전용 스캔 입력.
 pub(in crate::renderer::typeset) struct RowBlockQuery<'a> {

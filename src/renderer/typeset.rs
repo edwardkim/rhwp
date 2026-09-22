@@ -17755,24 +17755,19 @@ impl TypesetEngine {
             // 해당 행의 row_span==1 셀을 기준으로 내부 분할을 허용한다. 작은 보호
             // 블록은 위의 block path 에서 이미 처리되며, 여기서는 block path 대상이
             // 아닌 큰 블록의 과도한 이월만 줄인다.
+            let row_query = table::scan::row::RowScanQuery {
+                rows: &block_query,
+                r,
+                cursor_row,
+                start_cut,
+                start_row_height_override,
+            };
             let rowbreak_rowspan_row_splittable =
                 mt.allows_row_break_split() && can_intra_split && mt.is_row_splittable(r);
             if rowspan_touched[r] && !rowbreak_rowspan_row_splittable {
                 // 실제로 수용한 앞 행들의 높이(consumed)를 사용한다. 이전 행의
                 // 증분까지 포함하며, 늘린 높이가 안 맞으면 원래 높이로 되돌리지 않는다.
-                let h = cut_row_h[r];
-                let h = layout_engine
-                    .straddle_continuation_demand(
-                        table,
-                        r,
-                        cursor_row,
-                        start_cut,
-                        start_row_height_override,
-                        &mt.row_heights,
-                        styles,
-                        (r + 1, true),
-                    )
-                    .map_or(h, |need| h.max(need - consumed - cs_before));
+                let h = row_query.required_height(cut_row_h[r], consumed, cs_before);
                 if r == cursor_row || consumed + cs_before + h <= avail_for_rows {
                     consumed += cs_before + h;
                     r += 1;
@@ -17786,19 +17781,10 @@ impl TypesetEngine {
                 // 행부터 재개한다(76076 p35→p36 `주요내용`). 일반 rowspan 행을
                 // 전역으로 분할하지 않고, prior-span + 비중첩 + 내용 완전 소비
                 // 조건에서만 렌더 높이 상한을 carry 한다.
-                let has_prior_rowspan_cover = table.cells.iter().any(|c| {
-                    c.row_span > 1
-                        && (c.row as usize) < r
-                        && r < c.row as usize + c.row_span as usize
-                });
-                let row_has_nested = table.cells.iter().any(|c| {
-                    c.row as usize == r
-                        && c.paragraphs.iter().any(|p| {
-                            p.controls
-                                .iter()
-                                .any(|ctrl| matches!(ctrl, Control::Table(_)))
-                        })
-                });
+                let table::scan::row::RowBandShape {
+                    has_prior_rowspan_cover,
+                    row_has_nested,
+                } = row_query.band_shape();
                 let rest = (avail_for_rows - consumed - cs_before).max(0.0);
                 let row_start_cut: &[usize] = if r == cursor_row { start_cut } else { &[] };
                 if mt.allows_row_break_split()
@@ -17808,27 +17794,10 @@ impl TypesetEngine {
                     && !row_has_nested
                     && rest > 0.0
                 {
-                    let padding = layout_engine.row_remaining_visible_padding_height(
-                        table,
-                        r,
-                        row_start_cut,
-                        styles,
-                    );
-                    let content_budget = (rest - padding).max(0.0);
-                    let probe = layout_engine.advance_row_cut(
-                        table,
-                        r,
-                        row_start_cut,
-                        content_budget,
-                        styles,
-                    );
-                    let visible_height = layout_engine.row_cut_content_height(
-                        table,
-                        r,
-                        row_start_cut,
-                        &probe.end_cut,
-                        styles,
-                    );
+                    let table::scan::row::RowBandProbe {
+                        probe,
+                        visible_height,
+                    } = row_query.probe_band(row_start_cut, rest);
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
                             "DIAG_SCAN RSPAN_BAND? r={} h={:.1} rest={:.1} visible={:.1} fully={} nested={}",
@@ -17841,11 +17810,7 @@ impl TypesetEngine {
                     // `해당 없음`처럼 한 행의 텍스트만 먼저 잘려 p19의 source owner가
                     // 앞당겨진다. 한컴은 그 근소한 pseudo-tail은 보존하지 않고 행 전체를
                     // 다음 쪽으로 넘긴다.
-                    let retained_blank_tail = (rest - visible_height).max(0.0);
-                    if probe.fully_consumed
-                        && visible_height <= rest + 0.5
-                        && retained_blank_tail >= MIN_TOP_KEEP_PX
-                    {
+                    if table::scan::row::retains_blank_tail(&probe, visible_height, rest) {
                         consumed += cs_before + rest;
                         r += 1;
                         end_row = r;
@@ -17882,29 +17847,11 @@ impl TypesetEngine {
             // (`cut_row_h`)로 자르되, #3820의 native HWP5 rewind 형상에서 온전한
             // 행을 남길지 판단할 때는 renderer가 paint할 footprint를 사용한다.
             let row_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
-            let row_total = if row_start_cut.is_empty() {
-                whole_row_fit_h[r]
-            } else {
-                // 연속분 cursor_row — 시작 컷 적용. row_cut_content_height 가
-                // 셀별 (content+pad) 행 max 를 반환(분할 행이므로 cell.height
-                // 강제 없음).
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &[], styles)
-            };
+            let row_total = row_query.whole_row_height(row_start_cut, whole_row_fit_h);
             // 온전한 행 후보에는 rowspan 잔여 내용도 예약한다. 아래에서 실제
             // end_cut을 선택하면 row_cut_content_height로 분할 높이를 다시 측정하고,
             // 렌더러도 같은 end_cut을 받아 잔여 전체 높이 보정을 생략한다.
-            let row_total = layout_engine
-                .straddle_continuation_demand(
-                    table,
-                    r,
-                    cursor_row,
-                    start_cut,
-                    start_row_height_override,
-                    &mt.row_heights,
-                    styles,
-                    (r + 1, true),
-                )
-                .map_or(row_total, |need| row_total.max(need - consumed - cs_before));
+            let row_total = row_query.required_height(row_total, consumed, cs_before);
             // The final visible response is followed by a row without text or
             // controls. Its stored row height is authoritative for whole-row ownership;
             // browser-composed height may be larger solely because of font
