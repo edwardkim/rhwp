@@ -13,9 +13,9 @@ const SAMPLE: &str = "samples/issue7333/aaaaaa.hwp";
 const PAGE_INDEX: u32 = 39;
 const PARA_INDEX: u64 = 523;
 
-fn find_table(node: &serde_json::Value) -> Option<(f64, f64)> {
+fn find_table(node: &serde_json::Value, para_index: u64) -> Option<(f64, f64)> {
     if node.get("type").and_then(|value| value.as_str()) == Some("Table")
-        && node.get("pi").and_then(|value| value.as_u64()) == Some(PARA_INDEX)
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
     {
         let bbox = node.get("bbox")?;
         return Some((bbox.get("y")?.as_f64()?, bbox.get("h")?.as_f64()?));
@@ -23,7 +23,7 @@ fn find_table(node: &serde_json::Value) -> Option<(f64, f64)> {
     node.get("children")
         .and_then(|value| value.as_array())?
         .iter()
-        .find_map(find_table)
+        .find_map(|child| find_table(child, para_index))
 }
 
 #[test]
@@ -38,7 +38,7 @@ fn overlapping_picture_lines_occupy_one_declared_table_frame() {
         .get_page_render_tree(PAGE_INDEX)
         .unwrap_or_else(|error| panic!("40쪽 render tree: {error:?}"));
     let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
-    let (y, height) = find_table(&tree).expect("40쪽 pi=523 스크린샷 표");
+    let (y, height) = find_table(&tree, PARA_INDEX).expect("40쪽 pi=523 스크린샷 표");
 
     assert!(
         (height - 616.5).abs() < 1.0,
@@ -48,5 +48,30 @@ fn overlapping_picture_lines_occupy_one_declared_table_frame() {
         y + height < 920.0,
         "pi=523 표 bottom={:.1}px — 본문·꼬리말 사이에 들어가야 한다",
         y + height
+    );
+}
+
+#[test]
+fn auxiliary_cell_width_does_not_pull_following_table_over_screenshot() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    let json = document
+        .get_page_render_tree(8)
+        .unwrap_or_else(|error| panic!("9쪽 render tree: {error:?}"));
+    let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+    let (screenshot_y, screenshot_height) = find_table(&tree, 155).expect("9쪽 pi=155 스크린샷 표");
+    let (following_y, following_height) = find_table(&tree, 157).expect("9쪽 pi=157 후속 정보 표");
+
+    assert!(
+        following_height < 180.0,
+        "pi=157 표 높이={following_height:.1}px — 행 보조폭으로 재줄바꿈해 커지면 안 된다"
+    );
+    assert!(
+        following_y >= screenshot_y + screenshot_height + 20.0,
+        "pi=157 표 top={following_y:.1}px, pi=155 bottom={:.1}px — 다음 표가 스크린샷과 겹쳤다",
+        screenshot_y + screenshot_height
     );
 }

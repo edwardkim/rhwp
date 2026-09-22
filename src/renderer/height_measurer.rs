@@ -2267,6 +2267,24 @@ impl HeightMeasurer {
             }
         }
 
+        // 표 레이아웃은 열 그리드를 먼저 해석한 뒤 셀 문단을 그 너비에 맞춰 줄바꿈한다.
+        // 저장된 개별 cell.width는 행 보조값일 수 있어(특히 한 행의 합이 표 폭과 다른
+        // HWP5 표) 그대로 높이 측정에 쓰면 화면보다 좁은 폭에서 재합성해 행을 과대
+        // 계상한다. layout과 같은 소유 폭을 한 번 계산해 모든 텍스트·중첩 표 측정에
+        // 사용한다. #7333 9쪽 pi=157의 1,303HU 보조 폭이 대표 사례다.
+        let paragraph_frame_owner_widths = table.paragraph_frame_owner_widths();
+        let measured_cell_width_px = |cell_index: usize, cell: &crate::model::table::Cell| {
+            let width = paragraph_frame_owner_widths
+                .get(cell_index)
+                .copied()
+                .unwrap_or_else(|| cell.width.min(i32::MAX as u32) as i32);
+            if width > 0 {
+                hwpunit_to_px(width, self.dpi) * width_scale
+            } else {
+                0.0
+            }
+        };
+
         let row_count = table.row_count as usize;
         let mut row_heights = vec![0.0f64; row_count];
         // 행별 **컨텐츠** 하한 — 2단계에서만 채워지며, 병합 선언이 행합보다 작을 때
@@ -2339,7 +2357,7 @@ impl HeightMeasurer {
             .collect();
 
         // 2단계: 셀 내 실제 컨텐츠 높이 계산 (layout_table과 동일)
-        for cell in &table.cells {
+        for (cell_index, cell) in table.cells.iter().enumerate() {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
                 // [Task #1785] 셀 패딩 — aim=false 는 layout 의 레거시 보존값 규칙
@@ -2360,11 +2378,7 @@ impl HeightMeasurer {
                 // [Task #671] 좌우 패딩 — 셀 content box 의 inner_width 계산용
                 let pad_left = hwpunit_to_px(eff_pad.left as i32, self.dpi);
                 let pad_right = hwpunit_to_px(eff_pad.right as i32, self.dpi);
-                let cell_w_px = if cell.width < 0x80000000 {
-                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
-                } else {
-                    0.0
-                };
+                let cell_w_px = measured_cell_width_px(cell_index, cell);
                 // [#2279 axis B 보류] 측정 shrink 폭은 80168 r7(한글 8줄) 회귀로 보류
                 // — table_layout::cell_units_uncached 의 [#2279 axis B 보류] 참조.
                 let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
@@ -3316,7 +3330,7 @@ impl HeightMeasurer {
         }
 
         // 2-c단계: 병합 셀의 실제 컨텐츠 높이가 결합 행 높이 초과 시 마지막 행 확장
-        for cell in &table.cells {
+        for (cell_index, cell) in table.cells.iter().enumerate() {
             let r = cell.row as usize;
             let span = cell.row_span as usize;
             if span > 1 && r + span <= row_count {
@@ -3335,11 +3349,7 @@ impl HeightMeasurer {
                     hwpunit_to_px(eff_pad.left as i32, self.dpi),
                     hwpunit_to_px(eff_pad.right as i32, self.dpi),
                 );
-                let cell_w_px = if cell.width < 0x80000000 {
-                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
-                } else {
-                    0.0
-                };
+                let cell_w_px = measured_cell_width_px(cell_index, cell);
                 let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
                     cell_w_px, pad_left, pad_right, self.dpi,
                 );
@@ -4142,16 +4152,13 @@ impl HeightMeasurer {
         // 중첩 표 셀: 실제 중첩 표 높이를 재귀 측정하여 total_content_height 보정
         for mc in &mut measured_cells {
             if mc.has_nested_table {
-                let cell = &table
+                let (cell_index, cell) = table
                     .cells
                     .iter()
-                    .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
+                    .enumerate()
+                    .find(|(_, cell)| cell.row as usize == mc.row && cell.col as usize == mc.col)
                     .unwrap();
-                let mc_cell_w = if cell.width < 0x80000000 {
-                    hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
-                } else {
-                    0.0
-                };
+                let mc_cell_w = measured_cell_width_px(cell_index, cell);
                 // 저장 vpos 사다리가 붕괴한 셀(둘째 이후 문단이 전부 vpos=0)은 max
                 // 합성이 성립하지 않는다 — para_top 이 전부 0 이 되어 nested_bottom 이
                 // "가장 큰 중첩 표 하나"로 축소되고 텍스트 줄높이를 통째로 가린다.

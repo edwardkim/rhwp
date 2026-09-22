@@ -4420,6 +4420,12 @@ impl LayoutEngine {
                 // Picture 컨트롤이 있는 문단
                 let comp = self.compose_header_footer_paragraph(para, page_number, styles);
                 if comp.tac_controls.is_empty() {
+                    // 글자처럼 취급하지 않는 그림과 쪽번호 AutoNumber가 같은 꼬리말
+                    // 문단에 공존할 수 있다. 그림만 개별 배치하고 끝내면 AutoNumber가
+                    // 조합 텍스트에 남아 있어도 전혀 그려지지 않는다(#7333).
+                    // 그림의 y 누적은 다음 그림 배치용이므로, 인라인 필드는 원래
+                    // 문단 기준선(text_y)에서 따로 레이아웃한다.
+                    let text_y = y_offset;
                     // 머리말/꼬리말 내 Picture: header/footer area 기준 배치
                     for (ci, ctrl) in para.controls.iter().enumerate() {
                         if let Control::Picture(pic) = ctrl {
@@ -4464,6 +4470,34 @@ impl LayoutEngine {
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             y_offset += pic_h;
                         }
+                    }
+                    let has_page_auto_number = para.controls.iter().any(|ctrl| {
+                        matches!(
+                            ctrl,
+                            Control::AutoNumber(number)
+                                if matches!(
+                                    number.number_type,
+                                    crate::model::control::AutoNumberType::Page
+                                        | crate::model::control::AutoNumberType::TotalPage
+                                )
+                        )
+                    });
+                    if has_page_auto_number {
+                        let text_end = self.layout_paragraph(
+                            tree,
+                            area_node,
+                            para,
+                            Some(&comp),
+                            styles,
+                            area,
+                            text_y,
+                            0,
+                            usize::MAX - i,
+                            None,
+                            None,
+                            None,
+                        );
+                        y_offset = y_offset.max(text_end);
                     }
                 } else {
                     // TAC Picture: layout_paragraph에서 인라인 배치
