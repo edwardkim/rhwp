@@ -242,8 +242,8 @@ fn in_front_decoration_keeps_character_table_on_its_saved_line() {
     let (y, height) = find_table(&tree, 220).expect("14쪽 pi=220 스크린샷 표");
 
     assert!(
-        (y - 346.8).abs() < 1.0,
-        "pi=220 표 top={y:.1}px — InFrontOfText 장식 뒤 TAC 표의 저장 줄 위치를 유지해야 한다"
+        (y - 350.6).abs() < 1.0,
+        "pi=220 표 top={y:.1}px — 전체 대역 TAC 표는 저장 줄 위 여백 뒤에 놓여야 한다"
     );
     assert!(
         (height - 426.4).abs() < 1.0,
@@ -261,6 +261,32 @@ fn in_front_decoration_keeps_character_table_on_its_saved_line() {
         "pi=220 번호 1 주석 y={:.1}px — 주석은 첫 저장 줄에 남아야 한다",
         callout.1
     );
+}
+
+#[test]
+fn full_band_empty_tac_tables_use_their_saved_line_top() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    // 한컴 2020 PDF의 바깥 표선 상단. 세 표 모두 두 번째 LINE_SEG의 text_height가
+    // 표 높이와 outer margin 대역을 함께 저장한 빈 문단이다.
+    for (page_index, para_index, expected_y) in
+        [(13, 220, 350.6), (21, 329, 327.2), (22, 341, 295.2)]
+    {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let (y, _) = find_table(&tree, para_index)
+            .unwrap_or_else(|| panic!("{}쪽 pi={para_index} 전체 대역 TAC 표", page_index + 1));
+        assert!(
+            (y - expected_y).abs() < 1.0,
+            "{}쪽 pi={para_index} 표 top={y:.1}px — 한컴 2020 PDF의 저장 줄 기준 y={expected_y:.1}px와 맞아야 한다",
+            page_index + 1
+        );
+    }
 }
 
 #[test]
