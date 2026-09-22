@@ -143,6 +143,11 @@
   정책·fmt·native Clippy 및 기존 집중 계약 368건 통과. 컷 채택/상태 반영·일반 행·
   continuation 본체와 R3 통합 검증은 남아 있다.
 
+- 최신 절편: [Stage46 R3e 채택한 블록 조각의 범위·점유 높이 Query 분리·집중 검증 완료](../working/task_m100_7280_stage46.md).
+  `table/scan/block_fragment.rs`에 컷 선택·끝 행·점유 높이 조회를 분리하고 부모의
+  컷 복사·측정·누적 순서를 보존했다. 고정 제품 `cfbff473f`에서 정책·fmt·native Clippy와
+  기존 집중 계약 368건 통과. 일반 행/rowspan 끝행·스캔 상태/continuation과 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -193,6 +198,7 @@ renderer/typeset/
   table/host_spacing.rs              표 소유 문단의 흐름/fit 간격과 strict 후속 fit 조회
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
   table/scan/block_fit.rs            블록 컷의 저장 완결 밴드·분할 허용·재시도 조회
+  table/scan/block_fragment.rs       채택한 컷의 끝 행·점유 높이 조회, 부모 상태 반영과 분리
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
