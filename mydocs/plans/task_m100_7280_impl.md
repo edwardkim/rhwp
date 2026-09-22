@@ -165,11 +165,17 @@
   정책·fmt·native Clippy와 기존 집중 계약 389건 통과. 행 내부 컷·스캔 상태/continuation
   본체 및 R3 통합 검증은 남아 있다.
 
-- 최신 절편: [Stage50 R3i 일반 행 분할 진입·마지막 주석 행 Query 분리·집중 검증 완료](../working/task_m100_7280_stage50.md).
+- [Stage50 R3i 일반 행 분할 진입·마지막 주석 행 Query 분리·집중 검증 완료](../working/task_m100_7280_stage50.md).
   `table/scan/row_entry.rs`에 주석 행 형상/컷, 분할 가능성, 패딩/native reset 조회를 분리했다.
   컷 조회·gate·패딩 차감 순서와 부모의 예약/이월·높이 override는 보존했다.
   고정 제품 `a63d366a9`에서 정책·fmt·native Clippy와 기존 집중 계약 390건 통과.
   후속 저장 프레임 확장·예산 재판정·스캔 상태/continuation 및 R3 통합 검증은 남아 있다.
+
+- 최신 절편: [Stage51 R3j 저장 프레임 꼬리 진입·후보 컷 Query 분리·집중 검증 완료](../working/task_m100_7280_stage51.md).
+  `table/scan/source_tail.rs`에 reset/프레임 진입 조건과 지연 후보 컷 선택을 분리했다.
+  후속 rewind 보정·확장 예산 수용·컷 대입과 스캔 상태 쓰기는 보존했다.
+  고정 제품 `f7a5179c8`에서 정책·fmt·native Clippy 및 기존 집중 계약 394건 통과.
+  후보 보정/예산 조회·스캔 상태/continuation 본체와 R3 통합 검증은 남아 있다.
 
 ## 1. 구현 목표와 비범위
 
@@ -226,6 +232,7 @@ renderer/typeset/
   table/scan/source_frame.rs         일반 행 저장 프레임·후속 컷 조건·통째 수용 조회
   table/scan/landscape.rs            가로 용지 whole/short-row 수용 형상·경계 행 분할 가능성 조회
   table/scan/row_entry.rs            일반 행 분할 진입·주석 행 형상/컷·패딩/native reset 조회
+  table/scan/source_tail.rs          저장 프레임 꼬리 진입 조건·지연 후보 컷 선택
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
