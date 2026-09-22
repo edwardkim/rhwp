@@ -48,6 +48,9 @@
   동일 입력·페이지의 기준 PDF와 수정 전후 Native/fresh WASM 출력을 비교하고, compare·standalone
   overlay·review를 산출해 직접 연다. 표 외곽·앞뒤 문단·줄바꿈·겹침·누락 등 변경 주장을 판독한다.
   실행한 source SHA·입력/PDF·페이지·명령·대표 PNG와 남은 차이를 기존 결과보고에 연결한다.
+  reviewer가 실제 결과를 열어 볼 수 있게 대표 review·overlay PNG를 PR 본문에 Markdown 이미지로
+  표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
+  head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
   직접 판독에서 큰 차이가 남으면 비용이 큰 전체 회귀를 시작하기 전에 원인을 수정하고 다시
   캡처한다. 작은 정렬 불변식의 PASS로 외곽선·뒤 문단·줄바꿈 차이를 승인하지 않는다.
