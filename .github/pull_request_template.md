@@ -53,6 +53,27 @@ closes #
 - 내용으로 대응시킨 Visual Sweep 페이지·영역, 앞뒤 조각·다음 내용 확인, baseline 변경 근거:
 - 부분 개선이면 남은 문제와 이슈 종료 여부 (PR 본문·최종 merge 메시지에 동일 범위 적용):
 
+## Visual Sweep 직접 증적 (해당하는 경우)
+
+<!-- renderer/layout/typeset/paint 또는 사용자-visible WASM 렌더링 변경에서 Visual Sweep을 실행했다면,
+리뷰 요청 전에 최종 PR head에 있는 대표 review·overlay PNG를 아래에 실제 Markdown 이미지로 표시한다.
+경로·임시 output·review 문서 링크만 남기지 않는다. PR 번호가 아직 없으면 issue 또는 변경 주제의 안정 경로를
+사용하고, raw URL에는 PR head의 repository owner/name과 정확한 head SHA를 쓴다. 이후 코드가 바뀌면
+새 head의 PNG와 URL로 다시 캡처·교체한다. 비해당이면 이 절을 제거하고 사유를 위 검증 결과에 적는다. -->
+
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)를 따름
+- PR head repository / SHA:
+- 입력·기준 PDF·대응 페이지·영역:
+- 사람 판독 및 남은 차이: <!-- 자동 수치는 보조값이며, 표·그림·줄바꿈·테두리·앞뒤 내용의 직접 판독을 적는다. -->
+
+| 출력 경로 | review | overlay |
+| --- | --- | --- |
+| Native | ![Native review](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/REVIEW_PNG_PATH) | ![Native overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/OVERLAY_PNG_PATH) |
+| fresh WASM | ![fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/WASM_REVIEW_PNG_PATH) | ![fresh WASM overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/WASM_OVERLAY_PNG_PATH) |
+
+<!-- 실행하지 않은 출력 경로의 행은 삭제하고, 생략 사유를 검증 결과에 적는다. 실제 asset 존재와 PR 본문 Markdown을
+PR 생성·수정 뒤 다시 확인한다. merge 뒤 comment에는 같은 asset의 merge SHA 고정 URL을 별도로 사용한다. -->
+
 ## 성능 영향 및 측정 결과 (해당하는 경우)
 
 - 예상 영향: <!-- 개선 / 회귀 가능성 / 영향 없음 / 미확인 -->

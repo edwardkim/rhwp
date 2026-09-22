@@ -388,6 +388,42 @@ jq '.pages[] | select(.page == 22) | {page, overlay_png, visual_accuracy_proxy_p
   output/task1274/<target>/overlay/overlay_metrics.json
 ```
 
+<a id="pr-body-visual-evidence"></a>
+
+## PR 본문 직접 증적
+
+renderer, layout, paint처럼 문서 비교 결과를 reviewer의 판단 근거로 쓰는 PR은 merge 전에도 대표
+PNG를 PR 본문에서 바로 볼 수 있게 한다. review 문서·임시 output 경로·asset 파일명만 적어 두고
+reviewer가 저장소를 찾아 열게 하지 않는다.
+
+1. 비교를 마친 최종 PR head에 대표 review와 standalone overlay PNG를 `mydocs/pr/assets/` 아래 안정
+   경로로 commit한다. PR 번호를 아직 모르면 `issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다.
+   PNG가 바뀌면 같은 경로를 써도 되지만, 반드시 새 head SHA로 URL을 바꾼다.
+2. PR 본문에는 해당 PR의 `headRepositoryOwner/headRepository`와 정확한 `headRefOid`를 사용한 아래 형식의
+   Markdown 이미지를 넣는다. target repository나 branch 이름으로 대신하지 않는다. 외부 fork PR도
+   contributor fork의 head repository와 SHA를 사용한다.
+3. Native/fresh WASM 등 실제 실행한 각 출력 경로마다 대표 review와 overlay를 한 장씩 표시한다. 실행하지
+   않은 경로는 이미지 행을 지우고 사유를 적는다. 자동 수치는 보조값이며 사람의 직접 판독·남은 차이도
+   이미지 위나 아래에 함께 기록한다.
+4. `gh pr create` 또는 `gh pr edit --body-file` 뒤 `gh pr view N --json body`로 URL·한글·실제 head SHA를
+   재확인하고, `gh api repos/<head-owner>/<head-repo>/contents/<asset>?ref=<head-sha>`로 asset이 그 head에
+   존재하는지 확인한다. GitHub PR 화면에서 이미지가 렌더링되는 것도 직접 확인한다.
+
+~~~markdown
+## Visual Sweep 직접 증적
+
+- 대상: 기준 PDF p55 ↔ rhwp p78, 표 외곽·PS 마크·앞뒤 내용
+- 판독: Native/fresh WASM 모두 표 외곽과 마크 상대 위치를 확인했다. 자동 일치율은 보조값이다.
+
+| 출력 경로 | review | overlay |
+| --- | --- | --- |
+| Native | ![Native review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_review_078.png) | ![Native overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_overlay_078.png) |
+| fresh WASM | ![fresh WASM review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_review_078.png) | ![fresh WASM overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_overlay_078.png) |
+~~~
+
+PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](#github-merge-comment)는 merge commit SHA와
+`edwardkim/rhwp`를 고정한다. 두 시점을 섞지 않는다.
+
 ## GitHub merge comment
 
 renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이

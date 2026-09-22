@@ -370,7 +370,10 @@ review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위�
 [PR 접수와 리뷰 기록](pr_review/intake_and_review.md)을 따른다. 시각 검증을 실제 판단 근거로 사용하면
 문서 비교 절차의 정본으로 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md#github-merge-comment)를
 사용한다. 임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
-그 경로를 review 문서와 실제 GitHub comment에 사용한다. 이때 대표 review PNG 자체를 열어 도구 라벨,
+그 경로를 review 문서와 실제 GitHub comment에 사용한다. **PR 생성·검토 요청 전에는** 최종 PR head의
+repository와 SHA로 고정한 review·overlay PNG를 PR 본문 Markdown 이미지로 표시한다. head가 바뀌면
+새 캡처·새 URL로 본문을 갱신하고, `gh pr view --json body` 및 asset API 조회와 PR 화면으로 표시를 확인한다.
+merge 후에는 같은 asset을 merge SHA 고정 URL로 바꾸어 contributor comment에 남긴다. 이때 대표 review PNG 자체를 열어 도구 라벨,
 한글 glyph, 수치 표기, overlay legend가 판독 가능한지 확인하고, 깨진 라벨이나 판정 오해 소지가 있으면
 merge 전 보정하거나 별도 issue로 분리해 review 문서에 적는다. merge 후 comment에는 Visual Sweep 정본
 link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.

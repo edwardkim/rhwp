@@ -198,6 +198,11 @@ review 문서에는 최소한 다음을 포함한다.
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
 SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
 
+또한 reviewer는 merge 전 PR 본문에서 실제 Visual Sweep 증적이 보이는지 확인한다. 최종 PR head의
+repository·SHA로 고정한 Native/fresh WASM review·overlay 이미지가 실행한 출력 경로별로 표시되어야 하며,
+asset 경로·임시 output·review 문서 링크만 있으면 증적 부족으로 기록한다. 이 확인은 merge 뒤 contributor
+comment의 merge SHA 고정 증적과 별개다. 정본은 [Visual Sweep PR 본문 직접 증적](../verification/visual_sweep_guide.md#pr-body-visual-evidence)이다.
+
 ### 3.2 implementation 계획서
 
 다음 중 하나면 pr_N_review_impl.md를 추가한다.

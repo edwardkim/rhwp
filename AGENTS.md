@@ -129,7 +129,11 @@
   픽셀 점수 또는 빈 줄에 보이는 글자가 없다는 이유만으로 시각 통과를 선언하지 않는다.
 - 렌더링 변경은 [Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)을 실행한다.
   영향 페이지의 Native/fresh WASM compare·standalone overlay·review를 산출해 직접 확인하고,
-  source SHA·입력/기준 PDF·페이지·명령·대표 PNG·남은 차이를 결과보고에 연결한다.
+  source SHA·입력/기준 PDF·페이지·명령·대표 PNG·남은 차이를 결과보고에 연결한다. PR review를
+  요청하기 전에는 대표 review·overlay PNG를 **PR 본문에서 실제 Markdown 이미지로 표시**한다.
+  경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
+  고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
+  같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
   변경 후 이전 캡처를 재사용하지 않으며 CI나 자동 점수만으로 직접 판독을 대신하지 않는다.
   영향 페이지에서 큰 위치·줄바꿈·외곽선 차이가 보이면 전체 회귀보다 이 차이의 원인 확인과
   재캡처를 먼저 한다. 기존 차이 또는 합성 입력이라는 분류만으로 보류 사유를 해소하지 않는다.
