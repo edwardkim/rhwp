@@ -13924,6 +13924,78 @@ impl LayoutEngine {
             .collect()
     }
 
+    /// [#6761] 줄 원점(`vpos = 0`)에서 시작한 줄 **바로 다음 줄도 0** 인 저장 되감김을 셀마다
+    /// CellUnit 번호로 돌려준다. 앞 줄이 양수에서 되감기는 `row_stored_rewind_unit_indices` 가
+    /// 못 보는 형상이다 — 셀의 첫 줄이 쪽 끝에 남고 둘째 줄이 새 쪽 원점에서 재개한 자리다.
+    ///
+    /// ```text
+    ///   1480000-201900042 <표 2-5> r=3 셀[9]
+    ///     p[0] ls[0] vpos=0  ls[1] vpos=0     ← 둘째 줄이 새 쪽 원점으로 되감김
+    ///     p[1] ls[0] vpos=1320 = 1100 + 220   ← 되감긴 줄에서 한 줄만큼 전진
+    /// ```
+    ///
+    /// 모든 줄을 0 으로 적는 입력과 가르기 위해, 두 번째 값으로 **되감긴 줄 다음 seg 가 그 줄의
+    /// `lh + ls` 만큼 전진했는지**(저장 사다리가 실제로 이어지는지)를 셀마다 돌려준다.
+    /// 번호 투영 규칙은 `row_stored_rewind_unit_indices` 와 같다.
+    pub(crate) fn row_stored_zero_origin_rewind_unit_indices(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<(Vec<usize>, bool)> {
+        let mut cells: Vec<&crate::model::table::Cell> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells
+            .iter()
+            .map(|cell| {
+                let units = self.cell_units(cell, table, styles);
+                let mut found: Vec<usize> = Vec::new();
+                let mut confirmed = false;
+                for (para_idx, paragraph) in cell.paragraphs.iter().enumerate() {
+                    for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
+                        if pair[0].vertical_pos != 0 || pair[1].vertical_pos != 0 {
+                            continue;
+                        }
+                        let rewind_line = li + 1;
+                        let Some(unit_idx) =
+                            self.cell_unit_ordinal_for(cell, table, styles, para_idx, rewind_line)
+                        else {
+                            continue;
+                        };
+                        let Some(unit) = units.get(unit_idx) else {
+                            continue;
+                        };
+                        if unit.para_idx != para_idx || unit.vis_start != rewind_line {
+                            continue;
+                        }
+                        if !found.contains(&unit_idx) {
+                            found.push(unit_idx);
+                        }
+                        let rewound = &pair[1];
+                        let next = paragraph.line_segs.get(rewind_line + 1).or_else(|| {
+                            cell.paragraphs
+                                .get(para_idx + 1)
+                                .and_then(|next_para| next_para.line_segs.first())
+                        });
+                        if let Some(next) = next {
+                            let advance = i64::from(rewound.line_height)
+                                + i64::from(rewound.line_spacing.max(0));
+                            if rewound.line_height > 0 && i64::from(next.vertical_pos) == advance {
+                                confirmed = true;
+                            }
+                        }
+                    }
+                }
+                found.sort_unstable();
+                (found, confirmed)
+            })
+            .collect()
+    }
+
     /// Return whether a row records an in-paragraph return from a positive
     /// stored vertical position to the top of a new physical frame.  This is
     /// source pagination data, not a measured-height heuristic.
