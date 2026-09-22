@@ -8055,6 +8055,37 @@ impl LayoutEngine {
                     && paragraphs
                         .get(item_para)
                         .is_some_and(|p| p.controls.is_empty() && !para_has_non_whitespace_text(p));
+                // [#6761] 자리차지 표 밴드 뒤 문단의 **앞 간격은 밴드 안에서 소비된다** — 첫 줄
+                // top 은 `max(흐름 + 앞 간격, 밴드 하단)` 이다. 문단 layout 이 첫 줄 앞에 이
+                // 간격을 더하므로 밴드로 밀 때 그만큼 덜 민다.
+                //
+                // 근거는 한컴 저장 사다리다. 코퍼스 HWP5 6,582건에서 "글자 있는 host 의 비-TAC
+                // 자리차지 표(vert=문단, 양수 offset) 다음 문단(앞 간격 > 0)" 141곳을 재면 다음
+                // 문단 vpos 가 표 바깥여백 상자 하단과 **90곳 모두 0HU 차로 같고**, 하단+앞 간격인
+                // 곳은 0곳이다(나머지는 쪽을 넘는 표·캡션). `1480000-201900042` 83쪽 pi=153:
+                // 저장 44518 = 표 상자 하단 44518, 정본 PDF 도 같은 자리인데 rhwp 는 20px 아래에
+                // 그려 마지막 표가 본문 바닥을 넘었다. typeset 은 이미 저장 자리로 회계한다.
+                // HWPX 코퍼스는 흡수 8 · 가산 4(쪽 원점 없는 연속 vpos 생성기)로 갈리므로 HWP5
+                // 저장 사다리 프로필에만 적용한다.
+                let band_absorbed_spacing_before = match item {
+                    PageItem::FullParagraph { .. }
+                        if self.profile.get().hwp5_stored_pagination_layout() =>
+                    {
+                        paragraphs
+                            .get(item_para)
+                            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+                            .map(|s| {
+                                crate::renderer::hwp3_variant_flow_spacing_before(
+                                    s.spacing_before,
+                                    self.use_hwp3_origin_flow_spacing_before.get(),
+                                )
+                            })
+                            .unwrap_or(0.0)
+                            .max(0.0)
+                    }
+                    _ => 0.0,
+                };
+                let mut jump_line_lead = 0.0;
                 for zone in &visible_float_exclusions {
                     // [Issue #1549] 자기 문단에 앵커된 float 표는 그 문단의 텍스트(제목)를
                     // 밀어내지 않는다 — 제목은 앵커(표 위)에 남아야 한다. owner 가 다른 후속
@@ -8077,7 +8108,16 @@ impl LayoutEngine {
                         && jump_to < zone.top
                         && jump_to + item_probe_height > zone.top + 0.5;
                     if starts_in_zone || overlaps_zone {
-                        jump_to = jump_to.max(zone.bottom);
+                        let absorbed = if zone.fixed_textbox {
+                            0.0
+                        } else {
+                            band_absorbed_spacing_before
+                        };
+                        let target = (zone.bottom - absorbed).max(zone.top);
+                        if target > jump_to {
+                            jump_to = target;
+                            jump_line_lead = zone.bottom - target;
+                        }
                     }
                 }
                 if jump_to > y_offset + 0.5 {
@@ -8093,7 +8133,8 @@ impl LayoutEngine {
                         .get(item_para)
                         .and_then(|p| p.line_segs.first())
                         .and_then(|s| hcursor.ladder_expected_y(col_area.y, s.vertical_pos))
-                        .map(|exp| (exp - jump_to).abs() <= 6.0)
+                        // 사다리 기대값은 첫 줄 top 이다 — 흡수한 앞 간격까지 더한 자리와 잰다.
+                        .map(|exp| (exp - (jump_to + jump_line_lead)).abs() <= 6.0)
                         .unwrap_or(false);
                     if !ladder_encodes_jump {
                         hcursor.shift_vpos_base_for_rendered_delta(delta);
