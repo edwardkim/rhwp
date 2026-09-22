@@ -41,6 +41,17 @@
 //! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
 //! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
 //! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
+//!
+//! ## [#6761 후속] 빈 조각 쪽이 사라져 쪽수가 105 → 104 다
+//!
+//! 같은 이슈의 개체 칸 회계 수정(`빈 개체 줄을 그림 위에 쌓지 않는다`)으로 이 문서의
+//! `<표 4-1> 국내외 유사 마크 현황` 이 한 쪽에 들어간다. 수정 전에는 마지막 `덴마크` 행의
+//! 그림만 이어받는 **여분 쪽**이 78쪽 뒤에 끼어 있었다. 정본은 그 표를 55쪽 한 장에 담는다.
+//!
+//! - `PAGE_INDEX`(77) 는 그대로다 — 없어진 쪽은 그 **뒤**(0-기반 78)였다.
+//! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
+//! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
+//!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -81,8 +92,8 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
     assert_eq!(
         document.page_count(),
-        105,
-        "쪽수는 105쪽이어야 한다 (#6761 로 정본 14쪽이 복원됐다)"
+        104,
+        "쪽수는 104쪽이어야 한다 (#6761 후속: 빈 조각 쪽이 사라졌다)"
     );
 
     let tree = document
@@ -91,7 +102,11 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let mut images = Vec::new();
     collect_cell_images(&tree.root, None, &mut images);
 
-    assert_eq!(images.len(), 11, "77쪽의 칸 안 그림 11개를 보존해야 한다");
+    assert_eq!(
+        images.len(),
+        12,
+        "77쪽의 칸 안 그림 12개를 보존해야 한다 (정본 55쪽도 12개)"
+    );
 
     for (cell_y, image_y, image_h) in &images {
         assert!(

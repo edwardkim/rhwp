@@ -2146,6 +2146,57 @@ impl HeightMeasurer {
             }
         }
 
+        // [#6761] 1-b단계: 그 행의 **선언 높이가 아직 유효한가**.
+        //
+        // 아래 `empty_para_line_height`(#6660) 는 "글자 없는 문단의 줄은 개체를 담는
+        // 자리" 라는 계약인데, 처음에는 개체가 선언 칸을 넘을 때만 적용했다. 개체가
+        // 선언 안에 들어가는 칸에서도 한컴은 그 줄을 개체 위에 따로 쌓지 않는다 —
+        // `<표 4-1> 국내외 유사 마크 현황`(1480000-201900042, 정본 55쪽 래스터 실측)
+        // 의 `인증마크` 칸 열한 개가 전부 그렇다.
+        //
+        // ```text
+        //   r=4 중국  선언 5547HU=74.0px  그림 65.8px  빈 글줄 13.3px
+        //     줄까지 세면 82.9px → 행마다 약 9px 씩 쌓여 마지막 행이 쪽을 넘는다
+        //     줄을 빼면 69.6px ≤ 선언 → 행 74.0px = 정본 괘선 실측 74px
+        // ```
+        //
+        // 다만 **선언을 권위로 쓰려면 그 선언이 그 행을 실제로 담을 수 있어야 한다.**
+        // 행 안의 저장 줄이나 개체가 하나라도 선언을 넘으면 그 선언은 이미 그 내용을
+        // 못 담는 낡은 값이므로 종전 회계를 유지한다. `#6312` 의 기관명 행이 그
+        // 반례다 — c=0 의 그림(36.1px)은 선언(39.9px) 안에 들지만 같은 행 c=2 의
+        // **글자처럼 취급** 그림은 저장 줄 자체가 3194HU(42.6px)로 선언을 넘는다.
+        // 거기서 빈 줄을 빼면 뒤 문단이 한/글 실측(360.1px)에서 6.8px 더 멀어진다.
+        //
+        // 판정에는 재합성이 아니라 **저장 값만** 쓴다 — 저장 줄 extent(vpos+lh)와
+        // 비인라인 개체 높이. 둘 다 이 단계에서 이미 알 수 있고, 선언과 같은 출처다.
+        let row_declared_covers_stored_content: Vec<bool> = (0..row_count)
+            .map(|r| {
+                let declared = row_heights[r];
+                declared > 0.0
+                    && table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row_span == 1 && cell.row as usize == r)
+                        .all(|cell| {
+                            let stored_line_extent = cell
+                                .paragraphs
+                                .iter()
+                                .flat_map(|pp| pp.line_segs.iter())
+                                .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
+                                .map(|seg| {
+                                    hwpunit_to_px(
+                                        seg.vertical_pos.saturating_add(seg.line_height),
+                                        self.dpi,
+                                    )
+                                })
+                                .fold(0.0f64, f64::max);
+                            stored_line_extent <= declared + 0.5
+                                && self.measure_non_inline_controls_height(&cell.paragraphs)
+                                    <= declared + 0.5
+                        })
+            })
+            .collect();
+
         // 2단계: 셀 내 실제 컨텐츠 높이 계산 (layout_table과 동일)
         for cell in &table.cells {
             if cell.row_span == 1 && (cell.row as usize) < row_count {
@@ -2616,7 +2667,12 @@ impl HeightMeasurer {
                     let empty_para_line_height: f64 = cell
                         .paragraphs
                         .iter()
-                        .filter(|_| cell.paragraphs.len() == 1 && non_inline_h > declared_cell_h)
+                        .filter(|_| {
+                            cell.paragraphs.len() == 1
+                                && (non_inline_h > declared_cell_h
+                                    || (declared_cell_h.is_finite()
+                                        && row_declared_covers_stored_content[r]))
+                        })
                         .filter(|pp| {
                             pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
                                 matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
