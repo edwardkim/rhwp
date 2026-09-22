@@ -1,4 +1,6 @@
-//! 저장 프레임 꼬리의 진입 조건과 후보 컷만 조회한다. 보정·예산 수용·스캔 전진은 부모 소유다.
+//! 저장 프레임 꼬리 진입·후보 선택 Query. 경계/확장 계산은 extension, 상태 반영은 부모 소유다.
+
+pub(in crate::renderer::typeset) mod extension;
 
 use super::row::RowScanQuery;
 use super::RowBlockQuery;
