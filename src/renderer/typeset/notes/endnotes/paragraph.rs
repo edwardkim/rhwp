@@ -117,8 +117,8 @@ impl TypesetEngine {
                 .map(|p| p.text.trim_start().starts_with('문'))
                 .unwrap_or(false);
             let en_para_local_idx = st.endnote_paragraphs.len();
-            st.endnote_paragraphs.push(en_para_copy);
-            st.endnote_para_sources.push(EndnoteParaSource {
+            st.append_endnote_paragraph(en_para_copy);
+            st.append_endnote_source(EndnoteParaSource {
                 section_index: en_ref.section_index,
                 para_index: en_ref.para_index,
                 control_index: en_ref.control_index,
@@ -153,8 +153,8 @@ impl TypesetEngine {
                 && ep_idx == 0
                 && !para_is_treat_as_char_picture_only(en_para)
             {
-                st.current_height = 0.0;
-                st.current_start_height = 0.0;
+                st.align_flow_to(0.0);
+                st.record_column_flow_origin(0.0);
                 st.reset_vpos_cursor();
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
@@ -1283,8 +1283,8 @@ impl TypesetEngine {
                     for ls in &mut next_para_copy.line_segs {
                         ls.vertical_pos += endnote_start;
                     }
-                    st.endnote_paragraphs.push(next_para_copy);
-                    st.endnote_para_sources.push(EndnoteParaSource {
+                    st.append_endnote_paragraph(next_para_copy);
+                    st.append_endnote_source(EndnoteParaSource {
                         section_index: en_ref.section_index,
                         para_index: en_ref.para_index,
                         control_index: en_ref.control_index,
@@ -1300,11 +1300,11 @@ impl TypesetEngine {
                         &styles,
                         Some(en_col_w),
                     );
-                    st.current_items.push(PageItem::FullParagraph {
+                    st.append_item(PageItem::FullParagraph {
                         para_index: next_para_idx,
                     });
-                    st.current_height += next_fmt.total_height;
-                    st.current_endnote_flow = true;
+                    st.advance_flow_by(next_fmt.total_height);
+                    st.mark_endnote_flow();
                     pre_emitted_endnote_para_indices.insert(ep_idx + 1);
                 }
             }
@@ -1420,15 +1420,11 @@ impl TypesetEngine {
                 None
             };
             if let Some(pullup_hu) = no_separator_default_tail_render_pullup_hu {
-                if let Some(render_para) = st.endnote_paragraphs.get_mut(en_para_local_idx) {
-                    // 비가시 구분선 기본 미주의 마지막 단 한 줄 tail 묶음은
-                    // 저장 vpos가 실제 frame 하단보다 한 줄가량 아래를 가리킬
-                    // 수 있다. Pagination은 tail을 현재 단에 남기되, 렌더 vpos만
-                    // 위로 당겨 127~129 같은 연속 번호가 frame 안에 보이게 한다.
-                    for ls in &mut render_para.line_segs {
-                        ls.vertical_pos -= pullup_hu;
-                    }
-                }
+                // 비가시 구분선 기본 미주의 마지막 단 한 줄 tail 묶음은
+                // 저장 vpos가 실제 frame 하단보다 한 줄가량 아래를 가리킬
+                // 수 있다. Pagination은 tail을 현재 단에 남기되, 렌더 vpos만
+                // 위로 당겨 127~129 같은 연속 번호가 frame 안에 보이게 한다.
+                st.shift_endnote_render_lines(en_para_local_idx, -pullup_hu);
             }
             // 구분선 아래가 큰 기본 미주에서 제목 tail만 현재 단 하단에
             // 남는 경우, 저장 vpos가 한 기본 미주 gap만큼 위로 당겨질 수
@@ -1462,11 +1458,7 @@ impl TypesetEngine {
                 None
             };
             if let Some(gap_hu) = default_large_below_rewind_title_tail_gap_hu {
-                if let Some(render_para) = st.endnote_paragraphs.get_mut(en_para_local_idx) {
-                    for ls in &mut render_para.line_segs {
-                        ls.vertical_pos += gap_hu;
-                    }
-                }
+                st.shift_endnote_render_lines(en_para_local_idx, gap_hu);
             }
             let tac_picture_rewinds_before_column_base = st.col_count > 1
                 && compact_between_notes_gap
@@ -1748,7 +1740,7 @@ impl TypesetEngine {
                 prev_en_content_bottom_vpos = this_content_bottom_offset.or(this_bottom_offset);
             }
             if local_vpos_rewind {
-                st.column_had_compact_endnote_rewind = true;
+                st.mark_compact_endnote_rewind();
             }
         }
         EndnoteFlowState {

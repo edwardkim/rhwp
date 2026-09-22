@@ -255,7 +255,7 @@ impl TypesetEngine {
                 // 막아 절대 좌표(vert=용지)에 통째로 그려지게 한다.
                 if can_sync || has_preceding_paper_float || is_paper_behind_infront {
                     if can_sync && !is_paper_behind_infront {
-                        st.current_height = target_y;
+                        st.align_flow_to(target_y);
                     }
                     // table_total = 0: 표 자체는 cur_h advance 에 영향 없음 (Paper-absolute).
                     // 호스트 본문 lines 만 place_table_with_text 가 pre_height 로 추가(첫 박스만).
@@ -313,7 +313,7 @@ impl TypesetEngine {
                     && target_y < available
                     && snap_keeps_table_fitting
                 {
-                    st.current_height = target_y;
+                    st.align_flow_to(target_y);
                 }
             }
         }
@@ -471,7 +471,7 @@ impl TypesetEngine {
                 }
                 if sync_h + uncertain_anchor_margin <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
-                    st.current_height = sync_h;
+                    st.align_flow_to(sync_h);
                 } else if !st.current_items.is_empty() {
                     // 배타 영역 침범 → 발신명의 블록을 통째로 다음 쪽에 단독 배치(분할 부적절).
                     if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -500,10 +500,11 @@ impl TypesetEngine {
                 // 배타 모델: 블록은 flow 를 소비하지 않는다(하단 절대배치) — 소비 롤백
                 // 후 하단 배타 영역으로 예약. 저장-flow 소비 누계는 후속 틀 vpos 보정용.
                 let consumed = (st.current_height - flow_before).max(0.0);
-                st.current_height = flow_before;
-                st.bottom_fixed_consumed_flow += consumed;
-                st.current_bottom_fixed_exclusion =
-                    st.current_bottom_fixed_exclusion.max(block_height + v_off);
+                st.align_flow_to(flow_before);
+                st.reserve_bottom_fixed_flow(
+                    consumed,
+                    st.current_bottom_fixed_exclusion.max(block_height + v_off),
+                );
                 // [Issue #1920] 후속 일반 문단의 vpos 캘리브레이션(vpos_snap_current_height)은
                 // 저장 flow 좌표를 그대로 따라간다. 한글 저장 vpos 는 하단 고정 틀의 높이도
                 // 문서순 누적하므로, 스냅이 틀 높이만큼 전진한 좌표로 이동한 뒤 배타 영역
@@ -515,9 +516,9 @@ impl TypesetEngine {
                     let consumed_hu = (consumed / self.dpi * 7200.0).round() as i32;
                     if consumed_hu > 0 {
                         if let Some(base) = st.vpos_page_base {
-                            st.vpos_page_base = Some(base + consumed_hu);
+                            st.record_vpos_page_origin(Some(base + consumed_hu));
                         } else if let Some(base) = st.vpos_lazy_base {
-                            st.vpos_lazy_base = Some(base + consumed_hu);
+                            st.record_vpos_lazy_origin(Some(base + consumed_hu));
                         }
                     }
                 }
@@ -979,7 +980,7 @@ impl TypesetEngine {
                 } else {
                     top_px
                 };
-                st.current_height = flow_top;
+                st.align_flow_to(flow_top);
                 placement_para_start_height = flow_top;
             }
             // [#3820 Stage 11] native HWP5의 빈-host 1×1 RowBreak 표가 자체 각주를
@@ -1137,13 +1138,13 @@ impl TypesetEngine {
             },
         );
         if let Some((source_top, _)) = saved_table_source_frame {
-            st.current_height = source_top;
+            st.align_flow_to(source_top);
             placement_para_start_height = source_top;
         }
         if host_line_trails_float_stack {
             // [#2813] 앵커 줄 아이템을 float 스택 뒤로 이연(한글 문서순) —
             // 스택 첫 표 배치 전에 걸려야 렌더 순서가 표→줄로 나온다.
-            st.defer_host_line_item_para = Some(para_idx);
+            st.defer_host_line(Some(para_idx));
         }
         let whole_placement_height =
             if let Some((source_top, source_bottom)) = saved_table_source_frame {
@@ -1255,8 +1256,7 @@ impl TypesetEngine {
         // 아니므로 여기에 표 높이만 더하면 뒤 줄의 앵커 거리가 예산에서 빠진다.
         if resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available) {
             if let Some(placement) = resolved_host_placement {
-                st.paragraph_float_placements
-                    .insert((para_idx, ctrl_idx), placement);
+                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
             }
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
@@ -1325,17 +1325,17 @@ impl TypesetEngine {
                 if !st.current_items.is_empty() {
                     st.advance_column_or_new_page();
                 }
-                st.current_items.push(PageItem::Table {
+                st.append_item(PageItem::Table {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                 });
-                st.current_height += if ft.strict_following_plain_text_fit {
+                st.advance_flow_by(if ft.strict_following_plain_text_fit {
                     ft.total_height
                 } else {
                     ft.effective_height
-                };
+                });
                 if ft.strict_following_plain_text_fit && is_last_placed {
-                    st.strict_plain_text_fit_after_empty_host_float_once = true;
+                    st.require_strict_following_text_fit();
                 }
                 return None;
             }

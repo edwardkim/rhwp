@@ -46,7 +46,7 @@ impl TypesetEngine {
             if let (Some(shape), Some(profile)) = (endnote_shape, endnote_flow_profile) {
                 let sep_height = profile.separator_height_px(self.dpi);
                 if sep_height > 0.0 {
-                    st.current_items.push(PageItem::EndnoteSeparator {
+                    st.append_item(PageItem::EndnoteSeparator {
                         separator_length: shape.separator_length,
                         margin_above: shape.separator_above_margin_hu(),
                         margin_below: endnote_separator_below_margin(shape),
@@ -54,10 +54,10 @@ impl TypesetEngine {
                         line_width: shape.separator_line_width,
                         color: shape.separator_color,
                     });
-                    st.current_endnote_flow = true;
+                    st.mark_endnote_flow();
                     if !profile.compact_separator_below {
-                        st.current_height += sep_height;
-                        st.current_start_height = st.current_height;
+                        st.advance_flow_by(sep_height);
+                        st.record_column_flow_origin(st.current_height);
                     }
                 }
             }
@@ -280,9 +280,9 @@ impl TypesetEngine {
                 {
                     let reclaimed = (available - st.current_height).max(0.0);
                     st.advance_column_or_new_page();
-                    st.current_height -= reclaimed;
-                    st.current_start_height = st.current_height;
-                    st.current_endnote_flow = true;
+                    st.reclaim_flow_by(reclaimed);
+                    st.record_column_flow_origin(st.current_height);
+                    st.mark_endnote_flow();
                     st.reset_vpos_cursor();
                     prev_en_bottom_vpos = None;
                     prev_en_content_bottom_vpos = None;
@@ -329,7 +329,7 @@ impl TypesetEngine {
                 if between_notes > 0 {
                     // [Task #1246] 섹션 미주 between-notes 마진(HU)을 보관 →
                     // HeightCursor 가 미주 사이 min-gap 보정에 사용. 모든 경계 동일값.
-                    st.endnote_between_notes_hu = between_notes;
+                    st.record_endnote_between_margin(between_notes);
                     let prev_spacing = st
                         .endnote_paragraphs
                         .get(prev_local_idx)
@@ -515,21 +515,26 @@ impl TypesetEngine {
                             skip_default_render_between_notes_trailing
                                 || skip_default_mid_column_between_notes_trailing
                                 || skip_absorbed_render_between_notes_trailing;
-                        if let Some(prev_para) = st.endnote_paragraphs.get_mut(prev_local_idx) {
-                            if let Some(last_seg) = prev_para.line_segs.last_mut() {
-                                if !skip_render_between_notes_trailing {
-                                    // 내부 vpos 되감김으로 현재 단/쪽 상단에 이어진
-                                    // 수식 tail은 저장 lineSeg 흐름에 기본 gap이 이미
-                                    // 포함되어 있다. 20mm 전체를 render tail에 다시
-                                    // 주입하면 다음 제목이 한 note gap만큼 내려간다.
-                                    let render_between_notes =
-                                        if large_rewind_equation_tail_between_notes_boundary {
-                                            ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU.max(prev_spacing)
-                                        } else {
-                                            between_notes
-                                        };
-                                    last_seg.line_spacing = render_between_notes;
-                                }
+                        if st
+                            .endnote_paragraphs
+                            .get(prev_local_idx)
+                            .is_some_and(|p| !p.line_segs.is_empty())
+                        {
+                            if !skip_render_between_notes_trailing {
+                                // 내부 vpos 되감김으로 현재 단/쪽 상단에 이어진
+                                // 수식 tail은 저장 lineSeg 흐름에 기본 gap이 이미
+                                // 포함되어 있다. 20mm 전체를 render tail에 다시
+                                // 주입하면 다음 제목이 한 note gap만큼 내려간다.
+                                let render_between_notes =
+                                    if large_rewind_equation_tail_between_notes_boundary {
+                                        ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU.max(prev_spacing)
+                                    } else {
+                                        between_notes
+                                    };
+                                st.apply_endnote_render_tail_spacing(
+                                    prev_local_idx,
+                                    render_between_notes,
+                                );
                             }
                         }
                     }

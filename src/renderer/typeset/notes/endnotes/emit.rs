@@ -38,23 +38,23 @@ impl TypesetEngine {
         let mut emitted = false;
         if let Some(split_line) = split_candidate {
             let first_h = fmt.line_advances_sum(0..split_line);
-            st.current_items.push(PageItem::PartialParagraph {
+            st.append_item(PageItem::PartialParagraph {
                 para_index: en_para_idx,
                 start_line: 0,
                 end_line: split_line,
             });
-            st.current_height += first_h;
-            st.current_endnote_flow = true;
+            st.advance_flow_by(first_h);
+            st.mark_endnote_flow();
             st.advance_column_or_new_page();
             let rest_h =
                 fmt.line_advances_sum(split_line..fmt.line_heights.len()) + fmt.spacing_after;
-            st.current_items.push(PageItem::PartialParagraph {
+            st.append_item(PageItem::PartialParagraph {
                 para_index: en_para_idx,
                 start_line: split_line,
                 end_line: fmt.line_heights.len(),
             });
-            st.current_height += rest_h;
-            st.current_endnote_flow = true;
+            st.advance_flow_by(rest_h);
+            st.mark_endnote_flow();
             emitted = true;
         } else {
             let table_only_endnote_para = en_para.text.is_empty()
@@ -70,26 +70,26 @@ impl TypesetEngine {
                 && non_tac_object_height.is_some()
                 && !endnote_has_text_or_equation;
             if !table_only_endnote_para && !pre_emitted_non_tac_object_only_para {
-                st.current_items.push(PageItem::FullParagraph {
+                st.append_item(PageItem::FullParagraph {
                     para_index: en_para_idx,
                 });
-                st.current_endnote_flow = true;
+                st.mark_endnote_flow();
             }
             for (ctrl_idx, ctrl) in en_para.controls.iter().enumerate() {
                 match ctrl {
                     Control::Table(_) if table_only_endnote_para => {
-                        st.current_items.push(PageItem::Table {
+                        st.append_item(PageItem::Table {
                             para_index: en_para_idx,
                             control_index: ctrl_idx,
                         });
-                        st.current_endnote_flow = true;
+                        st.mark_endnote_flow();
                     }
                     Control::Shape(_) | Control::Picture(_) => {
-                        st.current_items.push(PageItem::Shape {
+                        st.append_item(PageItem::Shape {
                             para_index: en_para_idx,
                             control_index: ctrl_idx,
                         });
-                        st.current_endnote_flow = true;
+                        st.mark_endnote_flow();
                     }
                     _ => {}
                 }
@@ -130,9 +130,9 @@ impl TypesetEngine {
                     );
                 }
                 if consume_rewind_picture_height {
-                    st.current_height += en_advance;
+                    st.advance_flow_by(en_advance);
                 } else {
-                    st.current_height = st.current_height.max(rewind_end);
+                    st.align_flow_to(st.current_height.max(rewind_end));
                 }
             } else {
                 if ssot_debug {
@@ -145,7 +145,7 @@ impl TypesetEngine {
                         st.current_height + en_advance,
                     );
                 }
-                st.current_height += en_advance;
+                st.advance_flow_by(en_advance);
             }
             // [Task #1363 v2 Stage 2] A2: 누적을 렌더 시뮬 bottom 으로 스냅.
             // compute_en_metrics(saved-delta) 대신 HeightCursor 시뮬레이션이
@@ -163,7 +163,7 @@ impl TypesetEngine {
                             en_para_idx, st.current_height, sim_bottom,
                         );
                     }
-                    st.current_height = sim_bottom;
+                    st.align_flow_to(sim_bottom);
                 }
             }
         }

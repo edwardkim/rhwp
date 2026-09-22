@@ -161,7 +161,7 @@ impl TypesetEngine {
         }
         self.drain_block_table_continuation(st, context, source);
         if ft.strict_following_plain_text_fit && is_last_placed {
-            st.strict_plain_text_fit_after_empty_host_float_once = true;
+            st.require_strict_following_text_fit();
         }
         None
     }

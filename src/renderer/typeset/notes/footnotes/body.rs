@@ -247,13 +247,11 @@ impl TypesetEngine {
                             split.prefix_height,
                         )
                     {
-                        if let Some(page) = st.pages.last_mut() {
-                            page.footnotes.push(FootnoteRef {
-                                number: fn_ctrl.number,
-                                source: source.clone(),
-                                fragment: Some(split.suffix),
-                            });
-                        }
+                        st.record_current_footnote(FootnoteRef {
+                            number: fn_ctrl.number,
+                            source: source.clone(),
+                            fragment: Some(split.suffix),
+                        });
                         st.add_footnote_fragment_height(
                             split.suffix_height,
                             split.suffix.draw_separator,
@@ -263,22 +261,18 @@ impl TypesetEngine {
                 }
             }
             if let Some(split) = current_page_reset_fragments {
-                if let Some(page) = st.pages.last_mut() {
-                    page.footnotes.push(FootnoteRef {
-                        number: fn_ctrl.number,
-                        source: source.clone(),
-                        fragment: Some(split.prefix),
-                    });
-                }
+                st.record_current_footnote(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: source.clone(),
+                    fragment: Some(split.prefix),
+                });
                 st.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
                 st.force_new_page();
-                if let Some(page) = st.pages.last_mut() {
-                    page.footnotes.push(FootnoteRef {
-                        number: fn_ctrl.number,
-                        source: source.clone(),
-                        fragment: Some(split.suffix),
-                    });
-                }
+                st.record_current_footnote(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: source.clone(),
+                    fragment: Some(split.suffix),
+                });
                 st.add_footnote_fragment_height(split.suffix_height, split.suffix.draw_separator);
                 return;
             }
@@ -299,13 +293,11 @@ impl TypesetEngine {
                 // existing-note reset은 helper guard 밖이므로 영향이 없다.
                 st.force_new_page();
             }
-            if let Some(page) = st.pages.last_mut() {
-                page.footnotes.push(FootnoteRef {
-                    number: fn_ctrl.number,
-                    source,
-                    fragment: None,
-                });
-            }
+            st.record_current_footnote(FootnoteRef {
+                number: fn_ctrl.number,
+                source,
+                fragment: None,
+            });
             st.add_footnote_height(fn_height);
         }
     }

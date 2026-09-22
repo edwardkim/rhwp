@@ -74,7 +74,7 @@ impl TypesetEngine {
         // 실제 표 상자와 페이지 예산이 서로 다른 높이를 소비한다.
         if !is_continuation && cursor_row == 0 && start_cut.is_empty() {
             if let Some(offset) = prepared.first_fragment_saved_offset {
-                st.current_height = offset;
+                st.align_flow_to(offset);
             }
         }
         let (host_before_overhead, fragment_outer_bottom_overhead) =

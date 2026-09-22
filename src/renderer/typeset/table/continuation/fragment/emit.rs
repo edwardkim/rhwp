@@ -72,16 +72,17 @@ impl TypesetEngine {
                 placement.occupied_bottom = placement.table_top
                     + owner_height
                     + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
-                st.paragraph_float_placements
-                    .insert((para_idx, ctrl_idx), placement);
-                st.current_height = placement.occupied_bottom
-                    + if terminal {
-                        host_spacing_after_only
-                    } else {
-                        0.0
-                    };
+                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                st.align_flow_to(
+                    placement.occupied_bottom
+                        + if terminal {
+                            host_spacing_after_only
+                        } else {
+                            0.0
+                        },
+                );
                 if terminal {
-                    st.visible_float_exclusions.push(VisibleFloatExclusion {
+                    st.add_visible_float_exclusion(VisibleFloatExclusion {
                         para_index: para_idx,
                         top: placement.table_top,
                         bottom: placement.occupied_bottom,
@@ -148,13 +149,13 @@ impl TypesetEngine {
                 0.0
             };
             if cursor_row == 0 && !is_continuation && start_cut.is_empty() {
-                st.current_items.push(PageItem::Table {
+                st.append_item(PageItem::Table {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                 });
-                st.current_height += partial_height + host_spacing_total;
+                st.advance_flow_by(partial_height + host_spacing_total);
             } else {
-                st.current_items.push(PageItem::PartialTable {
+                st.append_item(PageItem::PartialTable {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                     start_row: cursor_row,
@@ -172,13 +173,15 @@ impl TypesetEngine {
                 // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                 // host line advance/positive offset은 원 anchor 조각의 계약이며,
                 // continuation 끝에서 다시 더하면 다음 본문을 이중으로 민다(#2439).
-                st.current_height += host_before_overhead
-                    + vert_offset_overhead
-                    + partial_height
-                    + bottom_caption_extra
-                    + terminal_outer_bottom_overhead
-                    + host_spacing_after_only
-                    + terminal_nested_child_host_line_spacing;
+                st.advance_flow_by(
+                    host_before_overhead
+                        + vert_offset_overhead
+                        + partial_height
+                        + bottom_caption_extra
+                        + terminal_outer_bottom_overhead
+                        + host_spacing_after_only
+                        + terminal_nested_child_host_line_spacing,
+                );
             }
             commit_fragment(
                 st,
@@ -223,7 +226,7 @@ impl TypesetEngine {
                         relax_terminal_table_footnote_fit && is_continuation,
                         true,
                     );
-                    st.reset_vpos_after_queued_table_footnote_page = true;
+                    st.request_vpos_reset_after_queued_footnote();
                     let after = (
                         continuation.next_table_footnote,
                         continuation.pending_table_footnote_fragment.is_some(),
@@ -279,7 +282,7 @@ impl TypesetEngine {
                 .is_none_or(|remaining| remaining <= 0.0);
 
         // 중간 또는 내용이 완전히 소비된 최종 컷 fragment 배치
-        st.current_items.push(PageItem::PartialTable {
+        st.append_item(PageItem::PartialTable {
             para_index: para_idx,
             control_index: ctrl_idx,
             start_row: cursor_row,
@@ -298,12 +301,14 @@ impl TypesetEngine {
         });
         // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
         // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
-        st.current_height += host_before_overhead
-            + vert_offset_overhead
-            + partial_height
-            + fragment_outer_bottom_overhead;
+        st.advance_flow_by(
+            host_before_overhead
+                + vert_offset_overhead
+                + partial_height
+                + fragment_outer_bottom_overhead,
+        );
         if terminal_cut_consumed {
-            st.current_height += host_spacing_after_only + terminal_nested_child_host_line_spacing;
+            st.advance_flow_by(host_spacing_after_only + terminal_nested_child_host_line_spacing);
             commit_fragment(st, caption_extra + partial_height, true);
             continuation.finish(row_count, true);
             return TableContinuationIteration::Complete;

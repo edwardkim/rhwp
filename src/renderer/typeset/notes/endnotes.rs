@@ -43,11 +43,10 @@ impl TypesetEngine {
         // RenderAll(END_OF_DOCUMENT 마지막 구역): 앞선 구역 미주(문서 순서) → 이 구역
         //   미주 순으로 endnote_refs 앞에 이어 붙여 모두 문서 끝에 렌더한다.
         match endnote_deferral {
-            EndnoteDeferral::Suppress => st.endnotes.clear(),
+            EndnoteDeferral::Suppress => st.suppress_endnotes(),
             EndnoteDeferral::RenderAll(deferred) => {
-                let mut merged: Vec<EndnoteRef> = deferred.iter().map(|d| d.reff.clone()).collect();
-                merged.append(&mut st.endnotes);
-                st.endnotes = merged;
+                let merged: Vec<EndnoteRef> = deferred.iter().map(|d| d.reff.clone()).collect();
+                st.prepend_endnotes(merged);
             }
             EndnoteDeferral::None => {}
         }
@@ -85,9 +84,9 @@ impl TypesetEngine {
             let endnote_flow_profile = endnote_shape.map(EndnoteFlowProfile::from_shape);
             let compact_endnote_separator_profile = endnote_flow_profile.is_some();
             if let Some(profile) = endnote_flow_profile {
-                st.endnote_separator_above_hu = profile.separator_above_hu;
-                st.endnote_separator_below_hu = profile.separator_below_hu;
-                st.endnote_between_notes_hu = profile.between_notes_hu;
+                st.record_endnote_separator_above(profile.separator_above_hu);
+                st.record_endnote_separator_below(profile.separator_below_hu);
+                st.record_endnote_between_margin(profile.between_notes_hu);
             }
 
             for (en_ref_idx, en_ref) in endnote_refs.iter().enumerate() {

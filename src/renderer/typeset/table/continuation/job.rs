@@ -84,15 +84,16 @@ impl TypesetEngine {
             hwpunit_to_px(3000, self.dpi),
             column_def.column_type,
         );
-        state.hide_empty_line = hide_empty_line;
-        state.profile = profile;
-        state.has_stored_line_segs = para
-            .line_segs
-            .iter()
-            .any(|line| !is_synthetic_line_seg(line));
-        state.skip_spacing_before_prededuct = skip_spacing_before_prededuct;
-        state.current_zone_design_spacing_px = column_def_design_spacing_px(column_def, self.dpi);
-        state.section_has_no_footer = true;
+        state.initialize_source(
+            hide_empty_line,
+            profile,
+            para.line_segs
+                .iter()
+                .any(|line| !is_synthetic_line_seg(line)),
+            skip_spacing_before_prededuct,
+        );
+        state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi));
+        state.record_footer_presence(true);
         state.ensure_page();
 
         let column_width = state
@@ -189,20 +190,8 @@ impl TypesetEngine {
         state.ensure_page();
         let (hf_entries, page_number_pos) =
             Self::collect_header_footer_controls(paragraphs, section_index);
-        Self::finalize_pages(&mut state.pages, &hf_entries, &page_number_pos, paragraphs);
-        Some(PaginationResult {
-            pages: state.pages,
-            wrap_around_paras: Vec::new(),
-            hidden_empty_paras: state.hidden_empty_paras,
-            pre_emitted_host_paras: state.pre_emitted_host_paras,
-            pre_emitted_host_heights: state.pre_emitted_host_heights,
-            endnotes: state.endnotes,
-            endnote_paragraphs: state.endnote_paragraphs,
-            endnote_para_sources: state.endnote_para_sources,
-            endnote_between_notes_hu: state.endnote_between_notes_hu,
-            endnote_separator_above_hu: state.endnote_separator_above_hu,
-            endnote_separator_below_hu: state.endnote_separator_below_hu,
-        })
+        state.finalize_pages(&hf_entries, &page_number_pos, paragraphs);
+        Some(state.into_result())
     }
 
     pub(crate) fn resumable_table_target(job: &ResumableTablePaginationJob) -> (usize, usize) {

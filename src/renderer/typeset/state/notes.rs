@@ -5,7 +5,7 @@ use crate::renderer::typeset::{FootnoteFragment, FootnoteRef, FootnoteSource, Ty
 impl TypesetState {
     /// [#2559] 각주가 사용할 수 있는 빈 꼬리말 밴드 높이.
     pub(in crate::renderer::typeset) fn footer_band_reclaim(&self) -> f64 {
-        self.footer_band_reclaim_for_height(self.current_footnote_height)
+        self.footer_band_reclaim_for_height(self.data.current_footnote_height)
     }
 
     /// 예약 전 first-footnote collision을 계산할 때도 현재 page와 동일한 footer
@@ -18,8 +18,8 @@ impl TypesetState {
         if std::env::var("RHWP_FB_OFF").is_ok() {
             return 0.0;
         }
-        if self.section_has_no_footer && footnote_height > 0.0 {
-            self.layout.footer_area.height.max(0.0)
+        if self.data.section_has_no_footer && footnote_height > 0.0 {
+            self.data.layout.footer_area.height.max(0.0)
         } else {
             0.0
         }
@@ -41,30 +41,30 @@ impl TypesetState {
             eprintln!(
                 "DIAG_FN add h={:.1} cur_total={:.1} page={} cur_h={:.1} first={}",
                 height,
-                self.current_footnote_height,
-                self.pages.len() + 1,
-                self.current_height,
-                self.is_first_footnote_on_page
+                self.data.current_footnote_height,
+                self.data.pages.len() + 1,
+                self.data.current_height,
+                self.data.is_first_footnote_on_page
             );
         }
-        if self.is_first_footnote_on_page {
+        if self.data.is_first_footnote_on_page {
             if draw_separator {
-                self.current_footnote_height += self.footnote_separator_overhead;
-                self.current_page_has_footnote_separator = true;
+                self.data.current_footnote_height += self.data.footnote_separator_overhead;
+                self.data.current_page_has_footnote_separator = true;
             }
-            self.is_first_footnote_on_page = false;
+            self.data.is_first_footnote_on_page = false;
         } else {
             // 번호 없는 tail이 page의 첫 각주였고, 뒤의 일반 note가 처음으로
             // separator를 요구하는 경우다. layout은 footnote 전체 중 하나라도
             // draw_separator이면 선을 그리므로, reservation도 같은 시점에 한 번
             // 보충해야 본문/FootnoteArea 충돌이 생기지 않는다.
-            if draw_separator && !self.current_page_has_footnote_separator {
-                self.current_footnote_height += self.footnote_separator_overhead;
-                self.current_page_has_footnote_separator = true;
+            if draw_separator && !self.data.current_page_has_footnote_separator {
+                self.data.current_footnote_height += self.data.footnote_separator_overhead;
+                self.data.current_page_has_footnote_separator = true;
             }
-            self.current_footnote_height += self.footnote_between_notes_margin;
+            self.data.current_footnote_height += self.data.footnote_between_notes_margin;
         }
-        self.current_footnote_height += height;
+        self.data.current_footnote_height += height;
         self.sync_current_page_footnote_area();
     }
 
@@ -78,14 +78,14 @@ impl TypesetState {
         content_height: f64,
         draw_separator: bool,
     ) -> f64 {
-        self.current_footnote_height
-            + if self.is_first_footnote_on_page {
+        self.data.current_footnote_height
+            + if self.data.is_first_footnote_on_page {
                 0.0
             } else {
-                self.footnote_between_notes_margin
+                self.data.footnote_between_notes_margin
             }
-            + if draw_separator && !self.current_page_has_footnote_separator {
-                self.footnote_separator_overhead
+            + if draw_separator && !self.data.current_page_has_footnote_separator {
+                self.data.footnote_separator_overhead
             } else {
                 0.0
             }
@@ -106,28 +106,28 @@ impl TypesetState {
     ) -> bool {
         let projected = self.projected_footnote_fragment_height(content_height, draw_separator);
         let projected_margin = if projected > 0.0 && reserve_safety_margin {
-            self.footnote_safety_margin
+            self.data.footnote_safety_margin
         } else {
             0.0
         };
-        let reclaim = if self.section_has_no_footer {
-            self.layout.footer_area.height.max(0.0)
+        let reclaim = if self.data.section_has_no_footer {
+            self.data.layout.footer_area.height.max(0.0)
         } else {
             0.0
         };
         let page_available = (self.base_available_height()
             - (projected - reclaim).max(0.0)
             - projected_margin
-            - self.current_zone_y_offset
-            - self.current_bottom_fixed_exclusion)
+            - self.data.current_zone_y_offset
+            - self.data.current_bottom_fixed_exclusion)
             .max(0.0);
         let footnote_only_capacity = (self.base_available_height()
-            - self.current_zone_y_offset
-            - self.current_bottom_fixed_exclusion)
+            - self.data.current_zone_y_offset
+            - self.data.current_bottom_fixed_exclusion)
             .max(0.0);
 
         (projected - reclaim).max(0.0) + projected_margin <= footnote_only_capacity + 0.5
-            && self.current_height + overlap_guard <= page_available + 0.5
+            && self.data.current_height + overlap_guard <= page_available + 0.5
     }
 
     /// 이미 flush된 분할 문단의 앵커 page에 첫 native-HWP5 각주를 소급 등록한다.
@@ -143,7 +143,7 @@ impl TypesetState {
         source: FootnoteSource,
         content_height: f64,
     ) -> bool {
-        let Some(page) = self.pages.get_mut(page_idx) else {
+        let Some(page) = self.data.pages.get_mut(page_idx) else {
             return false;
         };
         let first = page.footnotes.is_empty();
@@ -163,12 +163,12 @@ impl TypesetState {
             + if has_separator {
                 0.0
             } else {
-                self.footnote_separator_overhead
+                self.data.footnote_separator_overhead
             }
             + if first {
                 0.0
             } else {
-                self.footnote_between_notes_margin
+                self.data.footnote_between_notes_margin
             };
         page.layout
             .update_footnote_area(existing_height + added_height);
@@ -184,7 +184,7 @@ impl TypesetState {
         fragment: FootnoteFragment,
         content_height: f64,
     ) -> bool {
-        let Some(page) = self.pages.get_mut(page_idx) else {
+        let Some(page) = self.data.pages.get_mut(page_idx) else {
             return false;
         };
         let first = page.footnotes.is_empty();
@@ -202,12 +202,12 @@ impl TypesetState {
         });
         let added_height = content_height
             + if fragment.draw_separator && !has_separator {
-                self.footnote_separator_overhead
+                self.data.footnote_separator_overhead
             } else {
                 0.0
             }
             + if !first {
-                self.footnote_between_notes_margin
+                self.data.footnote_between_notes_margin
             } else {
                 0.0
             };
@@ -222,31 +222,31 @@ impl TypesetState {
         note_count: usize,
     ) -> f64 {
         if note_count == 0 {
-            return self.current_footnote_height;
+            return self.data.current_footnote_height;
         }
-        let separator = if self.current_page_has_footnote_separator {
+        let separator = if self.data.current_page_has_footnote_separator {
             0.0
         } else {
-            self.footnote_separator_overhead
+            self.data.footnote_separator_overhead
         };
-        let between_count = if self.is_first_footnote_on_page {
+        let between_count = if self.data.is_first_footnote_on_page {
             note_count.saturating_sub(1)
         } else {
             note_count
         };
-        self.current_footnote_height
+        self.data.current_footnote_height
             + separator
-            + self.footnote_between_notes_margin * between_count as f64
+            + self.data.footnote_between_notes_margin * between_count as f64
             + note_content_height
     }
 
     pub(in crate::renderer::typeset) fn sync_current_page_footnote_area(&mut self) {
-        if self.current_footnote_height <= 0.0 {
+        if self.data.current_footnote_height <= 0.0 {
             return;
         }
-        if let Some(page) = self.pages.last_mut() {
+        if let Some(page) = self.data.pages.last_mut() {
             page.layout
-                .update_footnote_area(self.current_footnote_height);
+                .update_footnote_area(self.data.current_footnote_height);
         }
     }
 }

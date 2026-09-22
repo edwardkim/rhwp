@@ -352,8 +352,7 @@ impl TypesetEngine {
                 + queue_footer_roundoff_slack)
                 .min(st.base_available_height() + queue_footer_roundoff_slack)
                 .max(0.0);
-            st.fragment_queued_table_footnotes
-                .insert((para_idx, ctrl_idx));
+            st.mark_fragment_footnotes_queued((para_idx, ctrl_idx));
         }
 
         // 첫 행이 남은 공간보다 크면 다음 페이지로 (인트라-로우 분할 가능성 확인).
@@ -395,16 +394,16 @@ impl TypesetEngine {
                 if *para_index == para_idx)
             });
             if !already_emitted {
-                st.current_items.push(PageItem::PartialParagraph {
+                st.append_item(PageItem::PartialParagraph {
                     para_index: para_idx,
                     start_line: 0,
                     end_line: fmt.line_heights.len(),
                 });
                 let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
-                st.current_height = st.current_height.max(placement_para_start_height + host_h);
-                st.pre_emitted_host_heights.insert(para_idx, host_h);
+                st.align_flow_to(st.current_height.max(placement_para_start_height + host_h));
+                st.record_pre_emitted_host_height(para_idx, host_h);
             }
-            st.pre_emitted_host_paras.insert(para_idx);
+            st.mark_pre_emitted_host(para_idx);
         }
         // Task #398: rowspan>1 셀이 행 0의 시작점이면 블록 전체 높이로 판정.
         // [Task #1046 Stage 2] 첫(비연속) fragment 의 렌더러 y_start 점프 — host_spacing.before

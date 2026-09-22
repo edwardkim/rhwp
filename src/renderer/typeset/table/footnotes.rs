@@ -40,34 +40,28 @@ impl TypesetEngine {
             .flatten()
             .filter(|split| split.force_next_page && st.col_count == 1);
         if let Some(split) = split {
-            if let Some(page) = st.pages.last_mut() {
-                page.footnotes.push(FootnoteRef {
-                    number: footnote.number,
-                    source: source.clone(),
-                    fragment: Some(split.prefix),
-                });
-            }
+            st.record_current_footnote(FootnoteRef {
+                number: footnote.number,
+                source: source.clone(),
+                fragment: Some(split.prefix),
+            });
             st.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
             st.force_new_page();
-            if let Some(page) = st.pages.last_mut() {
-                page.footnotes.push(FootnoteRef {
-                    number: footnote.number,
-                    source,
-                    fragment: Some(split.suffix),
-                });
-            }
+            st.record_current_footnote(FootnoteRef {
+                number: footnote.number,
+                source,
+                fragment: Some(split.suffix),
+            });
             st.add_footnote_fragment_height(split.suffix_height, split.suffix.draw_separator);
-            st.reset_vpos_after_queued_table_footnote_page = true;
+            st.request_vpos_reset_after_queued_footnote();
             return;
         }
 
-        if let Some(page) = st.pages.last_mut() {
-            page.footnotes.push(FootnoteRef {
-                number: footnote.number,
-                source,
-                fragment: None,
-            });
-        }
+        st.record_current_footnote(FootnoteRef {
+            number: footnote.number,
+            source,
+            fragment: None,
+        });
         st.add_footnote_height(content_height);
     }
 
@@ -118,19 +112,17 @@ impl TypesetEngine {
                         note: &TableCellFootnote,
                         fragment: Option<FootnoteFragment>,
                         content_height: f64| {
-            if let Some(page) = st.pages.last_mut() {
-                page.footnotes.push(FootnoteRef {
-                    number: note.number,
-                    source: FootnoteSource::TableCell {
-                        para_index: para_idx,
-                        table_control_index: ctrl_idx,
-                        cell_index: note.cell_index,
-                        cell_para_index: note.cell_para_index,
-                        cell_control_index: note.cell_control_index,
-                    },
-                    fragment,
-                });
-            }
+            st.record_current_footnote(FootnoteRef {
+                number: note.number,
+                source: FootnoteSource::TableCell {
+                    para_index: para_idx,
+                    table_control_index: ctrl_idx,
+                    cell_index: note.cell_index,
+                    cell_para_index: note.cell_para_index,
+                    cell_control_index: note.cell_control_index,
+                },
+                fragment,
+            });
             let draw_separator = fragment
                 .map(|fragment| fragment.draw_separator)
                 .unwrap_or(true);

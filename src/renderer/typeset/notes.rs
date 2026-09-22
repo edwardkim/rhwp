@@ -5,7 +5,6 @@
 
 pub(super) mod endnotes;
 pub(super) mod footnotes;
-mod reservation;
 
 use super::TypesetState;
 use crate::model::control::Control;
