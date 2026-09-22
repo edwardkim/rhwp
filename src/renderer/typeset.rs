@@ -18048,63 +18048,23 @@ impl TypesetEngine {
                 content_budget,
                 styles,
             );
-            // A terminal paragraph tail must not cross the exact plain-text
-            // reset where the ordinary capacity cut already stopped.  A row
-            // may contain other `vpos=0` transitions for control-only
-            // paragraphs; those are local layout coordinates and keep the
-            // existing source-frame tail contract.
-            let ordinary_cut_ends_at_plain_text_saved_reset =
-                st.profile.hwp5_stored_pagination_layout()
-                    && !table.common.treat_as_char
-                    && terminal_response_before_empty_spacer
-                    && layout_engine.row_cut_ends_at_plain_text_saved_reset(
-                        table,
-                        r,
-                        row_start_cut,
-                        &res.end_cut,
-                        styles,
-                    );
-            let source_frame_tail_contract = (terminal_response_before_empty_spacer
-                && !ordinary_cut_ends_at_plain_text_saved_reset)
-                || terminal_source_frame
-                || continued_source_frame
-                || opening_source_frame
-                || mid_source_frame;
-            // [#5584 ②] 중간 행 갈래만의 확장 상한 — 근소 부족(한 유닛 규모)일 때만.
-            let mid_frame_only = mid_source_frame
-                && !opening_source_frame
-                && !terminal_source_frame
-                && !continued_source_frame
-                && !(terminal_response_before_empty_spacer
-                    && !ordinary_cut_ends_at_plain_text_saved_reset);
+            let source_tail_query = table::scan::source_tail::SourceTailQuery {
+                row: &row_query,
+                row_start_cut,
+                profile: &st.profile,
+                terminal_response_before_empty_spacer,
+                terminal_source_frame,
+                continued_source_frame,
+                opening_source_frame,
+                mid_source_frame,
+            };
+            let table::scan::source_tail::SourceTailGate {
+                enabled: source_tail_enabled,
+                mid_frame_only,
+            } = source_tail_query.gate(&res);
             let mut uses_source_frame_tail = false;
-            if (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
-                && !table.common.treat_as_char
-                && source_frame_tail_contract
-            {
-                let source_tail_cut = if continued_source_frame || res.consumed_height <= 0.5 {
-                    // A numeric tail allowance used to make this 0px case
-                    // reach the first saved response line.  Select that exact
-                    // source unit instead, so a page-tail frame can begin
-                    // without guessing its pixel height.
-                    layout_engine.next_visible_unit_cut_for_row(
-                        table,
-                        r,
-                        row_start_cut,
-                        &res.end_cut,
-                        styles,
-                    )
-                } else {
-                    stored_source_frame.or_else(|| {
-                        layout_engine.paragraph_tail_cut_for_row(
-                            table,
-                            r,
-                            row_start_cut,
-                            &res.end_cut,
-                            styles,
-                        )
-                    })
-                };
+            if source_tail_enabled {
+                let source_tail_cut = source_tail_query.candidate(&res, stored_source_frame);
                 if let Some(mut source_tail_cut) = source_tail_cut {
                     // [#6973] 파생 문단 꼬리 확장은 **저장된 물리 쪽 경계**를 넘지 않는다.
                     //
