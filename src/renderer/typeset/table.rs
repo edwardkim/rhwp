@@ -17,6 +17,9 @@ use crate::renderer::height_measurer::{
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+pub(super) mod block;
+pub(super) mod continuation;
+pub(super) mod footnotes;
 mod host_spacing;
 pub(super) mod scan;
 

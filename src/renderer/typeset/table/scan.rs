@@ -11,6 +11,9 @@ pub(in crate::renderer::typeset) mod block_fragment;
 pub(in crate::renderer::typeset) mod landscape;
 pub(in crate::renderer::typeset) mod row;
 pub(in crate::renderer::typeset) mod row_entry;
+mod runner;
+mod types;
+pub(in crate::renderer::typeset) use types::{BlockRowScanVars, BlockTableRowScan};
 pub(in crate::renderer::typeset) mod source_frame;
 pub(in crate::renderer::typeset) mod source_tail;
 
