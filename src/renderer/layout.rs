@@ -968,6 +968,34 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+/// [#7203] 쪽(단) 맨 위에 앉은 어울림(TAC) 표 호스트의 저장 첫 줄 `vertical_pos`(px).
+///
+/// `LINE_SEG.vertical_pos` 는 문단 기준이 아니라 쪽(단) 상단 기준 절대값이다. 호스트
+/// 문단이 단 맨 위에 오면 흐름 커서가 곧 단 상단이므로 저장값이 그대로 위 여백이 된다.
+/// 본문 문단은 `paragraph_layout` 의 column-top 계약(Task #1811)이 이 값을 싣는데, 빈
+/// 앵커 문단의 TAC 표는 `PageItem::FullParagraph` 가 발행되지 않아 그 블록을 못 타고
+/// 저장값이 0 으로 뭉개졌다.
+///
+/// 정본 `pdf/hwpctl_API_v2.4-hwp-2020.pdf` 가 두 갈래를 갈라 준다 — 쪽 맨 위에 놓인 표
+/// 15건 중 저장 `vpos=500HU`(6.67px)인 8건만 정본 윗변 `142.56` 대 rhwp `136.00` 으로
+/// 어긋났고(`+6.56px`, 8건 전부 같은 값), `vpos=0` 인 1건과 자리차지 6건은
+/// `136.01` 대 `136.00` 으로 이미 맞았다.
+///
+/// 상한은 Task #1811 과 같은 계약이다 — 쪽-상대 증거인 `vpos ≤ spacing_before` 만 쓰고
+/// 누적축 인코딩(`vpos ≫ spacing_before`)은 쪽-상대 증거가 아니므로 종전대로 버린다.
+/// 합성 사다리(`TAG_IMPLEMENTATION_PROPERTY`)도 증거가 아니다.
+fn tac_column_top_stored_vpos_px(para: &Paragraph, spacing_before: f64, dpi: f64) -> Option<f64> {
+    let seg = para.line_segs.first()?;
+    if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return None;
+    }
+    if seg.vertical_pos <= 0 {
+        return None;
+    }
+    let vpos_px = hwpunit_to_px(seg.vertical_pos, dpi);
+    (vpos_px <= spacing_before + 0.5).then_some(vpos_px)
+}
+
 fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
@@ -10908,6 +10936,22 @@ impl LayoutEngine {
                             gap,
                         )
                         .map_or(floor, |fixed_floor| floor.max(fixed_floor))
+                    } else {
+                        table_y_start
+                    };
+                    // [#7203] 단 맨 위 어울림(TAC) 표는 호스트의 저장 첫 줄 `vertical_pos`
+                    // 만큼 아래다. 흐름 커서가 곧 단 상단이라 그 저장값이 위 여백인데,
+                    // 빈 앵커 문단은 `paragraph_layout` 을 타지 않아 Task #1811 의
+                    // column-top vpos 계약을 못 받고 0 으로 뭉개졌다.
+                    let table_y_start = if is_tac
+                        && inline_pos.is_none()
+                        && self.profile.get().hwp5_stored_pagination_layout()
+                        && (para_y_for_table - col_area.y).abs() < 1.0
+                    {
+                        let spacing_before = para_style.map(|st| st.spacing_before).unwrap_or(0.0);
+                        table_y_start
+                            + tac_column_top_stored_vpos_px(para, spacing_before, self.dpi)
+                                .unwrap_or(0.0)
                     } else {
                         table_y_start
                     };

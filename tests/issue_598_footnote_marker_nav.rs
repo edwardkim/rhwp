@@ -1,3 +1,10 @@
+//! 좌표 상수 주의 — 아래 `hit_test_body_footnote_marker_native` 의 y 는 본문 줄의 실제
+//! 자리를 따라간다. [#7203] 이 단 맨 위 어울림 표에 저장 첫 줄 `vertical_pos` 를 실으면서
+//! `samples/footnote-01.hwp` 1쪽 본문이 통째로 **20.0px** 아래로 내려갔고, 그 자리가
+//! 한/글 정본이다 — `pdf/footnote-01-hwp-2020.pdf` 의 둘째 가로 괘선 `244.69` 대
+//! rhwp 표 윗변이 `224.50`(수정 전) → `244.50`(수정 후)로 맞았다. 본문 줄 잔차도
+//! 일정한 `+40.0px` 에서 `+20.0px` 로 줄었다. 그래서 y 세 개를 같은 폭으로 옮겼다.
+
 use std::path::Path;
 
 use rhwp::wasm_api::HwpDocument;
@@ -21,7 +28,7 @@ fn issue_598_body_footnote_marker_has_hit_and_cursor_unit() {
     assert_eq!(doc.get_control_text_positions(0, 3), "[7]");
 
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 392.0)
+        .hit_test_body_footnote_marker_native(0, 264.0, 412.0)
         .expect("hit body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"sectionIndex\":0"), "hit json: {hit}");
@@ -57,7 +64,7 @@ fn issue_598_second_body_footnote_marker_has_same_cursor_unit() {
     assert_eq!(doc.get_control_text_positions(0, 7), "[6]");
 
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 214.0, 684.0)
+        .hit_test_body_footnote_marker_native(0, 214.0, 704.0)
         .expect("hit second body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"paragraphIndex\":7"), "hit json: {hit}");
@@ -165,7 +172,7 @@ fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
     assert_eq!(missed, "{\"hit\":false}");
 
     let old_marker_hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 380.0)
+        .hit_test_body_footnote_marker_native(0, 264.0, 400.0)
         .expect("hit old marker position after delete");
     assert_eq!(old_marker_hit, "{\"hit\":false}");
 
