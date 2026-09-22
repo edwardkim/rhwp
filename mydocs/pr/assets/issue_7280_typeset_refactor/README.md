@@ -17,6 +17,8 @@ asset을 담는 후속 문서 commit과 실제 바이너리의 source SHA를 구
 사람 판정 정확도가 아니다. review 패널은 rhwp/PDF/overlay 순서다. WASM review 상단의 긴
 진단 라벨 일부가 오른쪽 끝에서 잘리지만 문서 영역과 위 표의 proxy 값은 보존되어 있다.
 이미지를 수정하거나 문서 영역을 잘라 차이를 숨기지 않았다.
+이 라벨 폭 초과는 [별도 도구 이슈 #7349](https://github.com/edwardkim/rhwp/issues/7349)로
+추적한다. #7280 조판 구조 변경의 제품 결함과 구별하며 원래 증적과 수치를 보존한다.
 
 원본 PNG 위치는 `output/7280/stage58-integration/` 아래 다음 경로다:
 

@@ -22,7 +22,7 @@ reviewer assign 또는 GitHub approve는 수행하지 않았다.
 | 원격 상태 | OPEN, Draft 아님, mergeable=true / blocked, CI 진행 중 |
 
 이 기록의 후속 commit이 최종 CI 대상 head가 된다. 위 mergeability와 CI는 작성 시점 값이며
-merge 전 최신 head의 required check·독립 검토·작업지시자 승인을 다시 확인한다.
+merge 전 최신 head의 required check·검토 결과·작업지시자 승인을 다시 확인한다.
 대형 구조 변경이므로 즉시 admin merge하지 않는다.
 
 [Issue #7280](https://github.com/edwardkim/rhwp/issues/7280)의 목적은 기여자의 조판 코드
@@ -73,7 +73,7 @@ tree `9d05662102f23f07d83c6a6df002d5cd781eda0c`로 head tree와 같았다.
 | 줄 소속·점유 높이 | paragraph/line_queries, whole_fit/flow/split_entry의 기존 계약 보존. 새 저장 정보 수용 규칙 없음 | 보존 범위 충족 |
 | 사례·독립성 | 별도 빌드한 devel을 동작 기준으로 비교; 한컴 PDF와 내부 계약은 구별. 신규 결함 수정 전 FAIL/후 PASS 주장은 없음 | 충족 |
 | 기준값 변경 | 테스트·golden·baseline·ignore 변경 없음 | 비해당 |
-| 주장·검증 범위 | 정확한 실행 SHA, 명령, 직접 판독 범위와 기존 PDF 차이를 보고. CPU/메모리 성능은 미측정 | 기록 충족; 독립적인 전체 코드 review는 대기 |
+| 주장·검증 범위 | 정확한 실행 SHA, 명령, 직접 판독 범위와 기존 PDF 차이를 보고. CPU/메모리 성능은 미측정 | 기록 충족; 아래 별도 self-review 완료. 외부 독립 승인 아님 |
 
 ## 입력 커밋과 시각 증적
 
@@ -119,7 +119,7 @@ Native/fresh WASM 대표 review·overlay 4개는 `mydocs/pr/assets/issue_7280_ty
 원시 compare/overlay/review 경로와 SHA는 위 asset 문서에 연결했다. 생성 직후 실제 PR 화면에서
 4개 이미지의 로딩/디코드와 고정 head URL을 확인했다. 후속 기록 head로 본문 URL도 갱신한다.
 WASM review 상단의 긴 도구 라벨 일부 잘림은 asset 안내에 공개했다. 문서 그림 자체 누락과는
-구별하며 게시용 라벨 보완 또는 별도 증적 도구 이슈 처리는 merge 전 검토 항목으로 남긴다.
+구별하며 후속 절차에서 별도 증적 도구 이슈 [#7349](https://github.com/edwardkim/rhwp/issues/7349)로 분리했다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -129,11 +129,109 @@ WASM review 상단의 긴 도구 라벨 일부 잘림은 asset 안내에 공개�
 고정해 Markdown image로 표시한다. asset이 실제 devel merge commit에 존재하고 별도 댓글 승인을
 받은 뒤에만 UTF-8 `--body-file`로 게시하고 API로 본문을 확인한다. 이번에는 댓글을 게시하지 않는다.
 
+## CI 성공 후 self-review — 2026-09-23
+
+작업지시자의 “CI 성공하면 self-review 절차를 진행” 승인에 따라 제출 이후 별도 검토 주기를
+실행했다. 대상은 `c08b4fc3bce4b06f207af80bd7c3d33ada75f547`, base는
+`1966af77fa8046c844d654b157b5168baad8a30e`다. 작성자 self-review이며 외부 독립 승인은 아니다.
+
+### 원격 CI와 통합
+
+- [CI](https://github.com/edwardkim/rhwp/actions/runs/35771920071): success.
+  Archive A–D, Lint(fmt/Native·WASM·workspace Clippy), Native Skia, 최종 Build & Test 통과.
+- [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/35771919652): success.
+- [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/35771920125): success, Rust 분석 포함.
+- [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/35773934089): pass.
+  WASM Build/Frontend/prop roundtrip/adapter inter-diff의 정책 skip은 실행 성공으로 세지 않는다.
+- fetch 후 base/head 불변, OPEN / mergeable=true / clean. `merge-tree` exit 0이며 결과
+  `533d9c93beb4615cc072ae788b60f9ac3c675102`는 head tree와 동일하다.
+- 실행 source `29130d539…`부터 검토 head까지 `src`, `tests`, `crates`, Cargo 입력과
+  Visual Sweep/WASM export 스크립트 diff가 없다. 기존 필수 lint·전체 회귀·Docker WASM 증거를
+  재사용하며, 이번 CI 성공을 이전 head에 소급하지 않는다.
+- 추가 focused nextest를 시작했으나 같은 제품에 대한 중복 검증이라는 작업지시자 지적에 따라
+  빌드 중 중단했다. `self-review-focused.log`는 통과/실패 증거로 세지 않는다.
+  이후 추가 빌드·회귀·시각 재실행 없이 기존 Stage57/58 검증과 위 CI 결과를 사용한다.
+
+### 실제 호출 경로 재검토
+
+| 검토 경계 | 대조한 생산·소비·최종 상태 경로 | 결과와 범위 |
+| --- | --- | --- |
+| 문단 판단 순서 | `paragraph/flow.rs::place`의 예산→흡수/다단→강제 경계→whole-fit→overflow→failed-fit; `whole_fit.rs::inspect`→`split_entry.rs` | rewind의 occupied/current height 구별, override 이후 반환 플래그, available-height 지연 조회 유지. 검토한 경로에서 신규 순서 역전 없음 |
+| 표 컷·높이·방출 | `continuation/fragment.rs` 시작 컷 snapshot→`fragment/budget.rs`→`fragment/scan.rs`→`scan/runner.rs`의 block/row step→`fragment/emit.rs`→PageItem | 원본/row-geometry 소유, 시작 행 물리 tail, 누적 consumed, caption/footnote와 최종 컷 종료를 구별. paint 경로는 변경 없음. 기존 호환 예외의 조판 타당성은 재승인하지 않음 |
+| Native와 재개 job 수명 | `continuation/step.rs` 동기 drain / `continuation/job.rs` begin·step·finish→`document_core/queries/rendering.rs:4740` step와 완료 후 pagination 교체 | 동일 fragment 경로를 소비하고 Native는 drain 뒤 state 복귀, job은 완료 전 공개 pagination 유지. 호출자는 base 대비 변경 없음 |
+| 문단·구역 최종화 | `section.rs` 문단 flow→anchor 마무리→controls→다음 문단; deferred picture→endnotes→deferred table→flush→finalize | 미주·보류 항목 순서와 종료 후처리 유지. `TypesetState`는 private data와 불변 Deref만 제공 |
+| 어울림과 미주 Query/Command | `controls/wrap_flow.rs::place`의 classify→흡수 또는 suffix 판단→밴드 종료→방출; `notes/endnotes/measure.rs`의 로컬 문단/컷 재색인과 scratch layout→fit→`emit.rs` | 밴드 종료 전후 관측 시점과 조건부 available-height 조회 유지. 측정용 노드와 확정 페이지 상태를 분리 |
+
+devel 반영 누락 검토에서는 Stage57의 `check-absorption.mjs`와 기존 `absorption.json`을
+읽고, 실제 `whole_fit.rs:160`의 위치 일치 판정→override 이후 결과→`flow.rs:141`→
+`split_entry.rs:199` 소비를 대조했다. 원격 변경 4개 hunk(#6761 helper/whole-fit/split,
+#6656 예약 높이 설명)의 누락은 발견하지 않았다. 이미 통과한 집중 403건과 최신 CI를
+증거로 재사용하며 해당 검사나 빌드를 재실행하지 않았다.
+
+기여자 관리 관점에서도 문단 순회는 section, 읽기 판정은 도메인 Query, 확정 상태 변경은
+state Command로 구분되고 구조 정본에 변경 위치·소비 경로·관련 테스트가 연결되어 있다.
+넓은 불변 `StateView`, `TypesetEngine`의 내부 가변 profile, layout/document_core와의 기존
+의존은 남아 있다. 완전한 CQRS 격리나 전체 엔진 재설계가 끝났다는 주장은 하지 않으며,
+이번 승인 범위인 기존 동작을 보존한 책임 분리의 제품 차단 사유로는 판단하지 않는다.
+
+R3–R5 단계별 이동 증명과 최신 통합 증거를 함께 검토했다. 이번 별도 코드 검토는 위 핵심
+분기와 호출 연결 중심이며 모든 기존 규칙의 사양 적합성 또는 성능 개선을 입증하지 않는다.
+
+### 시각 증거 재검토
+
+아래 재실행은 중복 작업 지적 **이전**의 이력이다. 지적 이후에는 추가 실행하지 않았다.
+기존 `compare-native.mjs`, `compare-visual.mjs native`, `compare-visual.mjs wasm`을 재실행했다.
+Native 14문서 772쪽의 pagination/render tree/SVG, WASM 11문서 748쪽의 render tree/SVG,
+선택 23쪽 PNG의 전후 동일 및 Native/WASM 동일을 다시 확인했다. 결과는
+`output/7280/stage60-submit/self-review-*-comparison.json`에 있다.
+
+대표 review/standalone overlay 4개를 직접 열었다. 제품 source와 일치하는 기존 fresh Docker
+WASM(`e28071e8…`)을 사용해 chemical 14쪽 Chrome Visual Sweep도 새 output에서 재실행했다:
+
+```bash
+VISUAL_SWEEP_CHROME=/home/edward/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome \
+venv/bin/python scripts/visual_sweep.py --key chemical-review \
+  --hwp samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp \
+  --pdf pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf \
+  --pages 14 --dpi 96 \
+  --rhwp-bin output/7280/stage58-integration/bin/head \
+  --wasm-pkg output/7280/stage58-integration/pkg/head \
+  --out output/7280/stage60-submit/self-review-wasm
+```
+
+완료 1/1쪽, 자동 후보 0, pixel match 93.79743%, proxy 21.71057%.
+104쪽 SVG/render tree export 완료, 14쪽 raster PNG는 이전 fresh WASM 결과와 바이트 동일하다.
+새 review 직접 판독에서도 표 외곽·본문의 기존 PDF 대비 세로 위치 차이를 확인했다.
+이는 구조 리팩토링의 신규 회귀가 아니라 보존된 차이이며 한컴 일치 통과를 뜻하지 않는다.
+
+### 보완 사항
+
+제품 코드에서 이번 변경으로 도입된 결함은 검토 범위에서 발견하지 않았다.
+다만 `wasm-chemical-rewind-p014-review.png`와 standalone overlay 상단의 긴 진단 라벨이
+우측에서 잘리는 증적 문제가 재현된다. 문서 본문 잘림과는 다르다.
+`visual_fixture_evidence.md`의 게시 증적 요건에 따라 별도 도구 이슈로 추적한다.
+초기 self-review에서는 원격 이슈/댓글·approve·merge를 실행하지 않았다.
+최종 기록 정리에서는 제품·테스트·기준값을 수정하지 않았고, 빌드/회귀/시각 검증도 추가 실행하지 않았다.
+초기 정리는 review와 오늘할일의 로컬 갱신까지만 수행했다.
+
+### 승인된 후속 처리
+
+작업지시자의 “후속 절차를 진행하세요” 승인으로 라벨 문제를
+[#7349](https://github.com/edwardkim/rhwp/issues/7349)에 등록했다. 동일 증상 검색 뒤 #6016의
+해결된 한글 tofu 문제와 구별했으며 원래 PNG와 metric·본문을 변경하지 않았다.
+이 항목은 도구의 잔여 문제이지 #7280 제품 결함이나 검증 실패가 아니다.
+
+검토 기록·오늘할일·asset 안내만 single-parent review-only 후속 commit으로 같은 PR에 반영한다.
+제품 코드·테스트·기준값 변경, devel 재병합, 빌드·회귀 재실행은 하지 않는다.
+녹색 candidate는 `c08b4fc3…`와 위 CI run이며 후속 head의 실제 preflight/aggregate 결과는
+push 후 확인한다. 기존 head 성공을 새 head 성공으로 미리 기록하지 않는다.
+
 ## 최종 판정
 
-**머지 보류** — 제출 및 작성자 로컬 검증은 완료했으나 최신 원격 CI는 진행 중이고 대형 PR의
-별도 검토/작업지시자 merge 판단은 미실행이다. 새 실행 회귀가 확인되어 보류한 것은 아니다.
+**승인** — #7280 구조 리팩토링의 self-review 범위에서 새 제품 결함이나 devel 반영 누락을
+발견하지 않았다. 검증된 제품과 동일하며 CI 성공·기존 집중/전체 검증·시각 증거를 재사용했다.
+증적 라벨 한계는 #7349로 분리해 공개했다. 외부 독립 승인이나 한컴 피델리티 전체 승인은 아니다.
 
-해제 조건은 최신 head의 required check 성공, 대형 구조 변경 검토와 남은 증적 라벨 처리 확인,
-작업지시자의 merge 승인이다. 제품 수정이 추가되면 해당 head를 다시 검증한다.
+남은 merge 조건은 review 기록 반영 후 최신 head의 required check 확인과 작업지시자의
+merge 승인이다. 제품 수정이 추가되면 해당 head를 다시 검증한다.
 이 기록은 GitHub approve·admin bypass·merge·이슈 close를 수행하지 않는다.
