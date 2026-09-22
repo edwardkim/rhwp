@@ -5,6 +5,7 @@ use crate::renderer::typeset::{
     para_has_non_whitespace_text, paragraph, partial_rowbreak_fragment_spacing_px,
     row_geometry_table, saved_rowbreak_first_fragment_flow_overflow_allowance, table,
     table_declared_object_covers_cell_row_frames, Control, TypesetEngine, TypesetState,
+    SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
 };
 
 use super::super::TableContinuationCursor;
@@ -460,10 +461,37 @@ impl TypesetEngine {
         //   direct  r=7 에서 sfwr=false → 7행에서 끊고 8행은 다음 단 → +1쪽
         //   한/글 2024 = 13쪽 = hwp5    (direct 는 14쪽)
         // ```
+        // [#7288] 저장 프레임은 **이 내용에 대한 증거**일 때만 예산 초과를 허용한다.
+        //
+        // 이 허용치는 선언 개체 높이(`table.common.height`)가 만든 프레임에서 온다.
+        // 선언이 실제 측정보다 크게 작으면 그 프레임은 이 내용의 기록이 아니다 —
+        // 편집으로 낡았거나 애초에 다른 내용의 값이다. 그대로 믿으면 잔여 밴드에 안
+        // 들어가는 행을 통째로 얹어 지면 밖으로 넘긴다.
+        //
+        // ```text
+        //   선언 개체 높이   53.8px
+        //   측정 첫 행      515.0px   ← 9.6배
+        //   잔여 밴드       335.5px
+        //   종전           행을 y=670..1185 에 통째로 — 본문(1009px) 밖 176px
+        // ```
+        //
+        // 상한은 새로 만들지 않는다. 같은 «선언을 어디까지 믿나» 질문에 [#3236] 이
+        // 쓰는 `SINGLE_ROW_DECLARED_TRUST_MAX_RATIO` 를 그대로 쓴다 — 측정이 선언의
+        // 1.5배를 넘으면 글꼴 대체 팽창이 아니라 내용이 진짜로 큰 것이므로 선언 특례를
+        // 적용하지 않는다. 프레임이 덮는다고 본 행들(`source_first_fragment_row_end`)의
+        // 측정 합으로 견준다. [#5057] 의 21484591 은 선언과 측정이 맞아 넘지 않는다.
+        let source_frame_declared_height_is_credible = source_first_fragment_row_end
+            .zip(saved_first_fragment_source_frame)
+            .is_some_and(|(row_end, (frame_height, _))| {
+                let measured: f64 = cut_row_h.iter().take(row_end).sum::<f64>()
+                    + cs * row_end.saturating_sub(1) as f64;
+                measured <= frame_height * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
+            });
         let mut source_first_fragment_overflow_allowance = saved_first_fragment_source_frame
             .filter(|_| {
                 st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout()
             })
+            .filter(|_| source_frame_declared_height_is_credible)
             .filter(|_| st.current_footnote_height <= 0.0)
             .map(|(_, flow_bottom_px)| {
                 saved_rowbreak_first_fragment_flow_overflow_allowance(
