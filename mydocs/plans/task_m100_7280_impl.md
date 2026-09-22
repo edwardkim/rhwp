@@ -1,13 +1,13 @@
 # Task #7280 — 조판 코드 책임 분리 및 변경 관리 구현계획
 
 - Issue: [#7280](https://github.com/edwardkim/rhwp/issues/7280)
-- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2 구조 분리·책임 묶음 통합 검증 완료](../working/task_m100_7280_stage41.md), [R3 책임 묶음 구현·검증 완료](../working/task_m100_7280_stage53.md), [R4 각주·미주 책임 묶음 구현·검증 완료](../working/task_m100_7280_stage54.md). R5–R6 및 최종 제출 게이트는 남아 있다. 아래 절편별 잔여 목록은 각 단계 당시의 기록이다.
+- 상태: 2026-09-20 작업지시자 승인. [R1 완료](../working/task_m100_7280_stage2.md), [R2 구조 분리·책임 묶음 통합 검증 완료](../working/task_m100_7280_stage41.md), [R3 책임 묶음 구현·검증 완료](../working/task_m100_7280_stage53.md), [R4 각주·미주 책임 묶음 구현·검증 완료](../working/task_m100_7280_stage54.md), [R5 상태 소유·구역 조정 책임 묶음 구현·검증 완료](../working/task_m100_7280_stage55.md). R6 및 최종 제출 게이트는 남아 있다. 아래 절편별 잔여 목록은 각 단계 당시의 기록이다.
 - 수행계획: [task_m100_7280.md](task_m100_7280.md)
 - 기준 조사: [stage1](../working/task_m100_7280_stage1.md), 커밋 `816f57818`.
 - 제품 baseline: `722fb38af361ed3508aef7ca0ac3a8fdc5d3c0db`.
 - 기준 회귀: 10,096건 통과 / 실패 0건 / 제외 50건. 기본 feature 로컬 nextest 결과이며 전체 CI·시각 정확성 판정은 아니다.
 - 진행 단위 변경(2026-09-22): 작업지시자 지시에 따라 Stage52 이후에는 **R3 잔여 전체 → R4 전체 → R5 전체**를 구현·검증·완료 보고 단위로 삼는다. 작은 helper 이동마다 승인 대기·새 단계 문서·동일 누적 회귀를 반복하지 않는다. 상세 운영은 §4.1과 §7을 따른다.
-- 책임 묶음 구현 기록: [Stage53 R3 완료](../working/task_m100_7280_stage53.md), [Stage54 R4 완료](../working/task_m100_7280_stage54.md). R4 제품 `59256802c`에서 전체 10,096건 통과/0실패/기존 제외50, Native 353쪽·fresh Docker WASM 329쪽 데이터와 선택19쪽 출력 보존을 확인했다. 다음은 승인된 R5 전체이며 R5/R6 완료를 뜻하지 않는다.
+- 책임 묶음 구현 기록: [Stage53 R3 완료](../working/task_m100_7280_stage53.md), [Stage54 R4 완료](../working/task_m100_7280_stage54.md), [Stage55 R5 완료](../working/task_m100_7280_stage55.md). R5 제품 `7947ee45f`에서 집중 395건 및 전체 10,096건 통과/0실패/기존 제외50, Native 353쪽·fresh Docker WASM 329쪽 데이터와 선택19쪽 출력 보존을 확인했다. 다음은 R6 구조 정본·규칙 관리 지도·재계측이며 최종 제출 게이트는 별도로 남아 있다.
 - 후속 진행: [R2e 분할 경계 보정 분리·집중 검증 완료](../working/task_m100_7280_stage7.md).
   R2 줄 스캔·배치 및 표 문단 흐름 조정 분리는 계속 진행한다.
 - 현재 절편: [R2f 줄 후보 스캔 분리·집중 검증 완료](../working/task_m100_7280_stage8.md).
