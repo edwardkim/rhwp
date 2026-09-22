@@ -159,6 +159,12 @@
   고정 제품 `4a9804d05`에서 정책·fmt·native Clippy와 기존 집중 계약 387건 통과.
   가로 용지/행 내부 컷·스캔 상태/continuation 본체 및 R3 통합 검증은 남아 있다.
 
+- 최신 절편: [Stage49 R3h 가로 용지 행 수용·분할 조건 Query 분리·집중 검증 완료](../working/task_m100_7280_stage49.md).
+  `table/scan/landscape.rs`에 whole/short-row 조건과 경계 행 분할 가능성 조회를 분리했다.
+  조건 평가·반복 조회·부모의 수용/예약/이월 순서를 보존했다. 고정 제품 `a9a8d49bc`에서
+  정책·fmt·native Clippy와 기존 집중 계약 389건 통과. 행 내부 컷·스캔 상태/continuation
+  본체 및 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -212,6 +218,7 @@ renderer/typeset/
   table/scan/block_fragment.rs       채택한 컷의 끝 행·점유 높이 조회, 부모 상태 반영과 분리
   table/scan/row.rs                  일반/rowspan 행 요구 높이·잔여 밴드 컷/표시 높이 조회
   table/scan/source_frame.rs         일반 행 저장 프레임·후속 컷 조건·통째 수용 조회
+  table/scan/landscape.rs            가로 용지 whole/short-row 수용 형상·경계 행 분할 가능성 조회
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
