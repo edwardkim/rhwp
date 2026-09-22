@@ -4896,23 +4896,38 @@ impl TypesetEngine {
                     if *para_index == para_idx && *start_line == 0)
                 }));
         let has_substantive_text = para_has_non_whitespace_text(para);
-        // [#7330] 공백만 있는 **단일** host 줄은 표 뒤 본문으로 내보내지 않는다.
+        let whitespace_only_single_tac_host_line = !has_substantive_text
+            && !para.text.is_empty()
+            && table.common.treat_as_char
+            && pre_table_end_line == 0
+            && total_lines <= 1;
+        // [#7330] 같은 문단의 **앞선 표가 이미 놓은** host 줄을 마지막 표가 한 번 더
+        // "표 뒤 본문" 으로 내보내는 갈래를 막는다 — 같은 줄의 **이중 방출**이다.
         //
-        // 종전 게이트는 `treat_as_char && pre_table_end_line == 0` 으로 좁혀 있었다.
-        // 같은 문단에 표가 둘 있고 마지막 표가 비-TAC 이면 위 `post_table_start` 가
-        // `is_last_table && !is_first_table` 갈래로 **0** 이 되어, 공백뿐인 host 줄
-        // 전체가 "표 뒤 본문" 으로 나간다. 그 줄은 저장 vpos 가 아니라 흐름 꼬리를
-        // 받으므로 float 표 아래에 그려지고 그만큼 뒤 문단이 밀린다.
+        // 한 문단에 표가 둘이고 마지막 표가 비-TAC 이면 위 `post_table_start` 가
+        // `is_last_table && !is_first_table` 갈래로 **0** 이 된다. 그러면 앞선 TAC 표가
+        // `pre_table_end_line`(=1)까지로 이미 배치한 줄이 `post_table_start..total_lines`
+        // = `0..1` 로 통째로 다시 실려 나간다. 그 두 번째 사본은 저장 vpos 가 아니라
+        // 흐름 꼬리를 받으므로 자리차지 표 **아래**에 그려지고 뒤 문단을 그만큼 민다.
         //
         // 실측 `36374873_결재문서본문_야간방호일지` pi=3 (공백 42칸, 줄 1개):
         //   host 줄  978.2 (13×8 표가 끝나는 976.9 뒤)  → 수정 후 251.5 (그 표 앞)
         //   pi=5..7  1125.5 / 1146.8 / 1168.1  → 용지(1122.5) 밖
         //   수정 후  pi=5..7  1030.6 / 1052.0 / 1073.3 (줄 하나 93.5px 이 흐름에서 빠져 -94.9px)
-        let whitespace_only_single_host_line =
-            !has_substantive_text && !para.text.is_empty() && total_lines <= 1;
+        //
+        // `is_first_table` 로 좁히는 것이 핵심이다. 첫 표가 곧 마지막 표인 host
+        // (`#6925` 의 `148751598-briefing.hwp` pi=0: `first=last=true`, `pre_end=0`)는
+        // 그 줄을 **처음** 놓는 것이므로 막으면 저장 슬롯이 접혀 뒤가 24px 당겨진다.
+        let whitespace_only_host_line_already_placed = !has_substantive_text
+            && !para.text.is_empty()
+            && total_lines <= 1
+            && !is_first_table
+            && pre_table_end_line > 0
+            && post_table_start == 0;
         let has_post_text = !para.text.is_empty()
             && total_lines > post_table_start
-            && !whitespace_only_single_host_line;
+            && !whitespace_only_single_tac_host_line
+            && !whitespace_only_host_line_already_placed;
         let should_add_post_text =
             is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
         if should_add_post_text {
