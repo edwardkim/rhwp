@@ -17600,10 +17600,6 @@ impl TypesetEngine {
                 // [Task #1025] 연속분 커서가 블록 중간이면 블록 시작 컷을 적용.
                 let blk_start_cut: &[usize] = if r == cursor_row { &start_cut } else { &[] };
                 let block_row_offsets = block_query.row_offsets(&block);
-                let block_fragment_height =
-                    |row_end: usize, block_start_cut: &[usize], block_end_cut: &[usize]| -> f64 {
-                        block_query.fragment_height(&block, row_end, block_start_cut, block_end_cut)
-                    };
                 let block_h = block_query.required_height(&block, blk_start_cut);
                 if consumed + cs_before + block_h <= avail_for_rows {
                     consumed += cs_before + block_h;
@@ -17727,56 +17723,18 @@ impl TypesetEngine {
                 if can_intra_split
                     && ((!res.fully_consumed && allow_block_split) || band_fill.is_some())
                 {
-                    let (cut_res, cut_offsets) = if let Some((ref res2, ref offsets)) = band_fill {
-                        (res2, offsets.as_slice())
-                    } else {
-                        (&res, block_row_offsets.as_slice())
-                    };
-                    let use_offsets = rowbreak_use_row_offsets || band_fill.is_some();
-                    end_row = if use_offsets {
-                        let mut render_end = b_start + 1;
-                        for (idx, row_top) in cut_offsets.iter().enumerate() {
-                            if *row_top < cut_res.consumed_height - 0.1 {
-                                render_end = b_start + idx + 1;
-                            }
-                        }
-                        render_end.min(b_end).max(b_start + 1)
-                    } else {
-                        b_end
-                    };
-                    split_end_cut = cut_res.end_cut.clone();
-                    split_end_limit = cut_res.consumed_height;
+                    let selected = table::scan::block_fragment::SelectedBlockCut::select(
+                        rowbreak_use_row_offsets,
+                        &res,
+                        &block_row_offsets,
+                        &band_fill,
+                    );
+                    end_row = selected.end_row(&block);
+                    split_end_cut = selected.cut_res.end_cut.clone();
+                    split_end_limit = selected.cut_res.consumed_height;
                     split_block_start = Some(b_start);
-                    let split_total = if use_offsets {
-                        // [#2287] 오프셋(밴드) 컷의 페이지 소비 권위는 컷 워크의
-                        // consumed_height(예산 내 가시 밴드)다. per-row 합산
-                        // (block_fragment_height)은 rowspan 걸침 셀의 유닛을 행
-                        // 단위로 배분하지 못해 양방향으로 발산한다:
-                        // - 연속분(start_cut)에서 row_span==1 필터로 **0 평가**
-                        //   (완전 증발 — 표 밀집 -40~-64쪽의 결함 1), 또는
-                        // - 첫 조각에서 걸침 셀 유닛 전량이 계상되어 **블록 전체로
-                        //   과대** (교육부 47×9 r2..4: frag 2354.6 vs 컷 450.7 —
-                        //   p25 가 2396px 로 만재되어 p26 sliver + p30 tail
-                        //   overflow, PR #2290 P1 리뷰).
-                        // frag_total 은 렌더 조각 표시용 참고값으로만 두고, 소비는
-                        // 컷 워크와 발산할 때 consumed_height 로 정정한다.
-                        let frag_total =
-                            block_fragment_height(end_row, blk_start_cut, &cut_res.end_cut);
-                        if (frag_total - cut_res.consumed_height).abs() <= 0.5 {
-                            frag_total
-                        } else {
-                            cut_res.consumed_height
-                        }
-                    } else {
-                        layout_engine.row_block_content_height(
-                            table,
-                            b_start,
-                            b_end,
-                            blk_start_cut,
-                            &cut_res.end_cut,
-                            styles,
-                        )
-                    };
+                    let split_total =
+                        selected.occupied_height(&block_query, &block, blk_start_cut, end_row);
                     consumed += cs_before + split_total;
                     break;
                 }
