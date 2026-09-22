@@ -60,7 +60,7 @@ pub(super) fn discard_terminal_blank_only_page(
     }
 }
 /// 페이지 번호 + 머리말/꼬리말 최종 할당 (기존 Paginator::finalize_pages와 동일)
-pub(super) fn finalize_pages(
+pub(in crate::renderer::typeset) fn finalize_pages(
     pages: &mut [PageContent],
     hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
     page_number_pos: &Option<crate::model::control::PageNumberPos>,

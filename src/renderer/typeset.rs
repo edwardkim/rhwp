@@ -6618,7 +6618,7 @@ mod tests {
 
         let mut paragraphs = vec![Paragraph::default(); 8];
         paragraphs[7].controls = vec![Control::Table(Box::default()), Control::PageHide(hide)];
-        TypesetEngine::finalize_pages(&mut pages, &[], &None, &paragraphs);
+        state::finalize::finalize_pages(&mut pages, &[], &None, &paragraphs);
 
         assert!(pages[0].page_hide.is_some());
         assert!(pages[1].page_hide.is_none());

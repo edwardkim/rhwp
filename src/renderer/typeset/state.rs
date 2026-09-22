@@ -877,7 +877,7 @@ impl TypesetState {
 
 mod commands;
 mod data;
-mod finalize;
+pub(super) mod finalize;
 mod notes;
 mod transition;
 
