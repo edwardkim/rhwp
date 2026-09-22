@@ -357,14 +357,18 @@ impl TypesetEngine {
         // its final line spacing is not painted content. Subtracting the box
         // inset from that mid-page advance rejects valid source units
         // (80168 157->158 pages, rowbreak-problem-pages 18->19).
-        let page_avail = if let Some(p) = fragment_placement.filter(|_| single_cell_fragment_shape)
-        {
-            let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
-                table,
-                st.available_height(),
-                self.dpi,
-            );
-            page_avail.min((box_bottom - p.table_top - caption_extra).max(0.0))
+        let single_cell_box_height = fragment_placement
+            .filter(|_| single_cell_fragment_shape)
+            .map(|p| {
+                let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                    table,
+                    st.available_height(),
+                    self.dpi,
+                );
+                (box_bottom - p.table_top).max(0.0)
+            });
+        let page_avail = if let Some(box_height) = single_cell_box_height {
+            page_avail.min((box_height - caption_extra).max(0.0))
         } else {
             page_avail
         };
@@ -558,6 +562,8 @@ impl TypesetEngine {
             source_first_fragment_overflow_allowance,
             header_overhead,
             avail_for_rows,
+            single_cell_fragment_shape,
+            single_cell_box_height,
         }
     }
 }

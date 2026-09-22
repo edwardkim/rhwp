@@ -869,6 +869,17 @@ impl TypesetEngine {
                     self.dpi,
                 ).map(|top| top - column.y)
             },
+            next_para_stored_top: paragraphs_all.get(para_idx + 1).and_then(|next| {
+                let seg = next
+                    .line_segs
+                    .first()
+                    .filter(|seg| !is_synthetic_line_seg(seg))?;
+                let spacing_before = styles
+                    .para_styles
+                    .get(next.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                Some((seg.vertical_pos, spacing_before))
+            }),
             source_cellbreak_row_end: (self.profile.get().hwp5_stored_pagination_layout()
                 && !self.profile.get().session_edited())
             .then(|| paragraphs_all.get(para_idx + 1))
