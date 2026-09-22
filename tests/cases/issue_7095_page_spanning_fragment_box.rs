@@ -508,3 +508,82 @@ fn issue_7095_stale_cell_height_keeps_content_fitted_box_top_anchored() {
         cell.y
     );
 }
+
+/// 쪽 트리에서 본문 단 바로 아래 항목들(표·글줄)의 (종류, 위, 아래).
+fn column_children(core: &DocumentCore, page_index: u32) -> Vec<(bool, f64, f64)> {
+    let page = core
+        .build_page_render_tree(page_index)
+        .expect("render tree");
+    fn column(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(column)
+    }
+    column(&page.root)
+        .expect("본문 단")
+        .children
+        .iter()
+        .map(|n| {
+            (
+                matches!(n.node_type, RenderNodeType::Table(_)),
+                n.bbox.y,
+                n.bbox.y + n.bbox.height,
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn issue_7095_terminal_fragment_box_takes_the_stored_cell_height_remainder() {
+    // 한/글은 분할된 칸의 저장 높이를 조각 상자 높이의 합으로 적는다. 저장 높이는 칸의
+    // 최소 높이라 끝 조각 상자는 `max(내용, 저장 높이 − 앞 조각 상자 합)` 이다.
+    //
+    // - 7062: 저장 700976HU = 9346.35px ↔ 정본 상자 500.30 + 996.43×8 + 874.04 = 9345.78px.
+    //   정본 10쪽 상자 47.20..921.24 (PDF 벡터, 쪽 척도 제거). 수정 전 rhwp 는 내용에 맞춰
+    //   901.3 에서 끝났다.
+    // - 1382000 `pi=95`: 저장 4335.25px ↔ 정본 합 4335.38px. 정본 30쪽 상자 아래 923.87,
+    //   수정 전 842.0.
+    let core = load();
+    let (_, top, bottom) = column_children(&core, 9)
+        .into_iter()
+        .find(|(is_table, _, _)| *is_table)
+        .expect("7062 10쪽 끝 조각");
+    assert!(
+        (top - 47.2).abs() < 0.5 && (bottom - 921.24).abs() < 1.0,
+        "#7095: 7062 10쪽 끝 조각 상자는 정본 47.20..921.24 여야 한다: {top:.2}..{bottom:.2}"
+    );
+
+    let survey = load_sample("samples/task2430/1382000_domestic_violence_survey.hwp");
+    let (_, _, bottom) = column_children(&survey, 29)
+        .into_iter()
+        .find(|(is_table, _, _)| *is_table)
+        .expect("1382000 30쪽 끝 조각");
+    assert!(
+        (bottom - 923.87).abs() < 1.0,
+        "#7095: 1382000 30쪽 끝 조각 상자 아래는 정본 923.87 이어야 한다: {bottom:.2}"
+    );
+}
+
+#[test]
+fn issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top() {
+    // 반례: rowbreak-problem-pages `pi=13` 은 저장 칸 높이가 상자 합이 아니다. 나머지 규칙만
+    // 쓰면 끝 조각이 16px 늘어 뒤 문단이 한/글 저장 자리(첫 줄 vpos 21751HU → 본문 위 94.5 +
+    // 290.0 = 384.5)를 넘고 문서가 18 → 19쪽이 된다. 다음 문단의 저장 자리가 늘림의 상한이다.
+    let core = load_sample("samples/rowbreak-problem-pages.hwp");
+    let first_line_after_table = column_children(&core, 13)
+        .into_iter()
+        .skip_while(|(is_table, _, _)| !*is_table)
+        .find(|(is_table, _, _)| !*is_table)
+        .map(|(_, top, _)| top)
+        .expect("14쪽 끝 조각 뒤 문단");
+    assert!(
+        (first_line_after_table - 384.5).abs() < 1.5,
+        "#7095: 끝 조각 뒤 문단은 한/글 저장 자리 384.5 에 있어야 한다: {first_line_after_table:.2}"
+    );
+    assert_eq!(
+        core.page_count(),
+        18,
+        "#7095: rowbreak-problem-pages 는 한/글과 같은 18쪽"
+    );
+}
