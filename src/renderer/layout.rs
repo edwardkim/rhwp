@@ -2931,6 +2931,34 @@ fn tac_has_only_in_front_decoration_shapes_before(para: &Paragraph, control_inde
         })
 }
 
+/// 글앞 장식 뒤의 TAC 표가 물리 표 상자까지 담은 저장 줄과 음수 줄간격을 함께
+/// 기록한 경우, 표의 paint 높이에는 줄간격이 없지만 뒤 문단의 flow 예약에는 한 번
+/// 포함된다. 이 음수분을 다시 예약하면 표 뒤 본문이 글꼴 높이만큼 아래로 밀린다.
+/// 실제 표 소유 줄, 바깥 여백 포함 줄높이, 글앞 장식이라는 세 조건을 모두 확인해
+/// 일반 TAC/도형의 저장 줄 계약에는 적용하지 않는다 (#7333 p13·p16~21).
+fn tac_in_front_decoration_fixed_line_spacing_deduction_hu(
+    para: &Paragraph,
+    control_index: usize,
+) -> Option<i32> {
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char
+        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
+        || table.common.height >= 0x8000_0000
+    {
+        return None;
+    }
+    let seg = para
+        .line_segs
+        .get(control_line_seg_index(para, control_index)?)?;
+    let outer_box_height = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    (seg.line_spacing < 0 && i64::from(seg.line_height) >= outer_box_height - 10)
+        .then_some(-seg.line_spacing)
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -12740,6 +12768,18 @@ impl LayoutEngine {
                 // 은 이미 반영됨 — #521 후가산은 그 외 경로에만 적용.
                 if outer_margin_bottom_px > 0.0 && !stored_lh_covers_om {
                     y_offset += outer_margin_bottom_px;
+                }
+                // 앞선 글앞 장식 도형은 호스트 줄의 흐름에 참여하지 않아 `host_seg`를
+                // 의도적으로 비운다. 그 경우 물리 표 상자를 포함한 실제 소유 줄의
+                // 음수 Fixed 줄간격도 누락된다. 표 paint와 outer margin은 위에서 이미
+                // 반영했으므로, 뒤 문단의 흐름에만 이 저장 간격을 더한다(#7333 p13,
+                // p16~21). 양수 간격 및 일반 가시 개체 조합은 기존 분기를 유지한다.
+                if self.profile.get().hwp5_stored_pagination_layout() {
+                    if let Some(deduction_hu) =
+                        tac_in_front_decoration_fixed_line_spacing_deduction_hu(para, control_index)
+                    {
+                        y_offset -= hwpunit_to_px(deduction_hu, self.dpi);
+                    }
                 }
                 // TAC 표도 호스트 문단의 점유 영역이다. 별도 PageItem 경로로
                 // 그려져 layout_composed_paragraph를 거치지 않아도 문단 외곽선을

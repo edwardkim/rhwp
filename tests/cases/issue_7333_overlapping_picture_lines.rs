@@ -26,6 +26,18 @@ fn find_table(node: &serde_json::Value, para_index: u64) -> Option<(f64, f64)> {
         .find_map(|child| find_table(child, para_index))
 }
 
+fn find_text_line_y(node: &serde_json::Value, para_index: u64) -> Option<f64> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("TextLine")
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
+    {
+        return node.get("bbox")?.get("y")?.as_f64();
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(|child| find_text_line_y(child, para_index))
+}
+
 fn rectangles(node: &serde_json::Value, out: &mut Vec<(f64, f64, f64, f64)>) {
     if node.get("type").and_then(|value| value.as_str()) == Some("Rect") {
         if let Some(bbox) = node.get("bbox") {
@@ -129,4 +141,35 @@ fn in_front_decoration_keeps_character_table_on_its_saved_line() {
         "pi=220 번호 1 주석 y={:.1}px — 주석은 첫 저장 줄에 남아야 한다",
         callout.1
     );
+}
+
+#[test]
+fn fixed_line_spacing_after_in_front_decoration_table_is_not_reserved_twice() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    // 한컴 2020 PDF에서 측정한 표 뒤 첫 본문 줄: p13, p16~21.
+    for (page_index, para_index, expected_y) in [
+        (12, 209, 853.5),
+        (15, 253, 835.4),
+        (16, 265, 814.5),
+        (17, 277, 816.8),
+        (18, 288, 662.5),
+        (19, 301, 685.2),
+        (20, 315, 729.0),
+    ] {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let y = find_text_line_y(&tree, para_index)
+            .unwrap_or_else(|| panic!("{}쪽 pi={para_index} 표 뒤 첫 본문 줄", page_index + 1));
+        assert!(
+            (y - expected_y).abs() < 1.0,
+            "{}쪽 pi={para_index} 본문 y={y:.1}px — 음수 저장 줄간격을 표 예약에 중복 계상하면 안 된다",
+            page_index + 1
+        );
+    }
 }
