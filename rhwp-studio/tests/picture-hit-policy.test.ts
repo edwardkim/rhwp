@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  exactSelectedControlLayoutPages,
   isNestedCellDescendantOfControl,
   orderedControlLayoutPages,
 } from '../src/engine/picture-hit-policy.ts';
@@ -32,4 +33,11 @@ test('글상자 control은 그 안의 cellPath 그림의 조상으로 유지한�
 test('마우스로 고른 개체는 해당 쪽을 먼저 다시 찾는다', () => {
   assert.deepEqual(orderedControlLayoutPages(4, 2), [2, 0, 1, 3]);
   assert.deepEqual(orderedControlLayoutPages(4), [0, 1, 2, 3]);
+});
+
+test('포인터가 확정한 쪽은 다음 쪽 fallback 없이 그 쪽만 조회한다', () => {
+  assert.deepEqual(exactSelectedControlLayoutPages(4, 2), [2]);
+  assert.deepEqual(exactSelectedControlLayoutPages(4), [0, 1, 2, 3]);
+  assert.deepEqual(exactSelectedControlLayoutPages(4, -1), [0, 1, 2, 3]);
+  assert.deepEqual(exactSelectedControlLayoutPages(4, 4), [0, 1, 2, 3]);
 });

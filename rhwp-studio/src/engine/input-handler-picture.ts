@@ -7,9 +7,9 @@ import { PictureResizeJournal } from './picture-resize-journal';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import { computeRotationRecord } from './object-drag-record';
 import {
+  exactSelectedControlLayoutPages,
   isMasterPageDecoration,
   isNestedCellDescendantOfControl,
-  orderedControlLayoutPages,
   isSupportedPictureControl,
 } from './picture-hit-policy';
 import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
@@ -366,7 +366,7 @@ export function findPictureBbox(this: any,
   const layoutType = matchType === 'line' ? 'line' : matchType;
   try {
     const pageCount = this.wasm.pageCount;
-    for (const p of orderedControlLayoutPages(pageCount, ref.pageIndex)) {
+    for (const p of exactSelectedControlLayoutPages(pageCount, ref.pageIndex)) {
       const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isSupportedPictureControl) };
       for (const ctrl of layout.controls) {
         if (matchesControlRef(ctrl, { ...ref, type: matchType } as PictureObjectRef, layoutType)) {
@@ -447,7 +447,7 @@ export function renderPictureObjectSelection(this: any): void {
   try {
     const zoom = this.viewportManager.getZoom();
     const pageCount = this.wasm.pageCount;
-    for (const p of orderedControlLayoutPages(pageCount, ref.pageIndex)) {
+    for (const p of exactSelectedControlLayoutPages(pageCount, ref.pageIndex)) {
       const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isSupportedPictureControl) };
       for (const ctrl of layout.controls) {
         if (matchesControlRef(ctrl, ref as PictureObjectRef, layoutType)) {

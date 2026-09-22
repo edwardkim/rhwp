@@ -51,3 +51,17 @@ export function orderedControlLayoutPages(pageCount: number, selectedPage?: numb
   if (selectedPage === undefined || selectedPage < 0 || selectedPage >= pageCount) return pages;
   return [selectedPage, ...pages.filter((page) => page !== selectedPage)];
 }
+
+/**
+ * 포인터가 확정한 쪽에서 객체 선택 overlay를 다시 찾는 순서.
+ *
+ * `pageIndex`가 있으면 click hit가 이미 해당 layout 항목의 쪽 소유를 확정했다. 이 뒤에
+ * 같은 document address를 다른 쪽에서 찾아 쓰면 맞쪽 보기에서 클릭과 핸들이 서로 다른
+ * 쪽에 나타날 수 있다. keyboard/명령처럼 page hint가 없는 selection만 전체 검색한다.
+ */
+export function exactSelectedControlLayoutPages(pageCount: number, selectedPage?: number): number[] {
+  if (selectedPage !== undefined && selectedPage >= 0 && selectedPage < pageCount) {
+    return [selectedPage];
+  }
+  return Array.from({ length: Math.max(0, pageCount) }, (_, page) => page);
+}
