@@ -377,7 +377,7 @@ export class EquationEditorDialog {
     this.latexHint = document.createElement('div');
     this.latexHint.className = 'eq-latex-hint';
     this.latexHint.style.display = 'none';
-    this.latexHint.innerHTML = '<span>💡 백슬래시(\\) 명령어가 감지됨 — </span>';
+    this.latexHint.replaceChildren(Object.assign(document.createElement('span'), { textContent: i18nText('dialog.equationEditor.latexHint.text') }));
     const hintLink = document.createElement('a');
     hintLink.href = '#';
     hintLink.textContent = i18nText('dialog.equationEditor.hintLink.text');

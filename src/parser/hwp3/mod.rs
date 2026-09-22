@@ -3449,6 +3449,23 @@ pub(crate) fn parse_paragraph_list(
                 };
 
                 let mut th = (linfo.line_height as i32) * 4;
+                // [#4680 실험] HWP3 저장 줄높이는 **줄 상자**(글자+여유)다. 그걸 그대로
+                // 글자 높이(th)로 쓰면 문단 줄간격(160%)이 그 위에 또 곱해져 줄이 부푼다.
+                // 한컴 자신의 HWP3→HWPX 변환본은 `vertsize` 를 **문단 대표 글자 크기**로
+                // 적는다(04442 실측 33/34 문단 일치). 인라인 개체가 없는 줄에 한해 맞춘다.
+                let max_char_height = para
+                    .char_shapes
+                    .iter()
+                    .filter_map(|cs| doc_char_shapes.get(cs.char_shape_id as usize))
+                    .map(|cs| cs.base_size)
+                    .max()
+                    .unwrap_or(fallback_text_height);
+                if th > fallback_text_height
+                    && max_char_height <= fallback_text_height
+                    && para.controls.is_empty()
+                {
+                    th = fallback_text_height;
+                }
 
                 let lh;
                 let bl;

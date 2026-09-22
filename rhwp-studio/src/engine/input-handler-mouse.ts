@@ -1405,6 +1405,11 @@ export function onDblClick(this: any, e: MouseEvent): void {
         this.eventBus.emit('chart-data-edit-request');
         return;
       }
+      // 한/글 5.x 수식은 OLE로 저장된다. 차트가 아닌 OLE는 명령 쪽에서 Contents를
+      // 검증해 native equation으로 전환한 뒤 수식 편집기를 연다(#7105).
+      e.preventDefault();
+      this.eventBus.emit('equation-edit-request', { sec: ref.sec, ppi: ref.ppi, ci: ref.ci });
+      return;
     }
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {

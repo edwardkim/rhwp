@@ -232,10 +232,10 @@ export class ZoomDialog extends ModalDialog {
     multiple.className = 'zoom-dialog-choice-column';
 
     for (const [value, label] of [
-      ['auto', '자동'],
-      ['single', '한 쪽'],
-      ['double', '두 쪽'],
-      ['facing', '맞쪽'],
+      ['auto', t('dialog.zoom.createArrangementSection.label')],
+      ['single', t('dialog.zoom.createArrangementSection.label.x4300a4')],
+      ['double', t('dialog.zoom.createArrangementSection.label.x580846')],
+      ['facing', t('dialog.zoom.createArrangementSection.label.x11933b')],
     ] as const) {
       standard.appendChild(this.radioRow(
         'page-arrangement',

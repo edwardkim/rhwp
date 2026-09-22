@@ -179,8 +179,8 @@ export class StyleToolbarOverflowController {
     this.trigger.disabled = toolbarDisabled;
     const currentAlignment = activeCommand?.title;
     const accessibleLabel = currentAlignment
-      ? `문단 정렬 더보기, 현재 ${currentAlignment}`
-      : '문단 정렬 더보기';
+      ? t('ui.styleToolbarOverflow.alignMoreCurrent', { p1: currentAlignment })
+      : t('ui.styleToolbarOverflow.alignMore');
     this.trigger.setAttribute('aria-label', accessibleLabel);
     this.trigger.title = currentAlignment
       ? t('dialog.styleToolbarOverflow.trigger.tooltip', { p1: currentAlignment })

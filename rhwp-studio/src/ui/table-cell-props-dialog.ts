@@ -258,7 +258,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const padGrid = document.createElement('div');
     padGrid.className = 'dialog-margin-grid';
     this.cellPaddingInputs = {};
-    for (const [key, text] of [['left', '왼쪽'], ['right', '오른쪽'], ['top', '위쪽'], ['bottom', '아래쪽']] as const) {
+    for (const [key, text] of [['left', i18nText('dialog.tableCellProps.buildCellTab.label')], ['right', i18nText('dialog.tableCellProps.buildCellTab.label.x19b0fb')], ['top', i18nText('dialog.tableCellProps.buildCellTab.label.xa0991a')], ['bottom', i18nText('dialog.tableCellProps.buildCellTab.label.x5f4a61')]] as const) {
       padGrid.appendChild(this.label(text));
       this.cellPaddingInputs[key] = this.numberInput();
       padGrid.appendChild(this.cellPaddingInputs[key]);
@@ -314,7 +314,7 @@ export class TableCellPropsDialog extends ModalDialog {
     vertSubRow.appendChild(this.label(''));
     const vertSubGroup = document.createElement('div');
     vertSubGroup.className = 'dialog-btn-group';
-    const vertSubLabels = ['문 눕힘(Q)', '문 세움(U)'];
+    const vertSubLabels = [i18nText('dialog.tableCellProps.buildCellTab.label.x872cd2'), i18nText('dialog.tableCellProps.buildCellTab.label.xd9f9d6')];
     vertSubLabels.forEach((text, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -377,7 +377,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const pbRow = this.row();
     pbRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x36c931')));
     this.tablePageBreakSelect = this.selectOptions([
-      ['2', '나눔'], ['1', '셀 단위로 나눔'], ['0', '나누지 않음'],
+      ['2', i18nText('dialog.tableCellProps.selectOptions.label')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.x370d98')], ['0', i18nText('dialog.tableCellProps.selectOptions.label.x5a79b4')],
     ]);
     pbRow.appendChild(this.tablePageBreakSelect);
     pageSection.appendChild(pbRow);
@@ -398,8 +398,8 @@ export class TableCellPropsDialog extends ModalDialog {
     const abLineRow = this.row();
     abLineRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x7b45da')));
     const abLineType = this.selectOptions([
-      ['0', '없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
-      ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '이중 실선'],
+      ['0', i18nText('dialog.tableCellProps.selectOptions.label.x696251')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.x4a9e5f')], ['2', i18nText('dialog.tableCellProps.selectOptions.label.x83e6b8')], ['3', i18nText('dialog.tableCellProps.selectOptions.label.x982113')],
+      ['4', i18nText('dialog.tableCellProps.selectOptions.label.xcff873')], ['5', i18nText('dialog.tableCellProps.buildTableTab.label')], ['6', i18nText('dialog.tableCellProps.buildTableTab.label.x951654')], ['7', i18nText('dialog.tableCellProps.buildTableTab.label.xf00047')],
     ]);
     abLineType.disabled = true;
     abLineRow.appendChild(abLineType);
@@ -442,7 +442,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const padGrid = document.createElement('div');
     padGrid.className = 'dialog-margin-grid';
     this.tablePaddingInputs = {};
-    for (const [key, text] of [['left', '왼쪽'], ['right', '오른쪽'], ['top', '위쪽'], ['bottom', '아래쪽']] as const) {
+    for (const [key, text] of [['left', i18nText('dialog.tableCellProps.buildTableTab.label.x8d60c4')], ['right', i18nText('dialog.tableCellProps.buildTableTab.label.x19b0fb')], ['top', i18nText('dialog.tableCellProps.buildTableTab.label.xa0991a')], ['bottom', i18nText('dialog.tableCellProps.buildTableTab.label.x5f4a61')]] as const) {
       padGrid.appendChild(this.label(text));
       this.tablePaddingInputs[key] = this.numberInput();
       padGrid.appendChild(this.tablePaddingInputs[key]);
@@ -500,7 +500,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const wrapGroup = document.createElement('div');
     wrapGroup.className = 'dialog-btn-group';
     this.wrapBtns = [];
-    const wrapLabels = ['어울림', '자리 차지', '글 뒤로', '글 앞으로'];
+    const wrapLabels = [i18nText('dialog.tableCellProps.buildBasicTab.label'), i18nText('dialog.tableCellProps.buildBasicTab.label.xf9d03e'), i18nText('dialog.tableCellProps.buildBasicTab.label.x03fc93'), i18nText('dialog.tableCellProps.buildBasicTab.label.x8f15c1')];
     wrapLabels.forEach((text, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -517,13 +517,13 @@ export class TableCellPropsDialog extends ModalDialog {
     const hRow = this.row();
     hRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x1b155a')));
     this.horzRelSelect = this.selectOptions([
-      ['Paper', '종이'], ['Page', '쪽'], ['Column', '단'], ['Para', '문단'],
+      ['Paper', i18nText('dialog.tableCellProps.selectOptions.label.xd3445e')], ['Page', i18nText('dialog.tableCellProps.selectOptions.label.xc8cbf2')], ['Column', i18nText('dialog.tableCellProps.selectOptions.label.x0a2ddb')], ['Para', i18nText('dialog.tableCellProps.selectOptions.label.x7d1c86')],
     ]);
     hRow.appendChild(this.horzRelSelect);
     hRow.appendChild(this.unit(i18nText('dialog.tableCellProps.unit.label')));
     this.horzAlignSelect = this.selectOptions([
-      ['Left', '왼쪽'], ['Center', '가운데'], ['Right', '오른쪽'],
-      ['Inside', '안쪽'], ['Outside', '바깥쪽'],
+      ['Left', i18nText('dialog.tableCellProps.selectOptions.label.x8d60c4')], ['Center', i18nText('dialog.tableCellProps.selectOptions.label.x55b22e')], ['Right', i18nText('dialog.tableCellProps.selectOptions.label.x19b0fb')],
+      ['Inside', i18nText('dialog.tableCellProps.buildBasicTab.label.x8eb06a')], ['Outside', i18nText('dialog.tableCellProps.buildBasicTab.label.x634f07')],
     ]);
     hRow.appendChild(this.horzAlignSelect);
     hRow.appendChild(this.unit(i18nText('dialog.tableCellProps.unit.label.x63402b')));
@@ -536,13 +536,13 @@ export class TableCellPropsDialog extends ModalDialog {
     const vRow = this.row();
     vRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.xe59031')));
     this.vertRelSelect = this.selectOptions([
-      ['Paper', '종이'], ['Page', '쪽'], ['Para', '문단'],
+      ['Paper', i18nText('dialog.tableCellProps.selectOptions.label.xd3445e')], ['Page', i18nText('dialog.tableCellProps.selectOptions.label.xc8cbf2')], ['Para', i18nText('dialog.tableCellProps.selectOptions.label.x7d1c86')],
     ]);
     vRow.appendChild(this.vertRelSelect);
     vRow.appendChild(this.unit(i18nText('dialog.tableCellProps.unit.label')));
     this.vertAlignSelect = this.selectOptions([
-      ['Top', '위'], ['Center', '가운데'], ['Bottom', '아래'],
-      ['Inside', '안쪽'], ['Outside', '바깥쪽'],
+      ['Top', i18nText('dialog.tableCellProps.selectOptions.label.x2c954b')], ['Center', i18nText('dialog.tableCellProps.selectOptions.label.x55b22e')], ['Bottom', i18nText('dialog.tableCellProps.selectOptions.label.x313c9d')],
+      ['Inside', i18nText('dialog.tableCellProps.selectOptions.label.x8eb06a')], ['Outside', i18nText('dialog.tableCellProps.buildBasicTab.label.x634f07')],
     ]);
     vRow.appendChild(this.vertAlignSelect);
     vRow.appendChild(this.unit(i18nText('dialog.tableCellProps.unit.label.x63402b')));
@@ -601,7 +601,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const etcSection = this.createSection(i18nText('dialog.tableCellProps.createSection.label.x5babec'));
     const etcRow = this.row();
     etcRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x04fd63')));
-    const numSelect = this.selectOptions([['Table', '표']]);
+    const numSelect = this.selectOptions([['Table', i18nText('dialog.tableCellProps.selectOptions.label.x5d1963')]]);
     numSelect.disabled = true;
     etcRow.appendChild(numSelect);
     etcSection.appendChild(etcRow);
@@ -662,7 +662,7 @@ export class TableCellPropsDialog extends ModalDialog {
     const outerGrid = document.createElement('div');
     outerGrid.className = 'dialog-margin-grid';
     this.marginOuterInputs = {};
-    for (const [key, text] of [['left', '왼쪽'], ['right', '오른쪽'], ['top', '위쪽'], ['bottom', '아래쪽']] as const) {
+    for (const [key, text] of [['left', i18nText('dialog.tableCellProps.buildMarginTab.label')], ['right', i18nText('dialog.tableCellProps.buildMarginTab.label.x19b0fb')], ['top', i18nText('dialog.tableCellProps.buildMarginTab.label.xa0991a')], ['bottom', i18nText('dialog.tableCellProps.buildMarginTab.label.x5f4a61')]] as const) {
       outerGrid.appendChild(this.label(text));
       this.marginOuterInputs[key] = this.numberInput();
       outerGrid.appendChild(this.marginOuterInputs[key]);
@@ -950,8 +950,8 @@ export class TableCellPropsDialog extends ModalDialog {
     const abLineRow = this.row();
     abLineRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x2ec5ae')));
     const abLineType = this.selectOptions([
-      ['0', '없음'], ['1', '실선'], ['2', '파선'], ['3', '점선'],
-      ['4', '일점쇄선'], ['5', '이점쇄선'], ['6', '긴 파선'], ['7', '이중 실선'],
+      ['0', i18nText('dialog.tableCellProps.selectOptions.label.x696251')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.x4a9e5f')], ['2', i18nText('dialog.tableCellProps.selectOptions.label.x83e6b8')], ['3', i18nText('dialog.tableCellProps.selectOptions.label.x982113')],
+      ['4', i18nText('dialog.tableCellProps.selectOptions.label.xcff873')], ['5', i18nText('dialog.tableCellProps.buildBorderTab.label.xe3ee0f')], ['6', i18nText('dialog.tableCellProps.buildBorderTab.label.x951654')], ['7', i18nText('dialog.tableCellProps.buildBorderTab.label.xf00047')],
     ]);
     abLineType.disabled = true;
     abLineRow.appendChild(abLineType);
@@ -1165,8 +1165,8 @@ export class TableCellPropsDialog extends ModalDialog {
     const patTypeRow = this.row();
     patTypeRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x0829e0')));
     this.bgPatternTypeSelect = this.selectOptions([
-      ['0', '없음'], ['1', '가로줄'], ['2', '세로줄'], ['3', '역슬래시'],
-      ['4', '슬래시'], ['5', '십자'], ['6', 'X자'],
+      ['0', i18nText('dialog.tableCellProps.selectOptions.label.x696251')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.xd965c1')], ['2', i18nText('dialog.tableCellProps.selectOptions.label.x7842b4')], ['3', i18nText('dialog.tableCellProps.selectOptions.label.xf14cb1')],
+      ['4', i18nText('dialog.tableCellProps.selectOptions.label.xcf200e')], ['5', i18nText('dialog.tableCellProps.buildBackgroundTab.label')], ['6', i18nText('dialog.tableCellProps.buildBackgroundTab.label.x432dc9')],
     ]);
     this.bgPatternTypeSelect.addEventListener('change', () => {
       this.bgColorRadio.checked = true;

@@ -133,7 +133,10 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
-스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 단, Visual Sweep을 수용 근거로 주장하는 렌더링 PR은
+대표 review·overlay PNG를 `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 넣고 PR 본문에서
+실제 Markdown 이미지로 표시합니다. 이 경우는 메인터너 review 기록을 작성하는 의무가 아니라 reviewer가
+제출 근거를 직접 볼 수 있게 하는 제출 의무입니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
@@ -785,8 +788,10 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
 
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
 
-- **스크린샷·비교 이미지는 저장소에 커밋하지 말고 PR 본문에 첨부**해주세요 (필요 시
-  메인테이너가 판정 자료를 `mydocs/pr/assets/` 에 반영합니다).
+- **스크린샷·비교 이미지**는 개인정보·대형 원본·탐색용 중간 산출물을 저장소에 커밋하지 말고 PR 본문에
+  첨부해주세요. 단, Visual Sweep을 수용 근거로 쓰는 공개 가능한 대표 review·overlay PNG는
+  `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
+  PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
   (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
   명시해주세요. 한컴 정본 오라클은 버전·크기와 무관하게 `pdf/**`에 일반 Git blob으로만

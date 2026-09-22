@@ -6,6 +6,26 @@
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
 samples/2010-01-06.hwp	6	6
 samples/2022년 국립국어원 업무계획.hwp	35	35
+# 편람 두 행 — 정답지가 383 과 384 로 갈리는 것은 정답지가 모호해서가 아니라 KoPub 설치 여부다.
+# pdf/ 의 편람 PDF 10종 전수 실측(쪽수 · 용지 · 내장 글꼴, 앞 60쪽 수집):
+#   KoPub 미설치  -hwp-2020 · -hwp-2024 · -hwpx-2020 · -hwpx-2024   384쪽  555x754pt  Haansoft only
+#   KoPub 설치    -2020-kopub · -hwp-kopub-2020 · -hwpx-kopub-2020  383쪽
+#   형식 미표기    -2024                                             383쪽  555x752pt  내장 글꼴 0 (다른 환경)
+#   2010 엔진     -2010-kopub 388쪽 · -2010-no-ttf 389쪽             (다른 세대)
+# 위 머리말의 "kopub/no-ttf 는 섞지 않는다" 규칙대로 384 가 canonical 이고, 이 저장소의
+# 실행 환경도 KoPub 미설치다(tests/fixtures/issue_6389/kopub-unavailable.json 참조).
+# "지금 새로 뽑으면 383" 은 재현 불가가 아니라 뽑은 장비에 KoPub 이 있었다는 뜻이다 — #7009.
+# hwpx 382 는 미해결 격차다(제5장 질의 상자가 선언 셀 높이보다 +7~+27px 크다, #6842).
+# 이 문서의 쪽수는 제5장 끝 한 경계의 간발의 차에 걸려 있어 조판 수리가 들어오면 움직인다.
+#
+# ⚠ hwp 의 384 는 **정답지의 384 가 아니다**(#7009). 본문이 3쪽 길고 부록이 3쪽 짧아
+#   총합만 맞는다 — 이 줄만으로는 그 상쇄를 볼 수 없다.
+#     구조 랜드마크           정답지   hwp        hwpx
+#     부록 간지 쪽             310     313 (+3)   308 (−2)
+#     본문 마지막 쪽           308     311 (+3)   306 (−2)
+#     부록 간지 뒤 쪽수         74      71 (−3)    74 (±0)
+#   그 편차는 tests/cases/issue_7009_handbook_structure_landmarks.rs 가 잠근다.
+#   이 줄을 고칠 때는 그 파일도 함께 본다.
 samples/2025 행정업무운영 편람(최종).hwp	384	384
 samples/2025 행정업무운영 편람(최종).hwpx	384	382
 samples/20250130-hongbo.hwp	4	4
@@ -62,7 +82,7 @@ samples/basic/interview.hwp	2	2
 samples/basic/issue2007_nested_cell_pagination_42065.hwp	17	17
 samples/basic/request.hwp	1	1
 samples/basic/shortcut.hwp	7	7
-samples/basic/sungeo.hwp	94	86
+samples/basic/sungeo.hwp	94	94
 samples/basic/treatise sample.hwp	7	7
 samples/bitmap.hwp	1	1
 samples/biz_plan.hwp	6	6
@@ -213,7 +233,7 @@ samples/hwpx/issue_241.hwpx	1	1
 samples/hwpx/k-water-rfp.hwpx	27	27
 samples/hwpx/mel-001.hwpx	20	20
 samples/hwpx/opengov/36384689_결재문서본문_화재발생종합보고서(제2026-298호).hwpx	1	1
-samples/hwpx/opengov/36385445_결재문서본문_화재발생종합보고서(제2026-189호, 2026. 5. 14.).hwpx	2	1
+samples/hwpx/opengov/36385445_결재문서본문_화재발생종합보고서(제2026-189호, 2026. 5. 14.).hwpx	2	2
 samples/hwpx/opengov/36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx	9	9
 samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx	1	1
 samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx	1	1
@@ -345,7 +365,7 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwp	1	1
 samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
-samples/issue5792/2700727_animal_facility_standards.hwpx	6	5
+samples/issue5792/2700727_animal_facility_standards.hwpx	6	6
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
 samples/issue5807/coanchored_float_tac_order.hwp	3	3
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
@@ -518,7 +538,7 @@ samples/tac-case-004.hwp	1	1
 samples/tac-case-005.hwp	1	1
 samples/tac-host-spacing.hwpx	1	1
 samples/tac-img-02.hwp	66	66
-samples/tac-img-02.hwpx	66	67
+samples/tac-img-02.hwpx	66	66
 samples/task1716/table_scattered_header_rowbreak.hwpx	52	52
 samples/task1718/table_giant_cell_overfill.hwp	48	47
 samples/task1725/text_footnote_tail_overpagination.hwp	242	242

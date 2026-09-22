@@ -26,8 +26,9 @@ export function openViewer(options = {}) {
   const viewerBase = browser.runtime.getURL('viewer.html');
   const fullUrl = buildViewerUrl(viewerBase, options);
 
-  browser.tabs.create({ url: fullUrl }).catch((err) => {
+  return browser.tabs.create({ url: fullUrl }).catch((err) => {
     console.error('[rhwp] 뷰어 탭 생성 오류:', err);
+    throw err;
   });
 }
 

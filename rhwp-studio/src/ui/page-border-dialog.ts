@@ -228,9 +228,9 @@ export class PageBorderDialog extends ModalDialog {
     const picture = this.checkbox(t('dialog.pageBorder.checkbox.label.x2634ad'));
     picture.disabled = true;
     const gradRow = this.row();
-    gradRow.append(this.radioRow(grad), this.disabledSelect(['세로', '가로', '오른쪽 대각선']), this.disabledSwatch(), this.disabledSwatch());
+    gradRow.append(this.radioRow(grad), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label'), t('dialog.pageBorder.disabledSelect.label'), t('dialog.pageBorder.disabledSelect.label.xbba5a5')]), this.disabledSwatch(), this.disabledSwatch());
     const pictureRow = this.row();
-    pictureRow.append(this.checkboxRow(picture), this.disabledSelect(['문서에 포함']), this.disabledSelect(['크기에 맞추어']), this.label(t('dialog.pageBorder.label.label.x4b520d')), this.disabledInput('0'));
+    pictureRow.append(this.checkboxRow(picture), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label.x7bd407')]), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label.x63b824')]), this.label(t('dialog.pageBorder.label.label.x4b520d')), this.disabledInput('0'));
     fill.append(this.radioRow(this.bgNoneRadio), colorRow, gradRow, pictureRow);
     root.appendChild(fill);
 
@@ -529,13 +529,13 @@ export class PageBorderDialog extends ModalDialog {
   private dialogConfigRow(includeFillArea = false): HTMLDivElement {
     const row = this.row();
     row.style.marginTop = '4px';
-    row.append(this.label(t('dialog.pageBorder.label.label.xb1824b')), this.disabledSelect(['문서 전체']));
+    row.append(this.label(t('dialog.pageBorder.label.label.xb1824b')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label')]));
     if (includeFillArea) {
-      row.append(this.label(t('dialog.pageBorder.label.label.xe97fdb')), this.disabledSelect(['종이', '쪽', '테두리']));
+      row.append(this.label(t('dialog.pageBorder.label.label.xe97fdb')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label.xd3445e'), t('dialog.pageBorder.disabledSelect.label.xc8cbf2'), t('dialog.pageBorder.disabledSelect.label.x2d7a9f')]));
     }
     const spacer = document.createElement('span');
     spacer.style.flex = '1';
-    row.append(spacer, this.label(t('dialog.pageBorder.label.label.x433ed9')), this.disabledSelect(['사용자 지정']), this.smallPlainButton(t('dialog.pageBorder.smallPlainButton.label')));
+    row.append(spacer, this.label(t('dialog.pageBorder.label.label.x433ed9')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label.x677ccb')]), this.smallPlainButton(t('dialog.pageBorder.smallPlainButton.label')));
     return row;
   }
 

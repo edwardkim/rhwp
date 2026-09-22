@@ -1422,6 +1422,34 @@ pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> 
 /// (`spacing_before`)이 이미 흐름에 싣고 있어 여기서 또 실으면 두 번 든다
 /// (`byeolpyo1` 의 이미 맞던 표가 1.9px 내려간다 — 실측).
 /// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 열지 않는다.
+/// [#7287] **어울림(Square) 자리차지** 표의 위쪽 바깥여백 (HU).
+///
+/// 가로 [`para_relative_left_aligned_outer_margin_left_hu`](`#6887`) 의 세로판이다.
+///
+/// 이 갈래는 종전에 `layout.rs` 의 `table_y_start` 체인에서 **전용 분기가 없어**
+/// 마지막 폴백(`y_offset` = 흐름 위치)으로 떨어졌다. 저장 앵커 경로(`stored_top` ·
+/// 빈 host lane)는 모두 `is_para_topbottom_float` 를 요구해 어울림은 타지 않고,
+/// `compute_table_y_position` 의 절대 배치 분기도 `TopAndBottom | BehindText |
+/// InFrontOfText` 만 받는다. 그래서 위쪽 바깥여백을 아무도 내지 않았다.
+///
+/// 정본 실측(`pdf/hwpctl_API_v2.4-hwp-2020.pdf`): 이 형상 5건이 전부 정본보다
+/// `+2.88 .. +3.67px` 위였고, 선언 `outMargin.top` 283HU(3.77px)에서 괘선
+/// stroke/2(0.32px)를 뺀 값과 같다.
+///
+/// 오른쪽·가운데 정렬과 글줄 참여(`treat_as_char`) 표는 실측 근거가 없어 열지 않는다.
+pub(crate) fn square_float_outer_margin_top_hu(table: &Table) -> Option<i32> {
+    if !matches!(table.common.text_wrap, TextWrap::Square)
+        || table.common.treat_as_char
+        || !matches!(table.common.vert_rel_to, VertRelTo::Para)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || table.outer_margin_top <= 0
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_top))
+}
+
 pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32> {
     if !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || table.common.treat_as_char

@@ -427,8 +427,12 @@ function pastePlainText(this: any, text: string, hasSelection: boolean): void {
     if (lines[i]) {
       this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), lines[i]) });
     }
-    if (i < lines.length - 1 && !this.cursor.isInCell()) {
-      this.executeOperation({ kind: 'command', command: new SplitParagraphCommand(this.cursor.getPosition()) });
+    if (i < lines.length - 1) {
+      const position = this.cursor.getPosition();
+      const command = this.cursor.isInCell()
+        ? new SplitParagraphInCellCommand(position)
+        : new SplitParagraphCommand(position);
+      this.executeOperation({ kind: 'command', command });
     }
   }
 }

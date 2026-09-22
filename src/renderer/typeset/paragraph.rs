@@ -303,6 +303,7 @@ pub(super) fn place_after_failed_fit(
     body_bottom_vpos: Option<i32>,
     available: f64,
     layout_drift_safety_px: f64,
+    stored_vpos_rewind_break: bool,
     stored_vpos_rewind_overflow_break: bool,
     forced_page_break_line: Option<usize>,
     native_hwp5_existing_footnote_reset_line: Option<usize>,
@@ -392,6 +393,7 @@ pub(super) fn place_after_failed_fit(
         para,
         &entry_fit,
         available,
+        stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,
         &st.paragraph_split_entry_page(),
         dpi,
@@ -564,6 +566,7 @@ pub(super) fn try_absorb_empty_paragraph(
 
 pub(super) struct WholeFitDecision {
     pub fits: bool,
+    pub stored_vpos_rewind_break: bool,
     pub stored_vpos_rewind_overflow_break: bool,
 }
 
@@ -638,6 +641,7 @@ pub(super) fn decide_whole_fit(
                 || st.current_height + page_end_fit_height <= available
                 || saved_single_line_bottom_fits
                 || saved_list_tail_body_vpos_fits),
+        stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,
     }
 }

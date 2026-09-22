@@ -5,6 +5,7 @@ use super::super::{
     para_controls_only_topbottom_floats, para_has_visible_text, paragraph_page_end_fit_height,
     paragraph_text_looks_like_list_continuation_tail, preceding_stored_vpos,
     saved_bounds_fit_at_flow_tail, saved_flow_marks_page_last, single_line_visible_bounds_px,
+    stored_rewind_boundary_matches_current_flow, stored_vpos_restarts_near_body_top,
     stored_vpos_rewinds, VisibleFloatExclusion, STORED_VPOS_REWIND_MIN_FILL,
 };
 use super::metrics::FormattedParagraph;
@@ -153,8 +154,19 @@ pub(super) fn inspect(
             .iter()
             .any(|it| page_item_para_index(it) == Some(para_idx))
         && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
-    let stored_vpos_rewind_break =
-        stored_vpos_rewind_base && page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL;
+    // [#6761] 채움률 관문만으로는 "덜 찼는데 한글이 끊은 쪽"을 놓친다. 되감김이
+    // **쪽 위쪽 띠에서 다시 시작**하고 되감김 직전 자리가 지금 흐름 위치와 같으면,
+    // 사다리가 적은 그 쪽 경계가 지금 이 자리다 — 채움률과 무관하게 인정한다.
+    let stored_rewind_at_matching_flow_position = stored_vpos_restarts_near_body_top(para)
+        && stored_rewind_boundary_matches_current_flow(
+            paragraphs,
+            para_idx,
+            page_occupied_height,
+            dpi,
+        );
+    let stored_vpos_rewind_break = stored_vpos_rewind_base
+        && (page_occupied_height >= available * STORED_VPOS_REWIND_MIN_FILL
+            || stored_rewind_at_matching_flow_position);
     // [#5755] 되돌아간 문단이 통째로는 안 들어가는 경우 — 어차피 전체 배치는 실패라
     // 종전엔 split 경로로 흘러가 저장 좌표(새 쪽의 쪽-지역 좌표)를 현재 쪽 꼬리
     // 적합 근거로 오독, 본문 밖·용지 밖까지 그렸다(156677324 pi=9: 996>934px).

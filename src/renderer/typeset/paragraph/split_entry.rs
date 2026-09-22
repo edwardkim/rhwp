@@ -1,5 +1,8 @@
 //! 줄 분할 진입 전 첫 줄/저장 경계 판정. 쪽 전환과 호환성 상태 기록은 호출자가 맡는다.
-use super::super::{is_synthetic_line_seg, page_item_para_index, para_has_visible_text};
+use super::super::{
+    is_synthetic_line_seg, page_item_para_index, para_has_visible_text,
+    stored_vpos_restarts_near_body_top,
+};
 use super::metrics::FormattedParagraph;
 use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile};
 use crate::renderer::{pagination::PageItem, style_resolver::ResolvedStyleSet};
@@ -135,6 +138,7 @@ pub(in crate::renderer::typeset) fn should_advance(
     para: &Paragraph,
     fit: &SplitEntryFit,
     available: f64,
+    stored_vpos_rewind_break: bool,
     stored_vpos_rewind_overflow_break: bool,
     page: &SplitEntryPage<'_>,
     dpi: f64,
@@ -182,7 +186,17 @@ pub(in crate::renderer::typeset) fn should_advance(
         || (stored_whole_para_reset && !hangul2024_split_refit)
         // [#5755] 저장 되감김 + 전체 fit 실패 = 한글이 이 문단을 통째로 다음 쪽에
         // 둔 배치 — split 로 현재 쪽에 걸치지 말고 먼저 쪽을 넘긴다.
-        || stored_vpos_rewind_overflow_break)
+        || stored_vpos_rewind_overflow_break
+        // [#6761] 되감김 판정(`stored_vpos_rewind_break`)이 서면 전체 배치 분기는
+        // 이미 건너뛴다. 그런데 분할 경로가 그 값을 안 봐서, 남은 여백에 첫 줄이
+        // 들어가면 같은 쪽에 얹고 만다 — 되감김이 말한 쪽 경계가 무시된다.
+        //
+        // 다만 되감김 자체는 **부분 후퇴**도 포함한다(같은 쪽 안에서 표 아래 주석이
+        // 앞 문단보다 위에서 시작하는 형상 — 1342000 pi=219 70880 -> pi=220 66140).
+        // 쪽 경계의 되감김은 사다리가 **쪽 위쪽 띠에서 다시 시작**한다는 뜻이므로,
+        // 이 분기는 `cl > 5000` 의 거울인 `nv <= 5000` 까지 요구한다
+        // (1130000 pi=41 53956 -> pi=42 500 이 그 형상이다).
+        || (stored_vpos_rewind_break && stored_vpos_restarts_near_body_top(para)))
         && !page.current_items.is_empty()
         && !hwp_first_line_before_reset_fits
 }

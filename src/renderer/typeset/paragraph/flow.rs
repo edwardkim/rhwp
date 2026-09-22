@@ -80,6 +80,7 @@ pub(in crate::renderer::typeset) fn place(
 
     let paragraph::WholeFitDecision {
         fits,
+        stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,
     } = paragraph::decide_whole_fit(
         st,
@@ -137,6 +138,7 @@ pub(in crate::renderer::typeset) fn place(
         body_bottom_vpos,
         available,
         layout_drift_safety_px,
+        stored_vpos_rewind_break,
         stored_vpos_rewind_overflow_break,
         forced_page_break_line,
         native_hwp5_existing_footnote_reset_line,

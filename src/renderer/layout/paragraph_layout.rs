@@ -2305,6 +2305,14 @@ impl LayoutEngine {
         if declared <= 0 {
             return false;
         }
+        // 이 헬퍼에는 control 위치가 전달되지 않는다. 저장 밴드가 첫 줄이라는 사실만으로
+        // 문단 안의 모든 TAC 표가 그 줄을 소유한다고 확대하면, 뒤 segment의 표까지
+        // 줄바꿈을 건너뛰게 된다. 단일 segment에서는 그 소유 관계가 자명하고, 다중
+        // segment는 control별 line-seg 조회가 가능한 별도 경로가 생길 때까지 종전 배치를
+        // 유지한다.
+        if para.line_segs.len() != 1 {
+            return false;
+        }
         let Some(ls) = para.line_segs.first() else {
             return false;
         };
@@ -3219,13 +3227,29 @@ impl LayoutEngine {
                             self.dpi,
                         ),
                 );
+                // [#7312] 저장 밴드가 `om_top + 선언높이 + om_bottom` 로 **이 표 하나를**
+                // 담고 있다고 증명하면(`tac_stored_band_is_outer_box`) 중간앵커 줄바꿈을
+                // 적용하지 않는다. 그 술어는 바로 아래 `tac_table_stored_outer_band_top` 의
+                // 게이트이기도 하고, `#5729` 가 "참이면 한글은 표 상단을 줄 상단 + om_top 에
+                // 앉힌다" 로 계약을 세운 자리다. 곧 **저장 사다리가 "이 표가 이 줄을 통째로
+                // 차지한다" 고 말하는데** 폭 판정이 표를 다음 줄로 내려보내면 그 계약이
+                // 무력화된다 — 내려간 `current_y` 를 그 함수가 그대로 받기 때문이다.
+                //
+                // 실측 `36494702_결재문서본문.hwpx` pi=2 (한/글 2022 정본 대조):
+                //   저장 ls[0].lh 6896 == om_top 283 + 선언 6330 + om_bottom 283  (오차 0)
+                //   occupied 294.00 + footprint 362.09 > line_w 642.53  → 줄바꿈 발동
+                //   표 상단   종전 237.5 (= 140.4 + line_step 93.28 + om_top 3.77)
+                //             수정 144.2 (= 140.4 + om_top 3.77)        정본 145.7
+                //   표 좌단   종전  79.4 (줄 시작으로 되돌림)  수정 373.4  정본 373.9
+                //   그 문단 뒤 본문 전체가 181.4px 내려가 있었다(`pi=11` 1050.3 → 868.9,
+                //   정본 869.6).
                 let table_wrapped = should_wrap_middle_anchored_table(
                     control_positions.get(*ctrl_idx).copied(),
                     text_chars.len(),
                     inline_x - line_start_x,
                     table_footprint,
                     right_margin - line_start_x,
-                );
+                ) && !Self::tac_stored_band_is_outer_box(para, tbl);
                 if table_wrapped {
                     current_y += line_step;
                     inline_x = line_start_x;
@@ -5483,17 +5507,9 @@ impl LayoutEngine {
             // 높이가 저장 `lh` 그대로일 것 — 재조판된 상자에 저장 전진을 섞으면 사다리도
             // 상자도 아닌 값이 된다. ③ 전진이 실제 글자(`max_fs`)를 담을 것 — HWP3 변환본
             // 처럼 낡은 값이면 다음 줄이 글자 위로 올라온다(hwp3-empty-cell 겹침 1건).
-            let stored_line_advance = para.filter(|_| !source_metrics_reflowed).and_then(|p| {
+            let stored_line_advance = para.and_then(|p| {
                 let seg = p.line_segs.get(line_idx)?;
                 let next = p.line_segs.get(line_idx + 1)?;
-                if (hwpunit_to_px(seg.line_height, self.dpi) - line_height).abs() >= 0.5 {
-                    return None;
-                }
-                if seg.vertical_pos < 0 || next.vertical_pos <= seg.vertical_pos {
-                    return None;
-                }
-                let step =
-                    hwpunit_to_px(next.vertical_pos - seg.vertical_pos, self.dpi) - line_spacing_px;
                 // [#6928] 줄 바닥은 **글자 높이**(`max_fs`)로 지켜 왔는데, 글자처럼 취급
                 // 개체(그림·표)가 줄 높이를 정하는 줄에는 글리프가 없어 `max_fs` 가 0 이다.
                 // 그래서 저장 사다리가 주는 작은 걸음이 무방비로 통과하고, 뒤 내용이 그
@@ -5515,10 +5531,15 @@ impl LayoutEngine {
                 } else {
                     max_fs
                 };
-                (step > 0.0
-                    && step < line_height
-                    && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
-                    .then_some(step)
+                crate::renderer::stored_line_flow_height(
+                    seg,
+                    next,
+                    line_height,
+                    line_spacing_px,
+                    flow_floor,
+                    self.dpi,
+                    source_metrics_reflowed,
+                )
             });
             let flow_step = stored_line_advance.unwrap_or(line_height);
             let line_flow_height =

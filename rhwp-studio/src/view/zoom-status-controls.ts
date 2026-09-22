@@ -75,16 +75,18 @@ export function zoomSliderPositionToPercent(
   );
 }
 
+import { t } from '../i18n/index.ts';
+
 /** 상태바 native tooltip용 플랫폼 단축키 문구. */
 export function zoomPercentShortcutTitle(
-  action: '확대' | '축소',
+  action: 'zoomIn' | 'zoomOut',
   shortcut: 'Ctrl++' | 'Ctrl+-',
   platform: PlatformKind,
 ): string {
   if (platform === 'mac') {
     const formatted = formatShortcutLabel(shortcut, platform).replace(/-$/, '−');
-    return `${action} (${formatted})`;
+    return `${t(`ui.zoom.${action}`)} (${formatted})`;
   }
   const formatted = shortcut === 'Ctrl++' ? 'Ctrl + +' : 'Ctrl + -';
-  return `${action} (${formatted})`;
+  return `${t(`ui.zoom.${action}`)} (${formatted})`;
 }

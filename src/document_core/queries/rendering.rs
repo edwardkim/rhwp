@@ -7826,13 +7826,14 @@ impl DocumentCore {
         }
 
         fn collect_page_lines(node: &RenderNode, lines: &mut Vec<String>) {
-            if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            if matches!(
+                node.node_type,
+                RenderNodeType::TextLine(_) | RenderNodeType::Equation(_)
+            ) {
                 let mut line = String::new();
                 let mut has_token = false;
 
-                for child in &node.children {
-                    collect_line_text(child, &mut line, &mut has_token);
-                }
+                collect_line_text(node, &mut line, &mut has_token);
 
                 if has_token {
                     lines.push(line);

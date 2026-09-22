@@ -496,8 +496,8 @@ export class CellBorderBgDialog extends ModalDialog {
     const patTypeRow = this.row();
     patTypeRow.appendChild(this.label(i18nText('dialog.cellBorderBg.label.label.x0829e0')));
     this.bgPatternTypeSelect = this.selectOptions([
-      ['0', '없음'], ['1', '가로줄'], ['2', '세로줄'], ['3', '역슬래시'],
-      ['4', '슬래시'], ['5', '십자'], ['6', 'X자'],
+      ['0', i18nText('dialog.cellBorderBg.selectOptions.label')], ['1', i18nText('dialog.cellBorderBg.selectOptions.label.xd965c1')], ['2', i18nText('dialog.cellBorderBg.selectOptions.label.x7842b4')], ['3', i18nText('dialog.cellBorderBg.selectOptions.label.xf14cb1')],
+      ['4', i18nText('dialog.cellBorderBg.selectOptions.label.xcf200e')], ['5', i18nText('dialog.cellBorderBg.buildBackgroundTab.label')], ['6', i18nText('dialog.cellBorderBg.buildBackgroundTab.label.x432dc9')],
     ]);
     this.bgPatternTypeSelect.addEventListener('change', () => {
       this.bgColorRadio.checked = true;
@@ -683,9 +683,9 @@ export class CellBorderBgDialog extends ModalDialog {
     this.diagButtons.push(clearBtn);
 
     const defs: [string, string][] = [
-      ['VERTICAL', '가로 중심선'],
-      ['HORIZONTAL', '세로 중심선'],
-      ['CROSS', '가로세로 중심선'],
+      ['VERTICAL', i18nText('dialog.cellBorderBg.createCenterLineButtonGroup.label')],
+      ['HORIZONTAL', i18nText('dialog.cellBorderBg.createCenterLineButtonGroup.label.xa8f8ec')],
+      ['CROSS', i18nText('dialog.cellBorderBg.createCenterLineButtonGroup.label.x90a4f5')],
     ];
     for (const [value, title] of defs) {
       const btn = this.createIconButton(title, this.createCenterLineIcon(value));

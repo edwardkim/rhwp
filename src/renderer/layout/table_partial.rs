@@ -2886,6 +2886,96 @@ impl LayoutEngine {
                                     } else {
                                         pic_y
                                     };
+                                    // [#7334] 일본 PS 마크처럼 저장 셀 높이가 실제 행보다
+                                    // 작고, 같은 빈 문단에 글앞·자리차지 그림이 함께 있는
+                                    // 경우의 bottom-aligned 그림 묶음이다. 저장 LINE_SEG vpos는
+                                    // 행 하단의 빈 줄 자리라서 각 그림의 Para 기준점으로 다시
+                                    // 쓰면 둘 다 다음 행까지 밀린다. 한/글은 두 마크를 실제
+                                    // 셀 안에 두되, 빈 문단 한 줄은 하단에 남긴다. 일반 부동
+                                    // 그림의 셀 밖 배치는 문서마다 의미가 있으므로 이 저장
+                                    // 형상에만 실제 content bottom 바로 위의 빈 줄로 되돌린다.
+                                    let mixed_bottom_aligned_picture_stack = para
+                                        .text
+                                        .trim()
+                                        .is_empty()
+                                        && cell.vertical_align == VerticalAlign::Bottom
+                                        && para.line_segs.len() == 1
+                                        && para
+                                            .line_segs
+                                            .first()
+                                            .is_some_and(|seg| seg.vertical_pos > 0)
+                                        && cell.height < 0x8000_0000
+                                        && hwpunit_to_px(cell.height as i32, self.dpi)
+                                            + 0.5
+                                            < inner_area.height
+                                        && para.controls.iter().all(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if !picture.common.treat_as_char
+                                                        && matches!(
+                                                            picture.common.text_wrap,
+                                                            crate::model::shape::TextWrap::InFrontOfText
+                                                                | crate::model::shape::TextWrap::TopAndBottom
+                                                        )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::InFrontOfText
+                                                    )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::TopAndBottom
+                                                    )
+                                            )
+                                        });
+                                    let reserved_empty_line_height = para
+                                        .line_segs
+                                        .first()
+                                        .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
+                                        .unwrap_or(0.0);
+                                    // 같은 빈 문단에 든 부동 그림의 vertical_offset은 공통
+                                    // bottom anchor에서의 상대 위치다. anchor를 셀 안으로
+                                    // 되돌릴 때 이 차이까지 버리면, 저장본에서 더 낮은 두 번째
+                                    // 그림이 첫 번째 그림 위로 올라가 서로 겹쳐 보인다.
+                                    let stack_first_vertical_offset = para
+                                        .controls
+                                        .iter()
+                                        .filter_map(|control| match control {
+                                            Control::Picture(picture) => {
+                                                Some(picture.common.vertical_offset as i32)
+                                            }
+                                            _ => None,
+                                        })
+                                        .min()
+                                        .unwrap_or(0);
+                                    let stack_relative_vertical_offset = hwpunit_to_px(
+                                        (pic.common.vertical_offset as i32)
+                                            .saturating_sub(stack_first_vertical_offset),
+                                        self.dpi,
+                                    );
+                                    let pic_y = if mixed_bottom_aligned_picture_stack
+                                        && pic_y + pic_h
+                                            > cell_content_bottom(cell_y, cell_h, pad_bottom) + 0.5
+                                    {
+                                        cell_content_bottom(cell_y, cell_h, pad_bottom)
+                                            - reserved_empty_line_height
+                                            - pic_h
+                                            + stack_relative_vertical_offset
+                                    } else {
+                                        pic_y
+                                    };
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -4378,7 +4468,18 @@ impl LayoutEngine {
                     end_cut.first().copied().unwrap_or(0),
                 )
             });
-            if starts_at_body_top && !projected_content {
+            // [#6923] 쪽 **중간**에서 시작하는 비끝 조각도, 칸 내용이 상자 상단에 붙는
+            // (`valign=Top`) 형상이면 상자를 쪽이 정한다 — 늘려도 내용이 움직이지 않는다.
+            // 148738070 1쪽(감싼 1×1 표, 표 상단 338.4)은 정본 상자 하단이 1021.9 인데
+            // rhwp 는 내용 끝(1003.5)에서 끊어 18.4px 짧았다. 위 156645214 반례는
+            // `Center` 칸이라 늘리면 내용이 8px 내려가므로 그 갈래는 종전대로 둔다.
+            let content_is_top_anchored = table.cells.first().is_some_and(|cell| {
+                matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+            });
+            if (starts_at_body_top || content_is_top_anchored)
+                && !projected_content
+                && (starts_at_body_top || stored_reset_paint_geometry.is_none())
+            {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로

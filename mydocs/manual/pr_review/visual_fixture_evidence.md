@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-17
+last_verified: 2026-09-22
 ---
 
 # 시각·fixture 증적
@@ -196,12 +196,19 @@ reviewer는 [접수·리뷰 기록의 준수 표](intake_and_review.md#27-조판
 
 ## 대표 asset과 안정 URL
 
-visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요청 전에 대표 review_NNN.png를
-현재 review branch의 mydocs/pr/assets 아래에 PR 번호를 포함한 안정 파일명으로 복사한다.
+visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요청 전에 대표 review·overlay PNG를
+현재 PR head의 `mydocs/pr/assets/` 아래 안정 경로로 복사한다. PR 번호가 아직 없으면
+`issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다. PR 번호를 예측하거나 이미지 경로를 바꾸기 위한
+trailing commit을 만들지 않는다.
 
 - review 문서에는 임시 output 경로와 최종 asset 경로를 둘 다 적는다.
 - 여러 페이지를 검증해도 모든 PNG를 기계적으로 보존할 필요는 없다. 결론을 증명하는 정상 page와
   보완 요청·후속 issue 판단에 필요한 후보 page를 대표 asset으로 남긴다.
+- merge 전 PR 본문에는 최종 head의 `headRepositoryOwner/headRepository`와 `headRefOid`로 고정한 raw URL을
+  Markdown image로 실제 표시한다. Native/fresh WASM처럼 실행한 출력 경로마다 review·overlay를 대표로
+  넣으며, 경로·임시 output·review 문서 링크만으로 대신하지 않는다. 외부 fork PR은 contributor fork의
+  repository와 head SHA를 사용한다. 게시 뒤 PR 화면에서 이미지가 렌더링되는지, API로 body·asset이 같은
+  head를 가리키는지 확인한다. 정본 형식은 [Visual Sweep PR 본문 직접 증적](../verification/visual_sweep_guide.md#pr-body-visual-evidence)을 따른다.
 - GitHub merge comment에는 [Visual Sweep 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
   direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
   raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은

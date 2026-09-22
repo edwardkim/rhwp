@@ -182,7 +182,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         refresh = (root / "scripts/refresh-nextest-target-duration-policy.mjs").read_text()
 
         self.assertIn('"schema_version": 2', policy)
-        self.assertIn('"fallback_seconds_per_test": 60', policy)
+        self.assertIn('"fallback_seconds_per_test": 5', policy)
         self.assertIn('"parallelism_factor": 4', policy)
         self.assertIn('"cases": {}', policy)
         self.assertIn('"test_cases": {}', policy)

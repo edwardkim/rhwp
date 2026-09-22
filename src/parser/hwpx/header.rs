@@ -1288,6 +1288,14 @@ fn parse_para_shape_switch(
                         b"margin" | b"intent" | b"left" | b"right" | b"prev" | b"next" => {
                             // margin 하위 요소들: <left value="..." />, <prev value="..." /> 등
                             let tag_name = local;
+                            // [#6875] HwpUnitChar `case` 의 `unit="CHAR"` 는 저장값이
+                            // **홀수**여서 절반이 정수로 안 떨어진다는 표시다. 그 자리를
+                            // 무시하면 왕복에서 최하위 비트가 사라지고 한/글이 문단 간격을
+                            // 작게 잡는다(07939: 558 → 545쪽). `value` 보다 먼저 읽는다.
+                            let char_unit = ce.attributes().flatten().any(|attr| {
+                                attr.key.as_ref().as_bytes() == b"unit"
+                                    && attr.value.as_ref() == "CHAR"
+                            });
                             for attr in ce.attributes().flatten() {
                                 if attr.key.as_ref().as_bytes() == b"value" {
                                     let val = parse_i32(&attr);
@@ -1299,7 +1307,9 @@ fn parse_para_shape_switch(
                                         // 일반 HWPX 문단 흐름과 기준 HWP3 변환본이 함께 밀린다.
                                         // 손상 문서의 극단 value 는 i32 곱셈 오버플로 패닉을
                                         // 유발하므로 saturating 으로 막는다(정상값은 무영향).
-                                        let val2x = val.saturating_mul(2);
+                                        let val2x = val
+                                            .saturating_mul(2)
+                                            .saturating_add(i32::from(char_unit));
                                         match tag_name {
                                             b"left" => {
                                                 ps.margin_left = val2x;
