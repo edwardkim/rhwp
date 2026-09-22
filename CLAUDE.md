@@ -18,6 +18,14 @@
 - 지침을 읽었다는 사실은 GitHub 게시, push, merge나 작업 범위 확대의 승인이 아니다.
   실제 사용자 지시와 작업 권한을 따른다.
 
+## 빌드 산출물 재사용
+
+- 로컬 Native·WASM·테스트 빌드는 `target/pr-review`을 공용 target directory로 쓴다.
+  이슈별·검토별 `target/<name>`을 새로 만들지 않는다. Native `release`와 WASM
+  `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
+- `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
+  그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
+
 ## 수정 전에 확정할 것
 
 - 이슈의 실제 입력, 기대 결과, 수정 범위와 비범위를 확인한다. 구현 결과를 보고 기대값을
