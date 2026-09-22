@@ -16,6 +16,34 @@ use crate::renderer::height_measurer::{
 };
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
+use crate::renderer::typeset::signed_hwpunit;
+
+/// [#7288] «쪽 경계에서» 값 0 «나누지 않음» 의 **원자 규칙**을 이 표에 걸 수 있는가.
+///
+/// 값의 뜻은 한/글 정본 실측으로 고정했다. 한/글 13.0 이 같은 원문을 두 형식으로 저장한
+/// 쌍둥이(`samples/2025 행정업무운영 편람(최종).hwp` / `.hwpx`)에서 표별 분포가 양쪽
+/// 일치해(45 / 4 / 274) HWP5 `HWPTAG_TABLE` bit 0~1 의 `0/1/2` 가 HWPX
+/// `pageBreak="NONE"/"TABLE"/"CELL"` 에 대응하는 것이 실측으로 잠긴다. rhwp 의 enum
+/// 이름(`CellBreak`=1 · `RowBreak`=2)은 이 뜻과 반대로 읽히니 이름으로 판단하지 않는다.
+///
+/// 한/글은 값 0 표를 쪽 경계에서 나누지 않고 통째로 다음 쪽에 놓는다 — 저장소 정본
+/// `pdf/text_footnote_tail_overpagination-2024.pdf` 62·63쪽이 7x7 `NONE` 표 둘을 각각
+/// 한 쪽에 통째로 담고, 정본 51문서 교차 확인에서 `NONE` 표 21건 중 쪽을 넘긴 사례는 0건이다.
+///
+/// 다만 **양수 세로 오프셋의 가시-host 자리차지 float** 은 제외한다. 그 갈래는 흐름을
+/// 전진시키지 않고 배제 영역에만 밴드를 남기며, 뒤 본문의 y 는 저장 사다리에서 온다.
+/// 두 좌표계가 아직 화해되지 않아(#7198 축) 표만 옮기면 글 위에 표가 그려진다 —
+/// 1490000 149쪽 실측 겹침 134 -> 156. 오프셋 0 float 과 `treat_as_char` 표는 흐름이
+/// 밴드를 실제로 소비하므로 해당 없다.
+///
+/// 조회만 한다 — 상태를 쓰지 않는다. 소비자는 `table/block/prepare.rs` 의 이월 게이트와
+/// `table/scan/row_entry.rs` 의 분할 게이트다.
+pub(in crate::renderer::typeset) fn none_table_is_atomic_here(table: &Table) -> bool {
+    matches!(table.page_break, crate::model::table::TablePageBreak::None)
+        && !(!table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && signed_hwpunit(table.common.vertical_offset) > 0)
+}
 
 pub(super) mod block;
 pub(super) mod continuation;

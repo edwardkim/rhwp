@@ -1841,7 +1841,9 @@ fn rowbreak_row_has_internal_saved_vpos_reset(
 }
 
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
-fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
+pub(in crate::renderer::typeset) fn rowbreak_table_has_internal_saved_vpos_reset(
+    table: &crate::model::table::Table,
+) -> bool {
     (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
 }
 
@@ -1958,7 +1960,7 @@ pub(crate) fn missing_lineseg_trailing_line_break(
     )
 }
 
-fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
+pub(in crate::renderer::typeset) fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
@@ -2457,7 +2459,10 @@ const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
 ///
 /// 판별력 실측(r29 `PI_MISMATCH` n=1 코호트 66건): 어긋난 항목의 36% 가 되돌아감인데,
 /// 같은 문서 **다른 쪽**의 마지막 항목은 1,134개 중 2개(0.2%)뿐이다 — 180배 농축.
-fn stored_vpos_rewinds(prev_vpos: Option<i32>, para: &Paragraph) -> bool {
+pub(in crate::renderer::typeset) fn stored_vpos_rewinds(
+    prev_vpos: Option<i32>,
+    para: &Paragraph,
+) -> bool {
     let Some(nv) = para
         .line_segs
         .iter()

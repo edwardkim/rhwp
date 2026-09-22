@@ -1,8 +1,9 @@
 //! 구역 문단 처리의 absorb_section_tail 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_para_topbottom_float, para_has_visible_text, paragraph_saved_visible_bounds,
-    paragraph_saved_vpos_reset_starts_new_page_after, ColumnBreakType, Control, PageItem,
-    Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
+    hwpunit_to_px, is_para_topbottom_float, is_synthetic_line_seg, para_has_visible_text,
+    paragraph_saved_visible_bounds, paragraph_saved_vpos_reset_starts_new_page_after,
+    stored_vpos_rewinds, ColumnBreakType, Control, PageItem, Paragraph, ResolvedStyleSet,
+    TypesetEngine, TypesetState,
 };
 impl TypesetEngine {
     #[allow(clippy::too_many_arguments)]
@@ -140,6 +141,55 @@ impl TypesetEngine {
                 found
             };
         if empty_tail_bridge_to_reset {
+            st.hide_empty_paragraph(para_idx);
+            st.append_item(PageItem::FullParagraph {
+                para_index: para_idx,
+            });
+            return true;
+        }
+
+        // [#7288] **앞 프레임에 속한 빈 문단이 새 프레임의 첫 줄을 밀지 않는다.**
+        //
+        // 저장 사다리가 다음 문단에서 되감기면 그 자리가 새 프레임의 시작이고, 이 빈
+        // 문단의 저장 vpos 는 **막 떠난 프레임**의 좌표다. 그런데도 여기서 줄 상자를
+        // 주면 새 프레임의 모든 줄이 한 줄씩 밀린다.
+        //
+        // 증거는 문서가 준다 — `#6900` 과 같은 판별로, **다음 문단의 저장 vpos 가 지금
+        // 조판 위치와 정확히 일치**할 때만 거둔다. 그 일치는 사다리가 이 자리를 이미
+        // 다음 문단에게 줬다는 뜻이다. 좌표계가 다른 경로(다단·zone 오프셋)는 값이
+        // 어긋나 스스로 비켜 간다.
+        //
+        // 실측 — `samples/task1725/text_footnote_tail_overpagination.hwp` 63쪽,
+        // 7x7 «나누지 않음» 표가 통째로 이 쪽에 온 뒤(본문 top 75.6px):
+        //
+        // ```text
+        //   pi=1372 빈 문단  저장 vpos 73300 -> 977.3px  (앞 프레임 바닥)
+        //   pi=1373 빈 문단  저장 vpos 19720 -> 262.9px  = 지금 조판 위치
+        //   pi=1374 "주) ..."  저장 vpos 21640 -> 288.5px = 한컴 PDF 363.9 - 75.6
+        // ```
+        //
+        // 종전에는 pi=1372 가 25.6px 를 먹어 그 쪽의 마지막 줄이 본문을 12.2px 넘었다.
+        let stale_frame_empty_absorbed = !st.current_items.is_empty()
+            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+            && para.text.is_empty()
+            && para.controls.is_empty()
+            && paragraphs.get(para_idx + 1).is_some_and(|next_para| {
+                stored_vpos_rewinds(
+                    para.line_segs
+                        .iter()
+                        .find(|seg| !is_synthetic_line_seg(seg))
+                        .map(|seg| seg.vertical_pos),
+                    next_para,
+                ) && next_para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .is_some_and(|next_first| {
+                        (hwpunit_to_px(next_first.vertical_pos, self.dpi) - st.current_height).abs()
+                            <= 0.5
+                    })
+            });
+        if stale_frame_empty_absorbed {
             st.hide_empty_paragraph(para_idx);
             st.append_item(PageItem::FullParagraph {
                 para_index: para_idx,

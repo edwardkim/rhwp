@@ -327,10 +327,19 @@ impl TypesetEngine {
                     return true;
                 }
             }
+            // [#7288] «쪽 경계에서» 가 행 내부 컷을 허용하는지 묻는다. 값 0 «나누지 않음»
+            // 은 이 조각의 **온전한 밴드**에도 행이 안 들어갈 때 — 곧 어느 쪽에도 못 넣을
+            // 때 — 만 불가피하게 자른다. 저장본이 이 표의 분할을 기록했으면 그 증거가
+            // 재조판 규칙보다 구체적이므로 종전대로 둔다.
+            let row_needs_whole_band =
+                r == cursor_row && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+            let intra_row_cut_here = !table::none_table_is_atomic_here(table)
+                || table_storage_declares_splits
+                || row_needs_whole_band;
             let table::scan::row_entry::RowSplitGate {
                 native_short_parent_child_splittable,
                 splittable,
-            } = row_entry.split_gate(can_intra_split);
+            } = row_entry.split_gate(can_intra_split, intra_row_cut_here);
             if !splittable {
                 // [#2236 진단] 분할 불가 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
