@@ -13,7 +13,9 @@ use crate::renderer::typeset::notes::footnotes::boundary::{
     native_hwp5_first_footnote_overlap_break_line, native_hwp5_footnote_reset_fragments,
     NativeHwp5FootnoteFragmentSplit,
 };
-use crate::renderer::typeset::notes::footnotes::measure::queued_table_footnote_content_height;
+use crate::renderer::typeset::notes::footnotes::measure::{
+    composed_footnote_content_height, queued_table_footnote_content_height,
+};
 
 use crate::document_core::queries::rendering::body_pile_stays_on_anchor_page;
 use crate::model::control::Control;
