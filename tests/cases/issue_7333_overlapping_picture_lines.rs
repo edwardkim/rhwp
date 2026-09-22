@@ -75,3 +75,26 @@ fn auxiliary_cell_width_does_not_pull_following_table_over_screenshot() {
         screenshot_y + screenshot_height
     );
 }
+
+#[test]
+fn in_front_decoration_keeps_character_table_on_its_saved_line() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    let json = document
+        .get_page_render_tree(13)
+        .unwrap_or_else(|error| panic!("14쪽 render tree: {error:?}"));
+    let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+    let (y, height) = find_table(&tree, 220).expect("14쪽 pi=220 스크린샷 표");
+
+    assert!(
+        (y - 346.8).abs() < 1.0,
+        "pi=220 표 top={y:.1}px — InFrontOfText 장식 뒤 TAC 표의 저장 줄 위치를 유지해야 한다"
+    );
+    assert!(
+        (height - 426.4).abs() < 1.0,
+        "pi=220 표 높이={height:.1}px — 스크린샷 frame 높이를 유지해야 한다"
+    );
+}

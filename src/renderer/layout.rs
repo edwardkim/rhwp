@@ -2915,6 +2915,22 @@ pub(crate) fn control_line_seg_index(para: &Paragraph, control_index: usize) -> 
     Some(idx)
 }
 
+/// 앞선 글앞 도형은 호스트 줄의 흐름을 점유하지 않는다. 빈 문단에서 이 도형들 뒤의
+/// TAC 표가 별도 저장 줄을 갖는 경우, 표의 소유 줄 `vpos`가 실제 페인트 기준이다.
+/// Picture, 글자처럼 도형, 글뒤/어울림 도형은 #4622의 이중 가산 반증 범위이므로 제외한다.
+fn tac_has_only_in_front_decoration_shapes_before(para: &Paragraph, control_index: usize) -> bool {
+    let before = &para.controls[..control_index.min(para.controls.len())];
+    !before.is_empty()
+        && before.iter().all(|control| {
+            matches!(control, Control::Shape(shape)
+            if !shape.common().treat_as_char
+                && matches!(
+                    shape.common().text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                ))
+        })
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -11838,6 +11854,37 @@ impl LayoutEngine {
                     _ => None,
                 })
         });
+        // #7333: 글앞 장식 도형 뒤의 TAC 화면표는 도형이 붙은 첫 저장 줄이 아니라
+        // 표 제어문자가 놓인 줄의 `vpos`에서 시작한다. 같은 host를 뒤늦게 그리는
+        // 도형 pass도 `para_start_y`를 읽으므로, 흐름 cursor와 host 원점을 함께
+        // 옮겨야 도형·표가 서로 어긋나지 않는다. 표 줄이 실제 table frame을 품는
+        // 경우에만 채택해 #4622의 가시 개체 이중 가산 반증을 피한다.
+        let tac_in_front_decoration_line_shift = paragraphs.get(para_index).and_then(|para| {
+            let Control::Table(table) = para.controls.get(control_index)? else {
+                return None;
+            };
+            if !self.profile.get().hwp5_stored_pagination_layout()
+                || !table.common.treat_as_char
+                || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
+            {
+                return None;
+            }
+            let first = para.line_segs.first()?;
+            let owned = para
+                .line_segs
+                .get(control_line_seg_index(para, control_index)?)?;
+            if owned.line_height < signed_hwpunit(table.common.height) {
+                return None;
+            }
+            let delta_hu = owned
+                .vertical_pos
+                .saturating_sub(first.vertical_pos)
+                .saturating_sub(table.outer_margin_top as i32);
+            (delta_hu > 0).then(|| hwpunit_to_px(delta_hu as i32, self.dpi))
+        });
+        if let Some(shift) = tac_in_front_decoration_line_shift {
+            y_offset += shift;
+        }
         if let Some(anchor_y) = deferred_empty_float_anchor_y {
             // typeset가 다음 계산 본문을 표보다 먼저 배치해도 표는 host의 저장 anchor에
             // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
