@@ -42,6 +42,8 @@ type PictureSelectionRef = {
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
   /** [Task #2230] 그림 미지정 placeholder — 더블클릭 시 그림 지정 진입. */
   missing?: boolean;
+  /** 마우스 hit 당시의 실제 page layout. 동일 주소의 분할 항목 선택에 사용한다. */
+  pageIndex?: number;
 };
 
 /** 커서 상태를 관리한다 */
@@ -1854,10 +1856,11 @@ export class CursorState {
     cellPath?: CellPathEntry[],
     noteRef?: any,
     missing?: boolean,
+    pageIndex?: number,
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing, pageIndex };
     this.selectedPictureRefs = [{ ...this.selectedPictureRef }];
   }
 

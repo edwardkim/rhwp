@@ -1272,6 +1272,67 @@ impl LayoutEngine {
         );
     }
 
+    /// 일반 직선의 두 끝점을 HWP5 `renderingInfo` 좌표계로 변환한다.
+    ///
+    /// 보통의 양수 축척은 호출부가 이미 `render_w/original_size`로 적용한다. 다만
+    /// 음수 축척·이동·전단이 있는 경우에는 그 절댓값만 쓰면 시작과 끝이 뒤집혀
+    /// 화살표의 방향까지 반대가 된다. 묶음 자식은 이미 별도 affine 경로를 지나므로
+    /// 여기서는 top-level 직선만 보정한다.
+    fn line_endpoints_in_rendering_frame(
+        &self,
+        line: &crate::model::shape::LineShape,
+        render_x: f64,
+        render_y: f64,
+        sx: f64,
+        sy: f64,
+        matrix_positioned: bool,
+    ) -> ((f64, f64), (f64, f64)) {
+        let sa = &line.drawing.shape_attr;
+        let uses_signed_affine = !matrix_positioned
+            && (sa.render_sx < 0.0
+                || sa.render_sy < 0.0
+                || sa.render_b.abs() > 1e-6
+                || sa.render_c.abs() > 1e-6
+                || sa.render_tx.abs() > 1e-6
+                || sa.render_ty.abs() > 1e-6);
+        if uses_signed_affine
+            && [
+                sa.render_sx,
+                sa.render_b,
+                sa.render_tx,
+                sa.render_c,
+                sa.render_sy,
+                sa.render_ty,
+            ]
+            .iter()
+            .all(|value| value.is_finite())
+        {
+            let point = |x: i32, y: i32| {
+                let x_hu = sa.render_sx * f64::from(x) + sa.render_b * f64::from(y) + sa.render_tx;
+                let y_hu = sa.render_c * f64::from(x) + sa.render_sy * f64::from(y) + sa.render_ty;
+                (
+                    render_x + x_hu * self.dpi / crate::renderer::HWPUNIT_PER_INCH,
+                    render_y + y_hu * self.dpi / crate::renderer::HWPUNIT_PER_INCH,
+                )
+            };
+            return (
+                point(line.start.x, line.start.y),
+                point(line.end.x, line.end.y),
+            );
+        }
+
+        (
+            (
+                render_x + hwpunit_to_px(line.start.x, self.dpi) * sx,
+                render_y + hwpunit_to_px(line.start.y, self.dpi) * sy,
+            ),
+            (
+                render_x + hwpunit_to_px(line.end.x, self.dpi) * sx,
+                render_y + hwpunit_to_px(line.end.y, self.dpi) * sy,
+            ),
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn layout_shape_object_with_group_origin(
         &self,
@@ -1592,10 +1653,14 @@ impl LayoutEngine {
                             }
                             _ => {}
                         }
-                        let x1 = render_x + hwpunit_to_px(line.start.x, self.dpi) * sx;
-                        let y1 = render_y + hwpunit_to_px(line.start.y, self.dpi) * sy;
-                        let x2 = render_x + hwpunit_to_px(line.end.x, self.dpi) * sx;
-                        let y2 = render_y + hwpunit_to_px(line.end.y, self.dpi) * sy;
+                        let ((x1, y1), (x2, y2)) = self.line_endpoints_in_rendering_frame(
+                            line,
+                            render_x,
+                            render_y,
+                            sx,
+                            sy,
+                            matrix_positioned,
+                        );
                         let node_id = tree.next_id();
                         let mut line_node = LineNode::new(x1, y1, x2, y2, line_style);
                         line_node.section_index = Some(section_index);
@@ -1615,10 +1680,14 @@ impl LayoutEngine {
                 } else {
                     // 일반 직선
                     let line_style = drawing_to_line_style(&line.drawing);
-                    let x1 = render_x + hwpunit_to_px(line.start.x, self.dpi) * sx;
-                    let y1 = render_y + hwpunit_to_px(line.start.y, self.dpi) * sy;
-                    let x2 = render_x + hwpunit_to_px(line.end.x, self.dpi) * sx;
-                    let y2 = render_y + hwpunit_to_px(line.end.y, self.dpi) * sy;
+                    let ((x1, y1), (x2, y2)) = self.line_endpoints_in_rendering_frame(
+                        line,
+                        render_x,
+                        render_y,
+                        sx,
+                        sy,
+                        matrix_positioned,
+                    );
                     let node_id = tree.next_id();
                     let mut line_node = LineNode::new(x1, y1, x2, y2, line_style);
                     line_node.section_index = Some(section_index);

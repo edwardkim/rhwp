@@ -853,6 +853,7 @@ export function onClick(this: any, e: MouseEvent): void {
             (picHit as any).cellPath,
             undefined,
             (picHit as any).missing,
+            (picHit as any).pageIndex,
           );
           this.active = true;
           this.caret.hide();
@@ -1086,6 +1087,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           hit.sectionIndex, hit.parentParaIndex, hit.controlIndex, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1106,6 +1108,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           shapeHit.sec, shapeHit.ppi, shapeHit.ci, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1134,6 +1137,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (tbPic as any).cellPath,
           (tbPic as any).noteRef,
           (tbPic as any).missing,
+          (tbPic as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();
@@ -1189,6 +1193,7 @@ export function onClick(this: any, e: MouseEvent): void {
           this.cursor.enterPictureObjectSelectionDirect(
             picHit.sec, picHit.ppi, picHit.ci, 'line',
             undefined, undefined, (picHit as any).headerFooter,
+            undefined, undefined, undefined, undefined, (picHit as any).pageIndex,
           );
           this.active = true;
           this.caret.hide();
@@ -1230,6 +1235,7 @@ export function onClick(this: any, e: MouseEvent): void {
             this.cursor.enterPictureObjectSelectionDirect(
               picHit.sec, picHit.ppi, picHit.ci, 'shape',
               undefined, undefined, (picHit as any).headerFooter,
+              undefined, undefined, undefined, undefined, (picHit as any).pageIndex,
             );
             this.active = true;
             this.caret.hide();
@@ -1252,6 +1258,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (picHit as any).cellPath,
           (picHit as any).noteRef,
           (picHit as any).missing,
+          (picHit as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();

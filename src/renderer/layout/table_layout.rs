@@ -6279,8 +6279,24 @@ impl LayoutEngine {
                                 };
                                 // A fallback TAC picture has its own baseline. Align it
                                 // within the stored text box, not at the line's top edge.
-                                // A picture that fills the text box needs no displacement.
-                                let baseline_offset = para
+                                //
+                                // `layout_picture` preserves an inline cell picture's declared
+                                // frame and lets TableCell clip the excess. The pre-placement
+                                // width clamp above is only for line wrapping; using its scaled
+                                // height here moves a full-line frame down by the leftover
+                                // leading. Keep the stored-line test in the unscaled coordinate
+                                // system (#7333 p31 print-dialog screenshot).
+                                let full_stored_line_picture = pic.caption.is_none()
+                                    && pic.common.margin.top == 0
+                                    && pic.common.margin.bottom == 0
+                                    && para.line_segs.get(target_line).is_some_and(|seg| {
+                                        (hwpunit_to_px(seg.text_height, self.dpi) - pic_h).abs()
+                                            <= 4.0
+                                    });
+                                let baseline_offset = if full_stored_line_picture {
+                                    0.0
+                                } else {
+                                    para
                                     .line_segs
                                     .get(target_line)
                                     .filter(|seg| {
@@ -6299,7 +6315,8 @@ impl LayoutEngine {
                                         hwpunit_to_px(seg.baseline_distance, self.dpi)
                                             * (1.0 - clamped_h / text_h).max(0.0)
                                     })
-                                    .unwrap_or(0.0);
+                                    .unwrap_or(0.0)
+                                };
                                 let picture_y = tac_img_y + baseline_offset;
                                 if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
                                     let segs: Vec<(i32, i32)> = para

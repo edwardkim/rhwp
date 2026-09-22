@@ -368,7 +368,7 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 )
 ```
 
-Docker를 사용할 수 없을 때의 진단 경로는 같은 worktree에서
+Docker를 사용할 수 없을 때의 진단 경로는 해당 worktree의 **저장소 루트**에서
 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
 이 경우 Docker 부재·대체 명령을 기록하고, 최적화된 표준 빌드를 통과했다고 쓰지 마세요. Windows native
 wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이미 WASM을 준비했다면 이어지는 frontend
@@ -503,7 +503,10 @@ Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구�
 `--dev` 성공을 최적화된 release WASM의 검증으로 기록하지 않습니다. 동일 SHA로 이미 요구되는 WASM을
 준비했다면 package 검사를 위해 재빌드하지 않습니다.
 
-macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전 metadata
+macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. 아래 명령과 alias는 반드시
+**저장소 루트**(`scripts/`, 루트 `pkg/`, `rhwp-studio/`가 함께 있는 곳)에서 실행합니다. `rhwp-studio/`
+디렉터리 안에서 실행하면 wrapper를 찾지 못하고, 그 안의 `pkg/`는 Studio 개발 서버가 읽는 package가 아닙니다.
+`wasm-pack`의 사전 metadata
 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
@@ -518,7 +521,7 @@ CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out
 
 혼합 변경에서도 `rhwp_review_target_dir`는 source checkout의 같은 `target/pr-review`를 가리킵니다.
 worktree에서 명령을 실행할 때는 상대 경로 대신 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}"`를
-지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
+지정합니다. 반복 실행용 alias도 **저장소 루트에서만** 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
 직접 확인할 때는 `--dev` 없이 아래 표준 alias를 사용합니다.
 
 ```bash

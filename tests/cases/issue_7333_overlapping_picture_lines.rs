@@ -26,6 +26,29 @@ fn find_table(node: &serde_json::Value, para_index: u64) -> Option<(f64, f64)> {
         .find_map(|child| find_table(child, para_index))
 }
 
+fn find_image_bbox(
+    node: &serde_json::Value,
+    para_index: u64,
+    control_index: u64,
+) -> Option<(f64, f64, f64, f64)> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Image")
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
+        && node.get("ci").and_then(|value| value.as_u64()) == Some(control_index)
+    {
+        let bbox = node.get("bbox")?;
+        return Some((
+            bbox.get("x")?.as_f64()?,
+            bbox.get("y")?.as_f64()?,
+            bbox.get("w")?.as_f64()?,
+            bbox.get("h")?.as_f64()?,
+        ));
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(|child| find_image_bbox(child, para_index, control_index))
+}
+
 fn find_text_line_y(node: &serde_json::Value, para_index: u64) -> Option<f64> {
     if node.get("type").and_then(|value| value.as_str()) == Some("TextLine")
         && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
@@ -36,6 +59,103 @@ fn find_text_line_y(node: &serde_json::Value, para_index: u64) -> Option<f64> {
         .and_then(|value| value.as_array())?
         .iter()
         .find_map(|child| find_text_line_y(child, para_index))
+}
+
+fn find_table_cell_first_line_y(node: &serde_json::Value, para_index: u64) -> Option<f64> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Table")
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
+    {
+        return node
+            .get("children")?
+            .as_array()?
+            .iter()
+            .find(|child| child.get("type").and_then(|value| value.as_str()) == Some("Cell"))?
+            .get("children")?
+            .as_array()?
+            .iter()
+            .find(|child| child.get("type").and_then(|value| value.as_str()) == Some("TextLine"))?
+            .get("bbox")?
+            .get("y")?
+            .as_f64();
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(|child| find_table_cell_first_line_y(child, para_index))
+}
+
+fn find_table_cell_image_bbox(
+    node: &serde_json::Value,
+    para_index: u64,
+) -> Option<(f64, f64, f64, f64)> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Table")
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
+    {
+        let cell = node
+            .get("children")?
+            .as_array()?
+            .iter()
+            .find(|child| child.get("type").and_then(|value| value.as_str()) == Some("Cell"))?;
+        let image =
+            cell.get("children")?.as_array()?.iter().find(|child| {
+                child.get("type").and_then(|value| value.as_str()) == Some("Image")
+            })?;
+        let bbox = image.get("bbox")?;
+        return Some((
+            bbox.get("x")?.as_f64()?,
+            bbox.get("y")?.as_f64()?,
+            bbox.get("w")?.as_f64()?,
+            bbox.get("h")?.as_f64()?,
+        ));
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(|child| find_table_cell_image_bbox(child, para_index))
+}
+
+fn find_footer_logo_frame_y(node: &serde_json::Value) -> Option<f64> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Footer") {
+        return node
+            .get("children")
+            .and_then(|value| value.as_array())?
+            .iter()
+            .find_map(find_footer_logo_frame_y);
+    }
+    if node.get("type").and_then(|value| value.as_str()) == Some("Image") {
+        let bbox = node.get("bbox")?;
+        let width = bbox.get("w")?.as_f64()?;
+        let height = bbox.get("h")?.as_f64()?;
+        if (165.0..171.0).contains(&width) && (46.0..51.0).contains(&height) {
+            return bbox.get("y")?.as_f64();
+        }
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(find_footer_logo_frame_y)
+}
+
+fn find_footer_rule_y(node: &serde_json::Value) -> Option<f64> {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Footer") {
+        return node
+            .get("children")
+            .and_then(|value| value.as_array())?
+            .iter()
+            .find_map(find_footer_rule_y);
+    }
+    if node.get("type").and_then(|value| value.as_str()) == Some("Image") {
+        let bbox = node.get("bbox")?;
+        let width = bbox.get("w")?.as_f64()?;
+        let height = bbox.get("h")?.as_f64()?;
+        if (620.0..640.0).contains(&width) && height < 6.0 {
+            return bbox.get("y")?.as_f64();
+        }
+    }
+    node.get("children")
+        .and_then(|value| value.as_array())?
+        .iter()
+        .find_map(find_footer_rule_y)
 }
 
 fn rectangles(node: &serde_json::Value, out: &mut Vec<(f64, f64, f64, f64)>) {
@@ -172,4 +292,118 @@ fn fixed_line_spacing_after_in_front_decoration_table_is_not_reserved_twice() {
             page_index + 1
         );
     }
+}
+
+#[test]
+fn bottom_aligned_mixed_footer_uses_the_saved_grid_leading() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    for page_index in [1, 30] {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let y = find_footer_rule_y(&tree)
+            .unwrap_or_else(|| panic!("{}쪽 footer 파란 rule", page_index + 1));
+        assert!(
+            (y - 1002.7).abs() < 1.0,
+            "{}쪽 footer rule y={y:.1}px — 한컴 2020 PDF의 y=1003px 기준과 맞아야 한다",
+            page_index + 1
+        );
+        let logo_frame_y = find_footer_logo_frame_y(&tree)
+            .unwrap_or_else(|| panic!("{}쪽 footer 로고 frame", page_index + 1));
+        assert!(
+            (logo_frame_y - 1027.1).abs() < 1.0,
+            "{}쪽 footer 로고 frame y={logo_frame_y:.1}px — Paper 기준 그림도 HWP5 저장 grid의 452HU leading을 반영해야 한다",
+            page_index + 1
+        );
+    }
+}
+
+fn svg_numeric_attr(tag: &str, name: &str) -> Option<f64> {
+    let (_, value) = tag.split_once(&format!("{name}=\""))?;
+    value.split_once('"')?.0.parse().ok()
+}
+
+#[test]
+fn page_31_signed_line_transform_preserves_arrow_direction() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+    let svg = document
+        .render_page_svg_native(30)
+        .expect("31쪽 SVG 렌더링");
+
+    // 31쪽 둘째 빨간 화살표는 HWP5 renderingInfo의 x=-0.896, tx=7508 변환을
+    // 쓴다. 한컴 2020 PDF에서는 오른쪽 위에서 왼쪽 아래로 진행한다. 절댓값
+    // scale만 적용하면 방향이 반대로 된다.
+    let (x1, y1, x2, y2) = svg
+        .lines()
+        .filter(|tag| {
+            tag.contains("<line")
+                && tag.contains("stroke=\"#ff0000\"")
+                && tag.contains("marker-end")
+        })
+        .filter_map(|tag| {
+            Some((
+                svg_numeric_attr(tag, "x1")?,
+                svg_numeric_attr(tag, "y1")?,
+                svg_numeric_attr(tag, "x2")?,
+                svg_numeric_attr(tag, "y2")?,
+            ))
+        })
+        .find(|(_, y1, _, y2)| y2 - y1 > 150.0)
+        .expect("31쪽의 긴 빨간 대각선 화살표");
+
+    assert!(
+        x1 > x2 && y1 < y2,
+        "31쪽 화살표 방향=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — PDF처럼 오른쪽 위에서 왼쪽 아래여야 한다"
+    );
+    assert!(
+        (x1 - 542.0).abs() < 2.0
+            && (y1 - 484.2).abs() < 2.0
+            && (x2 - 445.9).abs() < 2.0
+            && (y2 - 701.2).abs() < 2.0,
+        "31쪽 화살표 끝점=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — 저장 renderingInfo frame을 유지해야 한다"
+    );
+}
+
+#[test]
+fn page_31_inline_screenshot_keeps_its_saved_frame_before_cell_clip() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+    let json = document.get_page_render_tree(30).expect("31쪽 render tree");
+    let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+    let (_, image_y, width, height) =
+        find_table_cell_image_bbox(&tree, 430).expect("31쪽 p430 표 셀의 스크린샷 그림");
+    let line_y = find_table_cell_first_line_y(&tree, 430).expect("31쪽 p430 빈 셀의 저장 줄 위쪽");
+    let picture = match &document.document().sections[0].paragraphs[430].controls[5] {
+        rhwp::model::control::Control::Table(table) => {
+            match &table.cells[0].paragraphs[0].controls[0] {
+                rhwp::model::control::Control::Picture(picture) => picture,
+                other => panic!("p430 table picture expected, got {other:?}"),
+            }
+        }
+        other => panic!("p430 table expected, got {other:?}"),
+    };
+    assert_eq!(
+        (picture.common.width, picture.common.height),
+        (48190, 38370),
+        "31쪽 스크린샷의 HWP5 저장 frame"
+    );
+
+    // HWP5 저장 frame=48190×38370 HU. TableCell은 화면 끝에서 clip하지만,
+    // 그림 자체를 cell 안쪽 폭 45884 HU로 축소해서는 안 된다.
+    assert!(
+        (width - 642.5).abs() < 1.0 && (height - 511.6).abs() < 1.0,
+        "31쪽 스크린샷 frame={width:.1}×{height:.1}px — 저장 크기를 유지한 뒤 셀 경계에서 clip해야 한다"
+    );
+    assert!(
+        (image_y - line_y).abs() < 1.0,
+        "31쪽 스크린샷 y={image_y:.1}px, 셀 저장 줄 y={line_y:.1}px — leading을 다시 더하면 주석 도형과 어긋난다"
+    );
 }

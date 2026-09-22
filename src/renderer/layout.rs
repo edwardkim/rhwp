@@ -4384,12 +4384,27 @@ impl LayoutEngine {
         } else {
             0.0
         };
+        // HWP5의 그림 혼합 footer는 저장 LINE_SEG가 footer 안 줄 grid를 완전히
+        // 표현한다. `BOTTOM` subList에서 첫 줄의 vpos는 0이지만, 한컴은 첫 줄의
+        // line_spacing을 footer 원점 뒤의 선행 여백으로 쓴다. 그림을 포함했다는
+        // 이유만으로 text-only 정렬을 피하던 기존 경로는 이 1회 선행 여백도 버려
+        // rule·로고·AutoNumber를 함께 위로 올렸다(#7333, 452 HU = 6.03px).
+        //
+        // 임의의 stale vpos를 원점으로 삼지 않는다. 각 문단이 정확히 한 저장 줄을
+        // 가지고 vpos가 직전 줄의 height+spacing만큼 진행하며, 전체 grid가 선언한
+        // subList 높이 안에 닫힐 때만 적용한다.
+        let stored_mixed_footer_leading = if !text_only_footer {
+            self.bottom_aligned_footer_grid_leading_px(hf_paragraphs, list_attr, band_height_hu)
+        } else {
+            0.0
+        };
         let mut y_offset = area.y
             + match vert_align {
                 1 => slack / 2.0,
                 2 => slack,
                 _ => 0.0,
-            };
+            }
+            + stored_mixed_footer_leading;
         for (i, para) in hf_paragraphs.iter().enumerate() {
             // 테이블 컨트롤이 있으면 테이블 렌더링
             let has_table = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
@@ -4497,11 +4512,29 @@ impl LayoutEngine {
                                     styles,
                                 );
                             } else {
+                                // `Paper`/`Page` 기준은 header/footer 틀을 원점으로
+                                // 다시 해석하므로 para_y의 저장 grid 선행을 읽지 않는다.
+                                // 완전한 BOTTOM HWP5 grid로 확인한 경우에만 그 틀 원점도
+                                // 첫 줄 leading만큼 이동한다. `Para`/`Column` 그림은 이미
+                                // y_offset을 쓰므로 여기서 area를 움직이면 두 번 더해진다.
+                                let picture_area = if !is_header
+                                    && stored_mixed_footer_leading > 0.0
+                                    && matches!(
+                                        pic.common.vert_rel_to,
+                                        VertRelTo::Paper | VertRelTo::Page
+                                    ) {
+                                    LayoutRect {
+                                        y: area.y + stored_mixed_footer_leading,
+                                        ..*area
+                                    }
+                                } else {
+                                    *area
+                                };
                                 self.layout_header_footer_picture(
                                     tree,
                                     area_node,
                                     pic,
-                                    area,
+                                    &picture_area,
                                     y_offset,
                                     bin_data_content,
                                     outer_section_index,
@@ -4651,6 +4684,50 @@ impl LayoutEngine {
                 break;
             }
         }
+    }
+
+    /// `BOTTOM` footer의 완전한 HWP5 저장 줄 grid가 갖는 첫 줄 선행 간격.
+    ///
+    /// 그림·자동번호가 섞인 footer는 실제 그림 상자를 줄 높이로 환산할 수 없어
+    /// 일반 text-only subList 정렬을 적용할 수 없다. 다만 모든 inner 문단의 한 줄
+    /// grid가 저장되어 있고 그 grid가 `textHeight` 안에 닫히면, 한컴이 첫 줄
+    /// `line_spacing`을 footer 원점 뒤의 선행으로 쓰는 계약은 독립적으로 남아 있다.
+    /// 이 함수는 그 좁은 경우만 허용한다.
+    fn bottom_aligned_footer_grid_leading_px(
+        &self,
+        paragraphs: &[Paragraph],
+        list_attr: u32,
+        band_height_hu: u32,
+    ) -> f64 {
+        if (list_attr >> 21) & 0b11 != 2 || band_height_hu == 0 || paragraphs.is_empty() {
+            return 0.0;
+        }
+
+        let mut expected_vpos = 0_i32;
+        let mut leading_hu = None;
+        for paragraph in paragraphs {
+            let [line] = paragraph.line_segs.as_slice() else {
+                return 0.0;
+            };
+            if line.vertical_pos != expected_vpos || line.line_height <= 0 || line.line_spacing <= 0
+            {
+                return 0.0;
+            }
+            leading_hu.get_or_insert(line.line_spacing);
+            let Some(next_vpos) = line
+                .vertical_pos
+                .checked_add(line.line_height)
+                .and_then(|value| value.checked_add(line.line_spacing))
+            else {
+                return 0.0;
+            };
+            expected_vpos = next_vpos;
+        }
+
+        if expected_vpos > band_height_hu as i32 {
+            return 0.0;
+        }
+        hwpunit_to_px(leading_hu.unwrap_or(0), self.dpi)
     }
 
     fn compose_header_footer_paragraph(
