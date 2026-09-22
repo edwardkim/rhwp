@@ -843,7 +843,7 @@ impl TypesetEngine {
                     consumed += cs_before + split_total;
                 }
             }
-            return false;
+            false
         })();
         let scan = BlockTableRowScan {
             consumed,

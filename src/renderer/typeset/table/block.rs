@@ -32,7 +32,6 @@ struct BlockTableInput<'a> {
 }
 
 /// Values that survive whole-placement attempts. No page state is copied here.
-
 struct SplitTableEntry<'a> {
     total_footnote: f64,
     next_starts_new_page: bool,

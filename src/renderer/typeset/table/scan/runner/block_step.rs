@@ -225,7 +225,7 @@ impl TypesetEngine {
                 return true;
             }
             end_row = r;
-            return false;
+            false
         })();
         let scan = BlockTableRowScan {
             consumed,
