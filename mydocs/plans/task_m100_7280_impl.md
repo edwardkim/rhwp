@@ -137,6 +137,12 @@
   컷·예산·누적·재개 순서를 보존했다. 고정 제품 `8a32f7c34`에서 정책·fmt·native Clippy 및
   기존 집중 계약 364건 통과. 블록 컷 수용/이월·일반 행·continuation과 R3 통합 검증은 남아 있다.
 
+- 최신 절편: [Stage45 R3d 블록 컷 수용·밴드 재시도 Query 분리·집중 검증 완료](../working/task_m100_7280_stage45.md).
+  `table/scan/block_fit.rs`로 저장 줄 완결 밴드·분할 허용·재시도 조건을 분리하고
+  컷 실행·진단·누적 예약·커서 전진 순서를 보존했다. 고정 제품 `2cfa3c13b`에서
+  정책·fmt·native Clippy 및 기존 집중 계약 368건 통과. 컷 채택/상태 반영·일반 행·
+  continuation 본체와 R3 통합 검증은 남아 있다.
+
 ## 1. 구현 목표와 비범위
 
 여러 기여자가 조판 코드를 추가·수정·삭제할 때 **어디를 바꾸고, 무엇에 영향을 주며,
@@ -186,6 +192,7 @@ renderer/typeset/
   table.rs                           표 진입·준비와 기존 결과 타입
   table/host_spacing.rs              표 소유 문단의 흐름/fit 간격과 strict 후속 fit 조회
   table/scan.rs                      가용 영역에서 행/셀 분할 후보 계산
+  table/scan/block_fit.rs            블록 컷의 저장 완결 밴드·분할 허용·재시도 조회
   table/continuation.rs              표 조각 적용·재개 커서와 종료
   notes.rs                           각주 예약·표 각주 큐 조정
   notes/endnotes.rs                  미주 내용 준비·구성·배치 조정
