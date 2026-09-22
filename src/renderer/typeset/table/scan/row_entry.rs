@@ -94,7 +94,13 @@ impl RowEntryQuery<'_> {
     }
 
     /// native child 조회는 can_intra_split보다 먼저 실행하는 기존 순서를 보존한다.
-    pub(in crate::renderer::typeset) fn split_gate(&self, can_intra_split: bool) -> RowSplitGate {
+    /// `intra_row_cut_here` 는 [#7288] «쪽 경계에서» 가 이 자리의 행 내부 컷을 허용하는지다.
+    /// 값 0 «나누지 않음» 표의 원자 규칙은 호출처가 판정해 넘긴다.
+    pub(in crate::renderer::typeset) fn split_gate(
+        &self,
+        can_intra_split: bool,
+        intra_row_cut_here: bool,
+    ) -> RowSplitGate {
         let RowScanQuery { rows, r, .. } = *self.row;
         let RowBlockQuery {
             layout_engine,
@@ -105,8 +111,9 @@ impl RowEntryQuery<'_> {
         } = *rows;
         let native_short_parent_child_splittable =
             layout_engine.native_short_parent_child_row_is_fragmentable(table, r, styles);
-        let splittable =
-            can_intra_split && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
+        let splittable = can_intra_split
+            && intra_row_cut_here
+            && (mt.is_row_splittable(r) || native_short_parent_child_splittable);
 
         RowSplitGate {
             native_short_parent_child_splittable,
