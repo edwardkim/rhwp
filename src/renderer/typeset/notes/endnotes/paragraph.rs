@@ -1424,7 +1424,7 @@ impl TypesetEngine {
                 // 저장 vpos가 실제 frame 하단보다 한 줄가량 아래를 가리킬
                 // 수 있다. Pagination은 tail을 현재 단에 남기되, 렌더 vpos만
                 // 위로 당겨 127~129 같은 연속 번호가 frame 안에 보이게 한다.
-                st.shift_endnote_render_lines(en_para_local_idx, -pullup_hu);
+                st.retract_endnote_render_lines(en_para_local_idx, pullup_hu);
             }
             // 구분선 아래가 큰 기본 미주에서 제목 tail만 현재 단 하단에
             // 남는 경우, 저장 vpos가 한 기본 미주 gap만큼 위로 당겨질 수

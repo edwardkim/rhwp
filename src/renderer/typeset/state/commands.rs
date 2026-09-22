@@ -326,6 +326,17 @@ impl TypesetState {
             }
         }
     }
+    pub(in crate::renderer::typeset) fn retract_endnote_render_lines(
+        &mut self,
+        index: usize,
+        delta: i32,
+    ) {
+        if let Some(render_para) = self.data.endnote_paragraphs.get_mut(index) {
+            for ls in &mut render_para.line_segs {
+                ls.vertical_pos -= delta;
+            }
+        }
+    }
     pub(in crate::renderer::typeset) fn attach_pending_behind_absorptions(&mut self) {
         for wrap_para in std::mem::take(&mut self.data.behind_pending_absorbs) {
             let anchor = wrap_para.table_para_index;
