@@ -18,6 +18,7 @@ use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
 mod host_spacing;
+pub(super) mod scan;
 
 /// 포맷 경계의 기존 IR 참조와 관측값. 페이지/단의 가변 상태를 전달하지 않는다.
 pub(super) struct TableFormatInput<'a> {
