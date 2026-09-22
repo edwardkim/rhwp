@@ -1,14 +1,168 @@
-//! 표 포맷을 위한 측정 결과 수용 Query.
-//! 기존 높이 보정 정책을 유지하며 host 간격·각주 예약·분할/배치는 호출자가 소유한다.
+//! 표 포맷의 읽기 전용 준비·결과 조립과 측정 결과 수용 Query.
+//! host 간격은 하위 Query가, 각주 예약·분할/배치는 호출자가 소유한다.
 
-use super::para_has_non_whitespace_text;
+use super::{
+    native_hwp5_footnote_reset_fragments, para_has_non_whitespace_text,
+    queued_table_footnote_content_height, FormattedTable, TableCellFootnote,
+};
+use crate::model::control::Control;
 use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile, table::Table};
+use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::float_placement::is_para_topbottom_float;
 use crate::renderer::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
     MeasuredTable,
 };
+use crate::renderer::pagination::estimate_footnote_note_height;
+use crate::renderer::style_resolver::ResolvedStyleSet;
+
+mod host_spacing;
+
+/// 포맷 경계의 기존 IR 참조와 관측값. 페이지/단의 가변 상태를 전달하지 않는다.
+pub(super) struct TableFormatInput<'a> {
+    pub(super) para: &'a Paragraph,
+    pub(super) para_idx: usize,
+    pub(super) ctrl_idx: usize,
+    pub(super) table: &'a Table,
+    pub(super) measured_tables: &'a [MeasuredTable],
+    pub(super) styles: &'a ResolvedStyleSet,
+    pub(super) composed: Option<&'a ComposedParagraph>,
+    pub(super) next_para: Option<&'a Paragraph>,
+    pub(super) is_column_top: bool,
+}
+
+/// 측정 선택 → host 간격 → 측정값 복제 → 각주 수집 → 결과 조립 순서를 유지한다.
+/// profile과 TAC 질의는 원래 평가 위치에서만 호출한다. 각주 예약/페이지 배치는 하지 않는다.
+pub(super) fn format(
+    input: TableFormatInput<'_>,
+    dpi: f64,
+    profile: impl Fn() -> LayoutCompatibilityProfile,
+    uses_tac_flow: impl FnOnce() -> bool,
+) -> FormattedTable {
+    let TableFormatInput {
+        para,
+        para_idx,
+        ctrl_idx,
+        table,
+        measured_tables,
+        styles,
+        composed,
+        next_para,
+        is_column_top,
+    } = input;
+    let mt = measured_tables
+        .iter()
+        .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
+    let fitted_visible_mt = fit_measured_for_host(para, table, mt, dpi, &profile);
+    let mt = fitted_visible_mt.as_ref().or(mt);
+
+    let is_tac = uses_tac_flow();
+    let host_spacing::HostSpacingResult {
+        host_spacing,
+        strict_following_plain_text_fit,
+    } = host_spacing::resolve(
+        host_spacing::HostSpacingInput {
+            para,
+            ctrl_idx,
+            table,
+            styles,
+            composed,
+            next_para,
+            is_column_top,
+            is_tac,
+        },
+        dpi,
+        &profile,
+    );
+
+    let (
+        row_heights,
+        cell_spacing,
+        effective_height,
+        caption_height,
+        cumulative_heights,
+        page_break,
+        cells,
+        header_row_count,
+    ) = if let Some(mt) = mt {
+        let hrc = if mt.repeat_header && mt.has_header_cells {
+            1
+        } else {
+            0
+        };
+        (
+            mt.row_heights.clone(),
+            mt.cell_spacing,
+            mt.total_height,
+            mt.caption_height,
+            mt.cumulative_heights.clone(),
+            mt.page_break,
+            mt.cells.clone(),
+            hrc,
+        )
+    } else {
+        (
+            Vec::new(),
+            0.0,
+            0.0,
+            0.0,
+            vec![0.0],
+            Default::default(),
+            Vec::new(),
+            0,
+        )
+    };
+
+    let total_height = effective_height + host_spacing.before + host_spacing.after;
+
+    // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
+    let mut table_footnote_height = 0.0;
+    let mut table_footnote_count = 0usize;
+    let mut table_footnotes = Vec::new();
+    for (cell_idx, cell) in table.cells.iter().enumerate() {
+        for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+            for (cc_idx, cc) in cp.controls.iter().enumerate() {
+                if let Control::Footnote(fn_ctrl) = cc {
+                    let fn_height = estimate_footnote_note_height(fn_ctrl, dpi);
+                    table_footnote_height += fn_height;
+                    table_footnote_count += 1;
+                    let fragment_split = profile()
+                        .hwp5_stored_pagination_layout()
+                        .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, dpi))
+                        .flatten();
+                    table_footnotes.push(TableCellFootnote {
+                        number: fn_ctrl.number,
+                        cell_index: cell_idx,
+                        cell_para_index: cp_idx,
+                        cell_control_index: cc_idx,
+                        row: cell.row as usize,
+                        content_height: queued_table_footnote_content_height(fn_ctrl, dpi),
+                        fragment_split,
+                    });
+                }
+            }
+        }
+    }
+
+    FormattedTable {
+        row_heights,
+        cell_spacing,
+        header_row_count,
+        host_spacing,
+        effective_height,
+        total_height,
+        caption_height,
+        is_tac,
+        cumulative_heights,
+        page_break,
+        cells,
+        table_footnote_height,
+        table_footnote_count,
+        table_footnotes,
+        strict_following_plain_text_fit,
+    }
+}
 
 /// 기존 측정값에 대한 보정 후보를 반환한다. 원본 fallback과 결과 수명은 호출자가 관리한다.
 /// profile 관측은 기존 guard의 단락 평가 위치를 보존한다.
