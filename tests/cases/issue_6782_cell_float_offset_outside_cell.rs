@@ -233,6 +233,36 @@ fn the_other_eleven_images_keep_their_offsets() {
     }
 }
 
+/// 일본 PS 두 마크는 같은 셀의 아래 경계를 넘어가면 안 된다.
+///
+/// 이 셀은 저장 `cell.height`가 행의 실제 높이보다 작고, 빈 문단의 `vpos`는
+/// 행 하단 쪽에 저장돼 있다. 이를 두 부동 그림의 문단 기준점으로 그대로 쓰면
+/// 두 번째 마크가 다음 행으로 밀린다. 한/글 2020 기준 PDF(물리 77쪽, 인쇄 쪽번호
+/// 55)에서는 두 마크 모두 일본 행 안에 온전히 들어간다.
+#[test]
+fn japan_mixed_wrap_marks_stay_inside_their_cell() {
+    let images = page_cell_images();
+    let japan: Vec<&CellImage> = images
+        .iter()
+        .filter(|(row, col, _, _)| (*row, *col) == (5, 3))
+        .collect();
+    assert_eq!(
+        japan.len(),
+        2,
+        "일본 인증마크 셀에는 그림 두 장이 있어야 한다"
+    );
+
+    for (_, _, (cell_y, cell_h), (_, image_y, _, image_h)) in japan {
+        assert!(
+            *image_y >= *cell_y - TOLERANCE_PX
+                && image_y + image_h <= cell_y + cell_h + TOLERANCE_PX,
+            "일본 PS 마크가 자기 셀을 벗어났다: 셀 {cell_y:.1}..{:.1}, 그림 {image_y:.1}..{:.1}",
+            cell_y + cell_h,
+            image_y + image_h,
+        );
+    }
+}
+
 /// 축소 과정이 전체 원본의 칸과 그림 배치를 바꾸지 않는지 공개 입력끼리 대조한다.
 #[test]
 fn the_reduced_fixture_preserves_original_cell_image_geometry() {

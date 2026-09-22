@@ -2886,6 +2886,67 @@ impl LayoutEngine {
                                     } else {
                                         pic_y
                                     };
+                                    // [#7334] 일본 PS 마크처럼 저장 셀 높이가 실제 행보다
+                                    // 작고, 같은 빈 문단에 글앞·자리차지 그림이 함께 있는
+                                    // 경우의 bottom-aligned 그림 묶음이다. 저장 LINE_SEG vpos는
+                                    // 행 하단의 빈 줄 자리라서 각 그림의 Para 기준점으로 다시
+                                    // 쓰면 둘 다 다음 행까지 밀린다. 한/글은 두 마크를 실제
+                                    // 셀 안에 둔다. 일반 부동 그림의 셀 밖 배치는 문서마다
+                                    // 의미가 있으므로 이 저장 형상에만 셀 하단으로 되돌린다.
+                                    let mixed_bottom_aligned_picture_stack = para
+                                        .text
+                                        .trim()
+                                        .is_empty()
+                                        && cell.vertical_align == VerticalAlign::Bottom
+                                        && para.line_segs.len() == 1
+                                        && para
+                                            .line_segs
+                                            .first()
+                                            .is_some_and(|seg| seg.vertical_pos > 0)
+                                        && cell.height < 0x8000_0000
+                                        && hwpunit_to_px(cell.height as i32, self.dpi)
+                                            + 0.5
+                                            < inner_area.height
+                                        && para.controls.iter().all(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if !picture.common.treat_as_char
+                                                        && matches!(
+                                                            picture.common.text_wrap,
+                                                            crate::model::shape::TextWrap::InFrontOfText
+                                                                | crate::model::shape::TextWrap::TopAndBottom
+                                                        )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::InFrontOfText
+                                                    )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::TopAndBottom
+                                                    )
+                                            )
+                                        });
+                                    let pic_y = if mixed_bottom_aligned_picture_stack
+                                        && pic_y + pic_h
+                                            > cell_content_bottom(cell_y, cell_h, pad_bottom) + 0.5
+                                    {
+                                        cell_content_bottom(cell_y, cell_h, pad_bottom) - pic_h
+                                    } else {
+                                        pic_y
+                                    };
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
