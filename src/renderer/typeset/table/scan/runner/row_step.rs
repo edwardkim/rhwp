@@ -330,7 +330,19 @@ impl TypesetEngine {
             let table::scan::row_entry::RowSplitGate {
                 native_short_parent_child_splittable,
                 splittable,
-            } = row_entry.split_gate(can_intra_split);
+            } = row_entry.split_gate(can_intra_split, {
+                // [#7288] «쪽 경계에서» 가 행 내부 컷을 허용하는지 묻는다. 값 2 «나눔» 만
+                // 무조건 자르고, 값 0 «나누지 않음»·값 1 «셀 단위로 나눔» 은 이 조각의
+                // **온전한 밴드**에도 행이 안 들어갈 때 — 곧 어느 쪽에도 못 넣을 때 —
+                // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
+                // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
+                // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
+                let row_needs_whole_band =
+                    r == cursor_row && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+                !crate::renderer::typeset::none_table_is_atomic_here(table)
+                    || table_storage_declares_splits
+                    || row_needs_whole_band
+            });
             if !splittable {
                 // [#2236 진단] 분할 불가 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {

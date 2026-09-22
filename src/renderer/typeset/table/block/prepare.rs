@@ -4,8 +4,9 @@ use crate::renderer::typeset::{
     controls, hwpunit_to_px, hwpx_stored_tac_table_starts_at_page_top, is_para_topbottom_float,
     is_synthetic_line_seg, is_two_row_picture_caption_rowbreak_table,
     native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
-    notes, para_has_visible_text, paragraph, partial_rowbreak_fragment_spacing_px,
-    row_geometry_table, stored_square_picture_has_adjacent_text, table,
+    none_table_is_atomic_here, notes, para_has_visible_text, paragraph,
+    partial_rowbreak_fragment_spacing_px, row_geometry_table,
+    rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
     BlockTableContinuationContext, BlockTableContinuationPreparedState,
     BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
     MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
@@ -490,7 +491,38 @@ impl TypesetEngine {
         // 465.3px, 셀 내 중첩 확장)에서 게이트가 침묵해 unsplittable 행이
         // 잔여 84.9px 에 강제 통째 배치 — 쪽 밖 428px 오버플로. max() 로
         // 콘텐츠 초과분을 게이트에 반영한다 (#874 선언>내용 형상은 불변).
-        let split_unit_h = if first_block_protected {
+        // [#7288] «쪽 경계에서» 가 원자 단위를 정한다. 값 0 «나누지 않음» 은 표
+        // **전체**가 단위이므로, 첫 행만 보고 남은 공간에 붙잡으면 안 된다. 행 높이와
+        // 같은 측정 공간(선언과 컷의 max)을 써서 이월 게이트가 스캔과 어긋나지 않게 한다.
+        let all_rows_h = {
+            let mut sum = 0.0;
+            for r in 0..row_count {
+                if r > 0 {
+                    sum += cs;
+                }
+                sum += mt
+                    .row_heights
+                    .get(r)
+                    .copied()
+                    .unwrap_or(0.0)
+                    .max(cut_row_h.get(r).copied().unwrap_or(0.0));
+            }
+            sum
+        };
+        // 저장본이 이 표 **안**에 쪽 프레임 리셋을 기록했다면, 그 문서는 실제로 이
+        // 표를 나눠 저장한 것이다. 기록된 분할은 «쪽 경계에서» 의 재조판 규칙보다
+        // 구체적인 증거이므로 원자 단위 규칙을 적용하지 않는다 (#6132 저장 vpos 계약).
+        let stored_declares_table_split = rowbreak_table_has_internal_saved_vpos_reset(table);
+        // [#7288] «나누지 않음» 의 원자 규칙은 **흐름이 표 밴드를 소비하는 배치**에만 건다.
+        // 양수 세로 오프셋의 가시-host 자리차지 float 은 흐름을 전진시키지 않고 배제 영역에
+        // 맡기는 별도 갈래이고(signed_vertical_offset > 0), 뒤 본문의 y 는 저장 사다리에서
+        // 온다. 두 좌표계가 화해되지 않은 상태(#7198 축)에서 표만 옮기면 글 위에 표가
+        // 그려진다(1490000 149쪽 실측: 겹침 134→156). 그 축을 먼저 풀기 전까지 미적용으로
+        // 둔다 — 오프셋 0 float 과 treat_as_char 표는 흐름이 밴드를 소비하므로 해당 없다.
+        let atomic_rule_applies = none_table_is_atomic_here(table) && !stored_declares_table_split;
+        let split_unit_h = if atomic_rule_applies {
+            all_rows_h
+        } else if first_block_protected {
             first_block_h
         } else {
             mt.row_heights
@@ -546,8 +578,17 @@ impl TypesetEngine {
         if stored_page_top_tac_table
             || (remaining_on_page < split_unit_h && !st.current_items.is_empty())
         {
+            // [#7288] 원자 단위가 새 쪽에 통째로 들어가면 여기서 자르지 않고 이월한다.
+            // 값 2 «나눔» 만 그 자리에서 행 내부를 자르고, 값 0 «나누지 않음»·값 1
+            // «셀 단위로 나눔» 은 단위가 한 쪽에도 안 들어갈 때만 불가피하게 자른다.
+            // 한/글 정본: 편람 PDF 158→159쪽은 큰 행을 통째로 넘기며 앞쪽 바닥에 빈
+            // 공간을 남긴다(값 1), 315→316쪽은 문장 한가운데를 자른다(값 2).
+            let unit_fits_fresh_page =
+                split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+            let intra_row_cut_here = !atomic_rule_applies || !unit_fits_fresh_page;
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
+                && intra_row_cut_here
                 && mt.is_row_splittable(0);
             // [Task #874 #6] 한컴 PDF (aift.hwp p19~20 표 pi=236 "기능 간 이벤트 연계
             // 구성도 이미지") 정합: 1×1 표 의 셀이 content 보다 훨씬 큰 cell.height
@@ -593,6 +634,9 @@ impl TypesetEngine {
                     && table_total <= (base_available - first_frag_overhead).max(0.0);
             let first_row_force_splittable = !first_block_protected
                 && can_intra_split
+                // [#7288] force-split 은 «나눔» 의 갈래다. 값 0·1 표를 한 줄 + padding
+                // 예산으로 현재 쪽에 붙잡으면 정책이 정한 원자 단위가 깨진다.
+                && intra_row_cut_here
                 && remaining_on_page > 0.0
                 && !rewound_empty_figure_float_should_defer;
             let min_content = if first_row_splittable {
@@ -612,7 +656,7 @@ impl TypesetEngine {
             // 추정으로 현재 페이지에 붙잡지 않는다(pi=290 8.7px). genuine page-larger 와
             // 1×1 단일 셀(row_count==1, 행 경계 없어 셀 내부 컷 필요, #874)은 제외 —
             // fits_fresh_page/row_count 조건으로 기존 force-split(렌더러 경계 컷) 유지.
-            let fits_fresh_page = split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+            let fits_fresh_page = unit_fits_fresh_page;
             let multirow_clean_defer = !first_row_splittable
                 && row_count > 1
                 && first_block_end < row_count
