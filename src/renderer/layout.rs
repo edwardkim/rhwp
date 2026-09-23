@@ -131,6 +131,7 @@ const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
 /// baseline/flow 계약을 유지한다.
 fn stored_empty_full_band_tac_table_top(
     para: &Paragraph,
+    control_index: usize,
     table: &crate::model::table::Table,
     col_area: &LayoutRect,
     dpi: f64,
@@ -139,6 +140,7 @@ fn stored_empty_full_band_tac_table_top(
         || !table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || para.stored_text_partition_dirty
+        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
     {
         return None;
     }
@@ -191,6 +193,7 @@ fn stored_empty_full_band_tac_table_flow_end(
         || !table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || para.stored_text_partition_dirty
+        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
     {
         return None;
     }
@@ -221,7 +224,7 @@ fn stored_empty_full_band_tac_table_flow_end(
     }
 
     let stored_y = hwpunit_to_px(following.vertical_pos, dpi);
-    (stored_y <= col_area.height + 60.0).then(|| col_area.y + stored_y)
+    (stored_y <= col_area.height + 60.0).then_some(col_area.y + stored_y)
 }
 
 /// 저장 outer-box paint origin 보정의 layout 단계 안전문이다.
@@ -3045,6 +3048,7 @@ fn tac_in_front_decoration_fixed_line_spacing_deduction_hu(
         return None;
     };
     if !table.common.treat_as_char
+        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
         || table.common.height >= 0x8000_0000
     {
@@ -4801,6 +4805,31 @@ impl LayoutEngine {
         band_height_hu: u32,
     ) -> f64 {
         if (list_attr >> 21) & 0b11 != 2 || band_height_hu == 0 || paragraphs.is_empty() {
+            return 0.0;
+        }
+        // #7333의 저장 leading은 Paper/Page 기준 그림과 쪽번호가 섞인 footer의
+        // 계약이다. 도형만 든 footer에도 한 줄 grid가 있을 수 있으나 그 경우
+        // 일반 footer 원점에 선행 여백을 더하면 snapshot을 이동시킨다.
+        let has_picture = paragraphs.iter().any(|paragraph| {
+            paragraph
+                .controls
+                .iter()
+                .any(|control| matches!(control, Control::Picture(_)))
+        });
+        let has_page_number = paragraphs.iter().any(|paragraph| {
+            paragraph.controls.iter().any(|control| {
+                matches!(
+                    control,
+                    Control::AutoNumber(number)
+                        if matches!(
+                            number.number_type,
+                            crate::model::control::AutoNumberType::Page
+                                | crate::model::control::AutoNumberType::TotalPage
+                        )
+                )
+            })
+        });
+        if !has_picture || !has_page_number {
             return 0.0;
         }
 
@@ -11356,7 +11385,7 @@ impl LayoutEngine {
                         None
                     };
                 let table_y_start = if is_tac && inline_pos.is_none() {
-                    stored_empty_full_band_tac_table_top(para, t, col_area, self.dpi)
+                    stored_empty_full_band_tac_table_top(para, control_index, t, col_area, self.dpi)
                         .unwrap_or(table_y_start)
                 } else {
                     table_y_start
