@@ -2459,6 +2459,39 @@ const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
 ///
 /// 판별력 실측(r29 `PI_MISMATCH` n=1 코호트 66건): 어긋난 항목의 36% 가 되돌아감인데,
 /// 같은 문서 **다른 쪽**의 마지막 항목은 1,134개 중 2개(0.2%)뿐이다 — 180배 농축.
+/// [#6132] 저장 vpos 초과가 이 문단을 **새 쪽에서 시작시키는가** — 세 신호를 함께 본다.
+///
+/// 단일 신호("저장 자리가 본문을 넘는다")만으로는 부족하다. 같은 형상이 문단을 쪽 안에
+/// 그대로 두는 문서에도 흔하게 나온다(실측 후보: 2025 행정업무편람 26곳 · 2070
+/// 시장구조조사 13곳 · 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 ① 표를 단 문단
+/// ② 저장 자리가 본문 바닥을 **근소하게** 초과 ③ 다음 문단이 되감김 셋을 함께 요구한다.
+///
+/// 쪽 잔여 조건은 상태라 호출자가 소유한다 — 이 Query 는 문단과 좌표만 읽는다.
+pub(in crate::renderer::typeset) fn stored_vpos_overflow_defers_paragraph(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    body_bottom_px: f64,
+    dpi: f64,
+) -> bool {
+    let first_stored = |p: &Paragraph| {
+        p.line_segs
+            .iter()
+            .find(|seg| !is_synthetic_line_seg(seg))
+            .map(|seg| seg.vertical_pos)
+    };
+    let (Some(own), Some(next)) = (first_stored(para), next_para.and_then(first_stored)) else {
+        return false;
+    };
+    let hosts_table = para
+        .controls
+        .iter()
+        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+    let own_px = hwpunit_to_px(own, dpi);
+    let overflows_body_narrowly =
+        own > 0 && own_px > body_bottom_px && own_px - body_bottom_px <= MIN_TOP_KEEP_PX;
+    hosts_table && overflows_body_narrowly && next < own
+}
+
 pub(in crate::renderer::typeset) fn stored_vpos_rewinds(
     prev_vpos: Option<i32>,
     para: &Paragraph,

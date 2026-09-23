@@ -333,7 +333,8 @@ impl TypesetEngine {
             // 재조판 규칙보다 구체적이므로 종전대로 둔다.
             let row_needs_whole_band =
                 r == cursor_row && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
-            let intra_row_cut_here = !table::none_table_is_atomic_here(table)
+            let intra_row_cut_here = !(table::none_table_is_atomic_here(table)
+                || table::cell_unit_row_is_atomic_here(table))
                 || table_storage_declares_splits
                 || row_needs_whole_band;
             let table::scan::row_entry::RowSplitGate {

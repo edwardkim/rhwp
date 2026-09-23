@@ -38,6 +38,15 @@ use crate::renderer::typeset::signed_hwpunit;
 ///
 /// 조회만 한다 — 상태를 쓰지 않는다. 소비자는 `table/block/prepare.rs` 의 이월 게이트와
 /// `table/scan/row_entry.rs` 의 분할 게이트다.
+pub(in crate::renderer::typeset) fn cell_unit_row_is_atomic_here(table: &Table) -> bool {
+    matches!(
+        table.page_break,
+        crate::model::table::TablePageBreak::CellBreak
+    ) && !(!table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && signed_hwpunit(table.common.vertical_offset) > 0)
+}
+
 pub(in crate::renderer::typeset) fn none_table_is_atomic_here(table: &Table) -> bool {
     matches!(table.page_break, crate::model::table::TablePageBreak::None)
         && !(!table.common.treat_as_char

@@ -513,9 +513,10 @@ impl TypesetEngine {
             sum
         };
         let stored_declares_table_split = rowbreak_table_has_internal_saved_vpos_reset(table);
-        let atomic_rule_applies =
-            table::none_table_is_atomic_here(table) && !stored_declares_table_split;
-        let split_unit_h = if atomic_rule_applies {
+        let atomic_rule_applies = (table::none_table_is_atomic_here(table)
+            || table::cell_unit_row_is_atomic_here(table))
+            && !stored_declares_table_split;
+        let split_unit_h = if atomic_rule_applies && table::none_table_is_atomic_here(table) {
             all_rows_h
         } else if first_block_protected {
             first_block_h
