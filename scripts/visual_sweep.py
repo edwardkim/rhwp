@@ -856,9 +856,15 @@ def overlay_summary_for_metrics(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
+    tolerant_matches = [
+        float(item["tolerant_content_match_percent"])
+        for item in metrics
+        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
+    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
+    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     return {
         "compared_pages": len(metrics),
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -879,6 +885,14 @@ def overlay_summary_for_metrics(
         else None,
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
+        else None,
+        "average_tolerant_content_match_percent": round(
+            sum(tolerant_matches) / len(tolerant_matches), 5
+        )
+        if tolerant_matches
+        else None,
+        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
+        if worst_tolerant is not None
         else None,
         "worst_pages": [
             item["page"]
@@ -4856,53 +4870,7 @@ def make_overlay_compares(
         pages.append(out)
         metrics.append(page_metrics)
 
-    pixel_matches = [
-        float(item["pixel_match_percent"])
-        for item in metrics
-        if isinstance(item.get("pixel_match_percent"), (int, float))
-    ]
-    ink_matches = [
-        float(item["ink_match_percent"])
-        for item in metrics
-        if isinstance(item.get("ink_match_percent"), (int, float))
-    ]
-    proxy_matches = [
-        float(item["visual_accuracy_proxy_percent"])
-        for item in metrics
-        if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
-    ]
-    worst_pixel = min(pixel_matches) if pixel_matches else None
-    worst_ink = min(ink_matches) if ink_matches else None
-    worst_proxy = min(proxy_matches) if proxy_matches else None
-    summary = {
-        "compared_pages": count,
-        "pixel_diff_threshold": pixel_diff_threshold,
-        "average_pixel_match_percent": round(sum(pixel_matches) / len(pixel_matches), 5)
-        if pixel_matches
-        else None,
-        "worst_pixel_match_percent": round(worst_pixel, 5)
-        if worst_pixel is not None
-        else None,
-        "average_ink_match_percent": round(sum(ink_matches) / len(ink_matches), 5)
-        if ink_matches
-        else None,
-        "worst_ink_match_percent": round(worst_ink, 5)
-        if worst_ink is not None
-        else None,
-        "average_visual_accuracy_proxy_percent": round(sum(proxy_matches) / len(proxy_matches), 5)
-        if proxy_matches
-        else None,
-        "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
-        if worst_proxy is not None
-        else None,
-        "worst_pages": [
-            item["page"]
-            for item in sorted(
-                metrics,
-                key=lambda row: float(row.get("visual_accuracy_proxy_percent", 100.0)),
-            )[:10]
-        ],
-    }
+    summary = overlay_summary_for_metrics(metrics, pixel_diff_threshold)
     metrics_path = out_dir / "overlay_metrics.json"
     metrics_path.write_text(
         json.dumps({"summary": summary, "pages": metrics}, ensure_ascii=False, indent=2) + "\n",
