@@ -28,7 +28,6 @@ class SubpixelTolerantContentMatchTests(unittest.TestCase):
         pdf = Image.new("RGB", (32, 32), "white")
         ImageDraw.Draw(rhwp).line((10, 4, 10, 27), fill="black", width=1)
         ImageDraw.Draw(pdf).line((11, 4, 11, 27), fill="black", width=1)
-
         self.assertEqual(
             SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=1), 100.0
         )
@@ -38,10 +37,101 @@ class SubpixelTolerantContentMatchTests(unittest.TestCase):
         pdf = Image.new("RGB", (32, 32), "white")
         ImageDraw.Draw(rhwp).line((8, 4, 8, 27), fill="black", width=1)
         ImageDraw.Draw(pdf).line((13, 4, 13, 27), fill="black", width=1)
-
         value = SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=2)
         self.assertIsNotNone(value)
         self.assertLess(value, 100.0)
+
+
+class LabelWrapTests(unittest.TestCase):
+    """[#7349] 라벨이 canvas 폭을 넘으면 접는다 — 문서 이미지는 건드리지 않는다."""
+
+    def setUp(self) -> None:
+        self.font = SWEEP.label_font()
+
+    def width_of(self, text: str) -> int:
+        bbox = self.font.getbbox(text)
+        return bbox[2] - bbox[0]
+
+    def test_short_label_stays_one_line(self) -> None:
+        lines = SWEEP.wrap_label_lines("t34 p014 overlay", self.font, 600)
+        self.assertEqual(lines, ["t34 p014 overlay"])
+
+    def test_long_label_wraps_within_width(self) -> None:
+        text = (
+            "chemical-rewind (WASM) p014 overlay pixel_match=93.797% "
+            "ink_match=21.711% diff=55306/891662"
+        )
+        max_width = 400
+        lines = SWEEP.wrap_label_lines(text, self.font, max_width)
+        self.assertGreater(len(lines), 1)
+        for line in lines:
+            self.assertLessEqual(self.width_of(line), max_width, line)
+        self.assertEqual(
+            "".join(lines).replace(" ", ""),
+            text.replace(" ", ""),
+            "접어도 글자를 잃지 않는다",
+        )
+
+    def test_unbroken_token_is_split_by_characters(self) -> None:
+        text = "x" * 400
+        max_width = 120
+        lines = SWEEP.wrap_label_lines(text, self.font, max_width)
+        self.assertGreater(len(lines), 1)
+        for line in lines:
+            self.assertLessEqual(self.width_of(line), max_width, line)
+        self.assertEqual("".join(lines), text)
+
+    def test_label_line_height_is_positive(self) -> None:
+        self.assertGreaterEqual(SWEEP.label_line_height(self.font), 12)
+
+
+class OverlayLabelFitTests(unittest.TestCase):
+    """[#7349] overlay PNG 의 라벨이 canvas 오른쪽에서 잘리지 않는다 — 문서 영역은 그대로."""
+
+    def make_pages(self, temp_dir: Path) -> tuple[Path, Path]:
+        rhwp = Image.new("RGB", (794, 240), "white")
+        ImageDraw.Draw(rhwp).rectangle([40, 40, 300, 120], fill=(0, 0, 0))
+        pdf = Image.new("RGB", (794, 240), "white")
+        ImageDraw.Draw(pdf).rectangle([48, 40, 308, 120], fill=(0, 0, 0))
+        rhwp_path = temp_dir / "rhwp_014.png"
+        pdf_path = temp_dir / "pdf-014.png"
+        rhwp.save(rhwp_path)
+        pdf.save(pdf_path)
+        return rhwp_path, pdf_path
+
+    def test_long_key_label_ink_stays_inside_canvas(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            out_path = temp_dir / "overlay_014.png"
+            metrics = SWEEP.make_overlay_page(
+                rhwp_path,
+                pdf_path,
+                out_path,
+                "chemical-rewind (WASM) 긴 진단 라벨 폭 초과 재현 key",
+                13,
+                pixel_diff_threshold=16,
+            )
+            canvas = Image.open(out_path).convert("L")
+            label_height = canvas.height - 240
+            self.assertGreater(label_height, 0, "라벨 영역이 있어야 한다")
+            pixels = canvas.load()
+            right_edge = [
+                x
+                for x in range(canvas.width)
+                for y in range(label_height)
+                if pixels[x, y] < 128
+            ]
+            self.assertTrue(right_edge, "라벨 잉크가 있어야 한다")
+            self.assertLess(
+                max(right_edge),
+                canvas.width - 1,
+                "라벨이 canvas 오른쪽 끝까지 닿으면 잘린 것이다",
+            )
+            # 문서 영역은 접기 전후로 같다 — 라벨만 늘어난다.
+            document = canvas.crop((0, label_height, canvas.width, canvas.height))
+            self.assertEqual(document.size, (794, 240))
+            self.assertEqual(metrics["width"], 794)
 
 
 class LabelFontTests(unittest.TestCase):
