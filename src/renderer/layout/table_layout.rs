@@ -12942,8 +12942,46 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if table.row_count <= 1 {
+            // 예산·컷 회계는 다행 표로 한정한다(#3931). 1×1 본문 래퍼는 칠하는 상자에서만
+            // 같은 증거를 쓴다 — `single_cell_fragment_paint_trailing_trim_px`.
+            return 0.0;
+        }
+        self.saved_reset_cut_trailing_spacing(table, cell, units, end_cut, styles)
+    }
+
+    /// [#7095] 1×1 RowBreak 본문 래퍼의 **비끝 조각**이 칠하는 상자에서 뺄 줄 뒤 간격(px).
+    ///
+    /// 저장 사다리가 조각 경계에서 되감기면 한/글은 그 줄 뒤 간격을 **그리지 않는다**
+    /// (`table_partial.rs` 의 쪽 고정 갈래 주석이 30269 10쪽으로 같은 규칙을 적는다).
+    /// 다행 표의 `native_multirow_saved_reset_trailing_trim` 과 **같은 증거 사슬**을 쓰되
+    /// 행 수 게이트만 뺀다. 예산·컷 회계에는 넣지 않는다 — 그쪽은 조각 소비 높이를 바꿔
+    /// 쪽 경계를 움직인다. `NativeStoredResetFragmentPaintGeometry` 와 같은 성격의
+    /// paint 전용 계약이다.
+    pub(super) fn single_cell_fragment_paint_trailing_trim_px(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if table.row_count != 1 || table.col_count != 1 {
+            return 0.0;
+        }
+        self.saved_reset_cut_trailing_spacing(table, cell, units, end_cut, styles)
+    }
+
+    /// 저장 되감김이 증명하는 "컷 앞 줄의 뒤 간격". 위 두 진입점이 공유한다.
+    fn saved_reset_cut_trailing_spacing(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
         if !self.profile.get().hwp5_stored_pagination_layout()
-            || table.row_count <= 1
             || table.common.treat_as_char
             || !matches!(
                 table.page_break,

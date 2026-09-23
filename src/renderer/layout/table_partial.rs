@@ -4609,7 +4609,27 @@ impl LayoutEngine {
                 // 쪽 상자 아래를 넘기지도 않는다. KTX 25쪽 `pi406` 은 위 바깥 여백을 연 뒤 내용
                 // 행 높이(뒤 줄간격 포함)로 끝나 본문 아래를 2.6px 넘었다 — 정본은 그 자리에
                 // 괘선을 그리지 않고, 줄 위치는 정본과 같은 쪽 경계에 있다.
-                row_heights[0] = row_heights[0].min(pinned_height);
+                //
+                // [#7095] 쪽 상자가 상한으로만 걸리는 칸(저장 칸 높이가 쪽을 덮지 않아 위
+                // 갈래를 타지 못한다)은 그 줄간격이 그대로 남는다. 위 갈래가 `pinned_height`
+                // **대입**으로 지우는 것과 같은 규칙을 여기서는 차감으로 적용한다 — 저장
+                // 사다리가 이 컷에서 되감겼다는 증거가 있을 때만이다.
+                //
+                // `1382000_domestic_violence_survey` `pi=90`: 16·17쪽 괘선이 989.81 · 992.76
+                // 으로 정본(977.07 · 979.95)보다 12.7px 아래였다. 유닛 합에서 그 줄의
+                // 줄간격(1100HU = 14.67px)을 빼고 칸 아래 여백을 더하면 773.91 · 862.81 로
+                // 정본과 1.85px 안에 든다 — 같은 문서 다른 쪽의 계통 오차와 같은 크기다.
+                //
+                // 흐름과 예산은 건드리지 않는다. 그쪽까지 바꾸면 조각 소비 높이가 줄어
+                // 쪽 경계가 움직인다(`row_split_meets_min_top_keep` 의 25px 고아 기준).
+                let paint_trim = table.cells.first().map_or(0.0, |cell| {
+                    let units = self.cell_units(cell, table, styles);
+                    let end_unit = end_cut.first().copied().unwrap_or(0);
+                    self.single_cell_fragment_paint_trailing_trim_px(
+                        table, cell, &units, end_unit, styles,
+                    )
+                });
+                row_heights[0] = (row_heights[0] - paint_trim).max(0.0).min(pinned_height);
             }
         }
 
