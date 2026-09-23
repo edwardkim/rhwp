@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   exactSelectedControlLayoutPages,
+  isLineControlHit,
   isNestedCellDescendantOfControl,
   lineControlReference,
   orderedControlLayoutPages,
@@ -18,6 +19,12 @@ test('독립 전경 도형은 같은 문단의 표 셀 그림 조상이 아니�
   };
 
   assert.equal(isNestedCellDescendantOfControl(foregroundShape, screenshotInTable), false);
+});
+
+test('8쪽 화살표의 실제 선 경로는 이를 덮는 도형 경계보다 먼저 적중한다', () => {
+  const arrow = { x: 281.6, y: 534.7, w: 304.9, h: 145.2, x1: 281.6, y1: 534.7, x2: 586.5, y2: 679.9 };
+  assert.equal(isLineControlHit(arrow, 434, 607), true);
+  assert.equal(isLineControlHit(arrow, 360, 620), false);
 });
 
 test('글상자 control은 그 안의 cellPath 그림의 조상으로 유지한다', () => {

@@ -11,6 +11,7 @@ import {
   isMasterPageDecoration,
   isNestedCellDescendantOfControl,
   isSupportedPictureControl,
+  isLineControlHit,
   lineControlReference,
 } from './picture-hit-policy';
 import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
@@ -150,17 +151,6 @@ function controlToRef(ctrl: any, pageIndex?: number): PictureObjectRef {
     cellPath: ctrl.cellPath, noteRef: ctrl.noteRef, headerFooter: ctrl.headerFooter, missing: ctrl.missing, pageIndex };
 }
 
-/** 클릭 좌표에서 그림, 글상자, 수식, OLE 개체를 찾는다. */
-/** 점과 선분 사이 최소 거리 (px) */
-function pointToSegmentDist(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
-  const dx = x2 - x1, dy = y2 - y1;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq === 0) return Math.hypot(px - x1, py - y1);
-  let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
-  t = Math.max(0, Math.min(1, t));
-  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
-}
-
 /**
  * [Task #2230] 그림 미지정 placeholder 에 그림 지정 — 파일 선택 후
  * assignPictureImage 커맨드를 스냅샷(Undo 지원)으로 실행한다.
@@ -224,6 +214,16 @@ export function findPictureAtClick(this: any,
 ): PictureObjectRef | null {
   try {
     const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isSupportedPictureControl) };
+    // 연결선의 경로는 넓은 도형·그림 경계 상자 안에 놓이는 경우가 많다. 경계 상자보다
+    // 먼저 실제 선 경로를 판정해야 #7333 8쪽처럼 화살표 클릭이 컨테이너 선택으로 바뀌지 않는다.
+    const topLine = layout.controls
+      .filter((ctrl: any) => ctrl.type === 'line' && ctrl.secIdx !== undefined &&
+        ctrl.paraIdx !== undefined && ctrl.controlIdx !== undefined &&
+        ctrl.wrap !== 'behindText' && !isMasterPageDecoration(ctrl) &&
+        isLineControlHit(ctrl, pageX, pageY))
+      .reduce((top: any, line: any) => top === null || isAboveControl(line, top) ? line : top, null);
+    if (topLine) return controlToRef(topLine, pageIdx);
+
     // [Task #1171, #7333] 글상자 컨테이너와 그 안의 cellPath picture가 겹치면 picture를
     // 우선 선택한다. 다만 같은 문단의 **독립 전경 Shape**까지 컨테이너로 취급하면, #7333
     // 8쪽에서 작은 주석 도형을 눌러도 뒤의 스크린샷 picture가 선택된다. cellPath의 조상인
@@ -277,45 +277,7 @@ export function findPictureAtClick(this: any,
 
       let hit = false;
       if (ctrl.type === 'line') {
-        // 직선: 점-선분 거리, 연결선: 곡선 경로 샘플링으로 히트 판정
-        const threshold = 6;
-        const dist1 = pointToSegmentDist(pageX, pageY, ctrl.x1, ctrl.y1, ctrl.x2, ctrl.y2);
-        hit = dist1 <= threshold;
-        if (!hit && ctrl.w > 2 && ctrl.h > 2) {
-          const sx = ctrl.x1, sy = ctrl.y1, ex = ctrl.x2, ey = ctrl.y2;
-          const mx = ctrl.x + ctrl.w / 2, my = ctrl.y + ctrl.h / 2;
-          // 꺽인 연결선: 가능한 모든 직각 경로 검사
-          const segs: [number,number,number,number][] = [
-            // 수평→수직→수평 (S자 꺽임)
-            [sx,sy, mx,sy], [mx,sy, mx,ey], [mx,ey, ex,ey],
-            // 수직→수평→수직 (S자 꺽임)
-            [sx,sy, sx,my], [sx,my, ex,my], [ex,my, ex,ey],
-            // L자 꺽임
-            [sx,sy, ex,sy], [ex,sy, ex,ey],
-            [sx,sy, sx,ey], [sx,ey, ex,ey],
-          ];
-          for (const [ax,ay,bx,by] of segs) {
-            if (pointToSegmentDist(pageX, pageY, ax, ay, bx, by) <= threshold) {
-              hit = true; break;
-            }
-          }
-          // 곡선 연결선: 베지어 곡선 — 8세그먼트 샘플링
-          if (!hit) {
-            const c1x = mx, c1y = sy, c2x = mx, c2y = ey;
-            const N = 8;
-            let prevX = sx, prevY = sy;
-            for (let k = 1; k <= N; k++) {
-              const t = k / N;
-              const u = 1 - t;
-              const bx = u*u*u*sx + 3*u*u*t*c1x + 3*u*t*t*c2x + t*t*t*ex;
-              const by = u*u*u*sy + 3*u*u*t*c1y + 3*u*t*t*c2y + t*t*t*ey;
-              if (pointToSegmentDist(pageX, pageY, prevX, prevY, bx, by) <= threshold) {
-                hit = true; break;
-              }
-              prevX = bx; prevY = by;
-            }
-          }
-        }
+        hit = isLineControlHit(ctrl, pageX, pageY);
       } else {
         // bbox 히트 판정
         hit = pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&

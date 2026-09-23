@@ -91,3 +91,46 @@ export function lineControlReference(control: any, pageIndex?: number) {
     pageIndex,
   };
 }
+
+function pointToSegmentDistance(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared === 0) return Math.hypot(px - x1, py - y1);
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+/** 직선·연결선의 실제 경로만 적중으로 처리한다. */
+export function isLineControlHit(control: any, pageX: number, pageY: number): boolean {
+  const threshold = 6;
+  const { x1, y1, x2, y2 } = control;
+  if (![x1, y1, x2, y2].every(Number.isFinite)) return false;
+  if (pointToSegmentDistance(pageX, pageY, x1, y1, x2, y2) <= threshold) return true;
+  if (!(control.w > 2 && control.h > 2)) return false;
+
+  const mx = control.x + control.w / 2;
+  const my = control.y + control.h / 2;
+  const segments: [number, number, number, number][] = [
+    [x1, y1, mx, y1], [mx, y1, mx, y2], [mx, y2, x2, y2],
+    [x1, y1, x1, my], [x1, my, x2, my], [x2, my, x2, y2],
+    [x1, y1, x2, y1], [x2, y1, x2, y2],
+    [x1, y1, x1, y2], [x1, y2, x2, y2],
+  ];
+  if (segments.some(([ax, ay, bx, by]) => pointToSegmentDistance(pageX, pageY, ax, ay, bx, by) <= threshold)) {
+    return true;
+  }
+
+  let previousX = x1;
+  let previousY = y1;
+  for (let k = 1; k <= 8; k++) {
+    const t = k / 8;
+    const u = 1 - t;
+    const bx = u * u * u * x1 + 3 * u * u * t * mx + 3 * u * t * t * mx + t * t * t * x2;
+    const by = u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2;
+    if (pointToSegmentDistance(pageX, pageY, previousX, previousY, bx, by) <= threshold) return true;
+    previousX = bx;
+    previousY = by;
+  }
+  return false;
+}
