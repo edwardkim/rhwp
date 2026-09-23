@@ -462,6 +462,7 @@ impl TypesetEngine {
                         row_start_cut,
                         &safe_end_cut,
                         styles,
+                        false,
                     );
                     res.end_cut = safe_end_cut;
                     res.consumed_height = (safe_total - padding).max(0.0);
@@ -573,8 +574,14 @@ impl TypesetEngine {
             // 분할 행의 표시 높이(per-cell content+visible pad). advance_row_cut 의
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
-            let split_total =
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles);
+            let split_total = layout_engine.row_cut_content_height(
+                table,
+                r,
+                row_start_cut,
+                &res.end_cut,
+                styles,
+                false,
+            );
             // [#3738 Stage 15] native HWP5의 RowBreak 표에 저장된 셀 내부 reset은
             // 같은 row의 앞부분을 현재 쪽 끝에 두고 tail을 다음 쪽에서 재개하라는
             // 물리 경계다. 이때 content-only 첫 cut은 25px orphan 경계에 몇 px
@@ -772,6 +779,7 @@ impl TypesetEngine {
                             row_start_cut,
                             &res2.end_cut,
                             styles,
+                            false,
                         );
                         let cand2 = consumed + cs_before + split_total2;
                         let retry_split_row_overflow_tolerance = if uses_source_frame_tail {

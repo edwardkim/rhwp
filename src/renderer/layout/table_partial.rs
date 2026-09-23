@@ -1433,7 +1433,7 @@ impl LayoutEngine {
                             .iter()
                             .any(|c| c.row as usize == r && c.row_span == 1);
                         let h = if has_single_row_cells {
-                            let h = self.row_cut_content_height(table, r, &[], &[], styles);
+                            let h = self.row_cut_content_height(table, r, &[], &[], styles, false);
                             if h > 0.0 {
                                 h
                             } else {
@@ -1444,8 +1444,14 @@ impl LayoutEngine {
                         };
                         consumed_h += h + cell_spacing;
                     }
-                    consumed_h +=
-                        self.row_cut_content_height(table, boundary_row, &[], end_cut, styles);
+                    consumed_h += self.row_cut_content_height(
+                        table,
+                        boundary_row,
+                        &[],
+                        end_cut,
+                        styles,
+                        false,
+                    );
                     eu = self
                         .cell_units_fitting_height(cell, table, styles, consumed_h - pad_top)
                         .max(su);
@@ -4359,9 +4365,9 @@ impl LayoutEngine {
                     let h = if !has_visible_range {
                         0.0
                     } else if has_row_cut || in_start || in_end {
-                        self.row_cut_content_height(table, r, &per_start, &per_end, styles)
+                        self.row_cut_content_height(table, r, &per_start, &per_end, styles, false)
                     } else {
-                        self.row_cut_content_height(table, r, &[], &[], styles)
+                        self.row_cut_content_height(table, r, &[], &[], styles, false)
                     };
                     if h > 0.0 {
                         row_heights[r] = h;
@@ -4399,7 +4405,15 @@ impl LayoutEngine {
                             continue;
                         }
                     }
-                    let h = self.row_cut_content_height(table, r, su, eu, styles);
+                    // [#7095] 이 조각이 표를 끝내는가 — 칸의 꼬리 빈 문단은 그때만 줄
+                    // 상자를 차지한다. `end_cut` 이 비었다는 것만으로는 부족하다(행 경계에서
+                    // 끝나는 중간 조각도 빈다). 마지막 행까지 소비한 이어짐 조각으로 좁힌다.
+                    let terminal_fragment = is_continuation
+                        && end_cut.is_empty()
+                        && end_row == table.row_count as usize
+                        && r == split_last_row;
+                    let h =
+                        self.row_cut_content_height(table, r, su, eu, styles, terminal_fragment);
                     if h > 0.0 {
                         row_heights[r] = h;
                     }
