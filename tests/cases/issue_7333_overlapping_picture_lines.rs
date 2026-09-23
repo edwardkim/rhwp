@@ -351,6 +351,42 @@ fn full_band_tac_table_consumes_the_saved_following_line_spacing() {
 }
 
 #[test]
+fn cell_screenshot_uses_its_own_saved_line_after_callout_shapes() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    // 각 셀은 InFrontOfText 주석 도형 뒤에 그림을 둔다. 그림의 empty-control
+    // stream position은 두 번째 저장 LINE_SEG(vpos=1600HU)를 가리킨다. 한컴 2020
+    // PDF의 스크린샷 상단을 96dpi로 측정한 값이다.
+    for (page_index, para_index, control_index, expected_y) in [
+        (39, 523, 4, 318.6),
+        (40, 532, 7, 369.8),
+        (41, 539, 6, 383.1),
+        (42, 549, 7, 395.4),
+        (43, 557, 6, 408.7),
+        (46, 586, 6, 408.7),
+    ] {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let (_, y, _, _) = find_image_bbox(&tree, para_index, control_index).unwrap_or_else(|| {
+            panic!(
+                "{}쪽 pi={para_index} ci={control_index} 셀 스크린샷",
+                page_index + 1
+            )
+        });
+        assert!(
+            (y - expected_y).abs() < 1.0,
+            "{}쪽 pi={para_index} ci={control_index} 그림 y={y:.1}px — 두 번째 저장 줄과 PDF {expected_y:.1}px를 써야 한다",
+            page_index + 1
+        );
+    }
+}
+
+#[test]
 fn bottom_aligned_mixed_footer_uses_the_saved_grid_leading() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));

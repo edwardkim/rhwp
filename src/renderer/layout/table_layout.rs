@@ -6178,10 +6178,14 @@ impl LayoutEngine {
                                 // LINE_SEG 기반 줄 판별
                                 let mut target_line = if all_runs_empty && para.line_segs.len() > 1
                                 {
-                                    // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
-                                    let li = tac_seq_index.min(para.line_segs.len() - 1);
+                                    // 빈 문단이라도 앞선 글앞/글뒤 도형은 TAC 순번에 포함되지
+                                    // 않는다. 그림은 빈-control stream의 실제 위치가 가리키는
+                                    // 저장 LINE_SEG를 우선 사용한다. 없거나 깨진 stream만 기존
+                                    // TAC 순번 폴백을 쓴다 (#7333 p40~47).
+                                    let fallback = tac_seq_index.min(para.line_segs.len() - 1);
                                     tac_seq_index += 1;
-                                    li
+                                    super::control_line_seg_index(para, ctrl_idx)
+                                        .unwrap_or(fallback)
                                 } else {
                                     // 텍스트 있는 문단: char position으로 줄 판별
                                     composed
