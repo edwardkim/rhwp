@@ -653,9 +653,12 @@ impl TypesetEngine {
                                     .get(*idx)
                                     .is_some_and(|(units, _)| units.first() == Some(&cut))
                         })
-                        && visible_indices
-                            .iter()
-                            .any(|idx| rewinds.get(*idx).is_some_and(|(_, confirmed)| *confirmed))
+                        && visible_indices.iter().any(|idx| {
+                            let cut = res.end_cut.get(*idx).copied().unwrap_or(0);
+                            rewinds
+                                .get(*idx)
+                                .is_some_and(|(_, confirmed)| confirmed.contains(&cut))
+                        })
                 };
             if r > cursor_row
                 && !cellbreak_complete_unit_keep

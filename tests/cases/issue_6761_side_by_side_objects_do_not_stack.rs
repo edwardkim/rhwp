@@ -39,6 +39,8 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::model::shape::HorzAlign;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp";
@@ -83,6 +85,79 @@ fn max_off_canvas(node: &RenderNode, page_bottom: f64) -> f64 {
         .fold(own, f64::max)
 }
 
+fn target_cell_height(core: &DocumentCore) -> (u32, f64) {
+    for page in 0..core.page_count() as u32 {
+        let text = core.extract_page_text_native(page).unwrap_or_default();
+        if !flat(&text).contains(&flat(ROW_LABEL)) {
+            continue;
+        }
+        let tree = core.build_page_render_tree(page).expect("render tree");
+        let mut cells = Vec::new();
+        cell_texts(&tree.root, None, &mut cells);
+        if let Some((_, height)) = cells
+            .iter()
+            .find(|(text, _)| flat(text).contains(&flat(ROW_LABEL)))
+        {
+            return (page, *height);
+        }
+    }
+    panic!("`{ROW_LABEL}` 칸을 찾지 못했다");
+}
+
+/// 저장 Left offset을 같은 물리 x의 Right offset으로 바꾼 문서.
+/// 그림 좌표는 같으므로 높이 측정도 원본과 같아야 한다.
+fn right_aligned_equivalent() -> DocumentCore {
+    let mut core = open();
+    let mut doc = core.document().clone();
+    let mut changed = 0;
+    for section in &mut doc.sections {
+        for paragraph in &mut section.paragraphs {
+            for control in &mut paragraph.controls {
+                let Control::Table(table) = control else {
+                    continue;
+                };
+                let table_padding = table.padding;
+                for cell in &mut table.cells {
+                    if cell.row != 11 || cell.col != 3 {
+                        continue;
+                    }
+                    let padding = if cell.apply_inner_margin {
+                        cell.padding
+                    } else {
+                        cell.effective_padding(&table_padding)
+                    };
+                    let reference_width =
+                        i64::from(cell.width) - i64::from(padding.left) - i64::from(padding.right);
+                    let mut picture_index = 0;
+                    for para in &mut cell.paragraphs {
+                        for child in &mut para.controls {
+                            let Control::Picture(picture) = child else {
+                                continue;
+                            };
+                            if picture_index == 1 {
+                                assert!(matches!(picture.common.horz_align, HorzAlign::Left));
+                                let left_offset =
+                                    i64::from(picture.common.horizontal_offset as i32);
+                                let right_offset = reference_width
+                                    - i64::from(picture.common.width as i32)
+                                    - left_offset;
+                                picture.common.horizontal_offset =
+                                    u32::try_from(right_offset).expect("오른쪽 offset 범위");
+                                picture.common.horz_align = HorzAlign::Right;
+                                changed += 1;
+                            }
+                            picture_index += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(changed, 1, "대상 두 번째 그림을 찾지 못했다");
+    core.set_document(doc);
+    core
+}
+
 /// 가로로 떨어진 개체는 세로로 쌓지 않는다 — 행이 저장 선언·정본과 같아진다.
 #[test]
 fn horizontally_separated_objects_share_one_band() {
@@ -112,6 +187,30 @@ fn horizontally_separated_objects_share_one_band() {
          기준 {ROW_HEIGHT:?} 안이어야 한다. 나란히 놓이는 그림 2장을 세로로 더하면 \
          212.7px 로 커진다 (#6761)",
         page + 1
+    );
+}
+
+/// 정렬 표현만 Left에서 Right로 바꿔도 물리 구간이 같으면 같은 높이를 예약한다.
+/// offset만 비교하면 두 그림을 떨어진 band로 보고 행을 212.7px로 부풀린다.
+#[test]
+fn equivalent_right_alignment_keeps_the_same_row_height() {
+    let left = open();
+    let right = right_aligned_equivalent();
+    let (left_page, left_height) = target_cell_height(&left);
+    let (right_page, right_height) = target_cell_height(&right);
+    assert_eq!(
+        right.page_count(),
+        left.page_count(),
+        "동일 위치 그림이 쪽 수를 바꿨다"
+    );
+    assert_eq!(
+        right_page, left_page,
+        "동일 위치 그림의 대상 행 쪽이 바뀌었다"
+    );
+    assert!(
+        (right_height - left_height).abs() <= 0.5,
+        "같은 물리 위치의 Right 정렬 그림 때문에 행 높이가 {left_height:.1}px -> \
+         {right_height:.1}px 로 달라졌다"
     );
 }
 

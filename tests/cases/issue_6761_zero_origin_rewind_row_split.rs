@@ -166,3 +166,51 @@ fn rewind_without_ladder_continuation_is_not_split_evidence() {
         head_page + 1
     );
 }
+
+/// 한 셀 안에 여러 `0 -> 0` 후보가 있으면, 나중 후보의 사다리 확인이 앞 후보의 컷을
+/// 승인하면 안 된다. 앞 후보 다음 줄은 일부러 80HU 밀어 확인을 깨고, 같은 문단 끝에
+/// 별도 후보를 붙인다. 둘째 후보만 확인되어도 실제 컷은 첫 후보이므로 행 전체를 넘겨야 한다.
+#[test]
+fn later_confirmed_rewind_does_not_authorize_an_earlier_cut() {
+    let mut core = open();
+    let table_page = table_start_page(&core);
+    let mut doc = core.document().clone();
+    let mut touched = 0;
+    for section in &mut doc.sections {
+        for paragraph in &mut section.paragraphs {
+            for control in &mut paragraph.controls {
+                let Control::Table(table) = control else {
+                    continue;
+                };
+                for cell in table.cells.iter_mut().filter(|cell| cell.row == 3) {
+                    let is_response = cell
+                        .paragraphs
+                        .first()
+                        .is_some_and(|p| flat(&p.text).starts_with(&flat("- 순식간에")));
+                    if !is_response {
+                        continue;
+                    }
+                    for seg in &mut cell.paragraphs[1].line_segs {
+                        seg.vertical_pos += 80;
+                    }
+                    let mut rewound = cell.paragraphs[0].clone();
+                    for seg in &mut rewound.line_segs {
+                        seg.vertical_pos = 0;
+                    }
+                    let mut next = rewound.clone();
+                    next.line_segs[0].vertical_pos = 1320;
+                    cell.paragraphs.push(rewound);
+                    cell.paragraphs.push(next);
+                    touched += 1;
+                }
+            }
+        }
+    }
+    assert_eq!(touched, 1, "대상 응답 셀을 찾지 못했다");
+    core.set_document(doc);
+    assert_eq!(
+        first_page_with(&core, ROW_HEAD),
+        table_page + 1,
+        "나중 후보의 확인으로 첫 후보 컷을 승인하면 안 된다"
+    );
+}

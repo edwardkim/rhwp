@@ -10,7 +10,9 @@ use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::paragraph::{LineSeg, Paragraph};
-use crate::model::shape::{Caption, CommonObjAttr, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::shape::{
+    Caption, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
+};
 use crate::model::table::{Table, TablePageBreak};
 
 /// A stored Square table fits between its host line and the next visible paragraph.
@@ -1666,8 +1668,21 @@ impl HeightMeasurer {
     /// ```
     ///
     /// 문단 **사이**는 그대로 더한다 — 문단은 실제로 흐름을 전진시킨다.
-    fn measure_non_inline_controls_height(&self, paragraphs: &[Paragraph]) -> f64 {
-        paragraphs
+    fn measure_non_inline_controls_height(
+        &self,
+        cell: &crate::model::table::Cell,
+        table_padding: &crate::model::Padding,
+    ) -> f64 {
+        let padding = if cell.apply_inner_margin {
+            cell.padding
+        } else {
+            cell.effective_padding(table_padding)
+        };
+        let reference_width = i64::from(cell.width)
+            .saturating_sub(i64::from(padding.left))
+            .saturating_sub(i64::from(padding.right))
+            .max(0);
+        cell.paragraphs
             .iter()
             .map(|para| {
                 let mut bands: Vec<(i64, i64, f64)> = Vec::new();
@@ -1681,7 +1696,11 @@ impl HeightMeasurer {
                     if height <= 0.0 {
                         continue;
                     }
-                    bands.push(Self::object_horizontal_band(common, height));
+                    bands.push(Self::object_horizontal_band(
+                        common,
+                        reference_width,
+                        height,
+                    ));
                 }
                 Self::stacked_band_height(&mut bands)
             })
@@ -1690,16 +1709,23 @@ impl HeightMeasurer {
 
     /// 개체의 가로 점유 구간과 흐름 높이. 기준(`horz_rel_to`)이 다르면 원점이 달라
     /// 좌표를 직접 비교할 수 없으므로 겹친다고 본다(종전 합산과 같은 보수적 결과).
-    fn object_horizontal_band(common: &CommonObjAttr, height: f64) -> (i64, i64, f64) {
+    fn object_horizontal_band(
+        common: &CommonObjAttr,
+        reference_width: i64,
+        height: f64,
+    ) -> (i64, i64, f64) {
         if !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para) {
             return (i64::MIN / 4, i64::MAX / 4, height);
         }
-        let left =
-            i64::from(common.horizontal_offset as i32) - i64::from(common.margin.left as i32);
-        let right = left
-            + i64::from(common.width as i32).max(0)
-            + i64::from(common.margin.left as i32)
-            + i64::from(common.margin.right as i32);
+        let width = i64::from(common.width as i32).max(0);
+        let offset = i64::from(common.horizontal_offset as i32);
+        let visible_left = match common.horz_align {
+            HorzAlign::Left | HorzAlign::Inside => offset,
+            HorzAlign::Center => (reference_width - width).max(0) / 2 + offset,
+            HorzAlign::Right | HorzAlign::Outside => (reference_width - width).max(0) - offset,
+        };
+        let left = visible_left - i64::from(common.margin.left as i32);
+        let right = visible_left + width + i64::from(common.margin.right as i32);
         (left, right, height)
     }
 
@@ -2248,7 +2274,7 @@ impl HeightMeasurer {
                                 })
                                 .fold(0.0f64, f64::max);
                             stored_line_extent <= declared + 0.5
-                                && self.measure_non_inline_controls_height(&cell.paragraphs)
+                                && self.measure_non_inline_controls_height(cell, &table.padding)
                                     <= declared + 0.5
                         })
             })
@@ -2668,7 +2694,8 @@ impl HeightMeasurer {
                         .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
-                    let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
+                    let non_inline_h =
+                        self.measure_non_inline_controls_height(cell, &table.padding);
                     let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
                     // [Task #2226] 저장 LINE_SEG 흐름 extent 가 additive 합보다 작으면
                     // 저장 지오메트리 신뢰 — TopAndBottom flow 그림의 배치는 저장 vpos
@@ -2941,7 +2968,8 @@ impl HeightMeasurer {
                 {
                     cell_h_px
                 } else if relaxed_pad_mirror {
-                    let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
+                    let non_inline_h =
+                        self.measure_non_inline_controls_height(cell, &table.padding);
                     let object_based =
                         non_inline_h.max(self.cell_wrap_objects_bottom_height(&cell.paragraphs));
                     let object_req = if object_based > 0.0 {
@@ -3532,7 +3560,7 @@ impl HeightMeasurer {
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
                 // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
-                let non_inline_h = self.measure_non_inline_controls_height(&cell.paragraphs);
+                let non_inline_h = self.measure_non_inline_controls_height(cell, &table.padding);
                 let nested_bottom =
                     self.cell_nested_controls_bottom(&cell.paragraphs, styles, depth, cell_w_px);
                 let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);

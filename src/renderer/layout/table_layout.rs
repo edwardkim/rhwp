@@ -13967,14 +13967,15 @@ impl LayoutEngine {
     /// ```
     ///
     /// 모든 줄을 0 으로 적는 입력과 가르기 위해, 두 번째 값으로 **되감긴 줄 다음 seg 가 그 줄의
-    /// `lh + ls` 만큼 전진했는지**(저장 사다리가 실제로 이어지는지)를 셀마다 돌려준다.
+    /// `lh + ls` 만큼 전진했는지**(저장 사다리가 실제로 이어지는지)를 확인한 CellUnit 번호를
+    /// 셀마다 돌려준다.
     /// 번호 투영 규칙은 `row_stored_rewind_unit_indices` 와 같다.
     pub(crate) fn row_stored_zero_origin_rewind_unit_indices(
         &self,
         table: &crate::model::table::Table,
         row: usize,
         styles: &ResolvedStyleSet,
-    ) -> Vec<(Vec<usize>, bool)> {
+    ) -> Vec<(Vec<usize>, Vec<usize>)> {
         let mut cells: Vec<&crate::model::table::Cell> = table
             .cells
             .iter()
@@ -13986,7 +13987,7 @@ impl LayoutEngine {
             .map(|cell| {
                 let units = self.cell_units(cell, table, styles);
                 let mut found: Vec<usize> = Vec::new();
-                let mut confirmed = false;
+                let mut confirmed: Vec<usize> = Vec::new();
                 for (para_idx, paragraph) in cell.paragraphs.iter().enumerate() {
                     for (li, pair) in paragraph.line_segs.windows(2).enumerate() {
                         if pair[0].vertical_pos != 0 || pair[1].vertical_pos != 0 {
@@ -14017,12 +14018,15 @@ impl LayoutEngine {
                             let advance = i64::from(rewound.line_height)
                                 + i64::from(rewound.line_spacing.max(0));
                             if rewound.line_height > 0 && i64::from(next.vertical_pos) == advance {
-                                confirmed = true;
+                                if !confirmed.contains(&unit_idx) {
+                                    confirmed.push(unit_idx);
+                                }
                             }
                         }
                     }
                 }
                 found.sort_unstable();
+                confirmed.sort_unstable();
                 (found, confirmed)
             })
             .collect()
