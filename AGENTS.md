@@ -184,6 +184,22 @@
 
 ## 문서와 검증
 
+- **로컬 Rust·WASM 산출물 재사용**: 일반 개발·이슈 수정·PR review의 기본
+  `CARGO_TARGET_DIR`/`--target-dir`는 항상 `target/pr-review`다. 이 경로의
+  `release`, `release-test`, `debug`, `wasm32-unknown-unknown`을 Native와 WASM이 함께
+  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`을 새로 만들지 않는다.
+  다른 실행 중인 Cargo 작업의 산출물과 충돌할 우려가 있으면 새 경로를 만드는 대신
+  실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
+  `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
+- **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
+  같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시 **저장소 루트
+  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  실행한다. `rhwp-studio/` 안에서는 `scripts/wasm-pack-locked.sh`가 없고 그곳의 `pkg/`는
+  개발 서버 입력이 아니므로 사용하지 않는다. 이 wrapper는 성공한 루트 기본 `pkg/` web package의 `rhwp.js`·`rhwp_bg.wasm`을
+  `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치 및 브라우저 새로고침 뒤 실제
+  동작을 확인한다. Rust target만 빌드하거나 wrapper 밖에서 `pkg/`만 갱신한 상태를 Studio
+  검증으로 보고하지 않는다.
 - **Rust source 또는 Rust test/baseline helper를 바꾼 모든 PR·push 직전 필수**: 포맷만 확인하고
   Clippy를 CI에 넘기지 않는다. PR review worktree에서 파생 integration suite를 준비한 뒤 아래
   Rust lint 묶음을 **순차로** 모두 통과시킨다. `cargo clippy -- -D warnings`만으로는

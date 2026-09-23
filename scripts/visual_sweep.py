@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -856,9 +856,15 @@ def overlay_summary_for_metrics(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
+    tolerant_matches = [
+        float(item["tolerant_content_match_percent"])
+        for item in metrics
+        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
+    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
+    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     return {
         "compared_pages": len(metrics),
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -879,6 +885,14 @@ def overlay_summary_for_metrics(
         else None,
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
+        else None,
+        "average_tolerant_content_match_percent": round(
+            sum(tolerant_matches) / len(tolerant_matches), 5
+        )
+        if tolerant_matches
+        else None,
+        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
+        if worst_tolerant is not None
         else None,
         "worst_pages": [
             item["page"]
@@ -1450,6 +1464,51 @@ def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
     if r >= 244 and g >= 244 and b >= 244:
         return False
     return min(r, g, b) < 232 or max(r, g, b) - min(r, g, b) > 24
+
+
+def subpixel_tolerant_content_match_percent(
+    rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
+) -> float | None:
+    """Compare content silhouettes while allowing a small rasterization offset.
+
+    The exact ink metric remains the review authority for color and pixel-level
+    differences. This companion metric answers the narrower geometry question:
+    whether content exists within ``radius_px`` on the other raster. It makes
+    anti-aliasing and sub-pixel font edges visible as a separate, non-gating
+    number instead of inflating the strict metric.
+    """
+    if radius_px < 0:
+        raise ValueError("radius_px must be non-negative")
+    rhwp, pdf = padded_pair(rhwp.convert("RGB"), pdf.convert("RGB"))
+    width, height = rhwp.size
+    rhwp_mask = Image.new("L", (width, height), 0)
+    pdf_mask = Image.new("L", (width, height), 0)
+    rhwp_mask.putdata([255 if is_content_pixel(pixel) else 0 for pixel in rhwp.getdata()])
+    pdf_mask.putdata([255 if is_content_pixel(pixel) else 0 for pixel in pdf.getdata()])
+    if radius_px:
+        kernel = radius_px * 2 + 1
+        rhwp_near = rhwp_mask.filter(ImageFilter.MaxFilter(kernel))
+        pdf_near = pdf_mask.filter(ImageFilter.MaxFilter(kernel))
+    else:
+        rhwp_near = rhwp_mask
+        pdf_near = pdf_mask
+
+    content_union = 0
+    mismatched = 0
+    for rhwp_content, pdf_content, rhwp_neighbor, pdf_neighbor in zip(
+        rhwp_mask.getdata(),
+        pdf_mask.getdata(),
+        rhwp_near.getdata(),
+        pdf_near.getdata(),
+    ):
+        if not (rhwp_content or pdf_content):
+            continue
+        content_union += 1
+        if (rhwp_content and not pdf_neighbor) or (pdf_content and not rhwp_neighbor):
+            mismatched += 1
+    if not content_union:
+        return None
+    return round((1.0 - mismatched / content_union) * 100.0, 5)
 
 
 def is_dark_pixel(pixel: tuple[int, int, int]) -> bool:
@@ -4675,23 +4734,33 @@ def make_overlay_page(
     pixel_match_percent = (1.0 - diff_ratio) * 100.0
     ink_match_percent = (1.0 - ink_diff_ratio) * 100.0 if ink_union_pixels else None
     visual_accuracy_proxy_percent = ink_match_percent if ink_match_percent is not None else pixel_match_percent
+    tolerant_radius_px = 2
+    tolerant_content_match_percent = subpixel_tolerant_content_match_percent(
+        rhwp, pdf, radius_px=tolerant_radius_px
+    )
     diff_bbox = None
     if bbox_max_x >= 0:
         diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
 
-    label_h = 42
-    canvas = Image.new("RGB", (width, height + label_h), "white")
+    label_h = 30
+    footer_h = 30
+    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
     canvas.paste(overlay, (0, label_h))
     draw = ImageDraw.Draw(canvas)
     font = label_font()
-    ink_match_label = f"{ink_match_percent:.3f}%" if ink_match_percent is not None else "n/a"
     draw.text(
         (8, 6),
-        (
-            f"{key} p{page_index + 1:03d} overlay "
-            f"pixel_match={pixel_match_percent:.3f}% "
-            f"ink_match={ink_match_label} "
-            f"diff={diff_pixels}/{total_pixels}"
+        f"{key} p{page_index + 1:03d}",
+        fill=(20, 20, 20),
+        font=font,
+    )
+    draw.text(
+        (8, label_h + height + 6),
+        review_comment_line(
+            {
+                "visual_accuracy_proxy_percent": visual_accuracy_proxy_percent,
+                "tolerant_content_match_percent": tolerant_content_match_percent,
+            }
         ),
         fill=(20, 20, 20),
         font=font,
@@ -4716,6 +4785,8 @@ def make_overlay_page(
         "ink_diff_ratio": round(ink_diff_ratio, 8) if ink_union_pixels else None,
         "ink_match_percent": round(ink_match_percent, 5) if ink_match_percent is not None else None,
         "visual_accuracy_proxy_percent": round(visual_accuracy_proxy_percent, 5),
+        "tolerant_content_match_radius_px": tolerant_radius_px,
+        "tolerant_content_match_percent": tolerant_content_match_percent,
         "mean_abs_channel_delta": round(total_abs_delta / (total_pixels * 3), 3)
         if total_pixels
         else 0.0,
@@ -4764,9 +4835,15 @@ def make_overlay_compares(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
+    tolerant_matches = [
+        float(item["tolerant_content_match_percent"])
+        for item in metrics
+        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
+    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
+    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     summary = {
         "compared_pages": count,
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -4788,6 +4865,14 @@ def make_overlay_compares(
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
         else None,
+        "average_tolerant_content_match_percent": round(
+            sum(tolerant_matches) / len(tolerant_matches), 5
+        )
+        if tolerant_matches
+        else None,
+        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
+        if worst_tolerant is not None
+        else None,
         "worst_pages": [
             item["page"]
             for item in sorted(
@@ -4805,9 +4890,15 @@ def make_overlay_compares(
 
 
 def review_comment_line(metrics: dict[str, object] | None) -> str:
-    percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
-    if isinstance(percent, (int, float)):
-        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {percent:.2f}%."
+    strict_percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
+    tolerant_percent = metrics.get("tolerant_content_match_percent") if metrics else None
+    if isinstance(strict_percent, (int, float)) and isinstance(tolerant_percent, (int, float)):
+        return (
+            "코멘트: 2px 이웃 관용 내용 실루엣 일치율 보조값 = 약 "
+            f"{tolerant_percent:.2f}% (엄격 내용 픽셀: {strict_percent:.2f}%)."
+        )
+    if isinstance(strict_percent, (int, float)):
+        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {strict_percent:.2f}%."
     return "코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 확인 불가."
 
 
@@ -4818,16 +4909,8 @@ def make_review_panels(
     out_dir: Path,
 ) -> list[Path]:
     overlays_by_page = {page_num(path): path for path in overlay_pages}
-    metrics_by_page = {
-        int(item["page"]): item
-        for item in overlay_metrics
-        if isinstance(item.get("page"), int)
-    }
     review_pages: list[Path] = []
     gutter = 18
-    footer_padding_x = 18
-    footer_padding_y = 14
-    font = label_font()
     for compare_path in compare_pages:
         page = page_num(compare_path)
         overlay_path = overlays_by_page.get(page)
@@ -4836,29 +4919,11 @@ def make_review_panels(
         compare = Image.open(compare_path).convert("RGB")
         overlay = Image.open(overlay_path).convert("RGB")
         width = compare.width + gutter + overlay.width
-        image_height = max(compare.height, overlay.height)
-        comment_line = review_comment_line(metrics_by_page.get(page))
-        bbox = font.getbbox(comment_line)
-        line_height = bbox[3] - bbox[1]
-        overlay_footer_height = footer_padding_y * 2 + line_height
-        height = max(image_height, overlay.height + overlay_footer_height)
+        height = max(compare.height, overlay.height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
         overlay_x = compare.width + gutter
         canvas.paste(overlay, (overlay_x, 0))
-        draw = ImageDraw.Draw(canvas)
-        separator_y = overlay.height + 1
-        draw.line(
-            [(overlay_x, separator_y), (overlay_x + overlay.width, separator_y)],
-            fill=(210, 210, 210),
-            width=2,
-        )
-        draw.text(
-            (overlay_x + footer_padding_x, overlay.height + footer_padding_y),
-            comment_line,
-            fill=(20, 20, 20),
-            font=font,
-        )
         out = out_dir / f"review_{page:03d}.png"
         out.parent.mkdir(parents=True, exist_ok=True)
         canvas.save(out)

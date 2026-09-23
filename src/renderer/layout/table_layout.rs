@@ -265,7 +265,7 @@ use super::{CellContext, CellPathEntry, LayoutEngine};
 
 // 표 수평 정렬: model::shape 타입 사용
 use crate::model::shape::{
-    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo,
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
 
 /// A clipped table cell still has to expose an immediately nested table's
@@ -6178,10 +6178,14 @@ impl LayoutEngine {
                                 // LINE_SEG 기반 줄 판별
                                 let mut target_line = if all_runs_empty && para.line_segs.len() > 1
                                 {
-                                    // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
-                                    let li = tac_seq_index.min(para.line_segs.len() - 1);
+                                    // 빈 문단이라도 앞선 글앞/글뒤 도형은 TAC 순번에 포함되지
+                                    // 않는다. 그림은 빈-control stream의 실제 위치가 가리키는
+                                    // 저장 LINE_SEG를 우선 사용한다. 없거나 깨진 stream만 기존
+                                    // TAC 순번 폴백을 쓴다 (#7333 p40~47).
+                                    let fallback = tac_seq_index.min(para.line_segs.len() - 1);
                                     tac_seq_index += 1;
-                                    li
+                                    super::control_line_seg_index(para, ctrl_idx)
+                                        .unwrap_or(fallback)
                                 } else {
                                     // 텍스트 있는 문단: char position으로 줄 판별
                                     composed
@@ -6279,8 +6283,24 @@ impl LayoutEngine {
                                 };
                                 // A fallback TAC picture has its own baseline. Align it
                                 // within the stored text box, not at the line's top edge.
-                                // A picture that fills the text box needs no displacement.
-                                let baseline_offset = para
+                                //
+                                // `layout_picture` preserves an inline cell picture's declared
+                                // frame and lets TableCell clip the excess. The pre-placement
+                                // width clamp above is only for line wrapping; using its scaled
+                                // height here moves a full-line frame down by the leftover
+                                // leading. Keep the stored-line test in the unscaled coordinate
+                                // system (#7333 p31 print-dialog screenshot).
+                                let full_stored_line_picture = pic.caption.is_none()
+                                    && pic.common.margin.top == 0
+                                    && pic.common.margin.bottom == 0
+                                    && para.line_segs.get(target_line).is_some_and(|seg| {
+                                        (hwpunit_to_px(seg.text_height, self.dpi) - pic_h).abs()
+                                            <= 4.0
+                                    });
+                                let baseline_offset = if full_stored_line_picture {
+                                    0.0
+                                } else {
+                                    para
                                     .line_segs
                                     .get(target_line)
                                     .filter(|seg| {
@@ -6299,7 +6319,8 @@ impl LayoutEngine {
                                         hwpunit_to_px(seg.baseline_distance, self.dpi)
                                             * (1.0 - clamped_h / text_h).max(0.0)
                                     })
-                                    .unwrap_or(0.0);
+                                    .unwrap_or(0.0)
+                                };
                                 let picture_y = tac_img_y + baseline_offset;
                                 if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
                                     let segs: Vec<(i32, i32)> = para
@@ -7136,10 +7157,34 @@ impl LayoutEngine {
                             let table_cell_ctx = table_meta.map(|(opi, otci)| {
                                 (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
                             });
+                            // HWP5가 셀 안의 번호 주석 앞에 남긴 음수 y offset은
+                            // 다음 inline TopAndBottom 그림의 저장 줄을 거슬러 올라가는
+                            // paint offset이 아니다. 한컴은 그 주석을 그림의 첫 줄에
+                            // 붙인다. 일반적인 음수 paragraph offset은 보존하고, 같은
+                            // 셀 문단의 뒤쪽 그림이 이 정확한 형식일 때만 정규화한다.
+                            let follows_inline_picture = para.controls.iter().skip(ctrl_idx + 1).any(
+                                |candidate| {
+                                    matches!(candidate, Control::Picture(picture)
+                                        if picture.common.treat_as_char
+                                            && matches!(picture.common.text_wrap, TextWrap::TopAndBottom))
+                                },
+                            );
+                            let mut shape_for_layout = shape.clone();
+                            if follows_inline_picture
+                                && matches!(shape.common().text_wrap, TextWrap::InFrontOfText)
+                                && matches!(shape.common().vert_rel_to, VertRelTo::Para)
+                                && matches!(
+                                    shape.common().vert_align,
+                                    VertAlign::Top | VertAlign::Inside
+                                )
+                                && (shape.common().vertical_offset as i32) < 0
+                            {
+                                shape_for_layout.common_mut().vertical_offset = 0;
+                            }
                             self.layout_cell_shape(
                                 tree,
                                 cell_node,
-                                shape,
+                                &shape_for_layout,
                                 &inner_area,
                                 shape_anchor_y,
                                 para_alignment,
