@@ -23,6 +23,16 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
+fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
+    match (previous.line_segs.first(), current.line_segs.first()) {
+        (Some(previous), Some(current)) => {
+            current.vertical_pos < previous.vertical_pos
+                && current.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }
+        _ => false,
+    }
+}
+
 fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
     start_para: usize,
@@ -46,15 +56,9 @@ fn recalculate_cell_paragraph_vpos(
         .enumerate()
         .skip(start_para)
         .find_map(|(idx, pair)| {
-            let previous = pair[0].line_segs.first()?.vertical_pos;
-            let current_seg = pair[1].line_segs.first()?;
-            let current = current_seg.vertical_pos;
-            let is_synthetic = current_seg.tag
-                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                != 0;
             let reset_para = idx + 1;
             let is_inserted_paragraph = ignore_reset_at == Some(reset_para);
-            (current < previous && !is_inserted_paragraph && !is_synthetic).then_some(reset_para)
+            (cell_vpos_resets(&pair[0], &pair[1]) && !is_inserted_paragraph).then_some(reset_para)
         })
         .unwrap_or(paragraphs.len());
 
@@ -2974,6 +2978,56 @@ impl DocumentCore {
             dpi,
             is_hwp3_variant,
         );
+    }
+
+    /// [#6639] 각 셀을 한 번 순회한다. 저장 RowBreak 원점은 유지하고 변경된 조각만 갱신한다.
+    pub(crate) fn flush_cell_format_vpos(&mut self) {
+        use crate::model::identity::walk::{walk, Node};
+
+        if !std::mem::take(&mut self.pending_cell_format_vpos) {
+            return;
+        }
+        let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
+        for section in &mut self.document.sections {
+            walk(&mut section.paragraphs, |node| {
+                let Node::Paragraphs(paragraphs) = node else {
+                    return Ok(());
+                };
+                if !paragraphs.iter().any(|p| p.cell_format_vpos_dirty) {
+                    return Ok(());
+                }
+                // 구조 편집에도 표시가 문단과 함께 이동한다. 좌표 변경 전에 경계를 읽는다.
+                let stops: Vec<usize> = paragraphs
+                    .windows(2)
+                    .enumerate()
+                    .filter_map(|(idx, pair)| {
+                        cell_vpos_resets(&pair[0], &pair[1]).then_some(idx + 1)
+                    })
+                    .chain(std::iter::once(paragraphs.len()))
+                    .collect();
+                let mut start = 0;
+                for stop in stops {
+                    let fragment = &mut paragraphs[start..stop];
+                    let first = fragment.iter().position(|p| p.cell_format_vpos_dirty);
+                    for para in fragment.iter_mut() {
+                        para.cell_format_vpos_dirty = false;
+                    }
+                    if let Some(first) = first {
+                        apply_cell_vpos_ladder(
+                            fragment,
+                            first,
+                            fragment.len(),
+                            &self.styles,
+                            self.dpi,
+                            is_hwp3_variant,
+                        );
+                    }
+                    start = stop;
+                }
+                Ok(())
+            })
+            .expect("cell formatting traversal is infallible");
+        }
     }
 
     /// [#4138] 표 셀의 vpos 사다리를 처음부터 끝까지 단조 재구축한다.

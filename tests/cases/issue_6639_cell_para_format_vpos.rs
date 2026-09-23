@@ -12,6 +12,7 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
+use rhwp::model::paragraph::Paragraph;
 use serde_json::Value;
 
 const PARA_COUNT: usize = 4;
@@ -34,11 +35,6 @@ fn cell_vpos(core: &DocumentCore, para: usize, ctrl: usize) -> Vec<i32> {
     let Control::Table(table) = &core.document().sections[0].paragraphs[para].controls[ctrl] else {
         panic!("표 컨트롤이어야 함");
     };
-    assert_eq!(
-        table.cells[0].paragraphs.len(),
-        PARA_COUNT,
-        "셀 문단 수 유지"
-    );
     table.cells[0]
         .paragraphs
         .iter()
@@ -66,16 +62,13 @@ fn text_roundtrip(core: &mut DocumentCore, para: usize, ctrl: usize) {
         .expect("공백 삭제");
 }
 
-/// 줄 간격을 바꾼 뒤 후속 문단 시작이 앞 문단 끝에 붙어 있는지 확인한다.
-///
-/// 경계 간격(spacing_after/before)은 모르므로 절대값이 아니라 최대-최소 편차를
-/// 본다 — 사다리가 연속이면 모든 경계 간격이 같고, stale이면 어긋난다.
-fn max_boundary_spread(core: &DocumentCore, para: usize, ctrl: usize) -> i32 {
+/// 이 fixture는 문단 앞뒤 간격이 0이므로 모든 경계 틈도 정확히 0이어야 한다.
+fn boundary_gaps(core: &DocumentCore, para: usize, ctrl: usize) -> Vec<i32> {
     let Control::Table(table) = &core.document().sections[0].paragraphs[para].controls[ctrl] else {
         panic!("표 컨트롤이어야 함");
     };
     let paras = &table.cells[0].paragraphs;
-    let gaps: Vec<i32> = paras
+    paras
         .windows(2)
         .map(|pair| {
             let prev_last = pair[0].line_segs.last().expect("이전 문단 줄");
@@ -87,8 +80,7 @@ fn max_boundary_spread(core: &DocumentCore, para: usize, ctrl: usize) -> i32 {
                 .vertical_pos
                 - bottom
         })
-        .collect();
-    gaps.iter().max().unwrap() - gaps.iter().min().unwrap()
+        .collect()
 }
 
 fn build_four_para_cell(core: &mut DocumentCore, para: usize, ctrl: usize) {
@@ -134,8 +126,8 @@ fn batch_line_spacing_shrink_keeps_vpos_ladder_continuous() {
     let base_vpos = cell_vpos(&core, para, ctrl);
     let base_ids = cell_shape_ids(&core, para, ctrl);
     assert_eq!(
-        max_boundary_spread(&core, para, ctrl),
-        0,
+        boundary_gaps(&core, para, ctrl),
+        vec![0; PARA_COUNT - 1],
         "160% 기준선은 연속 사다리여야 한다"
     );
 
@@ -166,8 +158,8 @@ fn batch_line_spacing_shrink_keeps_vpos_ladder_continuous() {
         "줄 간격을 낮추면 마지막 줄이 위로 올라와야 한다"
     );
     assert_eq!(
-        max_boundary_spread(&core, para, ctrl),
-        0,
+        boundary_gaps(&core, para, ctrl),
+        vec![0; PARA_COUNT - 1],
         "140% 적용 직후에도 경계 간격이 균일해야 한다 (stale vpos면 어긋난다)"
     );
 
@@ -190,8 +182,235 @@ fn batch_line_spacing_shrink_keeps_vpos_ladder_continuous() {
         "undo 복원 뒤 vpos가 기준선으로 돌아와야 한다"
     );
     assert_eq!(
-        max_boundary_spread(&core, para, ctrl),
-        0,
+        boundary_gaps(&core, para, ctrl),
+        vec![0; PARA_COUNT - 1],
         "undo 뒤에도 경계 간격이 균일해야 한다"
     );
+}
+
+/// 저장된 한 줄 문단을 모사한다. 10pt 높이 + 160% 줄 간격 = 1600 HWPUNIT.
+fn stored_cell(positions: &[i32]) -> (DocumentCore, usize, usize) {
+    let mut core = DocumentCore::new_empty();
+    let (para, ctrl) = create_single_cell(&mut core);
+    core.insert_text_in_cell_native(0, para, ctrl, 0, 0, 0, "문단")
+        .unwrap();
+    core.apply_para_format_in_cell_native(
+        0,
+        para,
+        ctrl,
+        0,
+        0,
+        r#"{"lineSpacing":160,"spacingBefore":0,"spacingAfter":0}"#,
+    )
+    .unwrap();
+    let Control::Table(table) =
+        &mut core.document_mut().sections[0].paragraphs[para].controls[ctrl]
+    else {
+        panic!("table");
+    };
+    let template = table.cells[0].paragraphs[0].clone();
+    table.cells[0].paragraphs = positions
+        .iter()
+        .map(|&vpos| {
+            let mut paragraph = template.clone();
+            assert_eq!(paragraph.line_segs.len(), 1);
+            let line = &mut paragraph.line_segs[0];
+            line.vertical_pos = vpos;
+            line.line_height = 1000;
+            line.text_height = 1000;
+            line.baseline_distance = 850;
+            line.line_spacing = 600;
+            line.tag &= !rhwp::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+            paragraph
+        })
+        .collect();
+    (core, para, ctrl)
+}
+
+fn paragraphs(core: &DocumentCore, para: usize, ctrl: usize) -> &[Paragraph] {
+    let Control::Table(table) = &core.document().sections[0].paragraphs[para].controls[ctrl] else {
+        panic!("table");
+    };
+    &table.cells[0].paragraphs
+}
+
+#[test]
+fn batch_defers_cell_ladder_until_end_and_uses_earliest_change() {
+    let positions: Vec<_> = (0..1024).map(|i| i * 1600).collect();
+    let (mut core, para, ctrl) = stored_cell(&positions);
+    core.begin_batch_native().unwrap();
+    // 역순과 중복 선택도 조각의 첫 변경부터 한 번만 처리한다.
+    for idx in (0..positions.len()).rev().chain([512, 0]) {
+        core.apply_para_format_in_cell_native(0, para, ctrl, 0, idx, r#"{"spacingAfter":200}"#)
+            .unwrap();
+        assert_eq!(
+            paragraphs(&core, para, ctrl).last().unwrap().line_segs[0].vertical_pos,
+            *positions.last().unwrap(),
+            "setter가 전체 셀을 다시 순회하면 안 된다"
+        );
+    }
+    core.end_batch_native().unwrap();
+    // ParaShape 간격은 2배 스케일로 저장된다: spacingAfter=200 -> 100 HWPUNIT.
+    assert_eq!(
+        cell_vpos(&core, para, ctrl),
+        (0..1024).map(|i| i * 1700).collect::<Vec<_>>()
+    );
+    core.begin_batch_native().unwrap();
+    core.end_batch_native().unwrap();
+    assert_eq!(
+        cell_vpos(&core, para, ctrl),
+        (0..1024).map(|i| i * 1700).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn alignment_and_its_undo_preserve_stored_vpos() {
+    let positions = [100, 1900, 3800, 5900];
+    for batched in [false, true] {
+        let (mut core, para, ctrl) = stored_cell(&positions);
+        let ids = cell_shape_ids(&core, para, ctrl);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for idx in 0..positions.len() {
+            core.apply_para_format_in_cell_native(
+                0,
+                para,
+                ctrl,
+                0,
+                idx,
+                r#"{"alignment":"center"}"#,
+            )
+            .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        assert_eq!(cell_vpos(&core, para, ctrl), positions);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for (idx, id) in ids.into_iter().enumerate() {
+            core.set_cell_para_shape_id_native(0, para, ctrl, 0, idx, id)
+                .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        assert_eq!(cell_vpos(&core, para, ctrl), positions);
+    }
+}
+
+#[test]
+fn rowbreak_fragments_keep_origins_and_only_changed_fragments_move() {
+    let positions = [100, 1700, 3300, 200, 1800, 3400, 80, 2000];
+    for batched in [false, true] {
+        let (mut core, para, ctrl) = stored_cell(&positions);
+        let ids = cell_shape_ids(&core, para, ctrl);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for idx in [4, 3, 1] {
+            core.apply_para_format_in_cell_native(
+                0,
+                para,
+                ctrl,
+                0,
+                idx,
+                r#"{"spacingBefore":100,"spacingAfter":200}"#,
+            )
+            .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        // 조각 첫 문단의 저장 원점(100/200/80), 변경하지 않은 마지막 조각의 틈을 보존한다.
+        assert_eq!(
+            cell_vpos(&core, para, ctrl),
+            [100, 1750, 3450, 200, 1950, 3650, 80, 2000]
+        );
+        let formatted_ids = cell_shape_ids(&core, para, ctrl);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for idx in [1, 3, 4] {
+            core.set_cell_para_shape_id_native(0, para, ctrl, 0, idx, ids[idx])
+                .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        assert_eq!(cell_vpos(&core, para, ctrl), positions);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for idx in [1, 3, 4] {
+            core.set_cell_para_shape_id_native(0, para, ctrl, 0, idx, formatted_ids[idx])
+                .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        assert_eq!(
+            cell_vpos(&core, para, ctrl),
+            [100, 1750, 3450, 200, 1950, 3650, 80, 2000]
+        );
+    }
+}
+
+#[test]
+fn line_spacing_reflow_preserves_rowbreak_origins() {
+    for batched in [false, true] {
+        let (mut core, para, ctrl) = stored_cell(&[100, 1700, 3300, 200, 1800, 3400]);
+        if batched {
+            core.begin_batch_native().unwrap();
+        }
+        for idx in 0..6 {
+            core.apply_para_format_in_cell_native(0, para, ctrl, 0, idx, r#"{"lineSpacing":140}"#)
+                .unwrap();
+        }
+        if batched {
+            core.end_batch_native().unwrap();
+        }
+        assert_eq!(
+            cell_vpos(&core, para, ctrl),
+            [100, 1500, 2900, 200, 1600, 3000]
+        );
+    }
+}
+
+#[test]
+fn snapshot_restore_discards_pending_format_positions() {
+    let positions = [100, 1900, 3800, 5900];
+    let (mut core, para, ctrl) = stored_cell(&positions);
+    let snapshot = core.save_snapshot_native();
+    core.begin_batch_native().unwrap();
+    core.apply_para_format_in_cell_native(0, para, ctrl, 0, 0, r#"{"spacingAfter":200}"#)
+        .unwrap();
+    core.restore_snapshot_native(snapshot).unwrap();
+    core.end_batch_native().unwrap();
+    assert_eq!(cell_vpos(&core, para, ctrl), positions);
+}
+
+#[test]
+fn mixed_batch_insertion_keeps_pending_cell_format() {
+    let (mut core, para, ctrl) = stored_cell(&[0, 1600, 3200]);
+    core.begin_batch_native().unwrap();
+    core.apply_para_format_in_cell_native(0, para, ctrl, 0, 0, r#"{"spacingAfter":200}"#)
+        .unwrap();
+    core.insert_paragraph_native(0, para).unwrap();
+    core.end_batch_native().unwrap();
+    assert_eq!(cell_vpos(&core, para + 1, ctrl), [0, 1700, 3300]);
+}
+
+#[test]
+fn snapshot_inside_batch_contains_completed_formatting() {
+    let (mut core, para, ctrl) = stored_cell(&[0, 1600, 3200]);
+    core.begin_batch_native().unwrap();
+    core.apply_para_format_in_cell_native(0, para, ctrl, 0, 0, r#"{"spacingAfter":200}"#)
+        .unwrap();
+    let snapshot = core.save_snapshot_native();
+    core.end_batch_native().unwrap();
+    core.restore_snapshot_native(snapshot).unwrap();
+    assert_eq!(cell_vpos(&core, para, ctrl), [0, 1700, 3300]);
 }

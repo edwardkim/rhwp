@@ -56,6 +56,21 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.korean_break_unit.is_some()
 }
 
+// ID 복원도 적용과 같은 흐름 속성 및 문단 간격만 비교한다.
+fn cell_para_shape_affects_vpos(
+    before: &crate::model::style::ParaShape,
+    after: &crate::model::style::ParaShape,
+) -> bool {
+    before.line_spacing != after.line_spacing
+        || before.line_spacing_type != after.line_spacing_type
+        || before.margin_left != after.margin_left
+        || before.margin_right != after.margin_right
+        || before.indent != after.indent
+        || (before.attr1 ^ after.attr1) & (0b111 << 5) != 0 // 영어·한글 줄나눔 단위
+        || before.spacing_before != after.spacing_before
+        || before.spacing_after != after.spacing_after
+}
+
 fn body_paragraph_box_for_para_shape(
     core: &DocumentCore,
     sec_idx: usize,
@@ -1617,7 +1632,7 @@ impl DocumentCore {
             mods.border_spacing = Some([arr[0], arr[1], arr[2], arr[3]]);
         }
 
-        let new_id;
+        let affects_vpos;
         {
             let para = self
                 .get_cell_paragraph_ref(
@@ -1629,7 +1644,18 @@ impl DocumentCore {
                 )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
             let base_id = para.para_shape_id;
-            new_id = self.document.find_or_create_para_shape(base_id, &mods);
+            let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+            affects_vpos = self
+                .document
+                .doc_info
+                .para_shapes
+                .get(base_id as usize)
+                .is_none_or(|old| {
+                    cell_para_shape_affects_vpos(
+                        old,
+                        &self.document.doc_info.para_shapes[new_id as usize],
+                    )
+                });
 
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1639,6 +1665,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = new_id;
+            cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
         // 줄바꿈에 영향을 주는 변경 시 셀 내 문단 LineSeg 재계산.
@@ -1660,23 +1687,8 @@ impl DocumentCore {
             );
         }
 
-        // [#6639] 줄 높이·문단 간격이 바뀌면 후속 문단 시작 위치를 다시 쌓는다.
-        // 셀 텍스트 입력/삭제 경로는 reflow 뒤 recalculate_cell_paragraph_vpos_native를
-        // 호출하지만 서식 경로는 빠져 있어, 줄 간격을 낮춰도 후속 문단이 옛 위치에
-        // 남아 공백이 벌어졌다. 변경 문단부터 사다리를 다시 만들어 batch의 다음
-        // 호출·end_batch paginate가 연속 위치를 소비하게 한다. 기하에 영향 없는
-        // 변경(alignment 등)에는 멱등이라 위치가 그대로다. 간격(spacing_after/before)
-        // 만 바뀐 경우 reflow는 건너뛰어도 경계 틈이 달라지므로 무조건 재계산한다.
-        // 새 문단 모양이 생겼을 수 있어 해석 스타일을 먼저 갱신한다.
-        self.rebuild_resolved_styles();
-        self.recalculate_cell_paragraph_vpos_native(
-            sec_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-            None,
-        );
+        // [#6639] 배치 중에는 셀별로 모으고, 스타일 갱신 뒤 조각마다 한 번 재배치한다.
+        self.pending_cell_format_vpos |= affects_vpos;
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
@@ -1708,6 +1720,27 @@ impl DocumentCore {
             )));
         }
 
+        let old_id = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?
+            .para_shape_id;
+        let affects_vpos = self
+            .document
+            .doc_info
+            .para_shapes
+            .get(old_id as usize)
+            .is_none_or(|old| {
+                cell_para_shape_affects_vpos(
+                    old,
+                    &self.document.doc_info.para_shapes[para_shape_id as usize],
+                )
+            });
         {
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1717,6 +1750,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = para_shape_id;
+            cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
         self.reflow_cell_paragraph(
@@ -1726,19 +1760,10 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
-        // [#6639] undo 복원도 줄 높이를 되돌리므로 후속 사다리를 함께 되돌린다.
-        // 복원 대상 ID는 함수 진입 시 존재를 검증했으므로 해석 스타일이 이미 있다.
-        self.recalculate_cell_paragraph_vpos_native(
-            sec_idx,
-            parent_para_idx,
-            control_idx,
-            cell_idx,
-            cell_para_idx,
-            None,
-        );
+        self.pending_cell_format_vpos |= affects_vpos;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_section_deferred_in_batch(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
             section: sec_idx,
             para: parent_para_idx,

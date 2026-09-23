@@ -130,6 +130,10 @@ pub struct Paragraph {
     /// template until fresh rows are published.
     #[serde(skip_serializing)]
     pub stored_text_partition_dirty: bool,
+    /// Pending cell-format vpos update. Travels with the paragraph during batch edits;
+    /// never serialized, and flushed before saving an undo snapshot.
+    #[serde(skip_serializing)]
+    pub cell_format_vpos_dirty: bool,
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
@@ -1554,6 +1558,7 @@ impl Paragraph {
             markpen_marks: new_markpen_marks,
             numbering_restart: None,
             stored_text_partition_dirty: false,
+            cell_format_vpos_dirty: self.cell_format_vpos_dirty,
         }
     }
 
