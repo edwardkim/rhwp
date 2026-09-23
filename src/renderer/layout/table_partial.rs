@@ -4622,14 +4622,31 @@ impl LayoutEngine {
                 //
                 // 흐름과 예산은 건드리지 않는다. 그쪽까지 바꾸면 조각 소비 높이가 줄어
                 // 쪽 경계가 움직인다(`row_split_meets_min_top_keep` 의 25px 고아 기준).
-                // 줄 뒤 간격은 **내용이 쪽 상자 안에 들어갈 때만** 뺀다. 넘으면 한/글도 상자를
-                // 쪽에 맞추므로 그 자리에서 또 빼면 정본보다 위로 올라간다 — 코퍼스 A/B 가
-                // 그 반례 3건을 냈다(정책연구 163쪽 `83.76>83.71` · chemical 34쪽
-                // `126.96>125.47` · vietnam 27쪽 `543.49>535.35`, 모두 빼면 벌어진다).
-                // 중첩 표 이송 여백은 그 상한과 무관하다(18쪽 41.07px ↔ 상한 4.26px).
-                // 여유를 주지 않는다 — 정책연구 163쪽은 0.05px 만 넘는데 그 쪽은 빼면 안 된다.
-                // 빼야 하는 쪽의 최소 여유는 10.22px(정책연구 161·164)라 경계가 넉넉하다.
-                let content_fits_page_box = row_heights[0] <= pinned_height;
+                // 줄 뒤 간격은 **저장 칸 높이가 이 조각 내용을 대표하지 못할 때만** 뺀다.
+                //
+                // 한/글은 분할 칸의 저장 높이를 조각 상자 높이의 합으로 적는다(#7347). 그 값이
+                // 이 조각 내용보다도 작으면 낡았거나 칸 여백뿐이라(1382000 `pi=90` 은 282HU =
+                // 위아래 여백 141+141) 이 조각을 설명하지 못한다. 반대로 저장 높이가 내용보다
+                // 크면 한/글이 그 높이를 실제로 적은 것이므로 잔여를 건드리지 않는다.
+                //
+                // 코퍼스 A/B(1,016문서)가 가른 축이다.
+                //
+                // ```text
+                //   빼야 하는 쪽   1382000 16·17쪽   저장   3.76px < 내용 788.55 · 877.51
+                //                  정책연구 161쪽    저장 289.52px < 내용 937.09
+                //                  정책연구 164쪽    저장 218.08px < 내용 937.09
+                //   그대로 둘 쪽   정책연구 163쪽    저장 218.08px > 내용  83.76
+                //                  chemical  34쪽    저장 249.73px > 내용 126.96
+                //                  vietnam   27쪽    저장 683.87px > 내용 543.49
+                //                  hwpx_sample2 9쪽  저장 701.95px > 내용 456.01
+                // ```
+                //
+                // 중첩 표 이송 여백은 이 판정과 무관하다 — 값이 커서(18쪽 41.07px) 저장 높이
+                // 유무로 대신할 수 없다.
+                let stored_cell_px = table.cells.first().map_or(0.0, |cell| {
+                    hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi)
+                });
+                let stored_height_understates_fragment = stored_cell_px < row_heights[0];
                 let paint_trim = table.cells.first().map_or(0.0, |cell| {
                     let units = self.cell_units(cell, table, styles);
                     let end_unit = end_cut.first().copied().unwrap_or(0);
@@ -4639,7 +4656,7 @@ impl LayoutEngine {
                         &units,
                         end_unit,
                         styles,
-                        content_fits_page_box,
+                        stored_height_understates_fragment,
                     )
                 });
                 row_heights[0] = (row_heights[0] - paint_trim).max(0.0).min(pinned_height);
