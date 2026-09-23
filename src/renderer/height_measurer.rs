@@ -615,6 +615,53 @@ pub struct MeasuredTable {
     pub row_block_end: Vec<usize>,
 }
 
+/// 측정된 행 높이가 문서의 **행별 선언 높이**와 이미 일치하는가.
+///
+/// 일치하면 개체 높이와의 차이는 화해시킬 측정 오차가 아니다. 행 선언이 없는 행이
+/// 하나라도 있으면 일치를 증명할 수 없으므로 거짓을 돌려 종전 경로를 유지한다 (#7147).
+fn measured_rows_match_declared(measured: &MeasuredTable, table: &Table, dpi: f64) -> bool {
+    let row_count = measured.row_heights.len();
+    if row_count == 0 {
+        return false;
+    }
+    (0..row_count).all(|row| {
+        let declared = declared_row_height_px(table, row, dpi);
+        declared > 0.0 && (measured.row_heights[row] - declared).abs() <= 0.5
+    })
+}
+
+/// 행 `row` 의 선언 높이(px) — 그 행에서 세로 병합 없는 칸의 최댓값.
+fn declared_row_height_px(table: &Table, row: usize, dpi: f64) -> f64 {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+        .map(|cell| hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max)
+}
+
+/// 개체 선언 높이가 **행 경계**에 떨어지는가 — 곧 앞에서부터 정수 개의 행이
+/// 정확히 그 높이를 채우는가. 채우면 그 값은 쪽 나뉘는 표의 첫 조각 높이로 읽을 수
+/// 있고, 행 중간에서 끊기면 조각 경계일 수 없다 (#7147).
+fn declared_height_lands_on_a_row_boundary(
+    measured: &MeasuredTable,
+    table: &Table,
+    target_body_height: f64,
+    dpi: f64,
+) -> bool {
+    let mut cumulative = 0.0f64;
+    for row in 0..measured.row_heights.len() {
+        if row > 0 {
+            cumulative += measured.cell_spacing;
+        }
+        cumulative += declared_row_height_px(table, row, dpi);
+        if (cumulative - target_body_height).abs() <= 0.5 {
+            return true;
+        }
+    }
+    false
+}
+
 pub fn fit_measured_table_to_declared_height(
     measured: &MeasuredTable,
     table: &Table,
@@ -630,6 +677,30 @@ pub fn fit_measured_table_to_declared_height(
     let target_body_height = hwpunit_to_px(table.common.height as i32, dpi);
     let target_row_sum = (target_body_height - cell_spacing_total).max(0.0);
     let current_row_sum = fitted.row_heights.iter().sum::<f64>();
+
+    // [#7147] 개체 높이가 **행 경계**에 떨어지면 그것은 표 전체 높이가 아니라
+    // **쪽 나뉘는 표의 첫 조각** 높이다 — 그 값으로 행을 비례 축소하면 안 된다.
+    //
+    // 이 보정이 화해시키려는 것은 "측정이 저장 선언에서 근소하게 어긋났다"(#1510)이다.
+    // 그런데 측정이 **행별 선언과 이미 일치**하는데도 개체 높이만 작은 표가 있고, 그
+    // 차이의 뜻은 두 가지다. 둘을 가르는 것은 비율이 아니라 **행 경계 적중 여부**다.
+    //
+    // ```text
+    //   시장구조조사 표 Ⅵ-5 (20행)  개체 366.6  누적 [22.7 … 345.0 366.6 388.2 … 453.1]
+    //                                          → 15번 행 경계에 정확히 적중
+    //   1480000-201900698 pi=303 (3행) 개체 130.2  누적 [47.0, 99.4, 144.7]
+    //                                          → 어느 경계에도 안 맞음(행 중간)
+    // ```
+    //
+    // 한/글 정본이 둘을 그렇게 그린다. 앞은 그 경계에서 쪽을 나누고 행 선언을 지킨다
+    // (정본 1행 6.005mm ↔ 선언 6.004mm). 뒤는 나누지 않고 개체 높이 그대로 그린다
+    // (정본 괘선 899 / 946 / 998 / 1029px → 표 높이 130px = 개체 130.2px).
+    // 곧 행 중간에서 끊기는 개체 높이는 조각 경계일 수 없으므로 종전대로 화해한다.
+    if measured_rows_match_declared(&fitted, table, dpi)
+        && declared_height_lands_on_a_row_boundary(&fitted, table, target_body_height, dpi)
+    {
+        return fitted;
+    }
 
     // 선언 높이 보정은 #1510처럼 측정값과 저장값이 근소하게 어긋난 fixed-size 표에만
     // 적용한다. 콘텐츠가 선언 높이보다 훨씬 큰 표를 강제로 압축하면 행/중첩 표 분할
