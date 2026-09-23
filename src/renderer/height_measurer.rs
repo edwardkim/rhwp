@@ -2770,8 +2770,47 @@ impl HeightMeasurer {
                         .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs))
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
-                    let non_inline_h =
+                    let ordinary_non_inline_h =
                         self.measure_non_inline_controls_height(cell, &table.padding);
+                    // HWP5 RowBreak TAC 표의 빈 셀에 TopAndBottom flow 그림이 둘 이상
+                    // 저장되면, 한컴은 같은 문단 안에서도 각 그림이 요구한 줄을
+                    // 순서대로 보존한다. 가로 band만으로 `max`를 고르면 중간 행이
+                    // 줄어들고 마지막 행에 여유가 몰린다 (#7333 p37/p38 아이콘 표).
+                    // 일반 표·텍스트 셀·나란히 놓인 단일 그림은 기존 max 규칙을
+                    // 유지한다.
+                    let stacked_stored_picture_h = if table.common.treat_as_char
+                        && matches!(table.page_break, TablePageBreak::RowBreak)
+                        && cell.paragraphs.len() == 1
+                        && cell.paragraphs[0].text.trim().is_empty()
+                    {
+                        let picture_heights: Vec<f64> = cell.paragraphs[0]
+                            .controls
+                            .iter()
+                            .filter_map(|control| match control {
+                                Control::Picture(picture)
+                                    if !picture.common.treat_as_char
+                                        && picture.common.flow_with_text
+                                        && matches!(
+                                            picture.common.text_wrap,
+                                            TextWrap::TopAndBottom
+                                        )
+                                        && matches!(
+                                            picture.common.vert_rel_to,
+                                            VertRelTo::Para
+                                        ) =>
+                                {
+                                    Some(self.non_inline_control_flow_height(&picture.common))
+                                }
+                                _ => None,
+                            })
+                            .collect();
+                        (picture_heights.len() >= 2)
+                            .then(|| picture_heights.into_iter().sum())
+                            .unwrap_or(0.0)
+                    } else {
+                        0.0
+                    };
+                    let non_inline_h = ordinary_non_inline_h.max(stacked_stored_picture_h);
                     let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs);
                     // [Task #2226] 저장 LINE_SEG 흐름 extent 가 additive 합보다 작으면
                     // 저장 지오메트리 신뢰 — TopAndBottom flow 그림의 배치는 저장 vpos

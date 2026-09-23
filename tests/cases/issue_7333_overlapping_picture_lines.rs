@@ -114,6 +114,32 @@ fn find_table_cell_image_bbox(
         .find_map(|child| find_table_cell_image_bbox(child, para_index))
 }
 
+fn image_bboxes_for_para(
+    node: &serde_json::Value,
+    para_index: u64,
+    out: &mut Vec<(f64, f64, f64, f64)>,
+) {
+    if node.get("type").and_then(|value| value.as_str()) == Some("Image")
+        && node.get("pi").and_then(|value| value.as_u64()) == Some(para_index)
+    {
+        if let Some(bbox) = node.get("bbox") {
+            if let (Some(x), Some(y), Some(width), Some(height)) = (
+                bbox.get("x").and_then(|value| value.as_f64()),
+                bbox.get("y").and_then(|value| value.as_f64()),
+                bbox.get("w").and_then(|value| value.as_f64()),
+                bbox.get("h").and_then(|value| value.as_f64()),
+            ) {
+                out.push((x, y, width, height));
+            }
+        }
+    }
+    if let Some(children) = node.get("children").and_then(|value| value.as_array()) {
+        for child in children {
+            image_bboxes_for_para(child, para_index, out);
+        }
+    }
+}
+
 fn find_footer_logo_frame_y(node: &serde_json::Value) -> Option<f64> {
     if node.get("type").and_then(|value| value.as_str()) == Some("Footer") {
         return node
@@ -381,6 +407,69 @@ fn cell_screenshot_uses_its_own_saved_line_after_callout_shapes() {
         assert!(
             (y - expected_y).abs() < 1.0,
             "{}쪽 pi={para_index} ci={control_index} 그림 y={y:.1}px — 두 번째 저장 줄과 PDF {expected_y:.1}px를 써야 한다",
+            page_index + 1
+        );
+    }
+}
+
+#[test]
+fn cell_callout_with_stale_negative_offset_stays_on_its_picture_line() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+
+    // 27쪽 pi=383의 첫 번호 도형은 HWP5에 -1275HU offset으로 저장됐지만, 뒤의
+    // inline screenshot이 지정하는 셀 줄에 붙어야 한다. 한컴 2020 PDF의 빨간
+    // 번호 사각형 top은 96dpi raster에서 약 y=350px이다.
+    let json = document.get_page_render_tree(26).expect("27쪽 render tree");
+    let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+    let mut rects = Vec::new();
+    rectangles(&tree, &mut rects);
+    let callout = rects
+        .iter()
+        .find(|(x, _, width, height)| {
+            (x - 260.4).abs() < 1.0 && (width - 26.7).abs() < 1.0 && (height - 25.0).abs() < 1.0
+        })
+        .expect("27쪽 첫 번호 주석 사각형");
+    assert!(
+        (callout.1 - 350.8).abs() < 1.0,
+        "27쪽 번호 1 주석 y={:.1}px — 뒤 inline 그림의 저장 줄(PDF y≈350.8px)에 붙어야 한다",
+        callout.1
+    );
+}
+
+#[test]
+fn stored_multi_picture_rows_keep_their_middle_row_height() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+
+    // p37/pi=495와 p38/pi=503의 세 번째 셀은 빈 문단에 TopAndBottom flow 그림 두 장을
+    // 저장한다. 이를 가로 band의 max로만 재면 해당 행이 약 12px 줄고 마지막 행에
+    // 높이가 몰린다. 한컴 2020 PDF에서 다음 아이콘들은 각각 y=363.5/376.5px이다.
+    for (page_index, para_index, expected_x, expected_y, expected_width) in
+        [(36, 495, 100.3, 363.5, 28.8), (37, 503, 82.4, 376.5, 35.2)]
+    {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let mut images = Vec::new();
+        image_bboxes_for_para(&tree, para_index, &mut images);
+        let (_, y, _, _) = images
+            .iter()
+            .find(|(x, _, width, _)| {
+                (x - expected_x).abs() < 0.2 && (width - expected_width).abs() < 0.2
+            })
+            .unwrap_or_else(|| {
+                panic!(
+                    "{}쪽 pi={para_index} 중간 행 아이콘 x={expected_x:.1} w={expected_width:.1}",
+                    page_index + 1
+                )
+            });
+        assert!(
+            (y - expected_y).abs() < 1.0,
+            "{}쪽 pi={para_index} 중간 행 아이콘 y={y:.1}px — 한컴 2020 PDF {expected_y:.1}px와 맞아야 한다",
             page_index + 1
         );
     }

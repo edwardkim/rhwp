@@ -484,6 +484,7 @@ overlay 색상 의미:
 | `pixel_match_percent` | 전체 canvas 픽셀 중 임계값 이하로 일치한 비율 |
 | `ink_match_percent` | 양쪽 중 하나라도 내용 픽셀인 영역에서 일치한 비율 |
 | `visual_accuracy_proxy_percent` | 자동 시각 판정 보조 일치율. 잉크 영역이 있으면 `ink_match_percent`, 없으면 `pixel_match_percent` |
+| `tolerant_content_match_percent` | 내용 실루엣의 상대편이 `tolerant_content_match_radius_px` 이웃에 있을 때 일치로 보는 기하 보조값 |
 | `diff_bbox` | 차이가 난 픽셀들의 bounding box |
 | `mean_abs_channel_delta` | RGB 채널 평균 절대 차이 |
 | `max_channel_delta` | 페이지 내 최대 RGB 채널 차이 |
@@ -500,6 +501,9 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
 - `ink_match_percent = 100 * (1 - ink_diff_pixels / ink_union_pixels)` 이다.
 - `visual_accuracy_proxy_percent`는 잉크 영역이 있으면 `ink_match_percent`, 잉크 영역이 없으면
   `pixel_match_percent`를 쓴다.
+- `tolerant_content_match_percent`는 기본 2px 이웃까지 허용한 내용 실루엣 일치율이다. 글꼴
+  anti-aliasing·sub-pixel rasterization의 프린지를 기하 위치 차이와 분리해 보여 주기 위한 값이며,
+  `ink_match_percent`나 `visual_accuracy_proxy_percent`를 대체하거나 합격 기준으로 쓰지 않는다.
 
 따라서 이 값은 "자동 시각 판정 정확도"가 아니라 "내용 픽셀 중심 raster 일치율"에 가깝다. 폰트,
 anti-aliasing, PDF rasterizer, 전체 위치 이동의 영향을 크게 받으므로, 낮은 값은 우선 검토 신호이지

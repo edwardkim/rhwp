@@ -265,7 +265,7 @@ use super::{CellContext, CellPathEntry, LayoutEngine};
 
 // 표 수평 정렬: model::shape 타입 사용
 use crate::model::shape::{
-    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertRelTo,
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
 
 /// A clipped table cell still has to expose an immediately nested table's
@@ -7157,10 +7157,34 @@ impl LayoutEngine {
                             let table_cell_ctx = table_meta.map(|(opi, otci)| {
                                 (section_index, opi, otci, cell_idx, cp_idx, ctrl_idx)
                             });
+                            // HWP5가 셀 안의 번호 주석 앞에 남긴 음수 y offset은
+                            // 다음 inline TopAndBottom 그림의 저장 줄을 거슬러 올라가는
+                            // paint offset이 아니다. 한컴은 그 주석을 그림의 첫 줄에
+                            // 붙인다. 일반적인 음수 paragraph offset은 보존하고, 같은
+                            // 셀 문단의 뒤쪽 그림이 이 정확한 형식일 때만 정규화한다.
+                            let follows_inline_picture = para.controls.iter().skip(ctrl_idx + 1).any(
+                                |candidate| {
+                                    matches!(candidate, Control::Picture(picture)
+                                        if picture.common.treat_as_char
+                                            && matches!(picture.common.text_wrap, TextWrap::TopAndBottom))
+                                },
+                            );
+                            let mut shape_for_layout = shape.clone();
+                            if follows_inline_picture
+                                && matches!(shape.common().text_wrap, TextWrap::InFrontOfText)
+                                && matches!(shape.common().vert_rel_to, VertRelTo::Para)
+                                && matches!(
+                                    shape.common().vert_align,
+                                    VertAlign::Top | VertAlign::Inside
+                                )
+                                && (shape.common().vertical_offset as i32) < 0
+                            {
+                                shape_for_layout.common_mut().vertical_offset = 0;
+                            }
                             self.layout_cell_shape(
                                 tree,
                                 cell_node,
-                                shape,
+                                &shape_for_layout,
                                 &inner_area,
                                 shape_anchor_y,
                                 para_alignment,

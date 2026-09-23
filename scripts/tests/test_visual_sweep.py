@@ -22,6 +22,28 @@ sys.modules[SPEC.name] = SWEEP
 SPEC.loader.exec_module(SWEEP)
 
 
+class SubpixelTolerantContentMatchTests(unittest.TestCase):
+    def test_one_pixel_silhouette_shift_is_accepted_within_radius(self) -> None:
+        rhwp = Image.new("RGB", (32, 32), "white")
+        pdf = Image.new("RGB", (32, 32), "white")
+        ImageDraw.Draw(rhwp).line((10, 4, 10, 27), fill="black", width=1)
+        ImageDraw.Draw(pdf).line((11, 4, 11, 27), fill="black", width=1)
+
+        self.assertEqual(
+            SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=1), 100.0
+        )
+
+    def test_displacement_beyond_radius_remains_visible(self) -> None:
+        rhwp = Image.new("RGB", (32, 32), "white")
+        pdf = Image.new("RGB", (32, 32), "white")
+        ImageDraw.Draw(rhwp).line((8, 4, 8, 27), fill="black", width=1)
+        ImageDraw.Draw(pdf).line((13, 4, 13, 27), fill="black", width=1)
+
+        value = SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=2)
+        self.assertIsNotNone(value)
+        self.assertLess(value, 100.0)
+
+
 class LabelFontTests(unittest.TestCase):
     def setUp(self) -> None:
         SWEEP.label_font.cache_clear()
