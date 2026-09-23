@@ -4535,6 +4535,22 @@ impl TypesetEngine {
                 .enumerate()
                 .find(|(_, ls)| (hwpunit_to_px(ls.line_height, self.dpi) - tbl_line_h).abs() < 1.0)
                 .map(|(i, _)| i)
+                // [#7160] 배포용(ViewText) 문서는 저장 LINE_SEG 가 없어 위 판정이 늘 0 으로
+                // 떨어졌고, 표가 먼저 방출돼 host 글자가 표 **아래**로 갔다. 저장 줄이 없으면
+                // 구성된 줄(프레임 채움 결과)의 높이로 같은 판정을 한다 — 측정·배치가 같은
+                // 구성 결과를 소비한다. 한/글 정본 `distribution_doc-2024.pdf` 3쪽은
+                // `(단위 : 천원)` 줄 **다음** 줄에 표를 둔다.
+                .or_else(|| {
+                    if !para.line_segs.is_empty() {
+                        return None;
+                    }
+                    // 구성된 줄은 표 본체 높이로 남고 바깥 여백은 배치가 따로 더한다 —
+                    // 두 기준 모두와 대조한다.
+                    let table_body_h = hwpunit_to_px(table.common.height as i32, self.dpi);
+                    fmt.line_heights.iter().position(|h| {
+                        (h - tbl_line_h).abs() < 1.0 || (h - table_body_h).abs() < 1.0
+                    })
+                })
                 .unwrap_or(0)
         } else {
             0
