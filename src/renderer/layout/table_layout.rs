@@ -12958,19 +12958,12 @@ impl LayoutEngine {
     /// 행 수 게이트만 뺀다. 예산·컷 회계에는 넣지 않는다 — 그쪽은 조각 소비 높이를 바꿔
     /// 쪽 경계를 움직인다. `NativeStoredResetFragmentPaintGeometry` 와 같은 성격의
     /// paint 전용 계약이다.
-    /// `content_fits_page_box` 는 조각 내용이 쪽 상자 안에 들어가는지다(`row_height <=
-    /// pinned_height`). **줄 뒤 간격 갈래에만** 건다 — 내용이 쪽 상자를 넘으면 한/글도 상자를
-    /// 쪽에 맞추고, 그 자리에서 또 빼면 정본보다 위로 올라간다. 실측이 정확히 가른 축이다:
+    /// `stored_height_understates_fragment` 는 저장 칸 높이가 이 조각 내용보다 작은지다.
+    /// **줄 뒤 간격 갈래에만** 건다 — 저장 높이가 내용보다 크면 한/글이 그 높이를 실제로
+    /// 적은 것이므로 잔여를 건드리지 않는다. 코퍼스 A/B 1,016문서가 가른 축이다.
     ///
-    /// ```text
-    ///   빼야 하는 쪽   1382000 16쪽 788.55<830.65 · 17쪽 877.51<890.67
-    ///                  정책연구 161·164쪽 937.09<947.31
-    ///   그대로 둘 쪽   정책연구 163쪽 83.76>83.71 · chemical 34쪽 126.96>125.47
-    ///                  vietnam 27쪽 543.49>535.35
-    /// ```
-    ///
-    /// 중첩 표 이송 여백은 그 상한과 무관하다 — 값이 커서(1382000 18쪽 41.07px) 쪽 상자
-    /// 상한(4.26px)이 대신할 수 없다.
+    /// 중첩 표 이송 여백은 이 판정과 무관하다 — 값이 커서(1382000 18쪽 41.07px) 저장 높이
+    /// 유무로 대신할 수 없다.
     pub(super) fn single_cell_fragment_paint_trailing_trim_px(
         &self,
         table: &crate::model::table::Table,
@@ -12978,12 +12971,12 @@ impl LayoutEngine {
         units: &[CellUnit],
         end_cut: usize,
         styles: &ResolvedStyleSet,
-        content_fits_page_box: bool,
+        stored_height_understates_fragment: bool,
     ) -> f64 {
         if table.row_count != 1 || table.col_count != 1 {
             return 0.0;
         }
-        let spacing = if content_fits_page_box {
+        let spacing = if stored_height_understates_fragment {
             self.saved_reset_cut_trailing_spacing(table, cell, units, end_cut, styles)
         } else {
             0.0
