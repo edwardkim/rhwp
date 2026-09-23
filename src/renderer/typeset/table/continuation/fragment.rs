@@ -51,6 +51,11 @@ struct FragmentBudget {
     source_first_fragment_overflow_allowance: f64,
     header_overhead: f64,
     avail_for_rows: f64,
+    /// [#7095] 본문을 통째로 담은 1×1 RowBreak 쪽 조각 형상인지.
+    single_cell_fragment_shape: bool,
+    /// [#7095] 저장 host 원점이 있는 조각이 칠하는 상자 높이(px). 원점이 없는 조각은
+    /// 방출 시점의 흐름 좌표로 같은 상자를 다시 잰다.
+    single_cell_box_height: Option<f64>,
 }
 
 impl TypesetEngine {

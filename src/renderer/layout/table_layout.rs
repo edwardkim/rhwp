@@ -4055,7 +4055,8 @@ impl LayoutEngine {
 
     /// [#3386] MeasuredTable 행높이를 행별 저장 선언(cellSz)으로 교정한다.
     /// 발동 조건(전부 충족 시에만):
-    /// - 모든 셀이 row_span==1 이고 저장 LINE_SEG 를 보유(#2211 술어)
+    /// - 모든 셀이 row_span==1 이고, 저장 LINE_SEG를 보유하거나 모든 **내용 셀**이
+    ///   저장 LINE_SEG 없는 ViewText 격자다(빈 셀의 synthetic LINE_SEG는 제외)
     /// - 모든 행에 유효 선언 높이 존재(cell.height < 0x8000_0000)
     /// - 선언 합 == 측정 합 (±1.5px; 총높이 보존 → 쪽수·후속 흐름 불변)
     /// - 행별 |선언-측정| <= max(12px, 선언의 15%) (실콘텐츠 성장 행 보호)
@@ -4068,12 +4069,25 @@ impl LayoutEngine {
         if row_count == 0 || rh.len() < row_count || !self.declared_trust_allowed.get() {
             return;
         }
+        let viewtext_content_grid = table.cells.iter().all(|cell| {
+            let has_visible_content = cell.paragraphs.iter().any(|paragraph| {
+                paragraph
+                    .text
+                    .chars()
+                    .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
+            });
+            !has_visible_content
+                || cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+        });
         let mut decl = vec![f64::NAN; row_count];
         for cell in &table.cells {
             if cell.row_span != 1 {
                 return;
             }
-            if !Self::cell_has_stored_line_segs(cell) {
+            if !viewtext_content_grid && !Self::cell_has_stored_line_segs(cell) {
                 return;
             }
             let r = cell.row as usize;

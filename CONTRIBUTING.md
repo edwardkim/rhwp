@@ -139,6 +139,19 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 제출 근거를 직접 볼 수 있게 하는 제출 의무입니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
+Visual Sweep을 수용 근거로 쓰는 경우 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
+90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
+PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
+PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
+다른 경우에만 양쪽 font family와 확인 방법을 적은 UTF-8 증거 파일을
+`--font-mismatch-evidence`로 지정할 수 있습니다. 글꼴 이름의 추정, anti-aliasing, CI 녹색은 예외가
+아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
+다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
+원본성·소비 경로를 검증합니다.
+`RHWP_FONT_PATH`를 사용할 때에는 설정한 모든 디렉터리가 실제로 존재하고 입력 문서의 face를 제공하는지
+먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
+올바른 글꼴 공급으로 다시 실행합니다.
+
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
 따라 review·오늘할일을 같은 PR의 후속 commit에 포함합니다. 이 운영 예외는 외부 기여자의 제출 의무가 아닙니다.

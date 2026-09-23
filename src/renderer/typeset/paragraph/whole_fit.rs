@@ -23,6 +23,21 @@ pub(in crate::renderer::typeset) struct WholeFitPage<'a> {
     pub hangul2024_reclaimed: f64,
 }
 
+/// 저장 줄이 없는 제목 뒤에 번호 목록이 오면, 한/글은 제목과 첫 항목을 같은 쪽에서
+/// 시작시킨다. 페이지 꼬리의 `height_for_fit`은 제목의 마지막 line spacing을 빼므로,
+/// 그 값만으로는 제목이 layout에서 본문 밖으로 잘려 목록과 분리될 수 있다.
+fn no_lineseg_heading_precedes_ordered_list(para: &Paragraph, next: Option<&Paragraph>) -> bool {
+    if !para.line_segs.is_empty() || !para.controls.is_empty() || !para_has_visible_text(para) {
+        return false;
+    }
+    let Some(next) = next else {
+        return false;
+    };
+    let trimmed = next.text.trim_start();
+    let digits = trimmed.bytes().take_while(u8::is_ascii_digit).count();
+    digits > 0 && trimmed.as_bytes().get(digits) == Some(&b'.')
+}
+
 pub(super) struct WholeFitEvidence {
     pub saved_single_line_bottom_fits: bool,
     pub saved_list_tail_body_vpos_fits: bool,
@@ -127,10 +142,16 @@ pub(super) fn inspect(
     // 위 omit_untrusted_empty(저장 리셋 직전 빈 문단)는 트림 혜택도 잃는다
     // — 전량(lh+ls) 부족 시 다음 쪽 상단으로 넘긴다(36392557 pi14 36px).
     // 텍스트 문단은 종전 h4f 트림 유지(36392757 pi19: 전량 요구 시 +1 실측).
+    // 저장 줄 없는 제목이 번호 목록 바로 앞에 있으면, 마지막 line spacing까지
+    // 현재 쪽 예산에 넣어 제목과 첫 항목의 소속을 함께 판정한다. 일반 무저장
+    // 본문까지 전량 요구하면 정상적으로 현재 쪽에 끝나는 문단을 다음 쪽으로 밀어
+    // 페이지 수가 늘어나므로 이 구조에만 한정한다.
     let page_end_fit_height = paragraph_page_end_fit_height(
         fmt.total_height,
         fmt.height_for_fit,
-        omit_untrusted_empty || strict_after_empty_host_float,
+        omit_untrusted_empty
+            || strict_after_empty_host_float
+            || no_lineseg_heading_precedes_ordered_list(para, paragraphs.get(para_idx + 1)),
     );
     // [#6855] "이 쪽이 찼는가"를 `current_height` 로만 물으면 **자리차지 밴드가
     // 차지한 쪽을 빈 쪽으로 읽는다.** 1613000-202200037 182쪽은 29×3 표가

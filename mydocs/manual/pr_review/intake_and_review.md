@@ -178,6 +178,12 @@ mydocs/pr/pr_N_review_impl.md
 
 review 문서에는 최소한 다음을 포함한다.
 
+새 review는 [PR review 템플릿](review_template.md)을 사용한다. **`## 최종 판정`을 제목 바로 다음
+첫 절에 둔다.** 접수 정보·검증 표·시각 증적을 보기 전에도 현재 결론과 blocker 또는 merge 전
+조건을 확인할 수 있어야 한다. 검증 중인 초안에는 `머지 보류`와 아직 완료되지 않은 검증을
+해제 조건으로 쓰고, 완료 후 판정과 근거를 갱신한다. 아래 상세 근거 절에 다른 최종 판정을
+중복 작성하지 않는다.
+
 - PR metadata 표: 번호, 작성자, base, 규모, mergeable 작성 시점 참고값
 - 관련 issue 요약과 변경 범위: 핵심 기능, metadata 변경, 범위 밖 변경
 - 렌더 영향과 visual sweep 필요 여부

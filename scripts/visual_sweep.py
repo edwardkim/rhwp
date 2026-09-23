@@ -101,7 +101,8 @@ FRAME_TAIL_LINE_OVERFLOW_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 DEFAULT_PIXEL_DIFF_THRESHOLD = 32
-VISUAL_SWEEP_RUN_SCHEMA_VERSION = 1
+PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT = 90.0
+VISUAL_SWEEP_RUN_SCHEMA_VERSION = 2
 VISUAL_SWEEP_PAGE_SCHEMA_VERSION = 1
 LARGE_INK_TILE_SIZE = 16
 LARGE_INK_TILE_MIN_PIXELS = 20
@@ -720,6 +721,7 @@ def run_manifest_for_target(
     provenance: dict[str, object],
     dpi: int,
     pixel_diff_threshold: int,
+    font_mismatch_evidence: dict[str, str] | None = None,
     *,
     resume: bool,
 ) -> dict[str, object]:
@@ -730,6 +732,7 @@ def run_manifest_for_target(
         "provenance": provenance,
         "dpi": dpi,
         "pixel_diff_threshold": pixel_diff_threshold,
+        "font_mismatch_evidence": font_mismatch_evidence,
     }
     if not resume:
         manifest = {
@@ -904,6 +907,74 @@ def overlay_summary_for_metrics(
     }
 
 
+def pr_review_gate(
+    metrics: list[dict[str, object]],
+    *,
+    expected_pages: list[int] | None = None,
+    font_mismatch_evidence: dict[str, str] | None = None,
+) -> dict[str, object]:
+    """Return the PR-review disposition for the rendered review PNGs.
+
+    A 2px tolerant silhouette result below 90% is not an approval signal.  The
+    caller still receives all raster artifacts so the maintainer can diagnose
+    the mismatch, but the output manifest records that another review is
+    required and ``main`` returns failure.  Font mismatch is deliberately an
+    explicit, hashed evidence exception: automatic raster heuristics cannot
+    tell a substituted face from a layout regression.
+    """
+    below_threshold: list[dict[str, object]] = []
+    unavailable: list[object] = []
+    measured_pages: set[int] = set()
+    for item in metrics:
+        page = item.get("page")
+        if isinstance(page, int):
+            measured_pages.add(page)
+        value = item.get("tolerant_content_match_percent")
+        if not isinstance(value, (int, float)):
+            unavailable.append(page)
+        elif value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT:
+            below_threshold.append(
+                {
+                    "page": page,
+                    "tolerant_content_match_percent": round(float(value), 5),
+                }
+            )
+
+    if expected_pages is not None:
+        unavailable.extend(
+            page for page in sorted(set(expected_pages)) if page not in measured_pages
+        )
+
+    if font_mismatch_evidence is not None:
+        status = "font_mismatch_exception"
+    elif below_threshold or unavailable:
+        status = "re_review_required"
+    else:
+        status = "passed"
+    return {
+        "status": status,
+        "minimum_tolerant_content_match_percent": PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT,
+        "below_threshold_pages": below_threshold,
+        "unavailable_metric_pages": unavailable,
+        "font_mismatch_evidence": font_mismatch_evidence,
+    }
+
+
+def font_mismatch_evidence_record(root: Path, evidence: Path | None) -> dict[str, str] | None:
+    """Record the only permitted automatic-score exception without trusting a label."""
+    if evidence is None:
+        return None
+    resolved = resolve_input_path(root, evidence)
+    if not resolved.is_file():
+        raise SystemExit(f"--font-mismatch-evidence 파일이 없습니다: {resolved}")
+    if not resolved.read_text(encoding="utf-8").strip():
+        raise SystemExit("--font-mismatch-evidence는 양쪽 실제 글꼴을 설명하는 비어 있지 않은 UTF-8 파일이어야 합니다.")
+    return {
+        "path": safe_rel_str(root, resolved),
+        "sha256": sha256_file(resolved),
+    }
+
+
 def select_source_page_paths(
     all_svg_paths: list[Path],
     all_tree_paths: list[Path],
@@ -1075,6 +1146,7 @@ def write_target_status(
     compact_shapes: list[dict[str, object]],
     pdf_question_markers: list[dict[str, object]],
     pixel_diff_threshold: int,
+    font_mismatch_evidence: dict[str, str] | None = None,
 ) -> dict[str, object]:
     completed = valid_page_manifests(base)
     completed_pages = sorted(completed)
@@ -1097,6 +1169,11 @@ def write_target_status(
         if isinstance(page.get("visual_metrics"), dict)
     ]
     overlay_summary = overlay_summary_for_metrics(overlay_metrics, pixel_diff_threshold)
+    review_gate = pr_review_gate(
+        overlay_metrics,
+        expected_pages=requested_pages or completed_pages,
+        font_mismatch_evidence=font_mismatch_evidence,
+    )
     overlay_metrics_path = base / "overlay" / "overlay_metrics.json"
     write_json_atomic(
         overlay_metrics_path,
@@ -1170,6 +1247,7 @@ def write_target_status(
         "note_shape_json": safe_rel_str(root, analysis_dir / "note_shape.json"),
         "overlay_metrics": overlay_summary,
         "overlay_metrics_json": safe_rel_str(root, overlay_metrics_path),
+        "pr_review_gate": review_gate,
         "visual_metrics": visual_summary,
         "flagged_pages": flagged_pages,
     }
@@ -1193,6 +1271,7 @@ def render_target(
     font_environment: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
+    font_mismatch_evidence: Path | None = None,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1203,6 +1282,7 @@ def render_target(
         raise SystemExit(f"HWP 파일이 없습니다: {hwp}")
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
+    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence)
 
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
@@ -1255,6 +1335,7 @@ def render_target(
         provenance,
         dpi,
         pixel_diff_threshold,
+        font_mismatch_record,
         resume=resume,
     )
 
@@ -1351,6 +1432,7 @@ def render_target(
         compact_shapes,
         pdf_question_markers,
         pixel_diff_threshold,
+        font_mismatch_record,
     )
 
     svg_zoom = dpi / 96.0
@@ -1437,6 +1519,7 @@ def render_target(
             compact_shapes,
             pdf_question_markers,
             pixel_diff_threshold,
+            font_mismatch_record,
         )
 
     manifest = write_target_status(
@@ -1451,6 +1534,7 @@ def render_target(
         compact_shapes,
         pdf_question_markers,
         pixel_diff_threshold,
+        font_mismatch_record,
     )
     print(
         f"Raster PNG pages: rhwp={len(valid_page_manifests(base))}, pdf={len(all_pdf_pngs)}",
@@ -1469,13 +1553,10 @@ def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
 def subpixel_tolerant_content_match_percent(
     rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
 ) -> float | None:
-    """Compare content silhouettes while allowing a small rasterization offset.
+    """작은 rasterization 오프셋을 허용해 내용 실루엣을 비교한다.
 
-    The exact ink metric remains the review authority for color and pixel-level
-    differences. This companion metric answers the narrower geometry question:
-    whether content exists within ``radius_px`` on the other raster. It makes
-    anti-aliasing and sub-pixel font edges visible as a separate, non-gating
-    number instead of inflating the strict metric.
+    엄격 ink 지표는 색상·픽셀 차이의 검토 기준으로 남기고, 이 값은
+    anti-aliasing·sub-pixel 차이를 구분해 보여 주는 보조 지표다.
     """
     if radius_px < 0:
         raise ValueError("radius_px must be non-negative")
@@ -4642,6 +4723,60 @@ def label_font() -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def label_line_height(font: ImageFont.ImageFont) -> int:
+    """라벨 한 줄의 높이(px). 글꼴이 비어 있어도 최소 높이를 보장한다."""
+    bbox = font.getbbox("Ag가")
+    return max(12, bbox[3] - bbox[1] + 4)
+
+
+def wrap_label_lines(
+    text: str, font: ImageFont.ImageFont, max_width: int
+) -> list[str]:
+    """[#7349] 라벨을 canvas 폭 안에서 접는다.
+
+    긴 key 와 metric 조합이 한 줄로 그려져 오른쪽에서 잘렸다. 문서 이미지는 그대로 두고
+    라벨만 여러 줄로 나눈다. 공백 기준으로 접되, 한 낱말이 폭보다 길면 문자 단위로 자른다.
+    """
+    if max_width <= 0:
+        return [text]
+
+    def width_of(value: str) -> int:
+        bbox = font.getbbox(value)
+        return bbox[2] - bbox[0]
+
+    lines: list[str] = []
+    current = ""
+    for token in text.split(" "):
+        candidate = f"{current} {token}".strip()
+        if current and width_of(candidate) > max_width:
+            lines.append(current)
+            current = token
+        else:
+            current = candidate
+        while width_of(current) > max_width and len(current) > 1:
+            cut = len(current)
+            while cut > 1 and width_of(current[:cut]) > max_width:
+                cut -= 1
+            lines.append(current[:cut])
+            current = current[cut:]
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def draw_label_block(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    fill: tuple[int, int, int],
+) -> None:
+    x, y = xy
+    step = label_line_height(font)
+    for index, line in enumerate(lines):
+        draw.text((x, y + index * step), line, fill=fill, font=font)
+
+
 def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Image.Image, Image.Image]:
     width = max(left_image.width, right_image.width)
     height = max(left_image.height, right_image.height)
@@ -4742,28 +4877,27 @@ def make_overlay_page(
     if bbox_max_x >= 0:
         diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
 
-    label_h = 30
-    footer_h = 30
-    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
-    canvas.paste(overlay, (0, label_h))
-    draw = ImageDraw.Draw(canvas)
     font = label_font()
-    draw.text(
-        (8, 6),
-        f"{key} p{page_index + 1:03d}",
-        fill=(20, 20, 20),
-        font=font,
-    )
-    draw.text(
-        (8, label_h + height + 6),
+    title_lines = wrap_label_lines(f"{key} p{page_index + 1:03d}", font, width - 16)
+    comment_lines = wrap_label_lines(
         review_comment_line(
             {
                 "visual_accuracy_proxy_percent": visual_accuracy_proxy_percent,
                 "tolerant_content_match_percent": tolerant_content_match_percent,
             }
         ),
-        fill=(20, 20, 20),
-        font=font,
+        font,
+        width - 16,
+    )
+    # [#7349] 긴 target key와 한국어 검토 코멘트를 모두 canvas 폭 안에서 접는다.
+    label_h = max(30, 10 + len(title_lines) * label_line_height(font))
+    footer_h = max(30, 10 + len(comment_lines) * label_line_height(font))
+    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
+    canvas.paste(overlay, (0, label_h))
+    draw = ImageDraw.Draw(canvas)
+    draw_label_block(draw, (8, 5), title_lines, font, (20, 20, 20))
+    draw_label_block(
+        draw, (8, label_h + height + 5), comment_lines, font, (20, 20, 20)
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(out_path)
@@ -4820,67 +4954,7 @@ def make_overlay_compares(
         pages.append(out)
         metrics.append(page_metrics)
 
-    pixel_matches = [
-        float(item["pixel_match_percent"])
-        for item in metrics
-        if isinstance(item.get("pixel_match_percent"), (int, float))
-    ]
-    ink_matches = [
-        float(item["ink_match_percent"])
-        for item in metrics
-        if isinstance(item.get("ink_match_percent"), (int, float))
-    ]
-    proxy_matches = [
-        float(item["visual_accuracy_proxy_percent"])
-        for item in metrics
-        if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
-    ]
-    tolerant_matches = [
-        float(item["tolerant_content_match_percent"])
-        for item in metrics
-        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
-    ]
-    worst_pixel = min(pixel_matches) if pixel_matches else None
-    worst_ink = min(ink_matches) if ink_matches else None
-    worst_proxy = min(proxy_matches) if proxy_matches else None
-    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
-    summary = {
-        "compared_pages": count,
-        "pixel_diff_threshold": pixel_diff_threshold,
-        "average_pixel_match_percent": round(sum(pixel_matches) / len(pixel_matches), 5)
-        if pixel_matches
-        else None,
-        "worst_pixel_match_percent": round(worst_pixel, 5)
-        if worst_pixel is not None
-        else None,
-        "average_ink_match_percent": round(sum(ink_matches) / len(ink_matches), 5)
-        if ink_matches
-        else None,
-        "worst_ink_match_percent": round(worst_ink, 5)
-        if worst_ink is not None
-        else None,
-        "average_visual_accuracy_proxy_percent": round(sum(proxy_matches) / len(proxy_matches), 5)
-        if proxy_matches
-        else None,
-        "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
-        if worst_proxy is not None
-        else None,
-        "average_tolerant_content_match_percent": round(
-            sum(tolerant_matches) / len(tolerant_matches), 5
-        )
-        if tolerant_matches
-        else None,
-        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
-        if worst_tolerant is not None
-        else None,
-        "worst_pages": [
-            item["page"]
-            for item in sorted(
-                metrics,
-                key=lambda row: float(row.get("visual_accuracy_proxy_percent", 100.0)),
-            )[:10]
-        ],
-    }
+    summary = overlay_summary_for_metrics(metrics, pixel_diff_threshold)
     metrics_path = out_dir / "overlay_metrics.json"
     metrics_path.write_text(
         json.dumps({"summary": summary, "pages": metrics}, ensure_ascii=False, indent=2) + "\n",
@@ -4919,6 +4993,8 @@ def make_review_panels(
         compare = Image.open(compare_path).convert("RGB")
         overlay = Image.open(overlay_path).convert("RGB")
         width = compare.width + gutter + overlay.width
+        # overlay 자체가 상단 key와 하단 한국어 지표를 이미 포함한다. review에서 같은
+        # footer를 다시 만들면 지표가 두 번 출력되므로, 두 패널의 최대 높이만 사용한다.
         height = max(compare.height, overlay.height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
@@ -4941,12 +5017,18 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
         page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
-        label_h = 30
         gutter = 16
+        # [#7349] 좌·우 라벨도 각 패널 폭 안에서 접는다.
+        left_lines = wrap_label_lines(f"{key} p{page_number:03d} rhwp", font, width - 16)
+        right_lines = wrap_label_lines(f"{key} p{page_number:03d} pdf", font, width - 16)
+        label_h = max(
+            30,
+            10 + max(len(left_lines), len(right_lines)) * label_line_height(font),
+        )
         canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
         draw = ImageDraw.Draw(canvas)
-        draw.text((8, 5), f"{key} p{page_number:03d} rhwp", fill=(20, 20, 20), font=font)
-        draw.text((width + gutter + 8, 5), f"{key} p{page_number:03d} pdf", fill=(20, 20, 20), font=font)
+        draw_label_block(draw, (8, 5), left_lines, font, (20, 20, 20))
+        draw_label_block(draw, (width + gutter + 8, 5), right_lines, font, (20, 20, 20))
         canvas.paste(rhwp, (0, label_h))
         canvas.paste(pdf, (width + gutter, label_h))
         out = out_dir / f"compare_{page_number:03d}.png"
@@ -5035,6 +5117,14 @@ def main() -> None:
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
     parser.add_argument(
+        "--font-mismatch-evidence",
+        type=Path,
+        help=(
+            "한컴 PDF와 rhwp 출력의 실제 글꼴이 완전히 다르다는 검토 증거 UTF-8 파일입니다. "
+            "지정하면 90%% 실루엣 gate를 예외 처리하되, 경로와 SHA-256을 manifest에 남깁니다."
+        ),
+    )
+    parser.add_argument(
         "--wasm-pkg", type=Path,
         help="새 WASM web package를 Chrome에서 실행해 SVG와 render tree를 비교합니다. rhwp CLI는 글꼴 별칭과 note-shape만 제공합니다.",
     )
@@ -5109,8 +5199,9 @@ def main() -> None:
     selected = dedupe_target_keys([*selected, *custom_targets])
     out_root = root / args.out
     out_root.mkdir(parents=True, exist_ok=True)
+    re_review_targets: list[str] = []
     for target in selected:
-        render_target(
+        manifest = render_target(
             root,
             target,
             out_root,
@@ -5124,9 +5215,24 @@ def main() -> None:
             font_environment=args.font_environment,
             embed_fonts=args.embed_fonts,
             font_paths=args.font_path,
+            font_mismatch_evidence=args.font_mismatch_evidence,
         )
+        gate = manifest.get("pr_review_gate")
+        if isinstance(gate, dict) and gate.get("status") == "re_review_required":
+            pages = gate.get("below_threshold_pages")
+            page_text = ", ".join(
+                f"p{item.get('page')}={item.get('tolerant_content_match_percent')}%"
+                for item in pages
+                if isinstance(item, dict)
+            )
+            re_review_targets.append(f"{target.key} ({page_text or '실루엣 지표 없음'})")
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")
+    if re_review_targets:
+        raise SystemExit(
+            "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. "
+            "메인터너 보정 후 새 review PNG로 재검토하세요: " + "; ".join(re_review_targets)
+        )
 
 
 if __name__ == "__main__":
