@@ -1,6 +1,9 @@
 //! 일반 fit 실패 뒤의 기존 넘침 허용 판정. 상태 변경과 높이 반영은 하지 않는다.
 
-use super::super::{paragraph_forces_page_boundary_after, stored_zero_vpos_after_near_full_line};
+use super::super::{
+    paragraph_forces_page_boundary_after, stored_vpos_overflow_defers_paragraph,
+    stored_zero_vpos_after_near_full_line,
+};
 use super::metrics::FormattedParagraph;
 use crate::model::{
     control::Control,
@@ -87,6 +90,7 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
     para_idx: usize,
     page: &OverflowPage,
     forced_page_break_line: Option<usize>,
+    dpi: f64,
 ) -> bool {
     // [Task #1537] 폰트 치환 drift 로 인한 "tail 1줄 spill 후 강제 쪽나누기 고아 페이지" 차단.
     //
@@ -153,6 +157,23 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
         }
         declared
     };
+    // [#7288] 다음 문단의 **저장 vpos 가 본문 높이를 넘으면** 그 문단은 이 쪽에 있을 수
+    // 없다고 **문서가 적은** 것이다 — `#6132` 가 쓰는 바로 그 사실이고, 사다리 패턴에서
+    // 추론한 경계가 아니다. 위 경고("추론 경계까지 받으면 쪽 이득 없이 넘침만 는다")는
+    // 추론에 대한 것이라 여기에는 해당하지 않는다.
+    //
+    // 156482639: 표 조각 뒤 빈 문단 `pi=101` 이 잔여를 조금 넘치는데, 다음 `pi=102`
+    // ('참고3' 표)의 저장 vpos 73760 = 983.5px 가 본문 977.8px 를 넘어 어차피 새 쪽에서
+    // 시작한다. 그때 `pi=101` 을 밀면 그 쪽에는 아무것도 안 들어와 **쪽번호만 남은 빈
+    // 쪽**이 된다 — `#6854` 와 같은 고아 쪽이다.
+    let next_para_stored_vpos_exceeds_body = paragraphs.get(para_idx + 1).is_some_and(|next| {
+        stored_vpos_overflow_defers_paragraph(
+            next,
+            paragraphs.get(para_idx + 2),
+            page.body_height,
+            dpi,
+        )
+    });
     // 본문 높이를 바꾸지 않는 컨트롤(각주/미주)만 허용 — 표/그림/글상자가 있으면
     // 줄 단위 split/배치 규칙이 달라지므로 제외.
     let only_note_controls = para
@@ -173,11 +194,15 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
     //
     // ⚠ 여기서는 **선언된** 쪽나누기만 인정한다 — 사다리에서 추론한 경계까지 받으면
     // 쪽 이득 없이 넘침만 는다.
-    let inkless_tail =
-        para.text.trim().is_empty() && fmt.line_heights.len() == 1 && next_para_declares_page_break;
+    let inkless_tail = para.text.trim().is_empty()
+        && fmt.line_heights.len() == 1
+        && (next_para_declares_page_break || next_para_stored_vpos_exceeds_body);
+    // ⚠ 새 사실은 **잉크 없는 갈래만** 연다. 바깥 관문까지 넓히면 글자 있는
+    // `font_drift_tail` 도 함께 열려 다른 문서의 쪽 귀속이 바뀐다 — 실측으로
+    // `issue_1749`·`issue_2470` 핀과 본문 넘침 래칫 3구획이 깨졌다.
     page.col_count == 1
         && forced_page_break_line.is_none()
-        && next_para_forces_break
+        && (next_para_forces_break || inkless_tail)
         && only_note_controls
         && page.has_items
         && (font_drift_tail || inkless_tail)

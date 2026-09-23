@@ -1840,7 +1840,6 @@ fn rowbreak_row_has_internal_saved_vpos_reset(
         })
 }
 
-/// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
 /// [#7288] «쪽 경계에서» 값 0 «나누지 않음» 의 **원자 규칙**을 이 표에 걸 수 있는가.
 ///
 /// 값의 뜻은 한/글 정본 실측으로 고정했다. 한/글 13.0 이 같은 원문을 두 형식으로 저장한
@@ -1865,6 +1864,33 @@ pub(in crate::renderer) fn none_table_is_atomic_here(table: &crate::model::table
             && signed_hwpunit(table.common.vertical_offset) > 0)
 }
 
+/// [#7288] «쪽 경계에서» 값 1 «셀 단위로 나눔» 의 **행 원자 규칙**을 이 표에 걸 수 있는가.
+///
+/// 값의 뜻과 enum 이름의 함정은 위 [`none_table_is_atomic_here`] 의 설명과 같다
+/// (`CellBreak`=1 · `RowBreak`=2 로 이름이 뜻과 반대로 읽힌다).
+///
+/// 한/글은 값 1 표를 **행 경계에서만** 끊는다 — 행 안까지 자르지 않는다. 저장소 정본
+/// `pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf` 158→159쪽은 40행 2열 값 1 표에서
+/// 마지막 행이 괘선까지 닫히고 바닥에 빈 공간을 남긴 뒤 다음 쪽이 새 행으로 시작한다.
+/// `pdf/issue6132/156482639_startup_ir_contest-2020.pdf` 5→6쪽도 항목 7 을 끝내고 6쪽을
+/// 새 행(`8 안산 (주)오토노미아`)으로 시작한다.
+///
+/// 제외 범위는 값 0 과 같다 — **양수 세로 오프셋의 가시-host 자리차지 float**.
+///
+/// 조회만 한다 — 상태를 쓰지 않는다. 소비자는 `table/block/prepare.rs` 의 이월 게이트와
+/// `table/scan/runner/row_step.rs` 의 행 내부 컷 게이트다.
+pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
+    table: &crate::model::table::Table,
+) -> bool {
+    matches!(
+        table.page_break,
+        crate::model::table::TablePageBreak::CellBreak
+    ) && !(!table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && signed_hwpunit(table.common.vertical_offset) > 0)
+}
+
+/// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
 fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
     (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
 }
@@ -2473,6 +2499,39 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
 const LADDER_FIT_EPSILON_PX: f64 = 1.0;
 
 const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
+
+/// [#6132] 저장 vpos 초과가 이 문단을 **새 쪽에서 시작시키는가** — 세 신호를 함께 본다.
+///
+/// 단일 신호("저장 자리가 본문을 넘는다")만으로는 부족하다. 같은 형상이 문단을 쪽 안에
+/// 그대로 두는 문서에도 흔하게 나온다(실측 후보: 2025 행정업무편람 26곳 · 2070
+/// 시장구조조사 13곳 · 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 ① 표를 단 문단
+/// ② 저장 자리가 본문 바닥을 **근소하게** 초과 ③ 다음 문단이 되감김 셋을 함께 요구한다.
+///
+/// 쪽 잔여 조건은 상태라 호출자가 소유한다 — 이 Query 는 문단과 좌표만 읽는다.
+pub(in crate::renderer::typeset) fn stored_vpos_overflow_defers_paragraph(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    body_bottom_px: f64,
+    dpi: f64,
+) -> bool {
+    let first_stored = |p: &Paragraph| {
+        p.line_segs
+            .iter()
+            .find(|seg| !is_synthetic_line_seg(seg))
+            .map(|seg| seg.vertical_pos)
+    };
+    let (Some(own), Some(next)) = (first_stored(para), next_para.and_then(first_stored)) else {
+        return false;
+    };
+    let hosts_table = para
+        .controls
+        .iter()
+        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+    let own_px = hwpunit_to_px(own, dpi);
+    let overflows_body_narrowly =
+        own > 0 && own_px > body_bottom_px && own_px - body_bottom_px <= MIN_TOP_KEEP_PX;
+    hosts_table && overflows_body_narrowly && next < own
+}
 
 /// 저장 `vpos` 가 되돌아가는 자리 — 한글이 거기서 쪽을 끊었다는 신호다 [#3837].
 ///
