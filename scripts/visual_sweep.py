@@ -856,15 +856,9 @@ def overlay_summary_for_metrics(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
-    tolerant_matches = [
-        float(item["tolerant_content_match_percent"])
-        for item in metrics
-        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
-    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
-    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     return {
         "compared_pages": len(metrics),
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -885,14 +879,6 @@ def overlay_summary_for_metrics(
         else None,
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
-        else None,
-        "average_tolerant_content_match_percent": round(
-            sum(tolerant_matches) / len(tolerant_matches), 5
-        )
-        if tolerant_matches
-        else None,
-        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
-        if worst_tolerant is not None
         else None,
         "worst_pages": [
             item["page"]
@@ -1469,13 +1455,10 @@ def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
 def subpixel_tolerant_content_match_percent(
     rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
 ) -> float | None:
-    """Compare content silhouettes while allowing a small rasterization offset.
+    """작은 rasterization 오프셋을 허용해 내용 실루엣을 비교한다.
 
-    The exact ink metric remains the review authority for color and pixel-level
-    differences. This companion metric answers the narrower geometry question:
-    whether content exists within ``radius_px`` on the other raster. It makes
-    anti-aliasing and sub-pixel font edges visible as a separate, non-gating
-    number instead of inflating the strict metric.
+    엄격 ink 지표는 색상·픽셀 차이의 검토 기준으로 남기고, 이 값은
+    anti-aliasing·sub-pixel 차이를 구분해 보여 주는 보조 지표다.
     """
     if radius_px < 0:
         raise ValueError("radius_px must be non-negative")
@@ -4642,6 +4625,60 @@ def label_font() -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def label_line_height(font: ImageFont.ImageFont) -> int:
+    """라벨 한 줄의 높이(px). 글꼴이 비어 있어도 최소 높이를 보장한다."""
+    bbox = font.getbbox("Ag가")
+    return max(12, bbox[3] - bbox[1] + 4)
+
+
+def wrap_label_lines(
+    text: str, font: ImageFont.ImageFont, max_width: int
+) -> list[str]:
+    """[#7349] 라벨을 canvas 폭 안에서 접는다.
+
+    긴 key 와 metric 조합이 한 줄로 그려져 오른쪽에서 잘렸다. 문서 이미지는 그대로 두고
+    라벨만 여러 줄로 나눈다. 공백 기준으로 접되, 한 낱말이 폭보다 길면 문자 단위로 자른다.
+    """
+    if max_width <= 0:
+        return [text]
+
+    def width_of(value: str) -> int:
+        bbox = font.getbbox(value)
+        return bbox[2] - bbox[0]
+
+    lines: list[str] = []
+    current = ""
+    for token in text.split(" "):
+        candidate = f"{current} {token}".strip()
+        if current and width_of(candidate) > max_width:
+            lines.append(current)
+            current = token
+        else:
+            current = candidate
+        while width_of(current) > max_width and len(current) > 1:
+            cut = len(current)
+            while cut > 1 and width_of(current[:cut]) > max_width:
+                cut -= 1
+            lines.append(current[:cut])
+            current = current[cut:]
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def draw_label_block(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    fill: tuple[int, int, int],
+) -> None:
+    x, y = xy
+    step = label_line_height(font)
+    for index, line in enumerate(lines):
+        draw.text((x, y + index * step), line, fill=fill, font=font)
+
+
 def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Image.Image, Image.Image]:
     width = max(left_image.width, right_image.width)
     height = max(left_image.height, right_image.height)
@@ -4742,28 +4779,27 @@ def make_overlay_page(
     if bbox_max_x >= 0:
         diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
 
-    label_h = 30
-    footer_h = 30
-    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
-    canvas.paste(overlay, (0, label_h))
-    draw = ImageDraw.Draw(canvas)
     font = label_font()
-    draw.text(
-        (8, 6),
-        f"{key} p{page_index + 1:03d}",
-        fill=(20, 20, 20),
-        font=font,
-    )
-    draw.text(
-        (8, label_h + height + 6),
+    title_lines = wrap_label_lines(f"{key} p{page_index + 1:03d}", font, width - 16)
+    comment_lines = wrap_label_lines(
         review_comment_line(
             {
                 "visual_accuracy_proxy_percent": visual_accuracy_proxy_percent,
                 "tolerant_content_match_percent": tolerant_content_match_percent,
             }
         ),
-        fill=(20, 20, 20),
-        font=font,
+        font,
+        width - 16,
+    )
+    # [#7349] 긴 target key와 한국어 검토 코멘트를 모두 canvas 폭 안에서 접는다.
+    label_h = max(30, 10 + len(title_lines) * label_line_height(font))
+    footer_h = max(30, 10 + len(comment_lines) * label_line_height(font))
+    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
+    canvas.paste(overlay, (0, label_h))
+    draw = ImageDraw.Draw(canvas)
+    draw_label_block(draw, (8, 5), title_lines, font, (20, 20, 20))
+    draw_label_block(
+        draw, (8, label_h + height + 5), comment_lines, font, (20, 20, 20)
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(out_path)
@@ -4835,15 +4871,9 @@ def make_overlay_compares(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
-    tolerant_matches = [
-        float(item["tolerant_content_match_percent"])
-        for item in metrics
-        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
-    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
-    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     summary = {
         "compared_pages": count,
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -4864,14 +4894,6 @@ def make_overlay_compares(
         else None,
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
-        else None,
-        "average_tolerant_content_match_percent": round(
-            sum(tolerant_matches) / len(tolerant_matches), 5
-        )
-        if tolerant_matches
-        else None,
-        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
-        if worst_tolerant is not None
         else None,
         "worst_pages": [
             item["page"]
@@ -4909,8 +4931,16 @@ def make_review_panels(
     out_dir: Path,
 ) -> list[Path]:
     overlays_by_page = {page_num(path): path for path in overlay_pages}
+    metrics_by_page = {
+        int(item["page"]): item
+        for item in overlay_metrics
+        if isinstance(item.get("page"), int)
+    }
     review_pages: list[Path] = []
     gutter = 18
+    footer_padding_x = 18
+    footer_padding_y = 14
+    font = label_font()
     for compare_path in compare_pages:
         page = page_num(compare_path)
         overlay_path = overlays_by_page.get(page)
@@ -4919,11 +4949,34 @@ def make_review_panels(
         compare = Image.open(compare_path).convert("RGB")
         overlay = Image.open(overlay_path).convert("RGB")
         width = compare.width + gutter + overlay.width
-        height = max(compare.height, overlay.height)
+        image_height = max(compare.height, overlay.height)
+        comment_line = review_comment_line(metrics_by_page.get(page))
+        # [#7349] 하단 코멘트도 overlay 폭 안에서 접는다.
+        comment_lines = wrap_label_lines(
+            comment_line, font, overlay.width - footer_padding_x * 2
+        )
+        overlay_footer_height = (
+            footer_padding_y * 2 + len(comment_lines) * label_line_height(font)
+        )
+        height = max(image_height, overlay.height + overlay_footer_height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
         overlay_x = compare.width + gutter
         canvas.paste(overlay, (overlay_x, 0))
+        draw = ImageDraw.Draw(canvas)
+        separator_y = overlay.height + 1
+        draw.line(
+            [(overlay_x, separator_y), (overlay_x + overlay.width, separator_y)],
+            fill=(210, 210, 210),
+            width=2,
+        )
+        draw_label_block(
+            draw,
+            (overlay_x + footer_padding_x, overlay.height + footer_padding_y),
+            comment_lines,
+            font,
+            (20, 20, 20),
+        )
         out = out_dir / f"review_{page:03d}.png"
         out.parent.mkdir(parents=True, exist_ok=True)
         canvas.save(out)
@@ -4941,12 +4994,18 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
         page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
-        label_h = 30
         gutter = 16
+        # [#7349] 좌·우 라벨도 각 패널 폭 안에서 접는다.
+        left_lines = wrap_label_lines(f"{key} p{page_number:03d} rhwp", font, width - 16)
+        right_lines = wrap_label_lines(f"{key} p{page_number:03d} pdf", font, width - 16)
+        label_h = max(
+            30,
+            10 + max(len(left_lines), len(right_lines)) * label_line_height(font),
+        )
         canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
         draw = ImageDraw.Draw(canvas)
-        draw.text((8, 5), f"{key} p{page_number:03d} rhwp", fill=(20, 20, 20), font=font)
-        draw.text((width + gutter + 8, 5), f"{key} p{page_number:03d} pdf", fill=(20, 20, 20), font=font)
+        draw_label_block(draw, (8, 5), left_lines, font, (20, 20, 20))
+        draw_label_block(draw, (width + gutter + 8, 5), right_lines, font, (20, 20, 20))
         canvas.paste(rhwp, (0, label_h))
         canvas.paste(pdf, (width + gutter, label_h))
         out = out_dir / f"compare_{page_number:03d}.png"
