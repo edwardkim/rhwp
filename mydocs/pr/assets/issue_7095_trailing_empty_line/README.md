@@ -6,7 +6,7 @@
 `sha256 59baa27df0aa73f776af7e3db6ab539824c50012ef17b609d7a0d812cb92472e`).
 
 ```bash
-RHWP_FONT_PATH=ttfs:hwp:ttfs/windows venv/bin/python scripts/visual_sweep.py \
+RHWP_FONT_PATH=ttfs/hwp:ttfs/windows venv/bin/python scripts/visual_sweep.py \
   --hwp samples/task2430/1382000_domestic_violence_survey.hwp \
   --pdf pdf/issue2430/1382000_domestic_violence_survey-2020.pdf \
   --rhwp-bin target/release/rhwp --svg-rasterizer rsvg --pages 16-19
@@ -26,6 +26,12 @@ RHWP_FONT_PATH=ttfs:hwp:ttfs/windows venv/bin/python scripts/visual_sweep.py \
 **16쪽(대조군, 비끝 조각).** 이 변경으로 움직이지 않는다 — 수정 전후 모두 괘선 989.81 이다.
 다만 정본 977.07 보다 12.7px 아래에서 끝난다. 이 차이는 **이 PR 의 회귀가 아니다**: 같은
 문서·같은 기준으로 수정 전에도 989.81 이었다. 별도 축이며 #7095 코멘트에 남긴다.
+
+## 폰트 환경
+
+`RHWP_FONT_PATH=ttfs/hwp:ttfs/windows` 로 실행했다. `ttfs/hwp`(144개)를 뺀 경로로도 같은
+문서에서 괘선 좌표와 `pixel_match 94.377%` 가 **동일**했다 — 이 문서의 조각 상자 높이는
+폰트 대체에 흔들리지 않는다.
 
 ## 남은 차이
 
