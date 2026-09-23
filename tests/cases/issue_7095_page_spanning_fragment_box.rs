@@ -587,3 +587,72 @@ fn issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored
         "#7095: rowbreak-problem-pages 는 한/글과 같은 18쪽"
     );
 }
+
+#[test]
+fn issue_7095_terminal_fragment_box_counts_the_trailing_empty_line() {
+    // 1382000 `pi=90` 은 저장 칸 높이가 282HU 라 조각 상자 합보다 훨씬 작다. #7347 의
+    // `저장 칸 높이 − 앞 조각 상자 합` 은 음수가 되어 적용되지 않고, 끝 조각 상자는 내용으로
+    // 정해진다. 그런데 그 내용 높이가 칸 안 **꼬리 빈 문단**의 줄 상자를 빼고 있었다.
+    //
+    // 칸의 저장 사다리 끝:
+    //   마지막 주석 문단  vertpos 61920  vertsize 1100   (* 본 동의서는 총 2장을 …)
+    //   꼬리 빈 문단      vertpos 64120  vertsize 1100   (내용 없음)
+    //
+    // 정본 `pdf/issue2430/1382000_domestic_violence_survey-2020.pdf`
+    // (`Hancom PDF 1.3.0.550` / `Hwp 2020 0.0.0.0`, `hancom_version 11.0.0.9136`,
+    // `sha256 59baa27df0aa73f776af7e3db6ab539824c50012ef17b609d7a0d812cb92472e`) 19쪽의
+    // 표 괘선은 **115.35 .. 986.03** 이다(96dpi, 쪽 척도 841/841.88 보정).
+    //
+    //   꼬리 빈 문단의 줄 **시작**까지 = 64120HU = 854.93px  → 수정 전 rhwp 856.82 (−13.86)
+    //   꼬리 빈 문단의 줄 **상자**까지 = 65220HU = 869.60px  → 정본 870.68      (−1.08)
+    //
+    // 저장소의 `…-2020-print.pdf` 는 `cairo 1.18.0` 산출이고 한글 글꼴을 내장하지 않아 이 쪽을
+    // 10줄(정본·저장 `LineSeg`·rhwp 는 13줄)로 그린다 — 기준으로 쓰지 않는다(#7352).
+    let core = load_sample("samples/task2430/1382000_domestic_violence_survey.hwp");
+
+    let frag = tables_of_para(&page_nodes(&core, 18), 90, 1, 1)
+        .into_iter()
+        .max_by(|a, b| a.height.total_cmp(&b.height))
+        .expect("1382000 19쪽 끝 조각 표");
+    let bottom = frag.y + frag.height;
+    assert!(
+        (frag.y - 115.3).abs() < 1.0,
+        "#7095: 19쪽 끝 조각 상자 상단은 115.3(정본 115.35)이어야 한다: {:.2}",
+        frag.y
+    );
+    // 이 시험이 읽는 render tree `Table` bbox 는 **끝 조각에서는** 실제로 그려지는 괘선과
+    // 같다(수정 뒤 984.40 ↔ SVG 984.07). 비끝 조각은 `min(pinned_height)` clamp 가 걸려 두
+    // 값이 갈리므로 아래 대조군은 bbox 실측값으로 잠근다.
+    //
+    // 허용치는 같은 문서 비끝 조각의 계통 오차로 정한다 — 16·17·18쪽 괘선이 정본보다
+    // 1.92 / 1.86 / 1.87px 작다. 수정 뒤 19쪽도 같은 방향 1.6px 이고, 수정 전 13.6px 는
+    // 그 7배로 이 범위 밖이다.
+    assert!(
+        (bottom - 986.03).abs() < 2.5,
+        "#7095: 끝 조각 상자는 꼬리 빈 문단의 줄 상자까지 세야 한다 — \
+         정본 986.03(비끝 조각 계통 오차 1.9px), 수정 전 972.40: {bottom:.2}"
+    );
+
+    // 대조군: 같은 표의 **비끝** 조각(16·17쪽)은 이 변경으로 움직이지 않는다. 값은 수정
+    // 전후로 동일한 render tree bbox 실측이다(괘선은 clamp 뒤라 각각 975.15 · 978.09 로
+    // 그려지고 정본 977.07 · 979.95 와 1.92 · 1.86px 차이다 — 위 허용치의 근거).
+    for (page_index, top, want_bottom) in [(15u32, 201.30, 990.10), (16, 115.30, 993.00)] {
+        let other = tables_of_para(&page_nodes(&core, page_index), 90, 1, 1)
+            .into_iter()
+            .max_by(|a, b| a.height.total_cmp(&b.height))
+            .expect("1382000 비끝 조각 표");
+        assert!(
+            (other.y - top).abs() < 0.5 && (other.y + other.height - want_bottom).abs() < 0.5,
+            "#7095: 비끝 조각({page_index})은 {top:.2} .. {want_bottom:.2} 로 유지되어야 한다: \
+             y={:.2} bottom={:.2}",
+            other.y,
+            other.y + other.height
+        );
+    }
+
+    assert_eq!(
+        core.page_count(),
+        39,
+        "#7095: 1382000 쪽수는 정본과 같은 39 여야 한다"
+    );
+}

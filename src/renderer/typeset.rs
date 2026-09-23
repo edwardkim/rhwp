@@ -6336,7 +6336,8 @@ mod tests {
             cut.consumed_height,
         );
 
-        let visible_height = engine.row_cut_content_height(&table, 0, &[], &cut.end_cut, &styles);
+        let visible_height =
+            engine.row_cut_content_height(&table, 0, &[], &cut.end_cut, &styles, false);
         assert!(
             visible_height > cut.consumed_height,
             "visible fragment must include vertical padding: content={}, visible={visible_height}",

@@ -15619,9 +15619,9 @@ impl LayoutEngine {
         }
 
         if has_row_cut {
-            self.row_cut_content_height(table, row, &per_start, &per_end, styles)
+            self.row_cut_content_height(table, row, &per_start, &per_end, styles, false)
         } else {
-            self.row_cut_content_height(table, row, &[], &[], styles)
+            self.row_cut_content_height(table, row, &[], &[], styles, false)
         }
     }
 
@@ -16758,6 +16758,7 @@ impl LayoutEngine {
                             &cut.start_cut,
                             &cut.end_cut,
                             styles,
+                            false,
                         );
                         extra += (child_height - reserved_flow).max(0.0);
                         // 자식의 실제 상자가 셀 최소 높이를 늘린 경우 부모 행도
@@ -16872,7 +16873,7 @@ impl LayoutEngine {
                     .any(|c| c.row as usize == r && c.row_span == 1);
                 let declared = resolved_row_heights.get(r).copied().unwrap_or(0.0);
                 let measured = if has_single_row_cells {
-                    self.row_cut_content_height(table, r, &[], &[], styles)
+                    self.row_cut_content_height(table, r, &[], &[], styles, false)
                 } else {
                     0.0
                 };
@@ -16886,7 +16887,8 @@ impl LayoutEngine {
                     - remaining_band)
                     .max(0.0);
             } else if !start_cut.is_empty() {
-                prior_h += self.row_cut_content_height(table, start_row, &[], start_cut, styles);
+                prior_h +=
+                    self.row_cut_content_height(table, start_row, &[], start_cut, styles, false);
             }
         }
         let su = if prior_h > 0.0 {
@@ -16967,6 +16969,43 @@ impl LayoutEngine {
     }
 
     /// 분할 행의 컷 범위에 속하는 내용과 셀 패딩의 높이. 온전한 행은 선언 높이도 보존한다.
+    /// [#7095] 표를 끝내는 조각에서 칸의 **꼬리 빈 문단**이 차지하는 줄 상자 높이(px).
+    ///
+    /// 1×1 RowBreak 칸의 빈 spacer 유닛은 높이 0 으로 접힌다(`collapse_empty_rowbreak_spacer`).
+    /// 쪽 경계에 오는 spacer 는 한/글도 예약하지 않으므로 그 접기는 맞지만, **칸을 닫는 마지막
+    /// 문단**은 다르다 — 한/글은 그 줄 상자까지 칸 높이에 적는다. 저장 `LINE_SEG` 가 없는
+    /// (합성) 빈 문단은 제외한다.
+    fn terminal_trailing_stored_empty_line_px(
+        &self,
+        cell: &crate::model::table::Cell,
+        units: &[CellUnit],
+        su: usize,
+        eu: usize,
+    ) -> f64 {
+        if eu != units.len() {
+            return 0.0;
+        }
+        let Some(last) = units[su..eu].last() else {
+            return 0.0;
+        };
+        if !last.empty_spacer || last.height > 0.5 {
+            return 0.0;
+        }
+        let Some(para) = cell.paragraphs.get(last.para_idx) else {
+            return 0.0;
+        };
+        let stored = para.line_segs.iter().find(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        match stored {
+            Some(seg) if seg.line_height > 0 => hwpunit_to_px(seg.line_height, self.dpi),
+            _ => 0.0,
+        }
+    }
+
+    /// `terminal_fragment` 는 이 컷이 **표를 끝내는 조각**인지다. [#7095] 칸의 꼬리 빈
+    /// 문단은 그때만 줄 상자를 차지한다 — 판정은 호출처가 한다(`end_cut` 이 비었다는 것은
+    /// "끝까지 잰다"는 뜻일 뿐 종결을 뜻하지 않는다).
     pub(crate) fn row_cut_content_height(
         &self,
         table: &crate::model::table::Table,
@@ -16974,6 +17013,7 @@ impl LayoutEngine {
         start_cut: &[usize],
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
+        terminal_fragment: bool,
     ) -> f64 {
         let mut row_cells: Vec<&crate::model::table::Cell> = table
             .cells
@@ -17016,9 +17056,24 @@ impl LayoutEngine {
             } else {
                 self.native_saved_reset_cut_trailing_trim(table, cell, &units, su, eu, styles)
             };
+            // [#7095] 칸의 **꼬리** 빈 문단은 표를 끝내는 조각 안에서 줄 상자를 차지한다.
+            //
+            // 1×1 RowBreak 칸의 빈 spacer 유닛은 높이 0 으로 접힌다(`cell_units` 의
+            // `collapse_empty_rowbreak_spacer`). 쪽 경계에 오는 spacer 는 한/글도 예약하지
+            // 않으므로 그 접기는 맞지만, **칸을 닫는 마지막 문단**은 다르다 — 한/글은 그
+            // 줄 상자까지 칸 높이에 적는다.
+            //
+            // `1382000_domestic_violence_survey` `pi=90` 19쪽(끝 조각): 저장 사다리 끝은
+            // 주석 문단 다음의 빈 문단이고, 접힌 채로 재면 상자가 13.7px 짧다.
+            let trailing_stored_empty_line = if terminal_fragment {
+                self.terminal_trailing_stored_empty_line_px(cell, &units, su, eu)
+            } else {
+                0.0
+            };
             let content: f64 =
                 (units[su..eu].iter().map(|u| u.height).sum::<f64>() - trailing_trim).max(0.0)
-                    + mixed_nested_extra;
+                    + mixed_nested_extra
+                    + trailing_stored_empty_line;
             let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
             let has_visible_cut = units[su..eu]
                 .iter()
@@ -17213,7 +17268,8 @@ impl LayoutEngine {
                     prefix_end.push(self.cell_units(cell, table, styles).len());
                 }
             }
-            let prefix_height = self.row_cut_content_height(table, row, &[], &prefix_end, styles);
+            let prefix_height =
+                self.row_cut_content_height(table, row, &[], &prefix_end, styles, false);
             // 이 helper는 scan 중 호출돼 `LayoutEngine::current_body_area`가 아직
             // 갱신되지 않은 경로가 있다. 현재 `TypesetState`가 보유한 fresh 본문
             // 높이를 호출자가 넘겨야 실제 다음 페이지 수용성을 판정할 수 있다.
@@ -18983,7 +19039,8 @@ mod row_cut_tests {
                     cut.consumed_height + extra <= budget + 0.1,
                     "reserve must fit before accepting the cut"
                 );
-                let painted = eng.row_cut_content_height(&t, 0, &start, &cut.end_cut, &styles);
+                let painted =
+                    eng.row_cut_content_height(&t, 0, &start, &cut.end_cut, &styles, false);
                 assert!(
                     painted <= budget + 0.1,
                     "paint must fit the same selected interval: {painted}"
