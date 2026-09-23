@@ -99,6 +99,17 @@ class OverlayLabelFitTests(unittest.TestCase):
         pdf.save(pdf_path)
         return rhwp_path, pdf_path
 
+    def test_overlay_summary_keeps_tolerant_content_metric(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            result = SWEEP.make_overlay_compares(
+                [rhwp_path], [pdf_path], temp_dir / "overlay", "summary", pixel_diff_threshold=16
+            )
+            summary = result["summary"]
+            self.assertIsInstance(summary["average_tolerant_content_match_percent"], float)
+            self.assertIsInstance(summary["worst_tolerant_content_match_percent"], float)
+
     def test_long_key_label_ink_stays_inside_canvas(self) -> None:
         with tempfile.TemporaryDirectory() as raw_dir:
             temp_dir = Path(raw_dir)
