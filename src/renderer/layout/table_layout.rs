@@ -13014,7 +13014,23 @@ impl LayoutEngine {
         if table.row_count != 1 || table.col_count != 1 {
             return 0.0;
         }
-        self.saved_reset_cut_trailing_spacing(table, cell, units, end_cut, styles)
+        let spacing = self.saved_reset_cut_trailing_spacing(table, cell, units, end_cut, styles);
+        if spacing > 0.0 {
+            return spacing;
+        }
+        // 조각의 마지막 유닛이 **중첩 표 atom** 이면 그 유닛 높이에는 표 상자 아래의
+        // 보이지 않는 이송 여백이 들어 있다(`#5920`). 한/글은 그 여백 앞에서 조각 상자를
+        // 닫는다 — 1382000 `pi=90` 18쪽: 유닛 합 893.0 + 칸 여백 3.76 = 896.76 인데 정본
+        // 상자는 855.69 이고, 그 차가 정확히 이 꼬리(41.07)다.
+        //
+        // `advance_row_cut`(`#5920`)은 같은 값을 컷 예산에서만 쓴다. 여기서는 칠하는
+        // 상자에만 쓰므로 조각 경계는 움직이지 않는다.
+        end_cut
+            .checked_sub(1)
+            .and_then(|last| units.get(last))
+            .map_or(0.0, |unit| {
+                self.nested_atom_invisible_tail(cell, unit, styles)
+            })
     }
 
     /// 저장 되감김이 증명하는 "컷 앞 줄의 뒤 간격". 위 두 진입점이 공유한다.
