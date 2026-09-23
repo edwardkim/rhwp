@@ -633,18 +633,23 @@ fn issue_7095_terminal_fragment_box_counts_the_trailing_empty_line() {
          정본 986.03(비끝 조각 계통 오차 1.9px), 수정 전 972.40: {bottom:.2}"
     );
 
-    // 대조군: 같은 표의 **비끝** 조각(16·17쪽)은 이 변경으로 움직이지 않는다. 값은 수정
-    // 전후로 동일한 render tree bbox 실측이다(괘선은 clamp 뒤라 각각 975.15 · 978.09 로
-    // 그려지고 정본 977.07 · 979.95 와 1.92 · 1.86px 차이다 — 위 허용치의 근거).
-    for (page_index, top, want_bottom) in [(15u32, 201.30, 990.10), (16, 115.30, 993.00)] {
+    // 같은 표의 **비끝** 조각(16·17쪽)도 정본과 맞는다 — 저장 되감김이 증명하는 줄 뒤
+    // 간격(1100HU = 14.67px)을 칠하는 상자에서 뺀다. 정본 괘선은 977.07 · 979.95 이고
+    // 실제 SVG 괘선은 975.15 · 978.09 로 1.92 · 1.86px 차인데, 이는 끝 조각의 잔차
+    // 1.96px 와 같은 계통이다. 아래 값은 render tree bbox 이고 괘선보다 0.25~0.31px 크다.
+    //
+    // 수정 전에는 990.10 · 993.00 으로 정본보다 12.7px 아래에서 끝났다 — 유닛 합이 조각
+    // 마지막 줄의 뒤 줄간격을 품고 있었고, 이 칸은 저장 높이가 282HU 라 쪽 고정 갈래
+    // (`row_heights[0] = pinned_height`)를 타지 못해 그 값이 그대로 남았다.
+    for (page_index, top, want_bottom) in [(15u32, 201.30, 975.40), (16, 115.30, 978.40)] {
         let other = tables_of_para(&page_nodes(&core, page_index), 90, 1, 1)
             .into_iter()
             .max_by(|a, b| a.height.total_cmp(&b.height))
             .expect("1382000 비끝 조각 표");
         assert!(
             (other.y - top).abs() < 0.5 && (other.y + other.height - want_bottom).abs() < 0.5,
-            "#7095: 비끝 조각({page_index})은 {top:.2} .. {want_bottom:.2} 로 유지되어야 한다: \
-             y={:.2} bottom={:.2}",
+            "#7095: 비끝 조각({page_index}) 상자는 {top:.2} .. {want_bottom:.2} 여야 한다 — \
+             수정 전 990.10 · 993.00: y={:.2} bottom={:.2}",
             other.y,
             other.y + other.height
         );
