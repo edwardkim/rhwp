@@ -2804,9 +2804,11 @@ impl HeightMeasurer {
                                 _ => None,
                             })
                             .collect();
-                        (picture_heights.len() >= 2)
-                            .then(|| picture_heights.into_iter().sum())
-                            .unwrap_or(0.0)
+                        if picture_heights.len() >= 2 {
+                            picture_heights.into_iter().sum()
+                        } else {
+                            0.0
+                        }
                     } else {
                         0.0
                     };
