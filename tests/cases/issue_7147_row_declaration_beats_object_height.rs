@@ -62,17 +62,12 @@ fn load() -> DocumentCore {
 
 /// 쪽 `page` 에 그려진 표 `pi` 의 `rowspan == 1` 셀 상자 높이를 행 번호별로 모은다.
 fn row_box_heights_mm(doc: &DocumentCore, page: u32) -> std::collections::BTreeMap<u16, f64> {
-    fn walk(
-        node: &RenderNode,
-        in_target: bool,
-        out: &mut std::collections::BTreeMap<u16, f64>,
-    ) {
+    fn walk(node: &RenderNode, in_target: bool, out: &mut std::collections::BTreeMap<u16, f64>) {
         let mut inside = in_target;
         match &node.node_type {
             RenderNodeType::Table(t) if t.para_index == Some(TABLE_PARA) => inside = true,
             RenderNodeType::TableCell(c) if in_target && c.row_span == 1 => {
-                out.entry(c.row)
-                    .or_insert(node.bbox.height / DPI * 25.4);
+                out.entry(c.row).or_insert(node.bbox.height / DPI * 25.4);
             }
             _ => {}
         }
@@ -97,9 +92,12 @@ fn header_row_boxes_match_the_hancom_oracle() {
         "쪽 {PAGE} 에서 표 pi={TABLE_PARA} 의 셀을 찾지 못했다 — 시험 설정 오류"
     );
     for (row, oracle) in [(0u16, ORACLE_ROW0_MM), (1u16, ORACLE_ROW1_MM)] {
-        let got = *rows
-            .get(&row)
-            .unwrap_or_else(|| panic!("행 {row} 의 셀 상자를 찾지 못했다. 잡힌 행: {:?}", rows.keys()));
+        let got = *rows.get(&row).unwrap_or_else(|| {
+            panic!(
+                "행 {row} 의 셀 상자를 찾지 못했다. 잡힌 행: {:?}",
+                rows.keys()
+            )
+        });
         assert!(
             (got - oracle).abs() <= TOLERANCE_MM,
             "행 {row} 상자 높이가 정본과 다르다 — 개체 높이에 맞춘 비례 축소가 살아 있으면 \
