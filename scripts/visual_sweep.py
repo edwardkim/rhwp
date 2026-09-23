@@ -4583,6 +4583,60 @@ def label_font() -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def label_line_height(font: ImageFont.ImageFont) -> int:
+    """라벨 한 줄의 높이(px). 글꼴이 비어 있어도 최소 높이를 보장한다."""
+    bbox = font.getbbox("Ag가")
+    return max(12, bbox[3] - bbox[1] + 4)
+
+
+def wrap_label_lines(
+    text: str, font: ImageFont.ImageFont, max_width: int
+) -> list[str]:
+    """[#7349] 라벨을 canvas 폭 안에서 접는다.
+
+    긴 key 와 metric 조합이 한 줄로 그려져 오른쪽에서 잘렸다. 문서 이미지는 그대로 두고
+    라벨만 여러 줄로 나눈다. 공백 기준으로 접되, 한 낱말이 폭보다 길면 문자 단위로 자른다.
+    """
+    if max_width <= 0:
+        return [text]
+
+    def width_of(value: str) -> int:
+        bbox = font.getbbox(value)
+        return bbox[2] - bbox[0]
+
+    lines: list[str] = []
+    current = ""
+    for token in text.split(" "):
+        candidate = f"{current} {token}".strip()
+        if current and width_of(candidate) > max_width:
+            lines.append(current)
+            current = token
+        else:
+            current = candidate
+        while width_of(current) > max_width and len(current) > 1:
+            cut = len(current)
+            while cut > 1 and width_of(current[:cut]) > max_width:
+                cut -= 1
+            lines.append(current[:cut])
+            current = current[cut:]
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def draw_label_block(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    fill: tuple[int, int, int],
+) -> None:
+    x, y = xy
+    step = label_line_height(font)
+    for index, line in enumerate(lines):
+        draw.text((x, y + index * step), line, fill=fill, font=font)
+
+
 def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Image.Image, Image.Image]:
     width = max(left_image.width, right_image.width)
     height = max(left_image.height, right_image.height)
@@ -4679,23 +4733,24 @@ def make_overlay_page(
     if bbox_max_x >= 0:
         diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
 
-    label_h = 42
-    canvas = Image.new("RGB", (width, height + label_h), "white")
-    canvas.paste(overlay, (0, label_h))
-    draw = ImageDraw.Draw(canvas)
     font = label_font()
     ink_match_label = f"{ink_match_percent:.3f}%" if ink_match_percent is not None else "n/a"
-    draw.text(
-        (8, 6),
+    # [#7349] 긴 key·metric 조합이 canvas 폭을 넘으면 접고 라벨 영역을 그만큼 늘린다.
+    label_lines = wrap_label_lines(
         (
             f"{key} p{page_index + 1:03d} overlay "
             f"pixel_match={pixel_match_percent:.3f}% "
             f"ink_match={ink_match_label} "
             f"diff={diff_pixels}/{total_pixels}"
         ),
-        fill=(20, 20, 20),
-        font=font,
+        font,
+        width - 16,
     )
+    label_h = max(42, 12 + len(label_lines) * label_line_height(font))
+    canvas = Image.new("RGB", (width, height + label_h), "white")
+    canvas.paste(overlay, (0, label_h))
+    draw = ImageDraw.Draw(canvas)
+    draw_label_block(draw, (8, 6), label_lines, font, (20, 20, 20))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(out_path)
 
@@ -4838,9 +4893,13 @@ def make_review_panels(
         width = compare.width + gutter + overlay.width
         image_height = max(compare.height, overlay.height)
         comment_line = review_comment_line(metrics_by_page.get(page))
-        bbox = font.getbbox(comment_line)
-        line_height = bbox[3] - bbox[1]
-        overlay_footer_height = footer_padding_y * 2 + line_height
+        # [#7349] 하단 코멘트도 overlay 폭 안에서 접는다.
+        comment_lines = wrap_label_lines(
+            comment_line, font, overlay.width - footer_padding_x * 2
+        )
+        overlay_footer_height = (
+            footer_padding_y * 2 + len(comment_lines) * label_line_height(font)
+        )
         height = max(image_height, overlay.height + overlay_footer_height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
@@ -4853,11 +4912,12 @@ def make_review_panels(
             fill=(210, 210, 210),
             width=2,
         )
-        draw.text(
+        draw_label_block(
+            draw,
             (overlay_x + footer_padding_x, overlay.height + footer_padding_y),
-            comment_line,
-            fill=(20, 20, 20),
-            font=font,
+            comment_lines,
+            font,
+            (20, 20, 20),
         )
         out = out_dir / f"review_{page:03d}.png"
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -4876,12 +4936,18 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
         page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
-        label_h = 30
         gutter = 16
+        # [#7349] 좌·우 라벨도 각 패널 폭 안에서 접는다.
+        left_lines = wrap_label_lines(f"{key} p{page_number:03d} rhwp", font, width - 16)
+        right_lines = wrap_label_lines(f"{key} p{page_number:03d} pdf", font, width - 16)
+        label_h = max(
+            30,
+            10 + max(len(left_lines), len(right_lines)) * label_line_height(font),
+        )
         canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
         draw = ImageDraw.Draw(canvas)
-        draw.text((8, 5), f"{key} p{page_number:03d} rhwp", fill=(20, 20, 20), font=font)
-        draw.text((width + gutter + 8, 5), f"{key} p{page_number:03d} pdf", fill=(20, 20, 20), font=font)
+        draw_label_block(draw, (8, 5), left_lines, font, (20, 20, 20))
+        draw_label_block(draw, (width + gutter + 8, 5), right_lines, font, (20, 20, 20))
         canvas.paste(rhwp, (0, label_h))
         canvas.paste(pdf, (width + gutter, label_h))
         out = out_dir / f"compare_{page_number:03d}.png"
