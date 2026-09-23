@@ -4622,13 +4622,28 @@ impl LayoutEngine {
                 //
                 // 흐름과 예산은 건드리지 않는다. 그쪽까지 바꾸면 조각 소비 높이가 줄어
                 // 쪽 경계가 움직인다(`row_split_meets_min_top_keep` 의 25px 고아 기준).
-                let paint_trim = table.cells.first().map_or(0.0, |cell| {
-                    let units = self.cell_units(cell, table, styles);
-                    let end_unit = end_cut.first().copied().unwrap_or(0);
-                    self.single_cell_fragment_paint_trailing_trim_px(
-                        table, cell, &units, end_unit, styles,
-                    )
-                });
+                // **이어짐 조각에만** 적용한다. 코퍼스 A/B 가 첫 조각의 반례 3건을 냈다 —
+                // 한/글 정본은 첫 조각에서 그 간격을 **그린다**.
+                //
+                // ```text
+                //   정책연구용역사업 163쪽  start=[] end=[3]   정본 1034.19  빼면 1020.96 (−13.2)
+                //   chemical-labeling 34쪽  start=[] end=[7]   정본 1022.83  빼면 1021.47 (−1.4)
+                //   vietnam_labor    27쪽  start=[] end=[23]  정본 1022.83  빼면 1022.25 (−0.6)
+                // ```
+                //
+                // 같은 문서 161·164쪽(`start=[34]` · `start=[3]`, 이어짐)은 정본이 1010.67 이고
+                // 빼야 맞는다. 첫 조각과 이어짐 조각이 정확히 갈린다.
+                let paint_trim = if start_cut.is_empty() {
+                    0.0
+                } else {
+                    table.cells.first().map_or(0.0, |cell| {
+                        let units = self.cell_units(cell, table, styles);
+                        let end_unit = end_cut.first().copied().unwrap_or(0);
+                        self.single_cell_fragment_paint_trailing_trim_px(
+                            table, cell, &units, end_unit, styles,
+                        )
+                    })
+                };
                 row_heights[0] = (row_heights[0] - paint_trim).max(0.0).min(pinned_height);
             }
         }
