@@ -9,6 +9,9 @@
 use std::fs;
 use std::path::Path;
 
+use rhwp::model::control::Control;
+use rhwp::model::shape::ShapeObject;
+
 const SAMPLE: &str = "samples/issue7333/aaaaaa.hwp";
 const PAGE_INDEX: u32 = 39;
 const PARA_INDEX: u64 = 523;
@@ -550,6 +553,84 @@ fn page_31_signed_line_transform_preserves_arrow_direction() {
             && (y2 - 701.2).abs() < 2.0,
         "31쪽 화살표 끝점=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — 저장 renderingInfo frame을 유지해야 한다"
     );
+}
+
+#[test]
+fn connector_paths_preserve_saved_direction_and_endpoint_marker() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+
+    // 19쪽의 빨간 연결선은 HWP5 renderingInfo에 y 음수 축척이 있고 끝 화살표를
+    // 가진다. path로 그리는 연결선도 일반 LineNode처럼 그 축척과 끝 marker를
+    // 보존해야 한다. 이 경우 한컴 2020 PDF는 왼쪽 위→오른쪽 아래 방향이다.
+    let Control::Shape(shape) = &document.document().sections[0].paragraphs[286].controls[0] else {
+        panic!("19쪽 주석 연결선 control");
+    };
+    let ShapeObject::Line(line) = shape.as_ref() else {
+        panic!("19쪽 주석은 직선");
+    };
+    assert!(
+        line.connector
+            .as_ref()
+            .is_some_and(|connector| !connector.control_points.is_empty()),
+        "19쪽 주석은 제어점을 가진 연결선이어야 한다"
+    );
+    assert_eq!(
+        (line.drawing.border_line.attr >> 16) & 0x3f,
+        1,
+        "19쪽 연결선의 끝은 HWP Arrow여야 한다"
+    );
+
+    let svg = document
+        .render_page_svg_native(18)
+        .expect("19쪽 SVG 렌더링");
+    let marker_line = svg
+        .lines()
+        .filter(|tag| tag.contains("<line") && tag.contains("stroke=\"none\""))
+        .find(|tag| tag.contains("marker-end"))
+        .expect("19쪽 연결선의 SVG 끝 marker");
+    let (x1, y1, x2, y2) = (
+        svg_numeric_attr(marker_line, "x1").expect("x1"),
+        svg_numeric_attr(marker_line, "y1").expect("y1"),
+        svg_numeric_attr(marker_line, "x2").expect("x2"),
+        svg_numeric_attr(marker_line, "y2").expect("y2"),
+    );
+    assert!(
+        x2 > x1 && y2 > y1,
+        "19쪽 연결선 방향=({x1:.1}, {y1:.1})→({x2:.1}, {y2:.1}) — PDF처럼 오른쪽 아래 끝에 arrow가 있어야 한다"
+    );
+}
+
+#[test]
+fn screenshot_table_direction_lines_keep_their_arrow_markers() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).expect("read fixture");
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse fixture");
+
+    // 41·43쪽의 스크린샷 표에는 직선처럼 보이는 방향 연결선이 있다. 파서는 이를
+    // 제어점 연결선으로 보존하므로 SVG도 경로 본문만 그리지 말고 marker를 내야 한다.
+    for (page_index, table_para_index) in [(40, 532), (42, 549)] {
+        let Control::Table(table) =
+            &document.document().sections[0].paragraphs[table_para_index].controls[0]
+        else {
+            panic!("{}쪽 스크린샷 표", page_index + 1);
+        };
+        let has_connector = table.cells[0].paragraphs[0].controls.iter().any(|control| {
+            matches!(control, Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Line(line) if line.connector.is_some()))
+        });
+        assert!(has_connector, "{}쪽 방향 연결선 파싱", page_index + 1);
+        let svg = document
+            .render_page_svg_native(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 SVG: {error:?}", page_index + 1));
+        assert!(
+            svg.lines().any(|tag| tag.contains("<line")
+                && tag.contains("stroke=\"none\"")
+                && tag.contains("marker-")),
+            "{}쪽 연결선 SVG marker",
+            page_index + 1
+        );
+    }
 }
 
 #[test]
