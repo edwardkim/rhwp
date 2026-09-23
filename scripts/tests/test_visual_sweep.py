@@ -42,6 +42,53 @@ class SubpixelTolerantContentMatchTests(unittest.TestCase):
         self.assertLess(value, 100.0)
 
 
+class PrReviewGateTests(unittest.TestCase):
+    def test_help_renders_the_percent_threshold(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(MODULE_PATH), "--help"],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        self.assertIn("90% 실루엣 gate", completed.stdout)
+
+    def test_below_ninety_requires_re_review(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(
+            gate["below_threshold_pages"],
+            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+        )
+
+    def test_ninety_and_above_passes(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "passed")
+
+    def test_missing_requested_metric_requires_re_review(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 7, "tolerant_content_match_percent": 99.0}],
+            expected_pages=[7, 8],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(gate["unavailable_metric_pages"], [8])
+
+    def test_hashed_font_mismatch_evidence_is_the_only_exception(self) -> None:
+        evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            font_mismatch_evidence=evidence,
+        )
+        self.assertEqual(gate["status"], "font_mismatch_exception")
+        self.assertEqual(gate["font_mismatch_evidence"], evidence)
+
+
 class LabelWrapTests(unittest.TestCase):
     """[#7349] 라벨이 canvas 폭을 넘으면 접는다 — 문서 이미지는 건드리지 않는다."""
 
@@ -143,6 +190,34 @@ class OverlayLabelFitTests(unittest.TestCase):
             document = canvas.crop((0, label_height, canvas.width, canvas.height))
             self.assertEqual(document.size, (794, 240))
             self.assertEqual(metrics["width"], 794)
+
+    def test_review_uses_the_overlay_footer_once(self) -> None:
+        """overlay의 한국어 지표는 review 패널에서 한 번만 보여야 한다."""
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            (temp_dir / "compare").mkdir()
+            compare = SWEEP.make_compares(
+                [rhwp_path], [pdf_path], temp_dir / "compare", "footer"
+            )
+            overlay_path = temp_dir / "overlay" / "overlay_014.png"
+            metrics = SWEEP.make_overlay_page(
+                rhwp_path,
+                pdf_path,
+                overlay_path,
+                "footer",
+                13,
+                pixel_diff_threshold=16,
+            )
+            review = SWEEP.make_review_panels(
+                compare, [overlay_path], [metrics], temp_dir / "review"
+            )[0]
+            with Image.open(review) as review_image, Image.open(overlay_path) as overlay_image:
+                self.assertEqual(
+                    review_image.height,
+                    overlay_image.height,
+                    "review가 overlay 하단 지표를 다시 붙이면 안 된다",
+                )
 
 
 class LabelFontTests(unittest.TestCase):

@@ -134,6 +134,17 @@
   경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
   고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
   같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
+  대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율이 하나라도 90% 미만이거나 측정 불가이면
+  `scripts/visual_sweep.py`의 `pr_review_gate`가 `re_review_required`가 된다. 이 상태에서는 새 PR을 만들지 않고,
+  이미 열린 PR은 승인·통합하지 않는다. 기여자는 PDF/overlay 원인을 자기 branch에서 재검토·수정하고 새 head에서
+  재실행한 뒤 gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 기여자 변경을 메인터너 보정으로
+  대신하지 않는다. 한컴 PDF와 rhwp에 실제
+  적용된 글꼴이 완전히 다르다는 검증 증거 파일을 `--font-mismatch-evidence`로 해시 고정한 경우만
+  `font_mismatch_exception`을 쓸 수 있다. 글꼴 이름 추정·anti-aliasing·CI 녹색은 예외가 아니다.
+  예외 판정 전 PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 비교한다. 이 위치가
+  어긋나면 글꼴이 달라도 배치 결함을 먼저 수정하고 다시 캡처한다(#7359 p14).
+  `RHWP_FONT_PATH`를 쓰면 각 디렉터리가 존재하고 입력 문서의 face를 실제 공급하는지 먼저 확인한다.
+  존재하지 않는 과거 font 경로로 생긴 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
   변경 후 이전 캡처를 재사용하지 않으며 CI나 자동 점수만으로 직접 판독을 대신하지 않는다.
   영향 페이지에서 큰 위치·줄바꿈·외곽선 차이가 보이면 전체 회귀보다 이 차이의 원인 확인과
   재캡처를 먼저 한다. 기존 차이 또는 합성 입력이라는 분류만으로 보류 사유를 해소하지 않는다.

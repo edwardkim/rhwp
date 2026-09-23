@@ -1072,6 +1072,35 @@ fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
 
+/// 저장 LINE_SEG가 없는 ViewText 문단에서 선행 공백 뒤 첫 RowBreak TAC 표는 한/글이
+/// 좌우 대칭 기본 padding을 표 시작 inset으로 보존한다. PageItem TAC fallback의
+/// 좌표에만 적용해, 저장 줄·후행 표·비대칭 padding의 기존 배치를 유지한다.
+fn viewtext_first_rowbreak_table_left_inset(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> f64 {
+    if crate::renderer::para_has_no_stored_line_segs(para)
+        && para.text.chars().next().is_some_and(char::is_whitespace)
+        && control_index == 0
+        && table.common.treat_as_char
+        && matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        && table.padding.left > 0
+        && table.padding.left == table.padding.right
+    {
+        hwpunit_to_px(
+            i32::from(table.padding.left) + i32::from(table.outer_margin_left),
+            dpi,
+        )
+    } else {
+        0.0
+    }
+}
+
 /// [#7203] 쪽(단) 맨 위에 앉은 어울림(TAC) 표 호스트의 저장 첫 줄 `vertical_pos`(px).
 ///
 /// `LINE_SEG.vertical_pos` 는 문단 기준이 아니라 쪽(단) 상단 기준 절대값이다. 호스트
@@ -3286,6 +3315,11 @@ pub struct LayoutEngine {
     /// 앞 간격이 통째로 유실된다(00451 제목 −26px). 이 토글이 켜진 문단은
     /// column-top 트림을 우회해 전량 재가산하고, 읽는 즉시 clear 된다.
     reapply_snap_anchored_spacing_before: std::cell::Cell<bool>,
+    /// The first stored HWP5 body line may retain its saved top spacing after
+    /// frame recomposition when it introduces a visible paragraph-float table.
+    /// Set for one column item only; other page-top paragraphs keep their
+    /// existing trim contract.
+    page_top_float_caption_spacing_para: std::cell::Cell<Option<usize>>,
     /// [#6267] 지금 배치하는 자리차지(TopAndBottom) 표의 호스트 문단이 **이미 그린
     /// 본문 텍스트를 가지고 있는지**. body_bottom 클램프 해제(#5699 J3)의 판별자다 —
     /// 하단 고정 틀(#1658/#1858)은 빈 host 라 클램프가 흐름을 넘어도 겹칠 텍스트가
@@ -3421,6 +3455,7 @@ impl LayoutEngine {
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
+            page_top_float_caption_spacing_para: std::cell::Cell::new(None),
             para_float_host_has_text: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
             declared_trust_allowed: std::cell::Cell::new(true),
@@ -7345,8 +7380,90 @@ impl LayoutEngine {
             .enumerate()
             .map(|(index, item)| (item.para_index(), index))
             .collect();
+        // #7359 p14: the page begins with one saved text line, followed by a
+        // visible paragraph-float table and its caption in the next paragraph.
+        // Both stored vpos steps carry their own paragraph spacing.  Restrict
+        // the page-top fallback to this complete ladder shape; applying it to
+        // unrelated first paragraphs grows body-overflow baselines.
+        let page_top_float_caption_spacing_para = (|| {
+            if !self.profile.get().hwp5_stored_pagination_layout()
+                || (y_offset - col_area.y).abs() >= 0.5
+            {
+                return None;
+            }
+            let (
+                Some(PageItem::FullParagraph {
+                    para_index: first_pi,
+                }),
+                Some(PageItem::Table {
+                    para_index: host_pi,
+                    control_index,
+                }),
+                Some(PageItem::PartialParagraph {
+                    para_index: caption_pi,
+                    start_line: 0,
+                    ..
+                }),
+            ) = (
+                col_content.items.first(),
+                col_content.items.get(1),
+                col_content.items.get(2),
+            )
+            else {
+                return None;
+            };
+            if *host_pi != *first_pi + 1 || *caption_pi != *host_pi {
+                return None;
+            }
+            let first = paragraphs.get(*first_pi)?;
+            let host = paragraphs.get(*host_pi)?;
+            let Control::Table(table) = host.controls.get(*control_index)? else {
+                return None;
+            };
+            if !first.controls.is_empty()
+                || first.line_segs.len() != 1
+                || host.line_segs.len() != 1
+                || !para_has_non_whitespace_text(first)
+                || !para_has_non_whitespace_text(host)
+                || !is_para_topbottom_float(&table.common)
+                || first.line_segs[0].tag
+                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                    != 0
+                || host.line_segs[0].tag
+                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                    != 0
+            {
+                return None;
+            }
+            let first_spacing = styles
+                .para_styles
+                .get(first.para_shape_id as usize)?
+                .spacing_before;
+            let host_spacing = styles
+                .para_styles
+                .get(host.para_shape_id as usize)?
+                .spacing_before;
+            let first_vpos = hwpunit_to_px(first.line_segs[0].vertical_pos, self.dpi);
+            let host_saved_gap = hwpunit_to_px(
+                host.line_segs[0].vertical_pos
+                    - first.line_segs[0].vertical_pos
+                    - first.line_segs[0].line_height
+                    - first.line_segs[0].line_spacing,
+                self.dpi,
+            );
+            (first_spacing > 0.5
+                && host_spacing > 0.5
+                && (first_vpos - first_spacing).abs() < 0.5
+                && (host_saved_gap - host_spacing).abs() < 0.5)
+                .then_some(*first_pi)
+        })();
         let mut deferred_paragraph_spacing = std::collections::HashMap::new();
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
+            self.page_top_float_caption_spacing_para.set(
+                (item_ordinal == 0)
+                    .then_some(page_top_float_caption_spacing_para)
+                    .flatten(),
+            );
             // vpos 기반 y_offset 보정
             let item_para = match item {
                 PageItem::FullParagraph { para_index } => *para_index,
@@ -10796,7 +10913,11 @@ impl LayoutEngine {
                         hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
                     )
                 };
-                let base_x = col_area.x + effective_margin + leading + om_l;
+                let base_x = col_area.x
+                    + effective_margin
+                    + leading
+                    + om_l
+                    + viewtext_first_rowbreak_table_left_inset(para, control_index, t, self.dpi);
                 // [Issue #291] ParaShape align 반영:
                 // TAC 표가 inline_shape_position 미설정 상태에서 단/문단 좌측에
                 // 붙어버리는 회귀를 막는다. ParaShape align=Right 인 경우 표를

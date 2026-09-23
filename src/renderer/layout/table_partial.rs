@@ -4217,7 +4217,15 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let y_start = if single_cell_page_fragment
+        let terminal_multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
+            && crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table,
+                is_continuation,
+                start_row,
+                start_cut,
+            );
+        let y_start = if (single_cell_page_fragment || terminal_multirow_reopens_outer_top)
             && stored_reset_paint_geometry.is_none()
             && resolved_table_top.is_none()
         {

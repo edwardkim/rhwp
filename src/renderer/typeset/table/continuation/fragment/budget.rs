@@ -91,6 +91,21 @@ impl TypesetEngine {
                 ),
                 self.dpi,
             );
+        // The terminal cut row restarts on a fresh page with its saved outer
+        // top margin. Reserve the same inset that partial-table paint opens;
+        // otherwise the following table is measured 141 HU too high (86712 p28).
+        let host_before_overhead = host_before_overhead
+            + if crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table,
+                is_continuation,
+                cursor_row,
+                start_cut,
+            ) {
+                hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+            } else {
+                0.0
+            };
         // 끝 조각의 흐름 전진에는 이 형상이 새로 연 아래 여백과 100HU 를 넣지 않는다.
         // 둘 다 비끝 조각 상자의 계약이고, 끝 조각은 내용에 맞춰 끝나 렌더러도 그 뒤에
         // 여백을 두지 않는다. 넣어 두면 쓰지 않는 자리를 예산에서 먹어 다음 내용이 밀린다.

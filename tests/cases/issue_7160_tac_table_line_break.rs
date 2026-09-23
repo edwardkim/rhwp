@@ -29,10 +29,18 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 const SAMPLE: &str = "samples/task1768/distribution_doc.hwpx";
 /// 표를 든 host 문단(구역 0).
 const HOST_PARA: usize = 47;
+/// 한컴 정본에서 다음 쪽 첫 줄로 함께 넘어가는 소제목.
+const SECTION_HEADING_PARA: usize = 35;
+/// 소제목 바로 뒤의 첫 목록 항목.
+const FIRST_LIST_PARA: usize = 36;
 /// 이 문단의 글자 — 정본에서 표 **위** 줄에 있다.
 const HOST_TEXT: &str = "단위";
 /// 본문 오른쪽 끝(px). 표가 이 밖으로 나가면 안 된다.
 const BODY_RIGHT: f64 = 725.7;
+/// 한컴 2024 기준 PDF 3쪽의 해당 표 왼쪽 테두리.
+const REFERENCE_TABLE_LEFT: f64 = 91.0;
+/// 한컴 2024 정본 PDF 3쪽 `(단위 : 천원)`의 render-box 왼쪽.
+const REFERENCE_UNIT_LABEL_LEFT: f64 = 628.0;
 
 fn open() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -67,6 +75,17 @@ fn run_text(node: &RenderNode) -> String {
     }
     walk(node, &mut text);
     text
+}
+
+fn find_text_run_x(node: &RenderNode, needle: &str) -> Option<f64> {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.text.contains(needle) {
+            return Some(node.bbox.x);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_text_run_x(child, needle))
 }
 
 /// 표가 있는 쪽의 (표 bbox, host 문단 줄들).
@@ -139,6 +158,39 @@ fn trailing_whitespace_does_not_get_its_own_line() {
     );
 }
 
+/// ViewText host의 선행 TAC 표는 기본 안쪽 여백을 inline 시작 폭에 보존한다.
+/// 이 값이 빠지면 표와 `(단위 : 천원)`이 함께 약 8px 왼쪽으로 밀린다. 한컴 2024
+/// 정본 PDF의 p3 괘선 왼쪽(x=91px)을 독립 기준으로 둔다.
+#[test]
+fn leading_viewtext_inline_table_keeps_its_visible_left_inset() {
+    let core = open();
+    let (page, (_, table_x, _), _) = host_page(&core);
+    assert!(
+        (table_x - REFERENCE_TABLE_LEFT).abs() <= 1.0,
+        "{}쪽 표 왼쪽이 {table_x:.1}px 이다 — 한컴 정본 {REFERENCE_TABLE_LEFT:.1}px의 첫 줄 들여쓰기를 따라야 한다",
+        page + 1
+    );
+}
+
+#[test]
+fn viewtext_table_unit_label_uses_the_table_right_inset() {
+    let core = open();
+    for page in 0..core.page_count() as u32 {
+        let tree = core.build_page_render_tree(page).expect("render tree");
+        for node in column_nodes(&tree.root) {
+            if let Some(unit_x) = find_text_run_x(node, "(단위 : 천원)") {
+                assert!(
+                    (unit_x - REFERENCE_UNIT_LABEL_LEFT).abs() <= 1.0,
+                    "{}쪽 단위 문구가 {unit_x:.1}px 이다 — 한컴 정본 {REFERENCE_UNIT_LABEL_LEFT:.1}px 표 우측 inset에 있어야 한다",
+                    page + 1
+                );
+                return;
+            }
+        }
+    }
+    panic!("`(단위 : 천원)` 문구가 없다");
+}
+
 /// 반례 — 줄에 들어가는 글자처럼 취급 표는 같은 줄에 남는다(같은 문서 1쪽 제목 표).
 #[test]
 fn tac_table_that_fits_keeps_its_line() {
@@ -160,4 +212,43 @@ fn tac_table_that_fits_keeps_its_line() {
             x + width
         );
     }
+}
+
+/// 한/글 정본은 `직무활동 범위` 제목을 p2 바닥에 잘라 두지 않고, 다음 목록과 함께
+/// p3으로 보낸다. 저장 `LINE_SEG`가 없는 제목은 마지막 잉크 높이만 fit에 쓰면
+/// 뒤 줄간격 전진을 잃어 layout에서 본문 하단을 넘긴다.
+#[test]
+fn no_lineseg_heading_moves_with_its_following_list_to_the_next_page() {
+    let core = open();
+    assert_eq!(
+        core.page_count(),
+        3,
+        "원본·한/글 정본과 같은 3쪽이어야 한다"
+    );
+    let mut heading_page = None;
+    let mut first_list_page = None;
+    for page in 0..core.page_count() as u32 {
+        let tree = core.build_page_render_tree(page).expect("render tree");
+        for node in column_nodes(&tree.root) {
+            match &node.node_type {
+                RenderNodeType::TextLine(line) if line.para_index == Some(SECTION_HEADING_PARA) => {
+                    heading_page = Some(page);
+                }
+                RenderNodeType::TextLine(line) if line.para_index == Some(FIRST_LIST_PARA) => {
+                    first_list_page = Some(page);
+                }
+                _ => {}
+            }
+        }
+    }
+    assert_eq!(
+        heading_page,
+        first_list_page,
+        "소제목 pi={SECTION_HEADING_PARA:?}와 첫 목록 pi={FIRST_LIST_PARA:?}가 같은 쪽이어야 한다: heading={heading_page:?}, list={first_list_page:?}"
+    );
+    assert_eq!(
+        heading_page,
+        Some(2),
+        "한/글 기준 p3(0-based 2)에서 소제목과 목록이 시작해야 한다"
+    );
 }
