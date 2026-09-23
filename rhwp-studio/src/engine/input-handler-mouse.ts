@@ -117,7 +117,6 @@ function selectOleObjectFromHit(this: any, oleHit: any): void {
  * 컨테이너가 선택을 소비하므로, 선 자체의 적중을 먼저 객체 선택으로 확정한다.
  */
 function selectLineObjectFromHit(this: any, lineHit: any): void {
-  bringShapeToFront.call(this, lineHit);
   this.cursor.clearSelection();
   this.exitPictureObjectSelectionIfNeeded();
   this.cursor.enterPictureObjectSelectionDirect(
