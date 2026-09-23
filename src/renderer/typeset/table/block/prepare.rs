@@ -1,11 +1,11 @@
 //! Split geometry and reservation preparation. Runs only after whole-placement fails.
 
 use crate::renderer::typeset::{
-    controls, hwpunit_to_px, hwpx_stored_tac_table_starts_at_page_top, is_para_topbottom_float,
-    is_synthetic_line_seg, is_two_row_picture_caption_rowbreak_table,
-    native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
-    none_table_is_atomic_here, notes, para_has_visible_text, paragraph,
-    partial_rowbreak_fragment_spacing_px, row_geometry_table,
+    cell_unit_row_is_atomic_here, controls, hwpunit_to_px,
+    hwpx_stored_tac_table_starts_at_page_top, is_para_topbottom_float, is_synthetic_line_seg,
+    is_two_row_picture_caption_rowbreak_table, native_hwp5_rowbreak_host_precedes_first_fragment,
+    native_terminal_child_host_line_spacing, none_table_is_atomic_here, notes,
+    para_has_visible_text, paragraph, partial_rowbreak_fragment_spacing_px, row_geometry_table,
     rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
     BlockTableContinuationContext, BlockTableContinuationPreparedState,
     BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
@@ -526,8 +526,12 @@ impl TypesetEngine {
         // 온다. 두 좌표계가 화해되지 않은 상태(#7198 축)에서 표만 옮기면 글 위에 표가
         // 그려진다(1490000 149쪽 실측: 겹침 134→156). 그 축을 먼저 풀기 전까지 미적용으로
         // 둔다 — 오프셋 0 float 과 treat_as_char 표는 흐름이 밴드를 소비하므로 해당 없다.
-        let atomic_rule_applies = none_table_is_atomic_here(table) && !stored_declares_table_split;
-        let split_unit_h = if atomic_rule_applies {
+        // 값 1 «셀 단위로 나눔» 은 행 경계에서만 끊으므로 같은 이월 게이트를 받는다.
+        // 다만 아래 «표 통째» 분할 단위는 값 0 에만 해당한다 — 값 1 은 행 단위다.
+        let atomic_rule_applies = (none_table_is_atomic_here(table)
+            || cell_unit_row_is_atomic_here(table))
+            && !stored_declares_table_split;
+        let split_unit_h = if atomic_rule_applies && none_table_is_atomic_here(table) {
             all_rows_h
         } else if first_block_protected {
             first_block_h
