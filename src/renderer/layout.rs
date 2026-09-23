@@ -172,6 +172,58 @@ fn stored_empty_full_band_tac_table_top(
         .then(|| col_area.y + stored_y + hwpunit_to_px(table.outer_margin_top as i32, dpi))
 }
 
+/// 빈 host의 full-band TAC 표가 표 paint frame과 다음 문단의 시작을 같은 저장
+/// `LINE_SEG`에 기록한 경우, 표 뒤 흐름의 하한을 복원한다.
+///
+/// `text_height`는 표의 선언 outer-box와 같고 다음 문단의 `vertical_pos`가
+/// `vertical_pos + text_height + line_spacing`과 일치해야 한다. 따라서 일반 TAC의
+/// 추정 spacing이 아니라 한컴이 저장한 다음 문단 top만 사용한다. 앞 장식 도형 때문에
+/// 일반 TAC 후가산 경로가 소유 줄을 찾지 못하는 HWP5 full-band carrier에만 적용한다.
+fn stored_empty_full_band_tac_table_flow_end(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    following: &Paragraph,
+    col_area: &LayoutRect,
+    dpi: f64,
+) -> Option<f64> {
+    if !para.text.trim().is_empty()
+        || !table.common.treat_as_char
+        || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        || para.stored_text_partition_dirty
+    {
+        return None;
+    }
+
+    let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    let owner = para
+        .line_segs
+        .get(control_line_seg_index(para, control_index)?)
+        .filter(|line| line.tag & synth == 0)?;
+    let following = following
+        .line_segs
+        .iter()
+        .find(|line| line.tag & synth == 0)?;
+    let outer_box_height_hu = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    if outer_box_height_hu <= 0 || (i64::from(owner.text_height) - outer_box_height_hu).abs() > 8 {
+        return None;
+    }
+
+    let expected_next_vpos = i64::from(owner.vertical_pos)
+        + i64::from(owner.text_height)
+        + i64::from(owner.line_spacing);
+    if following.vertical_pos <= owner.vertical_pos
+        || (i64::from(following.vertical_pos) - expected_next_vpos).abs() > 8
+    {
+        return None;
+    }
+
+    let stored_y = hwpunit_to_px(following.vertical_pos, dpi);
+    (stored_y <= col_area.height + 60.0).then(|| col_area.y + stored_y)
+}
+
 /// 저장 outer-box paint origin 보정의 layout 단계 안전문이다.
 ///
 /// pagination 결과에 실제로 채워진 단 수가 아니라 활성 구역의 권위 단 수를
@@ -12911,6 +12963,32 @@ impl LayoutEngine {
                         tac_in_front_decoration_fixed_line_spacing_deduction_hu(para, control_index)
                     {
                         y_offset -= hwpunit_to_px(deduction_hu, self.dpi);
+                    }
+                    // Full-band 빈 TAC carrier는 표의 paint origin과 다음 문단 top을
+                    // 같은 저장 LINE_SEG 사다리에 기록한다. 앞 InFrontOfText 장식이
+                    // host_seg의 일반 후가산을 막아도, 이 정확한 등식이 성립하면
+                    // 다음 문단의 저장 top보다 흐름이 위에 남아서는 안 된다(#7333
+                    // p14·p22·p23·p33). 계산된 일반 TAC 흐름이 이미 더 아래면 유지한다.
+                    if let Some(stored_flow_end) =
+                        para.controls
+                            .get(control_index)
+                            .and_then(|control| match control {
+                                Control::Table(table) => {
+                                    paragraphs.get(para_index + 1).and_then(|following| {
+                                        stored_empty_full_band_tac_table_flow_end(
+                                            para,
+                                            control_index,
+                                            table,
+                                            following,
+                                            col_area,
+                                            self.dpi,
+                                        )
+                                    })
+                                }
+                                _ => None,
+                            })
+                    {
+                        y_offset = y_offset.max(stored_flow_end);
                     }
                 }
                 // TAC 표도 호스트 문단의 점유 영역이다. 별도 PageItem 경로로

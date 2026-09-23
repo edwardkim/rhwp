@@ -321,6 +321,36 @@ fn fixed_line_spacing_after_in_front_decoration_table_is_not_reserved_twice() {
 }
 
 #[test]
+fn full_band_tac_table_consumes_the_saved_following_line_spacing() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("parse {SAMPLE}: {error}"));
+
+    // PDF에서 측정한 표 뒤 첫 가시 본문 줄. 네 full-band carrier의 다음 저장
+    // vpos는 각각 `owner.vpos + owner.text_height + owner.line_spacing`와 같다.
+    // Stage 8은 표 top만 복원해 이 줄들을 8.8~10.4px 위로 남겼다.
+    for (page_index, para_index, expected_y) in [
+        (13, 222, 815.5),
+        (21, 331, 804.9),
+        (22, 344, 826.0),
+        (32, 454, 802.9),
+    ] {
+        let json = document
+            .get_page_render_tree(page_index)
+            .unwrap_or_else(|error| panic!("{}쪽 render tree: {error:?}", page_index + 1));
+        let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+        let y = find_text_line_y(&tree, para_index)
+            .unwrap_or_else(|| panic!("{}쪽 pi={para_index} 표 뒤 첫 본문 줄", page_index + 1));
+        assert!(
+            (y - expected_y).abs() < 1.5,
+            "{}쪽 pi={para_index} 본문 y={y:.1}px — full-band TAC의 저장 후행 간격을 한 번 소비해야 한다 (PDF {expected_y:.1}px)",
+            page_index + 1
+        );
+    }
+}
+
+#[test]
 fn bottom_aligned_mixed_footer_uses_the_saved_grid_leading() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {SAMPLE}: {error}"));
