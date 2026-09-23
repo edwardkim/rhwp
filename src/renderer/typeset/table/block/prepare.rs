@@ -126,7 +126,14 @@ impl TypesetEngine {
                     // cell_units would add the same Square flow band again.
                     mt.row_heights[r]
                 } else if has_single_row_cells {
-                    layout_engine.row_cut_content_height(row_geometry_table, r, &[], &[], styles)
+                    layout_engine.row_cut_content_height(
+                        row_geometry_table,
+                        r,
+                        &[],
+                        &[],
+                        styles,
+                        false,
+                    )
                 } else {
                     0.0
                 };

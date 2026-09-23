@@ -112,8 +112,14 @@ impl SourceTailQuery<'_> {
                 }
             }
             if clipped_any {
-                let clipped_total =
-                    layout_engine.row_cut_content_height(table, r, row_start_cut, &clipped, styles);
+                let clipped_total = layout_engine.row_cut_content_height(
+                    table,
+                    r,
+                    row_start_cut,
+                    &clipped,
+                    styles,
+                    false,
+                );
                 return Some(SourceTailCorrection {
                     end_cut: clipped,
                     consumed_height: (clipped_total - padding).max(0.0),
@@ -172,7 +178,14 @@ impl SourceTailQuery<'_> {
         let bounded_extension_branch =
             mid_frame_only || table.common.text_wrap == crate::model::shape::TextWrap::Square;
         let frame_tail_rest = if bounded_extension_branch {
-            layout_engine.row_cut_content_height(table, r, &source_tail_cut.end_cut, &[], styles)
+            layout_engine.row_cut_content_height(
+                table,
+                r,
+                &source_tail_cut.end_cut,
+                &[],
+                styles,
+                false,
+            )
         } else {
             0.0
         };
