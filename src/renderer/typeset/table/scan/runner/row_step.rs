@@ -622,9 +622,48 @@ impl TypesetEngine {
                 && res.consumed_height > 0.5
                 && res.end_cut.iter().any(|units| *units > 0)
                 && (avail_for_rows - consumed - cs_before) >= MIN_TOP_KEEP_PX;
+            // [#6761] 저장 사다리가 이 행을 **첫 줄 뒤에서** 나눈 자리(셀 첫 줄 `vpos=0` 다음
+            // 줄도 0)와 이번 컷이 보이는 모든 셀에서 같은 unit 이면, 한컴이 그 자리에 한 줄만
+            // 남긴 분할이다 — 25px 고아 기준은 그 한 줄(10pt 17.6px)을 늘 기각한다.
+            // `1480000-201900042 <표 2-5>` r=3: 컷 [1,1] = 저장 되감김 [1,1], 기각하면 행 전체가
+            // 다음 쪽으로 가 그 쪽 마지막 줄이 본문 바닥을 13px 넘는다.
+            // 저장값이 모두 0 인 입력과 가르도록 한 셀 이상에서 되감긴 줄 다음 seg 의 전진을
+            // 요구하고, 컷이 저장 경계와 하나라도 다르면 종전 기준을 그대로 쓴다.
+            let stored_zero_origin_rewind_keep = (st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && row_start_cut.is_empty()
+                && res.consumed_height > 0.5
+                && {
+                    let rewinds =
+                        layout_engine.row_stored_zero_origin_rewind_unit_indices(table, r, styles);
+                    let visible = layout_engine.row_visible_source_cell_flags(table, r, styles);
+                    let visible_indices: Vec<usize> = visible
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, shown)| **shown)
+                        .map(|(idx, _)| idx)
+                        .collect();
+                    !visible_indices.is_empty()
+                        && visible_indices.iter().all(|idx| {
+                            let cut = res.end_cut.get(*idx).copied().unwrap_or(0);
+                            cut > 0
+                                && rewinds
+                                    .get(*idx)
+                                    .is_some_and(|(units, _)| units.first() == Some(&cut))
+                        })
+                        && visible_indices.iter().any(|idx| {
+                            let cut = res.end_cut.get(*idx).copied().unwrap_or(0);
+                            rewinds
+                                .get(*idx)
+                                .is_some_and(|(_, confirmed)| confirmed.contains(&cut))
+                        })
+                };
             if r > cursor_row
                 && !cellbreak_complete_unit_keep
                 && !landscape_boundary_band_keep
+                && !stored_zero_origin_rewind_keep
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,
