@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   exactSelectedControlLayoutPages,
   isNestedCellDescendantOfControl,
+  lineControlReference,
   orderedControlLayoutPages,
 } from '../src/engine/picture-hit-policy.ts';
 
@@ -40,4 +41,20 @@ test('포인터가 확정한 쪽은 다음 쪽 fallback 없이 그 쪽만 조회
   assert.deepEqual(exactSelectedControlLayoutPages(4), [0, 1, 2, 3]);
   assert.deepEqual(exactSelectedControlLayoutPages(4, -1), [0, 1, 2, 3]);
   assert.deepEqual(exactSelectedControlLayoutPages(4, 4), [0, 1, 2, 3]);
+});
+
+test('중첩 표 안의 연결선도 객체 선택에 필요한 셀 경로를 보존한다', () => {
+  const cellPath = [{ controlIndex: 4, cellIndex: 2, cellParaIndex: 1 }];
+  const line = lineControlReference({
+    type: 'line', secIdx: 0, paraIdx: 532, controlIdx: 4,
+    x1: 176, y1: 717.3, x2: 303.2, y2: 595.7,
+    cellIdx: 2, cellParaIdx: 1, outerTableControlIdx: 3, cellPath,
+  }, 40);
+
+  assert.equal(line.type, 'line');
+  assert.equal(line.pageIndex, 40);
+  assert.equal(line.cellIdx, 2);
+  assert.equal(line.cellParaIdx, 1);
+  assert.equal(line.outerTableControlIdx, 3);
+  assert.deepEqual(line.cellPath, cellPath);
 });

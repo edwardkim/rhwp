@@ -11,6 +11,7 @@ import {
   isMasterPageDecoration,
   isNestedCellDescendantOfControl,
   isSupportedPictureControl,
+  lineControlReference,
 } from './picture-hit-policy';
 import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
 import type { CellPathLike } from '@/core/types';
@@ -142,8 +143,7 @@ function isAboveControl(a: any, b: any): boolean {
 /** 적중한 layout 컨트롤에서 PictureObjectRef 를 구성한다(line 은 끝점 포함). */
 function controlToRef(ctrl: any, pageIndex?: number): PictureObjectRef {
   if (ctrl.type === 'line') {
-    return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: 'line',
-      x1: ctrl.x1, y1: ctrl.y1, x2: ctrl.x2, y2: ctrl.y2, pageIndex };
+    return lineControlReference(ctrl, pageIndex);
   }
   return { sec: ctrl.secIdx, ppi: ctrl.paraIdx, ci: ctrl.controlIdx, type: ctrl.type,
     cellIdx: ctrl.cellIdx, cellParaIdx: ctrl.cellParaIdx, outerTableControlIdx: ctrl.outerTableControlIdx,

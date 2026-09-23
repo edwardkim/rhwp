@@ -65,3 +65,29 @@ export function exactSelectedControlLayoutPages(pageCount: number, selectedPage?
   }
   return Array.from({ length: Math.max(0, pageCount) }, (_, page) => page);
 }
+
+/**
+ * 연결선도 도형과 같은 객체 선택 주소를 쓴다. 특히 표 셀 안의 선은 `cellPath`가
+ * 없으면 같은 control 번호를 가진 본문 개체로 잘못 다시 찾아 선택 표시가 다른 쪽에
+ * 나타날 수 있으므로, hit-test가 얻은 주소를 빠짐없이 보존한다.
+ */
+export function lineControlReference(control: any, pageIndex?: number) {
+  return {
+    sec: control.secIdx,
+    ppi: control.paraIdx,
+    ci: control.controlIdx,
+    type: 'line' as const,
+    x1: control.x1,
+    y1: control.y1,
+    x2: control.x2,
+    y2: control.y2,
+    cellIdx: control.cellIdx,
+    cellParaIdx: control.cellParaIdx,
+    outerTableControlIdx: control.outerTableControlIdx,
+    cellPath: control.cellPath,
+    noteRef: control.noteRef,
+    headerFooter: control.headerFooter,
+    missing: control.missing,
+    pageIndex,
+  };
+}

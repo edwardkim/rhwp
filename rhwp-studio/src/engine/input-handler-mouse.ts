@@ -112,6 +112,36 @@ function selectOleObjectFromHit(this: any, oleHit: any): void {
   this.textarea.focus();
 }
 
+/**
+ * 연결선은 표 셀·글상자 위에 그려질 수 있다. 본문 hit-test를 먼저 처리하면 그
+ * 컨테이너가 선택을 소비하므로, 선 자체의 적중을 먼저 객체 선택으로 확정한다.
+ */
+function selectLineObjectFromHit(this: any, lineHit: any): void {
+  bringShapeToFront.call(this, lineHit);
+  this.cursor.clearSelection();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
+    lineHit.sec,
+    lineHit.ppi,
+    lineHit.ci,
+    'line',
+    lineHit.cellIdx,
+    lineHit.cellParaIdx,
+    lineHit.headerFooter,
+    lineHit.outerTableControlIdx,
+    lineHit.cellPath,
+    lineHit.noteRef,
+    lineHit.missing,
+    lineHit.pageIndex,
+  );
+  this.active = true;
+  this.caret.hide();
+  this.selectionRenderer.clear();
+  this.renderPictureObjectSelection();
+  this.eventBus.emit('picture-object-selection-changed', true);
+  this.textarea.focus();
+}
+
 function selectProtectedCell(this: any, hit: any): void {
   hideProtectedCellHover(this);
   this.cursor.clearSelection();
@@ -989,9 +1019,13 @@ export function onClick(this: any, e: MouseEvent): void {
     } catch { /* 무시 */ }
   }
 
-  const earlyOleHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-  if (earlyOleHit?.type === 'ole') {
-    selectOleObjectFromHit.call(this, earlyOleHit);
+  const earlyObjectHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+  if (earlyObjectHit?.type === 'ole') {
+    selectOleObjectFromHit.call(this, earlyObjectHit);
+    return;
+  }
+  if (earlyObjectHit?.type === 'line') {
+    selectLineObjectFromHit.call(this, earlyObjectHit);
     return;
   }
 
@@ -1185,22 +1219,7 @@ export function onClick(this: any, e: MouseEvent): void {
         }
 
         if (picHit.type === 'line') {
-          // 직선 → 맨 앞으로 이동 후 객체 선택
-          bringShapeToFront.call(this, picHit);
-          this.cursor.clearSelection();
-          this.exitPictureObjectSelectionIfNeeded();
-          // [Task #825] picHit.headerFooter 동반 시 머리말/꼬리말 그림 marker 보존.
-          this.cursor.enterPictureObjectSelectionDirect(
-            picHit.sec, picHit.ppi, picHit.ci, 'line',
-            undefined, undefined, (picHit as any).headerFooter,
-            undefined, undefined, undefined, undefined, (picHit as any).pageIndex,
-          );
-          this.active = true;
-          this.caret.hide();
-          this.selectionRenderer.clear();
-          this.renderPictureObjectSelection();
-          this.eventBus.emit('picture-object-selection-changed', true);
-          this.textarea.focus();
+          selectLineObjectFromHit.call(this, picHit);
           return;
         }
         if (picHit.type === 'shape') {
