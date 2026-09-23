@@ -4622,28 +4622,26 @@ impl LayoutEngine {
                 //
                 // 흐름과 예산은 건드리지 않는다. 그쪽까지 바꾸면 조각 소비 높이가 줄어
                 // 쪽 경계가 움직인다(`row_split_meets_min_top_keep` 의 25px 고아 기준).
-                // **이어짐 조각에만** 적용한다. 코퍼스 A/B 가 첫 조각의 반례 3건을 냈다 —
-                // 한/글 정본은 첫 조각에서 그 간격을 **그린다**.
-                //
-                // ```text
-                //   정책연구용역사업 163쪽  start=[] end=[3]   정본 1034.19  빼면 1020.96 (−13.2)
-                //   chemical-labeling 34쪽  start=[] end=[7]   정본 1022.83  빼면 1021.47 (−1.4)
-                //   vietnam_labor    27쪽  start=[] end=[23]  정본 1022.83  빼면 1022.25 (−0.6)
-                // ```
-                //
-                // 같은 문서 161·164쪽(`start=[34]` · `start=[3]`, 이어짐)은 정본이 1010.67 이고
-                // 빼야 맞는다. 첫 조각과 이어짐 조각이 정확히 갈린다.
-                let paint_trim = if start_cut.is_empty() {
-                    0.0
-                } else {
-                    table.cells.first().map_or(0.0, |cell| {
-                        let units = self.cell_units(cell, table, styles);
-                        let end_unit = end_cut.first().copied().unwrap_or(0);
-                        self.single_cell_fragment_paint_trailing_trim_px(
-                            table, cell, &units, end_unit, styles,
-                        )
-                    })
-                };
+                // 줄 뒤 간격은 **내용이 쪽 상자 안에 들어갈 때만** 뺀다. 넘으면 한/글도 상자를
+                // 쪽에 맞추므로 그 자리에서 또 빼면 정본보다 위로 올라간다 — 코퍼스 A/B 가
+                // 그 반례 3건을 냈다(정책연구 163쪽 `83.76>83.71` · chemical 34쪽
+                // `126.96>125.47` · vietnam 27쪽 `543.49>535.35`, 모두 빼면 벌어진다).
+                // 중첩 표 이송 여백은 그 상한과 무관하다(18쪽 41.07px ↔ 상한 4.26px).
+                // 여유를 주지 않는다 — 정책연구 163쪽은 0.05px 만 넘는데 그 쪽은 빼면 안 된다.
+                // 빼야 하는 쪽의 최소 여유는 10.22px(정책연구 161·164)라 경계가 넉넉하다.
+                let content_fits_page_box = row_heights[0] <= pinned_height;
+                let paint_trim = table.cells.first().map_or(0.0, |cell| {
+                    let units = self.cell_units(cell, table, styles);
+                    let end_unit = end_cut.first().copied().unwrap_or(0);
+                    self.single_cell_fragment_paint_trailing_trim_px(
+                        table,
+                        cell,
+                        &units,
+                        end_unit,
+                        styles,
+                        content_fits_page_box,
+                    )
+                });
                 row_heights[0] = (row_heights[0] - paint_trim).max(0.0).min(pinned_height);
             }
         }
