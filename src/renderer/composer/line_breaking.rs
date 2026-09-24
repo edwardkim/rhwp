@@ -482,7 +482,17 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 }
 
                 if !token_text.is_empty() {
-                    let width = measure_token_width(
+                    // 토큰 폭과 **그 합을 이루는 글자별 폭**을 한 번에 받는다.
+                    //
+                    // 종전에는 글자별 폭을 inline control 이 있는 토큰에만 채웠다.
+                    // 그러면 한 줄에 안 들어가는 보통의 한글 토큰이 글자 단위 폴백으로
+                    // 내려갔을 때 `base_char_widths` 가 비어, 폴백이 측정과 무관한 상수
+                    // (`line_max_fs.max(12.0)`) 로 글자를 잘랐다 — 같은 토큰을 재는 자가
+                    // 둘이 된다. `#7407` 대상 셀(연속 줄 38208 HWPUNIT, 9pt 장평 95%)에서
+                    // 실제 전진폭은 11.400px 인데 폴백은 12.000px 로 세어 줄마다 42자만
+                    // 담았다 — 43번째 글자는 19px 을 남기고 들어가는데도 거부됐다.
+                    // 한/글 출력은 같은 줄에 44자를 담는다.
+                    let (width, char_widths) = measure_token_char_widths(
                         &metric_scope,
                         &token_text,
                         start,
@@ -492,24 +502,6 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         current_lang,
                         inline_controls,
                     );
-                    let char_widths = if has_inline_control_in_range(inline_controls, start, i) {
-                        (start..i)
-                            .map(|ci| {
-                                measure_char_width(
-                                    &metric_scope,
-                                    text_chars[ci],
-                                    ci,
-                                    char_offsets,
-                                    char_shapes,
-                                    styles,
-                                    current_lang,
-                                    inline_controls,
-                                )
-                            })
-                            .collect()
-                    } else {
-                        Vec::new()
-                    };
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
@@ -797,7 +789,36 @@ fn measure_token_width(
     default_lang: usize,
     inline_controls: &[FlowInlineControl],
 ) -> f64 {
+    measure_token_char_widths(
+        metric_scope,
+        text,
+        start_char_idx,
+        char_offsets,
+        char_shapes,
+        styles,
+        default_lang,
+        inline_controls,
+    )
+    .0
+}
+
+/// 토큰 전체 폭과, **그 합을 이루는 글자별 폭**을 함께 낸다.
+///
+/// 줄 나눔은 토큰이 통째로 들어갈 때는 합만 쓰고, 안 들어갈 때는 글자 단위 폴백에서
+/// 개별 폭을 쓴다. 두 값이 같은 순회에서 나와야 한 토큰을 두 잣대로 재지 않는다.
+/// 합은 종전 `measure_token_width` 와 같은 순서로 누적하므로 값이 바뀌지 않는다.
+fn measure_token_char_widths(
+    metric_scope: &ParagraphMetricScope,
+    text: &str,
+    start_char_idx: usize,
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    default_lang: usize,
+    inline_controls: &[FlowInlineControl],
+) -> (f64, Vec<f64>) {
     let mut total = 0.0;
+    let mut char_widths = Vec::with_capacity(text.len());
     let mut current_lang = default_lang;
     for (offset, ch) in text.chars().enumerate() {
         let idx = start_char_idx + offset;
@@ -815,35 +836,12 @@ fn measure_token_width(
             detected
         };
         let ts = metric_scope.style(styles, style_id, lang, idx);
-        total += estimate_text_width_unrounded(&ch.to_string(), &ts)
+        let width = estimate_text_width_unrounded(&ch.to_string(), &ts)
             + inline_width_px_at(inline_controls, idx);
+        total += width;
+        char_widths.push(width);
     }
-    total
-}
-
-fn measure_char_width(
-    metric_scope: &ParagraphMetricScope,
-    ch: char,
-    char_idx: usize,
-    char_offsets: &[u32],
-    char_shapes: &[CharShapeRef],
-    styles: &ResolvedStyleSet,
-    default_lang: usize,
-    inline_controls: &[FlowInlineControl],
-) -> f64 {
-    let utf16_pos = char_offsets
-        .get(char_idx)
-        .copied()
-        .unwrap_or(char_idx as u32);
-    let style_id = find_active_char_shape(char_shapes, utf16_pos);
-    let lang = if is_lang_neutral(ch) {
-        default_lang
-    } else {
-        detect_lang_category(ch)
-    };
-    let style = metric_scope.style(styles, style_id, lang, char_idx);
-    estimate_text_width_unrounded(&ch.to_string(), &style)
-        + inline_width_px_at(inline_controls, char_idx)
+    (total, char_widths)
 }
 
 fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) -> f64 {
@@ -852,16 +850,6 @@ fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) ->
         .filter(|control| control.char_position == char_idx)
         .map(|control| control.width_hwp as f64 / 75.0)
         .sum()
-}
-
-fn has_inline_control_in_range(
-    inline_controls: &[FlowInlineControl],
-    start: usize,
-    end: usize,
-) -> bool {
-    inline_controls
-        .iter()
-        .any(|control| (start..end).contains(&control.char_position))
 }
 
 /// 기존 scalar tokenization과 같은 문자별 base pen을 만든 뒤, 그 입력 전체를
