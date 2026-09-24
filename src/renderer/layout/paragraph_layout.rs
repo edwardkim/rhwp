@@ -717,6 +717,45 @@ fn is_caption_cell_context(cell_ctx: Option<&CellContext>) -> bool {
         .is_some_and(|entry| entry.cell_index == CAPTION_CELL_SENTINEL)
 }
 
+/// 저장 줄이 없는 ViewText 표-호스트의 괄호형 단위 문구는, 앞의 대량 공백 advance가
+/// 아니라 표의 우측 안쪽 여백에 붙는다. 한/글은 이 문구의 끝을 `table right -
+/// padding.right + outer_margin.right`에 둔다.
+fn viewtext_table_suffix_label_right(
+    para: Option<&Paragraph>,
+    comp_line: &ComposedLine,
+    x_start: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    let Control::Table(table) = para.controls.first()? else {
+        return None;
+    };
+    let line_text: String = comp_line.runs.iter().map(|run| run.text.as_str()).collect();
+    if !crate::renderer::para_has_no_stored_line_segs(para)
+        || !para.text.chars().next().is_some_and(char::is_whitespace)
+        || !line_text.trim_start().starts_with('(')
+        || !table.common.treat_as_char
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        || table.padding.left <= 0
+        || table.padding.left != table.padding.right
+    {
+        return None;
+    }
+    let table_left = x_start
+        + hwpunit_to_px(
+            i32::from(table.padding.left) + 2 * i32::from(table.outer_margin_left),
+            dpi,
+        );
+    Some(
+        table_left + hwpunit_to_px(table.common.width as i32, dpi)
+            - hwpunit_to_px(i32::from(table.padding.right), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_right), dpi),
+    )
+}
+
 /// HWP5 원본 LineSeg가 저장한 column-relative 줄 시작점을 일반 본문 줄에 적용한다.
 ///
 /// ParaShape의 margin/indent는 재조판 기본값이고, 원본 LineSeg.column_start는 해당
@@ -2305,6 +2344,14 @@ impl LayoutEngine {
         if declared <= 0 {
             return false;
         }
+        // 이 헬퍼에는 control 위치가 전달되지 않는다. 저장 밴드가 첫 줄이라는 사실만으로
+        // 문단 안의 모든 TAC 표가 그 줄을 소유한다고 확대하면, 뒤 segment의 표까지
+        // 줄바꿈을 건너뛰게 된다. 단일 segment에서는 그 소유 관계가 자명하고, 다중
+        // segment는 control별 line-seg 조회가 가능한 별도 경로가 생길 때까지 종전 배치를
+        // 유지한다.
+        if para.line_segs.len() != 1 {
+            return false;
+        }
         let Some(ls) = para.line_segs.first() else {
             return false;
         };
@@ -3219,13 +3266,29 @@ impl LayoutEngine {
                             self.dpi,
                         ),
                 );
+                // [#7312] 저장 밴드가 `om_top + 선언높이 + om_bottom` 로 **이 표 하나를**
+                // 담고 있다고 증명하면(`tac_stored_band_is_outer_box`) 중간앵커 줄바꿈을
+                // 적용하지 않는다. 그 술어는 바로 아래 `tac_table_stored_outer_band_top` 의
+                // 게이트이기도 하고, `#5729` 가 "참이면 한글은 표 상단을 줄 상단 + om_top 에
+                // 앉힌다" 로 계약을 세운 자리다. 곧 **저장 사다리가 "이 표가 이 줄을 통째로
+                // 차지한다" 고 말하는데** 폭 판정이 표를 다음 줄로 내려보내면 그 계약이
+                // 무력화된다 — 내려간 `current_y` 를 그 함수가 그대로 받기 때문이다.
+                //
+                // 실측 `36494702_결재문서본문.hwpx` pi=2 (한/글 2022 정본 대조):
+                //   저장 ls[0].lh 6896 == om_top 283 + 선언 6330 + om_bottom 283  (오차 0)
+                //   occupied 294.00 + footprint 362.09 > line_w 642.53  → 줄바꿈 발동
+                //   표 상단   종전 237.5 (= 140.4 + line_step 93.28 + om_top 3.77)
+                //             수정 144.2 (= 140.4 + om_top 3.77)        정본 145.7
+                //   표 좌단   종전  79.4 (줄 시작으로 되돌림)  수정 373.4  정본 373.9
+                //   그 문단 뒤 본문 전체가 181.4px 내려가 있었다(`pi=11` 1050.3 → 868.9,
+                //   정본 869.6).
                 let table_wrapped = should_wrap_middle_anchored_table(
                     control_positions.get(*ctrl_idx).copied(),
                     text_chars.len(),
                     inline_x - line_start_x,
                     table_footprint,
                     right_margin - line_start_x,
-                );
+                ) && !Self::tac_stored_band_is_outer_box(para, tbl);
                 if table_wrapped {
                     current_y += line_step;
                     inline_x = line_start_x;
@@ -3513,6 +3576,30 @@ impl LayoutEngine {
                 }
             };
             let comp_ref = recomposed.as_ref().unwrap_or(comp);
+            // A stored HWP5 page-top line whose vpos exactly equals its own
+            // paragraph spacing still carries that spacing after a width-only
+            // frame recomposition. Suppressing the fallback solely because the
+            // frame returned `Some` moves the complete page-top run upward.
+            let preserve_saved_page_top_spacing = recomposed.is_some()
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && self.page_top_float_caption_spacing_para.get() == Some(para_index)
+                && start_line == 0
+                && (y_start - col_area.y).abs() < 0.5
+                && para.controls.is_empty()
+                && para.line_segs.len() == 1
+                && para.line_segs[0].tag
+                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                    == 0
+                && styles
+                    .para_styles
+                    .get(comp.para_style_id as usize)
+                    .is_some_and(|style| {
+                        style.spacing_before > 0.5
+                            && (hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
+                                - style.spacing_before)
+                                .abs()
+                                < 0.5
+                    });
             // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
             // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
             // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
@@ -3536,7 +3623,7 @@ impl LayoutEngine {
                 para_index,
                 None,
                 // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
-                recomposed.is_some(),
+                recomposed.is_some() && !preserve_saved_page_top_spacing,
                 false,
                 0.0,
                 multi_col_width_hu,
@@ -5483,17 +5570,9 @@ impl LayoutEngine {
             // 높이가 저장 `lh` 그대로일 것 — 재조판된 상자에 저장 전진을 섞으면 사다리도
             // 상자도 아닌 값이 된다. ③ 전진이 실제 글자(`max_fs`)를 담을 것 — HWP3 변환본
             // 처럼 낡은 값이면 다음 줄이 글자 위로 올라온다(hwp3-empty-cell 겹침 1건).
-            let stored_line_advance = para.filter(|_| !source_metrics_reflowed).and_then(|p| {
+            let stored_line_advance = para.and_then(|p| {
                 let seg = p.line_segs.get(line_idx)?;
                 let next = p.line_segs.get(line_idx + 1)?;
-                if (hwpunit_to_px(seg.line_height, self.dpi) - line_height).abs() >= 0.5 {
-                    return None;
-                }
-                if seg.vertical_pos < 0 || next.vertical_pos <= seg.vertical_pos {
-                    return None;
-                }
-                let step =
-                    hwpunit_to_px(next.vertical_pos - seg.vertical_pos, self.dpi) - line_spacing_px;
                 // [#6928] 줄 바닥은 **글자 높이**(`max_fs`)로 지켜 왔는데, 글자처럼 취급
                 // 개체(그림·표)가 줄 높이를 정하는 줄에는 글리프가 없어 `max_fs` 가 0 이다.
                 // 그래서 저장 사다리가 주는 작은 걸음이 무방비로 통과하고, 뒤 내용이 그
@@ -5515,10 +5594,15 @@ impl LayoutEngine {
                 } else {
                     max_fs
                 };
-                (step > 0.0
-                    && step < line_height
-                    && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
-                    .then_some(step)
+                crate::renderer::stored_line_flow_height(
+                    seg,
+                    next,
+                    line_height,
+                    line_spacing_px,
+                    flow_floor,
+                    self.dpi,
+                    source_metrics_reflowed,
+                )
             });
             let flow_step = stored_line_advance.unwrap_or(line_height);
             let line_flow_height =
@@ -6047,6 +6131,18 @@ impl LayoutEngine {
             pending_right_leader_digit_render = emit_state.pending_right_leader_digit_render;
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
+
+            if let Some(label_right) =
+                viewtext_table_suffix_label_right(para, comp_line, x_start, self.dpi)
+            {
+                for child in &mut line_node.children {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.text.starts_with('(') && run.text.trim_end().ends_with(')') {
+                            child.bbox.x = label_right - child.bbox.width;
+                        }
+                    }
+                }
+            }
 
             // 조판부호: 텍스트 뒤에 위치한 미삽입 도형 마커 추가
             for (smi, (spos, stext)) in shape_markers.iter().enumerate() {

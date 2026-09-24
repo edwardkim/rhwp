@@ -109,8 +109,8 @@ test('상황 선은 한글 2024 순서로 축소·범위·확대·통합 배율 
 test('상황 선 확대·축소는 플랫폼 단축키를 호버에 표시하고 별도 키 리스너를 만들지 않는다', () => {
   assert.match(commands, /id: 'view:zoom-in'[\s\S]*?shortcutLabel: 'Ctrl\+\+'/);
   assert.match(commands, /id: 'view:zoom-out'[\s\S]*?shortcutLabel: 'Ctrl\+-'/);
-  assert.match(main, /zoomPercentShortcutTitle\('확대', 'Ctrl\+\+'/);
-  assert.match(main, /zoomPercentShortcutTitle\('축소', 'Ctrl\+-'/);
+  assert.match(main, /zoomPercentShortcutTitle\('zoomIn'/);
+  assert.match(main, /zoomPercentShortcutTitle\('zoomOut'/);
   const setupStart = main.indexOf('function setupZoomControls()');
   const setupEnd = main.indexOf('\nlet totalSections', setupStart);
   assert.doesNotMatch(

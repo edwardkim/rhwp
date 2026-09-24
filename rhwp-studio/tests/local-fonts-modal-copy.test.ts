@@ -15,7 +15,7 @@ test('로컬 글꼴 감지 모달은 사용자에게 대체 글꼴 표현을 사
   const modal = source('src/ui/local-fonts-modal.ts');
 
   assertShowsText(modal, '대체 글꼴로 보기');
-  assert.match(modal, /대체 글꼴 사용/);
+  assertShowsText(modal, '대체 글꼴 사용');
   assert.doesNotMatch(modal, /웹 대체로 보기/);
   assert.doesNotMatch(modal, /웹 대체 사용/);
 });

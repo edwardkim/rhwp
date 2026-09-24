@@ -3045,14 +3045,15 @@ impl DocumentCore {
                 table.caption = Some(cap);
                 caption_created = true;
                 // attr bit 29: 캡션 존재 플래그 (한컴 호환성)
+                // [#7288] 이것은 **개체 공통 속성**이다. `raw_table_record_attr`(HWPTAG_TABLE
+                // 레코드 첫 UINT32)은 bit 0~1 «쪽 경계에서» · bit 2 제목 줄 반복으로 비트
+                // 배치가 전혀 달라, 여기에 대입하면 그 두 속성이 통째로 뭉개진다.
                 table.attr |= 1 << 29;
                 table.common.attr = table.attr;
-                table.raw_table_record_attr = table.attr;
             } else if !has_cap && table.caption.is_some() {
                 table.caption = None;
                 table.attr &= !(1 << 29);
                 table.common.attr = table.attr;
-                table.raw_table_record_attr = table.attr;
                 caption_changed = true;
             }
         }

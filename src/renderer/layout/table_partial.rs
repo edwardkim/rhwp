@@ -18,7 +18,8 @@ use super::border_rendering::{
 use super::table_layout::{
     border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
     expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
-    native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
+    native_terminal_child_host_line_spacing, translate_render_subtree_y, NestedTableSplit,
+    INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::{
@@ -1075,6 +1076,8 @@ impl LayoutEngine {
         enclosing_cell_ctx: Option<&CellContext>,
         clamp_header_negative_para_offset: bool,
         probe: Option<&PartialTableCellProbe>,
+        // [#7095] 쪽이 상자를 정한 비끝 1×1 조각 — 칸 `valign` 을 조각 내용으로 적용한다.
+        center_pinned_single_cell: bool,
     ) {
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
@@ -1965,7 +1968,40 @@ impl LayoutEngine {
             // 네 조건(line_ranges·mixed·nested·non-inline)이 모두 창 유닛에서만
             // 유도되므로 전량 레이아웃에서도 반드시 skip 된다 — 순회 자체를 생략한다.
             // stop_after_para 이후 문단은 캐럿 문단의 좌표에 영향이 없어 중단한다.
-            let (loop_start, loop_end_excl) = match (composition_window, probe) {
+            // [#7095] 단, 아래에서 조각 내용 높이로 가운데 정렬하는 칸은 뒤 문단이 앞
+            // 문단의 y 를 정하므로 끝까지 순회해야 캐럿이 그려진 줄과 같은 자리에 선다.
+            //
+            // 근거는 조각 경계가 칸 자신의 문단 사이(또는 글줄 사이)에 놓이는 형상뿐이다. 경계가
+            // **중첩 표를 가로지르는** 조각(42065: 바깥 1×1 칸의 유일한 문단이 본문 전체를 담은
+            // 중첩 표)은 한/글이 가운데로 옮기지 않는다 — 열면 5~7·11·16쪽이 12~36px 올라간다.
+            let centers_pinned_fragment = center_pinned_single_cell
+                && matches!(cell.vertical_align, VerticalAlign::Center)
+                && cut_units.is_some_and(|(start_unit, end_unit)| {
+                    let units = self.cell_units(cell, table, styles);
+                    let hosts_table = |unit: Option<&super::table_layout::CellUnit>| {
+                        unit.and_then(|u| cell.paragraphs.get(u.para_idx))
+                            .is_some_and(|para| {
+                                para.controls
+                                    .iter()
+                                    .any(|control| matches!(control, Control::Table(_)))
+                            })
+                    };
+                    let cuts_through_table =
+                        |before: usize, after: usize| match (units.get(before), units.get(after)) {
+                            (Some(a), Some(b)) => a.para_idx == b.para_idx && hosts_table(Some(a)),
+                            _ => false,
+                        };
+                    // 가운데 정렬의 기준인 조각 내용은 한/글 자신의 쪽 프레임이어야 한다 — 컷이
+                    // 저장 프레임 되감김에서 끝나지 않으면 rhwp 조각이 한/글 쪽과 다른 내용을
+                    // 담아(1382000 22쪽) 여유를 잘못 잰다.
+                    // 끝 조각은 칸 끝에서 끝나므로 그 자체가 한/글의 마지막 프레임이다.
+                    (end_unit >= units.len()
+                        || self.cell_unit_opens_stored_page_frame(cell, table, styles, end_unit))
+                        && (start_unit == 0 || !cuts_through_table(start_unit - 1, start_unit))
+                        && !cuts_through_table(end_unit - 1, end_unit)
+                });
+            let probe_stop = probe.filter(|_| !centers_pinned_fragment);
+            let (loop_start, loop_end_excl) = match (composition_window, probe_stop) {
                 (Some((lo, hi)), p) => {
                     let end = hi.saturating_add(1).min(cell.paragraphs.len()).min(
                         p.map_or(cell.paragraphs.len(), |p| {
@@ -2886,6 +2922,96 @@ impl LayoutEngine {
                                     } else {
                                         pic_y
                                     };
+                                    // [#7334] 일본 PS 마크처럼 저장 셀 높이가 실제 행보다
+                                    // 작고, 같은 빈 문단에 글앞·자리차지 그림이 함께 있는
+                                    // 경우의 bottom-aligned 그림 묶음이다. 저장 LINE_SEG vpos는
+                                    // 행 하단의 빈 줄 자리라서 각 그림의 Para 기준점으로 다시
+                                    // 쓰면 둘 다 다음 행까지 밀린다. 한/글은 두 마크를 실제
+                                    // 셀 안에 두되, 빈 문단 한 줄은 하단에 남긴다. 일반 부동
+                                    // 그림의 셀 밖 배치는 문서마다 의미가 있으므로 이 저장
+                                    // 형상에만 실제 content bottom 바로 위의 빈 줄로 되돌린다.
+                                    let mixed_bottom_aligned_picture_stack = para
+                                        .text
+                                        .trim()
+                                        .is_empty()
+                                        && cell.vertical_align == VerticalAlign::Bottom
+                                        && para.line_segs.len() == 1
+                                        && para
+                                            .line_segs
+                                            .first()
+                                            .is_some_and(|seg| seg.vertical_pos > 0)
+                                        && cell.height < 0x8000_0000
+                                        && hwpunit_to_px(cell.height as i32, self.dpi)
+                                            + 0.5
+                                            < inner_area.height
+                                        && para.controls.iter().all(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if !picture.common.treat_as_char
+                                                        && matches!(
+                                                            picture.common.text_wrap,
+                                                            crate::model::shape::TextWrap::InFrontOfText
+                                                                | crate::model::shape::TextWrap::TopAndBottom
+                                                        )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::InFrontOfText
+                                                    )
+                                            )
+                                        })
+                                        && para.controls.iter().any(|control| {
+                                            matches!(
+                                                control,
+                                                Control::Picture(picture)
+                                                    if matches!(
+                                                        picture.common.text_wrap,
+                                                        crate::model::shape::TextWrap::TopAndBottom
+                                                    )
+                                            )
+                                        });
+                                    let reserved_empty_line_height = para
+                                        .line_segs
+                                        .first()
+                                        .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
+                                        .unwrap_or(0.0);
+                                    // 같은 빈 문단에 든 부동 그림의 vertical_offset은 공통
+                                    // bottom anchor에서의 상대 위치다. anchor를 셀 안으로
+                                    // 되돌릴 때 이 차이까지 버리면, 저장본에서 더 낮은 두 번째
+                                    // 그림이 첫 번째 그림 위로 올라가 서로 겹쳐 보인다.
+                                    let stack_first_vertical_offset = para
+                                        .controls
+                                        .iter()
+                                        .filter_map(|control| match control {
+                                            Control::Picture(picture) => {
+                                                Some(picture.common.vertical_offset as i32)
+                                            }
+                                            _ => None,
+                                        })
+                                        .min()
+                                        .unwrap_or(0);
+                                    let stack_relative_vertical_offset = hwpunit_to_px(
+                                        (pic.common.vertical_offset as i32)
+                                            .saturating_sub(stack_first_vertical_offset),
+                                        self.dpi,
+                                    );
+                                    let pic_y = if mixed_bottom_aligned_picture_stack
+                                        && pic_y + pic_h
+                                            > cell_content_bottom(cell_y, cell_h, pad_bottom) + 0.5
+                                    {
+                                        cell_content_bottom(cell_y, cell_h, pad_bottom)
+                                            - reserved_empty_line_height
+                                            - pic_h
+                                            + stack_relative_vertical_offset
+                                    } else {
+                                        pic_y
+                                    };
                                     let pic_area = LayoutRect {
                                         x: pic_x,
                                         y: pic_y,
@@ -3596,6 +3722,52 @@ impl LayoutEngine {
                 }
             }
 
+            // [#7095] 쪽이 정한 비끝 조각 상자 안에서 칸 `valign=Center` 를 적용한다.
+            //
+            // 한/글 2020 정본(156060125, `pdf/tac_object_host_line_height-2020.pdf`)의
+            // 3~9쪽 조각은 줄마다 `칸 내용 위 + 저장 vpos` 에 쪽별 상수 하나를 더한 자리에
+            // 놓이고(쪽 안 편차 0.6px 이하), 그 상수는 `(상자 안 높이 − 조각 내용 높이) / 2`
+            // 와 0.55~0.93px 안에서 맞는다. #4042 가 막은 것은 **칸 전체** 내용으로 잰
+            // 가운데 정렬이고, 이 조각의 내용만 재면 한/글과 같은 가운데 정렬이 된다.
+            // 같은 형상의 `valign=Top` 칸(148738070)은 정본이 상자 위에 붙으므로 건드리지 않는다.
+            //
+            // 조각 내용 높이는 실제 배치 커서(`para_y`)에 **이 조각이 소유했지만 그리지
+            // 않은 꼬리 빈 문단**의 저장 줄 상자를 더한다. 글자가 없어도 줄 상자는 공간을
+            // 차지한다 — 정본 4·5·6쪽은 그 빈 줄(p67·p96·p121) 바닥까지를 내용으로 센다.
+            if centers_pinned_fragment && matches!(effective_align, VerticalAlign::Top) {
+                let trailing_empty_extent = cut_units
+                    .and_then(|(_, end_unit)| {
+                        let units = self.cell_units(cell, table, styles);
+                        let last_owned = units.get(end_unit.checked_sub(1)?)?.para_idx;
+                        if last_owned <= last_rendered_para_idx
+                            || !cell.paragraphs[last_rendered_para_idx + 1..=last_owned]
+                                .iter()
+                                .all(|para| para.text.is_empty() && para.controls.is_empty())
+                        {
+                            return None;
+                        }
+                        let rendered_end = line_ranges.as_ref()?.get(last_rendered_para_idx)?.1;
+                        let rendered_seg = cell.paragraphs[last_rendered_para_idx]
+                            .line_segs
+                            .get(rendered_end.checked_sub(1)?)?;
+                        let tail_seg = cell.paragraphs[last_owned].line_segs.last()?;
+                        let delta = (tail_seg.vertical_pos + tail_seg.line_height)
+                            - (rendered_seg.vertical_pos + rendered_seg.line_height);
+                        (delta > 0).then(|| hwpunit_to_px(delta, self.dpi))
+                    })
+                    .unwrap_or(0.0);
+                let content_height = (para_y - text_y_start) + trailing_empty_extent;
+                let dy = (inner_height - content_height) / 2.0;
+                if dy > 0.0 {
+                    let box_top = cell_node.bbox.y;
+                    for child in &mut cell_node.children {
+                        // 앞 조각이 소유한 줄은 상자 위 clip 밖에 남는다 — 내리면 보이게 된다.
+                        if child.bbox.y + 0.5 >= box_top {
+                            translate_render_subtree_y(child, dy);
+                        }
+                    }
+                }
+            }
             // 각주 참조 번호
             for para in &cell.paragraphs {
                 self.add_footnote_superscripts(tree, &mut cell_node, para, styles);
@@ -4045,7 +4217,15 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let y_start = if single_cell_page_fragment
+        let terminal_multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
+            && crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table,
+                is_continuation,
+                start_row,
+                start_cut,
+            );
+        let y_start = if (single_cell_page_fragment || terminal_multirow_reopens_outer_top)
             && stored_reset_paint_geometry.is_none()
             && resolved_table_top.is_none()
         {
@@ -4357,6 +4537,14 @@ impl LayoutEngine {
         let starts_at_body_top =
             (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
                 < 1.0;
+        // [#7095] 끝 조각 상자는 페이지네이터가 `max(내용, 저장 칸 높이 − 앞 조각 상자 합)` 으로
+        // 정해 `end_row_height_override` 로 넘긴다(7062 10쪽: 정본 상자 874.04). 그 상자도 칸
+        // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
+        let mut center_pinned_single_cell = single_cell_page_fragment
+            && row_count == 1
+            && is_continuation
+            && end_cut.is_empty()
+            && end_row_height_override.is_some();
         if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
             let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
                 table,
@@ -4378,12 +4566,38 @@ impl LayoutEngine {
                     end_cut.first().copied().unwrap_or(0),
                 )
             });
-            if starts_at_body_top && !projected_content {
+            // [#6923] 쪽 **중간**에서 시작하는 비끝 조각도, 칸 내용이 상자 상단에 붙는
+            // (`valign=Top`) 형상이면 상자를 쪽이 정한다 — 늘려도 내용이 움직이지 않는다.
+            // 148738070 1쪽(감싼 1×1 표, 표 상단 338.4)은 정본 상자 하단이 1021.9 인데
+            // rhwp 는 내용 끝(1003.5)에서 끊어 18.4px 짧았다. 위 156645214 반례는
+            // `Center` 칸이라 늘리면 내용이 8px 내려가므로 그 갈래는 종전대로 둔다.
+            let content_is_top_anchored = table.cells.first().is_some_and(|cell| {
+                matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+            });
+            // [#7095] 한/글은 분할된 칸의 저장 높이를 **조각 상자 높이의 합**으로 적는다
+            // (1382000 `pi=95`: 칸 h 325144HU = 4335px ↔ 정본 상자 855+891×3+810 = 4338px,
+            // 7062: 700976HU = 9346px ↔ 정본 합 9337px, 차는 PDF 쪽 척도). 저장 높이가 쪽 상자
+            // 하나보다도 작은 칸(1382000 `pi=90`: h 282HU)은 상자를 쪽에 고정할 수 없고, 정본도
+            // 네 조각 모두 내용에 맞춘다(16~19쪽 상자 아래 977·980·970·897). 그런 칸은 쪽 상자로
+            // 늘리지 않는다 — 늘린 상자 안에서 칸 `valign` 을 적용하면 내용이 14~18px 내려간다.
+            // `valign=Top` 칸은 저장 높이가 작아도 정본이 상자를 쪽에 둔다(synam-001 `pi=163`
+            // h 282HU: 20쪽 내용 끝 1032 ↔ 상자 1054) — 위 #6923 갈래는 그대로 둔다.
+            let stored_cell_spans_page_box = content_is_top_anchored
+                || table.cells.first().is_some_and(|cell| {
+                    hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
+                        >= pinned_height
+                });
+            if (starts_at_body_top || content_is_top_anchored)
+                && stored_cell_spans_page_box
+                && !projected_content
+                && (starts_at_body_top || stored_reset_paint_geometry.is_none())
+            {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
                 // 잘랐으므로 보이는 줄은 상자 안에 있다.
                 row_heights[0] = pinned_height;
+                center_pinned_single_cell = true;
             } else if stored_reset_paint_geometry.is_none() {
                 // 쪽 중간에서 시작하는 비끝 조각은 늘리지는 않되(위 156645214 반례), 같은 이유로
                 // 쪽 상자 아래를 넘기지도 않는다. KTX 25쪽 `pi406` 은 위 바깥 여백을 연 뒤 내용
@@ -4636,6 +4850,7 @@ impl LayoutEngine {
             enclosing_cell_ctx,
             clamp_header_negative_para_offset,
             probe,
+            center_pinned_single_cell,
         );
 
         // A recovered terminal Square-flow line also owns the final frame edge.

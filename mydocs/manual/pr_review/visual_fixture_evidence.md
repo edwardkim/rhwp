@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-17
+last_verified: 2026-09-22
 ---
 
 # 시각·fixture 증적
@@ -20,13 +20,24 @@ renderer/layout/typeset/paint 등 사용자-visible 렌더링 경로가 바뀌�
 reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검증 완료"라고 쓰지 않는다. 통합 head에서
 직접 만든 기준 PDF·visual sweep 또는 reviewer가 직접 연 기준 PDF/PNG 판정이 있어야 수용 근거가 된다.
 
+`scripts/visual_sweep.py`의 review PNG를 수용 근거로 사용하면, 각 비교 쪽의
+`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율)는 **90% 이상**이어야 한다. 90% 미만 또는
+지표를 낼 수 없는 쪽이 있으면 스크립트는 review·overlay 산출물과 `pr_review_gate` 기록을 남긴 뒤 실패하며,
+review 문서는 `머지 보류 — 기여자 재검토 필요`로 판정한다. 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다.
+기여자는 자기 branch에서 원인과 증적을 보완해 새 head로 재실행하고 gate를 통과할 때만 PR을 생성·갱신하며,
+reviewer는 메인터너 보정으로 대신하지 않는다. 한컴 PDF와 rhwp의 실제 글꼴이 완전히 다른
+경우만, 양쪽 글꼴 정보·확인 방법·영향 쪽을 기록한 UTF-8 증거 파일을
+`--font-mismatch-evidence`로 지정해 예외로 남길 수 있다. 그 예외는 이미지 직접 판독을 생략하는 근거가 아니다.
+예외를 지정하기 전에 표 괘선, 문단 시작점, 그림 경계를 PDF·rhwp의 같은 좌표에서 대조한다.
+위치가 어긋나면 글꼴 차이가 공존해도 배치 결함을 먼저 수정한다(#7359 p14).
+
 직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 판정은 다음처럼 제한한다.
 
 - `머지 보류`: PR 주장이 시각 결과 자체인데 기준 산출물 또는 maintainer 직접 판정이 없다.
   코드·회귀 테스트만 통과했거나 원 PR 증적만 확인한 경우도 이 판정이다.
-- `메인터너 보정 후 수용 가능`: 원 head의 시각 증적은 불충분하지만, 범위가 제한된 보정 commit과
-  그 commit의 직접 기준 PDF·visual sweep 검증을 같은 integration head에서 제시할 수 있을 때만 쓴다.
-  보정 전 원 head를 `승인`으로 쓰지 않는다.
+- `기여자 재검토 필요`: 원 head의 시각 증적이 불충분하거나 90% gate에 미달했다. 기여자가 자기 branch에서
+  원인을 수정하고 직접 기준 PDF·visual sweep을 새 head에서 제시할 때만 다시 판정한다. 그 전 원 head를
+  `승인`으로 쓰지 않으며 reviewer가 메인터너 보정으로 대신하지 않는다.
 
 이 상태에서는 "원 PR 증적 확인", "numeric/contract test 통과", "IR sweep baseline 통과" 같은 표현을
 "visual sweep 통과"와 섞지 않는다.
@@ -38,6 +49,7 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
 - compare, overlay, review PNG의 임시 output 경로
 - 검토한 페이지 수와 자동 후보 수
 - pixel match, visual_accuracy_proxy_percent
+- `tolerant_content_match_percent`와 `pr_review_gate`의 결과. 90% 미만이면 보정·재실행 전 `승인`으로 쓰지 않는다.
 - 사람이 확인한 결과와 PR 주장과의 관계
 
 대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
@@ -196,12 +208,19 @@ reviewer는 [접수·리뷰 기록의 준수 표](intake_and_review.md#27-조판
 
 ## 대표 asset과 안정 URL
 
-visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요청 전에 대표 review_NNN.png를
-현재 review branch의 mydocs/pr/assets 아래에 PR 번호를 포함한 안정 파일명으로 복사한다.
+visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요청 전에 대표 review·overlay PNG를
+현재 PR head의 `mydocs/pr/assets/` 아래 안정 경로로 복사한다. PR 번호가 아직 없으면
+`issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다. PR 번호를 예측하거나 이미지 경로를 바꾸기 위한
+trailing commit을 만들지 않는다.
 
 - review 문서에는 임시 output 경로와 최종 asset 경로를 둘 다 적는다.
 - 여러 페이지를 검증해도 모든 PNG를 기계적으로 보존할 필요는 없다. 결론을 증명하는 정상 page와
   보완 요청·후속 issue 판단에 필요한 후보 page를 대표 asset으로 남긴다.
+- merge 전 PR 본문에는 최종 head의 `headRepositoryOwner/headRepository`와 `headRefOid`로 고정한 raw URL을
+  Markdown image로 실제 표시한다. Native/fresh WASM처럼 실행한 출력 경로마다 review·overlay를 대표로
+  넣으며, 경로·임시 output·review 문서 링크만으로 대신하지 않는다. 외부 fork PR은 contributor fork의
+  repository와 head SHA를 사용한다. 게시 뒤 PR 화면에서 이미지가 렌더링되는지, API로 body·asset이 같은
+  head를 가리키는지 확인한다. 정본 형식은 [Visual Sweep PR 본문 직접 증적](../verification/visual_sweep_guide.md#pr-body-visual-evidence)을 따른다.
 - GitHub merge comment에는 [Visual Sweep 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
   direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
   raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은

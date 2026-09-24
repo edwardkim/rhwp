@@ -28,6 +28,39 @@ last_verified: 2026-09-17
 - **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
+## PR review 실루엣 gate
+
+renderer·layout·paint 변경의 PR review에 Visual Sweep을 사용하면, 각 대표 review PNG의
+`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율 보조값)는 **90% 이상**이어야 한다.
+`scripts/visual_sweep.py`는 90% 미만 또는 측정 불가 페이지가 있으면 PNG와 manifest를 남긴 뒤 exit
+non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_required`로 기록한다. 이 상태에서는
+새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자는 자기 branch에서 PDF와 overlay를 다시 판독해
+원인을 수정한 새 head로 재실행하고, gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 메인터너
+보정으로 그 변경을 대신하지 않는다. 이 규칙은 지표를
+올리기 위해 tolerance·DPI·대상 영역을 사후 변경하는 근거가 아니다.
+
+예외는 한컴 PDF와 rhwp raster에 실제로 적용된 글꼴이 완전히 다르다는 사실을 확인한 경우뿐이다. 이때도
+`--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
+representative PNG를 기록한 증거 파일의 경로·SHA-256을 manifest에 남긴다. 단순 anti-aliasing, 작은
+baseline 차이, 글꼴 이름의 추정, `flagged=0` 또는 CI 녹색은 예외 근거가 아니다. 이 예외는
+`font_mismatch_exception`으로 남으며 사람의 overlay 판독과 다른 조판 차이의 보류 의무를 없애지 않는다.
+예외를 적용하기 전에 PDF와 rhwp의 표 괘선·문단 시작·그림 경계 좌표를 먼저 비교한다.
+이 위치가 어긋나면 낮은 점수를 글꼴 탓으로 분류하지 않고 배치를 고쳐 다시 캡처한다.
+#7359 14쪽은 표 행 높이가 같아도 표 전체가 약 15px 위에 있어 68.17%였고,
+페이지 첫 문단의 저장 간격을 복구한 뒤 97.48%가 됐다.
+
+```bash
+RHWP_FONT_PATH="/절대/경로/검증된-한컴-글꼴" python3 scripts/visual_sweep.py \
+  --file-target <key> <입력 HWP/HWPX> <기존 한컴 PDF> \
+  --rhwp-bin target/pr-review/release-test/rhwp --pages <영향 쪽> --dpi 96 \
+  --out output/<review>
+```
+
+실행 전에 `RHWP_FONT_PATH`의 모든 디렉터리가 실제로 존재하고, 입력 문서가 요구한 face가 그 경로 또는
+운영체제에 설치됐는지 확인한다. 존재하지 않는 `ttfs/hwp`, `ttfs/windows` 같은 과거 경로를 설정하면
+환경변수 자체는 전달돼도 renderer가 fallback face로 조판해 낮은 지표를 만들어 낸다. 이 경우에는
+`--font-mismatch-evidence` 예외를 바로 적용하지 말고, 먼저 올바른 글꼴 공급으로 다시 실행한다.
+
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
 따른다. 독립 기준 PDF와 실제 사용자-visible 실패를 조사할 때는 bug-hunter가 상위이고, sweep은
 후보 검출·재현 범위 축소·수정 전후 무회귀만 담당한다. 이미 원인과 발동 페이지가 확정된 renderer/layout
@@ -388,6 +421,42 @@ jq '.pages[] | select(.page == 22) | {page, overlay_png, visual_accuracy_proxy_p
   output/task1274/<target>/overlay/overlay_metrics.json
 ```
 
+<a id="pr-body-visual-evidence"></a>
+
+## PR 본문 직접 증적
+
+renderer, layout, paint처럼 문서 비교 결과를 reviewer의 판단 근거로 쓰는 PR은 merge 전에도 대표
+PNG를 PR 본문에서 바로 볼 수 있게 한다. review 문서·임시 output 경로·asset 파일명만 적어 두고
+reviewer가 저장소를 찾아 열게 하지 않는다.
+
+1. 비교를 마친 최종 PR head에 대표 review와 standalone overlay PNG를 `mydocs/pr/assets/` 아래 안정
+   경로로 commit한다. PR 번호를 아직 모르면 `issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다.
+   PNG가 바뀌면 같은 경로를 써도 되지만, 반드시 새 head SHA로 URL을 바꾼다.
+2. PR 본문에는 해당 PR의 `headRepositoryOwner/headRepository`와 정확한 `headRefOid`를 사용한 아래 형식의
+   Markdown 이미지를 넣는다. target repository나 branch 이름으로 대신하지 않는다. 외부 fork PR도
+   contributor fork의 head repository와 SHA를 사용한다.
+3. Native/fresh WASM 등 실제 실행한 각 출력 경로마다 대표 review와 overlay를 한 장씩 표시한다. 실행하지
+   않은 경로는 이미지 행을 지우고 사유를 적는다. 자동 수치는 보조값이며 사람의 직접 판독·남은 차이도
+   이미지 위나 아래에 함께 기록한다.
+4. `gh pr create` 또는 `gh pr edit --body-file` 뒤 `gh pr view N --json body`로 URL·한글·실제 head SHA를
+   재확인하고, `gh api repos/<head-owner>/<head-repo>/contents/<asset>?ref=<head-sha>`로 asset이 그 head에
+   존재하는지 확인한다. GitHub PR 화면에서 이미지가 렌더링되는 것도 직접 확인한다.
+
+~~~markdown
+## Visual Sweep 직접 증적
+
+- 대상: 기준 PDF p55 ↔ rhwp p78, 표 외곽·PS 마크·앞뒤 내용
+- 판독: Native/fresh WASM 모두 표 외곽과 마크 상대 위치를 확인했다. 자동 일치율은 보조값이다.
+
+| 출력 경로 | review | overlay |
+| --- | --- | --- |
+| Native | ![Native review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_review_078.png) | ![Native overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_overlay_078.png) |
+| fresh WASM | ![fresh WASM review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_review_078.png) | ![fresh WASM overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_overlay_078.png) |
+~~~
+
+PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](#github-merge-comment)는 merge commit SHA와
+`edwardkim/rhwp`를 고정한다. 두 시점을 섞지 않는다.
+
 ## GitHub merge comment
 
 renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이
@@ -448,6 +517,7 @@ overlay 색상 의미:
 | `pixel_match_percent` | 전체 canvas 픽셀 중 임계값 이하로 일치한 비율 |
 | `ink_match_percent` | 양쪽 중 하나라도 내용 픽셀인 영역에서 일치한 비율 |
 | `visual_accuracy_proxy_percent` | 자동 시각 판정 보조 일치율. 잉크 영역이 있으면 `ink_match_percent`, 없으면 `pixel_match_percent` |
+| `tolerant_content_match_percent` | 내용 실루엣의 상대편이 `tolerant_content_match_radius_px` 이웃에 있을 때 일치로 보는 기하 보조값 |
 | `diff_bbox` | 차이가 난 픽셀들의 bounding box |
 | `mean_abs_channel_delta` | RGB 채널 평균 절대 차이 |
 | `max_channel_delta` | 페이지 내 최대 RGB 채널 차이 |
@@ -464,6 +534,10 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
 - `ink_match_percent = 100 * (1 - ink_diff_pixels / ink_union_pixels)` 이다.
 - `visual_accuracy_proxy_percent`는 잉크 영역이 있으면 `ink_match_percent`, 잉크 영역이 없으면
   `pixel_match_percent`를 쓴다.
+- `tolerant_content_match_percent`는 기본 2px 이웃까지 허용한 내용 실루엣 일치율이다. 글꼴
+  anti-aliasing·sub-pixel rasterization의 프린지를 기하 위치 차이와 분리해 보여 주기 위한 값이며,
+  `ink_match_percent`나 `visual_accuracy_proxy_percent`를 대체하지 않는다. 다만 PR review에서는 위
+  `PR review 실루엣 gate`에 따라 90% 미만을 재검토 신호이자 보류 조건으로 사용한다.
 
 따라서 이 값은 "자동 시각 판정 정확도"가 아니라 "내용 픽셀 중심 raster 일치율"에 가깝다. 폰트,
 anti-aliasing, PDF rasterizer, 전체 위치 이동의 영향을 크게 받으므로, 낮은 값은 우선 검토 신호이지
@@ -548,8 +622,9 @@ summary: /path/to/rhwp/output/task1274/summary.json
 - `visual_accuracy_proxy_percent`는 자동 일치율 지표일 뿐 최종 시각 판정을 대체하지 않는다.
 - `flagged=0`이어도 낮은 `visual_accuracy_proxy_percent` 또는 옛자모·PUA·목록 marker가 있으면
   review/overlay를 반드시 확인한다. glyph·제품명 표시 차이는 이 경로에서 후보가 된다.
-- PR 의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR 이 아니면 visual sweep 차이는 참고 자료이며,
-  그 차이만으로 merge 보류나 reject 결론을 내리지 않는다.
+- PR의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR이 아니어도 Visual Sweep을 PR 수용 근거로
+  첨부했다면 90% gate를 적용한다. 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 PR은 review PNG를
+  만들지 않고 fixture 원본성·소비 경로만 별도로 검토한다.
 - `frame`, `question`, `title`, `tail`, `eq` 후보는 우선 검토 대상이다.
 - `tail`은 render tree의 page bbox를 **현재 raster DPI 좌표**로 투영한 뒤, 해당 bbox에
   실제 rhwp 잉크가 있는 TextLine만 세어 만든다. 페이지 밖에만 남은 continuation node나

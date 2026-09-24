@@ -1135,13 +1135,12 @@ fn write_para_margin<W: Write>(
     ps: &ParaShape,
     half: bool,
 ) -> Result<(), SerializeError> {
-    let v = |x: i32| if half { x / 2 } else { x };
     super::utils::start_tag(w, "hh:margin")?;
-    write_margin_child(w, "hc:intent", v(ps.indent))?;
-    write_margin_child(w, "hc:left", v(ps.margin_left))?;
-    write_margin_child(w, "hc:right", v(ps.margin_right))?;
-    write_margin_child(w, "hc:prev", v(ps.spacing_before))?;
-    write_margin_child(w, "hc:next", v(ps.spacing_after))?;
+    write_margin_child(w, "hc:intent", ps.indent, half)?;
+    write_margin_child(w, "hc:left", ps.margin_left, half)?;
+    write_margin_child(w, "hc:right", ps.margin_right, half)?;
+    write_margin_child(w, "hc:prev", ps.spacing_before, half)?;
+    write_margin_child(w, "hc:next", ps.spacing_after, half)?;
     end_tag(w, "hh:margin")?;
     Ok(())
 }
@@ -1171,15 +1170,40 @@ fn write_para_line_spacing<W: Write>(
 
 /// margin 자식(`<hc:intent value="…" unit="HWPUNIT"/>`). 한컴 원본 속성 순서는
 /// value, unit 이며 네임스페이스는 `hc:` 다.
+/// `<hh:margin>` 자식 하나. `half=true`(HwpUnitChar `case`)에서 저장값이 **홀수**면
+/// 절반이 정수로 안 떨어지므로 한컴은 그 자리를 `unit="CHAR"` 로 표시한다.
+///
+/// [#6875] 종전에는 단위를 `HWPUNIT` 으로 고정하고 값만 `x / 2` 로 적었다. 그러면 홀수의
+/// 최하위 비트(= 한컴이 `CHAR` 로 표시하는 그 자리)가 사라지고, 한/글은 `case` 를 우선
+/// 읽으므로 **문단 간격을 종전보다 작게** 잡는다. 07939(소방방재 점검메뉴얼)에서 문단마다
+/// 22.02pt 가 18.78pt 로 줄어 558쪽이 545쪽이 됐다(−13쪽).
+///
+/// 한컴 자신의 HWP→HWPX 변환본에서 이 규칙은 예외가 없다 — 같은 문서 margin 항목
+/// 2,170개 전수에서 `저장값이 홀수 ⟺ case 단위가 CHAR` 가 위반 0 이다.
+///
+/// 값은 `stored = case × 2 (+1 when CHAR)` 로 되돌릴 수 있게 적는다(파서의 정확한 역).
 fn write_margin_child<W: Write>(
     w: &mut Writer<W>,
     name: &str,
-    value: i32,
+    stored: i32,
+    half: bool,
 ) -> Result<(), SerializeError> {
+    if !half {
+        return empty_tag(
+            w,
+            name,
+            &[("value", &stored.to_string()), ("unit", "HWPUNIT")],
+        );
+    }
+    let odd = stored % 2 != 0;
+    let value = if odd { (stored - 1) / 2 } else { stored / 2 };
     empty_tag(
         w,
         name,
-        &[("value", &value.to_string()), ("unit", "HWPUNIT")],
+        &[
+            ("value", &value.to_string()),
+            ("unit", if odd { "CHAR" } else { "HWPUNIT" }),
+        ],
     )
 }
 

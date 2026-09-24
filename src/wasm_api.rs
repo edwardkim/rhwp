@@ -4815,6 +4815,22 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 한/글 5.x/97 OLE 수식을 편집 가능한 native equation으로 변환한다.
+    #[wasm_bindgen(js_name = promoteOleEquation)]
+    pub fn promote_ole_equation(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.promote_ole_equation_native(
+            section_idx as usize,
+            para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 각주 정보를 조회한다.
     #[wasm_bindgen(js_name = getFootnoteInfo)]
     pub fn get_footnote_info(

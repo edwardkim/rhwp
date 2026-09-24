@@ -38,6 +38,40 @@
 //! vpos 가 0이라 같은 폴백 갈래로 오는데 `-1,079HU`(14.4px)는 **적용되는 것이 정답**이고
 //! `issue_5734_cell_float_stack_stored_vpos` 가 그 값을 잠근다. 여기서는 같은 쪽의 **다른
 //! 그림 10장**이 자기 칸 안에 그대로 남는지로 그 축을 함께 잠근다.
+//!
+//! ## [#6761] 쪽 번호가 하나 밀렸다 — 기하 계약은 그대로다
+//!
+//! 이 fixture 는 `#6761` 이 다루는 바로 그 문서다. `#6761` 수정은 저장 사다리가 적어 둔
+//! 쪽 경계 하나를 복원한다 — 한/글 정본 14쪽(`최종안 제시 및 보고 자료: Design B 최종 제안
+//! 및 결정`)을 rhwp 가 13쪽에 얹고 있었다. 그 쪽이 제자리로 가면서 **뒤쪽 전부가 +1** 밀렸다.
+//!
+//! 그래서 이 파일의 `PAGE_INDEX` 를 76 → 77 로, `page_count` 를 104 → 105 로 옮긴다.
+//! **검사 항목은 하나도 완화하지 않았다** — 칸 안 그림 11개, `row4/col3` 의 CCC, 한/글
+//! 2020 기준 `y = 235.9 ± 3.0` 이 새 쪽 번호에서 그대로 성립한다(실측 `y = 238.7`).
+//!
+//! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
+//! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
+//! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
+//!
+//! ## [#6761 후속] 빈 조각 쪽이 사라져 쪽수가 105 → 104 다
+//!
+//! 같은 이슈의 개체 칸 회계 수정(`빈 개체 줄을 그림 위에 쌓지 않는다`)으로 이 문서의
+//! `<표 4-1> 국내외 유사 마크 현황` 이 한 쪽에 들어간다. 수정 전에는 마지막 `덴마크` 행의
+//! 그림만 이어받는 **여분 쪽**이 78쪽 뒤에 끼어 있었다. 정본은 그 표를 55쪽 한 장에 담는다.
+//!
+//! - `PAGE_INDEX`(77) 는 그대로다 — 없어진 쪽은 그 **뒤**(0-기반 78)였다.
+//! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
+//! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
+//!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
+//!
+//! ## [#6761 잔여 축] 나란히 놓이는 그림을 더하지 않으면서 쪽수가 104 → 103 이다
+//!
+//! 한 문단의 개체를 가로 겹침과 무관하게 세로로 합산하던 측정을 배치와 맞췄다.
+//! `<표 3-4>` 의 마지막 행이 제 쪽에 들어가면서 그 앞의 여분 쪽도 사라진다.
+//!
+//! - `page_count` 104 → **103** — 한컴 정본 쪽수와 같다.
+//! - `PAGE_INDEX` 77 → **76**. 없어진 쪽이 이 쪽 **앞**(`<표 3-4>` 구간)이다.
+//! - 그 쪽의 칸 안 그림은 12장 그대로다(정본 55쪽도 12장).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -96,7 +130,11 @@ fn page_cell_images() -> Vec<CellImage> {
     let bytes = std::fs::read(&path)
         .unwrap_or_else(|error| panic!("#6782 공개 fixture 읽기 {}: {error}", path.display()));
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
-    assert_eq!(document.page_count(), 104, "쪽수는 104쪽이어야 한다");
+    assert_eq!(
+        document.page_count(),
+        103,
+        "쪽수는 103쪽이어야 한다 (#6761 잔여 축까지 닫혀 정본과 같다)"
+    );
     let tree = document
         .build_page_render_tree(PAGE_INDEX)
         .expect("render p77");
@@ -123,13 +161,13 @@ fn target(images: &[CellImage]) -> CellImage {
 
 /// 표본 고정 — 대상이 통째로 사라지면 여기서 먼저 걸린다.
 #[test]
-fn the_page_still_holds_all_eleven_cell_images() {
+fn the_page_still_holds_all_twelve_cell_images() {
     let images = page_cell_images();
     assert_eq!(
         images.len(),
-        11,
-        "77쪽 표의 칸 안 그림은 11장이어야 한다 — 종전 시험은 `>= 10` 이라 \
-         대상 한 장이 없어져도 통과했다. got {}",
+        12,
+        "77쪽 표의 칸 안 그림은 12장이어야 한다 (정본 55쪽도 12장) — 종전 시험은 `>= 10` \
+         이라 대상 한 장이 없어져도 통과했다. got {}",
         images.len()
     );
 }
@@ -178,7 +216,7 @@ fn the_target_image_sits_inside_its_own_cell_at_the_hangul_position() {
 /// 같은 쪽·같은 표·같은 폴백 갈래인데 오프셋 결과가 칸 안에 남으므로 그대로 적용돼야 한다.
 /// 「음수면 0」이나 「결과 바닥을 칸 상단으로」 같은 넓은 판으로 바꾸면 여기가 깨진다.
 #[test]
-fn the_other_ten_images_keep_their_offsets() {
+fn the_other_eleven_images_keep_their_offsets() {
     let images = page_cell_images();
     let (.., (_, target_y, ..)) = target(&images);
 
@@ -186,7 +224,7 @@ fn the_other_ten_images_keep_their_offsets() {
         .iter()
         .filter(|(.., (_, y, ..))| (y - target_y).abs() > f64::EPSILON)
         .collect();
-    assert_eq!(others.len(), 10, "대상 외 그림은 10장이어야 한다");
+    assert_eq!(others.len(), 11, "대상 외 그림은 11장이어야 한다");
 
     for (row, col, (cell_y, cell_h), (_, image_y, _, image_h)) in &others {
         assert!(
@@ -204,6 +242,67 @@ fn the_other_ten_images_keep_their_offsets() {
     }
 }
 
+/// 일본 PS 두 마크는 같은 셀의 아래 경계를 넘어가면 안 된다.
+///
+/// 이 셀은 저장 `cell.height`가 행의 실제 높이보다 작고, 빈 문단의 `vpos`는
+/// 행 하단 쪽에 저장돼 있다. 이를 두 부동 그림의 문단 기준점으로 그대로 쓰면
+/// 두 번째 마크가 다음 행으로 밀린다. 한/글 2020 기준 PDF(물리 77쪽, 인쇄 쪽번호
+/// 55)에서는 두 마크 모두 일본 행 안에 온전히 들어간다.
+#[test]
+fn japan_mixed_wrap_marks_stay_inside_their_cell() {
+    let images = page_cell_images();
+    let japan: Vec<&CellImage> = images
+        .iter()
+        .filter(|(row, col, _, _)| (*row, *col) == (5, 3))
+        .collect();
+    assert_eq!(
+        japan.len(),
+        2,
+        "일본 인증마크 셀에는 그림 두 장이 있어야 한다"
+    );
+
+    for (_, _, (cell_y, cell_h), (_, image_y, _, image_h)) in japan {
+        assert!(
+            *image_y >= *cell_y - TOLERANCE_PX
+                && image_y + image_h <= cell_y + cell_h + TOLERANCE_PX,
+            "일본 PS 마크가 자기 셀을 벗어났다: 셀 {cell_y:.1}..{:.1}, 그림 {image_y:.1}..{:.1}",
+            cell_y + cell_h,
+            image_y + image_h,
+        );
+    }
+}
+
+/// 일본 PS 두 마크는 빈 문단의 마지막 글줄 위에 놓인다.
+///
+/// 아래쪽으로 내보내던 회귀를 막기 위해 셀 content bottom에 그림을 붙이면, 이번에는
+/// 한/글이 남겨 둔 빈 문단 한 줄(1000 HU = 13.33px)을 덮어 PDF보다 아래로 내려간다.
+/// 한/글 PDF(물리 77쪽, 인쇄 쪽번호 55)의 두 그림 frame top은 각각 318.2px,
+/// 319.0px이다. 첫 그림과 둘째 그림의 세로 offset 차이(82 HU = 1.09px)를 보존한
+/// 값이며, 원본 HWP와 축소 fixture 양쪽에서 고정한다.
+#[test]
+fn japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom() {
+    let images = page_cell_images();
+    let mut japan: Vec<&CellImage> = images
+        .iter()
+        .filter(|(row, col, _, _)| (*row, *col) == (5, 3))
+        .collect();
+    japan.sort_by(|a, b| a.3 .0.total_cmp(&b.3 .0));
+    assert_eq!(
+        japan.len(),
+        2,
+        "일본 인증마크 셀에는 그림 두 장이 있어야 한다"
+    );
+
+    let expected_tops = [318.2, 319.0];
+    for (image, expected_top) in japan.iter().zip(expected_tops) {
+        let (_, _, _, (_, image_y, _, _)) = image;
+        assert!(
+            (image_y - expected_top).abs() <= TOLERANCE_PX,
+            "일본 PS 마크의 빈 글줄 예약 위치가 한/글 PDF와 다르다: y={image_y:.1}, expected={expected_top:.1}"
+        );
+    }
+}
+
 /// 축소 과정이 전체 원본의 칸과 그림 배치를 바꾸지 않는지 공개 입력끼리 대조한다.
 #[test]
 fn the_reduced_fixture_preserves_original_cell_image_geometry() {
@@ -212,7 +311,7 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
     let bytes = std::fs::read(&original_path)
         .unwrap_or_else(|error| panic!("전체 원본 읽기 {}: {error}", original_path.display()));
     let original = HwpDocument::from_bytes(&bytes).expect("parse full original");
-    assert_eq!(original.page_count(), 104);
+    assert_eq!(original.page_count(), 103);
     let tree = original
         .build_page_render_tree(PAGE_INDEX)
         .expect("render full original p77");
@@ -220,7 +319,7 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
     collect_cell_images(&tree.root, None, &mut original_images);
 
     let reduced_images = page_cell_images();
-    assert_eq!(original_images.len(), 11);
+    assert_eq!(original_images.len(), 12);
     assert_eq!(reduced_images.len(), original_images.len());
     for (index, (reduced, full)) in reduced_images.iter().zip(&original_images).enumerate() {
         assert_eq!((reduced.0, reduced.1), (full.0, full.1), "image {index}");

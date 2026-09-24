@@ -282,7 +282,7 @@ export class EndnoteShapeDialog extends ModalDialog {
     this.separatorCheck.addEventListener('change', () => this.updateSeparatorEnabled());
     this.buildLineTypeControl();
     this.buildLineWidthControl();
-    this.separatorLengthModeSelect = this.select([['custom', '사용자']]);
+    this.separatorLengthModeSelect = this.select([['custom', t('dialog.endnoteShape.select.label')]]);
     this.separatorLengthModeSelect.style.width = '86px';
     this.separatorLengthInput = this.numberInput(50, 0, 300, 0.5);
     this.buildColorControl();

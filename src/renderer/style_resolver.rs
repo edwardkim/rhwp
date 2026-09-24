@@ -32,6 +32,9 @@ pub struct ResolvedCharStyle {
     /// 이름을 바꾸지 않았을 때뿐이다. HFT 는 한/글이 자기 글리프로 그리고, 대체된 이름은
     /// 다른 글꼴의 표를 빌려 오므로 표에 적힌 폭이 그 글꼴의 폭이라는 보장이 없다.
     pub font_families_metric_trusted: Vec<bool>,
+    /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
+    /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
+    pub font_families_hft_hangul: Vec<bool>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -94,6 +97,7 @@ impl Default for ResolvedCharStyle {
             font_family: String::new(),
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
+            font_families_hft_hangul: Vec::new(),
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -149,6 +153,22 @@ impl ResolvedCharStyle {
             0
         };
         self.font_families_metric_trusted
+            .get(slot)
+            .copied()
+            .unwrap_or(false)
+    }
+
+    /// [#7051] 지정 언어 카테고리의 글꼴이 HFT 한글 전용 face 라서 치환됐는지.
+    /// `font_family_for_lang` 과 같은 폴백(이름이 비면 한국어 0번)을 따른다.
+    pub fn hft_hangul_face_for_lang(&self, lang_index: usize) -> bool {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_hft_hangul
             .get(slot)
             .copied()
             .unwrap_or(false)
@@ -439,6 +459,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     // 7개 언어 카테고리별 폰트 이름, 자간, 장평 해소
     let mut font_families = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
 
@@ -455,6 +476,8 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
                     .as_deref()
                     .is_some_and(metric_widths_verified_face),
         );
+        font_families_hft_hangul
+            .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families.push(decision.css_family_chain.join(","));
 
         let spacing_percent = cs.spacings[lang] as f64;
@@ -472,6 +495,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_family,
         font_families,
         font_families_metric_trusted,
+        font_families_hft_hangul,
         font_size,
         bold: cs.bold,
         italic: cs.italic,
@@ -620,10 +644,33 @@ pub(crate) struct FontNameDecision {
 ///
 /// - `HY신명조` — `H2MJSM.TTF` 가 `periodcentered`(gid 20313 · 윤곽선 1개)를 1024/1024 로
 ///   갖고, `#7092` 재현체의 한/글 정본이 0.999em 이다(`·` 31회 전부 이 face).
+/// - `HY헤드라인M` — `ttfs/hwp/H2HDRM.TTF` 가 `periodcentered` 를 1024/1024 로 갖고
+///   윤곽선 bbox 가 `(439, 297, 586, 435)` 다(결측 글리프가 아니다). 저장소 한컴 정본
+///   **25개 문서**에서 이 face 의 `·` 전진폭이 0.89~1.06em 이고 중앙값이 1.000 이다
+///   (`k-water-rfp` 5종 · `mel-001` 3종 · `aift-2022` · `pr_6528_issue6181_p5` …).
+///   좁은 갈래(0.2~0.4em)는 한 건도 없다.
+/// - `HY울릉도M` — `ttfs/hwp/HYWULM.TTF` 가 같은 글리프를 1024/1024 로 갖고, 정본
+///   `press_release_split_cell_nested_table-hwpx-2020`(n=8, 0.944~1.000) 과
+///   `pr_6528_issue6181_p5_2020`(n=1, 1.000) 이 전각을 말한다.
 ///
 /// 새 face 를 넣으려면 그 글꼴 파일의 글리프와 한/글 출력 실측을 함께 남긴다.
+///
+/// 아직 넣지 않은 것 — `HY중고딕`(정본 5문서 n=41 이 전각이지만 저장소에 글꼴 파일이
+/// 없다) · `HY견고딕`·`HY그래픽`(글꼴 파일은 있으나 정본이 사실상 한 문서뿐) ·
+/// `휴먼명조`·`휴먼고딕`(정본 22문서가 전각이고 `HMKMM.TTF` 도 512/512 지만, 저장소
+/// 표본에서는 이 face 가 `alt_type == 1 && !substituted` 를 만족하지 않아 목록에 넣어도
+/// 값이 움직이지 않는다 — 실측으로 확인했다. HFT/TrueType 두 realization 을 가르는 다른
+/// 갈래다).
 fn metric_widths_verified_face(face: &str) -> bool {
-    matches!(face.trim(), "HY신명조" | "HYSinMyeongJo-Medium")
+    matches!(
+        face.trim(),
+        "HY신명조"
+            | "HYSinMyeongJo-Medium"
+            | "HY헤드라인M"
+            | "HYHeadLine-Medium"
+            | "HY울릉도M"
+            | "HYwulM"
+    )
 }
 
 pub(crate) fn lookup_font_name_decision(

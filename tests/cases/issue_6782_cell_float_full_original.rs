@@ -27,6 +27,40 @@
 //! ## 필수 실물 재현물
 //! 원문 전체를 samples/issue6782에 보존한다. 조각 표의 문맥과 BinData를 바꾸지 않으며,
 //! fixture가 없으면 실패한다. 개인 PC 경로 탐색이나 환경 변수에 따른 묵시적 skip은 없다.
+//!
+//! ## [#6761] 쪽 번호가 하나 밀렸다 — 기하 계약은 그대로다
+//!
+//! 이 fixture 는 `#6761` 이 다루는 바로 그 문서다. `#6761` 수정은 저장 사다리가 적어 둔
+//! 쪽 경계 하나를 복원한다 — 한/글 정본 14쪽(`최종안 제시 및 보고 자료: Design B 최종 제안
+//! 및 결정`)을 rhwp 가 13쪽에 얹고 있었다. 그 쪽이 제자리로 가면서 **뒤쪽 전부가 +1** 밀렸다.
+//!
+//! 그래서 이 파일의 `PAGE_INDEX` 를 76 → 77 로, `page_count` 를 104 → 105 로 옮긴다.
+//! **검사 항목은 하나도 완화하지 않았다** — 칸 안 그림 11개, `row4/col3` 의 CCC, 한/글
+//! 2020 기준 `y = 235.9 ± 3.0` 이 새 쪽 번호에서 그대로 성립한다(실측 `y = 238.7`).
+//!
+//! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
+//! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
+//! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
+//!
+//! ## [#6761 후속] 빈 조각 쪽이 사라져 쪽수가 105 → 104 다
+//!
+//! 같은 이슈의 개체 칸 회계 수정(`빈 개체 줄을 그림 위에 쌓지 않는다`)으로 이 문서의
+//! `<표 4-1> 국내외 유사 마크 현황` 이 한 쪽에 들어간다. 수정 전에는 마지막 `덴마크` 행의
+//! 그림만 이어받는 **여분 쪽**이 78쪽 뒤에 끼어 있었다. 정본은 그 표를 55쪽 한 장에 담는다.
+//!
+//! - `PAGE_INDEX`(77) 는 그대로다 — 없어진 쪽은 그 **뒤**(0-기반 78)였다.
+//! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
+//! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
+//!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
+//!
+//! ## [#6761 잔여 축] 나란히 놓이는 그림을 더하지 않으면서 쪽수가 104 → 103 이다
+//!
+//! 한 문단의 개체를 가로 겹침과 무관하게 세로로 합산하던 측정을 배치와 맞췄다.
+//! `<표 3-4>` 의 마지막 행이 제 쪽에 들어가면서 그 앞의 여분 쪽도 사라진다.
+//!
+//! - `page_count` 104 → **103** — 한컴 정본 쪽수와 같다.
+//! - `PAGE_INDEX` 77 → **76**. 없어진 쪽이 이 쪽 **앞**(`<표 3-4>` 구간)이다.
+//! - 그 쪽의 칸 안 그림은 12장 그대로다(정본 55쪽도 12장).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -65,7 +99,11 @@ fn collect_cell_images<'a>(
 fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let bytes = sample();
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
-    assert_eq!(document.page_count(), 104, "쪽수는 104쪽이어야 한다");
+    assert_eq!(
+        document.page_count(),
+        103,
+        "쪽수는 103쪽이어야 한다 (#6761 잔여 축까지 닫혀 정본과 같다)"
+    );
 
     let tree = document
         .build_page_render_tree(PAGE_INDEX)
@@ -73,7 +111,11 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let mut images = Vec::new();
     collect_cell_images(&tree.root, None, &mut images);
 
-    assert_eq!(images.len(), 11, "77쪽의 칸 안 그림 11개를 보존해야 한다");
+    assert_eq!(
+        images.len(),
+        12,
+        "77쪽의 칸 안 그림 12개를 보존해야 한다 (정본 55쪽도 12개)"
+    );
 
     for (cell_y, image_y, image_h) in &images {
         assert!(

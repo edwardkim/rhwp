@@ -423,8 +423,21 @@ export const insertCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
-      const ref = ih.getSelectedPictureRef();
-      if (!ref || ref.type !== 'equation') return;
+      let ref = ih.getSelectedPictureRef();
+      if (!ref || (ref.type !== 'equation' && ref.type !== 'ole')) return;
+      // 레거시 hwpeq5 OLE은 원본 방언을 안전하게 되쓸 수 없다. native equation으로
+      // 같은 슬롯에서 전환한 뒤 일반 편집기를 연다. snapshot 경로라 undo도 원 OLE로 복원된다.
+      if (ref.type === 'ole') {
+        const oleRef = ref;
+        let promoted: { ok: boolean; paraIdx: number; controlIdx: number } | undefined;
+        recordObjectMutation(ih, 'promoteOleEquation', (wasm) => {
+          promoted = wasm.promoteOleEquation(oleRef.sec, oleRef.ppi, oleRef.ci);
+          if (!promoted?.ok) throw new Error('[insert:equation-edit] 레거시 OLE 수식 전환 실패');
+        });
+        if (!promoted) return;
+        ih.selectPictureObject(oleRef.sec, promoted.paraIdx, promoted.controlIdx, 'equation');
+        ref = { ...oleRef, ppi: promoted.paraIdx, ci: promoted.controlIdx, type: 'equation' };
+      }
       if (!equationEditorDialog) {
         equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus, services);
       }

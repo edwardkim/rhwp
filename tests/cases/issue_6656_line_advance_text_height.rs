@@ -19,6 +19,11 @@
 
 use std::path::Path;
 
+use rhwp::renderer::composer::compose_paragraph;
+use rhwp::renderer::height_measurer::HeightMeasurer;
+use rhwp::renderer::style_resolver::resolve_styles;
+use rhwp::DocumentCore;
+
 fn page_svg(rel: &str, page: u32) -> String {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {rel}: {e}"));
@@ -76,5 +81,37 @@ fn lines_advance_by_stored_text_height_not_line_box_height() {
     assert!(
         ys.iter().any(|y| (y - 157.0).abs() < 0.7),
         "아래 아이콘 줄 y 157.0 (한/글 156.9, 종전 171.9): {ys:?}"
+    );
+}
+
+#[test]
+fn measurement_uses_the_same_saved_ladder_step_as_layout() {
+    let path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwpctl_ParameterSetID_Item_v1.2.hwp");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("#6656 기준 HWP 읽기"))
+        .expect("#6656 기준 HWP 파싱");
+    let document = core.document();
+    let para = document.sections[0].paragraphs[7].clone();
+    let composed = compose_paragraph(&para);
+    let styles = resolve_styles(&document.doc_info, 96.0);
+    let measured = HeightMeasurer::new(96.0)
+        .with_native_hwp5(true)
+        .measure_section(std::slice::from_ref(&para), &[composed], &styles, None);
+    let paragraph = measured.get_measured_paragraph(0).expect("문단 측정");
+
+    let current = &para.line_segs[2];
+    let next = &para.line_segs[3];
+    let stored_advance = f64::from(next.vertical_pos - current.vertical_pos) / 75.0;
+    let line_box_advance = f64::from(current.line_height + current.line_spacing) / 75.0;
+    assert!(
+        (stored_advance - line_box_advance).abs() > 1.0,
+        "이 입력은 저장 사다리와 줄 상자 advance가 달라야 한다"
+    );
+    assert!(
+        (paragraph.line_advance(2) - stored_advance).abs() < 0.01,
+        "측정도 배치와 같은 저장 사다리 advance를 써야 한다: measured={}, stored={}, box={}",
+        paragraph.line_advance(2),
+        stored_advance,
+        line_box_advance,
     );
 }

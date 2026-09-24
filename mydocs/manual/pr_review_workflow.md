@@ -53,6 +53,8 @@ commit의 lint 생략 규칙이 아니다.
 모든 정식 `pr_N_review.md`는 최종 판정을 아래 셋 중 **정확히 하나**로 적는다. `close`,
 `rebase 요청`, `comment 게시`, GitHub review의 `approve`, `merge`는 판정명이 아니라 그 판정 뒤에
 작업지시자 승인을 받아 수행할 수 있는 별도 조치다.
+review 문서는 제목 바로 다음 첫 절을 `## 최종 판정`으로 둔다. 현재 판정과 blocker 또는
+merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래에서 근거로 전개한다.
 
 | 최종 판정 | 의미 | review 문서에 반드시 남길 내용 |
 | --- | --- | --- |
@@ -370,7 +372,10 @@ review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위�
 [PR 접수와 리뷰 기록](pr_review/intake_and_review.md)을 따른다. 시각 검증을 실제 판단 근거로 사용하면
 문서 비교 절차의 정본으로 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md#github-merge-comment)를
 사용한다. 임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
-그 경로를 review 문서와 실제 GitHub comment에 사용한다. 이때 대표 review PNG 자체를 열어 도구 라벨,
+그 경로를 review 문서와 실제 GitHub comment에 사용한다. **PR 생성·검토 요청 전에는** 최종 PR head의
+repository와 SHA로 고정한 review·overlay PNG를 PR 본문 Markdown 이미지로 표시한다. head가 바뀌면
+새 캡처·새 URL로 본문을 갱신하고, `gh pr view --json body` 및 asset API 조회와 PR 화면으로 표시를 확인한다.
+merge 후에는 같은 asset을 merge SHA 고정 URL로 바꾸어 contributor comment에 남긴다. 이때 대표 review PNG 자체를 열어 도구 라벨,
 한글 glyph, 수치 표기, overlay legend가 판독 가능한지 확인하고, 깨진 라벨이나 판정 오해 소지가 있으면
 merge 전 보정하거나 별도 issue로 분리해 review 문서에 적는다. merge 후 comment에는 Visual Sweep 정본
 link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.
@@ -383,8 +388,9 @@ before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 vis
 
 ### 4.2 시각 증적 PR comment 계획
 
-시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 최종 판정 전에
-`Merge 후 contributor PR comment 계획` 절을 포함해야 한다. 이 절은 merge 뒤 새로 추정하거나 임시
+시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 제목 바로 아래의 `## 최종 판정`에
+현재 결론을 먼저 표시하고, 상세 근거 절에 `Merge 후 contributor PR comment 계획`을 포함해야 한다.
+이 절은 merge 뒤 새로 추정하거나 임시
 output에서 수치를 옮기는 일을 막기 위한 사전 기록이며, 최소한 다음을 적는다.
 
 1. [Visual Sweep의 GitHub merge comment 정본](verification/visual_sweep_guide.md#github-merge-comment) direct link

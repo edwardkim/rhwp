@@ -143,7 +143,7 @@ function generatePreview(preset: NumberingPreset, startNumber: number): string {
     const numStr = formatNumber(startNumber, preset.numberFormats[level]);
     // ^(level+1)을 numStr로 치환
     const marker = fmt.replace(`^${level + 1}`, numStr);
-    lines.push(`${indent}수준 ${level + 1}: ${marker}`);
+    lines.push(`${indent}${i18nText('dialog.numbering.previewLine', { p1: level + 1, p2: marker })}`);
   }
   return lines.join('\n');
 }

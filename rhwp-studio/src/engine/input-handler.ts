@@ -1826,10 +1826,15 @@ export class InputHandler {
       { type: 'command', commandId: 'edit:paste' },
       { type: 'separator' },
     ];
-    // 수식 객체: "수식 편집..." 항목 추가
-    if (ref?.type === 'equation') {
+    // native 수식과 레거시 hwpeq5 OLE 모두 편집기로 연다. 후자는 클릭 시 native
+    // equation으로 변환되며, 다른 OLE은 코어가 명시적 오류로 거부한다.
+    if (ref?.type === 'equation' || ref?.type === 'ole') {
       items.push(
-        { type: 'command', commandId: 'insert:equation-edit', label: '수식 편집...' },
+        {
+          type: 'command',
+          commandId: 'insert:equation-edit',
+          label: ref.type === 'ole' ? '수식으로 변환하여 편집...' : '수식 편집...',
+        },
         { type: 'separator' },
       );
     }

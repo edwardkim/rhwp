@@ -37,6 +37,7 @@
     "e2e:hwp-password-open": "node e2e/hwp-password-open.test.mjs --mode=headless",
     "e2e:clipboard-priority": "node e2e/task-871-clipboard-priority.test.mjs",
     "e2e:issue-6638": "node e2e/run-with-vite.mjs -- node e2e/cell-plain-text-paste-issue6638.test.mjs --mode=headless",
+    "e2e:issue-7333-line": "node e2e/run-with-vite.mjs -- node e2e/issue-7333-line-selection.test.mjs --mode=headless",
     "e2e:page-key-scroll": "node e2e/page-key-scroll.test.mjs --mode=headless",
     "e2e:page-break-caret": "node e2e/run-with-vite.mjs -- node e2e/page-break-caret-reveal.test.mjs --mode=headless",
     "e2e:home-end-key": "node e2e/home-end-key.test.mjs --mode=headless",
@@ -81,8 +82,8 @@
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.9",
-    "puppeteer-core": "^25.10.0",
+    "@types/chrome": "^0.3.0",
+    "puppeteer-core": "^25.11.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vite-plugin-pwa": "^1.3.0",

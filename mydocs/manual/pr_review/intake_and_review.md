@@ -178,6 +178,12 @@ mydocs/pr/pr_N_review_impl.md
 
 review 문서에는 최소한 다음을 포함한다.
 
+새 review는 [PR review 템플릿](review_template.md)을 사용한다. **`## 최종 판정`을 제목 바로 다음
+첫 절에 둔다.** 접수 정보·검증 표·시각 증적을 보기 전에도 현재 결론과 blocker 또는 merge 전
+조건을 확인할 수 있어야 한다. 검증 중인 초안에는 `머지 보류`와 아직 완료되지 않은 검증을
+해제 조건으로 쓰고, 완료 후 판정과 근거를 갱신한다. 아래 상세 근거 절에 다른 최종 판정을
+중복 작성하지 않는다.
+
 - PR metadata 표: 번호, 작성자, base, 규모, mergeable 작성 시점 참고값
 - 관련 issue 요약과 변경 범위: 핵심 기능, metadata 변경, 범위 밖 변경
 - 렌더 영향과 visual sweep 필요 여부
@@ -197,6 +203,11 @@ review 문서에는 최소한 다음을 포함한다.
 `mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
 SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
+
+또한 reviewer는 merge 전 PR 본문에서 실제 Visual Sweep 증적이 보이는지 확인한다. 최종 PR head의
+repository·SHA로 고정한 Native/fresh WASM review·overlay 이미지가 실행한 출력 경로별로 표시되어야 하며,
+asset 경로·임시 output·review 문서 링크만 있으면 증적 부족으로 기록한다. 이 확인은 merge 뒤 contributor
+comment의 merge SHA 고정 증적과 별개다. 정본은 [Visual Sweep PR 본문 직접 증적](../verification/visual_sweep_guide.md#pr-body-visual-evidence)이다.
 
 ### 3.2 implementation 계획서
 
