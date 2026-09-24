@@ -101,24 +101,23 @@ fn shape_feedback_keeps_stored_zero_size() {
 /// 함께 잠근다. 위 완화를 이 경우까지 넓히면 도형이 화면에서 사라진다.
 #[test]
 fn shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps() {
-    const SAMPLE: &str = "samples/issue6023/30269_reform_recommendation.hwp";
+    const SAMPLE: &str = "samples/21_언어_기출_편집가능본.hwp";
     let mut core = load(SAMPLE);
-    let Ok(before) = core.get_shape_properties_native(0, 0, 0) else {
-        // 이 재현물에 좌표 (0,0,0) 도형이 없으면 계약 대상이 아니다.
-        return;
-    };
+    // 한컴 저장 가로선 s0p4c0 은 높이 4 HWPUNIT. 도형 부재를 PASS 로 세지 않는다.
+    let before = core
+        .get_shape_properties_native(0, 4, 0)
+        .expect("대조 가로선 속성 읽기");
     let value: serde_json::Value = serde_json::from_str(&before).expect("봉지 파싱");
-    let Some(h) = value.get("height").and_then(|v| v.as_u64()) else {
-        return;
-    };
-    if h == 0 {
-        return; // 이미 0 이면 이 반례의 전제가 아니다.
-    }
+    let h = value
+        .get("height")
+        .and_then(|v| v.as_u64())
+        .expect("높이 필드");
+    assert_eq!(h, 4, "대조 가로선의 한컴 저장 높이 전제");
 
-    core.set_shape_properties_native(0, 0, 0, r#"{"height":0}"#)
+    core.set_shape_properties_native(0, 4, 0, r#"{"height":0}"#)
         .expect("0 으로 떨어뜨리는 편집");
     let after = core
-        .get_shape_properties_native(0, 0, 0)
+        .get_shape_properties_native(0, 4, 0)
         .expect("도형 속성 다시 읽기");
     let after_h = serde_json::from_str::<serde_json::Value>(&after)
         .ok()
@@ -126,8 +125,54 @@ fn shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps() {
         .expect("높이 읽기");
 
     assert!(
-        after_h >= 200,
+        after_h == 200,
         "0 으로 떨어뜨리는 편집은 최소 크기로 올라와야 한다 — 이 보호까지 풀면 도형이 \
          화면에서 사라진다. 이전 높이={h} 이후 높이={after_h}"
+    );
+}
+
+/// 저장 높이 0인 도형을 실제로 확대했다가 undo 하면 한컴 저장값으로 돌아와야 한다.
+#[test]
+fn shape_resize_undo_restores_stored_zero_height() {
+    const SAMPLE: &str = "samples/issue6023/30269_reform_recommendation.hwp";
+    let mut core = load(SAMPLE);
+    let before = core
+        .get_shape_properties_native(0, 28, 0)
+        .expect("높이 0 도형 속성 읽기");
+    let before_json: serde_json::Value = serde_json::from_str(&before).expect("원본 봉지 파싱");
+    assert_eq!(before_json["height"], 0, "한컴 저장 높이 0 전제");
+    let page_json = core
+        .get_page_of_position_native(0, 28)
+        .expect("도형이 속한 쪽 조회");
+    let page: u32 = serde_json::from_str::<serde_json::Value>(&page_json).expect("쪽 응답 파싱")
+        ["page"]
+        .as_u64()
+        .expect("쪽 번호") as u32;
+    assert!(page < core.page_count(), "대상 도형의 쪽이 존재해야 한다");
+    let before_svg = core.render_page_svg_native(page).expect("원본 영향 쪽 SVG");
+
+    core.set_shape_properties_native(0, 28, 0, r#"{"height":400}"#)
+        .expect("실제 확대");
+    let expanded = core
+        .get_shape_properties_native(0, 28, 0)
+        .expect("확대 후 속성 읽기");
+    let expanded_json: serde_json::Value = serde_json::from_str(&expanded).expect("확대 봉지 파싱");
+    assert_eq!(expanded_json["height"], 400, "확대가 실제로 적용돼야 한다");
+
+    // ResizeObjectCommand.undo 는 before 치수를 돌려준다. 저장 0 복원임을 명시한다.
+    core.set_shape_properties_native(0, 28, 0, r#"{"height":0,"restoreStoredZero":true}"#)
+        .expect("저장 높이 복원");
+    let restored = core
+        .get_shape_properties_native(0, 28, 0)
+        .expect("복원 후 속성 읽기");
+    assert_eq!(
+        restored, before,
+        "undo 뒤 개체 속성 봉지가 원본으로 돌아와야 한다"
+    );
+    assert_eq!(
+        core.render_page_svg_native(page)
+            .expect("undo 뒤 영향 쪽 SVG"),
+        before_svg,
+        "undo 뒤 영향 쪽의 실제 SVG 출력도 원본과 같아야 한다"
     );
 }

@@ -198,12 +198,13 @@ impl DocumentCore {
     ) {
         use crate::document_core::helpers::{json_bool, json_i16, json_str, json_u32};
 
-        // [#6806] 퇴화값 0 만 최소 크기로 올린다 — 한컴 문서에는 200 미만 치수가 정당하게 있다.
+        // [#6806] 퇴화값 0 만 최소 크기로 올린다. Undo 는 저장된 0 복원을 명시할 수 있다.
+        let restore_stored_zero = json_bool(props_json, "restoreStoredZero") == Some(true);
         if let Some(w) = json_u32(props_json, "width") {
-            c.width = super::clamp_degenerate_size(w, c.width);
+            c.width = super::clamp_degenerate_size(w, c.width, restore_stored_zero);
         }
         if let Some(h) = json_u32(props_json, "height") {
-            c.height = super::clamp_degenerate_size(h, c.height);
+            c.height = super::clamp_degenerate_size(h, c.height, restore_stored_zero);
         }
         if let Some(tac) = json_bool(props_json, "treatAsChar") {
             c.treat_as_char = tac;
