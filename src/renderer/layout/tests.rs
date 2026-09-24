@@ -743,6 +743,7 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![
             ResolvedCharStyle {
@@ -885,6 +886,7 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![
             ResolvedCharStyle {
@@ -977,6 +979,7 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
@@ -1013,6 +1016,7 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
@@ -1286,6 +1290,7 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         border_styles: vec![ResolvedBorderStyle::default()],
         ..Default::default()
@@ -2022,6 +2027,7 @@ fn test_tac_leading_width_block_table_full_line() {
         horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
@@ -2118,6 +2124,7 @@ fn test_tac_leading_width_inline_table_partial() {
         horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
@@ -2821,6 +2828,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
         border_styles: vec![ResolvedBorderStyle {
             fill_color: Some(0x00F0F0F0),

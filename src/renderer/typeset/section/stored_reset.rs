@@ -86,6 +86,32 @@ impl TypesetEngine {
                 let para_sb_hu_for_reset = para_style
                     .map(|s| (s.spacing_before * 7200.0 / 96.0) as i32)
                     .unwrap_or(0);
+                // 저장 HWP5에서 인라인 묶음 도형만 든 제목 문단은 쪽 첫 줄의
+                // vpos를 0 대신 작은 양수로 남길 수 있다. 보통의 shape-only
+                // 문단은 쪽-앵커/어울림 좌표일 수 있어 위의 일반 near-top
+                // 분기에서 제외하지만, 인라인 도형 한 개가 직전 쪽 하단에서
+                // 되감기고 다음 본문 문단도 그 새 좌표에서 이어지면 물리 쪽
+                // 경계다. 이 경계를 놓치면 제목 도형만 앞 쪽의 본문 밖에
+                // 그려지고 이어지는 본문은 다음 쪽으로 넘어간다.
+                let native_inline_shape_reset = !hwp3_origin_page_tolerance
+                    && profile.hwp5_stored_pagination_layout()
+                    && shape_only_para
+                    && para.controls.len() == 1
+                    && matches!(&para.controls[0], Control::Shape(shape) if shape.common().treat_as_char)
+                    && para.line_segs.len() == 1
+                    && cv > 0
+                    && cv <= 2500
+                    && prev_vpos_end > 60_000
+                    && paragraphs.get(para_idx + 1).is_some_and(|next| {
+                        next.line_segs
+                            .first()
+                            .filter(|seg| !is_synthetic_line_seg(seg))
+                            .is_some_and(|seg| {
+                                seg.vertical_pos > cv && seg.vertical_pos < prev_vpos_end / 2
+                            })
+                    })
+                    && !para_is_page_bottom_fixed_table_anchor(para)
+                    && !para_hosts_page_anchored_block(para);
                 // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
                 // 한글은 새 쪽 첫 줄의 stored vpos 를 0 이 아니라 해당 문단의
                 // spacing_before 로 기록하기도 한다 (조문별/규제영향분석서 클래스,
@@ -189,6 +215,7 @@ impl TypesetEngine {
                             && !para_hosts_page_anchored_block(para))
                         || near_page_top_reset
                         || native_near_top_reset
+                        || native_inline_shape_reset
                         || stored_top_collision_reset
                 };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전

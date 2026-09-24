@@ -342,6 +342,9 @@ impl Default for ResolvedBorderStyle {
 /// 해소된 스타일 세트 (DocInfo에서 변환)
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
+    /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
+    /// 기본 글꼴이 아닌 이 스타일로 출력된다.
+    pub page_number_char_style_id: Option<usize>,
     /// Shared session measurements for DB-missing glyphs, not document styles.
     pub supplemental_metrics:
         Option<std::sync::Arc<super::supplemental_metrics::SupplementalMetricSnapshot>>,
@@ -430,6 +433,14 @@ pub fn resolve_styles_with_variant(
     let bullets = doc_info.bullets.clone();
 
     ResolvedStyleSet {
+        page_number_char_style_id: doc_info
+            .styles
+            .iter()
+            .find(|style| {
+                style.local_name == "쪽 번호"
+                    || style.english_name.eq_ignore_ascii_case("Page Number")
+            })
+            .map(|style| style.char_shape_id as usize),
         char_styles,
         para_styles,
         border_styles,

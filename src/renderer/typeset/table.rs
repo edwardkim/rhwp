@@ -12,7 +12,7 @@ use crate::renderer::float_placement::is_para_topbottom_float;
 use crate::renderer::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
-    MeasuredTable,
+    trim_stored_hwpx_inline_row_trailing_spacing, MeasuredTable,
 };
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -177,6 +177,13 @@ pub(super) fn fit_measured_for_host(
     dpi: f64,
     profile: impl Fn() -> LayoutCompatibilityProfile,
 ) -> Option<MeasuredTable> {
+    if table.common.treat_as_char && profile().hwpx_stored_layout() && !profile().session_edited() {
+        if let Some(fitted) = mt
+            .and_then(|measured| trim_stored_hwpx_inline_row_trailing_spacing(measured, table, dpi))
+        {
+            return Some(fitted);
+        }
+    }
     // [#2195] 빈 앵커(자리차지 표 표준형)에도 선언높이 fit 적용 — 한글은 콘텐츠가
     // 선언보다 작아도 표 선언높이를 유지한다 (80168 pi=419 행 걷기 151.1 = 선언,
     // 콘텐츠 143.5 사용 시 페이지 끝 razor -1쪽). fit 자체의 0.75~1.35 가드(#1510)
