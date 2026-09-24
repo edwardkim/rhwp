@@ -1,6 +1,7 @@
 # #6639 / PR #7260 검토 입력과 기준 출력
 
-검토 코드 SHA: `e5135e3f19ff26222254f1474adc87d2af04e870`.
+아래 reviewer 자료의 검토 코드 SHA: `e5135e3f19ff26222254f1474adc87d2af04e870`.
+기여자의 후속 수정·검증은 문서 끝의 「2026-09-24 재리뷰 대응」에 구분해 기록한다.
 원본은 [이슈 첨부 ZIP](https://github.com/user-attachments/files/31736768/rhwp-table-cell-minimal-repro.zip)의
 `rhwp-table-cell-minimal-repro.hwp`이며, 첨부와 SHA-256이 같다. 이 자료는 reviewer가 보완한 것으로
 기여자의 구현 변경과 구분한다. 시각 일치 통과나 새로운 제품 회귀를 선언하는 자료가 아니다.
@@ -117,3 +118,95 @@ PDF SHA-1은 순서대로 원본 `b97cf2e9ffd41fe254d92f10eba07da62a3b7036`,
 | `pdf/issue6639/issue6639-original-160-2020.pdf` | 20828 | `ebd1cd8ef64741c648211db9174cae7118e59fcbc49fba39b57ab5c63b2e9bc0` |
 | `pdf/issue6639/issue6639-reference-140-2020.pdf` | 20831 | `0aff1a33d8d97a0adf0bd329bf173dab42e617f88a2549068d16e247bda7bc97` |
 | `pdf/issue6639/issue6639-reference-160-2020.pdf` | 20828 | `a17453b03acc4a4684e23f8843fe2e4d9baedaeb5b6c12eb319bf393344c77ac` |
+
+## 2026-09-24 재리뷰 대응
+
+제품·테스트 수정 SHA: `cf3e9fc1da3ba9cc949eb94ae6ddfb61f9baba5a`.
+PR 도입 전 비교는 첫 PR 커밋의 부모 `236a601da803b53429e9090eef652c661dd3bfe2`다.
+두 버전을 각각 빌드해 같은 원본의 `(0,0,2,31)`에 140%를 적용하고 원래 모양 ID를 복원했다.
+reviewer의 입력·기준 PDF·검토 기록은 그대로 보존했다.
+
+### 반복 편집의 RowBreak 경계
+
+수치 역행이 사라지는 상태는 합성만의 문제가 아니다. 기존 입력
+`samples/task2430/1382000_domestic_violence_survey.hwp`의 `(0,93,0,0)`은 실제 `RowBreak`
+표이며, 저장된 문단 76/77의 첫 vpos가 `64680 / 64462`다(index는 0부터).
+109문단을 140%로 바꾸면 문단 76이 64462보다 앞서 역행이 사라진다. 원래 모양 ID를
+복원할 때 종전 코드는 문단 77을 `69080`으로 옮겼고 수정본은 저장 원점 `64462`를 유지한다.
+이 입력의 SHA-256은 `a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381`이며,
+기존 한컴 출력은 `pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf`다.
+이는 실제 지원 입력의 경계 보존 검증이며, 그 문서의 140% 한컴 편집 출력과의 시각 일치 판정은 아니다.
+
+최초 서식 flush가 좌표를 바꾸기 전에 문단의 경계 여부를 보존한다. 이후에는 숫자 역행을
+재추론하지 않는다. 기존 ladder와 batch 종료 순회를 재사용하고 새 의존성·문서별 임계값은 없다.
+snapshot은 경계를 보존하며 문단 분할의 새 문단은 이어지는 조각이다. 폭 reflow는 기존 좌표계를
+다시 만들므로 경계를 해제한다. setter마다 셀 전체를 순회하는 작업은 추가하지 않았다.
+
+정식 회귀 `rowbreak_origin_survives_shrink_then_restore`와
+`saved_rowbreak_origin_survives_repeated_formatting`을 추가했다. 전자는 합성 입력의
+batch/eager, 두 번의 축소·복원, snapshot 왕복 및 경계 첫 문단의 텍스트 입력/삭제를 검사한다.
+후자는 위 실제 HWP의 두 번의 축소·복원을 검사한다. 수정 전 제품 코드 `e5135e3f`에 연결한
+두 검사는 모두 FAIL, 기존 RowBreak reflow 대조 검사는 PASS였다. 수정 후 #6639는 10/10 PASS다.
+
+### 원본의 편집·복원과 남는 화면 차이
+
+아래는 96dpi SVG 좌표다. 초기 화면과 원래 모양 ID 복원 화면은 각각 **PR 도입 전/수정 후
+SVG 전체가 byte 동일**하다. 140%에서는 756개 XML 노드 중 글자 622개의 위치만 달라지고
+문자열·줄 구성·셀/표 외곽은 같다. 첫 문단을 제외한 문단 시작점이 함께 위로 이동한다.
+
+| 상태 | 표 바탕 높이 | 대상 셀 Y / 높이 | 마지막 글줄 baseline Y |
+| --- | ---: | ---: | ---: |
+| 초기 160%, 양쪽 동일 | 1009.1200 | 328.1237 / 540.6004 | 858.5904 |
+| 도입 전 140% | 1024.5737 | 341.2933 / 540.6004 | 869.3600 |
+| 수정 후 140% | 1024.5737 | 341.2933 / 540.6004 | 806.9600 |
+| 원래 모양 ID 복원, 양쪽 동일 | 1025.3067 | 341.2933 / 541.3333 | 871.7600 |
+| 전체 snapshot 복원, 양쪽 동일 | 1009.1200 | 328.1237 / 540.6004 | 858.5904 |
+
+140%의 문단 첫 vpos는 도입 전 `[0,1440,8640,18720,27360,31680,33120,34560,36000,37440]`,
+수정 후 `[0,1260,7560,16380,23940,27720,28980,30240,31500,32760]`다.
+마지막 두 줄은 `[37440,38700]`에서 `[32760,34020]`으로 바뀐다. 화면의 마지막 글줄이
+62.4px 위로 이동하며 마지막 문단의 글자는 유지된다. 이 입력에는 표 뒤의 가시적인 본문이
+없어 하단 빈 행·표 외곽 위치를 비교했다. 별도 후속 본문의 정상 배치까지 검증한 것은 아니다.
+
+원본의 저장/로드 줄 수는 문단별 `[1,5,7,6,3,1,1,1,1,2]`(28줄)이고 제공된 한컴 PDF는
+`[1,4,6,5,3,1,1,1,1,2]`(25줄)다. 추가 줄바꿈은 초기 상태와 PR 도입 전부터 있다.
+글꼴 계측의 개별 원인은 분리하지 않았으므로 특정 폰트 결함으로 단정하지 않는다.
+
+모양 ID 복원이 최초 표 높이까지 복원하지 않는 현상도 기존 코드와 같다. 서식 편집은
+`raw_stream`을 비우며, `Document::layout_profile`의 `session_edited`가 켜진 뒤에는
+`HeightMeasurer`가 미편집 TAC 표에 적용하는 저장 높이 축소를 사용하지 않는다.
+모양 ID만 돌려도 그 편집 상태는 남는다. 전체 문서 snapshot을 복원하면 초기 SVG와 같았다.
+이 PR의 복원 주장은 **원래 모양 ID와 셀 문단 vpos**이며, Studio undo stack/화면 전체의
+픽셀 복원이나 한컴 출력 일치를 뜻하지 않는다. 독립된 높이·줄 구성 차이는 이번에 수정하지 않았다.
+
+| SVG 상태 | 도입 전/수정 후 공통 SHA-256 |
+| --- | --- |
+| 초기 / snapshot 복원 | `87b0960611b6983a044acaf564559e7804e1f191f8f64baeeb5c4b3751c70801` |
+| 원래 모양 ID 복원 | `bc7e098eb0928f00c3bedf61c999918c66b98f29e408ab086231eb669564a69b` |
+
+같은 제품 SHA에서 새로 빌드한 WASM을 Chromium에서 실행했다. 초기·140%·모양 ID 복원 SVG가
+각각 Native와 byte 동일하며 batch 및 비배치 복원 호출을 모두 확인했다. 실제 Studio UI의
+undo 버튼 검증은 아니다. 140% SVG 해시는 위 reviewer 자료의 `fa0ff3a1…`와 같다.
+
+- [도입 전 140% / 한컴 비교](../../mydocs/pr/assets/pr_7260_rereview_base140.png)
+- [수정 후 140% fresh WASM / 한컴 비교](../../mydocs/pr/assets/pr_7260_rereview_fixed140.png)
+- [수정 후 원래 모양 복원 / 한컴 비교](../../mydocs/pr/assets/pr_7260_rereview_restore160.png)
+- [수정 후 원본 fresh WASM / 한컴 비교](../../mydocs/pr/assets/pr_7260_rereview_original160.png)
+
+원본은 Native/fresh WASM 전체 Visual Sweep의 compare·overlay·review를 모두 직접 확인했다.
+양쪽 1쪽 완료, 자동 flagged 0, pixel match 91.23547%, 내용 중심 proxy 7.15330%지만
+추가 줄바꿈·행 경계 차이가 보이므로 시각 일치 통과로 쓰지 않는다. Windows/Chromium/webfont,
+원본 PDF raster는 Poppler 26.07.0, 편집 비교는 PDFium 96dpi와 canonical 비교 helper를 썼다.
+편집 비교는 render-tree heuristic 미실행이며 이전 macOS 수치와 직접 비교하지 않는다.
+
+재현은 위 명령의 코드 checkout을 해당 SHA로 바꿔 실행한다. 원본에서 초기 SVG와 모양 ID를
+저장하고 10문단을 140%로 batch 적용한 뒤 렌더한다. 저장한 ID로 `setCellParaShapeId`를 호출해
+다시 렌더하고, 별도로 편집 전 snapshot을 복원해 렌더한다. 각 checkout은 자기 소스로 빌드한
+산출물을 사용해야 한다. 실제 RowBreak 정식 회귀는 위 #6639 focused 명령에 포함된다.
+
+제품 SHA `cf3e9fc1`을 별도 review worktree에서 검증했다. 전체 release-test는 **9,993 passed /
+51 skipped**, #6639는 10 passed, #4118은 1 passed다. Native Skia lib는 4,112 passed /
+13 ignored, 이미지 누락 2개·직접 PDF 출력 4개도 통과했다. fmt, Native/WASM32/workspace
+all-targets Clippy(`-D warnings`), workspace build, manifest 계약 23개 및 정책 base
+`505661360e9a2d596f55300d0cb0c5222f0e14b4` 비교가 통과했다. 원본 fidelity의 text-only /
+all-SVG / layout-ledger도 완료했다. 뒤따르는 문서·PNG 커밋은 제품·테스트 코드를 바꾸지 않는다.
