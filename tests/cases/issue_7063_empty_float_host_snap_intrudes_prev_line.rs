@@ -52,6 +52,28 @@ fn find_table_top(node: &RenderNode, para_index: usize) -> Option<f64> {
         .find_map(|child| find_table_top(child, para_index))
 }
 
+fn find_table_bottom(node: &RenderNode, para_index: usize) -> Option<f64> {
+    if let RenderNodeType::Table(t) = &node.node_type {
+        if t.para_index == Some(para_index) && t.cell_context.is_none() {
+            return Some(node.bbox.y + node.bbox.height);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_table_bottom(child, para_index))
+}
+
+fn find_line_box_top(node: &RenderNode, para_index: usize) -> Option<f64> {
+    if let RenderNodeType::TextLine(line) = &node.node_type {
+        if line.para_index == Some(para_index) {
+            return Some(node.bbox.y);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_line_box_top(child, para_index))
+}
+
 fn find_line_box_bottom(node: &RenderNode, para_index: usize) -> Option<f64> {
     let mut bottom: Option<f64> = None;
     if let RenderNodeType::TextLine(line) = &node.node_type {
@@ -136,5 +158,48 @@ fn issue_7063_stored_ladder_witness_table_is_untouched() {
     assert!(
         (table_top - 208.73).abs() <= 1.0,
         "저장 사다리 증인 표는 종전 좌표(208.73px)를 유지해야 한다: {table_top:.2}"
+    );
+}
+
+/// 표 윗변 보정 뒤의 점유도 잠근다. 빈 host의 표를 내렸더라도 측정이 그만큼
+/// 덜 예약하거나 뒤 문단을 되감으면 이 두 문구가 표 안으로 들어간다.
+/// PDF 글자 상단은 `pdftotext -bbox-layout` 60쪽의 option/callback을 96/72로
+/// 환산했다. render tree 줄 상자는 glyph보다 약 0.8px 위에서 시작한다.
+#[test]
+fn issue_7063_following_flow_and_page_boundary_match_hancom() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(&path).expect("재현물 읽기");
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let page = core
+        .build_page_render_tree(PAGE_INDEX)
+        .expect("60쪽 render tree");
+
+    for (table_pi, empty_line_pi, following_pi, oracle_glyph_top) in
+        [(1465, 1466, 1467, 512.43), (1468, 1469, 1470, 601.39)]
+    {
+        let table_bottom = find_table_bottom(&page.root, table_pi).expect("표 하단");
+        let empty_line_top =
+            find_line_box_top(&page.root, empty_line_pi).expect("표 뒤 빈 줄 상자");
+        let following_top =
+            find_line_box_top(&page.root, following_pi).expect("표 뒤 실제 본문 줄");
+        assert!(
+            empty_line_top >= table_bottom - 0.1 && following_top > empty_line_top,
+            "표 {table_pi} 뒤 빈 줄/본문 점유: 표 하단={table_bottom:.2}, \
+             빈 줄={empty_line_top:.2}, 본문={following_top:.2}"
+        );
+        assert!(
+            (following_top - oracle_glyph_top).abs() <= 1.5,
+            "표 {table_pi} 뒤 본문 시작 {following_top:.2}가 한컴 PDF 글자 상단 \
+             {oracle_glyph_top:.2}와 어긋난다"
+        );
+    }
+
+    // 한컴 PDF는 105쪽이고 다음 쪽 첫 항목은 pi=1477의 표다. 표 높이를
+    // 과소/과대 예약해 경계 항목의 소유 쪽을 바꾸는 퇴행을 함께 검출한다.
+    assert_eq!(core.page_count(), 105, "한컴 PDF와 쪽수 일치");
+    let next_page = core.build_page_render_tree(PAGE_INDEX + 1).expect("61쪽");
+    assert!(
+        find_table_top(&next_page.root, 1477).is_some(),
+        "다음 쪽 첫 표 pi=1477을 61쪽에 보존해야 한다"
     );
 }
