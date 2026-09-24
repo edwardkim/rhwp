@@ -200,10 +200,10 @@ impl DocumentCore {
 
         // [#6806] 퇴화값 0 만 최소 크기로 올린다 — 한컴 문서에는 200 미만 치수가 정당하게 있다.
         if let Some(w) = json_u32(props_json, "width") {
-            c.width = super::clamp_degenerate_size(w);
+            c.width = super::clamp_degenerate_size(w, c.width);
         }
         if let Some(h) = json_u32(props_json, "height") {
-            c.height = super::clamp_degenerate_size(h);
+            c.height = super::clamp_degenerate_size(h, c.height);
         }
         if let Some(tac) = json_bool(props_json, "treatAsChar") {
             c.treat_as_char = tac;
