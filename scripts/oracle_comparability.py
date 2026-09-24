@@ -19,6 +19,9 @@
                   rhwp 가 저장을 지키고 정본이 재조판했다면 **둘 다 옳을 수 있다**.
   fontScale       같은 글자열 줄에서 정본과 rhwp 의 글꼴 크기 비. 1.0 에서 벗어나면
                   글자폭 비교가 통째로 기울어진다.
+  contentScale    `정본 x = a·rhwp x + b` 의 기울기 `a`. **글꼴 비와 같이 움직이면**
+                  rhwp 결함이 아니라 기준 산출물의 **인쇄 배율**이다(축소·확대, 용지에
+                  맞추기). 글꼴만 움직이고 위치가 그대로일 때만 글자 크기 결함이다.
 
 종료 코드는 언제나 0 이다 — 판정은 데이터이고, 게이트가 아니다. 90% 실루엣 게이트의
 예외는 정책대로 `--font-mismatch-evidence` 로만 남긴다. 대표 review PNG 직접 판독을
@@ -177,18 +180,32 @@ def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
         for line in re.finditer(r"<line[^>]*>(.*?)</line>", page.group(2), re.S):
             size = None
             chars = []
+            origin = None
             for chunk in re.split(r"(<font[^>]*>)", line.group(1)):
                 got = re.match(r'<font [^>]*size="([^"]*)"', chunk)
                 if got:
                     size = float(got.group(1)) * 96.0 / 72.0
                     continue
-                chars.extend(
-                    html.unescape(c)
-                    for c in re.findall(r'<char [^>]*c="([^"]*)"', chunk)
-                )
+                for quad, c in re.findall(
+                    r'<char quad="([^"]*)"[^>]*c="([^"]*)"', chunk
+                ):
+                    values = [float(v) for v in quad.split()]
+                    if origin is None:
+                        origin = (
+                            min(values[0::2]) * 96.0 / 72.0,
+                            min(values[1::2]) * 96.0 / 72.0,
+                        )
+                    chars.append(html.unescape(c))
             key = re.sub(r"\s+", "", "".join(chars))
             if key:
-                lines.append({"key": key, "font_px": size or 0.0})
+                lines.append(
+                    {
+                        "key": key,
+                        "font_px": size or 0.0,
+                        "x": origin[0] if origin else 0.0,
+                        "y": origin[1] if origin else 0.0,
+                    }
+                )
 
     embedded = set()
     # CP949 face 이름의 바이트를 보존해야 한다 — UTF-8 로 먼저 디코드하면
@@ -232,11 +249,18 @@ def read_rhwp(rhwp_bin: Path, doc: Path, work: Path, pages: list[int] | None) ->
                 rows[round(float(y), 1)].append(
                     (float(x), glyph, float(run_el.group(5)))
                 )
-        for _, row in sorted(rows.items()):
+        for baseline, row in sorted(rows.items()):
             row.sort()
             key = re.sub(r"\s+", "", "".join(c for _, c, _ in row))
             if key:
-                lines.append({"key": key, "font_px": row[0][2]})
+                lines.append(
+                    {
+                        "key": key,
+                        "font_px": row[0][2],
+                        "x": row[0][0],
+                        "y": baseline,
+                    }
+                )
     return {"boxes": boxes, "lines": lines}
 
 
@@ -329,12 +353,76 @@ def judge_font_scale(rhwp_lines, pdf_lines) -> dict:
     }
 
 
+def judge_content_scale(rhwp_lines, pdf_lines, font_ratio: float | None) -> dict:
+    """내용 전체가 같은 배율로 움직였는지 — 그렇다면 기준 산출물의 인쇄 배율이다.
+
+    글꼴만 움직이고 위치가 제자리면 글자 크기 결함이고, 글꼴·x·y 가 함께 움직이면
+    정본이 축소/확대 인쇄된 것이라 rhwp 를 고칠 일이 아니다. 짧은 글자열은 표의 같은
+    셀 문구끼리 잘못 짝지어지므로 **정본에 한 번만 나오는 긴 줄**만 센다.
+    """
+    seen = collections.Counter(line["key"] for line in pdf_lines)
+    pdf_by_key = {line["key"]: line for line in pdf_lines}
+    xs, ys = [], []
+    for line in rhwp_lines:
+        other = pdf_by_key.get(line["key"])
+        if not other or len(line["key"]) < 12 or seen[line["key"]] != 1:
+            continue
+        xs.append((line.get("x", 0.0), other.get("x", 0.0)))
+        ys.append((line.get("y", 0.0), other.get("y", 0.0)))
+    if len(xs) < 8:
+        return {"status": "미측정", "matchedLines": len(xs)}
+
+    def slope(pairs: list[tuple[float, float]]) -> float | None:
+        """`정본 = a·rhwp + b` 의 기울기. 배율에 가운데 맞춤이 섞여도 `a` 는 남는다."""
+        n = len(pairs)
+        sx = sum(p[0] for p in pairs)
+        sy = sum(p[1] for p in pairs)
+        sxx = sum(p[0] * p[0] for p in pairs)
+        sxy = sum(p[0] * p[1] for p in pairs)
+        denominator = n * sxx - sx * sx
+        return None if abs(denominator) < 1e-9 else (n * sxy - sx * sy) / denominator
+
+    x_slope = slope(xs)
+    y_slope = slope(ys)
+    if x_slope is None or y_slope is None:
+        return {"status": "미측정", "matchedLines": len(xs)}
+    # 판정은 **x 기울기만** 쓴다. `y` 는 쪽마다 0 으로 되돌아가므로 문서 전체를 한 직선에
+    # 맞추면 쪽 경계가 섞여 기울기가 무너진다(`1342000_edu_curriculum_map`: 실제 배율
+    # 0.83 인데 통합 적합은 0.65). x 원점은 모든 쪽이 같아 그 문제가 없다. `y` 는
+    # 참고로만 싣는다.
+    uniform = (
+        font_ratio is not None
+        and abs(font_ratio - 1.0) >= 0.005
+        and abs(x_slope - font_ratio) < 0.02
+    )
+    return {
+        "status": "배율" if uniform else "제자리",
+        "matchedLines": len(xs),
+        "xSlope": round(x_slope, 4),
+        "ySlope": round(y_slope, 4),
+        "note": (
+            "글꼴과 x 가 같은 비로 움직인다 — 정본이 축소/확대 인쇄된 것이라 "
+            "rhwp 결함이 아니다"
+            if uniform
+            else ""
+        ),
+    }
+
+
 def verdict(report: dict) -> tuple[str, str]:
     """막는 축부터 훑는다. 아래로 갈수록 "쓸 수 있되 주의" 에 가깝다."""
     if report["paperBox"]["status"] == "불일치":
         return "쪽상자_불일치", "쪽 상자가 달라 어떤 좌표 비교도 성립하지 않는다"
     if report["fontScale"]["status"] == "불일치":
         ratio = report["fontScale"]["medianOracleOverRhwp"]
+        # 글꼴·x·y 가 함께 움직였으면 정본의 인쇄 배율이다 — rhwp 를 고칠 일이 아니다.
+        if report.get("contentScale", {}).get("status") == "배율":
+            scale = report["contentScale"]
+            return (
+                "정본_인쇄배율",
+                f"정본 내용 전체가 {ratio} 배다(x 기울기 {scale['xSlope']}) — "
+                "축소/확대 인쇄본이라 좌표·폭 비교의 기준으로 쓸 수 없다",
+            )
         return (
             "글꼴크기_불일치",
             f"같은 글자열 줄의 글꼴 크기가 정본/rhwp = {ratio} 다 — "
@@ -403,6 +491,11 @@ def main() -> int:
             source["paragraphs"], mine["lines"], oracle["lines"]
         )
         report["fontScale"] = judge_font_scale(mine["lines"], oracle["lines"])
+        report["contentScale"] = judge_content_scale(
+            mine["lines"],
+            oracle["lines"],
+            report["fontScale"].get("medianOracleOverRhwp"),
+        )
         name, why = verdict(report)
         report["verdict"] = name
         report["verdictReason"] = why
@@ -416,7 +509,7 @@ def main() -> int:
         print(json.dumps(report, ensure_ascii=False, sort_keys=True))
         return 0
     print(f"판정: {report['verdict']} — {report['verdictReason']}")
-    for axis in ("paperBox", "declaredFaces", "storedLines", "fontScale"):
+    for axis in ("paperBox", "declaredFaces", "storedLines", "fontScale", "contentScale"):
         if axis in report:
             print(f"  {axis}: {json.dumps(report[axis], ensure_ascii=False)}")
     return 0
