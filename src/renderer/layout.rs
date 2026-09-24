@@ -6323,7 +6323,10 @@ impl LayoutEngine {
             // 적용해도 기존 바탕 기준 baseline 을 그대로 쓰면 6쪽 전부 glyph 이
             // 6~7px 위로 뜬다. 굴림 쪽번호(aift)는 반대 방향으로 2~3px 차이이므로
             // 모든 쪽번호에 일괄 이동을 적용하지 않는다.
+            // 각주가 꼬리말 영역까지 내려온 쪽에서는 이 보정이 마지막 각주
+            // 줄과 쪽번호를 새로 겹치게 한다(#1937). 그런 쪽은 기존 기준을 쓴다.
             let y = if is_footer
+                && page_content.footnotes.is_empty()
                 && (page_num_style.font_family.contains("함초롬돋움")
                     || page_num_style.font_family.contains("HCR Dotum"))
             {

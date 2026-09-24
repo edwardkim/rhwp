@@ -4242,6 +4242,9 @@ impl LayoutEngine {
         // 중첩 표와 쪽 중간에서 이어지는 조각은 별도 흐름 좌표를 쓴다.
         let hwpx_multirow_rowbreak_reopens_outer_top = self.profile.get().hwpx_stored_layout()
             && !table.common.treat_as_char
+            // 문단 기준 거대 셀은 자체 flow 경계를 가지며, 여기서 여백을 다시
+            // 열면 첫 조각의 bbox·selection 이 1mm 밀린다(#1949/#2215).
+            && matches!(table.common.horz_rel_to, HorzRelTo::Column)
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -4257,16 +4260,31 @@ impl LayoutEngine {
         // 저장 HWP5의 반복 제목행을 가진 다행 RowBreak 표도 첫 저장 앵커와
         // 다음 쪽에서 반복 제목행을 여는 조각마다 바깥 위 여백을 다시 둔다.
         // 제목행 없는 이어지는 표(76076 34쪽)는 본문 상단에 붙는 별도 계약이다.
-        let native_repeated_header_reopens_outer_top =
-            self.profile.get().hwp5_stored_pagination_layout()
+        let native_repeated_header_reopens_outer_top = self.profile.get().hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && matches!(
                     table.page_break,
                     crate::model::table::TablePageBreak::RowBreak
                 )
-                && table.row_count > 1
+                // 반복 제목행 뒤의 단일 큰 rowspan이 두 쪽에 걸치는
+                // 3×2 지원내역 표 계약이다. 장문 표의 일반 행 조각까지
+                // 여백을 다시 열면 #1937의 글자 겹침이 늘어난다.
+                && table.row_count == 3
+                && table.col_count == 2
                 && table.repeat_header
                 && !table.leading_header_rows().is_empty()
+                // 이 보정은 반복 제목행 바로 뒤에서 표 끝까지 걸친 가운데
+                // 정렬 셀의 저장 물리 높이를 두 조각에 나누는 경우에만 필요하다.
+                // 일반 83행 교육 표까지 열면 다른 조각이 본문 아래로 밀린다.
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == table.leading_header_rows().len()
+                        && cell.row_span > 1
+                        && cell.row as usize + cell.row_span as usize == table.row_count as usize
+                        && matches!(
+                            cell.vertical_align,
+                            crate::model::table::VerticalAlign::Center
+                        )
+                })
                 && table.outer_margin_top > 0
                 && enclosing_cell_ctx.is_none()
                 && !repeat_fragment_outer_margin
