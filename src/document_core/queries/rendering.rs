@@ -4520,6 +4520,7 @@ impl DocumentCore {
     /// (정규화·측정) → 페이지네이션 → 페이지 트리. 앞 단계를 뒤 단계보다 늦게
     /// 만들면 같은 패스 안에서 옛 값이 섞인다.
     pub(crate) fn rebuild_derived_state(&mut self) {
+        self.pending_cell_format_vpos = false;
         self.rebuild_resolved_styles();
         self.rebuild_embedded_exact_font_sources();
         self.recompose_all_with_horizontal_shaping();
@@ -7771,6 +7772,7 @@ impl DocumentCore {
 
     pub(crate) fn rebuild_section(&mut self, section_idx: usize) {
         self.rebuild_resolved_styles();
+        self.flush_cell_format_vpos();
         self.recompose_section(section_idx);
         self.paginate();
     }
