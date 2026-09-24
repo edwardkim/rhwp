@@ -387,6 +387,12 @@ export class CanvasView {
     this.pageRenderer.releaseAllPageDiagnostics();
   }
 
+  /** Font resources changed, without mutating the document or its undo/dirty state. */
+  async refreshFontResources(): Promise<void> {
+    const selected = await this.selectNextDocumentRevision(true);
+    if (selected) this.refreshPages();
+  }
+
   private async refreshPagesForRevision(): Promise<void> {
     const selected = await this.selectNextDocumentRevision(false);
     if (!selected) return;

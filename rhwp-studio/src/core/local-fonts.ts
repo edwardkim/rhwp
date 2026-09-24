@@ -5,6 +5,7 @@
  * 글꼴 목록을 조회한다. 저장된 감지 결과는 재사용하되, 새 목록 조회는
  * 사용자 승인 흐름에서만 호출하도록 API를 분리한다.
  */
+import { HostFontSource, type HostFontProvider, type HostFontReference, type HostFontData } from './host-font-provider.ts';
 import { REGISTERED_FONTS } from './font-loader.ts';
 import { setRawCanvasFont } from './canvas-font-raw.ts';
 
@@ -34,6 +35,8 @@ export interface LocalFontRecord {
   aliases: string[];
   /** face를 실제 Local Font Access 열거로 얻었는지, 이름 presence probe로만 확인했는지 구분한다. */
   detectionSource?: LocalFontDetectionSource;
+  /** Session-only resource identity; never serialized into browser snapshots. */
+  hostReference?: HostFontReference;
 }
 
 export interface LocalFontSnapshot {
@@ -948,7 +951,8 @@ export function resolveLocalFont(fontName: string): LocalFontRecord | null {
 
 /** CSS family와 달리 style별 native Typeface cache를 구분하는 안정 키다. */
 export function localFontFaceKey(record: Pick<LocalFontRecord, 'family' | 'fullName' | 'postscriptName'>): string {
-  return normalizeFontAlias(record.postscriptName || record.fullName || record.family);
+  return ('hostReference' in record && (record as LocalFontRecord).hostReference?.key)
+    || normalizeFontAlias(record.postscriptName || record.fullName || record.family);
 }
 
 function localFontRecordMatchesFontData(record: LocalFontRecord, fontData: FontData): boolean {
@@ -1075,4 +1079,70 @@ export function resetLocalFontsForTests(): void {
   storageLoaded = false;
   lastStorageError = null;
   localFontBytesByPostscriptName.clear();
+}
+
+
+// Host catalogs are deliberately separate from the browser/CSS presence snapshot.
+const hostFontSource = new HostFontSource();
+let hostLookupGeneration = -1;
+let hostLookupReferences: readonly HostFontReference[] = [];
+let hostRecords: LocalFontRecord[] = [];
+let hostLookup = emptyLocalFontLookup();
+
+export interface LocalFontStyleRequest { weight: number; slant: 'normal' | 'italic' | 'oblique' }
+
+export function setHostFontProvider(provider: HostFontProvider | null): Promise<void> {
+  return hostFontSource.setProvider(provider);
+}
+export function onHostFontsChanged(listener: () => void): () => void {
+  return hostFontSource.subscribe(listener);
+}
+export function hasHostFontProvider(): boolean { return hostFontSource.active; }
+export function prepareHostFontCatalog(): Promise<void> { return hostFontSource.ready(); }
+export function getHostFontState(): { active: boolean; generation: number; count: number; lastError: string | null } {
+  return { active: hostFontSource.active, generation: hostFontSource.generation,
+    count: hostFontSource.references().length, lastError: hostFontSource.lastError };
+}
+
+function currentHostRecords(): LocalFontRecord[] {
+  const references = hostFontSource.references();
+  // The catalog can finish loading without changing the invalidation generation.
+  if (hostLookupGeneration !== hostFontSource.generation
+    || references[0]?.face !== hostLookupReferences[0]?.face || references.length !== hostLookupReferences.length) {
+    hostLookupGeneration = hostFontSource.generation;
+    hostLookupReferences = references;
+    hostRecords = references.map(reference => {
+      const face = reference.face;
+      return { family: face.family, fullName: face.fullName, postscriptName: face.postscriptName,
+        style: face.style, displayName: face.fullName,
+        aliases: normalizeFontNames([face.family, face.fullName, face.postscriptName,
+          `${face.family} ${face.style}`, ...(face.aliases ?? [])]), hostReference: reference };
+    });
+    hostLookup = buildLocalFontLookup(hostRecords);
+  }
+  return hostRecords;
+}
+
+/** CanvasKit-only resolution. CSS consumers continue to use resolveLocalFont. */
+export function resolveCanvasKitLocalFont(name: string, style?: LocalFontStyleRequest): LocalFontRecord | null {
+  if (!hostFontSource.active) return resolveLocalFont(name);
+  const target = normalizeFontAlias(name);
+  currentHostRecords();
+  const candidates = hostLookup.aliases.get(target) ?? [];
+  const exact = candidates.filter(record => [record.postscriptName, record.fullName,
+    `${record.family} ${record.style}`].some(value => normalizeFontAlias(value) === target));
+  if (exact.length) return exact.length === 1 ? exact[0] : null;
+  if (style) {
+    const styled = candidates.filter(record => record.hostReference?.face.weight === style.weight
+      && record.hostReference?.face.slant === style.slant);
+    return styled.length === 1 ? styled[0] : null;
+  }
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+/** Consume the selected face directly, rather than resolving its name a second time. */
+export async function loadCanvasKitLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
+  if (record.hostReference) return hostFontSource.read(record.hostReference);
+  const bytes = await loadLocalFontBytes(record.postscriptName || record.fullName);
+  return bytes ? { bytes, faceIndex: 0 } : null;
 }
