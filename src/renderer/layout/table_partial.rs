@@ -1064,6 +1064,9 @@ impl LayoutEngine {
         table_y: f64,
         row_heights: &[f64],
         resolved_row_heights: &[f64],
+        // [#7063 레인②] 첫 행을 쪽 상자로 고정한 조각에서 **내용이 쓸 높이**(예산이 자른 값).
+        // 테두리 상자는 `row_heights` 를 쓰고, 내용은 이 값을 쓴다.
+        budget_row_height_0: Option<f64>,
         row_col_x: &[Vec<f64>],
         header_rows: &[usize],
         render_rows: &[usize],
@@ -1385,7 +1388,13 @@ impl LayoutEngine {
             let inner_width = crate::renderer::composer::cell_inner_text_width(
                 cell_w, pad_left, pad_right, self.dpi,
             );
-            let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            // [#7063 레인②] 테두리 상자는 `cell_h`(쪽이 정한 높이)를 쓰지만, 내용이 쓸 높이는
+            // 예산이 자른 값이다. 첫 행을 쪽 상자로 고정한 조각에서만 둘이 갈린다.
+            let content_cell_h = match budget_row_height_0 {
+                Some(budget) if cell_row == 0 && cell.row_span == 1 => budget,
+                _ => cell_h,
+            };
+            let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
             // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
@@ -1761,13 +1770,18 @@ impl LayoutEngine {
             } else {
                 total_content_height
             };
+            // [#7063 레인②] 세로 정렬의 기준은 **테두리 상자**의 안높이다. 내용 높이
+            // (`inner_height`)는 예산이 자른 값이라, 쪽 상자로 고정한 조각에서 둘이 갈린다.
+            // 정본은 늘어난 상자 안에서 그 조각을 정렬한다(hwpx_sample2 19쪽: 상자
+            // 89.91..1081.39 안에서 칸 내용이 95.06 — 상자 위에서 5.15px).
+            let align_inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
-                    cell_y + pad_top + (inner_height - centered_content_height).max(0.0) / 2.0
+                    cell_y + pad_top + (align_inner_height - centered_content_height).max(0.0) / 2.0
                 }
                 VerticalAlign::Bottom => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                    cell_y + pad_top + (align_inner_height - total_content_height).max(0.0)
                 }
             };
 
@@ -3769,7 +3783,9 @@ impl LayoutEngine {
                     })
                     .unwrap_or(0.0);
                 let content_height = (para_y - text_y_start) + trailing_empty_extent;
-                let dy = (inner_height - content_height) / 2.0;
+                // [#7063 레인②] 가운데정렬의 기준은 테두리 상자의 안높이다 —
+                // `inner_height` 는 예산이 자른 내용 높이라 쪽 상자로 고정한 조각에서 갈린다.
+                let dy = ((cell_h - pad_top - pad_bottom).max(0.0) - content_height) / 2.0;
                 if dy > 0.0 {
                     let box_top = cell_node.bbox.y;
                     for child in &mut cell_node.children {
@@ -4739,6 +4755,8 @@ impl LayoutEngine {
         // [#7095] 끝 조각 상자는 페이지네이터가 `max(내용, 저장 칸 높이 − 앞 조각 상자 합)` 으로
         // 정해 `end_row_height_override` 로 넘긴다(7062 10쪽: 정본 상자 874.04). 그 상자도 칸
         // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
+        // [#7063 레인②] 상자를 쪽이 정할 때 **내용이 쓸 높이**(예산이 자른 값)를 따로 든다.
+        let mut budget_row_height_0: Option<f64> = None;
         let mut center_pinned_single_cell = single_cell_page_fragment
             && row_count == 1
             && is_continuation
@@ -4786,15 +4804,21 @@ impl LayoutEngine {
                     hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
                         >= pinned_height
                 });
-            if (starts_at_body_top || content_is_top_anchored)
+            let d7063_pin = true;
+            if (starts_at_body_top || content_is_top_anchored || d7063_pin)
                 && stored_cell_spans_page_box
                 && !projected_content
-                && (starts_at_body_top || stored_reset_paint_geometry.is_none())
+                && (starts_at_body_top || d7063_pin || stored_reset_paint_geometry.is_none())
             {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
                 // 잘랐으므로 보이는 줄은 상자 안에 있다.
+                // [#7063 레인②] 상자(테두리)만 쪽이 정하고, **내용 높이는 예산이 정한 그대로**
+                // 둔다. 둘을 함께 늘리면 칸 안 중첩 표가 더 큰 `inner_height` 를 보고 다시
+                // 쪼개져 이미 다음 쪽에 배치된 행을 이 쪽에도 그린다(hwpx_sample2.hwp 8쪽:
+                // 9쪽 첫 행 `구 분`·`조회방법` 이 8쪽 1086~1124px 에도 나온다).
+                budget_row_height_0 = Some(row_heights[0]);
                 row_heights[0] = pinned_height;
                 center_pinned_single_cell = true;
             } else if stored_reset_paint_geometry.is_none() {
@@ -5037,6 +5061,7 @@ impl LayoutEngine {
             table_y,
             &row_heights,
             &resolved_row_heights,
+            budget_row_height_0,
             &row_col_x,
             &header_rows,
             &render_rows,
