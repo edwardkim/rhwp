@@ -55,6 +55,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -172,58 +173,57 @@ def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
     text = run(args).decode("utf-8", "replace")
 
     boxes, lines = [], []
-    for page in re.finditer(r"<page\b([^>]*)>(.*?)</page>", text, re.S):
-        width = re.search(r'width="([\d.]+)"', page.group(1))
-        height = re.search(r'height="([\d.]+)"', page.group(1))
-        if width and height:
-            boxes.append((float(width.group(1)), float(height.group(1))))
-        for line in re.finditer(r"<line[^>]*>(.*?)</line>", page.group(2), re.S):
-            size = None
+    try:
+        document = ET.fromstring(text)
+    except ET.ParseError as exc:
+        raise Unavailable(f"PDF structured text XML 오류: {exc}") from exc
+    for page in document.iter("page"):
+        if "width" in page.attrib and "height" in page.attrib:
+            boxes.append((float(page.attrib["width"]), float(page.attrib["height"])))
+        for line in page.iter("line"):
             chars = []
             origin = None
-            for chunk in re.split(r"(<font[^>]*>)", line.group(1)):
-                got = re.match(r'<font [^>]*size="([^"]*)"', chunk)
-                if got:
-                    size = float(got.group(1)) * 96.0 / 72.0
-                    continue
-                for quad, c in re.findall(
-                    r'<char quad="([^"]*)"[^>]*c="([^"]*)"', chunk
-                ):
-                    values = [float(v) for v in quad.split()]
+            size = 0.0
+            for font in line.iter("font"):
+                for char in font.iter("char"):
                     if origin is None:
-                        origin = (
-                            min(values[0::2]) * 96.0 / 72.0,
-                            min(values[1::2]) * 96.0 / 72.0,
-                        )
-                    chars.append(html.unescape(c))
+                        size = float(font.get("size", "0")) * 96.0 / 72.0
+                        # MuPDF 버전에 따라 c/quad 순서가 다르다. XML 속성으로 읽고
+                        # SVG와 같은 글줄 기준선 원점을 사용한다.
+                        if "x" in char.attrib and "y" in char.attrib:
+                            origin = (float(char.attrib["x"]) * 96.0 / 72.0,
+                                      float(char.attrib["y"]) * 96.0 / 72.0)
+                        else:
+                            quad = [float(v) for v in char.get("quad", "").split()]
+                            if len(quad) != 8:
+                                raise Unavailable("PDF 글자 원점과 quad가 없다")
+                            origin = (min(quad[0::2]) * 96.0 / 72.0,
+                                      min(quad[1::2]) * 96.0 / 72.0)
+                    chars.append(char.get("c", ""))
             key = re.sub(r"\s+", "", "".join(chars))
             if key:
-                lines.append(
-                    {
-                        "key": key,
-                        "font_px": size or 0.0,
-                        "x": origin[0] if origin else 0.0,
-                        "y": origin[1] if origin else 0.0,
-                    }
-                )
+                lines.append({"key": key, "font_px": size,
+                              "x": origin[0], "y": origin[1]})
 
     embedded = set()
     # CP949 face 이름의 바이트를 보존해야 한다 — UTF-8 로 먼저 디코드하면
     # `INPILL+휴먼명조` 가 치환 문자로 뭉개져 "임베드 안 됨" 으로 오판한다.
     info = run(["mutool", "info", "-F", str(pdf)]).decode("latin-1")
-    for quoted in re.finditer(r"'([^']+)'", info):
+    for quoted in re.finditer(r"[\"']([^\"']+)[\"']", info):
         embedded.add(normalize_face(quoted.group(1)))
     return {"boxes": boxes, "lines": lines, "embedded": embedded}
 
 
 def read_rhwp(rhwp_bin: Path, doc: Path, work: Path, pages: list[int] | None) -> dict:
     """rhwp SVG 에서 쪽 상자·줄 글자열·글꼴 크기를 읽는다."""
-    out = work / "svg"
-    args = [str(rhwp_bin), "export-svg", str(doc), "-o", str(out)]
-    if pages and len(pages) == 1:
-        args += ["-p", str(pages[0] - 1)]
-    run(args)
-    files = sorted(out.glob("*.svg"))
+    files = []
+    for page in dict.fromkeys(pages or [None]):
+        out = work / (f"svg-{page}" if page is not None else "svg")
+        args = [str(rhwp_bin), "export-svg", str(doc), "-o", str(out)]
+        if page is not None:
+            args += ["-p", str(page - 1)]
+        run(args)
+        files.extend(sorted(out.glob("*.svg")))
     if not files:
         raise Unavailable("rhwp SVG 산출 없음")
 
@@ -250,7 +250,8 @@ def read_rhwp(rhwp_bin: Path, doc: Path, work: Path, pages: list[int] | None) ->
                     (float(x), glyph, float(run_el.group(5)))
                 )
         for baseline, row in sorted(rows.items()):
-            row.sort()
+            # 같은 run의 글자는 x가 같으므로 안정 정렬로 원문 순서를 보존한다.
+            row.sort(key=lambda item: item[0])
             key = re.sub(r"\s+", "", "".join(c for _, c, _ in row))
             if key:
                 lines.append(
@@ -297,7 +298,9 @@ def judge_faces(referenced, embedded) -> dict:
     }
 
 
-def judge_lines(paragraphs, rhwp_lines, pdf_lines) -> dict:
+def judge_lines(paragraphs, rhwp_lines, pdf_lines, pages=None) -> dict:
+    if pages:
+        return {"status": "미측정", "reason": "선택 쪽과 원문 문단의 대응 정보가 없다"}
     """저장 끊음을 rhwp 가 재현하는지, 정본이 재조판했는지 센다."""
     # 줄 앞에 붙는 자동 번호·글머리표는 원문 글자열에 없다. 저장 머리 글자열이
     # 렌더된 줄의 **꼬리**와 같으면 그 끊음을 재현한 것으로 센다.
@@ -384,7 +387,7 @@ def judge_content_scale(rhwp_lines, pdf_lines, font_ratio: float | None) -> dict
 
     x_slope = slope(xs)
     y_slope = slope(ys)
-    if x_slope is None or y_slope is None:
+    if x_slope is None:
         return {"status": "미측정", "matchedLines": len(xs)}
     # 판정은 **x 기울기만** 쓴다. `y` 는 쪽마다 0 으로 되돌아가므로 문서 전체를 한 직선에
     # 맞추면 쪽 경계가 섞여 기울기가 무너진다(`1342000_edu_curriculum_map`: 실제 배율
@@ -399,7 +402,7 @@ def judge_content_scale(rhwp_lines, pdf_lines, font_ratio: float | None) -> dict
         "status": "배율" if uniform else "제자리",
         "matchedLines": len(xs),
         "xSlope": round(x_slope, 4),
-        "ySlope": round(y_slope, 4),
+        "ySlope": round(y_slope, 4) if y_slope is not None else None,
         "note": (
             "글꼴과 x 가 같은 비로 움직인다 — 정본이 축소/확대 인쇄된 것이라 "
             "rhwp 결함이 아니다"
@@ -429,7 +432,7 @@ def verdict(report: dict) -> tuple[str, str]:
             "폭 비교가 통째로 기울어져 있어 실루엣 수치를 글자폭 근거로 쓸 수 없다",
         )
     stored = report["storedLines"]
-    if stored["status"] != "비해당":
+    if stored["status"] not in ("비해당", "미측정"):
         total = stored["storedMultilineParagraphs"]
         gap = stored["rhwpReproducesStoredCut"] - stored["oracleReproducesStoredCut"]
         # 몇 문단 차이는 잡음이다. 의미 있는 격차일 때만 축으로 올린다.
@@ -488,7 +491,7 @@ def main() -> int:
             source["referenced_faces"], oracle["embedded"]
         )
         report["storedLines"] = judge_lines(
-            source["paragraphs"], mine["lines"], oracle["lines"]
+            source["paragraphs"], mine["lines"], oracle["lines"], args.page
         )
         report["fontScale"] = judge_font_scale(mine["lines"], oracle["lines"])
         report["contentScale"] = judge_content_scale(
