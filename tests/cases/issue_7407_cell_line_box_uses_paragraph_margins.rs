@@ -31,9 +31,10 @@
 //!
 //! # 이 검사가 말하지 않는 것
 //!
-//! 같은 폭에서도 **줄당 글자 수**는 아직 다르다(한/글 44 / rhwp 42). 그 4.8% 는 글자
-//! 진행폭 축(#7390·#7391·#7398)이며 이 검사의 대상이 아니다. 여기서 잠그는 것은
-//! **줄 상자의 좌단과 폭**뿐이다.
+//! 여기서 잠그는 것은 **줄 상자의 좌단과 폭**뿐이다. 그 상자 안에서 줄이 어느 글자에서
+//! 갈리는지는 `issue_7407_long_token_break_uses_measured_char_width.rs` 가 한/글이 적어
+//! 둔 줄별 `textpos` 로 잠근다. 두 검사는 함께 읽는다 — 상자가 맞아야 그 기대값이
+//! 성립하고, 상자만 맞아서는 줄이 맞지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -85,39 +86,5 @@ fn a_recomposed_cell_line_box_matches_the_one_hancom_stored() {
         gap <= 4,
         "줄 폭이 한/글과 {gap} HWPUNIT 다르다 — 한/글 {hancom_width} / rhwp {rhwp_width}. \
          문단 좌우 여백이 가용 너비에서 빠지지 않으면 여기서 1600 이 남는다."
-    );
-}
-
-/// 같은 칸을 한/글이 잡은 줄 수와 rhwp 가 잡은 줄 수는 **아직 다르다**.
-///
-/// 이 차이는 줄 상자가 아니라 글자 진행폭에서 온다(#7390·#7391·#7398). 여기서는 그
-/// 사실을 고정해 두어, 진행폭 축이 고쳐질 때 이 검사가 함께 갱신되도록 한다.
-#[test]
-fn the_remaining_line_count_gap_is_not_the_box() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let read = |rel: &str| -> Vec<usize> {
-        let bytes = std::fs::read(path.join(rel)).expect("읽기");
-        let core = DocumentCore::from_bytes(&bytes).expect("로드");
-        let Some(Control::Table(table)) = core.document().sections[0].paragraphs[0].controls.get(2)
-        else {
-            panic!("표 없음");
-        };
-        table.cells[CELL]
-            .paragraphs
-            .iter()
-            .map(|p| p.line_segs.len())
-            .collect()
-    };
-    let hancom = read(HANCOM);
-    let rhwp = read(NO_CACHE);
-    assert_eq!(
-        hancom.len(),
-        rhwp.len(),
-        "문단 수가 다르면 두 입력이 같은 문서가 아니다 — 시험 설정 오류."
-    );
-    assert!(
-        rhwp.iter().sum::<usize>() >= hancom.iter().sum::<usize>(),
-        "rhwp 가 한/글보다 줄을 적게 잡았다. 진행폭 축이 반대로 뒤집혔다는 뜻이므로 \
-         이 검사의 설명을 다시 써야 한다. 한/글={hancom:?} rhwp={rhwp:?}"
     );
 }
