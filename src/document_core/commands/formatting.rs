@@ -1227,6 +1227,23 @@ impl DocumentCore {
                 cell_para_idx,
             );
             self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
+            // [#7265] 리플로우가 이 문단의 줄 수·높이를 바꿨으면 **후속 문단의 사다리도**
+            // 다시 세워야 한다. 종전에는 이 표시가 없어 글자 크기를 키우면 문단이 두 줄이
+            // 되는데 다음 문단은 옛 vpos 에 남아 글자가 포개졌다.
+            //
+            // #6639 가 문단모양 경로에 세운 지연 기구를 그대로 쓴다 — 저장 RowBreak
+            // 원점을 보존하고 배치 경계에서 조각마다 한 번만 돌기 때문이다. 여기서
+            // 곧바로 재계산하면 그 원점 보존 계약이 깨진다.
+            if let Ok(cell_para) = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ) {
+                cell_para.cell_format_vpos_dirty = true;
+            }
+            self.pending_cell_format_vpos = true;
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -1296,6 +1313,15 @@ impl DocumentCore {
         if char_shape_mods_affect_text_flow(&mods) {
             let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
             self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
+            // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+            // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+            // 배치 경계에서 조각마다 한 번만 돈다.
+            if let Ok(cell_para) =
+                self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)
+            {
+                cell_para.cell_format_vpos_dirty = true;
+            }
+            self.pending_cell_format_vpos = true;
         }
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
@@ -1369,6 +1395,13 @@ impl DocumentCore {
         // 없으므로 flat set_char_shape_id_in_cell_native 처럼 무조건).
         let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
+        // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+        // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+        // 배치 경계에서 조각마다 한 번만 돈다.
+        if let Ok(cell_para) = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path) {
+            cell_para.cell_format_vpos_dirty = true;
+        }
+        self.pending_cell_format_vpos = true;
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
         self.document.sections[sec_idx].raw_stream = None;
@@ -1420,6 +1453,19 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+        // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+        // 배치 경계에서 조각마다 한 번만 돈다.
+        if let Ok(cell_para) = self.get_cell_paragraph_mut(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        ) {
+            cell_para.cell_format_vpos_dirty = true;
+        }
+        self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
