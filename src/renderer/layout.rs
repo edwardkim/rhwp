@@ -1414,6 +1414,60 @@ fn empty_host_float_raw_top(
     (para_y + vertical_offset_px).max(para_y) + fragment_outer_top_px
 }
 
+/// [#7063] 글자 없는 자리차지 표 host 의 저장-vpos 후방 스냅을 흐름 커서로 되돌린다.
+///
+/// `vpos_adjust` 의 저장-vpos 스냅은 목적지에서 현재 문단의 `spacing_before` 를 미리
+/// 빼고(#643), 뒤에서 그 문단을 조판할 때 다시 더해 상쇄한다. 그런데 **글자 없는
+/// 자리차지 표 host** 는 조판할 글줄이 없어 그 재가산 경로를 타지 않는다(#7203). 그
+/// 문단의 흐름 좌표(`para_y`)가 곧 표 윗변이 되는 이 갈래에서는 차감분이 그대로 남아
+/// 표가 **앞 문단 마지막 줄 상자를 파고든다** — `hwpctl_API_v2.4` 60쪽 `pi=1465` 는 앞
+/// 줄 상자 바닥 205.07 아래가 아니라 202.40 에 앉는다(`vpos_adjust` 의 ≤8px 후방 클램프는
+/// 이 크기를 통과시킨다).
+///
+/// 한/글 정본은 이 자리에서 표 윗변을 **앞 줄 상자 바닥 + 줄간격 + 바깥여백 위**, 곧
+/// 흐름 커서 + `outMargin.top` 에 둔다(정본 census 2문서 · `hwpctl_API_v2.4` 60쪽 잔차
+/// 0.14px). 저장 vpos 자체는 정본보다 아래(+4.9px)라 사전 차감만 끄면 이번에는 그만큼
+/// 과이동한다. 그래서 차감을 끄는 대신 **기준점을 흐름 커서로 되돌리고** 선언 바깥여백만
+/// 얹는다.
+///
+/// 저장 사다리 증인(`native_empty_single_topbottom_table_saved_top`)이 있는 표는 이 앞
+/// 갈래에서 이미 절대 좌표를 받으므로 여기 오지 않는다 — 같은 문서에서 그 갈래가 32건,
+/// 이 갈래가 8건이고, 정본과 어긋나는 것은 이 갈래 쪽이다.
+fn empty_float_vpos_snap_flow_top(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    para_y: f64,
+    flow_snap_context: Option<(f64, f64)>,
+    col_area: &LayoutRect,
+    dpi: f64,
+) -> Option<f64> {
+    if !is_para_topbottom_float(&table.common) || para_has_visible_text(para) {
+        return None;
+    }
+    // 세로 오프셋이 있는 표는 기준점이 흐름이 아니라 그 오프셋이다 — 별개 형상이다.
+    if signed_hwpunit(table.common.vertical_offset) != 0 {
+        return None;
+    }
+    let (flow_y_before_vpos_snap, prev_content_bottom_y) = flow_snap_context?;
+    if !flow_y_before_vpos_snap.is_finite() || !prev_content_bottom_y.is_finite() {
+        return None;
+    }
+    // 단 상단에서 시작하는 조각은 이 축의 결함이 없다(정본 13/13 일치). 스냅이 흐름을
+    // 끌어올린 **단 중간** 배치만 본다.
+    if para_y <= col_area.y + 0.5 || flow_y_before_vpos_snap <= para_y + 0.05 {
+        return None;
+    }
+    // ⚠ 발동 조건은 스냅의 방향이 아니라 **결함의 관측 형태**다 — 표 윗변이 직전
+    // 아이템의 줄 상자 바닥보다 위에 앉는 경우만이다(정본 없이 render tree 로 판정
+    // 된다). 스냅이 표를 끌어올려도 앞 줄 아래에 남는 자리는 종전 좌표가 맞는다
+    // (`hwpspec.hwp` 30쪽 `pi=179`: 앞 줄 바닥 699.70 · 표 701.10 — 여기서 흐름으로
+    // 되돌리면 +10.4px 밀려 뒤 내용과 겹친다).
+    if para_y >= prev_content_bottom_y - 0.05 {
+        return None;
+    }
+    Some(flow_y_before_vpos_snap + hwpunit_to_px(table.outer_margin_top as i32, dpi).max(0.0))
+}
+
 fn para_line_spacing_px(para: &Paragraph, dpi: f64) -> f64 {
     para.line_segs
         .last()
@@ -3325,6 +3379,12 @@ pub struct LayoutEngine {
     /// 하단 고정 틀(#1658/#1858)은 빈 host 라 클램프가 흐름을 넘어도 겹칠 텍스트가
     /// 없지만, 글이 있는 host 는 클램프가 곧 겹침이다.
     para_float_host_has_text: std::cell::Cell<bool>,
+    /// [#7063] 이 아이템의 (**저장-vpos 스냅 이전 흐름 커서**, **직전 아이템 내용
+    /// 바닥**). 글자 없는 자리차지 표 host 는 스냅이 `spacing_before` 를 사전 차감한
+    /// 자리에 그대로 앉는데(#7203 — 조판할 글줄이 없어 재가산 경로를 안 탄다), 저장
+    /// 사다리 증인이 없으면 그 값이 곧 표 윗변이 되어 앞 줄 상자를 문다. 파고들기
+    /// 판정과 한/글 정본의 기준점(흐름 커서)을 그 갈래에만 넘긴다.
+    item_flow_snap_context: std::cell::Cell<Option<(f64, f64)>>,
     /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
     /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
     hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
@@ -3457,6 +3517,7 @@ impl LayoutEngine {
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
             page_top_float_caption_spacing_para: std::cell::Cell::new(None),
             para_float_host_has_text: std::cell::Cell::new(false),
+            item_flow_snap_context: std::cell::Cell::new(None),
             hwpx_page_preview: std::cell::RefCell::new(None),
             declared_trust_allowed: std::cell::Cell::new(true),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
@@ -8737,6 +8798,11 @@ impl LayoutEngine {
                     y_offset = col_area.y + origin - spacing_before;
                 }
             }
+            // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
+            // 아이템 배치에 넘긴다.
+            self.item_flow_snap_context.set(
+                prev_item_content_bottom_y.map(|prev_bottom| (y_before_vpos_adjust, prev_bottom)),
+            );
             let item_start_y_for_band = y_offset;
             let (mut new_y, was_tac) = self.layout_column_item(
                 tree,
@@ -11137,6 +11203,15 @@ impl LayoutEngine {
                             })
                     } else if let Some(stored_top) = stored_top {
                         stored_top
+                    } else if let Some(flow_top) = empty_float_vpos_snap_flow_top(
+                        para,
+                        t,
+                        para_y_for_table,
+                        self.item_flow_snap_context.get(),
+                        col_area,
+                        self.dpi,
+                    ) {
+                        flow_top
                     } else {
                         empty_host_float_raw_top(
                             para_y_for_table,
