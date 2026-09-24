@@ -5,7 +5,7 @@ status: active
 
 # PR #7260 3차 검토 — 기존 변경 요청 해결
 
-최종 판정: **승인**. 검토 head `4c9efab2c1065757c5b25ebf96e1d0a76a102aeb`가 유지됐고 최신 CI가 성공했다. 이전 두 변경 요청은 해결됐으며 추가 코드 수정 요청은 없다. 사용자 승인으로 GitHub Approve 리뷰를 게시했다. 이번 후속 commit은 검토 기록만 반영하며, 최신 문서 head의 CI·승인 상태를 확인한 뒤 병합은 작업지시자가 직접 수행한다.
+최종 판정: **승인**. 검토 head `4c9efab2c1065757c5b25ebf96e1d0a76a102aeb`가 유지됐고 최신 CI가 성공했다. 이전 두 변경 요청은 해결됐으며 추가 코드 수정 요청은 없다. 사용자 승인으로 GitHub Approve 리뷰를 게시했다. 이번 후속 commit은 검토 기록만 반영하며, 최신 문서 head의 CI·승인 상태를 확인한 뒤 병합은 작업지시자가 별도로 승인한 뒤 수행한다.
 
 ## 대상과 검토 범위
 
@@ -90,4 +90,17 @@ WASM Build job과 일부 비적용 job의 SKIPPED는 실행 성공으로 세지 
 
 제품·test·fixture·workflow·baseline·asset 보정을 reviewer가 추가하지 않았고 current-base merge도 clean하므로, local_validation 4.3.0에 따라 이 정확한 head의 GitHub 전체 CI를 재사용한다. 전체 release-test·Native Skia 광범위 회귀 및 lint를 로컬에서 중복 실행하지 않았다. 기여자의 전체 회귀 수치를 reviewer 실행 결과로 바꾸어 쓰지 않는다.
 
-이전 요청의 해결과 최신 CI 성공을 근거로 사용자 승인 후 [Approve 리뷰](https://github.com/edwardkim/rhwp/pull/7260#pullrequestreview-5302281216)를 게시했다. API 재조회로 APPROVED 상태, 검토 SHA, 한글 본문의 초안 일치를 확인했다. 사용자가 검토 문서의 source branch push와 최종 병합 전 확인까지 승인했다. 이 문서만 single-parent trailing commit으로 반영하며, 새 head의 review-only fast-pass·required aggregate·mergeability·승인 상태를 확인한다. 병합은 작업지시자가 직접 수행하므로 reviewer는 merge·issue close를 실행하지 않는다.
+이전 요청의 해결과 최신 CI 성공을 근거로 사용자 승인 후 [Approve 리뷰](https://github.com/edwardkim/rhwp/pull/7260#pullrequestreview-5302281216)를 게시했다. API 재조회로 APPROVED 상태, 검토 SHA, 한글 본문의 초안 일치를 확인했다. 사용자가 검토 문서의 source branch push와 최종 병합 전 확인까지 승인했다. 이 문서만 single-parent trailing commit으로 반영하며, 새 head의 review-only fast-pass·required aggregate·mergeability·승인 상태를 확인한다. 이후 작업지시자가 PR 병합·후속 코멘트·필요 시 관련 이슈 수동 종료·임시 산출물 정리까지 승인했다. 실제 merge SHA와 종료 상태는 후속 코멘트에서 확인한다.
+
+## Merge 후 contributor PR comment 계획
+
+실제 병합 뒤 merge SHA와 devel 포함을 확인하고 다음 내용을 PR 코멘트에 남긴다. 이미 archive 경로의 검토 기록·원본·PDF·대표 PNG가 PR에 포함돼 있으므로 추가 문서 PR이나 오늘할일 생성은 필요하지 않다.
+
+- @lpaiu-cs의 기여에 감사하고 PR·실제 merge commit을 direct link로 연결한다.
+- 셀 줄간격 변경 직후 후속 문단 vpos 갱신, batch 중복 순회 제거, 반복 편집의 저장 RowBreak 원점 보존을 해결 범위로 적는다.
+- 녹색 code candidate `4c9efab2c`와 최종 문서 head의 review-only fast-pass, Build & Test aggregate 및 승인 상태를 구분한다. 미실행 heavy worker를 실행 성공으로 쓰지 않는다.
+- reviewer focused #6639 10/10·#4118 1/1, fresh WASM의 초기/140%/모양 복원/snapshot SVG Native 일치, 원본 1쪽의 compare·overlay·review 직접 판독 결과를 기록한다.
+- 영구 시각 자료는 기여자가 보존한 `mydocs/pr/assets/pr_7260_rereview_fixed140.png`를 실제 merge SHA 고정 raw URL로 포함한다. 이는 Windows/Chromium 환경의 140% 비교이며 reviewer macOS 픽셀 수치와 혼합하지 않는다. 이미지의 자동 점수는 내용 픽셀 비교 보조값으로만 설명한다. 잔여 줄바꿈·표 높이 차이는 기존 제한이며 한컴 전체 일치를 주장하지 않는다.
+- [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)과 [검증 README](../../../samples/issue6639/README.md)를 병합 후 저장소 링크로 연결한다.
+- 관련 #6639의 실제 종료 상태를 확인한다. OPEN이면 해결 범위·merge SHA·검증·잔여 제한 코멘트를 먼저 게시한 뒤 수동 close한다. CLOSED여도 동일 증적의 후속 코멘트가 없으면 중복 여부 확인 후 남긴다.
+- 병합 뒤 검증 CI를 재실행하지 않는다. duration 갱신 workflow의 성공 또는 자료 부족 보류를 확인한 뒤 이번 PR의 임시 worktree·branch·산출물을 정리한다.
