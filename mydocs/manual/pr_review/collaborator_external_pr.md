@@ -271,8 +271,9 @@ code 또는 test 보정이 하나라도 있으면 fast-pass가 아니며 최신 
 - 최신 head의 full CI 또는 9.3.2 fast-pass가 branch protection을 만족한다.
 - 필요한 review 문서와 오늘할일이 PR diff에 있다.
 - report는 사전 판단 형식이다.
-- contributor에게 review 또는 PR comment로 결과를 남긴다. 단, 이미 완료된 원 PR의 기록만 담는 별도
-  fast-pass PR은 추가 contributor comment 대상이 아니다.
+- contributor에게 한국어 존댓말의 review 또는 PR comment로 원 기여·보정 이유·실제 검증 결과를
+  구분해 남긴다. 단, 이미 완료된 원 PR의 기록만 담는 별도 fast-pass PR은 추가 contributor comment
+  대상이 아니다.
 - 최신 mergeable 상태와 작업지시자 승인을 확인한다.
 
 원 코드 PR을 merge한 뒤에는 [merge 후속 처리](post_merge.md)를 적용한다. 이미 완료된 원 PR의
