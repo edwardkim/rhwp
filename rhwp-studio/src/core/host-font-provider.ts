@@ -55,7 +55,7 @@ function copySnapshot(value: HostFontSnapshot): HostFontSnapshot {
       || (face.weight !== undefined && (!Number.isFinite(face.weight) || face.weight < 1 || face.weight > 1000))
       || (face.slant !== undefined && !['normal', 'italic', 'oblique'].includes(face.slant))
       || (face.aliases !== undefined && (!Array.isArray(face.aliases) || face.aliases.length > 32
-        || !face.aliases.every(alias => validName(alias))))) {
+        || !face.aliases.every((alias: unknown) => validName(alias))))) {
       throw new Error('Invalid host font face');
     }
     ids.add(face.id);
@@ -117,15 +117,16 @@ export class HostFontSource {
     try { off?.(); } catch (error) { console.warn('[HostFonts] Unsubscribe failed:', error); }
     if (provider) {
       try {
-        this.off = provider.subscribe(() => {
+        const unsubscribe = provider.subscribe(() => {
           if (this.connection !== connection) return;
           this.invalidate();
           this.notify();
           void this.ready();
         });
+        if (typeof unsubscribe !== 'function') throw new Error('Host font subscribe must return a disposer');
+        this.off = unsubscribe;
       } catch (error) {
         this.error = String(error);
-        this.provider = null;
       }
     }
     this.notify();
@@ -133,7 +134,7 @@ export class HostFontSource {
   }
 
   ready(): Promise<void> {
-    if (!this.provider || this.snapshot || this.error) return Promise.resolve();
+    if (!this.provider || this.snapshot || this.error !== null) return Promise.resolve();
     if (this.pendingSnapshot) return this.pendingSnapshot;
     const provider = this.provider;
     const generation = this.epoch;
@@ -151,7 +152,6 @@ export class HostFontSource {
     }).finally(() => {
       if (this.pendingSnapshot === pending) {
         this.pendingSnapshot = null;
-        this.notify();
       }
     });
     this.pendingSnapshot = pending;

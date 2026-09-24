@@ -950,8 +950,8 @@ export function resolveLocalFont(fontName: string): LocalFontRecord | null {
 }
 
 /** CSS family와 달리 style별 native Typeface cache를 구분하는 안정 키다. */
-export function localFontFaceKey(record: Pick<LocalFontRecord, 'family' | 'fullName' | 'postscriptName'>): string {
-  return ('hostReference' in record && (record as LocalFontRecord).hostReference?.key)
+export function localFontFaceKey(record: Pick<LocalFontRecord, 'family' | 'fullName' | 'postscriptName' | 'hostReference'>): string {
+  return record.hostReference?.key
     || normalizeFontAlias(record.postscriptName || record.fullName || record.family);
 }
 
@@ -1129,15 +1129,19 @@ export function resolveCanvasKitLocalFont(name: string, style?: LocalFontStyleRe
   const target = normalizeFontAlias(name);
   currentHostRecords();
   const candidates = hostLookup.aliases.get(target) ?? [];
-  const exact = candidates.filter(record => [record.postscriptName, record.fullName,
-    `${record.family} ${record.style}`].some(value => normalizeFontAlias(value) === target));
-  if (exact.length) return exact.length === 1 ? exact[0] : null;
-  if (style) {
-    const styled = candidates.filter(record => record.hostReference?.face.weight === style.weight
-      && record.hostReference?.face.slant === style.slant);
-    return styled.length === 1 ? styled[0] : null;
+  const postscript = hostLookup.postscriptNames.get(target) ?? [];
+  if (postscript.length) return postscript.length === 1 ? postscript[0] : null;
+  // A Regular face often has fullName === family. A shared family alias must still
+  // select Bold/Italic from the run style instead of treating that name as exact.
+  if (candidates.length === 1) {
+    const record = candidates[0];
+    if ([record.fullName, `${record.family} ${record.style}`].some(value => normalizeFontAlias(value) === target)
+      && normalizeFontAlias(record.family) !== target) return record;
   }
-  return candidates.length === 1 ? candidates[0] : null;
+  if (!style) return resolveLocalFontFromLookup(name, hostLookup);
+  const styled = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === style.slant);
+  return styled.length === 1 ? styled[0] : null;
 }
 
 /** Consume the selected face directly, rather than resolving its name a second time. */

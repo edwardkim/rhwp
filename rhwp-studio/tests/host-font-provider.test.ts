@@ -166,3 +166,13 @@ test('failed byte reads recover on a new revision and buffers are isolated from 
   new Uint8Array(data!.bytes)[0] = 9;
   assert.equal(new Uint8Array(original)[0], 4);
 });
+
+test('Regular fullName equal to family does not intercept a family Bold request', async () => {
+  const f = fixture();
+  const faces = f.snapshot().faces.map((face, index) => index === 0 ? { ...face, fullName: face.family } : face);
+  f.provider.getSnapshot = async () => ({ revision: 'same-full-name', faces });
+  try {
+    await setHostFontProvider(f.provider);
+    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'bold');
+  } finally { await setHostFontProvider(null); }
+});
