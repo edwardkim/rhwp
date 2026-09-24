@@ -1624,6 +1624,7 @@ impl DocumentCore {
     /// 없으므로 그 표의 사다리를 그대로 둔다 — 종전 동작이다.
     fn writeback_reflowed_table_frames(&self, snapshot: &mut Document) {
         use crate::model::control::Control;
+        use crate::renderer::layout::table_layout::CellUnitLineAnchor;
         use crate::renderer::pagination::PageItem;
         use std::collections::{BTreeMap, BTreeSet};
 
@@ -1702,16 +1703,39 @@ impl DocumentCore {
                         let anchors =
                             self.layout_engine
                                 .cell_unit_line_anchors(cell, table, &self.styles);
-                        // 컷이 줄을 차지하지 않는 유닛(자리차지 개체 등)에 떨어지면 그 조각의
-                        // 첫 **줄**은 뒤의 첫 가시 유닛이다. 개체 유닛의 `para_idx` 는 앵커
-                        // 문단이라 흐름 순서와 어긋나므로 그대로 쓰면 안 된다.
-                        let resets: Vec<(usize, usize)> = units
-                            .iter()
-                            .filter_map(|unit| {
-                                anchors.get(*unit..)?.iter().flatten().next().copied()
-                            })
-                            .collect();
-                        if resets.len() != units.len() {
+                        let mut resets: Vec<(usize, usize)> = Vec::with_capacity(units.len());
+                        for unit in units.iter() {
+                            match anchors.get(*unit) {
+                                // 조각이 이 줄에서 시작한다.
+                                Some(CellUnitLineAnchor::Opens(para, line)) => {
+                                    resets.push((*para, *line))
+                                }
+                                // 줄을 차지하지 않는 유닛(자리차지 개체)에서 시작하면 첫 줄은
+                                // 뒤의 첫 `Opens` 다.
+                                Some(CellUnitLineAnchor::NoLineOfItsOwn) => {
+                                    if let Some((para, line)) =
+                                        anchors.get(*unit..).and_then(|tail| {
+                                            tail.iter().find_map(|anchor| match anchor {
+                                                CellUnitLineAnchor::Opens(para, line) => {
+                                                    Some((*para, *line))
+                                                }
+                                                _ => None,
+                                            })
+                                        })
+                                    {
+                                        resets.push((para, line));
+                                    }
+                                }
+                                // 이미 열린 줄 안(중첩 표 행)은 host 사다리가 가리킬 수 없다.
+                                // 뒤 줄을 대신 적으면 그 구조를 통째로 앞 쪽에 넣으라는 거짓이
+                                // 되므로 이 경계는 **쓰지 않는다** — 읽는 쪽이 제 용량 컷을
+                                // 쓰게 두는 것이 편집 직후 배치와 같다.
+                                Some(CellUnitLineAnchor::InsideAnOpenLine) | None => {}
+                            }
+                        }
+                        resets.sort_unstable();
+                        resets.dedup();
+                        if resets.is_empty() {
                             continue;
                         }
                         plans.push((section_idx, para_idx, control_idx, cell_idx, resets));
@@ -1720,7 +1744,12 @@ impl DocumentCore {
             }
         }
 
-        // 2단계 — 스냅숏 사다리를 그 컷으로 다시 세운다.
+        // 2단계 — 되감김 위치만 옮긴다.
+        //
+        // 사다리를 통째로 다시 깔면 안 된다. 저장 vpos 는 조각 경계 말고도 **줄 사이 간격**을
+        // 나르고(조판의 `vpos_gap_before` 등이 읽는다), 촘촘한 사다리로 덮으면 그 신호가
+        // 사라져 읽는 쪽이 더 채운다(실측: 문단 2276 편집에서 103쪽이 11낱말 더 먹었다).
+        // 그래서 줄 사이 **원래 간격을 그대로 이어 붙이고**, 되감김만 실제 컷 자리로 옮긴다.
         for (section_idx, para_idx, control_idx, cell_idx, resets) in plans {
             let Some(Control::Table(table)) = snapshot
                 .sections
@@ -1734,20 +1763,38 @@ impl DocumentCore {
                 continue;
             };
             let resets: BTreeSet<(usize, usize)> = resets.into_iter().collect();
-            let mut next = cell
-                .paragraphs
-                .first()
-                .and_then(|paragraph| paragraph.line_segs.first())
-                .map(|seg| seg.vertical_pos)
-                .unwrap_or(0);
+            let mut previous: Option<(i32, i32, i32)> = None; // (원래 vpos, 새 vpos, 줄 점유 높이)
             for (cell_para_idx, cell_para) in cell.paragraphs.iter_mut().enumerate() {
                 for (line_idx, seg) in cell_para.line_segs.iter_mut().enumerate() {
-                    if resets.contains(&(cell_para_idx, line_idx)) {
-                        // 조각 시작 = 셀-로컬 원점. 이어지는 조각의 저장값이 이것이다.
-                        next = 0;
-                    }
+                    let stored = seg.vertical_pos;
+                    let occupied = seg.line_height.saturating_add(seg.line_spacing);
+                    let next = match previous {
+                        None => stored,
+                        Some((previous_stored, previous_new, previous_occupied)) => {
+                            if resets.contains(&(cell_para_idx, line_idx)) {
+                                // 조각 시작 — 원래도 여기서 되감겼으면 그 원점을 그대로 쓰고,
+                                // 아니면 셀-로컬 원점 0 을 쓴다(이 문서의 조각 원점 관행).
+                                if stored < previous_stored {
+                                    stored
+                                } else {
+                                    0
+                                }
+                            } else {
+                                // 같은 조각 안 — 원래 간격을 그대로 잇는다. 원래 여기서
+                                // 되감겼다면(조각 경계가 옮겨갔다) 이을 간격이 없으므로 앞
+                                // 줄의 점유 높이를 쓴다.
+                                let advance = stored - previous_stored;
+                                previous_new
+                                    + if advance > 0 {
+                                        advance
+                                    } else {
+                                        previous_occupied
+                                    }
+                            }
+                        }
+                    };
                     seg.vertical_pos = next;
-                    next += seg.line_height + seg.line_spacing;
+                    previous = Some((stored, next, occupied));
                 }
             }
         }

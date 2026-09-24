@@ -1881,6 +1881,29 @@ pub(crate) fn native_terminal_child_host_line_spacing(
         .fold(0.0, f64::max)
 }
 
+/// [#7114] 셀 유닛이 저장 `LINE_SEG` 사다리에서 여는 줄.
+///
+/// pagination 이 기록한 컷(`PageItem::PartialTable::start_cut`)은 유닛 서수인데 저장
+/// 프레임은 줄 좌표다. 유닛과 줄은 1:1 이 아니라 세 갈래로 갈린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CellUnitLineAnchor {
+    /// 이 유닛이 `(셀 문단 인덱스, 문단 내 줄 인덱스)` 를 **새로 연다**. 조각이 여기서
+    /// 시작하면 그 줄이 조각의 첫 줄이다.
+    Opens(usize, usize),
+    /// 줄을 차지하지 않는다(`vis_start == vis_end`) — 자리차지 개체 유닛이다. 조각이
+    /// 여기서 시작하면 첫 **줄**은 뒤의 첫 `Opens` 다. 이 유닛의 `para_idx` 는 앵커
+    /// 문단을 가리켜 흐름 순서와도 어긋나므로(실측: 유닛 533 이 문단 315·316 사이에서
+    /// `para=310, h=216.3px`) 그 값을 줄 자리로 쓰면 안 된다.
+    NoLineOfItsOwn,
+    /// **이미 열린 줄 안**이다 — host 문단의 한 줄을 여러 유닛이 나눠 가질 때의 뒤 유닛이며,
+    /// 중첩 표 행이 여기 해당한다(실측: 문단 81 의 중첩 표 3행이 전부 `(81, 0)`).
+    ///
+    /// 조각이 여기서 시작하면 그 경계는 **host 사다리로 표현할 수 없다**. 뒤의 host 줄을
+    /// 대신 적으면 "경계가 그 구조 뒤에 있다"는 거짓을 쓰는 것이고, 읽는 쪽의 꼬리 흡수가
+    /// 그 말을 믿어 중첩 행을 앞 쪽으로 끌어올린다(실측 74.9px, 허용치 48px 안).
+    InsideAnOpenLine,
+}
+
 #[derive(Debug, Clone)]
 struct NestedTableUnitCut {
     start_cut: RowCut,
@@ -12856,43 +12879,28 @@ impl LayoutEngine {
         cells.into_iter().map(|(_, idx)| idx).collect()
     }
 
-    /// [#7114] 셀 유닛 서수 → 그 유닛이 **새로 여는 줄** `(셀 문단 인덱스, 문단 내 줄 인덱스)`.
+    /// [#7114] 셀 유닛 서수 → 저장 사다리에서 그 유닛이 여는 줄([`CellUnitLineAnchor`]).
     ///
-    /// pagination 이 기록한 컷(`PageItem::PartialTable::start_cut`)은 유닛 서수인데 저장
-    /// `LINE_SEG` 프레임은 줄 좌표다. 저장 경로가 **실제 조판 컷**을 프레임으로 되쓰려면
-    /// 둘을 잇는 매핑이 하나 있어야 한다. 컷 판정이 쓰는 `cell_units` 를 그대로 소비하므로
-    /// 조판과 저장이 같은 유닛 정의를 본다.
-    ///
-    /// 유닛과 줄은 1:1 이 아니다. 줄을 새로 열지 않는 유닛은 `None` 이며, 호출자는 컷을
-    /// 뒤쪽 첫 `Some` 으로 해소한다 — 그 유닛들이 차지하는 자리는 **이미 시작된 줄**이거나
-    /// 줄이 아니기 때문이다.
-    ///
-    /// - `vis_start == vis_end`: 줄을 차지하지 않는다. 자리차지 개체 유닛이 여기 해당하며
-    ///   `para_idx` 가 앵커 문단을 가리켜 **흐름 순서와도 어긋난다**(실측: 유닛 533 이
-    ///   문단 315 와 316 사이에서 `para=310, vis=0..0, h=216.3px`).
-    /// - 앞 유닛과 같은 `(문단, 줄)`: 한 host 줄을 잘게 쪼갠 뒤 유닛이다. 중첩 표 host
-    ///   문단이 그렇다 — 실측으로 문단 2276 의 중첩 표 행 여덟 유닛이 전부 `(2276, 0)` 이다.
-    ///   중첩 표 **안**에서 쪽이 갈리면 host 줄은 이미 앞 쪽에 있으므로 그 줄을 조각 시작으로
-    ///   삼으면 경계가 한 문단 앞당겨진다.
+    /// 컷 판정이 쓰는 `cell_units` 를 그대로 소비하므로 조판과 저장이 같은 유닛 정의를 본다.
     pub(crate) fn cell_unit_line_anchors(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
-    ) -> Vec<Option<(usize, usize)>> {
+    ) -> Vec<CellUnitLineAnchor> {
         let mut opened: Option<(usize, usize)> = None;
         self.cell_units(cell, table, styles)
             .iter()
             .map(|unit| {
                 if unit.vis_start >= unit.vis_end {
-                    return None;
+                    return CellUnitLineAnchor::NoLineOfItsOwn;
                 }
                 let line = (unit.para_idx, unit.vis_start);
                 if opened == Some(line) {
-                    return None;
+                    return CellUnitLineAnchor::InsideAnOpenLine;
                 }
                 opened = Some(line);
-                Some(line)
+                CellUnitLineAnchor::Opens(line.0, line.1)
             })
             .collect()
     }
