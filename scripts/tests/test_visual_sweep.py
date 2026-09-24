@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import base64
+import io
 import json
 import os
 import subprocess
@@ -340,6 +342,98 @@ class SelectedRasterTests(unittest.TestCase):
         )
 
         self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
+
+
+class EmbeddedFontPreflightTests(unittest.TestCase):
+    def font_bytes(self, *, remove_cmap=False):
+        from fontTools.ttLib import TTFont
+        fixture = MODULE_PATH.parents[1] / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
+        with TTFont(fixture) as font:
+            if remove_cmap:
+                del font['cmap']
+            data = io.BytesIO()
+            font.save(data)
+            return data.getvalue()
+
+    def svg(self, data):
+        encoded = base64.b64encode(data).decode('ascii')
+        return ('<svg><style>@font-face {font-family:"Fixture";'
+                f'src:url("data:font/ttf;base64,{encoded}")}}</style>'
+                '<text font-family="Fixture">AV</text></svg>')
+
+    def test_real_font_with_unicode_mapping_is_accepted(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(self.font_bytes()))
+            records = SWEEP.inspect_svg_embedded_fonts(svg)
+            self.assertEqual(records[0]['status'], 'passed')
+            self.assertGreater(records[0]['unicode_mapping_count'], 0)
+
+    def test_pdf_style_font_without_cmap_blocks_capture_and_records_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            report = Path(temp) / 'font-check.json'
+            with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
+                SWEEP.check_sweep_embedded_fonts([svg], report)
+            record = json.loads(report.read_text())
+            self.assertEqual(record['status'], 'failed')
+            self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
+
+    def test_broken_font_bytes_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(b'not a font'))
+            self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
+
+    def test_wasm_font_policy_cannot_bypass_font_validation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            source = '<svg><text x="12" y="34" font-family="Fixture">AV</text></svg>'
+            policy = self.svg(self.font_bytes(remove_cmap=True))
+            svg.write_text(SWEEP.apply_svg_font_policy(source, policy))
+            self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
+
+    def test_subset_request_is_rejected_even_from_python_api(self):
+        with self.assertRaisesRegex(SystemExit, '--embed-fonts=full'):
+            SWEEP.svg_font_export_options(Path('.'), 'subset', [])
+
+    def test_bare_embed_fonts_selects_full_in_cli(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with (
+                patch.object(sys, 'argv', ['visual_sweep.py', '--file-target', 'fixture', 'a.hwp', 'a.pdf', '--out', temp, '--embed-fonts']),
+                patch.object(SWEEP, 'ensure_tools'),
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
+                patch.object(SWEEP, 'render_target', return_value={}) as render,
+            ):
+                SWEEP.main()
+            self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+
+    def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'a.hwp').write_bytes(b'input')
+            (root / 'a.pdf').write_bytes(b'pdf')
+            target = SWEEP.Target('fixture', Path('a.hwp'), Path('a.pdf'))
+            out = root / 'out'
+            base = out / 'fixture'
+            (base / 'svg').mkdir(parents=True)
+            (base / 'render_tree').mkdir()
+            (base / 'svg/p001.svg').write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            (base / 'render_tree/p001.json').write_text('{}')
+            SWEEP.update_root_summary(out, {'key': 'fixture', 'pr_review_gate': {'status': 'passed'}})
+            with (
+                patch.object(SWEEP, 'sweep_provenance', return_value={}),
+                patch.object(SWEEP, 'run_manifest_for_target', return_value={}),
+                patch.object(SWEEP, 'load_note_shape', return_value={}),
+                patch.object(SWEEP, 'run') as run,
+            ):
+                with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
+                    SWEEP.render_target(root, target, out, 'rhwp', 96, 32, [1], resume=True, svg_rasterizer='webfont')
+            run.assert_not_called()
+            summary = json.loads((out / 'summary.json').read_text())[0]
+            self.assertEqual(summary['run_state'], 'failed')
+            self.assertEqual(summary['pr_review_gate']['status'], 're_review_required')
 
 
 class WasmSweepTests(unittest.TestCase):

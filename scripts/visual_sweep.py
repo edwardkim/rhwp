@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import html as html_lib
 import importlib.util
+import io
 import json
 import os
 import platform
@@ -657,9 +659,14 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
 
 def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
     """명시적 검증 폰트 공급과 hash를 고정한다. 폰트 파일은 scratch SVG에만 포함한다."""
+    if mode == "subset":
+        raise SystemExit(
+            "SVG 서브셋 임베딩은 Unicode cmap을 보존하지 않아 검증에 사용할 수 없습니다. "
+            "--embed-fonts=full 또는 설치 글꼴을 쓰는 기본 모드로 재실행하세요."
+        )
     if paths and mode is None:
         raise SystemExit("--font-path는 --embed-fonts와 함께 사용해야 합니다.")
-    args = [f"--embed-fonts={mode}"] if mode == "full" else ["--embed-fonts"] if mode else ["--font-style"]
+    args = ["--embed-fonts=full"] if mode == "full" else ["--font-style"]
     files = []
     for directory in paths:
         directory = resolve_input_path(root, directory)
@@ -670,6 +677,59 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
             if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
                 files.append({"path": str(path), "sha256": sha256_file(path)})
     return args, {"mode": mode or "local", "files": files}
+
+
+def inspect_svg_embedded_fonts(svg_path: Path) -> list[dict[str, object]]:
+    """픽셀 점수 전에 임베딩 폰트의 Unicode 매핑을 검사한다.
+
+    cmap이 없는 PDF용 subset은 glyph가 있어도 SVG text를 표시할 수 없다.
+    이 검사는 실제 글꼴 선택이나 모든 글자의 표시를 입증하지 않는다.
+    local()/외부 URL 폰트는 이 검사 밖이며 직접 PNG 판독이 계속 필요하다.
+    """
+    records: list[dict[str, object]] = []
+    svg = svg_path.read_text(encoding="utf-8")
+    for rule in re.findall(r"@font-face\s*\{[^{}]*\}", svg, re.IGNORECASE):
+        family = re.search(r"font-family\s*:\s*([^;}]+)", rule, re.IGNORECASE)
+        name = family.group(1).strip().strip("\"'") if family else "(unknown)"
+        for data_url in re.findall(r"url\(\s*[\"']?(data:[^\"')]+)", rule, re.IGNORECASE):
+            record: dict[str, object] = {"family": name}
+            try:
+                from fontTools.ttLib import TTFont
+
+                header, payload = data_url.split(",", 1)
+                if not header.lower().endswith(";base64"):
+                    raise ValueError("base64 font data URI가 아님")
+                data = base64.b64decode(re.sub(r"\s+", "", payload), validate=True)
+                record["sha256"] = hashlib.sha256(data).hexdigest()
+                with TTFont(io.BytesIO(data), fontNumber=0) as font:
+                    cmap = font.getBestCmap() if "cmap" in font else None
+                    if not cmap:
+                        raise ValueError("Unicode cmap이 없거나 비어 있음")
+                    record["unicode_mapping_count"] = len(cmap)
+                record["status"] = "passed"
+            except ImportError:
+                record.update(status="failed", reason="임베딩 폰트 검사를 위해 fonttools 설치 필요")
+            except Exception as error:
+                # FontTools는 손상된 SFNT/WOFF마다 다른 예외를 사용한다.
+                record.update(status="failed", reason=str(error))
+            records.append(record)
+    return records
+
+
+def check_sweep_embedded_fonts(svg_paths: list[Path], report_path: Path) -> None:
+    pages = [{"svg": str(path), "fonts": inspect_svg_embedded_fonts(path)} for path in svg_paths]
+    failures = [
+        f"{Path(page['svg']).name}: {font['family']}: {font['reason']}"
+        for page in pages for font in page["fonts"] if font["status"] == "failed"
+    ]
+    write_json_atomic(report_path, {
+        "status": "failed" if failures else "passed",
+        "embedded_font_count": sum(len(page["fonts"]) for page in pages),
+        "scope": "embedded font Unicode cmap only; direct PNG inspection still required",
+        "pages": pages,
+    })
+    if failures:
+        raise SystemExit("임베딩 글꼴 검사 실패 — 캡처/시각 통과 판정을 중단합니다.\n" + "\n".join(failures))
 
 
 def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None) -> None:
@@ -1374,6 +1434,28 @@ def render_target(
     print(f"SVG export pages: {len(all_svg_paths)}", flush=True)
     if not all_svg_paths or not all_tree_paths:
         raise SystemExit("SVG 또는 render tree export 산출물이 없습니다.")
+
+    # Native와 WASM, 새 실행과 resume 모두 raster/checkpoint 재사용 전에 검사한다.
+    # font-mismatch 예외도 손상된 폰트 데이터의 검사를 우회하지 못한다.
+    font_check_path = analysis_dir / "embedded_font_check.json"
+    try:
+        check_sweep_embedded_fonts(
+            raster_paths_for_selected_pages(all_svg_paths, selected_pages),
+            font_check_path,
+        )
+    except SystemExit:
+        # resume 중 손상된 SVG를 발견했을 때도 과거 passed 요약을 남기지 않는다.
+        run_manifest["run_state"] = "failed"
+        write_json_atomic(run_manifest_path(base), run_manifest)
+        failure = {
+            "key": target.key,
+            "run_state": "failed",
+            "embedded_font_check": str(font_check_path),
+            "pr_review_gate": {"status": "re_review_required", "reason": "invalid_embedded_font"},
+        }
+        write_json_atomic(base / "manifest.json", failure)
+        update_root_summary(out_root, failure)
+        raise
 
     pdf_prefix = pdf_png_dir / "pdf"
     if not resume and selected_pages is None:
@@ -5113,7 +5195,7 @@ def main() -> None:
         ),
     )
     parser.add_argument("--dpi", type=int, default=96)
-    parser.add_argument("--embed-fonts", nargs="?", const="subset", choices=("subset", "full"), help="진단 SVG에 검증 글꼴을 명시적으로 공급합니다. 공개 증적은 PNG로 보존합니다.")
+    parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
     parser.add_argument(
