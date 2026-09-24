@@ -1088,6 +1088,12 @@ let hostLookupGeneration = -1;
 let hostLookupReferences: readonly HostFontReference[] = [];
 let hostRecords: LocalFontRecord[] = [];
 let hostLookup = emptyLocalFontLookup();
+hostFontSource.subscribe(() => {
+  hostLookupGeneration = -1;
+  hostLookupReferences = [];
+  hostRecords = [];
+  hostLookup = emptyLocalFontLookup();
+});
 
 export interface LocalFontStyleRequest { weight: number; slant: 'normal' | 'italic' | 'oblique' }
 
