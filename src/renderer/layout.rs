@@ -4420,6 +4420,7 @@ impl LayoutEngine {
             &mut tree,
             &mut footer_node,
             page_content,
+            styles,
             layout,
             page_border_fill,
         );
@@ -6209,6 +6210,7 @@ impl LayoutEngine {
         tree: &mut PageRenderTree,
         footer_node: &mut RenderNode,
         page_content: &PageContent,
+        styles: &ResolvedStyleSet,
         layout: &PageLayoutInfo,
         page_border_fill: Option<&PageBorderFill>,
     ) {
@@ -6234,21 +6236,33 @@ impl LayoutEngine {
                 _ => &layout.footer_area,
             };
 
-            // [#3048] 한글은 쪽 번호 매기기(pgnp) 번호를 10pt 로 그린다 — pgnp 사용
-            // 문서 8건 오라클 실측 전건 일치(7건 직접 10.0pt, 1건은 2-up 내보내기로
-            // 0.707배 축소된 7.07pt 로 설명됨). 종전 값 10.0 은 pt 로 의도된 값이
-            // px 필드에 들어가 96dpi 에서 7.5pt 로 렌더되던 단위 혼동이었다.
+            // [#3048] 스타일이 없는 pgnp 의 기본 크기는 10pt 이다. 문서에
+            // `쪽 번호` 스타일이 있으면 그 글자 모양을 사용한다. 원본 PDF 의
+            // #7336 쪽번호는 HCRDotum 인데, 고정 `바탕`은 폭·획·세로 위치를
+            // 모두 다르게 그렸다.
             const PAGE_NUMBER_PT: f64 = 10.0;
-            let font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
+            let page_number_char_style = styles
+                .page_number_char_style_id
+                .and_then(|id| styles.char_styles.get(id));
+            let font_size = page_number_char_style
+                .map(|style| style.font_size)
+                .filter(|size| *size > 0.0)
+                .unwrap_or(PAGE_NUMBER_PT * self.dpi / 72.0);
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·
             // 오른쪽 정렬 위치를 약 2pt 왼쪽으로 밀었다. 아래 TextRunNode 가 쓰는
             // 스타일과 **같은 값**으로 재야 측정과 렌더가 어긋나지 않는다.
             let page_num_style = TextStyle {
-                font_family: "바탕".to_string(),
+                font_family: page_number_char_style
+                    .and_then(|style| style.font_families.get(1).or(style.font_families.first()))
+                    .filter(|family| !family.is_empty())
+                    .cloned()
+                    .unwrap_or_else(|| "바탕".to_string()),
                 font_size,
-                color: 0x000000,
+                color: page_number_char_style
+                    .map(|style| style.text_color)
+                    .unwrap_or(0x000000),
                 ..Default::default()
             };
             let text_width = estimate_text_width(&page_num_text, &page_num_style);
@@ -6303,6 +6317,19 @@ impl LayoutEngine {
                     .unwrap_or(footer_center)
             } else {
                 footer_center
+            };
+            // #7336: 한컴 2020·2024 PDF 의 함초롬돋움 쪽번호는 동일한 footer
+            // 밴드에서 글꼴 크기의 절반만큼 아래에 놓인다. 문서의 `쪽 번호` 스타일을
+            // 적용해도 기존 바탕 기준 baseline 을 그대로 쓰면 6쪽 전부 glyph 이
+            // 6~7px 위로 뜬다. 굴림 쪽번호(aift)는 반대 방향으로 2~3px 차이이므로
+            // 모든 쪽번호에 일괄 이동을 적용하지 않는다.
+            let y = if is_footer
+                && (page_num_style.font_family.contains("함초롬돋움")
+                    || page_num_style.font_family.contains("HCR Dotum"))
+            {
+                y + font_size / 2.0
+            } else {
+                y
             };
 
             let line_id = tree.next_id();
@@ -7316,28 +7343,57 @@ impl LayoutEngine {
 
         // vpos 보정을 위한 페이지 기준 vpos 계산
         // 페이지 첫 항목의 vpos를 기준점으로 삼아 모든 페이지에서 vpos 보정 적용
-        let vpos_page_base_init: Option<i32> = col_content.items.first().and_then(|item| {
-            match item {
-                PageItem::FullParagraph { para_index } => paragraphs
-                    .get(*para_index)
-                    .and_then(|p| p.line_segs.first())
-                    .map(|seg| seg.vertical_pos),
-                PageItem::PartialParagraph {
-                    para_index,
-                    start_line,
-                    ..
-                } => paragraphs
-                    .get(*para_index)
-                    .and_then(|p| p.line_segs.get(*start_line))
-                    .map(|seg| seg.vertical_pos),
-                PageItem::Table { para_index, .. } => paragraphs
-                    .get(*para_index)
-                    .and_then(|p| p.line_segs.first())
-                    .map(|seg| seg.vertical_pos),
-                // PartialTable/Shape: 지연 보정 사용
-                _ => None,
-            }
-        });
+        let saved_inline_heading_page = matches!(col_content.items.first(), Some(PageItem::FullParagraph { para_index })
+            if self.profile.get().hwp5_stored_pagination_layout()
+                && *para_index > 0
+                && paragraphs.get(*para_index).is_some_and(|para| {
+                    para.line_segs.len() == 1
+                        && (1..=2500).contains(&para.line_segs[0].vertical_pos)
+                        && para.controls.len() == 1
+                        && matches!(&para.controls[0], Control::Shape(shape) if shape.common().treat_as_char)
+                        && !para_has_visible_text(para)
+                })
+                && paragraphs.get(*para_index - 1).and_then(|para| para.line_segs.last())
+                    .is_some_and(|seg| seg.vertical_pos.saturating_add(seg.line_height) > 60_000)
+                && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
+                    .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
+                        && seg.vertical_pos < 30_000));
+        let vpos_page_base_init: Option<i32> = col_content
+            .items
+            .first()
+            .and_then(|item| {
+                match item {
+                    PageItem::FullParagraph { para_index } => paragraphs
+                        .get(*para_index)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos),
+                    PageItem::PartialParagraph {
+                        para_index,
+                        start_line,
+                        ..
+                    } => paragraphs
+                        .get(*para_index)
+                        .and_then(|p| p.line_segs.get(*start_line))
+                        .map(|seg| seg.vertical_pos),
+                    PageItem::Table { para_index, .. } => paragraphs
+                        .get(*para_index)
+                        .and_then(|p| p.line_segs.first())
+                        .map(|seg| seg.vertical_pos),
+                    // PartialTable/Shape: 지연 보정 사용
+                    _ => None,
+                }
+            })
+            .map(|base| {
+                // 저장 HWP5의 새 쪽을 인라인 도형 제목이 열면 그 제목 자체의
+                // vpos(예: 1000HU)는 쪽 원점이 아니다. 도형은 자체 좌표로 그려지고
+                // 뒤따르는 본문은 쪽-상대 vpos를 그대로 따른다. 제목 vpos를
+                // page_base로 빼면 뒤의 문단·표가 그만큼 위로 밀린다.
+                if saved_inline_heading_page {
+                    0
+                } else {
+                    base
+                }
+            });
         // (base=0 무차별 부여는 다쪽 분할표 연속 컬럼에서 오작동 — HeightCursor 의
         // [Task #1027 Stage C] inter-item VPOS_CORR 상태머신을 HeightCursor 로 캡슐화.
         // vpos_page_base/lazy_base, prev_layout_para, prev_item_was_partial_table(#991:
@@ -9171,7 +9227,12 @@ impl LayoutEngine {
             } else {
                 false
             };
-            if was_tac || (is_table_or_shape && !is_para_float_table && !is_inline_tac_object) {
+            let heading_shape_keeps_page_base = saved_inline_heading_page
+                && matches!(item, PageItem::Shape { para_index, control_index: 0 }
+                    if matches!(col_content.items.first(), Some(PageItem::FullParagraph { para_index: first }) if first == para_index));
+            if !heading_shape_keeps_page_base
+                && (was_tac || (is_table_or_shape && !is_para_float_table && !is_inline_tac_object))
+            {
                 hcursor.vpos_page_base = None;
                 hcursor.vpos_lazy_base = None;
             }
