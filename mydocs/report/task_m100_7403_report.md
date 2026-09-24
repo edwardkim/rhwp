@@ -7,7 +7,8 @@
 - 최종 검증 source: `eb91a11f1052b88ae6efdfeb7e42b6233dbfde84`
 - 브랜치: `codex/issue-7403-host-font-provider`
 - 검증일: 2026-09-24
-- 상태: 아래 공통 공급 계약·CanvasKit·Canvas2D 범위의 로컬 검증 통과. GitHub CI·push·PR은 미수행.
+- 상태: 아래 공통 공급 계약·CanvasKit·Canvas2D 범위의 로컬 검증 통과.
+- 제출: [PR #7405](https://github.com/edwardkim/rhwp/pull/7405), 원본 저장소 작업 브랜치로 push했다. GitHub CI는 제출 후 별도로 확인한다.
   이후 커밋은 보고서와 증거 보존이며 제품 코드·테스트 변경이 아니다.
 
 ## 구현과 발견한 결함
@@ -193,5 +194,5 @@ glyph resource 교체는 범위 밖이다. WebGL/WebGPU, 다른 브라우저 엔
 두 renderer 범위와 출력 책임을 반영해 갱신했다. 게시 뒤 한글 본문 일치와 담당자 postmelee를 확인했다.
 
 이번 실행에서 baseline·golden·실루엣 임계값은 변경하지 않았다. 남은 단계는 이 범위와 제한을
-명시한 PR 준비·승인된 push/PR 생성 및 최신 head GitHub required checks다. 이 기록은 maintainer의
+명시한 PR #7405의 최신 head GitHub required checks와 merge 승인이다. 이 기록은 maintainer의
 merge 승인이나 이슈 전체 완료 판정을 대신하지 않는다.
