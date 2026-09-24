@@ -230,8 +230,34 @@ def split_baseline_row(row):
     return lines
 
 
+def comparison_key(text: str) -> str:
+    """두 출력의 글자열을 견주기 위한 열쇠.
+
+    공백과 함께 **사용자 정의 영역(PUA)과 옛한글 자모**를 버린다. 같은 글자를 한/글과
+    rhwp 가 서로 다른 코드로 적기 때문이다 — `hwpspec.hwp` 의 「ᄒᆞᆫ글」 로고 글자를
+    정본은 `U+F53A` 하나로, rhwp 는 자모 셋(`U+1112 U+119E U+11AB`)으로 적는다.
+    글자열이 다르니 어떤 대조도 성립하지 않는다.
+
+    **너비 문제가 아니다.** rhwp 는 그 묶음을 0.9259 em 으로 전진시켜 한 음절 폭을
+    쓴다. 버리고 다시 세면 그 문서의 "정본만 지킨 문단" 이 45 -> 8 로 줄어든다 —
+    37건이 표기 차이였다.
+
+    매핑표 대신 버리는 쪽을 쓴다. 표는 글꼴·판본마다 달라 유지할 근거가 없고, 양쪽에서
+    똑같이 버리면 `endswith` 대조는 그대로 성립한다.
+    """
+    return "".join(
+        c
+        for c in text
+        if not c.isspace()
+        and not 0xE000 <= ord(c) <= 0xF8FF
+        and not 0x1100 <= ord(c) <= 0x11FF
+        and not 0xA960 <= ord(c) <= 0xA97F
+        and not 0xD7B0 <= ord(c) <= 0xD7FF
+    )
+
+
 def row_to_line(row, baseline):
-    key = re.sub(r"\s+", "", "".join(glyph for _, glyph, _ in row))
+    key = comparison_key("".join(glyph for _, glyph, _ in row))
     if not key:
         return None
     return {"key": key, "font_px": row[0][2], "x": row[0][0], "y": baseline}
@@ -369,7 +395,7 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines, pages=None) -> dict:
         if len(cuts) < 2:
             continue
         text = para["text"]
-        head = re.sub(r"\s+", "", text[: cuts[1]])
+        head = comparison_key(text[: cuts[1]])
         if len(head) < 12:
             continue
         stored += 1
