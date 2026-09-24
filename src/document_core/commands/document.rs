@@ -642,7 +642,16 @@ impl DocumentCore {
                                     // 표 소유자가 이미 확정한 셀 폭을 흔든다.
                                     reflow_line_segs(
                                         cell_para,
-                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                                        // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                                        // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                                        ParagraphBox::content_for_style(
+                                            cell_inner_width,
+                                            styles
+                                                .para_styles
+                                                .get(cell_para.para_shape_id as usize),
+                                            dpi,
+                                        ),
                                         styles,
                                         dpi,
                                     );
@@ -1173,7 +1182,14 @@ impl DocumentCore {
                     {
                         reflow_line_segs(
                             child_para,
-                            ParagraphBox::content_width_px(inner_width, dpi),
+                            // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                            // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                            // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                            ParagraphBox::content_for_style(
+                                inner_width,
+                                styles.para_styles.get(child_para.para_shape_id as usize),
+                                dpi,
+                            ),
                             styles,
                             dpi,
                         );
@@ -1502,7 +1518,16 @@ impl DocumentCore {
                                     // 셀 내용 상자 — 위와 같은 이유로 미스냅.
                                     reflow_line_segs(
                                         cell_para,
-                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                                        // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                                        // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                                        ParagraphBox::content_for_style(
+                                            cell_inner_width,
+                                            styles
+                                                .para_styles
+                                                .get(cell_para.para_shape_id as usize),
+                                            dpi,
+                                        ),
                                         &styles,
                                         dpi,
                                     );
