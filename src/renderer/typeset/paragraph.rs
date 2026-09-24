@@ -270,6 +270,7 @@ pub(super) fn try_place_overflow_paragraph(
         para_idx,
         &page,
         forced_page_break_line,
+        dpi,
     ) {
         let first_line_advance = fmt.line_advance(0);
         // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를

@@ -2538,7 +2538,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                     if !picture.common.treat_as_char
                     && picture.common.text_wrap == crate::model::shape::TextWrap::Square)
                 }))
-            && line_breaking::supports_picture_band_frame_controls(para));
+            && line_breaking::supports_picture_band_frame_controls(para))
+        // [#7160] 글자처럼 취급 **표** host 도 프레임이 받는다 — `inline_control_size_hwp` 가
+        // 그 폭을 인라인 토큰으로 계상하므로 그림과 같은 축이다. 글자 없는 host 는 제외한다:
+        // 줄을 나눌 글자가 없고 표 자리 계약은 다른 경로가 갖는다.
+        || (para.text.chars().any(|c| !c.is_whitespace())
+            && line_breaking::supports_tac_table_band_frame_controls(para));
     if !paragraph_box.is_usable() || !frame_admits_controls {
         return None;
     }
@@ -2597,7 +2602,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         // `StoredRowResolution::Stored` and `LayoutFrame::try_admit_stored_rows`
         // for the measurement). `None`: the paragraph's controls have their own
         // layout owner and no frame was ever built for it.
-        Some(line_breaking::StoredRowResolution::Stored) | None => None,
+        other => None,
     }
 }
 

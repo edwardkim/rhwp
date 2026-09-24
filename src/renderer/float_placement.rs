@@ -1374,6 +1374,32 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
         && matches!(table.page_break, TablePageBreak::RowBreak)
 }
 
+/// A saved native RowBreak table can finish a cut cell on a fresh page.  Hancom
+/// reopens its outer top margin even when the host has no positive object offset
+/// (86712 p28: 141 HU, PDF first border 77.5px versus body top 75.6px).
+/// Keep this separate from the broad empty-host margin rule disproved by #2097:
+/// the observed contract is a cut inside the final row of a wide multi-column
+/// table. One-column giant cells (#2214) and two-column nested-fragment tables
+/// (76076 p34) already align with the PDF without reopening this margin.
+pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
+    native_hwp5_layout: bool,
+    table: &Table,
+    is_continuation: bool,
+    start_row: usize,
+    start_cut: &[usize],
+) -> bool {
+    native_hwp5_layout
+        && is_continuation
+        && table.row_count > 1
+        && table.col_count > 2
+        && start_row + 1 == table.row_count as usize
+        && !start_cut.is_empty()
+        && table.outer_margin_top > 0
+        && is_para_topbottom_float(&table.common)
+        && matches!(table.page_break, TablePageBreak::RowBreak)
+        && signed_hwpunit(table.common.vertical_offset) == 0
+}
+
 /// Physical bottom of a nonterminal single-cell page fragment. Callers use
 /// the same column-relative boundary for row fitting and page-relative painting.
 pub(crate) fn single_cell_page_fragment_bottom(table: &Table, body_bottom: f64, dpi: f64) -> f64 {

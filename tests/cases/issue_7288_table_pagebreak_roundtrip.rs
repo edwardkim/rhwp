@@ -155,6 +155,32 @@ fn setting_page_break_keeps_the_other_raw_bits() {
     );
 }
 
+/// 뜻은 CellBreak 이지만 원본이 보존한 비표준 raw 값(3)은, 같은 뜻으로 다시 설정해도
+/// 정규값 1로 바꾸면 안 된다. serializer는 raw 의미와 IR 의미가 달라질 때만 bit 0~1을
+/// 동기화하므로 setter가 raw 비트를 미리 덮으면 이 계약을 깨뜨린다.
+#[test]
+fn setting_an_equivalent_page_break_keeps_nonstandard_raw_value() {
+    let mut doc = load();
+    let (sec, para, ctrl) = first_table_path(&doc);
+    let Control::Table(table) =
+        &mut doc.document_mut().sections[sec].paragraphs[para].controls[ctrl]
+    else {
+        panic!("첫 컨트롤이 표가 아니다");
+    };
+    table.raw_table_record_attr = (table.raw_table_record_attr & !0x03) | 0x03;
+    table.page_break = TablePageBreak::CellBreak;
+
+    doc.set_table_properties_native(sec, para, ctrl, "{\"pageBreak\":1}")
+        .expect("동일한 표 속성 설정");
+    let reloaded = save_and_reload(&doc);
+    assert_eq!(
+        first_table(&reloaded).raw_table_record_attr & 0x03,
+        0x03,
+        "뜻이 같은 pageBreak 설정이 원본 raw 값을 정규화했다"
+    );
+    assert_eq!(first_table(&reloaded).page_break, TablePageBreak::CellBreak);
+}
+
 /// **다른 속성만 바꿀 때는 이 비트를 건드리지 않는다.**
 ///
 /// `pageBreak`·`repeatHeader` 키가 없으면 raw attr 은 원본 그대로여야 한다.

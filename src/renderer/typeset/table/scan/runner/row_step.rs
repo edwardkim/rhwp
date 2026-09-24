@@ -330,7 +330,20 @@ impl TypesetEngine {
             let table::scan::row_entry::RowSplitGate {
                 native_short_parent_child_splittable,
                 splittable,
-            } = row_entry.split_gate(can_intra_split);
+            } = row_entry.split_gate(can_intra_split, {
+                // [#7288] «쪽 경계에서» 가 행 내부 컷을 허용하는지 묻는다. 값 2 «나눔» 만
+                // 무조건 자르고, 값 0 «나누지 않음»·값 1 «셀 단위로 나눔» 은 이 조각의
+                // **온전한 밴드**에도 행이 안 들어갈 때 — 곧 어느 쪽에도 못 넣을 때 —
+                // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
+                // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
+                // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
+                let row_needs_whole_band =
+                    r == cursor_row && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+                !(crate::renderer::typeset::none_table_is_atomic_here(table)
+                    || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
+                    || table_storage_declares_splits
+                    || row_needs_whole_band
+            });
             if !splittable {
                 // [#2236 진단] 분할 불가 정지 — 동작 불변.
                 if std::env::var("RHWP_DIAG_SCAN").is_ok() {
@@ -622,9 +635,48 @@ impl TypesetEngine {
                 && res.consumed_height > 0.5
                 && res.end_cut.iter().any(|units| *units > 0)
                 && (avail_for_rows - consumed - cs_before) >= MIN_TOP_KEEP_PX;
+            // [#6761] 저장 사다리가 이 행을 **첫 줄 뒤에서** 나눈 자리(셀 첫 줄 `vpos=0` 다음
+            // 줄도 0)와 이번 컷이 보이는 모든 셀에서 같은 unit 이면, 한컴이 그 자리에 한 줄만
+            // 남긴 분할이다 — 25px 고아 기준은 그 한 줄(10pt 17.6px)을 늘 기각한다.
+            // `1480000-201900042 <표 2-5>` r=3: 컷 [1,1] = 저장 되감김 [1,1], 기각하면 행 전체가
+            // 다음 쪽으로 가 그 쪽 마지막 줄이 본문 바닥을 13px 넘는다.
+            // 저장값이 모두 0 인 입력과 가르도록 한 셀 이상에서 되감긴 줄 다음 seg 의 전진을
+            // 요구하고, 컷이 저장 경계와 하나라도 다르면 종전 기준을 그대로 쓴다.
+            let stored_zero_origin_rewind_keep = (st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && row_start_cut.is_empty()
+                && res.consumed_height > 0.5
+                && {
+                    let rewinds =
+                        layout_engine.row_stored_zero_origin_rewind_unit_indices(table, r, styles);
+                    let visible = layout_engine.row_visible_source_cell_flags(table, r, styles);
+                    let visible_indices: Vec<usize> = visible
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, shown)| **shown)
+                        .map(|(idx, _)| idx)
+                        .collect();
+                    !visible_indices.is_empty()
+                        && visible_indices.iter().all(|idx| {
+                            let cut = res.end_cut.get(*idx).copied().unwrap_or(0);
+                            cut > 0
+                                && rewinds
+                                    .get(*idx)
+                                    .is_some_and(|(units, _)| units.first() == Some(&cut))
+                        })
+                        && visible_indices.iter().any(|idx| {
+                            let cut = res.end_cut.get(*idx).copied().unwrap_or(0);
+                            rewinds
+                                .get(*idx)
+                                .is_some_and(|(_, confirmed)| confirmed.contains(&cut))
+                        })
+                };
             if r > cursor_row
                 && !cellbreak_complete_unit_keep
                 && !landscape_boundary_band_keep
+                && !stored_zero_origin_rewind_keep
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,

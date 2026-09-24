@@ -84,3 +84,6 @@ tests/fixtures/stored_column_width_quantization/*.hwp -text -diff
 pdf/two-digits-wrap-2020.pdf -text -diff
 pdf/two-digits-break-2020.pdf -text -diff
 pdf/two-digits-table-wrap-2020.pdf -text -diff
+# Issue #7333 stored input and visual references are binary evidence.
+samples/issue7333/*.hwp -text -diff
+pdf/issue7333/*.pdf -text -diff

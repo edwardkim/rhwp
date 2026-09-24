@@ -717,6 +717,45 @@ fn is_caption_cell_context(cell_ctx: Option<&CellContext>) -> bool {
         .is_some_and(|entry| entry.cell_index == CAPTION_CELL_SENTINEL)
 }
 
+/// 저장 줄이 없는 ViewText 표-호스트의 괄호형 단위 문구는, 앞의 대량 공백 advance가
+/// 아니라 표의 우측 안쪽 여백에 붙는다. 한/글은 이 문구의 끝을 `table right -
+/// padding.right + outer_margin.right`에 둔다.
+fn viewtext_table_suffix_label_right(
+    para: Option<&Paragraph>,
+    comp_line: &ComposedLine,
+    x_start: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let para = para?;
+    let Control::Table(table) = para.controls.first()? else {
+        return None;
+    };
+    let line_text: String = comp_line.runs.iter().map(|run| run.text.as_str()).collect();
+    if !crate::renderer::para_has_no_stored_line_segs(para)
+        || !para.text.chars().next().is_some_and(char::is_whitespace)
+        || !line_text.trim_start().starts_with('(')
+        || !table.common.treat_as_char
+        || !matches!(
+            table.page_break,
+            crate::model::table::TablePageBreak::RowBreak
+        )
+        || table.padding.left <= 0
+        || table.padding.left != table.padding.right
+    {
+        return None;
+    }
+    let table_left = x_start
+        + hwpunit_to_px(
+            i32::from(table.padding.left) + 2 * i32::from(table.outer_margin_left),
+            dpi,
+        );
+    Some(
+        table_left + hwpunit_to_px(table.common.width as i32, dpi)
+            - hwpunit_to_px(i32::from(table.padding.right), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_right), dpi),
+    )
+}
+
 /// HWP5 원본 LineSeg가 저장한 column-relative 줄 시작점을 일반 본문 줄에 적용한다.
 ///
 /// ParaShape의 margin/indent는 재조판 기본값이고, 원본 LineSeg.column_start는 해당
@@ -3537,6 +3576,30 @@ impl LayoutEngine {
                 }
             };
             let comp_ref = recomposed.as_ref().unwrap_or(comp);
+            // A stored HWP5 page-top line whose vpos exactly equals its own
+            // paragraph spacing still carries that spacing after a width-only
+            // frame recomposition. Suppressing the fallback solely because the
+            // frame returned `Some` moves the complete page-top run upward.
+            let preserve_saved_page_top_spacing = recomposed.is_some()
+                && self.profile.get().hwp5_stored_pagination_layout()
+                && self.page_top_float_caption_spacing_para.get() == Some(para_index)
+                && start_line == 0
+                && (y_start - col_area.y).abs() < 0.5
+                && para.controls.is_empty()
+                && para.line_segs.len() == 1
+                && para.line_segs[0].tag
+                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                    == 0
+                && styles
+                    .para_styles
+                    .get(comp.para_style_id as usize)
+                    .is_some_and(|style| {
+                        style.spacing_before > 0.5
+                            && (hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
+                                - style.spacing_before)
+                                .abs()
+                                < 0.5
+                    });
             // [#2279] 전체-문단 요청(start=0, end=원본 줄수 이상)은 재래핑 후 줄수로
             // 확장한다. 종전에는 재래핑이 줄수를 늘린 문단(45자 폴백 3줄 → 실폭 4줄,
             // 86712 pi=22)에서 원본 줄수로 클램프되어 마지막 줄이 렌더에서 소실됐다
@@ -3560,7 +3623,7 @@ impl LayoutEngine {
                 para_index,
                 None,
                 // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
-                recomposed.is_some(),
+                recomposed.is_some() && !preserve_saved_page_top_spacing,
                 false,
                 0.0,
                 multi_col_width_hu,
@@ -6068,6 +6131,18 @@ impl LayoutEngine {
             pending_right_leader_digit_render = emit_state.pending_right_leader_digit_render;
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
+
+            if let Some(label_right) =
+                viewtext_table_suffix_label_right(para, comp_line, x_start, self.dpi)
+            {
+                for child in &mut line_node.children {
+                    if let RenderNodeType::TextRun(run) = &child.node_type {
+                        if run.text.starts_with('(') && run.text.trim_end().ends_with(')') {
+                            child.bbox.x = label_right - child.bbox.width;
+                        }
+                    }
+                }
+            }
 
             // 조판부호: 텍스트 뒤에 위치한 미삽입 도형 마커 추가
             for (smi, (spos, stext)) in shape_markers.iter().enumerate() {

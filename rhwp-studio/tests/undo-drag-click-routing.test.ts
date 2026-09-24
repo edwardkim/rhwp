@@ -64,3 +64,10 @@ test('bringShapeToFront 는 z순서 변경을 executeOperation command(SetZOrder
   assert.match(body, /kind:\s*'command'/, "kind:'command' 로 기록(메뉴 정렬 경로와 동형)");
   assert.match(body, /new SetZOrderCommand\(picHit\.sec/, 'z 순서 속성쌍 커맨드로 기록');
 });
+
+test('연결선 클릭은 z순서나 문서를 바꾸지 않고 선택만 한다', () => {
+  const body = fnBody(mouseSrc, 'function selectLineObjectFromHit');
+  assert.doesNotMatch(body, /bringShapeToFront\(/, '단순 클릭은 선을 맨 앞으로 옮기면 안 됨');
+  assert.doesNotMatch(body, /executeOperation\(/, '단순 클릭은 Undo 항목을 만들면 안 됨');
+  assert.match(body, /enterPictureObjectSelectionDirect\(/, '선 객체 선택으로 진입');
+});

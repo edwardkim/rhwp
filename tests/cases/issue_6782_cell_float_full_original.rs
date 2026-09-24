@@ -52,12 +52,21 @@
 //! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
 //! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
 //!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
+//!
+//! ## [#6761 잔여 축] 나란히 놓이는 그림을 더하지 않으면서 쪽수가 104 → 103 이다
+//!
+//! 한 문단의 개체를 가로 겹침과 무관하게 세로로 합산하던 측정을 배치와 맞췄다.
+//! `<표 3-4>` 의 마지막 행이 제 쪽에 들어가면서 그 앞의 여분 쪽도 사라진다.
+//!
+//! - `page_count` 104 → **103** — 한컴 정본 쪽수와 같다.
+//! - `PAGE_INDEX` 77 → **76**. 없어진 쪽이 이 쪽 **앞**(`<표 3-4>` 구간)이다.
+//! - 그 쪽의 칸 안 그림은 12장 그대로다(정본 55쪽도 12장).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
-const PAGE_INDEX: u32 = 77;
+const PAGE_INDEX: u32 = 76;
 const PAGE_HEIGHT_PX: f64 = 1122.5;
 const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp";
 
@@ -92,8 +101,8 @@ fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
     let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
     assert_eq!(
         document.page_count(),
-        104,
-        "쪽수는 104쪽이어야 한다 (#6761 후속: 빈 조각 쪽이 사라졌다)"
+        103,
+        "쪽수는 103쪽이어야 한다 (#6761 잔여 축까지 닫혀 정본과 같다)"
     );
 
     let tree = document

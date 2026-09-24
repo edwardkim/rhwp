@@ -69,6 +69,7 @@ pub(crate) fn reidentify_with_allocator(
     // All destinations are assigned before any forward/backward ref is resolved.
     walk(paras, |node| {
         match node {
+            Node::Paragraphs(_) => {}
             Node::Paragraph(para) => {
                 if let Some(raw) = para.raw_header_extra.get_mut(6..10) {
                     raw.copy_from_slice(&allocator.id()?.to_le_bytes());

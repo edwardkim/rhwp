@@ -1,7 +1,7 @@
 //! Commit an accepted fragment, queued notes and cursor advance in their original order.
 
 use crate::renderer::typeset::{
-    hwpunit_to_px, row_geometry_table, table, BlockTableRowScan, PageItem,
+    hwpunit_to_px, is_synthetic_line_seg, row_geometry_table, table, BlockTableRowScan, PageItem,
     TableContinuationIteration, TypesetEngine, TypesetState, VisibleFloatExclusion,
     MIN_TOP_KEEP_PX,
 };
@@ -54,6 +54,8 @@ impl TypesetEngine {
             fragment_placement,
             header_overhead,
             avail_for_rows,
+            single_cell_fragment_shape,
+            single_cell_box_height,
             ..
         } = *budget;
         let BlockTableRowScan {
@@ -62,11 +64,11 @@ impl TypesetEngine {
             split_block_start,
             split_end_cut,
             split_end_limit,
-            end_row_height_override,
+            mut end_row_height_override,
         } = scan;
         // [Task #1022] walk 가 consumed 에 분할 행 기여까지 누적하므로
         // partial_height = consumed + header_overhead 로 단일화.
-        let partial_height: f64 = consumed + header_overhead;
+        let mut partial_height: f64 = consumed + header_overhead;
         let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
             if let Some(mut placement) = fragment_placement {
                 placement.occupied_bottom = placement.table_top
@@ -148,6 +150,57 @@ impl TypesetEngine {
             } else {
                 0.0
             };
+            // [#7095] 끝 조각 상자 = max(내용, 저장 칸 높이 − 앞 조각 상자 합).
+            // 7062 10쪽: 저장 9346.35 − 앞 조각 8472.3 = 874.0 (정본 874.04), 내용 850.2.
+            // 앞 조각이 이미 저장 높이를 넘은 표(148738070, 1382000 `pi=90`)는 음수라 불변이다.
+            // 근거는 `valign=Center` 칸뿐이다(7062, 1382000 `pi=93/95/99`). `valign=Top` 칸은
+            // 정본 상자 합이 저장 높이와 맞지 않는다(148738070: 합 4177px ↔ 저장 2529px).
+            let center_cell = table.cells.first().is_some_and(|cell| {
+                matches!(
+                    cell.vertical_align,
+                    crate::model::table::VerticalAlign::Center
+                )
+            });
+            if single_cell_fragment_shape
+                && center_cell
+                && is_continuation
+                && continuation.single_cell_box_sum_px > 0.0
+                && end_row_height_override.is_none()
+            {
+                let stored_cell_px = table.cells.first().map_or(0.0, |cell| {
+                    hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi)
+                });
+                let remainder = stored_cell_px - continuation.single_cell_box_sum_px;
+                // 상한: 다음 문단이 한/글 저장 자리(첫 줄 vpos)보다 내려가지 않게 한다. 저장 칸
+                // 높이가 상자 합이 아닌 표(rowbreak-problem-pages `pi=13`: 다음 문단이 이미
+                // 저장 자리 0.9px 안)는 늘리지 않는다. 다음 문단이 없거나 다음 쪽에서 되감긴
+                // 표는 한/글 자리를 모르므로 늘리지 않는다.
+                let next_para_room =
+                    input
+                        .prepared
+                        .next_para_stored_top
+                        .and_then(|(vpos, spacing_before)| {
+                            let stored_px = hwpunit_to_px(
+                                vpos.saturating_sub(st.vpos_page_base.unwrap_or(0)),
+                                self.dpi,
+                            );
+                            let projected_px = st.current_height
+                                + host_before_overhead
+                                + vert_offset_overhead
+                                + partial_height
+                                + terminal_outer_bottom_overhead
+                                + host_spacing_after_only
+                                + terminal_nested_child_host_line_spacing
+                                + spacing_before;
+                            (stored_px > st.current_height).then_some(stored_px - projected_px)
+                        });
+                let extension =
+                    next_para_room.map_or(0.0, |room| (remainder - partial_height).min(room));
+                if extension > 0.5 {
+                    end_row_height_override = Some(partial_height + extension);
+                    partial_height += extension;
+                }
+            }
             if cursor_row == 0 && !is_continuation && start_cut.is_empty() {
                 st.append_item(PageItem::Table {
                     para_index: para_idx,
@@ -299,6 +352,43 @@ impl TypesetEngine {
             end_row_height_override,
             start_row_height_override,
         });
+        // 저장 host 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
+        // host·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
+        // 첫 조각의 위는 흐름 커서가 아니라 host 저장 vpos 다 — 렌더러가 그 자리에 칠하고,
+        // 흐름은 저장 사다리보다 늦을 수 있다(7062: 흐름 484.3 ↔ 저장 488.8, 156645214:
+        // 116.3 ↔ 121.0). 흐름으로 재면 첫 상자가 그만큼 커져 끝 상자가 모자란다.
+        let single_cell_box_height = single_cell_box_height.or_else(|| {
+            single_cell_fragment_shape.then(|| {
+                let flow_top = if is_continuation {
+                    st.current_height
+                } else {
+                    input
+                        .source
+                        .paragraph
+                        .line_segs
+                        .iter()
+                        .find(|seg| !is_synthetic_line_seg(seg))
+                        .map(|seg| {
+                            hwpunit_to_px(
+                                seg.vertical_pos
+                                    .saturating_sub(st.vpos_page_base.unwrap_or(0)),
+                                self.dpi,
+                            )
+                        })
+                        .filter(|&anchor| anchor >= st.current_height)
+                        .unwrap_or(st.current_height)
+                };
+                (crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                    table,
+                    st.available_height(),
+                    self.dpi,
+                ) - (flow_top + host_before_overhead + vert_offset_overhead))
+                    .max(0.0)
+            })
+        });
+        if let Some(box_height) = single_cell_box_height {
+            continuation.single_cell_box_sum_px += box_height;
+        }
         // [#2238] 중간 fragment 가시높이 부기 — used_height(flush 시 current_height)
         // 표시용. advance 직후 current_height 가 리셋되므로 흐름/기하 불변.
         st.advance_flow_by(

@@ -2399,6 +2399,35 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+/// [#7160] 프레임 채움 전용 — **글자처럼 취급 표**도 인라인 토큰으로 싣는다.
+///
+/// 일반 경로는 표를 `control 배치 경로`에 두려고 제외하지만(#3211), 저장 줄이 없는 host 는
+/// 이 채움이 줄 경계의 유일한 소유자다. 표 폭을 안 실으면 줄에 남은 폭보다 넓은 표가
+/// 줄바꿈 없이 앞 글자 뒤에 붙는다(`distribution_doc.hwpx` 3쪽 — 표가 본문 오른쪽 밖으로 나간다).
+fn flow_inline_controls_with_tac_tables(para: &Paragraph) -> Vec<FlowInlineControl> {
+    let text_len = para.text.chars().count();
+    let mut controls = flow_inline_controls(para);
+    for (control, char_position) in para.controls.iter().zip(para.control_text_positions()) {
+        let Control::Table(table) = control else {
+            continue;
+        };
+        if !table.common.treat_as_char || char_position >= text_len {
+            continue;
+        }
+        let Some((width_hwp, height_hwp)) = inline_control_size_hwp(control) else {
+            continue;
+        };
+        controls.push(FlowInlineControl {
+            char_position,
+            width_hwp,
+            height_hwp,
+            baseline_distance_hwp: None,
+        });
+    }
+    controls.sort_by_key(|control| control.char_position);
+    controls
+}
+
 fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
     let text_len = para.text.chars().count();
     para.controls
@@ -2526,6 +2555,26 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
 /// already-supported treat-as-character Equation flow, and width-neutral
 /// markers. Other controls have their own layout owners and must leave this
 /// transaction untouched.
+/// [#7160] NO_LS 문단의 **글자처럼 취급 표** host 도 프레임이 받는다.
+///
+/// 배포용(ViewText) 문서는 저장 `LINE_SEG` 가 없어 45자 합성 줄바꿈이 유일한 소유자가 된다.
+/// 표를 사양하면 그 합성 줄이 그대로 남아 `(단위 : 천원)` 한 줄이 세 줄로 쪼개지고, 표가
+/// 자기 줄을 못 얻어 앞 글자 뒤에 붙는다(`distribution_doc.hwpx` 3쪽). TAC 표는 fill 이
+/// 인라인 토큰으로 폭을 계상하므로 그림과 같은 축이다.
+pub(super) fn supports_tac_table_band_frame_controls(para: &Paragraph) -> bool {
+    let mut tac_tables = 0usize;
+    for control in &para.controls {
+        match control {
+            Control::Table(table) if table.common.treat_as_char => tac_tables += 1,
+            Control::Picture(picture) if picture.common.treat_as_char => {}
+            Control::Equation(equation) if equation.common.treat_as_char => {}
+            other if control_is_width_neutral_marker(other) => {}
+            _ => return false,
+        }
+    }
+    tac_tables == 1
+}
+
 pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     let mut non_tac_pictures = 0usize;
     for control in &para.controls {
@@ -2721,7 +2770,11 @@ fn layout_paragraph_in_frame_impl(
 ) -> Option<Vec<LineSeg>> {
     // [#6102] 폭-중립 자리차지 표 host 도 fill 대상 — 표는 줄 폭을 소비하지
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
-    if !supports_picture_band_frame_controls(para) && !supports_cached_body_frame_controls(para) {
+    // [#7160] 저장 줄이 없는 글자처럼 취급 표 host 는 이 채움이 유일한 소유자다.
+    if !supports_picture_band_frame_controls(para)
+        && !supports_cached_body_frame_controls(para)
+        && !(para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+    {
         return None;
     }
 
@@ -2745,7 +2798,13 @@ fn layout_paragraph_in_frame_impl(
     // Keep Equation width and height ownership with the current scalar
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
-    let inline_controls = flow_inline_controls(para);
+    let inline_controls =
+        if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
+            // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
+            flow_inline_controls_with_tac_tables(para)
+        } else {
+            flow_inline_controls(para)
+        };
     // [#3128] 프레임이 들여쓰기 추적을 잃던 자리. 종전에는 여기서 `false` 를 박아
     // 두어, 저장 `LINE_SEG` 가 없는 들여쓴 셀 문단도 글꼴 고유 공백 폭으로 쟀다.
     // 실측: `76076_regulatory_analysis.hwp` 에서 이 술어를 만족하는 문단이 74 개고,
@@ -3019,6 +3078,11 @@ fn layout_paragraph_in_frame_impl(
                 break;
             }
         }
+        // [#7160] 저장 줄이 없는 TAC 표 host 에서만 말미 공백 줄을 앞 줄이 흡수한다 —
+        // 표가 자기 줄을 얻으면서 그 앞에 남던 공백 줄이 한/글에는 없다.
+        if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
+            frame.absorb_whitespace_only_rows(&para.text, first_row);
+        }
         Some(frame.project_line_segs_since(first_row))
     })();
 
@@ -3131,7 +3195,12 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // 만으로 재래핑하면 종전 무소유였던 float-host 문단의 확정 핀이 흔들린다.
     // 저장 줄이 아예 없으면 보호할 저장 기하가 없다. 폭-중립 표 호스트도
     // 아래 NO_LS fill로 보내 현재 frame의 줄 경계를 계산한다 (#6950).
-    if !supports_picture_band_frame_controls(para) {
+    // [#7160] 글자처럼 취급 표 host 도 같은 축이다 — 저장 줄이 없으면 아래 NO_LS fill 이
+    // 유일한 소유자이고, `inline_control_size_hwp` 가 그 표의 폭을 인라인 토큰으로 계상한다.
+    // 거절하면 45자 합성 줄이 그대로 남아 표가 자기 줄을 못 얻는다(distribution_doc 3쪽).
+    let tac_table_host_fill =
+        para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para);
+    if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;
         }
@@ -3144,6 +3213,18 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     if para.line_segs.is_empty() {
         let mut fill_input = para.clone();
         fill_input.line_segs.clear();
+        // [#7160] 문단 **끝**에 앵커된 글자처럼 취급 표는 글자 슬롯이 없어 폭 판정에서
+        // 빠진다. 자리 문자를 하나 붙여 그 표가 줄에 들어가는지 묻게 한다 — 안 들어가면
+        // 채움이 다음 줄로 넘긴다(한/글 정본 `distribution_doc-2024.pdf` 3쪽과 같은 자리).
+        let text_len = fill_input.text.chars().count();
+        if supports_tac_table_band_frame_controls(&fill_input)
+            && fill_input
+                .control_text_positions()
+                .iter()
+                .any(|position| *position >= text_len)
+        {
+            fill_input.text.push('\u{FFFC}');
+        }
         return layout_paragraph_in_frame(&fill_input, frame, styles, dpi)
             .map(|_| StoredRowResolution::Reflowed);
     }
