@@ -134,6 +134,11 @@ pub struct Paragraph {
     /// never serialized, and flushed before saving an undo snapshot.
     #[serde(skip_serializing)]
     pub cell_format_vpos_dirty: bool,
+    /// Stored cell fragment boundary, captured before the first formatting vpos update.
+    /// False also records that later growth must not invent a reset. Snapshots retain it;
+    /// splitting starts a continuation, and width reflow discards the old frames.
+    #[serde(skip_serializing)]
+    pub cell_vpos_reset: Option<bool>,
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
@@ -1559,6 +1564,7 @@ impl Paragraph {
             numbering_restart: None,
             stored_text_partition_dirty: false,
             cell_format_vpos_dirty: self.cell_format_vpos_dirty,
+            cell_vpos_reset: Some(false),
         }
     }
 

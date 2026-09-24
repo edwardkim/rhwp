@@ -24,6 +24,9 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
 fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
+    if let Some(reset) = current.cell_vpos_reset {
+        return reset;
+    }
     match (previous.line_segs.first(), current.line_segs.first()) {
         (Some(previous), Some(current)) => {
             current.vertical_pos < previous.vertical_pos
@@ -51,6 +54,10 @@ fn recalculate_cell_paragraph_vpos(
     // [Task #2299] 합성 seg(TAG_IMPLEMENTATION_PROPERTY, #1811)의 vpos=0 은 배치 전
     // placeholder 이지 분할 신호가 아니다 — 섹션 recalc 와 동일하게 정지 대상에서
     // 제외한다 (로드가 합성한 중간-셀 문단에서 가짜 정지 → 꼬리 미갱신 방지).
+    let fragment_start = (1..=start_para)
+        .rev()
+        .find(|&idx| paragraphs[idx].cell_vpos_reset == Some(true))
+        .unwrap_or(0);
     let stop_para = paragraphs
         .windows(2)
         .enumerate()
@@ -63,9 +70,9 @@ fn recalculate_cell_paragraph_vpos(
         .unwrap_or(paragraphs.len());
 
     apply_cell_vpos_ladder(
-        paragraphs,
-        start_para,
-        stop_para,
+        &mut paragraphs[fragment_start..stop_para],
+        start_para - fragment_start,
+        stop_para - fragment_start,
         styles,
         dpi,
         is_hwp3_variant,
@@ -2997,6 +3004,10 @@ impl DocumentCore {
                     return Ok(());
                 }
                 // 구조 편집에도 표시가 문단과 함께 이동한다. 좌표 변경 전에 경계를 읽는다.
+                for idx in 1..paragraphs.len() {
+                    let reset = cell_vpos_resets(&paragraphs[idx - 1], &paragraphs[idx]);
+                    paragraphs[idx].cell_vpos_reset = Some(reset);
+                }
                 let stops: Vec<usize> = paragraphs
                     .windows(2)
                     .enumerate()
@@ -3057,6 +3068,10 @@ impl DocumentCore {
             return;
         };
         let stop_para = cell.paragraphs.len();
+        // Width reflow deliberately discards the old fragment coordinate frames.
+        for para in &mut cell.paragraphs {
+            para.cell_vpos_reset = Some(false);
+        }
         apply_cell_vpos_ladder(
             &mut cell.paragraphs,
             0,

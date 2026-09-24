@@ -213,6 +213,7 @@ fn stored_cell(positions: &[i32]) -> (DocumentCore, usize, usize) {
         .iter()
         .map(|&vpos| {
             let mut paragraph = template.clone();
+            paragraph.cell_vpos_reset = None;
             assert_eq!(paragraph.line_segs.len(), 1);
             let line = &mut paragraph.line_segs[0];
             line.vertical_pos = vpos;
@@ -376,6 +377,97 @@ fn line_spacing_reflow_preserves_rowbreak_origins() {
             cell_vpos(&core, para, ctrl),
             [100, 1500, 2900, 200, 1600, 3000]
         );
+    }
+}
+
+#[test]
+fn rowbreak_origin_survives_shrink_then_restore() {
+    let positions = [100, 1700, 1600, 3200];
+    for batched in [true, false] {
+        let (mut core, para, ctrl) = stored_cell(&positions);
+        let ids = cell_shape_ids(&core, para, ctrl);
+        for _ in 0..2 {
+            if batched {
+                core.begin_batch_native().unwrap();
+            }
+            for idx in 0..4 {
+                core.apply_para_format_in_cell_native(
+                    0,
+                    para,
+                    ctrl,
+                    0,
+                    idx,
+                    r#"{"lineSpacing":140}"#,
+                )
+                .unwrap();
+            }
+            if batched {
+                core.end_batch_native().unwrap();
+            }
+            assert_eq!(cell_vpos(&core, para, ctrl), [100, 1500, 1600, 3000]);
+            let snapshot = core.save_snapshot_native();
+            core.restore_snapshot_native(snapshot).unwrap();
+            // Text editing the remembered fragment start must not join the previous one.
+            core.insert_text_in_cell_native(0, para, ctrl, 0, 2, 0, " ")
+                .unwrap();
+            core.delete_text_in_cell_native(0, para, ctrl, 0, 2, 0, 1)
+                .unwrap();
+            assert_eq!(cell_vpos(&core, para, ctrl), [100, 1500, 1600, 3000]);
+            if batched {
+                core.begin_batch_native().unwrap();
+            }
+            for (idx, id) in ids.iter().enumerate() {
+                core.set_cell_para_shape_id_native(0, para, ctrl, 0, idx, *id)
+                    .unwrap();
+            }
+            if batched {
+                core.end_batch_native().unwrap();
+            }
+            assert_eq!(cell_vpos(&core, para, ctrl), positions);
+        }
+    }
+}
+
+#[test]
+fn saved_rowbreak_origin_survives_repeated_formatting() {
+    // Normal HWP5 source, also covered by the Hancom 2020 PDF in pdf/issue2430.
+    let bytes = std::fs::read("samples/task2430/1382000_domestic_violence_survey.hwp").unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    let cell = |core: &DocumentCore| -> Vec<(u16, i32)> {
+        let Control::Table(table) = &core.document().sections[0].paragraphs[93].controls[0] else {
+            panic!("table");
+        };
+        assert!(matches!(
+            table.page_break,
+            rhwp::model::table::TablePageBreak::RowBreak
+        ));
+        table.cells[0]
+            .paragraphs
+            .iter()
+            .map(|p| (p.para_shape_id, p.line_segs[0].vertical_pos))
+            .collect()
+    };
+    let original = cell(&core);
+    assert_eq!((original[76].1, original[77].1), (64680, 64462));
+    for _ in 0..2 {
+        core.begin_batch_native().unwrap();
+        for idx in 0..original.len() {
+            core.apply_para_format_in_cell_native(0, 93, 0, 0, idx, r#"{"lineSpacing":140}"#)
+                .unwrap();
+        }
+        core.end_batch_native().unwrap();
+        assert_eq!(cell(&core)[77].1, original[77].1);
+        assert!(
+            cell(&core)[76].1 < original[77].1,
+            "shrink must hide the numeric reset"
+        );
+        core.begin_batch_native().unwrap();
+        for (idx, (id, _)) in original.iter().enumerate() {
+            core.set_cell_para_shape_id_native(0, 93, 0, 0, idx, *id)
+                .unwrap();
+        }
+        core.end_batch_native().unwrap();
+        assert_eq!(cell(&core)[77].1, original[77].1);
     }
 }
 
