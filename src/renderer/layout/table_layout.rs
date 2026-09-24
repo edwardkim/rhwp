@@ -12838,6 +12838,65 @@ impl LayoutEngine {
             })
     }
 
+    /// `RowCut`(`start_cut`/`end_cut`) 의 슬롯 순서 — `row` 의 `row_span == 1` 칸을 col
+    /// 오름차순으로 센 셀 인덱스다.
+    ///
+    /// 종전에는 같은 정의가 컷 walk 마다 인라인으로 다섯 벌 있었다. 컷을 **읽는** 저장
+    /// 경로(`DocumentCore::writeback_reflowed_table_frames`, #7114)가 생기면서 정의가
+    /// 갈리면 저장본이 엉뚱한 칸의 사다리를 고쳐 쓰게 되므로 한 곳으로 모았다.
+    pub(crate) fn row_cut_cell_order(table: &crate::model::table::Table, row: usize) -> Vec<usize> {
+        let mut cells: Vec<(u16, usize)> = table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| cell.row as usize == row && cell.row_span == 1)
+            .map(|(idx, cell)| (cell.col, idx))
+            .collect();
+        cells.sort_by_key(|(col, _)| *col);
+        cells.into_iter().map(|(_, idx)| idx).collect()
+    }
+
+    /// [#7114] 셀 유닛 서수 → 그 유닛이 **새로 여는 줄** `(셀 문단 인덱스, 문단 내 줄 인덱스)`.
+    ///
+    /// pagination 이 기록한 컷(`PageItem::PartialTable::start_cut`)은 유닛 서수인데 저장
+    /// `LINE_SEG` 프레임은 줄 좌표다. 저장 경로가 **실제 조판 컷**을 프레임으로 되쓰려면
+    /// 둘을 잇는 매핑이 하나 있어야 한다. 컷 판정이 쓰는 `cell_units` 를 그대로 소비하므로
+    /// 조판과 저장이 같은 유닛 정의를 본다.
+    ///
+    /// 유닛과 줄은 1:1 이 아니다. 줄을 새로 열지 않는 유닛은 `None` 이며, 호출자는 컷을
+    /// 뒤쪽 첫 `Some` 으로 해소한다 — 그 유닛들이 차지하는 자리는 **이미 시작된 줄**이거나
+    /// 줄이 아니기 때문이다.
+    ///
+    /// - `vis_start == vis_end`: 줄을 차지하지 않는다. 자리차지 개체 유닛이 여기 해당하며
+    ///   `para_idx` 가 앵커 문단을 가리켜 **흐름 순서와도 어긋난다**(실측: 유닛 533 이
+    ///   문단 315 와 316 사이에서 `para=310, vis=0..0, h=216.3px`).
+    /// - 앞 유닛과 같은 `(문단, 줄)`: 한 host 줄을 잘게 쪼갠 뒤 유닛이다. 중첩 표 host
+    ///   문단이 그렇다 — 실측으로 문단 2276 의 중첩 표 행 여덟 유닛이 전부 `(2276, 0)` 이다.
+    ///   중첩 표 **안**에서 쪽이 갈리면 host 줄은 이미 앞 쪽에 있으므로 그 줄을 조각 시작으로
+    ///   삼으면 경계가 한 문단 앞당겨진다.
+    pub(crate) fn cell_unit_line_anchors(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<Option<(usize, usize)>> {
+        let mut opened: Option<(usize, usize)> = None;
+        self.cell_units(cell, table, styles)
+            .iter()
+            .map(|unit| {
+                if unit.vis_start >= unit.vis_end {
+                    return None;
+                }
+                let line = (unit.para_idx, unit.vis_start);
+                if opened == Some(line) {
+                    return None;
+                }
+                opened = Some(line);
+                Some(line)
+            })
+            .collect()
+    }
+
     /// [#2097] 셀 문단 cp_idx 의 첫 유닛 앞까지의 누적 콘텐츠 높이(셀-로컬).
     /// 각주 앵커 문단이 컷 조각에 포함되는 경계(인서트-인지 컷 예산 상한) 산정용.
     /// 해당 문단 유닛이 없으면 None.
@@ -14300,12 +14359,10 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         let mut end_cut: RowCut = Vec::with_capacity(row_cells.len());
         let mut hit_hard_break = false;
@@ -15635,12 +15692,10 @@ impl LayoutEngine {
         let mut block_cells = Self::row_block_cells(table, b_start, b_end);
         block_cells.sort_by_key(|c| (c.row, c.col));
 
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         if row_cells.is_empty() {
             return 0.0;
@@ -16570,12 +16625,10 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
@@ -17034,12 +17087,10 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
         let is_whole_row = start_cut.is_empty() && end_cut.is_empty();
         // [#5910] 병합 선언이 걸친 행합보다 작으면 마지막 걸침 행의 **선언** 높이를
         // 그만큼 낮춘 값이 한글 실측 행 높이다. 컷 회계가 원 선언을 그대로 쓰면
@@ -17406,12 +17457,10 @@ impl LayoutEngine {
             // 이월되어 한컴보다 물리 쪽 수가 늘어난다.
             return 0.0;
         }
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         let mut max_padding = 0.0f64;
         for (i, cell) in row_cells.iter().enumerate() {
