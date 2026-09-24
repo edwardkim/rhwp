@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-20
+last_verified: 2026-09-24
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -262,19 +262,49 @@ Node 상태 계약에서 검출한다. 완료된 과거 Chrome 다운로드가 `
 
 ### 3.9 CI 선택 실행·브라우저 cache·실패 진단 (#3515)
 
-CI preflight의 `chrome_extension_e2e_required`와 이유를 사용한다. Chrome, shared/sw, WASM 입력과
-확장 viewer에 들어가는 Studio production source가 실행 대상이다. 실제 의존 관계는 Chrome Vite의
-`rhwp-studio/index.html` 진입점, `src`·`pkg` alias와 `build.mjs`의 명시적 정적 파일 복사 목록을
-기준으로 삼는다. Studio public 전체나 Studio tests/e2e만 바뀐 경우에는 일괄 실행하지 않는다.
-미분류 production 경로는 보수적으로 실행하며 Firefox/Safari/VSCode/npm editor 전용 코드와 문서만
-바뀌면 skip한다. rename 양쪽 경로, 불완전 목록, tag/manual, 판정 실패도 검사한다.
+CI preflight의 `chrome_extension_e2e_required`와 이유를 사용한다. 실행 정책은 PR의 **대상
+브랜치**로 구분한다. 현재 CI의 top-level event/path filter는 유지한다.
+
+| 실행 상황 | Chrome E2E 정책 |
+| --- | --- |
+| `devel` 대상 PR | 변경 경로를 분류해 필요한 경우 전체 smoke/download/lifecycle 실행 |
+| `main` 대상 CI (릴리즈 승격 포함) | 경로와 무관하게 전체 실행. CI review-only fast-pass도 사용하지 않음 |
+| `v*` tag / `workflow_dispatch` | 전체 실행. 수동 실행은 Chrome 전용 버튼이 아닌 기존 CI 전체 실행 |
+
+`devel`에서는 `rhwp-chrome/**`, `rhwp-shared/sw/**`, `rhwp-studio/src/**`, 공용 Rust/WASM
+입력과 폰트를 검사한다. 실제 빌드 근거는 Chrome Vite의 `rhwp-studio/index.html` 진입점,
+`src`·`pkg` alias와 `build.mjs`의 정적 파일 복사 목록이다. public 전체가 아니라 복사하는
+정적 파일 및 E2E가 읽는 샘플 3개를 개별 지정한다.
+
+Chrome 산출물에 들어가지 않는 것으로 확인한 다음 경로만 바뀌면 Chrome 검사를 생략한다.
+
+- `src/main.rs`, `src/cli/**`, `src/bin/**`, `src/tools/font_metric_gen.rs`
+- `bindings/Native/src/**`
+- `scripts/package-swift-xcframework.sh`, `scripts/frontend-vscode-outline.test.mjs`
+- 기존 제외: Firefox/Safari/VSCode/npm editor 전용 코드, 문서, Studio tests/e2e 및 빌드에
+  포함되지 않는 public 자료, E2E 입력 외의 samples/tests/gym 등
+
+root `Cargo.toml`은 CLI와 font generator를 binary로 선언하고 `src/lib.rs`는 CLI 모듈을
+포함하지 않는다. Native FFI는 root rhwp를 소비하는 별도 crate다. 이 근거로 위 source를
+제외하되 `Cargo.toml`/`Cargo.lock`/`build.rs`와 Native manifest 같은 빌드 입력은 계속 실행한다.
+`src/service/**`, parser, renderer와 내부 공용 crate를 CLI 전용으로 간주하지 않는다.
+
+이 분류는 완전한 의존성 분석이 아닌 보수적 경로 정책이다. 미분류 경로, 누락된 대상 브랜치,
+rename 정보 누락, 잘린 목록, 분류 실패는 실행한다. rename의 이전·새 경로를 모두 검사하므로
+CLI 전용 파일과 공용 코드 변경이 섞이면 실행한다. 정확한 목록은
+[분류기](../../scripts/ci-impact-classifier.cjs)와 [회귀 검사](../../scripts/tests/chrome-extension-impact.test.cjs)에 있다.
 
 Chrome이 필요하면 기존 Frontend package gates를 실행하고, 그 job의 fresh WASM 기반 dist를
-압축 artifact로 브라우저 job에 전달한다. 소비자는 생산자가 반환한 artifact ID를 사용하므로
-소비자만 재실행해도 다른 attempt의 이름을 추측하지 않는다. 전달 artifact는 1일 보존한다.
-Chrome job은 harness와 실제 입력 3개만 sparse checkout해 큰 PDF/source 사본의 준비 시간을 피한다.
-`Build & Test`와 CI Impact Policy가 Chrome의 success/skip을 함께 확인하며 기존 required check
-이름과 top-level trigger는 유지한다.
+압축 artifact로 전달한다. Chrome job은 **Frontend 전체 완료 뒤** 시작하며 기존 Rust/Lint/Native와는
+병렬이다. 소비자는 생산자의 artifact ID를 사용하고 빌드를 반복하지 않는다. 전달 artifact는 1일
+보존하며, Chrome job은 harness와 입력 3개만 sparse checkout한다. Build & Test는 success/skip을
+확인하고, devel 대상 CI Impact Policy도 같은 분류·package 승격을 감사한다. required check 이름은 유지한다.
+
+기존 package 대상 변경에는 Chrome job과 전달 비용이 추가된다. 기존 frontend `none`이던 공용
+Rust 변경에는 package 검사 전체도 추가된다. 반면 위 CLI/Native 전용 변경에서는 기존 frontend
+판정을 유지한다. 따라서 병렬 실행이 전체 대기 시간 불변이나 runner 사용량 불변을 뜻하지 않는다.
+2026-09-20 실측은 package 8분 5초, Chrome 81초였고, Chrome이 마지막 Rust 검사보다 먼저 끝났다.
+이는 [해당 실행](https://github.com/edwardkim/rhwp/actions/runs/35497234046)의 관측이며 시간 보장이 아니다.
 
 일반 frontend 설치에는 `PUPPETEER_SKIP_DOWNLOAD=true`를 사용한다. Chrome job만 lockfile의
 Puppeteer가 기대하는 Chrome for Testing을 명시적으로 설치하고 OS·아키텍처·lockfile별 정확한

@@ -1,5 +1,27 @@
 # Issue #3512 Chrome E2E 구현·검증 보고서
 
+## 2026-09-24 CI 정책 보완
+
+- 통합한 devel: `505661360e9a2d596f55300d0cb0c5222f0e14b4`, merge `b9e7d6498`.
+  9월 20일 오늘할일 add/add 충돌은 #7283·#7285 양쪽 기록을 보존해 해소했다.
+- 정책 source: `bc6c1bf00`. `devel`은 확인된 CLI/Native source와 전용 도구를 제외하고 공용
+  WASM 입력은 유지한다. `main` 대상 CI는 전체 suite를 실행하고 review-only 재사용을 하지 않는다.
+- 기존 정책에 새 검사 적용: 9개 중 4개 실패. 보정 후 CI·harness Node **182/182**, 관련 workflow
+  Python **137/137**, 변경 workflow 4개의 `actionlint -shellcheck=`, `git diff --check` 통과.
+- Node 검사는 실제 CI inline script를 실행해 `main` fast-pass 거부, `devel` 문서 fast-pass 유지,
+  baseRef·파일 목록 전달을 확인한다. CLI/Native 단독·공용 코드 혼합·양방향 rename·목록 누락·
+  브랜치 누락과 policy의 success/skip/failure 집계도 확인했다.
+- 이번 수정은 CI 분류·배선·문서만이다. 제품 Rust/Studio/확장 runtime와 browser 시나리오는
+  수정하지 않았다. 이 PR의 diff에 Rust source/test 변경이 없어 로컬 전체 Cargo/Visual Sweep은
+  실행하지 않았다. 아래 과거 10회/3회 결과는 당시 source·browser의 증거이며 새 head 결과로 세지 않는다.
+- 새 head의 원격 CI·Chrome 결과와 최종 merge-tree 검증은 [PR #7283](https://github.com/edwardkim/rhwp/pull/7283)
+  본문에서 정확한 SHA·run URL과 연결한다. main 정책의 로컬 계약 통과와 실제 릴리즈 승격 실행은 구분한다.
+
+최신 운영 정책·정확한 제외 경로와 비용 설명은
+[확장 매뉴얼 3.9](../manual/chrome_edge_extension_build_deploy.md#39-ci-선택-실행브라우저-cache실패-진단-3515)에 있다.
+
+## 2026-09-20 최초 구현·반복 검증 이력
+
 - Epic: [#3512](https://github.com/edwardkim/rhwp/issues/3512), 구현: #3513 → #3515
 - 기존 기반: #3514 / 통합 PR #5912, 다운로드 경합 대조군: #7279
 - 최종 기준 devel: `517df04ba110dc108fbbb203e72229c51819b591`

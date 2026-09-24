@@ -37,3 +37,11 @@ fixture 원본은 제외한다. 성공 시 작은 결과 summary만 남기고 �
 - GitHub Actions retry 없는 3회와 cache 로그는 원격 게시 승인 후 실제 run으로 확인한다.
 - Firefox Phase 2는 Chrome CI의 Linux/CfT 안정화 결과를 확인할 때까지 구현 보류 근거를 Epic에 남긴다.
 - #3512 최종 통합 완료 후에만 증적 보고서 연동 후속 이슈를 만든다.
+
+## 2026-09-24 실행 범위 보완
+
+사용자 요청으로 PR #7283의 실제 경로·CI 비용을 대조한 뒤 정책을 보완한다. `devel`은 확인된
+CLI binary/Native source 및 전용 도구 변경을 제외하고 공용 WASM 입력과 미분류 경로는 계속
+검사한다. `main` 대상 CI는 전체 Chrome suite를 실행하며 review-only fast-pass로 생략하지 않는다.
+분류기·trusted policy에 같은 baseRef를 전달하고, actual workflow script 실행 검사로 배선을 확인한다.
+코드·로컬 검증을 먼저 완료한 뒤 실제 Actions 결과와 실행 범위·비용을 중심으로 PR 본문을 재작성한다.

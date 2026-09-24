@@ -1,5 +1,31 @@
 # PR #7283 self-review — Chrome 확장 E2E와 영향 기반 CI
 
+## 최종 판정
+
+**머지 보류** — CI 정책 보완의 로컬 검증은 완료했다. 최신 원격 검증과 실제 병합 승인은
+별도 조건이며, 새 head의 SHA·Actions 결과·mergeability는 PR 본문에서 확인한다.
+
+## 2026-09-24 재검토
+
+- 기본 경로: collaborator self. 보조: intake_and_review, local_validation,
+  review_only_fast_pass, rework_and_exceptions. 기존 자체 PR의 보정이며 reviewer 추가는 없다.
+- 기존 head `2c195048b`에 devel `505661360`을 통합한 `b9e7d6498` 위의 정책 후보 `bc6c1bf00`을 검토했다.
+  작업 중 base가 `8619e6d4f5e10f4ab6478798bdf3e5660a8ba100`으로 전진했지만 관련 CI 코드 변경은 없고
+  merge-tree 충돌도 없었다. 기록 때문에 source를 반복 동기화하지 않았다.
+- `src/main.rs`, `src/cli/**`, `src/bin/**`, font generator, Native source는 확장 WASM의
+  root library 입력이 아닌 binary/소비자 경로다. 전용 Swift 패키징·VS Code 검사도 제외했다.
+  공유 library·Cargo/lock/build 입력과 미분류 경로는 계속 실행한다.
+- baseRef는 CI 수집 → Chrome 분류기, trusted policy의 pullRequest → 같은 분류기로 전달된다.
+  `main`에서는 full Chrome + package를 요구하고 preflight의 review-only 재사용을 차단한다.
+  `devel`에서는 제외 경로가 기존 frontend `none`을 package로 올리지 않는지 확인했다.
+- 수정 전 새 계약 4개 실패 → 수정 후 Node **182개**·Python **137개** 통과, Actions 구문 4개 통과.
+  actual workflow 실행으로 main/devel 분기와 입력 배선을 확인했고 제품 함수를 복제하지 않았다.
+- 조판 원칙·Visual Sweep: **비해당**. 새 변경은 CI routing이며 조판·runtime·fixture 바이트를 바꾸지 않는다.
+  기존 HWP/HWPX 3개 입력의 이전 검증과 새 CI 실행은 source SHA로 구분한다.
+- rollback은 정책 보정 commit을 되돌리는 PR이며 required check 이름·권한·캐시 저장 범위는 유지했다.
+
+[보고서](../../report/task_m100_3512_report.md)의 이번 보완 기록과 아래 최초 검증 이력을 구분한다.
+
 ## 검토 경로와 metadata
 
 - base route: `collaborator_self_merge.md`
@@ -110,7 +136,7 @@ CodeQL의 [경고 #206](https://github.com/edwardkim/rhwp/security/code-scanning
 실제 과거 다운로드 대조 검사를 통과했으며, 이 최종 후보에서 로컬 10회와 Linux 3회 연속 검증을 다시 통과했다. CodeQL 재검사도 통과했다.
 이전 `cb2b4eea0`의 전체 CI/Chrome 성공은 참고 기록이며 최종 후보의 통과 횟수에 포함하지 않는다.
 
-## 최종 판정
+## 2026-09-20 판정 이력
 
 기능·회귀·Linux 반복 실행 증거는 **충족**이다. 제품 source·조판 변경은 **비해당**이며,
 shared cache seed/hit은 기본 브랜치 workflow 등록 이후의 운영 확인으로 **미검증**이다.
