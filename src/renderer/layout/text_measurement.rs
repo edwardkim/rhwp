@@ -828,6 +828,8 @@ pub(crate) fn resolved_to_text_style(
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
+            // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
+            metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
             hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size,
             color: cs.text_color,
@@ -1373,8 +1375,13 @@ pub(crate) fn char_width_decision<'a>(
         } else {
             c
         };
+        // [#7391] 폭 표를 고를 때만 선언 face 로 되돌린다.
+        let metric_family = style
+            .metric_font_family
+            .as_deref()
+            .unwrap_or(&style.font_family);
         let embedded = measure_char_width_embedded_decision_for_font(
-            &style.font_family,
+            metric_family,
             style.bold,
             style.italic,
             c,
