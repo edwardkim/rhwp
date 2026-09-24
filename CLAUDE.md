@@ -60,12 +60,11 @@
 - 렌더링의 공통 결과·반례 검증·baseline 변경 근거는 위 공통 조판 원칙을 따른다.
   차트 변경은 종류와 축 등 해당 변경이 주장한 의미도 직접 확인한다.
 - **렌더링 변경은 [Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)으로 검증한다.**
-  작성자는 PR 생성·갱신 전에 제출할 code head에서 영향 페이지의 Visual Sweep을 끝내고,
-  대표 review·overlay PNG를 `mydocs/pr/assets/`의 추적 가능한 경로에 포함한다.
-  PR 본문 초안에는 그 head의 repository·SHA로 고정한 raw URL의 실제 `![...](...)`
-  이미지 두 종류와 입력·기준 PDF·페이지·결과를 넣는다. `gh pr create`/`gh pr edit` 뒤에는
-  `gh pr view --json body`, asset 조회, PR 화면에서 이미지가 표시되는지 확인한다.
-  증적이나 기준 PDF가 없으면 완료·승인으로 내지 않고 보류 사유를 기록한다.
+  외부 기여자는 [CONTRIBUTING.md의 렌더링 PR 제출 절차](CONTRIBUTING.md#메인터너-검토-기록과의-구분)에 따라
+  원 PR을 생성·갱신하기 전에 제출할 code head의 영향 페이지를 캡처한다. 대표 review·overlay PNG를
+  안정 경로에 커밋하고, 원 PR 본문에 그 head의 repository·SHA로 고정한 raw URL의 실제
+  `![...](...)` 이미지 두 종류와 입력·기준 PDF·페이지·결과를 넣는다. 게시 후 본문과 이미지를
+  실제 PR 화면에서 확인한다. 증적이나 기준 PDF가 없으면 제출 완료로 표시하지 않는다.
   동일 입력·페이지의 기준 PDF와 수정 전후 Native/fresh WASM 출력을 비교하고, compare·standalone
   overlay·review를 산출해 직접 연다. 표 외곽·앞뒤 문단·줄바꿈·겹침·누락 등 변경 주장을 판독한다.
   실행한 source SHA·입력/PDF·페이지·명령·대표 PNG와 남은 차이를 기존 결과보고에 연결한다.
