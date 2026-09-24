@@ -109,7 +109,11 @@ issue6310/press_release_cell_logo.hwpx	4
 issue6551/113424_evaluation_guideline.hwpx	3
 issue6601/36331407_side_by_side_tac_tables.hwpx	11
 issue6697/80550-agricultural-machinery-act-amendment.hwpx	14
-issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	7
+# [#7408] 7 -> 8. body_overflow 의 같은 자리다 — 70쪽 본문 줄이 정본 위치(+9.2px)로
+# 내려오면서 TextLine27/TextRun0(y=1058.93 h=18.67)이 Footer3 의 쪽번호
+# (y=1070.27 h=13.33)와 7.33px 겹친다. 정본은 그 줄을 66쪽에 두므로 이 겹침은
+# 쪽 나눔 결함의 결과이고, 그 결함은 수정 전에도 같은 쪽에 있었다.
+issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	8
 issue6795/1341000-201100013-cyber-university-application.hwp	2
 issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	5
 issue6879/156767332-broadcast-revenue-attachment.hwp	1

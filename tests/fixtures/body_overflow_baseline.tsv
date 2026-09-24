@@ -1,3 +1,5 @@
+# [#7408] 저장 LineSeg 의 캐시 키를 원점이 접힌 좌표계와 견주던 것을 고치면서 2행이
+# 움직였다 — hwpx/pr-1674.hwpx 1 -> 0 (조이기) · issue6764 39 -> 40 (증가, 아래 근거).
 # 조이기 (#6976 단계): devel 236a601da 실측으로 85행을 내렸다 — 대상 행 합계 1,037 -> 667,
 # 원장 전체 1,386 -> 1,016. 증가·신규는 0 이라 완화가 아니다. 측정은 이 게이트 자신의
 # RHWP_BODY_OVERFLOW_DUMP 로 떴고(공차 2.0px, over_bottom), 213행 전부 렌더에 성공했다
@@ -105,7 +107,7 @@ hwpx/opengov/36382669_결재문서본문_’26년 제3차 강사선정 심의회
 hwpx/opengov/36385226_결재문서본문_제2처리장 슬러지인발용 에어리프트 브로워 2호기 소모품 교체 보고.hwpx	1
 hwpx/opengov/36392900_결재문서본문_일일굴착복구공사현황보고.hwpx	1
 hwpx/opengov/36395270_footer_overpush.hwpx	0
-hwpx/pr-1674.hwpx	1
+hwpx/pr-1674.hwpx	0
 hwpx_sample2.hwp	2
 issue-986-receipt.hwp	0
 issue1835_tac_stale_height.hwp	1
@@ -181,7 +183,18 @@ issue6601/36331407_side_by_side_tac_tables.hwpx	1
 issue6697/80550-agricultural-machinery-act-amendment.hwpx	2
 issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	1
 issue6718/27469-child-allowance-retroactive-support.hwp	0
-issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	39
+# [#7408] 39 -> 40. 70쪽(인쇄 -65-) 본문 줄이 **정본 위치로 내려온 결과**다.
+#   정본 baseline      수정 전          수정 후
+#      946.7px       937.5 (-9.2)    946.8 (+0.1)
+#      974.7px       965.5 (-9.2)    974.8 (+0.1)
+#     1018.7px      1009.5 (-9.2)   1018.8 (+0.1)
+#   정본 = pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf 71쪽
+#   (mutool draw -F stext 의 char x/y = baseline). 쪽 상자·글꼴 크기는 양쪽 일치.
+# 쪽 내용은 수정 전후 같은 30줄이고, 본문 바닥(1046.93px)을 넘는 줄만 1 -> 2 로 는다.
+# **정본은 1018.7 다음에서 쪽을 끊어 나머지 2줄을 66쪽에 둔다** — rhwp 가 그 2줄을
+# 70쪽에 붙드는 것이 실제 결함이고 수정 전에도 있었다(수정 전 초과 21.3px).
+# 곧 이 증가는 새 결함이 아니라, 줄이 제자리로 온 덕에 기존 초과가 깊어진 것이다.
+issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	40
 issue6776/78494-virtual-convergence-industry-decree.hwpx	1
 issue6782/1480000-201900042-chemical-labeling-standards.hwp	6
 issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
