@@ -830,6 +830,8 @@ pub(crate) fn resolved_to_text_style(
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
             // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
+            // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
+            font_space_em: cs.font_space_em,
             hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size,
             color: cs.text_color,
@@ -1357,7 +1359,22 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
 
-    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = (c == '\u{318D}')
+    // [#7387] `CharShape.use_font_space` 가 켜진 run 의 공백은 반각이 아니라 **영문 슬롯**
+    // 글꼴이 선언한 공백 전진폭이다. 아래 메트릭 갈래는 공백을 무조건 `em_size/2` 로
+    // 누르고(그 run 자신의 글꼴로), 영문 슬롯을 볼 방법이 없으므로 여기서 먼저 가른다.
+    // 묶음 빈칸(U+00A0)은 #6646 에 따라 일반 공백과 같은 전진폭을 쓴다.
+    //
+    // 폭은 메트릭 갈래와 같은 `quantize_hwp_px` 격자(1/75px = HWPUNIT)에 올린다.
+    // 이게 없으면 영문 슬롯 글꼴의 공백이 마침 반각과 같은 run(예: 영문 슬롯이
+    // 휴먼명조 — 256/512 = 0.5 em)까지 공백마다 0.013px 씩 어긋난다.
+    let font_space_width = matches!(c, ' ' | '\u{00A0}')
+        .then_some(style.font_space_em)
+        .flatten()
+        .map(|em| quantize_hwp_px(font_size * em));
+    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
+    {
+        (w, "useFontSpace", None, "notApplicable")
+    } else if let Some(w) = (c == '\u{318D}')
         .then(|| area_dot_fallback_width(&style.font_family, font_size))
         .flatten()
     {
@@ -1561,14 +1578,18 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
 /// 한컴이 폭 변경 뒤 LINE_SEG를 다시 만들 때 쓰는 공백 advance.
 ///
 /// 저장본은 글꼴 고유 공백 폭을 보존할 수 있지만, 한컴의 새 재조판은 반각 공백을
-/// 사용한다. 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
+/// 사용한다(`use_font_space` 가 켜진 run 은 그 run 의 공백 기준폭, 아래 참조).
+/// 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
 /// stale cell 복구나 LINE_SEG 부재 재조판처럼 새 줄을 만드는 경로만 opt-in한다.
 ///
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
     let (font_size, ratio, _) = style_params(style);
-    let base_w = font_size * 0.5;
+    // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭이 기준이다.
+    // 이 값을 그대로 두면 아래 `stored_width` 비교가 늘 참이 되어, 고친 공백폭을
+    // 다시 반각으로 되돌린다.
+    let base_w = font_size * style.font_space_em.unwrap_or(0.5);
     let mut width = base_w * ratio
         + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
         + style.extra_char_spacing
