@@ -1,0 +1,113 @@
+{
+  "sourceSha": "6005ec32f87706d180a78ca9172314b5a0df5332",
+  "baseSha": "505661360e9a2d596f55300d0cb0c5222f0e14b4",
+  "visual": {
+    "native": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.42164,
+      "worst_pixel_match_percent": 99.42164,
+      "average_ink_match_percent": 28.63272,
+      "worst_ink_match_percent": 28.63272,
+      "average_visual_accuracy_proxy_percent": 28.63272,
+      "worst_visual_accuracy_proxy_percent": 28.63272,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "wasm": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.42164,
+      "worst_pixel_match_percent": 99.42164,
+      "average_ink_match_percent": 28.63272,
+      "worst_ink_match_percent": 28.63272,
+      "average_visual_accuracy_proxy_percent": 28.63272,
+      "worst_visual_accuracy_proxy_percent": 28.63272,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "host-canvaskit": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.3816,
+      "worst_pixel_match_percent": 99.3816,
+      "average_ink_match_percent": 16.4672,
+      "worst_ink_match_percent": 16.4672,
+      "average_visual_accuracy_proxy_percent": 16.4672,
+      "worst_visual_accuracy_proxy_percent": 16.4672,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    }
+  },
+  "hostLifecycle": {
+    "historyResult": {
+      "clean": true,
+      "bytesUnchanged": true,
+      "undoUnchanged": true,
+      "redoUnchanged": true,
+      "redoCount": 1,
+      "beforeLength": 15,
+      "redoneLength": 16,
+      "undoneLength": 15
+    },
+    "switched": {
+      "changedDocument": true,
+      "sameImage": true,
+      "sameBytes": true,
+      "countBefore": 1,
+      "countAfter": 1
+    },
+    "replacedRace": {
+      "aborted": true,
+      "sameImage": true,
+      "count": 1
+    }
+  },
+  "fontPaint": {
+    "checks": [
+      {
+        "type": "textRun",
+        "style": "Italic",
+        "count": 1,
+        "sameAsStandalone": true,
+        "differsFromUpright": true
+      },
+      {
+        "type": "textRun",
+        "style": "Oblique",
+        "count": 1,
+        "sameAsStandalone": true,
+        "differsFromUpright": true
+      },
+      {
+        "type": "charOverlap",
+        "style": "Italic",
+        "count": 1,
+        "sameAsStandalone": true,
+        "differsFromUpright": true
+      },
+      {
+        "type": "charOverlap",
+        "style": "Oblique",
+        "count": 1,
+        "sameAsStandalone": true,
+        "differsFromUpright": true
+      }
+    ],
+    "invalid": {
+      "count": 0,
+      "failed": 1
+    },
+    "recoveredCount": 1,
+    "reads": 12
+  }
+}

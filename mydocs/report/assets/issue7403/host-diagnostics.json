@@ -1,0 +1,140 @@
+{
+  "fonts": [
+    "함초롬돋움",
+    "함초롬바탕"
+  ],
+  "reads": [
+    "batang",
+    "batang"
+  ],
+  "selected": [
+    "HCRBatang"
+  ],
+  "diagnostics": {
+    "mode": "default",
+    "surfacePreference": "software",
+    "surfaceBackend": "software",
+    "surfaceFallbackReason": null,
+    "lastRenderCompleted": true,
+    "lastUnsupportedOps": [],
+    "lastExpectedUnsupportedOps": [],
+    "lastUnexpectedUnsupportedOps": [],
+    "lastRenderError": null,
+    "passesRuntimeReadinessGate": true,
+    "readinessBlockers": [],
+    "hiddenCanvas2dOverlayUsed": false,
+    "lastRenderDurationMs": 3.7000000178813934,
+    "renderCount": 2,
+    "imageCacheEntries": 0,
+    "imageCacheLimit": 128,
+    "imageCachePixels": 0,
+    "imageCachePixelLimit": 67108864,
+    "imageCacheHits": 0,
+    "imageCacheMisses": 0,
+    "imageCacheEvictions": 0,
+    "imageFailureCacheHits": 0,
+    "imageFailures": [],
+    "localTypefaceCount": 1,
+    "localTypefaceLoadFailureCount": 0,
+    "localTypefacePendingCount": 0,
+    "bundledTypefaceCount": 0,
+    "bundledTypefaceLoadFailureCount": 0,
+    "glyphRunFontBlobCount": 0,
+    "glyphRunFontBlobBytes": 0,
+    "glyphRunTypefaceCount": 0,
+    "glyphRunFontCount": 0,
+    "fontSubstitutionLimit": 4096,
+    "unregisteredFontFallbacks": 0,
+    "fontSubstitutions": [],
+    "replayFeatureCounts": {
+      "dashedStrokes": 0,
+      "glyphRuns": 0,
+      "verticalPresentationPunctuation": 0,
+      "verticalTextRuns": 0
+    }
+  },
+  "studioDiagnostics": {
+    "mode": "default",
+    "surfacePreference": "software",
+    "surfaceBackend": "software",
+    "surfaceFallbackReason": null,
+    "lastRenderCompleted": true,
+    "lastUnsupportedOps": [],
+    "lastExpectedUnsupportedOps": [],
+    "lastUnexpectedUnsupportedOps": [],
+    "lastRenderError": null,
+    "passesRuntimeReadinessGate": true,
+    "readinessBlockers": [],
+    "hiddenCanvas2dOverlayUsed": false,
+    "lastRenderDurationMs": 4.0999999940395355,
+    "renderCount": 1,
+    "imageCacheEntries": 0,
+    "imageCacheLimit": 128,
+    "imageCachePixels": 0,
+    "imageCachePixelLimit": 67108864,
+    "imageCacheHits": 0,
+    "imageCacheMisses": 0,
+    "imageCacheEvictions": 0,
+    "imageFailureCacheHits": 0,
+    "imageFailures": [],
+    "localTypefaceCount": 1,
+    "localTypefaceLoadFailureCount": 0,
+    "localTypefacePendingCount": 0,
+    "bundledTypefaceCount": 0,
+    "bundledTypefaceLoadFailureCount": 0,
+    "glyphRunFontBlobCount": 0,
+    "glyphRunFontBlobBytes": 0,
+    "glyphRunTypefaceCount": 0,
+    "glyphRunFontCount": 0,
+    "fontSubstitutionLimit": 4096,
+    "unregisteredFontFallbacks": 0,
+    "fontSubstitutions": [],
+    "replayFeatureCounts": {
+      "dashedStrokes": 0,
+      "glyphRuns": 0,
+      "verticalPresentationPunctuation": 0,
+      "verticalTextRuns": 0
+    }
+  },
+  "pageInfo": {
+    "pageIndex": 0,
+    "pageNumber": 1,
+    "width": 793.7,
+    "height": 1122.5,
+    "sectionIndex": 0,
+    "marginLeft": 113.4,
+    "marginRight": 113.4,
+    "marginTop": 75.6,
+    "marginBottom": 56.7,
+    "marginHeader": 56.7,
+    "marginFooter": 56.7,
+    "headerArea": {
+      "x": 113.4,
+      "y": 75.6,
+      "width": 566.9,
+      "height": 56.7
+    },
+    "footerArea": {
+      "x": 113.4,
+      "y": 1009.1,
+      "width": 566.9,
+      "height": 56.7
+    },
+    "bodyLeft": 113.4,
+    "bodyRight": 680.3,
+    "marginGutter": 0,
+    "bindingMirrored": false,
+    "pageBorderLeft": 94.5,
+    "pageBorderRight": 94.5,
+    "pageBorderTop": 113.4,
+    "pageBorderBottom": 94.5,
+    "columns": [
+      {
+        "x": 113.4,
+        "width": 566.9
+      }
+    ]
+  },
+  "width": 794,
+  "height": 1123
+}
