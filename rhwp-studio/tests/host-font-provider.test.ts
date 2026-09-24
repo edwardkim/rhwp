@@ -176,3 +176,24 @@ test('Regular fullName equal to family does not intercept a family Bold request'
     assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'bold');
   } finally { await setHostFontProvider(null); }
 });
+
+test('italic runs can select an unambiguous oblique face when no italic face exists', async () => {
+  const f = fixture();
+  const regular = f.snapshot().faces[0];
+  const oblique = { ...regular, id: 'oblique', fullName: 'Host Only Oblique',
+    postscriptName: 'HostOnly-Oblique', style: 'Oblique', slant: 'oblique' as const };
+  f.provider.getSnapshot = async () => ({ revision: 'oblique', faces: [regular, oblique] });
+  try {
+    await setHostFontProvider(f.provider);
+    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'oblique');
+    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'normal' })?.hostReference?.face.id, 'regular');
+    const italic = { ...oblique, id: 'italic', fullName: 'Host Only Italic',
+      postscriptName: 'HostOnly-Italic', style: 'Italic', slant: 'italic' as const };
+    f.provider.getSnapshot = async () => ({ revision: 'both', faces: [regular, oblique, italic] });
+    f.change(); await prepareHostFontCatalog();
+    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'italic');
+    f.provider.getSnapshot = async () => ({ revision: 'ambiguous', faces: [oblique, { ...oblique, id: 'duplicate' }] });
+    f.change(); await prepareHostFontCatalog();
+    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' }), null);
+  } finally { await setHostFontProvider(null); }
+});

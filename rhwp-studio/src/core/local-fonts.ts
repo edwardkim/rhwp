@@ -1147,7 +1147,13 @@ export function resolveCanvasKitLocalFont(name: string, style?: LocalFontStyleRe
   if (!style) return resolveLocalFontFromLookup(name, hostLookup);
   const styled = candidates.filter(record => record.hostReference?.face.weight === style.weight
     && record.hostReference?.face.slant === style.slant);
-  return styled.length === 1 ? styled[0] : null;
+  if (styled.length) return styled.length === 1 ? styled[0] : null;
+  // Document styles expose an italic flag, while host catalogs can distinguish
+  // italic from oblique. Prefer the exact slant, then its inclined counterpart.
+  if (style.slant === 'normal') return null;
+  const alternate = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === (style.slant === 'italic' ? 'oblique' : 'italic'));
+  return alternate.length === 1 ? alternate[0] : null;
 }
 
 /** Consume the selected face directly, rather than resolving its name a second time. */

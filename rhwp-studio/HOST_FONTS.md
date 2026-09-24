@@ -32,7 +32,8 @@ TTC 데이터는 선택할 `faceIndex`를 지정한다. standalone SFNT는 0이�
 첫 구현의 화면 지원은 CanvasKit의 `textRun`·`charOverlap` face 경로다.
 문서 run의 family와 bold/italic에서 실제 face를 고르고 선택한 ID를 바이트 요청까지 유지한다.
 PostScript/full name으로 지정한 face는 문서 bold 플래그 때문에 다른 face로 바꾸지 않는다.
-정확한 family/style 후보가 없거나 여러 개면 기존 renderer fallback을 사용한다.
+기울임은 정확한 slant를 우선하고, 없으면 유일한 Italic/Oblique 대체 face를 선택한다.
+굵기는 요청값과 일치해야 한다. 후보가 없거나 여러 개면 기존 renderer fallback을 사용한다.
 지정한 호스트 공급자와 브라우저 목록의 우선순위를 자동 병합하지 않는다.
 
 Canvas2D의 CSS 설치 글꼴 판정·영속 감지 snapshot에는 호스트 목록을 넣지 않는다.
