@@ -35,6 +35,26 @@ pub struct ResolvedCharStyle {
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
+    /// [#7391] 언어 슬롯별로, 폭을 **선언 face 자신의 표**로 재야 하는 경우의 그 이름.
+    ///
+    /// legacy-latin 치환은 표시할 글꼴이 없는 환경의 폴백이라 라틴 face 를 한글 face 로
+    /// 보낸다(`AmeriGarmnd BT` → `HY견명조`). 표시로는 뜻이 있지만 **폭은 범주가 다르다** —
+    /// 한글 명조의 라틴 글리프 폭이 BT 계열 라틴 글꼴의 폭일 리 없다.
+    ///
+    /// rhwp 가 선언 face 자신의 메트릭 표를 이미 갖고 있으면 그 표를 버릴 이유가 없다.
+    /// `1341000_research_report_footnotes` 정본은 `AmeriGarmnd BT` 를 **그 글꼴 자신으로**
+    /// 그렸고(ASCII 13,919자), 그 전진폭을 후보 표와 대조하면 값이 갈린다:
+    ///
+    /// ```text
+    ///   AmeriGarmnd BT 자기 표                     중앙 오차 0.0398 em
+    ///   HY견명조 → HYMyeongJo-Extra (현행 치환 대상)   중앙 오차 0.2134 em   (5.4배)
+    ///   HYGothic-Medium                           중앙 오차 0.1324 em
+    /// ```
+    ///
+    /// 선언 face 의 표가 없으면 `None` 이라 종전 치환 대상의 표를 그대로 쓴다.
+    /// `HCI Poppy` 가 그 경우이며, 그 치환(`Palatino Linotype`)은 정본 ASCII 24,662자
+    /// 대조에서 중앙 오차 0.0040 em 으로 이미 맞다 — 건드리지 않는다.
+    pub font_families_metric_face: Vec<Option<String>>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -98,6 +118,7 @@ impl Default for ResolvedCharStyle {
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
             font_families_hft_hangul: Vec::new(),
+            font_families_metric_face: Vec::new(),
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -172,6 +193,20 @@ impl ResolvedCharStyle {
             .get(slot)
             .copied()
             .unwrap_or(false)
+    }
+
+    /// [#7391] 이 언어 슬롯의 폭을 잴 때 쓸 face. 되돌릴 게 없으면 `None`.
+    pub fn metric_face_for_lang(&self, lang_index: usize) -> Option<&str> {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_metric_face
+            .get(slot)
+            .and_then(Option::as_deref)
     }
 
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
@@ -453,6 +488,15 @@ pub fn resolve_styles_with_variant(
     }
 }
 
+/// [#7391] 이 face 이름으로 **자기 자신의** 메트릭 표를 찾을 수 있는지.
+///
+/// 별칭(`layout-metric` 평면)을 타고 남의 표를 빌려 오는 경우는 거짓이다 — 그건
+/// 치환 대상의 표와 다를 바 없어서 되돌릴 근거가 못 된다.
+fn has_own_metric_table(face: &&str) -> bool {
+    crate::renderer::font_metrics_data::find_metric_decision(face, false, false)
+        .is_some_and(|decision| decision.alias_rule_id.is_none())
+}
+
 /// CharShape + FontFace → ResolvedCharStyle 목록
 fn resolve_char_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedCharStyle> {
     doc_info
@@ -471,6 +515,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
 
@@ -489,6 +534,20 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         );
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
+        // [#7391] legacy-latin 폴백이 선언 face 를 한글 face 로 보내면서, 우리가 이미 가진
+        // 그 face 자신의 폭 표를 버리는 경우만 되돌린다. HFT/TTF 경계는 손대지 않는다 —
+        // HFT 한글 전용 face 의 반각 ASCII 회계(#7051)가 치환된 이름에 걸려 있다.
+        font_families_metric_face.push(
+            (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
+                .then(|| {
+                    decision
+                        .requested_face
+                        .as_deref()
+                        .filter(has_own_metric_table)
+                })
+                .flatten()
+                .map(str::to_string),
+        );
         font_families.push(decision.css_family_chain.join(","));
 
         let spacing_percent = cs.spacings[lang] as f64;
@@ -507,6 +566,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families,
         font_families_metric_trusted,
         font_families_hft_hangul,
+        font_families_metric_face,
         font_size,
         bold: cs.bold,
         italic: cs.italic,
