@@ -266,12 +266,14 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
         // [#7095] native HWP5 1×1 RowBreak 조각은 표의 바깥 위 여백(283HU)을 연다. 한/글 2020
         // 정본(새 PDF, 쪽 척도 제거)의 표 위 괘선은 4쪽 127.84 · 5~8쪽 87.04 이고, rhwp 는
         // 127.7 · 86.9 로 맞는다(종전 123.9 · 83.1 은 여백만큼 위였다). 그림은 표와 함께
-        // 내려간다. HWPX 계보는 이 술어 밖이라 종전 좌표를 유지한다.
-        let outer_top_shift = if relative.ends_with(".hwpx") {
-            0.0
-        } else {
-            283.0 * 96.0 / 7200.0
-        };
+        // 내려간다.
+        //
+        // [#7063 레인①] HWPX 계보도 같은 값으로 모은다. 이 문서의 **HWPX 정본**
+        // `pdf/issue2004_cell_image_stack-hwpx-2020.pdf` 의 표 위 괘선은 4쪽 127.70 ·
+        // 5~8쪽 86.95 로 HWP 정본과 같은 자리이고, 종전 HWPX 좌표(123.9 · 83.1)만 선언
+        // `outMargin.top` 283HU(3.77px)만큼 위였다. 두 계보가 같은 정본을 가리키므로
+        // 계보별 예외를 없앤다.
+        let outer_top_shift = 283.0 * 96.0 / 7200.0;
         let first_picture_id = if relative.ends_with(".hwpx") { 6 } else { 3 };
         for (page_index, (x, y, width, height)) in expected {
             let page = core

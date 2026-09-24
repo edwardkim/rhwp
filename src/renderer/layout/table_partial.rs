@@ -3863,13 +3863,40 @@ impl LayoutEngine {
     /// 쪽 경계로 잘리는 칸은 `effective_align` 이 `Top` 이라(이 파일 위쪽 #4042),
     /// 고정한 상자 아래에 빈 밴드가 남는다(7062 2쪽 1025.8..1043.9).
     fn single_cell_rowbreak_page_fragment(&self, table: &crate::model::table::Table) -> bool {
-        // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
-        // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
-        // 16쪽에서 칸 안 글상자가 꼬리말과 겹친다(text_overlap 1 → 2). 근거가 있는 범위로 좁힌다.
-        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
-            self.profile.get().hwp5_stored_pagination_layout(),
-            table,
-        )
+        // [#7063 레인①] `#7095` 의 조각 상자 계약에는 **계보 구분이 없다.** 그 이슈가
+        // `hwp5_stored_pagination_layout` 을 요구한 것은 근거 문서가 native HWP5 저장본
+        // (156060125 · 30269)뿐이었기 때문이고, 원본 HWPX 정본을 뜨면 같은 값이 나온다.
+        //
+        // 정본 실측(쪽 척도 제거 후, 조각 윗변 = 흐름 + `outMargin.top`):
+        //
+        // ```text
+        //   pdf/hwpx_sample2-hwpx-2020.pdf        141HU  37.80 → 39.70   정본 39.64  (6쪽)
+        //                                           0HU  37.80   불변    정본 37.72  ← 0 대조군
+        //   pdf/rowbreak-problem-pages-hwpx-2020.pdf
+        //                                         283HU  94.50 → 98.30   정본 98.29  (3쪽)
+        //                                           0HU  94.50   불변    정본 94.46  ← 0 대조군
+        //   pdf/issue2004_cell_image_stack-hwpx-2020.pdf
+        //                                         283HU 123.90 → 127.70  정본 127.70 (4쪽)
+        //                                         283HU  83.10 →  86.90  정본  86.95 (5~8쪽)
+        // ```
+        //
+        // 잔차는 선언값 두 종에서 ≤0.06px 이고 `omT=0` 표는 이미 맞는다 — 상수 보정이 아니라
+        // **선언 여백 그 자체**다. `issue2004` 는 같은 문서의 HWP 쌍둥이가 `#7095` 로 이미
+        // 정본과 맞고 HWPX 만 여백만큼 위였던 자리라, 두 계보가 같은 정본으로 모인다.
+        //
+        // 형상 조건(1×1 · 비-TAC · RowBreak)은 `#7095` 그대로 둔다. 행·열을 열면 samples
+        // 전수 overflow 가 2561 → 2614, text-overlap 3537 → 3551 로 34문서가 어긋난다(실측).
+        //
+        // **예산(`typeset` 조각 예산)은 종전 계보 게이트를 유지한다.** 이 술어가 paint 에서
+        // 여는 상자는 종전보다 **크기만** 하므로(쪽이 정한 아래끝까지) 예산이 이미 정한 컷이
+        // 상자 밖으로 나가지 않는다. 예산까지 함께 열면 `issue3236_split_table` 의 쪽수
+        // 정답지(2쪽)가 3쪽으로 깨진다 — 2쪽 끝 한 줄이 밀린다(실측).
+        //
+        // `#7098` 이 기록한 `rowbreak-problem-pages.hwpx` 15쪽 text_overlap 1 → 2 는 남는다.
+        // 그 쪽은 칸 안 글상자가 꼬리말을 파고드는 **선행** 결함 자리이고(정본 본문 마지막
+        // 글자 1008.80 · 그 글상자는 정본에 없다), 겹침 **면적**은 325.6 → 312.9 로,
+        // 최대 겹침 높이는 7.08 → 5.23 으로 줄어든다. 근거는 `text_overlap_baseline.tsv` 머리말.
+        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(true, table)
     }
 
     /// 표의 일부 행만 레이아웃한다 (페이지 분할).

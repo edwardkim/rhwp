@@ -8,6 +8,18 @@
 # 유보 2행 — 편람 hwp/hwpx 는 #6325 로 환경 분기가 실측된 문서다(같은 쪽 overflow 로컬 2 vs CI 4,
 # 표 높이 +103.47px). 로컬 실측(각 20)을 상한으로 쓰지 않고 기존 21 을 유지한다.
 # 상한의 권위는 CI(ubuntu-latest)다 — 다른 행에서도 CI 실측이 더 크면 그 값으로 올려 적는다.
+# 유보 1행 (#7063 레인①) — rowbreak-problem-pages.hwpx 1 -> 2. 완화가 아니라 **기존 침범이
+# 두 조각으로 갈린 것**이고 크기는 줄었다. 15쪽에서 칸 안 글상자가 꼬리말 줄을 파고드는데,
+# `#7095` 조각 상자 계약을 원본 HWPX 계보에 열면서 조각이 정본 자리로 3.77px 내려가
+# 한 줄이 두 줄에 걸쳤다.
+#   전후 노드  A=Table11/Cell0/Rect11/TextBox0/TextLine2·3  B=Footer3/TextLine0 (y 1051.33)
+#   전  TextLine3 y=1057.59  면적 325.58  겹침높이 7.08          (1건)
+#   후  TextLine2 y=1044.56  면적 160.88  겹침높이 5.23
+#       TextLine3 y=1061.36  면적 152.00  겹침높이 3.30          (2건, 합 312.88 · 최대 5.23)
+#   독립 기준: pdf/rowbreak-problem-pages-hwpx-2020.pdf 15쪽 본문 마지막 글자 기준선 1008.80,
+#             1062.88 은 쪽번호뿐 — 정본에는 이 글상자가 그 자리에 **없다**. 조각 윗변은
+#             정본 98.29 에 대해 94.50 -> 98.30 으로 맞는다. 침범 자체는 이 변경과 무관한
+#             선행 결함(같은 쪽 overBottom 250.60 -> 254.37)이고 #6976 축에 남는다.
 2025 행정업무운영 편람(최종).hwp	21
 2025 행정업무운영 편람(최종).hwpx	21
 80168_regulatory_analysis.hwp	2
@@ -117,7 +129,7 @@ kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1
 multi-table-002.hwp	1
-rowbreak-problem-pages.hwpx	1
+rowbreak-problem-pages.hwpx	2
 table_giant_cell_overfill.hwpx	16
 tac-img-02.hwp	1
 tac-img-02.hwpx	1
