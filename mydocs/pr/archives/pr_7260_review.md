@@ -3,141 +3,91 @@ kind: review
 status: active
 ---
 
-# PR #7260 재검토 — 변경 요청
+# PR #7260 3차 검토 — 기존 변경 요청 해결
 
-최종 판정: **머지 보류**. 기존 batch 성능 지적은 해결됐다. 남은 보류 근거는 PR이 주장한 편집·undo·RowBreak 원점 보존의 수용 증거이며, 한컴과의 모든 렌더 차이를 이 PR의 신규 회귀로 판정한 것은 아니다.
+최종 판정: **승인**. 검토 head `4c9efab2c1065757c5b25ebf96e1d0a76a102aeb`가 유지됐고 최신 CI가 성공했다. 이전 두 변경 요청은 해결됐으며 추가 코드 수정 요청은 없다. 사용자 승인으로 GitHub Approve 리뷰를 게시했다. 이번 후속 commit은 검토 기록만 반영하며, 최신 문서 head의 CI·승인 상태를 확인한 뒤 병합은 작업지시자가 직접 수행한다.
 
-## 대상과 처리 경로
+## 대상과 검토 범위
 
-| 항목 | 값 |
-| --- | --- |
-| PR / 이슈 | [#7260](https://github.com/edwardkim/rhwp/pull/7260) / [#6639](https://github.com/edwardkim/rhwp/issues/6639) |
-| 기여자 / reviewer | @lpaiu-cs / @postmelee |
-| 코드 검토 SHA | `e5135e3f19ff26222254f1474adc87d2af04e870` |
-| 증적 commit | `e1ac81c621f89a7c63ef974898eea958e1e6d046` |
-| 비교 base | `505661360e9a2d596f55300d0cb0c5222f0e14b4` (`upstream/devel`) |
-| 코드 변경 규모 | contributor 2 commits, 10 files |
-| 원격 상태 참고값 | Ready, 기존 CHANGES_REQUESTED, maintainerCanModify=true |
-| 처리 경로 | 사용자 지시로 현재 contributor branch `fix/6639-cell-vpos` 위에 증적·검토 기록만 추가 |
+- PR: [#7260](https://github.com/edwardkim/rhwp/pull/7260), 기여자 @lpaiu-cs, 이슈 #6639.
+- 기여자 회신: [재리뷰 대응](https://github.com/edwardkim/rhwp/pull/7260#issuecomment-5810804854).
+- 검토 head: `4c9efab2c1065757c5b25ebf96e1d0a76a102aeb`; 제품·테스트 commit: `cf3e9fc1da3ba9cc949eb94ae6ddfb61f9baba5a`.
+- 이전 검토 head: `96092453b70ed762363e13374ba674863f0d4dd4`; 두 새 commit만 증분 검토했다. 새 diff는 제품 3파일·회귀 1파일·README·PNG 4개다.
+- base: `505661360e9a2d596f55300d0cb0c5222f0e14b4`. `git merge-tree --write-tree upstream/devel HEAD` 성공, 충돌 없음. `git diff --check` 통과.
+- 처리 경로: collaborator 외부 contributor 재검토. 주 작업공간의 사용자 PDF 변경을 보존하기 위해 별도 임시 worktree를 사용했다. contributor source·baseline을 수정하지 않았다.
+- [이전 변경 요청 기록](https://github.com/lpaiu-cs/rhwp/blob/96092453b70ed762363e13374ba674863f0d4dd4/mydocs/pr/archives/pr_7260_review.md)은 당시 판정의 이력이다.
 
-주 작업공간의 사용자 변경을 보존하기 위해 기존 review worktree를 사용했다. contributor commit을 rewrite하지 않았고 reviewer의 제품 source·Rust test·baseline 변경은 없다. metadata 재요청·merge·issue close는 이번 범위가 아니다. 증적 추가 후에는 새 문서 sample이 포함되므로 review-only fast-pass를 가정하지 않는다. 최신 CI는 merge 전에 따로 확인한다.
+## 기존 요청의 판정
 
-## 기존 요청의 해결 확인
-
-실제 줄 흐름·문단 앞뒤 간격이 달라진 문단만 dirty로 표시하고 batch 종료에 한 번 처리한다. 정렬만 변경하거나 같은 값을 재적용하면 vpos 재계산을 예약하지 않는다. 셀 전체를 setter마다 순회하던 추가 O(N²) 작업과 중복 스타일 갱신을 제거했다. 성능 개선 배수 자체는 재계측하지 않았다.
-
-소비 경로는 `apply_para_format_in_cell_native` / `set_cell_para_shape_id_native` → paragraph/core pending 표시 → `end_batch_native`의 `flush_cell_format_vpos` → 현재 vpos로 조각 구분 → `apply_cell_vpos_ladder` → 기존 dirty/rebuild/pagination 경로다. `rebuild_section`, snapshot 저장, mutable document 접근에서도 pending을 처리한다. 본 리뷰는 helper 존재만이 아니라 현재 좌표로 경계를 다시 구분하는 소비 조건을 확인했다.
-
-## 기여자에게 요청할 보완
-
-### 1. 같은 입력의 편집·복원 결과로 잔여 차이의 범위를 설명
-
-[140% 직접 비교](../assets/pr_7260_edited140_native_wasm_review.png)에서 한컴보다 추가 줄바꿈과 큰 표 높이가 남는다. 원본 160% 비교에서도 차이가 있어 새 회귀로 단정할 수 없다. 초기 PR head와 현 head의 140% SVG가 같다는 사실은 이번 성능 보정의 무변화를 보여 주지만, PR 도입 전과의 비교를 대신하지 않는다.
-
-기여자는 제공된 원본에서 160% → 140% → 원래 모양 ID 복원을 실행하고, PR 도입 전 코드와 수정 후 코드의 같은 페이지·셀을 비교해 달라. 후속 문단 시작점, 마지막 줄 끝점, 셀/표 외곽과 뒤 내용 위치를 함께 확인한다. 보이는 차이가 기존 줄 구성·폰트·입력 캐시 문제인지, 본 vpos/높이 갱신에 영향을 주는지 설명해야 한다. 변경 경로의 위반이면 수정과 수정 전 FAIL/후 PASS 회귀를 추가한다. 독립된 기존 문제라면 근거와 남는 제한을 PR 본문에 명시하며 전체 renderer 수정을 요구하지 않는다.
-
-현재 reviewer의 원본 문단 vpos 복원 검사는 PASS지만, 모양 ID 복원 후 전체 SVG는 최초 화면과 다르다. 표 바탕 높이는 1009.12px에서 1025.3067px로 바뀐다. 이는 Studio의 실제 undo stack 검증과도 구분해야 한다. “좌표 일부 복원”을 “화면 전체 undo 일치”로 확대하지 말고 PR의 undo 주장 범위와 검사를 맞춰 달라.
-
-### 2. 반복 편집으로 vpos 역행이 사라지는 RowBreak 경계
-
-[`flush_cell_format_vpos`](../../../src/document_core/commands/text_editing.rs)는 매 flush마다 **현재** 인접 문단 첫 줄 vpos의 역행으로 조각을 나눈다. PR 테스트의 `stored_cell`을 사용하면 다음 합성 계약 실패가 재현된다.
-
-| 단계 | 첫 줄 vpos |
-| --- | --- |
-| 최초 160% | `[100,1700,1600,3200]` |
-| batch 140% 적용 | `[100,1500,1600,3000]` |
-| 원래 shape ID 복원 기대 | `[100,1700,1600,3200]` |
-| 실제 복원 | `[100,1700,3300,4900]` |
-
-첫 축소로 좌표 역행이 사라지면 다음 flush에서 두 번째 조각 원점을 잃는다. 이 입력은 수동 좌표를 쓴 합성이며 정상 한컴 저장본에서 유효한 초기 상태인지는 **미검증**이다. 실제 문서 회귀라고 쓰지 않는다. 기여자는 해당 초기 상태의 유효성·지원 계약을 독립 근거로 확인해 달라. 유효하면 조각 경계/원점을 반복 편집·undo에서도 유지하는 수정과 정식 회귀를 추가한다. 유효하지 않다면 어떤 저장 규칙으로 배제되는지 설명하고, 유효한 경계 사례로 현재 보존 주장을 검증해 달라. 수치 임계값을 더 붙이는 문서별 보정은 권하지 않는다.
-
-재현은 기존 `tests/cases/issue_6639_cell_para_format_vpos.rs`의 helper를 그대로 사용하는 아래 테스트다. reviewer는 별도 임시 example에서 실행했으며 이번 commit에 Rust test를 추가하지 않았다.
-
-```rust
-#[test]
-fn review_rowbreak_origin_survives_shrink_then_undo() {
-    let positions = [100, 1700, 1600, 3200];
-    let (mut core, para, ctrl) = stored_cell(&positions);
-    let ids = cell_shape_ids(&core, para, ctrl);
-    core.begin_batch_native().unwrap();
-    for idx in 0..4 {
-        core.apply_para_format_in_cell_native(
-            0, para, ctrl, 0, idx, r#"{"lineSpacing":140}"#,
-        ).unwrap();
-    }
-    core.end_batch_native().unwrap();
-    assert_eq!(cell_vpos(&core, para, ctrl), [100, 1500, 1600, 3000]);
-    core.begin_batch_native().unwrap();
-    for (idx, id) in ids.into_iter().enumerate() {
-        core.set_cell_para_shape_id_native(0, para, ctrl, 0, idx, id).unwrap();
-    }
-    core.end_batch_native().unwrap();
-    assert_eq!(cell_vpos(&core, para, ctrl), positions);
-}
-```
-
-## 검증과 증적
-
-[입력 README](../../../samples/issue6639/README.md)에 원본·파생 입력 4개와 PDF 3개의 저장소 경로, 출처, 생성 절차, byte 수, SHA-1/SHA-256, 한컴 job 및 engine 정보를 모았다. 실제 실행 파일과 증적 commit의 7개 Git blob을 SHA-256으로 대조해 모두 일치를 확인했다. 원본 SHA-256은 `983df661a2316881457ee4604c3084895bd4f6b350df4953c6c53cca8c162801`이다.
-
-| 검사 | 결과 및 한계 |
-| --- | --- |
-| #6639 focused | 8/8 PASS |
-| #4118 batch 동등성 | 1/1 PASS |
-| 실제 원본 native 편집 | 140% 마지막 문단 `[32760,34020]`, 텍스트 입력/삭제 후 유지, 원래 vpos 복원 PASS |
-| 합성 추가 계약 | 위 RowBreak shrink/복원 1개 FAIL; 실제 지원 입력 유효성은 미검증 |
-| fresh WASM | 동일 코드 SHA에서 새로 빌드하고 실제 Chromium 실행. 10문단 140%, 1쪽, Native SVG byte equality 및 텍스트 왕복 PASS |
-| 화면 전체 복원 | 원본 SVG와 달라 미충족 관측. 새 PR 회귀 여부 및 원인은 미검증 |
-| 원본 Native/fresh WASM sweep | 각각 1쪽 compare·overlay·review 직접 확인. 자동 flagged 0이지만 시각 차이는 남음 |
-| 140% 실제 편집 비교 | canonical webfont 및 compare/overlay/review helper로 비교. 편집 render-tree heuristic은 미실행 |
-| 파생 입력 대조 | 160% 한컴 대조 PDF raster가 원본 PDF와 동일. README 재생성 코드의 두 HWPX가 검증 입력과 byte 동일 |
-| 새 fixture 검사 | 신규 4개 샘플 대상 injection/보안 2개 PASS, IR 전수 왕복 래칫 82.072초 PASS(총 3/3). layout-anomaly는 4개 모두 모든 신호 0. 기존 자동 수집 범위에 포함되며 baseline 추가·완화는 불필요했다. |
-| baseline/golden | 변경 없음 |
-
-코드 SHA의 [CI 35820580415](https://github.com/edwardkim/rhwp/actions/runs/35820580415)와 [Render Diff 35820580055](https://github.com/edwardkim/rhwp/actions/runs/35820580055) 성공을 기존 코드 검토에 사용했다. CI WASM Build job은 skipped였으므로 reviewer가 별도 빌드했다. 이 결과를 새 fixture commit의 최신 전체 CI 통과로 쓰지 않는다. reviewer가 새 Rust source/test/helper를 수정하지 않아 새 Rust lint 묶음은 실행하지 않았으며, 새 sample 검사 결과는 별도로 기록했다.
-
-재실행 명령(검토용 별도 target을 사용할 것):
-
-```sh
-node scripts/rust-test-suite-manifest.mjs --prepare
-node scripts/run-rust-test.mjs issue_6639_cell_para_format_vpos -- --cargo-profile release-test --target-dir target/pr-review
-node scripts/run-rust-test.mjs issue_4118_cell_format_batch_deferral -- --cargo-profile release-test --target-dir target/pr-review
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir /tmp/pr7260-fresh-wasm --dev --no-opt
-RHWP_BIN=target/pr-review/release-test/rhwp venv/bin/python tools/fidelity_compare/fidelity_compare.py 0 0 --source samples/issue6639/rhwp-table-cell-minimal-repro.hwp --reference-pdf pdf/issue6639/issue6639-original-160-2020.pdf --label original160 --reference-grade Hancom2020 --text-only --export-all-svg --layout-ledger --out-dir /tmp/pr7260-fidelity
-venv/bin/python scripts/visual_sweep.py --file-target original160 samples/issue6639/rhwp-table-cell-minimal-repro.hwp pdf/issue6639/issue6639-original-160-2020.pdf --rhwp-bin target/pr-review/release-test/rhwp --pages 1 --dpi 96 --out /tmp/pr7260-native
-venv/bin/python scripts/visual_sweep.py --file-target original160 samples/issue6639/rhwp-table-cell-minimal-repro.hwp pdf/issue6639/issue6639-original-160-2020.pdf --rhwp-bin target/pr-review/release-test/rhwp --wasm-pkg /tmp/pr7260-fresh-wasm --pages 1 --dpi 96 --out /tmp/pr7260-wasm
-```
-
-140% 편집은 **원본 HWP**를 열고 `beginBatch()` → 대상 `(0,0,2,31)`의 문단 index 0..9에 `applyParaFormatInCell(..., '{"lineSpacing":140,"lineSpacingType":"Percent"}')` → `endBatch()` → `renderPageSvg(0)` 순서로 실행했다. 별도로 원래 shape ID들을 저장해 batch로 `setCellParaShapeId`를 호출했다. 이 경로는 Studio undo 버튼을 누른 검증이 아니다. 140% 기준 HWPX를 rhwp에서 단순히 열어 렌더한 것을 원본의 실시간 편집 결과로 대신하지 않았다.
-
-- fresh JS SHA-256: `a75560f1a0619ccc206444ec9da320b057375f11773611e90b41ce3d9c218175`
-- fresh WASM SHA-256: `1b0278cfe54d61d044efd162b3b96a0536161cfdd737bbeccf0bf02e110ede88`
-- 140% Native/WASM SVG SHA-256: `fa0ff3a16e57fbc06ed5c64528b93597cba9e65e5f869601bcbec5447c56758a`
-- 임시 원장·로그·SVG: `/private/tmp/pr7260-rereview-evidence` (재현 절차·입력과 대표 PNG는 저장소에 보존)
-
-| 직접 확인한 PNG | pixel match | 내용 중심 proxy |
+| 항목 | 판정 | 확인 근거 |
 | --- | --- | --- |
-| [원본 Native](../assets/pr_7260_original160_native_review.png) | 91.15192% | 8.54662% |
-| [원본 fresh WASM](../assets/pr_7260_original160_wasm_review.png) | 91.15012% | 8.54504% |
-| [140% 편집 Native/WASM](../assets/pr_7260_edited140_native_wasm_review.png) | 93.04333% | 14.46969% |
+| 반복 편집의 RowBreak 원점 소실 | 충족 | 최초 서식 flush에서 `Paragraph.cell_vpos_reset`에 경계 여부를 저장한다. 이후 수치 역행 유무가 달라져도 `cell_vpos_resets`가 저장한 경계를 우선하며 텍스트 편집 ladder도 조각 시작점부터 계산한다. 합성 batch/eager·반복·snapshot·경계 문단 텍스트 왕복 검사 PASS. |
+| 정상 저장본에서 반례 유효성 | 충족 | 기존 `samples/task2430/1382000_domestic_violence_survey.hwp`의 RowBreak 셀 `(0,93,0,0)` 문단 76/77은 `64680/64462`다. 140% 편집 뒤 역행이 사라지는 조건과 두 번의 복원 후 문단 77의 `64462` 보존을 정식 테스트로 재실행했다. |
+| 원본의 편집·복원과 기존 시각 차이 구분 | 충족 | contributor의 PR 도입 전 비교 자료와 코드 경로를 대조했다. reviewer의 현재 Native 초기·140%·모양 복원 SVG SHA가 기여자 기록과 모두 일치한다. 높이도 `1009.1200 → 1024.5737 → 1025.3067px`로 같고 전체 snapshot은 초기 SVG로 복귀한다. |
+| 성능 지적의 유지 해결 | 충족 | 새 경계 캡처는 기존 flush의 순회 안에서 수행한다. setter마다 셀 전체를 추가 순회하지 않는다. #4118 batch 동등성 PASS. 속도 개선 배수는 재계측하지 않았다. |
 
-## 조판 원칙 대조
+수정 전 제품 `e5135e3f`에서 신규 두 검사가 FAIL했다는 자료는 기여자 README의 실행 증거를 검토했다. 이번 reviewer 실행은 최신 head의 PASS이며 수정 전 제품을 다시 빌드한 실행과 구분한다.
 
-| 항목 | 판정과 근거 |
+원본의 줄 구성·표 높이 차이는 [입력 README](../../../samples/issue6639/README.md)의 도입 전 비교와 일치한다. `formatting.rs`의 raw stream 무효화 → `Document::layout_profile`의 `session_edited` → `HeightMeasurer`의 미편집 TAC 저장 높이 축소 해제 경로를 확인했다. 뒤의 두 파일은 PR 도입 전과 바뀌지 않았다. 모양 ID 복원은 편집 상태 전체를 되돌리는 API가 아니며, PR 본문도 복원 주장을 모양 ID·문단 vpos로 한정했다. 이 근거로 이전 보류를 해제할 수 있으며 한컴 시각 일치를 승인한 것은 아니다.
+
+## 조판 원칙 준수 검토
+
+| 검토 항목 | 판정과 근거 |
 | --- | --- |
-| 원인·범위·일반성 | 기존 반복 순회 해결 충족. 저장 조각 경계의 반복 편집 유효성은 미검증 |
-| 측정·배치 소비 | setter → pending → flush → ladder → 재배치 경로 확인. 최종 표 외곽의 기준 정합 및 복원 범위는 미검증 |
-| 분할·이어받기 | 컷/예산 알고리즘 변경은 비해당. RowBreak 조각 원점 보존 주장에는 위 반례가 적용되나 정상 입력 여부 미검증 |
-| 저장 정보 유효성 | 원본 저장본과 명시적 변형 HWPX를 구분. 대조군 성공을 원본 rhwp 일치로 승격하지 않음 |
-| 독립 기대값 | 한컴 PDF를 확보. 합성 원점 기대는 최초 좌표·복원 계약이며 한컴 일치로 보지 않음 |
-| 기준값 변경 | 비해당. 허용치 완화 없음 |
-| 입력 commit 동일성 | 충족. 증적 commit의 7개 HWP/HWPX/PDF blob과 실제 검증 입력 hash 일치 |
-| 완료·수용 증거 | 미검증 범위가 남아 머지 보류. 기존 코드 결함 해결과 필수 증거 부족을 구분 |
+| 독립 입력·기대값 | 충족. 실제 한컴 저장 HWP의 원래 조각 원점을 기준으로 반복 편집의 보존을 검사한다. 합성 계약과 실제 문서를 구분했다. |
+| 생산·소비 경로 | 충족. 서식 setter의 dirty → batch 종료 flush → 경계 캡처 → 공통 ladder → 기존 dirty/rebuild/pagination을 대조했다. 텍스트 편집에서도 같은 저장 경계와 조각 slice를 사용한다. |
+| snapshot과 경계 수명 | 충족(검사 범위). snapshot은 document clone으로 표식을 보존한다. 새 분할 문단은 continuation, 셀 폭 재래핑은 기존 경계를 false로 해제한다. 분할·폭 변경 분기는 코드 확인이며 이번 focused 검사의 새 별도 실행 사례로 세지 않는다. |
+| 문서별 보정·수치 임계값 | 충족. 새 문서 ID 분기·좌표 clamp·baseline 완화 없음. |
+| pagination 컷·예약 높이·종료 변경 | 비해당. 해당 알고리즘을 변경하지 않으며 경계 문단 좌표 갱신만 수정했다. 실제 RowBreak 문서의 한컴 140% 편집 화면·전체 페이지 분할 정합은 별도 미검증이다. |
+| 보이는 결과 | 충족(변경 범위). 원본 1쪽의 Native/fresh WASM compare·standalone overlay·review를 직접 판독하고, 140% 및 모양 복원 결과도 기준 PDF와 비교했다. 표 외곽과 추가 줄바꿈 차이는 남는 기존 제한으로 기록한다. |
+| 주장하지 않은 범위 | 미검증. Studio UI undo stack 전체 동작, 실제 RowBreak 문서의 한컴 편집 출력 일치, 저장·재열기 후 편집 세션 경계 메타데이터 보존. |
 
-## 보류 해제와 원격 조치
+## reviewer가 직접 실행한 검증
 
-기여자가 위 두 보완에 답하고, 필요한 코드·정식 회귀 수정 또는 독립적인 범위 설명을 제출하면 그 최종 head에서 재판정한다. 보완한 PDF/원본은 reviewer가 책임지고 보존하므로 기여자에게 MCP 접근을 요구하지 않는다. 이번 요청은 증적 push와 Request changes review이며 approve·merge·issue close는 포함하지 않는다. 새 sample을 포함한 최신 head의 CI 결과는 아직 미확정이다.
+실행 checkout은 검토 head 그대로이며 진단 example 등록에 사용한 임시 Cargo 변경은 빌드 뒤 원복했다. macOS arm64, Rust 1.93.1, 96dpi, canonical Chrome webfont 비교다.
 
-## Merge 후 contributor PR comment 계획
+| 검사 | 결과 |
+| --- | --- |
+| #6639 `issue_6639_cell_para_format_vpos` | 10/10 PASS, 새 실제·합성 경계 검사 포함 |
+| #4118 `issue_4118_cell_format_batch_deferral` | 1/1 PASS |
+| manifest 정책 검사 | base `50566136` 고정, PASS |
+| fresh WASM | 현재 checkout, `--dev --no-opt`, 성공; 배포 최적화 빌드의 대체 검사는 아님 |
+| 브라우저 실제 편집 | 초기·140%·모양 ID 복원·snapshot 복원 SVG 모두 Native와 byte 동일 |
+| 원본 140% 마지막 문단 vpos | `[32760,34020]` |
+| 전체 snapshot 복원 | 최초 SVG와 byte 동일 |
+| fidelity | `--text-only --export-all-svg --layout-ledger` 완료 |
+| Visual Sweep | Native/fresh WASM 각각 원본 1쪽 완료, compare·overlay·review 직접 판독 |
+| 입력 commit 일치 | 원본 issue6639 HWP, 실제 task2430 HWP 및 PDF 3개가 검토 head Git blob과 byte 동일 |
 
-현재 머지 보류이므로 merge comment를 게시하지 않는다. 해제 후 최종 head에서 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 source SHA·입력·페이지·compare/overlay/review와 잔여 차이를 갱신한다. merge가 실제 완료되면 대표 PNG를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<file>.png` 형식으로 고정하고 결과·기여자 credit을 포함한 본문을 UTF-8 파일의 `--body-file`로 게시한 뒤 API로 확인한다. 미래 CI·merge·issue 종료를 완료로 기록하지 않는다.
+SVG SHA-256:
+
+- 초기·전체 snapshot: `87b0960611b6983a044acaf564559e7804e1f191f8f64baeeb5c4b3751c70801`
+- 140%: `fa0ff3a16e57fbc06ed5c64528b93597cba9e65e5f869601bcbec5447c56758a`
+- 모양 ID 복원: `bc7e098eb0928f00c3bedf61c999918c66b98f29e408ab086231eb669564a69b`
+- fresh WASM: `74e201fab05949eb0f3b47ef52a191aa060875e5d0bf9837bcdd818edd0b60c4`
+- WASM JS: `a75560f1a0619ccc206444ec9da320b057375f11773611e90b41ce3d9c218175`
+
+재실행 명령은 README의 기존 절차를 따른다. reviewer의 focused 명령은 `node scripts/run-rust-test.mjs <위 test 이름> -- --cargo-profile release-test --target-dir <고정 target/pr-review>`다. WASM은 `CARGO_TARGET_DIR=<같은 target> scripts/wasm-pack-locked.sh --target web --out-dir <임시 wasm-pkg> --dev --no-opt`로 빌드했다. 두 sweep은 기존 검토 기록의 명령에 최신 checkout·바이너리·WASM 경로를 전달했다.
+
+로컬 임시 로그·SVG·비교 이미지는 `/private/tmp/pr7260-round3-evidence/`에 있다. 원본 1쪽은 `sweep-native/original160/`과 `sweep-wasm/original160/`, 실제 편집 비교는 `edited-after/`, 복원 비교는 `edited-restore/`다. 140%와 복원은 canonical 비교 helper로 비교했고 편집 상태 render-tree heuristic은 재실행하지 않았다. 자동 flagged 0이나 픽셀 점수를 한컴 일치 통과 근거로 사용하지 않는다.
+
+영구 대표 이미지는 이번 contributor commit에 있는 [140% 비교](../assets/pr_7260_rereview_fixed140.png), [모양 복원 비교](../assets/pr_7260_rereview_restore160.png), [도입 전 140% 비교](../assets/pr_7260_rereview_base140.png), [최신 원본 WASM 비교](../assets/pr_7260_rereview_original160.png)를 재사용한다. 환경 차이 때문에 Windows의 raster 점수와 reviewer macOS 수치를 직접 비교하지 않는다.
+
+## CI와 다음 원격 조치
+
+2026-09-24 재확인: head는 `4c9efab2c1065757c5b25ebf96e1d0a76a102aeb` 그대로이며 Ready, MERGEABLE이다. CI 확인 시 GitHub reviewDecision은 CHANGES_REQUESTED였으며, 이후 아래 Approve 리뷰를 게시했다.
+
+| 정확한 head의 CI 근거 | 결과 |
+| --- | --- |
+| [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/35976587145) | completed / success. 회귀 shard A–D, lint(fmt·clippy·WASM check), Native Skia, Frontend package gates 성공 |
+| [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/35976587059) | Canvas visual diff 성공 |
+| [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/35976587205) | Rust·Python·JavaScript/TypeScript 분석 성공 |
+| [Proptest](https://github.com/edwardkim/rhwp/actions/runs/35976587218) | prop roundtrip 성공 |
+| [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/35976587241) | 성공 |
+| [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/35978296717) | 성공 |
+
+WASM Build job과 일부 비적용 job의 SKIPPED는 실행 성공으로 세지 않는다. fresh WASM 빌드와 브라우저 시각 검증은 위 reviewer 로컬 실행으로 확인했다. 실패·대기·진행 중인 check는 없다.
+
+제품·test·fixture·workflow·baseline·asset 보정을 reviewer가 추가하지 않았고 current-base merge도 clean하므로, local_validation 4.3.0에 따라 이 정확한 head의 GitHub 전체 CI를 재사용한다. 전체 release-test·Native Skia 광범위 회귀 및 lint를 로컬에서 중복 실행하지 않았다. 기여자의 전체 회귀 수치를 reviewer 실행 결과로 바꾸어 쓰지 않는다.
+
+이전 요청의 해결과 최신 CI 성공을 근거로 사용자 승인 후 [Approve 리뷰](https://github.com/edwardkim/rhwp/pull/7260#pullrequestreview-5302281216)를 게시했다. API 재조회로 APPROVED 상태, 검토 SHA, 한글 본문의 초안 일치를 확인했다. 사용자가 검토 문서의 source branch push와 최종 병합 전 확인까지 승인했다. 이 문서만 single-parent trailing commit으로 반영하며, 새 head의 review-only fast-pass·required aggregate·mergeability·승인 상태를 확인한다. 병합은 작업지시자가 직접 수행하므로 reviewer는 merge·issue close를 실행하지 않는다.
