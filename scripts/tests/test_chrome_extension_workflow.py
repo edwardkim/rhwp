@@ -99,6 +99,8 @@ class ChromeExtensionWorkflowTests(unittest.TestCase):
         self.assertIn("chrome_extension_e2e_required: ${{ steps.chrome-impact.outputs.chrome_extension_e2e_required || 'true' }}", preflight)
         self.assertIn("== 'true' && 'package' || steps.impact.outputs.frontend_mode || 'package'", preflight)
         self.assertIn('expectedFileCount: context.payload.pull_request.changed_files', preflight)
+        self.assertIn('baseRef: context.payload.pull_request.base.ref', preflight)
+        self.assertIn("setResult(false, 'main-release-validation')", preflight)
         self.assertIn('scripts/chrome-extension-impact.cjs .ci-impact-input.json', preflight)
         self.assertIn("steps.finalize.outputs.fast_pass != 'true'", preflight)
         aggregate = self.job('build-and-test')

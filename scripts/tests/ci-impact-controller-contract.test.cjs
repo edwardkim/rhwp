@@ -21,9 +21,9 @@ const pull = () => ({ number: 123, state: 'open', commits: 2, created_at: '2026-
   user: { login: 'edwardkim' }, base: { ref: 'devel', sha: BASE, repo: clone(repository) },
   head: { sha: HEAD, ref: 'topic', repo: clone(repository) } });
 
-function scriptAt(marker) {
-  assert.equal(controller.split(marker).length, 2, 'unique workflow step: ' + marker);
-  const section = controller.split(marker)[1];
+function scriptAt(marker, workflow = controller) {
+  assert.equal(workflow.split(marker).length, 2, 'unique workflow step: ' + marker);
+  const section = workflow.split(marker)[1];
   assert.ok(section.includes('script: |'), 'inline script missing');
   const lines = [];
   for (const line of section.split('script: |')[1].split('\n').slice(1)) {
@@ -87,6 +87,42 @@ async function execute(script, ctx, { live = pull(), candidates = [pull()], env 
   });
   return { outputs, logs, posted, calls };
 }
+
+test('CI main preflight never reuses review-only evidence while devel keeps its fast pass', async () => {
+  const script = scriptAt('      - name: Detect review-only fast pass', readWorkflow('ci.yml'));
+  for (const baseRef of ['main', 'devel']) {
+    const ctx = { ...context(), eventName: 'pull_request' };
+    ctx.payload.pull_request.base.ref = baseRef;
+    ctx.payload.pull_request.head.ref = 'devel';
+    const result = await execute(script, ctx, { candidates: [{ filename: 'mydocs/review.md', status: 'modified' }] });
+    assert.equal(result.outputs.fast_pass, baseRef === 'main' ? 'false' : 'true');
+    assert.equal(result.outputs.reason, baseRef === 'main' ? 'main-release-validation' : 'all-review-only-no-code-impact');
+    if (baseRef === 'main') assert.equal(result.calls.length, 0);
+  }
+});
+
+test('CI collects the PR target and complete file list for the shared Chrome classifier', async () => {
+  const script = scriptAt('      - name: Collect CI impact input', readWorkflow('ci.yml'));
+  const { classifyChromeExtension } = require('../ci-impact-classifier.cjs');
+  for (const baseRef of ['main', 'devel']) {
+    let collected;
+    const ctx = { ...context(), eventName: 'pull_request' };
+    ctx.payload.pull_request.base.ref = baseRef;
+    ctx.payload.pull_request.changed_files = 1;
+    await vm.runInNewContext('(async () => {\n' + script + '\n})()', {
+      context: ctx, process: { env: { GITHUB_WORKSPACE: '/mock', CLASSIFIER_CHECKOUT_OUTCOME: 'success' } },
+      core: { setOutput() {}, info() {}, warning() {} },
+      github: { rest: { pulls: { listFiles() {} } },
+        paginate: async () => [{ filename: 'src/main.rs', status: 'modified' }] },
+      require: (name) => name === 'node:fs'
+        ? { existsSync: () => true, writeFileSync: (_, content) => { collected = JSON.parse(content); } }
+        : require(name),
+    });
+    assert.equal(collected.baseRef, baseRef);
+    assert.equal(collected.expectedFileCount, 1);
+    assert.equal(classifyChromeExtension(collected).chrome_extension_e2e_required, String(baseRef === 'main'));
+  }
+});
 
 const description = () => statusDescription({
   classification: classifyChanges({ eventName: 'pull_request', files: [{ filename: '.github/workflows/ci.yml', status: 'modified' }] }),

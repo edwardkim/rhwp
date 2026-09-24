@@ -468,11 +468,17 @@ test('Chrome audit agrees with the package override and requires exact execution
     ['rhwp-chrome/sw/settings-store.mjs', true],
     ['rhwp-firefox/background.js', false],
     ['rhwp-studio/tests/a.test.ts', false],
+    ['src/main.rs', false],
+    ['src/cli/document_io.rs', false],
+    ['bindings/Native/src/lib.rs', false],
+    ['scripts/frontend-vscode-outline.test.mjs', false],
+    ['src/parser/mod.rs', true],
   ]) {
     const input = policyInput({ files: [{ filename, status: 'modified' }] });
     const policy = determinePolicy(input);
     assert.equal(policy.classification.chrome_extension_e2e_required, String(required), filename);
     if (required) assert.equal(policy.classification.frontend_mode, 'package', filename);
+    else assert.equal(policy.classification.frontend_mode, input.classification.frontend_mode, filename);
     const workflows = workflowEvidence(policy);
     assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
     const chrome = workflows.CI.jobs.find(item => item.name === CI_CHROME_JOB);
@@ -489,6 +495,16 @@ test('Chrome audit agrees with the package override and requires exact execution
   input.pullRequest.headRepository = 'external/rhwp';
   input.pullRequest.authorPermission = 'read';
   assert.equal(determinePolicy(input).decision, 'blocked');
+});
+
+test('policy forwards the PR target and main requires Chrome even for a native-only diff', () => {
+  const input = policyInput({ files: [{ filename: 'src/main.rs', status: 'modified' }] });
+  assert.equal(determinePolicy(input).classification.frontend_mode, 'none');
+  input.pullRequest.baseRef = 'main';
+  const policy = determinePolicy(input);
+  assert.equal(policy.classification.chrome_extension_e2e_required, 'true');
+  assert.equal(policy.classification.chrome_extension_e2e_reason, 'main-release-validation');
+  assert.equal(policy.classification.frontend_mode, 'package');
 });
 
 test('policy still loads with the existing controller sparse checkout file set', () => {

@@ -570,7 +570,8 @@ function determinePolicy(input = {}) {
   }
   const forceAllWorkflows = Boolean(forceFullReason || !controllerAvailable);
   const chromeImpact = classifyChromeExtension({
-    eventName: 'pull_request', files: Array.isArray(input.files) ? input.files.map(normalizeFile) : input.files,
+    eventName: 'pull_request', baseRef: pullRequest.baseRef,
+    files: Array.isArray(input.files) ? input.files.map(normalizeFile) : input.files,
     expectedFileCount: input.expectedFileCount, forceFullReason,
   });
   // Match CI preflight's effective package lane, while retaining the independent

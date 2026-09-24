@@ -451,12 +451,23 @@ const requiredFiles = new Set([
 const unrelatedPrefixes = ['mydocs/', 'rhwp-firefox/', 'rhwp-safari/', 'rhwp-vscode/', 'npm/editor/',
   'rhwp-studio/tests/', 'rhwp-studio/e2e/', 'rhwp-studio/public/', 'samples/', 'pdf/', 'tests/', 'gym/', 'assets/screenshots/',
   'assets/chrome/', 'assets/edge/', 'assets/logo/'];
+// These consumers are outside the root library built by wasm-pack: main.rs owns
+// cli/, src/bin/ contains Cargo binaries, and Native depends on rhwp (not vice
+// versa). Keep manifests/lockfiles and all shared library inputs conservative.
+// Check these narrower exclusions before the broad src/ runtime prefix.
+const chromeUnrelatedSourcePrefixes = ['src/cli/', 'src/bin/', 'bindings/Native/src/'];
+const chromeUnrelatedFiles = new Set([
+  'src/main.rs', 'src/tools/font_metric_gen.rs',
+  'scripts/package-swift-xcframework.sh', 'scripts/frontend-vscode-outline.test.mjs',
+]);
 function result(required, reason) {
   return { chrome_extension_e2e_required: String(required), chrome_extension_e2e_reason: reason };
 }
 function classifyChromeExtension(input) {
   if (!input || input.forceFullReason) return result(true, input?.forceFullReason || 'invalid-input');
   if (input.eventName !== 'pull_request') return result(true, 'manual-tag-or-unknown-event');
+  if (input.baseRef === 'main') return result(true, 'main-release-validation');
+  if (input.baseRef !== 'devel') return result(true, 'missing-or-unsupported-base-ref');
   if (!Array.isArray(input.files) || input.files.length === 0) return result(true, 'empty-or-invalid-files');
   if (input.files.length >= 3000 || (input.expectedFileCount != null && input.expectedFileCount !== input.files.length)) {
     return result(true, 'incomplete-file-list');
@@ -479,6 +490,8 @@ function classifyChromeExtension(input) {
   }
   for (const filename of paths.sort()) {
     if (filename.endsWith('.md') || filename === 'LICENSE') continue;
+    if (chromeUnrelatedFiles.has(filename)
+      || chromeUnrelatedSourcePrefixes.some(prefix => filename.startsWith(prefix))) continue;
     if (requiredFiles.has(filename) || requiredPrefixes.some(prefix => filename.startsWith(prefix))) {
       return result(true, `extension-input:${filename}`);
     }

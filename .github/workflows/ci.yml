@@ -384,6 +384,12 @@ jobs:
               }
 
               const pr = context.payload.pull_request;
+              // A main-target run validates the release candidate itself, even
+              // when its paths or trailing review docs could otherwise reuse CI.
+              if (pr.base.ref === 'main') {
+                setResult(false, 'main-release-validation');
+                return;
+              }
               const prFiles = await github.paginate(github.rest.pulls.listFiles, {
                 owner,
                 repo,
@@ -718,6 +724,7 @@ jobs:
                 });
                 writeInput({
                   eventName: context.eventName,
+                  baseRef: context.payload.pull_request.base.ref,
                   files: normalizedFiles(files),
                   expectedFileCount: context.payload.pull_request.changed_files,
                 });
