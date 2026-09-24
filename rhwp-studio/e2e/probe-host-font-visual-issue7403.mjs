@@ -15,7 +15,7 @@ const out = path.resolve(process.env.RHWP_HOST_FONT_EVIDENCE || '../output/host-
 mkdirSync(out, { recursive: true });
 
 runTest('#7403 HCRBatang host face versus Hancom reference input', async ({ page }) => {
-  await loadApp(page, '?renderer=canvaskit&canvaskitSurface=raster');
+  await loadApp(page, '?renderer=canvaskit&canvaskitSurface=software');
   const result = await page.evaluate(async ({ font, document }) => {
     const decode = input => Uint8Array.from(atob(input), ch => ch.charCodeAt(0));
     const local = await import('/src/core/local-fonts.ts');
@@ -25,7 +25,7 @@ runTest('#7403 HCRBatang host face versus Hancom reference input', async ({ page
     const info = wasm.loadDocument(decode(document), 're-01-hangul-only-hancom.hwp');
     await window.__canvasView.loadDocument();
     const tree = wasm.getPageLayerTreeObject(0, 'screen');
-    const renderer = await CanvasKitLayerRenderer.create('default', 'raster');
+    const renderer = await CanvasKitLayerRenderer.create('default', 'software');
     const canvas = window.document.createElement('canvas');
     const pageInfo = wasm.getPageInfo(0);
     canvas.width = Math.ceil(pageInfo.width); canvas.height = Math.ceil(pageInfo.height);

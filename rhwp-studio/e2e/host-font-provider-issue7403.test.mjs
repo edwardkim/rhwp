@@ -10,7 +10,7 @@ async function verifyFacePaint(page) {
     const local = await import('/src/core/local-fonts.ts');
     const { collectHostFontRequests } = await import('/src/core/host-font-requests.ts');
     const decode = name => Uint8Array.from(atob(fixtures[name]), ch => ch.charCodeAt(0)).buffer;
-    const renderer = await CanvasKitLayerRenderer.create('default', 'raster');
+    const renderer = await CanvasKitLayerRenderer.create('default', 'software');
     const off = local.onHostFontsChanged(() => renderer.resetDocumentResources());
     const canvas = document.createElement('canvas'); canvas.width = 180; canvas.height = 100;
     let source = 'ttc', faceIndex = 1, slant = 'italic';
@@ -84,7 +84,7 @@ async function verifyFacePaint(page) {
 }
 
 runTest('Issue #7403 host font identity, replacement and document preservation', async ({ page }) => {
-  await loadApp(page, '?renderer=canvaskit&canvaskitSurface=raster');
+  await loadApp(page, '?renderer=canvaskit&canvaskitSurface=software');
   await verifyFacePaint(page);
   const result = await page.evaluate(async () => {
     const { CanvasKitLayerRenderer } = await import('/src/view/canvaskit-renderer.ts');
@@ -117,7 +117,7 @@ runTest('Issue #7403 host font identity, replacement and document preservation',
     };
     await window.rhwpStudio.fonts.setProvider(provider);
     const metadataReads = reads.length;
-    const renderer = await CanvasKitLayerRenderer.create('default', 'raster');
+    const renderer = await CanvasKitLayerRenderer.create('default', 'software');
     const off = local.onHostFontsChanged(() => renderer.resetDocumentResources());
     const canvas = document.createElement('canvas');
     canvas.width = 650; canvas.height = 150;
