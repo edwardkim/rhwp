@@ -99,8 +99,8 @@ import {
   glyphOutlinePayloadStatus,
 } from './glyph-outline-payload-status';
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
-import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveCanvasKitLocalFont,
-  hasHostFontProvider, loadCanvasKitLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
+import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont,
+  hasHostFontProvider, loadRendererLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
 import { hostFontStyle } from '@/core/host-font-requests';
 import { canvasKitFontFaceData } from './canvaskit/sfnt-face';
 import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
@@ -633,7 +633,7 @@ export class CanvasKitLayerRenderer {
         || this.localTypefaceLoadFailures.has(key) || this.localTypefacePending.has(key)) continue;
       this.localTypefacePending.set(key, documentGeneration);
       try {
-        const data = await loadCanvasKitLocalFont(record);
+        const data = await loadRendererLocalFont(record);
         if (this.disposed || documentGeneration !== this.documentGeneration
           || hostGeneration !== getHostFontState().generation) return registered;
         const bytes = data ? canvasKitFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
@@ -879,7 +879,7 @@ export class CanvasKitLayerRenderer {
     const character = record.source.character;
     const requestedFamily = primaryFontFamily(requested);
     const normalized = normalizedFontFamily(requestedFamily);
-    const localRecord = resolveCanvasKitLocalFont(requestedFamily);
+    const localRecord = resolveRendererLocalFont(requestedFamily);
     const localKey = localRecord ? localFontFaceKey(localRecord) : '';
     const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
     const bundled = this.bundledTypefaceAliases.get(normalized) ?? null;
@@ -3201,7 +3201,7 @@ export class CanvasKitLayerRenderer {
   private findPreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
     const key = normalizedFontFamily(fontFamily);
     if (!key) return null;
-    const record = resolveCanvasKitLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
+    const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
     const local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
     const bundled = this.bundledTypefaceAliases.get(key);
     if (key === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)) {

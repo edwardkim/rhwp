@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1] / "tests/fixtures/fonts"
 def face(style, offset):
     builder = FontBuilder(1000, isTTF=True)
     builder.setupGlyphOrder([".notdef", "test"])
-    builder.setupCharacterMap({ord("A"): "test", ord("가"): "test"})
+    builder.setupCharacterMap({ord("A"): "test", ord("가"): "test", 0x1F600: "test"})
     empty = TTGlyphPen(None)
     pen = TTGlyphPen(None)
     # A filled parallelogram: different real outlines, not synthetic paint skew.
@@ -23,7 +23,7 @@ def face(style, offset):
     pen.lineTo((100 + offset, 700))
     pen.closePath()
     builder.setupGlyf({".notdef": empty.glyph(), "test": pen.glyph()})
-    builder.setupHorizontalMetrics({name: (900, 100) for name in [".notdef", "test"]})
+    builder.setupHorizontalMetrics({name: (900 + offset, 100) for name in [".notdef", "test"]})
     builder.setupHorizontalHeader(ascent=800, descent=-200)
     builder.setupNameTable({
         "familyName": "RHWP Host Fixture", "styleName": style,

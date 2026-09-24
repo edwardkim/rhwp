@@ -1129,8 +1129,8 @@ function currentHostRecords(): LocalFontRecord[] {
   return hostRecords;
 }
 
-/** CanvasKit-only resolution. CSS consumers continue to use resolveLocalFont. */
-export function resolveCanvasKitLocalFont(name: string, style?: LocalFontStyleRequest): LocalFontRecord | null {
+/** Renderer-only resolution. OS/CSS presence probes keep using resolveLocalFont. */
+export function resolveRendererLocalFont(name: string, style?: LocalFontStyleRequest): LocalFontRecord | null {
   if (!hostFontSource.active) return resolveLocalFont(name);
   const target = normalizeFontAlias(name);
   currentHostRecords();
@@ -1157,7 +1157,7 @@ export function resolveCanvasKitLocalFont(name: string, style?: LocalFontStyleRe
 }
 
 /** Consume the selected face directly, rather than resolving its name a second time. */
-export async function loadCanvasKitLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
+export async function loadRendererLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
   if (record.hostReference) return hostFontSource.read(record.hostReference);
   const bytes = await loadLocalFontBytes(record.postscriptName || record.fullName);
   return bytes ? { bytes, faceIndex: 0 } : null;

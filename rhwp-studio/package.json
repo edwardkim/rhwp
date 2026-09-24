@@ -80,6 +80,7 @@
     "e2e:issue-7025-grid-overlay": "node e2e/run-with-vite.mjs -- node e2e/table-guide-grid-arrangement-issue7025.test.mjs --mode=headless",
     "e2e:issue-6557-merged-col": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless",
+    "e2e:issue-7403-canvas2d": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless --renderer=canvas2d",
     "e2e:issue-7403": "node e2e/run-with-vite.mjs -- node e2e/host-font-provider-issue7403.test.mjs --mode=headless"
   },
   "devDependencies": {

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { HostFontSource, type HostFontProvider, type HostFontSnapshot } from '../src/core/host-font-provider.ts';
-import { setHostFontProvider, prepareHostFontCatalog, resolveCanvasKitLocalFont, resolveLocalFont,
-  loadCanvasKitLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
+import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, resolveLocalFont,
+  loadRendererLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
 import { collectHostFontRequests } from '../src/core/host-font-requests.ts';
 import type { PageLayerTree } from '../src/core/types.ts';
@@ -107,16 +107,16 @@ test('host faces are selected by exact identity or family and style, without adv
   try {
     await setHostFontProvider(f.provider);
     assert.equal(resolveLocalFont('Host Only'), null);
-    assert.equal(resolveCanvasKitLocalFont('Host Only'), null);
-    const bold = resolveCanvasKitLocalFont('호스트전용', { weight: 700, slant: 'normal' })!;
+    assert.equal(resolveRendererLocalFont('Host Only'), null);
+    const bold = resolveRendererLocalFont('호스트전용', { weight: 700, slant: 'normal' })!;
     assert.equal(bold.hostReference?.face.id, 'bold');
-    assert.equal(resolveCanvasKitLocalFont('HostOnly-Regular', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'regular');
-    assert.deepEqual(new Uint8Array((await loadCanvasKitLocalFont(bold))!.bytes), Uint8Array.of(7));
+    assert.equal(resolveRendererLocalFont('HostOnly-Regular', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'regular');
+    assert.deepEqual(new Uint8Array((await loadRendererLocalFont(bold))!.bytes), Uint8Array.of(7));
     assert.deepEqual(getLocalFontState(), before);
     assert.equal(fontFamilyChainForDisplay('Host Only'), cssBefore);
     f.replace({ ...f.snapshot(), revision: 'new-bytes' });
     await prepareHostFontCatalog();
-    assert.equal(await loadCanvasKitLocalFont(bold), null);
+    assert.equal(await loadRendererLocalFont(bold), null);
   } finally { await setHostFontProvider(null); }
 });
 
@@ -134,7 +134,7 @@ test('paint requests preserve weight and only read the selected faces', async ()
     assert.equal(records.length, 1);
     assert.equal(records[0].hostReference?.face.id, 'bold');
     assert.equal(f.reads(), 0);
-    await loadCanvasKitLocalFont(records[0]);
+    await loadRendererLocalFont(records[0]);
     assert.equal(f.reads(), 1);
   } finally { await setHostFontProvider(null); }
 });
@@ -173,7 +173,7 @@ test('Regular fullName equal to family does not intercept a family Bold request'
   f.provider.getSnapshot = async () => ({ revision: 'same-full-name', faces });
   try {
     await setHostFontProvider(f.provider);
-    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'bold');
+    assert.equal(resolveRendererLocalFont('Host Only', { weight: 700, slant: 'normal' })?.hostReference?.face.id, 'bold');
   } finally { await setHostFontProvider(null); }
 });
 
@@ -185,15 +185,15 @@ test('italic runs can select an unambiguous oblique face when no italic face exi
   f.provider.getSnapshot = async () => ({ revision: 'oblique', faces: [regular, oblique] });
   try {
     await setHostFontProvider(f.provider);
-    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'oblique');
-    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'normal' })?.hostReference?.face.id, 'regular');
+    assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'oblique');
+    assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'normal' })?.hostReference?.face.id, 'regular');
     const italic = { ...oblique, id: 'italic', fullName: 'Host Only Italic',
       postscriptName: 'HostOnly-Italic', style: 'Italic', slant: 'italic' as const };
     f.provider.getSnapshot = async () => ({ revision: 'both', faces: [regular, oblique, italic] });
     f.change(); await prepareHostFontCatalog();
-    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'italic');
+    assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'italic' })?.hostReference?.face.id, 'italic');
     f.provider.getSnapshot = async () => ({ revision: 'ambiguous', faces: [oblique, { ...oblique, id: 'duplicate' }] });
     f.change(); await prepareHostFontCatalog();
-    assert.equal(resolveCanvasKitLocalFont('Host Only', { weight: 400, slant: 'italic' }), null);
+    assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'italic' }), null);
   } finally { await setHostFontProvider(null); }
 });

@@ -26,7 +26,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvaskit-cropped-contain.test.mjs` | 상시 | active | #7235 crop 이후 이미지 비율과 letterbox의 실제 CanvasKit replay 검사 | 합성 이미지 | 수동 | run-with-vite.mjs 경유 |
 | `issue-7333-line-selection.test.mjs` | 상시 | active | #7333 넓은 도형 위 화살표 실클릭 선택과 z-order·undo 무변경 검사 | issue7333/aaaaaa.hwp | npm e2e:issue-7333-line |  |
 | `probe-flow-input-latency-issue3794.mjs` | 진단 | active | #3794 flow 입력 budget·scheduler·restart 지연 측정 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | 수동 | 시간 수치는 비-CI 진단 |
-| `probe-host-font-visual-issue7403.mjs` | 진단 | active | #7403 실제 HCRBatang host face의 CanvasKit 출력과 해제 후 원복 시각 증거 | re-01-hangul-only-hancom.hwp | 수동 | RHWP_HOST_FONT_PATH로 검증한 글꼴 공급, run-with-vite.mjs 경유 |
+| `probe-host-font-visual-issue7403.mjs` | 진단 | active | #7403 실제 HCRBatang host face의 CanvasKit/Canvas2D 출력과 해제 후 원복 시각 증거 | re-01-hangul-only-hancom.hwp | 수동 | RHWP_HOST_FONT_PATH로 검증한 글꼴 공급, run-with-vite.mjs 경유 |
 | `chart-data-structure-issue6053.test.mjs` | 상시 | active | #6053 차트 행·열·라벨 구조 편집 UI — 우클릭 행 추가·저장본 반영·Ctrl+Z 원복·무편집 무흔적·ESC 는 메뉴만 닫음·종류별 사전 판정(원형 안내/주식형 캔들 양끝 비활성) | chart/세로막대형/묶은세로막대형.hwp, chart/원형/2차원원형.hwp, chart/기타/시가고가저가종가.hwp | npm e2e:issue-6053 | dev server 필요 — run-with-vite.mjs 경유 |
 | `cell-enter-pagination-issue4031.test.mjs` | 상시 | active | Issue #4031 — pending 중 셀 Enter의 pre-navigation full flush 0회·split 1회·barrier 대조군 계약 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-4031-cell-enter |  |
 | `cell-plain-text-paste-issue6638.test.mjs` | 상시 | active | #6638 셀 평문 붙여넣기 빈 문단·끝 개행·커서·undo/redo 보존 | — | npm e2e:issue-6638 | 합성 paste 이벤트, OS 클립보드 미사용 |
@@ -155,4 +155,4 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
 
-| `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·번들 Noto 글꼴 | npm e2e:issue-7403 | 명시적 CanvasKit 화면 |
+| `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |

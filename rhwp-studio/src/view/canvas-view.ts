@@ -2237,6 +2237,7 @@ export class CanvasView {
     this.reset();
     this.pageRenderer.dispose();
     this.rendererSession.dispose();
+    this.wasm.releaseCanvasFontResources();
     this.viewportManager.detach();
     for (const unsub of this.unsubscribers) {
       unsub();
