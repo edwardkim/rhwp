@@ -1931,6 +1931,32 @@ pub(crate) fn horizontal_range(
     (x, x + width_px.max(0.0))
 }
 
+/// 어울림(Square) 개체 옆에 글이 들어갈 수 있는 최소 레인 폭(px) — 10pt 한 글자(≈13.3px)보다 넉넉한 값.
+pub(crate) const SQUARE_MIN_SIDE_LANE_PX: f64 = 20.0;
+
+/// 비-TAC 어울림(Square) 개체가 단 안에 **글이 흐를 옆 레인**을 하나도 남기지 않는가.
+///
+/// 양옆 레인이 모두 [`SQUARE_MIN_SIDE_LANE_PX`] 보다 좁으면 한글은 그 줄을 개체 아래로 내린다 — 실측(지급신청
+/// 서식 · 종이 기준 표): 좌 레인 ≈6px · 우 ≈3.8px, 뒤 문단의 저장 vpos = 표 바닥. 지금은 layout(그림)만 쓴다 —
+/// typeset(쪽 배분)에 넣으면 문단 기준 표에서 쪽이 늘었다(행정업무운영 편람: 한글 384쪽 → 385쪽).
+pub(crate) fn square_float_leaves_no_side_lane(
+    common: &CommonObjAttr,
+    width_px: f64,
+    outer_left_px: f64,
+    outer_right_px: f64,
+    ctx: FloatPlacementContext,
+    dpi: f64,
+) -> bool {
+    if common.treat_as_char || !matches!(common.text_wrap, TextWrap::Square) || width_px <= 0.0 {
+        return false;
+    }
+    let (x_start, x_end) = horizontal_range(common, width_px, ctx, dpi);
+    let col = ctx.col_area;
+    let left_lane = (x_start - outer_left_px) - col.x;
+    let right_lane = (col.x + col.width) - (x_end + outer_right_px);
+    left_lane < SQUARE_MIN_SIDE_LANE_PX && right_lane < SQUARE_MIN_SIDE_LANE_PX
+}
+
 /// A placed float lane in page/column-relative coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct FloatLane {

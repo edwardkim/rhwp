@@ -530,6 +530,42 @@ impl LayoutEngine {
         (obj_width, obj_height)
     }
 
+    /// 칸 문단에 앵커된 개체의 **쪽·용지 기준 영역** — `(본문, 용지)`.
+    ///
+    /// 한글은 칸 안에 앵커된 개체라도 위치 기준이 `쪽`·`종이` 이면 그 쪽의 본문·용지를 기준으로 놓는다.
+    /// 칸의 안쪽 영역을 넘기면 오프셋이 칸 시작점에서 한 번 더 더해진다 — 실측(서약서 서식 직인 · 쪽 기준
+    /// 가로 20469 HU): 한글 x=374.6px ↔ 0.8.6 x=659.2px(≈75mm 오른쪽). 쪽 정보가 아직 없으면(0) 종전대로 칸 영역.
+    /// 문단·단 기준은 이 값을 쓰지 않는다(`compute_object_position` 이 container·col_area 를 쓴다).
+    pub(crate) fn cell_float_reference_areas(
+        &self,
+        inner_area: &LayoutRect,
+    ) -> (LayoutRect, LayoutRect) {
+        let (bx, by, bw, bh) = self.current_body_area.get();
+        let body = if bw > 0.0 && bh > 0.0 {
+            LayoutRect {
+                x: bx,
+                y: by,
+                width: bw,
+                height: bh,
+            }
+        } else {
+            *inner_area
+        };
+        let pw = self.current_paper_width.get();
+        let ph = self.current_page_height.get();
+        let paper = if pw > 0.0 && ph > 0.0 {
+            LayoutRect {
+                x: 0.0,
+                y: 0.0,
+                width: pw,
+                height: ph,
+            }
+        } else {
+            *inner_area
+        };
+        (body, paper)
+    }
+
     pub(crate) fn compute_object_position(
         &self,
         common: &CommonObjAttr,

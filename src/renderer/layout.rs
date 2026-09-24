@@ -12166,6 +12166,80 @@ impl LayoutEngine {
                         y_offset = wrap_text_bottom;
                     }
                 }
+                // 옆으로 흐를 레인이 없는 **종이·쪽 기준** 어울림 표의 **빈 앵커 문단** — 그 앵커 줄은 표에
+                // 겹치므로 한글은 그 줄을 표 아래로 옮기고 다음 문단을 그 뒤에 놓는다(0.8.6 은 표 첫 줄에 겹쳐 그렸다). 실측(지급신청
+                // 서식 · 쪽 폭 1240px): 표 아랫선 → 다음 줄 글자 윗단 = 한글 PDF 47px · 이 계산(표 바닥 + 바깥 아래 여백 0 +
+                // 앵커 줄 높이 lh) 48px. 줄 간격(ls)은 더하지 않는다 — 더하면 계산상 ≈9px 아래로 간다. 이 배치의 서식은 이것뿐이다.
+                // ⚠ **문단 기준** 표는 대상이 아니다 — 앵커 줄이 표를 품어 흐름이 «문단 윗선 + 표 높이» 다(행정업무운영
+                //   편람 p214: vpos 1900 + 표 37503 = 다음 문단 39403 · 세로 오프셋 700 은 안 더함). 거기까지 밀면 쪽이
+                //   늘어난다(실측 한글 384쪽 → 385쪽). 조판(typeset)은 건드리지 않는다 — 띠를 닫을 때의 바닥이 이미 한글
+                //   쪽 배분과 맞는다(편람 384·382 = 한글). 글이 있는 앵커 문단도 대상이 아니다(그 줄들의 재배치는 별도).
+                if *zone_column_count <= 1
+                    && layout.column_areas.len() <= 1
+                    && matches!(t.common.vert_align, crate::model::shape::VertAlign::Top)
+                    && matches!(
+                        t.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Paper
+                            | crate::model::shape::VertRelTo::Page
+                    )
+                    && !para_has_non_whitespace_text(para)
+                {
+                    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+                    let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
+                    let effective_margin = if indent > 0.0 {
+                        margin_left + indent
+                    } else {
+                        margin_left
+                    };
+                    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+                    let (bx, by, bw, bh) = self.current_body_area.get();
+                    let body = if bw > 0.0 && bh > 0.0 {
+                        LayoutRect {
+                            x: bx,
+                            y: by,
+                            width: bw,
+                            height: bh,
+                        }
+                    } else {
+                        **col_area
+                    };
+                    let placement =
+                        crate::renderer::float_placement::FloatPlacementContext::new(**col_area)
+                            .with_body_area(body)
+                            .with_paper_width(self.current_paper_width.get())
+                            .with_host_margins(effective_margin, margin_right);
+                    let width_px = hwpunit_to_px(
+                        crate::renderer::float_placement::signed_hwpunit(t.common.width),
+                        self.dpi,
+                    );
+                    if crate::renderer::float_placement::square_float_leaves_no_side_lane(
+                        &t.common,
+                        width_px,
+                        hwpunit_to_px(t.outer_margin_left as i32, self.dpi),
+                        hwpunit_to_px(t.outer_margin_right as i32, self.dpi),
+                        placement,
+                        self.dpi,
+                    ) {
+                        let host_line_px = para
+                            .line_segs
+                            .iter()
+                            .find(|s| {
+                                s.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                            .or_else(|| para.line_segs.first())
+                            .map(|s| hwpunit_to_px(s.line_height, self.dpi))
+                            .unwrap_or(0.0);
+                        let below = self.last_item_content_bottom.get()
+                            + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
+                            + host_line_px;
+                        if below.is_finite() && below > y_offset {
+                            y_offset = below;
+                        }
+                    }
+                }
             }
         }
         // [#5701] 자리차지(TopAndBottom) 표 host 의 저장 사다리가 문단 **내부**

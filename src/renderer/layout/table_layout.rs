@@ -6572,14 +6572,17 @@ impl LayoutEngine {
                                     c.vertical_offset = 0;
                                     c
                                 });
+                            // 쪽·종이 기준 개체는 칸이 아니라 쪽의 본문·용지를 기준으로 놓는다.
+                            let (cell_float_body_area, cell_float_paper_area) =
+                                self.cell_float_reference_areas(&inner_area);
                             let (pic_x, pic_y) = self.compute_object_position(
                                 grouped_common.as_ref().unwrap_or(&pic.common),
                                 pic_w,
                                 pic_h,
                                 &cell_area,
                                 &inner_area,
-                                &inner_area,
-                                &inner_area,
+                                &cell_float_body_area,
+                                &cell_float_paper_area,
                                 picture_anchor_y,
                                 para_alignment,
                             );
