@@ -1,4 +1,6 @@
 {
+  "backend": "canvaskit",
+  "hostAliasUsedByPaint": false,
   "fonts": [
     "함초롬돋움",
     "함초롬바탕"
@@ -23,7 +25,7 @@
     "passesRuntimeReadinessGate": true,
     "readinessBlockers": [],
     "hiddenCanvas2dOverlayUsed": false,
-    "lastRenderDurationMs": 3.7000000178813934,
+    "lastRenderDurationMs": 13.400000005960464,
     "renderCount": 2,
     "imageCacheEntries": 0,
     "imageCacheLimit": 128,
@@ -66,7 +68,7 @@
     "passesRuntimeReadinessGate": true,
     "readinessBlockers": [],
     "hiddenCanvas2dOverlayUsed": false,
-    "lastRenderDurationMs": 4.0999999940395355,
+    "lastRenderDurationMs": 6.5,
     "renderCount": 1,
     "imageCacheEntries": 0,
     "imageCacheLimit": 128,
@@ -136,5 +138,8 @@
     ]
   },
   "width": 794,
-  "height": 1123
+  "height": 1123,
+  "sourceSha": "eb91a11f1052b88ae6efdfeb7e42b6233dbfde84",
+  "fontProvenance": "font-provenance.json",
+  "wasmSha256": "fcb45acbe3491a981e02c5f752595fd039ca9a3e6826fe3bd730ae7b9801a35f"
 }

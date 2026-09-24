@@ -10,7 +10,7 @@
       "path": "/Users/melee/Documents/projects/forks/rhwp/pdf/re-01-hangul-only-hancom-2022.pdf",
       "sha256": "ceb38d48887392ade56aef29be6bb65d77dd89e77a49c4e9b04a9b5323159684"
     },
-    "git_head": "6005ec32f87706d180a78ca9172314b5a0df5332",
+    "git_head": "eb91a11f1052b88ae6efdfeb7e42b6233dbfde84",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "49c53ca246df4b992cb126d5710503d00a6096ce1f766497c809aba06ece9c73"
