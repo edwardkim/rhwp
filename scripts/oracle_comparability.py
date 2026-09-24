@@ -15,6 +15,9 @@
                   (`-Bold`), 공백 유무(`PalatinoLinotype`)가 전부 다르게 적힌다.
   storedLines     저장 LineSeg 의 끊음을 rhwp 가 재현하는가. 재현한다면 그 문단은
                   측정 경로를 타지 않으므로 **폭을 고쳐도 줄이 안 바뀐다**.
+                  판정은 총합이 아니라 `oracleKeepsButRhwpMisses` — **정본은 지켰는데
+                  rhwp 만 놓친** 문단 — 으로 한다. 둘이 서로 다른 문단을 놓쳐도 총합은
+                  같아질 수 있어 방향을 못 준다.
   oracleRetypeset 정본의 끊음이 저장 LineSeg 와 다른가. 다르면 정본이 재조판했다.
                   rhwp 가 저장을 지키고 정본이 재조판했다면 **둘 다 옳을 수 있다**.
   fontScale       같은 글자열 줄에서 정본과 rhwp 의 글꼴 크기 비. 1.0 에서 벗어나면
@@ -41,6 +44,22 @@
 `declaredFaces` 는 **과잉 보고 쪽으로 기운다** — 이름 없이 임베드된 서브셋 글꼴
 (mutool 이 `T2`·`T3` 로 표시)은 이름으로 판별할 수 없다. 그래서 이 축은 판정에서
 최하위 등급(`비교가능_주의`)으로만 쓰고, 확정은 전진폭 대조로 한다.
+
+## 줄은 **양쪽에 같은 규칙**으로 만든다
+
+`storedLines` 의 초판은 rhwp 쪽을 쪽 전체 baseline 으로 뭉치고 정본 쪽은 mutool 의
+`<line>` 을 썼다. 표 문서에서 그 둘은 서로 **다르게** 칸을 합쳐서, 같은 문서에 대해
+두 수치가 비대칭으로 어긋났다. `issue1853_caption_precedes_body_split.hwpx` 실측:
+
+    수정 전   rhwp 1,331줄(중앙 23자)   정본 1,785줄(중앙 16자)
+    수정 후   rhwp 1,559줄(중앙 17자)   정본 1,539줄(중앙 17자)
+
+지금은 양쪽 다 `<char>`/`<text>` 의 baseline 으로 모으고 `split_baseline_row` 하나로
+끊는다. 정본 290쌍 전수에서 이 교정이 큐를 이렇게 바꾼다.
+
+    rhwp_저장줄_이탈  13 -> 8
+      빠진 6문서 중 5문서는 `oracleKeepsButRhwpMisses = 0` (전부 artifact)
+      새로 들어온 hwpspec.hwp 는 45문단 — 종전 규칙이 `저장줄_재현`으로 가렸다
 """
 
 from __future__ import annotations
@@ -143,8 +162,20 @@ def read_source(rhwp_bin: Path, doc: Path, work: Path) -> dict:
 
     paragraphs = []
     for body in sections:
-        for para in re.finditer(r"<hp:p\b[^>]*>(.*?)</hp:p>", body, re.S):
-            inner = para.group(1)
+        # `<hp:p>` 는 **중첩된다** — 표를 담은 문단 안에 칸 문단이 들어간다. 비탐욕
+        # 정규식으로 짝지으면 바깥 문단이 첫 칸 문단의 `</hp:p>` 에서 닫혀, 그 문단의
+        # 글자열과 컷이 서로 다른 문단의 것으로 섞인다. 깊이로 정확히 짝짓는다.
+        opened: list[int] = []
+        for tag in re.finditer(r"<hp:p\b[^>]*?(/?)>|</hp:p>", body):
+            if tag.group(0).startswith("</"):
+                if not opened:
+                    continue
+                inner = body[opened.pop() : tag.start()]
+            elif tag.group(1) != "/":
+                opened.append(tag.end())
+                continue
+            else:
+                continue
             text = html.unescape(
                 re.sub(
                     r"<[^>]*>",
@@ -164,6 +195,47 @@ def read_source(rhwp_bin: Path, doc: Path, work: Path) -> dict:
 # ---------------------------------------------------------------- 출력 읽기
 
 
+# 한 baseline 위의 글자를 가로 공백으로 끊는 폭(글꼴 크기 배수).
+#
+# 쪽 전체를 baseline 하나로 뭉치면 **표의 여러 칸이 한 줄이 된다**. 그러면
+# `judge_lines` 의 "머리 글자열로 끝나는 줄이 있는가" 가 우연히 참이 되고, rhwp(SVG)와
+# 정본(stext)의 뭉치는 방식이 서로 달라 두 수치가 **비대칭으로** 어긋난다. 실측:
+# `22037757-chuncheon-personnel-rule-annex13.hwpx` 가 rhwp 102 / 정본 116 으로 나왔는데,
+# 같은 규칙을 양쪽에 걸면 rhwp 110 / 정본 101 로 **뒤집힌다**(그 문서에서 "정본은 지키고
+# rhwp 만 놓친" 문단은 0건이다).
+#
+# 1.5 는 칸 사이 여백과 자간·정렬 늘림을 가르는 값이다. 양쪽 끝 정렬로 벌어진 낱말
+# 사이는 한 글자 폭을 넘기 어렵고, 표 칸 사이 안여백은 그보다 넓다.
+LINE_SPLIT_GAP_EM = 1.5
+
+
+def split_baseline_row(row):
+    """한 baseline 의 `(x, glyph, font_px)` 를 가로 공백에서 끊어 여러 줄로 낸다.
+
+    **양쪽 입력에 같은 규칙으로 적용한다** — 그것이 이 함수가 있는 이유다.
+    """
+    row = sorted(row, key=lambda item: item[0])
+    lines, current, previous_end = [], [], None
+    for x, glyph, font_px in row:
+        if previous_end is not None and x - previous_end > LINE_SPLIT_GAP_EM * font_px:
+            if current:
+                lines.append(current)
+            current = []
+        current.append((x, glyph, font_px))
+        # 한 항목이 여러 글자를 담을 수 있다(rhwp `<text>` run). 끝점은 그 길이를 쓴다.
+        previous_end = x + font_px * len(glyph)
+    if current:
+        lines.append(current)
+    return lines
+
+
+def row_to_line(row, baseline):
+    key = re.sub(r"\s+", "", "".join(glyph for _, glyph, _ in row))
+    if not key:
+        return None
+    return {"key": key, "font_px": row[0][2], "x": row[0][0], "y": baseline}
+
+
 def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
     """정본의 쪽 상자·임베드 글꼴·줄 글자열·글꼴 크기를 읽는다."""
     args = ["mutool", "draw", "-F", "stext", "-o", "-", str(pdf)]
@@ -177,35 +249,30 @@ def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
         height = re.search(r'height="([\d.]+)"', page.group(1))
         if width and height:
             boxes.append((float(width.group(1)), float(height.group(1))))
-        for line in re.finditer(r"<line[^>]*>(.*?)</line>", page.group(2), re.S):
-            size = None
-            chars = []
-            origin = None
-            for chunk in re.split(r"(<font[^>]*>)", line.group(1)):
-                got = re.match(r'<font [^>]*size="([^"]*)"', chunk)
-                if got:
-                    size = float(got.group(1)) * 96.0 / 72.0
-                    continue
-                for quad, c in re.findall(
-                    r'<char quad="([^"]*)"[^>]*c="([^"]*)"', chunk
-                ):
-                    values = [float(v) for v in quad.split()]
-                    if origin is None:
-                        origin = (
-                            min(values[0::2]) * 96.0 / 72.0,
-                            min(values[1::2]) * 96.0 / 72.0,
-                        )
-                    chars.append(html.unescape(c))
-            key = re.sub(r"\s+", "", "".join(chars))
-            if key:
-                lines.append(
-                    {
-                        "key": key,
-                        "font_px": size or 0.0,
-                        "x": origin[0] if origin else 0.0,
-                        "y": origin[1] if origin else 0.0,
-                    }
+        # mutool 의 `<line>` 을 쓰지 않는다. 그 묶음은 rhwp SVG 쪽에 대응물이 없어
+        # **두 입력의 줄 정의가 달라지는 지점**이었다(표의 이웃 칸을 한쪽만 묶는다).
+        # 양쪽 모두 baseline 으로 모으고 같은 가로 공백 규칙으로 끊는다.
+        rows = collections.defaultdict(list)
+        size = 0.0
+        for chunk in re.split(r"(<font[^>]*>)", page.group(2)):
+            got = re.match(r'<font [^>]*size="([^"]*)"', chunk)
+            if got:
+                size = float(got.group(1)) * 96.0 / 72.0
+                continue
+            # `quad` 의 위 모서리가 아니라 `<char x= y=>` 의 **원점(baseline)** 으로 모은다.
+            # 한 줄에 크기가 다른 글자가 섞이면 quad 의 위 모서리는 글자마다 달라져
+            # 같은 줄이 여러 baseline 으로 흩어진다.
+            for x, y, c in re.findall(
+                r'<char [^>]*?x="([\d.-]+)" y="([\d.-]+)"[^>]*?c="([^"]*)"', chunk
+            ):
+                rows[round(float(y) * 96.0 / 72.0, 1)].append(
+                    (float(x) * 96.0 / 72.0, html.unescape(c), size)
                 )
+        for baseline, row in sorted(rows.items()):
+            for segment in split_baseline_row(row):
+                got = row_to_line(segment, baseline)
+                if got:
+                    lines.append(got)
 
     embedded = set()
     # CP949 face 이름의 바이트를 보존해야 한다 — UTF-8 로 먼저 디코드하면
@@ -242,25 +309,20 @@ def read_rhwp(rhwp_bin: Path, doc: Path, work: Path, pages: list[int] | None) ->
             body,
             re.S,
         ):
-            x = run_el.group(1) or run_el.group(3)
-            y = run_el.group(2) or run_el.group(4)
+            x = float(run_el.group(1) or run_el.group(3))
+            y = float(run_el.group(2) or run_el.group(4))
+            font_px = float(run_el.group(5))
             glyphs = html.unescape(re.sub(r"<[^>]*>", "", run_el.group(6)))
-            for glyph in glyphs:
-                rows[round(float(y), 1)].append(
-                    (float(x), glyph, float(run_el.group(5)))
-                )
+            # 한 `<text>` 는 통째로 담는다. 글자마다 x 를 지어내면(`x + n*font_px`)
+            # 좁은 글자에서 끝점이 부풀어 칸 사이 공백이 묻히고, 전부 같은 x 로 담아
+            # 정렬하면 동점이 글자 코드순으로 갈려 글자열이 뒤섞인다.
+            if glyphs:
+                rows[round(y, 1)].append((x, glyphs, font_px))
         for baseline, row in sorted(rows.items()):
-            row.sort()
-            key = re.sub(r"\s+", "", "".join(c for _, c, _ in row))
-            if key:
-                lines.append(
-                    {
-                        "key": key,
-                        "font_px": row[0][2],
-                        "x": row[0][0],
-                        "y": baseline,
-                    }
-                )
+            for segment in split_baseline_row(row):
+                got = row_to_line(segment, baseline)
+                if got:
+                    lines.append(got)
     return {"boxes": boxes, "lines": lines}
 
 
@@ -303,7 +365,7 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines) -> dict:
     # 렌더된 줄의 **꼬리**와 같으면 그 끊음을 재현한 것으로 센다.
     def hits(lines, head):
         return any(line["key"].endswith(head) for line in lines)
-    stored = rhwp_hit = pdf_hit = 0
+    stored = rhwp_hit = pdf_hit = oracle_only = 0
     for para in paragraphs:
         cuts = para["cuts"]
         if len(cuts) < 2:
@@ -313,8 +375,13 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines) -> dict:
         if len(head) < 12:
             continue
         stored += 1
-        rhwp_hit += hits(rhwp_lines, head)
-        pdf_hit += hits(pdf_lines, head)
+        mine = hits(rhwp_lines, head)
+        theirs = hits(pdf_lines, head)
+        rhwp_hit += mine
+        pdf_hit += theirs
+        # 착수 대상은 이것 하나다 — **정본은 저장 컷을 지켰는데 rhwp 만 놓친** 문단.
+        # 총합 비교는 둘이 서로 다른 문단을 놓쳐도 같은 수가 될 수 있어 방향을 못 준다.
+        oracle_only += theirs and not mine
     if not stored:
         return {"status": "비해당", "reason": "여러 줄 저장 LineSeg 문단이 없다"}
     return {
@@ -322,6 +389,7 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines) -> dict:
         "storedMultilineParagraphs": stored,
         "rhwpReproducesStoredCut": rhwp_hit,
         "oracleReproducesStoredCut": pdf_hit,
+        "oracleKeepsButRhwpMisses": oracle_only,
         "note": (
             "rhwp 가 저장 끊음을 지키고 정본은 다시 짰다 — 줄 차이는 둘 다 옳을 수 있다"
             if rhwp_hit > pdf_hit and stored
@@ -432,6 +500,7 @@ def verdict(report: dict) -> tuple[str, str]:
     if stored["status"] != "비해당":
         total = stored["storedMultilineParagraphs"]
         gap = stored["rhwpReproducesStoredCut"] - stored["oracleReproducesStoredCut"]
+        only = stored["oracleKeepsButRhwpMisses"]
         # 몇 문단 차이는 잡음이다. 의미 있는 격차일 때만 축으로 올린다.
         if gap >= max(5, round(total * 0.05)):
             return (
@@ -439,10 +508,14 @@ def verdict(report: dict) -> tuple[str, str]:
                 f"rhwp 가 저장 끊음을 {gap}문단 더 지킨다 — 그 문단은 측정 경로를 "
                 "타지 않으므로 폭을 고쳐도 줄이 바뀌지 않는다",
             )
-        if -gap >= max(5, round(total * 0.05)):
+        # **총합이 아니라 겹침으로 판정한다.** 둘이 서로 다른 문단을 놓쳐도 총합은
+        # 같아질 수 있고, 그러면 "rhwp 가 낫다/못하다" 가 방향을 잃는다. 착수 대상은
+        # 정본이 지킨 컷을 rhwp 만 놓친 문단이다.
+        if only >= max(5, round(total * 0.05)):
             return (
                 "rhwp_저장줄_이탈",
-                f"정본이 저장 끊음을 {-gap}문단 더 지킨다 — 줄 차이의 책임이 rhwp 쪽에 있다",
+                f"정본이 지킨 저장 끊음을 rhwp 만 {only}문단 놓친다 — "
+                "줄 차이의 책임이 rhwp 쪽에 있다",
             )
     faces = report["declaredFaces"]
     if faces["status"] == "대체있음":
