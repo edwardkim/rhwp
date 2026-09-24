@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 95.77044,
+    "worst_pixel_match_percent": 95.31493,
+    "average_ink_match_percent": 22.01953,
+    "worst_ink_match_percent": 16.77126,
+    "average_visual_accuracy_proxy_percent": 22.01953,
+    "worst_visual_accuracy_proxy_percent": 16.77126,
+    "average_tolerant_content_match_percent": 97.88011,
+    "worst_tolerant_content_match_percent": 97.12859,
+    "worst_pages": [
+      14,
+      15,
+      21
+    ]
+  },
+  "pages": [
+    {
+      "page": 14,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/rhwp_png/rhwp_014.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/pdf_png/pdf-014.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/overlay/overlay_014.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 41775,
+      "diff_ratio": 0.04685071,
+      "pixel_match_percent": 95.31493,
+      "ink_union_pixels": 50193,
+      "ink_diff_pixels": 41775,
+      "ink_diff_ratio": 0.83228737,
+      "ink_match_percent": 16.77126,
+      "visual_accuracy_proxy_percent": 16.77126,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 97.9539,
+      "mean_abs_channel_delta": 6.108,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        140,
+        133,
+        664,
+        1000
+      ]
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/rhwp_png/rhwp_015.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/pdf_png/pdf-015.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/overlay/overlay_015.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 34261,
+      "diff_ratio": 0.03842375,
+      "pixel_match_percent": 96.15762,
+      "ink_union_pixels": 41861,
+      "ink_diff_pixels": 34261,
+      "ink_diff_ratio": 0.81844676,
+      "ink_match_percent": 18.15532,
+      "visual_accuracy_proxy_percent": 18.15532,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 97.12859,
+      "mean_abs_channel_delta": 5.032,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        140,
+        133,
+        664,
+        938
+      ]
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/rhwp_png/rhwp_021.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/pdf_png/pdf-021.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs2B/hwpctl_api/overlay/overlay_021.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 37104,
+      "diff_ratio": 0.04161218,
+      "pixel_match_percent": 95.83878,
+      "ink_union_pixels": 53877,
+      "ink_diff_pixels": 37104,
+      "ink_diff_ratio": 0.68867977,
+      "ink_match_percent": 31.13202,
+      "visual_accuracy_proxy_percent": 31.13202,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 98.55783,
+      "mean_abs_channel_delta": 5.686,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        151,
+        664,
+        1003
+      ]
+    }
+  ]
+}
