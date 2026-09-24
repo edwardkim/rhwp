@@ -4,12 +4,12 @@
 - 설계 공유: [이슈 코멘트](https://github.com/edwardkim/rhwp/issues/7403#issuecomment-5809158954)
 - 담당자: `postmelee`
 - 기준 base: `505661360e9a2d596f55300d0cb0c5222f0e14b4`
-- 최종 검증 source: `eb91a11f1052b88ae6efdfeb7e42b6233dbfde84`
+- Studio 검증 source: `eb91a11f1052b88ae6efdfeb7e42b6233dbfde84`
 - 브랜치: `codex/issue-7403-host-font-provider`
 - 검증일: 2026-09-24
 - 상태: 아래 공통 공급 계약·CanvasKit·Canvas2D 범위의 로컬 검증 통과.
 - 제출: [PR #7405](https://github.com/edwardkim/rhwp/pull/7405), 원본 저장소 작업 브랜치로 push했다. GitHub CI는 제출 후 별도로 확인한다.
-  이후 커밋은 보고서와 증거 보존이며 제품 코드·테스트 변경이 아니다.
+- CI 후속 수정 source: `92b427c843edae758ec90f34f65d5257e1913059`. 아래 VS Code 소비자 보정 외 Studio·Rust·fixture 소스는 바뀌지 않았다.
 
 ## 구현과 발견한 결함
 
@@ -50,7 +50,7 @@ non-null 호출 표기 `method!(...)`를 정규식이 인식하지 못한 것이
 ## 최종 실행 결과
 
 작업 경로는 `/private/tmp/rhwp-7403`, Cargo cache는
-`/Users/melee/Documents/projects/forks/rhwp/target/pr-review`다. 아래는 모두 최종 source의 결과다.
+`/Users/melee/Documents/projects/forks/rhwp/target/pr-review`다. 아래 Studio·시각 결과는 위 Studio source의 결과다. 이후 VS Code 소비자 수정은 별도 절에 기록했다.
 
 | 명령/검사 | 결과 |
 | --- | --- |
@@ -72,6 +72,23 @@ glue SHA-256: `8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3`
 검증 당시 `pkg/`와 `rhwp-studio/public/` 각각의 hash가 일치했다. 생성 glue는 커밋에서 제외한다.
 Studio production bundle에 사용한 WASM은 dev 빌드다. optimized release WASM 검증으로 보고하지 않는다.
 Rust 소스·Cargo·toolchain은 base 대비 변경이 없어 Rust 전체 lint/integration 게이트는 비해당이다.
+
+## PR CI에서 발견한 소비자 호환성 보정
+
+최초 PR candidate `d8f65793be33890deeaef8f2e0ccbe019a02a147`의 [Frontend package gates](https://github.com/edwardkim/rhwp/actions/runs/35974531896/job/107552190116)는
+Studio 단위·툴바(2,666 assertions)·build 이후 VS Code compile에서 `TS18047: report is possibly null`로 실패했다.
+이번 `RendererSession.prepareCanvasKitDocument`의 nullable report 계약을 VS Code 소비자에 반영하지 못한
+회귀였다. 공통 코드의 소비자 범위를 Studio만으로 판단한 검증 누락을 정정한다.
+
+`rhwp-vscode/src/webview/viewer.ts`에서 report가 없으면 기존 explicit 경로처럼 preflight 준비를 생략한다.
+실제 report가 있는 auto 경로의 font plan과 prepareBundledFonts 호출은 유지한다.
+수정 전 동일 checkout의 VS Code typecheck에서 TS18047을 재현했고, 수정 후 package compile(typecheck+webpack)과
+RendererSession 13개 회귀가 통과했다. [RED](assets/issue7403/vscode-typecheck-red.txt),
+[GREEN](assets/issue7403/vscode-compile-green.txt)을 보존했다. 보정 source는 `92b427c843edae758ec90f34f65d5257e1913059`다.
+
+이 후속 수정은 Studio 화면·WASM·시각 입력·PNG 산출 경로를 바꾸지 않으므로 위 실제 Studio/Native/WASM 증거를
+그 범위에서 재사용한다. VS Code 소비자의 별도 시각 동등성을 입증한 것으로 확대하지 않는다.
+실패한 CI를 성공으로 재사용하지 않으며, 새 PR head의 전체 CI 결과를 별도로 확인한다.
 
 ## 계약별 직접 검사
 

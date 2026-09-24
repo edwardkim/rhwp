@@ -13,7 +13,7 @@ merge 전 조건은 최신 PR head의 required CI 통과, mergeability 재확인
 | PR·작성자·base | [#7405](https://github.com/edwardkim/rhwp/pull/7405) / postmelee / devel |
 | 관련 이슈 | [#7403](https://github.com/edwardkim/rhwp/issues/7403), 자동 종료 없이 참조 |
 | 검증 source | `eb91a11f1052b88ae6efdfeb7e42b6233dbfde84` |
-| 제출 candidate | `d8f65793be33890deeaef8f2e0ccbe019a02a147`, 이후 source/test 변경 없음 |
+| 제출 candidate | `d8f65793be33890deeaef8f2e0ccbe019a02a147`, 최초 제출 상태 |
 | 고정 base | `505661360e9a2d596f55300d0cb0c5222f0e14b4`, 제출 직전 최신 devel과 동일 |
 | 최초 규모 | 55 files / +2,796 / -129, 코드·테스트·보고서·PNG 포함 |
 | 작성 시점 참고값 | Open, MERGEABLE, CI 대기; reviewer는 self PR 규칙에 따라 지정하지 않음 |
@@ -43,7 +43,7 @@ Canvas2D의 보조 측정·paint는 동일 session의 동기 별칭 scope를 사
 [최종 보고서](../../report/task_m100_7403_report.md)의 명령·계약별 관측값·독립 기대값·RED/GREEN을 재사용한다.
 fresh web/Node dev WASM, TypeScript, Studio production build, **1,787 PASS / 0 FAIL / 0 SKIP**,
 양쪽 renderer E2E, 기존 CanvasKit 글꼴 coverage, manifest 140/140, 합성 글꼴 재생성 hash 검사가 통과했다.
-Rust/Cargo·Rust test/baseline helper를 바꾸지 않았고 새 글꼴은 TypeScript 브라우저 fixture이므로 Rust 전체 lint/integration은 비해당이다.
+VS Code package compile도 후속 보정에서 확인했다. Rust/Cargo·Rust test/baseline helper를 바꾸지 않았고 새 글꼴은 TypeScript 브라우저 fixture이므로 Rust 전체 lint/integration은 비해당이다.
 Native CLI는 Visual Sweep용으로 빌드했다. optimized release WASM을 검증했다고 주장하지 않는다.
 
 실제 제품 API와 CanvasView에서 동명 글꼴 교체·read 실패 복구·해제·문서 전환을 검사했다.
@@ -98,7 +98,11 @@ PR 본문은 head SHA 고정 raw 이미지로 네 경로를 직접 표시한다.
 
 ## CI와 병합 전 확인
 
-제출 candidate의 [CI run](https://github.com/edwardkim/rhwp/actions/runs/35974531896)이 시작됐다. 기록 commit의 push는 candidate CI 완료 후 수행하고,
+최초 candidate의 [CI run](https://github.com/edwardkim/rhwp/actions/runs/35974531896)에서 VS Code nullable report 소비자 누락이 검출됐다.
+`92b427c843edae758ec90f34f65d5257e1913059`에 기존 explicit 경로를 보존하는 guard를 추가했다. 수정 전 VS Code typecheck FAIL(TS18047),
+수정 후 package compile PASS 및 RendererSession 13 PASS를 확인했다. 자세한 증거는 보고서의 CI 보정 절에 있다.
+최초 source에는 consumer compile 회귀가 있었으며, 현재 승인은 이 보정을 포함한 범위다. Studio·Rust·fixture는 기존 검증 후 변경되지 않았다.
+실패 candidate는 재사용하지 않고 보정·문서 commit을 함께 push해 새 CI를 실행한다.
 최신 trailing head의 required checks와 mergeability를 별도로 확인한다. 완료한 로컬 검증을 반복하지 않는다.
 문서 trailing commit은 최신 base와 merge-tree·공백·변경 문서 링크·오늘할일 기존 기록 보존 검사를 통과한 뒤 push한다.
 
