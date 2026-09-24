@@ -7424,6 +7424,39 @@ impl LayoutEngine {
                                 hwpunit_to_px(nested_table.outer_margin_left as i32, self.dpi);
                             let tac_om_r =
                                 hwpunit_to_px(nested_table.outer_margin_right as i32, self.dpi);
+                            // [#6122 계열] 같은 칸 문단의 인라인 TAC **표** 가 둘 이상일
+                            // 때 폭 합이 칸 내폭을 넘으면 한글은 다음 줄로 내린다. 그림
+                            // 분기(위 `width_overflows_line`)는 이미 이 접기를 하지만 표
+                            // 분기는 `inline_x` 를 계속 오른쪽으로만 밀어, 둘째 표가 칸·
+                            // 용지 밖(x=718px, 용지폭 793.7px)으로 나가 통째로 소실됐다
+                            // (bizbc_11060 (양식)사업계획서 6쪽 '수행기관 주요 업무실적'
+                            // 12×6 표 — 괘선도 글자도 없이 사라짐).
+                            //
+                            // y 는 이미 아래 `table_seg` 가 표 자신의 저장 줄(`line_segs`)
+                            // 에서 읽으므로, 여기서는 줄머리 x 만 되돌리면 된다.
+                            let tac_table_advance = tac_om_l + tac_w + tac_om_r;
+                            if inline_x > inner_area.x + INLINE_WRAP_WIDTH_EPSILON_PX
+                                && inline_x + tac_table_advance
+                                    > inner_area.x + inner_area.width + INLINE_WRAP_WIDTH_EPSILON_PX
+                            {
+                                let line_w = tac_w.min(inner_area.width);
+                                let line_margin = effective_margin_left_line(
+                                    para_margin_left_px,
+                                    para_indent_px,
+                                    current_tac_line + 1,
+                                );
+                                inline_x = match para_alignment {
+                                    Alignment::Center | Alignment::Distribute => {
+                                        inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
+                                    }
+                                    Alignment::Right => {
+                                        inner_area.x + (inner_area.width - line_w).max(0.0)
+                                    }
+                                    _ => inner_area.x + line_margin,
+                                };
+                                current_tac_line = (current_tac_line + 1)
+                                    .min(para.line_segs.len().saturating_sub(1));
+                            }
                             if already_rendered_inline {
                                 inline_x += tac_om_l + tac_w + tac_om_r;
                             } else {
