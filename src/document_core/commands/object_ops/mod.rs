@@ -27,8 +27,14 @@ pub(crate) const MIN_SHAPE_SIZE: u32 = 200;
 /// 클램프의 원 목적은 리사이즈 핸들을 반대편으로 넘길 때 studio 가 보내는 0 이다.
 /// 한컴 문서에는 200 미만 치수(가로선 높이 3·4 등)가 정당하게 저장되어 있으므로
 /// `max(MIN_SHAPE_SIZE)` 는 같은 값 되먹임·undo 봉지까지 부풀렸다.
-pub(crate) fn clamp_degenerate_size(v: u32) -> u32 {
-    if v == 0 {
+/// `current` 는 이 봉지가 적용되기 **전** 문서가 들고 있던 값이다.
+///
+/// 클램프는 «값을 0 으로 떨어뜨리는 편집»에만 건다. 문서가 이미 0 을 저장하고 있으면
+/// 떨어뜨린 것이 아니므로 그대로 둔다 — 같은 봉지 되먹임(get∘set)과 undo 봉지가
+/// 문서를 바꾸면 안 된다. 그 자리에서 0 을 200 으로 올려도 보호되는 것이 없다:
+/// 문서는 이미 0 으로 저장되어 그대로 그려지고 있었다.
+pub(crate) fn clamp_degenerate_size(v: u32, current: u32) -> u32 {
+    if v == 0 && current != 0 {
         MIN_SHAPE_SIZE
     } else {
         v
