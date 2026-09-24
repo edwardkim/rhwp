@@ -4266,11 +4266,7 @@ impl LayoutEngine {
                     table.page_break,
                     crate::model::table::TablePageBreak::RowBreak
                 )
-                // 반복 제목행 뒤의 단일 큰 rowspan이 두 쪽에 걸치는
-                // 3×2 지원내역 표 계약이다. 장문 표의 일반 행 조각까지
-                // 여백을 다시 열면 #1937의 글자 겹침이 늘어난다.
-                && table.row_count == 3
-                && table.col_count == 2
+                && table.row_count > 1
                 && table.repeat_header
                 && !table.leading_header_rows().is_empty()
                 // 이 보정은 반복 제목행 바로 뒤에서 표 끝까지 걸친 가운데
