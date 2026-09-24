@@ -3251,6 +3251,31 @@ impl HeightMeasurer {
                 ) && content_height <= cell_h_px
                 {
                     cell_h_px
+                } else if depth == 0
+                    && !table.common.treat_as_char
+                    && matches!(table.common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
+                    && !cell.apply_inner_margin
+                    && crate::model::table::Cell::table_padding_unspecified(&table.padding)
+                    && cell.text_direction == 0
+                    && !has_nested_table_in_cell
+                    && !cell.paragraphs.is_empty()
+                    && cell_h_px > 0.0
+                    && content_height <= cell_h_px
+                {
+                    // 상하 여백이 저장값이 아니라 «표 여백 전축 0 = 미지정» 대체값(#2195)이고
+                    // 저장 줄 흐름이 선언 높이 안에 들면, 한글은 행을 선언 그대로 둔다 — 대체 여백은 칸 안
+                    // 배치에만 쓰이고 행을 키우지 않는다. 실측(지급신청 서식 · 한/글 PDF):
+                    // 2줄 칸 2300HU + 대체 여백 141×2 = 2582 로 세 행(선언 2453·2486·2453)이 커져 표 아래가
+                    // 7.4px 밀렸고, 한/글은 세 행 모두 선언 높이였다 — 저장 LINE_SEG 가 있는 칸(2행)과 없는 칸
+                    // (4·6행 · 조립으로 채운 값)이 **같게** 선언을 지켰다. 저장 여백(aim=true)·표 기본 여백이
+                    // 있는 표·중첩 표·줄 흐름이 선언을 넘는 칸은 종전 회계 그대로(#1748 캘리브 비접촉).
+                    // ⚠ **종이·쪽 기준으로 떠 있는 표에서만**이다 — 본문 흐름 표에 걸면 «2025 행정업무운영
+                    // 편람» 이 한글 384쪽 → 382쪽이 됐다(#4763 쪽수 계약 · 끄개 이분 실측). 흐름 표는 한글도
+                    // 대체 여백만큼 행을 키우고, 떠 있는 개체는 선언 크기를 지킨다.
+                    // ⚠ 이 값은 **필요 높이**다 — 행 높이는 1단계에서 선언 `cell.height` 로 시작하고
+                    //   아래 `if required_height > row_heights[r]` 로 **키우기만** 한다. 그래서 선언보다
+                    //   작은 값을 돌려줘도 행은 선언 아래로 줄지 않는다(대체 여백만 행을 키우지 않을 뿐).
+                    content_height
                 } else if relaxed_pad_mirror {
                     let non_inline_h =
                         self.measure_non_inline_controls_height(cell, &table.padding);

@@ -315,11 +315,27 @@ impl Cell {
             && table_padding.bottom == 0
     }
 
+    /// 저장된 세로 pad **한 쌍**이 쓸 만한가 — 어느 축도 큰 잔재(≥2500)가 아니다.
+    ///
+    /// `apply_inner_margin=false` 칸의 pad 는 한컴이 렌더에 쓰지 않는 필드라 쓰레기가 남을 수 있다.
+    /// 한 축이 위생 한도를 넘으면(음수 · 10mm급) 그 쌍은 **같은 잔재**이므로 다른 축도 믿지 않는다.
+    /// 실측(지급신청 서식 · 한/글 PDF): 칸 pad top 20424 · bottom 1287 · 선언 높이 1740 —
+    /// 축마다 따로 거르면 bottom 1287 이 살아남아 행이 847HU(≈17.6px @1240) 부풀었고, 한/글은 그 행을
+    /// 선언 높이 그대로(36px) 그렸다.
+    pub fn vertical_padding_pair_usable(&self) -> bool {
+        // 음수는 업스트림이 이미 **축마다** 결측 센티널로 폴백한다(#6358 — 다른 축의 정상 값 32 는 산다).
+        // 여기서는 **큰** 잔재(≥2500 · 10mm급)만 쌍을 버린다 — 첫 판은 음수까지 묶어 #6358 을 깨뜨렸다.
+        let big = |v: i16| v >= 2500;
+        !(big(self.padding.top) || big(self.padding.bottom))
+    }
+
     pub fn effective_padding(
         &self,
         table_padding: &crate::model::Padding,
     ) -> crate::model::Padding {
-        let unspec = !self.apply_inner_margin && Self::table_padding_unspecified(table_padding);
+        let unspec = !self.apply_inner_margin
+            && Self::table_padding_unspecified(table_padding)
+            && self.vertical_padding_pair_usable();
         let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
             // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
             // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.

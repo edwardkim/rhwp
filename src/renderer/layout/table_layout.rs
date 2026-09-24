@@ -4283,6 +4283,25 @@ impl LayoutEngine {
                         } else {
                             line_based
                         }
+                    } else if !table.common.treat_as_char
+                        && matches!(
+                            table.common.vert_rel_to,
+                            crate::model::shape::VertRelTo::Paper
+                                | crate::model::shape::VertRelTo::Page
+                        )
+                        && !cell.apply_inner_margin
+                        && crate::model::table::Cell::table_padding_unspecified(&table.padding)
+                        && cell.height < 0x8000_0000
+                        && line_based <= hwpunit_to_px(cell.height as i32, self.dpi)
+                    {
+                        // 이 칸의 상하 여백은 저장값이 아니라 «표 여백 전축 0 = 미지정» 대체값
+                        // (#2195 — `resolve_cell_padding`)이다. 저장 줄 흐름이 선언 높이 안에 들면 한글은
+                        // 행을 선언 그대로 둔다 — 실측(지급신청 서식 · 한/글 PDF): 2줄 칸
+                        // 2300HU + 대체 여백 141×2 = 2582 로 세 행(선언 2453·2486·2453)이 커져 표 아래가
+                        // 7.4px 밀렸고, 한/글은 세 행 모두 선언 높이였다. 대체 여백은 칸 **안** 배치에만 쓴다.
+                        // 저장 LINE_SEG 유무와 무관하다(한/글 실측: 두 경우 모두 선언 유지) — 측정기(`height_measurer`)와 같은 규칙.
+                        // ⚠ 종이·쪽 기준으로 떠 있는 표에서만(본문 흐름 표는 편람 384→382쪽 퇴행 · 측정기 주석).
+                        line_based
                     } else {
                         line_based + pad_top + pad_bottom
                     };
@@ -4874,8 +4893,10 @@ impl LayoutEngine {
         // 수평은 전축 0 도 진짜 0: 근거 실측은 `Cell::table_padding_unspecified` 주석과
         // `mydocs/plans/cell_width_authority.md`. 규칙은 `Cell::effective_padding` 과
         // 축 단위로 동일해야 한다 (#1785 — 갈리면 예약 높이와 렌더가 어긋난다).
+        // 세로 한 쌍 중 한 축이 잔재면 쌍 전체를 쓰지 않는다 — `Cell::effective_padding` 과 같은 규칙.
         let table_pad_unspec = !cell.apply_inner_margin
-            && crate::model::table::Cell::table_padding_unspecified(&table.padding);
+            && crate::model::table::Cell::table_padding_unspecified(&table.padding)
+            && cell.vertical_padding_pair_usable();
         let use_cell_left = Self::should_use_cell_padding_axis_for_context(
             cell,
             cell.padding.left,
