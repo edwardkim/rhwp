@@ -35,6 +35,12 @@ pub struct ResolvedCharStyle {
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
+    /// [#7387] `CharShape.use_font_space` 가 켜졌고 **영문 슬롯**(1) 글꼴의 공백
+    /// 글리프 폭을 알 때, 그 전진폭(em). 그 외에는 `None` 이고 공백은 반각이다.
+    ///
+    /// 한/글은 이 속성이 켜지면 공백을 영문 슬롯 글꼴의 제 공백폭으로 전진시킨다.
+    /// 근거와 문서 내 대조군은 [`crate::renderer::TextStyle::font_space_em`] 에 있다.
+    pub font_space_em: Option<f64>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
     /// 진하게
@@ -98,6 +104,7 @@ impl Default for ResolvedCharStyle {
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
             font_families_hft_hangul: Vec::new(),
+            font_space_em: None,
             font_size: 12.0,
             bold: false,
             italic: false,
@@ -442,6 +449,32 @@ pub fn resolve_styles_with_variant(
     }
 }
 
+/// [#7387] CSS 체인의 첫 face 가 **선언한** 공백 글리프 전진폭(em).
+///
+/// 공백을 반각으로 눌러 두는 [`measure_char_width_embedded_decision_for_font`] 의
+/// `c == ' '` 갈래를 우회해, 글꼴 표에 적힌 U+0020 의 값을 그대로 읽는다.
+/// `use_font_space` 가 켜진 run 에서만 쓴다.
+///
+/// [`measure_char_width_embedded_decision_for_font`]: crate::renderer::layout
+fn declared_space_advance_em(css_family_chain: &str, bold: bool, italic: bool) -> Option<f64> {
+    let primary = css_family_chain
+        .split(',')
+        .next()?
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    let decision = crate::renderer::font_metrics_data::find_metric_decision(primary, bold, italic)?;
+    let em = decision.metric.em_size;
+    if em == 0 {
+        return None;
+    }
+    let width = decision.metric.get_width(' ')?;
+    if width == 0 {
+        return None;
+    }
+    Some(f64::from(width) / f64::from(em))
+}
+
 /// CharShape + FontFace → ResolvedCharStyle 목록
 fn resolve_char_styles(doc_info: &DocInfo, dpi: f64) -> Vec<ResolvedCharStyle> {
     doc_info
@@ -486,6 +519,17 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         ratios.push(cs.ratios[lang] as f64 / 100.0);
     }
 
+    // [#7387] 공백은 영문 슬롯(1) 글꼴이 정한다. 속성이 꺼졌거나 그 글꼴의 공백폭을
+    // 모르면 `None` 으로 두어 종전 반각 측정을 그대로 쓴다.
+    let font_space_em = cs
+        .use_font_space
+        .then(|| {
+            font_families
+                .get(1)
+                .and_then(|chain| declared_space_advance_em(chain, cs.bold, cs.italic))
+        })
+        .flatten();
+
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
     let letter_spacing = letter_spacings[0];
@@ -496,6 +540,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families,
         font_families_metric_trusted,
         font_families_hft_hangul,
+        font_space_em,
         font_size,
         bold: cs.bold,
         italic: cs.italic,

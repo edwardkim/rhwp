@@ -291,6 +291,30 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_metric_trusted: bool,
+    /// [#7387] `CharShape.use_font_space`(글꼴에 어울리는 빈칸)가 켜진 run 의
+    /// **영문 슬롯** 글꼴이 선언한 공백 전진폭(em). 꺼져 있으면 `None` 이고
+    /// 공백은 종전대로 반각(`em/2`)이다.
+    ///
+    /// 한/글은 이 속성이 켜지면 공백을 반각이 아니라 영문 슬롯 글꼴의 제 공백
+    /// 글리프 전진폭으로 전진시킨다. `1382000_domestic_violence_survey` 정본
+    /// (`Hwp 2018 11.0.0.1623`)의 같은 문서·같은 쪽 대조가 값을 말한다 —
+    /// 미정렬 줄만 골라 charPr 에 붙여 재면:
+    ///
+    /// ```text
+    ///   ufs=0  charPr 12  자간 0   n=37   0.500 em   (반각 그대로)
+    ///   ufs=0  charPr 6·33 자간 -5 n=729  0.469 em   (0.5 x 0.95)
+    ///   ufs=1  charPr 65·54·53·59  자간 0 n=763  0.337 em
+    ///   ufs=1  charPr 24  자간 0   n=18   0.337 em
+    ///   ufs=1  charPr 26  자간 0   n=38   0.489 em  <- 영문 슬롯이 휴먼명조
+    /// ```
+    ///
+    /// 마지막 줄이 상수가 아님을 말한다: 같은 `ufs=1` 이라도 영문 슬롯이 대체 없이
+    /// 쓰인 휴먼명조면 그 글꼴의 제 공백 0.5 em 이 나오고, Batang 으로 대체된
+    /// 슬롯이면 0.333 em(341/1024)이 나온다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_space_em: Option<f64>,
     /// [#7051] 이 run 의 글꼴이 **HFT 한글 전용 face** 라서 대체됐는지
     /// (`FontSubstitutionBoundary::Hft`). 그런 글꼴의 ASCII 는 한컴이 반각(`em/2`)으로
     /// 전진시키므로 대체 글꼴의 비례 폭을 그대로 쓰면 안 된다. 진짜 영문 HFT
@@ -462,6 +486,7 @@ impl Default for TextStyle {
             strike_color: 0,
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
+            font_space_em: None,
             hft_hangul_face: false,
         }
     }
