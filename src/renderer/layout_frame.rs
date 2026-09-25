@@ -201,6 +201,46 @@ impl ParagraphBox {
         Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
     }
 
+    /// [#7407] A nested flow's content box **inset by the paragraph's own margins**.
+    ///
+    /// `content_width_px` hands the flow's full inner width with the origin at 0,
+    /// which is right only for a paragraph whose style has no side margins. A cell
+    /// paragraph has the same `margin_left`/`margin_right` a body paragraph has, and
+    /// dropping them gave the *same paragraph* two different boxes depending on the
+    /// route that reached it — the disagreement [`ParagraphBox::body`] exists to end.
+    ///
+    /// Measured on `samples/issue6639/issue6639-hancom-160.hwpx` cell 31, whose ten
+    /// paragraphs share `paraPr 18` (`margin_left = margin_right = 1600` in the IR's
+    /// 2x scale, i.e. 800 HWPUNIT each):
+    ///
+    /// | | 줄 폭 | 줄 원점 |
+    /// | --- | ---: | ---: |
+    /// | 한/글 저장 `hp:lineseg` | `39208` | `800` |
+    /// | `content_width_px` | `40808` | `0` |
+    /// | this | `39206` | `800` |
+    ///
+    /// The 1600 HWPUNIT surplus fits one more glyph per line, which is why the same
+    /// cell came out three lines shorter than the reference print.
+    ///
+    /// Unlike [`ParagraphBox::body`] the width is **not** snapped: a cell's inner
+    /// width never went through the column solver's quantization, so applying the
+    /// column quantum here would move an edge the cell never had.
+    pub(crate) fn content_for_style(
+        content_width_px: f64,
+        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        dpi: f64,
+    ) -> Self {
+        use crate::model::style::HeadType;
+        let margin_left = style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = style.map(|s| s.margin_right).unwrap_or(0.0);
+        let head_type = style.map(|s| s.head_type).unwrap_or(HeadType::None);
+        let width_hwp = crate::renderer::px_to_hwpunit(content_width_px, dpi);
+        let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left, dpi);
+        let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right, dpi);
+        Self::content(margin_left_hwp..width_hwp.saturating_sub(margin_right_hwp))
+            .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
+    }
+
     /// The box after the geometry pitch — the single source for both the
     /// published record and the carved frame.
     pub(crate) fn effective(&self) -> Range<i32> {
