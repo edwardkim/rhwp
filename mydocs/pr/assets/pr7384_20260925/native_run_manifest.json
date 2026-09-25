@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "key": "press7384",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
+    },
+    "pdf": {
+      "path": "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf",
+      "sha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc"
+    },
+    "git_head": "6f5034e0c4dfaa8ddf53a85c2b95199078108fb4",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "d3aebf6ba3f7d980cad3f299be92e2dcc55a82a4833789daafd46c20ada29e22"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    4,
+    5
+  ],
+  "requested_page_shards": [
+    [
+      4,
+      5
+    ]
+  ],
+  "run_state": "complete"
+}
