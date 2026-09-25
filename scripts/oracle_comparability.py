@@ -17,7 +17,8 @@
                   측정 경로를 타지 않으므로 **폭을 고쳐도 줄이 안 바뀐다**.
                   판정은 총합이 아니라 `oracleKeepsButRhwpMisses` — **정본은 지켰는데
                   rhwp 만 놓친** 문단 — 으로 한다. 둘이 서로 다른 문단을 놓쳐도 총합은
-                  같아질 수 있어 방향을 못 준다.
+                  같아질 수 있어 방향을 못 준다. PUA·옛한글 자모가 저장 첫 줄에 있으면
+                  코드만으로 대응을 확인할 수 없어 `excludedUncomparable`로 따로 센다.
   oracleRetypeset 정본의 끊음이 저장 LineSeg 와 다른가. 다르면 정본이 재조판했다.
                   rhwp 가 저장을 지키고 정본이 재조판했다면 **둘 다 옳을 수 있다**.
   fontScale       같은 글자열 줄에서 정본과 rhwp 의 글꼴 크기 비. 1.0 에서 벗어나면
@@ -231,28 +232,18 @@ def split_baseline_row(row):
 
 
 def comparison_key(text: str) -> str:
-    """두 출력의 글자열을 견주기 위한 열쇠.
+    """공백만 제외한다. 글자를 지우면 그 글자 앞뒤의 서로 다른 컷이 같아진다."""
+    return "".join(c for c in text if not c.isspace())
 
-    공백과 함께 **사용자 정의 영역(PUA)과 옛한글 자모**를 버린다. 같은 글자를 한/글과
-    rhwp 가 서로 다른 코드로 적기 때문이다 — `hwpspec.hwp` 의 「ᄒᆞᆫ글」 로고 글자를
-    정본은 `U+F53A` 하나로, rhwp 는 자모 셋(`U+1112 U+119E U+11AB`)으로 적는다.
-    글자열이 다르니 어떤 대조도 성립하지 않는다.
 
-    **너비 문제가 아니다.** rhwp 는 그 묶음을 0.9259 em 으로 전진시켜 한 음절 폭을
-    쓴다. 버리고 다시 세면 그 문서의 "정본만 지킨 문단" 이 45 -> 8 로 줄어든다 —
-    37건이 표기 차이였다.
-
-    매핑표 대신 버리는 쪽을 쓴다. 표는 글꼴·판본마다 달라 유지할 근거가 없고, 양쪽에서
-    똑같이 버리면 `endswith` 대조는 그대로 성립한다.
-    """
-    return "".join(
-        c
+def has_uncomparable_character(text: str) -> bool:
+    """폰트 전용 PUA와 옛한글 자모가 섞여 코드만으로 대조할 수 없는가."""
+    return any(
+        0xE000 <= ord(c) <= 0xF8FF
+        or 0x1100 <= ord(c) <= 0x11FF
+        or 0xA960 <= ord(c) <= 0xA97F
+        or 0xD7B0 <= ord(c) <= 0xD7FF
         for c in text
-        if not c.isspace()
-        and not 0xE000 <= ord(c) <= 0xF8FF
-        and not 0x1100 <= ord(c) <= 0x11FF
-        and not 0xA960 <= ord(c) <= 0xA97F
-        and not 0xD7B0 <= ord(c) <= 0xD7FF
     )
 
 
@@ -392,13 +383,17 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines, pages=None) -> dict:
     # 렌더된 줄의 **꼬리**와 같으면 그 끊음을 재현한 것으로 센다.
     def hits(lines, head):
         return any(line["key"].endswith(head) for line in lines)
-    stored = rhwp_hit = pdf_hit = oracle_only = 0
+    stored = rhwp_hit = pdf_hit = oracle_only = excluded = 0
     for para in paragraphs:
         cuts = para["cuts"]
         if len(cuts) < 2:
             continue
         text = para["text"]
-        head = comparison_key(text[: cuts[1]])
+        raw_head = text[: cuts[1]]
+        if has_uncomparable_character(raw_head):
+            excluded += 1
+            continue
+        head = comparison_key(raw_head)
         if len(head) < 12:
             continue
         stored += 1
@@ -410,13 +405,18 @@ def judge_lines(paragraphs, rhwp_lines, pdf_lines, pages=None) -> dict:
         # 총합 비교는 둘이 서로 다른 문단을 놓쳐도 같은 수가 될 수 있어 방향을 못 준다.
         oracle_only += theirs and not mine
     if not stored:
-        return {"status": "비해당", "reason": "여러 줄 저장 LineSeg 문단이 없다"}
+        return {
+            "status": "미측정" if excluded else "비해당",
+            "reason": "비교 가능한 여러 줄 저장 LineSeg 문단이 없다",
+            "excludedUncomparable": excluded,
+        }
     return {
         "status": "재현" if rhwp_hit * 2 >= stored else "재조판",
         "storedMultilineParagraphs": stored,
         "rhwpReproducesStoredCut": rhwp_hit,
         "oracleReproducesStoredCut": pdf_hit,
         "oracleKeepsButRhwpMisses": oracle_only,
+        "excludedUncomparable": excluded,
         "note": (
             "rhwp 가 저장 끊음을 지키고 정본은 다시 짰다 — 줄 차이는 둘 다 옳을 수 있다"
             if rhwp_hit > pdf_hit and stored

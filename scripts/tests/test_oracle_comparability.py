@@ -82,6 +82,26 @@ class ComparabilityReview(unittest.TestCase):
                 output = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)
             self.assertEqual([line['key'] for line in output['lines']], ['앞문장', '끝문장'])
 
+    def test_uncomparable_glyph_does_not_hide_a_different_saved_cut(self):
+        prefix = 'abcdefghijkl'
+        paragraph = {'text': prefix + '\uf53a' + '뒤문단', 'cuts': [0, len(prefix) + 1]}
+        # 그 글자 직전에서 끊긴 출력은 저장 컷을 재현하지 않았다. PUA를 지우면
+        # 두 글자열이 모두 prefix가 되어 거짓 양성이 된다.
+        before_glyph = [{'key': prefix}]
+        after_glyph = [{'key': prefix + '\uf53a'}]
+        self.assertNotEqual(oracle.comparison_key(prefix + '\uf53a'), prefix)
+        result = oracle.judge_lines([paragraph], before_glyph, after_glyph)
+        self.assertEqual(result['status'], '미측정')
+        self.assertEqual(result['excludedUncomparable'], 1)
+
+    def test_ordinary_saved_cut_is_still_counted(self):
+        paragraph = {'text': 'abcdefghijkl뒤문단', 'cuts': [0, 12]}
+        lines = [{'key': 'abcdefghijkl'}]
+        result = oracle.judge_lines([paragraph], lines, lines)
+        self.assertEqual(result['storedMultilineParagraphs'], 1)
+        self.assertEqual(result['oracleKeepsButRhwpMisses'], 0)
+        self.assertEqual(result['excludedUncomparable'], 0)
+
     def test_x_scale_without_x_variance_is_unmeasured(self):
         source = [dict(key=f'line-text-unique-{i:03d}', font_px=12, x=100, y=100+i*10) for i in range(8)]
         reference = [dict(line, font_px=9.6, x=80, y=line['y']*.8) for line in source]
