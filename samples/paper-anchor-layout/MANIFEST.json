@@ -1,0 +1,28 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "title": "Synthetic paper/page-anchored object placement inputs",
+  "entries": [
+    {
+      "path": "samples/paper-anchor-layout/square-table-next-line.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "synthetic — scripts/generate_paper_anchor_layout_fixtures.py from samples/hwpx/ref/ref_empty.hwpx",
+      "bytes": 7576,
+      "sha256": "3977a5bfe235c8bf8f9e3f1162fe17ac59a0a3761899ebb49bb10c5c0724025e",
+      "purpose": "A paper-anchored Square table on an empty anchor paragraph that leaves no side lane must push the next paragraph below the table",
+      "contract": "Next paragraph top >= table bottom (before the fix: 174.9px vs table 160.0..240.0px)",
+      "referencePdfStatus": "none — geometry contract, not a Hancom PDF match"
+    },
+    {
+      "path": "samples/paper-anchor-layout/cell-picture-page-paper.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "synthetic — scripts/generate_paper_anchor_layout_fixtures.py from samples/hwpx/ref/ref_empty.hwpx",
+      "bytes": 8226,
+      "sha256": "4f1fd45354a1308271761fd6bb887d68af5945a96fbf9a37d893ab9216d27a50",
+      "purpose": "Pictures anchored in table cells with paper/page-relative position measure their offsets from the paper/body, not from the cell",
+      "contract": "Paper picture at paper origin + offset (200.0, 400.0)px; page picture at body origin + offset (before the fix: paper picture at 313.4, 555.5px)",
+      "referencePdfStatus": "none — geometry contract, not a Hancom PDF match"
+    }
+  ]
+}
