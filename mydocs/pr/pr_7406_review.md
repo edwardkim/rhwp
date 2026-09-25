@@ -9,7 +9,7 @@ last_verified: 2026-09-26
 
 ## 최종 판정
 
-**머지 보류.** 메인터너 보정으로 PrEP 본문/표 겹침을 15건에서 1건으로 줄였고 67~70쪽의 국소 Visual Sweep은 통과했다. 추가 OLE 차트 보정 뒤 남성 차트가 있는 26쪽은 94.19%, 분리한 HWP/HWPX 샘플은 각각 90.67%/90.58%로 통과했다. 여성 차트가 있는 27쪽 전체는 66.83%로 보류 상태이며, 새 head의 전체 회귀·fresh WASM·전체 페이지 시각 검증도 남았다. 현재 원 PR을 승인하거나 통합하지 않는다.
+**머지 보류.** 메인터너 보정으로 PrEP 본문/표 겹침을 15건에서 1건으로 줄였고 67~70쪽의 국소 Visual Sweep은 통과했다. 추가 OLE 차트 보정 뒤 남성 차트가 있는 26쪽은 94.19%, 분리한 HWP/HWPX 샘플은 각각 90.67%/90.58%로 통과했다. 여성 차트가 있는 27쪽은 저장된 줄간격 복원 후 66.83%에서 91.85%로 개선됐다. 전체 140쪽 Native 검증에서는 40·51쪽의 표 이어받기 차이를 조사 중이고, 새 head의 전체 회귀·fresh WASM도 남았다. 현재 원 PR을 승인하거나 통합하지 않는다.
 
 ## 접수 정보
 
@@ -38,7 +38,7 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 | 신규 한컴 PDF | [1790387_prep_final_report-2024.pdf](../../pdf/issue2006/1790387_prep_final_report-2024.pdf), 원본을 HWP MCP `--engine 2024`로 변환, SHA-256 `04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8`, 140쪽, Hancom PDF 1.3.0.550 |
 | KoPub 집중 검사 | 검토 source head `regression_suite_016` 2/2 PASS |
 | 겹침 baseline | base 14건, 원 PR 단독 15건, 메인터너 보정 후보 1건. 상한은 15→1로 축소했고 검사 PASS. 최종 head 재검증 필요 |
-| Native Visual Sweep | 67/68/69/70/94/108쪽 국소 실루엣 **99.94489/96.51123/99.94315/99.97650/99.55839/96.98045%** 통과. 차트 26쪽 **94.19%**, 27쪽 **66.83% 보류** |
+| Native Visual Sweep | 최신 영향 쪽 26/27/67/68/69/70/94/108의 실루엣이 각각 **94.19/91.85/99.99/96.50/99.94/100.00/99.57/99.84%**로 통과. 전체 140쪽 검증은 진행 중이며 40·51쪽 차이 확인 |
 | OLE 분리 입력 | HWP `a29d415a…`, HWPX `a64ee3e5…`, [한컴 PDF](../../pdf/issue7406/7406_OLE__CHART.pdf) `bd3a5a0e…`. 한 페이지 Native HWP **90.67%**, HWPX **90.58%**, 두 gate 통과 |
 | 전체 release-test·lint·fresh WASM | 앞선 코드 후보의 nextest 10,241 PASS/50 skip 및 lint 통과. 추가 OLE 수정 후 최종 head 기준 재실행 필요; fresh WASM 미검증 |
 
@@ -46,13 +46,15 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 ## 시각 증적과 남은 차이
 
-물리 69쪽의 표 보정과 94쪽 KoPub 대조군은 기존 이미지에 남겼다. OLE 분리 샘플의 백분율 축·막대 길이·색·레이블과 여성 차트가 있는 원본 27쪽의 잔여 차이를 직접 확인했다. 대표 이미지:
+물리 69쪽의 표 보정과 94쪽 KoPub 대조군은 기존 이미지에 남겼다. OLE 분리 샘플의 백분율 축·막대 길이·색·레이블을 직접 확인했다. 원본 27쪽은 도형 줄 뒤에 저장된 720HU 줄간격을 복원해 다음 본문·그림 위치를 기준 PDF에 맞췄다. 전체 스윕에서 확인된 40·51쪽 표 이어받기 차이는 보류 사유로 조사한다. 대표 이미지:
 
 ![#7406 OLE 차트 분리 샘플 Native review](assets/pr7406_20260925/ole_chart_review_001.png)
 
 ![#7406 OLE 차트 분리 샘플 Native overlay](assets/pr7406_20260925/ole_chart_overlay_001.png)
 
 ![#7406 원본 27쪽 Native review](assets/pr7406_20260925/native_review_027.png)
+
+![#7406 원본 27쪽 Native overlay](assets/pr7406_20260925/native_overlay_027.png)
 
 ![#7406 69쪽 Native review](assets/pr7406_20260925/native_review_069.png)
 
@@ -64,4 +66,4 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 ## 보류 해제와 contributor 안내
 
-원본 27쪽의 차트 아래 벤다이어그램·텍스트 배치를 분리 조사하고, 전체 Native/fresh WASM Visual Sweep과 최종 head의 nextest·lint를 마친 뒤 판정한다. 90% 미만 페이지가 남으면 PR을 생성·승인·통합하지 않는다. 머지 시에는 실제 merge SHA와 CI URL, 같은 이미지의 merge SHA 고정 raw URL로 기여자에게 결과를 안내한다.
+전체 Native/fresh WASM Visual Sweep에서 표 이어받기를 포함한 90% 미만·측정 불가 페이지를 조사하고 최종 head의 nextest·lint를 마친 뒤 판정한다. 기준 PDF 140쪽과 rhwp 전체 출력 140쪽의 개수도 확인했으며, 선택 페이지만의 통과나 페이지 수 일치만으로 전체 시각 검증을 대신하지 않는다. 90% 미만 페이지가 남으면 PR을 생성·승인·통합하지 않는다. 머지 시에는 실제 merge SHA와 CI URL, 같은 이미지의 merge SHA 고정 raw URL로 기여자에게 결과를 안내한다.

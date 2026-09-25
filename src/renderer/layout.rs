@@ -10370,21 +10370,20 @@ impl LayoutEngine {
                                 };
                                 let shape_bottom = para_start + sb_applied + effective_h;
                                 if shape_bottom > y_offset {
-                                    // [#6665] HWP3 계보 휴리스틱은 2024 저장본도
-                                    // 포함한다. 계보 전체를 배제하지 않고, 빈 도형 줄의
-                                    // 다음 저장 vpos가 lh + ls 전진을 증명할 때만 ls를
-                                    // 복원한다. 원본 HWP3/HWPX와 저장 사다리가 다른
-                                    // 문단은 유지한다. 바닥값 판정에는 ls를 넣지 않는다.
+                                    // [#6665, #7406] 저장 줄 뒤의 다음 vpos가
+                                    // lh + ls 전진을 증명할 때만 도형 높이 바닥값에도
+                                    // 꼬리 ls를 복원한다. HWPX OLE 차트의 캡션 다음
+                                    // 본문도 이 경로를 사용한다. 바닥값 판정에는 ls를
+                                    // 넣지 않아 순수 개체 줄의 기존 소유권은 유지한다.
                                     // lh == 도형 프레임 높이인 순수 개체 줄(#1116)은
                                     // paragraph_layout의 높이 접힘과 짝을 이뤄 ls 없는
                                     // 바닥값이 전진량을 소유한다. 프레임보다 큰 저장
                                     // 줄 상자를 복원할 때만 별도의 꼬리 ls를 더한다.
                                     let profile = self.profile.get();
-                                    let stored_shape_line = (profile
-                                        .hwp5_stored_pagination_layout()
-                                        || profile.hwp3_layout())
-                                        && !profile.hwp3_native_layout()
-                                        && !profile.hwpx_stored_layout()
+                                    let stored_shape_line = (profile.hwpx_stored_layout()
+                                        || ((profile.hwp5_stored_pagination_layout()
+                                            || profile.hwp3_layout())
+                                            && !profile.hwp3_native_layout()))
                                         && para.text.chars().all(|c| {
                                             c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
                                         });
