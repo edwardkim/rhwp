@@ -244,3 +244,9 @@ issue6973/83818-appraisal-rules-amendment.hwpx	1
 # 컷 위치 자체는 tests/cases/issue_7234_scaffold_tall_table_row_split.rs 가 정본에 묶어 잠근다.
 issue7216/tall_table_before.hwpx	0
 issue7216/tall_table_after.hwpx	0
+# #7336 fixture 2행 — 두 표본 **자신의 기존 결손**이고 이 PR 이 만든 것이 아니다.
+# nested_table_fragment_cut.hwp 는 수정 전후 동일(4쪽 Group13 42.3px, 표 조각과 무관한 도형).
+# stored_frame_page_larger_rowbreak.hwpx 는 수정으로 초과가 2,742.4px -> 5.6px 로 줄었고
+# off-canvas 1 -> 0, overlap 1 -> 0, LAYOUT_OVERFLOW_CELL 40여건 -> 0 이다. 노드 수만 1 로 같다.
+issue7336/nested_table_fragment_cut.hwp	1
+issue7336/stored_frame_page_larger_rowbreak.hwpx	1

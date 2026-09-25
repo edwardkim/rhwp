@@ -1888,7 +1888,8 @@ fn estimate_regenerated_line_text_width(
 fn regenerated_half_space_width(style: &TextStyle) -> f64 {
     let font_size = style.font_size.max(0.0);
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
-    let base = font_size * 0.5 * ratio;
+    // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭을 쓴다.
+    let base = font_size * style.font_space_em.unwrap_or(0.5) * ratio;
     let tracking = if font_size > 0.0 {
         style.letter_spacing * (base / font_size)
     } else {

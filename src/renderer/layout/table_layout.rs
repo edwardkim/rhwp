@@ -4151,6 +4151,15 @@ impl LayoutEngine {
         suppress_unused_padding: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
+            let hwpx_inline_fitted = (self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().session_edited())
+            .then(|| {
+                crate::renderer::height_measurer::trim_stored_hwpx_inline_row_trailing_spacing(
+                    mt, table, self.dpi,
+                )
+            })
+            .flatten();
+            let mt = hwpx_inline_fitted.as_ref().unwrap_or(mt);
             // `TypesetEngine::format_table` uses this same narrow replacement for
             // native HWP5 empty RowBreak hosts.  Layout must consume the identical
             // row geometry: otherwise pagination reserves the declared tail height

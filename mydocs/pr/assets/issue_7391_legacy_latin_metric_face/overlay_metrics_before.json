@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 93.72318,
+    "worst_pixel_match_percent": 91.98194,
+    "average_ink_match_percent": 13.18125,
+    "worst_ink_match_percent": 12.91203,
+    "average_visual_accuracy_proxy_percent": 13.18125,
+    "worst_visual_accuracy_proxy_percent": 12.91203,
+    "average_tolerant_content_match_percent": 88.35621,
+    "worst_tolerant_content_match_percent": 87.57678,
+    "worst_pages": [
+      76,
+      72
+    ]
+  },
+  "pages": [
+    {
+      "page": 72,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/rhwp_png/rhwp_072.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/pdf_png/pdf-72.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/overlay/overlay_072.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 40442,
+      "diff_ratio": 0.04535575,
+      "pixel_match_percent": 95.46442,
+      "ink_union_pixels": 46727,
+      "ink_diff_pixels": 40442,
+      "ink_diff_ratio": 0.86549532,
+      "ink_match_percent": 13.45047,
+      "visual_accuracy_proxy_percent": 13.45047,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 87.57678,
+      "mean_abs_channel_delta": 5.441,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        143,
+        188,
+        793,
+        979
+      ]
+    },
+    {
+      "page": 76,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/rhwp_png/rhwp_076.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/pdf_png/pdf-76.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs93A/refs/overlay/overlay_076.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 71494,
+      "diff_ratio": 0.08018061,
+      "pixel_match_percent": 91.98194,
+      "ink_union_pixels": 82094,
+      "ink_diff_pixels": 71494,
+      "ink_diff_ratio": 0.87087972,
+      "ink_match_percent": 12.91203,
+      "visual_accuracy_proxy_percent": 12.91203,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 89.13563,
+      "mean_abs_channel_delta": 9.65,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        143,
+        188,
+        793,
+        980
+      ]
+    }
+  ]
+}

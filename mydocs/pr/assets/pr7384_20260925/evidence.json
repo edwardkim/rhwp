@@ -1,0 +1,77 @@
+{
+  "source_pr": 7384,
+  "source_head": "f18c56f66043dc9a50e6ded67b4750208fae0573",
+  "base_sha": "aeb9f489e1d5e297c1e98cf1ca8ff84532270aca",
+  "code_head": "ae6b96567c324f558e9d2cf08812865209f784d1",
+  "input": {
+    "path": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+    "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
+  },
+  "oracle_pdf": {
+    "path": "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf",
+    "sha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc"
+  },
+  "native_binary": {
+    "path": "target/pr-review/release-test/rhwp",
+    "sha256": "d3aebf6ba3f7d980cad3f299be92e2dcc55a82a4833789daafd46c20ada29e22"
+  },
+  "wasm_package": [
+    {
+      "path": "pkg/rhwp.js",
+      "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+    },
+    {
+      "path": "pkg/rhwp_bg.wasm",
+      "sha256": "24b31398180cb808446e61c40c01de6a4625240c99356b76ed2f08fdd3986972"
+    }
+  ],
+  "sweep_script": {
+    "path": "scripts/visual_sweep.py",
+    "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+  },
+  "pages": {
+    "native": {
+      "gate": "passed",
+      "metrics": [
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 97.149,
+          "pixel_match_percent": 85.26471,
+          "visual_accuracy_proxy_percent": 19.33882
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.62958,
+          "pixel_match_percent": 86.10258,
+          "visual_accuracy_proxy_percent": 19.09562
+        }
+      ],
+      "page4_bounds": {
+        "body_bottom_px": 1046.9,
+        "table_pi5_max_bottom_px": 1039.0
+      }
+    },
+    "wasm": {
+      "gate": "passed",
+      "metrics": [
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 97.14679,
+          "pixel_match_percent": 85.27581,
+          "visual_accuracy_proxy_percent": 19.3372
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.60362,
+          "pixel_match_percent": 86.11189,
+          "visual_accuracy_proxy_percent": 19.0806
+        }
+      ],
+      "page4_bounds": {
+        "body_bottom_px": 1046.9,
+        "table_pi5_max_bottom_px": 1039.0
+      }
+    }
+  },
+  "sweep_head": "5d958362ee740805ea857f6120156ac2c5091757"
+}

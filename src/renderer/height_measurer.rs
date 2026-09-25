@@ -642,6 +642,102 @@ fn declared_row_height_px(table: &Table, row: usize, dpi: f64) -> f64 {
         .fold(0.0f64, f64::max)
 }
 
+/// 저장 HWPX 인라인 RowBreak 표에서 마지막 LINE_SEG 줄간격을 측정기가
+/// 행 높이에 한 번 더 실은 경우, 저장 cellSz 경계로 되돌린다.
+///
+/// 완전한 저장 표(개체 높이 == 선언 행합)와 컨트롤 없는 저장 줄만 대상으로 한다.
+/// 각 줄의 `line_height`에는 이미 `line_spacing`이 포함되어 있으므로, 실측과
+/// 선언의 차이가 마지막 줄간격과 같고 저장 잉크+패딩이 선언 안에 들 때만
+/// 측정·배치가 함께 소비하는 MeasuredTable을 고친다.
+pub fn trim_stored_hwpx_inline_row_trailing_spacing(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    if !table.common.treat_as_char
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || measured.row_heights.len() != table.row_count as usize
+        || table.row_count < 2
+        || table.common.height == 0
+        || table.cells.iter().any(|cell| cell.row_span != 1)
+    {
+        return None;
+    }
+    let declared: Vec<f64> = (0..measured.row_heights.len())
+        .map(|row| declared_row_height_px(table, row, dpi))
+        .collect();
+    if declared.iter().any(|height| *height <= 0.0)
+        || (declared.iter().sum::<f64>()
+            + measured.cell_spacing * declared.len().saturating_sub(1) as f64
+            - hwpunit_to_px(table.common.height as i32, dpi))
+        .abs()
+            > 0.5
+    {
+        return None;
+    }
+
+    let mut fitted = measured.clone();
+    let mut reduction = 0.0;
+    for (row, declared_height) in declared.iter().copied().enumerate() {
+        let excess = measured.row_heights[row] - declared_height;
+        if excess <= 0.5 {
+            continue;
+        }
+        let mut matches_last_spacing = false;
+        let mut saved_content_fits = true;
+        for cell in table.cells.iter().filter(|cell| cell.row as usize == row) {
+            if cell.paragraphs.is_empty()
+                || cell.paragraphs.iter().any(|para| {
+                    !para.controls.is_empty()
+                        || para.line_segs.is_empty()
+                        || para.line_segs.iter().any(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                != 0
+                        })
+                })
+            {
+                saved_content_fits = false;
+                break;
+            }
+            let last_spacing = cell
+                .paragraphs
+                .last()
+                .and_then(|para| para.line_segs.last())
+                .map(|seg| hwpunit_to_px(seg.line_spacing, dpi))
+                .unwrap_or(0.0);
+            matches_last_spacing |= last_spacing > 0.5 && (excess - last_spacing).abs() <= 0.5;
+            let saved_end = cell
+                .paragraphs
+                .iter()
+                .flat_map(|para| &para.line_segs)
+                .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+                .max()
+                .unwrap_or(0);
+            let pad = cell.effective_padding(&table.padding);
+            let declared_hu = i64::from(cell.height);
+            if saved_end + i64::from(pad.top) + i64::from(pad.bottom) > declared_hu + 3 {
+                saved_content_fits = false;
+                break;
+            }
+        }
+        if matches_last_spacing && saved_content_fits {
+            fitted.row_heights[row] = declared_height;
+            reduction += excess;
+        }
+    }
+    if reduction <= 0.0 {
+        return None;
+    }
+    fitted.cumulative_heights = vec![0.0; fitted.row_heights.len() + 1];
+    for (row, height) in fitted.row_heights.iter().enumerate() {
+        fitted.cumulative_heights[row + 1] = fitted.cumulative_heights[row]
+            + *height
+            + if row > 0 { fitted.cell_spacing } else { 0.0 };
+    }
+    fitted.total_height -= reduction;
+    Some(fitted)
+}
+
 /// 개체 선언 높이가 **행 경계**에 떨어지는가 — 곧 앞에서부터 정수 개의 행이
 /// 정확히 그 높이를 채우는가. 채우면 그 값은 쪽 나뉘는 표의 첫 조각 높이로 읽을 수
 /// 있고, 행 중간에서 끊기면 조각 경계일 수 없다 (#7147).
