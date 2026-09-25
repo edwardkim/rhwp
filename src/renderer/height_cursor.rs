@@ -430,6 +430,23 @@ impl HeightCursor {
                 })
             })
             .unwrap_or(false);
+        let curr_sb = paragraphs
+            .get(item_para)
+            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+            .map(|ps| ps.spacing_before)
+            .unwrap_or(0.0);
+        // A stored table-host vpos is safe when it advances by exactly the
+        // next paragraph's before-spacing from the preceding line end. It
+        // then carries no table height; using the preceding end and deducting
+        // that spacing again pulls the first fragment above its flow origin
+        // (issue2004 HWPX p4).
+        let table_host_only_before_gap = self.suppress_hwpx_stale_forward
+            && !self.session_edited
+            && curr_has_topbottom_para_table
+            && curr_sb > 0.0
+            && curr_first_vpos.is_some_and(|v| {
+                v == prev_vpos_end.saturating_add((curr_sb * 7200.0 / self.dpi).round() as i32)
+            });
         // [Task #412] 현재 paragraph first vpos 우선(spacing_after 인코딩), reset 시 fallback.
         //
         // 단, 현재 문단이 para-relative TopAndBottom 표의 host 이면 first_vpos 가 표
@@ -462,15 +479,15 @@ impl HeightCursor {
             {
                 v
             }
-            Some(v) if v > seg.vertical_pos && !curr_has_topbottom_para_table => v,
+            Some(v)
+                if v > seg.vertical_pos
+                    && (!curr_has_topbottom_para_table || table_host_only_before_gap) =>
+            {
+                v
+            }
             _ => prev_vpos_end,
         };
         // [Task #643] sb_N 사전 차감 대상 (vpos_corrected_end_y 내부에서 차감).
-        let curr_sb = paragraphs
-            .get(item_para)
-            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
-            .map(|ps| ps.spacing_before)
-            .unwrap_or(0.0);
         // [Task #1027 Stage A] 공유 클램프 함수.
         let allow_large_backward = (self.allow_vpos_rewind && vpos_rewind)
             || (self.allow_start_height_backtrack
