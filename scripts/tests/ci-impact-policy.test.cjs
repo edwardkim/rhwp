@@ -462,7 +462,7 @@ test('invalid classifier output and API collection failure both close to full', 
   ));
 });
 
-test('Chrome audit agrees with the package override and requires exact execution or skip', () => {
+test('Chrome audit requires mandatory execution and accepts successful optional execution', () => {
   for (const [filename, required] of [
     ['rhwp-studio/src/ui/about-dialog.ts', true],
     ['rhwp-chrome/sw/settings-store.mjs', true],
@@ -482,10 +482,11 @@ test('Chrome audit agrees with the package override and requires exact execution
     const workflows = workflowEvidence(policy);
     assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
     const chrome = workflows.CI.jobs.find(item => item.name === CI_CHROME_JOB);
-    for (const conclusion of ['success', 'skipped', 'failure', 'cancelled']) {
+    for (const conclusion of ['success', 'skipped', 'failure', 'cancelled', 'timed_out', 'neutral']) {
       chrome.conclusion = conclusion;
       const audit = auditPolicyRuns({ ...input, policy, workflows });
-      assert.equal(audit.conclusion === 'success', conclusion === (required ? 'success' : 'skipped'), `${filename}: ${conclusion}`);
+      const accepted = conclusion === 'success' || (!required && conclusion === 'skipped');
+      assert.equal(audit.conclusion === 'success', accepted, `${filename}: ${conclusion}`);
     }
     workflows.CI.jobs = workflows.CI.jobs.filter(item => item !== chrome);
     assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'failure');
@@ -823,7 +824,7 @@ test('aggregate audit accepts safe full execution when worker classification deg
     const preflight = evidence.jobs.find((entry) => entry.name.endsWith('preflight'));
     preflight.steps.find((entry) => entry.name.startsWith('Check out trusted')).conclusion = 'failure';
   }
-  for (const name of [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS]) {
+  for (const name of [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS, CI_CHROME_JOB]) {
     const aliases = CI_JOB_ALIASES[name] || [name];
     const lane = workflows.CI.jobs.find((entry) => aliases.includes(entry.name));
     lane.conclusion = 'success';
@@ -840,6 +841,32 @@ test('aggregate audit accepts safe full execution when worker classification deg
 
   const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
   assert.equal(audit.conclusion, 'success');
+});
+
+test('Chrome audit accepts CI collection-error fallback when the controller collects unrelated paths', () => {
+  for (const filename of ['rhwp-firefox/background.js', 'src/main.rs']) {
+    const files = [{ filename, status: 'modified' }];
+    const input = policyInput({ files, classification: classificationFor(files) });
+    const policy = determinePolicy(input);
+    assert.equal(policy.classification.chrome_extension_e2e_required, 'false');
+    const workflows = workflowEvidence(policy);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
+
+    // The worker's independent API request fails; the controller's request succeeds.
+    // Use the actual fallback classification to model the worker's completed jobs.
+    const worker = determinePolicy(policyInput({ files: [], forceFullReason: 'collection-error' }));
+    assert.equal(worker.classification.chrome_extension_e2e_required, 'true');
+    assert.equal(worker.classification.frontend_mode, 'package');
+    workflows.CI.jobs = ciJobs(worker.classification);
+    const audit = auditPolicyRuns({ ...input, policy, workflows });
+    assert.equal(audit.conclusion, 'success', `${filename}: ${audit.reason}`);
+
+    const chrome = workflows.CI.jobs.find(entry => entry.name === CI_CHROME_JOB);
+    for (const conclusion of ['failure', 'cancelled', 'timed_out']) {
+      chrome.conclusion = conclusion;
+      assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'failure');
+    }
+  }
 });
 
 test('safe supersets do not permit failed optional lanes or skipped required analysis', () => {

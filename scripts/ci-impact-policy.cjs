@@ -779,7 +779,9 @@ function auditCi(policy, jobs) {
     );
     if (failure) return failure;
   }
-  return requireJobConclusion(byName, CI_CHROME_JOB,
+  // CI may independently fall back to full execution when file collection or
+  // classification fails. A successful extra lane is safe, as for Rust/frontend.
+  return requireSafeJobConclusion(byName, CI_CHROME_JOB,
     policy.classification.chrome_extension_e2e_required === 'true' ? 'success' : 'skipped');
 }
 
