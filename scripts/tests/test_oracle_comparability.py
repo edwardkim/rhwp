@@ -66,6 +66,31 @@ class ComparabilityReview(unittest.TestCase):
                 output = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)
             self.assertEqual(output['lines'][0]['key'], 'cab문단')
 
+    def test_pdf_and_svg_split_distant_cells_on_the_same_baseline(self):
+        xml = (
+            '<document><page width="595" height="842"><block><line><font size="12">'
+            '<char x="10" y="20" c="칸"/><char x="22" y="20" c="하나"/>'
+            '<char x="200" y="20" c="칸"/><char x="212" y="20" c="둘"/>'
+            '</font></line></block></page></document>'
+        ).encode()
+        with patch.object(oracle, 'run', side_effect=[xml, b'']):
+            pdf_lines = oracle.read_pdf(Path('sample.pdf'), [1])['lines']
+        with tempfile.TemporaryDirectory() as folder:
+            work = Path(folder)
+            def export_svg(command):
+                out = work / 'svg'
+                out.mkdir()
+                (out / 'page_001.svg').write_text(
+                    '<svg width="800" height="1000">'
+                    '<text x="10" y="26.7" font-size="16">칸하나</text>'
+                    '<text x="200" y="26.7" font-size="16">칸둘</text></svg>'
+                )
+                return b''
+            with patch.object(oracle, 'run', export_svg):
+                svg_lines = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)['lines']
+        self.assertEqual([line['key'] for line in pdf_lines], ['칸하나', '칸둘'])
+        self.assertEqual([line['key'] for line in svg_lines], ['칸하나', '칸둘'])
+
     def test_svg_runs_sort_by_position_without_sorting_characters(self):
         with tempfile.TemporaryDirectory() as folder:
             work = Path(folder)
