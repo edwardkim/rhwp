@@ -160,6 +160,14 @@ PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하�
 먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
 올바른 글꼴 공급으로 다시 실행합니다.
 
+차트가 OLE에 들어 있어도 먼저 HWPX `Chart/chartN.xml`과 중첩 CFB
+`OOXMLChartContents`의 편집 가능한 데이터를 확인합니다. OOXML `c:chartSpace`가 있으면
+일반 OOXML 차트 경로로 그리며, 미리보기 그림을 값·레이블의 정본으로 쓰지 않습니다.
+레거시 `Contents`만 있으면 별도 파서의 지원 범위로 분류합니다. 차트 변경 PR은
+값축·범주·계열·누적/백분율·데이터 레이블과 차트 뒤 캡션 위치를 한컴 PDF에서
+직접 대조하고, 값 변경 후 낡은 미리보기가 남는 반례도 확인합니다.
+분류와 폴백의 상세 기준은 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따릅니다.
+
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
 따라 review·오늘할일을 같은 PR의 후속 commit에 포함합니다. 이 운영 예외는 외부 기여자의 제출 의무가 아닙니다.
