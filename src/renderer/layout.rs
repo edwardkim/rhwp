@@ -7423,6 +7423,44 @@ impl LayoutEngine {
                 && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
                     .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
                         && seg.vertical_pos < 30_000));
+        // A saved HWPX page can begin with a paragraph whose first vpos is
+        // precisely its spacing-before. That vpos is a margin from the page
+        // origin, not the origin itself. The following saved paragraph must
+        // also account for its own spacing in the same ladder before we use
+        // page-relative vpos for subsequent items (#7406 p90).
+        let hwpx_first_margin_is_page_relative = matches!(
+            col_content.items.first(),
+            Some(PageItem::FullParagraph { para_index })
+                if self.profile.get().hwpx_stored_layout()
+                    && !self.profile.get().session_edited()
+                    && paragraphs.get(*para_index).is_some_and(|first| {
+                        let Some(first_seg) = first.line_segs.first() else { return false; };
+                        let Some(last_seg) = first.line_segs.last() else { return false; };
+                        let Some(next) = paragraphs.get(*para_index + 1) else { return false; };
+                        let Some(next_seg) = next.line_segs.first() else { return false; };
+                        let first_before = styles.para_styles
+                            .get(first.para_shape_id as usize)
+                            .map(|style| style.spacing_before)
+                            .unwrap_or(0.0);
+                        let next_before = styles.para_styles
+                            .get(next.para_shape_id as usize)
+                            .map(|style| style.spacing_before)
+                            .unwrap_or(0.0);
+                        !para_has_overlay_shape(first)
+                            && !para_has_overlay_shape(next)
+                            && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && first_before > 0.5
+                            && next_before > 0.5
+                            && (hwpunit_to_px(first_seg.vertical_pos, self.dpi) - first_before).abs() <= 0.5
+                            && (hwpunit_to_px(
+                                next_seg.vertical_pos - last_seg.vertical_pos
+                                    - last_seg.line_height - last_seg.line_spacing,
+                                self.dpi,
+                            ) - next_before).abs() <= 0.5
+                    })
+        );
         let vpos_page_base_init: Option<i32> = col_content
             .items
             .first()
@@ -7453,7 +7491,7 @@ impl LayoutEngine {
                 // vpos(예: 1000HU)는 쪽 원점이 아니다. 도형은 자체 좌표로 그려지고
                 // 뒤따르는 본문은 쪽-상대 vpos를 그대로 따른다. 제목 vpos를
                 // page_base로 빼면 뒤의 문단·표가 그만큼 위로 밀린다.
-                if saved_inline_heading_page {
+                if saved_inline_heading_page || hwpx_first_margin_is_page_relative {
                     0
                 } else {
                     base

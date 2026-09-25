@@ -267,6 +267,27 @@ fn prep_saved_table_tail_keeps_subject_seven_on_page_81() {
 }
 
 #[test]
+fn prep_page_90_keeps_saved_leading_spacing_after_page_start() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(89).expect("물리 90쪽");
+    // 한컴 2024 PDF p90: 첫 문단의 500HU 앞 간격은 첫 줄 vpos에도
+    // 들어 있고, 뒤 문단 사이의 500HU 간격도 보존된다.
+    let first =
+        line_top_containing(&page.root, "전파경로에 대한 응답률이 적어").expect("90쪽 첫 문단");
+    let next =
+        line_top_containing(&page.root, "HIV 감염인 대상으로 감염 경로 확인").expect("뒤 소제목");
+    let heading = line_top_containing(&page.root, "3. 생존 HIV 감염인의 인구학적 특성")
+        .expect("다음 절 제목");
+    let caption = line_top_containing(&page.root, "<표 37> 2024년 HIV 내국인").expect("표 37 캡션");
+    assert!((first - 101.8).abs() <= 1.5, "첫 문단 y: {first:.1}");
+    assert!((next - 161.2).abs() <= 1.5, "소제목 y: {next:.1}");
+    assert!((heading - 346.5).abs() <= 1.5, "절 제목 y: {heading:.1}");
+    assert!((caption - 456.9).abs() <= 1.5, "표 캡션 y: {caption:.1}");
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
