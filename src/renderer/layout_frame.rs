@@ -253,7 +253,11 @@ impl ParagraphBox {
     /// deriving another horizontal range: two expressions for one quantity are
     /// what previously let the band and body disagree.
     pub(crate) fn frame_with(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
-        LayoutFrame::new(self.effective(), top, exclusions)
+        let mut frame = LayoutFrame::new(self.effective(), top, exclusions);
+        // [#7408] `effective()` 가 원점을 접었으면 그 사실을 프레임이 알아야 한다.
+        // 모르면 저장 행의 **참 원점**을 접힌 0 과 그대로 견주어 반드시 어긋난다.
+        frame.origin_is_authoritative = self.origin_is_derivable;
+        frame
     }
 
     /// [`ParagraphBox::frame_with`] for a flow that models no wrap geometry.
@@ -320,12 +324,27 @@ pub(crate) struct PhysicalRow {
 /// - Glyph shaping and kerning line-boundary differences → #4439.
 /// - Column-solver quantization belongs in `ParagraphBox::body`, before
 ///   paragraph margins. This predicate must not absorb it a second time.
-fn stored_row_matches_frame_expectation(expected: &Range<i32>, stored: &LineSeg) -> bool {
-    expected.start == stored.column_start
+///
+/// `origin_shift` is `0` whenever the frame's origin is authoritative, which is
+/// every case but the withheld-origin one — see
+/// [`LayoutFrame::origin_is_authoritative`]. With `0` this is exactly the rule
+/// above: `column_start` and `segment_width` by equality, no tolerance.
+fn stored_row_matches_frame_expectation(
+    expected: &Range<i32>,
+    stored: &LineSeg,
+    origin_shift: i32,
+) -> bool {
+    let Some(start) = expected.start.checked_add(origin_shift) else {
+        return false;
+    };
+    let Some(end) = expected.end.checked_add(origin_shift) else {
+        return false;
+    };
+    start == stored.column_start
         && stored
             .column_start
             .checked_add(stored.segment_width)
-            .is_some_and(|end| expected.end == end)
+            .is_some_and(|stored_end| end == stored_end)
 }
 
 /// The side-wrap choices represented by this physical-row frame. This is
@@ -357,6 +376,24 @@ pub(crate) struct LayoutFrame {
     pub(crate) current_intervals: Vec<Range<i32>>,
     pub(crate) next_geometry_event: Option<i32>,
     pub(crate) minimum_width: i32,
+    /// [#7408] Whether `horizontal.start` is this paragraph's **true** origin.
+    ///
+    /// `ParagraphBox::effective()` folds the origin into the width when the box
+    /// withholds it (`with_derivable_origin(false)` — the numbered/bulleted list
+    /// blocker documented there). The frame then runs at `0..width` while the
+    /// document's stored `LineSeg` still records the true `column_start`.
+    ///
+    /// The stored-row cache key compares those two by exact equality, so every
+    /// such paragraph missed and was rewrapped — `footnote-01.hwp` stores
+    /// `2000+46188` against a `0..46188` frame. Same width, origin folded away.
+    /// The rewrap then chose rhwp's own break instead of the saved one (pi=4:
+    /// 34 → 35 characters; 한/글 정본 keeps 34).
+    ///
+    /// When this is false the origin is **not evidence** — the frame declared it
+    /// unknown — so the key drops to width and inter-slot layout. The committed
+    /// geometry is still the frame's own carve, so nothing publishes an origin
+    /// the render side cannot consume.
+    origin_is_authoritative: bool,
     /// Whether `horizontal` is a column edge pair.
     ///
     /// The geometry pitch snaps the column's edge pair. A table cell's content
@@ -377,6 +414,7 @@ impl LayoutFrame {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
+            origin_is_authoritative: true,
             rows: Vec::new(),
         }
     }
@@ -642,9 +680,25 @@ impl LayoutFrame {
 
             // §1.4.1's three quantities: interval COUNT, then horzpos and
             // horzsize per slot, all by exact equality.
+            //
+            // [#7408] When this frame withheld its own origin, the row's first
+            // slot fixes the shift and every remaining quantity — widths and the
+            // gaps between slots — is still compared by equality. A frame that
+            // declared its origin unknown cannot also treat that origin as
+            // evidence against the document's own record.
+            let origin_shift = if self.origin_is_authoritative {
+                0
+            } else {
+                match (intervals.first(), stored_row.first()) {
+                    (Some(expected), Some(stored)) => {
+                        stored.column_start.saturating_sub(expected.start)
+                    }
+                    _ => 0,
+                }
+            };
             if intervals.len() != count
                 || intervals.iter().zip(stored_row).any(|(expected, stored)| {
-                    !stored_row_matches_frame_expectation(expected, stored)
+                    !stored_row_matches_frame_expectation(expected, stored, origin_shift)
                 })
             {
                 return None;
@@ -888,6 +942,7 @@ mod tests {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: 1,
+            origin_is_authoritative: true,
             rows: Vec::new(),
         }
     }
@@ -1130,7 +1185,7 @@ mod tests {
                 ..Default::default()
             }];
             assert!(
-                stored_row_matches_frame_expectation(&horizontal, &stored[0]),
+                stored_row_matches_frame_expectation(&horizontal, &stored[0], 0),
                 "{what}: precondition — the predicate alone would admit this"
             );
             assert!(
