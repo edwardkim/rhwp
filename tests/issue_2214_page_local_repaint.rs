@@ -291,7 +291,11 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
 
         // 실제 Studio 순서처럼 path-near를 첫 observer로 둔다.
         assert!(
-            approx_eq(rect.cell_bounds.h, 945.9),
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            approx_eq(rect.cell_bounds.h, 936.3),
             "{label}: deferred edit must retain pre-flush cell bounds: {rect:?}"
         );
         let tree_end = target_tree_end(&doc);
@@ -342,7 +346,11 @@ fn issue_2214_cold_representative_queries_are_exact() {
             direct.y
         );
         assert!(
-            approx_eq(direct.cell_bounds.h, 945.9),
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            approx_eq(direct.cell_bounds.h, 936.3),
             "{label}: cold 56 direct pre-flush bounds"
         );
         assert!(!direct.cell_overflowed, "{label}: cold 56 direct overflow");
@@ -365,7 +373,11 @@ fn issue_2214_cold_representative_queries_are_exact() {
             path.y
         );
         assert!(
-            approx_eq(path.cell_bounds.h, 945.9),
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            approx_eq(path.cell_bounds.h, 936.3),
             "{label}: cold 62 path pre-flush bounds"
         );
         assert!(!path.cell_overflowed, "{label}: cold 62 path overflow");

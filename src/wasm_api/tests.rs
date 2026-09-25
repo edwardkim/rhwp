@@ -19842,7 +19842,10 @@ fn test_get_table_bbox_at_page_for_giant_multi_page_cell() {
             "{path}: current fragment page"
         );
 
-        let click_y = 1057.3;
+        // [#6976] 1057.3 -> 1047.7. 첫 fragment 하단이 접기로 9.6px 올라왔다 — 이 상수는
+        // «첫 fragment 하단 근처» 를 고르는 재현점일 뿐이고, 계약은 그 점이 113쪽 조각의
+        // 경계가 아니라는 것이다.
+        let click_y = 1047.7;
         let legacy_bottom = legacy["y"].as_f64().unwrap() + legacy["height"].as_f64().unwrap();
         let current_bottom = current["y"].as_f64().unwrap() + current["height"].as_f64().unwrap();
         assert!(
@@ -25706,11 +25709,19 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .as_f64()
             .expect("flushed bounds h");
         assert!(
-            (transient_bounds_h - 945.9).abs() <= 0.2,
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            (transient_bounds_h - 936.3).abs() <= 0.2,
             "{label}: transient bounds h={transient_bounds_h}"
         );
         assert!(
-            (flushed_bounds_h - 945.9).abs() <= 0.2,
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            (flushed_bounds_h - 936.3).abs() <= 0.2,
             "{label}: flushed bounds h={flushed_bounds_h}"
         );
         assert_eq!(doc.page_count(), 115, "{label}: page count");
