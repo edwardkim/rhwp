@@ -574,6 +574,62 @@ fn inline_table_stored_line_top_offset_px(
     (delta > 0).then(|| hwpunit_to_px(delta, dpi))
 }
 
+/// 글머리표 문단의 마커 문자열. 없거나 그릴 수 없으면 `None`.
+fn bullet_marker_text(
+    para_style: &crate::renderer::style_resolver::ResolvedParaStyle,
+    styles: &ResolvedStyleSet,
+) -> Option<String> {
+    if para_style.head_type != HeadType::Bullet {
+        return None;
+    }
+    // Bullet: numbering_id(1-based)로 Bullet 참조
+    let bullet_id = para_style.numbering_id;
+    if bullet_id == 0 {
+        return None;
+    }
+    let bullet = styles.bullets.get((bullet_id - 1) as usize)?;
+    // U+FFFF는 이미지 글머리표 표시자 — 문자 렌더링 불가, 건너뜀
+    if bullet.bullet_char == '\u{FFFF}' {
+        return None;
+    }
+    // PUA 문자(0xF000~0xF0FF)를 표준 Unicode로 매핑
+    // HWP는 Symbol 폰트 문자를 PUA(0xF000+code)로 저장
+    let bullet_ch = map_pua_bullet_char(bullet.bullet_char);
+    // 글머리 기호 + 본문과의 거리(text_distance)에 따른 간격
+    Some(if bullet.text_distance > 0 {
+        format!("{} ", bullet_ch)
+    } else {
+        format!("{}", bullet_ch)
+    })
+}
+
+/// [#7418] 글머리표 마커가 문단의 **모든 줄**에서 차지하는 폭(px).
+///
+/// 한/글은 마커 뒤에서 본문을 시작하고 둘째 줄부터도 같은 자리에 맞춘다(행잉).
+/// 배치(`layout_composed_paragraph` 의 `num_offset`)가 이 폭만큼 줄 가용폭을 줄이므로,
+/// 줄 나눔(`layout_paragraph_in_frame`)도 같은 폭으로 줄을 채워야 한다. 종전에는 줄 나눔만
+/// 마커를 몰라 줄마다 마커 폭(`endnote-01` 15pt `❍ ` 2175HU)만큼 더 담았고, 배치는 넘친
+/// 줄을 좁은 상자에 양쪽 정렬로 눌러 담았다. 스타일은 배치의 마커 스타일
+/// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
+///
+/// 번호·개요 문단은 마커 문자열이 배치 단계의 번호 계수기에서 정해지므로 여기서 다루지 않는다.
+pub(crate) fn bullet_marker_hang_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
+    let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let text = bullet_marker_text(para_style, styles)?;
+    let char_shape_id = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
+        .unwrap_or(0);
+    let lang = para
+        .text
+        .chars()
+        .next()
+        .map(crate::renderer::style_resolver::detect_lang_category)
+        .unwrap_or(0);
+    let width = estimate_text_width(&text, &resolved_to_text_style(styles, char_shape_id, lang));
+    (width > 0.0).then_some(width)
+}
+
 fn paragraph_active_text_style(
     styles: &ResolvedStyleSet,
     para: Option<&Paragraph>,
@@ -4591,26 +4647,21 @@ impl LayoutEngine {
             .get(start_line..end)
             .map_or(true, |slice| slice.iter().all(|l| l.runs.is_empty()));
 
-        // 마커 자체는 첫 조각에서만 그리지만 본문 내어쓰기는 이어받는 줄에도 남는다.
-        let numbering_width = if para.is_some_and(|p| {
-            styles
-                .para_styles
-                .get(p.para_shape_id as usize)
-                .is_some_and(|s| s.head_type == HeadType::Bullet)
-        }) {
-            para.map_or(0.0, |p| {
-                super::super::composer::bullet_marker_width(p, styles)
-            })
-        } else if let Some(ref num_text) = composed.numbering_text {
-            let num_style = numbering_marker_text_style(
-                styles,
-                para,
-                composed.lines.first().and_then(|line| line.runs.first()),
-            );
-            estimate_text_width(num_text, &num_style)
-        } else {
-            0.0
-        };
+        // 마커는 첫 조각에서만 그리지만 내어쓰기는 이어지는 줄에도 유지한다.
+        // 줄 나눔과 같은 글머리표 폭을 사용한다.
+        let numbering_width =
+            if let Some(width) = para.and_then(|p| bullet_marker_hang_px(p, styles)) {
+                width
+            } else if let Some(ref num_text) = composed.numbering_text {
+                let num_style = numbering_marker_text_style(
+                    styles,
+                    para,
+                    composed.lines.first().and_then(|line| line.runs.first()),
+                );
+                estimate_text_width(num_text, &num_style)
+            } else {
+                0.0
+            };
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
@@ -9833,7 +9884,7 @@ impl LayoutEngine {
                     text
                 }
             }
-            HeadType::Bullet => super::super::composer::bullet_marker_text(para, styles)?,
+            HeadType::Bullet => bullet_marker_text(para_style, styles)?,
         };
 
         // 번호 텍스트를 별도 필드에 저장 (첫 run에 prepend하지 않음)
