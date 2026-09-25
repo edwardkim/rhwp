@@ -1982,7 +1982,15 @@ pub(crate) fn no_ls_short_label_cell(
         recompose_cell_lines_in_frame(
             &mut comp,
             p,
-            ParagraphBox::content_width_px(cell_inner_width, dpi),
+            // [#7422] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. `#7410` 이
+            // 편집 경로에서 통일한 계약이 이 재조합 경로에는 닿지 않아, 같은 문단이 어느
+            // 경로로 왔느냐로 다른 상자를 받았다 — 칸 31 에서 프레임 폭이 한/글의 39208
+            // 대신 40808 이 되어 줄마다 두 글자를 더 먹었다.
+            ParagraphBox::content_for_style(
+                cell_inner_width,
+                styles.para_styles.get(p.para_shape_id as usize),
+                dpi,
+            ),
             styles,
             dpi,
             false,
@@ -2291,7 +2299,12 @@ fn reflow_cell_line_ignoring_stored_segs(
     recompose_cell_lines_in_frame(
         composed,
         &para_no_ls,
-        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        // [#7422] 위와 같은 계약. 저장 seg 를 무시하는 경로도 문단 여백을 뺀다.
+        ParagraphBox::content_for_style(
+            cell_inner_width_px,
+            styles.para_styles.get(para.para_shape_id as usize),
+            dpi,
+        ),
         styles,
         dpi,
         false,
@@ -2316,7 +2329,12 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
     recompose_cell_lines_in_frame(
         composed,
         para,
-        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        // [#7422] 위와 같은 계약. 렌더/측정 공통 경로도 문단 여백을 뺀다.
+        ParagraphBox::content_for_style(
+            cell_inner_width_px,
+            styles.para_styles.get(para.para_shape_id as usize),
+            dpi,
+        ),
         styles,
         dpi,
         legacy_hwp3_stored_geometry,
