@@ -9,7 +9,7 @@ last_verified: 2026-09-26
 
 ## 최종 판정
 
-**머지 보류.** 메인터너 보정으로 PrEP 본문/표 겹침을 15건에서 1건으로 줄였고 67~70쪽의 국소 Visual Sweep은 통과했다. 추가 OLE 차트 보정 뒤 남성 차트가 있는 26쪽은 94.19%, 분리한 HWP/HWPX 샘플은 각각 90.67%/90.58%로 통과했다. 여성 차트가 있는 27쪽은 저장된 줄간격 복원 후 66.83%에서 91.85%로 개선됐다. 앞선 head의 전체 140쪽 Native 검증은 양쪽 모두 140쪽을 출력했지만 9쪽이 실루엣 90% 미만이어서 `re_review_required`였다. 후속 보정으로 40쪽은 60.17%에서 99.998%, 51쪽은 66.99%에서 100%, 57쪽은 88.08%에서 100%가 됐다. 다른 미달 페이지와 새 head의 전체 회귀·fresh WASM·전체 스윕은 남아 있다. 현재 원 PR을 승인하거나 통합하지 않는다.
+**머지 보류.** 메인터너 보정으로 PrEP 본문/표 겹침을 15건에서 1건으로 줄였고 67~70쪽의 국소 Visual Sweep은 통과했다. 추가 OLE 차트 보정 뒤 남성 차트가 있는 26쪽은 94.19%, 분리한 HWP/HWPX 샘플은 각각 90.67%/90.58%로 통과했다. 여성 차트가 있는 27쪽은 저장된 줄간격 복원 후 66.83%에서 91.85%로 개선됐다. 앞선 head의 전체 140쪽 Native 검증은 양쪽 모두 140쪽을 출력했지만 9쪽이 실루엣 90% 미만이어서 `re_review_required`였다. 후속 보정으로 40쪽은 60.17%에서 99.998%, 51·57쪽은 100%, 61쪽은 63.30%에서 99.95%가 됐다. 다른 미달 페이지와 새 head의 전체 회귀·fresh WASM·전체 스윕은 남아 있다. 현재 원 PR을 승인하거나 통합하지 않는다.
 
 ## 접수 정보
 
@@ -38,7 +38,7 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 | 신규 한컴 PDF | [1790387_prep_final_report-2024.pdf](../../pdf/issue2006/1790387_prep_final_report-2024.pdf), 원본을 HWP MCP `--engine 2024`로 변환, SHA-256 `04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8`, 140쪽, Hancom PDF 1.3.0.550 |
 | KoPub 집중 검사 | 검토 source head `regression_suite_016` 2/2 PASS |
 | 겹침 baseline | base 14건, 원 PR 단독 15건, 메인터너 보정 후보 1건. 상한은 15→1로 축소했고 검사 PASS. 최종 head 재검증 필요 |
-| Native Visual Sweep | 26/27/67/68/69/70/94/108쪽 영향 검증은 각각 **94.19/91.85/99.99/96.50/99.94/100.00/99.57/99.84%**. 앞선 head의 전체 140쪽은 rhwp/PDF 모두 140쪽, `re_review_required`: 1쪽 88.11%, 40쪽 60.17%, 51쪽 66.99%, 57쪽 88.08%, 61쪽 63.30%, 82쪽 75.40%, 90쪽 61.83%, 93쪽 75.61%, 105쪽 77.50%. 2·4·10·138쪽은 양쪽 모두 빈 페이지라 지표 없음·내용 픽셀 100% 일치. 후속 39/40/41쪽 **99.09/99.998/99.99%**, 50/51/52쪽 **99.95/100/100%**, 56/57/58쪽 **99.61/100/99.93%**; 세 국소 gate 통과. 최종 head 전체 스윕 필요 |
+| Native Visual Sweep | 26/27/67/68/69/70/94/108쪽 영향 검증은 각각 **94.19/91.85/99.99/96.50/99.94/100.00/99.57/99.84%**. 앞선 head의 전체 140쪽은 rhwp/PDF 모두 140쪽, `re_review_required`: 1쪽 88.11%, 40쪽 60.17%, 51쪽 66.99%, 57쪽 88.08%, 61쪽 63.30%, 82쪽 75.40%, 90쪽 61.83%, 93쪽 75.61%, 105쪽 77.50%. 2·4·10·138쪽은 양쪽 모두 빈 페이지라 지표 없음·내용 픽셀 100% 일치. 후속 39/40/41쪽 **99.09/99.998/99.99%**, 50/51/52쪽 **99.95/100/100%**, 56/57/58쪽 **99.61/100/99.93%**, 60/61/62쪽 **100/99.95/99.55%**; 네 국소 gate 통과. 최종 head 전체 스윕 필요 |
 | OLE 분리 입력 | HWP `a29d415a…`, HWPX `a64ee3e5…`, [한컴 PDF](../../pdf/issue7406/7406_OLE__CHART.pdf) `bd3a5a0e…`. 한 페이지 Native HWP **90.67%**, HWPX **90.58%**, 두 gate 통과 |
 | 전체 release-test·lint·fresh WASM | 앞선 코드 후보의 nextest 10,241 PASS/50 skip 및 lint 통과. 추가 OLE 수정 후 최종 head 기준 재실행 필요; fresh WASM 미검증 |
 
@@ -49,6 +49,8 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 물리 69쪽의 표 보정과 94쪽 KoPub 대조군은 기존 이미지에 남겼다. OLE 분리 샘플의 백분율 축·막대 길이·색·레이블을 직접 확인했다. 원본 27쪽은 도형 줄 뒤에 저장된 720HU 줄간격을 복원해 다음 본문·그림 위치를 기준 PDF에 맞췄다. 39→40쪽 1×1 셀 분할은 원본 위·아래 안 여백 각 850HU가 작은 셀 높이 282HU에 의해 축소된 문제를 고쳤다. 측정/컷 높이 차이 20.8px을 해소하고 저장 경계의 마지막 줄을 39쪽에 보존했다. 빈 문단의 시작 좌표가 표 조각 끝과 일치하면 문단 앞 간격도 한 번만 소비한다. 50→51쪽은 표 앞 한 줄 캡션의 저장 LineSeg가 지정한 표 시작 49275HU(본문 상대 657.0px)보다 분할 스캔의 흐름 시작이 26.7px 늦었던 문제다. 같은 저장 좌표를 첫 조각 예산에 적용해 한컴 PDF의 `치과의사`·`약사` 행을 50쪽에 남기고, 51쪽은 `간호사` 행부터 재개한다. 정식 회귀는 수정 전 FAIL/후 PASS, PrEP 관련 7건 PASS이며 새 이미지에서 표 외곽·뒤 문단을 직접 대조했다. 앞선 head의 전체 140쪽 review·overlay는 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/full-native-final/prep7406/`, 국소 재캡처는 `visual/p40-padding-impact/prep7406/`와 `visual/p51-caption-anchor/prep7406/`에 있다. 대표 이미지:
 
 57쪽은 가운데 정렬 TAC 표의 host 문단 왼쪽 여백 1000HU를 대체 배치 경로가 정렬 폭에 반영하지 않아 표 괘선이 한컴 PDF x=206px보다 6px 왼쪽이었다. 문단의 좌우 여백을 적용한 가용 줄 폭에서 표를 가운데 정렬했다. 정식 회귀는 수정 전 x=200.19px FAIL/후 PASS, PrEP 관련 8건 PASS. 56~58쪽 국소 sweep은 통과했고 표의 좌우 괘선과 57쪽 뒤 내용을 직접 확인했다. 재캡처는 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/p57-centered-margin/prep7406/`에 있다.
+
+61쪽의 분포도는 OLE 차트가 아니라 원본 `BinData/image16.tiff`(676×539) 그림이다. Para 기준 그림의 paint 상자만 host 왼쪽 여백 1000HU를 빠뜨려 PDF보다 13.3px 왼쪽에 놓였고, 그 여백은 typeset 쪽 공통 배치 상자에는 이미 포함돼 있었다. 두 경로의 상자를 맞췄다. 그림 설명의 끝과 다음 저장 LineSeg 시작이 같은 43579HU인데 문단 앞 간격 500HU를 다시 더하던 것도 그 경계에서만 제거했다. 그림 원점·뒤 두 문단의 정식 회귀는 수정 전 FAIL/후 PASS, PrEP 관련 9건 PASS. 60~62쪽 국소 sweep은 **100/99.95/99.55%**로 통과했고 그래프 본체·캡션·뒤 본문을 직접 판독했다. 재캡처는 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/p61-caption-flow/prep7406/`에 있다.
 
 ![#7406 OLE 차트 분리 샘플 Native review](assets/pr7406_20260925/ole_chart_review_001.png)
 
@@ -74,6 +76,10 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 ![#7406 원본 57쪽 Native overlay](assets/pr7406_20260925/native_overlay_057.png)
 
+![#7406 원본 61쪽 Native review](assets/pr7406_20260925/native_review_061.png)
+
+![#7406 원본 61쪽 Native overlay](assets/pr7406_20260925/native_overlay_061.png)
+
 ![#7406 69쪽 Native review](assets/pr7406_20260925/native_review_069.png)
 
 ![#7406 69쪽 Native overlay](assets/pr7406_20260925/native_overlay_069.png)
@@ -84,4 +90,4 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 ## 보류 해제와 contributor 안내
 
-61·82·90·93·105쪽 등 다른 90% 미만 페이지를 순서대로 보정하고 영향 페이지를 다시 캡처한다. 사용자가 1쪽의 글꼴 차이는 무시하도록 지정했지만, 나머지 배치 차이와 자동 게이트 미달은 여전히 보류 사유다. 새 head의 전체 Native/fresh WASM Visual Sweep·nextest·lint를 마친 뒤 판정한다. 앞선 head에서 기준 PDF 140쪽과 rhwp 전체 출력 140쪽의 개수를 확인했으며, 선택 페이지만의 통과나 페이지 수 일치만으로 전체 시각 검증을 대신하지 않는다. 머지 시에는 실제 merge SHA와 CI URL, 같은 이미지의 merge SHA 고정 raw URL로 기여자에게 결과를 안내한다.
+82·90·93·105쪽 등 다른 90% 미만 페이지를 순서대로 보정하고 영향 페이지를 다시 캡처한다. 사용자가 1쪽의 글꼴 차이는 무시하도록 지정했지만, 나머지 배치 차이와 자동 게이트 미달은 여전히 보류 사유다. 새 head의 전체 Native/fresh WASM Visual Sweep·nextest·lint를 마친 뒤 판정한다. 앞선 head에서 기준 PDF 140쪽과 rhwp 전체 출력 140쪽의 개수를 확인했으며, 선택 페이지만의 통과나 페이지 수 일치만으로 전체 시각 검증을 대신하지 않는다. 머지 시에는 실제 merge SHA와 CI URL, 같은 이미지의 merge SHA 고정 raw URL로 기여자에게 결과를 안내한다.

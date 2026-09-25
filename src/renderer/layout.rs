@@ -8882,6 +8882,17 @@ impl LayoutEngine {
                     self.dpi,
                 );
                 y_offset -= shared_spacing;
+                let caption_shared_spacing =
+                    crate::renderer::float_placement::hwpx_after_picture_caption_shared_spacing_px(
+                        self.profile.get().hwpx_stored_layout()
+                            && !self.profile.get().session_edited(),
+                        item_para.checked_sub(1).and_then(|i| paragraphs.get(i)),
+                        &paragraphs[item_para],
+                        spacing_before,
+                        y_offset - col_area.y,
+                        self.dpi,
+                    );
+                y_offset -= caption_shared_spacing;
             }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
             // 아이템 배치에 넘긴다.
@@ -14477,11 +14488,9 @@ impl LayoutEngine {
                             let para_style_id = comp
                                 .map(|c| c.para_style_id as usize)
                                 .unwrap_or(para.para_shape_id as usize);
-                            let alignment = styles
-                                .para_styles
-                                .get(para_style_id)
-                                .map(|s| s.alignment)
-                                .unwrap_or(Alignment::Left);
+                            let para_style = styles.para_styles.get(para_style_id);
+                            let alignment =
+                                para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
                             let deferred_page_start_square = wrap_anchors
                                 .values()
                                 .any(|anchor| anchor.anchor_para_index == para_index)
@@ -14599,10 +14608,17 @@ impl LayoutEngine {
                             } else {
                                 (vpos_accounts_for_height, pic_y)
                             };
+                            // typeset의 ObjectPlacementFrame과 같은 문단 좌우 여백을
+                            // Para 기준 그림에도 준다. paint만 단 전체를 기준으로
+                            // 두면 TIFF 그림과 캡션이 저장 1000HU만큼 왼쪽으로 간다
+                            // (#7406 p61). 다른 상대 기준은 별도 column/body/paper다.
+                            let para_margin_left = para_style.map_or(0.0, |s| s.margin_left);
+                            let para_margin_right = para_style.map_or(0.0, |s| s.margin_right);
                             let pic_container = LayoutRect {
-                                x: col_area.x,
+                                x: col_area.x + para_margin_left,
                                 y: pic_y,
-                                width: col_area.width,
+                                width: (col_area.width - para_margin_left - para_margin_right)
+                                    .max(0.0),
                                 height: col_area.height - (pic_y - col_area.y),
                             };
                             result_y = self.layout_body_picture(

@@ -215,6 +215,43 @@ fn prep_centered_inline_table_uses_host_paragraph_margin() {
 }
 
 #[test]
+fn prep_paragraph_relative_chart_image_uses_host_left_margin() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(60).expect("물리 61쪽");
+    fn chart_image(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Image(image) = &node.node_type {
+            if image.section_index == Some(1)
+                && image.para_index == Some(7)
+                && image.control_index == Some(0)
+            {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(chart_image)
+    }
+    let image = chart_image(&page.root).expect("성 파트너 수 분포 그림");
+    // 한컴 2024 PDF p61의 그림 원점은 96dpi에서 x=110.3px.
+    // 같은 TIFF가 rhwp에서는 문단 왼쪽 여백 1000HU를 빠뜨려 x=96.9px였다.
+    assert!(
+        (image.bbox.x - 110.3).abs() <= 1.5,
+        "그림 x: {:.2}",
+        image.bbox.x
+    );
+    // 캡션 뒤 본문은 저장 vpos=43579HU에서 곧바로 시작한다.
+    // 한컴 PDF 첫 줄/다음 문단은 각각 676.2/762.0px이다.
+    let next =
+        line_top_containing(&page.root, "HIV 검사를 한 적 있는 사람은").expect("그림 뒤 첫 문단");
+    let following = line_top_containing(&page.root, "성연결망 분석은").expect("그림 뒤 둘째 문단");
+    assert!((next - 676.2).abs() <= 1.5, "그림 뒤 첫 문단 y: {next:.2}");
+    assert!(
+        (following - 762.0).abs() <= 1.5,
+        "그림 뒤 둘째 문단 y: {following:.2}"
+    );
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
