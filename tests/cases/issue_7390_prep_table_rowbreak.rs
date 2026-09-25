@@ -311,6 +311,23 @@ fn prep_page_79_keeps_last_quote_before_saved_cell_reset() {
 }
 
 #[test]
+fn prep_page_93_caption_starts_after_saved_picture_bottom() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(92).expect("물리 93쪽");
+    // 한컴 2024 PDF p93 bbox(72dpi → 96dpi): 그림 15 캡션 572.1px,
+    // 뒤 첫 문단 613.0px, CDC 문단 685.8px.
+    let caption = line_top_containing(&page.root, "[그림 15] QUANTPrEP을").expect("그림 15 캡션");
+    let first = line_top_containing(&page.root, "2024년 주민등록연앙인구를 활용하였을 때")
+        .expect("그림 뒤 첫 문단");
+    let cdc = line_top_containing(&page.root, "다음으로 미국 CDC에서").expect("CDC 문단");
+    assert!((caption - 572.1).abs() <= 1.5, "캡션 y: {caption:.1}");
+    assert!((first - 613.0).abs() <= 1.5, "그림 뒤 문단 y: {first:.1}");
+    assert!((cdc - 685.8).abs() <= 1.5, "CDC 문단 y: {cdc:.1}");
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

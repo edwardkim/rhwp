@@ -8932,6 +8932,74 @@ impl LayoutEngine {
                     );
                 y_offset -= caption_shared_spacing;
             }
+            // A saved HWPX can put an empty paragraph exactly at the painted
+            // bottom of a floating picture. Its one line then separates the
+            // picture and the following caption. The picture host's own line
+            // height is already in the flow cursor; adding it again moves the
+            // empty line, caption, and later text together (#7406 p93).
+            if self.profile.get().hwpx_stored_layout() && !self.profile.get().session_edited() {
+                let picture_bottom_origin = (|| {
+                    let PageItem::FullParagraph { para_index } = item else {
+                        return None;
+                    };
+                    let PageItem::Shape {
+                        para_index: host_index,
+                        control_index,
+                    } = col_content.items.get(item_ordinal.checked_sub(1)?)?
+                    else {
+                        return None;
+                    };
+                    if *host_index + 1 != *para_index {
+                        return None;
+                    }
+                    let host = paragraphs.get(*host_index)?;
+                    let para = paragraphs.get(*para_index)?;
+                    let next = paragraphs.get(*para_index + 1)?;
+                    let Control::Picture(picture) = host.controls.get(*control_index)? else {
+                        return None;
+                    };
+                    if picture.common.treat_as_char
+                        || picture.common.text_wrap != TextWrap::TopAndBottom
+                        || picture.caption.is_some()
+                        || !para.text.trim().is_empty()
+                        || !para.controls.is_empty()
+                        || para.line_segs.len() != 1
+                    {
+                        return None;
+                    }
+                    let saved_line = para.line_segs.first()?;
+                    let next_line = next.line_segs.first()?;
+                    if saved_line.tag
+                        & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        != 0
+                        || next_line.tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                        || next_line.vertical_pos
+                            != saved_line.vertical_pos + saved_line.line_height
+                    {
+                        return None;
+                    }
+                    let image_bottom = col_node.children.iter().rev().find_map(|node| {
+                        let RenderNodeType::Image(image) = &node.node_type else {
+                            return None;
+                        };
+                        (image.para_index == Some(*host_index)
+                            && image.control_index == Some(*control_index))
+                        .then_some(node.bbox.y + node.bbox.height)
+                    })?;
+                    let saved_y = col_area.y
+                        + hwpunit_to_px(
+                            saved_line.vertical_pos - vpos_page_base_init.unwrap_or(0),
+                            self.dpi,
+                        );
+                    ((saved_y - image_bottom).abs() <= 1.0 && y_offset > image_bottom + 0.5)
+                        .then_some(image_bottom)
+                })();
+                if let Some(origin) = picture_bottom_origin {
+                    y_offset = origin;
+                }
+            }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
             // 아이템 배치에 넘긴다.
             self.item_flow_snap_context.set(
