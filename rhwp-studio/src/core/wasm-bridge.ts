@@ -1,5 +1,8 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
+import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
+import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
@@ -290,7 +293,7 @@ function installCanvasFontSubstitution(): void {
       return descriptor.get!.call(this);
     },
     set(value: string) {
-      descriptor.set!.call(this, substituteCssFontFamily(String(value)));
+      descriptor.set!.call(this, scopedHostCanvasFont(String(value)) ?? substituteCssFontFamily(String(value)));
     },
   });
   canvasFontSubstitutionInstalled = true;
@@ -299,6 +302,7 @@ function installCanvasFontSubstitution(): void {
 export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
+  private readonly hostCanvasFonts = new HostCanvasFontSession();
   private canvasFontGeneration = 0;
 
   private canvasMetricDocument(): CanvasMetricDocument | null {
@@ -320,18 +324,49 @@ export class WasmBridge {
     this.canvasMetricDocument()?.selectCanvasMetrics(false);
   }
 
-  prepareCanvasMetrics(backend: string, isCurrent: () => boolean = () => true): Promise<boolean> {
+  async prepareCanvasMetrics(backend: string, isCurrent: () => boolean = () => true): Promise<boolean> {
     const doc = this.doc;
+    const documentGeneration = this._documentGeneration;
+    const current = () => this.doc === doc && this._documentGeneration === documentGeneration && isCurrent();
+    if (backend === 'canvas2d' && hasHostFontProvider()) {
+      const generation = getHostFontState().generation;
+      await prepareHostFontCatalog();
+      if (!current() || generation !== getHostFontState().generation) return false;
+      const records = this.withPortableMetrics(() => {
+        const selected = new Map<string, LocalFontRecord>();
+        for (let page = 0; page < this.pageCount; page++) {
+          for (const record of collectHostFontRequests(this.getPageLayerTreeObject(page))) {
+            selected.set(localFontFaceKey(record), record);
+          }
+        }
+        return [...selected.values()];
+      });
+      await this.hostCanvasFonts.prepare(records);
+      if (!current() || generation !== getHostFontState().generation) return false;
+    } else {
+      this.hostCanvasFonts.reset();
+    }
     const metricDoc = this.canvasMetricDocument();
-    if (!metricDoc) return Promise.resolve(false);
+    if (!metricDoc || !current()) return false;
     return this.canvasMetrics.prepare(metricDoc,
       { document: this._documentGeneration, fonts: this.canvasFontGeneration }, backend,
-      () => this.doc === doc && isCurrent(), () => document.fonts.ready,
-      () => document.createElement('canvas').getContext('2d'));
+      current, () => document.fonts.ready, () => {
+        const context = document.createElement('canvas').getContext('2d');
+        return context ? this.hostCanvasFonts.measurementContext(context) : null;
+      });
+  }
+
+  releaseCanvasFontResources(): void {
+    this.hostCanvasFonts.reset();
+    this.invalidateCanvasMetrics();
+  }
+
+  getHostCanvasFontDiagnostics(): { loaded: number; pending: number; failed: number } {
+    return this.hostCanvasFonts.diagnostics();
   }
 
   withPortableMetrics<T>(operation: () => T): T {
-    return withPortableMetrics(this.canvasMetricDocument(), operation);
+    return withHostCanvasFonts(null, () => withPortableMetrics(this.canvasMetricDocument(), operation));
   }
   private initialized = false;
   private _fileName = 'document.hwp';
@@ -389,7 +424,7 @@ export class WasmBridge {
       if (!ctx) {
         ctx = document.createElement('canvas').getContext('2d');
       }
-      const resolved = canvasFontSubstitutionInstalled ? font : substituteCssFontFamily(font);
+      const resolved = scopedHostCanvasFont(font) ?? (canvasFontSubstitutionInstalled ? font : substituteCssFontFamily(font));
       if (resolved !== lastFont) {
         ctx!.font = resolved;
         lastFont = resolved;
@@ -403,7 +438,7 @@ export class WasmBridge {
    * 비교 상세 창 등 보조 WasmBridge 인스턴스에서 반복 로드 시 메모리 누수를 줄이기 위해 사용한다.
    */
   releaseDocument(): void {
-    this.canvasMetrics.invalidate();
+    this.releaseCanvasFontResources();
     if (this.doc) {
       try {
         this.doc.free();
@@ -444,6 +479,7 @@ export class WasmBridge {
       this._requiresPasswordForSave = requiresPasswordForSave;
       this._documentDigest = nextDocumentDigest;
       this._documentGeneration += 1;
+      this.releaseCanvasFontResources();
       if (previousDoc) {
         try {
           previousDoc.free();
@@ -551,6 +587,7 @@ export class WasmBridge {
       this._documentDigest = null;
     }
     this._documentGeneration += 1;
+    this.releaseCanvasFontResources();
     console.log(`[WasmBridge] 새 문서 생성: ${info.pageCount}페이지`);
     this.onFileNameChanged?.(this._fileName);
     return info;
@@ -929,7 +966,7 @@ export class WasmBridge {
 
   renderPageToCanvas(pageNum: number, canvas: HTMLCanvasElement, scale = 1.0): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    this.doc.renderPageToCanvas(pageNum, canvas, scale);
+    withHostCanvasFonts(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /**
@@ -960,18 +997,18 @@ export class WasmBridge {
       ) => void;
     };
     if (typeof d.renderPageToCanvasFilteredWithProfile === 'function') {
-      d.renderPageToCanvasFilteredWithProfile(pageNum, canvas, scale, layerKind, profile);
+      withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
       return;
     }
     if (profile !== 'screen') {
       throw new Error('[WasmBridge] 현재 WASM은 profile별 Canvas2D 렌더링을 지원하지 않습니다');
     }
     if (typeof d.renderPageToCanvasFiltered === 'function') {
-      d.renderPageToCanvasFiltered(pageNum, canvas, scale, layerKind);
+      withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPageToCanvasFiltered!(pageNum, canvas, scale, layerKind));
       return;
     }
     // 구버전 WASM(public/rhwp.js 등): 레이어 필터 API 없음 → 전체 캔버스 렌더로 폴백
-    this.doc.renderPageToCanvas(pageNum, canvas, scale);
+    withHostCanvasFonts(this.hostCanvasFonts, () => this.doc!.renderPageToCanvas(pageNum, canvas, scale));
   }
 
   /** 기존 Canvas를 유지한 채 page-space 일부만 filtered replay한다 (#3137 Stage 4). */
@@ -1000,7 +1037,7 @@ export class WasmBridge {
     if (typeof d.renderPagePatchToCanvasFilteredWithProfile !== 'function') {
       throw new Error('[WasmBridge] 현재 WASM은 focused page patch 렌더링을 지원하지 않습니다');
     }
-    d.renderPagePatchToCanvasFilteredWithProfile(
+    withHostCanvasFonts(this.hostCanvasFonts, () => d.renderPagePatchToCanvasFilteredWithProfile!(
       pageNum,
       canvas,
       scale,
@@ -1010,7 +1047,7 @@ export class WasmBridge {
       patch.y,
       patch.width,
       patch.height,
-    );
+    ));
   }
 
   /**
@@ -3469,14 +3506,14 @@ export class WasmBridge {
     if (typeof doc.renderHeaderFooterEditPreviewToCanvas !== 'function') {
       throw new Error('현재 WASM은 HF 대표 편집 preview 렌더링을 지원하지 않습니다');
     }
-    doc.renderHeaderFooterEditPreviewToCanvas(
+    withHostCanvasFonts(this.hostCanvasFonts, () => doc.renderHeaderFooterEditPreviewToCanvas!(
       pageNum,
       sectionIdx,
       isHeader,
       applyTo,
       canvas,
       scale,
-    );
+    ));
   }
 
   deleteHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): void {

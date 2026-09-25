@@ -42,7 +42,8 @@ last_verified: 2026-08-28
 2. 보정은 원 PR head 위에만 올린다. 관련 없는 `devel` 이력이나 다른 PR 변경을 fork branch에
    섞지 않는다.
 3. 보정 사유, 보정 범위, 검증 결과와 검증하지 못한 범위를 review 문서와 PR comment에
-   명시한다.
+   명시한다. 기여자에게 게시할 본문은 감사와 환영을 포함한 **한국어 존댓말**로 작성하며,
+   왜 보정이 필요했는지도 원 기여의 성과와 구분해 구체적으로 설명한다. 반말·책임 전가 표현은 쓰지 않는다.
 4. 사용자 또는 maintainer가 실제 동작을 확인한 경우에는 그 사실과 확인 주체를 기록하되,
    자동화 검증 결과로 바꾸어 표현하지 않는다.
 
@@ -68,8 +69,8 @@ trailing head가 생성한 CI에서 fast pass가 허용되는지 preflight 결�
 2. merge SHA를 확인하고 `devel`을 `upstream/devel`에 fast-forward한다.
 3. issue의 자동 close 여부를 확인하고, 필요한 경우 실제 merge·검증 결과를 담은 maintainer
    comment를 게시한다.
-4. 원 PR에는 따뜻한 감사와 rhwp 첫 기여 환영을 명시한다. contributor의 기여 내용과 maintainer
-   보정 사유를 구분하고, 실제 CI·로컬 검증·시각 검증 결과만 적는다.
+4. 원 PR에는 존댓말로 따뜻한 감사와 rhwp 첫 기여 환영을 명시한다. contributor의 기여 내용과 maintainer
+   보정이 필요했던 이유·범위를 구분하고, 실제 CI·로컬 검증·시각 검증 결과만 적는다.
 5. contributor fork branch는 삭제하지 않는다. 이번 처리에서 만든 clean local branch, worktree,
    검토 전용 산출물만 [merge 후속 처리](post_merge.md)의 정리 절차로 정리한다.
 
@@ -78,11 +79,11 @@ trailing head가 생성한 CI에서 fast pass가 허용되는지 preflight 결�
 ```markdown
 rhwp 첫 기여를 보내주셔서 감사합니다. 검토와 merge를 완료했습니다.
 
-- 기여 구현: <원 기여 범위>
-- maintainer 보정: <보정이 필요한 이유와 최소 범위>
-- CI: <실제로 성공한 최신 head check>
-- 로컬 검증: <실제로 실행한 focused 검증>
-- 동작 확인: <사용자 또는 maintainer가 확인한 범위, 해당하는 경우>
+- 기여 구현: <원 기여 범위>를 고쳐 주셨습니다.
+- maintainer 보정: <보정이 필요한 이유> 때문에 <최소 범위>를 추가로 보정했습니다.
+- CI: <실제로 성공한 최신 head check>를 확인했습니다.
+- 로컬 검증: <실제로 실행한 focused 검증>을 완료했습니다.
+- 동작 확인: <사용자 또는 maintainer가 확인한 범위>를 확인했습니다.
 
 contributor fork branch는 유지했습니다. 다음 기여도 환영합니다.
 ```

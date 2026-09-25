@@ -21,12 +21,34 @@ function fontFaceFamily(rule) {
   return value.replace(/^(['"])(.*)\1$/u, '$2').toLocaleLowerCase('en-US');
 }
 
+// Embedded full fonts can make a single @font-face rule tens of megabytes long.
+// V8's regexp iterator over that rule can exhaust its stack before Chrome runs.
+function fontFaceRanges(source) {
+  const ranges = [];
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf('@', offset);
+    if (start < 0) break;
+    const opening = source.slice(start, start + 64).match(/^@font-face\s*\{/iu);
+    if (!opening) {
+      offset = start + 1;
+      continue;
+    }
+    const close = source.indexOf('}', start + opening[0].length);
+    if (close < 0) break;
+    ranges.push([start, close + 1]);
+    offset = close + 1;
+  }
+  return ranges;
+}
+
 function declaredFontFaceFamilies(source) {
-  return new Set(
-    [...source.matchAll(/@font-face\s*\{[^{}]*\}/giu)]
-      .map(match => fontFaceFamily(match[0]))
-      .filter(family => family !== null),
-  );
+  return new Set(fontFaceRanges(source)
+    .map(([start, end]) => (
+      fontFaceFamily(source.slice(start, Math.min(end, start + 4096)))
+      ?? fontFaceFamily(source.slice(Math.max(start, end - 4096), end))
+    ))
+    .filter(family => family !== null));
 }
 
 export function parseWebfontRules(source) {
@@ -100,13 +122,21 @@ export function prepareSvgForWebfontRaster(svgSource, webfontCss) {
     /font-family=(['"])(.*?)\1/giu,
     (_match, quote, fontList) => `font-family=${quote}${appendTerminalFallback(fontList)}${quote}`,
   );
-  const withCssFallback = withAttributeFallback.replace(
-    /@font-face\s*\{[^{}]*\}|(font-family\s*:\s*)([^;}]+)/giu,
-    // A font-face family descriptor accepts one family, not a fallback list.
-    (match, prefix, fontList) => prefix
-      ? `${prefix}${appendTerminalFallback(fontList)}`
-      : match,
+  // Leave embedded @font-face blocks byte-for-byte intact. A regexp that spans
+  // their data URLs overflows the JS stack on full HCR/Haansoft font exports.
+  const cssFallback = part => part.replace(
+    /(font-family\s*:\s*)([^;}]+)/giu,
+    (_match, prefix, fontList) => `${prefix}${appendTerminalFallback(fontList)}`,
   );
+  const chunks = [];
+  let cursor = 0;
+  for (const [start, end] of fontFaceRanges(withAttributeFallback)) {
+    chunks.push(cssFallback(withAttributeFallback.slice(cursor, start)));
+    chunks.push(withAttributeFallback.slice(start, end));
+    cursor = end;
+  }
+  chunks.push(cssFallback(withAttributeFallback.slice(cursor)));
+  const withCssFallback = chunks.join('');
   return withCssFallback.replace(
     /<svg\b[^>]*>/iu,
     match => `${match}<style>${supplementalCss}</style>`,

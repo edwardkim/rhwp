@@ -18,6 +18,7 @@ bindings/Native/Cargo.lock
 
 # Output (렌더링 결과물)
 /output/
+*.log
 /dist/swift/
 
 # Docker

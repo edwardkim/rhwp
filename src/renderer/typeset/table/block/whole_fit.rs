@@ -331,6 +331,16 @@ impl TypesetEngine {
             && ft.table_footnotes.is_empty()
             && signed_hwpunit(table.common.vertical_offset) <= 0
             && next_starts_new_page
+            // [#7336] 저장 object frame 은 **현재 쪽**의 소유권만 말한다. 선언
+            // `common.height` 가 첫 조각만 뜻할 수 있다는 위 계약은 그대로 두되,
+            // 실측 표가 본문 한 쪽에도 들어가지 않으면 그 표는 반드시 여러 조각으로
+            // 나뉘어야 하므로 선언 frame 이 쪽 소유의 권위가 될 수 없다.
+            //
+            // `samples/issue7336/stored_frame_page_larger_rowbreak.hwpx` 실측:
+            // 선언 frame 901.2px 로 통째 배치했는데 페인터가 3,676px 를 그려 본문
+            // 아래로 2,742px 가 넘쳤고 '2-3. 추진일정' 절이 통째로 사라졌다
+            // (한/글 2024 7쪽 vs rhwp 4쪽). 이 경우 종전대로 행 컷 스캐너에 맡긴다.
+            && table_total - host_spacing_total <= st.base_available_height() + 0.5
             && !rowbreak_table_has_internal_saved_vpos_reset(table))
         .then(|| {
             let mut source_lines = para
