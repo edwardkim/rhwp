@@ -163,6 +163,50 @@ fn prep_single_cell_continuation_keeps_vertical_padding_and_following_flow() {
 }
 
 #[test]
+fn prep_intra_paragraph_cell_split_keeps_last_line_on_page_34() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let first = core.build_page_render_tree(33).expect("물리 34쪽");
+    let next = core.build_page_render_tree(34).expect("물리 35쪽");
+    // 원본 1×1 CELL 표의 마지막 문단은 저장 두 줄의 vertpos가
+    // 28200/29800HU이다. 한컴 PDF p34는 두 번째 줄을 표 하단에 두고,
+    // p35는 바로 (4) Jenness 항목으로 시작한다.
+    let tail = line_top_containing(&first.root, "는 경향을 보임").expect("34쪽 마지막 줄");
+    assert!((tail - 993.696).abs() <= 1.5, "34쪽 마지막 줄 y: {tail:.2}");
+    fn find_cell_table(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.row_count == 1
+                && table.col_count == 1
+                && line_top_containing(node, "는 경향을 보임").is_some()
+            {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(find_cell_table)
+    }
+    fn body_bottom(node: &RenderNode) -> Option<f64> {
+        if matches!(node.node_type, RenderNodeType::Body { .. }) {
+            return Some(node.bbox.y + node.bbox.height);
+        }
+        node.children.iter().find_map(body_bottom)
+    }
+    let table = find_cell_table(&first.root).expect("34쪽 단일 셀 표");
+    let bottom = body_bottom(&first.root).expect("34쪽 본문 바닥");
+    assert!(
+        table.bbox.y + table.bbox.height <= bottom + 0.5,
+        "34쪽 표 바닥 {:.2} > 본문 바닥 {bottom:.2}",
+        table.bbox.y + table.bbox.height
+    );
+    assert!(line_top_containing(&next.root, "는 경향을 보임").is_none());
+    let next_item = line_top_containing(&next.root, "(4) Jenness").expect("35쪽 첫 항목");
+    assert!(
+        (next_item - 106.496).abs() <= 1.5,
+        "35쪽 첫 항목 y: {next_item:.2}"
+    );
+}
+
+#[test]
 fn prep_population_table_keeps_last_fitting_rows_with_first_fragment() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

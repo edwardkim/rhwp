@@ -13849,6 +13849,112 @@ impl LayoutEngine {
         })
     }
 
+    /// Return the physical height of a saved opening frame at its exact cut.
+    /// The scanner and the partial-table painter must consume the same height.
+    pub(crate) fn saved_single_cell_opening_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !self.profile.get().hwpx_stored_layout()
+            || self.profile.get().session_edited()
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || row != 0
+            || !start_cut.is_empty()
+            || table.row_count != 1
+            || table.col_count != 1
+            || table.cells.len() != 1
+            || table.common.height >= 0x8000_0000
+        {
+            return None;
+        }
+        let cell = &table.cells[0];
+        if cell.vertical_padding_guard_height_hu(table) != table.common.height {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let end = *end_cut.first()?;
+        if end == 0 || end >= units.len() || end_cut.len() != 1 {
+            return None;
+        }
+        let closing = &units[end - 1];
+        let next = &units[end];
+        if closing.para_idx + 1 != next.para_idx
+            || closing.vis_start >= closing.vis_end
+            || next.vis_start >= next.vis_end
+        {
+            return None;
+        }
+        let closing_para = cell.paragraphs.get(closing.para_idx)?;
+        let next_para = cell.paragraphs.get(next.para_idx)?;
+        if !closing_para.controls.is_empty()
+            || !next_para.controls.is_empty()
+            || closing.vis_end != closing_para.line_segs.len()
+        {
+            return None;
+        }
+        let before = closing_para.line_segs.last()?;
+        let after = next_para.line_segs.first()?;
+        if before.vertical_pos <= 0
+            || after.vertical_pos != 0
+            || before.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        {
+            return None;
+        }
+        let pad = cell.effective_padding(&table.padding);
+        let saved_frame_bottom = i64::from(before.vertical_pos)
+            + i64::from(before.line_height)
+            + i64::from(pad.top)
+            + i64::from(pad.bottom);
+        if saved_frame_bottom != i64::from(table.common.height) {
+            return None;
+        }
+        Some(hwpunit_to_px(table.common.height as i32, self.dpi))
+    }
+
+    /// An ordinary cut can stop one line before a saved opening frame ends.
+    /// Extend only that one displaced line when the declared frame still fits.
+    pub(crate) fn saved_single_cell_opening_frame_tail(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        ordinary_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<(RowCutResult, f64)> {
+        let cell = table.cells.first()?;
+        let units = self.cell_units(cell, table, styles);
+        let ordinary_end = *ordinary_end_cut.first()?;
+        if ordinary_end == 0
+            || ordinary_end >= units.len()
+            || units[ordinary_end - 1].para_idx != units[ordinary_end].para_idx
+        {
+            return None;
+        }
+        let candidate =
+            self.paragraph_tail_cut_for_row(table, row, start_cut, ordinary_end_cut, styles)?;
+        let end = *candidate.end_cut.first()?;
+        if candidate.fully_consumed || end != ordinary_end + 1 {
+            return None;
+        }
+        let frame_height = self.saved_single_cell_opening_frame_height(
+            table,
+            row,
+            start_cut,
+            &candidate.end_cut,
+            styles,
+        )?;
+        Some((candidate, frame_height))
+    }
+
     /// Extend a row cut by exactly the next visible source unit in the cell
     /// that owns a stored frame reset, or in a single-cell continuation.
     ///

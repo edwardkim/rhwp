@@ -4473,7 +4473,17 @@ impl LayoutEngine {
                             continue;
                         }
                     }
-                    let h = self.row_cut_content_height(table, r, su, eu, styles);
+                    // A saved opening frame can end at a paragraph boundary
+                    // before the table's remaining paragraphs. Its declared
+                    // physical box is the height reserved by the scanner.
+                    let h = if r == start_row && r == split_last_row && !is_continuation {
+                        self.saved_single_cell_opening_frame_height(table, r, su, eu, styles)
+                            .unwrap_or_else(|| {
+                                self.row_cut_content_height(table, r, su, eu, styles)
+                            })
+                    } else {
+                        self.row_cut_content_height(table, r, su, eu, styles)
+                    };
                     if h > 0.0 {
                         row_heights[r] = h;
                     }
