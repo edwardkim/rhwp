@@ -9,7 +9,7 @@ last_verified: 2026-09-25
 
 ## 최종 판정
 
-**메인터너 별도 통합 후보는 목표 4쪽 경계와 후속 5쪽의 로컬 검증을 충족했다. 원 PR은 직접 병합하지 않는다.** [원 기여 PR #7384](https://github.com/edwardkim/rhwp/pull/7384)의 정확한 head `f18c56f66043dc9a50e6ded67b4750208fae0573`를 최신 `upstream/devel` `eb321165eca0320a4a307c53c49284b122a28482` 위에 `-x` 체리픽한 code head는 `6f5034e0c4dfaa8ddf53a85c2b95199078108fb4`다. 메인터너는 제품 코드를 더 고치지 않았고, 원 PR 본문에 없던 head 고정 review·overlay 증거를 별도 통합 PR에 보완한다. 원 기여자 head의 제출 요건이 완료됐다는 판정이 아니다. 원격 통합 PR의 CI와 병합 가능 상태는 생성 후 확인한다.
+**메인터너 별도 통합 후보는 목표 4쪽 경계와 후속 5쪽의 로컬 검증을 충족했다. 원 PR은 직접 병합하지 않는다.** [원 기여 PR #7384](https://github.com/edwardkim/rhwp/pull/7384)의 정확한 head `f18c56f66043dc9a50e6ded67b4750208fae0573`를 최신 `upstream/devel` `aeb9f489e1d5e297c1e98cf1ca8ff84532270aca` 위에 `-x` 체리픽한 code head는 `ae6b96567c324f558e9d2cf08812865209f784d1`다. 메인터너는 제품 코드를 더 고치지 않았고, 원 PR 본문에 없던 head 고정 review·overlay 증거를 별도 통합 PR에 보완한다. 원 기여자 head의 제출 요건이 완료됐다는 판정이 아니다. 원격 통합 PR의 CI와 병합 가능 상태는 생성 후 확인한다.
 
 이 수정은 [#7206](https://github.com/edwardkim/rhwp/issues/7206)의 **물리 4쪽 표 조각이 본문보다 7.0px 커지는 경계**에 한정한다. 물리 8쪽의 +4.57px, 전체 13쪽 대 한컴 12쪽, 글자 +58은 남는다. 따라서 #7206은 닫지 않는다.
 
@@ -31,9 +31,9 @@ last_verified: 2026-09-25
 
 - 집중 회귀 1/1 PASS. 전체 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast`는 **10,236/10,236 PASS·50 skip**, 종료 코드 0이다.
 - Native Skia 공식 3종은 rhwp 본체 3,930 PASS·13 ignored, 그림 누락 2/2 PASS, 직접 PDF 출력 4/4 PASS다.
-- `cargo fmt --all -- --check`, Native root·WASM lib·workspace all-targets Clippy `-D warnings`, workspace build, `eb321165e` 고정 manifest base 비교가 통과했다. `#[cfg(test)]` source-side 테스트는 변경하지 않았다.
+- `cargo fmt --all -- --check`, Native root·WASM lib·workspace all-targets Clippy `-D warnings`, workspace build, `aeb9f489e` 고정 manifest base 비교가 통과했다. `#[cfg(test)]` source-side 테스트는 변경하지 않았다.
 - Mac fresh WASM은 저장소 루트에서 `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`로 빌드했다. Docker 최적화 빌드 결과로 보고하지 않는다.
-- 정확한 code head에서 `scripts/visual_sweep.py --file-target press7384 ... --pages 4,5 --dpi 96`을 Native와 fresh WASM으로 각각 실행했다. 두 쪽 모두 `pr_review_gate=passed`, flagged=0/2. 2px 내용 실루엣은 Native p4 **97.149%**, p5 **95.62958%**; WASM p4 **97.14679%**, p5 **95.60362%**다. pixel match는 약 85–86%, visual accuracy proxy는 약 19%로 낮아 문서 전체 fidelity 통과로 확대하지 않는다. 대표 review와 standalone overlay를 직접 열어 한글 표시, 4쪽 표 외곽, 5쪽 그림 및 후속 문단을 대조했다. [Native manifest](../assets/pr7384_20260925/native_run_manifest.json)와 [WASM manifest](../assets/pr7384_20260925/wasm_run_manifest.json)에 입력·PDF·head·패키지 출처를 남겼다.
+- code commit `ae6b96567c324f558e9d2cf08812865209f784d1`과 제품·테스트 tree가 같은 문서 head `5d958362ee740805ea857f6120156ac2c5091757`에서 `scripts/visual_sweep.py --file-target press7384 ... --pages 4,5 --dpi 96`을 Native와 fresh WASM으로 각각 다시 실행했다. 두 쪽 모두 `pr_review_gate=passed`, flagged=0/2. 2px 내용 실루엣은 Native p4 **97.149%**, p5 **95.62958%**; WASM p4 **97.14679%**, p5 **95.60362%**다. pixel match는 약 85–86%, visual accuracy proxy는 약 19%로 낮아 문서 전체 fidelity 통과로 확대하지 않는다. 대표 review와 standalone overlay를 직접 열어 한글 표시, 4쪽 표 외곽, 5쪽 그림 및 후속 문단을 대조했다. [Native manifest](../assets/pr7384_20260925/native_run_manifest.json)와 [WASM manifest](../assets/pr7384_20260925/wasm_run_manifest.json)에 입력·PDF·head·패키지 출처를 남겼다.
 
 ![Native 물리 4쪽 review](../assets/pr7384_20260925/native_review_004.png)
 

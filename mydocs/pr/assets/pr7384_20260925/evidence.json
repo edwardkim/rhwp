@@ -1,8 +1,8 @@
 {
   "source_pr": 7384,
   "source_head": "f18c56f66043dc9a50e6ded67b4750208fae0573",
-  "base_sha": "eb321165eca0320a4a307c53c49284b122a28482",
-  "code_head": "6f5034e0c4dfaa8ddf53a85c2b95199078108fb4",
+  "base_sha": "aeb9f489e1d5e297c1e98cf1ca8ff84532270aca",
+  "code_head": "ae6b96567c324f558e9d2cf08812865209f784d1",
   "input": {
     "path": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
     "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
@@ -72,5 +72,6 @@
         "table_pi5_max_bottom_px": 1039.0
       }
     }
-  }
+  },
+  "sweep_head": "5d958362ee740805ea857f6120156ac2c5091757"
 }

@@ -10,7 +10,7 @@
       "path": "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf",
       "sha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc"
     },
-    "git_head": "6f5034e0c4dfaa8ddf53a85c2b95199078108fb4",
+    "git_head": "5d958362ee740805ea857f6120156ac2c5091757",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
