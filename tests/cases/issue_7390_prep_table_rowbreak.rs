@@ -328,6 +328,44 @@ fn prep_page_93_caption_starts_after_saved_picture_bottom() {
 }
 
 #[test]
+fn prep_page_105_merged_budget_table_keeps_saved_row_boundaries() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(104).expect("물리 105쪽");
+    fn budget_table(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.para_index == Some(336) && table.row_count == 20 && table.col_count == 6 {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(budget_table)
+    }
+    let table = budget_table(&page.root).expect("연구비 사용 내역 표");
+    let row_top = |row| {
+        table
+            .children
+            .iter()
+            .find_map(|child| match &child.node_type {
+                RenderNodeType::TableCell(cell) if cell.row == row && cell.col == 3 => {
+                    Some(child.bbox.y)
+                }
+                _ => None,
+            })
+    };
+    // 한컴 2024 PDF p105의 수평 괘선(96dpi): 첫 행 243/279px,
+    // 중간 10행 634px, 끝에서 둘째 행 975px, 표 끝 1019px.
+    for (row, expected) in [(1, 279.0), (10, 634.0), (19, 975.0)] {
+        let actual = row_top(row).expect("해당 행의 세로 병합 없는 셀");
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "행 {row} 괘선: 실제 {actual:.1}, PDF {expected:.1}"
+        );
+    }
+    assert!((table.bbox.y + table.bbox.height - 1019.0).abs() <= 2.0);
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

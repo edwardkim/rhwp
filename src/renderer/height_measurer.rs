@@ -642,6 +642,121 @@ fn declared_row_height_px(table: &Table, row: usize, dpi: f64) -> f64 {
         .fold(0.0f64, f64::max)
 }
 
+/// 비편집 HWPX의 `noAdjust` 표에서 저장 행 경계를 측정·배치에 함께 적용한다.
+/// 세로 병합 셀의 높이가 걸친 단일행 선언의 합과 맞는 경우만 신뢰한다.
+/// 전체 표 높이와 행 선언 합의 작은 차이는 마지막 행의 잔여 공간으로 닫는다.
+pub fn fit_stored_hwpx_no_adjust_rowspans(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let row_count = measured.row_heights.len();
+    if table.common.treat_as_char
+        || table.common.text_wrap != TextWrap::TopAndBottom
+        || table.raw_table_record_attr & 0x08 == 0
+        || table.common.height == 0
+        || row_count != table.row_count as usize
+        || row_count < 2
+        || !table.cells.iter().any(|cell| cell.row_span > 1)
+    {
+        return None;
+    }
+
+    let mut declared = vec![0.0f64; row_count];
+    for cell in &table.cells {
+        let row = cell.row as usize;
+        if row >= row_count || cell.height == 0 || cell.height >= 0x8000_0000 {
+            return None;
+        }
+        if cell.paragraphs.iter().any(|para| {
+            !para.controls.is_empty()
+                || para.line_segs.is_empty()
+                || para
+                    .line_segs
+                    .iter()
+                    .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        }) {
+            return None;
+        }
+        if cell.row_span == 1 {
+            let height = hwpunit_to_px(cell.height as i32, dpi);
+            if declared[row] > 0.0 && (declared[row] - height).abs() > 0.5 {
+                return None;
+            }
+            declared[row] = height;
+        }
+    }
+    if declared.iter().any(|height| *height <= 0.0)
+        || declared
+            .iter()
+            .zip(&measured.row_heights)
+            .any(|(saved, actual)| (saved - actual).abs() > 1.5)
+    {
+        return None;
+    }
+    for cell in table.cells.iter().filter(|cell| cell.row_span > 1) {
+        let start = cell.row as usize;
+        let end = start + cell.row_span as usize;
+        if end > row_count
+            || (declared[start..end].iter().sum::<f64>()
+                + measured.cell_spacing * (end - start - 1) as f64
+                - hwpunit_to_px(cell.height as i32, dpi))
+            .abs()
+                > 0.5
+        {
+            return None;
+        }
+    }
+
+    let target = hwpunit_to_px(table.common.height as i32, dpi)
+        - measured.cell_spacing * (row_count - 1) as f64;
+    let last = target - declared[..row_count - 1].iter().sum::<f64>();
+    let saved_last = declared[row_count - 1];
+    let measured_content_floor = measured
+        .cells
+        .iter()
+        .filter(|cell| cell.row == row_count - 1 && cell.row_span == 1)
+        .map(|cell| cell.total_content_height)
+        .fold(0.0f64, f64::max);
+    let saved_content_floor = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row_count - 1 && cell.row_span == 1)
+        .map(|cell| {
+            let pad = cell.effective_padding(&table.padding);
+            cell.paragraphs
+                .iter()
+                .flat_map(|para| &para.line_segs)
+                .map(|seg| {
+                    hwpunit_to_px(seg.vertical_pos, dpi)
+                        + hwpunit_to_px(seg.line_height, dpi)
+                        + hwpunit_to_px(pad.top as i32, dpi)
+                        + hwpunit_to_px(pad.bottom as i32, dpi)
+                })
+                .fold(0.0f64, f64::max)
+        })
+        .fold(0.0f64, f64::max);
+    if last <= 0.0
+        || (saved_last - last).abs() > 12.0
+        || last < measured_content_floor.max(saved_content_floor) - 0.5
+    {
+        return None;
+    }
+    declared[row_count - 1] = last;
+    let mut fitted = measured.clone();
+    fitted.row_heights = declared;
+    fitted.cumulative_heights = vec![0.0; row_count + 1];
+    for (row, height) in fitted.row_heights.iter().enumerate() {
+        fitted.cumulative_heights[row + 1] = fitted.cumulative_heights[row]
+            + *height
+            + if row > 0 { fitted.cell_spacing } else { 0.0 };
+    }
+    let previous_body =
+        measured.row_heights.iter().sum::<f64>() + measured.cell_spacing * (row_count - 1) as f64;
+    fitted.total_height += fitted.cumulative_heights[row_count] - previous_body;
+    Some(fitted)
+}
+
 /// 저장 HWPX 인라인 RowBreak 표에서 마지막 LINE_SEG 줄간격을 측정기가
 /// 행 높이에 한 번 더 실은 경우, 저장 cellSz 경계로 되돌린다.
 ///

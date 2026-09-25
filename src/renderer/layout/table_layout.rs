@@ -4151,6 +4151,15 @@ impl LayoutEngine {
         suppress_unused_padding: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
+            let hwpx_no_adjust_fitted = (self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().session_edited())
+            .then(|| {
+                crate::renderer::height_measurer::fit_stored_hwpx_no_adjust_rowspans(
+                    mt, table, self.dpi,
+                )
+            })
+            .flatten();
+            let mt = hwpx_no_adjust_fitted.as_ref().unwrap_or(mt);
             let hwpx_inline_fitted = (self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().session_edited())
             .then(|| {
