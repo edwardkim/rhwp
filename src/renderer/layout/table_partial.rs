@@ -5088,8 +5088,7 @@ impl LayoutEngine {
         // `probe`(#4149 캐럿 fast path)는 그 행을 통째로 보지 못하므로, 대상 셀이 그 행의
         // 유일한 칸일 때만 접는다. 그 밖의 형상은 호출자가 legacy 로 폴백한다.
         let fold_last_row = render_rows.last().copied().filter(|&fold_row| {
-            end_cut.iter().any(|&unit| unit > 0)
-                && enclosing_cell_ctx.is_none()
+            true && enclosing_cell_ctx.is_none()
                 && budget_row_height_0.is_none()
                 && probe.is_none_or(|p| {
                     table.cells.iter().enumerate().all(|(idx, cell)| {
@@ -5181,7 +5180,28 @@ impl LayoutEngine {
                     }
                 }
             }
-            let fold = trail.min(fold_slack).max(0.0);
+            // [#7095 확장] 쪽 상한 초과분. 정본은 `본문아래 − outMargin.bottom − 100HU` 에서
+            // 조각 상자를 끊는다 — 그 형상 조건은 1×1 이 아니다. 정본 세 문서 10조각에서
+            // 확인했다(양쪽 모두 괘선 병합으로 잰 값, 잔차 0.09~1.25px).
+            //
+            // ```text
+            //   문서                          행×열   omB(HU)  본문아래  정본아래   잔차
+            //   issue7336 p2·p5               16×1      283   1028.01  1022.99   1.25
+            //   rowbreak-problem-pages p3·p4  25×7      141   1028.00  1026.03   0.09
+            //   issue1853 … 6쪽                2×2      141   1020.48  1018.51   0.09
+            // ```
+            //
+            // 내용이 상한보다 먼저 끝나는 조각(issue7336 p3·p4)은 이 값이 0 이라 접지 않는다.
+            let cap_fold = {
+                let cap = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                    table,
+                    col_area.y + col_area.height,
+                    self.dpi,
+                );
+                (table_y + partial_table_height - cap).max(0.0)
+            };
+            // 두 사유(줄간격 · 쪽 상한) 중 **큰 쪽**만큼 접되, 실제로 남은 여분을 넘지 않는다.
+            let fold = trail.max(cap_fold).min(fold_slack).max(0.0);
             if fold > 0.5 && partial_table_height > fold + 1.0 {
                 let fold_row_end = fold_row + 1;
                 for child in &mut table_node.children {
