@@ -661,7 +661,7 @@ def apply_svg_font_policy(svg: str, policy_rules: list[str]) -> str:
 
     faces = re.compile(r"@font-face\s*\{[^{}]*\}", re.IGNORECASE)
     declared = {family(rule) for rule in faces.findall(svg)}
-    rules = [rule for rule in policy_rules if family(rule) not in declared]
+    rules = list(dict.fromkeys(rule for rule in policy_rules if family(rule) not in declared))
     if not rules:
         return svg
     opening = re.search(r"<svg\b[^>]*>", svg)

@@ -5,6 +5,7 @@ import base64
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -391,7 +392,7 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             svg = Path(temp) / 'p001.svg'
             source = '<svg><text x="12" y="34" font-family="Fixture">AV</text></svg>'
             policy = self.svg(self.font_bytes(remove_cmap=True))
-            svg.write_text(SWEEP.apply_svg_font_policy(source, policy))
+            svg.write_text(SWEEP.apply_svg_font_policy(source, re.findall(r"@font-face\s*\{[^{}]*\}", policy)))
             self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
 
     def test_subset_request_is_rejected_even_from_python_api(self):
@@ -441,7 +442,7 @@ class WasmSweepTests(unittest.TestCase):
         source = '<svg width="100"><text x="12" y="34" font-family="휴먼명조">조문</text></svg>'
         face = '@font-face { font-family: "휴먼명조"; src: local("HCR Batang"); }'
         policy = f'<svg><style>{face} text {{display:none}}</style><text x="99">다른 본문</text></svg>'
-        result = SWEEP.apply_svg_font_policy(source, policy + policy)
+        result = SWEEP.apply_svg_font_policy(source, re.findall(r"@font-face\s*\{[^{}]*\}", policy + policy))
         self.assertEqual(result, source.replace('width="100">', f'width="100"><style>{face}</style>'))
 
     def test_explicit_font_change_invalidates_resume(self) -> None:
@@ -463,12 +464,12 @@ class WasmSweepTests(unittest.TestCase):
     def test_embedded_font_policy_does_not_replace_wasm_text_or_coordinates(self) -> None:
         source = '<svg><text x="12" y="34">original</text></svg>'
         face = '@font-face {font-family:"Source";src:url("data:font/ttf;base64,AAAA");}'
-        result = SWEEP.apply_svg_font_policy(source, '<svg><style>' + face + '</style><text x="99">native</text></svg>')
+        result = SWEEP.apply_svg_font_policy(source, [face])
         self.assertEqual(result, source.replace('<svg>', '<svg><style>' + face + '</style>'))
 
     def test_font_policy_does_not_replace_a_wasm_owned_face(self) -> None:
         source = '<svg><style>@font-face {font-family:"Owned";src:url("wasm.woff2")}</style></svg>'
-        self.assertEqual(SWEEP.apply_svg_font_policy(source, '@font-face {font-family:"Owned";src:local("Other")}'), source)
+        self.assertEqual(SWEEP.apply_svg_font_policy(source, ['@font-face {font-family:"Owned";src:local("Other")}']), source)
 
     def test_changed_wasm_package_invalidates_resume(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
