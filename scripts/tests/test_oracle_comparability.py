@@ -80,7 +80,7 @@ class ComparabilityReview(unittest.TestCase):
                 return b''
             with patch.object(oracle, 'run', export_svg):
                 output = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)
-            self.assertEqual(output['lines'][0]['key'], '앞문장끝문장')
+            self.assertEqual([line['key'] for line in output['lines']], ['앞문장', '끝문장'])
 
     def test_x_scale_without_x_variance_is_unmeasured(self):
         source = [dict(key=f'line-text-unique-{i:03d}', font_px=12, x=100, y=100+i*10) for i in range(8)]

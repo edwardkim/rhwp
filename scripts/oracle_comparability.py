@@ -280,6 +280,7 @@ def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
             boxes.append((float(page.attrib["width"]), float(page.attrib["height"])))
         # PDF와 SVG 모두 같은 baseline 및 가로 공백 규칙으로 줄을 만든다.
         rows = collections.defaultdict(list)
+        baseline_origins = {}
         for font in page.iter("font"):
             size = float(font.get("size", "0")) * 96.0 / 72.0
             for char in font.iter("char"):
@@ -287,10 +288,12 @@ def read_pdf(pdf: Path, pages: list[int] | None) -> dict:
                     raise Unavailable("PDF 글자 baseline 원점이 없다")
                 x = float(char.attrib["x"]) * 96.0 / 72.0
                 y = float(char.attrib["y"]) * 96.0 / 72.0
-                rows[round(y, 1)].append((x, char.get("c", ""), size))
+                bucket = round(y, 1)
+                baseline_origins.setdefault(bucket, y)
+                rows[bucket].append((x, char.get("c", ""), size))
         for baseline, row in sorted(rows.items()):
             for segment in split_baseline_row(row):
-                got = row_to_line(segment, baseline)
+                got = row_to_line(segment, baseline_origins[baseline])
                 if got:
                     lines.append(got)
 
