@@ -2202,7 +2202,19 @@ impl HeightMeasurer {
                             return None;
                         };
                         if para_max_lh >= nested.common.height as i32 {
-                            return None; // 줄높이가 이미 담고 있다
+                            // [#7419] 저장 줄이 아니라 선언높이로 합성한 줄(NO_LS)이면 줄높이는
+                            // 선언만 담는다. 중첩 표가 내용으로 선언보다 자랐으면 그 차이만 더한다
+                            // (재현: 안쪽 표 선언 64.0px, 측정 70.5px → 바깥 칸이 6.5px 모자라
+                            // 안쪽 표 둘째 줄이 칸 밖으로 나갔다). 저장 줄은 종전대로 신뢰한다.
+                            if !crate::renderer::para_has_no_stored_line_segs(p) {
+                                return None; // 줄높이가 이미 담고 있다
+                            }
+                            let stretch =
+                                self.render_normalization.nested_table_width_scale(nested);
+                            let mt =
+                                self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
+                            let grown = mt.total_height - hwpunit_to_px(para_max_lh, self.dpi);
+                            return (grown > 0.5).then_some(grown);
                         }
                         let stretch = self.render_normalization.nested_table_width_scale(nested);
                         let mt = self.measure_table_impl(nested, 0, 0, styles, depth + 1, stretch);
@@ -3915,8 +3927,30 @@ impl HeightMeasurer {
         // 편집으로 셀이 자란 성장분까지 선언높이로 눌러 다른 행의 몫을 잠식한다
         // (셀 Enter 재현: 표가 선언 높이에 고정된 채 행 경계만 위로 밀림).
         // 편집 세션은 실측을 신뢰한다.
+        //
+        // [#7419] 생성기가 쓴 표(저장 LINE_SEG 가 하나도 없고, 표 선언높이가 행별 셀
+        // 선언높이의 합과 같다)는 선언높이가 독립된 측정이 아니라 셀 선언을 다시 적은
+        // 값이다. 그 합보다 내용이 커지면 한글은 행을 키운다(재현: 셀 2400+2400,
+        // 표 4800 → 한글 재저장 5284, 행 32.0+38.5px). 여기서 줄이면 합이 셀 선언합과
+        // 같아져 layout 의 선언 신뢰(`trust_declared_row_heights` viewtext 갈래)가
+        // 행을 셀 선언으로 되돌리고, 둘째 줄이 칸 밖으로 나가 다음 표와 겹친다.
+        let generator_restated_height = !self.is_native_hwp5
+            && table.cells.iter().all(|c| {
+                c.paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+            })
+            && {
+                let declared: f64 = (0..row_count)
+                    .map(|r| declared_row_height_px(table, r, self.dpi))
+                    .sum::<f64>()
+                    + cell_spacing * row_count.saturating_sub(1) as f64;
+                (0..row_count).all(|r| declared_row_height_px(table, r, self.dpi) > 0.0)
+                    && (declared - common_h).abs() <= 0.5
+            };
         let table_height = if table.common.treat_as_char
             && !self.session_edited
+            && !generator_restated_height
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
             && raw_table_height <= common_h * TAC_SHRINK_MAX_OVERFLOW_RATIO
