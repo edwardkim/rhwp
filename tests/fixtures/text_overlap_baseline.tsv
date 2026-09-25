@@ -8,20 +8,11 @@
 # 유보 2행 — 편람 hwp/hwpx 는 #6325 로 환경 분기가 실측된 문서다(같은 쪽 overflow 로컬 2 vs CI 4,
 # 표 높이 +103.47px). 로컬 실측(각 20)을 상한으로 쓰지 않고 기존 21 을 유지한다.
 # 상한의 권위는 CI(ubuntu-latest)다 — 다른 행에서도 CI 실측이 더 크면 그 값으로 올려 적는다.
-# 보류 중인 올림 1행 (#7390): issue2006/1790387_prep_final_report.hwpx 14 -> 15.
-# KoPub 라틴 폭 변경 뒤 실제 겹침이 1건 늘었다. 이 값은 회귀 해소 근거가 아니며,
-# 시각·겹침 원인 보정 전에는 이 PR을 승인하지 않는다.
-#  · 발생 환경: 69쪽(0기반 68). 수정 전에는 이 쪽 13건, 문서 전체 14건이고
-#    수정 후에는 이 쪽 14건, 문서 전체 15건이다. 선행 본문과 Table4의 구조적
-#    겹침이 이미 있었지만, 이 변경으로 셀 문자와 본문이 1건 더 교차한다.
-#  · 전후 노드·좌표: 새 1건은 Page/Body/Column0/TextLine2/TextRun0(x=105.73 w=119.52) 과
-#    Table4/Cell4/TextLine0/TextRun0. 그 셀 run 이 x=107.21 -> 82.39 로 옮겨 앉으며
-#    overlapW 4.61px 가 생겼다. 셀 글자가 올바른(평균 더 넓은) 라틴 폭으로 재측정된 결과다.
-#  · 독립 기준: KoPub 설치 환경 인쇄본 pdf/issue2006/…-hwp2020-20260814.pdf 대비 절대 px
-#    줄 폭 평균오차 0.0193 -> 0.0046 (짝 312줄, 개선 87 / 악화 5). 치환본 …-2022.pdf 로 재도
-#    0.0711 -> 0.0640 (개선 502 / 악화 107).
-#  · 파급: 코퍼스 1,142문서 A/B 에서 바뀐 문서는 이 한 건뿐이라는 원 PR 보고가
-#    있으나, 겹침은 위에서 확인한 대로 14 -> 15이므로 불변으로 기록하지 않는다.
+# #7390 / PR #7406: 원 KoPub 변경만 적용하면 PrEP 상한 14 -> 15가 필요했다.
+# 69쪽 비-TAC RowBreak 표가 선언된 첫 조각 높이만으로 whole-fit되어 선행 본문을
+# 덮은 것이 원인이다. 메인터너가 실제 행 점유로 컷을 선택하고, 67~70쪽의 줄·각주·
+# 그림 캡션 소유를 원 HWPX의 한컴 2024 PDF와 맞춘 뒤 Mac 전체 문서 실측은 1건이다.
+# RHWP_TEXT_OVERLAP_DUMP의 partition 1 원장으로 15 -> 1을 확인해 래칫을 조인다.
 2025 행정업무운영 편람(최종).hwp	21
 2025 행정업무운영 편람(최종).hwpx	21
 80168_regulatory_analysis.hwp	2
@@ -93,7 +84,7 @@ issue1921/59043_regulatory_analysis.hwp	2
 issue1937_rowbreak_footnote_overpagination.hwp	132
 issue1949_giant_cell_nested_tables_perf.hwp	8
 issue1949_giant_cell_nested_tables_perf.hwpx	8
-issue2006/1790387_prep_final_report.hwpx	15
+issue2006/1790387_prep_final_report.hwpx	1
 issue2470/36341511_masked.hwpx	4
 issue2559/1341000_research_report_footnotes.hwp	16
 issue3637/regulatory_impact_nested_table_escape.hwpx	14

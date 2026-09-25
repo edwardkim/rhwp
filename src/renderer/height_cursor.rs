@@ -327,7 +327,17 @@ impl HeightCursor {
             };
             let vpos_continuous =
                 matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end + curr_sb_hu);
-            let trailing_ls_hu = if vpos_continuous && prev_has_text {
+            // 저장 HWPX의 글자취급 그림만 든 문단도 그림 높이와 trailing
+            // 줄간격을 순차 커서가 이미 소비한다. 다음 저장 시작이 정확히
+            // 그 끝이면 빈 텍스트라는 이유로 같은 간격을 lazy 기준에 재가산하지 않는다.
+            let picture_spent_trailing = self.suppress_hwpx_stale_forward
+                && !synthetic_prev_seg
+                && para_is_treat_as_char_picture_only(prev_para)
+                && prev_para.controls.iter().any(|control| {
+                    matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
+                })
+                && curr_first_vpos == Some(prev_vpos_end);
+            let trailing_ls_hu = if (vpos_continuous && prev_has_text) || picture_spent_trailing {
                 0
             } else {
                 paragraphs

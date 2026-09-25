@@ -1,0 +1,194 @@
+//! #7390 / PR #7406: KoPub 줄 폭 변경 뒤 PrEP 69쪽의 다행 RowBreak 표가
+//! 선행 본문과 캡션 위로 끌려 올라오지 않고 70쪽에 이어져야 한다.
+//!
+//! 독립 기준: `pdf/issue2006/1790387_prep_final_report-2024.pdf` (원 HWPX를
+//! 한컴 2024 엔진으로 변환). 물리 69쪽은 `<표 27>` 캡션 뒤에 표가 시작하고,
+//! 물리 70쪽에서 마지막 행들을 이어 그린다. 수정 전에는 38행 전체가 69쪽
+//! 본문 상단 y=94.5px에 놓여 앞 글·캡션을 덮고 70쪽 후속 조각은 없다.
+
+use std::collections::BTreeSet;
+use std::path::Path;
+
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::DocumentCore;
+
+const SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
+
+fn target_table(node: &RenderNode) -> Option<&RenderNode> {
+    if let RenderNodeType::Table(table) = &node.node_type {
+        if table.para_index == Some(27)
+            && table.control_index == Some(0)
+            && table.row_count == 38
+            && table.col_count == 4
+        {
+            return Some(node);
+        }
+    }
+    node.children.iter().find_map(target_table)
+}
+
+fn line_text(node: &RenderNode, text: &mut String) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        text.push_str(&run.text);
+    }
+    for child in &node.children {
+        line_text(child, text);
+    }
+}
+
+fn caption_bottom(node: &RenderNode) -> Option<f64> {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        line_text(node, &mut text);
+        if text.contains("표 27") {
+            return Some(node.bbox.y + node.bbox.height);
+        }
+    }
+    node.children.iter().find_map(caption_bottom)
+}
+
+fn line_top_containing(node: &RenderNode, needle: &str) -> Option<f64> {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        line_text(node, &mut text);
+        if text.contains(needle) {
+            return Some(node.bbox.y);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| line_top_containing(child, needle))
+}
+
+fn visible_rows(table: &RenderNode) -> BTreeSet<u16> {
+    table
+        .children
+        .iter()
+        .filter_map(|child| match &child.node_type {
+            RenderNodeType::TableCell(cell) => Some(cell.row),
+            _ => None,
+        })
+        .collect()
+}
+
+fn paragraph_lines(node: &RenderNode, para_index: usize, lines: &mut Vec<String>) {
+    if let RenderNodeType::TextLine(line) = &node.node_type {
+        if line.para_index == Some(para_index) {
+            let mut text = String::new();
+            line_text(node, &mut text);
+            lines.push(text);
+        }
+    }
+    for child in &node.children {
+        paragraph_lines(child, para_index, lines);
+    }
+}
+
+fn footnote_text(node: &RenderNode) -> Option<String> {
+    if matches!(node.node_type, RenderNodeType::FootnoteArea) {
+        let mut text = String::new();
+        line_text(node, &mut text);
+        return Some(text);
+    }
+    node.children.iter().find_map(footnote_text)
+}
+
+#[test]
+fn prep_kopub_paragraph_does_not_orphan_final_syllable() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(66).expect("물리 67쪽");
+    let mut lines = Vec::new();
+    paragraph_lines(&page.root, 14, &mut lines);
+    assert_eq!(
+        lines.len(),
+        4,
+        "한컴 2024 PDF 물리 67쪽의 문단은 네 줄: {lines:?}"
+    );
+    assert!(
+        lines.last().is_some_and(|line| line.ends_with("하였음")),
+        "마지막 음절은 네 번째 줄에 있어야 한다: {lines:?}"
+    );
+    let mut next_paragraph = Vec::new();
+    paragraph_lines(&page.root, 16, &mut next_paragraph);
+    assert!(
+        next_paragraph
+            .last()
+            .is_some_and(|line| line.ends_with("연령을 정리하면 다음과 같음.")),
+        "한컴 PDF에서는 다음 문단의 마지막 줄까지 물리 67쪽에 있다: {next_paragraph:?}"
+    );
+}
+
+#[test]
+fn prep_footnote_four_starts_on_next_physical_page() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let marker_page = core.build_page_render_tree(66).expect("물리 67쪽");
+    let note_page = core.build_page_render_tree(67).expect("물리 68쪽");
+    let chart_caption_y = line_top_containing(&note_page.root, "연도별 성주체성장애 진단 건수")
+        .expect("68쪽 차트 캡션");
+    assert!(
+        (chart_caption_y - 705.7).abs() <= 1.5,
+        "한컴 2024 PDF 68쪽 차트 캡션 y=705.7px, 실제={chart_caption_y:.1}"
+    );
+    let marker_page_notes = footnote_text(&marker_page.root).unwrap_or_default();
+    let next_page_notes = footnote_text(&note_page.root).unwrap_or_default();
+    assert!(
+        !marker_page_notes.contains("F64 코드를 가장 처음 진단받은"),
+        "한컴 PDF의 각주 4 본문은 67쪽에 없다: {marker_page_notes}"
+    );
+    assert!(
+        next_page_notes.contains("F64 코드를 가장 처음 진단받은"),
+        "한컴 PDF의 각주 4 본문은 68쪽에 있다: {next_page_notes}"
+    );
+    assert!(
+        next_page_notes.contains("주상병 및 배제 상병"),
+        "각주 5도 같은 68쪽에 남아야 한다: {next_page_notes}"
+    );
+
+    let mut lines = Vec::new();
+    paragraph_lines(&note_page.root, 25, &mut lines);
+    assert_eq!(lines.len(), 3, "각주 위 본문은 세 줄이어야 한다: {lines:?}");
+    assert!(
+        lines
+            .last()
+            .is_some_and(|line| line.trim_end().ends_with("105,534명이")),
+        "한컴 PDF에서 각주 위 본문 세 번째 줄도 68쪽에 들어간다: {lines:?}"
+    );
+}
+
+#[test]
+fn prep_table_starts_after_caption_and_continues_next_page() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let first = core.build_page_render_tree(68).expect("물리 69쪽");
+    let next = core.build_page_render_tree(69).expect("물리 70쪽");
+
+    let first_table = target_table(&first.root).expect("69쪽 표 27의 첫 조각");
+    let caption_end = caption_bottom(&first.root).expect("69쪽 표 27 캡션");
+    assert!(
+        first_table.bbox.y + 0.5 >= caption_end,
+        "표 첫 조각이 선행 캡션을 덮는다: 표 y={:.1}, 캡션 끝={caption_end:.1}",
+        first_table.bbox.y
+    );
+
+    let first_rows = visible_rows(first_table);
+    let next_table = target_table(&next.root).expect("70쪽 표 27의 후속 조각");
+    let next_rows = visible_rows(next_table);
+    assert!(first_rows.contains(&0), "첫 조각은 첫 행을 소유한다");
+    assert!(
+        !first_rows.contains(&37),
+        "마지막 행은 첫 조각 밖에 있어야 한다"
+    );
+    assert!(
+        next_rows.contains(&37),
+        "다음 쪽에서 마지막 행을 이어 그린다"
+    );
+    assert!(
+        (1..38).all(|row| first_rows.contains(&row) ^ next_rows.contains(&row)),
+        "헤더 외 모든 원본 행은 두 쪽에서 정확히 한 번 소유한다: 첫={first_rows:?}, 다음={next_rows:?}"
+    );
+}

@@ -357,6 +357,8 @@ pub(crate) struct LayoutFrame {
     pub(crate) current_intervals: Vec<Range<i32>>,
     pub(crate) next_geometry_event: Option<i32>,
     pub(crate) minimum_width: i32,
+    /// Stored HWPX KoPub justified rows may compress spaces to the font advance.
+    pub(crate) kopub_justified_space: bool,
     /// Whether `horizontal` is a column edge pair.
     ///
     /// The geometry pitch snaps the column's edge pair. A table cell's content
@@ -377,6 +379,7 @@ impl LayoutFrame {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }
@@ -888,6 +891,7 @@ mod tests {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: 1,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }

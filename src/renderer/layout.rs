@@ -3437,8 +3437,9 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_exact,
     estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
-    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing,
-    resolved_to_text_style, split_into_clusters, trace_char_width_decisions, CharWidthDecision,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote,
+    kopub_justified_space_width, resolved_letter_spacing, resolved_to_text_style,
+    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -11348,6 +11349,41 @@ impl LayoutEngine {
                 );
                 let layer = Self::render_layer_from_common(&t.common, para_index, control_index);
                 Self::push_layered_paper_children(paper_images, &mut tmp_node, layer);
+                // The paper float paints outside the body, but its saved host
+                // line remains in the body flow when the following stored
+                // line starts at that line's end plus its trailing spacing.
+                if self.profile.get().hwpx_stored_layout()
+                    && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+                    && !para_has_visible_text(para)
+                {
+                    if let (Some(seg), Some(next)) = (
+                        para.line_segs.first(),
+                        paragraphs
+                            .get(para_index + 1)
+                            .and_then(|p| p.line_segs.first()),
+                    ) {
+                        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                            && next.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && next.vertical_pos
+                                == seg
+                                    .vertical_pos
+                                    .saturating_add(seg.line_height)
+                                    .saturating_add(seg.line_spacing)
+                        {
+                            y_offset = y_offset.max(
+                                col_area.y
+                                    + hwpunit_to_px(
+                                        seg.vertical_pos.saturating_add(seg.line_height),
+                                        self.dpi,
+                                    )
+                                    - hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                            );
+                        }
+                    }
+                }
             } else {
                 let square_anchor_y = if !is_tac && tbl_is_square {
                     square_wrap_table_line_anchor_y(para, t, para_y_for_table, self.dpi)

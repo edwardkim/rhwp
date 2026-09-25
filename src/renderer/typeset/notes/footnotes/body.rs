@@ -117,6 +117,30 @@ impl TypesetEngine {
             let move_to_next_reset_page = native_hwp5_final_marker_footnote_uses_next_reset_page(
                 st, para_idx, para, paragraphs, ctrl_idx, fn_ctrl, fn_height,
             );
+            // 저장 HWPX는 본문·그림 항목을 확정한 뒤 각주를 등록한다.
+            // marker가 현재 쪽에 있고 실제 각주 높이를 예약할 자리가 없으면
+            // 이미 놓인 본문을 침범하지 않도록 각주 본문만 다음 쪽에서 시작한다.
+            let hwpx_note_overflows_current_page = st.profile.hwpx_stored_layout()
+                && st.col_count == 1
+                && matches!(
+                    st.current_items.last(),
+                    Some(crate::renderer::pagination::PageItem::Shape { para_index, .. })
+                        if *para_index == para_idx
+                )
+                && crate::renderer::pagination::find_inline_control_target_page(
+                    &st.pages,
+                    &st.current_items,
+                    para_idx,
+                    ctrl_idx,
+                    para,
+                )
+                .is_none()
+                && !st.footnote_fragment_fits_current_page(
+                    composed_footnote_content_height(fn_ctrl, self.dpi),
+                    true,
+                    false,
+                    0.0,
+                );
             let body_tail_reset =
                 native_hwp5_body_footnote_tail_reset(st, para_idx, para, ctrl_idx);
             // 두 줄 각주는 full-note owner route와 다른 계약이다. marker
@@ -286,12 +310,15 @@ impl TypesetEngine {
                     return;
                 }
             }
-            if move_to_next_reset_page {
+            if move_to_next_reset_page || hwpx_note_overflows_current_page {
                 // marker/body는 방금 확정한 current page에 그대로 두고,
                 // 다음 paragraph의 stored vpos reset이 시작하는 fresh page에
                 // 이 단일 각주만 등록한다. p31 two-line fragment와 p43의
                 // existing-note reset은 helper guard 밖이므로 영향이 없다.
                 st.force_new_page();
+                if hwpx_note_overflows_current_page {
+                    st.mark_deferred_hwpx_note_body();
+                }
             }
             st.record_current_footnote(FootnoteRef {
                 number: fn_ctrl.number,

@@ -71,19 +71,22 @@ struct ParseState {
     cur_text_buf: String,
     in_tx: bool,
     in_cat: bool,
+    collect_categories: bool,
     in_val: bool,
     in_x_val: bool, // c:xVal (분산형 X 값)
     in_y_val: bool, // c:yVal (분산형 Y 값)
     in_chart_title: bool,
     in_v: bool,
     in_a_t: bool,
-    in_sp_pr: bool,      // c:spPr — 시리즈/figure의 shape properties
-    in_solid_fill: bool, // a:solidFill
-    in_ln: bool,         // a:ln (stroke)
-    in_num_cache: bool,  // c:numCache — formatCode 파싱
+    in_sp_pr: bool,                       // c:spPr — 시리즈/figure의 shape properties
+    in_solid_fill: bool,                  // a:solidFill
+    in_ln: bool,                          // a:ln (stroke)
+    scheme_fill: Option<(u32, f64, f64)>, // a:schemeClr 와 lumMod/lumOff
+    in_num_cache: bool,                   // c:numCache — formatCode 파싱
     // c:dPt(점별 속성) 블록 내부 — 점별 explosion 을 계열로 승격하지 않기 위한
     // 문맥 게이트 (PR #2500 후속)
     in_d_pt: bool,
+    in_d_lbls: bool,
     // [#6624] 글꼴 크기·선 굵기 문맥. c:chart 밖의 c:txPr 만 차트 전체 기본 글꼴이고,
     // c:plotArea 안 c:title 은 축 제목, c:marker 안 spPr 은 표식 테두리라 제외한다.
     in_chart_body: bool,
@@ -236,6 +239,9 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
     let name = e.local_name();
     let name_bytes = name.as_ref().as_bytes();
     match name_bytes {
+        b"hncChartStyle" => {
+            chart.color_index = attr_val(e, "colorIndex").and_then(|v| v.parse().ok());
+        }
         b"barChart" => {
             chart.chart_type = OoxmlChartType::Column; // barDir로 세분
             st.cur_plot_type = Some(OoxmlChartType::Column);
@@ -508,6 +514,17 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"dPt" => st.in_d_pt = true,
+        b"dLbls" => st.in_d_lbls = true,
+        b"showVal" if st.in_d_lbls => {
+            if let (Some(ser), Some(val)) = (st.cur_series.as_mut(), attr_val(e, "val")) {
+                ser.show_values = matches!(val.as_str(), "1" | "true");
+            }
+        }
+        b"dLblPos" if st.in_d_lbls => {
+            if let Some(ser) = st.cur_series.as_mut() {
+                ser.data_label_position = attr_val(e, "val");
+            }
+        }
         b"ser" => {
             let mut ser = OoxmlSeries::default();
             if let Some(t) = st.cur_plot_type {
@@ -516,7 +533,11 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.cur_series = Some(ser);
         }
         b"tx" => st.in_tx = true,
-        b"cat" => st.in_cat = true,
+        b"cat" => {
+            st.in_cat = true;
+            // 첫 계열의 c:cat이 비어 있거나 생략된 차트도 뒤 계열의 범주를 사용한다.
+            st.collect_categories = chart.categories.is_empty();
+        }
         b"val" => st.in_val = true,
         b"xVal" => st.in_x_val = true,
         b"yVal" => st.in_y_val = true,
@@ -559,7 +580,11 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
         b"defRPr" | b"rPr" => {
             if let Some(pt) = attr_val(e, "sz").and_then(|v| v.parse::<f64>().ok()) {
                 let pt = pt / 100.0;
-                if st.in_chart_title && !st.in_plot_area {
+                if st.in_d_lbls {
+                    if let Some(ser) = st.cur_series.as_mut() {
+                        ser.data_label_size_pt.get_or_insert(pt);
+                    }
+                } else if st.in_chart_title && !st.in_plot_area {
                     if chart.title_size_pt.is_none() {
                         chart.title_size_pt = Some(pt);
                     }
@@ -623,22 +648,19 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             if st.in_sp_pr && (st.in_solid_fill || st.in_ln) {
                 if let Some(val) = attr_val(e, "val") {
                     if let Some(rgb) = scheme_color(&val) {
-                        if let Some(ser) = st.cur_series.as_mut() {
-                            if ser.color.is_none() {
-                                ser.color = Some(rgb);
-                            }
-                        } else if let Some(owner) = line_owner(st) {
-                            set_line(
-                                chart,
-                                owner,
-                                LineSpec::Solid {
-                                    rgb,
-                                    width_emu: st.cur_ln_w,
-                                },
-                            );
-                        }
+                        st.scheme_fill = Some((rgb, 1.0, 0.0));
                     }
                 }
+            }
+        }
+        b"lumMod" => {
+            if let (Some((_, factor, _)), Some(value)) = (st.scheme_fill.as_mut(), attr_f64(e)) {
+                *factor = value / 100_000.0;
+            }
+        }
+        b"lumOff" => {
+            if let (Some((_, _, offset)), Some(value)) = (st.scheme_fill.as_mut(), attr_f64(e)) {
+                *offset = value / 100_000.0;
             }
         }
         b"numCache" => st.in_num_cache = true,
@@ -676,6 +698,23 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.cur_val_ax_id = None;
             st.cur_val_ax_pos = None;
             open_axis(chart, st, AxisKind::Value);
+        }
+        b"min" | b"max" if st.in_val_ax => {
+            if let (Some(ax), Some(value)) = (
+                st.cur_axis.and_then(|i| chart.axes.get_mut(i)),
+                attr_f64(e).filter(|v| v.is_finite()),
+            ) {
+                if name_bytes == b"min" {
+                    ax.minimum = Some(value);
+                } else {
+                    ax.maximum = Some(value);
+                }
+            }
+        }
+        b"numFmt" if st.in_val_ax => {
+            if let Some(ax) = st.cur_axis.and_then(|i| chart.axes.get_mut(i)) {
+                ax.format_code = attr_val(e, "formatCode");
+            }
         }
         b"catAx" => open_axis(chart, st, AxisKind::Category),
         b"dateAx" => open_axis(chart, st, AxisKind::Date),
@@ -722,7 +761,7 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
                         ser.name = text;
                     }
                 } else if st.in_cat {
-                    if chart.series.is_empty() {
+                    if st.collect_categories {
                         chart.categories.push(text);
                     }
                 } else if st.in_val || st.in_y_val {
@@ -758,9 +797,13 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
             }
         }
         b"tx" => st.in_tx = false,
-        b"cat" => st.in_cat = false,
+        b"cat" => {
+            st.in_cat = false;
+            st.collect_categories = false;
+        }
         b"val" => st.in_val = false,
         b"dPt" => st.in_d_pt = false,
+        b"dLbls" => st.in_d_lbls = false,
         b"chart" => st.in_chart_body = false,
         b"plotArea" => st.in_plot_area = false,
         b"txPr" => st.in_tx_pr = false,
@@ -781,6 +824,25 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
         b"ln" => {
             st.in_ln = false;
             st.cur_ln_w = None;
+        }
+        b"schemeClr" => {
+            if let Some((rgb, factor, offset)) = st.scheme_fill.take() {
+                let color = apply_luminance(rgb, factor, offset);
+                if let Some(ser) = st.cur_series.as_mut() {
+                    if ser.color.is_none() {
+                        ser.color = Some(color);
+                    }
+                } else if let Some(owner) = line_owner(st) {
+                    set_line(
+                        chart,
+                        owner,
+                        LineSpec::Solid {
+                            rgb: color,
+                            width_emu: st.cur_ln_w,
+                        },
+                    );
+                }
+            }
         }
         b"dTable" => st.in_d_table = false,
         b"numCache" => st.in_num_cache = false,
@@ -849,6 +911,45 @@ fn scheme_color(name: &str) -> Option<u32> {
     }
 }
 
+/// DrawingML `lumMod`/`lumOff`는 RGB 채널이 아니라 HSL 명도에 적용한다.
+fn apply_luminance(rgb: u32, factor: f64, offset: f64) -> u32 {
+    let r = ((rgb >> 16) & 0xff) as f64 / 255.0;
+    let g = ((rgb >> 8) & 0xff) as f64 / 255.0;
+    let b = (rgb & 0xff) as f64 / 255.0;
+    let max = r.max(g).max(b);
+    let min = r.min(g).min(b);
+    let diff = max - min;
+    let l = (max + min) / 2.0;
+    let s = if diff == 0.0 {
+        0.0
+    } else {
+        diff / (1.0 - (2.0 * l - 1.0).abs())
+    };
+    let h = if diff == 0.0 {
+        0.0
+    } else if max == r {
+        60.0 * ((g - b) / diff).rem_euclid(6.0)
+    } else if max == g {
+        60.0 * ((b - r) / diff + 2.0)
+    } else {
+        60.0 * ((r - g) / diff + 4.0)
+    };
+    let l = (l * factor + offset).clamp(0.0, 1.0);
+    let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+    let x = c * (1.0 - ((h / 60.0).rem_euclid(2.0) - 1.0).abs());
+    let (rr, gg, bb) = match (h / 60.0) as u32 {
+        0 => (c, x, 0.0),
+        1 => (x, c, 0.0),
+        2 => (0.0, c, x),
+        3 => (0.0, x, c),
+        4 => (x, 0.0, c),
+        _ => (c, 0.0, x),
+    };
+    let m = l - c / 2.0;
+    let channel = |v: f64| ((v + m) * 255.0).round().clamp(0.0, 255.0) as u32;
+    (channel(rr) << 16) | (channel(gg) << 8) | channel(bb)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -886,6 +987,71 @@ mod tests {
         assert_eq!(c.series[0].series_type, OoxmlChartType::Column);
         assert_eq!(c.series[0].values, vec![100.0, 80.0]);
         assert_eq!(c.categories, vec!["Seoul", "Busan"]);
+    }
+
+    #[test]
+    fn stacked_chart_uses_explicit_percent_value_axis() {
+        let xml = r#"<c:chartSpace xmlns:c="x"><c:chart><c:plotArea>
+          <c:barChart><c:barDir val="col"/><c:grouping val="stacked"/>
+            <c:ser><c:tx><c:v>A</c:v></c:tx><c:dLbls><c:txPr><a:p><a:pPr><a:defRPr sz="1000"/></a:pPr></a:p></c:txPr><c:dLblPos val="outEnd"/><c:showVal val="1"/></c:dLbls><c:val><c:numRef><c:numCache><c:formatCode>0%</c:formatCode>
+              <c:pt idx="0"><c:v>0.7</c:v></c:pt>
+            </c:numCache></c:numRef></c:val></c:ser>
+          </c:barChart>
+          <c:catAx><c:axPos val="b"/></c:catAx>
+          <c:valAx><c:scaling><c:min val="0"/><c:max val="1"/></c:scaling>
+            <c:axPos val="l"/><c:numFmt formatCode="0%" sourceLinked="0"/>
+          </c:valAx>
+        </c:plotArea></c:chart></c:chartSpace>"#;
+        let chart = parse_chart_xml(xml.as_bytes()).expect("chart");
+        let axis = chart
+            .axes
+            .iter()
+            .find(|a| a.kind == AxisKind::Value)
+            .unwrap();
+        assert_eq!((axis.minimum, axis.maximum), (Some(0.0), Some(1.0)));
+        assert_eq!(axis.format_code.as_deref(), Some("0%"));
+        assert!(chart.series[0].show_values);
+        assert_eq!(chart.series[0].data_label_size_pt, Some(10.0));
+        assert_eq!(
+            chart.series[0].data_label_position.as_deref(),
+            Some("outEnd")
+        );
+        let svg = chart.render_svg(0.0, 0.0, 430.0, 250.0);
+        assert!(svg.contains(">100%</text>"), "{svg}");
+        assert!(svg.contains(">20%</text>"), "{svg}");
+        assert!(!svg.contains(">1.5</text>"), "{svg}");
+        assert!(svg.contains(">70%</text>"), "{svg}");
+    }
+
+    #[test]
+    fn scheme_luminance_is_applied_in_hsl_space() {
+        let xml = r#"<c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea>
+          <c:barChart><c:ser><c:spPr><a:solidFill>
+            <a:schemeClr val="accent4"><a:lumMod val="40000"/><a:lumOff val="60000"/></a:schemeClr>
+          </a:solidFill></c:spPr><c:val><c:numRef><c:numCache>
+            <c:pt idx="0"><c:v>1</c:v></c:pt>
+          </c:numCache></c:numRef></c:val></c:ser></c:barChart>
+        </c:plotArea></c:chart></c:chartSpace>"#;
+        let chart = parse_chart_xml(xml.as_bytes()).unwrap();
+        assert_eq!(chart.series[0].color, Some(0xffe699));
+    }
+
+    #[test]
+    fn categories_may_begin_in_a_later_series() {
+        let xml = r#"<c:chartSpace xmlns:c="x"><c:chart><c:plotArea><c:barChart>
+          <c:ser><c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>0.7</c:v></c:pt>
+          </c:numCache></c:numRef></c:val></c:ser>
+          <c:ser><c:cat><c:strRef><c:strCache>
+            <c:pt idx="0"><c:v>20-29</c:v></c:pt><c:pt idx="1"><c:v>30-39</c:v></c:pt>
+          </c:strCache></c:strRef></c:cat><c:val><c:numRef><c:numCache>
+            <c:pt idx="0"><c:v>0.3</c:v></c:pt>
+          </c:numCache></c:numRef></c:val></c:ser>
+        </c:barChart></c:plotArea></c:chart></c:chartSpace>"#;
+        let chart = parse_chart_xml(xml.as_bytes()).unwrap();
+        assert_eq!(chart.categories, ["20-29", "30-39"]);
+        assert!(chart
+            .render_svg(0.0, 0.0, 430.0, 250.0)
+            .contains(">20-29</text>"));
     }
 
     // --- C1c (#1882) 갭①: 자동 제목 플래그 ---

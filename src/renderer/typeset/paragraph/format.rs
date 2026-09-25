@@ -252,6 +252,7 @@ fn recompose_for_flow(
                     crate::renderer::composer::StoredRowMissPolicy::Reflow,
                     &ctx.float_carve_evidence(),
                     known_square_band,
+                    ctx.profile().hwpx_stored_layout(),
                 )
             } else {
                 None

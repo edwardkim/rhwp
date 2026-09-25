@@ -145,6 +145,13 @@ fn label_font_px(chart: &OoxmlChart) -> f64 {
     chart.text_size_pt.unwrap_or(hancom_default::LABEL_PT) * PX_PER_PT
 }
 
+fn data_label_font_px(chart: &OoxmlChart, series: &OoxmlSeries) -> f64 {
+    series
+        .data_label_size_pt
+        .map(|pt| pt * PX_PER_PT)
+        .unwrap_or_else(|| label_font_px(chart))
+}
+
 /// 제목 글꼴 px — 제목 `sz`, 없으면 한컴 기본 14pt.
 fn title_font_px(chart: &OoxmlChart) -> f64 {
     chart.title_size_pt.unwrap_or(hancom_default::TITLE_PT) * PX_PER_PT
@@ -162,7 +169,11 @@ fn series_line_px(ser: &OoxmlSeries) -> f64 {
 fn label_text_width(text: &str, font: f64) -> f64 {
     text.chars()
         .map(|c| {
-            if c.is_ascii() {
+            if c == '%' {
+                // 백분율 기호는 숫자보다 넓다. 숫자 폭을 재사용하면 100% 값축과
+                // 플롯이 겹쳐 큰 차트에서 막대 전체가 왼쪽으로 밀린다.
+                font * 1.2
+            } else if c.is_ascii() {
                 font * hancom_default::DIGIT_EM
             } else {
                 font * hancom_default::CJK_EM
@@ -329,6 +340,14 @@ fn format_axis_num(v: f64) -> String {
     s
 }
 
+fn format_value_axis_num(v: f64, format_code: Option<&str>) -> String {
+    if format_code.is_some_and(|code| code.contains('%')) {
+        format!("{}%", (v * 100.0).round() as i64)
+    } else {
+        format_axis_num(v)
+    }
+}
+
 /// 차트 전체를 SVG 조각으로 렌더
 pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> String {
     if chart.series.is_empty() || chart.chart_type == OoxmlChartType::Unknown {
@@ -422,7 +441,9 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
     let bottom_pad = if is_pie {
         label_font * hancom_default::PIE_BOTTOM_PAD_EM
     } else {
-        label_font * hancom_default::BOTTOM_PAD_EM
+        // 250px 기준 차트의 축·범례 여백을 프레임 높이에 비례시킨다. 큰 차트에서
+        // 고정 픽셀 여백을 쓰면 플롯 하단과 범주 라벨이 기준 출력보다 아래로 내려간다.
+        label_font * hancom_default::BOTTOM_PAD_EM * (h / 250.0).max(1.0)
     };
     let plot_x = x + left_pad;
     let plot_y = y + title_h;
@@ -543,9 +564,20 @@ fn estimate_axis_label_width(chart: &OoxmlChart, axis_group: u8) -> f64 {
         return font * hancom_default::LEFT_GAP_EM;
     }
     let (vmin, vmax, _) = value_range_for(series.iter().cloned(), VERTICAL_AXIS_TICKS);
-    let fmt = series.first().and_then(|s| s.format_code.as_deref());
-    let min_label = format_num(vmin, fmt);
-    let max_label = format_num(vmax, fmt);
+    let axis = axis_at(
+        chart,
+        if axis_group == 0 {
+            AxisPos::Left
+        } else {
+            AxisPos::Right
+        },
+    );
+    let fmt = axis
+        .format_code
+        .as_deref()
+        .or_else(|| series.first().and_then(|s| s.format_code.as_deref()));
+    let min_label = format_value_axis_num(axis.minimum.unwrap_or(vmin), fmt);
+    let max_label = format_value_axis_num(axis.maximum.unwrap_or(vmax), fmt);
     let max_w = label_text_width(&min_label, font).max(label_text_width(&max_label, font));
     // 라벨 폭 + 라벨~축 간격 (한/글 실측: 한 자리 값축 라벨 차트의 플롯 왼쪽 27.5px)
     (max_w + font * hancom_default::LEFT_GAP_EM).max(2.0 * font)
@@ -564,8 +596,15 @@ fn value_axis_max_label_width(chart: &OoxmlChart) -> f64 {
         return 0.0;
     }
     let (_, vmax, _) = value_range_for(series.iter().cloned(), VERTICAL_AXIS_TICKS);
-    let fmt = series.first().and_then(|s| s.format_code.as_deref());
-    label_text_width(&format_num(vmax, fmt), font)
+    let axis = axis_at(chart, AxisPos::Bottom);
+    let fmt = axis
+        .format_code
+        .as_deref()
+        .or_else(|| series.first().and_then(|s| s.format_code.as_deref()));
+    label_text_width(
+        &format_value_axis_num(axis.maximum.unwrap_or(vmax), fmt),
+        font,
+    )
 }
 
 /// 시리즈 부분집합의 원시 값 범위 (0-baseline clamp + 퇴화 방어, nice 반올림 전)
@@ -730,7 +769,7 @@ fn render_bars(
     } else {
         VERTICAL_AXIS_TICKS
     };
-    let (vmin, vmax, vstep) = if percent {
+    let (mut vmin, mut vmax, mut vstep) = if percent {
         (0.0, 100.0, 20.0)
     } else if stacked {
         let max_sum = (0..cat_count)
@@ -762,6 +801,34 @@ fn render_bars(
         }
     };
 
+    let value_axis = axis_at(
+        chart,
+        if horizontal {
+            AxisPos::Bottom
+        } else {
+            AxisPos::Left
+        },
+    );
+    if let Some(minimum) = value_axis.minimum {
+        vmin = minimum;
+    }
+    if let Some(maximum) = value_axis.maximum.filter(|max| *max > vmin) {
+        vmax = maximum;
+    }
+    if value_axis.minimum.is_some() || value_axis.maximum.is_some() {
+        // 명시 범위는 headroom으로 늘리지 않는다. 백분율 축은 20% 눈금을 사용한다.
+        let intervals = if value_axis
+            .format_code
+            .as_deref()
+            .is_some_and(|code| code.contains('%'))
+        {
+            5.0
+        } else {
+            ticks
+        };
+        vstep = (vmax - vmin) / intervals;
+    }
+
     if chart.is_3d {
         // 3D는 시어 투영 기반 별도 경로 — 축 범위(vmin/vmax/vstep)는 위에서
         // 플롯 rect 기준으로 이미 확정(#1882 앵커 무접촉). 배치·방·압출만
@@ -785,7 +852,10 @@ fn render_bars(
         vmin,
         vmax,
         vstep,
-        chart.series.first().and_then(|s| s.format_code.as_deref()),
+        value_axis
+            .format_code
+            .as_deref()
+            .or_else(|| chart.series.first().and_then(|s| s.format_code.as_deref())),
         horizontal,
         false,
         percent,
@@ -811,6 +881,7 @@ fn render_bars(
         cat_span * idx as f64
     };
 
+    let mut data_labels = String::new();
     if stacked {
         // 누적: 카테고리당 단일 막대, 시리즈를 아래/왼쪽부터 쌓음.
         // percent → 카테고리 합으로 정규화(전체 길이 = 100%), stacked → vmax로 정규화.
@@ -826,6 +897,7 @@ fn render_bars(
                 (vmax - vmin).max(1e-9)
             };
             let mut acc = 0.0_f64; // 지금까지 쌓인 픽셀 길이
+            let mut preceding_label_y = None::<f64>;
             for (si, ser) in chart.series.iter().enumerate() {
                 let v = ser.values.get(ci).copied().unwrap_or(0.0).max(0.0);
                 let color = series_color(ser, si);
@@ -840,6 +912,22 @@ fn render_bars(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
                         base + acc, cell, seg.max(0.0), bar_span_total, color
                     ));
+                    if ser.show_values && v > 0.0 {
+                        let font = data_label_font_px(chart, ser);
+                        let label_x = match ser.data_label_position.as_deref() {
+                            Some("ctr") => base + acc + seg / 2.0,
+                            Some("inEnd") => base + acc + seg - 2.0,
+                            Some("inBase") => base + acc + 2.0,
+                            _ => base + acc + seg + 2.0,
+                        };
+                        data_labels.push_str(&format!(
+                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"1.5\" paint-order=\"stroke\" text-anchor=\"start\">{}</text>\n",
+                            label_x,
+                            cell + bar_span_total / 2.0 + font * 0.35,
+                            font,
+                            xml_escape(&format_value_axis_num(v, ser.format_code.as_deref()))
+                        ));
+                    }
                     acc += seg;
                 } else {
                     let seg = ph * (v / denom);
@@ -848,6 +936,56 @@ fn render_bars(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
                         cell, by, bar_span_total, seg.max(0.0), color
                     ));
+                    if ser.show_values && v > 0.0 {
+                        let font = data_label_font_px(chart, ser);
+                        let label_y = match ser.data_label_position.as_deref() {
+                            Some("ctr") => by + seg / 2.0 + font * 0.35,
+                            Some("inEnd") => by + font,
+                            Some("inBase") => by + seg - 2.0,
+                            // SVG text y는 글자 위가 아니라 기준선이다. 한컴의 outEnd는
+                            // 바로 윗 조각을 침범하지 않도록 글자 한 줄을 더 올린다.
+                            Some("outEnd") => by - font - 2.0,
+                            _ => by - 2.0,
+                        };
+                        let label_y = if ser.data_label_position.as_deref() == Some("outEnd") {
+                            let packed_y = preceding_label_y
+                                .map(|previous| label_y.min(previous - font * 0.9))
+                                .unwrap_or(label_y);
+                            preceding_label_y = Some(packed_y);
+                            packed_y
+                        } else {
+                            label_y
+                        };
+                        // outEnd 라벨은 누적 차트의 다음 계열 위에 놓일 수 있다.
+                        // 실제 글자 중심이 검은 면에 들어가면 밝은 글자를 사용한다.
+                        let label_middle = label_y - font * 0.4;
+                        let mut fill_bottom = py + ph;
+                        let mut label_fill = "#000000";
+                        for (paint_idx, paint_series) in chart.series.iter().enumerate() {
+                            let paint_value =
+                                paint_series.values.get(ci).copied().unwrap_or(0.0).max(0.0);
+                            let fill_top = fill_bottom - ph * (paint_value / denom);
+                            if label_middle >= fill_top && label_middle <= fill_bottom {
+                                let rgb = paint_series.color.unwrap_or_else(|| palette(paint_idx));
+                                let r = (rgb >> 16) & 0xff;
+                                let g = (rgb >> 8) & 0xff;
+                                let b = rgb & 0xff;
+                                if 299 * r + 587 * g + 114 * b < 100_000 {
+                                    label_fill = "#ffffff";
+                                }
+                                break;
+                            }
+                            fill_bottom = fill_top;
+                        }
+                        data_labels.push_str(&format!(
+                            "<text class=\"hwp-chart-data-label\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"sans-serif\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                            cell + bar_span_total / 2.0,
+                            label_y,
+                            font,
+                            label_fill,
+                            xml_escape(&format_value_axis_num(v, ser.format_code.as_deref()))
+                        ));
+                    }
                     acc += seg;
                 }
             }
@@ -889,6 +1027,8 @@ fn render_bars(
         }
     }
 
+    // 스택 위 경계에 놓인 값 라벨은 다음 계열의 막대가 덮지 않도록 마지막에 칠한다.
+    svg.push_str(&data_labels);
     render_category_labels(svg, chart, px, py, pw, ph, cat_count, horizontal);
 }
 
@@ -1858,6 +1998,8 @@ fn render_value_grid(
     let label = |v: f64| -> String {
         if percent {
             format!("{}%", v.round() as i64)
+        } else if format_code.is_some_and(|code| code.contains('%')) {
+            format_value_axis_num(v, format_code)
         } else if decimal {
             format_axis_num(v)
         } else {
@@ -2855,6 +2997,37 @@ mod tests {
             categories: vec!["a".into(), "b".into()],
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn stacked_out_end_label_is_readable_on_dark_next_segment() {
+        let chart = OoxmlChart {
+            chart_type: OoxmlChartType::Column,
+            grouping: BarGrouping::Stacked,
+            categories: vec!["20-29".into()],
+            series: vec![
+                OoxmlSeries {
+                    values: vec![0.58],
+                    color: Some(0x289b6e),
+                    format_code: Some("0%".into()),
+                    show_values: true,
+                    data_label_size_pt: Some(10.0),
+                    data_label_position: Some("outEnd".into()),
+                    ..Default::default()
+                },
+                OoxmlSeries {
+                    values: vec![0.22],
+                    color: Some(0x000000),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let svg = chart.render_svg(0.0, 0.0, 430.0, 250.0);
+        assert!(
+            svg.contains("fill=\"#ffffff\" text-anchor=\"middle\">58%</text>"),
+            "{svg}"
+        );
     }
 
     #[test]

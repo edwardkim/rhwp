@@ -2497,6 +2497,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         miss_policy,
         float_carve_evidence,
         false,
+        false,
     )
 }
 
@@ -2521,6 +2522,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 함께 설명할 때만 저장 기하를 유지한다.
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
     known_square_band: bool,
+    hwpx_stored_layout: bool,
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -2531,7 +2533,36 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     // 여기서 사양하면 45자 합성 줄바꿈이 그대로 남아 감폭된 상자 폭을 넘는다
     // (아이콘 옆 설명 한 줄이 열 밖까지 이어지는 형상). 저장 행이 있는 문단의
     // 소유권 계약은 종전대로 본문 게이트만 통과한다.
+    let has_kopub_face = para.char_shapes.iter().any(|reference| {
+        styles
+            .char_styles
+            .get(reference.char_shape_id as usize)
+            .is_some_and(|style| {
+                style.font_families.iter().any(|face| {
+                    face.contains("KoPub돋움체")
+                        || face.contains("KoPub바탕체")
+                        || face.to_lowercase().contains("kopub dotum")
+                        || face.to_lowercase().contains("kopub batang")
+                })
+            })
+    });
+    let justified_kopub = hwpx_stored_layout
+        && has_kopub_face
+        && styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify);
+    let justified_kopub_picture = justified_kopub
+        && para.controls.iter().any(|control| {
+            matches!(control, crate::model::control::Control::Picture(picture)
+                if picture.common.treat_as_char)
+        });
     let frame_admits_controls = line_breaking::supports_cached_body_frame_controls(para)
+        || (justified_kopub_picture
+            && para.controls.iter().all(|control| {
+                matches!(control, crate::model::control::Control::Picture(picture)
+                    if picture.common.treat_as_char)
+            }))
         || (crate::renderer::para_has_no_stored_line_segs(para)
             && (known_square_band
                 || para.controls.iter().any(|control| {
@@ -2555,7 +2586,23 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             .map(|segment| segment.vertical_pos)
             .unwrap_or(0),
     );
-    let stale = stored_rows_are_stale(composed, para, inner_width_px, styles);
+    frame.kopub_justified_space = justified_kopub_picture;
+    // 실제 글꼴 공백폭으로 다시 채운 행이 저장 사다리보다 적으면 저장 경계는
+    // 현 출력 환경에서 유효하지 않다. 외부 어울림 기하와 강제 개행은 이 판단 밖이다.
+    let compact_stored_rows = justified_kopub_picture
+        && para.line_segs.len() > 1
+        && !para.text.contains('\n')
+        && !para.stored_text_partition_is_dirty()
+        && !frame.models_exclusions()
+        && {
+            let mut probe = frame.clone();
+            let mut input = para.clone();
+            input.line_segs.clear();
+            line_breaking::layout_paragraph_in_frame(&input, &mut probe, styles, dpi)
+                .is_some_and(|rows| rows.len() < para.line_segs.len())
+        };
+    let stale =
+        compact_stored_rows || stored_rows_are_stale(composed, para, inner_width_px, styles);
     match line_breaking::resolve_stored_line_segs_in_frame(
         para,
         &mut frame,

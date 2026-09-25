@@ -1065,6 +1065,30 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     None
 }
 
+/// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
+/// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
+pub(crate) fn kopub_justified_space_width(style: &TextStyle) -> Option<f64> {
+    let primary = style.font_family.split(',').next()?.trim();
+    let lower = primary.to_lowercase();
+    let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        290.0
+    } else if primary.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        312.0
+    } else {
+        return None;
+    };
+    let (font_size, ratio, _) = style_params(style);
+    let base = quantize_hwp_px(font_size * units / 1000.0);
+    let mut width = base * ratio
+        + glyph_letter_spacing(style.letter_spacing, base * ratio, font_size)
+        + style.extra_char_spacing
+        + style.extra_word_spacing;
+    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+        width = width.max(base * ratio * 0.5);
+    }
+    Some(width)
+}
+
 /// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
 ///
 /// HWP의 일반적인 U+0020 반각 규약(`em/2`)과 달리, 원명 `한양중고딕`으로
