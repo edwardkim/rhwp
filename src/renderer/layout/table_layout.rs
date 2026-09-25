@@ -5068,6 +5068,7 @@ impl LayoutEngine {
         pad_left: f64,
         pad_right: f64,
         cell_w: f64,
+        inner_height_px: f64,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
@@ -5081,6 +5082,7 @@ impl LayoutEngine {
             pad_left,
             pad_right,
             cell_w,
+            inner_height_px,
             composed_paras,
             paragraphs,
             styles,
@@ -8408,6 +8410,7 @@ impl LayoutEngine {
                 pad_left,
                 pad_right,
                 cell_w,
+                (cell_h - pad_top - pad_bottom).max(0.0),
                 &composed_paras,
                 &cell.paragraphs,
                 styles,
@@ -20226,10 +20229,13 @@ mod row_cut_tests {
         let composed = vec![composed_text("12345678901234567890")];
         let paragraphs = vec![Paragraph::default()];
 
+        // [#7413] 칸 안쪽 높이. 0.0 은 "높이를 모른다"는 뜻이라 높이 판정을 건너뛰고
+        // 종전 동작(폭만 보고 축소)을 그대로 검사한다.
         let shrunk = eng.shrink_cell_padding_for_overflow(
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,
@@ -20245,6 +20251,7 @@ mod row_cut_tests {
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,
@@ -20263,6 +20270,7 @@ mod row_cut_tests {
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,
