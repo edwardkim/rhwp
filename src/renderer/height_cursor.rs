@@ -435,14 +435,32 @@ impl HeightCursor {
             .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
             .map(|ps| ps.spacing_before)
             .unwrap_or(0.0);
-        // A stored table-host vpos is safe when it advances by exactly the
-        // next paragraph's before-spacing from the preceding line end. It
-        // then carries no table height; using the preceding end and deducting
-        // that spacing again pulls the first fragment above its flow origin
-        // (issue2004 HWPX p4).
+        // A one-cell picture frame can store a host vpos that advances by
+        // exactly its before-spacing from the preceding line end. It carries
+        // no table height; using the preceding end and deducting that spacing
+        // again pulls its first fragment above the flow origin (issue2004 p4).
+        // Text tables with the same numeric gap still use the conservative
+        // host rule: issue1853 p10 otherwise paints its last line below body.
+        let one_cell_picture_frame = paragraphs.get(item_para).is_some_and(|para| {
+            para.controls.iter().any(|control| match control {
+                Control::Table(table) => {
+                    table.row_count == 1
+                        && table.col_count == 1
+                        && table.cells.len() == 1
+                        && table.cells[0].paragraphs.iter().any(|cell_para| {
+                            cell_para
+                                .controls
+                                .iter()
+                                .any(|control| matches!(control, Control::Picture(_)))
+                        })
+                }
+                _ => false,
+            })
+        });
         let table_host_only_before_gap = self.suppress_hwpx_stale_forward
             && !self.session_edited
             && curr_has_topbottom_para_table
+            && one_cell_picture_frame
             && curr_sb > 0.0
             && curr_first_vpos.is_some_and(|v| {
                 v == prev_vpos_end.saturating_add((curr_sb * 7200.0 / self.dpi).round() as i32)

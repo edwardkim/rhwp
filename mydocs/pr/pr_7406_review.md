@@ -74,6 +74,8 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 `issue2004` HWPX 물리 4쪽 첫 그림은 기준 124.9px보다 6.68px 높은 118.22px에 그려졌다. 앞 제목의 저장 줄 끝 3060HU와 표 호스트 첫 `vpos=3560HU`의 차이는 표 호스트의 문단 앞 간격 **500HU**와 정확히 같다. 기존 `HeightCursor`는 TopAndBottom 표 호스트의 첫 vpos를 항상 버리고 이전 줄 끝에서 앞 간격을 다시 빼서 첫 표 조각을 올렸다. 저장 사다리가 이처럼 앞 간격만 인코딩한 경우에는 표 높이가 포함되지 않았으므로 해당 첫 vpos를 사용한다. 수정 전 그림 좌표 회귀 FAIL, 수정 후 **6/6 PASS**(HWP/HWPX 그림, PrEP 39→40·90쪽, 80168 쪽수, RowBreak HWP/HWPX). 새 Native 그림 상단은 **124.9px**, PrEP 39·40·41·90쪽은 모두 **99.99% 이상**으로 gate PASS다. `issue2004` 물리 4쪽 전체 실루엣은 **57.45→81.87%**로 개선됐으나 이미지 내부 픽셀 차이가 남아 이 대조 문서의 시각 일치를 주장하지 않는다. 증적은 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/issue2004-p4-after/`와 `visual/p40-p90-after-2004/`에 있다.
 
+그 뒤 전체 nextest **10,255 PASS/1 FAIL/50 skip**에서 `issue1853` 물리 10쪽 넘침이 다시 검출됐다. 같은 숫자상 앞 간격 사다리를 가진 3×2 텍스트 표까지 그림 표 규칙이 적용된 반례다. 저장 1×1 표의 셀에 실제 Picture 컨트롤이 있는 경우로 규칙을 한정했다. 수정 전 본문 넘침 원장 FAIL/수정 후 **PASS**, `issue2004` HWP/HWPX 그림과 PrEP·80168 대조군 포함 집중 회귀 **5/5 PASS**다. 새 CLI의 `issue1853` 물리 10쪽 넘침 **0건**, `issue2004` 그림 상단 **124.9px**, PrEP 39·40·41·90쪽 국소 sweep 최저 **99.99354%**다. `issue2004` 전체 실루엣은 **81.87%**로 남아 대조 문서의 전체 시각 일치를 주장하지 않는다. 최종 전체 nextest·140쪽 sweep은 이 보정 head에서 재실행해야 한다.
+
 물리 1쪽의 기준 PDF는 `H2hdrM`과 `Dotum` 내장 subset을 사용하지만, 같은 제목 SVG의 Chrome 실제 적용 글꼴은 `HCR Dotum`이다. 두 출력의 글꼴이 완전히 다른 것을 [해시 고정 증거](assets/pr7406_20260925/font_mismatch_001.md)에 기록했다. 이 예외는 물리 1쪽에만 적용하며 표·그림 경계와 글줄 수·순서를 review/overlay에서 직접 확인했다. 최종 전체 Visual Sweep에는 이 증거 파일을 `--font-mismatch-evidence`로 전달하고 다른 쪽의 점수와 배치 차이는 별도로 판정한다.
 
 ![#7406 원본 물리 1쪽 Native review](assets/pr7406_20260925/native_review_001.png)
