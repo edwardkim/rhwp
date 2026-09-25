@@ -66,6 +66,31 @@ class ComparabilityReview(unittest.TestCase):
                 output = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)
             self.assertEqual(output['lines'][0]['key'], 'cab문단')
 
+    def test_pdf_and_svg_split_distant_cells_on_the_same_baseline(self):
+        xml = (
+            '<document><page width="595" height="842"><block><line><font size="12">'
+            '<char x="10" y="20" c="칸"/><char x="22" y="20" c="하나"/>'
+            '<char x="200" y="20" c="칸"/><char x="212" y="20" c="둘"/>'
+            '</font></line></block></page></document>'
+        ).encode()
+        with patch.object(oracle, 'run', side_effect=[xml, b'']):
+            pdf_lines = oracle.read_pdf(Path('sample.pdf'), [1])['lines']
+        with tempfile.TemporaryDirectory() as folder:
+            work = Path(folder)
+            def export_svg(command):
+                out = work / 'svg'
+                out.mkdir()
+                (out / 'page_001.svg').write_text(
+                    '<svg width="800" height="1000">'
+                    '<text x="10" y="26.7" font-size="16">칸하나</text>'
+                    '<text x="200" y="26.7" font-size="16">칸둘</text></svg>'
+                )
+                return b''
+            with patch.object(oracle, 'run', export_svg):
+                svg_lines = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)['lines']
+        self.assertEqual([line['key'] for line in pdf_lines], ['칸하나', '칸둘'])
+        self.assertEqual([line['key'] for line in svg_lines], ['칸하나', '칸둘'])
+
     def test_svg_runs_sort_by_position_without_sorting_characters(self):
         with tempfile.TemporaryDirectory() as folder:
             work = Path(folder)
@@ -80,7 +105,27 @@ class ComparabilityReview(unittest.TestCase):
                 return b''
             with patch.object(oracle, 'run', export_svg):
                 output = oracle.read_rhwp(Path('rhwp'), Path('sample.hwp'), work, None)
-            self.assertEqual(output['lines'][0]['key'], '앞문장끝문장')
+            self.assertEqual([line['key'] for line in output['lines']], ['앞문장', '끝문장'])
+
+    def test_uncomparable_glyph_does_not_hide_a_different_saved_cut(self):
+        prefix = 'abcdefghijkl'
+        paragraph = {'text': prefix + '\uf53a' + '뒤문단', 'cuts': [0, len(prefix) + 1]}
+        # 그 글자 직전에서 끊긴 출력은 저장 컷을 재현하지 않았다. PUA를 지우면
+        # 두 글자열이 모두 prefix가 되어 거짓 양성이 된다.
+        before_glyph = [{'key': prefix}]
+        after_glyph = [{'key': prefix + '\uf53a'}]
+        self.assertNotEqual(oracle.comparison_key(prefix + '\uf53a'), prefix)
+        result = oracle.judge_lines([paragraph], before_glyph, after_glyph)
+        self.assertEqual(result['status'], '미측정')
+        self.assertEqual(result['excludedUncomparable'], 1)
+
+    def test_ordinary_saved_cut_is_still_counted(self):
+        paragraph = {'text': 'abcdefghijkl뒤문단', 'cuts': [0, 12]}
+        lines = [{'key': 'abcdefghijkl'}]
+        result = oracle.judge_lines([paragraph], lines, lines)
+        self.assertEqual(result['storedMultilineParagraphs'], 1)
+        self.assertEqual(result['oracleKeepsButRhwpMisses'], 0)
+        self.assertEqual(result['excludedUncomparable'], 0)
 
     def test_x_scale_without_x_variance_is_unmeasured(self):
         source = [dict(key=f'line-text-unique-{i:03d}', font_px=12, x=100, y=100+i*10) for i in range(8)]
