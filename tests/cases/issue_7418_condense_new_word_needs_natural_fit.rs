@@ -34,19 +34,16 @@
 //! 가르는 것은 대안 모형이다. 새 낱말의 한도를 **축소율**로 두면 공백이 많은 B 를, **남은 틈**
 //! (종전 2.5em 문턱)으로 두면 C 를 설명하지 못한다.
 //!
-//! # 검사에서 빼는 두 문단 — 줄바꿈 여유 대역
+//! # 공백을 줄여 넣을 때는 줄바꿈 여유를 얹지 않는다
 //!
-//! A 의 condense 15·30 문단은 뺀다. 한 줄씩, condense 후 후보 폭이 상자를 **5·30 HWPUNIT**
-//! 넘는데 rhwp 의 줄바꿈 여유(`line_break_tolerance_hwp`, 이 상자에서 +50 HWPUNIT) 안이라
-//! rhwp 는 받고 한/글은 거절한다.
+//! A 의 condense 15·30 문단에는 condense 후 후보 폭이 상자를 **5·30 HWPUNIT** 넘는 줄이 있다.
+//! rhwp 의 줄바꿈 여유(`line_break_tolerance_hwp`, 이 상자에서 +50)를 얹으면 받게 되지만 한/글은
+//! 거절한다. 그래서 줄인 폭은 여유 없이 상자와 비교한다(자연폭 판정의 여유는 그대로 둔다).
 //!
 //! ```text
-//!   A c15 줄12: 자연 43500 → condense 후 42525   (상자 42520, 여유 끝 42570)
+//!   A c15 줄12: 자연 43500 → condense 후 42525   (상자 42520)
 //!   A c30 줄13: 자연 44500 → condense 후 42550
 //! ```
-//!
-//! 이 여유는 rhwp 의 폭 **추정** 오차를 흡수하려고 코퍼스로 정한 별개 계약이다. 이 검사는 그
-//! 계약을 잠그지 않는다.
 //!
 //! # 이 검사가 말하지 않는 것
 //!
@@ -75,8 +72,6 @@ const LABELS: [&str; 13] = [
     "D 낱말 c50",
     "D 낱말 c75",
 ];
-/// 줄바꿈 여유 대역에 줄이 걸려 이 검사에서 빼는 문단(모듈 주석 참조).
-const IN_TOLERANCE_BAND: [&str; 2] = ["A 글자 c15", "A 글자 c30"];
 
 /// 맨 앞 공백 실험 — 문단은 (condense, 맨 앞 공백 수)만 다르다.
 const LEAD_NO_CACHE: &str = "samples/issue7418/condense_leading_space_synthetic.hwpx";
@@ -124,7 +119,6 @@ fn recomposed_line_starts_match_hancom_under_condense() {
     let mismatched: Vec<String> = LABELS
         .iter()
         .zip(hancom.iter().zip(rhwp.iter()))
-        .filter(|(label, _)| !IN_TOLERANCE_BAND.contains(label))
         .filter(|(_, (h, r))| h != r)
         .map(|(label, (h, r))| {
             let first = h
