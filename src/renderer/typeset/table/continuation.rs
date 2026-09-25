@@ -30,6 +30,12 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// fragment의 FootnoteArea 첫 항목으로 먼저 등록해야 source 순서가 보존된다.
     pub(in crate::renderer::typeset) pending_table_footnote_fragment:
         Option<PendingTableFootnoteFragment>,
+    /// [#7095] 쪽을 넘는 1×1 표의 앞 조각들이 칠한 상자 높이의 합(px).
+    ///
+    /// 한/글은 분할된 칸의 저장 높이를 조각 상자 높이의 합으로 적는다(7062: 700976HU =
+    /// 9346.35px ↔ 정본 상자 합 9345.78px, 1382000 `pi=93/95/99` 도 0.6px 안). 저장 높이는
+    /// 칸의 **최소** 높이라, 끝 조각 상자는 `max(내용, 저장 높이 − 이 합)` 이다.
+    pub(in crate::renderer::typeset) single_cell_box_sum_px: f64,
 }
 
 /// RowBreak 표 셀 각주가 HWP 저장 vpos reset에서 물리 page를 넘을 때의 tail 정보.
@@ -134,6 +140,9 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     pub(in crate::renderer::typeset) first_fragment_saved_offset: Option<f64>,
     /// Both stored fragment heights independently prove this whole-row boundary.
     pub(in crate::renderer::typeset) source_cellbreak_row_end: Option<usize>,
+    /// [#7095] 표 host 다음 문단 첫 줄의 저장 vpos(HU)와 그 문단의 문단 위 간격(px).
+    /// 한/글이 끝 조각 뒤에 그 문단을 놓은 자리이며, 끝 조각 상자를 늘리는 상한이다.
+    pub(in crate::renderer::typeset) next_para_stored_top: Option<(i32, f64)>,
     /// 고정 선언 높이보다 실측 내용이 크게 넘치는 native HWP5 RowBreak 표가 마지막
     /// continuation fragment에서 URL 각주를 붙일 때의 실제 경계 완화 여부.
     pub(in crate::renderer::typeset) relax_terminal_table_footnote_fit: bool,

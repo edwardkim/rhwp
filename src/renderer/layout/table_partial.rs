@@ -1078,6 +1078,7 @@ impl LayoutEngine {
         probe: Option<&PartialTableCellProbe>,
         // [#7095] 쪽이 상자를 정한 비끝 1×1 조각 — 칸 `valign` 을 조각 내용으로 적용한다.
         center_pinned_single_cell: bool,
+        center_saved_spanning_cell: Option<usize>,
     ) {
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
@@ -1668,7 +1669,9 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if (is_in_split_row || is_rowbreak_straddle)
+            let effective_align = if center_saved_spanning_cell == Some(cell_idx) {
+                VerticalAlign::Center
+            } else if (is_in_split_row || is_rowbreak_straddle)
                 && (cell_was_split || cell_content_cut_by_slice)
             {
                 VerticalAlign::Top
@@ -1685,70 +1688,79 @@ impl LayoutEngine {
                 && end_row.checked_sub(1).is_some_and(|last_row| {
                     cell_row <= last_row && last_row < cell_row + cell.row_span as usize
                 });
-            let centered_content_height =
-                if effective_align == VerticalAlign::Center && owns_end_tail {
-                    let visual_height = line_ranges.as_ref().map(|ranges| {
-                        let mut total = 0.0;
-                        let para_count = cell.paragraphs.len();
-                        for (pi, ((comp, para), &(start, end))) in composed_store
-                            .eager_slice()
+            let centered_content_height = if center_saved_spanning_cell == Some(cell_idx) {
+                let units = self.cell_units(cell, table, styles);
+                cut_units
+                    .map(|(start, end)| {
+                        units[start.min(units.len())..end.min(units.len())]
                             .iter()
-                            .zip(cell.paragraphs.iter())
-                            .zip(ranges.iter())
-                            .enumerate()
-                        {
-                            let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                            let is_last_para = pi + 1 == para_count;
-                            if empty_paragraphs[pi] {
-                                if owns_empty_paragraph(pi) {
-                                    total += self.calc_para_lines_height(
-                                        &comp.lines,
-                                        para,
-                                        false,
-                                        false,
-                                        pi,
-                                        para_count,
-                                        para_style,
-                                        styles,
-                                    );
-                                }
-                                continue;
+                            .map(|unit| unit.height)
+                            .sum::<f64>()
+                    })
+                    .unwrap_or(total_content_height)
+            } else if effective_align == VerticalAlign::Center && owns_end_tail {
+                let visual_height = line_ranges.as_ref().map(|ranges| {
+                    let mut total = 0.0;
+                    let para_count = cell.paragraphs.len();
+                    for (pi, ((comp, para), &(start, end))) in composed_store
+                        .eager_slice()
+                        .iter()
+                        .zip(cell.paragraphs.iter())
+                        .zip(ranges.iter())
+                        .enumerate()
+                    {
+                        let para_style = styles.para_styles.get(para.para_shape_id as usize);
+                        let is_last_para = pi + 1 == para_count;
+                        if empty_paragraphs[pi] {
+                            if owns_empty_paragraph(pi) {
+                                total += self.calc_para_lines_height(
+                                    &comp.lines,
+                                    para,
+                                    false,
+                                    false,
+                                    pi,
+                                    para_count,
+                                    para_style,
+                                    styles,
+                                );
                             }
-                            if start == 0 && end > 0 && pi > 0 {
-                                total += para_style.map(|s| s.spacing_before).unwrap_or(0.0);
-                            }
-                            for li in start..end.min(comp.lines.len()) {
-                                let line = &comp.lines[li];
-                                let raw_height = hwpunit_to_px(line.line_height, self.dpi);
-                                let glyph_em = line
-                                    .runs
-                                    .iter()
-                                    .filter_map(|run| {
-                                        styles
-                                            .char_styles
-                                            .get(run.char_style_id as usize)
-                                            .map(|style| style.font_size)
-                                    })
-                                    .fold(0.0f64, f64::max);
-                                let line_height = raw_height.max(glyph_em);
-                                let is_cell_last_line = is_last_para && li + 1 == comp.lines.len();
-                                total += line_height;
-                                if !is_cell_last_line {
-                                    total += hwpunit_to_px(line.line_spacing, self.dpi);
-                                }
-                            }
-                            if end == comp.lines.len() && end > start && !is_last_para {
-                                total += para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+                            continue;
+                        }
+                        if start == 0 && end > 0 && pi > 0 {
+                            total += para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+                        }
+                        for li in start..end.min(comp.lines.len()) {
+                            let line = &comp.lines[li];
+                            let raw_height = hwpunit_to_px(line.line_height, self.dpi);
+                            let glyph_em = line
+                                .runs
+                                .iter()
+                                .filter_map(|run| {
+                                    styles
+                                        .char_styles
+                                        .get(run.char_style_id as usize)
+                                        .map(|style| style.font_size)
+                                })
+                                .fold(0.0f64, f64::max);
+                            let line_height = raw_height.max(glyph_em);
+                            let is_cell_last_line = is_last_para && li + 1 == comp.lines.len();
+                            total += line_height;
+                            if !is_cell_last_line {
+                                total += hwpunit_to_px(line.line_spacing, self.dpi);
                             }
                         }
-                        total
-                    });
-                    visual_height
-                        .map(|height| total_content_height.max(height))
-                        .unwrap_or(total_content_height)
-                } else {
-                    total_content_height
-                };
+                        if end == comp.lines.len() && end > start && !is_last_para {
+                            total += para_style.map(|s| s.spacing_after).unwrap_or(0.0);
+                        }
+                    }
+                    total
+                });
+                visual_height
+                    .map(|height| total_content_height.max(height))
+                    .unwrap_or(total_content_height)
+            } else {
+                total_content_height
+            };
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
@@ -1994,8 +2006,9 @@ impl LayoutEngine {
                     // 가운데 정렬의 기준인 조각 내용은 한/글 자신의 쪽 프레임이어야 한다 — 컷이
                     // 저장 프레임 되감김에서 끝나지 않으면 rhwp 조각이 한/글 쪽과 다른 내용을
                     // 담아(1382000 22쪽) 여유를 잘못 잰다.
-                    end_unit < units.len()
-                        && self.cell_unit_opens_stored_page_frame(cell, table, styles, end_unit)
+                    // 끝 조각은 칸 끝에서 끝나므로 그 자체가 한/글의 마지막 프레임이다.
+                    (end_unit >= units.len()
+                        || self.cell_unit_opens_stored_page_frame(cell, table, styles, end_unit))
                         && (start_unit == 0 || !cuts_through_table(start_unit - 1, start_unit))
                         && !cuts_through_table(end_unit - 1, end_unit)
                 });
@@ -4216,7 +4229,69 @@ impl LayoutEngine {
         // 여는 규칙은 근거가 없어 최상위 조각으로 좁히고, 중첩 조각은 종전 좌표를 유지한다.
         let single_cell_page_fragment =
             self.single_cell_rowbreak_page_fragment(table) && enclosing_cell_ctx.is_none();
-        let y_start = if single_cell_page_fragment
+        let terminal_multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
+            && crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                table,
+                is_continuation,
+                start_row,
+                start_cut,
+            );
+        // HWPX의 자리차지 단일 열 RowBreak 표는 저장 앵커(첫 조각) 또는
+        // 다음 쪽 본문 상단(이어지는 조각) 뒤에 상단 바깥여백을 연다.
+        // 중첩 표와 쪽 중간에서 이어지는 조각은 별도 흐름 좌표를 쓴다.
+        let hwpx_multirow_rowbreak_reopens_outer_top = self.profile.get().hwpx_stored_layout()
+            && !table.common.treat_as_char
+            // 문단 기준 거대 셀은 자체 flow 경계를 가지며, 여기서 여백을 다시
+            // 열면 첫 조각의 bbox·selection 이 1mm 밀린다(#1949/#2215).
+            && matches!(table.common.horz_rel_to, HorzRelTo::Column)
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count > 1
+            && table.col_count == 1
+            && table.outer_margin_top > 0
+            && enclosing_cell_ctx.is_none()
+            && ((!is_continuation && start_row == 0 && start_cut.is_empty())
+                || (is_continuation
+                    && col_node.children.is_empty()
+                    && (y_start - col_area.y).abs() <= 0.5));
+        // 저장 HWP5의 반복 제목행을 가진 다행 RowBreak 표도 첫 저장 앵커와
+        // 다음 쪽에서 반복 제목행을 여는 조각마다 바깥 위 여백을 다시 둔다.
+        // 제목행 없는 이어지는 표(76076 34쪽)는 본문 상단에 붙는 별도 계약이다.
+        let native_repeated_header_reopens_outer_top = self.profile.get().hwp5_stored_pagination_layout()
+                && !table.common.treat_as_char
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && table.row_count > 1
+                && table.repeat_header
+                && !table.leading_header_rows().is_empty()
+                // 이 보정은 반복 제목행 바로 뒤에서 표 끝까지 걸친 가운데
+                // 정렬 셀의 저장 물리 높이를 두 조각에 나누는 경우에만 필요하다.
+                // 일반 83행 교육 표까지 열면 다른 조각이 본문 아래로 밀린다.
+                && table.cells.iter().any(|cell| {
+                    cell.row as usize == table.leading_header_rows().len()
+                        && cell.row_span > 1
+                        && cell.row as usize + cell.row_span as usize == table.row_count as usize
+                        && matches!(
+                            cell.vertical_align,
+                            crate::model::table::VerticalAlign::Center
+                        )
+                })
+                && table.outer_margin_top > 0
+                && enclosing_cell_ctx.is_none()
+                && !repeat_fragment_outer_margin
+                && ((!is_continuation && start_row == 0 && start_cut.is_empty())
+                    || (is_continuation
+                        && col_node.children.is_empty()
+                        && (y_start - col_area.y).abs() <= 0.5));
+        let y_start = if (single_cell_page_fragment
+            || terminal_multirow_reopens_outer_top
+            || hwpx_multirow_rowbreak_reopens_outer_top
+            || native_repeated_header_reopens_outer_top)
             && stored_reset_paint_geometry.is_none()
             && resolved_table_top.is_none()
         {
@@ -4440,11 +4515,27 @@ impl LayoutEngine {
                     if target <= 0.0 {
                         continue;
                     }
-                    let cur: f64 = (bs..be.min(row_count))
+                    // [#7336] 차액은 **이 조각이 실제로 그리는** 마지막 행에 싣는다.
+                    //
+                    // 조각이 rowspan 블록 안쪽에서 끝나면(`end_row < be`) 블록의 마지막
+                    // 행은 이 조각의 `render_rows` 에 없다. 거기에 차액을 더하면 조각
+                    // 상자 높이(`partial_table_height`)에도, 걸침 셀 bbox 에도 반영되지
+                    // 않아 컷이 소비한 내용이 통째로 clip 된다.
+                    //
+                    // `samples/issue7336/nested_table_fragment_cut.hwp` 4쪽 실측: 예산
+                    // `consumed=603.6`(컷 인덱스 17 = 걸침 셀의 10×2 중첩 표까지)인데
+                    // 그린 상자는 `tbl_h=81.8` 이고, 중첩 표가 칸 하단(486.2) 밖 y=535.3
+                    // 에 놓여 clip 으로 전멸했다. 5쪽 이어짐 조각은 컷 17 **다음**부터
+                    // 재개하므로 그 사이 9행이 어느 쪽에도 남지 않았다.
+                    //
+                    // 비교 기준(`cur`)도 같은 범위로 맞춘다 — 그리지 않는 행의 선언
+                    // 높이가 섞이면 차액이 과소 계산된다.
+                    let be_painted = be.min(row_count).min(end_row.max(bs + 1));
+                    let cur: f64 = (bs..be_painted)
                         .map(|r| row_heights.get(r).copied().unwrap_or(0.0))
                         .sum();
                     if target > cur + 0.5 {
-                        if let Some(last) = (bs..be.min(row_count)).next_back() {
+                        if let Some(last) = (bs..be_painted).next_back() {
                             row_heights[last] += target - cur;
                         }
                     }
@@ -4517,6 +4608,96 @@ impl LayoutEngine {
                 row_heights[last] = limit.max(0.0);
             }
         }
+        // 반복 제목행 바로 뒤의 가운데 정렬 rowspan 셀이 두 물리 쪽을 소유하면
+        // 컷 유닛 높이의 합보다 저장 셀 높이가 클 수 있다. 첫 조각 상자는 쪽
+        // 하단까지, 마지막 조각은 선언 셀 높이의 잔여분까지 연다. 그래야 두
+        // 조각에서 valign 중심과 테두리가 같은 저장 좌표계를 사용한다.
+        let mut center_saved_spanning_cell = None;
+        let header_count = table.leading_header_rows().len();
+        let centered_span = (self.profile.get().hwp5_stored_pagination_layout()
+            && !table.common.treat_as_char
+            && table.repeat_header
+            && header_count > 0
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
+            && enclosing_cell_ctx.is_none())
+        .then(|| {
+            table.cells.iter().enumerate().find(|(_, cell)| {
+                cell.row as usize == header_count
+                    && cell.row_span > 1
+                    && cell.row as usize + cell.row_span as usize == row_count
+                    && matches!(
+                        cell.vertical_align,
+                        crate::model::table::VerticalAlign::Center
+                    )
+            })
+        })
+        .flatten();
+        if let (Some((cell_idx, cell)), Some(saved_anchor)) = (
+            centered_span,
+            paragraphs
+                .get(para_index)
+                .and_then(|para| para.line_segs.first())
+                .filter(|seg| seg.vertical_pos > 0),
+        ) {
+            let two_fragment_span = (!is_continuation
+                && start_row == 0
+                && end_row > header_count
+                && end_row < row_count
+                && is_block_split
+                && rowspan_block_range(table, end_row - 1) == (header_count, row_count)
+                && !end_cut.is_empty())
+                || (is_continuation
+                    && start_row == header_count
+                    && end_row == row_count
+                    && start_cut_is_block
+                    && rowspan_block_range(table, start_row) == (header_count, row_count)
+                    && !start_cut.is_empty()
+                    && end_cut.is_empty());
+            if two_fragment_span {
+                let units = self.cell_units(cell, table, styles);
+                let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
+                let declared = hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi);
+                let content =
+                    units.iter().map(|unit| unit.height).sum::<f64>() + pad_top + pad_bottom;
+                let first_table_y = col_area.y
+                    + hwpunit_to_px(saved_anchor.vertical_pos, self.dpi)
+                    + hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+                let header_height = resolved_row_heights[..header_count].iter().sum::<f64>();
+                let first_cell_y = first_table_y + header_height;
+                let first_bottom =
+                    crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                        table,
+                        col_area.y + col_area.height,
+                        self.dpi,
+                    );
+                let first_height = first_bottom - first_cell_y;
+                let final_height = declared - first_height;
+                let current = row_heights[header_count..end_row].iter().sum::<f64>();
+                let target = if is_continuation {
+                    final_height
+                } else {
+                    first_height
+                };
+                let extra = target - current;
+                if declared > content + 8.0
+                    && first_height > 0.0
+                    && final_height > 0.0
+                    && extra > 0.5
+                    && extra <= declared - content + 1.0
+                    && (is_continuation || (first_table_y - y_start).abs() < 1.0)
+                {
+                    row_heights[end_row - 1] += extra;
+                    center_saved_spanning_cell = Some(cell_idx);
+                }
+            }
+        }
         // [#7095] 쪽 상단에서 시작하는 비끝 조각의 상자는 내용이 아니라 쪽이 정한다.
         //
         // 한/글 2020 정본(156060125 2·3쪽 · 30269 10쪽)의 조각 상자 아래는
@@ -4528,7 +4709,14 @@ impl LayoutEngine {
         let starts_at_body_top =
             (y_start - (col_area.y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi))).abs()
                 < 1.0;
-        let mut center_pinned_single_cell = false;
+        // [#7095] 끝 조각 상자는 페이지네이터가 `max(내용, 저장 칸 높이 − 앞 조각 상자 합)` 으로
+        // 정해 `end_row_height_override` 로 넘긴다(7062 10쪽: 정본 상자 874.04). 그 상자도 칸
+        // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
+        let mut center_pinned_single_cell = single_cell_page_fragment
+            && row_count == 1
+            && is_continuation
+            && end_cut.is_empty()
+            && end_row_height_override.is_some();
         if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
             let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
                 table,
@@ -4835,6 +5023,7 @@ impl LayoutEngine {
             clamp_header_negative_para_offset,
             probe,
             center_pinned_single_cell,
+            center_saved_spanning_cell,
         );
 
         // A recovered terminal Square-flow line also owns the final frame edge.

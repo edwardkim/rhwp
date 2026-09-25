@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-09-17
+last_verified: 2026-09-24
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -27,6 +27,39 @@ last_verified: 2026-09-17
 - **표 셀의 visible line 경계 침범 또는 visible-ending 자연 text 폭 위험 후보**
 - **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
+
+## PR review 실루엣 gate
+
+renderer·layout·paint 변경의 PR review에 Visual Sweep을 사용하면, 각 대표 review PNG의
+`tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율 보조값)는 **90% 이상**이어야 한다.
+`scripts/visual_sweep.py`는 90% 미만 또는 측정 불가 페이지가 있으면 PNG와 manifest를 남긴 뒤 exit
+non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_required`로 기록한다. 이 상태에서는
+새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자는 자기 branch에서 PDF와 overlay를 다시 판독해
+원인을 수정한 새 head로 재실행하고, gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 메인터너
+보정으로 그 변경을 대신하지 않는다. 이 규칙은 지표를
+올리기 위해 tolerance·DPI·대상 영역을 사후 변경하는 근거가 아니다.
+
+예외는 한컴 PDF와 rhwp raster에 실제로 적용된 글꼴이 완전히 다르다는 사실을 확인한 경우뿐이다. 이때도
+`--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
+representative PNG를 기록한 증거 파일의 경로·SHA-256을 manifest에 남긴다. 단순 anti-aliasing, 작은
+baseline 차이, 글꼴 이름의 추정, `flagged=0` 또는 CI 녹색은 예외 근거가 아니다. 이 예외는
+`font_mismatch_exception`으로 남으며 사람의 overlay 판독과 다른 조판 차이의 보류 의무를 없애지 않는다.
+예외를 적용하기 전에 PDF와 rhwp의 표 괘선·문단 시작·그림 경계 좌표를 먼저 비교한다.
+이 위치가 어긋나면 낮은 점수를 글꼴 탓으로 분류하지 않고 배치를 고쳐 다시 캡처한다.
+#7359 14쪽은 표 행 높이가 같아도 표 전체가 약 15px 위에 있어 68.17%였고,
+페이지 첫 문단의 저장 간격을 복구한 뒤 97.48%가 됐다.
+
+```bash
+RHWP_FONT_PATH="/절대/경로/검증된-한컴-글꼴" python3 scripts/visual_sweep.py \
+  --file-target <key> <입력 HWP/HWPX> <기존 한컴 PDF> \
+  --rhwp-bin target/pr-review/release-test/rhwp --pages <영향 쪽> --dpi 96 \
+  --out output/<review>
+```
+
+실행 전에 `RHWP_FONT_PATH`의 모든 디렉터리가 실제로 존재하고, 입력 문서가 요구한 face가 그 경로 또는
+운영체제에 설치됐는지 확인한다. 존재하지 않는 `ttfs/hwp`, `ttfs/windows` 같은 과거 경로를 설정하면
+환경변수 자체는 전달돼도 renderer가 fallback face로 조판해 낮은 지표를 만들어 낸다. 이 경우에는
+`--font-mismatch-evidence` 예외를 바로 적용하지 말고, 먼저 올바른 글꼴 공급으로 다시 실행한다.
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
 따른다. 독립 기준 PDF와 실제 사용자-visible 실패를 조사할 때는 bug-hunter가 상위이고, sweep은
@@ -82,7 +115,9 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 
 로컬 글꼴 이름이 존재해도 Chrome이 실제로 같은 face를 사용하는지는 별도 확인한다.
 글꼴 굵기 검토에서 대체 face를 원 face의 증거로 세지 않는다. 필요한 경우 CLI와 같은
-`--embed-fonts[=subset|full] --font-path <디렉터리>`를 sweep에 전달한다. Native와 WASM에
+`--embed-fonts=full --font-path <디렉터리>`를 sweep에 전달한다. `--embed-fonts`만 지정해도
+전체 임베딩이며 `=subset`은 거부한다. 현재 CLI의 PDF용 subsetter는 Unicode `cmap`을
+제거하므로 SVG `<text>`용 검증 폰트로 사용할 수 없다. Native와 WASM에
 같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
 mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
 
@@ -98,6 +133,23 @@ venv/bin/python scripts/visual_sweep.py \
 사용 glyph의 outline/advance를 유지한 유효한 subset은 full 모드로 전달할 수 있다. 브라우저
 OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
 실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
+
+Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
+임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
+필요하다(`python -m pip install fonttools`). 손상된 폰트·없는/빈 `cmap`·검사 의존성 누락은
+`analysis/embedded_font_check.json`에 face·폰트 SHA-256·실패 이유를 남기고 중단한다.
+기존 성공 요약도 `re_review_required`로 바꾸며 `--font-mismatch-evidence`로 우회할 수 없다.
+이 검사는 Unicode 매핑의 존재를 확인할 뿐 모든 글자 표시나 실제 선택 face를 입증하지 않는다.
+설치 폰트·외부 URL 폰트도 검사 범위 밖이다. 대표 review/overlay PNG를 열어 한글·숫자·기호,
+표 안 글자와 각주까지 확인한 뒤 나머지 Sweep을 진행한다. 두부나 누락이 보이면 점수와
+무관하게 그 캡처를 실패 증거로 보존하고 올바른 원본 폰트로 재산출한다.
+
+`--embed-fonts=full`에서 `--font-path`를 생략하면 `RHWP_FONT_PATH`의 디렉터리를 사용한다.
+이 환경변수도 없고 macOS 사용자 글꼴 폴더 `~/Library/Fonts`가 있으면 그 폴더를
+자동으로 사용한다. 실제 공급 경로·글꼴 파일 SHA-256·선택 출처는 `run_manifest.json`의
+`font_supply`에 기록한다. 명시한 경로 또는 환경변수 경로가 없거나 글꼴 파일이 비어 있으면
+캡처 전에 실패한다. 입력 문서에 필요한 face가 실제로 공급되는지와 대표 PNG의 글꼴 표시를
+직접 확인해야 한다. 한글 두부가 있어도 실루엣 점수만으로 gate가 통과할 수 있다.
 
 ## 필수 도구
 
@@ -484,6 +536,7 @@ overlay 색상 의미:
 | `pixel_match_percent` | 전체 canvas 픽셀 중 임계값 이하로 일치한 비율 |
 | `ink_match_percent` | 양쪽 중 하나라도 내용 픽셀인 영역에서 일치한 비율 |
 | `visual_accuracy_proxy_percent` | 자동 시각 판정 보조 일치율. 잉크 영역이 있으면 `ink_match_percent`, 없으면 `pixel_match_percent` |
+| `tolerant_content_match_percent` | 내용 실루엣의 상대편이 `tolerant_content_match_radius_px` 이웃에 있을 때 일치로 보는 기하 보조값 |
 | `diff_bbox` | 차이가 난 픽셀들의 bounding box |
 | `mean_abs_channel_delta` | RGB 채널 평균 절대 차이 |
 | `max_channel_delta` | 페이지 내 최대 RGB 채널 차이 |
@@ -500,6 +553,10 @@ PDF raster와 rhwp raster가 얼마나 비슷한지를 보여주는 자동 보�
 - `ink_match_percent = 100 * (1 - ink_diff_pixels / ink_union_pixels)` 이다.
 - `visual_accuracy_proxy_percent`는 잉크 영역이 있으면 `ink_match_percent`, 잉크 영역이 없으면
   `pixel_match_percent`를 쓴다.
+- `tolerant_content_match_percent`는 기본 2px 이웃까지 허용한 내용 실루엣 일치율이다. 글꼴
+  anti-aliasing·sub-pixel rasterization의 프린지를 기하 위치 차이와 분리해 보여 주기 위한 값이며,
+  `ink_match_percent`나 `visual_accuracy_proxy_percent`를 대체하지 않는다. 다만 PR review에서는 위
+  `PR review 실루엣 gate`에 따라 90% 미만을 재검토 신호이자 보류 조건으로 사용한다.
 
 따라서 이 값은 "자동 시각 판정 정확도"가 아니라 "내용 픽셀 중심 raster 일치율"에 가깝다. 폰트,
 anti-aliasing, PDF rasterizer, 전체 위치 이동의 영향을 크게 받으므로, 낮은 값은 우선 검토 신호이지
@@ -584,8 +641,9 @@ summary: /path/to/rhwp/output/task1274/summary.json
 - `visual_accuracy_proxy_percent`는 자동 일치율 지표일 뿐 최종 시각 판정을 대체하지 않는다.
 - `flagged=0`이어도 낮은 `visual_accuracy_proxy_percent` 또는 옛자모·PUA·목록 marker가 있으면
   review/overlay를 반드시 확인한다. glyph·제품명 표시 차이는 이 경로에서 후보가 된다.
-- PR 의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR 이 아니면 visual sweep 차이는 참고 자료이며,
-  그 차이만으로 merge 보류나 reject 결론을 내리지 않는다.
+- PR의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR이 아니어도 Visual Sweep을 PR 수용 근거로
+  첨부했다면 90% gate를 적용한다. 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 PR은 review PNG를
+  만들지 않고 fixture 원본성·소비 경로만 별도로 검토한다.
 - `frame`, `question`, `title`, `tail`, `eq` 후보는 우선 검토 대상이다.
 - `tail`은 render tree의 page bbox를 **현재 raster DPI 좌표**로 투영한 뒤, 해당 bbox에
   실제 rhwp 잉크가 있는 TextLine만 세어 만든다. 페이지 밖에만 남은 continuation node나

@@ -210,26 +210,22 @@ impl TypesetEngine {
                     // ① **표를 단 문단**만. #3837 되감김 규칙이 닿지 못하는 계보가
                     //    정확히 이것이고(표 경로는 그 판정을 지나지 않는다), 위 네
                     //    문서의 후보 52곳 중 표를 단 문단은 sample16 한 곳뿐이다.
-                    let hosts_table = para
-                        .controls
-                        .iter()
-                        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+                    let defers = super::stored_vpos_overflow_defers_paragraph(
+                        para,
+                        paragraphs.get(para_idx + 1),
+                        st.base_available_height(),
+                        self.dpi,
+                    );
                     // ② 저장 자리가 본문 바닥을 **근소하게** 넘을 것. 크게 넘는 사다리는
                     //    쪽 리셋이 아니라 구역 누적 좌표계라 판정의 전제가 깨진다
                     //    (sample16 pi=738: 3567.4px / 가용 971.3px).
                     let own_px = hwpunit_to_px(own, self.dpi);
                     let body_bottom = st.base_available_height();
-                    let overflows_body_narrowly =
-                        own > 0 && own_px > body_bottom && own_px - body_bottom <= MIN_TOP_KEEP_PX;
                     // ③ 이 쪽에 조각이 될 만한 잔여가 남아 있을 것. 잔여가 그보다 작으면
                     //    통상 fit 이 어차피 다음 쪽으로 넘긴다 — 거기서 또 끊으면 빈 쪽이
                     //    하나 더 생긴다(3075729 #1880: 잔여 10.4px, 13쪽 → 14쪽).
                     let page_room_left = body_bottom - st.current_height;
-                    if hosts_table
-                        && overflows_body_narrowly
-                        && next < own
-                        && page_room_left > MIN_TOP_KEEP_PX
-                    {
+                    if defers && page_room_left > MIN_TOP_KEEP_PX {
                         if std::env::var("RHWP_DIAG_VPOS_OVF").is_ok() {
                             eprintln!(
                                 "[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}",

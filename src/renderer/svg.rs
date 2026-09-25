@@ -16,8 +16,8 @@ pub(crate) use super::image_resolver::{
 };
 use super::pua_oldhangul::map_pua_old_hangul;
 use super::render_tree::{
-    BoundingBox, FormObjectNode, ImageNode, PageBackgroundImage, PageRenderTree, RenderNode,
-    RenderNodeType, ShapeTransform, LEGACY_IMAGE_WATERMARK_OPACITY,
+    BoundingBox, FormObjectNode, ImageNode, PageBackgroundImage, PageRenderTree, PathNode,
+    RenderNode, RenderNodeType, ShapeTransform, LEGACY_IMAGE_WATERMARK_OPACITY,
     REAL_PICTURE_WATERMARK_FILL_OPACITY, REAL_PICTURE_WATERMARK_PAGE_OPACITY,
 };
 use super::{
@@ -898,6 +898,7 @@ impl SvgRenderer {
             RenderNodeType::Path(path) => {
                 self.open_shape_transform(&path.transform, &node.bbox);
                 self.draw_path_with_gradient(&path.commands, &path.style, path.gradient.as_deref());
+                self.draw_path_arrow_markers(path);
             }
             RenderNodeType::Equation(eq) => {
                 // 수식 SVG 조각을 bbox 위치에 배치
@@ -3238,6 +3239,52 @@ impl SvgRenderer {
             number,
         ));
     }
+
+    /// 연결선은 `PathNode`로 보존되므로, 일반 `LineNode`와 같은 marker를 별도
+    /// 투명 기준선에 붙인다. SVG marker는 기준선 stroke와 독립적으로 정의된 색을
+    /// 사용한다. 따라서 경로 본문을 두 번 칠하지 않고도 시작/끝 모양을 유지한다.
+    fn draw_path_arrow_markers(&mut self, path: &PathNode) {
+        let (Some(style), Some((x1, y1, x2, y2))) = (&path.line_style, path.connector_endpoints)
+        else {
+            return;
+        };
+        if style.start_arrow == super::ArrowStyle::None
+            && style.end_arrow == super::ArrowStyle::None
+        {
+            return;
+        }
+        let color = color_to_svg(style.color);
+        let line_len = ((x2 - x1).powi(2) + (y2 - y1).powi(2)).sqrt();
+        if line_len <= f64::EPSILON {
+            return;
+        }
+        let mut markers = String::new();
+        if style.start_arrow != super::ArrowStyle::None {
+            let marker_id = self.ensure_arrow_marker(
+                &color,
+                style.width.max(0.5),
+                line_len,
+                &style.start_arrow,
+                style.start_arrow_size,
+                true,
+            );
+            markers.push_str(&format!(" marker-start=\"url(#{marker_id})\""));
+        }
+        if style.end_arrow != super::ArrowStyle::None {
+            let marker_id = self.ensure_arrow_marker(
+                &color,
+                style.width.max(0.5),
+                line_len,
+                &style.end_arrow,
+                style.end_arrow_size,
+                false,
+            );
+            markers.push_str(&format!(" marker-end=\"url(#{marker_id})\""));
+        }
+        self.output.push_str(&format!(
+            "<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"none\" fill=\"none\"{markers}/>\n"
+        ));
+    }
 }
 
 impl Renderer for SvgRenderer {
@@ -4344,9 +4391,12 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
 /// 폰트명 → 알려진 파일명 매핑 (HWP/한컴/MS 폰트)
 fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
-        "함초롬바탕" | "함초롱바탕" | "한컴바탕" => {
-            vec!["hamchob-r.ttf", "HBATANG.TTF"]
+        // 한컴 PDF의 함초롬바탕은 HCR Batang이다. HBATANG.TTF는 다른
+        // Haansoft Batang이므로 HCR 설치 파일을 먼저 찾는다 (#7265 시각 대조).
+        "함초롬바탕" | "함초롱바탕" => {
+            vec!["HANBatang.ttf", "hamchob-r.ttf", "HBATANG.TTF"]
         }
+        "한컴바탕" => vec!["hamchob-r.ttf", "HBATANG.TTF"],
         "함초롬돋움" | "함초롱돋움" | "한컴돋움" => {
             vec!["hamchod-r.ttf", "HDOTUM.TTF"]
         }

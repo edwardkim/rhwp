@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import base64
+import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -20,6 +23,204 @@ if SPEC is None or SPEC.loader is None:
 SWEEP = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SWEEP
 SPEC.loader.exec_module(SWEEP)
+
+
+class SubpixelTolerantContentMatchTests(unittest.TestCase):
+    def test_one_pixel_silhouette_shift_is_accepted_within_radius(self) -> None:
+        rhwp = Image.new("RGB", (32, 32), "white")
+        pdf = Image.new("RGB", (32, 32), "white")
+        ImageDraw.Draw(rhwp).line((10, 4, 10, 27), fill="black", width=1)
+        ImageDraw.Draw(pdf).line((11, 4, 11, 27), fill="black", width=1)
+        self.assertEqual(
+            SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=1), 100.0
+        )
+
+    def test_displacement_beyond_radius_remains_visible(self) -> None:
+        rhwp = Image.new("RGB", (32, 32), "white")
+        pdf = Image.new("RGB", (32, 32), "white")
+        ImageDraw.Draw(rhwp).line((8, 4, 8, 27), fill="black", width=1)
+        ImageDraw.Draw(pdf).line((13, 4, 13, 27), fill="black", width=1)
+        value = SWEEP.subpixel_tolerant_content_match_percent(rhwp, pdf, radius_px=2)
+        self.assertIsNotNone(value)
+        self.assertLess(value, 100.0)
+
+
+class PrReviewGateTests(unittest.TestCase):
+    def test_help_renders_the_percent_threshold(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(MODULE_PATH), "--help"],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
+        self.assertIn("90% 실루엣 gate", completed.stdout)
+
+    def test_below_ninety_requires_re_review(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(
+            gate["below_threshold_pages"],
+            [{"page": 3, "tolerant_content_match_percent": 89.99}],
+        )
+
+    def test_ninety_and_above_passes(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "passed")
+
+    def test_missing_requested_metric_requires_re_review(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 7, "tolerant_content_match_percent": 99.0}],
+            expected_pages=[7, 8],
+            font_mismatch_evidence=None,
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(gate["unavailable_metric_pages"], [8])
+
+    def test_hashed_font_mismatch_evidence_is_the_only_exception(self) -> None:
+        evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 28.4}],
+            font_mismatch_evidence=evidence,
+        )
+        self.assertEqual(gate["status"], "font_mismatch_exception")
+        self.assertEqual(gate["font_mismatch_evidence"], evidence)
+
+
+class LabelWrapTests(unittest.TestCase):
+    """[#7349] 라벨이 canvas 폭을 넘으면 접는다 — 문서 이미지는 건드리지 않는다."""
+
+    def setUp(self) -> None:
+        self.font = SWEEP.label_font()
+
+    def width_of(self, text: str) -> int:
+        bbox = self.font.getbbox(text)
+        return bbox[2] - bbox[0]
+
+    def test_short_label_stays_one_line(self) -> None:
+        lines = SWEEP.wrap_label_lines("t34 p014 overlay", self.font, 600)
+        self.assertEqual(lines, ["t34 p014 overlay"])
+
+    def test_long_label_wraps_within_width(self) -> None:
+        text = (
+            "chemical-rewind (WASM) p014 overlay pixel_match=93.797% "
+            "ink_match=21.711% diff=55306/891662"
+        )
+        max_width = 400
+        lines = SWEEP.wrap_label_lines(text, self.font, max_width)
+        self.assertGreater(len(lines), 1)
+        for line in lines:
+            self.assertLessEqual(self.width_of(line), max_width, line)
+        self.assertEqual(
+            "".join(lines).replace(" ", ""),
+            text.replace(" ", ""),
+            "접어도 글자를 잃지 않는다",
+        )
+
+    def test_unbroken_token_is_split_by_characters(self) -> None:
+        text = "x" * 400
+        max_width = 120
+        lines = SWEEP.wrap_label_lines(text, self.font, max_width)
+        self.assertGreater(len(lines), 1)
+        for line in lines:
+            self.assertLessEqual(self.width_of(line), max_width, line)
+        self.assertEqual("".join(lines), text)
+
+    def test_label_line_height_is_positive(self) -> None:
+        self.assertGreaterEqual(SWEEP.label_line_height(self.font), 12)
+
+
+class OverlayLabelFitTests(unittest.TestCase):
+    """[#7349] overlay PNG 의 라벨이 canvas 오른쪽에서 잘리지 않는다 — 문서 영역은 그대로."""
+
+    def make_pages(self, temp_dir: Path) -> tuple[Path, Path]:
+        rhwp = Image.new("RGB", (794, 240), "white")
+        ImageDraw.Draw(rhwp).rectangle([40, 40, 300, 120], fill=(0, 0, 0))
+        pdf = Image.new("RGB", (794, 240), "white")
+        ImageDraw.Draw(pdf).rectangle([48, 40, 308, 120], fill=(0, 0, 0))
+        rhwp_path = temp_dir / "rhwp_014.png"
+        pdf_path = temp_dir / "pdf-014.png"
+        rhwp.save(rhwp_path)
+        pdf.save(pdf_path)
+        return rhwp_path, pdf_path
+
+    def test_overlay_summary_keeps_tolerant_content_metric(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            result = SWEEP.make_overlay_compares(
+                [rhwp_path], [pdf_path], temp_dir / "overlay", "summary", pixel_diff_threshold=16
+            )
+            summary = result["summary"]
+            self.assertIsInstance(summary["average_tolerant_content_match_percent"], float)
+            self.assertIsInstance(summary["worst_tolerant_content_match_percent"], float)
+
+    def test_long_key_label_ink_stays_inside_canvas(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            out_path = temp_dir / "overlay_014.png"
+            metrics = SWEEP.make_overlay_page(
+                rhwp_path,
+                pdf_path,
+                out_path,
+                "chemical-rewind (WASM) 긴 진단 라벨 폭 초과 재현 key",
+                13,
+                pixel_diff_threshold=16,
+            )
+            canvas = Image.open(out_path).convert("L")
+            label_height = canvas.height - 240
+            self.assertGreater(label_height, 0, "라벨 영역이 있어야 한다")
+            pixels = canvas.load()
+            right_edge = [
+                x
+                for x in range(canvas.width)
+                for y in range(label_height)
+                if pixels[x, y] < 128
+            ]
+            self.assertTrue(right_edge, "라벨 잉크가 있어야 한다")
+            self.assertLess(
+                max(right_edge),
+                canvas.width - 1,
+                "라벨이 canvas 오른쪽 끝까지 닿으면 잘린 것이다",
+            )
+            # 문서 영역은 접기 전후로 같다 — 라벨만 늘어난다.
+            document = canvas.crop((0, label_height, canvas.width, canvas.height))
+            self.assertEqual(document.size, (794, 240))
+            self.assertEqual(metrics["width"], 794)
+
+    def test_review_uses_the_overlay_footer_once(self) -> None:
+        """overlay의 한국어 지표는 review 패널에서 한 번만 보여야 한다."""
+        with tempfile.TemporaryDirectory() as raw_dir:
+            temp_dir = Path(raw_dir)
+            rhwp_path, pdf_path = self.make_pages(temp_dir)
+            (temp_dir / "compare").mkdir()
+            compare = SWEEP.make_compares(
+                [rhwp_path], [pdf_path], temp_dir / "compare", "footer"
+            )
+            overlay_path = temp_dir / "overlay" / "overlay_014.png"
+            metrics = SWEEP.make_overlay_page(
+                rhwp_path,
+                pdf_path,
+                overlay_path,
+                "footer",
+                13,
+                pixel_diff_threshold=16,
+            )
+            review = SWEEP.make_review_panels(
+                compare, [overlay_path], [metrics], temp_dir / "review"
+            )[0]
+            with Image.open(review) as review_image, Image.open(overlay_path) as overlay_image:
+                self.assertEqual(
+                    review_image.height,
+                    overlay_image.height,
+                    "review가 overlay 하단 지표를 다시 붙이면 안 된다",
+                )
 
 
 class LabelFontTests(unittest.TestCase):
@@ -144,12 +345,137 @@ class SelectedRasterTests(unittest.TestCase):
         self.assertEqual(commands, [["pdftoppm", "-r", "144", "-png", "reference.pdf", "out/pdf"]])
 
 
+class EmbeddedFontPreflightTests(unittest.TestCase):
+    def font_bytes(self, *, remove_cmap=False):
+        from fontTools.ttLib import TTFont
+        fixture = MODULE_PATH.parents[1] / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
+        with TTFont(fixture) as font:
+            if remove_cmap:
+                del font['cmap']
+            data = io.BytesIO()
+            font.save(data)
+            return data.getvalue()
+
+    def svg(self, data):
+        encoded = base64.b64encode(data).decode('ascii')
+        return ('<svg><style>@font-face {font-family:"Fixture";'
+                f'src:url("data:font/ttf;base64,{encoded}")}}</style>'
+                '<text font-family="Fixture">AV</text></svg>')
+
+    def test_real_font_with_unicode_mapping_is_accepted(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(self.font_bytes()))
+            records = SWEEP.inspect_svg_embedded_fonts(svg)
+            self.assertEqual(records[0]['status'], 'passed')
+            self.assertGreater(records[0]['unicode_mapping_count'], 0)
+
+    def test_pdf_style_font_without_cmap_blocks_capture_and_records_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            report = Path(temp) / 'font-check.json'
+            with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
+                SWEEP.check_sweep_embedded_fonts([svg], report)
+            record = json.loads(report.read_text())
+            self.assertEqual(record['status'], 'failed')
+            self.assertEqual(record['pages'][0]['fonts'][0]['family'], 'Fixture')
+
+    def test_broken_font_bytes_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            svg.write_text(self.svg(b'not a font'))
+            self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
+
+    def test_wasm_font_policy_cannot_bypass_font_validation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            svg = Path(temp) / 'p001.svg'
+            source = '<svg><text x="12" y="34" font-family="Fixture">AV</text></svg>'
+            policy = self.svg(self.font_bytes(remove_cmap=True))
+            svg.write_text(SWEEP.apply_svg_font_policy(source, re.findall(r"@font-face\s*\{[^{}]*\}", policy)))
+            self.assertEqual(SWEEP.inspect_svg_embedded_fonts(svg)[0]['status'], 'failed')
+
+    def test_subset_request_is_rejected_even_from_python_api(self):
+        with self.assertRaisesRegex(SystemExit, '--embed-fonts=full'):
+            SWEEP.svg_font_export_options(Path('.'), 'subset', [])
+
+    def test_full_embedding_uses_configured_font_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            fonts = Path(temp) / 'fonts'
+            fonts.mkdir()
+            (fonts / 'hangul.ttf').write_bytes(b'font fixture')
+            with patch.dict(os.environ, {'RHWP_FONT_PATH': str(fonts)}):
+                args, supply = SWEEP.svg_font_export_options(Path(temp), 'full', [])
+            self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
+            self.assertEqual(supply['source'], 'RHWP_FONT_PATH')
+            self.assertEqual(len(supply['files']), 1)
+
+    def test_full_embedding_uses_macos_user_fonts_when_unconfigured(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            fonts = home / 'Library/Fonts'
+            fonts.mkdir(parents=True)
+            (fonts / 'hangul.ttf').write_bytes(b'font fixture')
+            with (
+                patch.dict(os.environ, {'RHWP_FONT_PATH': ''}),
+                patch.object(SWEEP.platform, 'system', return_value='Darwin'),
+                patch.object(Path, 'home', return_value=home),
+            ):
+                args, supply = SWEEP.svg_font_export_options(home, 'full', [])
+            self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
+            self.assertEqual(supply['source'], 'macOS_user_fonts')
+
+    def test_missing_configured_font_directory_fails_before_capture(self):
+        with tempfile.TemporaryDirectory() as temp:
+            missing = Path(temp) / 'missing-fonts'
+            with patch.dict(os.environ, {'RHWP_FONT_PATH': str(missing)}):
+                with self.assertRaisesRegex(SystemExit, '폰트 디렉터리가 없습니다'):
+                    SWEEP.svg_font_export_options(Path(temp), 'full', [])
+
+    def test_bare_embed_fonts_selects_full_in_cli(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with (
+                patch.object(sys, 'argv', ['visual_sweep.py', '--file-target', 'fixture', 'a.hwp', 'a.pdf', '--out', temp, '--embed-fonts']),
+                patch.object(SWEEP, 'ensure_tools'),
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
+                patch.object(SWEEP, 'render_target', return_value={}) as render,
+            ):
+                SWEEP.main()
+            self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+
+    def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'a.hwp').write_bytes(b'input')
+            (root / 'a.pdf').write_bytes(b'pdf')
+            target = SWEEP.Target('fixture', Path('a.hwp'), Path('a.pdf'))
+            out = root / 'out'
+            base = out / 'fixture'
+            (base / 'svg').mkdir(parents=True)
+            (base / 'render_tree').mkdir()
+            (base / 'svg/p001.svg').write_text(self.svg(self.font_bytes(remove_cmap=True)))
+            (base / 'render_tree/p001.json').write_text('{}')
+            SWEEP.update_root_summary(out, {'key': 'fixture', 'pr_review_gate': {'status': 'passed'}})
+            with (
+                patch.object(SWEEP, 'sweep_provenance', return_value={}),
+                patch.object(SWEEP, 'run_manifest_for_target', return_value={}),
+                patch.object(SWEEP, 'load_note_shape', return_value={}),
+                patch.object(SWEEP, 'run') as run,
+            ):
+                with self.assertRaisesRegex(SystemExit, 'Unicode cmap'):
+                    SWEEP.render_target(root, target, out, 'rhwp', 96, 32, [1], resume=True, svg_rasterizer='webfont')
+            run.assert_not_called()
+            summary = json.loads((out / 'summary.json').read_text())[0]
+            self.assertEqual(summary['run_state'], 'failed')
+            self.assertEqual(summary['pr_review_gate']['status'], 're_review_required')
+
+
 class WasmSweepTests(unittest.TestCase):
     def test_font_policy_preserves_geometry_and_uses_only_font_faces(self) -> None:
         source = '<svg width="100"><text x="12" y="34" font-family="휴먼명조">조문</text></svg>'
         face = '@font-face { font-family: "휴먼명조"; src: local("HCR Batang"); }'
         policy = f'<svg><style>{face} text {{display:none}}</style><text x="99">다른 본문</text></svg>'
-        result = SWEEP.apply_svg_font_policy(source, policy + policy)
+        result = SWEEP.apply_svg_font_policy(source, re.findall(r"@font-face\s*\{[^{}]*\}", policy + policy))
         self.assertEqual(result, source.replace('width="100">', f'width="100"><style>{face}</style>'))
 
     def test_explicit_font_change_invalidates_resume(self) -> None:
@@ -171,12 +497,12 @@ class WasmSweepTests(unittest.TestCase):
     def test_embedded_font_policy_does_not_replace_wasm_text_or_coordinates(self) -> None:
         source = '<svg><text x="12" y="34">original</text></svg>'
         face = '@font-face {font-family:"Source";src:url("data:font/ttf;base64,AAAA");}'
-        result = SWEEP.apply_svg_font_policy(source, '<svg><style>' + face + '</style><text x="99">native</text></svg>')
+        result = SWEEP.apply_svg_font_policy(source, [face])
         self.assertEqual(result, source.replace('<svg>', '<svg><style>' + face + '</style>'))
 
     def test_font_policy_does_not_replace_a_wasm_owned_face(self) -> None:
         source = '<svg><style>@font-face {font-family:"Owned";src:url("wasm.woff2")}</style></svg>'
-        self.assertEqual(SWEEP.apply_svg_font_policy(source, '@font-face {font-family:"Owned";src:local("Other")}'), source)
+        self.assertEqual(SWEEP.apply_svg_font_policy(source, ['@font-face {font-family:"Owned";src:local("Other")}']), source)
 
     def test_changed_wasm_package_invalidates_resume(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

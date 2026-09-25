@@ -1840,6 +1840,56 @@ fn rowbreak_row_has_internal_saved_vpos_reset(
         })
 }
 
+/// [#7288] «쪽 경계에서» 값 0 «나누지 않음» 의 **원자 규칙**을 이 표에 걸 수 있는가.
+///
+/// 값의 뜻은 한/글 정본 실측으로 고정했다. 한/글 13.0 이 같은 원문을 두 형식으로 저장한
+/// 쌍둥이(`samples/2025 행정업무운영 편람(최종).hwp` / `.hwpx`)에서 표별 분포가 양쪽
+/// 일치해(45 / 4 / 274) HWP5 `HWPTAG_TABLE` bit 0~1 의 `0/1/2` 가 HWPX
+/// `pageBreak="NONE"/"TABLE"/"CELL"` 에 대응하는 것이 실측으로 잠긴다. rhwp 의 enum
+/// 이름(`CellBreak`=1 · `RowBreak`=2)은 이 뜻과 반대로 읽히니 이름으로 판단하지 않는다.
+///
+/// 한/글은 이 표를 쪽 경계에서 나누지 않고 통째로 다음 쪽에 놓는다 — 저장소 정본
+/// `pdf/text_footnote_tail_overpagination-2024.pdf` 62·63쪽이 7x7 `NONE` 표 둘을 각각
+/// 한 쪽에 통째로 담고, 정본 51문서 교차 확인에서 `NONE` 표 21건 중 쪽을 넘긴 사례는 0건이다.
+///
+/// 다만 **양수 세로 오프셋의 가시-host 자리차지 float** 은 제외한다. 그 갈래는 흐름을
+/// 전진시키지 않고 배제 영역에만 밴드를 남기며(`signed_vertical_offset > 0`), 뒤 본문의
+/// y 는 저장 사다리에서 온다. 두 좌표계가 아직 화해되지 않아(#7198 축) 표만 옮기면 글 위에
+/// 표가 그려진다 — 1490000 149쪽 실측 겹침 134 -> 156. 오프셋 0 float 과 `treat_as_char`
+/// 표는 흐름이 밴드를 실제로 소비하므로 해당 없다.
+pub(in crate::renderer) fn none_table_is_atomic_here(table: &crate::model::table::Table) -> bool {
+    matches!(table.page_break, crate::model::table::TablePageBreak::None)
+        && !(!table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && signed_hwpunit(table.common.vertical_offset) > 0)
+}
+
+/// [#7288] «쪽 경계에서» 값 1 «셀 단위로 나눔» 의 **행 원자 규칙**을 이 표에 걸 수 있는가.
+///
+/// 값의 뜻과 enum 이름의 함정은 위 [`none_table_is_atomic_here`] 의 설명과 같다
+/// (`CellBreak`=1 · `RowBreak`=2 로 이름이 뜻과 반대로 읽힌다).
+///
+/// 한/글은 값 1 표를 **행 경계에서만** 끊는다 — 행 안까지 자르지 않는다. 저장소 정본
+/// `pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf` 158→159쪽은 40행 2열 값 1 표에서
+/// 마지막 행이 괘선까지 닫히고 바닥에 빈 공간을 남긴 뒤 다음 쪽이 새 행으로 시작한다.
+/// `pdf/issue6132/156482639_startup_ir_contest-2020.pdf` 5→6쪽도 항목 7 을 끝내고 6쪽을
+/// 새 행(`8 안산 (주)오토노미아`)으로 시작한다.
+///
+/// 제외 범위는 값 0 과 같다 — **양수 세로 오프셋의 가시-host 자리차지 float**.
+///
+/// 조회만 한다 — 상태를 쓰지 않는다. 소비자는 `table/block/prepare.rs` 의 이월 게이트와
+/// `table/scan/runner/row_step.rs` 의 행 내부 컷 게이트다.
+pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
+    table: &crate::model::table::Table,
+) -> bool {
+    matches!(
+        table.page_break,
+        crate::model::table::TablePageBreak::CellBreak
+    ) && !(!table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && signed_hwpunit(table.common.vertical_offset) > 0)
+}
+
 /// RowBreak 표 셀 안에 저장된 vpos reset이 있는지 판별한다.
 fn rowbreak_table_has_internal_saved_vpos_reset(table: &crate::model::table::Table) -> bool {
     (0..table.row_count as usize).any(|row| rowbreak_row_has_internal_saved_vpos_reset(table, row))
@@ -2450,6 +2500,39 @@ const LADDER_FIT_EPSILON_PX: f64 = 1.0;
 
 const STORED_VPOS_REWIND_MIN_FILL: f64 = 0.90;
 
+/// [#6132] 저장 vpos 초과가 이 문단을 **새 쪽에서 시작시키는가** — 세 신호를 함께 본다.
+///
+/// 단일 신호("저장 자리가 본문을 넘는다")만으로는 부족하다. 같은 형상이 문단을 쪽 안에
+/// 그대로 두는 문서에도 흔하게 나온다(실측 후보: 2025 행정업무편람 26곳 · 2070
+/// 시장구조조사 13곳 · 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 ① 표를 단 문단
+/// ② 저장 자리가 본문 바닥을 **근소하게** 초과 ③ 다음 문단이 되감김 셋을 함께 요구한다.
+///
+/// 쪽 잔여 조건은 상태라 호출자가 소유한다 — 이 Query 는 문단과 좌표만 읽는다.
+pub(in crate::renderer::typeset) fn stored_vpos_overflow_defers_paragraph(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    body_bottom_px: f64,
+    dpi: f64,
+) -> bool {
+    let first_stored = |p: &Paragraph| {
+        p.line_segs
+            .iter()
+            .find(|seg| !is_synthetic_line_seg(seg))
+            .map(|seg| seg.vertical_pos)
+    };
+    let (Some(own), Some(next)) = (first_stored(para), next_para.and_then(first_stored)) else {
+        return false;
+    };
+    let hosts_table = para
+        .controls
+        .iter()
+        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+    let own_px = hwpunit_to_px(own, dpi);
+    let overflows_body_narrowly =
+        own > 0 && own_px > body_bottom_px && own_px - body_bottom_px <= MIN_TOP_KEEP_PX;
+    hosts_table && overflows_body_narrowly && next < own
+}
+
 /// 저장 `vpos` 가 되돌아가는 자리 — 한글이 거기서 쪽을 끊었다는 신호다 [#3837].
 ///
 /// 기존 [`paragraph_saved_vpos_reset_starts_new_page_after`] 는 단일 단에서 `nv == 0`
@@ -2517,7 +2600,10 @@ fn stored_rewind_boundary_matches_current_flow(
     };
     let advance_hu = prev_seg.line_height.saturating_add(prev_seg.line_spacing);
     let stored_end_px = hwpunit_to_px(prev_seg.vertical_pos.saturating_add(advance_hu), dpi);
-    let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi);
+    // 저장 줄과 실제 글꼴 측정의 차이가 한 줄보다 약간 커질 수 있다. #7333의
+    // 38→39쪽 경계는 20.8px 차이로, 한 줄 공차 16px만으로는 실제 저장 쪽 경계를 놓쳤다.
+    // 되감김과 새 쪽 상단이라는 소유 조건은 호출부에서 그대로 확인한다.
+    let tolerance_px = hwpunit_to_px(advance_hu.max(0), dpi) * 1.5;
     (current_height_px - stored_end_px).abs() <= tolerance_px
 }
 
@@ -4508,6 +4594,22 @@ impl TypesetEngine {
                 .enumerate()
                 .find(|(_, ls)| (hwpunit_to_px(ls.line_height, self.dpi) - tbl_line_h).abs() < 1.0)
                 .map(|(i, _)| i)
+                // [#7160] 배포용(ViewText) 문서는 저장 LINE_SEG 가 없어 위 판정이 늘 0 으로
+                // 떨어졌고, 표가 먼저 방출돼 host 글자가 표 **아래**로 갔다. 저장 줄이 없으면
+                // 구성된 줄(프레임 채움 결과)의 높이로 같은 판정을 한다 — 측정·배치가 같은
+                // 구성 결과를 소비한다. 한/글 정본 `distribution_doc-2024.pdf` 3쪽은
+                // `(단위 : 천원)` 줄 **다음** 줄에 표를 둔다.
+                .or_else(|| {
+                    if !para.line_segs.is_empty() {
+                        return None;
+                    }
+                    // 구성된 줄은 표 본체 높이로 남고 바깥 여백은 배치가 따로 더한다 —
+                    // 두 기준 모두와 대조한다.
+                    let table_body_h = hwpunit_to_px(table.common.height as i32, self.dpi);
+                    fmt.line_heights.iter().position(|h| {
+                        (h - tbl_line_h).abs() < 1.0 || (h - table_body_h).abs() < 1.0
+                    })
+                })
                 .unwrap_or(0)
         } else {
             0
@@ -6487,6 +6589,7 @@ mod tests {
             source_next_positive_rewind: false,
             first_fragment_saved_offset: None,
             source_cellbreak_row_end: None,
+            next_para_stored_top: None,
             relax_terminal_table_footnote_fit: false,
         };
         let flow_layout =

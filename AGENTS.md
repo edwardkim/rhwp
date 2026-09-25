@@ -134,6 +134,17 @@
   경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
   고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
   같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
+  대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율이 하나라도 90% 미만이거나 측정 불가이면
+  `scripts/visual_sweep.py`의 `pr_review_gate`가 `re_review_required`가 된다. 이 상태에서는 새 PR을 만들지 않고,
+  이미 열린 PR은 승인·통합하지 않는다. 기여자는 PDF/overlay 원인을 자기 branch에서 재검토·수정하고 새 head에서
+  재실행한 뒤 gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 기여자 변경을 메인터너 보정으로
+  대신하지 않는다. 한컴 PDF와 rhwp에 실제
+  적용된 글꼴이 완전히 다르다는 검증 증거 파일을 `--font-mismatch-evidence`로 해시 고정한 경우만
+  `font_mismatch_exception`을 쓸 수 있다. 글꼴 이름 추정·anti-aliasing·CI 녹색은 예외가 아니다.
+  예외 판정 전 PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 비교한다. 이 위치가
+  어긋나면 글꼴이 달라도 배치 결함을 먼저 수정하고 다시 캡처한다(#7359 p14).
+  `RHWP_FONT_PATH`를 쓰면 각 디렉터리가 존재하고 입력 문서의 face를 실제 공급하는지 먼저 확인한다.
+  존재하지 않는 과거 font 경로로 생긴 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
   변경 후 이전 캡처를 재사용하지 않으며 CI나 자동 점수만으로 직접 판독을 대신하지 않는다.
   영향 페이지에서 큰 위치·줄바꿈·외곽선 차이가 보이면 전체 회귀보다 이 차이의 원인 확인과
   재캡처를 먼저 한다. 기존 차이 또는 합성 입력이라는 분류만으로 보류 사유를 해소하지 않는다.
@@ -184,6 +195,22 @@
 
 ## 문서와 검증
 
+- **로컬 Rust·WASM 산출물 재사용**: 일반 개발·이슈 수정·PR review의 기본
+  `CARGO_TARGET_DIR`/`--target-dir`는 항상 `target/pr-review`다. 이 경로의
+  `release`, `release-test`, `debug`, `wasm32-unknown-unknown`을 Native와 WASM이 함께
+  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`을 새로 만들지 않는다.
+  다른 실행 중인 Cargo 작업의 산출물과 충돌할 우려가 있으면 새 경로를 만드는 대신
+  실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
+  `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
+- **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
+  같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시 **저장소 루트
+  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  실행한다. `rhwp-studio/` 안에서는 `scripts/wasm-pack-locked.sh`가 없고 그곳의 `pkg/`는
+  개발 서버 입력이 아니므로 사용하지 않는다. 이 wrapper는 성공한 루트 기본 `pkg/` web package의 `rhwp.js`·`rhwp_bg.wasm`을
+  `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치 및 브라우저 새로고침 뒤 실제
+  동작을 확인한다. Rust target만 빌드하거나 wrapper 밖에서 `pkg/`만 갱신한 상태를 Studio
+  검증으로 보고하지 않는다.
 - **Rust source 또는 Rust test/baseline helper를 바꾼 모든 PR·push 직전 필수**: 포맷만 확인하고
   Clippy를 CI에 넘기지 않는다. PR review worktree에서 파생 integration suite를 준비한 뒤 아래
   Rust lint 묶음을 **순차로** 모두 통과시킨다. `cargo clippy -- -D warnings`만으로는
