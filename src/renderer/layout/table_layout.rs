@@ -4926,8 +4926,9 @@ impl LayoutEngine {
         // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
         // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
         // 발동 기준은 측정(height_measurer)과 공유한다 (#5751).
-        let (pad_top, pad_bottom) = if cell.height < 0x80000000 {
-            let cell_h_px = hwpunit_to_px(cell.height as i32, self.dpi);
+        let padding_guard_height = cell.vertical_padding_guard_height_hu(table);
+        let (pad_top, pad_bottom) = if padding_guard_height < 0x80000000 {
+            let cell_h_px = hwpunit_to_px(padding_guard_height as i32, self.dpi);
             let total_v_pad = pad_top + pad_bottom;
             if crate::model::table::Cell::vertical_padding_is_abnormal(cell_h_px, total_v_pad) {
                 let max_v_pad = cell_h_px * 0.5;

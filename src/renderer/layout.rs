@@ -8858,6 +8858,31 @@ impl LayoutEngine {
                     y_offset = col_area.y + origin - spacing_before;
                 }
             }
+            if matches!(
+                item,
+                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { start_line: 0, .. }
+            ) {
+                let previous_is_partial_table = item_ordinal
+                    .checked_sub(1)
+                    .and_then(|index| col_content.items.get(index))
+                    .is_some_and(|previous| {
+                        matches!(previous, PageItem::PartialTable { para_index, .. } if *para_index < item_para)
+                    });
+                let spacing_before = styles
+                    .para_styles
+                    .get(paragraphs[item_para].para_shape_id as usize)
+                    .map(|style| style.spacing_before)
+                    .unwrap_or(0.0);
+                let shared_spacing = crate::renderer::float_placement::hwpx_empty_after_partial_table_shared_spacing_px(
+                    self.profile.get().hwpx_stored_layout(),
+                    previous_is_partial_table,
+                    &paragraphs[item_para],
+                    spacing_before,
+                    y_offset - col_area.y,
+                    self.dpi,
+                );
+                y_offset -= shared_spacing;
+            }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
             // 아이템 배치에 넘긴다.
             self.item_flow_snap_context.set(

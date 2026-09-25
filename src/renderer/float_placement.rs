@@ -17,6 +17,40 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
+/// Saved blank paragraph immediately after a terminal table fragment can
+/// start at the fragment's physical bottom. Its `spacing_before` is already
+/// represented by that shared boundary, so both pagination and paint reuse
+/// the same amount instead of reserving it twice (#7406 pp.39–40).
+pub(crate) fn hwpx_empty_after_partial_table_shared_spacing_px(
+    hwpx_stored: bool,
+    previous_is_partial_table: bool,
+    para: &Paragraph,
+    spacing_before: f64,
+    flow_from_body_top: f64,
+    dpi: f64,
+) -> f64 {
+    if !hwpx_stored
+        || !previous_is_partial_table
+        || spacing_before <= 0.0
+        || !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+    {
+        return 0.0;
+    }
+    let Some(first) = para.line_segs.first() else {
+        return 0.0;
+    };
+    if first.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return 0.0;
+    }
+    let saved_top = hwpunit_to_px(first.vertical_pos, dpi);
+    if saved_top > 0.0 && (saved_top - flow_from_body_top).abs() <= 1.0 {
+        spacing_before
+    } else {
+        0.0
+    }
+}
+
 /// 문단 상대 자리차지 개체의 확정된 세로 배치. 모든 값은 단 상대 px다.
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]

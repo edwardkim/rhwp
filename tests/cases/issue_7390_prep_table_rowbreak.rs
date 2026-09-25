@@ -140,6 +140,29 @@ fn prep_chart_caption_preserves_following_saved_line_spacing() {
 }
 
 #[test]
+fn prep_single_cell_continuation_keeps_vertical_padding_and_following_flow() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let first = core.build_page_render_tree(38).expect("물리 39쪽");
+    let next = core.build_page_render_tree(39).expect("물리 40쪽");
+    // 독립 한컴 2024 PDF bbox: p39 A1 y=81.552pt, p40 A8의 두 번째
+    // 선택지 y=79.872pt, 뒤 본문 y=165.648pt. 96dpi로 환산했다.
+    let a1 = line_top_containing(&first.root, "A1. 귀하의 출생년도를").expect("A1 첫 줄");
+    let a8_tail = line_top_containing(&next.root, "2) 없다").expect("A8 이어지는 선택지");
+    let following = line_top_containing(&next.root, "관심집단과 대조군은").expect("표 뒤 본문");
+    assert!((a1 - 108.736).abs() <= 1.5, "39쪽 첫 줄: {a1:.1}");
+    assert!(
+        (a8_tail - 106.496).abs() <= 1.5,
+        "40쪽 이어지는 줄: {a8_tail:.1}"
+    );
+    assert!(
+        (following - 220.864).abs() <= 1.5,
+        "표 뒤 본문: {following:.1}"
+    );
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

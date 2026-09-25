@@ -3224,8 +3224,9 @@ impl HeightMeasurer {
                 // (156505020 데이터 셀: pad 15.09px, h 21.09px) 측정만 행을 안 늘리고
                 // 렌더는 저장 여백을 그대로 써 글자가 아래 괘선을 넘겼다.
                 let total_pad = pad_top + pad_bottom;
-                let cell_h_px = if cell.height < 0x80000000 {
-                    hwpunit_to_px(cell.height as i32, self.dpi)
+                let padding_guard_height = cell.vertical_padding_guard_height_hu(table);
+                let cell_h_px = if padding_guard_height < 0x80000000 {
+                    hwpunit_to_px(padding_guard_height as i32, self.dpi)
                 } else {
                     0.0
                 };

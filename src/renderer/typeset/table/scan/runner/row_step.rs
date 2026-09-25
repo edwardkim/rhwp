@@ -365,7 +365,36 @@ impl TypesetEngine {
                 return false;
             }
             let padding = row_entry.padding();
-            let content_budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // A page-spanning 1×1 cell can store only a tiny seed cell height
+            // while its outer table owns the physical box. Once its full
+            // vertical inset is restored, HU-to-pixel rounding can put the
+            // last source line less than one raster pixel past the numeric
+            // budget. Keep that line with the source frame (#7406 p39→40);
+            // ordinary rows and continuations retain the exact budget.
+            let source_cell_rounding_slack = if st.profile.hwpx_stored_layout()
+                && r == cursor_row
+                && row_start_cut.is_empty()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && table.cells[0].height < table.common.height
+                && table.cells[0].paragraphs.windows(2).any(|pair| {
+                    pair[0]
+                        .line_segs
+                        .last()
+                        .is_some_and(|line| line.vertical_pos > 0)
+                        && pair[1]
+                            .line_segs
+                            .first()
+                            .is_some_and(|line| line.vertical_pos == 0)
+                }) {
+                1.0
+            } else {
+                0.0
+            };
+            let content_budget = (avail_for_rows - consumed - cs_before - padding
+                + source_cell_rounding_slack)
+                .max(0.0);
             let native_hwp5_internal_reset_row_tail = row_entry.native_reset_tail(&st.profile);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
