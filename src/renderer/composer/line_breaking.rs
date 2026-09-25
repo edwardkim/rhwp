@@ -1201,6 +1201,17 @@ fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
 }
 
+/// [#7418] 이 공백 앞에 같은 줄의 글자가 하나도 없는가 — 줄 맨 앞 공백.
+///
+/// 한/글은 줄 맨 앞 공백을 condense 로 줄이지 않는다. 문단 첫 줄의 들여 쓴 공백
+/// 0·2·4·6 개를 condense 50·75 로 바꾼 합성 문단 8개의 줄 끊음을 한/글 2024 가
+/// 저장한 줄과 맞대면, 맨 앞 공백을 줄이지 않는 모형만 8/8 로 맞는다(줄이는 모형 2/8).
+fn space_is_line_leading(text_chars: &[char], line_start: usize, space_idx: usize) -> bool {
+    text_chars
+        .get(line_start..space_idx)
+        .is_none_or(|before| before.iter().all(|c| *c == ' '))
+}
+
 fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
     if condense_min_space == 0 || space_width_hwp <= 0 {
         return 0;
@@ -1682,7 +1693,13 @@ fn fill_one_interval(
                     cursor.line_max_fs = *max_font_size;
                 }
                 let space_hwp = to_hwp(*width);
-                let space_savings = condense_space_savings_hwp(space_hwp, condense_min_space);
+                // [#7418] 줄 맨 앞 공백은 condense 로 줄지 않는다.
+                let leading = space_is_line_leading(text_chars, cursor.line_start_idx, *idx);
+                let space_savings = if leading {
+                    0
+                } else {
+                    condense_space_savings_hwp(space_hwp, condense_min_space)
+                };
                 if let Some(cut) = overflowing_space_cut(
                     cursor.line_start_idx,
                     *idx,
@@ -1704,7 +1721,8 @@ fn fill_one_interval(
                     };
                     cursor.line_start_idx = cut;
                     cursor.lw = if absorbed { 0 } else { space_hwp };
-                    cursor.line_space_savings = if absorbed { 0 } else { space_savings };
+                    // 넘어간 공백은 새 줄의 맨 앞 공백이다.
+                    cursor.line_space_savings = 0;
                     cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
@@ -1730,12 +1748,11 @@ fn fill_one_interval(
                 cursor.width_at_last_break = cursor.lw;
                 cursor.space_savings_at_last_break = cursor.line_space_savings;
                 cursor.fs_at_last_break = cursor.line_max_fs;
-                if cursor.word_gap_natural_hwp.is_none() && *idx > cursor.line_start_idx {
+                if cursor.word_gap_natural_hwp.is_none() && !leading {
                     cursor.word_gap_natural_hwp = Some(cursor.lw);
                 }
                 cursor.lw += space_hwp;
-                cursor.line_space_savings +=
-                    condense_space_savings_hwp(space_hwp, condense_min_space);
+                cursor.line_space_savings += space_savings;
                 cursor.token_index += 1;
             }
             BreakToken::Text {
@@ -2105,7 +2122,9 @@ fn fill_lines_before_cursor(
                 fs_at_last_break = line_max_fs;
                 let space_hwp = to_hwp(*width);
                 lw += space_hwp;
-                line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
+                if !space_is_line_leading(text_chars, line_start_idx, *idx) {
+                    line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
+                }
             }
             BreakToken::Text {
                 start_idx,
@@ -2298,11 +2317,16 @@ fn recalc_space_savings_hwp(
     condense_min_space: u8,
 ) -> i32 {
     let mut w = 0i32;
+    // [#7418] 줄 맨 앞 공백(첫 글자 토큰 앞)은 줄지 않는다.
+    let mut line_has_text = false;
     for t in &tokens[..current_token_idx] {
         match t {
-            BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
+            BreakToken::Space { idx, width, .. } if *idx >= new_line_start && line_has_text => {
                 let space_hwp = to_hwp(*width);
                 w += condense_space_savings_hwp(space_hwp, condense_min_space);
+            }
+            BreakToken::Text { start_idx, .. } if *start_idx >= new_line_start => {
+                line_has_text = true;
             }
             _ => {}
         }
