@@ -133,13 +133,17 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
-스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 단, Visual Sweep을 수용 근거로 주장하는 렌더링 PR은
-대표 review·overlay PNG를 `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 넣고 PR 본문에서
-실제 Markdown 이미지로 표시합니다. 이 경우는 메인터너 review 기록을 작성하는 의무가 아니라 reviewer가
-제출 근거를 직접 볼 수 있게 하는 제출 의무입니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
-요청한 경우에만 그 요청 범위에서 예외로 합니다.
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. **렌더링·조판·페이지 배치 변경의 원 PR을 생성하거나
+code head를 갱신할 때는**, 해당 head의 영향 페이지를 한컴 기준 PDF와 Native/fresh WASM
+Visual Sweep으로 비교하세요. 대표 review·overlay PNG를
+`mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 커밋하고, 원 PR 본문에
+head repository·정확한 SHA로 고정한 raw URL의 실제 Markdown 이미지로 표시하세요.
+입력·기준 PDF·페이지·실행 명령·결과·남은 차이도 본문에 적고, 게시 후 본문과 이미지가
+PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 완료 상태로 표시하지 말고
+보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
+메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
-Visual Sweep을 수용 근거로 쓰는 경우 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
+이 Visual Sweep에서 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
 PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
 PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
@@ -815,7 +819,7 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
 
 - **스크린샷·비교 이미지**는 개인정보·대형 원본·탐색용 중간 산출물을 저장소에 커밋하지 말고 PR 본문에
-  첨부해주세요. 단, Visual Sweep을 수용 근거로 쓰는 공개 가능한 대표 review·overlay PNG는
+  첨부해주세요. 렌더링 변경의 공개 가능한 대표 Visual Sweep review·overlay PNG는
   `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
