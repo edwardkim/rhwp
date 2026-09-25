@@ -2,9 +2,105 @@
 
 ## 최종 판정
 
-**승인.** 아래 로컬·브라우저·시각 검증으로 명시한 화면 지원 범위를 확인했다.
-이는 작성자 self-review이며 GitHub approve나 merge 승인이 아니다.
-merge 전 조건은 최신 PR head의 required CI 통과, mergeability 재확인과 작업지시자의 merge 승인이다.
+**승인.** 화면용 호스트 글꼴 공급 계약과 명시한 검증 범위를 충족한다.
+2026-09-25에 발견한 오늘할일 충돌은 문서 절 위치 조정만으로 해소했고,
+후보 `9bf4451acd91d415505c7be1ffbefe132e498bdd`의 GitHub checks는
+14 SUCCESS / 19 SKIPPED, 실패·대기 없음, `MERGEABLE / CLEAN`을 확인했다.
+제품 소스·테스트·시각 자산은 기존 검증 head와 동일하다.
+이는 작성자 self-review이며 GitHub approve나 실제 merge 승인이 아니다.
+이 리뷰 기록을 포함한 최종 trailing head의 required CI·mergeability 재확인과 작업지시자의 merge 승인은 별도 조건이다.
+
+## 2026-09-25 재검토
+
+- 검토 head: `bf371e200cfbc343094b552169864ba6c9235a27`.
+- 최신 fetch base: `97073606de2545f88540429e2f7f8312eefa9641`.
+- 기본 경로: `collaborator_self_merge.md`. 보조 경로: `intake_and_review.md`,
+  `local_validation.md`, `visual_fixture_evidence.md`, `rework_and_exceptions.md`.
+  모 workflow·선택표 및 위 문서를 읽었다. 아래 접수 정보는 최초 제출 당시 기록이다.
+
+### 최초 병합 차단 사항 — 아래 후속에서 해소
+
+`git merge-tree --write-tree upstream/devel bf371e200cfbc343094b552169864ba6c9235a27`은
+exit 1을 반환했다. 충돌 파일은 `mydocs/orders/20260924.md` 하나다.
+최신 base의 #7368 검토 절과 이 PR의 M100/#7403 절이 같은 EOF에 추가되어 충돌한다.
+두 절을 모두 보존해야 한다. 제품 소스의 텍스트 충돌은 없었다.
+GitHub도 같은 head에 `CONFLICTING / DIRTY`를 반환했다.
+기존 head의 CI 32 SUCCESS / 4 SKIPPED는 확인했지만 충돌 해소 후 head의 검증을 대신하지 않는다.
+
+### 코드·검증 대조
+
+`HostFontSource`의 세대/revision/face 소유권, `local-fonts`의 스타일 선택과 브라우저 목록 분리,
+두 renderer의 자원 준비·해제, `WasmBridge`의 측정/paint scope와 portable SVG 분리,
+`RendererSession` 및 VS Code nullable report 소비자를 대조했다.
+이번 검토에서 새로 재현한 제품 결함은 없다. 조판 원칙의 적용 범위와 독립 증거는 아래 표를 유지한다.
+분할·LineSeg·baseline 변경은 없으며 미실행 경로를 충족으로 확대하지 않는다.
+
+집중 재실행 명령(검토 head의 `rhwp-studio`):
+
+```sh
+node --test tests/host-font-provider.test.ts tests/host-canvas-fonts.test.ts tests/renderer-session.test.ts
+git diff --check 505661360..bf371e200
+```
+
+첫 명령은 **27 PASS / 0 FAIL / 0 SKIP**, 두 번째는 exit 0이었다.
+전체 Studio 1,787개·fresh WASM·E2E는 아래 기존 source/head 증거를 재사용했으며 이번에 재실행한 것으로 세지 않는다.
+기존 Native/fresh WASM/CanvasKit/Canvas2D 대표 review PNG와 WASM/두 화면 renderer overlay를
+직접 열었다. 1쪽의 세 줄에서 누락·겹침·줄바꿈 변화는 보이지 않았고 가장자리·농도·screen guide
+차이는 남는다. 이는 기존 산출물의 직접 재판독이며 새 base 통합본의 재캡처가 아니다.
+입력 3개의 검토 head Git blob SHA-256은 아래 입력 표와 일치했다.
+
+재판독한 review PNG의 SHA-256:
+
+| 파일 (`mydocs/report/assets/issue7403/`) | SHA-256 |
+| --- | --- |
+| `native-review-001.png` | `6a4feb9a0b9f813a0d704cd72b0fe43052d04fcfc00fae76f6f034d4ae1cc5e1` |
+| `wasm-review-001.png` | `3978b0e7e1ef8471d5ca50abb23313d152ca24029434fe4e119e67e9ca76bd76` |
+| `host-canvaskit-review-001.png` | `15f40dd650de04f6c0568d002673ae01255e38f680c5ebde54de0de8a91bce33` |
+| `host-canvas2d-review-001.png` | `dee707413b2fbc832e9686d86ca321dc387d09a837d8e234d4ce76ad65f3e854` |
+
+### 다운스트림 증거와 잔여 범위
+
+알한글 작업이 전달한 보고서 `mydocs/working/task_m020_567_pr7405_validation.md`
+(알한글 소스 `ef7d638794f82b71a71c75ef2029bf4eb3d463db`)를 읽고 범위를 대조했다.
+동일 upstream head에서 실제 IPC·WebKit Canvas2D·Apple GPU WebGL2를 포함한 격리 probe
+29개 통과가 보고됐다. 이번 리뷰가 이를 재실행한 것은 아니다. WebGPU 요청은 실제 WebGL2로
+fallback하므로 WebGPU 성공으로 세지 않는다. 전체 앱·실제 설치 권한·다쪽 출력·실제 프린터는 미검증이다.
+
+현재 알한글 PDF의 다른 글꼴 사용과 별도 출력 WebView FontFace 공급 후 Regular/Bold 포함 결과는
+문서화된 호스트 책임과 일치한다. 출력 snapshot·준비 대기·IPC queue·metadata 정규화·글꼴 메뉴는
+다운스트림 후속이며 현재 증거로 upstream API 확대를 병합 필수 조건으로 요구하지 않는다.
+
+### 보류 해제 조건
+
+1. 양쪽 오늘할일 기록을 보존한 충돌 해소와 최신 base/head 병합 시뮬레이션 성공.
+2. 통합으로 변경되는 코드 범위에 맞는 검증 및 시각 증적·PR 본문 SHA 갱신.
+3. 새 head의 required checks와 `MERGEABLE / CLEAN` 확인, 작업지시자의 실제 merge 승인.
+
+### 충돌 해소와 CI 확인
+
+사용자가 충돌 해소·CI 확인·리뷰 문서 push·최종 판정을 지시한 뒤 진행했다.
+`9bf4451acd91d415505c7be1ffbefe132e498bdd`는 이 PR의 M100 절을 문서 앞쪽으로 옮긴
+single-parent 문서 전용 commit이다. 최신 devel 전체를 source branch에 병합하거나 다른 PR의 기록을
+복사하지 않았다. 제품 코드·테스트·fixture·workflow·시각 자산 diff는 0이다.
+
+push 전 base `a7458aa39ca4ac8636a52e4c7a607d55973bf3a6`에 대해
+`git merge-tree --write-tree <base> <head>`가 exit 0을 반환했고,
+merge tree는 `0089baaf9a81c1d8fcc3c30d323b0dc323e8c3f6`였다.
+merge tree의 `git diff --check`, 최신 base 기록의 전수 보존, #7368/M100 절의 각 1회 존재,
+오늘할일·review의 내부 링크 대상 10개 확인을 통과했다. 원격 base/head 유지도 push 직전 재확인했다.
+검증 중 base가 전진했을 때는 새 base를 fetch하고 같은 검사를 다시 수행했다.
+
+후보 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/36107076872)는 성공했다.
+preflight의 `DETECTED_FAST_PASS=true`, `CANDIDATE_SHA=bf371e200cfbc343094b552169864ba6c9235a27`,
+`DETECTED_REASON=build-and-test-green:success`와 최신 `Build & Test` success를 직접 확인했다.
+[Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/36107076953)은 실제 회귀를 실행해 성공했다.
+전체 checks는 14 SUCCESS / 19 SKIPPED, 실패·대기 없음이었다. 생략한 heavy job을 재실행한 것으로 세지 않는다.
+최종 GitHub 상태는 `MERGEABLE / CLEAN`이었다.
+
+이 기록과 오늘할일 갱신을 같은 PR의 후속 문서 commit으로 push한다. 후속 head도 동일한 병합·링크·기록
+보존 검사를 거친 뒤 push하며 최신 head의 CI 집계를 다시 확인한다. PR 본문의 raw 이미지 URL은 최종 head로
+갱신한다. code head가 바뀌지 않았으므로 기존 이미지와 source 검증을 재사용한다.
+이번 승인 범위에는 실제 merge·issue close가 없으며 수행하지 않았다.
 
 ## 접수 정보
 
