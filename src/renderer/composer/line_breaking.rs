@@ -1268,20 +1268,27 @@ fn line_break_tolerance_hwp(box_width_hwp: i32) -> i32 {
         .clamp(LINE_BREAK_TOLERANCE_MIN_HWP, LINE_BREAK_TOLERANCE_MAX_HWP)
 }
 
-fn condense_fit_can_pull_next_token(
-    current_width_hwp: i32,
-    current_space_savings_hwp: i32,
-    effective_width_hwp: i32,
-    max_font_size: f64,
-) -> bool {
-    let current_condensed_width =
-        condensed_line_width_hwp(current_width_hwp, current_space_savings_hwp);
-    let remaining_hwp = effective_width_hwp - current_condensed_width;
-    // Hancom uses condense to rescue a line that still has a meaningful
-    // natural gap, but it does not pull the next word into an already tight
-    // line. The p03 PDF preface is sensitive to that distinction.
-    let min_remaining_hwp = to_hwp((max_font_size * 2.5).max(20.0));
-    remaining_hwp >= min_remaining_hwp
+/// 이 토큰이 줄 안에서 **새 낱말을 시작**하면, 그 앞 공백들 직전까지의 자연폭.
+///
+/// 바로 앞 토큰이 이 줄의 공백이 아니면 이어지는 글자이므로 `None` 이다.
+/// 이월(#3822) 재확인처럼 채움 상태가 없는 자리에서 토큰으로 다시 계산한다.
+fn new_word_natural_before_hwp(
+    tokens: &[BreakToken],
+    token_idx: usize,
+    line_start: usize,
+) -> Option<i32> {
+    let mut k = token_idx;
+    while k > 0 {
+        match &tokens[k - 1] {
+            BreakToken::Space { idx, .. } if *idx >= line_start => k -= 1,
+            _ => break,
+        }
+    }
+    if k == token_idx {
+        return None;
+    }
+    let width = recalc_width_hwp(tokens, k, line_start);
+    (width > 0).then_some(width)
 }
 
 /// Letter spacing is excluded from the fit test and included in the pen.
@@ -1366,27 +1373,31 @@ impl FitWidthHwp {
     }
 }
 
+/// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
+///
+/// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
+/// 그러나 **새 낱말은 줄이 아직 자연폭 안에 있을 때만** 시작한다 — 이미 공백을 줄여야
+/// 하는 줄에는 새 낱말을 들이지 않는다. `new_word_natural_before_hwp` 는 이 토큰이 새
+/// 낱말을 시작할 때 그 앞 공백 직전까지의 자연폭이다(이어지는 글자면 `None`).
+///
+/// 독립 근거는 한/글 2024 출력이다. condense 0·15·30·50·75, 낱말 길이, 글자/낱말 단위를
+/// 바꾼 합성 문단 13개(203줄)의 줄 끊음을 이 규칙이 전부 재현한다. 종전의 "남은 틈
+/// 2.5em 이상일 때만 condense" 문턱은 15/203 줄만 맞았다.
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
     space_savings_hwp: i32,
     effective_width_hwp: i32,
-    max_font_size: f64,
+    new_word_natural_before_hwp: Option<i32>,
 ) -> bool {
     let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
-    let tolerance_hwp = line_break_tolerance_hwp(effective_width_hwp);
-    let needs_condense_to_fit = natural_candidate > effective_width_hwp + tolerance_hwp
-        && condensed_candidate <= effective_width_hwp + tolerance_hwp;
-    let condense_pull_allowed = !needs_condense_to_fit
-        || condense_fit_can_pull_next_token(
-            current_width_hwp,
-            space_savings_hwp,
-            effective_width_hwp,
-            max_font_size,
-        );
-
-    condensed_candidate <= effective_width_hwp + tolerance_hwp && condense_pull_allowed
+    let limit_hwp = effective_width_hwp + line_break_tolerance_hwp(effective_width_hwp);
+    if condensed_candidate > limit_hwp {
+        return false;
+    }
+    let needs_condense_to_fit = natural_candidate > limit_hwp;
+    !(needs_condense_to_fit && new_word_natural_before_hwp.is_some_and(|w| w > limit_hwp))
 }
 
 /// Greedy line-fill continuation.
@@ -1409,6 +1420,9 @@ struct FillCursor {
     width_at_last_break: i32,
     space_savings_at_last_break: i32,
     fs_at_last_break: f64,
+    /// [#7418] 마지막으로 소비한 토큰이 이 줄의 공백이면, 그 공백 묶음 직전까지의 자연폭.
+    /// 다음 글자 토큰이 새 낱말을 시작하는지와 그때 줄이 자연폭 안인지를 판정한다.
+    word_gap_natural_hwp: Option<i32>,
     finished: bool,
     emitted_any: bool,
 }
@@ -1429,6 +1443,7 @@ impl FillCursor {
             width_at_last_break: 0,
             space_savings_at_last_break: 0,
             fs_at_last_break: 0.0,
+            word_gap_natural_hwp: None,
             finished: false,
             emitted_any: false,
         }
@@ -1604,6 +1619,7 @@ fn fill_one_interval(
                 });
             }
             BreakToken::Tab { idx, max_font_size } => {
+                cursor.word_gap_natural_hwp = None;
                 // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
                 let lw_px = cursor.lw as f64 / 75.0;
                 let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
@@ -1695,6 +1711,7 @@ fn fill_one_interval(
                     cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
+                    cursor.word_gap_natural_hwp = None;
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
                     return Some(FilledInterval {
@@ -1707,6 +1724,9 @@ fn fill_one_interval(
                 cursor.width_at_last_break = cursor.lw;
                 cursor.space_savings_at_last_break = cursor.line_space_savings;
                 cursor.fs_at_last_break = cursor.line_max_fs;
+                if cursor.word_gap_natural_hwp.is_none() && *idx > cursor.line_start_idx {
+                    cursor.word_gap_natural_hwp = Some(cursor.lw);
+                }
                 cursor.lw += space_hwp;
                 cursor.line_space_savings +=
                     condense_space_savings_hwp(space_hwp, condense_min_space);
@@ -1720,6 +1740,11 @@ fn fill_one_interval(
                 base_char_widths,
                 ..
             } => {
+                // [#7418] 바로 앞이 이 줄의 공백이었으면 이 토큰이 새 낱말을 시작한다.
+                let new_word_natural = cursor
+                    .word_gap_natural_hwp
+                    .take()
+                    .filter(|_| *start_idx > cursor.line_start_idx);
                 if let Some(next_char_idx) = cursor.fallback_char_idx {
                     debug_assert!(*start_idx <= next_char_idx && next_char_idx <= *end_idx);
                     let mut ci = next_char_idx;
@@ -1792,7 +1817,7 @@ fn fill_one_interval(
                     w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
                     cursor.line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 );
 
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
@@ -1897,7 +1922,7 @@ fn fill_one_interval(
                                 ),
                                 cursor.line_space_savings,
                                 eff_w(false),
-                                *max_font_size,
+                                new_word_natural_before_hwp(tokens, ti, cursor.line_start_idx),
                             ) {
                                 cursor.lw += w_hwp;
                                 cursor.token_index += 1;
@@ -2094,12 +2119,13 @@ fn fill_lines_before_cursor(
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
                 // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
                 let effective_width = eff_w(is_first_line);
+                let new_word_natural = new_word_natural_before_hwp(tokens, ti, line_start_idx);
                 let token_fits = text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 );
                 // Same single predicate as the live fill — see the note there.
                 let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
@@ -2127,7 +2153,7 @@ fn fill_lines_before_cursor(
                     FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 ) {
                     if *start_idx > line_start_idx {
                         if let Some(break_token_idx) = last_break_token_idx {
@@ -2169,7 +2195,7 @@ fn fill_lines_before_cursor(
                                 FitWidthHwp(w_hwp),
                                 line_space_savings,
                                 eff_w(false),
-                                *max_font_size,
+                                new_word_natural_before_hwp(tokens, ti, line_start_idx),
                             ) {
                                 lw += w_hwp;
                                 continue;
