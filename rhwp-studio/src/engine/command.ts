@@ -2171,7 +2171,13 @@ export class ResizeObjectCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     for (const target of this.targets) {
-      this.setProps(wasm, target, target.before);
+      const isShape = target.type === 'shape' || target.type === 'line'
+        || target.type === 'group' || target.type === 'ole';
+      const restoreStoredZero = isShape
+        && (target.before.width === 0 || target.before.height === 0);
+      this.setProps(wasm, target, restoreStoredZero
+        ? { ...target.before, restoreStoredZero: true }
+        : target.before);
     }
     const first = this.targets[0];
     return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };

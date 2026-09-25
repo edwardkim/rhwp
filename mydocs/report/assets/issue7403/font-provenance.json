@@ -1,0 +1,29 @@
+{
+  "pdf": "/Users/melee/Documents/projects/forks/rhwp/pdf/re-01-hangul-only-hancom-2022.pdf",
+  "pdfSha256": "ceb38d48887392ade56aef29be6bb65d77dd89e77a49c4e9b04a9b5323159684",
+  "hostFont": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatang.ttf",
+  "hostFontSha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+  "pdfBaseFont": "/INPILL+HCRBatang",
+  "hostPostScriptName": "HCRBatang",
+  "pdfCreator": "Hwp 2022 12.0.0.4426",
+  "pdfProducer": "Hancom PDF 1.3.0.550",
+  "pdfPages": 1,
+  "pdfUnitsPerEm": 1000,
+  "hostUnitsPerEm": 1000,
+  "outlineMatches": {
+    "가": true,
+    "나": true,
+    "다": true,
+    "라": true,
+    "마": true,
+    "바": true,
+    "사": true,
+    "아": true,
+    "자": true,
+    "차": true,
+    "카": true,
+    "타": true,
+    "파": true,
+    "하": true
+  }
+}
