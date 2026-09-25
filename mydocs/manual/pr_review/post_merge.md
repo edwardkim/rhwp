@@ -210,6 +210,11 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
 
+PR이 merge되고 필수 후속 처리가 끝나면, 해당 검토가 만든
+`output/pr-review/<review-id>/`의 로그와 임시 산출물을 정리한다. 먼저 이 경로를 사용하는 실행이 없는지,
+필요한 결과 요약·영구 증적이 검토 문서와 추적 asset에 남았는지 확인한다. 정확히 해당 review가 소유한
+경로만 제거하며 다른 검토의 `output`과 공유 산출물은 보존한다. merge 전 보류 중인 검토의 로그는 유지한다.
+
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
 여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge
 simulation만 수행한 local 검토 worktree도 포함한다. 다음 작업의 편의를 위한 보존은 유지 사유가 아니다. 제거
