@@ -48,6 +48,7 @@ import type {
   LayerTextControlMarkOp,
   LayerTextDecorationOp,
   LayerTextRunOp,
+  LayerTextStyle,
   PageInfo,
   PageLayerTree,
 } from '@/core/types';
@@ -98,7 +99,10 @@ import {
   glyphOutlinePayloadStatus,
 } from './glyph-outline-payload-status';
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
-import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, type LocalFontRecord } from '@/core/local-fonts';
+import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, resolveRendererLocalFont,
+  hasHostFontProvider, loadRendererLocalFont, getHostFontState, type LocalFontRecord } from '@/core/local-fonts';
+import { hostFontStyle } from '@/core/host-font-requests';
+import { canvasKitFontFaceData } from './canvaskit/sfnt-face';
 import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
@@ -149,6 +153,7 @@ interface CanvasKitSurfaceTarget {
 }
 
 interface CanvasKitLocalTypeface {
+  hostFace?: { weight?: number; slant?: string };
   typeface: Typeface | null;
   fontManager: FontMgr | null;
   fontFamily: string | null;
@@ -555,7 +560,7 @@ export class CanvasKitLayerRenderer {
 
   /** 현재 문서가 실제로 사용하는 설치 글꼴만 CanvasKit native 객체로 등록한다. */
   async prepareLocalFonts(fontNames: readonly string[] | undefined): Promise<number> {
-    if (this.disposed || !fontNames?.length) return 0;
+    if (this.disposed || !fontNames?.length || hasHostFontProvider()) return 0;
     const generation = this.documentGeneration;
     const pendingRecords = new Map<string, LocalFontRecord>();
     // legacy 이름(`한양중고딕`)은 설치 face 이름이 아니므로 치환 대상(`HY중고딕`)까지 함께 본다.
@@ -612,6 +617,49 @@ export class CanvasKitLayerRenderer {
         if (this.localTypefacePending.get(faceKey) === generation) {
           this.localTypefacePending.delete(faceKey);
         }
+      }
+    }
+    return registered;
+  }
+
+  /** Host records have already been selected from actual text styles. */
+  async prepareHostFonts(records: readonly LocalFontRecord[]): Promise<number> {
+    const documentGeneration = this.documentGeneration;
+    const hostGeneration = getHostFontState().generation;
+    let registered = 0;
+    for (const record of records) {
+      const key = localFontFaceKey(record);
+      if (!record.hostReference || this.localTypefaces.has(key)
+        || this.localTypefaceLoadFailures.has(key) || this.localTypefacePending.has(key)) continue;
+      this.localTypefacePending.set(key, documentGeneration);
+      try {
+        const data = await loadRendererLocalFont(record);
+        if (this.disposed || documentGeneration !== this.documentGeneration
+          || hostGeneration !== getHostFontState().generation) return registered;
+        const bytes = data ? canvasKitFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
+        if (!bytes) { this.localTypefaceLoadFailures.add(key); continue; }
+        let typeface: Typeface | null = null;
+        let fontManager: FontMgr | null = null;
+        try {
+          typeface = this.canvasKit.Typeface.MakeFreeTypeFaceFromData(bytes)
+            ?? this.canvasKit.Typeface.MakeTypefaceFromData(bytes);
+          fontManager = this.canvasKit.FontMgr.FromData(bytes.slice(0));
+          if (!typeface) {
+            fontManager?.delete?.();
+            this.localTypefaceLoadFailures.add(key);
+            continue;
+          }
+          this.localTypefaces.set(key, { typeface, fontManager,
+            fontFamily: fontManager && fontManager.countFamilies() > 0 ? fontManager.getFamilyName(0) : record.family,
+            hostFace: record.hostReference.face });
+          registered++;
+        } catch (error) {
+          typeface?.delete?.(); fontManager?.delete?.();
+          this.localTypefaceLoadFailures.add(key);
+          console.warn('[CanvasKit] Host face preparation failed:', error);
+        }
+      } finally {
+        if (this.localTypefacePending.get(key) === documentGeneration) this.localTypefacePending.delete(key);
       }
     }
     return registered;
@@ -831,7 +879,7 @@ export class CanvasKitLayerRenderer {
     const character = record.source.character;
     const requestedFamily = primaryFontFamily(requested);
     const normalized = normalizedFontFamily(requestedFamily);
-    const localRecord = resolveLocalFont(requestedFamily);
+    const localRecord = resolveRendererLocalFont(requestedFamily);
     const localKey = localRecord ? localFontFaceKey(localRecord) : '';
     const local = localKey ? this.localTypefaces.get(localKey) ?? null : null;
     const bundled = this.bundledTypefaceAliases.get(normalized) ?? null;
@@ -2170,7 +2218,7 @@ export class CanvasKitLayerRenderer {
     const hasLayoutPositions = replayPositions?.length === codePoints.length + 1
       && replayPositions.every(Number.isFinite);
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
-    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily);
+    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
       throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
     }
@@ -2212,8 +2260,8 @@ export class CanvasKitLayerRenderer {
             setSkewX?: (skew: number) => void;
             setScaleX?: (scale: number) => void;
           };
-          adjustable.setEmbolden?.(style.bold === true);
-          adjustable.setSkewX?.(style.italic === true ? -0.2 : 0);
+          adjustable.setEmbolden?.(style.bold === true && (preparedTypeface?.hostFace?.weight ?? 0) < 600);
+          adjustable.setSkewX?.(style.italic === true && !['italic', 'oblique'].includes(preparedTypeface?.hostFace?.slant ?? '') ? -0.2 : 0);
           adjustable.setScaleX?.(ratio);
         };
         font = new this.canvasKit.Font(typeface, fontSize);
@@ -2573,7 +2621,7 @@ export class CanvasKitLayerRenderer {
         : 1;
     const innerFontSize = Math.max(1, fontSize * Math.min(4, Math.max(0.1, rawRatio)));
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
-    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily);
+    const preparedTypeface = this.findPreparedTypeface(requestedFontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
       throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${requestedFontFamily}`);
     }
@@ -2666,8 +2714,8 @@ export class CanvasKitLayerRenderer {
             setEmbolden?: (enabled: boolean) => void;
             setSkewX?: (skew: number) => void;
           };
-          adjustable.setEmbolden?.(style.bold === true);
-          adjustable.setSkewX?.(style.italic === true ? -0.2 : 0);
+          adjustable.setEmbolden?.(style.bold === true && (preparedTypeface?.hostFace?.weight ?? 0) < 600);
+          adjustable.setSkewX?.(style.italic === true && !['italic', 'oblique'].includes(preparedTypeface?.hostFace?.slant ?? '') ? -0.2 : 0);
         };
         try {
           adjustFont(textFont);
@@ -3150,10 +3198,10 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private findPreparedTypeface(fontFamily: string | undefined): CanvasKitLocalTypeface | null {
+  private findPreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
     const key = normalizedFontFamily(fontFamily);
     if (!key) return null;
-    const record = resolveLocalFont(primaryFontFamily(fontFamily));
+    const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
     const local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
     const bundled = this.bundledTypefaceAliases.get(key);
     if (key === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)) {
