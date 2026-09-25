@@ -190,6 +190,31 @@ fn prep_population_table_keeps_last_fitting_rows_with_first_fragment() {
 }
 
 #[test]
+fn prep_centered_inline_table_uses_host_paragraph_margin() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(56).expect("물리 57쪽");
+    fn demographic_table(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.para_index == Some(535) && table.row_count == 29 && table.col_count == 2 {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(demographic_table)
+    }
+    let table = demographic_table(&page.root).expect("성별 정체성 표");
+    // 한컴 2024 PDF p57의 표 좌우 괘선은 96dpi에서 x=206/599px.
+    // 원본 host의 1000HU 왼쪽 여백을 가운데 정렬 폭에도 반영해야 한다.
+    assert!(
+        (table.bbox.x - 206.0).abs() <= 1.5,
+        "표 왼쪽: {:.2}",
+        table.bbox.x
+    );
+    assert!((table.bbox.x + table.bbox.width - 599.0).abs() <= 1.5);
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

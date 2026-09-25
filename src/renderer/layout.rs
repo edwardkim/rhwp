@@ -11086,8 +11086,15 @@ impl LayoutEngine {
                     }
                     Some(crate::model::style::Alignment::Center) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
-                        let center =
-                            col_area.x + (col_area.width - tbl_w) / 2.0 + (om_l - om_r) / 2.0;
+                        // 인라인 위치가 없는 TAC 표도 host 문단의 가용 줄 영역에서
+                        // 가운데 정렬한다. 왼쪽 여백만 있는 경우 단 전체 폭에서
+                        // 정렬하면 표가 여백의 절반만큼 왼쪽으로 치우친다.
+                        let line_width =
+                            (col_area.width - effective_margin - margin_right).max(0.0);
+                        let center = col_area.x
+                            + effective_margin
+                            + (line_width - tbl_w) / 2.0
+                            + (om_l - om_r) / 2.0;
                         center.max(base_x)
                     }
                     _ => base_x,
