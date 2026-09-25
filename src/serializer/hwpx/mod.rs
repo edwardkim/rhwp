@@ -88,15 +88,17 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     // 4b. Contents/masterpage{N}.xml — 바탕쪽 (전 섹션 누적 전역 인덱스).
     //     id/href 의 인덱스는 section.rs 의 idRef 인덱스와 동일 규칙(전역 누적)이라
     //     별도 공유 상태 없이 정합한다.
-    let mut master_items: Vec<(String, String)> = Vec::new();
+    // [#6907] 소속 구역 인덱스를 함께 들고 간다 — `write_content_hpf` 가 바탕쪽을
+    // 그 구역 항목 바로 앞에 써야 매니페스트 순서(= 구역 소속)가 보존된다.
+    let mut master_items: Vec<(usize, String, String)> = Vec::new();
     let mut mp_global = 0usize;
-    for sec in &doc.sections {
+    for (section_idx, sec) in doc.sections.iter().enumerate() {
         for mp in &sec.section_def.master_pages {
             let id = format!("masterpage{}", mp_global);
             let href = format!("Contents/masterpage{}.xml", mp_global);
             let xml = master_page::render_master_page_xml(mp, &id, &mut ctx);
             z.write_deflated(&href, xml.as_bytes())?;
-            master_items.push((id, href));
+            master_items.push((section_idx, id, href));
             mp_global += 1;
         }
     }

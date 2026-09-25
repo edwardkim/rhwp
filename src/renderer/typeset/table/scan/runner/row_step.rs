@@ -783,9 +783,25 @@ impl TypesetEngine {
                 } else {
                     0.1
                 };
+                // [#7206] 이어받은 조각이 **커서 행 안에서** 시작해 같은 행에서 끝나면 위
+                // 세 조건이 모두 서지 않아 쪽 면적 초과 가드에 **진입조차 하지 못했다.**
+                // 그 사이 `consumed` 는 칠할 높이(`split_total`)를 대조 없이 받아, 조각
+                // 상자가 본문보다 커진다 — `press_release_split_cell_nested_table` 물리
+                // 4쪽에서 `cand 1008.6 > avail 1001.6`(7.0px)이고 렌더 트리도 본문
+                // 45.3~1046.9 안에 표 45.3~1053.9 를 담았다. 같은 문서에서 0.1·1.4·4.6·7.0
+                // 네 건이 같은 이유로 통과했다.
+                //
+                // 진입만 넓히고 판정은 기존 경로에 맡긴다 — 예산을 초과분만큼 줄여 한 번
+                // 재시도하고, 그래도 안 되면 아래 `continuation_row_must_advance` 가 종전과
+                // **같은 컷**을 수용한다. 그 갈래는 `r == cursor_row && is_continuation &&
+                // !row_start_cut.is_empty()` 이라 여기서 새로 여는 경우를 정확히 덮는다.
+                // 따라서 재시도가 실패해도 종전 동작이고, 0-전진으로 떨어지지 않는다.
+                let continuation_cut_row =
+                    r == cursor_row && is_continuation && !row_start_cut.is_empty();
                 if (r > cursor_row
                     || mixed_nested_owner_guard
-                    || native_split_continuation_row_tail)
+                    || native_split_continuation_row_tail
+                    || continuation_cut_row)
                     && split_candidate_rows_height > avail_for_rows + split_row_overflow_tolerance
                 {
                     // 보이는 조각은 orphan 기준을 통과해도 row-area 예산은 넘을 수 있다.
