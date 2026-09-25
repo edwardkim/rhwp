@@ -7427,13 +7427,18 @@ impl LayoutEngine {
         // precisely its spacing-before. That vpos is a margin from the page
         // origin, not the origin itself. The following saved paragraph must
         // also account for its own spacing in the same ladder before we use
-        // page-relative vpos for subsequent items (#7406 p90).
+        // page-relative vpos for subsequent items (#7406 p90). An explicit
+        // page-break paragraph starts a new flow, so its first vpos remains
+        // the page base (issue1853 p10).
         let hwpx_first_margin_is_page_relative = matches!(
             col_content.items.first(),
             Some(PageItem::FullParagraph { para_index })
                 if self.profile.get().hwpx_stored_layout()
                     && !self.profile.get().session_edited()
                     && paragraphs.get(*para_index).is_some_and(|first| {
+                        if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
+                            return false;
+                        }
                         let Some(first_seg) = first.line_segs.first() else { return false; };
                         let Some(last_seg) = first.line_segs.last() else { return false; };
                         let Some(next) = paragraphs.get(*para_index + 1) else { return false; };

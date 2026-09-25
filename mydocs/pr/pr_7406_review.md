@@ -68,6 +68,8 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 전체 nextest에서 `issue_6632_cell_tac_shape_line_height`의 글줄 기준선 검사가 기존 x 필터 때문에 FAIL했다. `samples/hwpspec.hwp`의 한컴 2024 PDF 물리 106쪽을 글자 단위로 직접 추출하면 `(x2, y2)`의 숫자 `2`는 **(515.50, 540.64)px**, `(x3, y3)`의 숫자 `3`은 **(271.58, 582.88)px**이다. 현재 renderer의 두 글자 좌표는 이 독립 기준과 0.2px 이내로 맞는데 테스트는 과거 x=505.2/261.5px만 찾고 있었다. 테스트의 x 선택 기준을 PDF 값으로 고쳤다. 위치를 이전 x로 되돌린 임시 코드에서는 해당 회귀가 통과했지만, 직접 시각 비교에서 곡선·라벨이 PDF보다 10px 왼쪽으로 이동하고 p106 실루엣이 **87.74→86.21%**로 악화해 그 임시 코드를 폐기했다. 최종 테스트는 수정 전 FAIL/수정 후 **2/2 PASS**, PrEP 57쪽 가운데 정렬 대조군도 PASS다. p106의 남은 글꼴·픽셀 차이는 #7406 승인 근거로 사용하지 않는다. 분석 자료는 Git 제외 `output/pr-review/planet6897-7406-20260925/diag-6632/`에 보존한다.
 
+전체 nextest의 본문 넘침 원장에서는 `issue1853_caption_precedes_body_split.hwpx` 물리 10쪽이 3.84px 아래로 넘쳤다. 이 쪽 첫 문단은 원본 HWPX의 명시적 `pageBreak="1"`이고, PrEP 물리 90쪽(인쇄 78쪽)의 첫 문단은 자연스러운 흐름이다. 두 문서 모두 첫 저장 `vpos=500HU`와 뒤 문단의 앞 간격 사다리가 있어, 기존 90쪽 보정이 명시적 쪽나눔까지 페이지 원점 0으로 분류했다. 명시적 쪽나눔은 첫 `vpos`를 기준점으로 유지하도록 보정했다. 원장 검사 수정 전 FAIL(1건 증가)/후 **PASS**, 90쪽 회귀 **PASS**, CLI `layout-anomaly`의 해당 쪽 넘침 1→0건, 원본 물리 90쪽 직접 Visual Sweep **100%**다. `issue1853` 물리 10쪽의 기준 PDF 대비 실루엣은 **53.31%**로 별도 배치·글꼴 차이가 남으므로 이 문서 자체의 시각 일치를 주장하지 않는다. 증적은 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/issue1853-p10-after/`와 `visual/p90-after-1853/`에 있다.
+
 ![#7406 OLE 차트 분리 샘플 Native review](assets/pr7406_20260925/ole_chart_review_001.png)
 
 ![#7406 OLE 차트 분리 샘플 Native overlay](assets/pr7406_20260925/ole_chart_overlay_001.png)
