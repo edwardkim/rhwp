@@ -1,0 +1,40 @@
+✔ catalog is metadata-only; concurrent face reads share an in-flight request (1.444458ms)
+✔ change immediately invalidates bytes, even if the provider ignores abort (0.303083ms)
+✔ a second change during enumeration supersedes the pending snapshot (0.353625ms)
+✔ replacement distinguishes providers with identical IDs and revisions and ignores detached listeners (0.240292ms)
+✔ malformed catalog fails closed and recovers on the next notification (0.27275ms)
+✔ host faces are selected by exact identity or family and style, without advertising CSS availability (9.745833ms)
+✔ paint requests preserve weight and only read the selected faces (0.436667ms)
+✔ detaching during enumeration discards the late catalog and stops notifications (0.132709ms)
+✔ failed byte reads recover on a new revision and buffers are isolated from the provider (0.387041ms)
+✔ Regular fullName equal to family does not intercept a family Bold request (0.349416ms)
+✖ italic runs can select an unambiguous oblique face when no italic face exists (0.773875ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.603375
+
+✖ failing tests:
+
+test at rhwp-studio/tests/host-font-provider.test.ts:180:1
+✖ italic runs can select an unambiguous oblique face when no italic face exists (0.773875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + undefined
+  - 'oblique'
+
+      at TestContext.<anonymous> (file:///private/tmp/rhwp-7403/rhwp-studio/tests/host-font-provider.test.ts:188:12)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'oblique',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
