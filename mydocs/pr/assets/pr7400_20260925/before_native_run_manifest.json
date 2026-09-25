@@ -1,0 +1,47 @@
+{
+  "schema_version": 2,
+  "key": "cell7400_before",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue7265/pr7400_cell_char_format_before.hwpx",
+      "sha256": "fcb33c629538fc5604ff6135b7d3fd3e63564e2dc1acc032b92b0bc292aa956d"
+    },
+    "pdf": {
+      "path": "pdf/issue7265/pr7400_cell_char_format_before-2020.pdf",
+      "sha256": "1fe50323faea63b8296a55c641d8ff0047dd42628444ef25a819c6cb4ba0d342"
+    },
+    "git_head": "177acf40054f2bbb4bbe65cd9f4267d3df308f8f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "e7db90ac19bd7e4607940bbcfa2d00c2e6c420d3faec3a346dc5e0c74e95ea16"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20260924/pr7400-hcr-fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -61,4 +61,20 @@ const { MoveLineEndpointCommand, ResizeObjectCommand } =
   assert.deepEqual(applied.at(-1), { rotationAngle: 0 }, 'undo 는 원래 회전각으로 복원');
 }
 
+// 저장 높이 0 의 도형을 키웠다가 되돌릴 때만 명시적 복원 표시를 보낸다.
+{
+  const applied = [];
+  const wasm = { setShapeProperties: (s, p, c, props) => applied.push(props) };
+  const cmd = new ResizeObjectCommand([{
+    sec: 0, ppi: 28, ci: 0, type: 'shape',
+    before: { width: 300, height: 0 }, after: { width: 300, height: 400 },
+  }]);
+
+  cmd.execute(wasm);
+  assert.deepEqual(applied.at(-1), { width: 300, height: 400 }, 'redo 는 실제 확대 치수');
+  cmd.undo(wasm);
+  assert.deepEqual(applied.at(-1), { width: 300, height: 0, restoreStoredZero: true },
+    'undo 는 저장된 0 을 복원하는 뜻을 명시');
+}
+
 console.log('DRAG_COMMAND_BEHAVIOUR_OK');
