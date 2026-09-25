@@ -399,6 +399,39 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, '--embed-fonts=full'):
             SWEEP.svg_font_export_options(Path('.'), 'subset', [])
 
+    def test_full_embedding_uses_configured_font_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            fonts = Path(temp) / 'fonts'
+            fonts.mkdir()
+            (fonts / 'hangul.ttf').write_bytes(b'font fixture')
+            with patch.dict(os.environ, {'RHWP_FONT_PATH': str(fonts)}):
+                args, supply = SWEEP.svg_font_export_options(Path(temp), 'full', [])
+            self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
+            self.assertEqual(supply['source'], 'RHWP_FONT_PATH')
+            self.assertEqual(len(supply['files']), 1)
+
+    def test_full_embedding_uses_macos_user_fonts_when_unconfigured(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp)
+            fonts = home / 'Library/Fonts'
+            fonts.mkdir(parents=True)
+            (fonts / 'hangul.ttf').write_bytes(b'font fixture')
+            with (
+                patch.dict(os.environ, {'RHWP_FONT_PATH': ''}),
+                patch.object(SWEEP.platform, 'system', return_value='Darwin'),
+                patch.object(Path, 'home', return_value=home),
+            ):
+                args, supply = SWEEP.svg_font_export_options(home, 'full', [])
+            self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
+            self.assertEqual(supply['source'], 'macOS_user_fonts')
+
+    def test_missing_configured_font_directory_fails_before_capture(self):
+        with tempfile.TemporaryDirectory() as temp:
+            missing = Path(temp) / 'missing-fonts'
+            with patch.dict(os.environ, {'RHWP_FONT_PATH': str(missing)}):
+                with self.assertRaisesRegex(SystemExit, '폰트 디렉터리가 없습니다'):
+                    SWEEP.svg_font_export_options(Path(temp), 'full', [])
+
     def test_bare_embed_fonts_selects_full_in_cli(self):
         with tempfile.TemporaryDirectory() as temp:
             with (

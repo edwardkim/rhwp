@@ -671,6 +671,18 @@ def apply_svg_font_policy(svg: str, policy_rules: list[str]) -> str:
     return svg[:end] + "<style>" + "\n".join(rules) + "</style>" + svg[end:]
 
 
+def default_sweep_font_paths() -> list[Path]:
+    """Find the installed fonts used by the local renderer when no path was given."""
+    configured = os.environ.get("RHWP_FONT_PATH", "")
+    if configured:
+        return [Path(value) for value in configured.split(os.pathsep) if value]
+    if platform.system() == "Darwin":
+        user_fonts = Path.home() / "Library/Fonts"
+        if user_fonts.is_dir():
+            return [user_fonts]
+    return []
+
+
 def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
     """명시적 검증 폰트 공급과 hash를 고정한다. 폰트 파일은 scratch SVG에만 포함한다."""
     if mode == "subset":
@@ -680,6 +692,11 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
         )
     if paths and mode is None:
         raise SystemExit("--font-path는 --embed-fonts와 함께 사용해야 합니다.")
+    source = "explicit" if paths else "none"
+    if mode == "full" and not paths:
+        paths = default_sweep_font_paths()
+        if paths:
+            source = "RHWP_FONT_PATH" if os.environ.get("RHWP_FONT_PATH") else "macOS_user_fonts"
     args = ["--embed-fonts=full"] if mode == "full" else ["--font-style"]
     files = []
     for directory in paths:
@@ -690,7 +707,9 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
         for path in sorted(directory.rglob("*")):
             if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
                 files.append({"path": str(path), "sha256": sha256_file(path)})
-    return args, {"mode": mode or "local", "files": files}
+    if mode == "full" and paths and not files:
+        raise SystemExit("공급한 폰트 디렉터리에 지원하는 글꼴 파일이 없습니다.")
+    return args, {"mode": mode or "local", "source": source, "files": files}
 
 
 def inspect_svg_embedded_fonts(svg_path: Path) -> list[dict[str, object]]:
