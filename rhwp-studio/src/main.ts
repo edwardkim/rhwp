@@ -1,3 +1,5 @@
+import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
+import { collectHostFontRequests } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { installDocumentTitle } from '@/ui/document-title';
 import type { DocumentInfo, PageInfo } from '@/core/types';
@@ -152,6 +154,7 @@ async function completeHostSave(fileName?: string): Promise<{ ok: true; wasDirty
 // 호스트를 위해 프로덕션 빌드에도 항상 노출한다 (iframe 호스트는 embed RPC 사용).
 (window as any).rhwpStudio = {
   notifySaved: (fileName?: string) => completeHostSave(fileName),
+  fonts: { setProvider: setHostFontProvider, getState: getHostFontState },
 };
 
 // E2E 테스트용 전역 노출 (개발 모드 전용)
@@ -561,6 +564,21 @@ async function initialize(): Promise<void> {
           );
         },
         async prepareCanvasKitDocument(renderer, report) {
+          if (hasHostFontProvider()) {
+            const documentGeneration = wasm.documentGeneration;
+            const generation = getHostFontState().generation;
+            await prepareHostFontCatalog();
+            if (generation !== getHostFontState().generation || documentGeneration !== wasm.documentGeneration) return;
+            const records = new Map<string, LocalFontRecord>();
+            for (let page = 0; page < wasm.pageCount; page++) {
+              for (const record of collectHostFontRequests(wasm.getPageLayerTreeObject(page, renderProfile))) {
+                records.set(localFontFaceKey(record), record);
+              }
+            }
+            await renderer.prepareHostFonts([...records.values()]);
+          }
+          // Explicit CanvasKit has no document-wide auto-selection preflight.
+          if (!report) return;
           const plan = resolveCanvasKitFontPlan(
             report.requiredFontFamilies,
             extensionViewerSettings,
@@ -1159,6 +1177,14 @@ function setupEventListeners(): void {
       (window as any).__renderBackendFallbackReason = diagnostics.fallbackReason;
       (window as any).__rendererSelection = diagnostics;
     }
+  });
+
+  onHostFontsChanged(() => {
+    if (!canvasView || wasm.pageCount === 0) return;
+    wasm.invalidateCanvasMetricFonts();
+    void canvasView.refreshFontResources().catch(error => {
+      console.warn('[HostFonts] View refresh failed:', error);
+    });
   });
 
   eventBus.on('local-fonts-changed', () => {
