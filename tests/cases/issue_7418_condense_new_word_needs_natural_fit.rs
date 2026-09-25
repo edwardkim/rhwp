@@ -78,14 +78,28 @@ const LABELS: [&str; 13] = [
 /// 줄바꿈 여유 대역에 줄이 걸려 이 검사에서 빼는 문단(모듈 주석 참조).
 const IN_TOLERANCE_BAND: [&str; 2] = ["A 글자 c15", "A 글자 c30"];
 
-fn line_starts(rel: &str) -> Vec<Vec<u32>> {
+/// 맨 앞 공백 실험 — 문단은 (condense, 맨 앞 공백 수)만 다르다.
+const LEAD_NO_CACHE: &str = "samples/issue7418/condense_leading_space_synthetic.hwpx";
+const LEAD_HANCOM: &str = "samples/issue7418/condense_leading_space_synthetic-hancom-2024.hwpx";
+const LEAD_LABELS: [&str; 8] = [
+    "c75 앞공백0",
+    "c75 앞공백2",
+    "c75 앞공백4",
+    "c75 앞공백6",
+    "c50 앞공백0",
+    "c50 앞공백2",
+    "c50 앞공백4",
+    "c50 앞공백6",
+];
+
+fn line_starts(rel: &str, expected_body_paragraphs: usize) -> Vec<Vec<u32>> {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{rel} 읽기: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let paragraphs = &core.document().sections[0].paragraphs;
     assert_eq!(
         paragraphs.len(),
-        LABELS.len() + 1,
+        expected_body_paragraphs + 1,
         "{rel}: 본문 문단 수가 fixture 생성기와 다르다 — 시험 설정 오류"
     );
     paragraphs[1..]
@@ -97,8 +111,8 @@ fn line_starts(rel: &str) -> Vec<Vec<u32>> {
 /// rhwp 가 직접 잡은 줄이 한/글이 적어 둔 줄과 **글자 단위로** 같다.
 #[test]
 fn recomposed_line_starts_match_hancom_under_condense() {
-    let hancom = line_starts(HANCOM);
-    let rhwp = line_starts(NO_CACHE);
+    let hancom = line_starts(HANCOM, LABELS.len());
+    let rhwp = line_starts(NO_CACHE, LABELS.len());
 
     // 전제: condense 가 실제로 줄 끊음을 바꾸는 입력이어야 한다. 같은 글을 쓴 A 의 c0 과
     // c50 이 한/글에서 갈리지 않으면 이 검사는 아무것도 잠그지 않는다.
@@ -137,11 +151,40 @@ fn recomposed_line_starts_match_hancom_under_condense() {
 /// 반례 경계 — condense 가 없는 문단은 종전과 같이 한/글과 일치한다.
 #[test]
 fn paragraphs_without_condense_are_unchanged() {
-    let hancom = line_starts(HANCOM);
-    let rhwp = line_starts(NO_CACHE);
+    let hancom = line_starts(HANCOM, LABELS.len());
+    let rhwp = line_starts(NO_CACHE, LABELS.len());
     for (i, label) in LABELS.iter().enumerate() {
         if label.ends_with(" c0") {
             assert_eq!(rhwp[i], hancom[i], "{label}: condense 0 문단이 한/글과 달라졌다");
         }
     }
+}
+
+/// 줄 맨 앞 공백은 condense 로 줄지 않는다.
+///
+/// 문단은 맨 앞 공백 수(0·2·4·6)와 condense(75·50)만 다르다. 첫 줄은 4자 낱말 8개 뒤에
+/// 12자 낱말이 오도록 짜서, 맨 앞 공백까지 줄이면 그 낱말의 글자를 1~2자 더 담는다.
+/// 한/글 2024 는 맨 앞 공백을 줄이지 않는다(맨 앞 공백 0 문단은 두 해석이 같아 대조군이다).
+#[test]
+fn leading_spaces_are_not_condensed() {
+    let hancom = line_starts(LEAD_HANCOM, LEAD_LABELS.len());
+    let rhwp = line_starts(LEAD_NO_CACHE, LEAD_LABELS.len());
+
+    // 전제: 맨 앞 공백 수가 한/글의 첫 줄 끝을 실제로 바꿔야 한다.
+    assert_ne!(
+        hancom[0].get(1),
+        hancom[3].get(1),
+        "정답지 전제가 깨졌다 — 맨 앞 공백 0 과 6 의 첫 줄 끝이 같다"
+    );
+    let mismatched: Vec<String> = LEAD_LABELS
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(label, (h, r))| format!("{label}: 한/글 {h:?} / rhwp {r:?}"))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "맨 앞 공백 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
 }
