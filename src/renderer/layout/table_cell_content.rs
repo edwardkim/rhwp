@@ -1051,6 +1051,7 @@ impl LayoutEngine {
                 pad_left,
                 pad_right,
                 cell_w,
+                (cell_h - pad_top - pad_bottom).max(0.0),
                 &composed_paras,
                 &cell.paragraphs,
                 styles,

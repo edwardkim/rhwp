@@ -3085,6 +3085,8 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     pad_left: f64,
     pad_right: f64,
     cell_w: f64,
+    // 칸의 글자 상자 높이(px). 줄바꿈 결과가 여기에 들어가면 여백을 깎지 않는다.
+    inner_height_px: f64,
     composed_paras: &[ComposedParagraph],
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
@@ -3154,9 +3156,68 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     // Task #347: estimate_text_width는 영어 본문(Times New Roman 등) 자연 폭을
     // 5~15%까지 과대 추정할 수 있어, HWP가 이미 줄바꿈한 본문에서도
     // padding 축소가 잘못 트리거됨. 15% 이내 초과는 정상으로 보고 미축소.
+    //
+    // [#7413] 이 사전 필터는 **그대로 둔다.** 아래 높이 판정이 "깎지 않아도 되는 칸"을
+    // 걸러내는 일을 하고, 이 필터를 함께 없애면 종전에 깎지 않던 칸까지 새로 깎게 되어
+    // 측정 범위 밖의 동작 확장이 된다(samples 전수 A/B: 변화 174 → 234).
     let overflow_threshold = available * 1.15;
     if max_line_w <= overflow_threshold || cell_w <= 2.0 {
         return (pad_left, pad_right);
+    }
+
+    // [#7413] **줄바꿈으로 해결되는 문단은 깎지 않는다.**
+    //
+    // 종전 조건은 "자연 폭 > 가용 너비 × 1.15" 였다. 그건 "이 문단은 줄바꿈이 필요하다"는
+    // 뜻일 뿐이라, 줄바꿈해도 칸 높이에 들어가는 문단까지 전부 걸렸다. 1.15 는 Task #347 이
+    // 영문 자연 폭 과대 추정을 흡수하려고 둔 값이고 한/글 출력에서 나온 값이 아니다.
+    //
+    // 축소가 실제로 지탱하는 계약은 "칸 안 글자가 칸 밖으로 새지 않는다" 하나다(실측:
+    // 축소를 끄면 samples 전수에서 겹침이 4건 늘고, 그 넷이 전부 줄바꿈 결과가 행 높이를
+    // 넘는 자리다 — 20099369_yeongwol_forms 3쪽 칸 w=41.9/h=43.6 가 2줄 45px 를 요구,
+    // issue5169 12쪽 Cell5 h=59.2 가 4줄 80.3px, Cell51 h=29.4 가 2줄 46.7px).
+    //
+    // 그러므로 묻는 것을 바꾼다 — "줄바꿈한 결과가 칸 높이를 넘는가". 넘지 않으면 줄바꿈이
+    // 답이고 여백은 그대로 둔다. 정본 대조 가능한 10쪽(80168 3쪽·2022 국립국어원 3쪽·
+    // 156160455 1쪽)에서 종전 축소는 전부 한/글에서 멀어지게 하고 있었다.
+    if inner_height_px > 0.0 && available > 0.0 {
+        // 줄 수를 **추정하지 않고 실제로 센다.** `ceil(자연 폭 / 가용 폭)` 은 어절
+        // 줄바꿈이 줄 끝에 남기는 낭비를 반영하지 못해 낙관적이다(issue5169 `Cell5`:
+        // 추정 52.3px vs 실제 4줄 83.2px). 폭 판정을 통과한 칸에서만 도는 경로라
+        // 조합 비용은 그 칸들로 한정된다.
+        let mut wrapped_height = 0.0f64;
+        for (idx, para) in paragraphs.iter().enumerate() {
+            let mut comp = match composed_paras.get(idx) {
+                Some(c) => c.clone(),
+                None => compose_paragraph_in_context(para, styles),
+            };
+            recompose_cell_lines_in_frame(
+                &mut comp,
+                para,
+                ParagraphBox::content_for_style(
+                    available,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    dpi,
+                ),
+                styles,
+                dpi,
+                false,
+            );
+            for line in &comp.lines {
+                // 실제 줄 피치는 `line_height + line_spacing` 이다. `line_height` 만
+                // 쓰면 줄간격이 빠져 높이를 과소평가한다(20099369 3쪽 칸: 1300 + 390
+                // = 1690 HWPUNIT = 22.53px, 렌더 실측 22.5px).
+                wrapped_height +=
+                    crate::renderer::hwpunit_to_px(line.line_height + line.line_spacing, dpi);
+            }
+        }
+        if std::env::var_os("RHWP_DIAG_SHRINK").is_some() {
+            println!(
+                "D_SHRINK cell_w={cell_w:.1} avail={available:.1} inner_h={inner_height_px:.1} wrapped_h={wrapped_height:.1} max_line_w={max_line_w:.1}"
+            );
+        }
+        if wrapped_height <= inner_height_px {
+            return (pad_left, pad_right);
+        }
     }
     let min_pad = 1.0;
     let total_pad = pad_left + pad_right;
