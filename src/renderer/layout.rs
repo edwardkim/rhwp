@@ -11225,6 +11225,19 @@ impl LayoutEngine {
                     )
                     .map(|_| hwpunit_to_px(t.outer_margin_top as i32, self.dpi))
                     .unwrap_or_else(|| {
+                        // rhwp가 HWP5에서 내보낸 HWPX의 비분할 빈-host 표는
+                        // 저장 HWPX 줄 배치 계약을 쓰지 않는다. 측정이 예약한
+                        // outer_top을 실제 첫 표 원점에도 소비한다. 저장 top이나
+                        // 별도 flow snap이 있으면 아래 raw_top 선택에서 우선한다.
+                        // 한컴 2020 #7265 셀 서식 편집본: 본문 132.3px,
+                        // 표 테두리 136.0px = 본문 + 283HU.
+                        if self.profile.get().hwp5_origin_hwpx()
+                            && !is_current_empty_square_sibling_float
+                            && is_para_topbottom_float(&t.common)
+                            && matches!(t.page_break, TablePageBreak::None)
+                        {
+                            return hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                        }
                         // [#6378] 원본 HWPX 는 HWP5 RowBreak helper 가 꺼져
                         // outMargin.top 이 빈 host 상단에 안 실린다. 같은
                         // 문서 HWP 는 y 가 3.8px 아래(283HU)다. 모든 T&B
