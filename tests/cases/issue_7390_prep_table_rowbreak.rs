@@ -163,6 +163,33 @@ fn prep_single_cell_continuation_keeps_vertical_padding_and_following_flow() {
 }
 
 #[test]
+fn prep_population_table_keeps_last_fitting_rows_with_first_fragment() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let first = core.build_page_render_tree(49).expect("물리 50쪽");
+    let next = core.build_page_render_tree(50).expect("물리 51쪽");
+    fn population_table(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.para_index == Some(480) && table.row_count == 21 && table.col_count == 5 {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(population_table)
+    }
+    let first_rows = visible_rows(population_table(&first.root).expect("50쪽 인구집단 표"));
+    let next_rows = visible_rows(population_table(&next.root).expect("51쪽 인구집단 표"));
+    // 한컴 2024 PDF p50은 치과의사·약사 두 행까지 놓고, p51은
+    // 반복 제목행 뒤 간호사 행부터 재개한다.
+    assert!(
+        first_rows.contains(&11) && first_rows.contains(&12),
+        "50쪽 행: {first_rows:?}"
+    );
+    assert!(!next_rows.contains(&11) && !next_rows.contains(&12));
+    assert!(next_rows.contains(&13), "51쪽 행: {next_rows:?}");
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

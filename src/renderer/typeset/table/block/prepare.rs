@@ -3,9 +3,10 @@
 use crate::renderer::typeset::{
     cell_unit_row_is_atomic_here, controls, hwpunit_to_px,
     hwpx_stored_tac_table_starts_at_page_top, is_para_topbottom_float, is_synthetic_line_seg,
-    is_two_row_picture_caption_rowbreak_table, native_hwp5_rowbreak_host_precedes_first_fragment,
-    native_terminal_child_host_line_spacing, none_table_is_atomic_here, notes,
-    para_has_visible_text, paragraph, partial_rowbreak_fragment_spacing_px, row_geometry_table,
+    is_two_row_picture_caption_rowbreak_table, line_seg_visible_bounds_px,
+    native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
+    none_table_is_atomic_here, notes, para_has_visible_text, paragraph,
+    partial_rowbreak_fragment_spacing_px, row_geometry_table,
     rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
     BlockTableContinuationContext, BlockTableContinuationPreparedState,
     BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
@@ -915,7 +916,68 @@ impl TypesetEngine {
                     table,
                     &column,
                     self.dpi,
-                ).map(|top| top - column.y)
+                )
+                .map(|top| top - column.y)
+                .or_else(|| {
+                    // HWPX의 한 줄 캡션 다음에 오는 빈-host Square RowBreak 표는
+                    // 저장 LineSeg 사다리에서 표의 첫 원점이 확정된다. 앞 문단을
+                    // 재측정한 흐름이 한 줄 이상 길어져도 분할 스캐너는 paint와
+                    // 같은 저장 원점에서 남은 쪽 높이를 계산해야 한다.
+                    let prev = para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i))?;
+                    if !st.profile.hwpx_stored_layout()
+                        || st.profile.session_edited()
+                        || !prev.controls.is_empty()
+                        || !para_has_visible_text(prev)
+                        || para_has_visible_text(para)
+                        || para.controls.len() != 1
+                        || table.common.treat_as_char
+                        || !matches!(
+                            table.common.text_wrap,
+                            crate::model::shape::TextWrap::Square
+                        )
+                        || !matches!(
+                            table.common.vert_rel_to,
+                            crate::model::shape::VertRelTo::Para
+                        )
+                        || table.common.vertical_offset != 0
+                        || !matches!(
+                            table.page_break,
+                            crate::model::table::TablePageBreak::RowBreak
+                        )
+                        || table.row_count <= 1
+                    {
+                        return None;
+                    }
+                    let mut previous_lines = prev
+                        .line_segs
+                        .iter()
+                        .filter(|seg| !is_synthetic_line_seg(seg));
+                    let previous = previous_lines.next()?;
+                    if previous_lines.next().is_some() {
+                        return None;
+                    }
+                    let mut host_lines = para
+                        .line_segs
+                        .iter()
+                        .filter(|seg| !is_synthetic_line_seg(seg));
+                    let host = host_lines.next()?;
+                    if host_lines.next().is_some()
+                        || previous
+                            .vertical_pos
+                            .saturating_add(previous.line_height)
+                            .saturating_add(previous.line_spacing)
+                            != host.vertical_pos
+                    {
+                        return None;
+                    }
+                    let (saved_top, _) = line_seg_visible_bounds_px(
+                        host,
+                        st.vpos_page_base.unwrap_or(0),
+                        self.dpi,
+                    )?;
+                    (saved_top <= st.current_height && saved_top < table_available)
+                        .then_some(saved_top)
+                })
             },
             next_para_stored_top: paragraphs_all.get(para_idx + 1).and_then(|next| {
                 let seg = next
