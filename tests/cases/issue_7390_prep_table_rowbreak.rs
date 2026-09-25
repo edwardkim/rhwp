@@ -252,6 +252,21 @@ fn prep_paragraph_relative_chart_image_uses_host_left_margin() {
 }
 
 #[test]
+fn prep_saved_table_tail_keeps_subject_seven_on_page_81() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let first = core.build_page_render_tree(80).expect("물리 81쪽");
+    let next = core.build_page_render_tree(81).expect("물리 82쪽");
+    // 한컴 2024 PDF는 대상자 7의 라벨·응답을 81쪽 표의 마지막에,
+    // 저장 vpos가 0으로 돌아간 대상자 8은 82쪽 표 처음에 둔다.
+    assert!(line_top_containing(&first.root, "대상자 7 (여, 40대)").is_some());
+    assert!(line_top_containing(&first.root, "물 중단 후 금단 증상으로").is_some());
+    assert!(line_top_containing(&next.root, "대상자 7 (여, 40대)").is_none());
+    assert!(line_top_containing(&next.root, "대상자 8 (남, 30대)").is_some());
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

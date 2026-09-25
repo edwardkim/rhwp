@@ -13149,6 +13149,56 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        // An original HWPX 1-cell table may store an empty closing line just
+        // before the next page's vpos=0 line.  The closing line belongs to the
+        // first fragment, but its line spacing does not occupy that page.  The
+        // same trimmed height must be used by cut selection and painted bounds.
+        if self.profile.get().hwpx_stored_layout()
+            && !self.profile.get().session_edited()
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count == 1
+            && table.col_count == 1
+            && start_cut == 0
+            && end_cut > 1
+            && end_cut < units.len()
+        {
+            let closing = &units[end_cut - 1];
+            let next = &units[end_cut];
+            if closing.empty_spacer
+                && next.hard_break_before
+                && next.para_idx > closing.para_idx
+                && units[..end_cut - 1].iter().any(|unit| !unit.empty_spacer)
+            {
+                if let (Some(closing_para), Some(next_para)) = (
+                    cell.paragraphs.get(closing.para_idx),
+                    cell.paragraphs.get(next.para_idx),
+                ) {
+                    if let (Some(before), Some(after)) =
+                        (closing_para.line_segs.last(), next_para.line_segs.first())
+                    {
+                        if closing_para.text.trim().is_empty()
+                            && closing_para.controls.is_empty()
+                            && next_para.text.chars().any(|c| !c.is_whitespace())
+                            && before.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && after.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && before.vertical_pos > 0
+                            && after.vertical_pos == 0
+                        {
+                            return hwpunit_to_px(before.line_spacing.max(0), self.dpi)
+                                .min(closing.height);
+                        }
+                    }
+                }
+            }
+        }
         let trim =
             self.native_multirow_saved_reset_trailing_trim(table, cell, units, end_cut, styles);
         if trim > 0.0 || start_cut != 0 || end_cut == 0 || end_cut > units.len() {
