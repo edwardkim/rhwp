@@ -47,41 +47,6 @@ fn preview_image(svg: &str) -> Option<DynamicImage> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::io::Read;
-
-    #[test]
-    fn issue_7406_ole_preview_supplies_custom_series_colors() {
-        let bytes = std::fs::read("samples/issue7406/7406_OLE__CHART.hwpx").unwrap();
-        let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
-        let mut xml = Vec::new();
-        zip.by_name("Chart/chart1.xml")
-            .unwrap()
-            .read_to_end(&mut xml)
-            .unwrap();
-        let mut ole = Vec::new();
-        zip.by_name("BinData/ole1.ole")
-            .unwrap()
-            .read_to_end(&mut ole)
-            .unwrap();
-        let container = crate::parser::ole_container::parse_ole_container(&ole).unwrap();
-        let mut chart = OoxmlChart::parse(&xml).unwrap();
-        chart.series[0].values[0] = 0.4; // 편집된 OOXML 값은 미리보기의 원래 값과 달라도 된다.
-        assert!(apply_preview_palette(
-            &mut chart,
-            container.raw_contents.as_deref().unwrap(),
-            container.preview_emf.as_deref().unwrap(),
-            643.28,
-            294.87,
-        ));
-        assert_eq!(chart.series[0].color, Some(0x289b6e));
-        assert_eq!(chart.series[1].color, Some(0x000000));
-        assert_eq!(chart.series[2].color, Some(0xffef99));
-    }
-}
-
 fn bar_centers(image: &DynamicImage, wanted: usize) -> Vec<u32> {
     let (w, h) = image.dimensions();
     let rgb = image.to_rgb8();

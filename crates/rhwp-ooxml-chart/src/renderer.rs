@@ -3000,37 +3000,6 @@ mod tests {
     }
 
     #[test]
-    fn stacked_out_end_label_is_readable_on_dark_next_segment() {
-        let chart = OoxmlChart {
-            chart_type: OoxmlChartType::Column,
-            grouping: BarGrouping::Stacked,
-            categories: vec!["20-29".into()],
-            series: vec![
-                OoxmlSeries {
-                    values: vec![0.58],
-                    color: Some(0x289b6e),
-                    format_code: Some("0%".into()),
-                    show_values: true,
-                    data_label_size_pt: Some(10.0),
-                    data_label_position: Some("outEnd".into()),
-                    ..Default::default()
-                },
-                OoxmlSeries {
-                    values: vec![0.22],
-                    color: Some(0x000000),
-                    ..Default::default()
-                },
-            ],
-            ..Default::default()
-        };
-        let svg = chart.render_svg(0.0, 0.0, 430.0, 250.0);
-        assert!(
-            svg.contains("fill=\"#ffffff\" text-anchor=\"middle\">58%</text>"),
-            "{svg}"
-        );
-    }
-
-    #[test]
     fn test_stacked_bars_share_x_per_category() {
         // 누적: 카테고리(2)당 단일 컬럼 → 서로 다른 x = 2개 (시리즈가 같은 x 공유)
         let svg = render_chart_svg(&bars_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);

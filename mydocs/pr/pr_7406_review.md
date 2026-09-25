@@ -30,6 +30,8 @@ last_verified: 2026-09-26
 
 OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`가 편집 가능한 값·레이블을 담고, 중첩 EMF 미리보기가 문서 전용 색을 담는다. #7406은 OLE 안의 OOXML `chartSpace`이므로 [일반 OOXML 차트 경로](../tech/chart_ole_v1_boundary.md)로 그린다. `colorIndex=-1`인 누적 막대에서 색만 미리보기로 복원하고 축·막대·레이블은 OOXML 데이터로 렌더한다. `samples/issue7406`의 값을 바꿔도 낡은 미리보기 막대를 재사용하지 않는 집중 검사와 한컴 PDF 비교를 수행했다. HWPX 구조 근거는 `mydocs/tech/hwp_ole_spec.md` 및 사용자가 제공한 `hwpx_complete_guide.pdf`의 4.2절이다.
 
+최종 lint에서 OLE 색상표 source 파일의 `#[cfg(test)]` 모듈 위치 오류와 PR base 대비 source 단위 테스트 5개 증가가 확인됐다. 테스트 모듈을 파일 끝으로 정리하고, 축·범주·레이블·색상표 검사를 `tests/cases/issue_7406_ole_chart.rs`의 공개 API 회귀로 옮겼다. source 단위 테스트 정책은 기존 4205개 기준으로 통과하고, 옮긴 integration 테스트 **5/5 PASS**다. 제품 함수의 구현은 이 정리에서 바뀌지 않았다.
+
 ## 검증 입력과 결과
 
 | 항목 | 결과 |
