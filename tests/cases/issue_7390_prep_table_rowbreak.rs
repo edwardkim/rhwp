@@ -288,6 +288,29 @@ fn prep_page_90_keeps_saved_leading_spacing_after_page_start() {
 }
 
 #[test]
+fn prep_page_79_keeps_last_quote_before_saved_cell_reset() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let before = core.build_page_render_tree(78).expect("물리 79쪽");
+    let after = core.build_page_render_tree(79).expect("물리 80쪽");
+    // 한컴 2024 PDF p79는 표의 '필로폰이 제게' 한 줄을 같은 쪽에 두고,
+    // p80은 저장 vpos가 0으로 되감긴 다음 문단부터 시작한다.
+    assert!(
+        line_top_containing(&before.root, "필로폰이 제게 잘 맞는다고").is_some(),
+        "저장 프레임 마지막 응답은 79쪽에 남아야 함"
+    );
+    assert!(
+        line_top_containing(&after.root, "필로폰이 제게 잘 맞는다고").is_none(),
+        "80쪽에 마지막 응답이 중복되거나 이월되면 안 됨"
+    );
+    assert!(
+        line_top_containing(&after.root, "채팅 어플로 사람들을 만나기도").is_some(),
+        "80쪽은 저장 reset 뒤의 다음 응답에서 재개"
+    );
+}
+
+#[test]
 fn prep_footnote_four_starts_on_next_physical_page() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
