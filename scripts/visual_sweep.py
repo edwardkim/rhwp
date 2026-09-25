@@ -639,7 +639,21 @@ def wasm_package_provenance(root: Path, package: Path) -> dict[str, object]:
     }
 
 
-def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
+def svg_font_face_rules(svg_path: Path) -> list[str]:
+    """Read only the leading CSS; embedded SVG page content can be gigabytes."""
+    chunks: list[bytes] = []
+    tail = b""
+    with svg_path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            chunks.append(chunk)
+            if b"</style>" in tail + chunk:
+                break
+            tail = chunk[-8:]
+    css = b"".join(chunks).split(b"</style>", 1)[0].decode("utf-8")
+    return re.findall(r"@font-face\s*\{[^{}]*\}", css, re.IGNORECASE)
+
+
+def apply_svg_font_policy(svg: str, policy_rules: list[str]) -> str:
     """글꼴 별칭만 보충한다. WASM의 텍스트·좌표·그리기 노드는 그대로 보존한다."""
     def family(rule: str) -> str:
         match = re.search(r"font-family\s*:\s*([^;}]+)", rule, re.IGNORECASE)
@@ -647,7 +661,7 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
 
     faces = re.compile(r"@font-face\s*\{[^{}]*\}", re.IGNORECASE)
     declared = {family(rule) for rule in faces.findall(svg)}
-    rules = list(dict.fromkeys(rule for rule in faces.findall(policy_svg) if family(rule) not in declared))
+    rules = [rule for rule in policy_rules if family(rule) not in declared]
     if not rules:
         return svg
     opening = re.search(r"<svg\b[^>]*>", svg)
@@ -758,9 +772,13 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
     if not expected or set(raw) != expected or set(trees) != expected or not policies:
         raise SystemExit("WASM SVG/render tree 페이지가 누락됐거나 글꼴 정책이 없습니다.")
     # 별칭은 문서의 폰트 공급 계약이다. Native의 페이지 소속을 WASM에 강제하지 않는다.
-    policy = "\n".join(path.read_text(encoding="utf-8") for path in policies.values())
+    # A full-font policy SVG also contains the whole page. Joining all pages and
+    # scanning that string once per WASM page grows quadratically for long docs.
+    policy_rules = list(dict.fromkeys(
+        rule for path in policies.values() for rule in svg_font_face_rules(path)
+    ))
     for page in sorted(expected):
-        svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy)
+        svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy_rules)
         (base / "svg" / raw[page].name).write_text(svg, encoding="utf-8")
         shutil.copyfile(trees[page], base / "render_tree" / trees[page].name)
     # output 복사까지 끝난 경우에만 export 완료를 표시한다.
