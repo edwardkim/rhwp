@@ -317,7 +317,9 @@ API pagination 경계, candidate의 fast-pass 실행, failed·pending run, GHAS 
 [review-only fast-pass](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)를 따른다.
 
 발행 v7과 세 consumer의 지원 버전은 연결 테스트로 함께 검증한다. Chrome E2E의 실행/skip과 frontend
-package 승격도 같은 trusted 분류 결과로 감사한다. Chrome 분류 함수는 기존 sparse checkout에
+package 승격도 같은 trusted 분류 결과로 감사한다. CI 자체의 수집·분류 실패로 실행 범위가 늘어난
+경우, 독립 감사는 선택 사항인 Chrome job의 `skipped` 또는 `success`를 허용한다. 필수 job의
+생략과 실행된 job의 실패·취소는 허용하지 않는다. Chrome 분류 함수는 기존 sparse checkout에
 포함되는 `ci-impact-classifier.cjs`에 두므로, main의 이전 controller 배선으로 새 devel 정책을 읽어도
 새 의존 파일 누락으로 중단되지 않는다. main 대상 PR은 trusted reuse
 조회 자체를 생략하며, devel 대상이라도 중복/누락 필드·다른 base·미지원 버전은 재사용하지 않는다.

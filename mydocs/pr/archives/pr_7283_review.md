@@ -2,8 +2,78 @@
 
 ## 최종 판정
 
-**머지 보류** — CI 정책 보완의 로컬 검증은 완료했다. 최신 원격 검증과 실제 병합 승인은
-별도 조건이며, 새 head의 SHA·Actions 결과·mergeability는 PR 본문에서 확인한다.
+**승인 — 코드 검토 판정.** 아래 P2는 `3aaa49cf9`에서 수정했고 회귀 검증을 통과했다.
+merge 전 조건은 수정 후 최신 PR head의 GitHub Actions 통과와 작업지시자 병합 승인이다.
+이 기록은 GitHub approve 또는 merge를 수행하지 않는다.
+
+## 2026-09-25 리뷰 후 보완
+
+- 코드 후보: `3aaa49cf9` (`fix(ci): accept successful Chrome fallback in impact audit`).
+- Chrome이 선택 사항일 때 독립 감사는 `skipped`와 `success`를 허용한다. CI가 파일 목록 조회나
+  분류 실패 때문에 추가 실행한 정상 결과를 받아들이도록 기존 `requireSafeJobConclusion`을 재사용했다.
+- 필수 Chrome의 skip, missing job, failure/cancelled/timed_out/neutral은 거부한다.
+  review-only fast-pass의 Chrome skip 계약과 CI 자체 Build & Test 집계 조건은 유지했다.
+- 정식 `scripts/tests/ci-impact-policy.test.cjs`에서 Firefox·CLI 전용 변경에 대해 controller 정상 조회와
+  CI `collection-error`를 분리하고 실제 fallback 분류 결과로 job 증적을 만들었다.
+  정상 skip 대조군과 성공한 전체 실행은 통과하고 추가 실행의 실패·취소·시간 초과는 실패했다.
+- 새/보강 검사 **수정 전 3개 실패 → 수정 후 통과**. 기존 safe-full 감사 테스트에도 Chrome을 포함했다.
+- 로컬 Node **177/177**, Python **137/137** 통과. 명령은 아래 리뷰와 같은 묶음이며
+  새 회귀 검사 1개가 추가됐다. 로그: `/private/tmp/rhwp-7283-fix-before.log`,
+  `/private/tmp/rhwp-7283-fix-node.log`, `/private/tmp/rhwp-7283-fix-python.log`.
+- 실제 원격 API 오류를 유발하지 않고 policy 함수에 해당 입력을 전달해 검증했다.
+  제품·browser harness·workflow YAML·Rust 변경은 없어 브라우저/전체 Rust/시각 검증은 로컬에서 반복하지 않았다.
+- 아래 원격 33 success/4 skipped와 브라우저 증적은 수정 전 `cde215c6`에 해당한다.
+  수정 후 원격 결과는 PR의 최신 head에서 확인해야 한다.
+
+## 2026-09-25 현재 head 코드 리뷰
+
+- 검토 head: `cde215c6e3ae94a4095cd7c0fe5ec53322ea6183`, base `devel`.
+  PR diff 기준 공통 조상 `505661360e9a2d596f55300d0cb0c5222f0e14b4`.
+- collaborator self 경로. intake_and_review, local_validation, rework_and_exceptions,
+  review_template을 적용했다. reviewer 지정이나 GitHub review·comment·push·merge는 수행하지 않았다.
+- lifecycle, 탭 감시, 실행기/실패 진단, 영향 분류, job 집계/감사, 캐시 및 promotion 증적 처리를 검토했다.
+  38파일, +2,665/-100. 조판·제품 runtime·fixture 변경은 없어 조판 원칙과 Visual Sweep은 **비해당**이다.
+
+### P2 — 보수적으로 추가 실행한 Chrome 성공을 감사에서 거부 (발견 당시, 위 보완으로 해결)
+
+위치: `scripts/ci-impact-policy.cjs:782–783`.
+
+`rhwp-firefox/background.js`만 수정한 devel PR에서 CI의 파일 목록 API 조회가 실패하면
+`.github/workflows/ci.yml`의 수집 catch가 `collection-error`를 기록한다. 분류기는 full 실행을 선택하고
+Chrome E2E와 package job을 실행한다. 별도 controller의 조회가 성공하면 Chrome은 필요 없다고
+판정한다. 이때 CI 전체와 Chrome job이 모두 성공해도 `requireJobConclusion(..., 'skipped')`가
+`CI:job-not-skipped:Chrome extension E2E:completed:success`를 반환한다.
+정상적으로 복구한 실행이 독립 감사에서 실패하므로 #3515의 판정 실패 시 실행 정책과 모순된다.
+
+실제 policy 함수와 기존 테스트 fixture helper로 정상 skip 대조군은 success, collection-error로
+full 실행한 성공 증적은 failure임을 재현했다. 브라우저 오류가 아니라 감사 로직의 재현 가능한 결함이다.
+필요하지 않은 lane에는 기존 Rust/Native/frontend 감사처럼 `skipped` 또는 `success`를 허용하고,
+필수 Chrome의 skip과 실행된 Chrome의 failure/cancelled는 계속 거부해야 한다. 기존 safe-full 테스트도
+Chrome을 full 실행에 포함해야 한다. CI 자체의 로컬 output과 job 결과 일치 검사는 그대로 유지할 수 있다.
+
+### 실행한 검증과 한계
+
+- 현재 head에서 Node **176/176**, Python **137/137** 통과.
+- Node: Chrome impact, CI classifier/policy/controller/evidence/report, tab-monitor,
+  failure-diagnostics 계약. Python: CI/Chrome/controller/CodeQL/review-only/wiring/promotion 계약 8모듈.
+- 재현 스크립트: `/private/tmp/rhwp-7283-audit-repro.cjs`.
+  결과: `/private/tmp/rhwp-7283-audit-repro.json`.
+  일반 테스트 로그: `/private/tmp/rhwp-7283-review-node.log`, `/private/tmp/rhwp-7283-review-python.log`.
+- 원격 재조회: 현재 head **33 success / 4 skipped**.
+  [CI 35981603616](https://github.com/edwardkim/rhwp/actions/runs/35981603616)의 Chrome E2E도 success.
+  위 장애 복구 반례는 해당 정상 실행에서 발생하지 않아 CI 녹색과 모순되지 않는다.
+- 이번 리뷰에서 실제 브라우저/전체 Rust 빌드는 재실행하지 않았다. 현재 head의 원격 실행과 기존
+  source별 증적을 참고했다. 원격 API 장애는 유발하지 않고 해당 입력과 성공 job 증적으로 감사 함수를 실행했다.
+- 기존 E2E 입력 3개는 검토 commit에 포함되어 있고 checkout의 SHA-256은 아래와 같다. 새로운
+  HWP/HWPX/PDF 입력은 생성하지 않았다.
+
+| 입력 | SHA-256 |
+| --- | --- |
+| `samples/hwp3-pagedef-1915.hwp` | `b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0` |
+| `samples/hwpx_sample2.hwpx` | `188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2` |
+| `samples/re-font-dotum-empty-hancom.hwp` | `1ee8871f37bec2e97d0928709dc411c0eacad656f35aa3d92c5cf89f61c5761b` |
+
+이 절은 수정 전 head의 리뷰 기록이다. 결함의 해결과 수정 후 검증은 위 보완 절을 따른다.
 
 ## 2026-09-24 재검토
 
