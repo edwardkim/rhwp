@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-15
+last_verified: 2026-09-24
 ---
 
 # 로컬 사전 검증
@@ -10,6 +10,11 @@ last_verified: 2026-09-15
 이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. 선택한 검증과 생략 이유를
 PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은
 **반드시 하나가 끝난 뒤 다음 명령을 실행**한다.
+
+로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
+`/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
+실행 head·명령·결과와 필요한 증적의 위치를 요약한다. merge 뒤 해당 review의 `output` 정리는
+[merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
 모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. 전체 회귀는 host마다 고정한
 `target/pr-review`를 재사용해 이전 review의 debug/release 산출물과 분리한다. Cargo가 소스·feature·compiler

@@ -73,3 +73,17 @@ test('supply conflicts are matched against the supplied family case-insensitivel
   assert.doesNotMatch(svg, /https:\/\/cdn\.example\.test\/safe\.woff2/);
   assert.match(svg, /src: local\("Safe"\)/);
 });
+
+test('full embedded font data is preserved without overflowing the rule parser', () => {
+  const data = 'A'.repeat(16 * 1024 * 1024);
+  const face = `@font-face { font-family: "Big Face"; src: url(data:font/ttf;base64,${data}); }`;
+  const source = `<svg><style>${face}.body { font-family: "Big Face"; }</style><text font-family="Big Face">text</text></svg>`;
+  const rules = [{ ruleId: 'big', sourceFace: 'Big Face', supply: { fontFamily: 'Big Face', sourceUrl: 'https://cdn.example.test/big.woff2', format: 'woff2' } }];
+  assert.deepEqual(selectWebfontRules(source, rules), []);
+  const prepared = prepareSvgForWebfontRaster(source, buildWebfontCss('/repo', rules));
+  assert.ok(prepared.includes(face));
+  assert.match(prepared, /font-family: "Big Face", __rhwp_visual_sweep_noto_sans_kr__/);
+  assert.doesNotMatch(prepared, /https:\/\/cdn\.example\.test\/big\.woff2/);
+  const lateFace = `@font-face { src: url(data:font/ttf;base64,${data}); font-family: "Big Face"; }`;
+  assert.deepEqual(selectWebfontRules(source.replace(face, lateFace), rules), []);
+});
