@@ -54,6 +54,8 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 81→82쪽의 1×1 저장 RowBreak 표는 한컴 PDF에서 ‘대상자 7’ 라벨·응답이 81쪽 끝, `vpos=0`으로 재개하는 ‘대상자 8’이 82쪽 처음이다. 기존 컷은 빈 종료 줄의 600HU 후행 간격까지 81쪽 예산으로 더해 약 4px 초과하자 대상자 7까지 되돌렸다. HWPX 저장 줄의 양수→0 되감김과 빈 종료 줄이 함께 확인될 때 그 후행 간격만 컷·페인트 공통 높이에서 제외했다. 정식 회귀는 수정 전 FAIL/후 PASS, PrEP 관련 10건 PASS(140쪽 수 고정 포함). 최종 바이너리의 81~83쪽 sweep은 **99.44/99.88/97.65%**로 통과했고 표 외곽·대상자 7/8·뒤 본문을 직접 대조했다. 재캡처는 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/p82-tail-final/prep7406/`에 있다.
 
+사용자 지적에 따라 물리 78쪽(인쇄 쪽 66)을 현재 head에서 다시 대조했다. 77/78/79쪽의 2px 관용 내용 실루엣은 **99.91/98.73/95.65%**로 국소 gate를 통과한다. 78쪽 엄격 내용 픽셀 일치율은 22.57%라 review가 붉지만, ‘사회적 장벽’ 시작 y=94.5/95.1px, ‘4. 소결’ y=437.9/438.8px, 마지막 본문 y=766.5/767.1px(rhwp/PDF)로 배치 차이는 1px 이내다. 줄바꿈과 누락도 직접 대조했다. PDF는 KoPubDotum Light/Bold subset, rhwp SVG와 Mac 폰트 매핑은 KoPub돋움체 Light/Bold이다. 두 바이너리가 동일한지는 확인하지 않았으며, 이 페이지를 `font_mismatch_exception`으로 판정하지 않는다. 재캡처는 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/p78-user-check/prep7406/`에 있다.
+
 ![#7406 OLE 차트 분리 샘플 Native review](assets/pr7406_20260925/ole_chart_review_001.png)
 
 ![#7406 OLE 차트 분리 샘플 Native overlay](assets/pr7406_20260925/ole_chart_overlay_001.png)
@@ -81,6 +83,10 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 ![#7406 원본 61쪽 Native review](assets/pr7406_20260925/native_review_061.png)
 
 ![#7406 원본 61쪽 Native overlay](assets/pr7406_20260925/native_overlay_061.png)
+
+![#7406 원본 78쪽 Native review](assets/pr7406_20260925/native_review_078.png)
+
+![#7406 원본 78쪽 Native overlay](assets/pr7406_20260925/native_overlay_078.png)
 
 ![#7406 원본 81쪽 Native review](assets/pr7406_20260925/native_review_081.png)
 
