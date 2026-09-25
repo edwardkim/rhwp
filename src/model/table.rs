@@ -301,14 +301,19 @@ impl Cell {
     /// only cell. Some saved cells keep a tiny row seed even when the table
     /// itself spans pages; judging padding against that seed discards the
     /// table's real inset (#7406, PrEP pp.39–40: cell 282HU, table 68738HU,
-    /// top/bottom inset 850HU each). Measurement and paint use this same
-    /// height when deciding whether the inset is malformed.
+    /// top/bottom inset 850HU each). Require the saved insets to exceed the
+    /// seed height: equality alone also occurs in ordinary compact tables
+    /// (80168), where the seed does not prove that the outer box owns them.
+    /// Measurement and paint use this same height when deciding whether the
+    /// inset is malformed.
     pub fn vertical_padding_guard_height_hu(&self, table: &Table) -> u32 {
+        let pad = self.effective_padding(&table.padding);
         if table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
             && table.common.height < 0x8000_0000
             && table.common.height > self.height
+            && i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
         {
             table.common.height
         } else {

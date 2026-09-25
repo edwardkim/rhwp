@@ -70,6 +70,8 @@ OLE 차트는 HWPX의 `Chart/chart*.xml`과 HWP의 중첩 `OOXMLChartContents`�
 
 전체 nextest의 본문 넘침 원장에서는 `issue1853_caption_precedes_body_split.hwpx` 물리 10쪽이 3.84px 아래로 넘쳤다. 이 쪽 첫 문단은 원본 HWPX의 명시적 `pageBreak="1"`이고, PrEP 물리 90쪽(인쇄 78쪽)의 첫 문단은 자연스러운 흐름이다. 두 문서 모두 첫 저장 `vpos=500HU`와 뒤 문단의 앞 간격 사다리가 있어, 기존 90쪽 보정이 명시적 쪽나눔까지 페이지 원점 0으로 분류했다. 명시적 쪽나눔은 첫 `vpos`를 기준점으로 유지하도록 보정했다. 원장 검사 수정 전 FAIL(1건 증가)/후 **PASS**, 90쪽 회귀 **PASS**, CLI `layout-anomaly`의 해당 쪽 넘침 1→0건, 원본 물리 90쪽 직접 Visual Sweep **100%**다. `issue1853` 물리 10쪽의 기준 PDF 대비 실루엣은 **53.31%**로 별도 배치·글꼴 차이가 남으므로 이 문서 자체의 시각 일치를 주장하지 않는다. 증적은 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/issue1853-p10-after/`와 `visual/p90-after-1853/`에 있다.
 
+전체 nextest의 80168 문서 157→158쪽 증가 4건은 1×1 표 안 여백 보정의 적용 범위가 넓었던 결과다. HWPX 저장 XML에서 바깥 높이가 셀 높이보다 큰 1×1 표 53개 중 32개는 위·아래 안 여백 합이 셀 높이와 **같다**. PrEP 39→40쪽은 저장 셀 282HU보다 위·아래 여백 합 1700HU가 커서 작은 셀 높이만으로 여백을 폐기할 수 없다는 근거가 있다. 바깥 높이를 여백 판정에 쓰는 조건을 이처럼 **초과**하는 경우로 좁혔다. 80168 HWP/HWPX는 각각 한컴 기준 **157쪽**으로 복귀했고, 관련 nextest **11/11 PASS** 및 PrEP 39→41쪽 직접 Native sweep **99.99% 이상**이다. RowBreak 이어진 줄 검사 HWP/HWPX **2/2 PASS**도 확인했다. 다른 `issue2004` HWPX 그림 y 좌표 회귀는 별도 분석이 필요해 여전히 보류한다. 증적은 Git 제외 `output/pr-review/planet6897-7406-20260925/visual/p40-after-80168/`과 `logs/issue80168-focused-after.log`에 있다.
+
 ![#7406 OLE 차트 분리 샘플 Native review](assets/pr7406_20260925/ole_chart_review_001.png)
 
 ![#7406 OLE 차트 분리 샘플 Native overlay](assets/pr7406_20260925/ole_chart_overlay_001.png)
