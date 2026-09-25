@@ -1064,6 +1064,9 @@ impl LayoutEngine {
         table_y: f64,
         row_heights: &[f64],
         resolved_row_heights: &[f64],
+        // [#7063 레인②] 첫 행을 쪽 상자로 고정한 조각에서 **내용이 쓸 높이**(예산이 자른 값).
+        // 테두리 상자는 `row_heights` 를 쓰고, 내용은 이 값을 쓴다.
+        budget_row_height_0: Option<f64>,
         row_col_x: &[Vec<f64>],
         header_rows: &[usize],
         render_rows: &[usize],
@@ -1079,6 +1082,9 @@ impl LayoutEngine {
         // [#7095] 쪽이 상자를 정한 비끝 1×1 조각 — 칸 `valign` 을 조각 내용으로 적용한다.
         center_pinned_single_cell: bool,
         center_saved_spanning_cell: Option<usize>,
+        // [#6976] 접기 대상 행(모델 행 인덱스)과 그 행이 남긴 여분의 최솟값 수집기.
+        fold_last_row: Option<usize>,
+        fold_slack: &mut f64,
     ) {
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
@@ -1385,7 +1391,13 @@ impl LayoutEngine {
             let inner_width = crate::renderer::composer::cell_inner_text_width(
                 cell_w, pad_left, pad_right, self.dpi,
             );
-            let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            // [#7063 레인②] 테두리 상자는 `cell_h`(쪽이 정한 높이)를 쓰지만, 내용이 쓸 높이는
+            // 예산이 자른 값이다. 첫 행을 쪽 상자로 고정한 조각에서만 둘이 갈린다.
+            let content_cell_h = match budget_row_height_0 {
+                Some(budget) if cell_row == 0 && cell.row_span == 1 => budget,
+                _ => cell_h,
+            };
+            let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
             // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
@@ -1761,13 +1773,18 @@ impl LayoutEngine {
             } else {
                 total_content_height
             };
+            // [#7063 레인②] 세로 정렬의 기준은 **테두리 상자**의 안높이다. 내용 높이
+            // (`inner_height`)는 예산이 자른 값이라, 쪽 상자로 고정한 조각에서 둘이 갈린다.
+            // 정본은 늘어난 상자 안에서 그 조각을 정렬한다(hwpx_sample2 19쪽: 상자
+            // 89.91..1081.39 안에서 칸 내용이 95.06 — 상자 위에서 5.15px).
+            let align_inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
             let text_y_start = match effective_align {
                 VerticalAlign::Top => cell_y + pad_top,
                 VerticalAlign::Center => {
-                    cell_y + pad_top + (inner_height - centered_content_height).max(0.0) / 2.0
+                    cell_y + pad_top + (align_inner_height - centered_content_height).max(0.0) / 2.0
                 }
                 VerticalAlign::Bottom => {
-                    cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                    cell_y + pad_top + (align_inner_height - total_content_height).max(0.0)
                 }
             };
 
@@ -3746,6 +3763,7 @@ impl LayoutEngine {
             // 조각 내용 높이는 실제 배치 커서(`para_y`)에 **이 조각이 소유했지만 그리지
             // 않은 꼬리 빈 문단**의 저장 줄 상자를 더한다. 글자가 없어도 줄 상자는 공간을
             // 차지한다 — 정본 4·5·6쪽은 그 빈 줄(p67·p96·p121) 바닥까지를 내용으로 센다.
+            let mut placed_dy = 0.0_f64;
             if centers_pinned_fragment && matches!(effective_align, VerticalAlign::Top) {
                 let trailing_empty_extent = cut_units
                     .and_then(|(_, end_unit)| {
@@ -3769,8 +3787,11 @@ impl LayoutEngine {
                     })
                     .unwrap_or(0.0);
                 let content_height = (para_y - text_y_start) + trailing_empty_extent;
-                let dy = (inner_height - content_height) / 2.0;
+                // [#7063 레인②] 가운데정렬의 기준은 테두리 상자의 안높이다 —
+                // `inner_height` 는 예산이 자른 내용 높이라 쪽 상자로 고정한 조각에서 갈린다.
+                let dy = ((cell_h - pad_top - pad_bottom).max(0.0) - content_height) / 2.0;
                 if dy > 0.0 {
+                    placed_dy = dy;
                     let box_top = cell_node.bbox.y;
                     for child in &mut cell_node.children {
                         // 앞 조각이 소유한 줄은 상자 위 clip 밖에 남는다 — 내리면 보이게 된다.
@@ -3847,6 +3868,39 @@ impl LayoutEngine {
                 }
             }
 
+            // [#6976] 배치 뒤 행 단위 상자 접기 — 이 조각의 마지막 그린 행에서 바닥을
+            // 공유하는 칸들이 실제로 남긴 여분의 **최솟값**을 모은다. 상자를 접어도 어느 칸의
+            // 내용·아래여백도 잘리지 않는 상한이다.
+            if let Some(fold_row) = fold_last_row {
+                if cell_row + cell.row_span as usize == fold_row + 1 && !is_repeated_header_cell {
+                    // 배치 커서(`para_y`)는 줄 상자 바닥과 다를 수 있다 — 상자 **안에 있던**
+                    // 가시 자손의 바닥도 함께 본다. 상자 밖으로 나간 자손은 이 조각이 이미
+                    // 잘라 낸 것이므로 세지 않는다(세면 접기가 영영 멈춘다).
+                    let box_top = cell_node.bbox.y;
+                    let box_bottom = cell_y + cell_h;
+                    fn in_box_bottom(node: &RenderNode, top: f64, bottom: f64) -> f64 {
+                        let mut b: f64 = f64::NEG_INFINITY;
+                        if node.visible {
+                            let nb = node.bbox.y + node.bbox.height;
+                            if node.bbox.y + 0.5 >= top && nb <= bottom + 0.5 {
+                                b = nb;
+                            }
+                        }
+                        for child in &node.children {
+                            b = b.max(in_box_bottom(child, top, bottom));
+                        }
+                        b
+                    }
+                    let mut content_bottom = para_y + placed_dy;
+                    for child in &cell_node.children {
+                        content_bottom =
+                            content_bottom.max(in_box_bottom(child, box_top, box_bottom));
+                    }
+                    *fold_slack =
+                        fold_slack.min(box_bottom - (content_bottom + pad_bottom.max(0.0)));
+                }
+            }
+
             table_node.children.push(cell_node);
             table_node.children.extend(cell_diagonals);
         }
@@ -3863,13 +3917,40 @@ impl LayoutEngine {
     /// 쪽 경계로 잘리는 칸은 `effective_align` 이 `Top` 이라(이 파일 위쪽 #4042),
     /// 고정한 상자 아래에 빈 밴드가 남는다(7062 2쪽 1025.8..1043.9).
     fn single_cell_rowbreak_page_fragment(&self, table: &crate::model::table::Table) -> bool {
-        // 근거는 native HWP5 저장본(156060125, hancom-office-2020)이다. HWPX 계보는 조각
-        // 기하 계약이 따로 있고(`hwpx_stored_layout` 계열), 넓히면 `rowbreak-problem-pages.hwpx`
-        // 16쪽에서 칸 안 글상자가 꼬리말과 겹친다(text_overlap 1 → 2). 근거가 있는 범위로 좁힌다.
-        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(
-            self.profile.get().hwp5_stored_pagination_layout(),
-            table,
-        )
+        // [#7063 레인①] `#7095` 의 조각 상자 계약에는 **계보 구분이 없다.** 그 이슈가
+        // `hwp5_stored_pagination_layout` 을 요구한 것은 근거 문서가 native HWP5 저장본
+        // (156060125 · 30269)뿐이었기 때문이고, 원본 HWPX 정본을 뜨면 같은 값이 나온다.
+        //
+        // 정본 실측(쪽 척도 제거 후, 조각 윗변 = 흐름 + `outMargin.top`):
+        //
+        // ```text
+        //   pdf/hwpx_sample2-hwpx-2020.pdf        141HU  37.80 → 39.70   정본 39.64  (6쪽)
+        //                                           0HU  37.80   불변    정본 37.72  ← 0 대조군
+        //   pdf/rowbreak-problem-pages-hwpx-2020.pdf
+        //                                         283HU  94.50 → 98.30   정본 98.29  (3쪽)
+        //                                           0HU  94.50   불변    정본 94.46  ← 0 대조군
+        //   pdf/issue2004_cell_image_stack-hwpx-2020.pdf
+        //                                         283HU 123.90 → 127.70  정본 127.70 (4쪽)
+        //                                         283HU  83.10 →  86.90  정본  86.95 (5~8쪽)
+        // ```
+        //
+        // 잔차는 선언값 두 종에서 ≤0.06px 이고 `omT=0` 표는 이미 맞는다 — 상수 보정이 아니라
+        // **선언 여백 그 자체**다. `issue2004` 는 같은 문서의 HWP 쌍둥이가 `#7095` 로 이미
+        // 정본과 맞고 HWPX 만 여백만큼 위였던 자리라, 두 계보가 같은 정본으로 모인다.
+        //
+        // 형상 조건(1×1 · 비-TAC · RowBreak)은 `#7095` 그대로 둔다. 행·열을 열면 samples
+        // 전수 overflow 가 2561 → 2614, text-overlap 3537 → 3551 로 34문서가 어긋난다(실측).
+        //
+        // **예산(`typeset` 조각 예산)은 종전 계보 게이트를 유지한다.** 이 술어가 paint 에서
+        // 여는 상자는 종전보다 **크기만** 하므로(쪽이 정한 아래끝까지) 예산이 이미 정한 컷이
+        // 상자 밖으로 나가지 않는다. 예산까지 함께 열면 `issue3236_split_table` 의 쪽수
+        // 정답지(2쪽)가 3쪽으로 깨진다 — 2쪽 끝 한 줄이 밀린다(실측).
+        //
+        // `#7098` 이 기록한 `rowbreak-problem-pages.hwpx` 15쪽 text_overlap 1 → 2 는 남는다.
+        // 그 쪽은 칸 안 글상자가 꼬리말을 파고드는 **선행** 결함 자리이고(정본 본문 마지막
+        // 글자 1008.80 · 그 글상자는 정본에 없다), 겹침 **면적**은 325.6 → 312.9 로,
+        // 최대 겹침 높이는 7.08 → 5.23 으로 줄어든다. 근거는 `text_overlap_baseline.tsv` 머리말.
+        crate::renderer::float_placement::native_single_cell_rowbreak_page_fragment(true, table)
     }
 
     /// 표의 일부 행만 레이아웃한다 (페이지 분할).
@@ -4712,6 +4793,8 @@ impl LayoutEngine {
         // [#7095] 끝 조각 상자는 페이지네이터가 `max(내용, 저장 칸 높이 − 앞 조각 상자 합)` 으로
         // 정해 `end_row_height_override` 로 넘긴다(7062 10쪽: 정본 상자 874.04). 그 상자도 칸
         // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
+        // [#7063 레인②] 상자를 쪽이 정할 때 **내용이 쓸 높이**(예산이 자른 값)를 따로 든다.
+        let mut budget_row_height_0: Option<f64> = None;
         let mut center_pinned_single_cell = single_cell_page_fragment
             && row_count == 1
             && is_continuation
@@ -4759,15 +4842,21 @@ impl LayoutEngine {
                     hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
                         >= pinned_height
                 });
-            if (starts_at_body_top || content_is_top_anchored)
+            let d7063_pin = true;
+            if (starts_at_body_top || content_is_top_anchored || d7063_pin)
                 && stored_cell_spans_page_box
                 && !projected_content
-                && (starts_at_body_top || stored_reset_paint_geometry.is_none())
+                && (starts_at_body_top || d7063_pin || stored_reset_paint_geometry.is_none())
             {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
                 // 줄간격을 그리지 않으므로 상자는 줄이는 쪽으로도 쪽이 정한다. 예산이 같은 상자로
                 // 잘랐으므로 보이는 줄은 상자 안에 있다.
+                // [#7063 레인②] 상자(테두리)만 쪽이 정하고, **내용 높이는 예산이 정한 그대로**
+                // 둔다. 둘을 함께 늘리면 칸 안 중첩 표가 더 큰 `inner_height` 를 보고 다시
+                // 쪼개져 이미 다음 쪽에 배치된 행을 이 쪽에도 그린다(hwpx_sample2.hwp 8쪽:
+                // 9쪽 첫 행 `구 분`·`조회방법` 이 8쪽 1086~1124px 에도 나온다).
+                budget_row_height_0 = Some(row_heights[0]);
                 row_heights[0] = pinned_height;
                 center_pinned_single_cell = true;
             } else if stored_reset_paint_geometry.is_none() {
@@ -4984,6 +5073,32 @@ impl LayoutEngine {
         }
 
         // ── 6. 셀 렌더링 (render_rows 범위 내 셀만) ──
+        // [#6976] 쪽을 끝내는 조각의 마지막 행 상자를 **배치 뒤에** 접는다.
+        //
+        // 행 높이에는 조각 마지막 줄 **뒤의 줄간격**이 들어 있는데 한/글은 그 띠를 그리지
+        // 않는다. 그 여분은 행 높이를 정하는 단계에서는 알 수 없다 — 실제로 얼마가 남는지는
+        // 칸 내용을 배치해 봐야 나오고, 배치는 행 높이가 정해진 **뒤**에 일어난다. 그래서
+        // 행 높이(흐름·예약)는 그대로 두고 **그리는 상자만** 배치 뒤에 접는다.
+        //
+        // 조각이 쪽을 끝내므로(뒤 내용은 다음 쪽 소유) 이 축소는 뒤 내용을 밀지 않는다.
+        // 쪽이 상자를 정한 조각(`budget_row_height_0`)은 제외한다 — 그 높이는 내용이 아니라
+        // 쪽이 정한 값이고 정본도 그 자리를 채운다(hwpx_sample2 19쪽 pi=182 · 22~25쪽 pi=201).
+        //
+        // 접는 양은 그 행 **모든 칸**이 내놓는 여분의 최솟값이다. 셀 하나만 방출하는
+        // `probe`(#4149 캐럿 fast path)는 그 행을 통째로 보지 못하므로, 대상 셀이 그 행의
+        // 유일한 칸일 때만 접는다. 그 밖의 형상은 호출자가 legacy 로 폴백한다.
+        let fold_last_row = render_rows.last().copied().filter(|&fold_row| {
+            end_cut.iter().any(|&unit| unit > 0)
+                && enclosing_cell_ctx.is_none()
+                && budget_row_height_0.is_none()
+                && probe.is_none_or(|p| {
+                    table.cells.iter().enumerate().all(|(idx, cell)| {
+                        cell.row as usize + cell.row_span as usize != fold_row + 1
+                            || idx == p.cell_idx
+                    })
+                })
+        });
+        let mut fold_slack = f64::INFINITY;
         self.layout_partial_table_cells(
             tree,
             &mut table_node,
@@ -5010,6 +5125,7 @@ impl LayoutEngine {
             table_y,
             &row_heights,
             &resolved_row_heights,
+            budget_row_height_0,
             &row_col_x,
             &header_rows,
             &render_rows,
@@ -5024,7 +5140,72 @@ impl LayoutEngine {
             probe,
             center_pinned_single_cell,
             center_saved_spanning_cell,
+            fold_last_row,
+            &mut fold_slack,
         );
+
+        // [#6976] 접기 적용 — 자르는 양은 두 상한의 작은 쪽이다.
+        //
+        //   ① «마지막 줄의 저장 줄간격» — 한/글이 그리지 않는 띠. 선언 행 높이가 내용보다
+        //      훨씬 큰 행이 내용 바닥까지 통째로 내려앉는 것을 막는다.
+        //   ② «실제로 남은 여분» — 배치가 확정한 값(`fold_slack`). 행의 모든 칸이 내용과
+        //      아래 여백을 지킨 채 내놓을 수 있는 최댓값이라 과다 절삭을 막는다.
+        //
+        // ①만 빼면 `table_giant_cell_overfill` 처럼 행 높이에 줄간격의 **일부만** 들어 있는
+        // 조각에서 상자가 내용 아래로 내려간다. ②만 빼면 내용이 적은 선언 높이 행이 무너진다.
+        if let Some(fold_row) = fold_last_row {
+            let mut trail: f64 = 0.0;
+            let (su, eu) = (
+                start_cut.first().copied().unwrap_or(0),
+                end_cut.first().copied().unwrap_or(0),
+            );
+            if eu > 0 {
+                for cell in table.cells.iter().filter(|c| c.row as usize == fold_row) {
+                    let ranges = self.cell_line_ranges_from_cut(cell, table, styles, su, eu);
+                    let Some(pi2) = ranges
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, &(a, b))| b > a)
+                        .map(|(i, _)| i)
+                        .next_back()
+                    else {
+                        continue;
+                    };
+                    let end = ranges[pi2].1;
+                    if let Some(seg) = cell
+                        .paragraphs
+                        .get(pi2)
+                        .and_then(|p| p.line_segs.get(end.checked_sub(1).unwrap_or(0)))
+                    {
+                        trail = trail.max(hwpunit_to_px(seg.line_spacing.max(0), self.dpi));
+                    }
+                }
+            }
+            let fold = trail.min(fold_slack).max(0.0);
+            if fold > 0.5 && partial_table_height > fold + 1.0 {
+                let fold_row_end = fold_row + 1;
+                for child in &mut table_node.children {
+                    if let RenderNodeType::TableCell(meta) = &child.node_type {
+                        if usize::from(meta.row) + usize::from(meta.row_span) == fold_row_end
+                            && child.bbox.height > fold + 1.0
+                        {
+                            child.bbox.height -= fold;
+                        }
+                    }
+                }
+                if let Some(last_edge) = grid_row_y.last_mut() {
+                    *last_edge -= fold;
+                }
+                table_node.bbox.height -= fold;
+                // [#6976 진단] 접은 조각과 두 상한. 동작 불변.
+                if std::env::var("RHWP_DIAG_FOLD").is_ok() {
+                    eprintln!(
+                        "DIAG_FOLD pi={} rows={}..{} trail={:.2} slack={:.2} fold={:.2}",
+                        para_index, start_row, end_row, trail, fold_slack, fold
+                    );
+                }
+            }
+        }
 
         // A recovered terminal Square-flow line also owns the final frame edge.
         // Keep the paginator's consumed height separate from this paint-only expansion.

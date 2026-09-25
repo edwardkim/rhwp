@@ -3164,6 +3164,23 @@ impl DocumentCore {
         if *is_continuation && table.repeat_header && cell_end_row <= *start_row {
             return Ok(Unsupported);
         }
+        // [#6976] 쪽을 끝내는 조각은 마지막 그린 행의 상자를 배치 뒤에 접고, 그 양은
+        // 그 행 **모든 칸**이 내놓는 여분의 최솟값이다. 셀 하나만 방출하는 이 프로브는
+        // 대상 셀이 그 행의 유일한 칸일 때만 같은 값을 재현한다 — 그 밖에는 legacy 로
+        // 폴백한다. 접는 조각에서는 여분이 실제 배치 커서로 정해지므로 대상 셀을 끝까지
+        // 렌더한다(`needs_full_cell_for_bounds` 와 같은 이유·같은 방법).
+        let fragment_may_fold = end_cut.iter().any(|&unit| unit > 0);
+        if fragment_may_fold {
+            let Some(fold_row) = (*end_row).min(table.row_count as usize).checked_sub(1) else {
+                return Ok(Unsupported);
+            };
+            let sole_target = table.cells.iter().enumerate().all(|(idx, c)| {
+                c.row as usize + (c.row_span as usize).max(1) != fold_row + 1 || idx == cell_idx
+            });
+            if !sole_target {
+                return Ok(Unsupported);
+            }
+        }
 
         // ── 좌표계 프라이밍 — build_page_tree/build_single_column 과 동일 상태.
         // (memoized cell_units 등 포인터-키 캐시가 동일 값으로 채워지도록, 상태
@@ -3314,7 +3331,7 @@ impl DocumentCore {
         );
         let probe = PartialTableCellProbe {
             cell_idx,
-            stop_after_para: if needs_full_cell_for_bounds {
+            stop_after_para: if needs_full_cell_for_bounds || fragment_may_fold {
                 n_paras - 1
             } else {
                 cell_para_idx

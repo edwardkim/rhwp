@@ -1,3 +1,10 @@
+# 유보 1행 (#7063 레인②) — hwpx_sample2.hwpx 0 -> 1. 완화가 아니라 **도구의 귀속이 바뀐 것**이고
+# 실제로 그려지는 것은 그대로다. 8쪽(0-기준 7) 에서 용지(1122.5px) 밖으로 나가는 노드는
+# 수정 전후 **똑같이 9개**이고 좌표도 같다(중첩 Table 1020.1..1129.9 · Cell 1044.7..1129.8 …).
+#   바뀐 것은 그 노드를 감싼 조각 상자뿐이다 — 1018.20 -> 1083.70.
+#   정본 pdf/hwpx_sample2-hwpx-2020.pdf 의 그 상자는 226.55 .. 1083.31 이므로 새 값이 맞다(잔차 0.4).
+#   layout-anomaly 는 자손 합집합으로 재는데, 종전에는 그 중첩 표가 조각 상자 **밖**이라
+#   합집합에 안 들어갔고 이제 안으로 들어와 집계된다. 용지 밖 유출 자체는 선행 결함이다.
 2025 행정업무운영 편람(최종).hwp	11
 2025 행정업무운영 편람(최종).hwpx	20
 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	2
@@ -44,6 +51,7 @@ hwpx/hancom-hwp/mel-001.hwp	1
 hwpx/issue2019_floating_form_74312.hwpx	1
 hwpx/opengov/36385226_결재문서본문_제2처리장 슬러지인발용 에어리프트 브로워 2호기 소모품 교체 보고.hwpx	1
 hwpx/opengov/36392900_결재문서본문_일일굴착복구공사현황보고.hwpx	8
+hwpx_sample2.hwpx	1
 issue-986-receipt.hwp	2
 issue1858_paper_anchor_float_stack.hwpx	2
 issue1891_external_bindata_link.hwpx	7
