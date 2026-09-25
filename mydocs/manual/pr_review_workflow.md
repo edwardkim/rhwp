@@ -53,6 +53,8 @@ commit의 lint 생략 규칙이 아니다.
 모든 정식 `pr_N_review.md`는 최종 판정을 아래 셋 중 **정확히 하나**로 적는다. `close`,
 `rebase 요청`, `comment 게시`, GitHub review의 `approve`, `merge`는 판정명이 아니라 그 판정 뒤에
 작업지시자 승인을 받아 수행할 수 있는 별도 조치다.
+review 문서는 제목 바로 다음 첫 절을 `## 최종 판정`으로 둔다. 현재 판정과 blocker 또는
+merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래에서 근거로 전개한다.
 
 | 최종 판정 | 의미 | review 문서에 반드시 남길 내용 |
 | --- | --- | --- |
@@ -303,6 +305,11 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 
 ### 3.4 GitHub Markdown 본문 전송
 
+사용자와 기여자에게 공개되는 PR 본문·review·PR comment·issue comment는 한국어 **존댓말**로 작성한다.
+감사·보정 사유·검증 결과·남은 차이를 `합니다/했습니다` 문장으로 설명하고, 반말이나 명령형으로
+기여자에게 책임을 돌리지 않는다. review 문서의 comment 계획도 게시할 문안을 존댓말로 준비한다.
+이 규칙은 사실관계와 검증 범위를 정확히 적어야 하는 기존 요건을 대체하지 않는다.
+
 여러 단락의 review·comment·issue comment에는 실제 LF 줄바꿈을 전송한다. 셸 큰따옴표 안의 `\n`은
 줄바꿈이 아니라 문자 그대로이므로 `--body "...\n..."` 또는 `--comment "...\n..."`로 게시하지 않는다.
 
@@ -386,8 +393,9 @@ before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 vis
 
 ### 4.2 시각 증적 PR comment 계획
 
-시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 최종 판정 전에
-`Merge 후 contributor PR comment 계획` 절을 포함해야 한다. 이 절은 merge 뒤 새로 추정하거나 임시
+시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 제목 바로 아래의 `## 최종 판정`에
+현재 결론을 먼저 표시하고, 상세 근거 절에 `Merge 후 contributor PR comment 계획`을 포함해야 한다.
+이 절은 merge 뒤 새로 추정하거나 임시
 output에서 수치를 옮기는 일을 막기 위한 사전 기록이며, 최소한 다음을 적는다.
 
 1. [Visual Sweep의 GitHub merge comment 정본](verification/visual_sweep_guide.md#github-merge-comment) direct link

@@ -133,11 +133,28 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
-스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 단, Visual Sweep을 수용 근거로 주장하는 렌더링 PR은
-대표 review·overlay PNG를 `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 넣고 PR 본문에서
-실제 Markdown 이미지로 표시합니다. 이 경우는 메인터너 review 기록을 작성하는 의무가 아니라 reviewer가
-제출 근거를 직접 볼 수 있게 하는 제출 의무입니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
-요청한 경우에만 그 요청 범위에서 예외로 합니다.
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. **렌더링·조판·페이지 배치 변경의 원 PR을 생성하거나
+code head를 갱신할 때는**, 해당 head의 영향 페이지를 한컴 기준 PDF와 Native/fresh WASM
+Visual Sweep으로 비교하세요. 대표 review·overlay PNG를
+`mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 커밋하고, 원 PR 본문에
+head repository·정확한 SHA로 고정한 raw URL의 실제 Markdown 이미지로 표시하세요.
+입력·기준 PDF·페이지·실행 명령·결과·남은 차이도 본문에 적고, 게시 후 본문과 이미지가
+PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 완료 상태로 표시하지 말고
+보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
+메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
+
+이 Visual Sweep에서 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
+90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
+PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
+PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
+다른 경우에만 양쪽 font family와 확인 방법을 적은 UTF-8 증거 파일을
+`--font-mismatch-evidence`로 지정할 수 있습니다. 글꼴 이름의 추정, anti-aliasing, CI 녹색은 예외가
+아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
+다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
+원본성·소비 경로를 검증합니다.
+`RHWP_FONT_PATH`를 사용할 때에는 설정한 모든 디렉터리가 실제로 존재하고 입력 문서의 face를 제공하는지
+먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
+올바른 글꼴 공급으로 다시 실행합니다.
 
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
@@ -226,7 +243,7 @@ rhwp_source_dir="$(git rev-parse --show-toplevel)" &&
 rhwp_review_sha="$(git rev-parse HEAD)" &&
 rhwp_review_base_sha="$(git rev-parse upstream/devel)" &&
 rhwp_review_dir="${rhwp_source_dir}-rust-review" &&
-rhwp_review_target_dir="${rhwp_source_dir}-review-target" &&
+rhwp_review_target_dir="${rhwp_source_dir}/target/pr-review" &&
 (
   set -eu
   git -C "$rhwp_source_dir" status --short
@@ -252,10 +269,12 @@ merge/rebase는 하지 않습니다.
 PASS로 바꾸지 말고 준비된 worktree에서 같은 검사를 다시 실행하세요. 실제 포맷 diff가 나오면 아래
 [포맷 정책](#포맷-정책)에 따라 원본을 보정하고 새 commit을 다시 검증합니다.
 
-target은 source checkout 옆의 이 작업 전용 절대 경로에 둡니다. worktree 이름을 바꾸는 재검증에서도
-`rhwp_review_target_dir`는 유지해 Cargo 캐시를 재사용합니다. 모든 Cargo `--target-dir`과 host WASM의
-`CARGO_TARGET_DIR`가 같은 경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다.
-캐시는 이전 검증 결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다.
+target은 source checkout의 공용 절대 경로 `target/pr-review`에 둡니다. worktree 이름을 바꾸는
+재검증에서도 `rhwp_review_target_dir`가 같은 공용 cache를 가리키도록 하며, issue별·검토별 target
+디렉터리를 새로 만들지 않습니다. 모든 Cargo `--target-dir`과 host WASM의 `CARGO_TARGET_DIR`가 같은
+경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다. 캐시는 이전 검증
+결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다. 공유 경로를 삭제·초기화하기 전에는
+실행 중인 Cargo/Rust 작업과 소유자를 확인합니다.
 
 #### 2. Rust lint
 
@@ -366,7 +385,7 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 )
 ```
 
-Docker를 사용할 수 없을 때의 진단 경로는 같은 worktree에서
+Docker를 사용할 수 없을 때의 진단 경로는 해당 worktree의 **저장소 루트**에서
 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
 이 경우 Docker 부재·대체 명령을 기록하고, 최적화된 표준 빌드를 통과했다고 쓰지 마세요. Windows native
 wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이미 WASM을 준비했다면 이어지는 frontend
@@ -440,7 +459,7 @@ head의 required checks를 확인하세요.
 )
 ```
 
-source checkout과 외부 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
+source checkout과 공용 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
 다시 시작하세요. 정상 제거 뒤에는 `git worktree prune`을 추가로 실행할 필요가 없습니다.
 
 ### 프런트엔드 변경 검증
@@ -501,18 +520,29 @@ Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구�
 `--dev` 성공을 최적화된 release WASM의 검증으로 기록하지 않습니다. 동일 SHA로 이미 요구되는 WASM을
 준비했다면 package 검사를 위해 재빌드하지 않습니다.
 
-macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전 metadata
+macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. 아래 명령과 alias는 반드시
+**저장소 루트**(`scripts/`, 루트 `pkg/`, `rhwp-studio/`가 함께 있는 곳)에서 실행합니다. `rhwp-studio/`
+디렉터리 안에서 실행하면 wrapper를 찾지 못하고, 그 안의 `pkg/`는 Studio 개발 서버가 읽는 package가 아닙니다.
+`wasm-pack`의 사전 metadata
 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
 ```
 
-혼합 변경에서 host WASM 캐시를 재사용하려면 위 명령의 `target/pr-review` 대신
-`"${rhwp_review_target_dir:?}"`를 지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요.
+이 wrapper는 성공한 기본 web package의 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을
+`rhwp-studio/public/`에도 자동 동기화합니다. 따라서 개발 서버 검증을 위해 별도 `cp`를 실행하지
+마세요. `npx vite --host 0.0.0.0 --port 7700`으로 확인할 때는 두 경로의 SHA-256이 같은지 확인하고,
+브라우저를 새로고침한 뒤 실제 변경 흐름을 검사합니다. Rust target만 만들거나 wrapper 밖에서 `pkg/`만
+갱신한 결과는 Studio 반영 검증이 아닙니다.
+
+혼합 변경에서도 `rhwp_review_target_dir`는 source checkout의 같은 `target/pr-review`를 가리킵니다.
+worktree에서 명령을 실행할 때는 상대 경로 대신 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}"`를
+지정합니다. 반복 실행용 alias도 **저장소 루트에서만** 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
+직접 확인할 때는 `--dev` 없이 아래 표준 alias를 사용합니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev'
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
@@ -789,7 +819,7 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
 
 - **스크린샷·비교 이미지**는 개인정보·대형 원본·탐색용 중간 산출물을 저장소에 커밋하지 말고 PR 본문에
-  첨부해주세요. 단, Visual Sweep을 수용 근거로 쓰는 공개 가능한 대표 review·overlay PNG는
+  첨부해주세요. 렌더링 변경의 공개 가능한 대표 Visual Sweep review·overlay PNG는
   `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명

@@ -18,6 +18,21 @@
 - 지침을 읽었다는 사실은 GitHub 게시, push, merge나 작업 범위 확대의 승인이 아니다.
   실제 사용자 지시와 작업 권한을 따른다.
 
+## 빌드 산출물 재사용
+
+- 로컬 Native·WASM·테스트 빌드는 `target/pr-review`을 공용 target directory로 쓴다.
+  이슈별·검토별 `target/<name>`을 새로 만들지 않는다. Native `release`와 WASM
+  `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
+- `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
+  그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
+- `rhwp-studio` 개발 서버에서 Rust/WASM 변경을 확인할 때는 반드시 **저장소 루트
+  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  실행한다. `rhwp-studio/` 안에서 실행하면 wrapper 경로와 출력 `pkg/`가 모두 달라져 실패하거나
+  개발 서버가 이전 bundle을 읽는다. 이 wrapper가 루트 기본 `pkg/` web package를 만든 뒤 `rhwp.js`와 `rhwp_bg.wasm`을
+  `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치와 브라우저 새로고침 뒤 실제
+  동작을 확인한다. target 산출물만 만든 상태는 Studio 반영 검증이 아니다.
+
 ## 수정 전에 확정할 것
 
 - 이슈의 실제 입력, 기대 결과, 수정 범위와 비범위를 확인한다. 구현 결과를 보고 기대값을
@@ -45,6 +60,11 @@
 - 렌더링의 공통 결과·반례 검증·baseline 변경 근거는 위 공통 조판 원칙을 따른다.
   차트 변경은 종류와 축 등 해당 변경이 주장한 의미도 직접 확인한다.
 - **렌더링 변경은 [Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)으로 검증한다.**
+  외부 기여자는 [CONTRIBUTING.md의 렌더링 PR 제출 절차](CONTRIBUTING.md#메인터너-검토-기록과의-구분)에 따라
+  원 PR을 생성·갱신하기 전에 제출할 code head의 영향 페이지를 캡처한다. 대표 review·overlay PNG를
+  안정 경로에 커밋하고, 원 PR 본문에 그 head의 repository·SHA로 고정한 raw URL의 실제
+  `![...](...)` 이미지 두 종류와 입력·기준 PDF·페이지·결과를 넣는다. 게시 후 본문과 이미지를
+  실제 PR 화면에서 확인한다. 증적이나 기준 PDF가 없으면 제출 완료로 표시하지 않는다.
   동일 입력·페이지의 기준 PDF와 수정 전후 Native/fresh WASM 출력을 비교하고, compare·standalone
   overlay·review를 산출해 직접 연다. 표 외곽·앞뒤 문단·줄바꿈·겹침·누락 등 변경 주장을 판독한다.
   실행한 source SHA·입력/PDF·페이지·명령·대표 PNG와 남은 차이를 기존 결과보고에 연결한다.
@@ -52,6 +72,16 @@
   표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
   head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
+  `scripts/visual_sweep.py`의 2px 이웃 관용 내용 실루엣 일치율이 대표 review PNG 중 하나라도
+  90% 미만이거나 측정 불가이면 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자가 자기 branch에서
+  원인을 재검토·수정하고 새 head에서 gate를 통과한 뒤에만 PR을 생성·갱신한다. reviewer는 보류를 기록하며
+  메인터너 보정으로 대신하지 않는다.
+  예외는 양쪽 실제 글꼴이 완전히 다르다는 증거 파일을 `--font-mismatch-evidence`로 남긴 경우뿐이며,
+  그 전 PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 대조한다. 위치 차이가
+  있으면 글꼴 예외로 승인하지 않고 배치를 고친 뒤 다시 캡처한다(#7359 p14).
+  이름 추정·anti-aliasing·CI 녹색은 예외가 아니다.
+  `RHWP_FONT_PATH`의 모든 경로가 존재하고 입력 face를 공급하는지 확인한다. 존재하지 않는 과거 font
+  경로의 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
   직접 판독에서 큰 차이가 남으면 비용이 큰 전체 회귀를 시작하기 전에 원인을 수정하고 다시
   캡처한다. 작은 정렬 불변식의 PASS로 외곽선·뒤 문단·줄바꿈 차이를 승인하지 않는다.
   기준 입력을 재생성할 때는 기존 실패 입력을 보존하고 바뀐 저장 정보를 공개하며, 새 입력의

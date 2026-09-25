@@ -56,6 +56,21 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
         || mods.korean_break_unit.is_some()
 }
 
+// ID 복원도 적용과 같은 흐름 속성 및 문단 간격만 비교한다.
+fn cell_para_shape_affects_vpos(
+    before: &crate::model::style::ParaShape,
+    after: &crate::model::style::ParaShape,
+) -> bool {
+    before.line_spacing != after.line_spacing
+        || before.line_spacing_type != after.line_spacing_type
+        || before.margin_left != after.margin_left
+        || before.margin_right != after.margin_right
+        || before.indent != after.indent
+        || (before.attr1 ^ after.attr1) & (0b111 << 5) != 0 // 영어·한글 줄나눔 단위
+        || before.spacing_before != after.spacing_before
+        || before.spacing_after != after.spacing_after
+}
+
 fn body_paragraph_box_for_para_shape(
     core: &DocumentCore,
     sec_idx: usize,
@@ -1212,6 +1227,23 @@ impl DocumentCore {
                 cell_para_idx,
             );
             self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
+            // [#7265] 리플로우가 이 문단의 줄 수·높이를 바꿨으면 **후속 문단의 사다리도**
+            // 다시 세워야 한다. 종전에는 이 표시가 없어 글자 크기를 키우면 문단이 두 줄이
+            // 되는데 다음 문단은 옛 vpos 에 남아 글자가 포개졌다.
+            //
+            // #6639 가 문단모양 경로에 세운 지연 기구를 그대로 쓴다 — 저장 RowBreak
+            // 원점을 보존하고 배치 경계에서 조각마다 한 번만 돌기 때문이다. 여기서
+            // 곧바로 재계산하면 그 원점 보존 계약이 깨진다.
+            if let Ok(cell_para) = self.get_cell_paragraph_mut(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            ) {
+                cell_para.cell_format_vpos_dirty = true;
+            }
+            self.pending_cell_format_vpos = true;
         }
 
         self.document.sections[sec_idx].raw_stream = None;
@@ -1281,6 +1313,15 @@ impl DocumentCore {
         if char_shape_mods_affect_text_flow(&mods) {
             let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
             self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
+            // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+            // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+            // 배치 경계에서 조각마다 한 번만 돈다.
+            if let Ok(cell_para) =
+                self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path)
+            {
+                cell_para.cell_format_vpos_dirty = true;
+            }
+            self.pending_cell_format_vpos = true;
         }
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
@@ -1354,6 +1395,13 @@ impl DocumentCore {
         // 없으므로 flat set_char_shape_id_in_cell_native 처럼 무조건).
         let inner_cpi = path.last().map(|e| e.2).unwrap_or(0);
         self.reflow_cell_paragraph_by_path(sec_idx, parent_para_idx, path, inner_cpi);
+        // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+        // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+        // 배치 경계에서 조각마다 한 번만 돈다.
+        if let Ok(cell_para) = self.get_cell_paragraph_mut_by_path(sec_idx, parent_para_idx, path) {
+            cell_para.cell_format_vpos_dirty = true;
+        }
+        self.pending_cell_format_vpos = true;
         let outer_ctrl = path[0].0;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, outer_ctrl);
         self.document.sections[sec_idx].raw_stream = None;
@@ -1405,6 +1453,19 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        // [#7265] 리플로우가 줄 수·높이를 바꿨으면 후속 문단 사다리도 다시 세운다.
+        // #6639 의 지연 기구를 그대로 쓴다 — 저장 RowBreak 원점을 보존하고
+        // 배치 경계에서 조각마다 한 번만 돈다.
+        if let Ok(cell_para) = self.get_cell_paragraph_mut(
+            sec_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        ) {
+            cell_para.cell_format_vpos_dirty = true;
+        }
+        self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
         self.rebuild_section(sec_idx);
@@ -1617,7 +1678,7 @@ impl DocumentCore {
             mods.border_spacing = Some([arr[0], arr[1], arr[2], arr[3]]);
         }
 
-        let new_id;
+        let affects_vpos;
         {
             let para = self
                 .get_cell_paragraph_ref(
@@ -1629,7 +1690,18 @@ impl DocumentCore {
                 )
                 .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?;
             let base_id = para.para_shape_id;
-            new_id = self.document.find_or_create_para_shape(base_id, &mods);
+            let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+            affects_vpos = self
+                .document
+                .doc_info
+                .para_shapes
+                .get(base_id as usize)
+                .is_none_or(|old| {
+                    cell_para_shape_affects_vpos(
+                        old,
+                        &self.document.doc_info.para_shapes[new_id as usize],
+                    )
+                });
 
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1639,6 +1711,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = new_id;
+            cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
         // 줄바꿈에 영향을 주는 변경 시 셀 내 문단 LineSeg 재계산.
@@ -1659,6 +1732,9 @@ impl DocumentCore {
                 cell_para_idx,
             );
         }
+
+        // [#6639] 배치 중에는 셀별로 모으고, 스타일 갱신 뒤 조각마다 한 번 재배치한다.
+        self.pending_cell_format_vpos |= affects_vpos;
 
         // 표 dirty 마킹 — measure_section_incremental이 셀 높이를 재계산하도록
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
@@ -1690,6 +1766,27 @@ impl DocumentCore {
             )));
         }
 
+        let old_id = self
+            .get_cell_paragraph_ref(
+                sec_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".to_string()))?
+            .para_shape_id;
+        let affects_vpos = self
+            .document
+            .doc_info
+            .para_shapes
+            .get(old_id as usize)
+            .is_none_or(|old| {
+                cell_para_shape_affects_vpos(
+                    old,
+                    &self.document.doc_info.para_shapes[para_shape_id as usize],
+                )
+            });
         {
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1699,6 +1796,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = para_shape_id;
+            cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
         self.reflow_cell_paragraph(
@@ -1708,9 +1806,10 @@ impl DocumentCore {
             cell_idx,
             cell_para_idx,
         );
+        self.pending_cell_format_vpos |= affects_vpos;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_section_deferred_in_batch(sec_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
             section: sec_idx,
             para: parent_para_idx,

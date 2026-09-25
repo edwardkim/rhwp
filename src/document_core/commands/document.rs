@@ -289,6 +289,7 @@ impl DocumentCore {
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
+            pending_cell_format_vpos: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
@@ -1559,6 +1560,7 @@ impl DocumentCore {
         let sec_count = document.sections.len();
 
         self.document = document;
+        self.pending_cell_format_vpos = false;
         self.canvas_metrics = None;
         self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
@@ -2043,6 +2045,7 @@ impl DocumentCore {
     /// [Task #741 후속] 문서의 IR mutable 참조를 반환한다.
     /// WASM 영역 영역 외부 image inject 영역 의 영역 영역 영역.
     pub fn document_mut(&mut self) -> &mut Document {
+        self.flush_cell_format_vpos();
         &mut self.document
     }
 
@@ -2294,6 +2297,7 @@ impl DocumentCore {
     /// 종료 시 paginate()를 1회 실행하여 모든 dirty 구역을 처리한다.
     pub fn end_batch_native(&mut self) -> Result<String, HwpError> {
         self.batch_mode = false;
+        self.flush_cell_format_vpos();
         self.paginate();
         let result = self.serialize_event_log();
         self.event_log.clear();
@@ -2317,6 +2321,7 @@ impl DocumentCore {
     pub const MAX_SNAPSHOTS: usize = 100;
 
     pub fn save_snapshot_native(&mut self) -> u32 {
+        self.flush_cell_format_vpos();
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
         self.snapshot_store.push((

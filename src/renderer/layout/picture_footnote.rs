@@ -205,21 +205,27 @@ impl LayoutEngine {
             pic_height
         };
 
-        // 컨테이너 초과 시 비율 유지하며 축소 (표 셀 등). 회전 프레임과 실제 이미지를 같은
-        // 비율로 축소해야 중심/회전축이 유지된다.
-        if container.width > 0.0 && frame_width > container.width {
-            let scale = container.width / frame_width;
-            frame_width = container.width;
-            frame_height *= scale;
-            pic_width *= scale;
-            pic_height *= scale;
-        }
-        if container.height > 0.0 && frame_height > container.height {
-            let scale = container.height / frame_height;
-            frame_height = container.height;
-            frame_width *= scale;
-            pic_height *= scale;
-            pic_width *= scale;
+        // 글자처럼 표 셀 그림은 저장 frame으로 그린 뒤 TableCell clip에 맡긴다. 한/글은
+        // 셀 안쪽 폭에 맞춰 비율 축소하지 않으며, 넘치는 오른쪽·아래만 셀 경계에서 자른다.
+        // 먼저 축소하면 #7333 31쪽 스크린샷과 그 안의 주석 도형이 함께 작아진다. 그 밖의
+        // 그림은 기존처럼 컨테이너를 넘지 않도록 비율 유지 축소한다.
+        let preserve_inline_cell_frame = picture.common.treat_as_char && cell_ctx.is_some();
+        if !preserve_inline_cell_frame {
+            // 회전 프레임과 실제 이미지를 같은 비율로 축소해야 중심/회전축이 유지된다.
+            if container.width > 0.0 && frame_width > container.width {
+                let scale = container.width / frame_width;
+                frame_width = container.width;
+                frame_height *= scale;
+                pic_width *= scale;
+                pic_height *= scale;
+            }
+            if container.height > 0.0 && frame_height > container.height {
+                let scale = container.height / frame_height;
+                frame_height = container.height;
+                frame_width *= scale;
+                pic_height *= scale;
+                pic_width *= scale;
+            }
         }
 
         // [#6866] **회전 프레임 그림의 노드 상자는 `frame`(= 선언 상자)이다.**
