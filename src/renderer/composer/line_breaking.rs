@@ -1404,11 +1404,16 @@ fn text_token_fits_line_hwp(
     let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
     let limit_hwp = effective_width_hwp + line_break_tolerance_hwp(effective_width_hwp);
-    if condensed_candidate > limit_hwp {
+    if natural_candidate <= limit_hwp {
+        return true;
+    }
+    // 공백을 줄여야 들어가는 경우 — 줄바꿈 여유(자연폭 추정 오차 흡수용)를 얹지 않는다.
+    // 한/글은 줄인 폭이 상자를 넘으면 받지 않는다: 합성 문단에서 상자를 5·30 HWPUNIT
+    // 넘는 줄(여유 50 안)과 80168 49쪽 `…투자ㆍ운` + `용`(여유 31 안)을 모두 거절한다.
+    if condensed_candidate > effective_width_hwp {
         return false;
     }
-    let needs_condense_to_fit = natural_candidate > limit_hwp;
-    !(needs_condense_to_fit && new_word_natural_before_hwp.is_some_and(|w| w > limit_hwp))
+    !new_word_natural_before_hwp.is_some_and(|w| w > limit_hwp)
 }
 
 /// Greedy line-fill continuation.
