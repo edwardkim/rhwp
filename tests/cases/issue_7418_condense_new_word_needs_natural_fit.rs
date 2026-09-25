@@ -149,7 +149,10 @@ fn paragraphs_without_condense_are_unchanged() {
     let rhwp = line_starts(NO_CACHE, LABELS.len());
     for (i, label) in LABELS.iter().enumerate() {
         if label.ends_with(" c0") {
-            assert_eq!(rhwp[i], hancom[i], "{label}: condense 0 문단이 한/글과 달라졌다");
+            assert_eq!(
+                rhwp[i], hancom[i],
+                "{label}: condense 0 문단이 한/글과 달라졌다"
+            );
         }
     }
 }
@@ -179,6 +182,52 @@ fn leading_spaces_are_not_condensed() {
     assert!(
         mismatched.is_empty(),
         "맨 앞 공백 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}
+
+/// 글머리표 실험 — 같은 글, 같은 왼쪽 여백(2000)의 문단 5개.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_condense_bullet_fixture.py`,
+/// 한/글 저장본은 한/글 2024(13.0.0.564)가 연 뒤 저장한 것이다(`pdf/issue7418/condense_bullet_synthetic-2024.pdf`).
+const BULLET_NO_CACHE: &str = "samples/issue7418/condense_bullet_synthetic.hwpx";
+const BULLET_HANCOM: &str = "samples/issue7418/condense_bullet_synthetic-hancom-2024.hwpx";
+const BULLET_LABELS: [&str; 5] = [
+    "글머리표 글자 c0",
+    "글머리표 글자 c20",
+    "글머리표 글자 c50",
+    "글머리표 낱말 c20",
+    "대조군(글머리표 없음) 글자 c20",
+];
+
+/// 글머리표는 **모든 줄**의 앞을 차지한다 — 줄 나눔 상자에서 마커 폭을 뺀다.
+///
+/// 한/글은 마커 뒤에서 본문을 시작하고 둘째 줄부터도 같은 자리에 맞춘다(행잉). 배치는 그렇게
+/// 그렸지만 줄 나눔은 마커를 몰라 줄마다 마커 폭만큼 더 담았다. condense 0 문단도 틀렸으므로
+/// condense 와 별개의 결함이다. condense 가 새 낱말을 끌어오게 되자(#7418) 넘친 줄이 커져
+/// `endnote-01`·`footnote-01`·`pr-1674` 의 글머리표 문단에서 드러났다.
+///
+/// 수정 전(마커 폭을 빼지 않던 줄 나눔)은 글머리표 문단 4개가 모두 줄 1~2 에서 한/글보다
+/// 늦게 끊는다. 대조군은 수정 전후 모두 한/글과 같아, 차이가 마커에서만 난다는 것을 보인다.
+#[test]
+fn bullet_marker_is_excluded_from_the_line_box() {
+    let hancom = line_starts(BULLET_HANCOM, BULLET_LABELS.len());
+    let rhwp = line_starts(BULLET_NO_CACHE, BULLET_LABELS.len());
+
+    // 전제: 같은 글이므로 마커 폭이 한/글의 줄을 실제로 바꿔야 한다.
+    assert_ne!(
+        hancom[1], hancom[4],
+        "정답지 전제가 깨졌다 — 글머리표 문단과 대조군의 줄이 같다"
+    );
+    let mismatched: Vec<String> = BULLET_LABELS
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(label, (h, r))| format!("{label}: 한/글 {h:?} / rhwp {r:?}"))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "글머리표 문단의 줄이 한/글과 다르다:\n{}",
         mismatched.join("\n")
     );
 }

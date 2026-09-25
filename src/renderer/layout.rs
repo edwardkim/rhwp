@@ -3430,6 +3430,7 @@ mod table_partial;
 mod text_measurement;
 mod utils;
 
+pub(crate) use paragraph_layout::bullet_marker_hang_px;
 pub(crate) use paragraph_layout::ensure_min_baseline;
 pub(crate) use table_layout::border_style_has_diagonal;
 // [#4149] 셀 커서 fast path 프로브 (document_core::queries::cursor_rect 전용)

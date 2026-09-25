@@ -1387,13 +1387,16 @@ impl FitWidthHwp {
 /// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
 ///
 /// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
-/// 그러나 **새 낱말은 줄이 아직 자연폭 안에 있을 때만** 시작한다 — 이미 공백을 줄여야
-/// 하는 줄에는 새 낱말을 들이지 않는다. `new_word_natural_before_hwp` 는 이 토큰이 새
-/// 낱말을 시작할 때 그 앞 공백 직전까지의 자연폭이다(이어지는 글자면 `None`).
+/// 그러나 **새 낱말은 앞 줄이 자연폭으로 상자보다 좁을 때만** 시작한다 — 이미 공백을
+/// 줄여야 하거나 자연폭으로 꽉 찬 줄에는 새 낱말을 들이지 않는다.
+/// `new_word_natural_before_hwp` 는 이 토큰이 새 낱말을 시작할 때 그 앞 공백 직전까지의
+/// 자연폭이다(이어지는 글자면 `None`).
 ///
-/// 독립 근거는 한/글 2024 출력이다. condense 0·15·30·50·75, 낱말 길이, 글자/낱말 단위를
-/// 바꾼 합성 문단 13개(203줄)의 줄 끊음을 이 규칙이 전부 재현한다. 종전의 "남은 틈
-/// 2.5em 이상일 때만 condense" 문턱은 15/203 줄만 맞았다.
+/// 독립 근거는 한/글 2024 출력이다. condense 0·15·30·50·75, 낱말 길이, 글자/낱말 단위,
+/// 글꼴(맑은 고딕·함초롬바탕·한양신명조), 본문/표 칸을 바꾼 합성 문단의 줄 끊음을 이 규칙이
+/// 전부 재현한다(본문 208/208, 칸 211/211). 앞 줄이 상자를 **꼭 채운** 경우를 허용하면(≤)
+/// 칸 문단이 148/211 로 떨어진다. 종전의 "남은 틈 2.5em 이상일 때만 condense" 문턱은
+/// 68/208 줄만 맞았다.
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
@@ -1413,7 +1416,7 @@ fn text_token_fits_line_hwp(
     if condensed_candidate > effective_width_hwp {
         return false;
     }
-    !new_word_natural_before_hwp.is_some_and(|w| w > limit_hwp)
+    !new_word_natural_before_hwp.is_some_and(|w| w >= effective_width_hwp)
 }
 
 /// Greedy line-fill continuation.
@@ -1717,6 +1720,40 @@ fn fill_one_interval(
                     *has_inline_control,
                 ) {
                     let absorbed = cut > *idx;
+                    // [#7418] 넘친 공백 뒤에 공백만 남았으면 문단이 여기서 끝난다. 끝 공백은 줄
+                    // 밖에 걸리고 다음 행을 만들지 않는다 — 종전에는 글자 없는 빈 행을 하나 더
+                    // 게시했다(`rowbreak_cell_picture_only_paragraph` 2쪽 12/16 칸, 한/글 1줄).
+                    if absorbed
+                        && tokens[ti + 1..].iter().all(|token| {
+                            matches!(
+                                token,
+                                BreakToken::Space {
+                                    has_inline_control: false,
+                                    ..
+                                }
+                            )
+                        })
+                    {
+                        let end_idx = tokens
+                            .last()
+                            .map(|token| match token {
+                                BreakToken::Space { idx, .. } => *idx + 1,
+                                _ => cut,
+                            })
+                            .unwrap_or(cut);
+                        cursor.finished = true;
+                        cursor.emitted_any = true;
+                        cursor.token_index = tokens.len();
+                        return Some(FilledInterval {
+                            line: LineBreakResult {
+                                start_idx: cursor.line_start_idx,
+                                end_idx,
+                                max_font_size: cursor.line_max_fs,
+                                has_line_break: false,
+                            },
+                            termination: FillTermination::ParagraphEnd,
+                        });
+                    }
                     let line = LineBreakResult {
                         start_idx: cursor.line_start_idx,
                         end_idx: cut,
@@ -2829,6 +2866,11 @@ fn layout_paragraph_in_frame_impl(
     let text_chars = para.text.chars().collect::<Vec<_>>();
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
     let indent_px = para_style.map(|style| style.indent).unwrap_or(0.0);
+    // [#7418] 글머리표는 모든 줄의 앞을 차지한다. 배치가 같은 폭만큼 줄 가용폭을 줄이므로
+    // 채움도 각 행의 첫 구간에서 그 폭을 뺀 상자로 줄을 나눈다. 게시하는 행 기하(구간)는
+    // 마커를 포함한 그대로다 — 한/글 저장 행도 마커 자리부터 시작한다.
+    let marker_hang_px =
+        crate::renderer::layout::bullet_marker_hang_px(para, styles).unwrap_or(0.0);
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3010,11 +3052,16 @@ fn layout_paragraph_in_frame_impl(
                     .then_some(terminal_inline_metrics)
                     .flatten();
                 let mut row_terminated = false;
-                for interval in intervals {
-                    let available_width_px = crate::renderer::hwpunit_to_px(
+                for (interval_index, interval) in intervals.into_iter().enumerate() {
+                    let interval_width_px = crate::renderer::hwpunit_to_px(
                         interval.end.saturating_sub(interval.start),
                         dpi,
                     );
+                    let available_width_px = if interval_index == 0 {
+                        (interval_width_px - marker_hang_px).max(1.0)
+                    } else {
+                        interval_width_px
+                    };
                     let terminal = terminal_tokens.as_ref().and_then(|terminal_tokens| {
                         let mut replay = FillCursor::replay_from_boundary(
                             terminal_tokens,
@@ -3800,7 +3847,11 @@ fn reflow_line_segs_impl(
     // 폭에서, 프레임 상자를 또 폭에서 따로 만들어 둘이 어긋날 수 있었다.
     let published_horizontal = paragraph_box.effective();
     let seg_width_hwp = paragraph_box.width_hwp();
-    let available_width_px = paragraph_box.width_px(dpi);
+    // [#7418] 판정 폭에서만 글머리표 폭을 뺀다 — 프레임 채움(`layout_paragraph_in_frame`)과
+    // 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
+    let available_width_px = (paragraph_box.width_px(dpi)
+        - crate::renderer::layout::bullet_marker_hang_px(para, styles).unwrap_or(0.0))
+    .max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
