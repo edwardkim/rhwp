@@ -23,6 +23,28 @@
       "purpose": "Pictures anchored in table cells with paper/page-relative position measure their offsets from the paper/body, not from the cell",
       "contract": "Paper picture at paper origin + offset (200.0, 400.0)px; page picture at body origin + offset (before the fix: paper picture at 313.4, 555.5px)",
       "referencePdfStatus": "none — geometry contract, not a Hancom PDF match"
+    },
+    {
+      "path": "samples/paper-anchor-layout/paper-table-fallback-padding.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "synthetic — scripts/generate_paper_anchor_layout_fixtures.py from samples/hwpx/ref/ref_empty.hwpx",
+      "bytes": 7582,
+      "sha256": "d273df016f197b700149f46d15d59b75c966a3d4bd23e29ef992189a454174cb",
+      "purpose": "A paper-anchored table whose cell vertical padding is only the #2195 fallback (table inMargin all zero, hasMargin=0) keeps its declared row height when the stored line fits",
+      "contract": "Every row is 24.0px = declared 1800 HU (before the fix: 36.0px)",
+      "referencePdfStatus": "none — geometry contract, not a Hancom PDF match"
+    },
+    {
+      "path": "samples/paper-anchor-layout/residual-cell-padding-pair.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "synthetic — scripts/generate_paper_anchor_layout_fixtures.py from samples/hwpx/ref/ref_empty.hwpx",
+      "bytes": 7580,
+      "sha256": "a86ee23800a92d8e53fa8ae51c544d1423deb40654b7d2001b665c9e6136d790",
+      "purpose": "A stored cell vertical padding pair with one axis >= 2500 HU (20424/1287) is residue as a pair; neither axis grows the row",
+      "contract": "The row is 23.2px = declared 1740 HU (before the fix: 30.5px)",
+      "referencePdfStatus": "none — geometry contract, not a Hancom PDF match"
     }
   ]
 }

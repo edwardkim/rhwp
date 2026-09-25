@@ -9,7 +9,8 @@ copied, so the output is publishable.
 
 The geometry contracts that these inputs lock are described in
 `samples/paper-anchor-layout/README.md` and tested by
-`tests/cases/paper_anchor_float_reference.rs`.
+`tests/cases/paper_anchor_float_reference.rs` and
+`tests/cases/paper_anchor_table_row_height.rs`.
 
 Usage:
     python3 scripts/generate_paper_anchor_layout_fixtures.py
@@ -303,9 +304,88 @@ def fixture_cell_picture(head: str, end: str) -> str:
     )
 
 
+def fixture_fallback_padding(head: str, end: str) -> str:
+    """C1: paper-anchored table whose cell vertical padding is only a fallback.
+
+    Table inMargin is all zero (unspecified) and cells have hasMargin="0", so
+    the stored cell margin is the #2195 fallback. The single stored line
+    (1000 HU) fits the declared row height (1800 HU); the fallback padding
+    (850 + 850 HU) must not grow the row.
+    """
+    row_h = 1800
+    rows = [
+        [
+            cell(
+                r,
+                0,
+                BODY_WIDTH,
+                row_h,
+                paragraph(f"Line {r + 1}", lineseg(0, BODY_WIDTH - 1020, spacing=300)),
+                has_margin=False,
+                margin=(510, 510, 850, 850),
+            )
+        ]
+        for r in range(3)
+    ]
+    tbl = table(
+        rows,
+        width=BODY_WIDTH,
+        height=row_h * 3,
+        wrap="TOP_AND_BOTTOM",
+        treat_as_char=False,
+        vert_rel="PAPER",
+        horz_rel="PAPER",
+        vert_offset=20000,
+        horz_offset=BODY_LEFT,
+    )
+    return first_paragraph(head, "Heading") + paragraph("", lineseg(1600, BODY_WIDTH), tbl) + end
+
+
+def fixture_residual_padding_pair(head: str, end: str) -> str:
+    """C2: body-flow table whose stored cell vertical padding is a residual pair.
+
+    hasMargin="0" and the table inMargin is all zero. The stored pair is
+    top 20424 / bottom 1287 HU: the top axis is above the 2500 HU sanity limit,
+    so the pair is residue and neither axis may grow the 1740 HU row.
+    """
+    row_h = 1740
+    rows = [
+        [
+            cell(
+                0,
+                0,
+                BODY_WIDTH,
+                row_h,
+                paragraph("Residual", lineseg(0, BODY_WIDTH - 1020, spacing=300)),
+                has_margin=False,
+                margin=(510, 510, 20424, 1287),
+            )
+        ]
+    ]
+    tbl = table(
+        rows,
+        width=BODY_WIDTH,
+        height=row_h,
+        wrap="TOP_AND_BOTTOM",
+        treat_as_char=False,
+        vert_rel="PARA",
+        horz_rel="COLUMN",
+        vert_offset=0,
+        horz_offset=0,
+    )
+    return (
+        first_paragraph(head, "Heading")
+        + paragraph("", lineseg(1600, BODY_WIDTH, vertsize=row_h, spacing=600), tbl)
+        + paragraph("Tail", lineseg(1600 + row_h + 600, BODY_WIDTH))
+        + end
+    )
+
+
 FIXTURES = {
     "square-table-next-line.hwpx": (fixture_square_table, False),
     "cell-picture-page-paper.hwpx": (fixture_cell_picture, True),
+    "paper-table-fallback-padding.hwpx": (fixture_fallback_padding, False),
+    "residual-cell-padding-pair.hwpx": (fixture_residual_padding_pair, False),
 }
 
 

@@ -30,4 +30,24 @@
   칸 기준으로 재면 크게 어긋난다.
   수정 전 rhwp: 종이 기준 그림 (313.4, 555.5)px — 칸 시작점 (113.4, 153.6)에서 오프셋을 한 번 더 더했다.
 
-검사: [`tests/cases/paper_anchor_float_reference.rs`](../../tests/cases/paper_anchor_float_reference.rs).
+## `paper-table-fallback-padding.hwpx` — 대체 칸 여백을 가진 종이 기준 표
+
+- 종이 기준(세로 20000 · 가로 8504 HU) 자리차지 3행×1열 표, 행마다 선언 높이 1800 HU(24.0px).
+- 표 안 여백(`hp:inMargin`) 네 축 0(= 미지정), 칸은 `hasMargin="0"`, 저장 `cellMargin` 위·아래 850 HU.
+  이 칸 여백은 저장값이 아니라 #2195 의 «표 여백 전축 0 = 미지정» 대체값이다.
+- 칸마다 저장 줄 하나(1000 HU)가 선언 높이 안에 든다.
+- 계약: 행 높이는 선언 24.0px 그대로다(허용 0.5px).
+  수정 전 rhwp: 행마다 36.0px(= 줄 13.3 + 대체 여백 11.3×2) — 떠 있는 표가 선언보다 커졌다.
+
+## `residual-cell-padding-pair.hwpx` — 잔재 칸 여백 쌍을 가진 흐름 표
+
+- 문단 기준(`vertRelTo=PARA`·`horzRelTo=COLUMN`) 자리차지 1행×1열 표, 선언 높이 1740 HU(23.2px).
+  종이·쪽 기준이 아니므로 위 대체 여백 규칙이 아니라 칸 여백 선택 규칙만 검사한다.
+- 표 안 여백 네 축 0, 칸은 `hasMargin="0"`, 저장 `cellMargin` 위 20424 · 아래 1287 HU.
+  위 축은 위생 한도(2500 HU)에 걸려 이미 버려진다. 한 축이 잔재면 그 쌍은 같은 잔재다.
+- 계약: 행 높이는 선언 23.2px 그대로다(허용 0.5px).
+  수정 전 rhwp: 30.5px(= 줄 13.3 + 살아남은 아래 축 17.2).
+
+검사: [`tests/cases/paper_anchor_float_reference.rs`](../../tests/cases/paper_anchor_float_reference.rs)
+(앞 두 입력), [`tests/cases/paper_anchor_table_row_height.rs`](../../tests/cases/paper_anchor_table_row_height.rs)
+(뒤 두 입력).
