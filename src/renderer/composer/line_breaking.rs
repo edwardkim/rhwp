@@ -103,6 +103,10 @@ pub(crate) enum BreakToken {
     Space {
         idx: usize,
         width: f64,
+        /// [#7418] 자간을 적용하기 **전**의 공백 폭(px). 공백 최소값(condense)은 이 폭의
+        /// c% 만큼 줄인다 — 한/글 2024 합성 실험(자간 −20·−12·−6·+10% × condense 0~75,
+        /// 777줄)에서 자간 적용 후 폭을 기준으로 하면 음수 자간 문단이 한 줄에 덜 담았다.
+        condense_base: f64,
         max_font_size: f64,
         /// A visible object sharing this offset cannot hang beyond the row.
         has_inline_control: bool,
@@ -412,9 +416,14 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             let ts = metric_scope.style(styles, style_id, current_lang, i);
             let font_size = token_line_font_size(styles, style_id, &ts);
             let inline_width = inline_width_px_at(inline_controls, i);
+            let unspaced = crate::renderer::TextStyle {
+                letter_spacing: 0.0,
+                ..ts.clone()
+            };
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: space_metric.space_advance(&ts) + inline_width,
+                condense_base: space_metric.space_advance(&unspaced),
                 max_font_size: font_size,
                 has_inline_control: inline_width > 0.0,
             });
@@ -1212,6 +1221,8 @@ fn space_is_line_leading(text_chars: &[char], line_start: usize, space_idx: usiz
         .is_none_or(|before| before.iter().all(|c| *c == ' '))
 }
 
+/// 공백 하나를 condense 로 줄일 수 있는 폭. `space_width_hwp` 는 자간 **적용 전** 폭이다
+/// (`BreakToken::Space::condense_base`).
 fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
     if condense_min_space == 0 || space_width_hwp <= 0 {
         return 0;
@@ -1693,6 +1704,7 @@ fn fill_one_interval(
             BreakToken::Space {
                 idx,
                 width,
+                condense_base,
                 max_font_size,
                 has_inline_control,
             } => {
@@ -1706,7 +1718,7 @@ fn fill_one_interval(
                 let space_savings = if leading {
                     0
                 } else {
-                    condense_space_savings_hwp(space_hwp, condense_min_space)
+                    condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space)
                 };
                 if let Some(cut) = overflowing_space_cut(
                     cursor.line_start_idx,
@@ -2135,6 +2147,7 @@ fn fill_lines_before_cursor(
             BreakToken::Space {
                 idx,
                 width,
+                condense_base,
                 max_font_size,
                 ..
             } => {
@@ -2149,7 +2162,8 @@ fn fill_lines_before_cursor(
                 let space_hwp = to_hwp(*width);
                 lw += space_hwp;
                 if !space_is_line_leading(text_chars, line_start_idx, *idx) {
-                    line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
+                    line_space_savings +=
+                        condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
                 }
             }
             BreakToken::Text {
@@ -2347,9 +2361,10 @@ fn recalc_space_savings_hwp(
     let mut line_has_text = false;
     for t in &tokens[..current_token_idx] {
         match t {
-            BreakToken::Space { idx, width, .. } if *idx >= new_line_start && line_has_text => {
-                let space_hwp = to_hwp(*width);
-                w += condense_space_savings_hwp(space_hwp, condense_min_space);
+            BreakToken::Space {
+                idx, condense_base, ..
+            } if *idx >= new_line_start && line_has_text => {
+                w += condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
             }
             BreakToken::Text { start_idx, .. } if *start_idx >= new_line_start => {
                 line_has_text = true;
@@ -4792,6 +4807,7 @@ mod fill_cursor_tests {
             BreakToken::Space {
                 idx: 1,
                 width: 20.0,
+                condense_base: 20.0,
                 max_font_size: 12.0,
                 has_inline_control: true,
             },
@@ -4866,6 +4882,7 @@ mod fill_cursor_tests {
             BreakToken::Space {
                 idx: 2,
                 width: 5.0,
+                condense_base: 5.0,
                 max_font_size: 12.0,
                 has_inline_control: false,
             },
