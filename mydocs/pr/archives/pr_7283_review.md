@@ -2,9 +2,66 @@
 
 ## 최종 판정
 
-**승인 — 코드 검토 판정.** 아래 P2는 `3aaa49cf9`에서 수정했고 회귀 검증을 통과했다.
-merge 전 조건은 수정 후 최신 PR head의 GitHub Actions 통과와 작업지시자 병합 승인이다.
-이 기록은 GitHub approve 또는 merge를 수행하지 않는다.
+**머지 보류 — 최신 devel과 작업 기록 문서 충돌.** `179fecf3c`의 추가 코드 결함은 발견하지
+못했고 이전 P2 수정과 최신 CI 통과를 확인했다. `mydocs/orders/20260924.md`의 양쪽 기록을 보존해
+충돌을 해소하고, 새 head의 CI를 확인한 뒤 병합 판단한다. 이번 재리뷰는 원격 변경을 수행하지 않는다.
+
+## 2026-09-26 재리뷰와 도입 가치 판단
+
+- 검토 head: `179fecf3c6a8cc26f7c01d5d31a9d425e1425594`.
+  기본 경로 collaborator self, 보조 intake_and_review/local_validation/rework_and_exceptions.
+- 최신 `upstream/devel`: `eb9142dd7`.
+  `git merge-tree --write-tree upstream/devel HEAD`에서 **작업 기록 문서 1개만 충돌**했다.
+  PR의 #3512/#3513/#3515 기록과 devel의 #7403 기록을 함께 보존하면 된다.
+  checkout이나 브랜치에 merge를 적용하지 않았고, 통합 tree의 실행 검증은 하지 않았다.
+- 이전 P2: 선택적인 Chrome job의 정상 추가 실행을 허용하고, 필수 검사 생략 및 실패를 거부하는
+  실제 코드와 테스트를 재검토했다. CI policy/Chrome impact/controller 계약 **78/78** 재실행 통과.
+  로그 `/private/tmp/rhwp-7283-rereview-tests.log`.
+- 정확한 head의 원격 checks **33 success / 4 skipped**.
+  [CI 36108038362](https://github.com/edwardkim/rhwp/actions/runs/36108038362)는 2026-09-25
+  07:31:04–07:47:47 UTC, 약 **16분 43초**. Frontend package **8분 34초**, Chrome **76초**.
+  Chrome suite 합계 **51.844초**, smoke/download/lifecycle 모두 통과, retry 0, browser cache miss.
+  Chrome 종료 07:41:34, 마지막 Rust C 종료 07:47:38로 **6분 4초** 먼저 끝났다.
+  이 관측은 이전 head의 결과와 분리하며 모든 PR의 추가 대기 시간이나 비용을 보장하지 않는다.
+- 로컬 브라우저·Rust 전체 검증은 반복하지 않고 위 exact-head CI 증적을 확인했다.
+  Rust/조판/fixture 변경은 없어 조판 원칙과 Visual Sweep은 비해당이다.
+
+### 필요성과 검증 범위
+
+도입에 찬성한다. `ROADMAP.md`는 Chrome/Edge/Firefox를 업스트림의 공식 배포 대상으로 명시한다.
+기존 Node 검사는 mock Chrome API/DOM으로 저장소·다운로드 로직을 검증하고, dist 계약은 정적 파일
+존재/내용을 확인한다. 실제 MV3 worker 중단·재기동, 동일 profile 재시작, options UI 저장과
+Chrome download 이벤트·탭 생성의 연결은 이번 실제 브라우저 검사가 보완한다.
+
+[과거 탭 폭주 #1498](https://github.com/edwardkim/rhwp/issues/1498),
+[설정 문제 #2656](https://github.com/edwardkim/rhwp/issues/2656),
+[보강 PR #2658](https://github.com/edwardkim/rhwp/pull/2658)이라는 실제 사용자·개발 이력이 있다.
+다만 Chrome 업데이트가 설정을 직접 초기화했다는 원인은 확정되지 않았으며 이 E2E도 이를 입증하지 않는다.
+완료된 과거 다운로드는 onCreated를 재발생시키지 않아 freshness 방어 제거 검출은 기존 Node 계약이 담당한다
+(`rhwp-chrome/e2e/lifecycle-mutations.mjs:54`). E2E의 이 부분은 정상 시작의 무탭 생성 검사다.
+
+이 검사는 unpacked Chrome 확장의 사용자 동작 회귀 검사이며 Firefox/Edge 실제 실행, 스토어 업데이트,
+계정 동기화, 최종 배포 ZIP 동일성, HWPX 렌더링·조판 정확도 전체를 보장하지 않는다.
+후속 외부 증적 보고서 연동은 선택 사항이며 이번 회귀 검사의 효용을 위한 선행 조건이 아니다.
+
+### 실행 비용과 권고
+
+`src/**`, `crates/**`, `rhwp-studio/src/**`의 보수적 분류는 공유 WASM의 영향을 놓치지 않지만
+정확한 실행 의존성 분석은 아니다. Chrome이 필요하면 Frontend **전체 package lane**을 승격한다.
+기존에 Rust만 수행하던 변경에는 Firefox build, VS Code compile, Studio gate를 포함한 비용이 추가될 수 있다.
+
+최신 devel의 first-parent 변경 50개를 각각 devel PR 입력으로 가정해 현 PR의 분류 함수를 실행했다.
+43개가 Chrome 대상, 7개 제외이며 대상 중 33개는 이미 package, 10개는 none에서 package로 승격했다.
+rename 양쪽 경로를 포함했다. 표본은 `eb9142dd7`에서 고정했고
+`/private/tmp/rhwp-7283-impact-sample.json`에 경로 판정과 commit을 기록했다.
+이는 top-level trigger·fast-pass·실제 PR 변경 범위·runner billing을 재현한 측정이 아니다.
+따라서 실제 실행률/과금 수치로 환산하지 않는다.
+
+권고는 devel에서 관련 변경 자동 검사 + main CI 전체 검사 정책을 유지하는 것이다.
+main에서만 검사하면 확장 회귀 발견이 릴리즈 통합 시점까지 늦어진다. 다만 현재 정책을
+'확장 전용 변경에만 드물게 실행'이라고 설명해서는 안 된다. 비용이 문제가 되면 후속 작업에서
+Chrome 산출물 준비를 다른 frontend 제품 검사와 분리하는 방안을 실제 비용과 함께 평가한다.
+단순히 lifecycle 일부만 생략하면 약 34초는 줄일 수 있어도 package 승격 비용은 해결되지 않는다.
 
 ## 2026-09-25 리뷰 후 보완
 
