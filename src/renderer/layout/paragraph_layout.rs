@@ -594,7 +594,15 @@ fn bullet_marker_text(
     }
     // PUA 문자(0xF000~0xF0FF)를 표준 Unicode로 매핑
     // HWP는 Symbol 폰트 문자를 PUA(0xF000+code)로 저장
-    let bullet_ch = map_pua_bullet_char(bullet.bullet_char);
+    let bullet_ch = match map_pua_bullet_char(bullet.bullet_char) {
+        // [#7418] 글머리표 자리의 soft hyphen(U+00AD)은 한/글이 반각 하이픈으로 그린다
+        // (`footnote-01-hwp-2020.pdf` 1쪽: 마커 8673 → 본문 10079, 14pt 에서 마커+공백
+        // 1406 HWPUNIT). 본문의 soft hyphen 은 보이지 않아야 하므로 `map_pua_bullet_char`
+        // 가 아니라 글머리표 문자열에서만 바꾼다. 종전에는 보이지 않는 1em 글자로 재어
+        // 본문이 694 HWPUNIT 늦게 시작했다.
+        '\u{00AD}' => '-',
+        other => other,
+    };
     // 글머리 기호 + 본문과의 거리(text_distance)에 따른 간격
     Some(if bullet.text_distance > 0 {
         format!("{} ", bullet_ch)
@@ -606,13 +614,14 @@ fn bullet_marker_text(
 /// [#7418] 글머리표 마커가 문단의 **모든 줄**에서 차지하는 폭(px).
 ///
 /// 한/글은 마커 뒤에서 본문을 시작하고 둘째 줄부터도 같은 자리에 맞춘다(행잉).
-/// 배치(`layout_composed_paragraph` 의 `num_offset`)가 이 폭만큼 줄 가용폭을 줄이므로,
+/// 배치(`layout_composed_paragraph_in_frame` 의 `num_offset`)가 이 폭만큼 줄 가용폭을 줄이므로,
 /// 줄 나눔(`layout_paragraph_in_frame`)도 같은 폭으로 줄을 채워야 한다. 종전에는 줄 나눔만
 /// 마커를 몰라 줄마다 마커 폭(`endnote-01` 15pt `❍ ` 2175HU)만큼 더 담았고, 배치는 넘친
 /// 줄을 좁은 상자에 양쪽 정렬로 눌러 담았다. 스타일은 배치의 마커 스타일
 /// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
 ///
-/// 번호·개요 문단은 마커 문자열이 배치 단계의 번호 계수기에서 정해지므로 여기서 다루지 않는다.
+/// 번호·개요 문단은 마커 문자열이 배치 단계의 번호 계수기에서 정해지므로 여기서 다루지 않는다
+/// (#7436).
 pub(crate) fn bullet_marker_hang_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
     let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
     let text = bullet_marker_text(para_style, styles)?;
