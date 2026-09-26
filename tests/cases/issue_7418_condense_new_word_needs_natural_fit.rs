@@ -539,11 +539,10 @@ fn list_marker_head_places_first_and_following_lines() {
     };
     // PDF 원점은 문단 여백에서 6 HWPUNIT 떨어져 있다(마커가 여백에 붙은 문단 전부 6).
     const PDF_ORIGIN_HU: f64 = 6.0;
-    // `❍` 는 맑은 고딕에 없는 글자다. 한/글은 1.0em(≈1000)으로, rhwp 는 대체 글꼴의 0.97em 으로
-    // 재어 마커가 본문 앞에 서는 문단의 첫 줄이 30 HWPUNIT 안팎 다르다. 글꼴 대체 축이라 여기서
-    // 보지 않고, PDF 원점 반올림(±8)과 함께 허용한다. 종전 규칙(마커+공백 한 칸, 보정·단위·자동
-    // 내어쓰기 무시)은 이 문단들에서 수백~1000 HWPUNIT 어긋난다.
-    const TOLERANCE_HU: f64 = 40.0;
+    // PDF 글자 원점은 HWPUNIT 로 ±8 안팎 흔들린다(같은 영역의 문단끼리도 1501·1507·1509).
+    // 종전 규칙(마커+공백 한 칸, 보정·단위·자동 내어쓰기 무시)은 이 문단들에서 수백~1000
+    // HWPUNIT 어긋난다.
+    const TOLERANCE_HU: f64 = 15.0;
     let mut mismatched = Vec::new();
     for (i, case) in HEAD_CASES.iter().enumerate() {
         let para = i + 1;

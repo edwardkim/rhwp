@@ -182,6 +182,8 @@ pub struct MarkerHead {
     pub width_adjust: i16,
     /// 본문과의 거리 (bit4 에 따라 % 또는 HWPUNIT)
     pub text_distance: i16,
+    /// 마커 글자 모양 (`u32::MAX` 는 참조 없음 — 문단 첫 글자 모양을 따른다)
+    pub char_shape_id: u32,
 }
 
 impl std::fmt::Debug for NumberingMarker {

@@ -118,6 +118,12 @@ issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	7
 issue6795/1341000-201100013-cyber-university-application.hwp	2
 issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	5
 issue6879/156767332-broadcast-revenue-attachment.hwp	1
+# #7418: 글머리표 머리 모양 합성 문서의 **의도된** 마커 겹침. 너비 보정 −1000·본문과의 거리 50%
+#   (B09~B11)는 마커 영역(1000 − 1000 + 500 = 500 HWPUNIT)이 마커 글자(1em)보다 좁아, 한/글
+#   2024 PDF(`pdf/issue7418/list_marker_head_synthetic-2024.pdf`)도 마커를 본문 첫 글자에 겹쳐
+#   그린다. 영역 0 인 B12~B14 는 한/글처럼 마커를 그리지 않아 세지 않는다.
+issue7418/list_marker_head_synthetic-hancom-2024.hwpx	3
+issue7418/list_marker_head_synthetic.hwpx	3
 kps-ai.hwp	2
 mel-001.hwp	1
 multi-table-001.hwp	1
