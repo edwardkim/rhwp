@@ -119,7 +119,8 @@ pub struct ComposedParagraph {
     pub inline_controls: Vec<InlineControl>,
     /// 개요 번호/글머리표 등 문단 머리 텍스트 (렌더링 전용)
     /// 문서 좌표 char_offset에 포함되지 않으며 별도 TextRunNode로 렌더링된다.
-    pub numbering_text: Option<String>,
+    /// 문단 머리 속성은 마커 영역(본문과의 거리·너비 보정·자동 내어쓰기)을 정한다.
+    pub numbering_text: Option<(String, crate::model::paragraph::MarkerHead)>,
     /// treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 목록
     /// (para.text 내 절대 char 인덱스, 폭 HWPUNIT, para.controls 내 인덱스)
     pub tac_controls: Vec<(usize, i32, usize)>,

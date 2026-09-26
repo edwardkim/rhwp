@@ -7670,32 +7670,40 @@ impl HwpDocument {
         n.start_number = 1;
         n.level_start_numbers = [1; 7];
         // 수준별 번호 형식 코드 설정
+        // [#7418] 한/글 기본 머리 모양은 자동 내어쓰기(속성 bit3)다 — 둘째 줄부터 본문 시작에 맞춘다.
         n.heads[0] = NumberingHead {
             number_format: 0,
+            attr: 1 << 3,
             ..Default::default()
         }; // 1,2,3
         n.heads[1] = NumberingHead {
             number_format: 8,
+            attr: 1 << 3,
             ..Default::default()
         }; // 가,나,다
         n.heads[2] = NumberingHead {
             number_format: 0,
+            attr: 1 << 3,
             ..Default::default()
         }; // 1,2,3
         n.heads[3] = NumberingHead {
             number_format: 8,
+            attr: 1 << 3,
             ..Default::default()
         }; // 가,나,다
         n.heads[4] = NumberingHead {
             number_format: 1,
+            attr: 1 << 3,
             ..Default::default()
         }; // ①②③
         n.heads[5] = NumberingHead {
             number_format: 10,
+            attr: 1 << 3,
             ..Default::default()
         }; // ㄱ,ㄴ,ㄷ
         n.heads[6] = NumberingHead {
             number_format: 5,
+            attr: 1 << 3,
             ..Default::default()
         }; // a,b,c
         self.core.document.doc_info.numberings.push(n);
@@ -7748,6 +7756,7 @@ impl HwpDocument {
                         if let Ok(code) = part.trim().parse::<u8>() {
                             n.heads[level] = NumberingHead {
                                 number_format: code,
+                                attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
                                 ..Default::default()
                             };
                             level += 1;
@@ -7781,6 +7790,7 @@ impl HwpDocument {
         use crate::model::style::Bullet;
         let b = Bullet {
             bullet_char: bullet_ch,
+            attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
             text_distance: 50,
             ..Default::default()
         };
