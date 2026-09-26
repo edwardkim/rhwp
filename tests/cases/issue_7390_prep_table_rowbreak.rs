@@ -355,6 +355,19 @@ fn prep_page_79_keeps_last_quote_before_saved_cell_reset() {
 }
 
 #[test]
+fn prep_page_92_caption_keeps_saved_negative_empty_line_advance() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(91).expect("물리 92쪽");
+    // 한컴 2024 PDF p92 caption bbox: 742.872pt × 96/72 = 990.496px.
+    // 저장 빈 문단(66533HU) 뒤 캡션은 67163HU: 1050HU 줄 상자와
+    // -420HU 간격의 630HU 전진을 보존한다. 빈 글자와 0 높이는 다르다.
+    let caption = line_top_containing(&page.root, "[그림 14] QUANTPrEP을").expect("그림 14 캡션");
+    assert!((caption - 990.496).abs() <= 1.5, "캡션 y: {caption:.3}");
+}
+
+#[test]
 fn prep_page_93_caption_starts_after_saved_picture_bottom() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");

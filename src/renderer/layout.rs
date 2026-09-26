@@ -8941,7 +8941,11 @@ impl LayoutEngine {
             // bottom of a floating picture. Its one line then separates the
             // picture and the following caption. The picture host's own line
             // height is already in the flow cursor; adding it again moves the
-            // empty line, caption, and later text together (#7406 p93).
+            // empty line, caption, and later text together (#7406 p92–93).
+            // The successor's stored origin also owns the empty line's physical
+            // advance, including negative spacing. A hidden empty glyph must
+            // not erase that independently saved gap.
+            let mut saved_picture_empty_flow_end = None;
             if self.profile.get().hwpx_stored_layout() && !self.profile.get().session_edited() {
                 let picture_bottom_origin = (|| {
                     let PageItem::FullParagraph { para_index } = item else {
@@ -8974,14 +8978,21 @@ impl LayoutEngine {
                     }
                     let saved_line = para.line_segs.first()?;
                     let next_line = next.line_segs.first()?;
+                    let saved_advance = next_line
+                        .vertical_pos
+                        .checked_sub(saved_line.vertical_pos)?;
+                    let full_advance = saved_line
+                        .line_height
+                        .checked_add(saved_line.line_spacing)?;
                     if saved_line.tag
                         & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                         != 0
                         || next_line.tag
                             & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                             != 0
-                        || next_line.vertical_pos
-                            != saved_line.vertical_pos + saved_line.line_height
+                        || saved_advance <= 0
+                        || (saved_advance != saved_line.line_height
+                            && saved_advance != full_advance)
                     {
                         return None;
                     }
@@ -8998,11 +9009,16 @@ impl LayoutEngine {
                             saved_line.vertical_pos - vpos_page_base_init.unwrap_or(0),
                             self.dpi,
                         );
-                    ((saved_y - image_bottom).abs() <= 1.0 && y_offset > image_bottom + 0.5)
-                        .then_some(image_bottom)
+                    let flow_end = image_bottom + hwpunit_to_px(saved_advance, self.dpi);
+                    ((saved_y - image_bottom).abs() <= 1.0
+                        && y_offset > image_bottom + 0.5
+                        && image_bottom >= col_area.y
+                        && flow_end <= col_area.y + col_area.height + 0.5)
+                        .then_some((image_bottom, flow_end))
                 })();
-                if let Some(origin) = picture_bottom_origin {
+                if let Some((origin, flow_end)) = picture_bottom_origin {
                     y_offset = origin;
+                    saved_picture_empty_flow_end = Some(flow_end);
                 }
             }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
@@ -9040,6 +9056,9 @@ impl LayoutEngine {
                 &col_content.inline_flow_plans,
                 &col_content.paragraph_float_placements,
             );
+            if let Some(flow_end) = saved_picture_empty_flow_end {
+                new_y = flow_end;
+            }
             if let PageItem::FullParagraph { para_index } = item {
                 if let Some(plan) = col_content.inline_flow_plans.get(para_index) {
                     hcursor.min_flow_floor = hcursor.min_flow_floor.max(col_area.y + plan.end);
