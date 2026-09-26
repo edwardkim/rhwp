@@ -428,6 +428,15 @@ fn numbering_head_align_str(attr: u32) -> &'static str {
     }
 }
 
+/// [#7418] 문단 머리 정보 속성 bit4 — 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
+fn para_head_text_offset_type_str(attr: u32) -> &'static str {
+    if (attr >> 4) & 0x01 != 0 {
+        "HWPUNIT"
+    } else {
+        "PERCENT"
+    }
+}
+
 // [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
@@ -842,7 +851,7 @@ fn write_numbering<W: Write>(
             ("useInstWidth", use_inst_width),
             ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
-            ("textOffsetType", "PERCENT"),
+            ("textOffsetType", para_head_text_offset_type_str(h.attr)),
             ("textOffset", text_offset_s.as_str()),
             ("numFormat", num_format),
             ("charPrIDRef", char_pr_id_ref_s.as_str()),
@@ -919,11 +928,17 @@ fn write_bullet<W: Write>(
             "hh:paraHead",
             &[
                 ("level", "0"),
-                ("align", "LEFT"),
-                ("useInstWidth", "0"),
-                ("autoIndent", "1"),
+                ("align", numbering_head_align_str(b.attr)),
+                (
+                    "useInstWidth",
+                    if (b.attr >> 2) & 0x01 != 0 { "1" } else { "0" },
+                ),
+                (
+                    "autoIndent",
+                    if (b.attr >> 3) & 0x01 != 0 { "1" } else { "0" },
+                ),
                 ("widthAdjust", &b.width_adjust.to_string()),
-                ("textOffsetType", "PERCENT"),
+                ("textOffsetType", para_head_text_offset_type_str(b.attr)),
                 ("textOffset", &b.text_distance.to_string()),
                 ("numFormat", "DIGIT"),
                 ("charPrIDRef", &b.char_shape_id.to_string()),

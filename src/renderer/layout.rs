@@ -3431,7 +3431,7 @@ mod text_measurement;
 mod utils;
 
 pub(crate) use paragraph_layout::ensure_min_baseline;
-pub(crate) use paragraph_layout::{assign_numbering_markers, list_marker_hang_px};
+pub(crate) use paragraph_layout::{assign_numbering_markers, list_marker_geometry};
 pub(crate) use table_layout::border_style_has_diagonal;
 // [#4149] 셀 커서 fast path 프로브 (document_core::queries::cursor_rect 전용)
 pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};

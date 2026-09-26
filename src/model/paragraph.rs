@@ -166,8 +166,22 @@ pub enum NumberingMarker {
     Unresolved,
     /// 번호·개요 문단이 아니거나, 그려질 번호가 없다.
     Absent,
-    /// 그려질 번호 문자열.
-    Text(String),
+    /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
+    Text(String, MarkerHead),
+}
+
+/// 목록 마커(글머리표·번호)의 문단 머리 속성 — HWP5 표 41·44 의 속성·너비 보정·본문과의 거리.
+///
+/// 줄 나눔과 배치가 마커가 차지하는 영역을 같은 값으로 정하도록 번호 문자열과 함께 둔다.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct MarkerHead {
+    /// 속성: bit0-1 정렬(0 왼쪽 · 1 가운데 · 2 오른쪽), bit2 인스턴스 폭,
+    /// bit3 자동 내어쓰기, bit4 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
+    pub attr: u32,
+    /// 너비 보정값 (HWPUNIT)
+    pub width_adjust: i16,
+    /// 본문과의 거리 (bit4 에 따라 % 또는 HWPUNIT)
+    pub text_distance: i16,
 }
 
 impl std::fmt::Debug for NumberingMarker {
@@ -180,7 +194,7 @@ impl NumberingMarker {
     /// 그려질 번호 문자열 — 계산 전이거나 번호가 없으면 `None`.
     pub fn text(&self) -> Option<&str> {
         match self {
-            NumberingMarker::Text(text) => Some(text),
+            NumberingMarker::Text(text, _) => Some(text),
             _ => None,
         }
     }

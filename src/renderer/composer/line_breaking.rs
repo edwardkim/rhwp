@@ -1395,6 +1395,17 @@ impl FitWidthHwp {
     }
 }
 
+/// [#7418] 목록 마커를 얹은 줄 나눔 상자: `(가용폭에서 뺄 양, 들여쓰기)`.
+/// 마커가 없으면 문단 들여쓰기 그대로다.
+fn list_marker_breaker_box(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    indent_px: f64,
+) -> (f64, f64) {
+    crate::renderer::layout::list_marker_geometry(para, styles)
+        .map_or((0.0, indent_px), |geometry| geometry.breaker_box(indent_px))
+}
+
 /// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
 ///
 /// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
@@ -2864,11 +2875,15 @@ fn layout_paragraph_in_frame_impl(
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = para_style.map(|style| style.indent).unwrap_or(0.0);
-    // [#7418·#7436] 목록 마커(글머리표·번호)는 모든 줄의 앞을 차지한다. 배치가 같은 폭만큼
-    // 줄 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 그 폭을 뺀 상자로 줄을 나눈다. 게시하는
-    // 행 기하(구간)는 마커를 포함한 그대로다 — 한/글 저장 행도 마커 자리부터 시작한다.
-    let marker_hang_px = crate::renderer::layout::list_marker_hang_px(para, styles).unwrap_or(0.0);
+    // [#7418·#7436] 목록 마커(글머리표·번호)는 줄 앞을 차지한다. 배치가 마커 기하만큼
+    // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
+    // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
+    // 한/글 저장 행도 마커 자리부터 시작한다.
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(
+        para,
+        styles,
+        para_style.map(|style| style.indent).unwrap_or(0.0),
+    );
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3847,9 +3862,16 @@ fn reflow_line_segs_impl(
     let seg_width_hwp = paragraph_box.width_hwp();
     // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
     // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
-    let available_width_px = (paragraph_box.width_px(dpi)
-        - crate::renderer::layout::list_marker_hang_px(para, styles).unwrap_or(0.0))
-    .max(1.0);
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(
+        para,
+        styles,
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|s| s.indent)
+            .unwrap_or(0.0),
+    );
+    let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -4008,9 +4030,8 @@ fn reflow_line_segs_impl(
     let text_len = text_chars.len();
     let inline_controls = flow_inline_controls(para);
 
-    // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회
+    // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회 (들여쓰기는 목록 마커를 얹은 값)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = para_style.map(|s| s.indent).unwrap_or(0.0);
     let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
     let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
     let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);

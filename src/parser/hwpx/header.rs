@@ -2088,14 +2088,37 @@ fn parse_bullet_hwpx(
 
 /// `<hh:bullet>` 자식 `<hh:paraHead>` 의 widthAdjust/textOffset/charPrIDRef 를
 /// Bullet 필드(HWP5 BULLET record 의 문단 머리 정보 12바이트와 동일 의미)로 흡수한다.
+/// align/useInstWidth/autoIndent/textOffsetType 은 같은 정보의 속성 비트로 옮긴다.
 fn apply_bullet_para_head_attrs(bullet: &mut Bullet, e: &quick_xml::events::BytesStart) {
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"charPrIDRef" => bullet.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => bullet.width_adjust = parse_i16(&attr),
             b"textOffset" => bullet.text_distance = parse_i16(&attr),
-            _ => {}
+            key => bullet.attr = apply_para_head_attr_bit(bullet.attr, key, &attr_str(&attr)),
         }
+    }
+}
+
+/// [#7418] `hh:paraHead` 의 배치 속성을 HWP5 문단 머리 정보(표 41) 속성 비트로 옮긴다:
+/// bit0-1 정렬(LEFT 0 · CENTER 1 · RIGHT 2), bit2 useInstWidth, bit3 autoIndent,
+/// bit4 textOffsetType(PERCENT 0 · HWPUNIT 1). 직렬화기(`numbering_head_align_str` 등)의
+/// 역방향이다. 줄 배치가 마커 영역(본문과의 거리 단위·자동 내어쓰기)을 이 비트로 정한다.
+fn apply_para_head_attr_bit(attr: u32, key: &[u8], value: &str) -> u32 {
+    let set = |attr: u32, bit: u32, on: bool| if on { attr | bit } else { attr & !bit };
+    match key {
+        b"align" => {
+            let code = match value {
+                "CENTER" => 1,
+                "RIGHT" => 2,
+                _ => 0,
+            };
+            (attr & !0x03) | code
+        }
+        b"useInstWidth" => set(attr, 1 << 2, value == "1" || value == "true"),
+        b"autoIndent" => set(attr, 1 << 3, value == "1" || value == "true"),
+        b"textOffsetType" => set(attr, 1 << 4, value == "HWPUNIT"),
+        _ => attr,
     }
 }
 
@@ -2190,7 +2213,7 @@ fn parse_numbering_para_head_attrs(
             b"charPrIDRef" => head.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => head.width_adjust = parse_i16(&attr),
             b"textOffset" => head.text_distance = parse_i16(&attr),
-            _ => {}
+            key => head.attr = apply_para_head_attr_bit(head.attr, key, &attr_str(&attr)),
         }
     }
 

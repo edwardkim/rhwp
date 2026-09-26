@@ -430,3 +430,150 @@ fn condense_saves_from_the_space_width_before_letter_spacing() {
         mismatched.join("\n")
     );
 }
+
+/// 글머리표 머리 모양 실험 — 문단마다 글머리표 정의 하나(`❍`, 맑은 고딕 10pt, 왼쪽 여백
+/// 4000 HWPUNIT)를 두고 너비 보정·본문과의 거리·들여쓰기·자동 내어쓰기·정렬만 바꾼다.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_list_marker_head_fixture.py`,
+/// 한/글 2024 저장본과 같은 세션 PDF(`pdf/issue7418/list_marker_head_synthetic-2024.pdf`)가 있다.
+const HEAD_NO_CACHE: &str = "samples/issue7418/list_marker_head_synthetic.hwpx";
+const HEAD_HANCOM: &str = "samples/issue7418/list_marker_head_synthetic-hancom-2024.hwpx";
+
+/// (너비 보정, 거리 %, 들여쓰기, 자동 내어쓰기, 정렬, 한/글 첫 줄 본문, 한/글 둘째 줄) —
+/// 본문 x 는 PDF 글자 원점을 문단 왼쪽 여백 기준 HWPUNIT 으로 잰 값이다(쪽 척도 0.99894 보정).
+const HEAD_CASES: [(i32, i32, i32, bool, &str, i32, i32); 43] = [
+    (0, 50, 0, true, "LEFT", 1507, 1507),
+    (0, 50, -1200, true, "LEFT", 1507, 2708),
+    (0, 50, 1000, true, "LEFT", 1507, 511),
+    (0, 0, 0, true, "LEFT", 1015, 1015),
+    (0, 0, -1200, true, "LEFT", 1015, 2216),
+    (0, 0, 1000, true, "LEFT", 1015, 6),
+    (0, 100, 0, true, "LEFT", 2012, 2012),
+    (0, 100, -1200, true, "LEFT", 2012, 3212),
+    (0, 100, 1000, true, "LEFT", 2012, 1015),
+    (-1000, 50, 0, true, "LEFT", 511, 511),
+    (-1000, 50, -1200, true, "LEFT", 511, 1711),
+    (-1000, 50, 1000, true, "LEFT", 1015, 6),
+    (-1000, 0, 0, true, "LEFT", 6, 6),
+    (-1000, 0, -1200, true, "LEFT", 6, 1207),
+    (-1000, 0, 1000, true, "LEFT", 1015, 6),
+    (-1000, 100, 0, true, "LEFT", 1015, 1015),
+    (-1000, 100, -1200, true, "LEFT", 1015, 2216),
+    (-1000, 100, 1000, true, "LEFT", 1015, 6),
+    (1000, 50, 0, true, "LEFT", 2516, 2516),
+    (1000, 50, -1200, true, "LEFT", 2516, 3716),
+    (1000, 50, 1000, true, "LEFT", 2516, 1507),
+    (1000, 0, 0, true, "LEFT", 2012, 2012),
+    (1000, 0, -1200, true, "LEFT", 2012, 3212),
+    (1000, 0, 1000, true, "LEFT", 2012, 1015),
+    (1000, 100, 0, true, "LEFT", 3008, 3008),
+    (1000, 100, -1200, true, "LEFT", 3008, 4209),
+    (1000, 100, 1000, true, "LEFT", 3008, 2012),
+    (3000, 50, 0, true, "LEFT", 4509, 4509),
+    (3000, 50, -1200, true, "LEFT", 4509, 5709),
+    (3000, 50, 1000, true, "LEFT", 4509, 3512),
+    (3000, 0, 0, true, "LEFT", 4017, 4017),
+    (3000, 0, -1200, true, "LEFT", 4017, 5217),
+    (3000, 0, 1000, true, "LEFT", 4017, 3008),
+    (3000, 100, 0, true, "LEFT", 5013, 5013),
+    (3000, 100, -1200, true, "LEFT", 5013, 6214),
+    (3000, 100, 1000, true, "LEFT", 5013, 4017),
+    (0, 50, 0, false, "LEFT", 1507, 6),
+    (0, 50, -1200, false, "LEFT", 1507, 1207),
+    (0, 50, 1000, false, "LEFT", 2516, 6),
+    (0, 50, 0, true, "CENTER", 1507, 1507),
+    (3000, 50, 0, true, "CENTER", 4509, 4509),
+    (0, 50, 0, true, "RIGHT", 1507, 1507),
+    (3000, 50, 0, true, "RIGHT", 4509, 4509),
+];
+
+fn head_label(case: &(i32, i32, i32, bool, &str, i32, i32)) -> String {
+    let (wa, to, ind, auto, align, _, _) = case;
+    format!("보정 {wa} 거리 {to}% 들여쓰기 {ind} 자동 {auto} {align}")
+}
+
+/// 줄 나눔 상자는 머리 모양이 정한 줄별 본문 시작을 뺀 폭이다.
+///
+/// 종전에는 마커 글자와 공백 한 칸의 폭을 모든 줄에서 똑같이 뺐다 — 너비 보정·본문과의 거리
+/// 단위·자동 내어쓰기를 몰라, 들여쓰기가 양수이거나 보정이 있는 문단의 줄이 한/글과 달랐다.
+#[test]
+fn list_marker_head_sets_the_line_box() {
+    let hancom = line_starts(HEAD_HANCOM, HEAD_CASES.len());
+    let rhwp = line_starts(HEAD_NO_CACHE, HEAD_CASES.len());
+    let mismatched: Vec<String> = HEAD_CASES
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(case, (h, r))| format!("{}: 한/글 {h:?} / rhwp {r:?}", head_label(case)))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "머리 모양 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}
+
+/// 첫 줄과 둘째 줄의 본문 시작이 한/글 PDF 와 같다.
+///
+/// | | 첫 줄 본문 | 이어지는 줄 |
+/// |---|---|---|
+/// | 자동 내어쓰기 | `max(영역, max(들여쓰기,0))` | 첫 줄 − 들여쓰기 |
+/// | 끔 | `max(들여쓰기,0) + 영역` | `max(−들여쓰기,0)` |
+///
+/// 영역 = 마커 글자 폭 + 너비 보정 + 글자 크기 × 거리%.
+#[test]
+fn list_marker_head_places_first_and_following_lines() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(HEAD_NO_CACHE);
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(&path).expect("fixture 읽기")).expect("문서 로드");
+    let section = &core.document().sections[0];
+    let page = &section.section_def.page_def;
+    let body_left_hu = (page.margin_left + page.margin_gutter) as f64 + 4000.0;
+    let x_hu = |para: usize, offset: usize| -> f64 {
+        let json = core
+            .get_cursor_rect_native(0, para, offset)
+            .unwrap_or_else(|e| panic!("문단 {para} 캐럿 {offset}: {e:?}"));
+        let value: serde_json::Value = serde_json::from_str(&json).expect("캐럿 JSON");
+        value["x"].as_f64().expect("캐럿 x") * 75.0 - body_left_hu
+    };
+    // PDF 원점은 문단 여백에서 6 HWPUNIT 떨어져 있다(마커가 여백에 붙은 문단 전부 6).
+    const PDF_ORIGIN_HU: f64 = 6.0;
+    // `❍` 는 맑은 고딕에 없는 글자다. 한/글은 1.0em(≈1000)으로, rhwp 는 대체 글꼴의 0.97em 으로
+    // 재어 마커가 본문 앞에 서는 문단의 첫 줄이 30 HWPUNIT 안팎 다르다. 글꼴 대체 축이라 여기서
+    // 보지 않고, PDF 원점 반올림(±8)과 함께 허용한다. 종전 규칙(마커+공백 한 칸, 보정·단위·자동
+    // 내어쓰기 무시)은 이 문단들에서 수백~1000 HWPUNIT 어긋난다.
+    const TOLERANCE_HU: f64 = 40.0;
+    let mut mismatched = Vec::new();
+    for (i, case) in HEAD_CASES.iter().enumerate() {
+        let para = i + 1;
+        let paragraph = &section.paragraphs[para];
+        let second_start = paragraph.line_segs[1].text_start as usize;
+        let chars: Vec<char> = paragraph.text.chars().collect();
+        let is_syllable = |i: usize| ('가'..='힣').contains(&chars[i]);
+        assert!(
+            is_syllable(4) && is_syllable(5) && is_syllable(second_start),
+            "{}: 첫 낱말이나 둘째 줄 첫 글자가 음절이 아니다 — 시험 설정 오류",
+            head_label(case)
+        );
+        let first = x_hu(para, 0);
+        // 줄 경계의 캐럿은 앞 줄 끝에 설 수 있으므로 둘째 줄 첫 글자 뒤 캐럿에서 한 음절 폭을
+        // 뺀다. 음절 폭은 첫 줄 첫 낱말(`B00 가나다`) 안 두 음절 사이 간격이다 — 양쪽 정렬은
+        // 공백만 늘린다.
+        let syllable = x_hu(para, 5) - x_hu(para, 4);
+        let second = x_hu(para, second_start + 1) - syllable;
+        let (want_first, want_second) =
+            (case.5 as f64 - PDF_ORIGIN_HU, case.6 as f64 - PDF_ORIGIN_HU);
+        if (first - want_first).abs() > TOLERANCE_HU || (second - want_second).abs() > TOLERANCE_HU
+        {
+            mismatched.push(format!(
+                "{}: 한/글 ({want_first:.0}, {want_second:.0}) / rhwp ({first:.0}, {second:.0})",
+                head_label(case)
+            ));
+        }
+    }
+    assert!(
+        mismatched.is_empty(),
+        "머리 모양 문단의 본문 시작이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}
