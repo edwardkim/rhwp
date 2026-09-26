@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "repository": "edwardkim/rhwp",
   "workflows": {
+    ".github/workflows/chrome-browser-cache.yml": {
+      "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
+      "sensitiveSurfaces": ["cache"],
+      "requiredJobs": ["Frontend package gates", "Chrome extension E2E"],
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": ["workflow_dispatch"],
+      "allowedActors": ["edwardkim"]
+    },
     ".github/workflows/adapter-diff.yml": {
       "executionMode": "direct",
       "sensitiveSurfaces": ["cache"],

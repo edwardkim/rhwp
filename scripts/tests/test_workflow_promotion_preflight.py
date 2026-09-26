@@ -475,6 +475,7 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
 
 class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     expected_workflows = {
+        ".github/workflows/chrome-browser-cache.yml",
         ".github/workflows/adapter-diff.yml",
         ".github/workflows/ci.yml",
         ".github/workflows/codeql.yml",

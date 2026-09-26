@@ -523,6 +523,8 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
             "FRONTEND_PACKAGE_RESULT": "skipped",
+            "CHROME_EXTENSION_REQUIRED": "false",
+            "CHROME_EXTENSION_RESULT": "skipped",
             "PROMOTION_RESULT": "skipped",
             "CANONICAL_PROMOTION": "false",
             **overrides,
@@ -580,7 +582,9 @@ class CiImpactWorkflowTests(unittest.TestCase):
             step,
         )
         self.assertIn("persist-credentials: false", step)
-        self.assertIn("sparse-checkout: scripts/ci-impact-classifier.cjs", step)
+        self.assertIn("sparse-checkout: |", step)
+        self.assertIn("            scripts/ci-impact-classifier.cjs", step)
+        self.assertIn("            scripts/chrome-extension-impact.cjs", step)
         self.assertIn("sparse-checkout-cone-mode: false", step)
         self.assertIn("id: checkout-impact-classifier", step)
         self.assertIn("Classify CI impact", self.preflight)
@@ -1091,6 +1095,25 @@ mod support;
                     "needs.preflight.outputs.rust_required == 'true'",
                     self._step(step_name, aggregate),
                 )
+
+    def test_aggregate_checks_chrome_execution_and_skip(self) -> None:
+        for required, actual, accepted in (
+            ("true", "success", True), ("false", "skipped", True),
+            ("true", "skipped", False), ("true", "failure", False),
+            ("true", "cancelled", False), ("true", "timed_out", False),
+            ("false", "success", False), ("false", "failure", False),
+            ("", "skipped", False), ("unknown", "success", False),
+        ):
+            with self.subTest(required=required, result=actual):
+                result = self._run_aggregate(
+                    FRONTEND_MODE="package", FRONTEND_UNIT_RESULT="skipped",
+                    FRONTEND_PACKAGE_RESULT="success",
+                    CHROME_EXTENSION_REQUIRED=required, CHROME_EXTENSION_RESULT=actual,
+                )
+                self.assertEqual(result.returncode == 0, accepted, result.stdout)
+        for actual in ("success", "failure", "cancelled"):
+            result = self._run_aggregate(FAST_PASS="true", CHROME_EXTENSION_RESULT=actual)
+            self.assertNotEqual(result.returncode, 0, result.stdout)
 
     def test_aggregate_accepts_every_supported_stage4_lane(self) -> None:
         rust_success = {

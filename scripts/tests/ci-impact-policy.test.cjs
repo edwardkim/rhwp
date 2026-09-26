@@ -10,6 +10,7 @@ const test = require('node:test');
 const { classifyChanges } = require('../ci-impact-classifier.cjs');
 const {
   CI_AUDITED_JOB_IDS,
+  CI_CHROME_JOB,
   CI_FRONTEND_JOBS,
   CI_JOB_ALIASES,
   CI_NATIVE_JOB,
@@ -134,7 +135,7 @@ function ciJobs(classification, fastPass = false) {
   ];
   if (fastPass) {
     return jobs.concat(
-      [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS]
+      [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS, CI_CHROME_JOB]
         .map((name) => job(name, 'skipped')),
     );
   }
@@ -154,6 +155,7 @@ function ciJobs(classification, fastPass = false) {
   }[classification.frontend_mode];
   jobs.push(job(CI_FRONTEND_JOBS[0], frontend[0]));
   jobs.push(job(CI_FRONTEND_JOBS[1], frontend[1]));
+  jobs.push(job(CI_CHROME_JOB, classification.chrome_extension_e2e_required === 'true' ? 'success' : 'skipped'));
   return jobs;
 }
 
@@ -460,11 +462,70 @@ test('invalid classifier output and API collection failure both close to full', 
   ));
 });
 
+test('Chrome audit requires mandatory execution and accepts successful optional execution', () => {
+  for (const [filename, required] of [
+    ['rhwp-studio/src/ui/about-dialog.ts', true],
+    ['rhwp-chrome/sw/settings-store.mjs', true],
+    ['rhwp-firefox/background.js', false],
+    ['rhwp-studio/tests/a.test.ts', false],
+    ['src/main.rs', false],
+    ['src/cli/document_io.rs', false],
+    ['bindings/Native/src/lib.rs', false],
+    ['scripts/frontend-vscode-outline.test.mjs', false],
+    ['src/parser/mod.rs', true],
+  ]) {
+    const input = policyInput({ files: [{ filename, status: 'modified' }] });
+    const policy = determinePolicy(input);
+    assert.equal(policy.classification.chrome_extension_e2e_required, String(required), filename);
+    if (required) assert.equal(policy.classification.frontend_mode, 'package', filename);
+    else assert.equal(policy.classification.frontend_mode, input.classification.frontend_mode, filename);
+    const workflows = workflowEvidence(policy);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
+    const chrome = workflows.CI.jobs.find(item => item.name === CI_CHROME_JOB);
+    for (const conclusion of ['success', 'skipped', 'failure', 'cancelled', 'timed_out', 'neutral']) {
+      chrome.conclusion = conclusion;
+      const audit = auditPolicyRuns({ ...input, policy, workflows });
+      const accepted = conclusion === 'success' || (!required && conclusion === 'skipped');
+      assert.equal(audit.conclusion === 'success', accepted, `${filename}: ${conclusion}`);
+    }
+    workflows.CI.jobs = workflows.CI.jobs.filter(item => item !== chrome);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'failure');
+  }
+  const files = [{ filename: 'scripts/chrome-extension-impact.cjs', status: 'modified' }];
+  const input = policyInput({ files });
+  input.pullRequest.headRepository = 'external/rhwp';
+  input.pullRequest.authorPermission = 'read';
+  assert.equal(determinePolicy(input).decision, 'blocked');
+});
+
+test('policy forwards the PR target and main requires Chrome even for a native-only diff', () => {
+  const input = policyInput({ files: [{ filename: 'src/main.rs', status: 'modified' }] });
+  assert.equal(determinePolicy(input).classification.frontend_mode, 'none');
+  input.pullRequest.baseRef = 'main';
+  const policy = determinePolicy(input);
+  assert.equal(policy.classification.chrome_extension_e2e_required, 'true');
+  assert.equal(policy.classification.chrome_extension_e2e_reason, 'main-release-validation');
+  assert.equal(policy.classification.frontend_mode, 'package');
+});
+
+test('policy still loads with the existing controller sparse checkout file set', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-policy-sparse-'));
+  try {
+    for (const file of ['ci-impact-classifier.cjs', 'ci-impact-policy.cjs']) {
+      fs.copyFileSync(path.join(__dirname, '..', file), path.join(directory, file));
+    }
+    const output = execFileSync(process.execPath, ['-e',
+      `const {determinePolicy} = require('./ci-impact-policy.cjs'); console.log(determinePolicy().classification.chrome_extension_e2e_required);`,
+    ], { cwd: directory, encoding: 'utf8' });
+    assert.equal(output.trim(), 'true');
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
 test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '6',
+    v: '7',
     cv: '7',
     mode: 'selective',
     rfp: '0',
@@ -558,7 +619,7 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
   const conditioned = [...CI_WORKFLOW.matchAll(
     /^  ([A-Za-z0-9_-]+):\n([\s\S]*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)/gm,
   )].filter(([, , body]) => (
-    /needs\.preflight\.outputs\.(?:rust_required|native_skia_required|frontend_mode)/.test(body)
+    /needs\.preflight\.outputs\.(?:rust_required|native_skia_required|frontend_mode|chrome_extension_e2e_required)/.test(body)
   )).map(([, jobId]) => jobId).sort();
   assert.deepEqual(conditioned, Object.keys(CI_AUDITED_JOB_IDS).sort());
 
@@ -566,6 +627,7 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     ...CI_RUST_JOBS,
     CI_NATIVE_JOB,
     ...CI_FRONTEND_JOBS,
+    CI_CHROME_JOB,
     'Build & Test',
     'resolve-nextest-duration-policy',
   ]);
@@ -762,7 +824,7 @@ test('aggregate audit accepts safe full execution when worker classification deg
     const preflight = evidence.jobs.find((entry) => entry.name.endsWith('preflight'));
     preflight.steps.find((entry) => entry.name.startsWith('Check out trusted')).conclusion = 'failure';
   }
-  for (const name of [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS]) {
+  for (const name of [...CI_RUST_JOBS, CI_NATIVE_JOB, ...CI_FRONTEND_JOBS, CI_CHROME_JOB]) {
     const aliases = CI_JOB_ALIASES[name] || [name];
     const lane = workflows.CI.jobs.find((entry) => aliases.includes(entry.name));
     lane.conclusion = 'success';
@@ -779,6 +841,32 @@ test('aggregate audit accepts safe full execution when worker classification deg
 
   const audit = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
   assert.equal(audit.conclusion, 'success');
+});
+
+test('Chrome audit accepts CI collection-error fallback when the controller collects unrelated paths', () => {
+  for (const filename of ['rhwp-firefox/background.js', 'src/main.rs']) {
+    const files = [{ filename, status: 'modified' }];
+    const input = policyInput({ files, classification: classificationFor(files) });
+    const policy = determinePolicy(input);
+    assert.equal(policy.classification.chrome_extension_e2e_required, 'false');
+    const workflows = workflowEvidence(policy);
+    assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'success');
+
+    // The worker's independent API request fails; the controller's request succeeds.
+    // Use the actual fallback classification to model the worker's completed jobs.
+    const worker = determinePolicy(policyInput({ files: [], forceFullReason: 'collection-error' }));
+    assert.equal(worker.classification.chrome_extension_e2e_required, 'true');
+    assert.equal(worker.classification.frontend_mode, 'package');
+    workflows.CI.jobs = ciJobs(worker.classification);
+    const audit = auditPolicyRuns({ ...input, policy, workflows });
+    assert.equal(audit.conclusion, 'success', `${filename}: ${audit.reason}`);
+
+    const chrome = workflows.CI.jobs.find(entry => entry.name === CI_CHROME_JOB);
+    for (const conclusion of ['failure', 'cancelled', 'timed_out']) {
+      chrome.conclusion = conclusion;
+      assert.equal(auditPolicyRuns({ ...input, policy, workflows }).conclusion, 'failure');
+    }
+  }
 });
 
 test('safe supersets do not permit failed optional lanes or skipped required analysis', () => {
@@ -1104,7 +1192,7 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '7');
 });
 
 test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {

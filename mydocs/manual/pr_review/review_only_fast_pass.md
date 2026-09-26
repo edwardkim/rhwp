@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-14
+last_verified: 2026-09-24
 ---
 
 # Review-only fast-pass
@@ -31,6 +31,10 @@ Proptest roundtrip과 Adapter inter-diff도 같은 허용 경로 정책을 사�
 candidate의 결과를 재사용할 때는 PR 번호 배열 유무가 아니라 candidate SHA, 현재 PR head branch, source
 repository id와 PR 생성 이후 실행 여부를 함께 확인한다. 따라서 fork PR의 `listWorkflowRuns` 응답에
 `pull_requests` 배열이 비어 있어도, 다른 PR·다른 fork·PR 생성 전 실행 결과는 재사용하지 않는다.
+
+CI의 `main` 대상 실행은 릴리즈 후보의 전체 Chrome E2E를 보장하기 위해 아래 fast-pass를
+사용하지 않는다. `devel`에서는 기존 재사용 조건을 유지한다. workflow의 top-level 문서 경로
+제외와 CodeQL·Render Diff의 독립적인 정책은 이 CI preflight 예외와 구분한다.
 
 ## A. code PR 뒤의 trailing review-only commit
 
@@ -108,7 +112,7 @@ PR review와 오늘할일만 추가하는 경우에는 다음 순서를 따른�
 ### A.1 CI 실행 정책을 바꾼 PR의 trusted 재사용
 
 이 경로는 devel 대상 same-repository PR 전용이다. main 대상 PR은 Controller를 기다리거나
-해당 status로 검증을 생략하지 않는다. 발행 v6과 CI·CodeQL·Render Diff 소비 계약은 실제 발행
+해당 status로 검증을 생략하지 않는다. 발행 v7과 CI·CodeQL·Render Diff 소비 계약은 실제 발행
 출력을 소비하는 연결 테스트로 검증하며, 구버전·중복/누락 필드를 허용하여 우회하지 않는다.
 Controller의 운영 배선 반영 여부와 비대상 이벤트 경계는
 [GitHub 운영 매뉴얼](../github_operations.md#75-workflow-pr의-후행-review-기록)을 따른다.

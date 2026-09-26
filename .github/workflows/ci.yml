@@ -76,7 +76,9 @@ jobs:
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
       rust_required: ${{ steps.impact.outputs.rust_required || 'true' }}
-      frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+      frontend_mode: ${{ (steps.chrome-impact.outputs.chrome_extension_e2e_required || 'true') == 'true' && 'package' || steps.impact.outputs.frontend_mode || 'package' }}
+      chrome_extension_e2e_required: ${{ steps.chrome-impact.outputs.chrome_extension_e2e_required || 'true' }}
+      chrome_extension_e2e_reason: ${{ steps.chrome-impact.outputs.chrome_extension_e2e_reason || 'classifier-unavailable' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
       codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
@@ -288,7 +290,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '6'
+                    && fields.get('v') === '7'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -382,6 +384,12 @@ jobs:
               }
 
               const pr = context.payload.pull_request;
+              // A main-target run validates the release candidate itself, even
+              // when its paths or trailing review docs could otherwise reuse CI.
+              if (pr.base.ref === 'main') {
+                setResult(false, 'main-release-validation');
+                return;
+              }
               const prFiles = await github.paginate(github.rest.pulls.listFiles, {
                 owner,
                 repo,
@@ -645,7 +653,9 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
           persist-credentials: false
-          sparse-checkout: scripts/ci-impact-classifier.cjs
+          sparse-checkout: |
+            scripts/ci-impact-classifier.cjs
+            scripts/chrome-extension-impact.cjs
           sparse-checkout-cone-mode: false
 
       - name: Collect CI impact input
@@ -714,7 +724,9 @@ jobs:
                 });
                 writeInput({
                   eventName: context.eventName,
+                  baseRef: context.payload.pull_request.base.ref,
                   files: normalizedFiles(files),
+                  expectedFileCount: context.payload.pull_request.changed_files,
                 });
                 return;
               }
@@ -777,13 +789,27 @@ jobs:
           --input .ci-impact-input.json
           --github-output "$GITHUB_OUTPUT"
 
+      - name: Classify Chrome extension impact
+        id: chrome-impact
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
+        continue-on-error: true
+        run: node scripts/chrome-extension-impact.cjs .ci-impact-input.json
+
+      - name: Summarize Chrome extension impact
+        if: ${{ always() }}
+        env:
+          CHROME_REQUIRED: ${{ steps.chrome-impact.outputs.chrome_extension_e2e_required || 'true' }}
+          CHROME_REASON: ${{ steps.chrome-impact.outputs.chrome_extension_e2e_reason || 'classifier-unavailable' }}
+        run: |
+          printf 'Chrome extension E2E: required=%s reason=%s\n' "$CHROME_REQUIRED" "$CHROME_REASON" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Summarize CI impact classification
         if: ${{ always() }}
         continue-on-error: true
         env:
           IMPACT_AUTHORITY: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
           RUST_REQUIRED: ${{ steps.impact.outputs.rust_required || 'true' }}
-          FRONTEND_MODE: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+          FRONTEND_MODE: ${{ (steps.chrome-impact.outputs.chrome_extension_e2e_required || 'true') == 'true' && 'package' || steps.impact.outputs.frontend_mode || 'package' }}
           RENDER_REQUIRED: ${{ steps.impact.outputs.render_required || 'true' }}
           NATIVE_SKIA_REQUIRED: ${{ steps.impact.outputs.native_skia_required || 'true' }}
           CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
@@ -980,6 +1006,7 @@ jobs:
 
       - name: Validate CI impact classifier
         run: |
+          node --test scripts/tests/chrome-extension-impact.test.cjs
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
           node --test scripts/tests/ci-impact-controller-contract.test.cjs
@@ -1075,6 +1102,7 @@ jobs:
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
+          python3 -m unittest scripts/tests/test_chrome_extension_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
@@ -1307,6 +1335,8 @@ jobs:
           cache-dependency-path: rhwp-studio/package-lock.json
 
       - name: Install Studio dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
         run: npm --prefix rhwp-studio ci
 
       - name: Type-check Studio
@@ -1318,6 +1348,8 @@ jobs:
 
   frontend-package-gates:
     name: Frontend package gates
+    outputs:
+      chrome_dist_artifact_id: ${{ steps.upload-chrome-dist.outputs.artifact-id }}
     runs-on: ubuntu-latest
     # [#6717] 직렬 package 설치가 지연돼도 회귀 gate를 실행할 여유를 두되 hang은 실패로 드러낸다.
     timeout-minutes: 30
@@ -1368,6 +1400,8 @@ jobs:
             rhwp-vscode/package-lock.json
 
       - name: Install frontend package dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
         run: |
           npm --prefix rhwp-studio ci --no-audit --prefer-offline
           npm --prefix rhwp-chrome ci --no-audit --prefer-offline
@@ -1385,6 +1419,11 @@ jobs:
 
       - name: Run Chrome extension options UI tests
         run: node --test rhwp-chrome/options.test.mjs
+
+      - name: Verify Chrome E2E CI contracts
+        run: |
+          node --test scripts/tests/chrome-extension-impact.test.cjs
+          python3 -m unittest scripts/tests/test_ci_impact_workflow.py scripts/tests/test_chrome_extension_workflow.py
 
       - name: Run Studio unit tests
         run: npm --prefix rhwp-studio run test
@@ -1436,6 +1475,21 @@ jobs:
       - name: Verify extension distributions
         run: node --test scripts/frontend-extension-dist.test.mjs
 
+      - name: Package Chrome E2E input
+        if: ${{ needs.preflight.outputs.chrome_extension_e2e_required == 'true' }}
+        run: tar -czf "$RUNNER_TEMP/chrome-extension-dist.tar.gz" -C rhwp-chrome dist
+
+      - name: Upload Chrome E2E input
+        id: upload-chrome-dist
+        if: ${{ needs.preflight.outputs.chrome_extension_e2e_required == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: chrome-extension-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/chrome-extension-dist.tar.gz
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
       - name: Compile VS Code extension
         run: npm --prefix rhwp-vscode run compile
 
@@ -1454,6 +1508,92 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+  chrome-extension-e2e:
+    name: Chrome extension E2E
+    needs: [preflight, frontend-package-gates]
+    if: ${{ always() && needs.preflight.result == 'success' && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.chrome_extension_e2e_required == 'true' && needs.frontend-package-gates.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PUPPETEER_CACHE_DIR: ${{ github.workspace }}/.cache/chrome-extension
+      RHWP_EXTENSION_E2E_OUTPUT_DIR: ${{ github.workspace }}/output/chrome-extension-e2e
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Consume the packaged dist; the rest of the large source/PDF corpus
+          # is unnecessary for this five-minute browser job.
+          sparse-checkout: |
+            /rhwp-chrome/
+            /samples/hwp3-pagedef-1915.hwp
+            /samples/hwpx_sample2.hwpx
+            /samples/re-font-dotum-empty-hancom.hwp
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: rhwp-chrome/package-lock.json
+      - name: Install Chrome test dependencies
+        run: npm --prefix rhwp-chrome ci --no-audit --prefer-offline
+      - name: Restore locked Chrome for Testing
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.PUPPETEER_CACHE_DIR }}
+          key: chrome-extension-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rhwp-chrome/package-lock.json') }}
+      - name: Install locked Chrome for Testing if absent
+        run: npm exec --prefix rhwp-chrome -- puppeteer browsers install chrome
+      - name: Allow the installed Chrome sandbox on Ubuntu
+        working-directory: rhwp-chrome
+        run: |
+          # Scope the user-namespace permission to this exact CfT binary.
+          # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
+          chrome_binary="$(node --input-type=module -e 'import puppeteer from "puppeteer"; process.stdout.write(await puppeteer.executablePath())')"
+          case "$chrome_binary" in
+            "$PUPPETEER_CACHE_DIR"/chrome/linux-*/chrome-linux64/chrome) ;;
+            *) echo '::error::Chrome executable is outside the expected cache'; exit 1 ;;
+          esac
+          [[ "$chrome_binary" =~ ^/[a-zA-Z0-9/_.-]+$ ]]
+          test -x "$chrome_binary"
+          printf 'abi <abi/4.0>,\ninclude <tunables/global>\nprofile rhwp-chrome-e2e "%s" flags=(unconfined) {\n  userns,\n}\n' \
+            "$chrome_binary" > "$RUNNER_TEMP/rhwp-chrome-e2e.apparmor"
+          sudo install -o root -g root -m 644 "$RUNNER_TEMP/rhwp-chrome-e2e.apparmor" /etc/apparmor.d/rhwp-chrome-e2e
+          sudo apparmor_parser --replace /etc/apparmor.d/rhwp-chrome-e2e
+      - name: Download this run's packaged extension
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          # Use the producer's immutable ID even when only a failed consumer is rerun.
+          artifact-ids: ${{ needs.frontend-package-gates.outputs.chrome_dist_artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/chrome-extension-input
+      - name: Extract this run's packaged extension
+        run: tar -xzf "$RUNNER_TEMP/chrome-extension-input/chrome-extension-dist.tar.gz" -C rhwp-chrome
+      - name: Verify tab guards
+        run: node --test rhwp-chrome/e2e/page-budget.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs rhwp-chrome/e2e/run-ci.test.mjs rhwp-chrome/e2e/failure-diagnostics.test.mjs
+      - name: Run packaged Chrome journeys
+        run: node rhwp-chrome/e2e/run-ci.mjs
+      - name: Upload minimal failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: chrome-extension-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            output/chrome-extension-e2e/*.json
+            output/chrome-extension-e2e/*.log
+            output/chrome-extension-e2e/*.png
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Remove the job's Chrome sandbox profile
+        if: ${{ always() }}
+        run: |
+          if [[ -f /etc/apparmor.d/rhwp-chrome-e2e ]]; then
+            sudo apparmor_parser --remove /etc/apparmor.d/rhwp-chrome-e2e
+            sudo rm /etc/apparmor.d/rhwp-chrome-e2e
+          fi
 
   test-archive-a-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
@@ -1695,6 +1835,7 @@ jobs:
       - native-skia-tests
       - frontend-unit-gates
       - frontend-package-gates
+      - chrome-extension-e2e
       - workflow-promotion-preflight
     if: ${{ always() }}
     permissions:
@@ -1831,6 +1972,8 @@ jobs:
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
           FRONTEND_PACKAGE_RESULT: ${{ needs['frontend-package-gates'].result }}
+          CHROME_EXTENSION_REQUIRED: ${{ needs.preflight.outputs.chrome_extension_e2e_required }}
+          CHROME_EXTENSION_RESULT: ${{ needs['chrome-extension-e2e'].result }}
           PROMOTION_RESULT: ${{ needs['workflow-promotion-preflight'].result }}
           CANONICAL_PROMOTION: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'devel' && github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
@@ -1851,6 +1994,7 @@ jobs:
             exit 1
           fi
           if [[ "${FAST_PASS}" == "true" ]]; then
+            [[ "${CHROME_EXTENSION_RESULT}" == "skipped" ]] || { echo "::error::Chrome E2E must be skipped on fast-pass"; exit 1; }
             echo "CI preflight fast-pass accepted."
             exit 0
           fi
@@ -1871,6 +2015,11 @@ jobs:
             unit) [[ "${FRONTEND_UNIT_RESULT}/${FRONTEND_PACKAGE_RESULT}" == "success/skipped" ]] || { echo "::error::Frontend unit lane expected success/skipped"; failed=1; } ;;
             package) [[ "${FRONTEND_UNIT_RESULT}/${FRONTEND_PACKAGE_RESULT}" == "skipped/success" ]] || { echo "::error::Frontend package lane expected skipped/success"; failed=1; } ;;
             *) echo "::error::Unknown frontend mode: ${FRONTEND_MODE}"; failed=1 ;;
+          esac
+          case "${CHROME_EXTENSION_REQUIRED}" in
+            true) [[ "${CHROME_EXTENSION_RESULT}" == "success" ]] || { echo "::error::Required Chrome E2E did not succeed: ${CHROME_EXTENSION_RESULT}"; failed=1; } ;;
+            false) [[ "${CHROME_EXTENSION_RESULT}" == "skipped" ]] || { echo "::error::Unneeded Chrome E2E was not skipped: ${CHROME_EXTENSION_RESULT}"; failed=1; } ;;
+            *) echo "::error::Unknown Chrome E2E requirement: ${CHROME_EXTENSION_REQUIRED}"; failed=1 ;;
           esac
           exit "$failed"
   wasm-build:

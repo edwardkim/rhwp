@@ -10,6 +10,7 @@
     "build": "node build.mjs",
     "test:e2e:smoke": "npm run build && node --test e2e/page-budget.test.mjs && node e2e/extension-smoke.test.mjs",
     "test:e2e:download": "npm run build && node e2e/download-interceptor.test.mjs",
+    "test:e2e:lifecycle": "npm run build && node --test e2e/tab-monitor.test.mjs && node e2e/extension-lifecycle.test.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

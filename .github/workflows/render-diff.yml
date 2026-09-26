@@ -223,7 +223,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '6'
+                    && fields.get('v') === '7'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target

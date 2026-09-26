@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-20
+last_verified: 2026-09-24
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -15,7 +15,7 @@ last_verified: 2026-09-20
 
 | 항목 | 요구사항 |
 |------|---------|
-| Node.js | v20 이상 |
+| Node.js | v22.12 이상 (잠긴 Puppeteer의 최소 버전, CI는 Node 22) |
 | npm | v10 이상 |
 | WASM 빌드 | `pkg/` 폴더에 WASM 빌드 완료 상태 |
 | 웹폰트 | `assets/fonts/`에 canonical WOFF2 36개 존재 |
@@ -169,7 +169,7 @@ npm --prefix rhwp-chrome run test:e2e:smoke
 - 실행별 임시 Chrome profile·download 디렉터리 생성과 종료 후 정리
 
 사용자 Chrome profile, Web Store 설치 또는 외부 네트워크는 사용하지 않는다. 설정·다운로드 수명주기
-상세 E2E는 #3513, CI 선택 실행과 브라우저 cache는 #3515가 담당한다. flake 확인은 build를 한 번만
+상세 E2E와 CI 실행은 아래 3.8~3.9를 따른다. flake 확인은 build를 한 번만
 수행한 뒤 실행별 새 profile로 smoke를 반복한다. 명령은 실제 Chrome 실행 전에 탭 예산 계약 테스트도
 실행해, 끝나지 않는 surface가 있어도 예상 밖 page target만으로 즉시 실패하는지 확인한다.
 
@@ -223,6 +223,126 @@ timeout이나 retry로 제품 실패를 숨기지 말고, 특정 사례 단독 �
 테스트는 worker의 최초 `storage.session.set`만 보류하며 다운로드와 filename/complete 이벤트는
 Chrome이 발생시킨다. 실제 complete 수신 후 저장을 재개하고 1.5초 동안 ID당 탭이 하나임을 확인한다.
 이는 지연을 주입한 회귀 검증이며 자연 발생 빈도나 worker suspend/resume을 보증하지 않는다.
+
+### 3.8 설정 수명주기와 다운로드 탭 불변식 (#3513)
+
+```bash
+npm --prefix rhwp-chrome run test:e2e:lifecycle
+```
+
+확장을 빌드하고 탭 감시 계약을 검사한 뒤 실제 options UI에서 값을 저장한다. 주 assertion은
+표시된 OFF 상태와 생성된 viewer 탭 0/1개이며, `chrome.storage` 조회는 실패 진단에만 쓴다.
+새 프로필을 사용하는 10개 시나리오는 다음과 같다.
+
+| 전환 | 검사 |
+| --- | --- |
+| OFF 저장 → options 재진입 / worker 종료 / 같은 profile 재시작 | OFF 표시 유지, 추가 탭 0 |
+| OFF / ON → 새 HWP, HWPX 다운로드 | 완료 이벤트와 저장 바이트 확인, viewer 각각 0 / 1 |
+| worker 종료 확인 → 새 HWP, HWPX 다운로드 | 다른 worker target으로 재기동, viewer 정확히 1 |
+| 확장 없이 HWP/HWPX 다운로드 → 확장 시작 → ON 저장 | `chrome://downloads`에서 과거 기록 보존 확인, viewer 0 |
+
+HWP는 `samples/hwp3-pagedef-1915.hwp`, HWPX는 `samples/hwpx_sample2.hwpx`를 사용한다.
+실행마다 고유 파일명과 loopback 서버를 사용하고 단계 timeout은 30초, 관찰 quiet window는 1.5초다.
+잠깐 생겼다가 닫힌 탭도 생성 이력에 포함하며 두 번째 탭은 진행 중 작업을 즉시 실패시킨다.
+worker를 깨울 수 있는 페이지 이동을 먼저 마친 뒤 worker를 종료하므로, 이후 다운로드가 재기동을
+일으켰는지 구분한다. 실제 Web Store 업데이트·계정 동기화·OS 인쇄 UI는 이 검사에 포함하지 않는다.
+
+```bash
+# 한 번 빌드한 dist에서 각 시나리오를 10회 반복한다. 자동 retry는 없다.
+RHWP_EXTENSION_LIFECYCLE_REPEAT=10 node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 실패한 사례만 조사할 때 사용한다.
+RHWP_EXTENSION_LIFECYCLE_CASE=wake-download-hwpx node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 정상 대조군과 방어 제거본을 비교한다. source가 아닌 임시 복사본에서만 변경한다.
+node rhwp-chrome/e2e/lifecycle-mutations.mjs
+```
+
+mutation 검증은 중복 방어 제거 시 실제 Chrome에서 viewer 2개를 검출한다. freshness 제거는 기존
+Node 상태 계약에서 검출한다. 완료된 과거 Chrome 다운로드가 `onCreated`를 다시 발생시키는 것은
+아니므로, 과거 기록 E2E만으로 freshness 방어의 검출력을 입증했다고 보고하지 않는다.
+
+### 3.9 CI 선택 실행·브라우저 cache·실패 진단 (#3515)
+
+CI preflight의 `chrome_extension_e2e_required`와 이유를 사용한다. 실행 정책은 PR의 **대상
+브랜치**로 구분한다. 현재 CI의 top-level event/path filter는 유지한다.
+
+| 실행 상황 | Chrome E2E 정책 |
+| --- | --- |
+| `devel` 대상 PR | 변경 경로를 분류해 필요한 경우 전체 smoke/download/lifecycle 실행 |
+| `main` 대상 CI (릴리즈 승격 포함) | 경로와 무관하게 전체 실행. CI review-only fast-pass도 사용하지 않음 |
+| `v*` tag / `workflow_dispatch` | 전체 실행. 수동 실행은 Chrome 전용 버튼이 아닌 기존 CI 전체 실행 |
+
+`devel`에서는 `rhwp-chrome/**`, `rhwp-shared/sw/**`, `rhwp-studio/src/**`, 공용 Rust/WASM
+입력과 폰트를 검사한다. 실제 빌드 근거는 Chrome Vite의 `rhwp-studio/index.html` 진입점,
+`src`·`pkg` alias와 `build.mjs`의 정적 파일 복사 목록이다. public 전체가 아니라 복사하는
+정적 파일 및 E2E가 읽는 샘플 3개를 개별 지정한다.
+
+Chrome 산출물에 들어가지 않는 것으로 확인한 다음 경로만 바뀌면 Chrome 검사를 생략한다.
+
+- `src/main.rs`, `src/cli/**`, `src/bin/**`, `src/tools/font_metric_gen.rs`
+- `bindings/Native/src/**`
+- `scripts/package-swift-xcframework.sh`, `scripts/frontend-vscode-outline.test.mjs`
+- 기존 제외: Firefox/Safari/VSCode/npm editor 전용 코드, 문서, Studio tests/e2e 및 빌드에
+  포함되지 않는 public 자료, E2E 입력 외의 samples/tests/gym 등
+
+root `Cargo.toml`은 CLI와 font generator를 binary로 선언하고 `src/lib.rs`는 CLI 모듈을
+포함하지 않는다. Native FFI는 root rhwp를 소비하는 별도 crate다. 이 근거로 위 source를
+제외하되 `Cargo.toml`/`Cargo.lock`/`build.rs`와 Native manifest 같은 빌드 입력은 계속 실행한다.
+`src/service/**`, parser, renderer와 내부 공용 crate를 CLI 전용으로 간주하지 않는다.
+
+이 분류는 완전한 의존성 분석이 아닌 보수적 경로 정책이다. 미분류 경로, 누락된 대상 브랜치,
+rename 정보 누락, 잘린 목록, 분류 실패는 실행한다. rename의 이전·새 경로를 모두 검사하므로
+CLI 전용 파일과 공용 코드 변경이 섞이면 실행한다. 정확한 목록은
+[분류기](../../scripts/ci-impact-classifier.cjs)와 [회귀 검사](../../scripts/tests/chrome-extension-impact.test.cjs)에 있다.
+
+Chrome이 필요하면 기존 Frontend package gates를 실행하고, 그 job의 fresh WASM 기반 dist를
+압축 artifact로 전달한다. Chrome job은 **Frontend 전체 완료 뒤** 시작하며 기존 Rust/Lint/Native와는
+병렬이다. 소비자는 생산자의 artifact ID를 사용하고 빌드를 반복하지 않는다. 전달 artifact는 1일
+보존하며, Chrome job은 harness와 입력 3개만 sparse checkout한다. Build & Test는 success/skip을
+확인하고, devel 대상 CI Impact Policy도 같은 분류·package 승격을 감사한다. required check 이름은 유지한다.
+
+기존 package 대상 변경에는 Chrome job과 전달 비용이 추가된다. 기존 frontend `none`이던 공용
+Rust 변경에는 package 검사 전체도 추가된다. 반면 위 CLI/Native 전용 변경에서는 기존 frontend
+판정을 유지한다. 따라서 병렬 실행이 전체 대기 시간 불변이나 runner 사용량 불변을 뜻하지 않는다.
+2026-09-20 실측은 package 8분 5초, Chrome 81초였고, Chrome이 마지막 Rust 검사보다 먼저 끝났다.
+이는 [해당 실행](https://github.com/edwardkim/rhwp/actions/runs/35497234046)의 관측이며 시간 보장이 아니다.
+
+일반 frontend 설치에는 `PUPPETEER_SKIP_DOWNLOAD=true`를 사용한다. Chrome job만 lockfile의
+Puppeteer가 기대하는 Chrome for Testing을 명시적으로 설치하고 OS·아키텍처·lockfile별 정확한
+cache를 복원한다. PR에서는 browser cache를 저장하지 않는다. `chrome-browser-cache.yml`의 기본
+수동 실행은 **설치 검증만** 수행한다. 기본 브랜치에 정식 반영된 뒤 승인된 cache 준비 실행에서만
+`verify_only=false`로 shared cache를 저장한다.
+
+```bash
+# workflow가 기본 브랜치에 등록된 이후 설치만 확인할 때 사용한다.
+gh workflow run chrome-browser-cache.yml --ref devel -f verify_only=true
+# main에 workflow가 반영된 뒤 shared cache 준비 (원격 실행 승인이 필요한 명령)
+gh workflow run chrome-browser-cache.yml --ref main -f verify_only=false
+```
+
+새 수동 workflow는 기본 브랜치 등록 전에 dispatch할 수 없으므로, 최초 승격은 같은 exact 후보 SHA의
+CI를 `contracts-only` adapter로 사용한다. Frontend package gates의 cache 분기 계약과 Chrome E2E의
+잠긴 브라우저 설치·실행 성공을 요구한다. 이 증거를 shared cache 저장 성공으로 보고하지 않는다.
+cache가 아직 없으면 PR에서 다운로드하여 실행할 수 있다. 이 cache 준비는 branch push 전체 CI를
+되살리지 않는다. main 반영·cache hit와 GitHub runner 시간은 실제 run 확인 전에는 미검증이다.
+Ubuntu CI에서는 설치된 Chrome for Testing의 실행 경로를 확인하고 그 파일 하나에만 user namespace를
+허용하는 AppArmor profile을 적용한다. [Chromium의 실행 경로별 profile 절차](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md)를
+따르며, job 종료 때 해당 profile을 제거한다. `No usable sandbox`는 브라우저 시작 실패이며 제품
+시나리오 실패와 구분한다. 경로 조회는 잠긴 Puppeteer의 비동기 `executablePath()`를 기다린다.
+warm-cache 목표 90초와 job hard timeout 5분은 브라우저 job의 기준이며, 선행 WASM·확장 빌드 시간은
+따로 본다. 세 browser suite에는 합계 220초의 실행 예산을 두고 timeout을 실패로 남긴다.
+
+이미 빌드한 dist에서 CI와 같은 전체 경로를 로컬 실행하려면 다음 명령을 쓴다.
+
+```bash
+node rhwp-chrome/e2e/run-ci.mjs
+```
+
+전체 runner는 case/repeat 제한 환경변수를 거부하여 부분 실행을 전체 통과로 보고하지 않는다.
+Puppeteer·Chrome·manifest 버전과 suite별 시간을 출력하며 실패 시 뒤 suite를 실행하지 않는다.
+진단 위치는 기본 `output/chrome-extension-e2e/`, 선택적으로 `RHWP_EXTENSION_E2E_OUTPUT_DIR`로 지정한다.
+console/page error, worker·download·extension URL, 단계 JSON과 PNG를 먼저 읽는다. CI에서는 실패한
+경우에만 해당 디렉터리의 JSON/LOG/PNG를 7일 보존한다. 전체 profile과 원문 fixture는 업로드하지 않는다.
+설치·runner hard timeout 때문에 브라우저 진단이 없으면 Actions step 로그를 확인한다.
 
 ---
 

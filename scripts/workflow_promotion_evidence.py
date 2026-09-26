@@ -314,7 +314,7 @@ def collect_evidence(
     if not isinstance(raw_entries, list):
         raise PromotionEvidenceError("inventory entries are invalid")
 
-    entries: dict[str, Mapping[str, Any]] = {}
+    entries: dict[str, list[Mapping[str, Any]]] = {}
     for entry in raw_entries:
         if not isinstance(entry, Mapping) or entry.get("classification") == "comment-only":
             continue
@@ -329,7 +329,7 @@ def collect_evidence(
         )
         if not path or not FULL_SHA256.fullmatch(workflow_sha):
             raise PromotionEvidenceError(f"executable entry has no evidence hash: {path}")
-        entries[path] = entry
+        entries.setdefault(path, []).append(entry)
 
     raw_runs, runs_complete = source.list_runs(candidate_sha)
     if not isinstance(raw_runs, list):
@@ -346,78 +346,80 @@ def collect_evidence(
             raise PromotionEvidenceError("run ID is invalid")
         jobs, jobs_complete = source.list_jobs(run_id)
         artifacts, artifacts_complete = source.list_artifacts(run_id)
-        entry = entries[path]
-        required_verdict = entry.get("requiredVerdictArtifact")
-        evidence_artifacts: list[dict[str, Any]] = []
-        for artifact in sorted(
-            artifacts,
-            key=lambda item: int(item.get("id", 0)) if isinstance(item, Mapping) else 0,
-        ):
-            if not isinstance(artifact, Mapping) or not artifact.get("name"):
-                raise PromotionEvidenceError("artifact record is invalid")
-            record: dict[str, Any] = {"name": str(artifact["name"])}
-            if (
-                isinstance(required_verdict, Mapping)
-                and record["name"] == str(required_verdict.get("name", ""))
-                and artifact.get("expired") is not True
+        # One exact CI run can serve its own policy and a contracts-only adapter.
+        # Keep both subject hashes/modes; indexing only by evidencePath loses one.
+        for entry in entries[path]:
+            required_verdict = entry.get("requiredVerdictArtifact")
+            evidence_artifacts: list[dict[str, Any]] = []
+            for artifact in sorted(
+                artifacts,
+                key=lambda item: int(item.get("id", 0)) if isinstance(item, Mapping) else 0,
             ):
-                artifact_id = artifact.get("id")
-                size = artifact.get("size_in_bytes")
-                digest = str(artifact.get("digest", ""))
+                if not isinstance(artifact, Mapping) or not artifact.get("name"):
+                    raise PromotionEvidenceError("artifact record is invalid")
+                record: dict[str, Any] = {"name": str(artifact["name"])}
                 if (
-                    not isinstance(artifact_id, int)
-                    or not isinstance(size, int)
-                    or size < 0
-                    or size > MAX_ARTIFACT_BYTES
-                    or not digest.startswith("sha256:")
+                    isinstance(required_verdict, Mapping)
+                    and record["name"] == str(required_verdict.get("name", ""))
+                    and artifact.get("expired") is not True
                 ):
-                    raise PromotionEvidenceError("verdict artifact metadata is invalid")
-                raw = source.download_artifact(
-                    artifact_id,
-                    max_bytes=MAX_ARTIFACT_BYTES,
-                )
-                actual_digest = hashlib.sha256(raw).hexdigest()
-                if actual_digest != digest.removeprefix("sha256:"):
-                    raise PromotionEvidenceError("verdict artifact digest mismatch")
-                verdict, files = _structured_verdict(
-                    raw,
-                    required_path=str(required_verdict.get("requiredPath", "")),
-                )
-                record.update(
-                    {"sha256": actual_digest, "verdict": verdict, "files": files}
-                )
-            evidence_artifacts.append(record)
+                    artifact_id = artifact.get("id")
+                    size = artifact.get("size_in_bytes")
+                    digest = str(artifact.get("digest", ""))
+                    if (
+                        not isinstance(artifact_id, int)
+                        or not isinstance(size, int)
+                        or size < 0
+                        or size > MAX_ARTIFACT_BYTES
+                        or not digest.startswith("sha256:")
+                    ):
+                        raise PromotionEvidenceError("verdict artifact metadata is invalid")
+                    raw = source.download_artifact(
+                        artifact_id,
+                        max_bytes=MAX_ARTIFACT_BYTES,
+                    )
+                    actual_digest = hashlib.sha256(raw).hexdigest()
+                    if actual_digest != digest.removeprefix("sha256:"):
+                        raise PromotionEvidenceError("verdict artifact digest mismatch")
+                    verdict, files = _structured_verdict(
+                        raw,
+                        required_path=str(required_verdict.get("requiredPath", "")),
+                    )
+                    record.update(
+                        {"sha256": actual_digest, "verdict": verdict, "files": files}
+                    )
+                evidence_artifacts.append(record)
 
-        actor = raw_run.get("actor")
-        collected_runs.append(
-            {
-                "id": run_id,
-                "url": str(raw_run.get("html_url", "")),
-                "path": path,
-                "event": str(raw_run.get("event", "")),
-                "actor": str(actor.get("login", "")) if isinstance(actor, Mapping) else "",
-                "headSha": candidate_sha,
-                "workflowSha256": str(
-                    (entry.get("after") or entry.get("before") or {}).get("sha256", "")
-                ),
-                "executionMode": str(entry.get("executionMode", "")),
-                "paginationComplete": bool(
-                    runs_complete and jobs_complete and artifacts_complete
-                ),
-                "status": str(raw_run.get("status", "")),
-                "conclusion": str(raw_run.get("conclusion", "")),
-                "jobs": [
-                    {
-                        "name": str(job.get("name", "")),
-                        "status": str(job.get("status", "")),
-                        "conclusion": str(job.get("conclusion", "")),
-                    }
-                    for job in jobs
-                    if isinstance(job, Mapping)
-                ],
-                "artifacts": evidence_artifacts,
-            }
-        )
+            actor = raw_run.get("actor")
+            collected_runs.append(
+                {
+                    "id": run_id,
+                    "url": str(raw_run.get("html_url", "")),
+                    "path": path,
+                    "event": str(raw_run.get("event", "")),
+                    "actor": str(actor.get("login", "")) if isinstance(actor, Mapping) else "",
+                    "headSha": candidate_sha,
+                    "workflowSha256": str(
+                        (entry.get("after") or entry.get("before") or {}).get("sha256", "")
+                    ),
+                    "executionMode": str(entry.get("executionMode", "")),
+                    "paginationComplete": bool(
+                        runs_complete and jobs_complete and artifacts_complete
+                    ),
+                    "status": str(raw_run.get("status", "")),
+                    "conclusion": str(raw_run.get("conclusion", "")),
+                    "jobs": [
+                        {
+                            "name": str(job.get("name", "")),
+                            "status": str(job.get("status", "")),
+                            "conclusion": str(job.get("conclusion", "")),
+                        }
+                        for job in jobs
+                        if isinstance(job, Mapping)
+                    ],
+                    "artifacts": evidence_artifacts,
+                }
+            )
 
     comments: list[dict[str, Any]] = []
     comments_complete = True
@@ -431,7 +433,7 @@ def collect_evidence(
         "candidateSha": candidate_sha,
         "runsComplete": bool(runs_complete),
         "commentsComplete": comments_complete,
-        "runs": sorted(collected_runs, key=lambda item: (item["path"], item["id"])),
+        "runs": sorted(collected_runs, key=lambda item: (item["path"], item["id"], item["workflowSha256"])),
         "waivers": _collect_waivers(
             comments,
             trusted_maintainers=trusted_maintainers,

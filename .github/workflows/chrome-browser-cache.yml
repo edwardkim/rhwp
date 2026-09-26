@@ -1,0 +1,69 @@
+name: Prepare Chrome extension browser cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      verify_only:
+        description: 'Only verify the locked browser installation (no shared cache write)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify locked Chrome installation
+    if: ${{ inputs.verify_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PUPPETEER_CACHE_DIR: ${{ github.workspace }}/.cache/chrome-extension-verification
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            /rhwp-chrome/package.json
+            /rhwp-chrome/package-lock.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - run: npm --prefix rhwp-chrome ci --no-audit --prefer-offline
+      - run: npm exec --prefix rhwp-chrome -- puppeteer browsers install chrome
+
+  prepare:
+    name: Seed shared Chrome browser cache
+    # Cache seed only, with trusted default-branch dependencies. No PR code/tests.
+    if: ${{ !inputs.verify_only && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PUPPETEER_CACHE_DIR: ${{ github.workspace }}/.cache/chrome-extension
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            /rhwp-chrome/package.json
+            /rhwp-chrome/package-lock.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - run: npm --prefix rhwp-chrome ci --no-audit --prefer-offline
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        id: chrome-cache
+        with:
+          path: ${{ env.PUPPETEER_CACHE_DIR }}
+          key: chrome-extension-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rhwp-chrome/package-lock.json') }}
+      - run: npm exec --prefix rhwp-chrome -- puppeteer browsers install chrome
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        if: ${{ steps.chrome-cache.outputs.cache-hit != 'true' }}
+        with:
+          path: ${{ env.PUPPETEER_CACHE_DIR }}
+          key: chrome-extension-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rhwp-chrome/package-lock.json') }}
