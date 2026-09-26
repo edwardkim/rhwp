@@ -1,4 +1,40 @@
+---
+kind: report
+status: historical
+canonical: mydocs/report/issue7362/README.md
+last_verified: 2026-09-26
+---
+
+> 아래는 원 PR #7366이 `7a95e46e0` 기준으로 제출한 **과거 증적**입니다.
+> 최신 devel `8baae3346`에서 원 높이 정책 변경 없이도 두 좌표 검사가 통과하며,
+> 69–70쪽의 실제 보정은 #7437에 반영됐습니다. 당시의 환경 불일치 추론을 현재
+> 결함 해소 근거나 시각 gate 통과로 사용하지 않습니다.
+> [현행 개별 검토](../../pr/archives/pr_7366_review.md)를 함께 확인해 주세요.
+
 # #7362 시각 증적 — 자리차지 표가 앞 본문 글줄 위에 그려진다
+
+## 2026-09-26 메인터너 보정 결과
+
+| 비교 | 실행 결과 | 해석 |
+| --- | --- | --- |
+| devel `8baae3346` + 원 검사만 추가 | 2/2 PASS, exit 0 | 신고 원인은 현재 devel에서 이미 해결됨. `max` 변경의 수정 전 FAIL 증거가 아님 |
+| 같은 devel의 정상 선언-fit 대조군 | 7/7 PASS, exit 0 | #2097/#2105·한컴 기준 1730000/3080901·squeeze/band 정상 경로 |
+| 원 `max` 정책 적용 `428ccddfc` | 위 두 묶음 9/9 PASS, exit 0 | 새 회귀는 실행으로 검출하지 않았으나 신고 입력에서 추가 효과도 없음 |
+| 제품 정책을 devel과 동일하게 복원한 보정 후보 | 9/9 PASS, exit 0 | 원 좌표 두 검사를 가드로 유지하고 전역 정책 확장은 제외 |
+
+모든 집중 실행은 `cargo nextest run --locked --cargo-profile release-test
+--target-dir target/pr-review --test-threads 8 --no-fail-fast`에 명시한 suite/filter를
+사용했습니다. 로그는 `output/pr-review/planet6897-7366-20260926/logs/`에만 남깁니다.
+최종 후보는 `src/`, `crates/`, Cargo.toml/lock이 base와 동일한 테스트·기록 변경입니다.
+원 검사의 주석에서 일반 `max` 규칙을 입증한다는 주장을 제거했습니다.
+
+현재 Native 69/70쪽 review·standalone overlay를 직접 재확인했습니다. 69쪽은 캡션
+아래에서 표가 시작하고 70쪽은 마지막 행과 뒤 본문·표28을 보존합니다. #7437에
+보존된 최종 Native/fresh WASM 실루엣 지표는 각각 99.94299/100%이며 실제 제품 코드가
+동일한 base 증거입니다. 이 검토 head에서 새 fresh WASM을 실행한 결과로 보고하지 않습니다.
+추가 lint·정책·CI 결과와 후속 계획은 개별 review에 이어 기록합니다.
+
+## 이하 원 PR의 과거 증적
 
 ## 실행한 것
 

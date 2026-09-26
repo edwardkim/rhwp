@@ -189,21 +189,16 @@ impl TypesetEngine {
             && matches!(table.page_break, crate::model::table::TablePageBreak::None)
             && ft.table_footnotes.is_empty()
             && st.current_height + ft.effective_height <= available + 0.5;
-        // 적합 판정은 **두 높이 중 큰 쪽**으로 한다. 선언과 실측이 어긋날 때 작은
-        // 쪽을 골라 "들어간다"고 답하면, 통째 배치가 확정된 뒤 실제로는 본문 하단을
-        // 넘어 그 초과분을 아무도 책임지지 않는다. 종전에는 이 규칙을 편집 세션
-        // (셀 Enter 로 실측이 자란 표)에만 적용했는데, 어긋남의 출처가 편집이든
-        // 변환이든 적합 판정에 주는 결과는 같다.
-        //
-        // 실측: `samples/issue2006/1790387_prep_final_report.hwpx` 쪽 68 의 38행 표는
-        // 선언 809.3px · 실측 957.3px 이다. 선언으로 판정하면 113.5+809.3=922.8 ≤ 926.0
-        // 이라 통째로 들어가는데, 그린 표는 957.3px 라 쪽이 144.9px 넘치고 페인트의
-        // 세로 클램프가 한 점으로 퇴화해 표를 단 상단으로 끌어올려 앞 본문을 덮었다.
-        // 한/글 정본은 같은 표를 행 피치 24.66px(=실측 쪽)로 그리며 쪽 경계에서 나눈다.
-        let declared_fit_height = if hwpx_noninline_tac_measured_fit {
+        // [편집 세션] 셀 편집으로 실측이 선언을 넘게 자란 표는 선언 기준 whole-fit
+        // 이 무의미하다 — 선언으로는 "들어간다"인데 실측은 본문 하단을 넘어,
+        // 표가 앞 쪽에 잘린 채 남는다(셀 Enter 재현). 실측을 fit 기준으로 써서
+        // 넘치면 이월·스캔 경로로 넘긴다.
+        let session_grown_measured_fit = self.profile.get().session_edited()
+            && ft.effective_height > declared_object_total + 8.0;
+        let declared_fit_height = if hwpx_noninline_tac_measured_fit || session_grown_measured_fit {
             ft.effective_height
         } else {
-            declared_object_total.max(ft.effective_height)
+            declared_object_total
         };
         // A stored RowBreak object frame can fit in the current body while
         // browser measurement places the table body a rounding-sized amount
