@@ -27,7 +27,7 @@ use super::utils::{
 use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
-use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::paragraph::{LineSeg, NumberingMarker, Paragraph};
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap,
     VertRelTo,
@@ -593,7 +593,114 @@ fn bullet_marker_text(
     })
 }
 
-/// [#7418] 글머리표 마커가 문단의 **모든 줄**에서 차지하는 폭(px).
+/// 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함). 계수기를 한 칸 진행한다.
+///
+/// 배치의 계수기 경로와 문서 순서 사전 계산([`assign_numbering_markers`])이 같은 규칙을
+/// 쓰도록 한 곳에 둔다.
+pub(crate) fn numbering_head_text(
+    para: &Paragraph,
+    para_style: &crate::renderer::style_resolver::ResolvedParaStyle,
+    styles: &ResolvedStyleSet,
+    outline_numbering_id: u16,
+    state: &mut super::NumberingState,
+) -> Option<String> {
+    let numbering_id = resolve_numbering_id(
+        para_style.head_type,
+        para_style.numbering_id,
+        outline_numbering_id,
+    );
+    let level = para_style.para_level;
+    // [#3307] 개요 문단이 유효한 정의에 도달하지 못하면 한컴 내장
+    // 기본 모양(전 수준 ^N)으로 fallback 한다. NUMBER 는 불변 —
+    // 정의 없는 NUMBER 는 종전대로 번호를 그리지 않는다.
+    let synthesized_default;
+    let numbering = match numbering_id
+        .checked_sub(1)
+        .and_then(|i| styles.numberings.get(i as usize))
+    {
+        Some(n) => n,
+        None if para_style.head_type == HeadType::Outline => {
+            synthesized_default = crate::renderer::layout::utils::default_outline_numbering();
+            &synthesized_default
+        }
+        None => return None,
+    };
+
+    let counters = state.advance(numbering_id, level, para.numbering_restart);
+    let start_numbers = numbering.level_start_numbers;
+
+    let level_idx = (level as usize).min(6);
+    let format_str = &numbering.level_formats[level_idx];
+    if format_str.is_empty() {
+        return None;
+    }
+
+    let text = expand_numbering_format(format_str, &counters, numbering, &start_numbers, level_idx);
+    if text.is_empty() {
+        return None;
+    }
+    let has_distance = numbering
+        .heads
+        .get(level_idx)
+        .map(|h| h.text_distance > 0)
+        .unwrap_or(false);
+    Some(if has_distance {
+        format!("{} ", text)
+    } else {
+        text
+    })
+}
+
+/// [#7436] 번호·개요 문단의 번호 문자열을 **문서 순서로 한 번** 계산해 문단에 둔다.
+///
+/// 줄 나눔은 문단 하나만 보고 줄을 채우므로 계수기를 가질 수 없다. 쪽 나누기 전에 여기서
+/// 번호를 정해 두면 줄 나눔(마커 폭)과 배치(그리는 번호)가 같은 문자열을 쓴다.
+///
+/// 순서는 구역 → 문단 → 그 문단의 표 칸 문단(재귀)이다. 계수기는 구역을 넘어 이어진다
+/// (배치의 쪽별 재생과 같은 연속). 빈 기본 표 앵커 문단은 배치가 계수기를 진행하지 않으므로
+/// 여기서도 건너뛴다.
+pub(crate) fn assign_numbering_markers(
+    sections: &mut [crate::model::document::Section],
+    styles: &ResolvedStyleSet,
+) {
+    fn visit(
+        para: &mut Paragraph,
+        styles: &ResolvedStyleSet,
+        outline_numbering_id: u16,
+        state: &mut super::NumberingState,
+    ) {
+        para.numbering_marker = match styles.para_styles.get(para.para_shape_id as usize) {
+            Some(style)
+                if matches!(style.head_type, HeadType::Number | HeadType::Outline)
+                    && !super::para_is_empty_topbottom_table_anchor(para) =>
+            {
+                match numbering_head_text(para, style, styles, outline_numbering_id, state) {
+                    Some(text) => NumberingMarker::Text(text),
+                    None => NumberingMarker::Absent,
+                }
+            }
+            _ => NumberingMarker::Absent,
+        };
+        for control in &mut para.controls {
+            if let Control::Table(table) = control {
+                for cell in &mut table.cells {
+                    for cell_para in &mut cell.paragraphs {
+                        visit(cell_para, styles, outline_numbering_id, state);
+                    }
+                }
+            }
+        }
+    }
+    let mut state = super::NumberingState::default();
+    for section in sections {
+        let outline_numbering_id = section.section_def.outline_numbering_id;
+        for para in &mut section.paragraphs {
+            visit(para, styles, outline_numbering_id, &mut state);
+        }
+    }
+}
+
+/// [#7418] 목록 마커가 문단의 **모든 줄**에서 차지하는 폭(px).
 ///
 /// 한/글은 마커 뒤에서 본문을 시작하고 둘째 줄부터도 같은 자리에 맞춘다(행잉).
 /// 배치(`layout_composed_paragraph_in_frame` 의 `num_offset`)가 이 폭만큼 줄 가용폭을 줄이므로,
@@ -602,11 +709,19 @@ fn bullet_marker_text(
 /// 줄을 좁은 상자에 양쪽 정렬로 눌러 담았다. 스타일은 배치의 마커 스타일
 /// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
 ///
-/// 번호·개요 문단은 마커 문자열이 배치 단계의 번호 계수기에서 정해지므로 여기서 다루지 않는다
-/// (#7436).
-pub(crate) fn bullet_marker_hang_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
+/// 글머리표는 문단 모양만으로, 번호·개요는 문서 순서로 미리 계산한 번호(#7436,
+/// [`assign_numbering_markers`])로 문자열을 정한다. 아직 계산하지 않은 번호 문단은 폭을
+/// 모르므로 `None` 이다.
+pub(crate) fn list_marker_hang_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
     let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
-    let text = bullet_marker_text(para_style, styles)?;
+    let text = match para_style.head_type {
+        HeadType::Bullet => bullet_marker_text(para_style, styles)?,
+        HeadType::Number | HeadType::Outline => match &para.numbering_marker {
+            NumberingMarker::Text(text) => text.clone(),
+            _ => return None,
+        },
+        HeadType::None => return None,
+    };
     let char_shape_id = para
         .char_shape_id_at(0)
         .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
@@ -4474,7 +4589,7 @@ impl LayoutEngine {
         let numbering_width = if start_line == 0 {
             if let Some(ref num_text) = composed.numbering_text {
                 // [#7418] 글머리표 폭은 줄 나눔과 같은 정의를 쓴다.
-                para.and_then(|p| bullet_marker_hang_px(p, styles))
+                para.and_then(|p| list_marker_hang_px(p, styles))
                     .unwrap_or_else(|| {
                         let num_style = numbering_marker_text_style(
                             styles,
@@ -9593,64 +9708,19 @@ impl LayoutEngine {
 
         let head_text = match para_style.head_type {
             HeadType::None => return None,
-            HeadType::Outline | HeadType::Number => {
-                let numbering_id = resolve_numbering_id(
-                    para_style.head_type,
-                    para_style.numbering_id,
+            // [#7436] 문서 순서로 미리 계산한 번호가 있으면 그것을 그린다 — 줄 나눔이 같은
+            // 문자열의 폭으로 줄을 채웠다. 계산 전이면(엔진 단독 사용) 종전처럼 계수기를 쓴다.
+            HeadType::Outline | HeadType::Number => match &para.numbering_marker {
+                NumberingMarker::Text(text) => text.clone(),
+                NumberingMarker::Absent => return None,
+                NumberingMarker::Unresolved => numbering_head_text(
+                    para,
+                    para_style,
+                    styles,
                     outline_numbering_id,
-                );
-                let level = para_style.para_level;
-                // [#3307] 개요 문단이 유효한 정의에 도달하지 못하면 한컴 내장
-                // 기본 모양(전 수준 ^N)으로 fallback 한다. NUMBER 는 불변 —
-                // 정의 없는 NUMBER 는 종전대로 번호를 그리지 않는다.
-                let synthesized_default;
-                let numbering = match numbering_id
-                    .checked_sub(1)
-                    .and_then(|i| styles.numberings.get(i as usize))
-                {
-                    Some(n) => n,
-                    None if para_style.head_type == HeadType::Outline => {
-                        synthesized_default =
-                            crate::renderer::layout::utils::default_outline_numbering();
-                        &synthesized_default
-                    }
-                    None => return None,
-                };
-
-                let counters = self.numbering_state.borrow_mut().advance(
-                    numbering_id,
-                    level,
-                    para.numbering_restart,
-                );
-                let start_numbers = numbering.level_start_numbers;
-
-                let level_idx = (level as usize).min(6);
-                let format_str = &numbering.level_formats[level_idx];
-                if format_str.is_empty() {
-                    return None;
-                }
-
-                let text = expand_numbering_format(
-                    format_str,
-                    &counters,
-                    numbering,
-                    &start_numbers,
-                    level_idx,
-                );
-                if text.is_empty() {
-                    return None;
-                }
-                let has_distance = numbering
-                    .heads
-                    .get(level_idx)
-                    .map(|h| h.text_distance > 0)
-                    .unwrap_or(false);
-                if has_distance {
-                    format!("{} ", text)
-                } else {
-                    text
-                }
-            }
+                    &mut self.numbering_state.borrow_mut(),
+                )?,
+            },
             HeadType::Bullet => bullet_marker_text(para_style, styles)?,
         };
 

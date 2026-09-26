@@ -4905,6 +4905,12 @@ impl DocumentCore {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.ensure_exact_font_measurement_contexts();
+        // [#7436] 편집으로 문단이 늘거나 줄면 뒤 번호가 바뀐다. 측정·배치 전에 문서 순서로
+        // 번호 문자열을 다시 정해 두 경로가 같은 값을 쓰게 한다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_profile_enabled =
             std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");

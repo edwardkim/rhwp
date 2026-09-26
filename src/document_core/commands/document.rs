@@ -231,6 +231,9 @@ impl DocumentCore {
         // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
         // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
         let include_cell_empty = !document.layout_profile().hwp3_layout();
+        // [#7436] 저장 줄 없는 번호 문단도 번호 폭을 뺀 상자로 줄을 나눈다 — 재조판 전에
+        // 문서 순서로 번호 문자열을 정해 둔다.
+        crate::renderer::layout::assign_numbering_markers(&mut document.sections, &styles);
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,
