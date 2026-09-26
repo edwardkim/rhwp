@@ -1881,6 +1881,29 @@ pub(crate) fn native_terminal_child_host_line_spacing(
         .fold(0.0, f64::max)
 }
 
+/// [#7114] 셀 유닛이 저장 `LINE_SEG` 사다리에서 여는 줄.
+///
+/// pagination 이 기록한 컷(`PageItem::PartialTable::start_cut`)은 유닛 서수인데 저장
+/// 프레임은 줄 좌표다. 유닛과 줄은 1:1 이 아니라 세 갈래로 갈린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CellUnitLineAnchor {
+    /// 이 유닛이 `(셀 문단 인덱스, 문단 내 줄 인덱스)` 를 **새로 연다**. 조각이 여기서
+    /// 시작하면 그 줄이 조각의 첫 줄이다.
+    Opens(usize, usize),
+    /// 줄을 차지하지 않는다(`vis_start == vis_end`) — 자리차지 개체 유닛이다. 조각이
+    /// 여기서 시작하면 첫 **줄**은 뒤의 첫 `Opens` 다. 이 유닛의 `para_idx` 는 앵커
+    /// 문단을 가리켜 흐름 순서와도 어긋나므로(실측: 유닛 533 이 문단 315·316 사이에서
+    /// `para=310, h=216.3px`) 그 값을 줄 자리로 쓰면 안 된다.
+    NoLineOfItsOwn,
+    /// **이미 열린 줄 안**이다 — host 문단의 한 줄을 여러 유닛이 나눠 가질 때의 뒤 유닛이며,
+    /// 중첩 표 행이 여기 해당한다(실측: 문단 81 의 중첩 표 3행이 전부 `(81, 0)`).
+    ///
+    /// 조각이 여기서 시작하면 그 경계는 **host 사다리로 표현할 수 없다**. 뒤의 host 줄을
+    /// 대신 적으면 "경계가 그 구조 뒤에 있다"는 거짓을 쓰는 것이고, 읽는 쪽의 꼬리 흡수가
+    /// 그 말을 믿어 중첩 행을 앞 쪽으로 끌어올린다(실측 74.9px, 허용치 48px 안).
+    InsideAnOpenLine,
+}
+
 #[derive(Debug, Clone)]
 struct NestedTableUnitCut {
     start_cut: RowCut,
@@ -12857,6 +12880,50 @@ impl LayoutEngine {
             })
     }
 
+    /// `RowCut`(`start_cut`/`end_cut`) 의 슬롯 순서 — `row` 의 `row_span == 1` 칸을 col
+    /// 오름차순으로 센 셀 인덱스다.
+    ///
+    /// 종전에는 같은 정의가 컷 walk 마다 인라인으로 다섯 벌 있었다. 컷을 **읽는** 저장
+    /// 경로(`DocumentCore::writeback_reflowed_table_frames`, #7114)가 생기면서 정의가
+    /// 갈리면 저장본이 엉뚱한 칸의 사다리를 고쳐 쓰게 되므로 한 곳으로 모았다.
+    pub(crate) fn row_cut_cell_order(table: &crate::model::table::Table, row: usize) -> Vec<usize> {
+        let mut cells: Vec<(u16, usize)> = table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| cell.row as usize == row && cell.row_span == 1)
+            .map(|(idx, cell)| (cell.col, idx))
+            .collect();
+        cells.sort_by_key(|(col, _)| *col);
+        cells.into_iter().map(|(_, idx)| idx).collect()
+    }
+
+    /// [#7114] 셀 유닛 서수 → 저장 사다리에서 그 유닛이 여는 줄([`CellUnitLineAnchor`]).
+    ///
+    /// 컷 판정이 쓰는 `cell_units` 를 그대로 소비하므로 조판과 저장이 같은 유닛 정의를 본다.
+    pub(crate) fn cell_unit_line_anchors(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<CellUnitLineAnchor> {
+        let mut opened: Option<(usize, usize)> = None;
+        self.cell_units(cell, table, styles)
+            .iter()
+            .map(|unit| {
+                if unit.vis_start >= unit.vis_end {
+                    return CellUnitLineAnchor::NoLineOfItsOwn;
+                }
+                let line = (unit.para_idx, unit.vis_start);
+                if opened == Some(line) {
+                    return CellUnitLineAnchor::InsideAnOpenLine;
+                }
+                opened = Some(line);
+                CellUnitLineAnchor::Opens(line.0, line.1)
+            })
+            .collect()
+    }
+
     /// [#2097] 셀 문단 cp_idx 의 첫 유닛 앞까지의 누적 콘텐츠 높이(셀-로컬).
     /// 각주 앵커 문단이 컷 조각에 포함되는 경계(인서트-인지 컷 예산 상한) 산정용.
     /// 해당 문단 유닛이 없으면 None.
@@ -14528,12 +14595,10 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         let mut end_cut: RowCut = Vec::with_capacity(row_cells.len());
         let mut hit_hard_break = false;
@@ -15863,12 +15928,10 @@ impl LayoutEngine {
         let mut block_cells = Self::row_block_cells(table, b_start, b_end);
         block_cells.sort_by_key(|c| (c.row, c.col));
 
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         if row_cells.is_empty() {
             return 0.0;
@@ -16798,12 +16861,10 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
@@ -17262,12 +17323,10 @@ impl LayoutEngine {
         end_cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
         let is_whole_row = start_cut.is_empty() && end_cut.is_empty();
         // [#5910] 병합 선언이 걸친 행합보다 작으면 마지막 걸침 행의 **선언** 높이를
         // 그만큼 낮춘 값이 한글 실측 행 높이다. 컷 회계가 원 선언을 그대로 쓰면
@@ -17634,12 +17693,10 @@ impl LayoutEngine {
             // 이월되어 한컴보다 물리 쪽 수가 늘어난다.
             return 0.0;
         }
-        let mut row_cells: Vec<&crate::model::table::Cell> = table
-            .cells
-            .iter()
-            .filter(|c| c.row as usize == row && c.row_span == 1)
+        let row_cells: Vec<&crate::model::table::Cell> = Self::row_cut_cell_order(table, row)
+            .into_iter()
+            .filter_map(|idx| table.cells.get(idx))
             .collect();
-        row_cells.sort_by_key(|c| c.col);
 
         let mut max_padding = 0.0f64;
         for (i, cell) in row_cells.iter().enumerate() {
