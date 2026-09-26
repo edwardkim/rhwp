@@ -757,7 +757,7 @@ pub fn fit_stored_hwpx_no_adjust_rowspans(
     Some(fitted)
 }
 
-/// 저장 HWPX 인라인 RowBreak 표에서 마지막 LINE_SEG 줄간격을 측정기가
+/// 저장 HWPX 인라인 표에서 마지막 LINE_SEG 줄간격을 측정기가
 /// 행 높이에 한 번 더 실은 경우, 저장 cellSz 경계로 되돌린다.
 ///
 /// 완전한 저장 표(개체 높이 == 선언 행합)와 컨트롤 없는 저장 줄만 대상으로 한다.
@@ -769,17 +769,31 @@ pub fn trim_stored_hwpx_inline_row_trailing_spacing(
     table: &Table,
     dpi: f64,
 ) -> Option<MeasuredTable> {
+    // A complete 1×1 HWPX CELL frame (model RowBreak) can retain a tiny cell seed. Its outer
+    // box owns the insets only when the saved last ink edge plus those insets
+    // closes that box exactly. It is not a cut into a continuing cell.
+    let single_cell_frame = matches!(table.page_break, TablePageBreak::RowBreak)
+        && table.row_count == 1
+        && table.col_count == 1
+        && table.cells.len() == 1
+        && table.cells[0].vertical_padding_guard_height_hu(table) == table.common.height;
     if !table.common.treat_as_char
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !(single_cell_frame
+            || (matches!(table.page_break, TablePageBreak::RowBreak) && table.row_count >= 2))
         || measured.row_heights.len() != table.row_count as usize
-        || table.row_count < 2
         || table.common.height == 0
         || table.cells.iter().any(|cell| cell.row_span != 1)
     {
         return None;
     }
     let declared: Vec<f64> = (0..measured.row_heights.len())
-        .map(|row| declared_row_height_px(table, row, dpi))
+        .map(|row| {
+            if single_cell_frame {
+                hwpunit_to_px(table.common.height as i32, dpi)
+            } else {
+                declared_row_height_px(table, row, dpi)
+            }
+        })
         .collect();
     if declared.iter().any(|height| *height <= 0.0)
         || (declared.iter().sum::<f64>()
@@ -829,7 +843,26 @@ pub fn trim_stored_hwpx_inline_row_trailing_spacing(
                 .max()
                 .unwrap_or(0);
             let pad = cell.effective_padding(&table.padding);
-            let declared_hu = i64::from(cell.height);
+            let declared_hu = i64::from(if single_cell_frame {
+                cell.vertical_padding_guard_height_hu(table)
+            } else {
+                cell.height
+            });
+            if single_cell_frame {
+                let stored: Vec<_> = cell
+                    .paragraphs
+                    .iter()
+                    .flat_map(|para| &para.line_segs)
+                    .collect();
+                if stored
+                    .windows(2)
+                    .any(|pair| pair[1].vertical_pos < pair[0].vertical_pos)
+                    || saved_end + i64::from(pad.top) + i64::from(pad.bottom) != declared_hu
+                {
+                    saved_content_fits = false;
+                    break;
+                }
+            }
             if saved_end + i64::from(pad.top) + i64::from(pad.bottom) > declared_hu + 3 {
                 saved_content_fits = false;
                 break;

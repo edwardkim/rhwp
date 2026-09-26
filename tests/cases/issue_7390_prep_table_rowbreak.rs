@@ -14,6 +14,24 @@ use rhwp::DocumentCore;
 
 const SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
 
+#[test]
+fn prep_page_76_single_cell_does_not_reserve_last_line_spacing() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(75).expect("물리 76쪽");
+    let first = line_top_containing(&page.root, "대상자 1 (30대 후반").expect("표 첫 줄");
+    let following = line_top_containing(&page.root, "다양한 트랜지션 과정을").expect("표 뒤 본문");
+    // 한컴 PDF bbox yMin 113.232/494.568pt, 96dpi. 저장 표 높이는
+    // 37100HU = 마지막 줄 끝(34400+1000) + 위아래 여백(850+850).
+    // 마지막 줄의 후행 600HU는 이 완결 프레임 뒤에 다시 더하지 않는다.
+    assert!((first - 150.976).abs() <= 1.5, "표 첫 줄: {first:.3}");
+    assert!(
+        (following - 659.424).abs() <= 1.5,
+        "표 뒤 본문: {following:.3}"
+    );
+}
+
 fn target_table(node: &RenderNode) -> Option<&RenderNode> {
     if let RenderNodeType::Table(table) = &node.node_type {
         if table.para_index == Some(27)
