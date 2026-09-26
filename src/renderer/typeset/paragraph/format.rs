@@ -565,6 +565,14 @@ fn resolve_line_metrics(
                 pairs.extend(metrics);
             }
         }
+        // [#7418] 저장 줄 없는 글자처럼 취급 표 host — 표 줄의 줄간격을 잃지 않는다.
+        if pairs.is_empty() {
+            if let Some(metric) =
+                crate::renderer::tac_table_host_line_metrics(para, ctx.dpi(), styles, para_style)
+            {
+                pairs.push(metric);
+            }
+        }
         // 저장 LINE_SEG가 전혀 없는 빈 문단도 composer는 placeholder line 하나를
         // 남길 수 있다. 그 경우 `pairs.is_empty()`만으로는 fallback에 들어가지 않아
         // 400HU(약 5.3px)로 축소된다. 한글은 이 문단을 저장 글자모양과 줄간격의

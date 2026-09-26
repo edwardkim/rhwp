@@ -1899,6 +1899,14 @@ impl HeightMeasurer {
                     pairs.extend(metrics);
                 }
             }
+            // [#7418] typeset `format_paragraph_for_flow` 와 같은 표 host 줄 (측정 정합).
+            if pairs.is_empty() {
+                if let Some(metric) =
+                    crate::renderer::tac_table_host_line_metrics(para, self.dpi, styles, para_style)
+                {
+                    pairs.push(metric);
+                }
+            }
             pairs.into_iter().unzip()
         } else if !para.line_segs.is_empty() {
             // 누름틀(ClickHere) 안내문이 LINE_SEG에 포함되면 줄 수가 실제보다 많음
