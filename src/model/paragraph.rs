@@ -155,7 +155,11 @@ pub struct Paragraph {
 }
 
 /// [`Paragraph::numbering_marker`] 의 상태.
-#[derive(Debug, Default, Clone, PartialEq)]
+///
+/// `Debug` 는 값을 드러내지 않는다 — 문서의 `Debug` 문자열을 동일성 증거로 쓰는 검사
+/// (거부된 편집이 문서를 바꾸지 않았는가 등)에 편집·쪽 나누기마다 다시 계산되는 파생값이
+/// 끼면 없는 차이를 만든다. 값은 [`NumberingMarker::text`] 로 읽는다.
+#[derive(Default, Clone, PartialEq)]
 pub enum NumberingMarker {
     /// 아직 계산하지 않았다 — 배치는 종전처럼 자기 계수기로 번호를 만든다.
     #[default]
@@ -164,6 +168,22 @@ pub enum NumberingMarker {
     Absent,
     /// 그려질 번호 문자열.
     Text(String),
+}
+
+impl std::fmt::Debug for NumberingMarker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NumberingMarker(..)")
+    }
+}
+
+impl NumberingMarker {
+    /// 그려질 번호 문자열 — 계산 전이거나 번호가 없으면 `None`.
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            NumberingMarker::Text(text) => Some(text),
+            _ => None,
+        }
+    }
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
