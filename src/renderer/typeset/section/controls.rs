@@ -149,7 +149,25 @@ impl TypesetEngine {
                         // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
                         // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
                         // 박스가 잘못된 페이지에 떠 있게 된다.
-                        let routed = if crate::renderer::pagination::is_routable_treat_as_char_picture_or_shape(ctrl) {
+                        // [#5941] `treat_as_char` 뿐 아니라 **비-TAC 그림/도형**도 앵커 줄이
+                        // 라우팅된 쪽에 등록한다. 바로 위 `#476/#4092` 주석이 적은 실패 모드
+                        // ("paragraph 가 페이지 분할되면 … 박스가 잘못된 페이지에 떠 있게 된다")
+                        // 는 TAC 여부와 무관한데 적용 범위가 TAC 으로 좁아, 자리차지/어울림
+                        // 개체가 **문단이 끝난 쪽**에 붙었다.
+                        //
+                        // 실측 `1490000-201600081_roadmap_research.hwp` `pi=23`(용지 기준
+                        // 자리차지 묶음, 앵커 줄 0): 문단이 161~162쪽으로 나뉘어 개체가 162쪽에
+                        // 붙고, 비워진 161쪽을 본문 34줄이 채워 하단을 555.8px 넘겼다.
+                        // 한/글 정본(`Hancom PDF 1.3.0.534`)은 그 그림을 **161쪽**에 둔다.
+                        //
+                        // 넓혀도 안전하다 — 앵커 줄이 현재 쪽에 있으면
+                        // `find_inline_control_target_page` 의 `in_current` 검사가 `None` 을
+                        // 돌려주므로 제자리 개체는 하나도 움직이지 않는다. 같은 문서의
+                        // `pi=25` 가 그 경우다(`would_route=None`).
+                        let routed =
+                            if crate::renderer::pagination::is_routable_anchored_picture_or_shape(
+                                ctrl,
+                            ) {
                                 crate::renderer::pagination::find_inline_control_target_page(
                                     &st.pages,
                                     &st.current_items,
