@@ -209,11 +209,16 @@ fn approx_eq(actual: f64, expected: f64) -> bool {
     (actual - expected).abs() <= 0.2
 }
 
-/// 한컴 2020 adapter-save oracle의 원본 형식별 fifth-line 전환점이다.
+/// fifth line 이 생기는 입력 수 — HWP·HWPX 모두 56 이다.
+///
+/// [#7418] 종전 HWPX 61 은 한/글 2020 이 한양신명조를 함초롬바탕으로 대체한 환경의 출력에서
+/// 정한 값이었다. 한양신명조가 있는 환경에서 한/글 2024·2020 이 직접 나누면 두 형식 모두
+/// 55 번째에서 `[0, 44, 84, 122, 128]` 로 전환한다. rhwp 는 56 번째에 `[.., 129]` 로
+/// 전환해 넷째 줄에 한 글자를 더 담는다(남은 차이, `src/wasm_api/tests.rs` 와 같은 근거).
 fn flow_boundary_insert_count(label: &str) -> usize {
     match label {
         "hwp" => 56,
-        "hwpx" => 61,
+        "hwpx" => 56,
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
@@ -221,8 +226,8 @@ fn flow_boundary_insert_count(label: &str) -> usize {
 fn expected_line_starts(label: &str, inserted: usize) -> &'static [usize] {
     if inserted >= flow_boundary_insert_count(label) {
         match label {
-            "hwp" => &[0, 44, 84, 122, 129],
-            "hwpx" => &[0, 45, 87, 125, 129],
+            // 두 형식이 같은 문서라 줄도 같다 — 종전 HWPX 값은 대체 글꼴 환경의 줄이었다.
+            "hwp" | "hwpx" => &[0, 44, 84, 122, 129],
             other => panic!("unknown #2214 fixture label: {other}"),
         }
     } else {
@@ -237,11 +242,9 @@ fn expected_line_starts(label: &str, inserted: usize) -> &'static [usize] {
 fn expected_56_path_caret(label: &str) -> (f64, f64) {
     match label {
         "hwp" => (577.6, 344.8),
-        // [#7254] hwpx 의 x 가 671.6 → 670.9 로 0.7px 왼쪽이다. 배치 run 폭의 정수
-        // 반올림을 걷어내면서 이 줄의 run 원점이 같은 양만큼 옮겨졌고, caret 은 그 원점을
-        // 그대로 따라간다(글자와 caret 이 여전히 같은 값을 소비한다는 뜻이다). hwp 변형은
-        // 줄 구성이 달라 값이 그대로다.
-        "hwpx" => (674.7, 319.2),
+        // [#7418] hwpx 도 56 번째에 fifth line 이 생겨(`flow_boundary_insert_count`) caret 이
+        // hwp 와 같은 줄·자리에 선다. 종전 값은 넷째 줄 끝이었다.
+        "hwpx" => (577.6, 344.8),
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
@@ -249,8 +252,8 @@ fn expected_56_path_caret(label: &str) -> (f64, f64) {
 fn expected_56_direct_caret(label: &str) -> (f64, f64) {
     match label {
         "hwp" => (577.6, 345.6),
-        // [#7254] 위 path caret 과 같은 0.7px 이동.
-        "hwpx" => (674.7, 320.0),
+        // [#7418] 위 path caret 과 같은 까닭으로 hwp 와 같다.
+        "hwpx" => (577.6, 345.6),
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
