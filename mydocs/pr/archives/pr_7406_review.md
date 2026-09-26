@@ -22,6 +22,9 @@ last_verified: 2026-09-26
 | 원격 참고값 | 2026-09-26 재조회: 원 PR OPEN, Draft 아님, `MERGEABLE/CLEAN`, 원 head `298bd802ac3fc843e1d70ca6f3dbe95134b361c5`. 이 원 head를 직접 병합하지 않음 |
 | 메인터너 보정 | KoPub 줄 구성·각주·표 분할·그림 뒤 흐름과 겹침 상한 15→1 보정. OLE 차트의 OOXML 값축·백분율 레이블·범주·미리보기 색상표 보정. 각 원인·회귀·시각 결과는 아래에 기록 |
 | 최종 code candidate | `9e7518243b251193ee91378e2d09e754d0223d64` — 92쪽 저장 빈 줄·76쪽 완결 표·33쪽 정상 저장 어절 경계 보정 |
+| 통합 PR / 최초 CI 대상 head | [#7437](https://github.com/edwardkim/rhwp/pull/7437) / `e05025719afb2266fd198b47229992055f6dda85`; code `9e7518243`와 Rust tree 동일. Full CI·CodeQL·Render Diff·Proptest·Adapter·정책 성공, 체크 31 pass/3 skip. 문서 trailing head는 별도 재확인 |
+
+기본 경로는 `collaborator_external_pr`의 devel 기반 체리픽 통합이며, 보조 경로는 접수·리뷰 기록/로컬 검증/시각·fixture 증적/merge 후속 처리다. `pr_review_workflow.md`, 선택표와 해당 자식 가이드를 적용했다. 체리픽 통합 PR 번호만을 위한 별도 review 문서를 만들지 않고 이 원 PR archive와 오늘할일을 같은 통합 PR에 포함한다. owner 자동 리뷰 요청은 하지 않았다.
 
 ## 변경과 조판 원칙 검토
 
@@ -50,6 +53,12 @@ OLE 분리 샘플의 최종 Native 재캡처는 HWP **90.66968%**, HWPX **90.584
 | 이전 code head 참고 기록 | code head `e049c490d`: 전체 nextest **10,258/10,258 PASS·50 skip**, 629.122초. fmt, Native/WASM32/workspace Clippy, workspace build, manifest·unit-tier base `c80a8370ab294259557c850c2e54495ecd0e79c0` 비교 PASS. Native Skia lib **4,112 PASS·13 skip**, 그림 누락·직접 PDF 출력 집중 **6/6 PASS**. fresh Mac WASM wrapper `--no-opt` PASS(로컬 대체, Docker 최적화 빌드 아님), pkg/Studio JS·WASM SHA 일치. WASM 영향 **38/38쪽 완료**, 1쪽만 글꼴 예외 **87.66%**, 나머지 90% 이상. OLE 한 쪽 WASM **90.58460%**, gate passed. 이 결과를 이후 코드 보정 head에 재사용하지 않는다 |
 
 기존 `...-hwp2020-20260814.pdf`의 절차적 생성 출처는 [#7399 검토](pr_7399_review.md)에서 미검증이었다. 이번에는 원본에 대응하는 새 한컴 2024 PDF를 생성해 판정에 썼다. PDF의 KoPubDotum subset과 Mac 글꼴 공급을 확인했고 94·108쪽은 99% 이상이다. 68~70쪽의 표·본문 배치 차이를 글꼴 예외로 분류하지 않는다.
+
+## 통합 PR code candidate CI
+
+[통합 PR #7437](https://github.com/edwardkim/rhwp/pull/7437)의 code candidate PR head `e05025719afb2266fd198b47229992055f6dda85`에서 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/36220999235) attempt 1이 성공했다. `fast_pass=false`, reason=`no-green-build-candidate`였으며 lint·Native Skia·frontend package·네 archive builder/worker·집계를 실제 실행했다. 기본 회귀 합계는 **10,067/10,067 PASS·50 skip**(A 3873/B 2023/C 2012/D 2159)로 Mac 로컬 10,260개 결과와 구분한다. [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/36220999150), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/36220998906), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/36220999432), [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/36220999295), [정책 controller](https://github.com/edwardkim/rhwp/actions/runs/36220999234)도 성공했다. 최종 체크는 **31 pass·3 skip**, 실패·대기 없음이었다.
+
+검증된 merge SHA `73fd3c5147dc99eea847b7dce084b77da2ddb9a7`의 tree `3cf4abdecd1991b5a456dba183c6692671c978e2`는 로컬 merge-tree와 일치한다. [CI·job·artifact provenance](../assets/pr7406_20260925/code_candidate_ci.json)에 exact head/attempt/tested merge/네 worker와 artifact ID를 보존했다. 이 기록 commit은 mydocs만 추가·수정하며, 최신 trailing head의 fast-pass 또는 CI와 mergeability는 병합 직전 다시 확인한다. 통합 PR 번호만을 위한 별도 review 문서는 만들지 않는다.
 
 ## 최종 검증 재현 및 영구 증적
 
@@ -251,4 +260,4 @@ python3 scripts/visual_sweep.py --key prep7406 --hwp samples/issue2006/1790387_p
 
 ## Merge 후 contributor PR comment 계획
 
-통합 PR이 실제로 병합되고 asset이 `devel`에 들어간 뒤 원 PR #7406에 한국어 존댓말로 원 기여와 메인터너 보정을 구분해 알린다. 통합 PR 번호·실제 merge SHA·최신 CI URL·전체 nextest 및 Native/fresh WASM Visual Sweep의 최종 결과를 적는다. 인쇄 78쪽(물리 90쪽), 34→35쪽 표 분할, 물리 92쪽 음수 간격 캡션, 물리 76쪽 완결 표, 33쪽 정상 저장 어절 경계 보정을 설명하고, merge SHA로 고정한 `mydocs/pr/assets/pr7406_20260925/native_review_090.png`, `native_overlay_090.png`, `native_review_034.png`, `native_overlay_034.png`, `wasm_review_090.png`, `wasm_overlay_090.png`, `native_review_092.png`, `native_overlay_092.png`, `wasm_review_092.png`, `wasm_overlay_092.png`, `native_review_033.png`, `native_overlay_033.png`, `native_review_076.png`, `native_overlay_076.png`의 raw URL을 Markdown 이미지로 표시한다. #7390은 남은 범위가 있어 자동 종료하지 않고 상태를 별도 확인한다. 게시 후 원 PR을 통합 PR 링크와 함께 닫고 comment URL을 기록한다.
+통합 PR이 실제로 병합되고 asset이 `devel`에 들어간 뒤 원 PR #7406에 한국어 존댓말로 원 기여와 메인터너 보정을 구분해 알린다. 통합 PR 번호·실제 merge SHA·최신 CI URL·전체 nextest 및 Native/fresh WASM Visual Sweep의 최종 결과를 적는다. PR 본문과 같은 Native/fresh WASM 대표 review·overlay 24개(90·34·92·33·76쪽과 분리 OLE)를 모두 실제 merge SHA로 고정해 다시 표시하고, 전체 140쪽 비교 PDF 네 개도 연결한다. 인쇄 78쪽(물리 90쪽), 34→35쪽 표 분할, 물리 92쪽 음수 간격 캡션, 물리 76쪽 완결 표, 33쪽 정상 저장 어절 경계 보정을 설명하고, merge SHA로 고정한 `mydocs/pr/assets/pr7406_20260925/native_review_090.png`, `native_overlay_090.png`, `native_review_034.png`, `native_overlay_034.png`, `wasm_review_090.png`, `wasm_overlay_090.png`, `native_review_092.png`, `native_overlay_092.png`, `wasm_review_092.png`, `wasm_overlay_092.png`, `native_review_033.png`, `native_overlay_033.png`, `native_review_076.png`, `native_overlay_076.png`의 raw URL을 Markdown 이미지로 표시한다. #7390은 남은 범위가 있어 자동 종료하지 않고 상태를 별도 확인한다. 게시 후 원 PR을 통합 PR 링크와 함께 닫고 comment URL을 기록한다.
