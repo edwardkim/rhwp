@@ -70,6 +70,22 @@ last_verified: 2026-09-26
 | 저장/편집 후 재조판 범위 확대 | 비해당: 기존 계약과 허용치 유지 |
 | 시각 hold 재판정 | 기존 실패를 글꼴로 면제하지 않음. 실제 source 제품 보정은 #7437, 동일 base의 69/70 경계·행/뒤 본문을 직접 확인 |
 
+## 통합 PR과 code candidate CI
+
+[통합 PR #7438](https://github.com/edwardkim/rhwp/pull/7438)을 생성했고 code candidate `d3568f2a49a8d2da179d528b9e2d0b2eb75dce3a`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/36223427120) attempt 1이 성공했다. `fast_pass=false reason=no-green-build-candidate`였으며 lint와 네 archive builder/worker를 실행했다. test-only 분류에 따라 Native Skia·WASM·frontend gate는 skip된 것이므로 이 run에서 통과한 것으로 쓰지 않는다.
+
+| CI archive | PASS | skip | 실행 초 |
+| --- | ---: | ---: | ---: |
+| A | 3873 | 13 | 95.633 |
+| B | 1666 | 3 | 287.099 |
+| C | 2416 | 25 | 329.361 |
+| D | 2114 | 9 | 225.784 |
+| 합계 | **10069** | **50** | 각 worker 결과 |
+
+기본 회귀 10,069 PASS는 이번 GitHub Linux 결과이며, 로컬 focused 9+1 및 선행 #7437 Mac 전체 10,260과 구분한다. [CI provenance](../assets/pr7366_20260926/code_candidate_ci.json)에 source/head/run/attempt·worker·artifact IDs·tested merge를 고정했다. tested merge는 `40fae4327d54c4d79564eeb1b0135682699214f2`, tree `bb13010168db43ee0ffcc00a86d49dc4fd9a9818`이며 local merge-tree와 동일하다.
+
+code candidate 최종 체크는 26 success·5 skip·1 neutral, 실패·대기 없음, MERGEABLE/CLEAN이었다. Rust CodeQL 분석은 성공했다. 별도 code-scanning neutral은 test-only 경로에서 JS/TS·Python 구성이 실행되지 않아 devel의 두 구성이 비교 결과에 없다는 사유이며, 해당 소스는 이번 diff에 없다. 완료하지 않은 구성을 완료로 표시하지 않는다. 이 뒤 mydocs-only trailing head의 CI/fast-pass와 mergeability를 다시 확인한다.
+
 ## Merge 후 contributor PR comment 계획
 
 통합 PR의 최신 CI/merge SHA와 devel asset 존재를 확인한 후 원 #7366에 한국어 존댓말로 안내한다. 원 기여의 최종 좌표 회귀를 유지하고, 신고 자체는 #7437에서 이미 해결됐으며 이번 통합은 추가 가드/기록임을 구분한다. 전역 max를 제외한 이유는 새 회귀가 검출됐기 때문이 아니라 현재 해결에 불필요하고 일반성 증거가 부족하기 때문이라고 설명한다.
