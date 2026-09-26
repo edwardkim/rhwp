@@ -133,13 +133,17 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
-스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 단, Visual Sweep을 수용 근거로 주장하는 렌더링 PR은
-대표 review·overlay PNG를 `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 넣고 PR 본문에서
-실제 Markdown 이미지로 표시합니다. 이 경우는 메인터너 review 기록을 작성하는 의무가 아니라 reviewer가
-제출 근거를 직접 볼 수 있게 하는 제출 의무입니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
-요청한 경우에만 그 요청 범위에서 예외로 합니다.
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. **렌더링·조판·페이지 배치 변경의 원 PR을 생성하거나
+code head를 갱신할 때는**, 해당 head의 영향 페이지를 한컴 기준 PDF와 Native/fresh WASM
+Visual Sweep으로 비교하세요. 대표 review·overlay PNG를
+`mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 커밋하고, 원 PR 본문에
+head repository·정확한 SHA로 고정한 raw URL의 실제 Markdown 이미지로 표시하세요.
+입력·기준 PDF·페이지·실행 명령·결과·남은 차이도 본문에 적고, 게시 후 본문과 이미지가
+PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 완료 상태로 표시하지 말고
+보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
+메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
-Visual Sweep을 수용 근거로 쓰는 경우 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
+이 Visual Sweep에서 대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율은 모두
 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
 PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
 PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
@@ -148,9 +152,21 @@ PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하�
 아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
 다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
 원본성·소비 경로를 검증합니다.
+같은 원본과 출력 환경에 대응하는 **한컴 PDF 전체 페이지 수와 rhwp 전체 페이지 수**도 비교합니다.
+영향 쪽만 선택해 비교했더라도 전체 페이지 수가 다르면 PR을 재검토하고, 누락·추가된 쪽의 시작
+경계와 앞뒤 내용을 확인해 원인을 수정한 뒤 새 head에서 다시 검증합니다. 선택한 쪽의 Visual Sweep
+점수나 글꼴 예외가 통과해도 페이지 수 차이를 승인 근거로 바꾸지 않습니다.
 `RHWP_FONT_PATH`를 사용할 때에는 설정한 모든 디렉터리가 실제로 존재하고 입력 문서의 face를 제공하는지
 먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
 올바른 글꼴 공급으로 다시 실행합니다.
+
+차트가 OLE에 들어 있어도 먼저 HWPX `Chart/chartN.xml`과 중첩 CFB
+`OOXMLChartContents`의 편집 가능한 데이터를 확인합니다. OOXML `c:chartSpace`가 있으면
+일반 OOXML 차트 경로로 그리며, 미리보기 그림을 값·레이블의 정본으로 쓰지 않습니다.
+레거시 `Contents`만 있으면 별도 파서의 지원 범위로 분류합니다. 차트 변경 PR은
+값축·범주·계열·누적/백분율·데이터 레이블과 차트 뒤 캡션 위치를 한컴 PDF에서
+직접 대조하고, 값 변경 후 낡은 미리보기가 남는 반례도 확인합니다.
+분류와 폴백의 상세 기준은 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따릅니다.
 
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
@@ -815,7 +831,7 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
 
 - **스크린샷·비교 이미지**는 개인정보·대형 원본·탐색용 중간 산출물을 저장소에 커밋하지 말고 PR 본문에
-  첨부해주세요. 단, Visual Sweep을 수용 근거로 쓰는 공개 가능한 대표 review·overlay PNG는
+  첨부해주세요. 렌더링 변경의 공개 가능한 대표 Visual Sweep review·overlay PNG는
   `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명

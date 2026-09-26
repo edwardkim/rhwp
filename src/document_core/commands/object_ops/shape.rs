@@ -402,10 +402,11 @@ impl DocumentCore {
         // `max(200)` 은 되먹임·undo 봉지의 정당한 값을 200 으로 부풀렸다.
         let width_before = c.width;
         let height_before = c.height;
+        let restore_stored_zero = json_bool(props_json, "restoreStoredZero") == Some(true);
         let new_w = crate::document_core::helpers::json_u32(props_json, "width")
-            .map(super::clamp_degenerate_size);
+            .map(|w| super::clamp_degenerate_size(w, width_before, restore_stored_zero));
         let new_h = crate::document_core::helpers::json_u32(props_json, "height")
-            .map(super::clamp_degenerate_size);
+            .map(|h| super::clamp_degenerate_size(h, height_before, restore_stored_zero));
         Self::apply_common_obj_attr_from_json(c, props_json);
 
         // ShapeComponentAttr 크기/회전/채우기 동기화
@@ -779,10 +780,11 @@ impl DocumentCore {
         // `max(200)` 은 되먹임·undo 봉지의 정당한 값을 200 으로 부풀렸다.
         let width_before = c.width;
         let height_before = c.height;
+        let restore_stored_zero = json_bool(props_json, "restoreStoredZero") == Some(true);
         let new_w = crate::document_core::helpers::json_u32(props_json, "width")
-            .map(super::clamp_degenerate_size);
+            .map(|w| super::clamp_degenerate_size(w, width_before, restore_stored_zero));
         let new_h = crate::document_core::helpers::json_u32(props_json, "height")
-            .map(super::clamp_degenerate_size);
+            .map(|h| super::clamp_degenerate_size(h, height_before, restore_stored_zero));
         Self::apply_common_obj_attr_from_json(c, props_json);
 
         if let Some(d) = shape.drawing_mut() {

@@ -828,6 +828,10 @@ pub(crate) fn resolved_to_text_style(
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
+            // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
+            metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
+            // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
+            font_space_em: cs.font_space_em,
             hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size,
             color: cs.text_color,
@@ -975,6 +979,28 @@ fn quantize_hwp_px(px: f64) -> f64 {
     hwp as f64 / 75.0
 }
 
+/// [#7390] `KoPubDotum` Basic Latin(U+0020~U+007E) 전진폭, 1000em 기준.
+///
+/// KOPUS 배포본 `ttfs/kopub/KoPubDotum-{Light,Medium,Bold}.ttf` 의 `cmap`+`hmtx` 직독.
+/// 굵기 3종이 완전히 같아 한 벌만 둔다. 공백(첫 항목 290)은 **쓰지 않는다** —
+/// 위 `kopub_char_width` 의 반각 갈래가 먼저 반환한다.
+static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
+    290, 300, 320, 590, 590, 874, 706, 180, 310, 310, 446, 590, 300, 570, 300, 446, 563, 563, 563,
+    563, 563, 563, 563, 563, 563, 563, 316, 316, 425, 590, 425, 486, 882, 662, 664, 664, 713, 609,
+    555, 712, 718, 283, 500, 609, 555, 872, 718, 758, 609, 758, 664, 601, 555, 718, 621, 990, 609,
+    609, 555, 310, 446, 310, 434, 490, 291, 506, 562, 506, 562, 562, 341, 562, 562, 232, 232, 506,
+    232, 891, 562, 549, 562, 562, 341, 506, 341, 562, 504, 802, 506, 504, 451, 310, 386, 310, 527,
+];
+
+/// [#7390] `KoPubBatang` Basic Latin 전진폭. 위와 같은 출처·같은 규약이다.
+static KOPUB_BATANG_LATIN_0: [u16; 95] = [
+    312, 312, 312, 573, 573, 745, 789, 312, 312, 312, 419, 648, 312, 503, 312, 468, 573, 573, 573,
+    573, 573, 573, 573, 573, 573, 573, 312, 312, 484, 556, 484, 468, 834, 668, 640, 708, 770, 590,
+    554, 768, 770, 352, 358, 746, 552, 874, 778, 812, 612, 816, 672, 532, 652, 740, 686, 954, 708,
+    706, 638, 312, 468, 312, 477, 540, 312, 558, 606, 536, 592, 548, 360, 548, 624, 324, 282, 564,
+    288, 900, 612, 612, 632, 596, 416, 432, 350, 604, 506, 772, 588, 516, 476, 312, 468, 312, 648,
+];
+
 fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
     let lower = primary_name.to_lowercase();
     let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
@@ -983,20 +1009,43 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return None;
     }
 
+    // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
+    // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
+    // `pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf`(KoPub 설치 환경
+    // 인쇄, 서브셋 내장)를 세 방법으로 재면 모두 같은 곳을 가리킨다.
+    //
+    // ```text
+    //   연속 공백 쌍        n=359   0.4767 em (그려진 폭)
+    //   공백 4개 이상 덩어리 n=59    0.4767 em
+    //   183줄 최소제곱      장평 k=0.9510 · 자연 공백 0.5045 em
+    //     고정값별 잔차 중앙: 0.290 -> 0.669 · 0.436 -> 0.314 · 0.484 -> 0.249 · 0.500 -> 0.269
+    // ```
+    //
+    // 글꼴 값 0.290 은 잔차가 2.7배로 가장 나쁘다. 반각 0.5 를 유지한다.
     if c == ' ' {
         return Some(quantize_hwp_px(font_size * 0.5));
     }
+    // [#7390] ASCII 는 종전에 **일률 0.5em** 이었다. 실제 KoPub 은 비례 글꼴이라
+    // `i` 232 · `N`/`H` 718 처럼 3배 넘게 갈린다(1000em 기준). 아래 표는 KOPUS 배포본
+    // `KoPubDotum-*.ttf` / `KoPubBatang-*.ttf` 의 `cmap`+`hmtx` 직독이고, 굵기 3종의
+    // ASCII 전진폭이 **완전히 같아** 계열당 한 벌이면 된다. 같은 표가 위 정본에 내장된
+    // `KoPubDotumLight` 서브셋의 `/Widths` 와 검사한 18글자 전건에서 일치한다.
+    if let Some(index) = (c as u32)
+        .checked_sub(0x20)
+        .filter(|_| ('\u{20}'..='\u{7E}').contains(&c))
+    {
+        let table = if is_dotum {
+            &KOPUB_DOTUM_LATIN_0
+        } else {
+            &KOPUB_BATANG_LATIN_0
+        };
+        let units = table[index as usize];
+        if units > 0 {
+            return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
+        }
+    }
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    // [#2239] 괄호 — KoPub 경로는 86712 한컴 PDF 글리프 직독 실측(13px 문서
-    // 괄호 4px ≈ 0.3em, #2195 stage23)으로 narrow 유지. is_narrow_punctuation
-    // 의 괄호가 폰트 한정(is_narrow_paren_for_font)으로 빠지면서 여기서 보존.
-    if matches!(c, '(' | ')') {
-        return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    if c.is_ascii() {
-        return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
         // [#6389] KoPub돋움체 한글 전각은 872/1000em — 편람 kopub 오라클 PDF 의
@@ -1014,6 +1063,30 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     }
 
     None
+}
+
+/// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
+/// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
+pub(crate) fn kopub_justified_space_width(style: &TextStyle) -> Option<f64> {
+    let primary = style.font_family.split(',').next()?.trim();
+    let lower = primary.to_lowercase();
+    let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        290.0
+    } else if primary.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        312.0
+    } else {
+        return None;
+    };
+    let (font_size, ratio, _) = style_params(style);
+    let base = quantize_hwp_px(font_size * units / 1000.0);
+    let mut width = base * ratio
+        + glyph_letter_spacing(style.letter_spacing, base * ratio, font_size)
+        + style.extra_char_spacing
+        + style.extra_word_spacing;
+    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+        width = width.max(base * ratio * 0.5);
+    }
+    Some(width)
 }
 
 /// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
@@ -1355,7 +1428,22 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
 
-    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = (c == '\u{318D}')
+    // [#7387] `CharShape.use_font_space` 가 켜진 run 의 공백은 반각이 아니라 **영문 슬롯**
+    // 글꼴이 선언한 공백 전진폭이다. 아래 메트릭 갈래는 공백을 무조건 `em_size/2` 로
+    // 누르고(그 run 자신의 글꼴로), 영문 슬롯을 볼 방법이 없으므로 여기서 먼저 가른다.
+    // 묶음 빈칸(U+00A0)은 #6646 에 따라 일반 공백과 같은 전진폭을 쓴다.
+    //
+    // 폭은 메트릭 갈래와 같은 `quantize_hwp_px` 격자(1/75px = HWPUNIT)에 올린다.
+    // 이게 없으면 영문 슬롯 글꼴의 공백이 마침 반각과 같은 run(예: 영문 슬롯이
+    // 휴먼명조 — 256/512 = 0.5 em)까지 공백마다 0.013px 씩 어긋난다.
+    let font_space_width = matches!(c, ' ' | '\u{00A0}')
+        .then_some(style.font_space_em)
+        .flatten()
+        .map(|em| quantize_hwp_px(font_size * em));
+    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
+    {
+        (w, "useFontSpace", None, "notApplicable")
+    } else if let Some(w) = (c == '\u{318D}')
         .then(|| area_dot_fallback_width(&style.font_family, font_size))
         .flatten()
     {
@@ -1373,8 +1461,13 @@ pub(crate) fn char_width_decision<'a>(
         } else {
             c
         };
+        // [#7391] 폭 표를 고를 때만 선언 face 로 되돌린다.
+        let metric_family = style
+            .metric_font_family
+            .as_deref()
+            .unwrap_or(&style.font_family);
         let embedded = measure_char_width_embedded_decision_for_font(
-            &style.font_family,
+            metric_family,
             style.bold,
             style.italic,
             c,
@@ -1554,14 +1647,18 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
 /// 한컴이 폭 변경 뒤 LINE_SEG를 다시 만들 때 쓰는 공백 advance.
 ///
 /// 저장본은 글꼴 고유 공백 폭을 보존할 수 있지만, 한컴의 새 재조판은 반각 공백을
-/// 사용한다. 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
+/// 사용한다(`use_font_space` 가 켜진 run 은 그 run 의 공백 기준폭, 아래 참조).
+/// 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
 /// stale cell 복구나 LINE_SEG 부재 재조판처럼 새 줄을 만드는 경로만 opt-in한다.
 ///
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
     let (font_size, ratio, _) = style_params(style);
-    let base_w = font_size * 0.5;
+    // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭이 기준이다.
+    // 이 값을 그대로 두면 아래 `stored_width` 비교가 늘 참이 되어, 고친 공백폭을
+    // 다시 반각으로 되돌린다.
+    let base_w = font_size * style.font_space_em.unwrap_or(0.5);
     let mut width = base_w * ratio
         + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
         + style.extra_char_spacing

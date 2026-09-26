@@ -231,6 +231,30 @@ impl TypesetEngine {
             if let Some(first_seg) = para.line_segs.first() {
                 let target_y =
                     crate::renderer::hwpunit_to_px(first_seg.vertical_pos as i32, self.dpi);
+                // A paper-positioned table can paint above the body while its
+                // host still owns a saved line box.  When the next saved line
+                // starts exactly after that box, retain the host's line height
+                // in flow; the table's painted bottom alone ends too early.
+                let saved_host_line_end = paragraphs_all
+                    .get(para_idx + 1)
+                    .and_then(|next| next.line_segs.first())
+                    .filter(|next| {
+                        st.profile.hwpx_stored_layout()
+                            && !is_paper_behind_infront
+                            && is_first_placed
+                            && !para_has_visible_text(para)
+                            && !is_synthetic_line_seg(first_seg)
+                            && !is_synthetic_line_seg(next)
+                            && next.vertical_pos
+                                == first_seg
+                                    .vertical_pos
+                                    .saturating_add(first_seg.line_height)
+                                    .saturating_add(first_seg.line_spacing)
+                    })
+                    .map(|_| {
+                        target_y + hwpunit_to_px(first_seg.line_height, self.dpi)
+                            - hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    });
                 // 호스트 본문 lines + 표는 절대 좌표 → cur_h 는 first_vpos + host lines 만 진행.
                 let pre_lines_h = fmt.line_advances_sum(0..fmt.line_heights.len());
                 let can_sync = target_y > st.current_height && target_y + pre_lines_h <= available;
@@ -273,6 +297,9 @@ impl TypesetEngine {
                         ft.strict_following_plain_text_fit,
                         styles,
                     );
+                    if let Some(end) = saved_host_line_end {
+                        st.align_flow_to(end);
+                    }
                     return None;
                 }
             }
@@ -1246,15 +1273,42 @@ impl TypesetEngine {
         };
         let resolved_host_placement =
             unconstrained_host_placement.map(|p| constrain_host_placement.constrain(p, st));
-        let legacy_whole_fits = st.current_height + whole_fit_table_total <= available
-            || fits_after_overlay_shapes
-            || single_row_object_height_advance.is_some()
-            || declared_table_whole_fits
-            || saved_host_line_after_stack_fits
-            || saved_table_source_frame.is_some();
+        // [#7390] A stored RowBreak object declaration can describe only the
+        // first physical fragment.  It cannot grant whole-table ownership when
+        // the measured rows, painted from the current flow position, would pass
+        // the paper edge.  In that case the row scanner must choose the cut and
+        // the renderer must consume that same fragment instead of clamping the
+        // entire table back to the body top over preceding text/caption.
+        // This is a lower bound on the painted bottom: positive anchor offsets
+        // can only move the table farther down.  Trailing host spacing is not
+        // part of the painted table.  Keep the established body-margin bleed
+        // for objects whose painted rows still fit on the physical paper.
+        let below_body_slack =
+            (st.layout.page_height - (st.layout.body_area.y + st.layout.body_area.height)).max(0.0);
+        let painted_rowbreak_exceeds_paper = st.profile.hwpx_stored_layout()
+            && !table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count > 1
+            && table.cells.iter().all(|cell| cell.row_span == 1)
+            && total_footnote <= 0.0
+            && st.current_height + (table_total - host_spacing_total).max(0.0)
+                > available + below_body_slack + 0.5;
+        let legacy_whole_fits = !painted_rowbreak_exceeds_paper
+            && (st.current_height + whole_fit_table_total <= available
+                || fits_after_overlay_shapes
+                || single_row_object_height_advance.is_some()
+                || declared_table_whole_fits
+                || saved_host_line_after_stack_fits
+                || saved_table_source_frame.is_some());
         // 예약 구간의 하단으로 fit을 판정한다. current_height는 앵커 줄이
         // 아니므로 여기에 표 높이만 더하면 뒤 줄의 앵커 거리가 예산에서 빠진다.
-        if resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available) {
+        if !painted_rowbreak_exceeds_paper
+            && resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available)
+        {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
             }

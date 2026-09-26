@@ -138,6 +138,7 @@ gh issue comment N --repo edwardkim/rhwp --body-file <issue-comment.md>
 ~~~
 
 CLOSED여도 같은 merge commit·같은 검증 증적의 maintainer comment가 아직 없으면 다음을 담은 comment를 남긴다.
+issue comment도 한국어 존댓말로 작성하고, 원 기여·메인터너 보정·남은 차이를 사실에 맞게 구분한다.
 
 - merge PR과 merge commit
 - GitHub Actions와 local 검증 요약
@@ -167,7 +168,9 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 
 ## 7.4 contributor PR comment
 
-원 PR에는 감사, merge 사실, 실제 검증 결과, 필요하면 후속 issue를 남긴다. issue·PR·comment는 평문 번호
+원 PR에는 한국어 존댓말로 감사, merge 사실, 실제 검증 결과, 필요하면 후속 issue를 남긴다. 보정이 있었다면
+원 기여의 성과를 먼저 인정하고 **왜 메인터너 보정이 필요했는지**를 PDF 비교·회귀 근거와 함께 설명한다.
+반말·기여자 책임 전가 표현은 쓰지 않는다. issue·PR·comment는 평문 번호
 대신 Markdown direct link로 쓴다.
 
 시각 검증을 merge 판단 근거로 썼다면 [Visual Sweep의 GitHub merge comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
@@ -182,15 +185,15 @@ direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 �
 ~~~markdown
 검토 및 머지 완료했습니다. 감사합니다.
 
-- CI: Build & Test, CodeQL, Render Diff의 최신 head 결과 확인
-- 로컬 검증: 실제 실행한 focused/release-test/Native Skia 등
-- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
-- visual sweep: pN, flagged=0/N, pixel match NN.NNNNN%
+- CI: Build & Test, CodeQL, Render Diff의 최신 head 결과를 확인했습니다.
+- 로컬 검증: 아래에 적은 focused/release-test/Native Skia 검증을 실제로 실행했습니다.
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따랐습니다.
+- visual sweep: pN에서 flagged=0/N, pixel match NN.NNNNN%를 확인했습니다.
 
 코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 NN.NN%.
-높을수록 좋음: 기준 PDF와 rhwp PNG가 더 비슷함
-낮을수록 나쁨/검토 필요: 잉크 위치나 형태 차이가 큼
-단, 사람 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다
+값이 높을수록 기준 PDF와 rhwp PNG가 더 비슷합니다.
+값이 낮으면 잉크 위치나 형태 차이가 커서 직접 검토가 필요합니다.
+이 값은 사람의 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다.
 
 ![PR N pN visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<review>.png)
 ~~~
@@ -206,6 +209,11 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
+
+PR이 merge되고 필수 후속 처리가 끝나면, 해당 검토가 만든
+`output/pr-review/<review-id>/`의 로그와 임시 산출물을 정리한다. 먼저 이 경로를 사용하는 실행이 없는지,
+필요한 결과 요약·영구 증적이 검토 문서와 추적 asset에 남았는지 확인한다. 정확히 해당 review가 소유한
+경로만 제거하며 다른 검토의 `output`과 공유 산출물은 보존한다. merge 전 보류 중인 검토의 로그는 유지한다.
 
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
 여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge

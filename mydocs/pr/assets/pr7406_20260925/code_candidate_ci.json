@@ -1,0 +1,456 @@
+{
+  "pr": 7437,
+  "code_candidate_pr_head": "e05025719afb2266fd198b47229992055f6dda85",
+  "local_code_head": "9e7518243b251193ee91378e2d09e754d0223d64",
+  "base_sha": "c80a8370ab294259557c850c2e54495ecd0e79c0",
+  "ci_run_id": 36220999235,
+  "ci_run_attempt": 1,
+  "mode": "full",
+  "fast_pass": false,
+  "fast_pass_reason": "no-green-build-candidate",
+  "tested_merge_sha": "73fd3c5147dc99eea847b7dce084b77da2ddb9a7",
+  "tested_merge_tree": "3cf4abdecd1991b5a456dba183c6692671c978e2",
+  "checks": [
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108348654081",
+      "name": "Build & Test",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347592468",
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347332325",
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347301247",
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347117296",
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/runs/108346720756",
+      "name": "CodeQL",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304554",
+      "name": "build-test-archive-b / Build test archive (b)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304574",
+      "name": "build-test-archive-d / Build test archive (d)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304592",
+      "name": "build-test-archive-c / Build test archive (c)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999150/job/108346295616",
+      "name": "Analyze (rust)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999150/job/108346295620",
+      "name": "Analyze (javascript-typescript)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999150/job/108346295659",
+      "name": "Analyze (python)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290616",
+      "name": "Native Skia tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290629",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290704",
+      "name": "build-test-archive-a / Build test archive (a)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290708",
+      "name": "Resolve nextest target duration policy",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290677",
+      "name": "Frontend package gates",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346291127",
+      "name": "Frontend unit gates",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346291108",
+      "name": "Workflow promotion preflight",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999295/job/108346230699",
+      "name": "adapter inter-diff",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999432/job/108346227794",
+      "name": "prop roundtrip",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220998906/job/108346142010",
+      "name": "Canvas visual diff",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346140068",
+      "name": "CI preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999150/job/108346141496",
+      "name": "CodeQL preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999432/job/108346134234",
+      "name": "Proptest preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999295/job/108346135658",
+      "name": "adapter inter-diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999150/job/108346114375",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346114405",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999234/job/108346115012",
+      "name": "Evaluate trusted CI impact policy",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999432/job/108346114448",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999295/job/108346114107",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220998906/job/108346113198",
+      "name": "Render Diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346114962",
+      "name": "WASM Build",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36221930868",
+      "name": "CI Impact Policy",
+      "state": "SUCCESS"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346114405"
+    },
+    {
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346114962"
+    },
+    {
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346140068"
+    },
+    {
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290616"
+    },
+    {
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290629"
+    },
+    {
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290677"
+    },
+    {
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290704"
+    },
+    {
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346290708"
+    },
+    {
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346291108"
+    },
+    {
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346291127"
+    },
+    {
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304554"
+    },
+    {
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304574"
+    },
+    {
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108346304592"
+    },
+    {
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347117296"
+    },
+    {
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347301247"
+    },
+    {
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347332325"
+    },
+    {
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108347592468"
+    },
+    {
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/36220999235/job/108348654081"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 10899585593,
+      "name": "archive-expected-36220999235-b",
+      "size_in_bytes": 173,
+      "expired": false
+    },
+    {
+      "id": 10899363495,
+      "name": "test-archive-36220999235-d",
+      "size_in_bytes": 313951624,
+      "expired": false
+    },
+    {
+      "id": 10899352179,
+      "name": "archive-expected-36220999235-c",
+      "size_in_bytes": 173,
+      "expired": false
+    },
+    {
+      "id": 10899287787,
+      "name": "shard-count-d-1",
+      "size_in_bytes": 159,
+      "expired": false
+    },
+    {
+      "id": 10899228229,
+      "name": "trusted-postmerge-merge-tree-v1-73fd3c5147dc99eea847b7dce084b77da2ddb9a7-3cf4abdecd1991b5a456dba183c6692671c978e2",
+      "size_in_bytes": 470,
+      "expired": false
+    },
+    {
+      "id": 10899197937,
+      "name": "nextest-target-durations-36220999235-attempt-1-c",
+      "size_in_bytes": 50055,
+      "expired": false
+    },
+    {
+      "id": 10899167892,
+      "name": "shard-count-c-1",
+      "size_in_bytes": 159,
+      "expired": false
+    },
+    {
+      "id": 10899129346,
+      "name": "shard-count-a-1",
+      "size_in_bytes": 159,
+      "expired": false
+    },
+    {
+      "id": 10899097671,
+      "name": "test-archive-36220999235-c",
+      "size_in_bytes": 250469249,
+      "expired": false
+    },
+    {
+      "id": 10899092533,
+      "name": "archive-expected-36220999235-a",
+      "size_in_bytes": 173,
+      "expired": false
+    },
+    {
+      "id": 10899047976,
+      "name": "shard-count-b-1",
+      "size_in_bytes": 159,
+      "expired": false
+    },
+    {
+      "id": 10898902754,
+      "name": "test-archive-36220999235-a",
+      "size_in_bytes": 31535330,
+      "expired": false
+    },
+    {
+      "id": 10898874501,
+      "name": "archive-expected-36220999235-d",
+      "size_in_bytes": 173,
+      "expired": false
+    },
+    {
+      "id": 10898673412,
+      "name": "nextest-target-durations-36220999235-attempt-1-d",
+      "size_in_bytes": 55746,
+      "expired": false
+    },
+    {
+      "id": 10898534611,
+      "name": "test-archive-36220999235-b",
+      "size_in_bytes": 269058700,
+      "expired": false
+    },
+    {
+      "id": 10898403520,
+      "name": "nextest-target-durations-36220999235-attempt-1-b",
+      "size_in_bytes": 50323,
+      "expired": false
+    }
+  ],
+  "nextest_summary_lines": [
+    "test-archive-a-shard-1 / Default-feature tests (Archive A)\tUNKNOWN STEP\t2026-09-26T05:41:53.9743385Z      Summary [ 133.588s] 3873 tests run: 3873 passed (1 slow), 13 skipped",
+    "test-archive-b-shard-1 / Default-feature tests (Archive B)\tUNKNOWN STEP\t2026-09-26T05:45:22.5676463Z      Summary [ 238.302s] 2023 tests run: 2023 passed (3 slow), 21 skipped",
+    "test-archive-c-shard-1 / Default-feature tests (Archive C)\tUNKNOWN STEP\t2026-09-26T05:46:38.0604404Z      Summary [ 315.663s] 2012 tests run: 2012 passed (3 slow), 11 skipped",
+    "test-archive-d-shard-1 / Default-feature tests (Archive D)\tUNKNOWN STEP\t2026-09-26T05:49:04.8152359Z      Summary [ 330.205s] 2159 tests run: 2159 passed (2 slow), 5 skipped"
+  ],
+  "default_feature_tests": {
+    "passed": 10067,
+    "skipped": 50,
+    "archive_passed": {
+      "a": 3873,
+      "b": 2023,
+      "c": 2012,
+      "d": 2159
+    }
+  },
+  "native_skia_summary_lines": [
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:40:05.5676284Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3885 filtered out; finished in 0.61s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:40:05.5704046Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:40:05.5716290Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:40:05.5726379Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:43:45.9112412Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:43:47.9109216Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:43:59.6869301Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 235 filtered out; finished in 0.11s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:44:09.8120714Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 217 filtered out; finished in 0.05s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:44:21.6041832Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 0.06s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:44:33.7996678Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 221 filtered out; finished in 0.09s",
+    "Native Skia tests\tNative Skia tests\t2026-09-26T05:44:45.6579732Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.05s"
+  ]
+}

@@ -2205,7 +2205,38 @@ impl LayoutEngine {
                 {
                     // HWPX에서 주입된 OOXML 차트 XML 직접 경로 (CFB 컨테이너 없음)
                     if content.extension == "ooxml_chart" {
-                        if let Some(chart) = crate::ooxml_chart::OoxmlChart::parse(&ole_bytes) {
+                        if let Some(mut chart) = crate::ooxml_chart::OoxmlChart::parse(&ole_bytes) {
+                            if let Some(fallback) = ole.chart_switch_fallback.as_ref() {
+                                if let Some(fallback_bytes) =
+                                    find_bin_data(bin_data_content, fallback.bin_data_id as u16)
+                                        .and_then(|item| {
+                                            item.data.load_limited(
+                                                crate::model::bin_data::MAX_BIN_DATA_BYTES,
+                                            )
+                                        })
+                                {
+                                    if let Some(container) =
+                                        crate::parser::ole_container::parse_ole_container(
+                                            &fallback_bytes,
+                                        )
+                                    {
+                                        // 두 OOXML 사본이 다른 입력은 미리보기 색을 빌리지 않는다.
+                                        if container.ooxml_chart.as_deref()
+                                            == Some(ole_bytes.as_slice())
+                                        {
+                                            if let (Some(contents), Some(preview)) = (
+                                                container.raw_contents.as_deref(),
+                                                container.preview_emf.as_deref(),
+                                            ) {
+                                                crate::ole_chart::apply_preview_palette(
+                                                    &mut chart, contents, preview, render_w,
+                                                    render_h,
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             let svg_fragment =
                                 chart.render_svg(render_x, render_y, render_w, render_h);
                             push_ole_raw_svg_render_node(
@@ -2226,9 +2257,17 @@ impl LayoutEngine {
                             crate::parser::ole_container::parse_ole_container(&ole_bytes)
                         {
                             if let Some(ooxml_bytes) = container.ooxml_chart.as_ref() {
-                                if let Some(chart) =
+                                if let Some(mut chart) =
                                     crate::ooxml_chart::OoxmlChart::parse(ooxml_bytes)
                                 {
+                                    if let (Some(contents), Some(preview)) = (
+                                        container.raw_contents.as_deref(),
+                                        container.preview_emf.as_deref(),
+                                    ) {
+                                        crate::ole_chart::apply_preview_palette(
+                                            &mut chart, contents, preview, render_w, render_h,
+                                        );
+                                    }
                                     let svg_fragment =
                                         chart.render_svg(render_x, render_y, render_w, render_h);
                                     push_ole_raw_svg_render_node(

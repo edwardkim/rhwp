@@ -1,4 +1,4 @@
-//! Mutable owned-tree walk shared by identity assignment and reference fixup.
+//! Mutable owned-tree walk for identity assignment, reference fixup and cell formatting.
 use crate::error::HwpError;
 use crate::model::{
     control::Control,
@@ -7,13 +7,14 @@ use crate::model::{
 };
 
 pub(crate) enum Node<'a> {
+    Paragraphs(&'a mut [Paragraph]),
     Paragraph(&'a mut Paragraph),
     Control(&'a mut Control),
     Shape(&'a mut ShapeObject),
 }
 
 fn paragraphs<'a>(stack: &mut Vec<Node<'a>>, paras: &'a mut [Paragraph]) {
-    stack.extend(paras.iter_mut().rev().map(Node::Paragraph));
+    stack.push(Node::Paragraphs(paras));
 }
 
 fn caption<'a>(stack: &mut Vec<Node<'a>>, value: Option<&'a mut Caption>) {
@@ -31,6 +32,9 @@ pub(crate) fn walk(
     while let Some(mut node) = stack.pop() {
         visit(&mut node)?;
         match node {
+            Node::Paragraphs(paras) => {
+                stack.extend(paras.iter_mut().rev().map(Node::Paragraph));
+            }
             Node::Paragraph(para) => {
                 stack.extend(para.controls.iter_mut().rev().map(Node::Control))
             }

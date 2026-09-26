@@ -37,6 +37,7 @@ impl TypesetState {
                 square_band_bottom: 0.0,
                 square_band_top: None,
                 current_footnote_height: 0.0,
+                deferred_hwpx_note_body: false,
                 current_bottom_fixed_exclusion: 0.0,
                 bottom_fixed_consumed_flow: 0.0,
                 page_has_page_abs_top_table: false,
@@ -105,6 +106,7 @@ impl TypesetState {
                 vpos_lazy_base: None,
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
+                vpos_compacted_stored_delta: 0.0,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
@@ -137,6 +139,7 @@ impl TypesetState {
         self.data.vpos_lazy_base = None;
         self.data.vpos_page_base_stored = false;
         self.data.vpos_ladder_dirty = false;
+        self.data.vpos_compacted_stored_delta = 0.0;
         self.data.vpos_prev_layout_para = None;
         self.data.vpos_prev_partial_table = false;
         self.data.vpos_col_anchor = self.data.current_height;
@@ -156,8 +159,30 @@ impl TypesetState {
         // 보수적으로 밴드를 회수하지 않는다.
         let footnote_penalty =
             (self.data.current_footnote_height - self.footer_band_reclaim()).max(0.0);
-        // [#3707 진단] 가용 높이의 차감 내역. 두 문서에서 avail 이 21.4px 다른데
-        // 본문 영역은 같으므로, 어느 항목이 그 차이를 만드는지 가른다. 동작 불변.
+        let available = (base
+            - footnote_penalty
+            - fn_margin
+            - self.data.current_zone_y_offset
+            - self.data.current_bottom_fixed_exclusion)
+            .max(0.0);
+        let available = if self.data.profile.hwpx_stored_layout()
+            && self.data.deferred_hwpx_note_body
+            && self.data.current_footnote_height > 0.0
+        {
+            // HWPX의 FootnoteArea는 본문 하단에서 위로 자리를 차지한다.
+            // 비어 있는 footer 밴드 회수만 믿고 본문을 각주 영역 안으로
+            // 허용하지 않는다. 측정과 줄 분할이 같은 물리 경계를 쓴다.
+            available.min(
+                (base
+                    - self.data.current_footnote_height
+                    - self.data.current_zone_y_offset
+                    - self.data.current_bottom_fixed_exclusion)
+                    .max(0.0),
+            )
+        } else {
+            available
+        };
+        // [#3707 진단] 가용 높이의 차감 내역과 최종 물리 경계를 함께 기록한다.
         if std::env::var("RHWP_DIAG_AVAIL").is_ok() {
             eprintln!(
                 "DIAG_AVAIL base={:.1} fn_h={:.1} reclaim={:.1} penalty={:.1} fn_margin={:.1} zone_y={:.1} bottom_fixed={:.1} → {:.1}",
@@ -168,17 +193,10 @@ impl TypesetState {
                 fn_margin,
                 self.data.current_zone_y_offset,
                 self.data.current_bottom_fixed_exclusion,
-                (base - footnote_penalty - fn_margin - self.data.current_zone_y_offset
-                    - self.data.current_bottom_fixed_exclusion)
-                    .max(0.0),
+                available,
             );
         }
-        (base
-            - footnote_penalty
-            - fn_margin
-            - self.data.current_zone_y_offset
-            - self.data.current_bottom_fixed_exclusion)
-            .max(0.0)
+        available
     }
 
     /// 기본 가용 높이 (각주/존 미차감)
@@ -574,6 +592,7 @@ impl TypesetState {
         self.data.current_endnote_flow = false;
         self.data.column_had_compact_endnote_rewind = false;
         self.data.current_footnote_height = 0.0;
+        self.data.deferred_hwpx_note_body = false;
         self.data.current_bottom_fixed_exclusion = 0.0;
         self.data.bottom_fixed_consumed_flow = 0.0;
         self.data.page_has_page_abs_top_table = false;

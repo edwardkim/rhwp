@@ -66,6 +66,14 @@ impl TypesetEngine {
             session_edited: self.profile.get().session_edited(),
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
+        // 옛 행 수를 담고 있다. 동일 쪽에서 회수한 높이를 뺀 뒤 흐름 뒤로만 스냅한다.
+        if st.profile.hwpx_stored_layout()
+            && st.vpos_compacted_stored_delta > 0.0
+            && y > st.current_height
+        {
+            y = (y - st.vpos_compacted_stored_delta).max(st.current_height);
+        }
         // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
         // 계상 교정으로 확보한 표 밴드 위로 저장 vpos 스냅으로 되감기지 못한다.
         if y < st.ladder_band_floor {

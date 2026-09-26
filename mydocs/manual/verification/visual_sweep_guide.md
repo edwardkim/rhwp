@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-09-17
+last_verified: 2026-09-24
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -38,6 +38,11 @@ non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_require
 원인을 수정한 새 head로 재실행하고, gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 메인터너
 보정으로 그 변경을 대신하지 않는다. 이 규칙은 지표를
 올리기 위해 tolerance·DPI·대상 영역을 사후 변경하는 근거가 아니다.
+
+같은 원본·출력 환경의 기준 PDF와 rhwp **전체 페이지 수**가 다르면 선택 페이지의 실루엣 게이트가
+통과하더라도 PR을 재검토한다. `--page`/`--pages`로 선택한 쪽의 산출물 개수는 전체 페이지 수의
+증거가 아니다. 누락·추가된 쪽의 시작 경계와 앞뒤 내용을 확인하고 새 head에서 다시 비교한다.
+글꼴 예외도 페이지 수 차이를 면제하지 않는다.
 
 예외는 한컴 PDF와 rhwp raster에 실제로 적용된 글꼴이 완전히 다르다는 사실을 확인한 경우뿐이다. 이때도
 `--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
@@ -115,7 +120,9 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 
 로컬 글꼴 이름이 존재해도 Chrome이 실제로 같은 face를 사용하는지는 별도 확인한다.
 글꼴 굵기 검토에서 대체 face를 원 face의 증거로 세지 않는다. 필요한 경우 CLI와 같은
-`--embed-fonts[=subset|full] --font-path <디렉터리>`를 sweep에 전달한다. Native와 WASM에
+`--embed-fonts=full --font-path <디렉터리>`를 sweep에 전달한다. `--embed-fonts`만 지정해도
+전체 임베딩이며 `=subset`은 거부한다. 현재 CLI의 PDF용 subsetter는 Unicode `cmap`을
+제거하므로 SVG `<text>`용 검증 폰트로 사용할 수 없다. Native와 WASM에
 같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
 mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
 
@@ -131,6 +138,23 @@ venv/bin/python scripts/visual_sweep.py \
 사용 glyph의 outline/advance를 유지한 유효한 subset은 full 모드로 전달할 수 있다. 브라우저
 OTS 오류나 LastResort가 있으면 성공 캡처로 세지 않는다. 원 face를 공급한 정합성 검증과
 실제 Studio fallback 환경의 비교는 서로 다른 증거로 구분한다.
+
+Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재사용하기 전에
+임베딩 폰트의 Unicode `cmap`을 검사한다. 이를 위해 임베딩 모드는 Python `fonttools`가
+필요하다(`python -m pip install fonttools`). 손상된 폰트·없는/빈 `cmap`·검사 의존성 누락은
+`analysis/embedded_font_check.json`에 face·폰트 SHA-256·실패 이유를 남기고 중단한다.
+기존 성공 요약도 `re_review_required`로 바꾸며 `--font-mismatch-evidence`로 우회할 수 없다.
+이 검사는 Unicode 매핑의 존재를 확인할 뿐 모든 글자 표시나 실제 선택 face를 입증하지 않는다.
+설치 폰트·외부 URL 폰트도 검사 범위 밖이다. 대표 review/overlay PNG를 열어 한글·숫자·기호,
+표 안 글자와 각주까지 확인한 뒤 나머지 Sweep을 진행한다. 두부나 누락이 보이면 점수와
+무관하게 그 캡처를 실패 증거로 보존하고 올바른 원본 폰트로 재산출한다.
+
+`--embed-fonts=full`에서 `--font-path`를 생략하면 `RHWP_FONT_PATH`의 디렉터리를 사용한다.
+이 환경변수도 없고 macOS 사용자 글꼴 폴더 `~/Library/Fonts`가 있으면 그 폴더를
+자동으로 사용한다. 실제 공급 경로·글꼴 파일 SHA-256·선택 출처는 `run_manifest.json`의
+`font_supply`에 기록한다. 명시한 경로 또는 환경변수 경로가 없거나 글꼴 파일이 비어 있으면
+캡처 전에 실패한다. 입력 문서에 필요한 face가 실제로 공급되는지와 대표 PNG의 글꼴 표시를
+직접 확인해야 한다. 한글 두부가 있어도 실루엣 점수만으로 gate가 통과할 수 있다.
 
 ## 필수 도구
 

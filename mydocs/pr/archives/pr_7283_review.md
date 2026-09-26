@@ -2,9 +2,25 @@
 
 ## 최종 판정
 
-**머지 보류 — 최신 devel과 작업 기록 문서 충돌.** `179fecf3c`의 추가 코드 결함은 발견하지
-못했고 이전 P2 수정과 최신 CI 통과를 확인했다. `mydocs/orders/20260924.md`의 양쪽 기록을 보존해
-충돌을 해소하고, 새 head의 CI를 확인한 뒤 병합 판단한다. 이번 재리뷰는 원격 변경을 수행하지 않는다.
+**승인 — 코드 검토 판정.** 이전 P2 수정과 `179fecf3c`의 Full CI 통과를 확인했고,
+최신 devel 통합의 수동 충돌은 작업 기록 문서에 한정해 양쪽 내용을 보존했다.
+통합 checkout의 Node 177개·Python 137개가 통과했다. merge 전 조건은 새 head의 원격 checks,
+최신 mergeability 확인과 작업지시자 병합 승인이다. 운영자의 최종 의견 요청은 별도 코멘트 초안으로 준비한다.
+
+## 2026-09-26 병합 준비
+
+- 사용자 요청: PR을 병합 가능한 상태로 업데이트하고 메인테이너·운영자 의견 요청 코멘트 초안을 작성.
+- source `036fe7508`에 devel `eb9142dd7c73297d555383d7d8434a470bdef26e`를 한 번 통합했다.
+  기존 실제 문서 충돌을 해결하기 위한 current-base bridge이며 반복 코드 동기화가 아니다.
+- 수동 해소는 `mydocs/orders/20260924.md`의 동일 위치 추가 한 곳이었다. #7403과 #3512/#3513/#3515
+  기록을 함께 보존하고 이 PR의 검증 이력을 갱신했다. 제품 source/test/workflow의 수동 보정은 없다.
+- 통합 checkout에서 CI classifier/policy/controller/evidence/report 및 tab/diagnostics Node **177/177**,
+  CI/Chrome/CodeQL/review-only/promotion Python **137/137** 통과.
+- 이번 PR의 Rust·renderer 수정은 없으며 통합된 base의 제품 변경을 별도 수정으로 작성하지 않았다.
+  로컬 Rust/브라우저 전체 실행은 반복하지 않았다. 원격 checks가 이전 green candidate를 재사용하는지
+  또는 전체 실행하는지는 실제 preflight와 최신 head 결과로 확인한다.
+- 병합·공백·변경 문서 상대 링크와 최신 base 작업 기록 보존을 push 전에 merge tree에서 검증한다.
+  최종 CI URL·head와 실행/재사용 구분은 PR 본문에 갱신한다.
 
 ## 2026-09-26 재리뷰와 도입 가치 판단
 

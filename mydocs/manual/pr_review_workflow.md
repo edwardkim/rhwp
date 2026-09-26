@@ -305,6 +305,11 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 
 ### 3.4 GitHub Markdown 본문 전송
 
+사용자와 기여자에게 공개되는 PR 본문·review·PR comment·issue comment는 한국어 **존댓말**로 작성한다.
+감사·보정 사유·검증 결과·남은 차이를 `합니다/했습니다` 문장으로 설명하고, 반말이나 명령형으로
+기여자에게 책임을 돌리지 않는다. review 문서의 comment 계획도 게시할 문안을 존댓말로 준비한다.
+이 규칙은 사실관계와 검증 범위를 정확히 적어야 하는 기존 요건을 대체하지 않는다.
+
 여러 단락의 review·comment·issue comment에는 실제 LF 줄바꿈을 전송한다. 셸 큰따옴표 안의 `\n`은
 줄바꿈이 아니라 문자 그대로이므로 `--body "...\n..."` 또는 `--comment "...\n..."`로 게시하지 않는다.
 
