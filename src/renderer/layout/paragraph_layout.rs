@@ -610,6 +610,7 @@ fn bullet_marker_text(
             attr: bullet.attr,
             width_adjust: bullet.width_adjust,
             text_distance: bullet.text_distance,
+            char_shape_id: bullet.char_shape_id,
         },
     ))
 }
@@ -667,6 +668,7 @@ pub(crate) fn numbering_head_text(
             attr: head.attr,
             width_adjust: head.width_adjust,
             text_distance: head.text_distance,
+            char_shape_id: head.char_shape_id,
         },
     ))
 }
@@ -734,6 +736,8 @@ pub(crate) fn assign_numbering_markers(
 /// | 끔 | `max(들여쓰기,0) + 영역` | `max(−들여쓰기,0)` |
 ///
 /// 마커는 첫 줄 본문 바로 앞 영역에 그리고, 가운데·오른쪽 정렬은 영역 안에서 글자 위치만 바꾼다.
+/// 영역이 마커 글자보다 좁으면 글자가 본문과 겹친 채 그리고, 영역이 0 이하면 그리지 않는다
+/// (같은 합성 문서의 한/글 PDF: 보정 −1000·거리 50% 는 겹쳐 그리고, 보정 −1000·거리 0% 는 없다).
 ///
 /// 값은 문단 들여쓰기가 이미 준 줄 시작(`paragraph_line_indent`) **위에** 얹는 양이다.
 /// 줄 나눔(`layout_paragraph_in_frame`·`reflow_line_segs`)과 배치
@@ -747,6 +751,8 @@ pub(crate) struct ListMarkerGeometry {
     pub rest_line_px: f64,
     /// 마커 글자의 x — 첫 줄 본문 시작 기준(보통 음수).
     pub marker_dx_px: f64,
+    /// 영역이 있어 마커를 그린다.
+    pub marker_visible: bool,
 }
 
 impl ListMarkerGeometry {
@@ -796,13 +802,35 @@ pub(crate) fn list_marker_geometry(
         .next()
         .map(crate::renderer::style_resolver::detect_lang_category)
         .unwrap_or(0);
-    let style = resolved_to_text_style(styles, char_shape_id, lang);
+    let style = marker_char_style(styles, head, &text)
+        .unwrap_or_else(|| resolved_to_text_style(styles, char_shape_id, lang));
     Some(list_marker_geometry_for(
         &text,
         head,
         &style,
         para_style.indent,
+        para_style.head_type == HeadType::Bullet,
     ))
+}
+
+/// 머리 모양이 글자 모양을 직접 참조하면 마커는 그 글자 모양으로 재고 그린다.
+///
+/// `pr-1674.hwp` 글머리표 1(Wingdings `U+F06C`, 글자 모양 26 = 10pt, 거리 30%)의 문단 본문은
+/// 14pt 다. 한/글 2024 PDF 12쪽의 마커는 9.96pt 로 그려지고 영역은 1296 HWPUNIT
+/// (= 1000 + 30% × 1000)이다 — 본문 글자 모양으로 재면 1820 이 되어 한 줄 문단이 두 줄로 넘친다.
+/// `u32::MAX` 는 참조 없음이다. 0 도 참조 없음으로 본다 — 편집기·HWP3 가 만드는 기본 머리 모양이
+/// 글자 모양 필드를 0 으로 두며, 문서의 0번 글자 모양은 본문 기본 모양이라 첫 글자 모양과 같은 자리다.
+fn marker_char_style(styles: &ResolvedStyleSet, head: MarkerHead, text: &str) -> Option<TextStyle> {
+    let id = head.char_shape_id;
+    if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
+        return None;
+    }
+    let lang = text
+        .chars()
+        .next()
+        .map(crate::renderer::style_resolver::detect_lang_category)
+        .unwrap_or(0);
+    Some(resolved_to_text_style(styles, id, lang))
 }
 
 fn list_marker_geometry_for(
@@ -810,9 +838,18 @@ fn list_marker_geometry_for(
     head: MarkerHead,
     style: &TextStyle,
     indent_px: f64,
+    bullet: bool,
 ) -> ListMarkerGeometry {
     let hu = |v: i16| hwpunit_to_px(v as i32, crate::renderer::DEFAULT_DPI);
-    let glyph_px = estimate_text_width(text, style);
+    // 한/글은 ASCII 가 아닌 글머리표 글자를 글자 크기 1em 칸으로 잰다 — 글꼴에 없는 `❍`
+    // (맑은 고딕 10pt, 대체 글꼴 폭 0.97em → 한/글 1000), Wingdings `U+F09F`(글리프 폭
+    // 0.46em → 12pt 에서 한/글 영역 792 = 1200 − 1000 + 600, `chemical-labeling` 54쪽).
+    // ASCII 글머리표(`-`)는 글자 폭 그대로다(`footnote-01` 14pt 반각 706).
+    let glyph_px = if bullet && !text.is_ascii() {
+        style.font_size * text.chars().count() as f64
+    } else {
+        estimate_text_width(text, style)
+    };
     let distance_px = if head.attr & (1 << 4) != 0 {
         hu(head.text_distance)
     } else {
@@ -838,6 +875,7 @@ fn list_marker_geometry_for(
         first_line_px,
         rest_line_px,
         marker_dx_px: align_dx - area_px,
+        marker_visible: area_px > 0.0,
     }
 }
 
@@ -4864,12 +4902,19 @@ impl LayoutEngine {
         let marker_geometry = composed.numbering_text.as_ref().map(|(num_text, head)| {
             para.and_then(|p| list_marker_geometry(p, styles))
                 .unwrap_or_else(|| {
-                    let num_style = numbering_marker_text_style(
-                        styles,
-                        para,
-                        composed.lines.first().and_then(|l| l.runs.first()),
-                    );
-                    list_marker_geometry_for(num_text, *head, &num_style, indent)
+                    let num_style =
+                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
+                            numbering_marker_text_style(
+                                styles,
+                                para,
+                                composed.lines.first().and_then(|l| l.runs.first()),
+                            )
+                        });
+                    let bullet = styles
+                        .para_styles
+                        .get(composed.para_style_id as usize)
+                        .is_some_and(|ps| ps.head_type == HeadType::Bullet);
+                    list_marker_geometry_for(num_text, *head, &num_style, indent, bullet)
                 })
         });
 
@@ -6453,11 +6498,14 @@ impl LayoutEngine {
 
             // 개요 번호/글머리표: 첫 줄에서 별도 TextRunNode로 렌더링 (char_start: None)
             if line_idx == start_line && start_line == 0 {
-                if let (Some((num_text, _)), Some(geometry)) =
-                    (composed.numbering_text.as_ref(), marker_geometry)
-                {
+                if let (Some((num_text, head)), Some(geometry)) = (
+                    composed.numbering_text.as_ref(),
+                    marker_geometry.filter(|g| g.marker_visible),
+                ) {
                     let num_style =
-                        numbering_marker_text_style(styles, para, comp_line.runs.first());
+                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
+                            numbering_marker_text_style(styles, para, comp_line.runs.first())
+                        });
                     let num_width = estimate_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = RenderNode::new(
