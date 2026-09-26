@@ -74,16 +74,19 @@ fn glyphs(svg: &str, ch: &str) -> Vec<(f64, f64)> {
 /// 글자처럼 곡선 도형(저장 lh 152.9px) 한 줄. 종전엔 16.0 으로 접혀 다음 문단 "(x2, y2)",
 /// "(x3, y3)" 가 도형 위에 겹쳤다(기준선 422.1·446.1). 한/글 2024 PDF 실측 글리프 상자
 /// 아래 543.7·585.9 (기준선 ≈ 541.0·583.2), 수정 후 540.7·582.9.
+/// `pdf/hwpspec-2024.pdf` 106쪽의 글자 단위 stext(96dpi)에서 숫자 `2`는
+/// x=515.50, y=540.64, 숫자 `3`은 x=271.58, y=582.88이다. 가운데 정렬
+/// TAC 표의 host 여백을 반영한 뒤에도 이 독립 PDF 좌표를 기준으로 찾는다.
 #[test]
 fn text_after_a_text_and_shape_line_in_a_cell_follows_the_stored_line_height() {
     let svg = page_svg("samples/hwpspec.hwp", 105);
     let two: Vec<_> = glyphs(&svg, "2")
         .into_iter()
-        .filter(|(x, _)| (x - 505.2).abs() < 0.7)
+        .filter(|(x, _)| (x - 515.5).abs() < 0.7)
         .collect();
     let three: Vec<_> = glyphs(&svg, "3")
         .into_iter()
-        .filter(|(x, _)| (x - 261.5).abs() < 0.7)
+        .filter(|(x, _)| (x - 271.6).abs() < 0.7)
         .collect();
     assert!(
         two.iter().any(|(_, y)| (y - 540.7).abs() < 0.7),

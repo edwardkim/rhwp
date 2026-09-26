@@ -66,6 +66,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
+    /// Current page owns a HWPX note body deferred from a picture marker page.
+    pub(in crate::renderer::typeset) deferred_hwpx_note_body: bool,
     /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
     /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
     /// 이 영역 위까지만 흐른다 (available_height 차감). 페이지 전환 시 리셋.
@@ -293,6 +295,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#2243] 저장-앵커 사다리에 저장 lineseg 없는 문단이 끼어 dirty — 이후
     /// 사다리 역스냅(backward)은 fresh 성장분을 뭉갤 수 있어 금지(전방만 허용).
     pub(in crate::renderer::typeset) vpos_ladder_dirty: bool,
+    /// 저장 행을 재조판해 줄인 높이. 같은 쪽의 뒤 저장 vpos도 이만큼 이동한다.
+    pub(in crate::renderer::typeset) vpos_compacted_stored_delta: f64,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

@@ -7,10 +7,10 @@ use super::supplemental_clusters::ParagraphMetricScope;
 use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
-use crate::model::style::LineSpacingType;
+use crate::model::style::{Alignment, LineSpacingType};
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
-    is_cjk_char, resolved_letter_spacing,
+    is_cjk_char, kopub_justified_space_width, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -296,6 +296,9 @@ pub(crate) enum SpaceMetric {
     /// 재조판된 내부 공백을 **0.5em 칸**으로 잰다. 그 규칙이 없으면 프레임이 셀
     /// 안에서 한컴보다 넓게 재고, 줄이 밀려 셀이 쪽 밖으로 자란다.
     HalfCell,
+    /// 양쪽 정렬에서 KoPub 공백이 줄 채움 중 실제 글꼴 폭까지 압축되는 경계.
+    /// 다른 face는 저장 metric을 그대로 쓴다.
+    KoPubJustified,
 }
 
 impl SpaceMetric {
@@ -306,6 +309,8 @@ impl SpaceMetric {
             Self::HancomRegenerated => hancom_regenerated_space_width(style)
                 .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
             Self::HalfCell => super::regenerated_half_space_width(style),
+            Self::KoPubJustified => kopub_justified_space_width(style)
+                .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
         }
     }
 }
@@ -2812,6 +2817,10 @@ fn layout_paragraph_in_frame_impl(
     let space_metric =
         if super::missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(para, styles) {
             SpaceMetric::HalfCell
+        } else if frame.kopub_justified_space
+            && para_style.is_some_and(|style| style.alignment == Alignment::Justify)
+        {
+            SpaceMetric::KoPubJustified
         } else {
             SpaceMetric::Stored
         };

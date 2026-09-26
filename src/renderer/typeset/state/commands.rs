@@ -84,6 +84,9 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn mark_vpos_ladder_dirty(&mut self) {
         self.data.vpos_ladder_dirty = true;
     }
+    pub(in crate::renderer::typeset) fn record_compacted_stored_rows(&mut self, delta: f64) {
+        self.data.vpos_compacted_stored_delta += delta.max(0.0);
+    }
     pub(in crate::renderer::typeset) fn request_vpos_reset_after_queued_footnote(&mut self) {
         self.data.reset_vpos_after_queued_table_footnote_page = true;
     }
@@ -314,6 +317,9 @@ impl TypesetState {
         if let Some(page) = self.data.pages.last_mut() {
             page.footnotes.push(note);
         }
+    }
+    pub(in crate::renderer::typeset) fn mark_deferred_hwpx_note_body(&mut self) {
+        self.data.deferred_hwpx_note_body = true;
     }
     pub(in crate::renderer::typeset) fn shift_endnote_render_lines(
         &mut self,

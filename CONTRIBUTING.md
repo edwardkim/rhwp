@@ -152,9 +152,21 @@ PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하�
 아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
 다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
 원본성·소비 경로를 검증합니다.
+같은 원본과 출력 환경에 대응하는 **한컴 PDF 전체 페이지 수와 rhwp 전체 페이지 수**도 비교합니다.
+영향 쪽만 선택해 비교했더라도 전체 페이지 수가 다르면 PR을 재검토하고, 누락·추가된 쪽의 시작
+경계와 앞뒤 내용을 확인해 원인을 수정한 뒤 새 head에서 다시 검증합니다. 선택한 쪽의 Visual Sweep
+점수나 글꼴 예외가 통과해도 페이지 수 차이를 승인 근거로 바꾸지 않습니다.
 `RHWP_FONT_PATH`를 사용할 때에는 설정한 모든 디렉터리가 실제로 존재하고 입력 문서의 face를 제공하는지
 먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
 올바른 글꼴 공급으로 다시 실행합니다.
+
+차트가 OLE에 들어 있어도 먼저 HWPX `Chart/chartN.xml`과 중첩 CFB
+`OOXMLChartContents`의 편집 가능한 데이터를 확인합니다. OOXML `c:chartSpace`가 있으면
+일반 OOXML 차트 경로로 그리며, 미리보기 그림을 값·레이블의 정본으로 쓰지 않습니다.
+레거시 `Contents`만 있으면 별도 파서의 지원 범위로 분류합니다. 차트 변경 PR은
+값축·범주·계열·누적/백분율·데이터 레이블과 차트 뒤 캡션 위치를 한컴 PDF에서
+직접 대조하고, 값 변경 후 낡은 미리보기가 남는 반례도 확인합니다.
+분류와 폴백의 상세 기준은 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따릅니다.
 
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에

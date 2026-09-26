@@ -36,6 +36,7 @@ use super::{
     stored_vpos_rewinds, TypesetState,
 };
 use crate::model::paragraph::Paragraph;
+use crate::renderer::hwpunit_to_px;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
@@ -62,18 +63,29 @@ pub(super) fn place_split_paragraph(
     // 줄 단위 분할 루프
     let mut cursor_line: usize = 0;
     while cursor_line < line_count {
-        let fn_margin = if st.current_footnote_height > 0.0 {
-            st.footnote_safety_margin
-        } else {
-            0.0
-        };
         let page_avail = if cursor_line == 0 {
-            (base_available
-                - st.current_footnote_height
-                - fn_margin
-                - st.current_height
-                - st.current_zone_y_offset)
-                .max(0.0)
+            // 저장 HWPX의 실제 FootnoteArea 경계를 진입 fit과 공유한다.
+            // 여기서 별도 각주 높이와 40px 여백을 다시 빼면 물리적으로
+            // 들어가는 본문 줄이 다음 쪽으로 밀린다. 다른 profile은 기존
+            // 분할 예산을 유지한다.
+            if st.profile.hwpx_stored_layout()
+                && st.deferred_hwpx_note_body
+                && st.current_footnote_height > 0.0
+            {
+                (st.available_height() - st.current_height).max(0.0)
+            } else {
+                let fn_margin = if st.current_footnote_height > 0.0 {
+                    st.footnote_safety_margin
+                } else {
+                    0.0
+                };
+                (base_available
+                    - st.current_footnote_height
+                    - fn_margin
+                    - st.current_height
+                    - st.current_zone_y_offset)
+                    .max(0.0)
+            }
         } else {
             base_available
         };
@@ -225,6 +237,47 @@ pub(super) fn place_fitted_paragraph(
         trimmed_spacing_before,
         body_bottom_vpos,
     );
+    // Only the KoPub justified reflow above deliberately invalidates a saved
+    // row ladder. Other documents (including HWP3-origin HWPX) can have fewer
+    // composed rows for unrelated reasons; subtracting their saved height
+    // from every later vpos would pull content past the physical page edge.
+    let compacted_kopub_justified = st.profile.hwpx_stored_layout()
+        && para.controls.iter().any(|control| {
+            matches!(control, crate::model::control::Control::Picture(picture)
+                if picture.common.treat_as_char)
+        })
+        && styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .is_some_and(|style| style.alignment == crate::model::style::Alignment::Justify)
+        && para.char_shapes.iter().any(|reference| {
+            styles
+                .char_styles
+                .get(reference.char_shape_id as usize)
+                .is_some_and(|style| {
+                    style.font_families.iter().any(|face| {
+                        face.contains("KoPub돋움체")
+                            || face.contains("KoPub바탕체")
+                            || face.to_lowercase().contains("kopub dotum")
+                            || face.to_lowercase().contains("kopub batang")
+                    })
+                })
+        });
+    if compacted_kopub_justified
+        && para.line_segs.len() > fmt.line_heights.len()
+        && para
+            .line_segs
+            .iter()
+            .all(|seg| !super::is_synthetic_line_seg(seg))
+    {
+        let stored_lines_height: f64 = para
+            .line_segs
+            .iter()
+            .map(|seg| hwpunit_to_px(seg.line_height.saturating_add(seg.line_spacing), dpi))
+            .sum();
+        let compacted_lines_height = fmt.line_advances_sum(0..fmt.line_heights.len());
+        st.record_compacted_stored_rows(stored_lines_height - compacted_lines_height);
+    }
 }
 
 /// 일반 fit 실패 뒤 atomic → tail 순서로 시도한다. 성공 시 호출자는 즉시 반환한다.

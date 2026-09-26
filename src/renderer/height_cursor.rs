@@ -327,7 +327,17 @@ impl HeightCursor {
             };
             let vpos_continuous =
                 matches!(curr_first_vpos, Some(v) if v <= prev_vpos_end + curr_sb_hu);
-            let trailing_ls_hu = if vpos_continuous && prev_has_text {
+            // 저장 HWPX의 글자취급 그림만 든 문단도 그림 높이와 trailing
+            // 줄간격을 순차 커서가 이미 소비한다. 다음 저장 시작이 정확히
+            // 그 끝이면 빈 텍스트라는 이유로 같은 간격을 lazy 기준에 재가산하지 않는다.
+            let picture_spent_trailing = self.suppress_hwpx_stale_forward
+                && !synthetic_prev_seg
+                && para_is_treat_as_char_picture_only(prev_para)
+                && prev_para.controls.iter().any(|control| {
+                    matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
+                })
+                && curr_first_vpos == Some(prev_vpos_end);
+            let trailing_ls_hu = if (vpos_continuous && prev_has_text) || picture_spent_trailing {
                 0
             } else {
                 paragraphs
@@ -420,6 +430,41 @@ impl HeightCursor {
                 })
             })
             .unwrap_or(false);
+        let curr_sb = paragraphs
+            .get(item_para)
+            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+            .map(|ps| ps.spacing_before)
+            .unwrap_or(0.0);
+        // A one-cell picture frame can store a host vpos that advances by
+        // exactly its before-spacing from the preceding line end. It carries
+        // no table height; using the preceding end and deducting that spacing
+        // again pulls its first fragment above the flow origin (issue2004 p4).
+        // Text tables with the same numeric gap still use the conservative
+        // host rule: issue1853 p10 otherwise paints its last line below body.
+        let one_cell_picture_frame = paragraphs.get(item_para).is_some_and(|para| {
+            para.controls.iter().any(|control| match control {
+                Control::Table(table) => {
+                    table.row_count == 1
+                        && table.col_count == 1
+                        && table.cells.len() == 1
+                        && table.cells[0].paragraphs.iter().any(|cell_para| {
+                            cell_para
+                                .controls
+                                .iter()
+                                .any(|control| matches!(control, Control::Picture(_)))
+                        })
+                }
+                _ => false,
+            })
+        });
+        let table_host_only_before_gap = self.suppress_hwpx_stale_forward
+            && !self.session_edited
+            && curr_has_topbottom_para_table
+            && one_cell_picture_frame
+            && curr_sb > 0.0
+            && curr_first_vpos.is_some_and(|v| {
+                v == prev_vpos_end.saturating_add((curr_sb * 7200.0 / self.dpi).round() as i32)
+            });
         // [Task #412] 현재 paragraph first vpos 우선(spacing_after 인코딩), reset 시 fallback.
         //
         // 단, 현재 문단이 para-relative TopAndBottom 표의 host 이면 first_vpos 가 표
@@ -452,15 +497,15 @@ impl HeightCursor {
             {
                 v
             }
-            Some(v) if v > seg.vertical_pos && !curr_has_topbottom_para_table => v,
+            Some(v)
+                if v > seg.vertical_pos
+                    && (!curr_has_topbottom_para_table || table_host_only_before_gap) =>
+            {
+                v
+            }
             _ => prev_vpos_end,
         };
         // [Task #643] sb_N 사전 차감 대상 (vpos_corrected_end_y 내부에서 차감).
-        let curr_sb = paragraphs
-            .get(item_para)
-            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
-            .map(|ps| ps.spacing_before)
-            .unwrap_or(0.0);
         // [Task #1027 Stage A] 공유 클램프 함수.
         let allow_large_backward = (self.allow_vpos_rewind && vpos_rewind)
             || (self.allow_start_height_backtrack

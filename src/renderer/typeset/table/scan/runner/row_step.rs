@@ -365,7 +365,36 @@ impl TypesetEngine {
                 return false;
             }
             let padding = row_entry.padding();
-            let content_budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // A page-spanning 1×1 cell can store only a tiny seed cell height
+            // while its outer table owns the physical box. Once its full
+            // vertical inset is restored, HU-to-pixel rounding can put the
+            // last source line less than one raster pixel past the numeric
+            // budget. Keep that line with the source frame (#7406 p39→40);
+            // ordinary rows and continuations retain the exact budget.
+            let source_cell_rounding_slack = if st.profile.hwpx_stored_layout()
+                && r == cursor_row
+                && row_start_cut.is_empty()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && table.cells[0].height < table.common.height
+                && table.cells[0].paragraphs.windows(2).any(|pair| {
+                    pair[0]
+                        .line_segs
+                        .last()
+                        .is_some_and(|line| line.vertical_pos > 0)
+                        && pair[1]
+                            .line_segs
+                            .first()
+                            .is_some_and(|line| line.vertical_pos == 0)
+                }) {
+                1.0
+            } else {
+                0.0
+            };
+            let content_budget = (avail_for_rows - consumed - cs_before - padding
+                + source_cell_rounding_slack)
+                .max(0.0);
             let native_hwp5_internal_reset_row_tail = row_entry.native_reset_tail(&st.profile);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
@@ -486,6 +515,30 @@ impl TypesetEngine {
                     }
                 }
             }
+            // A direct HWPX 1×1 table can save the opening fragment's
+            // physical height alongside its final line and the next frame's
+            // vpos=0 paragraph. If ordinary capacity stops one line before
+            // that boundary, use the declared frame box only when it fits the
+            // current page. This leaves the closing inset with that physical
+            // fragment instead of reserving it twice (#7406 p34→35).
+            let mut saved_opening_frame_height = None;
+            if r == cursor_row && !is_continuation && consumed == 0.0 {
+                if let Some((source_cut, frame_height)) = layout_engine
+                    .saved_single_cell_opening_frame_tail(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                {
+                    if frame_height <= avail_for_rows - cs_before + 0.5 {
+                        budget = source_cut.consumed_height;
+                        res = source_cut;
+                        saved_opening_frame_height = Some(frame_height);
+                    }
+                }
+            }
             if res.fully_consumed {
                 // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
                 // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
@@ -586,8 +639,9 @@ impl TypesetEngine {
             // 분할 행의 표시 높이(per-cell content+visible pad). advance_row_cut 의
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
-            let split_total =
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles);
+            let split_total = saved_opening_frame_height.unwrap_or_else(|| {
+                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles)
+            });
             // [#3738 Stage 15] native HWP5의 RowBreak 표에 저장된 셀 내부 reset은
             // 같은 row의 앞부분을 현재 쪽 끝에 두고 tail을 다음 쪽에서 재개하라는
             // 물리 경계다. 이때 content-only 첫 cut은 25px orphan 경계에 몇 px

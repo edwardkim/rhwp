@@ -35,6 +35,8 @@ pub mod renderer;
 /// OOXML 차트 데이터 모델
 #[derive(Debug, Clone, Default)]
 pub struct OoxmlChart {
+    /// 한컴 확장 `hncChartStyle/@colorIndex`; -1은 문서 쪽 색상표를 사용한다.
+    pub color_index: Option<i32>,
     /// 주 차트 타입 (콤보인 경우 첫 번째 plotType이 들어감; 렌더러는 시리즈별 타입 우선)
     pub chart_type: OoxmlChartType,
     /// 명시 제목 텍스트 (`c:title > … > a:t`). 자동 제목 판단은 아래 플래그로 별도
@@ -261,7 +263,7 @@ pub enum TickMark {
 }
 
 /// 축 선언 하나. [#6624]
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct OoxmlAxis {
     pub kind: AxisKind,
     pub pos: AxisPos,
@@ -270,6 +272,11 @@ pub struct OoxmlAxis {
     pub major_tick_mark: TickMark,
     /// `c:delete val="1"` — 축선·눈금·라벨을 그리지 않는다 (격자선은 유지).
     pub deleted: bool,
+    /// 명시한 값축 범위. 자동 눈금 계산보다 우선한다.
+    pub minimum: Option<f64>,
+    pub maximum: Option<f64>,
+    /// 값축의 숫자 서식 (`0%` 등). 계열의 데이터 서식과 독립적이다.
+    pub format_code: Option<String>,
 }
 
 /// 범례 위치 (`c:legendPos`). C1c #1882 갭③.
@@ -378,6 +385,12 @@ pub struct OoxmlSeries {
     pub axis_group: u8,
     /// 숫자 포맷 코드 (예: "#,##0")
     pub format_code: Option<String>,
+    /// 계열의 `c:dLbls/c:showVal` — 각 막대에 원본 값을 표시한다.
+    pub show_values: bool,
+    /// 계열 데이터 라벨의 `c:dLbls/c:txPr/a:defRPr@sz` (pt).
+    pub data_label_size_pt: Option<f64>,
+    /// 계열 데이터 라벨의 `c:dLbls/c:dLblPos@val`.
+    pub data_label_position: Option<String>,
     /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. (C2a #2277)
     pub marker_symbol: SeriesMarker,
     /// 계열 레벨 `<c:explosion val>` (%) — 쪼개진원형: 전 슬라이스를 중심각

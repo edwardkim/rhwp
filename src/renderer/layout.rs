@@ -3437,8 +3437,9 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_exact,
     estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
-    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing,
-    resolved_to_text_style, split_into_clusters, trace_char_width_decisions, CharWidthDecision,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote,
+    kopub_justified_space_width, resolved_letter_spacing, resolved_to_text_style,
+    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -7422,6 +7423,49 @@ impl LayoutEngine {
                 && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
                     .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
                         && seg.vertical_pos < 30_000));
+        // A saved HWPX page can begin with a paragraph whose first vpos is
+        // precisely its spacing-before. That vpos is a margin from the page
+        // origin, not the origin itself. The following saved paragraph must
+        // also account for its own spacing in the same ladder before we use
+        // page-relative vpos for subsequent items (#7406 p90). An explicit
+        // page-break paragraph starts a new flow, so its first vpos remains
+        // the page base (issue1853 p10).
+        let hwpx_first_margin_is_page_relative = matches!(
+            col_content.items.first(),
+            Some(PageItem::FullParagraph { para_index })
+                if self.profile.get().hwpx_stored_layout()
+                    && !self.profile.get().session_edited()
+                    && paragraphs.get(*para_index).is_some_and(|first| {
+                        if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
+                            return false;
+                        }
+                        let Some(first_seg) = first.line_segs.first() else { return false; };
+                        let Some(last_seg) = first.line_segs.last() else { return false; };
+                        let Some(next) = paragraphs.get(*para_index + 1) else { return false; };
+                        let Some(next_seg) = next.line_segs.first() else { return false; };
+                        let first_before = styles.para_styles
+                            .get(first.para_shape_id as usize)
+                            .map(|style| style.spacing_before)
+                            .unwrap_or(0.0);
+                        let next_before = styles.para_styles
+                            .get(next.para_shape_id as usize)
+                            .map(|style| style.spacing_before)
+                            .unwrap_or(0.0);
+                        !para_has_overlay_shape(first)
+                            && !para_has_overlay_shape(next)
+                            && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && first_before > 0.5
+                            && next_before > 0.5
+                            && (hwpunit_to_px(first_seg.vertical_pos, self.dpi) - first_before).abs() <= 0.5
+                            && (hwpunit_to_px(
+                                next_seg.vertical_pos - last_seg.vertical_pos
+                                    - last_seg.line_height - last_seg.line_spacing,
+                                self.dpi,
+                            ) - next_before).abs() <= 0.5
+                    })
+        );
         let vpos_page_base_init: Option<i32> = col_content
             .items
             .first()
@@ -7452,7 +7496,7 @@ impl LayoutEngine {
                 // vpos(예: 1000HU)는 쪽 원점이 아니다. 도형은 자체 좌표로 그려지고
                 // 뒤따르는 본문은 쪽-상대 vpos를 그대로 따른다. 제목 vpos를
                 // page_base로 빼면 뒤의 문단·표가 그만큼 위로 밀린다.
-                if saved_inline_heading_page {
+                if saved_inline_heading_page || hwpx_first_margin_is_page_relative {
                     0
                 } else {
                     base
@@ -8857,6 +8901,126 @@ impl LayoutEngine {
                     y_offset = col_area.y + origin - spacing_before;
                 }
             }
+            if matches!(
+                item,
+                PageItem::FullParagraph { .. } | PageItem::PartialParagraph { start_line: 0, .. }
+            ) {
+                let previous_is_partial_table = item_ordinal
+                    .checked_sub(1)
+                    .and_then(|index| col_content.items.get(index))
+                    .is_some_and(|previous| {
+                        matches!(previous, PageItem::PartialTable { para_index, .. } if *para_index < item_para)
+                    });
+                let spacing_before = styles
+                    .para_styles
+                    .get(paragraphs[item_para].para_shape_id as usize)
+                    .map(|style| style.spacing_before)
+                    .unwrap_or(0.0);
+                let shared_spacing = crate::renderer::float_placement::hwpx_empty_after_partial_table_shared_spacing_px(
+                    self.profile.get().hwpx_stored_layout(),
+                    previous_is_partial_table,
+                    &paragraphs[item_para],
+                    spacing_before,
+                    y_offset - col_area.y,
+                    self.dpi,
+                );
+                y_offset -= shared_spacing;
+                let caption_shared_spacing =
+                    crate::renderer::float_placement::hwpx_after_picture_caption_shared_spacing_px(
+                        self.profile.get().hwpx_stored_layout()
+                            && !self.profile.get().session_edited(),
+                        item_para.checked_sub(1).and_then(|i| paragraphs.get(i)),
+                        &paragraphs[item_para],
+                        spacing_before,
+                        y_offset - col_area.y,
+                        self.dpi,
+                    );
+                y_offset -= caption_shared_spacing;
+            }
+            // A saved HWPX can put an empty paragraph exactly at the painted
+            // bottom of a floating picture. Its one line then separates the
+            // picture and the following caption. The picture host's own line
+            // height is already in the flow cursor; adding it again moves the
+            // empty line, caption, and later text together (#7406 p92–93).
+            // The successor's stored origin also owns the empty line's physical
+            // advance, including negative spacing. A hidden empty glyph must
+            // not erase that independently saved gap.
+            let mut saved_picture_empty_flow_end = None;
+            if self.profile.get().hwpx_stored_layout() && !self.profile.get().session_edited() {
+                let picture_bottom_origin = (|| {
+                    let PageItem::FullParagraph { para_index } = item else {
+                        return None;
+                    };
+                    let PageItem::Shape {
+                        para_index: host_index,
+                        control_index,
+                    } = col_content.items.get(item_ordinal.checked_sub(1)?)?
+                    else {
+                        return None;
+                    };
+                    if *host_index + 1 != *para_index {
+                        return None;
+                    }
+                    let host = paragraphs.get(*host_index)?;
+                    let para = paragraphs.get(*para_index)?;
+                    let next = paragraphs.get(*para_index + 1)?;
+                    let Control::Picture(picture) = host.controls.get(*control_index)? else {
+                        return None;
+                    };
+                    if picture.common.treat_as_char
+                        || picture.common.text_wrap != TextWrap::TopAndBottom
+                        || picture.caption.is_some()
+                        || !para.text.trim().is_empty()
+                        || !para.controls.is_empty()
+                        || para.line_segs.len() != 1
+                    {
+                        return None;
+                    }
+                    let saved_line = para.line_segs.first()?;
+                    let next_line = next.line_segs.first()?;
+                    let saved_advance = next_line
+                        .vertical_pos
+                        .checked_sub(saved_line.vertical_pos)?;
+                    let full_advance = saved_line
+                        .line_height
+                        .checked_add(saved_line.line_spacing)?;
+                    if saved_line.tag
+                        & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        != 0
+                        || next_line.tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                        || saved_advance <= 0
+                        || (saved_advance != saved_line.line_height
+                            && saved_advance != full_advance)
+                    {
+                        return None;
+                    }
+                    let image_bottom = col_node.children.iter().rev().find_map(|node| {
+                        let RenderNodeType::Image(image) = &node.node_type else {
+                            return None;
+                        };
+                        (image.para_index == Some(*host_index)
+                            && image.control_index == Some(*control_index))
+                        .then_some(node.bbox.y + node.bbox.height)
+                    })?;
+                    let saved_y = col_area.y
+                        + hwpunit_to_px(
+                            saved_line.vertical_pos - vpos_page_base_init.unwrap_or(0),
+                            self.dpi,
+                        );
+                    let flow_end = image_bottom + hwpunit_to_px(saved_advance, self.dpi);
+                    ((saved_y - image_bottom).abs() <= 1.0
+                        && y_offset > image_bottom + 0.5
+                        && image_bottom >= col_area.y
+                        && flow_end <= col_area.y + col_area.height + 0.5)
+                        .then_some((image_bottom, flow_end))
+                })();
+                if let Some((origin, flow_end)) = picture_bottom_origin {
+                    y_offset = origin;
+                    saved_picture_empty_flow_end = Some(flow_end);
+                }
+            }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
             // 아이템 배치에 넘긴다.
             self.item_flow_snap_context.set(
@@ -8892,6 +9056,9 @@ impl LayoutEngine {
                 &col_content.inline_flow_plans,
                 &col_content.paragraph_float_placements,
             );
+            if let Some(flow_end) = saved_picture_empty_flow_end {
+                new_y = flow_end;
+            }
             if let PageItem::FullParagraph { para_index } = item {
                 if let Some(plan) = col_content.inline_flow_plans.get(para_index) {
                     hcursor.min_flow_floor = hcursor.min_flow_floor.max(col_area.y + plan.end);
@@ -10369,21 +10536,20 @@ impl LayoutEngine {
                                 };
                                 let shape_bottom = para_start + sb_applied + effective_h;
                                 if shape_bottom > y_offset {
-                                    // [#6665] HWP3 계보 휴리스틱은 2024 저장본도
-                                    // 포함한다. 계보 전체를 배제하지 않고, 빈 도형 줄의
-                                    // 다음 저장 vpos가 lh + ls 전진을 증명할 때만 ls를
-                                    // 복원한다. 원본 HWP3/HWPX와 저장 사다리가 다른
-                                    // 문단은 유지한다. 바닥값 판정에는 ls를 넣지 않는다.
+                                    // [#6665, #7406] 저장 줄 뒤의 다음 vpos가
+                                    // lh + ls 전진을 증명할 때만 도형 높이 바닥값에도
+                                    // 꼬리 ls를 복원한다. HWPX OLE 차트의 캡션 다음
+                                    // 본문도 이 경로를 사용한다. 바닥값 판정에는 ls를
+                                    // 넣지 않아 순수 개체 줄의 기존 소유권은 유지한다.
                                     // lh == 도형 프레임 높이인 순수 개체 줄(#1116)은
                                     // paragraph_layout의 높이 접힘과 짝을 이뤄 ls 없는
                                     // 바닥값이 전진량을 소유한다. 프레임보다 큰 저장
                                     // 줄 상자를 복원할 때만 별도의 꼬리 ls를 더한다.
                                     let profile = self.profile.get();
-                                    let stored_shape_line = (profile
-                                        .hwp5_stored_pagination_layout()
-                                        || profile.hwp3_layout())
-                                        && !profile.hwp3_native_layout()
-                                        && !profile.hwpx_stored_layout()
+                                    let stored_shape_line = (profile.hwpx_stored_layout()
+                                        || ((profile.hwp5_stored_pagination_layout()
+                                            || profile.hwp3_layout())
+                                            && !profile.hwp3_native_layout()))
                                         && para.text.chars().all(|c| {
                                             c.is_whitespace() || c <= '\u{001F}' || c == '\u{FFFC}'
                                         });
@@ -11061,8 +11227,15 @@ impl LayoutEngine {
                     }
                     Some(crate::model::style::Alignment::Center) => {
                         let tbl_w = hwpunit_to_px(t.common.width as i32, self.dpi);
-                        let center =
-                            col_area.x + (col_area.width - tbl_w) / 2.0 + (om_l - om_r) / 2.0;
+                        // 인라인 위치가 없는 TAC 표도 host 문단의 가용 줄 영역에서
+                        // 가운데 정렬한다. 왼쪽 여백만 있는 경우 단 전체 폭에서
+                        // 정렬하면 표가 여백의 절반만큼 왼쪽으로 치우친다.
+                        let line_width =
+                            (col_area.width - effective_margin - margin_right).max(0.0);
+                        let center = col_area.x
+                            + effective_margin
+                            + (line_width - tbl_w) / 2.0
+                            + (om_l - om_r) / 2.0;
                         center.max(base_x)
                     }
                     _ => base_x,
@@ -11348,6 +11521,41 @@ impl LayoutEngine {
                 );
                 let layer = Self::render_layer_from_common(&t.common, para_index, control_index);
                 Self::push_layered_paper_children(paper_images, &mut tmp_node, layer);
+                // The paper float paints outside the body, but its saved host
+                // line remains in the body flow when the following stored
+                // line starts at that line's end plus its trailing spacing.
+                if self.profile.get().hwpx_stored_layout()
+                    && matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+                    && !para_has_visible_text(para)
+                {
+                    if let (Some(seg), Some(next)) = (
+                        para.line_segs.first(),
+                        paragraphs
+                            .get(para_index + 1)
+                            .and_then(|p| p.line_segs.first()),
+                    ) {
+                        if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                            && next.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && next.vertical_pos
+                                == seg
+                                    .vertical_pos
+                                    .saturating_add(seg.line_height)
+                                    .saturating_add(seg.line_spacing)
+                        {
+                            y_offset = y_offset.max(
+                                col_area.y
+                                    + hwpunit_to_px(
+                                        seg.vertical_pos.saturating_add(seg.line_height),
+                                        self.dpi,
+                                    )
+                                    - hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                            );
+                        }
+                    }
+                }
             } else {
                 let square_anchor_y = if !is_tac && tbl_is_square {
                     square_wrap_table_line_anchor_y(para, t, para_y_for_table, self.dpi)
@@ -14410,11 +14618,9 @@ impl LayoutEngine {
                             let para_style_id = comp
                                 .map(|c| c.para_style_id as usize)
                                 .unwrap_or(para.para_shape_id as usize);
-                            let alignment = styles
-                                .para_styles
-                                .get(para_style_id)
-                                .map(|s| s.alignment)
-                                .unwrap_or(Alignment::Left);
+                            let para_style = styles.para_styles.get(para_style_id);
+                            let alignment =
+                                para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
                             let deferred_page_start_square = wrap_anchors
                                 .values()
                                 .any(|anchor| anchor.anchor_para_index == para_index)
@@ -14532,10 +14738,17 @@ impl LayoutEngine {
                             } else {
                                 (vpos_accounts_for_height, pic_y)
                             };
+                            // typeset의 ObjectPlacementFrame과 같은 문단 좌우 여백을
+                            // Para 기준 그림에도 준다. paint만 단 전체를 기준으로
+                            // 두면 TIFF 그림과 캡션이 저장 1000HU만큼 왼쪽으로 간다
+                            // (#7406 p61). 다른 상대 기준은 별도 column/body/paper다.
+                            let para_margin_left = para_style.map_or(0.0, |s| s.margin_left);
+                            let para_margin_right = para_style.map_or(0.0, |s| s.margin_right);
                             let pic_container = LayoutRect {
-                                x: col_area.x,
+                                x: col_area.x + para_margin_left,
                                 y: pic_y,
-                                width: col_area.width,
+                                width: (col_area.width - para_margin_left - para_margin_right)
+                                    .max(0.0),
                                 height: col_area.height - (pic_y - col_area.y),
                             };
                             result_y = self.layout_body_picture(

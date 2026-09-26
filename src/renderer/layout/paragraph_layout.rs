@@ -3492,6 +3492,7 @@ impl LayoutEngine {
                 crate::renderer::composer::StoredRowMissPolicy::Reflow,
                 &self.body_float_carve_evidence.borrow(),
                 known_square_band,
+                self.profile.get().hwpx_stored_layout(),
             )?;
         let line = current.lines.get(line_index)?;
         let font_size = crate::renderer::composed_line_max_font_size(line, para, styles);
@@ -3570,6 +3571,7 @@ impl LayoutEngine {
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
                         &self.body_float_carve_evidence.borrow(),
                         wrap_anchor.is_some(),
+                        self.profile.get().hwpx_stored_layout(),
                     )
                 } else {
                     None

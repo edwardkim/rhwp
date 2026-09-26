@@ -4151,6 +4151,15 @@ impl LayoutEngine {
         suppress_unused_padding: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
+            let hwpx_no_adjust_fitted = (self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().session_edited())
+            .then(|| {
+                crate::renderer::height_measurer::fit_stored_hwpx_no_adjust_rowspans(
+                    mt, table, self.dpi,
+                )
+            })
+            .flatten();
+            let mt = hwpx_no_adjust_fitted.as_ref().unwrap_or(mt);
             let hwpx_inline_fitted = (self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().session_edited())
             .then(|| {
@@ -4926,8 +4935,9 @@ impl LayoutEngine {
         // 한컴은 자체 가드로 cell 안에 콘텐츠가 들어가도록 처리. cell.height 의 절반까지
         // 비례 축소 (HWP 스펙 외 한컴 동작 모방).
         // 발동 기준은 측정(height_measurer)과 공유한다 (#5751).
-        let (pad_top, pad_bottom) = if cell.height < 0x80000000 {
-            let cell_h_px = hwpunit_to_px(cell.height as i32, self.dpi);
+        let padding_guard_height = cell.vertical_padding_guard_height_hu(table);
+        let (pad_top, pad_bottom) = if padding_guard_height < 0x80000000 {
+            let cell_h_px = hwpunit_to_px(padding_guard_height as i32, self.dpi);
             let total_v_pad = pad_top + pad_bottom;
             if crate::model::table::Cell::vertical_padding_is_abnormal(cell_h_px, total_v_pad) {
                 let max_v_pad = cell_h_px * 0.5;
@@ -13148,6 +13158,109 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        // A saved HWPX pageBreak="CELL" can end a physical fragment with a visible
+        // paragraph, then restart the next paragraph at vpos=0. The final
+        // line's spacing belongs to the next frame, so it must not prevent
+        // that visible line from fitting the current page (#7406 p79→80).
+        if self.profile.get().hwpx_stored_layout()
+            && !self.profile.get().session_edited()
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count == 1
+            && table.col_count == 1
+            && start_cut == 0
+            && end_cut > 0
+            && end_cut < units.len()
+        {
+            let closing = &units[end_cut - 1];
+            let next = &units[end_cut];
+            if !closing.empty_spacer
+                && closing.vis_start < closing.vis_end
+                && next.hard_break_before
+                && next.para_idx == closing.para_idx + 1
+                && next.vis_start == 0
+            {
+                if let (Some(closing_para), Some(next_para)) = (
+                    cell.paragraphs.get(closing.para_idx),
+                    cell.paragraphs.get(next.para_idx),
+                ) {
+                    if let (Some(before), Some(after)) =
+                        (closing_para.line_segs.last(), next_para.line_segs.first())
+                    {
+                        if closing.vis_end == closing_para.line_segs.len()
+                            && closing_para.controls.is_empty()
+                            && next_para.controls.is_empty()
+                            && closing_para.text.chars().any(|c| !c.is_whitespace())
+                            && next_para.text.chars().any(|c| !c.is_whitespace())
+                            && before.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && after.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && before.vertical_pos > 0
+                            && after.vertical_pos == 0
+                        {
+                            return hwpunit_to_px(before.line_spacing.max(0), self.dpi)
+                                .min(closing.height);
+                        }
+                    }
+                }
+            }
+        }
+        // An original HWPX 1-cell table may store an empty closing line just
+        // before the next page's vpos=0 line.  The closing line belongs to the
+        // first fragment, but its line spacing does not occupy that page.  The
+        // same trimmed height must be used by cut selection and painted bounds.
+        if self.profile.get().hwpx_stored_layout()
+            && !self.profile.get().session_edited()
+            && !table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && table.row_count == 1
+            && table.col_count == 1
+            && start_cut == 0
+            && end_cut > 1
+            && end_cut < units.len()
+        {
+            let closing = &units[end_cut - 1];
+            let next = &units[end_cut];
+            if closing.empty_spacer
+                && next.hard_break_before
+                && next.para_idx > closing.para_idx
+                && units[..end_cut - 1].iter().any(|unit| !unit.empty_spacer)
+            {
+                if let (Some(closing_para), Some(next_para)) = (
+                    cell.paragraphs.get(closing.para_idx),
+                    cell.paragraphs.get(next.para_idx),
+                ) {
+                    if let (Some(before), Some(after)) =
+                        (closing_para.line_segs.last(), next_para.line_segs.first())
+                    {
+                        if closing_para.text.trim().is_empty()
+                            && closing_para.controls.is_empty()
+                            && next_para.text.chars().any(|c| !c.is_whitespace())
+                            && before.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && after.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && before.vertical_pos > 0
+                            && after.vertical_pos == 0
+                        {
+                            return hwpunit_to_px(before.line_spacing.max(0), self.dpi)
+                                .min(closing.height);
+                        }
+                    }
+                }
+            }
+        }
         let trim =
             self.native_multirow_saved_reset_trailing_trim(table, cell, units, end_cut, styles);
         if trim > 0.0 || start_cut != 0 || end_cut == 0 || end_cut > units.len() {
@@ -13734,6 +13847,112 @@ impl LayoutEngine {
             fully_consumed,
             consumed_height,
         })
+    }
+
+    /// Return the physical height of a saved opening frame at its exact cut.
+    /// The scanner and the partial-table painter must consume the same height.
+    pub(crate) fn saved_single_cell_opening_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !self.profile.get().hwpx_stored_layout()
+            || self.profile.get().session_edited()
+            || table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || row != 0
+            || !start_cut.is_empty()
+            || table.row_count != 1
+            || table.col_count != 1
+            || table.cells.len() != 1
+            || table.common.height >= 0x8000_0000
+        {
+            return None;
+        }
+        let cell = &table.cells[0];
+        if cell.vertical_padding_guard_height_hu(table) != table.common.height {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let end = *end_cut.first()?;
+        if end == 0 || end >= units.len() || end_cut.len() != 1 {
+            return None;
+        }
+        let closing = &units[end - 1];
+        let next = &units[end];
+        if closing.para_idx + 1 != next.para_idx
+            || closing.vis_start >= closing.vis_end
+            || next.vis_start >= next.vis_end
+        {
+            return None;
+        }
+        let closing_para = cell.paragraphs.get(closing.para_idx)?;
+        let next_para = cell.paragraphs.get(next.para_idx)?;
+        if !closing_para.controls.is_empty()
+            || !next_para.controls.is_empty()
+            || closing.vis_end != closing_para.line_segs.len()
+        {
+            return None;
+        }
+        let before = closing_para.line_segs.last()?;
+        let after = next_para.line_segs.first()?;
+        if before.vertical_pos <= 0
+            || after.vertical_pos != 0
+            || before.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        {
+            return None;
+        }
+        let pad = cell.effective_padding(&table.padding);
+        let saved_frame_bottom = i64::from(before.vertical_pos)
+            + i64::from(before.line_height)
+            + i64::from(pad.top)
+            + i64::from(pad.bottom);
+        if saved_frame_bottom != i64::from(table.common.height) {
+            return None;
+        }
+        Some(hwpunit_to_px(table.common.height as i32, self.dpi))
+    }
+
+    /// An ordinary cut can stop one line before a saved opening frame ends.
+    /// Extend only that one displaced line when the declared frame still fits.
+    pub(crate) fn saved_single_cell_opening_frame_tail(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        ordinary_end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<(RowCutResult, f64)> {
+        let cell = table.cells.first()?;
+        let units = self.cell_units(cell, table, styles);
+        let ordinary_end = *ordinary_end_cut.first()?;
+        if ordinary_end == 0
+            || ordinary_end >= units.len()
+            || units[ordinary_end - 1].para_idx != units[ordinary_end].para_idx
+        {
+            return None;
+        }
+        let candidate =
+            self.paragraph_tail_cut_for_row(table, row, start_cut, ordinary_end_cut, styles)?;
+        let end = *candidate.end_cut.first()?;
+        if candidate.fully_consumed || end != ordinary_end + 1 {
+            return None;
+        }
+        let frame_height = self.saved_single_cell_opening_frame_height(
+            table,
+            row,
+            start_cut,
+            &candidate.end_cut,
+            styles,
+        )?;
+        Some((candidate, frame_height))
     }
 
     /// Extend a row cut by exactly the next visible source unit in the cell

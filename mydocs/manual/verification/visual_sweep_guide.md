@@ -39,6 +39,11 @@ non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_require
 보정으로 그 변경을 대신하지 않는다. 이 규칙은 지표를
 올리기 위해 tolerance·DPI·대상 영역을 사후 변경하는 근거가 아니다.
 
+같은 원본·출력 환경의 기준 PDF와 rhwp **전체 페이지 수**가 다르면 선택 페이지의 실루엣 게이트가
+통과하더라도 PR을 재검토한다. `--page`/`--pages`로 선택한 쪽의 산출물 개수는 전체 페이지 수의
+증거가 아니다. 누락·추가된 쪽의 시작 경계와 앞뒤 내용을 확인하고 새 head에서 다시 비교한다.
+글꼴 예외도 페이지 수 차이를 면제하지 않는다.
+
 예외는 한컴 PDF와 rhwp raster에 실제로 적용된 글꼴이 완전히 다르다는 사실을 확인한 경우뿐이다. 이때도
 `--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
 representative PNG를 기록한 증거 파일의 경로·SHA-256을 manifest에 남긴다. 단순 anti-aliasing, 작은
