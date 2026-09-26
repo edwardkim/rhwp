@@ -378,3 +378,55 @@ fn numbered_marker_is_excluded_from_the_line_box() {
         mismatched.join("\n")
     );
 }
+
+/// 자간 × condense 실험 — 본문 실험과 같은 13문단에 모든 글자의 자간만 −20·−12·−6·+10% 로 둔다.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_condense_letter_spacing_fixture.py`.
+/// 한/글 저장 줄은 같은 세션 PDF 와 −20·−12·−6% 는 전 줄, +10% 는 229줄 중 227줄이 같다.
+const LETTER_SPACING_FIXTURES: [(&str, &str, &str); 4] = [
+    (
+        "자간 −20%",
+        "samples/issue7418/condense_letter_spacing_m20.hwpx",
+        "samples/issue7418/condense_letter_spacing_m20-hancom-2024.hwpx",
+    ),
+    (
+        "자간 −12%",
+        "samples/issue7418/condense_letter_spacing_m12.hwpx",
+        "samples/issue7418/condense_letter_spacing_m12-hancom-2024.hwpx",
+    ),
+    (
+        "자간 −6%",
+        "samples/issue7418/condense_letter_spacing_m6.hwpx",
+        "samples/issue7418/condense_letter_spacing_m6-hancom-2024.hwpx",
+    ),
+    (
+        "자간 +10%",
+        "samples/issue7418/condense_letter_spacing_p10.hwpx",
+        "samples/issue7418/condense_letter_spacing_p10-hancom-2024.hwpx",
+    ),
+];
+
+/// 공백 최소값(condense)은 자간 **적용 전** 공백 폭의 c% 를 줄인다.
+///
+/// 한/글 규칙은 넷이다: 줄에 들어가는가는 줄 끝 글자의 자간을 빼고 재고(#5678), 새 낱말 허용은
+/// 공백 앞 글자의 자간을 넣고 재며, 공백의 자간은 공백 폭 비례이고, condense 는 자간 전
+/// 공백 폭(반각)을 기준으로 줄인다. 넷째 규칙 대신 자간 적용 후 폭을 쓰면 음수 자간 문단이
+/// 한/글보다 한 줄에 덜 담는다(수정 전 −20% 7/13, −12% 7/13, −6% 10/13, +10% 9/13 문단).
+#[test]
+fn condense_saves_from_the_space_width_before_letter_spacing() {
+    let mut mismatched = Vec::new();
+    for (name, no_cache, hancom) in LETTER_SPACING_FIXTURES {
+        let h = line_starts(hancom, LABELS.len());
+        let r = line_starts(no_cache, LABELS.len());
+        for (label, (hl, rl)) in LABELS.iter().zip(h.iter().zip(r.iter())) {
+            if hl != rl {
+                mismatched.push(format!("{name} {label}: 한/글 {hl:?} / rhwp {rl:?}"));
+            }
+        }
+    }
+    assert!(
+        mismatched.is_empty(),
+        "자간 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}
