@@ -40,8 +40,25 @@ impl TypesetEngine {
             st.apply_float_band_before_block_table(para_idx, ft.effective_height);
         }
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
-        let mut total_footnote =
-            st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
+        // [#7379] 통째/분할 **진입 판정**의 예산에는 표 자신의 각주를 미리 싣지 않는다.
+        //
+        // 종전에는 표 전체의 각주 높이를 `available` 에서 먼저 깎았다. 그러면 각주를 든
+        // 표는 자기 각주 때문에 현재 쪽의 남은 자리가 음수가 되어, **분할을 시도조차
+        // 못 하고** 통째로 다음 쪽으로 간다. 쪼개졌다면 첫 조각은 그 조각이 실제로
+        // 데려가는 각주만 필요한데, 판정은 어느 조각도 쓰지 않을 예산을 요구한 것이다.
+        //
+        // 실측(`samples/정책연구용역사업 중간진도보고서(…).hwpx`, 한/글 정본 215쪽):
+        //   문단 0.728 표(7행 · RowBreak · 자리차지 · 표 안 각주 6건)
+        //     종전  total_footnote 294.0 (쪽 각주 43.4 + 표 각주 250.6)
+        //           → available 622.2 < current_height 713.8  → 통째 이월
+        //           → 그 쪽에 실제로 그려진 각주는 35.9px, 본문은 220px 공백
+        //     이후  같은 자리에서 분할 경로로 들어간다(한/글도 이 표를 p66/p67 로 쪼갠다).
+        //
+        // 조각이 실제로 데려간 각주는 등록 시점에 `register_body_footnote` 가 계상하므로
+        // 예약이 사라지는 것이 아니라 **판정 시점이 뒤로 밀릴 뿐**이다. samples 1,141문서
+        // 전수에서 바뀐 문서는 2건이고 둘 다 개선이다(정답지 거리 개선 1 · 악화 0 ·
+        // 일치 상실 0 · 넘침 −1 · 글자겹침 −179).
+        let mut total_footnote = st.projected_footnote_height(0.0, 0);
         // [#1921 d=+1 / Task #1725 동형] tail-before-vpos-reset 표는 각주 안전마진
         // (보수 버퍼 40px)을 완화한다. 한글은 stored vpos 상 쪽 하단에 표+각주를
         // 여유 수 px 로 타이트하게 배치하는데(75828 pi134: 표 하단 912.2 + 각주
