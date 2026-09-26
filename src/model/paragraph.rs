@@ -147,6 +147,27 @@ pub struct Paragraph {
     /// splitting starts a continuation, and width reflow discards the old frames.
     #[serde(skip_serializing)]
     pub cell_vpos_reset: Option<bool>,
+    /// [#7436] 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함).
+    ///
+    /// 번호는 문서 순서의 계수기에서 정해지는데, 줄 나눔은 문단 하나만 보고 줄을 채운다.
+    /// 그래서 쪽 나누기 전에 문서 순서로 **한 번** 계산해 문단에 둔다
+    /// (`renderer::layout::assign_numbering_markers`). 줄 나눔은 이 문자열의 폭만큼 모든
+    /// 줄의 상자를 줄이고(행잉), 배치는 같은 문자열을 그린다 — 두 경로가 같은 값을 쓴다.
+    /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다.
+    #[serde(skip_serializing)]
+    pub numbering_marker: NumberingMarker,
+}
+
+/// [`Paragraph::numbering_marker`] 의 상태.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub enum NumberingMarker {
+    /// 아직 계산하지 않았다 — 배치는 종전처럼 자기 계수기로 번호를 만든다.
+    #[default]
+    Unresolved,
+    /// 번호·개요 문단이 아니거나, 그려질 번호가 없다.
+    Absent,
+    /// 그려질 번호 문자열.
+    Text(String),
 }
 
 /// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
@@ -1689,6 +1710,8 @@ impl Paragraph {
             stored_text_partition_dirty: false,
             cell_format_vpos_dirty: self.cell_format_vpos_dirty,
             cell_vpos_reset: Some(false),
+            // 번호는 문서 순서로 다시 계산해야 하는 파생값이다 (#7436).
+            numbering_marker: NumberingMarker::Unresolved,
         }
     }
 

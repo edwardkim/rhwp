@@ -335,3 +335,46 @@ fn overflowing_trailing_space_does_not_open_an_empty_row() {
         mismatched.join("\n")
     );
 }
+
+/// 번호 문단 실험(#7436) — 글머리표 실험과 같은 글·모양에서 머리 모양만 번호(`^1.`)다.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_condense_numbered_fixture.py`,
+/// 한/글 저장 줄은 같은 세션 PDF(`pdf/issue7418/condense_numbered_synthetic-2024.pdf`)와 55/55 줄 같다.
+const NUMBERED_NO_CACHE: &str = "samples/issue7418/condense_numbered_synthetic.hwpx";
+const NUMBERED_HANCOM: &str = "samples/issue7418/condense_numbered_synthetic-hancom-2024.hwpx";
+const NUMBERED_LABELS: [&str; 5] = [
+    "번호 글자 c0",
+    "번호 글자 c20",
+    "번호 글자 c50",
+    "번호 낱말 c20",
+    "대조군(번호 없음) 글자 c20",
+];
+
+/// 번호도 **모든 줄**의 앞을 차지한다 — 줄 나눔 상자에서 번호 폭을 뺀다(#7436).
+///
+/// 번호 문자열은 문서 순서의 계수기로 정해져 줄 나눔이 알 수 없었다. 쪽 나누기 전에 문서
+/// 순서로 번호를 계산해 문단에 두고(`assign_numbering_markers`), 줄 나눔과 배치가 같은 문자열을
+/// 쓴다. 수정 전(번호 폭을 빼지 않던 줄 나눔)은 번호 문단 4개가 모두 한/글과 달랐고 대조군만
+/// 같았다(1/5, devel 은 0/5).
+#[test]
+fn numbered_marker_is_excluded_from_the_line_box() {
+    let hancom = line_starts(NUMBERED_HANCOM, NUMBERED_LABELS.len());
+    let rhwp = line_starts(NUMBERED_NO_CACHE, NUMBERED_LABELS.len());
+
+    // 전제: 같은 글이므로 번호 폭이 한/글의 줄을 실제로 바꿔야 한다.
+    assert_ne!(
+        hancom[1], hancom[4],
+        "정답지 전제가 깨졌다 — 번호 문단과 대조군의 줄이 같다"
+    );
+    let mismatched: Vec<String> = NUMBERED_LABELS
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(label, (h, r))| format!("{label}: 한/글 {h:?} / rhwp {r:?}"))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "번호 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}

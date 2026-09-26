@@ -2897,11 +2897,10 @@ fn layout_paragraph_in_frame_impl(
     let text_chars = para.text.chars().collect::<Vec<_>>();
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
     let indent_px = para_style.map(|style| style.indent).unwrap_or(0.0);
-    // [#7418] 글머리표는 모든 줄의 앞을 차지한다. 배치가 같은 폭만큼 줄 가용폭을 줄이므로
-    // 채움도 각 행의 첫 구간에서 그 폭을 뺀 상자로 줄을 나눈다. 게시하는 행 기하(구간)는
-    // 마커를 포함한 그대로다 — 한/글 저장 행도 마커 자리부터 시작한다.
-    let marker_hang_px =
-        crate::renderer::layout::bullet_marker_hang_px(para, styles).unwrap_or(0.0);
+    // [#7418·#7436] 목록 마커(글머리표·번호)는 모든 줄의 앞을 차지한다. 배치가 같은 폭만큼
+    // 줄 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 그 폭을 뺀 상자로 줄을 나눈다. 게시하는
+    // 행 기하(구간)는 마커를 포함한 그대로다 — 한/글 저장 행도 마커 자리부터 시작한다.
+    let marker_hang_px = crate::renderer::layout::list_marker_hang_px(para, styles).unwrap_or(0.0);
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3961,10 +3960,10 @@ fn reflow_line_segs_impl(
     // 폭에서, 프레임 상자를 또 폭에서 따로 만들어 둘이 어긋날 수 있었다.
     let published_horizontal = paragraph_box.effective();
     let seg_width_hwp = paragraph_box.width_hwp();
-    // [#7418] 판정 폭에서만 글머리표 폭을 뺀다 — 프레임 채움(`layout_paragraph_in_frame`)과
-    // 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
+    // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
+    // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
     let available_width_px = (paragraph_box.width_px(dpi)
-        - crate::renderer::layout::bullet_marker_hang_px(para, styles).unwrap_or(0.0))
+        - crate::renderer::layout::list_marker_hang_px(para, styles).unwrap_or(0.0))
     .max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
