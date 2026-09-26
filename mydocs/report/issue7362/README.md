@@ -1,5 +1,5 @@
 ---
-kind: report
+kind: snapshot
 status: historical
 canonical: mydocs/report/issue7362/README.md
 last_verified: 2026-09-26
