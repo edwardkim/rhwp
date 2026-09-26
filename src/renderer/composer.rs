@@ -2587,13 +2587,29 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             .unwrap_or(0),
     );
     frame.kopub_justified_space = justified_kopub_picture;
-    // 실제 글꼴 공백폭으로 다시 채운 행이 저장 사다리보다 적으면 저장 경계는
-    // 현 출력 환경에서 유효하지 않다. 외부 어울림 기하와 강제 개행은 이 판단 밖이다.
-    let compact_stored_rows = justified_kopub_picture
+    // A shorter fresh fill does not invalidate a clean stored partition.
+    // Only repair a final soft break that leaves the remainder of a Hangul
+    // word alone on the last row, when this frame can rejoin that remainder.
+    // A complete final word (or several words) retains its stored boundary.
+    let rejoinable_word_tail = justified_kopub_picture
         && para.line_segs.len() > 1
         && !para.text.contains('\n')
         && !para.stored_text_partition_is_dirty()
         && !frame.models_exclusions()
+        && {
+            let chars: Vec<_> = para.text.chars().collect();
+            let (start, _) = utf16_range_to_text_range(
+                &para.char_offsets,
+                para.line_seg_text_start(para.line_segs.len() - 1),
+                u32::MAX,
+                chars.len(),
+            );
+            let is_syllable = |c: char| ('\u{ac00}'..='\u{d7a3}').contains(&c);
+            start > 0
+                && start < chars.len()
+                && is_syllable(chars[start - 1])
+                && chars[start..].iter().copied().all(is_syllable)
+        }
         && {
             let mut probe = frame.clone();
             let mut input = para.clone();
@@ -2602,7 +2618,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                 .is_some_and(|rows| rows.len() < para.line_segs.len())
         };
     let stale =
-        compact_stored_rows || stored_rows_are_stale(composed, para, inner_width_px, styles);
+        rejoinable_word_tail || stored_rows_are_stale(composed, para, inner_width_px, styles);
     match line_breaking::resolve_stored_line_segs_in_frame(
         para,
         &mut frame,

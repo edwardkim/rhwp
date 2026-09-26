@@ -15,6 +15,25 @@ use rhwp::DocumentCore;
 const SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
 
 #[test]
+fn prep_page_33_keeps_complete_final_word_on_saved_sixth_line() {
+    let bytes =
+        std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
+    let page = core.build_page_render_tree(32).expect("물리 33쪽");
+    let mut lines = Vec::new();
+    paragraph_lines(&page.root, 345, &mut lines);
+    // 원본 저장 LineSeg 6개와 한컴 2024 PDF 물리 33쪽의 여섯 줄이
+    // 같은 어절 경계를 보존한다. 더 적은 줄로 채울 수 있다는 사실만으로
+    // 이 정상 저장 분할을 무효로 분류하면 안 된다.
+    assert_eq!(lines.len(), 6, "정상 저장 여섯 줄: {lines:?}");
+    assert!(lines[0].trim_end().ends_with("한다는"), "첫 줄: {lines:?}");
+    assert_eq!(lines[5].trim(), "왜곡될 수 있음.");
+    let last = line_top_containing(&page.root, "왜곡될 수 있음.").expect("마지막 줄");
+    // PDF yMin=430.848pt, 96dpi.
+    assert!((last - 574.464).abs() <= 1.5, "마지막 줄 위치: {last:.3}");
+}
+
+#[test]
 fn prep_page_76_single_cell_does_not_reserve_last_line_spacing() {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
