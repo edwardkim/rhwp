@@ -496,6 +496,7 @@ fn head_label(case: &(i32, i32, i32, bool, &str, i32, i32)) -> String {
 ///
 /// 종전에는 마커 글자와 공백 한 칸의 폭을 모든 줄에서 똑같이 뺐다 — 너비 보정·본문과의 거리
 /// 단위·자동 내어쓰기를 몰라, 들여쓰기가 양수이거나 보정이 있는 문단의 줄이 한/글과 달랐다.
+/// 수정 전(12d08c5ea, 마커+공백 한 칸 폭을 모든 줄에서 뺌)은 43문단 중 9문단만 한/글과 같았다.
 #[test]
 fn list_marker_head_sets_the_line_box() {
     let hancom = line_starts(HEAD_HANCOM, HEAD_CASES.len());
