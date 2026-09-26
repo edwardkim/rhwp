@@ -231,3 +231,107 @@ fn bullet_marker_is_excluded_from_the_line_box() {
         mismatched.join("\n")
     );
 }
+
+/// 표 칸 실험 — 본문 실험과 같은 13문단을 각각 1×1 표 칸(가용 41500)에 넣었다.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_condense_cell_fixture.py`,
+/// 한/글 저장본의 칸 줄은 같은 세션 PDF(`pdf/issue7418/condense_cell_synthetic-2024.pdf`)와 211줄 중
+/// 210줄이 글자 단위로 같다(나머지 1줄은 PDF 텍스트 추출이 한 줄을 여러 조각으로 나눈 것).
+const CELL_NO_CACHE: &str = "samples/issue7418/condense_cell_synthetic.hwpx";
+const CELL_HANCOM: &str = "samples/issue7418/condense_cell_synthetic-hancom-2024.hwpx";
+
+fn cell_line_starts(rel: &str) -> Vec<Vec<u32>> {
+    use rhwp::model::control::Control;
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{rel} 읽기: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let starts: Vec<Vec<u32>> = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .flat_map(|p| p.controls.iter())
+        .filter_map(|c| match c {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .map(|table| {
+            assert_eq!(
+                table.cells.len(),
+                1,
+                "{rel}: 1×1 표여야 한다 — 시험 설정 오류"
+            );
+            let para = &table.cells[0].paragraphs[0];
+            para.line_segs.iter().map(|seg| seg.text_start).collect()
+        })
+        .collect();
+    assert_eq!(
+        starts.len(),
+        LABELS.len(),
+        "{rel}: 칸 수가 fixture 생성기와 다르다 — 시험 설정 오류"
+    );
+    starts
+}
+
+/// 표 칸에서도 새 낱말은 앞 줄 자연폭이 상자보다 **엄격히** 좁을 때만 condense 로 시작한다.
+///
+/// 칸은 본문보다 상자가 좁아 앞 줄이 자연폭으로 상자를 꼭 채우는 경우가 생긴다. 앞 줄이 상자에
+/// 줄바꿈 여유를 더한 한계를 넘을 때만 새 낱말을 거절하던 판정은 13문단 중 8개만 한/글과 같았고,
+/// devel(2.5em 문턱)은 3개였다.
+#[test]
+fn cell_paragraphs_start_new_words_only_below_the_box() {
+    let hancom = cell_line_starts(CELL_HANCOM);
+    let rhwp = cell_line_starts(CELL_NO_CACHE);
+    let mismatched: Vec<String> = LABELS
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(label, (h, r))| format!("{label}: 한/글 {h:?} / rhwp {r:?}"))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "칸 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}
+
+/// 끝 공백 실험 — 한글 42자(42000)에 끝 공백 수만 다르다. 가용 42520.
+///
+/// 생성기는 `mydocs/tech/investigations/issue-7418/probes/make_trailing_space_fixture.py`.
+const TRAILING_NO_CACHE: &str = "samples/issue7418/trailing_space_synthetic.hwpx";
+const TRAILING_HANCOM: &str = "samples/issue7418/trailing_space_synthetic-hancom-2024.hwpx";
+const TRAILING_LABELS: [&str; 5] = [
+    "42자 + 공백 0(대조군)",
+    "42자 + 공백 1",
+    "42자 + 공백 2",
+    "42자 + 공백 3",
+    "42자 + 공백 2 + 42자(대조군)",
+];
+
+/// 문단 끝에서 넘친 공백은 줄 끝에 걸리고 빈 줄을 만들지 않는다.
+///
+/// 한/글은 넘친 공백 **하나**를 줄 끝에 걸고 그 뒤 공백은 새 줄로 넘긴다: 공백 2 → 1줄,
+/// 공백 3 → 2줄. 종전 rhwp 는 걸린 공백이 문단의 마지막 글자여도 글자 없는 빈 행을 하나 더
+/// 게시해 공백 2 문단이 2줄이었다(`rowbreak_cell_picture_only_paragraph` 2쪽 칸의 빈 줄).
+/// 공백 뒤에 글이 이어지는 대조군은 수정 전후 모두 2줄이다.
+#[test]
+fn overflowing_trailing_space_does_not_open_an_empty_row() {
+    let hancom = line_starts(TRAILING_HANCOM, TRAILING_LABELS.len());
+    let rhwp = line_starts(TRAILING_NO_CACHE, TRAILING_LABELS.len());
+
+    // 전제: 공백 2 와 3 이 한/글에서 갈라야 이 검사가 경계를 잠근다.
+    assert_ne!(
+        hancom[2].len(),
+        hancom[3].len(),
+        "정답지 전제가 깨졌다 — 끝 공백 2 와 3 의 줄 수가 같다"
+    );
+    let mismatched: Vec<String> = TRAILING_LABELS
+        .iter()
+        .zip(hancom.iter().zip(rhwp.iter()))
+        .filter(|(_, (h, r))| h != r)
+        .map(|(label, (h, r))| format!("{label}: 한/글 {h:?} / rhwp {r:?}"))
+        .collect();
+    assert!(
+        mismatched.is_empty(),
+        "끝 공백 문단의 줄이 한/글과 다르다:\n{}",
+        mismatched.join("\n")
+    );
+}

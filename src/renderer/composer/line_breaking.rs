@@ -1720,34 +1720,18 @@ fn fill_one_interval(
                     *has_inline_control,
                 ) {
                     let absorbed = cut > *idx;
-                    // [#7418] 넘친 공백 뒤에 공백만 남았으면 문단이 여기서 끝난다. 끝 공백은 줄
-                    // 밖에 걸리고 다음 행을 만들지 않는다 — 종전에는 글자 없는 빈 행을 하나 더
-                    // 게시했다(`rowbreak_cell_picture_only_paragraph` 2쪽 12/16 칸, 한/글 1줄).
-                    if absorbed
-                        && tokens[ti + 1..].iter().all(|token| {
-                            matches!(
-                                token,
-                                BreakToken::Space {
-                                    has_inline_control: false,
-                                    ..
-                                }
-                            )
-                        })
-                    {
-                        let end_idx = tokens
-                            .last()
-                            .map(|token| match token {
-                                BreakToken::Space { idx, .. } => *idx + 1,
-                                _ => cut,
-                            })
-                            .unwrap_or(cut);
+                    // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
+                    // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만
+                    // 줄 끝에 걸고 그 뒤 공백은 새 줄로 넘긴다(42자+공백 2 → 1줄, 공백 3 → 2줄;
+                    // `trailing_space_synthetic`). 그래서 뒤에 공백이 더 남은 경우는 종전대로 끊는다.
+                    if absorbed && ti + 1 == tokens.len() {
                         cursor.finished = true;
                         cursor.emitted_any = true;
                         cursor.token_index = tokens.len();
                         return Some(FilledInterval {
                             line: LineBreakResult {
                                 start_idx: cursor.line_start_idx,
-                                end_idx,
+                                end_idx: cut,
                                 max_font_size: cursor.line_max_fs,
                                 has_line_break: false,
                             },
