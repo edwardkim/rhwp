@@ -55,29 +55,12 @@ impl BlockCutQuery<'_> {
         // hard break는 이 계약에 포함하지 않는다. 그런 형상은 선언 높이가
         // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
         // 경로가 계속 소유한다.
-        // label cell 하나가 block 전체 행을 덮고, 각 행에는 그 label의
-        // 오른쪽 폭 전체를 차지하는 response cell 하나만 있는 form 구조다.
-        // 일반 평가 grid처럼 label 오른쪽에 여러 독립 열이 있으면 선언
-        // blank도 각 열의 frame 일부이므로 이 경로로 압축하지 않는다.
-        let block_is_label_response_form = table
-            .cells
-            .iter()
-            .find(|cell| cell.row as usize == b_start && cell.row_span as usize == block_size)
-            .is_some_and(|label| {
-                (b_start..b_end).all(|row| {
-                    let mut row_cells = table.cells.iter().filter(|cell| {
-                        cell.row as usize == row && !(row == b_start && cell.col == label.col)
-                    });
-                    row_cells.next().is_some_and(|response| {
-                        row_cells.next().is_none()
-                            && response.row_span == 1
-                            && response.col == label.col + label.col_span
-                            && response.col_span + label.col_span == table.col_count
-                    })
-                })
-            });
-        let source_complete_rowspan_block = block_is_label_response_form
-            && mt.allows_row_break_split()
+        // [#7418] 종전에는 label 칸 하나 + 오른쪽 응답 칸 하나인 서식으로만 좁혔다("일반 격자는
+        // 선언 blank 도 각 열의 frame 일부"라는 추론). 한/글 2020 정본은 일반 격자도 압축한다 —
+        // `22037757` 1쪽의 59×5 표 rowspan 묶음(행 11~12, 칸 선언 170.3px, 열 다섯 중 넷이
+        // rowspan)은 선언으로 본문을 5.8px 넘지만 내용이 들어가, 한/글이 1쪽에 싣고 행 12 를
+        // 본문 바닥(1010.8px)에서 자른다(선언 94.6 → 88.4px). 다음 쪽에 이어지는 조각은 없다.
+        let source_complete_rowspan_block = mt.allows_row_break_split()
             && r > cursor_row
             && blk_start_cut.is_empty()
             && !rowbreak_use_row_offsets
