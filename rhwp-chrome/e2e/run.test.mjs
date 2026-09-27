@@ -131,6 +131,7 @@ test('candidate mutation during execution invalidates otherwise successful suite
 test('output cannot change the candidate, including a symlinked parent', async t => {
   const options = await fixture(t);
   await assert.rejects(runChecks({ ...options, output: path.join(options.dist, 'out') }, dependencies), /outside/);
+  await assert.rejects(runChecks({ ...options, dist: path.parse(options.dist).root }, dependencies), /outside/);
   const alias = path.join(options.dir, 'alias');
   await symlink(options.dist, alias);
   await assert.rejects(runChecks({ ...options, output: path.join(alias, 'new', 'out') }, dependencies), /outside/);

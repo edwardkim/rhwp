@@ -12,7 +12,10 @@ const root = path.resolve(path.dirname(currentFile), '../..');
 const suites = ['extension-smoke', 'download-interceptor', 'extension-lifecycle'];
 const selectionVariables = ['RHWP_EXTENSION_SMOKE_REPEAT', 'RHWP_EXTENSION_DOWNLOAD_CASE',
   'RHWP_EXTENSION_LIFECYCLE_REPEAT', 'RHWP_EXTENSION_LIFECYCLE_CASE'];
-const within = (parent, child) => child === parent || child.startsWith(parent + path.sep);
+const within = (parent, child) => {
+  const relative = path.relative(parent, child);
+  return relative === '' || (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+};
 
 export function parseArgs(args) {
   const options = {};
@@ -65,7 +68,7 @@ async function browserEnvironment() {
   } catch { /* A source archive has no Git metadata. Candidate hashes remain authoritative. */ }
   return { node: process.version, platform: process.platform, arch: process.arch,
     puppeteer: require('puppeteer/package.json').version, chrome: await puppeteer.browserVersion(),
-    executable: puppeteer.executablePath(), harnessSha, harnessDirty };
+    executable: await puppeteer.executablePath(), harnessSha, harnessDirty };
 }
 
 async function canonicalPath(value) {
