@@ -14,7 +14,7 @@ const CURRENT_FILE = fileURLToPath(import.meta.url);
 const HERE = path.dirname(CURRENT_FILE);
 const EXTENSION_DIR = path.resolve(HERE, '..');
 const ROOT = path.resolve(EXTENSION_DIR, '..');
-const DIST_DIR = path.join(EXTENSION_DIR, 'dist');
+const DIST_DIR = path.resolve(process.env.RHWP_EXTENSION_DIST_DIR ?? path.join(EXTENSION_DIR, 'dist'));
 const FIXTURE_FILE = path.join(ROOT, 'samples', 'hwp3-pagedef-1915.hwp');
 const SURFACE_TIMEOUT_MS = positiveInteger(
   process.env.RHWP_EXTENSION_SMOKE_TIMEOUT_MS,

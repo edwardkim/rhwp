@@ -58,8 +58,7 @@ class WorkflowContractWiringTests(unittest.TestCase):
             self.assertIn(expected, found)
         self.assertEqual(
             node_contract_test_files(),
-            ["chrome-extension-impact.test.cjs",
-             "ci-impact-classifier.test.cjs", "ci-impact-controller-contract.test.cjs",
+            ["ci-impact-classifier.test.cjs", "ci-impact-controller-contract.test.cjs",
              "ci-impact-policy.test.cjs",
              "ci-impact-report.test.cjs", "ci-workflow-evidence.test.cjs"],
         )
