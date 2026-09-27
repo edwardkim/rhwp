@@ -1,63 +1,30 @@
-# Issue #3515 수행·구현 계획
+# Issue #3515 수행·구현 계획 — 선택 실행 E2E
 
-> 2026-09-27 범위 변경: 아래 CI 설계는 과거 기록이다. 현재 구현은 마지막 절의 선택 실행 계획을 따른다.
+- Parent: #3512, 선행: #3513 설정 수명주기 검사.
+- 2026-09-27 사용자 지시와 [메인테이너 동의](https://github.com/edwardkim/rhwp/pull/7283#issuecomment-5844951296)에 따라 범위를 축소한다.
+- 현재 구현: 개발자·에이전트가 배포 후보 폴더를 지정해 실행하는 보조 도구. 수동 배포 확인은 유지한다.
 
-- Parent: #3512, 선행 구현: #3514 및 #3513 (`b4c6b0e58`)
-- 사용자 승인: 2026-09-20, #3513 다음 CI 연결 진행.
-- 운영 등급 O3: 실제 browser job, O2 영향 분류·cache·artifact 포함.
+## 구현 범위
 
-## 구현
+1. PR이 추가한 자동 Chrome E2E, 영향도 분류, Frontend 승격, 필수 집계, cache workflow를 제거한다.
+   일반 CI의 기존 검사는 유지하며 main/tag 전용 자동 실행이나 새로운 dispatch를 추가하지 않는다.
+2. smoke/download/lifecycle와 진단은 유지한다. `npm --prefix rhwp-chrome run test:e2e -- --dist <후보>`를
+   단일 진입점으로 제공하고 기존 산출물을 다시 빌드하지 않는다. npm/editor 검사를 호출하지 않는다.
+3. 후보 파일 목록·SHA-256, 도구 환경, suite별 성공/실패/미실행을 JSON으로 보존한다.
+   후보 변경·잘못된 입력·timeout·이전 결과 폴더 덮어쓰기는 성공으로 처리하지 않는다.
+4. ZIP을 직접 처리하지 않는다. 압축을 해제한 폴더를 지정한다. 스토어 설치/업데이트·Edge/Firefox·
+   실제 문서 표시 품질과 최종 배포 판단은 수동 확인 범위다.
 
-기존 trusted preflight 입력을 재사용하는 독립 Chrome 영향 분류기를 추가한다. 기존 Rust/render/CodeQL
-판정 정책을 바꾸지 않는다. Chrome E2E가 필요하면 frontend package lane도 활성화해 같은 run의 fresh
-WASM과 production dist를 만든다. 이 dist를 짧게 보존하는 run/attempt별 artifact로 browser job에 넘긴다.
-브라우저 job은 5분 timeout이며 Chrome 자체·Puppeteer·manifest 버전과 실행 시간을 출력한다.
-빌드 준비 시간은 browser job의 90초 warm 목표와 구분한다.
+## 검증과 제출
 
-PR은 잠긴 Chrome cache를 복원만 한다. branch push CI가 없으므로 캐시 최초 저장은 별도의
-수동 browser-cache 준비 workflow에서 신뢰된 기본 branch 코드로 수행한다. 검증 CI를 병합 후 다시
-실행하지 않으며, 캐시가 없으면 해당 PR job에서 Chrome을 다운로드하되 저장하지 않는다.
-일반 frontend 의존성 설치는 Puppeteer 자동 다운로드를 끈다.
+- 기존 CI Node/Python 계약과 새 실행기의 후보 전달·실패·timeout·결과 보존 계약.
+- 현재 source로 준비한 실제 확장 폴더를 저장소 밖으로 옮겨 전체 E2E와 의도적 실패 실행.
+- common base 대비 `.github/`, `scripts/` 변경 없음 및 최신 devel merge simulation 확인.
+- 결과는 [보고서](../report/task_m100_3512_report.md)에 기록하고 PR 제목·본문을 현재 범위로 다시 쓴다.
+- 자동 CI 도입을 전제로 한 #3515의 원래 완료 조건이나 #3512 전체 완료를 주장하지 않는다.
+  이슈 종료·외부 증적 보고서 연동은 별도 후속 판단이다.
 
-분류 실패·불완전 목록·rename 정보 누락·tag/manual은 실행한다. extension source, shared/sw,
-Studio production source·필수 정적 surface·WASM·빌드 입력이 영향을 준다. Firefox/Safari/VSCode/npm
-editor 전용 코드와 문서·Studio tests/e2e만 바뀌면 건너뛴다. 불명확한 production 경로는 실행한다.
+## 이전 설계
 
-필수 Build & Test 집계는 expected run의 success와 expected skip의 skipped를 각각 검증한다.
-독립 CI Impact Policy도 같은 Chrome 분류기를 trusted base에서 읽고 실제 package 승격과 새 job을
-검사한다. 정책 의미가 추가되므로 protocol v7 producer/세 consumer를 함께 갱신하며, 기존 v6
-증거는 review-only 재사용에 쓰지 않는다. Rust/render/CodeQL의 영향 축 자체는 유지한다.
-실패 시 console·worker·다운로드·단계·extension URL·screenshot만 artifact로 남기며 profile과
-fixture 원본은 제외한다. 성공 시 작은 결과 summary만 남기고 진단 artifact는 올리지 않는다.
-
-## 검증과 완료 경계
-
-- 영향 경로·rename·목록 잘림·tag/manual/fallback의 Node 계약.
-- YAML/actionlint·생산자/소비자·required 집계의 실행/skip/failure/cancelled 계약.
-- 실제 production dist에서 smoke/download/lifecycle 전체를 10회 연속 실행, #3513 10회 결과도 연결.
-- 실패를 의도적으로 발생시켜 제한된 진단 파일과 오류 exit code 확인.
-- GitHub Actions retry 없는 3회와 cache 로그는 원격 게시 승인 후 실제 run으로 확인한다.
-- Firefox Phase 2는 Chrome CI의 Linux/CfT 안정화 결과를 확인할 때까지 구현 보류 근거를 Epic에 남긴다.
-- #3512 최종 통합 완료 후에만 증적 보고서 연동 후속 이슈를 만든다.
-
-## 2026-09-24 실행 범위 보완
-
-사용자 요청으로 PR #7283의 실제 경로·CI 비용을 대조한 뒤 정책을 보완한다. `devel`은 확인된
-CLI binary/Native source 및 전용 도구 변경을 제외하고 공용 WASM 입력과 미분류 경로는 계속
-검사한다. `main` 대상 CI는 전체 Chrome suite를 실행하며 review-only fast-pass로 생략하지 않는다.
-분류기·trusted policy에 같은 baseRef를 전달하고, actual workflow script 실행 검사로 배선을 확인한다.
-코드·로컬 검증을 먼저 완료한 뒤 실제 Actions 결과와 실행 범위·비용을 중심으로 PR 본문을 재작성한다.
-
-
-## 2026-09-27 선택 실행 도구로 범위 축소
-
-메인테이너 [동의](https://github.com/edwardkim/rhwp/pull/7283#issuecomment-5844951296)와 사용자 PR 갱신 지시에 따른다.
-
-- base route: collaborator_self_merge; modifiers: intake_and_review, local_validation, rework_and_exceptions.
-- 기존 후보 `0b3da1cb`, 비교 base `443844b593c62a722cf9cc3d9d0256e94ab88cb8`; merge simulation 충돌 없음.
-- 이번 PR의 CI/workflow/cache/영향 분류/필수 gate 변경을 공통 base 상태로 복원한다. 기존 CI 보호는 유지한다.
-- Chrome smoke/download/lifecycle와 진단을 유지하고 명시적 `--dist`로 기존 배포 후보 폴더를 검사한다.
-- 실행기는 빌드하지 않는다. 후보 파일 해시·도구/브라우저 환경·각 suite 결과·미실행 범위를 JSON에 남긴다.
-- 일반 PR/main/tag 자동 실행 및 전용 dispatch는 추가하지 않는다. 개발자와 에이전트가 동일 npm 명령을 호출한다.
-- 계약 검사, 기존 CI 정책 회귀, 실제 외부 후보 폴더 전체 E2E, 실패/잘못된 입력 검증 후 PR 제목·본문을 갱신한다.
-- ZIP은 미리 압축 해제해 폴더를 지정한다. 스토어 설치/업데이트·실제 문서 표시·수동 배포 판단은 별도다.
+2026-09-20~26의 CI 설계와 실행 경계 보완은 [당시 계획](https://github.com/edwardkim/rhwp/blob/0b3da1cbd2ca6881bd760303312966f03cfabbbe/mydocs/plans/task_m100_3515_plan.md)에 보존돼 있다.
+현재 실행 절차는 [확장 매뉴얼](../manual/chrome_edge_extension_build_deploy.md#39-배포-후보-선택-실행과-결과-보고-3515)을 따른다.

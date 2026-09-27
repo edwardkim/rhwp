@@ -1,0 +1,86 @@
+{
+  "kind": "selected fields from local result.json and logs; absolute machine paths omitted",
+  "sourceSha": "a2df40172af2f3459305611b8ac26671660449c0",
+  "environment": {
+    "node": "v24.15.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "puppeteer": "25.11.0",
+    "chrome": "153.0.8010.36",
+    "harnessSha": "a2df40172af2f3459305611b8ac26671660449c0",
+    "harnessDirty": false
+  },
+  "candidate": {
+    "version": "0.8.6",
+    "manifestVersion": 3,
+    "sha256": "2917ae68228b6f6364f63e3e1a46c1530d48be7fc272cd09b4f20f6b9f76e9d1"
+  },
+  "candidateFiles": 80,
+  "candidateUnchanged": true,
+  "build": "fresh wasm-pack --dev from PR source, followed by rhwp-chrome build; copied outside checkout",
+  "positive": {
+    "status": "pass",
+    "results": [
+      {
+        "name": "extension-smoke",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 1778,
+        "exitCode": 0
+      },
+      {
+        "name": "download-interceptor",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 14755,
+        "exitCode": 0
+      },
+      {
+        "name": "extension-lifecycle",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 35261,
+        "exitCode": 0
+      }
+    ],
+    "lifecycleScenarios": 10,
+    "retries": 0
+  },
+  "negative": {
+    "mutation": "remove print.html only from external copy; checkout dist remains valid",
+    "status": "fail",
+    "results": [
+      {
+        "name": "extension-smoke",
+        "status": "fail",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 1912,
+        "exitCode": 1
+      },
+      {
+        "name": "download-interceptor",
+        "status": "not-run"
+      },
+      {
+        "name": "extension-lifecycle",
+        "status": "not-run"
+      }
+    ],
+    "candidateUnchanged": true
+  },
+  "fixturesSha256": {
+    "samples/hwp3-pagedef-1915.hwp": "b272fdd218b4e91355167e63438a1605ef6902d75970c4ff5b8bae67087122d0",
+    "samples/hwpx_sample2.hwpx": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+    "samples/re-font-dotum-empty-hancom.hwp": "1ee8871f37bec2e97d0928709dc411c0eacad656f35aa3d92c5cf89f61c5761b"
+  },
+  "limitations": [
+    "Unpacked Chrome for Testing only",
+    "Store installation and upgrades not tested",
+    "Edge/Firefox and real user profiles not tested",
+    "Visual fidelity and release approval require manual review"
+  ]
+}
