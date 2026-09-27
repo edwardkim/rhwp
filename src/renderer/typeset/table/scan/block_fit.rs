@@ -56,11 +56,38 @@ impl BlockCutQuery<'_> {
         // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
         // 경로가 계속 소유한다.
         // [#7418] 종전에는 label 칸 하나 + 오른쪽 응답 칸 하나인 서식으로만 좁혔다("일반 격자는
-        // 선언 blank 도 각 열의 frame 일부"라는 추론). 한/글 2020 정본은 일반 격자도 압축한다 —
-        // `22037757` 1쪽의 59×5 표 rowspan 묶음(행 11~12, 칸 선언 170.3px, 열 다섯 중 넷이
-        // rowspan)은 선언으로 본문을 5.8px 넘지만 내용이 들어가, 한/글이 1쪽에 싣고 행 12 를
-        // 본문 바닥(1010.8px)에서 자른다(선언 94.6 → 88.4px). 다음 쪽에 이어지는 조각은 없다.
-        let source_complete_rowspan_block = mt.allows_row_break_split()
+        // 선언 blank 도 각 열의 frame 일부"라는 추론). 한/글 2020 정본은 그 서식만 압축하는 게
+        // 아니다 — `22037757` 1쪽의 59×5 표 rowspan 묶음(행 11~12, 칸 선언 170.3px)은 선언으로
+        // 본문을 5.8px 넘지만 내용이 들어가, 한/글이 1쪽에 싣고 행 12 를 본문 바닥(1010.8px)에서
+        // 자른다(선언 94.6 → 88.4px). 다음 쪽에 이어지는 조각은 없다.
+        //
+        // 다만 **묶음 안에서 행으로 나뉘는 열이 하나일 때**로 좁힌다. 그 형상에서만 잘리는 것이
+        // 한 열의 선언 빈 꼬리이고, 옛 label-응답 서식은 그 2열 특수형이다. 22037757 은 다섯 열
+        // 중 넷이 묶음 전체를 span 하고 col 1 만 행으로 나뉜다(자르는 양 94.6 → 93.6 = 1.0px).
+        //
+        // ⚠ 열 여럿이 독립이면 선언 blank 는 각 열 frame 의 일부라 잘라선 안 된다. 실측:
+        // `task2097/3248363_upmu_bunjang.hwpx` 는 네 열 중 셋이 행마다 독립인데(묶음 행 6~7)
+        // 이 경로가 행 7 을 270.2 → **149.1px** 로 121px 잘라, 칸 글자가 용지 바닥 1122.5 아래
+        // 1124.4·1147.1·1169.8px 에 그려졌다(off-canvas 1 · overflow_cell 3줄 신규).
+        let block_subdivided_column_count = {
+            let mut cols: Vec<u16> = table
+                .cells
+                .iter()
+                .filter(|cell| {
+                    let cell_start = cell.row as usize;
+                    let cell_end = cell_start + cell.row_span as usize;
+                    cell_start < b_end
+                        && cell_end > b_start
+                        && (cell.row_span as usize) < block_size
+                })
+                .map(|cell| cell.col)
+                .collect();
+            cols.sort_unstable();
+            cols.dedup();
+            cols.len()
+        };
+        let source_complete_rowspan_block = block_subdivided_column_count <= 1
+            && mt.allows_row_break_split()
             && r > cursor_row
             && blk_start_cut.is_empty()
             && !rowbreak_use_row_offsets
