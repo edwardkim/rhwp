@@ -35,8 +35,23 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// 한/글이 저장한 실제 문서(이름은 `.hwpx` 지만 CFB/HWP5 본이다).
 const DOC: &str = "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx";
-/// 0-based. 한/글 출력 PDF 의 37쪽과 같은 쪽이다.
-const PAGE: u32 = 36;
+/// 0-based. 한/글 출력 PDF 의 37쪽에 해당하는 rhwp 쪽이다.
+///
+/// [#7429] 이 문서는 rhwp 9쪽이 꼬리말만 담는 빈 쪽이라 **9쪽부터 정본보다 한 쪽 밀린다**
+/// (rhwp 75쪽 vs 정본 74쪽). 그래서 정본 37쪽은 rhwp 0-based 37 이다. 앞 8쪽은 첫·끝 줄까지
+/// 정본과 같다(`7366/pagecmp.py`).
+///
+/// 빈 9쪽의 근인은 이 검사와 다른 축이고 **이 PR 전부터 있다**(`6c94e5832` 동일):
+/// 8쪽의 한 문단이 정본 4줄 대신 5줄로 끊겨 +29px 를 먹고, 그 때문에 빈 문단 `pi=86` 의 줄
+/// (잉크 20.0px)이 잔여 17.7px 에 2.3px 모자라 혼자 9쪽을 연다. 줄이 갈리는 이유는 **양쪽
+/// 정렬에서 한/글이 공백을 ~14% 줄여 낱말을 완성**하는 데 있다 — 정본 PDF 실측으로 글자
+/// 전진폭은 18곳 평균 −0.01px 로 일치하고(임베드 휴먼명조 공백도 15pt 에서 정확히 0.5em),
+/// 차이는 전부 공백 압축이다. 이 문단의 `공백 최소값`(`attr1` 비트 9–15)은 0 인데도 한/글은
+/// 압축한다. 그 규칙을 다시 세우는 일은 한국어 양쪽 정렬 문단 전체에 걸려 별도 이슈다.
+///
+/// 여기서 잠그는 것은 종전대로 **그 칸의 줄 나눔**뿐이다. 빈 9쪽이 해결되면 이 값은 36 으로
+/// 돌아간다.
+const PAGE: u32 = 37;
 
 fn collect_runs(node: &RenderNode, out: &mut Vec<(f64, f64, String)>) {
     if let RenderNodeType::TextRun(run) = &node.node_type {
