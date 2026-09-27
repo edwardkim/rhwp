@@ -58,11 +58,15 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 
 ### 버그 리포트
 
-HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
+문서 표시 오류나 rhwp 동작 문제를 알려주세요:
 
-1. [이슈 생성](https://github.com/edwardkim/rhwp/issues/new?template=bug_report.md)
-2. **한컴 스크린샷** + **rhwp 스크린샷** 비교 첨부
-3. 가능하면 HWP 파일 첨부 (개인정보 제거 후)
+1. [이슈 생성](https://github.com/edwardkim/rhwp/issues/new/choose)에서 문제에 맞는 폼 선택
+2. 사용 경로·버전과 재현 순서, 기대 결과·실제 결과 입력
+3. 문서 표시 문제라면 가능할 때 원본 문서와 같은 페이지의 한컴/rhwp 비교 화면 첨부
+
+원본을 공개할 수 없으면 제공 불가 사유를 적어주세요. 한컴 PDF나 파일 첨부가 없어도
+신고할 수 있습니다. 첨부 자료에서는 개인정보를 제거해주세요. 사용법 질문은
+[Discussions](https://github.com/edwardkim/rhwp/discussions)를 이용해주세요.
 
 디버깅 정보를 함께 제공하면 수정이 빨라집니다 (아래 "디버깅 가이드" 참고).
 

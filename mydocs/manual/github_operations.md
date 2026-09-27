@@ -93,6 +93,33 @@ required check나 권한 변경을 단순 YAML 수정으로 취급하는 것도 
 7. **적용과 완료를 구분한다.** merge나 설정 변경은 적용일 뿐이다. 예상 event에서 기대한 run 또는
    no-run, required check, 비용·시간, 부작용과 rollback 가능성을 확인해야 완료다.
 
+### 2.3 이슈 폼 선택값의 자동 라벨링 (#7447)
+
+`.github/ISSUE_TEMPLATE/`의 4개 폼은 사용 경로를 수집한다.
+`.github/workflows/issue-form-labels.yml`은 `issues.opened`와 본문이 바뀐 `issues.edited`에서
+Studio → `rhwp-studio`, CLI → `cli`, 브라우저 확장 → `browser-extension`,
+라이브러리/API → `api`, MCP → `mcp`를 추가한다. OS·문서 형식·증상은 본문 정보로만 남긴다.
+
+- **추가 전용**이다. Studio → CLI로 응답을 바꿔도 기존 Studio 라벨은 남는다.
+  기존 라벨의 소유자를 추정해 삭제하지 않으며 잘못된 분류는 메인터너가 수동 정리한다.
+- 이슈 이벤트 이력에 제거된 기록이 있는 라벨은 재실행·응답 수정으로도 다시 붙이지 않는다.
+  다시 필요하면 메인터너가 직접 추가한다. 자동화별 소유권 기록이나 자동 댓글은 만들지 않는다.
+- 최신 본문·라벨과 전체 제거 이력을 읽으며, 허용된 라벨이 저장소에 없으면 경고하고 건너뛴다.
+  일반 본문·알 수 없는 선택값은 건너뛰고 새 라벨은 생성하지 않는다.
+- GitHub 응답은 수정 가능한 Markdown이므로 폼 출처 인증으로 취급하지 않는다. 알려진 폼의
+  제목 구조를 복사한 본문도 같은 입력으로 처리되지만 부여 가능한 라벨은 위 5개로 제한된다.
+- 본문을 실행하거나 로그에 출력하지 않는다. checkout 없이 SHA 고정 github-script와
+  `issues: write`만 사용하며 이슈별로 실행을 직렬화한다. 쓰기 직전 상태를 재확인하지만
+  GitHub API의 읽기와 라벨 추가는 원자적 연산이 아니므로 동시 편집을 완전히 잠그지는 않는다.
+
+로컬 검증은 `node --test scripts/tests/issue-form-labels.test.mjs`와 YAML 파싱·actionlint로 한다.
+CI에서는 기존 Lint job의 `Validate workflow contracts` 단계가 같은 테스트를 실행한다.
+폼과 `issues` workflow는 기본 브랜치에서 활성화되므로 `devel` 병합과 `main` 적용을 구분한다.
+적용 후 실제 폼 표시, 이슈 생성·본문 수정의 라벨 추가, 기존/제거 라벨 보존과 Blank issue를 확인한다.
+보안 신고는 기존 GitHub 보안 신고 경로를 유지하고, 사용법 질문은 config의 Discussions 링크로 안내한다.
+
+되돌릴 때는 해당 폼·workflow 변경을 revert한다. 이미 부여한 라벨을 일괄 삭제하지 않는다.
+
 ## 3. 운영 변경 분류와 처리 경로
 
 | 등급 | 예 | 기본 처리와 검증 |
