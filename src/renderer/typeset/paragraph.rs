@@ -324,7 +324,7 @@ pub(super) fn try_place_overflow_paragraph(
         st.advance_atomic_overflow_paragraph(advance, fmt.total_height, body_bottom_vpos);
         return true;
     }
-    if overflow::tail_overflow_candidate(
+    let tail_allowance = overflow::tail_overflow_candidate(
         para,
         fmt,
         paragraphs,
@@ -332,7 +332,8 @@ pub(super) fn try_place_overflow_paragraph(
         &page,
         forced_page_break_line,
         dpi,
-    ) {
+    );
+    if tail_allowance.allowed {
         let first_line_advance = fmt.line_advance(0);
         // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
         // 막으려던 LAYOUT_DRIFT_SAFETY_PX(현재 페이지 한정) 여유는 이 경우 의미가 없다.
@@ -343,7 +344,16 @@ pub(super) fn try_place_overflow_paragraph(
         // (full-place 체크를 이미 통과 못 했으므로 overflow > -safety. 진짜 본문 하단
         //  기준으로 한 줄 미만 초과면 마지막 줄 spill 대신 통째 배치.)
         let overflow = st.current_height + fmt.height_for_fit - true_available;
-        if overflow < first_line_advance {
+        // [#7429] 문서 근거 없는 잉크 없는 꼬리는 줄이 **온전히** 들어가야 한다 — 한/글은
+        // +100 HWPUNIT(1.3px)만 넘쳐도 다음 쪽으로 넘긴다. drift 안전마진을 뺀 `available`
+        // 대신 진짜 본문 하단으로 재는 것은 그대로 두어, 줄이 들어가는 빈 꼬리는 마진 때문에
+        // 밀리지 않는다.
+        let within_limit = if tail_allowance.requires_whole_line {
+            overflow <= 0.0
+        } else {
+            overflow < first_line_advance
+        };
+        if within_limit {
             st.commit_tail_overflow_paragraph(para_idx, fmt.total_height, body_bottom_vpos);
             return true;
         }
