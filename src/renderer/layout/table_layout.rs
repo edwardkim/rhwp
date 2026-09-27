@@ -11613,8 +11613,20 @@ impl LayoutEngine {
                             let row_is_auto_height = !row_cells.is_empty()
                                 && (row_cells.iter().all(|cell| cell.height == 0)
                                     || (declared_is_stub && *rh > row_declared_px + 0.5));
+                            // [#7418] 행을 대표하는 칸의 내용이 **또 하나의 중첩 표**(유닛이 모두
+                            // 그 표의 행)이면 선언 높이가 실제 값이어도 그 표의 행 경계에서 끊는다.
+                            // `70833` 조문대비표는 2×2 → 7×1 → 12×3 의 세 단 RowBreak 표다. 한/글
+                            // 2020 정본 4쪽은 7×1 의 행 3(선언 479px, 12×3 표 하나) 안에서 12×3 의
+                            // 행 경계로 끊어 쪽을 채운다. 행 3 을 원자로 두면 4쪽이 443.6px 에서
+                            // 끝나 조문대비표가 한 쪽 늘어난다. 안쪽 표도 RowBreak 라 행 단위
+                            // 분할이 그 표의 계약이다.
+                            let driver_is_nested_table_rows = driver.is_some_and(|driver_index| {
+                                let units = &row_units[driver_index];
+                                !units.is_empty()
+                                    && units.iter().all(|unit| unit.nested_row.is_some())
+                            });
                             if let Some(driver_index) = driver.filter(|driver_index| {
-                                row_is_auto_height
+                                (row_is_auto_height || driver_is_nested_table_rows)
                                     && !row_has_crossing_span
                                     && row_units[*driver_index].len() > 1
                             }) {
