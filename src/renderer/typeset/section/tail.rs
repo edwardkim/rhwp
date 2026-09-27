@@ -333,7 +333,24 @@ impl TypesetEngine {
             let next_force_break = next_para.column_type == ColumnBreakType::Page
                 || next_para.column_type == ColumnBreakType::Section;
             let is_curr_empty = para.text.is_empty() && para.controls.is_empty();
-            if next_force_break && is_curr_empty {
+            // [#7429] 흡수는 **문서가 적어 둔 배치**일 때만 한다.
+            //
+            // 이 가드(#967)는 빈 문단이 잔여에 안 들어가면 쪽을 넘기지 않고 현재 쪽 하단에
+            // 0-높이로 거둔다. 그런데 한/글은 그러지 않는다 — 합성 실험
+            // (`samples/issue7429/inkless_tail_synthetic`, 한 줄 문단 39개 + 빈 문단 + 쪽 나누기를
+            // 블록 14개로 두고 첫 문단 글자 크기로 넘침을 100 HWPUNIT 씩 조절)에서 한/글은 빈
+            // 문단 줄이 **온전히** 들어갈 때만(넘침 −0.4 HWPUNIT) 그 쪽에 두고, +100 HWPUNIT
+            // (1.3px)만 넘쳐도 다음 쪽으로 넘겨 쪽번호만 남은 빈 쪽을 만든다. 80168 152쪽도
+            // 같다(넘침 +7.9px → 한/글 빈 쪽 153).
+            //
+            // `#967` 의 근거 문서(sample18.hwp pi=27·164)는 저장 사다리가 있는 native HWP5 다 —
+            // 그 문서에서는 빈 문단의 자리를 파일이 적어 두었고, 흡수는 그 기록을 따르는 일이다.
+            // 사다리가 없어 우리가 합성한 줄에는 그 근거가 없으므로, 추정으로 쪽 경계를 옮기지
+            // 않는다. `4859b3b0f`(#7429)가 고친 `tail_overflow_candidate` 는 이 가드가 먼저
+            // 결론을 내려 닿지 못했다.
+            let empty_tail_placement_is_stored =
+                para.line_segs.iter().any(|seg| !is_synthetic_line_seg(seg));
+            if next_force_break && is_curr_empty && empty_tail_placement_is_stored {
                 // empty paragraph 의 예상 height = first line_seg 의 lh + ls
                 let empty_h_px = para
                     .line_segs
