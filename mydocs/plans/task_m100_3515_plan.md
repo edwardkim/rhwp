@@ -1,5 +1,7 @@
 # Issue #3515 수행·구현 계획
 
+> 2026-09-27 범위 변경: 아래 CI 설계는 과거 기록이다. 현재 구현은 마지막 절의 선택 실행 계획을 따른다.
+
 - Parent: #3512, 선행 구현: #3514 및 #3513 (`b4c6b0e58`)
 - 사용자 승인: 2026-09-20, #3513 다음 CI 연결 진행.
 - 운영 등급 O3: 실제 browser job, O2 영향 분류·cache·artifact 포함.
@@ -45,3 +47,17 @@ CLI binary/Native source 및 전용 도구 변경을 제외하고 공용 WASM �
 검사한다. `main` 대상 CI는 전체 Chrome suite를 실행하며 review-only fast-pass로 생략하지 않는다.
 분류기·trusted policy에 같은 baseRef를 전달하고, actual workflow script 실행 검사로 배선을 확인한다.
 코드·로컬 검증을 먼저 완료한 뒤 실제 Actions 결과와 실행 범위·비용을 중심으로 PR 본문을 재작성한다.
+
+
+## 2026-09-27 선택 실행 도구로 범위 축소
+
+메인테이너 [동의](https://github.com/edwardkim/rhwp/pull/7283#issuecomment-5844951296)와 사용자 PR 갱신 지시에 따른다.
+
+- base route: collaborator_self_merge; modifiers: intake_and_review, local_validation, rework_and_exceptions.
+- 기존 후보 `0b3da1cb`, 비교 base `443844b593c62a722cf9cc3d9d0256e94ab88cb8`; merge simulation 충돌 없음.
+- 이번 PR의 CI/workflow/cache/영향 분류/필수 gate 변경을 공통 base 상태로 복원한다. 기존 CI 보호는 유지한다.
+- Chrome smoke/download/lifecycle와 진단을 유지하고 명시적 `--dist`로 기존 배포 후보 폴더를 검사한다.
+- 실행기는 빌드하지 않는다. 후보 파일 해시·도구/브라우저 환경·각 suite 결과·미실행 범위를 JSON에 남긴다.
+- 일반 PR/main/tag 자동 실행 및 전용 dispatch는 추가하지 않는다. 개발자와 에이전트가 동일 npm 명령을 호출한다.
+- 계약 검사, 기존 CI 정책 회귀, 실제 외부 후보 폴더 전체 E2E, 실패/잘못된 입력 검증 후 PR 제목·본문을 갱신한다.
+- ZIP은 미리 압축 해제해 폴더를 지정한다. 스토어 설치/업데이트·실제 문서 표시·수동 배포 판단은 별도다.
