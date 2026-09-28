@@ -1872,6 +1872,22 @@ impl ParagraphFloatPlacement {
     /// Paragraph boundaries already live in the IR; an internal hard break ends
     /// the preceding text line even when the control has the same scalar offset.
     /// Missing character mapping is not evidence of a tail attachment.
+    /// 표 제어문자가 글 맨 앞(첫 줄 시작)에 있고 뒤에 보이는 글이 있을 때의 위치(0).
+    fn text_head_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
+        let text_len = para.text.chars().count();
+        if text_len == 0 || para.char_offsets.len() != text_len {
+            return None;
+        }
+        let position = *para.control_text_positions().get(control_index)?;
+        (position == 0
+            && !para.text.contains('\n')
+            && para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'))
+        .then_some(position)
+    }
+
     fn text_tail_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
         let text_len = para.text.chars().count();
         if text_len == 0 || para.char_offsets.len() != text_len {
@@ -1898,7 +1914,13 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
-        let char_pos = Self::text_tail_control_position(para, control_index)?;
+        // [#7418] 표 제어문자가 글 **앞**에 있어도 받는다. 아래 «모든 host 줄이 오프셋 위끝 전에
+        // 끝난다» 검사가 기하를 지키므로, 줄이 오프셋 안에 들면 글은 표 위에 선다(한/글 T&B:
+        // 자리가 있으면 글을 위에 둔다). 70833 pi=83(`- 규제 차등화…`, 줄 20px ≤ 오프셋 23.8)·
+        // 21298295 pi=4(16 ≤ 20.2)·156403546 pi=22(20 ≤ 26.4) 가 정본에서 표 위 제목이다.
+        // 오프셋이 줄보다 작으면(pr-1674: 0) 여전히 None — 글은 표 아래로 간다.
+        let char_pos = Self::text_tail_control_position(para, control_index)
+            .or_else(|| Self::text_head_control_position(para, control_index))?;
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()

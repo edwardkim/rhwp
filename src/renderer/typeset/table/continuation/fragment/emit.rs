@@ -739,11 +739,19 @@ impl TypesetEngine {
                         .iter()
                         .find(|seg| !is_synthetic_line_seg(seg))
                         .map(|seg| {
+                            // [#7418] 저장 앵커는 문단 상단이다. host 글을 선방출했으면
+                            // `vert_offset_overhead` 는 host 뒤 흐름 기준이라, 같은 기준으로
+                            // 맞추려면 앵커에도 host 높이를 더한다(156403546 3쪽: 섞이면 첫
+                            // 상자가 host 만큼 커져 끝 조각의 1×1 칸 연장 16.8px 가 사라졌다).
                             hwpunit_to_px(
                                 seg.vertical_pos
                                     .saturating_sub(st.vpos_page_base.unwrap_or(0)),
                                 self.dpi,
-                            )
+                            ) + st
+                                .pre_emitted_host_heights
+                                .get(&input.source.para_index)
+                                .copied()
+                                .unwrap_or(0.0)
                         })
                         .filter(|&anchor| anchor >= st.current_height)
                         .unwrap_or(st.current_height)
