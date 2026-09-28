@@ -283,7 +283,7 @@ fn footnote_text(node: &RenderNode, in_footnote: bool, text: &mut String) {
     let in_footnote = in_footnote || matches!(node.node_type, RenderNodeType::FootnoteArea);
     if in_footnote {
         if let RenderNodeType::TextRun(run) = &node.node_type {
-            text.push_str(&run.text);
+            text.push_str(run.display_or_text());
         }
     }
     for child in &node.children {
