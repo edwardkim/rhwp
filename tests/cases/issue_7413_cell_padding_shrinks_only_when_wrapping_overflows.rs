@@ -76,11 +76,7 @@ fn cell_text_extents(
 }
 
 /// `(칸 x, 칸 y, 칸 폭, 그 칸의 TextLine 수)`.
-fn cell_line_counts(
-    node: &RenderNode,
-    cell: Option<&RenderNode>,
-    out: &mut Vec<(f64, f64, f64, usize)>,
-) {
+fn cell_line_counts(node: &RenderNode, out: &mut Vec<(f64, f64, f64, usize)>) {
     if let RenderNodeType::TableCell(_) = node.node_type {
         let mut count = 0usize;
         fn walk(n: &RenderNode, count: &mut usize) {
@@ -95,7 +91,7 @@ fn cell_line_counts(
         out.push((node.bbox.x, node.bbox.y, node.bbox.width, count));
     }
     for child in &node.children {
-        cell_line_counts(child, cell, out);
+        cell_line_counts(child, out);
     }
 }
 
@@ -144,7 +140,7 @@ fn b_cell_that_cannot_wrap_within_its_height_still_shrinks() {
     let core = load(OVERFLOWS);
     let page = core.build_page_render_tree(2).expect("3쪽 render tree");
     let mut lines = Vec::new();
-    cell_line_counts(&page.root, None, &mut lines);
+    cell_line_counts(&page.root, &mut lines);
 
     let target: Vec<_> = lines
         .iter()
