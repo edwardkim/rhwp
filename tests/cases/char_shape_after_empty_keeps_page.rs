@@ -36,5 +36,9 @@ fn char_size_after_empty_paragraph_stays_on_one_page() {
 fn real_stored_zero_still_starts_a_page() {
     let core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample16-hwp5.hwp"))
         .expect("load stored multi-page HWP");
-    assert_eq!(core.page_count(), 64, "stored page boundaries must remain intact");
+    assert_eq!(
+        core.page_count(),
+        64,
+        "stored page boundaries must remain intact"
+    );
 }
