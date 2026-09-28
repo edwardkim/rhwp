@@ -58,6 +58,7 @@ const PAGINATION_BOUNDARY_KEYS = new Set([
 const CELL_BLOCK_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
+  'edit:delete',
 ]);
 
 function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
@@ -65,6 +66,13 @@ function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
   const commandId = matchShortcut(e, defaultShortcuts);
   if (!commandId || !CELL_BLOCK_GLOBAL_COMMANDS.has(commandId)) return false;
   e.preventDefault();
+  if (commandId === 'edit:delete' && e.ctrlKey && !e.metaKey) {
+    if (!this.cursor.isProtectedCellSelectionMode()) {
+      this.clearSelectedCellBlock();
+      this.updateCellSelection();
+    }
+    return true;
+  }
   this.dispatcher.dispatch(commandId);
   return true;
 }
@@ -831,6 +839,13 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const cmdId = matchShortcut(e, defaultShortcuts);
       if (cmdId) {
         e.preventDefault();
+        if (cmdId === 'edit:delete' && this.cursor.isInCellSelectionMode() && e.ctrlKey && !e.metaKey) {
+          if (!this.cursor.isProtectedCellSelectionMode()) {
+            this.clearSelectedCellBlock();
+            this.updateCellSelection();
+          }
+          return;
+        }
         this.dispatcher.dispatch(cmdId);
         return;
       }
@@ -1269,12 +1284,17 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
 
     // [Task #6741] 선택한 칸들의 내용을 한 번에 지우고 블록을 유지한다 — 한컴과 같다.
     // 종전에는 아래 "그 외 키"로 떨어져 블록이 풀리고 캐럿에서 한 글자만 지워졌다.
-    if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       if (!this.cursor.isProtectedCellSelectionMode()) {
         this.clearSelectedCellBlock();
         this.updateCellSelection();
       }
+      return;
+    }
+    if ((e.key === 'Backspace' || e.key === 'Delete') && e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      this.dispatcher?.dispatch('edit:delete');
       return;
     }
     const cellArrowAction = getCellSelectionArrowAction(e);
