@@ -38,6 +38,8 @@ import type { TableObjectRenderer } from './table-object-renderer';
 import type { TableResizeRenderer, BorderEdge } from './table-resize-renderer';
 import type { CellBbox, CellPathLike } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
+import { askCellBlockDelete } from '@/ui/cell-block-delete-dialog';
+import { clampedCellAfterDelete } from '@/command/commands/table';
 import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
@@ -5521,9 +5523,99 @@ export class InputHandler {
       }});
       return;
     }
+    if (this.cursor.isInCellSelectionMode()) {
+      void this.deleteSelectedCellBlock().catch((err) => {
+        console.warn('[InputHandler] 셀 블록 지우기 실패:', err);
+      });
+      return;
+    }
     if (this.cursor.hasSelection()) {
       this.deleteSelection();
     }
+  }
+
+  /** Delete selected cells, asking before structurally removing complete rows or columns. */
+  private async deleteSelectedCellBlock(): Promise<void> {
+    if (this.cursor.isProtectedCellSelectionMode()) return;
+    const ctx = this.cursor.getCellTableContext();
+    const range = this.cursor.getSelectedCellRange();
+    if (!ctx || !range) return;
+
+    const clearContents = () => {
+      this.clearSelectedCellBlock();
+      this.updateCellSelection();
+    };
+
+    const nested = (ctx.cellPath?.length ?? 0) > 1;
+    let structural: 'table' | 'rows' | 'cols' | null = null;
+    if (!nested && this.cursor.getExcludedCells().size === 0) {
+      const dims = this.wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
+      const fullRows = range.startCol === 0 && range.endCol === dims.colCount - 1;
+      const fullCols = range.startRow === 0 && range.endRow === dims.rowCount - 1;
+      if (fullRows || fullCols) {
+        const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
+        const straddles = bboxes.some((b) => {
+          if (fullRows) {
+            const inside = b.row >= range.startRow && b.row + b.rowSpan - 1 <= range.endRow;
+            const touches = b.row <= range.endRow && b.row + b.rowSpan - 1 >= range.startRow;
+            return touches && !inside;
+          }
+          const inside = b.col >= range.startCol && b.col + b.colSpan - 1 <= range.endCol;
+          const touches = b.col <= range.endCol && b.col + b.colSpan - 1 >= range.startCol;
+          return touches && !inside;
+        });
+        if (!straddles) structural = fullRows && fullCols ? 'table' : fullRows ? 'rows' : 'cols';
+      }
+    }
+
+    if (!structural) {
+      clearContents();
+      return;
+    }
+
+    const answer = await askCellBlockDelete();
+    this.focusTextarea();
+    if (answer === 'cancel') return;
+    if (answer === 'keep') {
+      clearContents();
+      return;
+    }
+
+    const selection = this.cursor.captureCellSelection();
+    const pos = this.cursor.getPosition();
+    const bodyPos: DocumentPosition = { sectionIndex: ctx.sec, paragraphIndex: ctx.ppi, charOffset: 0 };
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'deleteCellBlock',
+      operation: (wasm: WasmBridge) => {
+        if (structural === 'table') {
+          wasm.deleteTableControl(ctx.sec, ctx.ppi, ctx.ci);
+          return bodyPos;
+        }
+        let result: { ok: boolean; rowCount: number; colCount: number } | null = null;
+        if (structural === 'rows') {
+          for (let r = range.endRow; r >= range.startRow; r -= 1) {
+            result = wasm.deleteTableRow(ctx.sec, ctx.ppi, ctx.ci, r);
+            if (!result?.ok) throw new Error('셀 블록 행 삭제 실패');
+          }
+        } else {
+          for (let c = range.endCol; c >= range.startCol; c -= 1) {
+            result = wasm.deleteTableColumn(ctx.sec, ctx.ppi, ctx.ci, c);
+            if (!result?.ok) throw new Error('셀 블록 열 삭제 실패');
+          }
+        }
+        const corrected = result && clampedCellAfterDelete(
+          wasm, ctx.sec, ctx.ppi, ctx.ci,
+          range.startRow, range.startCol, result.rowCount, result.colCount,
+        );
+        if (!corrected) return bodyPos;
+        return { ...pos, charOffset: 0, cellIndex: corrected.cellIndex, cellParaIndex: corrected.cellParaIndex };
+      },
+      selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
+    });
+    this.cursor.exitCellSelectionMode();
+    this.cellSelectionRenderer?.clear();
+    this.updateCaret();
   }
 
   /** 전체 선택 (커맨드 시스템용) */

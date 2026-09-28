@@ -92,7 +92,7 @@ export const editCommands: CommandDef[] = [
     label: t('command.edit.delete.label'),
     icon: 'icon-delete',
     shortcutLabel: 'Ctrl+E',
-    canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && (ctx.hasSelection || ctx.inPictureObjectSelection || ctx.inTableObjectSelection),
+    canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode && (ctx.hasSelection || ctx.inCellSelectionMode || ctx.inPictureObjectSelection || ctx.inTableObjectSelection),
     execute(services) {
       services.getInputHandler()?.performDelete();
     },

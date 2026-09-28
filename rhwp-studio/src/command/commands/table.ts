@@ -267,7 +267,7 @@ function applyTableInsertRowColumn(
  * cellIndex를 getTableCellBboxes로 역조회한다 (병합 셀은 rowSpan/colSpan 범위로 매칭).
  * 표가 소멸(rowCount/colCount<=0)하면 null을 반환한다.
  */
-function clampedCellAfterDelete(
+export function clampedCellAfterDelete(
   wasm: CommandServices['wasm'],
   sec: number,
   parentPara: number,
