@@ -132,4 +132,24 @@ fn the_hyphen_after_hangul_is_drawn_with_the_latin_slot_face() {
         hyphen.1.contains("Palatino"),
         "한/글은 이 `-` 를 영문 슬롯 치환 글꼴 Palatino Linotype 으로 그린다. run={parts:?}"
     );
+
+    // `수반되나, 사업` — 쉼표도 영문 슬롯이고, 그 뒤 공백·한글은 한글 슬롯을 그대로 잇는다
+    // (말뭉치: 구두점 뒤 공백 88% 가 한글 글꼴).
+    let comma = parts
+        .iter()
+        .position(|(text, _)| text.trim() == ",")
+        .unwrap_or_else(|| panic!("`,` 가 제 run 으로 서야 한다. run={parts:?}"));
+    assert!(
+        parts[comma].1.contains("Palatino"),
+        "한/글은 이 `,` 를 영문 슬롯 글꼴로 그린다. run={parts:?}"
+    );
+    let after = parts[comma + 1..]
+        .iter()
+        .find(|(text, _)| !text.trim().is_empty())
+        .expect("쉼표 뒤 한글 run");
+    assert_eq!(
+        after.1, hangul.1,
+        "쉼표 뒤 `사업` 은 한글 슬롯 글꼴이어야 한다 — 구두점이 뒤 글자의 언어를 바꾸면 안 된다. \
+         run={parts:?}"
+    );
 }

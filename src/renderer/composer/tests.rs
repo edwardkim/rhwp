@@ -1258,38 +1258,6 @@ fn test_split_runs_by_lang_space_follows_prev() {
 }
 
 /// 빈 텍스트 run은 그대로 유지
-/// [#7418] ASCII 구두점은 영문 슬롯 run 으로 따로 서고, 뒤 공백은 앞 한글 언어를 잇는다.
-#[test]
-fn test_split_runs_by_lang_ascii_punct_uses_latin_slot() {
-    let runs = vec![ComposedTextRun {
-        text: "- 해당, 사업(가)".to_string(),
-        char_style_id: 0,
-        lang_index: 0,
-        char_overlap: None,
-        footnote_marker: None,
-        display_text: None,
-        supplemental_metrics_blocked: false,
-        inserted_control_text: false,
-    }];
-    let result = split_runs_by_lang(runs);
-    let got: Vec<(&str, usize)> = result
-        .iter()
-        .map(|run| (run.text.as_str(), run.lang_index))
-        .collect();
-    assert_eq!(
-        got,
-        vec![
-            ("-", 1),
-            (" 해당", 0),
-            (",", 1),
-            (" 사업", 0),
-            ("(", 1),
-            ("가", 0),
-            (")", 1),
-        ]
-    );
-}
-
 #[test]
 fn test_split_runs_by_lang_empty() {
     let runs = vec![ComposedTextRun {
