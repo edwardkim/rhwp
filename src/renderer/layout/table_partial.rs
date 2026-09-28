@@ -111,6 +111,8 @@ struct PartialTableHostContext<'a> {
     control_index: usize,
     repeat_fragment_outer_margin: bool,
     pre_emitted_host_height: f64,
+    /// [#7418] 같은 host 글의 내용 높이(마지막 줄간격 제외). 없으면 `pre_emitted_host_height`.
+    pre_emitted_host_content_height: f64,
     host_line_spacing: f64,
     resolved_table_top: Option<f64>,
 }
@@ -3586,6 +3588,7 @@ impl LayoutEngine {
                                                 control_index: 0,
                                                 repeat_fragment_outer_margin: false,
                                                 pre_emitted_host_height: 0.0,
+                                                pre_emitted_host_content_height: 0.0,
                                                 host_line_spacing: 0.0,
                                                 resolved_table_top: None,
                                             },
@@ -3675,6 +3678,17 @@ impl LayoutEngine {
                     if rendered_top_and_bottom_non_inline {
                         para_y +=
                             self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                    }
+                    // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다 —
+                    // 측정(`no_ls_tac_table_host_trailing_spacing_px`)이 행 높이에 넣은 몫이다.
+                    if cp_idx + 1 < cell.paragraphs.len() {
+                        if let Some(spacing) =
+                            crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                para, styles, self.dpi,
+                            )
+                        {
+                            para_y += spacing;
+                        }
                     }
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
@@ -3949,6 +3963,12 @@ impl LayoutEngine {
             .get(&para_index)
             .copied()
             .unwrap_or(0.0);
+        let pre_emitted_host_content_height = self
+            .pre_emitted_host_content_heights
+            .borrow()
+            .get(&para_index)
+            .copied()
+            .unwrap_or(pre_emitted_host_height);
         let host_line_spacing = para
             .line_segs
             .first()
@@ -3965,6 +3985,7 @@ impl LayoutEngine {
                 control_index,
                 repeat_fragment_outer_margin,
                 pre_emitted_host_height,
+                pre_emitted_host_content_height,
                 host_line_spacing,
                 resolved_table_top,
             },
@@ -4035,6 +4056,7 @@ impl LayoutEngine {
             control_index,
             repeat_fragment_outer_margin,
             pre_emitted_host_height,
+            pre_emitted_host_content_height,
             host_line_spacing,
             resolved_table_top,
         } = host;
@@ -4136,7 +4158,13 @@ impl LayoutEngine {
             // (부동 RowBreak 표 91.2px 오버플로우). 표의 참 상단 = para_start+vert_off =
             // y_start+(vert_off−host_h). typeset 예산도 동일 감액을 적용한다.
             // host pre-emit 이 아니면 host_h=0 → 종전과 동일(회귀 없음).
-            (hwpunit_to_px(vert_off_signed, self.dpi) - pre_emitted_host_height).max(0.0)
+            //
+            // [#7418] 바닥은 host 글의 **내용** 끝이다 — 표는 host 마지막 줄의 줄간격 띠 안까지
+            // 올라온다(표 위끝 = 문단 상단 + max(오프셋, host 내용 높이)). 70833 pi=83: host 줄
+            // 20 + 줄간격 12, 오프셋 23.8 → 표는 host 끝(32)이 아니라 23.8 에 선다(한/글 정본).
+            hwpunit_to_px(vert_off_signed, self.dpi)
+                .max(pre_emitted_host_content_height.min(pre_emitted_host_height))
+                - pre_emitted_host_height
         } else {
             0.0
         };

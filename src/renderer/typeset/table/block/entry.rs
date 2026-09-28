@@ -1297,8 +1297,32 @@ impl TypesetEngine {
             && total_footnote <= 0.0
             && st.current_height + (table_total - host_spacing_total).max(0.0)
                 > available + below_body_slack + 0.5;
+        // [#7418] 글 있는 host 의 줄이 문단 기준 오프셋보다 길면 `from_computed_host` 는
+        // 배치를 내지 않는다(모든 줄이 오프셋 위끝 전에 끝나는 계약만 소유). 그때 배치는
+        // 표를 host 글 **아래로** 민다(#1549) — 곧 host 글줄도 이 쪽에서 표와 함께 공간을
+        // 쓴다. 표 높이만 더하면 들어간다고 판정한 뒤 host 줄을 따로 얹어 본문을 넘긴다.
+        // 70833 pi=83: 160 + 표 808.3 ≤ 971.3 로 통째 두고 host 줄 32px 를 더해 990.2 —
+        // 한/글은 이 표를 12쪽 바닥에서 나눈다.
+        let host_text_before_table_advance = if resolved_host_placement.is_none()
+            && !table.common.treat_as_char
+            && is_para_topbottom_float(&table.common)
+            && para_has_non_whitespace_text(para)
+        {
+            // 표 위끝 = 문단 상단 + max(오프셋, host 내용 높이) — 분할 경로(budget.rs ·
+            // table_partial.rs)와 같은 식. host 마지막 줄의 줄간격 띠에는 표가 올라온다.
+            let host_content = fmt.line_advances_sum(0..fmt.line_heights.len())
+                - fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
+            let offset = hwpunit_to_px(
+                signed_hwpunit(table.common.vertical_offset).max(0),
+                self.dpi,
+            );
+            offset.max(host_content)
+        } else {
+            0.0
+        };
         let legacy_whole_fits = !painted_rowbreak_exceeds_paper
-            && (st.current_height + whole_fit_table_total <= available
+            && (st.current_height + whole_fit_table_total + host_text_before_table_advance
+                <= available
                 || fits_after_overlay_shapes
                 || single_row_object_height_advance.is_some()
                 || declared_table_whole_fits

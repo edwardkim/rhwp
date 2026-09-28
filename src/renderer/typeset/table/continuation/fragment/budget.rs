@@ -222,7 +222,15 @@ impl TypesetEngine {
                         .get(&para_idx)
                         .copied()
                         .unwrap_or(0.0);
-                    (raw - host_h).max(0.0)
+                    // [#7418] 바닥은 host 글의 내용 끝(마지막 줄간격 제외) — layout
+                    // (table_partial.rs) 과 같은 식. 표는 그 줄간격 띠 안까지 올라온다.
+                    let host_content_h = st
+                        .pre_emitted_host_content_heights
+                        .get(&para_idx)
+                        .copied()
+                        .unwrap_or(host_h)
+                        .min(host_h);
+                    raw.max(host_content_h) - host_h
                 } else {
                     0.0
                 }

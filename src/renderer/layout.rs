@@ -3304,6 +3304,13 @@ pub struct LayoutEngine {
     /// 직전 항목의 마지막 미주 줄이 공백 텍스트 + 수식만 가진 tail line-box 인지 여부.
     /// 이런 줄은 실제 ink보다 line box가 훨씬 커져 item overflow 로그만 남을 수 있다.
     last_item_endnote_equation_tail_line_box: std::cell::Cell<bool>,
+    /// [#7418] 바로 앞 항목이 표 host 문단의 첫 줄부터 그린 글 조각이었으면
+    /// (문단 번호, 문단 상단 y, 그 글의 내용 바닥).
+    /// 같은 문단의 문단 기준 자리차지 표는 host 글과 겹칠 수 없을 뿐, 그 줄의 **줄간격**
+    /// 띠에는 놓일 수 있다 — push-down 바닥을 흐름 y 가 아니라 이 값으로 잡는다.
+    host_text_content_bottom: std::cell::Cell<Option<(usize, f64, f64)>>,
+    /// [#7418] 지금 배치하는 표의 push-down 바닥(`host_text_content_bottom` 에서 온 값).
+    pub(crate) table_push_floor: std::cell::Cell<Option<f64>>,
     /// 빈 줄 감추기로 높이 0 처리된 문단 인덱스 집합
     hidden_empty_paras: std::cell::RefCell<std::collections::HashSet<usize>>,
     /// [Task #1755] 지연 이월 표의 host 텍스트 줄이 typeset 에서 이월 전 쪽에
@@ -3311,6 +3318,9 @@ pub struct LayoutEngine {
     pre_emitted_host_paras: std::cell::RefCell<std::collections::HashSet<usize>>,
     /// [#2015] pre-emit 한 host 텍스트 높이(px) — vert_offset 이중계상 보정용.
     pre_emitted_host_heights: std::cell::RefCell<std::collections::HashMap<usize, f64>>,
+    /// [#7418] 같은 host 글의 내용 높이(마지막 줄간격 제외) — typeset 과 같은 값.
+    pub(crate) pre_emitted_host_content_heights:
+        std::cell::RefCell<std::collections::HashMap<usize, f64>>,
     /// [#5854] 현재 구역의 저장 LINE_SEG 사다리가 통짜 합성값인지 — 단 진입 시 set.
     /// 참이면 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서 다시 뽑고,
     /// `vertical_pos` 앵커 스냅을 끈다 (조판 경로와 같은 규칙).
@@ -3495,9 +3505,14 @@ impl LayoutEngine {
             layout_table_overlaps: std::cell::RefCell::new(Vec::new()),
             last_item_content_bottom: std::cell::Cell::new(f64::NAN),
             last_item_endnote_equation_tail_line_box: std::cell::Cell::new(false),
+            host_text_content_bottom: std::cell::Cell::new(None),
+            table_push_floor: std::cell::Cell::new(None),
             hidden_empty_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             pre_emitted_host_paras: std::cell::RefCell::new(std::collections::HashSet::new()),
             pre_emitted_host_heights: std::cell::RefCell::new(std::collections::HashMap::new()),
+            pre_emitted_host_content_heights: std::cell::RefCell::new(
+                std::collections::HashMap::new(),
+            ),
             uniform_filler_ladder: std::cell::Cell::new(false),
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
@@ -3964,8 +3979,13 @@ impl LayoutEngine {
     }
 
     /// [#2015] pre-emit 된 host 텍스트 높이 맵 설정 (vert_offset 이중계상 보정용)
-    pub fn set_pre_emitted_host_heights(&self, heights: &std::collections::HashMap<usize, f64>) {
+    pub fn set_pre_emitted_host_heights(
+        &self,
+        heights: &std::collections::HashMap<usize, f64>,
+        content_heights: &std::collections::HashMap<usize, f64>,
+    ) {
         *self.pre_emitted_host_heights.borrow_mut() = heights.clone();
+        *self.pre_emitted_host_content_heights.borrow_mut() = content_heights.clone();
     }
 
     /// 렌더용 가상 미주 문단과 원본 Endnote 내부 문단의 매핑을 설정한다.
@@ -8824,6 +8844,9 @@ impl LayoutEngine {
             // 표 항목 렌더에서만 설정되므로, 비-표 항목/다른 표에 stale 값이 새지 않는다.
             self.last_item_content_bottom.set(f64::NAN);
             self.last_item_endnote_equation_tail_line_box.set(false);
+            if !matches!(item, PageItem::Table { .. }) {
+                self.host_text_content_bottom.set(None);
+            }
             let zero_between_shape_tail_margin_px = match item {
                 PageItem::Shape {
                     para_index,
@@ -10760,13 +10783,32 @@ impl LayoutEngine {
                         deferred_paragraph_spacing.insert(*para_index, deferred_spacing);
                     }
                     y_offset = y_offset.max(pp_y_out - deferred_spacing);
+                    let content_bottom = self.last_item_content_bottom.get();
+                    if *start_line == 0 && content_bottom.is_finite() {
+                        self.host_text_content_bottom.set(Some((
+                            *para_index,
+                            pp_y_in,
+                            content_bottom,
+                        )));
+                    }
                 }
             }
             PageItem::Table {
                 para_index,
                 control_index,
             } => {
-                return self.layout_table_item(
+                let host_text = self
+                    .host_text_content_bottom
+                    .take()
+                    .filter(|(host, _, _)| host == para_index);
+                if let Some((_, para_top, _)) = host_text {
+                    // host 글이 표 앞 항목으로 그려졌으면 문단 기준 오프셋의 기준점은 그
+                    // 글을 그리기 **전**의 문단 상단이다(FullParagraph 경로가 남기는 값과 같다).
+                    para_start_y.entry(*para_index).or_insert(para_top);
+                }
+                self.table_push_floor
+                    .set(host_text.map(|(_, _, bottom)| bottom));
+                let out = self.layout_table_item(
                     tree,
                     col_node,
                     paper_images,
@@ -10778,6 +10820,8 @@ impl LayoutEngine {
                     &ctx,
                     y_offset,
                 );
+                self.table_push_floor.set(None);
+                return out;
             }
             PageItem::PartialTable {
                 para_index,

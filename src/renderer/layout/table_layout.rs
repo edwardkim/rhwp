@@ -5441,7 +5441,16 @@ impl LayoutEngine {
                 {
                     anchor_y
                 } else {
-                    y_start
+                    // [#7418] 바로 앞이 이 표의 host 글 조각이면 바닥은 그 글의 **내용 바닥**
+                    // 이다. `y_start` 는 host 마지막 줄의 줄간격까지 지난 흐름 y 라, 문단 기준
+                    // 오프셋이 그 줄간격 띠 안을 가리키는 표를 띠 아래로 밀었다. 한/글은 띠
+                    // 안에 둔다 — 78494 9쪽 pi=90: host 공백 줄 175.9..195.9(줄간격 12px 로
+                    // 흐름 207.9), 표 위끝 한/글 199.3 = 문단 상단 175.9 + 오프셋 21.65 + 1.9.
+                    // 다른 앞 항목(앞 문단·같은 문단의 앞 표)은 값이 없어 종전대로 `y_start`.
+                    self.table_push_floor
+                        .get()
+                        .filter(|floor| *floor < y_start)
+                        .unwrap_or(y_start)
                 };
                 let pushed =
                     if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom) {
@@ -7808,6 +7817,18 @@ impl LayoutEngine {
             if rendered_top_and_bottom_non_inline {
                 para_y += self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
             }
+            // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다
+            // (`no_ls_tac_table_host_trailing_spacing_px`, 측정·조각 배치와 같은 값).
+            // 칸의 마지막 문단은 뒤에 이을 줄이 없어 더하지 않는다.
+            if cp_idx + 1 < cell.paragraphs.len() {
+                if let Some(spacing) =
+                    crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                        para, styles, self.dpi,
+                    )
+                {
+                    para_y += spacing;
+                }
+            }
             if let Some(bottom) = tac_flow_bottom {
                 para_y = para_y.max(bottom);
             }
@@ -8408,7 +8429,52 @@ impl LayoutEngine {
                 );
                 let wrap_object_bottom =
                     self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs);
+                // [#7418] 저장 줄이 하나도 없는 칸의 중첩 표는 글과 **차례로 쌓인다** —
+                // 측정(`height_measurer` 의 NO_LS 가산, #2148)이 행 높이를 그렇게 재고, 배치도
+                // 글 → 표 → 글 순으로 놓는다. 위 세 후보는 그 합을 모른다: composed 는 표를
+                // 빼고(#1658), vpos 는 저장 줄이 없어 0, nested_bottom 은 host 위치가 저장
+                // vpos 라 0 에서 잰다. 70833 pi=83 5행은 그래서 글 253.3 을 내용으로 잡고
+                // (칸 367 − 253.3)/2 = 56.8px 내려 그렸다 — 실제 내용은 칸을 채운다.
+                let no_ls_nested_flow = if cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+                {
+                    let nested_sum: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .flat_map(|p| p.controls.iter())
+                        .filter_map(|ctrl| match ctrl {
+                            Control::Table(t) => Some(
+                                self.calc_nested_table_height(t, styles)
+                                    .max(hwpunit_to_px(t.common.height as i32, self.dpi))
+                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                            ),
+                            _ => None,
+                        })
+                        .sum();
+                    // TAC 표 host 줄 뒤 줄간격(칸 마지막 문단 제외) — 측정과 같은 몫.
+                    let host_lines: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .take(cell.paragraphs.len().saturating_sub(1))
+                        .filter_map(|p| {
+                            crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                p, styles, self.dpi,
+                            )
+                        })
+                        .sum();
+                    if nested_sum > 0.0 {
+                        composed_height + nested_sum + host_lines
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
                 composed_height
+                    .max(no_ls_nested_flow)
                     .max(vpos_height)
                     .max(nested_bottom)
                     .max(wrap_object_bottom)
@@ -11897,6 +11963,19 @@ impl LayoutEngine {
                                     if charge {
                                         uh += hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
                                     }
+                                }
+                            }
+                            // [#7418] 저장 줄이 없는 host 는 증명할 사다리가 없다 — 그 줄의
+                            // 줄간격을 글자 크기로 잰 값을 계상한다(측정 행 높이·조각 배치와
+                            // 같은 `no_ls_tac_table_host_trailing_spacing_px`). 칸의 마지막
+                            // 문단이면 뒤에 이을 줄이 없어 더하지 않는다.
+                            if pi + 1 < cell.paragraphs.len() {
+                                if let Some(spacing) =
+                                    crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                        p, styles, self.dpi,
+                                    )
+                                {
+                                    uh += spacing;
                                 }
                             }
                         }
