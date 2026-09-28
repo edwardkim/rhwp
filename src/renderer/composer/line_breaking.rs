@@ -212,6 +212,31 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
 }
 
 /// 줄 꼬리 금칙: 줄 끝에 올 수 없는 문자
+/// [#7418] 글자 단위 한글 문단에서 `start_idx` 의 한글 글자 **앞**이 줄 끝 자리인가.
+///
+/// 글자 단위 모드는 한글 글자마다 그 **뒤**를 줄 끝 후보로 등록한다. 그래서 한글 앞에
+/// 라틴·숫자 토큰이 공백 없이 붙으면(`3,588만원`) 그 경계를 끊을 수 없었고, `만` 이 넘치면
+/// 줄이 앞 공백으로 되감겨 `3,588` 까지 다음 줄로 내려갔다. 한/글은 그 경계에서 끊는다 —
+/// 말뭉치 `pdf/` 에서 같은 문단의 이어진 줄이 라틴·숫자로 끝나고 한글로 시작하는 경계가
+/// 809곳이다(`제37조제1|항` · `CBTA|훈련체계` · `Annex 1|의` · `연간 10|시간`).
+///
+/// 직전 글자가 공백이면 이미 공백 토큰이 줄 끝 후보이고, 줄 끝 금칙 문자(`(`·`「` 등)면
+/// 줄 끝에 둘 수 없다. 직전이 한글이면 그 글자 뒤로 이미 등록된 같은 자리다.
+fn break_before_hangul_char(
+    text_chars: &[char],
+    start_idx: usize,
+    line_start_idx: usize,
+    korean_break_unit: u8,
+) -> bool {
+    // [#2185] bit7=1 = 글자 단위
+    korean_break_unit == 1
+        && start_idx > line_start_idx
+        && text_chars.get(start_idx).is_some_and(|c| is_hangul(*c))
+        && text_chars
+            .get(start_idx - 1)
+            .is_some_and(|prev| !prev.is_whitespace() && !is_line_end_forbidden(*prev))
+}
+
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
     matches!(
         ch,
@@ -1874,6 +1899,18 @@ fn fill_one_interval(
                     continue;
                 }
 
+                if break_before_hangul_char(
+                    text_chars,
+                    *start_idx,
+                    cursor.line_start_idx,
+                    korean_break_unit,
+                ) {
+                    cursor.last_break_token_idx = Some(ti - 1);
+                    cursor.last_break_char_idx = *start_idx;
+                    cursor.width_at_last_break = cursor.lw;
+                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.fs_at_last_break = cursor.line_max_fs;
+                }
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
                 }
@@ -2189,6 +2226,18 @@ fn fill_lines_before_cursor(
                 ref char_widths,
                 ..
             } => {
+                if break_before_hangul_char(
+                    text_chars,
+                    *start_idx,
+                    line_start_idx,
+                    korean_break_unit,
+                ) {
+                    last_break_token_idx = Some(ti - 1);
+                    last_break_char_idx = *start_idx;
+                    width_at_last_break = lw;
+                    space_savings_at_last_break = line_space_savings;
+                    fs_at_last_break = line_max_fs;
+                }
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
                 }
