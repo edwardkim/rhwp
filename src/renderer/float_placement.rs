@@ -1914,13 +1914,40 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
-        // [#7418] 표 제어문자가 글 **앞**에 있어도 받는다. 아래 «모든 host 줄이 오프셋 위끝 전에
-        // 끝난다» 검사가 기하를 지키므로, 줄이 오프셋 안에 들면 글은 표 위에 선다(한/글 T&B:
-        // 자리가 있으면 글을 위에 둔다). 70833 pi=83(`- 규제 차등화…`, 줄 20px ≤ 오프셋 23.8)·
-        // 21298295 pi=4(16 ≤ 20.2)·156403546 pi=22(20 ≤ 26.4) 가 정본에서 표 위 제목이다.
-        // 오프셋이 줄보다 작으면(pr-1674: 0) 여전히 None — 글은 표 아래로 간다.
-        let char_pos = Self::text_tail_control_position(para, control_index)
-            .or_else(|| Self::text_head_control_position(para, control_index))?;
+        let char_pos = Self::text_tail_control_position(para, control_index)?;
+        Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
+    }
+
+    /// [#7418] 표 제어문자가 글 **앞**에 있는 host 의 계산 줄 배치.
+    ///
+    /// 글 끝 앵커 모델(`from_computed_host`, #6950 이 논리 순서를 지킨다)과 따로 둔다. 같은
+    /// 기하 검사 — «모든 host 줄이 문단 기준 오프셋 위끝 전에 끝난다» — 를 통과할 때만 글이
+    /// 표 위에 선다(한/글 자리차지: 오프셋 안에 자리가 있으면 글을 위에 둔다). 70833 pi=83
+    /// (`- 규제 차등화…`, 줄 20px ≤ 오프셋 23.8)·21298295 pi=4(16 ≤ 20.2)·156403546 pi=22
+    /// (20 ≤ 26.4)가 정본에서 표 위 제목이다. 오프셋이 줄보다 작으면(pr-1674: 0) None — 글은
+    /// 표 아래로 간다.
+    pub fn from_computed_head_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let char_pos = Self::text_head_control_position(para, control_index)?;
+        Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
+    }
+
+    fn from_computed_host_at(
+        char_pos: usize,
+        para: &Paragraph,
+        table: &Table,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()

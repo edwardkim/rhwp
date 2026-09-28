@@ -1519,6 +1519,17 @@ impl TypesetEngine {
                         whole_placement_height,
                         self.dpi,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::ParagraphFloatPlacement::from_computed_head_host(
+                        para,
+                        table,
+                        ctrl_idx,
+                        text_origin,
+                        lines,
+                        whole_placement_height,
+                        self.dpi,
+                    )
+                    })
                 } else {
                     crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_host(
                         para,

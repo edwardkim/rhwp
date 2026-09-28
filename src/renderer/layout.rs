@@ -7770,6 +7770,10 @@ impl LayoutEngine {
                 .then_some(*first_pi)
         })();
         let mut deferred_paragraph_spacing = std::collections::HashMap::new();
+        // [#7418] host 글 조각 기록은 같은 단 안의 바로 다음 표만 쓴다 — 앞 쪽 끝의 기록이
+        // 새 쪽 첫 표로 새면 앞 쪽 좌표가 문단 상단이 된다(1480000 4구역: 칸 줄 550개가
+        // 용지 밖 1.5px).
+        self.host_text_content_bottom.set(None);
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
                 (item_ordinal == 0)

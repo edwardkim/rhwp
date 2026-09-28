@@ -3450,6 +3450,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
         // 조합 비용은 그 칸들로 한정된다.
         let mut wrapped_height = 0.0f64;
         let mut last_line_spacing = 0.0f64;
+        let mut stored_fits_fewer_lines = false;
         for (idx, para) in paragraphs.iter().enumerate() {
             let mut comp = match composed_paras.get(idx) {
                 Some(c) => c.clone(),
@@ -3467,6 +3468,19 @@ pub(crate) fn shrunk_cell_horizontal_padding(
                 dpi,
                 false,
             );
+            // [#7418] 한/글 자신의 저장 줄(비합성 LINE_SEG)이 줄바꿈 결과보다 적으면, 한/글은
+            // 이 글을 그 줄 수에 담았다는 증거다 — 높이와 무관하게 깎아 그 줄 수를 따른다.
+            // 20099369 3쪽 `월별누계` 칸: 저장 1줄, rhwp 줄바꿈 2줄(말미 제외 39.8 ≤ 43.6).
+            let stored_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .count();
+            if stored_lines > 0 && comp.lines.len() > stored_lines {
+                stored_fits_fewer_lines = true;
+            }
             for line in &comp.lines {
                 // 실제 줄 피치는 `line_height + line_spacing` 이다. `line_height` 만
                 // 쓰면 줄간격이 빠져 높이를 과소평가한다(20099369 3쪽 칸: 1300 + 390
@@ -3486,7 +3500,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
                 "D_SHRINK cell_w={cell_w:.1} avail={available:.1} inner_h={inner_height_px:.1} wrapped_h={wrapped_height:.1} max_line_w={max_line_w:.1}"
             );
         }
-        if wrapped_height <= inner_height_px {
+        if wrapped_height <= inner_height_px && !stored_fits_fewer_lines {
             return (pad_left, pad_right);
         }
     }
