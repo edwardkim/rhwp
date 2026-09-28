@@ -1,10 +1,11 @@
-//! [#7418] ASCII 구두점은 한/글이 **영문 슬롯** 글꼴로 재고 그린다.
+//! [#7418] 영문 슬롯이 옛 한컴 영문 글꼴이면 ASCII 구두점도 한/글이 **영문 슬롯** 글꼴로 재고
+//! 그린다.
 //!
 //! # 무엇이 깨져 있었나
 //!
 //! rhwp 는 ASCII 구두점을 언어 중립으로 보고 앞 글자 언어를 물려받았다. 한글 뒤 `-` 는 한글
 //! 슬롯의 휴먼명조로 재여 9.63px(722 HWPUNIT)가 됐다. 한/글 PDF 에서 같은 `-` 는 영문 슬롯의
-//! Palatino Linotype(영문 슬롯 `휴먼명조` 의 치환)으로 그려지고 전진폭은 ≈6.4px 다.
+//! Palatino Linotype(영문 슬롯 `HCI Poppy` 의 치환)으로 그려지고 전진폭은 ≈6.4px 다.
 //!
 //! `78494-virtual-convergence-industry-decree` 8쪽 `pi=73` 첫 줄 `  - 해당 사업자는 … 수반되나,
 //! 사업` 이 그 3.2px 때문에 `업` 을 213 HWPUNIT 넘겨 `사`/`업` 으로 갈렸다. 문단이 정본 4줄 대신
@@ -15,11 +16,14 @@
 //! 말뭉치 `pdf/` 1,359개에서 한글 뒤 ASCII 구두점의 글꼴을 쟀다. 한글 글꼴이 휴먼명조인 줄에서
 //! `(` 2278:17 · `,` 1733:6 · `)` 819:8 · `.` 525:10 · `:` 252:15 · `-` 77:0 (영문 글꼴:한글 글꼴)
 //! — 99% 가 영문 슬롯이다. 구두점 뒤 공백은 88% 가 한글 글꼴이라 앞 글자 언어를 그대로 잇는다.
+//! 한글 글꼴이 바탕·맑은 고딕이면 대부분 한글 글꼴 그대로다(2404:329 · 622:70) — 그래서 규칙은
+//! 영문 슬롯이 옛 한컴 영문 글꼴(`LegacyLatin` 치환 — 이 문서는 휴먼명조 + `HCI Poppy`)일 때만
+//! 건다. 반례는 마지막 검사다.
 //!
 //! # 이 검사가 말하지 않는 것
 //!
-//! 저장 줄(`LINE_SEG`)을 쓰는 문단의 줄 나눔은 바뀌지 않는다. 한/글 PDF 가 있는 원본 464개 중
-//! 쪽 경계가 바뀐 문서는 이 문서 하나다.
+//! 저장 줄(`LINE_SEG`)을 쓰는 문단의 줄 나눔은 바뀌지 않는다. `samples/` 1,176개 중 쪽 경계가
+//! 바뀐 문서는 이 문서 하나다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -151,5 +155,29 @@ fn the_hyphen_after_hangul_is_drawn_with_the_latin_slot_face() {
         after.1, hangul.1,
         "쉼표 뒤 `사업` 은 한글 슬롯 글꼴이어야 한다 — 구두점이 뒤 글자의 언어를 바꾸면 안 된다. \
          run={parts:?}"
+    );
+}
+
+/// 반례 — 영문 슬롯이 옛 한컴 영문 글꼴이 아니면 구두점은 한글 run 에 그대로 남는다.
+///
+/// 한/글은 한글 슬롯이 ASCII 를 제 글리프로 가진 글꼴(바탕·맑은 고딕 등)이면 한글 뒤 구두점을
+/// 한글 글꼴로 그린다(말뭉치: 한글 글꼴 Haansoft Batang 2404:329, 맑은 고딕 622:70). 모든
+/// 구두점을 영문 슬롯으로 떼면 이런 문서의 run·적중 판정·배치가 바뀐다.
+#[test]
+fn punctuation_stays_in_the_hangul_run_without_a_legacy_latin_slot() {
+    const DOC: &str = "samples/pr-1674.hwp";
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(DOC);
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{DOC} 읽기: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let page = core.build_page_render_tree(1).expect("2쪽 render tree");
+    let mut runs = Vec::new();
+    collect_runs(&page.root, &mut runs);
+
+    assert!(
+        runs.iter()
+            .any(|(_, _, text, _)| text.contains("국가공무원법, 공무원임용령,")),
+        "`국가공무원법, 공무원임용령,` 이 한 run 으로 남아야 한다 — 쉼표가 영문 슬롯 run 으로 \
+         갈라졌다. run={:?}",
+        runs.iter().map(|r| &r.2).collect::<Vec<_>>()
     );
 }

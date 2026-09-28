@@ -466,7 +466,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_latin_slot_punct(c) {
+                    let lang = if is_latin_slot_punct(c) && punct_latin_slot(styles, style_id) {
                         1
                     } else if is_lang_neutral(c) {
                         token_lang
@@ -498,7 +498,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_latin_slot_punct(c) {
+                    let lang = if is_latin_slot_punct(c) && punct_latin_slot(styles, style_id) {
                         1
                     } else if is_lang_neutral(c) {
                         current_lang
@@ -648,7 +648,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_latin_slot_punct(c) {
+                    let lang = if is_latin_slot_punct(c) && punct_latin_slot(styles, style_id) {
                         1
                     } else if is_lang_neutral(c) {
                         current_lang
@@ -686,7 +686,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                                 ci as u32
                             };
                             let sid = find_active_char_shape(char_shapes, u16p);
-                            let lang = if is_latin_slot_punct(c) || !is_lang_neutral(c) {
+                            let lang = if (is_latin_slot_punct(c) && punct_latin_slot(styles, sid))
+                                || !is_lang_neutral(c)
+                            {
                                 1
                             } else {
                                 current_lang
@@ -768,7 +770,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 i as u32
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            let lang = if is_latin_slot_punct(ch) {
+            let lang = if is_latin_slot_punct(ch) && punct_latin_slot(styles, style_id) {
                 1
             } else if is_lang_neutral(ch) {
                 current_lang
@@ -847,7 +849,7 @@ fn measure_token_char_widths(
             idx as u32
         };
         let style_id = find_active_char_shape(char_shapes, utf16_pos);
-        let lang = if is_latin_slot_punct(ch) {
+        let lang = if is_latin_slot_punct(ch) && punct_latin_slot(styles, style_id) {
             1
         } else if is_lang_neutral(ch) {
             current_lang
@@ -896,21 +898,17 @@ fn prepare_paragraph_projection(
     base_positions.push(pen);
 
     for (index, character) in text_chars.iter().copied().enumerate() {
-        let language_index = if is_latin_slot_punct(character) {
-            1
-        } else if is_lang_neutral(character) {
-            current_lang
-        } else {
-            let detected = detect_lang_category(character);
-            current_lang = detected;
-            detected
-        };
         let utf16_pos = para
             .char_offsets
             .get(index)
             .copied()
             .unwrap_or(index as u32);
         let char_shape_id = find_active_char_shape(&para.char_shapes, utf16_pos);
+        let language_index = char_lang_slot(
+            character,
+            &mut current_lang,
+            punct_latin_slot(styles, char_shape_id),
+        );
         let text_style = metric_scope.style(styles, char_shape_id, language_index, index);
         let base_font_size = if text_style.font_size > 0.0 {
             text_style.font_size
@@ -1347,6 +1345,17 @@ fn new_word_natural_before_hwp(
 /// `-0.16…-1.76` px).
 /// Forced to 0 under an active character grid, which is inert here: every
 /// corpus section has `char_grid == 0`.
+/// [#7418] 이 글자 모양의 ASCII 구두점을 영문 슬롯으로 재는가
+/// ([`ResolvedCharStyle::ascii_punct_latin_slot`]).
+///
+/// [`ResolvedCharStyle::ascii_punct_latin_slot`]: crate::renderer::style_resolver::ResolvedCharStyle::ascii_punct_latin_slot
+fn punct_latin_slot(styles: &ResolvedStyleSet, style_id: u32) -> bool {
+    styles
+        .char_styles
+        .get(style_id as usize)
+        .is_some_and(|style| style.ascii_punct_latin_slot)
+}
+
 fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: usize) -> i32 {
     if token_end_idx == 0 {
         return 0;
@@ -1373,9 +1382,9 @@ fn resolved_letter_spacing_px(
         .iter()
         .enumerate()
         .map(|(idx, ch)| {
-            let char_lang = char_lang_slot(*ch, &mut lang);
             let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
+            let char_lang = char_lang_slot(*ch, &mut lang, punct_latin_slot(styles, style_id));
             // [#5678] `TextStyle` 을 통째로 만들지 않고 자간만 읽는다.
             resolved_letter_spacing(styles, style_id, char_lang)
         })
