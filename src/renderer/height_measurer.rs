@@ -584,12 +584,16 @@ impl MeasuredParagraph {
 /// 줄간격(비율 줄간격이면 글자 크기 × (비율 − 100%))을 표 아래에 둔다. 70833 pi=83 5행:
 /// 10pt·160% host 의 표 아래 8.0px 가 한/글 행 387.7 과 rhwp 380.2 의 차이다.
 /// 칸의 마지막 줄 뒤 줄간격은 칸을 채우지 않으므로(측정 규칙) 호출자가 마지막 문단을 뺀다.
+///
+/// 줄이 **하나도 없는** 문단만 해당한다. rhwp 가 합성한 줄(tag 0x8…)이 있으면 그 줄의
+/// 줄간격을 배치가 이미 전진시킨다 — 36384689 칸[2] host 는 합성 줄 ls=600 으로 다음 문단을
+/// 한/글 저장 vpos 28760(= 28160 + 600)에 놓는데, 여기서 또 더하면 8.0px 가 두 번 실린다.
 pub(crate) fn no_ls_tac_table_host_trailing_spacing_px(
     p: &Paragraph,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<f64> {
-    if !crate::renderer::para_has_no_stored_line_segs(p)
+    if !p.line_segs.is_empty()
         || !p.text.trim().is_empty()
         || p.controls.is_empty()
         || !p

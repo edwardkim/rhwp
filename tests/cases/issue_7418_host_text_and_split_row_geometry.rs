@@ -12,6 +12,7 @@
 //! | 70833 12쪽 행 5·6 위끝 | 선언 높이 축소 가드·TAC host 줄간격 누락 | 596.3 / 967.0 |
 //! | 70833 12쪽 4행 첫 줄 x | 칸 여백 축소가 마지막 줄간격까지 세었다 | 241.0 |
 //! | 70833 13쪽 이어진 줄 x | 이어진 조각이 목록 마커 영역을 잃었다 | 246.8 |
+//! | 36384689 칸 안 표 뒤 문단 | 합성 줄이 품은 host 줄간격을 한 번 더 더했다 | 408.5 |
 //!
 //! 70833 의 쪽 수·본문 없는 쪽은 `issue_6854_empty_para_orphan_page` 가 본다.
 
@@ -23,6 +24,8 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 const DOC_78494: &str = "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx";
 const DOC_70833: &str = "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp";
 const DOC_76076: &str = "samples/76076_regulatory_analysis.hwp";
+const DOC_36384689: &str =
+    "samples/hwpx/opengov/36384689_결재문서본문_화재발생종합보고서(제2026-298호).hwpx";
 
 fn load(doc: &str) -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(doc);
@@ -204,4 +207,32 @@ fn continued_list_paragraph_lines_keep_the_marker_area() {
         .find(|(_, _, t)| t.starts_with("확인이필요한"))
         .expect("13쪽 이어진 줄");
     near(line.1, 266.7, 1.5, "70833 13쪽 이어진 줄 x");
+}
+
+/// host 줄 뒤 줄간격은 한 번만 붙는다. 36384689 칸[2] 의 TAC 표 host 문단은 저장 줄이 없어
+/// rhwp 가 줄을 합성하고, 그 합성 줄의 줄간격(600 HU)을 배치가 이미 전진시킨다. 뒤 문단은
+/// 한/글 저장 사다리 그대로 host 줄 위끝 + vertpos 30040 HU(400.5px) 에 선다 — 저장 줄이
+/// **아예 없는** host(70833)에만 줄간격을 따로 더한다.
+#[test]
+fn host_line_spacing_is_not_added_again_over_a_synthesized_host_line() {
+    let core = load(DOC_36384689);
+    let root = page(&core, 0);
+    let host_top = nodes(&root)
+        .into_iter()
+        .find_map(|n| match &n.node_type {
+            RenderNodeType::Table(t) if t.row_count == 8 && t.col_count == 3 => Some(n.bbox.y),
+            _ => None,
+        })
+        .expect("칸[2] 의 8×3 중첩 표");
+    let all = lines(&root);
+    let line = all
+        .iter()
+        .find(|(_, _, t)| t.starts_with("붙임"))
+        .expect("`붙임` 줄");
+    near(
+        line.0 - host_top,
+        30040.0 * 96.0 / 7200.0,
+        1.0,
+        "36384689 `붙임` 줄 − host 줄 위끝",
+    );
 }
