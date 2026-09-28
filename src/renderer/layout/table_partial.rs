@@ -2508,6 +2508,15 @@ impl LayoutEngine {
                     let split_cell_tac_flow = cut_units.is_some();
                     let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
+                    // [#7418] 이 조각이 중첩 표를 **끝까지** 그렸나 — host 줄간격은 표 뒤에만 선다.
+                    let nested_row_count = para.controls.iter().find_map(|c| match c {
+                        Control::Table(t) => Some(t.row_count as usize),
+                        _ => None,
+                    });
+                    let mut nested_table_continues = nested_cursor_split.is_some()
+                        || nested_cut_rows
+                            .zip(nested_row_count)
+                            .is_some_and(|((_, end), rows)| end < rows);
 
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
@@ -3543,6 +3552,12 @@ impl LayoutEngine {
                                             || s.offset_within_start > 0.5
                                             || s.visible_height + 0.5 < nested_h
                                     });
+                                    if split_ref.is_some_and(|s| {
+                                        s.end_row < nested_table.row_count as usize
+                                            || s.visible_height + 0.5 < nested_h
+                                    }) {
+                                        nested_table_continues = true;
+                                    }
 
                                     let nested_ctx = cell_context_opt.as_ref().map(|ctx| {
                                         let mut new_ctx = ctx.clone();
@@ -3681,7 +3696,18 @@ impl LayoutEngine {
                     }
                     // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다 —
                     // 측정(`no_ls_tac_table_host_trailing_spacing_px`)이 행 높이에 넣은 몫이다.
-                    if cp_idx + 1 < cell.paragraphs.len() {
+                    // 중첩 표가 이 조각에서 끝나지 않으면(쪽을 넘어 이어짐) 그 뒤 줄간격은
+                    // 이 조각에 없다 — tac_object_host_line_height 2쪽: 3×3 표가 쪽 바닥까지
+                    // 이어지는데 줄간격을 더해 칸 가운데 정렬이 6px 어긋났다.
+                    // 줄간격은 **뒤에 이을 줄**이 이 조각에 있을 때만 공간을 쓴다 — 칸의
+                    // 마지막 문단이거나 다음 문단이 다음 조각으로 가면 조각 끝의 말미다.
+                    let next_para_in_fragment = match line_ranges.as_ref() {
+                        Some(ranges) => ranges
+                            .get(cp_idx + 1)
+                            .is_some_and(|&(start, end)| start < end),
+                        None => cp_idx + 1 < cell.paragraphs.len(),
+                    };
+                    if next_para_in_fragment && !nested_table_continues {
                         if let Some(spacing) =
                             crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
                                 para, styles, self.dpi,
