@@ -19,13 +19,12 @@ function deleteRowColumnBlock(): string {
   return tableCmd.slice(start, end);
 }
 
+// 보정 헬퍼는 표 명령과 셀 블록 지우기(input-handler)가 같이 쓰도록 engine/table-cell-clamp.ts에 둔다.
 function clampHelperBlock(): string {
-  const tableCmd = source('src/command/commands/table.ts');
-  const start = tableCmd.indexOf('function clampedCellAfterDelete(');
+  const helper = source('src/engine/table-cell-clamp.ts');
+  const start = helper.indexOf('function clampedCellAfterDelete(');
   assert.notEqual(start, -1, 'clampedCellAfterDelete not found');
-  const end = tableCmd.indexOf('function applyTableDeleteRowColumn(', start);
-  assert.notEqual(end, -1, 'applyTableDeleteRowColumn after helper not found');
-  return tableCmd.slice(start, end);
+  return helper.slice(start);
 }
 
 // #1483: 표 줄/칸 지우기 후 커서 cellIndex 보정 — 삭제로 줄어든 셀 범위 초과 방지.

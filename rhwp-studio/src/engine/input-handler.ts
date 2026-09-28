@@ -39,7 +39,7 @@ import type { TableResizeRenderer, BorderEdge } from './table-resize-renderer';
 import type { CellBbox, CellPathLike } from '@/core/types';
 import { showConfirm } from '@/ui/confirm-dialog';
 import { askCellBlockDelete } from '@/ui/cell-block-delete-dialog';
-import { clampedCellAfterDelete } from '@/command/commands/table';
+import { clampedCellAfterDelete } from '@/engine/table-cell-clamp';
 import * as _mouse from './input-handler-mouse';
 import * as _table from './input-handler-table';
 import * as _keyboard from './input-handler-keyboard';
