@@ -1617,7 +1617,8 @@ pub(crate) fn find_active_char_shape_visible(
 /// 동일 CharShape 내에서도 한글→영문 전환 시 별도 Run으로 분리하여
 /// 각 언어에 맞는 폰트를 적용할 수 있도록 한다.
 ///
-/// 공백/구두점은 이전 문자의 언어를 따른다 (불필요한 Run 분할 방지).
+/// 공백은 이전 문자의 언어를 따른다 (불필요한 Run 분할 방지). ASCII 구두점은
+/// 영문 슬롯으로 따로 선다 ([`char_lang_slot`]).
 pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedTextRun> {
     let mut result = Vec::new();
 
@@ -1635,24 +1636,17 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
             .find(|&lang| lang != 0 || chars.iter().all(|&c| detect_lang_category(c) == 0))
             .unwrap_or(0);
 
-        let mut current_lang = initial_lang;
+        // [#7418] 글자마다 언어 슬롯을 정한 뒤 같은 슬롯끼리 묶는다. 중립 문자는 앞 글자
+        // 언어를 따르고, ASCII 구두점은 영문 슬롯으로 따로 선다.
+        let mut carry = initial_lang;
+        let langs: Vec<usize> = chars
+            .iter()
+            .map(|&ch| char_lang_slot(ch, &mut carry))
+            .collect();
+        let mut current_lang = langs[0];
         let mut current_start = 0;
 
-        for (i, &ch) in chars.iter().enumerate() {
-            let char_lang = detect_lang_category(ch);
-
-            // 언어 중립 문자(공백/구두점 등 = 기본값 0)는 이전 언어를 따름
-            // 단, detect_lang_category가 0을 반환하는 것은 한국어 또는 중립 두 가지 경우:
-            //   - 한글 음절/자모: 명시적으로 0번 매치
-            //   - 공백/구두점: _ => 0 폴백
-            // 한글 음절은 확실한 한국어이므로 구분해야 함
-            let is_neutral = is_lang_neutral(ch);
-
-            if is_neutral {
-                // 중립 문자: 현재 언어 유지
-                continue;
-            }
-
+        for (i, &char_lang) in langs.iter().enumerate() {
             if char_lang != current_lang {
                 // 언어 전환: 이전 구간 확정
                 if i > current_start {
@@ -1692,6 +1686,30 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
     }
 
     result
+}
+
+/// [#7418] 한/글이 **영문 슬롯** 글꼴로 재고 그리는 ASCII 구두점인가 (공백 제외).
+///
+/// 정본 PDF 실측: 한글 뒤 `-`·`,`·`(`·`)`·`:`·`.` 은 한글 슬롯 글꼴(휴먼명조)이 아니라
+/// 영문 슬롯 글꼴(Palatino Linotype — 영문 슬롯 `휴먼명조` 의 치환)로 그려진다. 말뭉치
+/// `pdf/` 1,359개에서 한글 글꼴이 휴먼명조인 줄의 구두점 6,426개 중 6,369개(99%)가 그렇다.
+/// 뒤따르는 공백은 앞 글자 언어를 그대로 따른다(구두점 뒤 공백 12,051개 중 88% 가 한글 글꼴).
+pub(crate) fn is_latin_slot_punct(ch: char) -> bool {
+    ch.is_ascii_punctuation()
+}
+
+/// 글자의 언어 슬롯. 중립 문자는 앞 글자 언어(`carry`)를 따르고, 영문 슬롯 구두점은
+/// 영문(1)으로 재되 `carry` 는 바꾸지 않는다 — 구두점 뒤 공백이 한글 언어를 잇도록.
+pub(crate) fn char_lang_slot(ch: char, carry: &mut usize) -> usize {
+    if is_latin_slot_punct(ch) {
+        1
+    } else if is_lang_neutral(ch) {
+        *carry
+    } else {
+        let lang = detect_lang_category(ch);
+        *carry = lang;
+        lang
+    }
 }
 
 /// 언어 중립 문자인지 판별한다 (공백, ASCII 구두점, 일반 기호 등).

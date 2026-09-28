@@ -4,7 +4,9 @@
 //! 한글 어절/글자, 영어 단어/하이픈, CJK 개별 분할을 지원한다.
 
 use super::supplemental_clusters::ParagraphMetricScope;
-use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
+use super::{
+    char_lang_slot, find_active_char_shape, is_lang_neutral, is_latin_slot_punct, ComposedParagraph,
+};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
 use crate::model::style::{Alignment, LineSpacingType};
@@ -464,7 +466,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_lang_neutral(c) {
+                    let lang = if is_latin_slot_punct(c) {
+                        1
+                    } else if is_lang_neutral(c) {
                         token_lang
                     } else {
                         let detected = detect_lang_category(c);
@@ -494,7 +498,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_lang_neutral(c) {
+                    let lang = if is_latin_slot_punct(c) {
+                        1
+                    } else if is_lang_neutral(c) {
                         current_lang
                     } else {
                         let detected = detect_lang_category(c);
@@ -642,7 +648,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         i as u32
                     };
                     let style_id = find_active_char_shape(char_shapes, utf16_pos);
-                    let lang = if is_lang_neutral(c) {
+                    let lang = if is_latin_slot_punct(c) {
+                        1
+                    } else if is_lang_neutral(c) {
                         current_lang
                     } else {
                         current_lang = 1; // English
@@ -678,7 +686,11 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                                 ci as u32
                             };
                             let sid = find_active_char_shape(char_shapes, u16p);
-                            let lang = if is_lang_neutral(c) { current_lang } else { 1 };
+                            let lang = if is_latin_slot_punct(c) || !is_lang_neutral(c) {
+                                1
+                            } else {
+                                current_lang
+                            };
                             let ts = metric_scope.style(styles, sid, lang, ci);
                             estimate_text_width_unrounded(&c.to_string(), &ts)
                                 + inline_width_px_at(inline_controls, ci)
@@ -756,7 +768,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 i as u32
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            let lang = if is_lang_neutral(ch) {
+            let lang = if is_latin_slot_punct(ch) {
+                1
+            } else if is_lang_neutral(ch) {
                 current_lang
             } else {
                 let detected = detect_lang_category(ch);
@@ -833,7 +847,9 @@ fn measure_token_char_widths(
             idx as u32
         };
         let style_id = find_active_char_shape(char_shapes, utf16_pos);
-        let lang = if is_lang_neutral(ch) {
+        let lang = if is_latin_slot_punct(ch) {
+            1
+        } else if is_lang_neutral(ch) {
             current_lang
         } else {
             let detected = detect_lang_category(ch);
@@ -880,7 +896,9 @@ fn prepare_paragraph_projection(
     base_positions.push(pen);
 
     for (index, character) in text_chars.iter().copied().enumerate() {
-        let language_index = if is_lang_neutral(character) {
+        let language_index = if is_latin_slot_punct(character) {
+            1
+        } else if is_lang_neutral(character) {
             current_lang
         } else {
             let detected = detect_lang_category(character);
@@ -1355,13 +1373,11 @@ fn resolved_letter_spacing_px(
         .iter()
         .enumerate()
         .map(|(idx, ch)| {
-            if !is_lang_neutral(*ch) {
-                lang = detect_lang_category(*ch);
-            }
+            let char_lang = char_lang_slot(*ch, &mut lang);
             let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
             // [#5678] `TextStyle` 을 통째로 만들지 않고 자간만 읽는다.
-            resolved_letter_spacing(styles, style_id, lang)
+            resolved_letter_spacing(styles, style_id, char_lang)
         })
         .collect()
 }
