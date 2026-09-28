@@ -35,6 +35,13 @@ pub struct ResolvedCharStyle {
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
+    /// [#7418] 영문 슬롯이 한컴 옛 영문 글꼴(`LegacyLatin` 치환 — `HCI Poppy` 등)이라
+    /// 한/글이 한글 뒤 ASCII 구두점도 그 영문 슬롯 글꼴로 재고 그리는가.
+    ///
+    /// 옛 한컴 서식은 한글 HFT(휴먼명조 등)와 영문 HFT(HCI Poppy 등)를 짝으로 쓴다. 정본 PDF
+    /// 에서 그 문서의 한글 뒤 `-`·`,`·`(` 은 영문 슬롯(Palatino Linotype)으로 그려진다. 한글
+    /// 슬롯이 ASCII 를 제 글리프로 가진 TTF(바탕·맑은 고딕)면 한/글은 한글 글꼴 그대로 둔다.
+    pub ascii_punct_latin_slot: bool,
     /// [#7391] 언어 슬롯별로, 폭을 **선언 face 자신의 표**로 재야 하는 경우의 그 이름.
     ///
     /// legacy-latin 치환은 표시할 글꼴이 없는 환경의 폴백이라 라틴 face 를 한글 face 로
@@ -124,6 +131,7 @@ impl Default for ResolvedCharStyle {
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
             font_families_hft_hangul: Vec::new(),
+            ascii_punct_latin_slot: false,
             font_families_metric_face: Vec::new(),
             font_space_em: None,
             font_size: 12.0,
@@ -551,10 +559,15 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
+    let mut latin_slot_legacy = false;
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
         let decision = lookup_font_name_decision(doc_info, lang, font_id);
+        if lang == 1 {
+            latin_slot_legacy =
+                decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin);
+        }
         let substituted = decision.substitution_boundary.is_some()
             && decision.normalized_face != decision.requested_face;
         font_families_metric_trusted.push(
@@ -600,6 +613,11 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         })
         .flatten();
 
+    // [#7418] 영문 슬롯이 한컴 옛 영문 글꼴이고 실제로 한글 슬롯과 다른 글꼴로 그려질 때만.
+    let primary = |chain: &String| chain.split(',').next().unwrap_or("").trim().to_string();
+    let ascii_punct_latin_slot =
+        latin_slot_legacy && primary(&font_families[0]) != primary(&font_families[1]);
+
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
     let letter_spacing = letter_spacings[0];
@@ -610,6 +628,7 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families,
         font_families_metric_trusted,
         font_families_hft_hangul,
+        ascii_punct_latin_slot,
         font_families_metric_face,
         font_space_em,
         font_size,
