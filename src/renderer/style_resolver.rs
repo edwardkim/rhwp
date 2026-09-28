@@ -35,12 +35,15 @@ pub struct ResolvedCharStyle {
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
-    /// [#7418] 영문 슬롯이 한컴 옛 영문 글꼴(`LegacyLatin` 치환 — `HCI Poppy` 등)이라
-    /// 한/글이 한글 뒤 ASCII 구두점도 그 영문 슬롯 글꼴로 재고 그리는가.
+    /// [#7418] 한/글이 한글 뒤 ASCII 구두점도 **영문 슬롯** 글꼴로 재고 그리는가.
     ///
-    /// 옛 한컴 서식은 한글 HFT(휴먼명조 등)와 영문 HFT(HCI Poppy 등)를 짝으로 쓴다. 정본 PDF
-    /// 에서 그 문서의 한글 뒤 `-`·`,`·`(` 은 영문 슬롯(Palatino Linotype)으로 그려진다. 한글
-    /// 슬롯이 ASCII 를 제 글리프로 가진 TTF(바탕·맑은 고딕)면 한/글은 한글 글꼴 그대로 둔다.
+    /// 영문 슬롯이 한컴 옛 영문 글꼴(`LegacyLatin` 치환)이고 그 치환이 **한글 글리프가 없는
+    /// 라틴 전용 글꼴**일 때 참이다 — 옛 서식의 휴먼명조 + `HCI Poppy`(→ Palatino Linotype).
+    /// 정본 PDF 에서 그 줄의 한글 뒤 `-`·`,`·`(` 은 Palatino 로 그려진다(휴먼명조 줄 99%).
+    ///
+    /// 치환이 한글 글꼴이면(`HCI Hollyhock` → HY중고딕) 그 글꼴이 ASCII 를 가지므로 한/글도
+    /// 한글 글꼴 그대로 둔다(`hwp3-sample16-hwp5` 정본: 한글 뒤 구두점 41건 모두 같은 글꼴).
+    /// 한글 슬롯이 바탕·맑은 고딕처럼 ASCII 를 가진 TTF 인 문서도 대부분 한글 글꼴 그대로다.
     pub ascii_punct_latin_slot: bool,
     /// [#7391] 언어 슬롯별로, 폭을 **선언 face 자신의 표**로 재야 하는 경우의 그 이름.
     ///
@@ -613,10 +616,21 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         })
         .flatten();
 
-    // [#7418] 영문 슬롯이 한컴 옛 영문 글꼴이고 실제로 한글 슬롯과 다른 글꼴로 그려질 때만.
-    let primary = |chain: &String| chain.split(',').next().unwrap_or("").trim().to_string();
-    let ascii_punct_latin_slot =
-        latin_slot_legacy && primary(&font_families[0]) != primary(&font_families[1]);
+    // [#7418] 영문 슬롯이 한컴 옛 영문 글꼴이고, 그 치환이 한글 글리프 없는 라틴 전용 글꼴일 때만.
+    let primary = |chain: &String| {
+        chain
+            .split(',')
+            .next()
+            .unwrap_or("")
+            .trim()
+            .trim_matches(|c| c == '\'' || c == '"')
+            .to_string()
+    };
+    let latin_primary = primary(&font_families[1]);
+    let ascii_punct_latin_slot = latin_slot_legacy
+        && primary(&font_families[0]) != latin_primary
+        && crate::renderer::font_metrics_data::find_metric(&latin_primary, cs.bold, cs.italic)
+            .is_some_and(|found| found.metric.hangul.is_none());
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
