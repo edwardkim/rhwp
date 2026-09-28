@@ -333,6 +333,24 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub hft_hangul_face: bool,
+    /// [#7418] 이 run 이 한글 슬롯이고 글자 모양이 `ascii_punct_latin_slot` 이면, ASCII
+    /// 구두점을 잴 때 쓸 **영문 슬롯**의 기본 메트릭. run 을 쪼개지 않고 글자 단위로 폭만
+    /// 영문 슬롯으로 잰다(#7051 HFT 반각 ASCII 와 같은 자리). 양쪽 정렬 여분 등 배치가 얹는
+    /// 값은 run 의 것을 그대로 쓴다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
+}
+
+/// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LatinSlotMetrics {
+    pub font_family: String,
+    pub metric_font_family: Option<String>,
+    pub font_metric_trusted: bool,
+    pub letter_spacing: f64,
+    pub ratio: f64,
 }
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -499,6 +517,7 @@ impl Default for TextStyle {
             metric_font_family: None,
             font_space_em: None,
             hft_hangul_face: false,
+            ascii_punct_latin: None,
         }
     }
 }

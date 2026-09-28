@@ -510,14 +510,6 @@ fn compose_paragraph_scoped(
     // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
     convert_pua_display_text(&mut composed);
 
-    // [#7418] 한/글이 영문 슬롯으로 재는 구두점은 그 슬롯의 run 으로 선다(글자 모양이 있을 때만).
-    if let Some(styles) = metric_styles {
-        for line in &mut composed.lines {
-            let runs = std::mem::take(&mut line.runs);
-            line.runs = split_latin_slot_punct(runs, styles);
-        }
-    }
-
     // Keep existing display projection intact; inserted control text has no source span.
     if protect_metrics {
         supplemental_clusters::preserve_boundaries(&mut composed, &para.text, metric_styles);
@@ -1548,15 +1540,8 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
     result
 }
 
-/// [#7418] ASCII 구두점(공백 제외)인가 — [`ResolvedCharStyle::ascii_punct_latin_slot`] 인
-/// 글자 모양에서 한/글은 이 글자를 **영문 슬롯** 글꼴로 재고 그린다.
-///
-/// 정본 PDF 실측: 한글 글꼴이 휴먼명조(영문 슬롯은 Palatino Linotype 으로 치환)인 줄에서
-/// 한글 뒤 `(` 2278:17 · `,` 1733:6 · `)` 819:8 · `.` 525:10 · `:` 252:15 · `-` 77:0
-/// (영문 글꼴:한글 글꼴, 말뭉치 `pdf/` 1,359개). 한글 글꼴이 바탕·맑은 고딕이면 대부분 한글
-/// 글꼴 그대로다. 구두점 뒤 공백은 88% 가 한글 글꼴이라 앞 글자 언어를 잇는다.
-///
-/// [`ResolvedCharStyle::ascii_punct_latin_slot`]: crate::renderer::style_resolver::ResolvedCharStyle::ascii_punct_latin_slot
+/// [#7418] ASCII 구두점(공백 제외)인가 — [`crate::renderer::TextStyle::ascii_punct_latin`] 가
+/// 있는 run 에서 한/글은 이 글자를 **영문 슬롯** 글꼴 메트릭으로 잰다.
 pub(crate) fn is_latin_slot_punct(ch: char) -> bool {
     ch.is_ascii_punctuation()
 }
@@ -1573,53 +1558,6 @@ pub(crate) fn char_lang_slot(ch: char, carry: &mut usize, punct_latin: bool) -> 
         *carry = lang;
         lang
     }
-}
-
-/// [#7418] 한글 run 안의 ASCII 구두점을 영문 슬롯 run 으로 떼어 낸다 — 그 run 의 글자 모양이
-/// [`ResolvedStyleSet`] 에서 `ascii_punct_latin_slot` 일 때만. 다른 글자 모양의 run 구조는
-/// 그대로다. 특수 run(겹침·각주 마커·표시 대체·삽입 컨트롤 글자)은 건드리지 않는다.
-fn split_latin_slot_punct(
-    runs: Vec<ComposedTextRun>,
-    styles: &ResolvedStyleSet,
-) -> Vec<ComposedTextRun> {
-    let mut result = Vec::with_capacity(runs.len());
-    for run in runs {
-        let eligible = run.lang_index == 0
-            && run.char_overlap.is_none()
-            && run.footnote_marker.is_none()
-            && run.display_text.is_none()
-            && !run.inserted_control_text
-            && run.text.chars().any(is_latin_slot_punct)
-            && styles
-                .char_styles
-                .get(run.char_style_id as usize)
-                .is_some_and(|style| style.ascii_punct_latin_slot);
-        if !eligible {
-            result.push(run);
-            continue;
-        }
-        let mut piece = String::new();
-        let mut piece_lang = 0usize;
-        let flush = |piece: &mut String, lang: usize, result: &mut Vec<ComposedTextRun>| {
-            if !piece.is_empty() {
-                result.push(ComposedTextRun {
-                    text: std::mem::take(piece),
-                    lang_index: lang,
-                    ..run.clone()
-                });
-            }
-        };
-        for ch in run.text.chars() {
-            let lang = if is_latin_slot_punct(ch) { 1 } else { 0 };
-            if lang != piece_lang {
-                flush(&mut piece, piece_lang, &mut result);
-                piece_lang = lang;
-            }
-            piece.push(ch);
-        }
-        flush(&mut piece, piece_lang, &mut result);
-    }
-    result
 }
 
 /// 언어 중립 문자인지 판별한다 (공백, ASCII 구두점, 일반 기호 등).
