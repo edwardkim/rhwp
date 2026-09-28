@@ -410,6 +410,7 @@ impl TypesetEngine {
         // 배제 영역을 만들기 전에 변환해 행 예산과 실제 배치에서 함께 소비한다.
         let source_control_frame =
             closed_source_frame_placement.filter(|_| closed_source_frame_key == host_frame);
+        let host_has_no_placement_model = unconstrained_host_placement.is_none();
         let fragment_host_placement =
             source_control_frame.or_else(|| {
                 unconstrained_host_placement
@@ -475,7 +476,9 @@ impl TypesetEngine {
                 });
                 let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
                 st.align_flow_to(st.current_height.max(placement_para_start_height + host_h));
-                st.record_pre_emitted_host_height(para_idx, host_h);
+                let host_trailing_spacing =
+                    fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
+                st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
             }
             st.mark_pre_emitted_host(para_idx);
         }
@@ -948,6 +951,15 @@ impl TypesetEngine {
                 crate::model::table::TablePageBreak::RowBreak
             ))
             || native_hwp5_host_precedes_first_fragment
+            // [#7418] 글줄이 문단 기준 오프셋보다 길어 host 배치 모델이 없는 표는 배치가
+            // 그 글 **아래로** 민다(#1549) — 통째 적합 판정(`entry.rs`)이 같은 조건으로 host
+            // 줄을 표 앞 소비로 센다. 조각으로 나뉠 때도 글을 첫 조각 앞에 내보내야 한다.
+            // 종전에는 마지막 조각 뒤로 밀려 70833 pi=83 의 표 제목이 13쪽 이어진 행 아래에
+            // 그려졌다(한/글: 12쪽 표 위).
+            || (host_has_no_placement_model
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && crate::renderer::typeset::para_has_non_whitespace_text(para))
         {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }

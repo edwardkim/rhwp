@@ -277,7 +277,14 @@ impl TypesetEngine {
                     .get(&para_idx)
                     .copied()
                     .unwrap_or(0.0);
-                (raw - host_h).max(0.0)
+                // 호스트의 마지막 줄간격을 제외한 내용 끝을 표 예산·배치가 함께 쓴다.
+                let host_content_h = st
+                    .pre_emitted_host_content_heights
+                    .get(&para_idx)
+                    .copied()
+                    .unwrap_or(host_h)
+                    .min(host_h);
+                raw.max(host_content_h) - host_h
             } else {
                 0.0
             }

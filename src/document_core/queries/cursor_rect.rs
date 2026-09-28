@@ -3256,8 +3256,10 @@ impl DocumentCore {
             .set_hidden_empty_paras(&pr.hidden_empty_paras);
         self.layout_engine
             .set_pre_emitted_host_paras(&pr.pre_emitted_host_paras);
-        self.layout_engine
-            .set_pre_emitted_host_heights(&pr.pre_emitted_host_heights);
+        self.layout_engine.set_pre_emitted_host_heights(
+            &pr.pre_emitted_host_heights,
+            &pr.pre_emitted_host_content_heights,
+        );
         let layout = &page_content.layout;
         self.layout_engine.prime_column_layout_env(layout);
 

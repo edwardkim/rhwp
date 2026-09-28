@@ -160,6 +160,8 @@ pub struct PaginationResult {
     pub pre_emitted_host_paras: std::collections::HashSet<usize>,
     /// [#2015] pre-emit 한 host 텍스트 높이(px). layout 이 vert_offset 이중계상을 보정할 때 사용.
     pub pre_emitted_host_heights: std::collections::HashMap<usize, f64>,
+    /// [#7418] pre-emit 한 host 글의 내용 높이(px, 마지막 줄간격 제외).
+    pub pre_emitted_host_content_heights: std::collections::HashMap<usize, f64>,
     /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)

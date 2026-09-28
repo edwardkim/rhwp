@@ -73,8 +73,12 @@ impl TypesetState {
         &mut self,
         index: usize,
         height: f64,
+        content_height: f64,
     ) {
         self.data.pre_emitted_host_heights.insert(index, height);
+        self.data
+            .pre_emitted_host_content_heights
+            .insert(index, content_height);
     }
     pub(in crate::renderer::typeset) fn mark_prefilled_paragraph(&mut self, index: usize) {
         self.data.prefilled_paras.insert(index);
@@ -404,6 +408,7 @@ impl TypesetState {
             hidden_empty_paras: self.data.hidden_empty_paras,
             pre_emitted_host_paras: self.data.pre_emitted_host_paras,
             pre_emitted_host_heights: self.data.pre_emitted_host_heights,
+            pre_emitted_host_content_heights: self.data.pre_emitted_host_content_heights,
             endnotes: self.data.endnotes,
             endnote_paragraphs: self.data.endnote_paragraphs,
             endnote_para_sources: self.data.endnote_para_sources,
