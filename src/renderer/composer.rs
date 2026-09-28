@@ -3449,6 +3449,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
         // 추정 52.3px vs 실제 4줄 83.2px). 폭 판정을 통과한 칸에서만 도는 경로라
         // 조합 비용은 그 칸들로 한정된다.
         let mut wrapped_height = 0.0f64;
+        let mut last_line_spacing = 0.0f64;
         for (idx, para) in paragraphs.iter().enumerate() {
             let mut comp = match composed_paras.get(idx) {
                 Some(c) => c.clone(),
@@ -3472,8 +3473,14 @@ pub(crate) fn shrunk_cell_horizontal_padding(
                 // = 1690 HWPUNIT = 22.53px, 렌더 실측 22.5px).
                 wrapped_height +=
                     crate::renderer::hwpunit_to_px(line.line_height + line.line_spacing, dpi);
+                last_line_spacing = crate::renderer::hwpunit_to_px(line.line_spacing, dpi);
             }
         }
+        // [#7418] 칸의 **마지막** 줄 뒤에는 이을 줄이 없어 그 줄간격은 칸을 채우지 않는다 —
+        // 행 높이 측정(`height_measurer`, 칸 마지막 줄의 말미 줄간격 제외)과 같은 규칙.
+        // 70833 pi=83 4행: 3줄 56.0(말미 5.33 포함) > 안높이 55.4 로 여백을 깎아 한/글보다
+        // 5.7px 왼쪽에서 시작하고 줄 끝이 달라졌다. 말미를 빼면 50.7 ≤ 55.4 다.
+        wrapped_height -= last_line_spacing.max(0.0);
         if std::env::var_os("RHWP_DIAG_SHRINK").is_some() {
             println!(
                 "D_SHRINK cell_w={cell_w:.1} avail={available:.1} inner_h={inner_height_px:.1} wrapped_h={wrapped_height:.1} max_line_w={max_line_w:.1}"
