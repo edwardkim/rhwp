@@ -52,14 +52,23 @@ fn load(rel: &str) -> DocumentCore {
 }
 
 /// `(칸 bbox, 글자 왼끝, 글자 오른끝)` 를 칸 단위로 모은다.
-fn cell_text_extents(node: &RenderNode, cell: Option<&RenderNode>, out: &mut Vec<(f64, f64, f64, f64)>) {
+fn cell_text_extents(
+    node: &RenderNode,
+    cell: Option<&RenderNode>,
+    out: &mut Vec<(f64, f64, f64, f64)>,
+) {
     let next_cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
         Some(node)
     } else {
         cell
     };
     if let (RenderNodeType::TextRun(_), Some(c)) = (&node.node_type, next_cell) {
-        out.push((c.bbox.x, c.bbox.width, node.bbox.x, node.bbox.x + node.bbox.width));
+        out.push((
+            c.bbox.x,
+            c.bbox.width,
+            node.bbox.x,
+            node.bbox.x + node.bbox.width,
+        ));
     }
     for child in &node.children {
         cell_text_extents(child, next_cell, out);
@@ -108,8 +117,14 @@ fn a_cell_that_wraps_within_its_height_keeps_its_declared_padding() {
         "정답지 전제가 깨졌다 — 대상 칸(x=115.30, w=76.40)을 못 찾았다. 쪽 구성이 바뀌었으면          이 검사의 좌표부터 다시 정해야 한다."
     );
 
-    let left = target.iter().map(|(_, _, x0, _)| *x0).fold(f64::MAX, f64::min);
-    let right = target.iter().map(|(_, _, _, x1)| *x1).fold(f64::MIN, f64::max);
+    let left = target
+        .iter()
+        .map(|(_, _, x0, _)| *x0)
+        .fold(f64::MAX, f64::min);
+    let right = target
+        .iter()
+        .map(|(_, _, _, x1)| *x1)
+        .fold(f64::MIN, f64::max);
     let (cx, cw) = (target[0].0, target[0].1);
     let pad_left = left - cx;
     let pad_right = cx + cw - right;
