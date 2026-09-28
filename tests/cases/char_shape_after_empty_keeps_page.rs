@@ -29,7 +29,11 @@ fn char_size_after_empty_paragraph_stays_on_one_page() {
     );
     assert_eq!(core.page_count(), 1, "editing must not add a page");
     core.delete_paragraph_native(0, 3).unwrap();
-    assert_eq!(core.page_count(), 1, "removing the empty paragraph must not add a page");
+    assert_eq!(
+        core.page_count(),
+        1,
+        "removing the empty paragraph must not add a page"
+    );
     let reopened = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
     assert_eq!(reopened.page_count(), 1, "saved HWP must stay on one page");
 }
