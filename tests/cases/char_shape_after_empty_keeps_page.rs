@@ -1,7 +1,6 @@
 //! Changing character size after an empty paragraph must not create a stored page break.
 
 use rhwp::document_core::DocumentCore;
-use rhwp::model::paragraph::LineSeg;
 
 #[test]
 fn char_size_after_empty_paragraph_stays_on_one_page() {
@@ -35,16 +34,7 @@ fn char_size_after_empty_paragraph_stays_on_one_page() {
 
 #[test]
 fn real_stored_zero_still_starts_a_page() {
-    let mut core = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp"))
-        .expect("load blank HWP");
-    for index in 1..5 {
-        core.insert_paragraph_native(0, index).unwrap();
-    }
-    for index in 0..5 {
-        core.insert_text_native(0, index, 0, "A").unwrap();
-    }
-    let paragraphs = &mut core.document.sections[0].paragraphs;
-    paragraphs[3].line_segs[0].vertical_pos = 0;
-    paragraphs[3].line_segs[0].tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    assert_eq!(core.page_count(), 2, "a real stored reset must remain a page boundary");
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample16-hwp5.hwp"))
+        .expect("load stored multi-page HWP");
+    assert_eq!(core.page_count(), 64, "stored page boundaries must remain intact");
 }

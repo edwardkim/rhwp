@@ -35,8 +35,16 @@ impl TypesetEngine {
         // vpos-reset trigger 시 wrap_around 강제 종료 + advance_column_or_new_page.
         if para_idx > 0 && !st.current_items.is_empty() {
             let prev_para = &paragraphs[para_idx - 1];
-            let curr_first_vpos = para.line_segs.first().map(|s| s.vertical_pos);
-            let prev_last_vpos = prev_para.line_segs.last().map(|s| s.vertical_pos);
+            let curr_first_vpos = para
+                .line_segs
+                .first()
+                .filter(|s| !is_synthetic_line_seg(s))
+                .map(|s| s.vertical_pos);
+            let prev_last_vpos = prev_para
+                .line_segs
+                .last()
+                .filter(|s| !is_synthetic_line_seg(s))
+                .map(|s| s.vertical_pos);
             if let (Some(cv), Some(pv)) = (curr_first_vpos, prev_last_vpos) {
                 // 현재 문단의 vpos가 직전 문단의 마지막 vpos보다 작은 경우 — 컬럼/페이지 reset 시그널.
                 // - 단일 단: cv == 0 만 인정 (Task #321 보수적 기준 유지).
