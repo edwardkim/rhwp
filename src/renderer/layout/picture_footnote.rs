@@ -79,6 +79,96 @@ fn compose_footnote_paragraph(
     crate::renderer::composer::compose_paragraph_in_context(para, styles)
 }
 
+/// 각주 번호를 문단 첫 줄에 실은 조합 결과를 만든다.
+///
+/// 각주 문단은 번호 자리에 autoNum 컨트롤을 두고, 파서는 그 자리를 공백 1자로
+/// 남긴다. 머리말·꼬리말 쪽번호(#3216)와 같이 모델 글자는 그대로 두고 `display_text`
+/// 만 번호로 바꿔, 글자 인덱스와 줄 나눔을 유지한 채 일반 문단 경로가 내어쓰기·정렬을
+/// 적용하게 한다. 자리표시 뒤의 원문 공백이 번호와 본문 사이를 맡으므로 번호 서식의
+/// 끝 공백은 뺀다(한/글: `78) CFR`).
+///
+/// 자리표시가 없는 문단(편집으로 만든 각주 등)은 첫 줄 앞에 번호 run 을 붙이고, 글자
+/// 모양은 종전 번호 경로와 같은 문단 첫 글자 모양을 쓴다. 첫 줄을 그리지 않는 조각
+/// (`selected_start > 0`)이나 조합 줄이 없는 빈 문단은 `None` 으로 종전 경로에 맡긴다.
+fn footnote_composed_with_number(
+    para: &Paragraph,
+    composed: &ComposedParagraph,
+    number_text: &str,
+    selected_start: usize,
+    base_cs_id: u32,
+) -> Option<ComposedParagraph> {
+    if selected_start != 0
+        || composed
+            .lines
+            .first()
+            .is_none_or(|line| line.runs.is_empty())
+    {
+        return None;
+    }
+    let mut numbered = composed.clone();
+    let line = numbered.lines.first_mut()?;
+    let positions = para.control_text_positions();
+    let placeholder = para
+        .controls
+        .iter()
+        .enumerate()
+        .find_map(|(index, control)| match control {
+            Control::AutoNumber(_) => positions.get(index).copied(),
+            _ => None,
+        });
+    let mut run_start = line.char_start;
+    let mut target = None;
+    if let Some(position) = placeholder {
+        for (run_index, run) in line.runs.iter().enumerate() {
+            let len = run.text.chars().count();
+            if (run_start..run_start + len).contains(&position)
+                && run.text.chars().nth(position - run_start) == Some(' ')
+            {
+                target = Some((run_index, position - run_start));
+                break;
+            }
+            run_start += len;
+        }
+    }
+    match target {
+        Some((run_index, local)) => {
+            let run = line.runs.remove(run_index);
+            let chars: Vec<char> = run.text.chars().collect();
+            let mut pieces = Vec::with_capacity(3);
+            if local > 0 {
+                let mut before = run.clone();
+                before.text = chars[..local].iter().collect();
+                before.display_text = None;
+                pieces.push(before);
+            }
+            let mut number = run.clone();
+            number.text = " ".to_string();
+            number.display_text = Some(number_text.trim_end().to_string());
+            pieces.push(number);
+            if local + 1 < chars.len() {
+                let mut after = run;
+                after.text = chars[local + 1..].iter().collect();
+                after.display_text = None;
+                pieces.push(after);
+            }
+            for (offset, piece) in pieces.into_iter().enumerate() {
+                line.runs.insert(run_index + offset, piece);
+            }
+        }
+        None => {
+            let mut number = line.runs.first().cloned().unwrap_or_default();
+            number.text = number_text.to_string();
+            number.char_style_id = base_cs_id;
+            number.display_text = None;
+            number.footnote_marker = None;
+            number.char_overlap = None;
+            number.inserted_control_text = true;
+            line.runs.insert(0, number);
+        }
+    }
+    Some(numbered)
+}
+
 fn footnote_composed_line_count(
     paragraphs: &[Paragraph],
     content_width_px: f64,
@@ -1217,8 +1307,23 @@ impl LayoutEngine {
                 }
                 let is_last_selected_line = para_start + selected_end == fragment_end;
 
-                if fragment_draws_number(fn_ref.fragment) && !number_drawn {
-                    // 첫 fragment의 첫 선택 줄에만 각주 번호를 삽입한다.
+                // 첫 fragment의 첫 선택 줄에만 각주 번호를 싣는다. 번호는 문단의 autoNum
+                // 자리표시 위에 얹어 일반 문단 경로로 그린다 — 그래야 번호 문단도 다른 문단과
+                // 같은 내어쓰기·정렬을 받는다. 조합 줄이 없는 빈 문단만 종전 전용 경로를 쓴다.
+                let draw_number = fragment_draws_number(fn_ref.fragment) && !number_drawn;
+                number_drawn |= draw_number;
+                let numbered = draw_number
+                    .then(|| {
+                        footnote_composed_with_number(
+                            para,
+                            &composed,
+                            &number_text,
+                            selected_start,
+                            base_cs_id,
+                        )
+                    })
+                    .flatten();
+                if draw_number && numbered.is_none() {
                     y = self.layout_footnote_paragraph_with_number(
                         tree,
                         fn_node,
@@ -1234,12 +1339,12 @@ impl LayoutEngine {
                         selected_end,
                         is_last_selected_line,
                     );
-                    number_drawn = true;
                 } else {
+                    let composed = numbered.as_ref().unwrap_or(&composed);
                     let returned_y = self.layout_composed_paragraph(
                         tree,
                         fn_node,
-                        &composed,
+                        composed,
                         styles,
                         fn_area,
                         y,
