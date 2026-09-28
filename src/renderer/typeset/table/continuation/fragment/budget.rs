@@ -432,7 +432,16 @@ impl TypesetEngine {
                     let flow_bottom_hu =
                         anchor_hu.saturating_add(table.common.height.min(i32::MAX as u32) as i32);
                     let flow_bottom_px = hwpunit_to_px(flow_bottom_hu, self.dpi);
-                    ((anchor_px - st.current_height).abs() <= 0.5
+                    // [#7418] 앵커는 **문단 시작**이다. host 글을 첫 조각 앞에 냈으면
+                    // `current_height` 는 그만큼 전진해 있다 — 빼고 견준다(21298295: host
+                    // `1. 편성기준` 36.8px 선방출로 프레임을 놓쳐 13행 첫 줄이 다음 쪽으로 가고
+                    // 3쪽이 됐다. 한/글 2쪽).
+                    let para_start = st.current_height
+                        - st.pre_emitted_host_heights
+                            .get(&para_idx)
+                            .copied()
+                            .unwrap_or(0.0);
+                    ((anchor_px - para_start).abs() <= 0.5
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5)
                         .then_some((
                             hwpunit_to_px(
