@@ -4917,6 +4917,15 @@ impl LayoutEngine {
                     list_marker_geometry_for(num_text, *head, &num_style, indent, bullet)
                 })
         });
+        // 이어지는 조각은 번호를 다시 붙이지 않는다(카운터를 두 번 전진시키지 않으려고
+        // `apply_paragraph_numbering` 을 첫 조각에서만 부른다). 그래도 마커 영역은 문단의
+        // 속성이다 — 없으면 이어지는 줄이 영역만큼 왼쪽으로 붙는다(70833 pi=83 6행: 13쪽의
+        // 이어진 두 줄이 한/글 266.7 대신 246.8). 마커는 첫 줄에만 그리므로 그리기는 불변.
+        let marker_geometry = marker_geometry.or_else(|| {
+            (start_line > 0)
+                .then(|| para.and_then(|p| list_marker_geometry(p, styles)))
+                .flatten()
+        });
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
