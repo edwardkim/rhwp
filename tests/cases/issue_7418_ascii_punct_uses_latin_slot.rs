@@ -110,74 +110,89 @@ fn a_hyphen_measured_in_the_latin_slot_keeps_hancoms_line_break() {
     );
 }
 
-/// 한글 사이의 `-` 는 영문 슬롯 글꼴 run 으로 따로 선다.
+/// 한글 run 안의 `-` 는 영문 슬롯 메트릭으로 전진한다 — run 은 쪼개지 않는다.
+///
+/// 공개 text-layout 의 `charX` 로 잰다. 한글 슬롯(휴먼명조 반각)으로 재면 9.63px, 영문 슬롯
+/// (Palatino Linotype 0.336em × 20px − 자간 3%)이면 ≈6.1px 다. 정본 PDF 의 이 `-` 는 6.4px 전진.
 #[test]
-fn the_hyphen_after_hangul_is_drawn_with_the_latin_slot_face() {
+fn the_hyphen_in_a_hangul_run_advances_with_latin_slot_metrics() {
     let core = load();
-    let lines = page_lines(&core);
-    let (_, parts) = lines
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(PAGE)
+            .expect("공개 text-layout"),
+    )
+    .expect("text-layout JSON");
+    let run = layout["runs"]
+        .as_array()
+        .expect("runs")
         .iter()
-        .find(|(text, _)| text.starts_with("-해당사업자는"))
-        .expect("대상 줄");
-
-    let hyphen = parts
+        .find(|run| {
+            run["text"]
+                .as_str()
+                .is_some_and(|text| text.contains("- 해당 사업자는"))
+        })
+        .expect("`- 해당 사업자는` 이 든 run — 구두점은 한글 run 안에 남는다");
+    let text: Vec<char> = run["text"].as_str().unwrap().chars().collect();
+    let hyphen = text.iter().position(|c| *c == '-').expect("`-`");
+    let char_x: Vec<f64> = run["charX"]
+        .as_array()
+        .expect("charX")
         .iter()
-        .find(|(text, _)| text.trim() == "-")
-        .unwrap_or_else(|| panic!("`-` 가 제 run 으로 서야 한다. run={parts:?}"));
-    let hangul = parts
-        .iter()
-        .find(|(text, _)| text.contains("해당"))
-        .expect("한글 run");
-    assert_ne!(
-        hyphen.1, hangul.1,
-        "`-` 가 한글 run 과 같은 글꼴(한글 슬롯)로 그려진다. run={parts:?}"
-    );
+        .map(|x| x.as_f64().expect("문자 경계"))
+        .collect();
+    let advance = char_x[hyphen + 1] - char_x[hyphen];
     assert!(
-        hyphen.1.contains("Palatino"),
-        "한/글은 이 `-` 를 영문 슬롯 치환 글꼴 Palatino Linotype 으로 그린다. run={parts:?}"
-    );
-
-    // `수반되나, 사업` — 쉼표도 영문 슬롯이고, 그 뒤 공백·한글은 한글 슬롯을 그대로 잇는다
-    // (말뭉치: 구두점 뒤 공백 88% 가 한글 글꼴).
-    let comma = parts
-        .iter()
-        .position(|(text, _)| text.trim() == ",")
-        .unwrap_or_else(|| panic!("`,` 가 제 run 으로 서야 한다. run={parts:?}"));
-    assert!(
-        parts[comma].1.contains("Palatino"),
-        "한/글은 이 `,` 를 영문 슬롯 글꼴로 그린다. run={parts:?}"
-    );
-    let after = parts[comma + 1..]
-        .iter()
-        .find(|(text, _)| !text.trim().is_empty())
-        .expect("쉼표 뒤 한글 run");
-    assert_eq!(
-        after.1, hangul.1,
-        "쉼표 뒤 `사업` 은 한글 슬롯 글꼴이어야 한다 — 구두점이 뒤 글자의 언어를 바꾸면 안 된다. \
-         run={parts:?}"
+        (5.5..7.0).contains(&advance),
+        "`-` 전진폭 {advance:.2}px — 영문 슬롯이면 ≈6.1px, 한글 슬롯(휴먼명조 반각)이면 9.63px"
     );
 }
 
-/// 반례 — 영문 슬롯이 옛 한컴 영문 글꼴이 아니면 구두점은 한글 run 에 그대로 남는다.
+/// 반례 — 영문 슬롯이 옛 한컴 영문 글꼴이 아니면 구두점 폭은 한글 슬롯 그대로다.
 ///
 /// 한/글은 한글 슬롯이 ASCII 를 제 글리프로 가진 글꼴(바탕·맑은 고딕 등)이면 한글 뒤 구두점을
-/// 한글 글꼴로 그린다(말뭉치: 한글 글꼴 Haansoft Batang 2404:329, 맑은 고딕 622:70). 모든
-/// 구두점을 영문 슬롯으로 떼면 이런 문서의 run·적중 판정·배치가 바뀐다.
+/// 한글 글꼴로 그린다(말뭉치: 한글 글꼴 Haansoft Batang 2404:329, 맑은 고딕 622:70).
+/// `pr-1674` 2쪽 `국가공무원법, ` 의 쉼표+공백 전진폭(`charX`) 12.000px 는 수정 전후가 같다 —
+/// 그 쪽 SVG 는 수정 전 HEAD(`af3a05b92`)와 바이트까지 같다. (SVG 글자 x 차 12.033px 는 양쪽
+/// 정렬 배분이 더해진 값이라 `charX` 와 다르다.)
 #[test]
-fn punctuation_stays_in_the_hangul_run_without_a_legacy_latin_slot() {
+fn punctuation_keeps_hangul_slot_width_without_a_legacy_latin_slot() {
     const DOC: &str = "samples/pr-1674.hwp";
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(DOC);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{DOC} 읽기: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    let page = core.build_page_render_tree(1).expect("2쪽 render tree");
-    let mut runs = Vec::new();
-    collect_runs(&page.root, &mut runs);
-
+    let layout: serde_json::Value = serde_json::from_str(
+        &core
+            .get_page_text_layout_native(1)
+            .expect("공개 text-layout"),
+    )
+    .expect("text-layout JSON");
+    let run = layout["runs"]
+        .as_array()
+        .expect("runs")
+        .iter()
+        .find(|run| {
+            run["text"]
+                .as_str()
+                .is_some_and(|text| text.contains("국가공무원법, "))
+        })
+        .expect("`국가공무원법, ` 이 든 run");
+    let text: Vec<char> = run["text"].as_str().unwrap().chars().collect();
+    let joined: String = text.iter().collect();
+    let comma = joined[..joined.find("국가공무원법, ").unwrap()]
+        .chars()
+        .count()
+        + 6;
+    assert_eq!(text[comma], ',');
+    let char_x: Vec<f64> = run["charX"]
+        .as_array()
+        .expect("charX")
+        .iter()
+        .map(|x| x.as_f64().expect("문자 경계"))
+        .collect();
+    let advance = char_x[comma + 2] - char_x[comma];
     assert!(
-        runs.iter()
-            .any(|(_, _, text, _)| text.contains("국가공무원법, 공무원임용령,")),
-        "`국가공무원법, 공무원임용령,` 이 한 run 으로 남아야 한다 — 쉼표가 영문 슬롯 run 으로 \
-         갈라졌다. run={:?}",
-        runs.iter().map(|r| &r.2).collect::<Vec<_>>()
+        (advance - 12.000).abs() < 0.01,
+        "쉼표+공백 전진폭 {advance:.3}px — 수정 전 12.000px 에서 바뀌면 안 된다(영문 슬롯이 옛 한컴          영문 글꼴이 아닌 문서)"
     );
 }

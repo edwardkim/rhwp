@@ -873,6 +873,16 @@ pub(crate) fn resolved_to_text_style(
             underline_color: cs.underline_color,
             strike_color: cs.strike_color,
             shade_color: cs.shade_color,
+            // [#7418] 한글 등 영문 외 슬롯 run 에서 ASCII 구두점은 영문 슬롯 메트릭으로 잰다.
+            ascii_punct_latin: (lang_index != 1 && cs.ascii_punct_latin_slot).then(|| {
+                Box::new(crate::renderer::LatinSlotMetrics {
+                    font_family: cs.font_family_for_lang(1).to_string(),
+                    metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
+                    font_metric_trusted: cs.font_metric_trusted_for_lang(1),
+                    letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
+                    ratio: cs.ratio_for_lang(1),
+                })
+            }),
         }
     } else {
         TextStyle::default()
@@ -1361,6 +1371,14 @@ pub(crate) fn char_width_decision<'a>(
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
     let c = chars[i];
+    // [#7418] 영문 슬롯으로 재는 구두점 — 글꼴·폭 표·자간·장평만 영문 슬롯 값이고, 배치가
+    // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다.
+    let latin = c
+        .is_ascii_punctuation()
+        .then_some(style.ascii_punct_latin.as_deref())
+        .flatten();
+    let ratio = latin.map_or(ratio, |l| if l.ratio > 0.0 { l.ratio } else { 1.0 });
+    let letter_spacing = latin.map_or(style.letter_spacing, |l| l.letter_spacing);
     if cluster_len[i] == 0 {
         return CharWidthDecision {
             width_source: "clusterContinuation",
@@ -1446,23 +1464,24 @@ pub(crate) fn char_width_decision<'a>(
             c
         };
         // [#7391] 폭 표를 고를 때만 선언 face 로 되돌린다.
-        let metric_family = style
-            .metric_font_family
-            .as_deref()
-            .unwrap_or(&style.font_family);
+        let metric_family = match latin {
+            Some(l) => l.metric_font_family.as_deref().unwrap_or(&l.font_family),
+            None => style
+                .metric_font_family
+                .as_deref()
+                .unwrap_or(&style.font_family),
+        };
         let mut embedded = measure_char_width_embedded_decision_for_font(
             metric_family,
             style.bold,
             style.italic,
             c,
             font_size,
-            style.font_metric_trusted,
-            style.hft_hangul_face,
+            latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
+            latin.is_none() && style.hft_hangul_face,
         );
-        // The row's shared rule selects the advance, without pretending that
-        // the document enabled useFontSpace. Both ordinary/NBSP characters
-        // retain the metric lookup provenance; explicit font space above
-        // continues to take precedence.
+        // 행의 공통 측정 규칙으로 폭을 고르며 원문의 useFontSpace 속성을 바꾸지 않는다.
+        // 일반 공백과 NBSP는 메트릭 조회 출처를 보존하고 명시한 글꼴 공백이 우선한다.
         if style.layout_half_space
             && matches!(c, ' ' | '\u{00A0}')
             && embedded.width_source != "metricHalfSpace"
@@ -1506,7 +1525,9 @@ pub(crate) fn char_width_decision<'a>(
                 embedded.metric,
                 embedded.character_match,
             )
-        } else if is_narrow_punctuation(c) || is_narrow_paren_for_font(&style.font_family, c) {
+        } else if is_narrow_punctuation(c)
+            || is_narrow_paren_for_font(latin.map_or(&style.font_family, |l| &l.font_family), c)
+        {
             (
                 font_size * 0.3,
                 "heuristicNarrow",
@@ -1545,7 +1566,7 @@ pub(crate) fn char_width_decision<'a>(
         base_width_raw
     };
     let mut final_width_px = base_width_px * ratio
-        + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
+        + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size)
         + style.extra_char_spacing;
     if c == ' ' {
         final_width_px += style.extra_word_spacing;
@@ -1554,7 +1575,7 @@ pub(crate) fn char_width_decision<'a>(
         final_width_px += style.extra_dash_advance;
     }
     let mut negative_spacing_clamped = false;
-    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+    if letter_spacing + style.extra_char_spacing < 0.0 {
         let min_width = base_width_px * ratio * 0.5;
         if final_width_px < min_width {
             final_width_px = min_width;
