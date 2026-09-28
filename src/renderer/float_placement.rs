@@ -1454,8 +1454,10 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
 /// (86712 p28: 141 HU, PDF first border 77.5px versus body top 75.6px).
 /// Keep this separate from the broad empty-host margin rule disproved by #2097:
 /// the observed contract is a cut inside the final row of a wide multi-column
-/// table. One-column giant cells (#2214) and two-column nested-fragment tables
-/// (76076 p34) already align with the PDF without reopening this margin.
+/// table. One-column giant cells (#2214) align with the PDF without reopening this margin.
+/// [#7418] Two-column tables reopen it too: the first border of 76076 p34 is 77.3px (HWP
+/// 2020) / 77.5px (2024) and of 78494 p20·p21 77.5px, all body top 75.6 + 141 HU. The
+/// former `col_count > 2` narrowing read 76076 p34 as aligned without the margin.
 pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout: bool,
     table: &Table,
@@ -1466,7 +1468,7 @@ pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout
         && is_continuation
         && table.row_count > 1
-        && table.col_count > 2
+        && table.col_count > 1
         && start_row + 1 == table.row_count as usize
         && !start_cut.is_empty()
         && table.outer_margin_top > 0
