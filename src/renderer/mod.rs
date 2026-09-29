@@ -3017,6 +3017,45 @@ fn format_hanja_number(n: u16) -> String {
     result
 }
 
+/// [#7470] 빈 host 줄이 문단 기준 자리차지 개체의 **띠 안에 흡수**되는가.
+///
+/// 한/글은 비TAC · `vert=Para` · TopAndBottom 개체에 줄 폭 전체가 막힌 host 줄을
+/// `segment_width = 0` 으로 저장하고, 그 줄의 높이·줄간격을 개체 띠와 별도로 전진하지 않는다
+/// (다음 문단 저장 vpos − 현 vpos = 개체 높이). `sw > 0`(개체 옆에 줄 폭이 남음)인 빈 host 는
+/// 종전처럼 개체 뒤에 host 한 줄을 더 전진한다(pr-149, Task #683).
+///
+/// ```text
+///   156636617 pi74  그림 h=20409  host lh=1100 ls=772 sw=0      다음 vpos − 현 vpos = 20409
+///   memo_field pi331 그림 h=20218 host lh=1200 ls=480 sw=0      다음 vpos − 현 vpos = 20218
+///   pr-149          그림 h=15696  host lh=1000 ls=600 sw=42520  host 한 줄 추가 전진
+/// ```
+///
+/// 조판과 배치가 같은 판별을 쓰도록 한 곳에 둔다. 미주 흐름은 별도 조판 경로라 배치도 본문 단에서만
+/// 이 판별을 쓴다.
+pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    // 띠가 앵커에서 시작할 때만 host 줄이 띠 안에 든다. 양수 세로 오프셋이면 host 줄은 개체 위에
+    // 따로 놓인다(PrEP 3.214: `sw=0` 이지만 오프셋 504HU, 한/글 캡션 위치는 종전 전진과 일치).
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) != 0
+    {
+        return false;
+    }
+    let has_visible_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+    if has_visible_text || para.line_segs.len() != 1 {
+        return false;
+    }
+    let seg = &para.line_segs[0];
+    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && seg.segment_width == 0
+}
+
 /// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.
 ///
 /// `#409` 는 비-TAC · `vert=Para` · TopAndBottom 개체가 뒤따르는 콘텐츠를 개체 높이만큼

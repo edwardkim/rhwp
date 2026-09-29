@@ -388,7 +388,26 @@ impl TypesetEngine {
                                 let hl =
                                     hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
                                 let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                Some((h, h + mb, hl, hr))
+                                // [#7470] 그림 띠에 흡수된 빈 host 줄은 이미 흐름에 더한 문단
+                                // 높이에서 돌려준다(배치 `layout_shape_item` #683 과 같은 판별).
+                                let absorbed_host_line = if pic.caption.is_none()
+                                    && crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                                        para,
+                                        &pic.common,
+                                    ) {
+                                    para.line_segs
+                                        .first()
+                                        .map(|seg| {
+                                            hwpunit_to_px(
+                                                seg.line_height + seg.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
+                                        .unwrap_or(0.0)
+                                } else {
+                                    0.0
+                                };
+                                Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
                             }
                             Control::Shape(s)
                                 if !s.common().treat_as_char
@@ -456,7 +475,39 @@ impl TypesetEngine {
                                 // 발동은 3장 이상으로 한정 — 2장 스택은 한컴이 razor-full
                                 // 페이지에 압축 유지하는 실측 반례(1051000-201800093 p60,
                                 // 158쪽 정답 유지)가 있어 제외한다.
-                                if pushdown_topbottom_ctrl_count >= 3 {
+                                // [#7470] 그림 1장: 한/글은 문단 기준 그림의 **실제 하단**(문단 시작
+                                // + 세로 오프셋 + 높이)이 본문을 넘으면 host 줄은 두고 그림만 다음 쪽
+                                // 맨 위로 넘긴다(memo_field pi335: 887 + 775 > 971). 흐름 누적이 아니라
+                                // 그림 위치로 판정한다(issue5595: 문단 시작 0 + 506 < 548 이면 유지).
+                                // 단 맨 위에서 시작한 host 는 넘겨도 다음 쪽에서 같은 높이로 넘치므로
+                                // 그대로 둔다(156634833 2쪽: 쪽 맨 위 그림, 한/글도 그 쪽에 둠).
+                                // 그림 뒤 흐름이 다음 쪽에서 시작한다는 저장 사다리의 증언(다음 문단
+                                // vpos 되감김)이 있을 때만 넘긴다. 다음 문단이 같은 쪽 사다리를 이으면
+                                // 한/글은 그림만 다음 쪽 맨 위로 미루고 흐름은 이 쪽에서 계속한다
+                                // (task1725 문단 1402→1403) — 그 이월은 이 경로가 표현하지 못한다.
+                                let single_picture_overflows = pushdown_topbottom_ctrl_count == 1
+                                    && picture_host_origin.0 == st.pages.len()
+                                    && picture_host_origin.1 == st.current_column
+                                    && picture_host_origin.2 > 1.0
+                                    && stored_ladder_restarts_after(
+                                        para,
+                                        paragraphs.get(para_idx + 1),
+                                    )
+                                    && match ctrl {
+                                        Control::Picture(pic) => {
+                                            let v_off = hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                )
+                                                .max(0),
+                                                self.dpi,
+                                            );
+                                            picture_host_origin.2 + v_off + obj_h
+                                                > st.available_height() + 0.5
+                                        }
+                                        _ => false,
+                                    };
+                                if pushdown_topbottom_ctrl_count >= 3 || single_picture_overflows {
                                     let ovl_base = topbottom_cols
                                         .iter()
                                         .filter(|c| c.1 > h_left && c.0 < h_right)
@@ -561,5 +612,19 @@ impl TypesetEngine {
             .get(para.para_shape_id as usize)
             .map_or(0.0, |style| style.spacing_after);
         st.finish_paragraph_float_flow(para_idx, spacing_after);
+    }
+}
+
+/// [#7470] 저장 사다리가 이 문단 뒤에서 되감기는가 — 다음 문단이 새 쪽에서 시작한다는 한/글의 증언.
+fn stored_ladder_restarts_after(para: &Paragraph, next: Option<&Paragraph>) -> bool {
+    let stored = |seg: &&crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    match (
+        para.line_segs.first().filter(stored),
+        next.and_then(|n| n.line_segs.first()).filter(stored),
+    ) {
+        (Some(cur), Some(next)) => next.vertical_pos < cur.vertical_pos,
+        _ => false,
     }
 }
