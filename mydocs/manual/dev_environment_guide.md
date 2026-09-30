@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-08-11
+last_verified: 2026-09-30
 ---
 
 # 개발 환경 가이드
