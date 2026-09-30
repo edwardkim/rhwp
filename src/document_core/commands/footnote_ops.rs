@@ -9,7 +9,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{ParaMeta, Paragraph};
-use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
+use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 impl DocumentCore {
     fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
@@ -428,10 +428,12 @@ impl DocumentCore {
             .ok_or_else(|| HwpError::RenderError("각주/미주 문단을 찾을 수 없음".to_string()))?
             .para_shape_id;
         let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+        let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
         {
             let fn_para =
                 self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
             fn_para.para_shape_id = new_id;
+            restamp_indentation(&mut fn_para.line_segs, old_indent, new_indent);
         }
 
         if mods.line_spacing.is_some()

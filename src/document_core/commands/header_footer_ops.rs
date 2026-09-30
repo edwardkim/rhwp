@@ -16,7 +16,7 @@ use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ParaMeta, Paragraph};
-use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
+use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 /// HeaderFooterApply → 표시 레이블
 fn apply_label(a: HeaderFooterApply) -> &'static str {
@@ -1213,11 +1213,13 @@ impl DocumentCore {
         }
 
         let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+        let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
 
         // para_shape_id 갱신
         {
             let para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
             para.para_shape_id = new_id;
+            restamp_indentation(&mut para.line_segs, old_indent, new_indent);
         }
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산.
