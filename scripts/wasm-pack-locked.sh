@@ -25,6 +25,14 @@ for arg in "$@"; do
   esac
 done
 
+# Opt-in WASM release experiment (#7473). Keep wasm-pack's packaging/wasm-opt
+# pipeline and the default build unchanged. The mixed rlib+cdylib baseline does
+# not run cross-crate LTO; cdylib alone would otherwise enable fat LTO.
+case "${RHWP_WASM_CDYLIB_ONLY:-0}" in
+  0|1) ;;
+  *) echo "RHWP_WASM_CDYLIB_ONLY must be 0 or 1" >&2; exit 2 ;;
+esac
+
 real_cargo="${CARGO:-}"
 if [ -z "${real_cargo}" ]; then
   real_cargo="$(command -v cargo)"
@@ -49,6 +57,37 @@ if [ "${1:-}" = "metadata" ]; then
     fi
   done
   exec "${RHWP_WASM_PACK_REAL_CARGO}" "$@" --locked
+fi
+
+if [ "${RHWP_WASM_CDYLIB_ONLY:-0}" = "1" ] && [ "${1:-}" = "build" ]; then
+  shift
+  release=0
+  library=0
+  wasm=0
+  if [ "${CARGO_BUILD_TARGET:-}" = "wasm32-unknown-unknown" ]; then wasm=1; fi
+  previous=""
+  for arg in "$@"; do
+    case "${arg}" in
+      --release) release=1 ;;
+      --lib) library=1 ;;
+      --target=wasm32-unknown-unknown) wasm=1 ;;
+      --target=*) wasm=0 ;;
+      --profile|--profile=*|--config|--config=*|--package|--package=*|-p|-p?*|--workspace|--)
+        echo "cdylib-only requires the standard release invocation without profile/config overrides" >&2
+        exit 2 ;;
+    esac
+    if [ "${previous}" = "--target" ]; then
+      wasm=0
+      if [ "${arg}" = "wasm32-unknown-unknown" ]; then wasm=1; fi
+    fi
+    previous="${arg}"
+  done
+  if [ "${release}${library}${wasm}" != "111" ]; then
+    echo "cdylib-only requires --release --lib --target wasm32-unknown-unknown" >&2
+    exit 2
+  fi
+  exec "${RHWP_WASM_PACK_REAL_CARGO}" rustc "$@" \
+    --package rhwp --crate-type cdylib --config profile.release.lto=false
 fi
 
 exec "${RHWP_WASM_PACK_REAL_CARGO}" "$@"
