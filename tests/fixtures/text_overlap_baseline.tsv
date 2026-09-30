@@ -13,6 +13,13 @@
 # 덮은 것이 원인이다. 메인터너가 실제 행 점유로 컷을 선택하고, 67~70쪽의 줄·각주·
 # 그림 캡션 소유를 원 HWPX의 한컴 2024 PDF와 맞춘 뒤 Mac 전체 문서 실측은 1건이다.
 # RHWP_TEXT_OVERLAP_DUMP의 partition 1 원장으로 15 -> 1을 확인해 래칫을 조인다.
+# #7469: 번호가 붙은 각주 첫 문단이 문단 모양의 내어쓰기·양쪽 정렬을 받게 되면서 세 행이 는다.
+# 셋 다 각주가 본문 위에 겹쳐 그려지는 기존 결함 쪽에서만 늘었다. 쪽마다 교차 사각형 합집합(px):
+#   issue1937 43쪽 5,895 -> 6,082 · text_footnote_tail(hwp) 204쪽 1,360 -> 1,336: 면적은 그대로이고
+#   한 줄이 run 여럿으로 나뉘어 교차 쌍만 +2 / +1.
+#   정책연구 hwpx 82쪽 45,443 -> 69,362: HWPX 표 각주 queue 결함(#7379)으로 각주가 이미 표 위에 겹친 쪽에서,
+#   양쪽 정렬된 각주 줄이 한/글처럼 폭 전체로 퍼져 더 넓게 덮는다(+33). 같은 문서 .hwp 는 이 쪽이 정상이라 불변.
+#   #7379 가 고쳐지면 이 행은 88 수준으로 내려간다(로컬 실측).
 2025 행정업무운영 편람(최종).hwp	21
 2025 행정업무운영 편람(최종).hwpx	21
 80168_regulatory_analysis.hwp	2
@@ -81,7 +88,7 @@ issue1891/80168_regulatory_analysis.hwpx	2
 issue1891/80250_regulatory_analysis.hwpx	2
 issue1891_external_bindata_link.hwpx	3
 issue1921/59043_regulatory_analysis.hwp	2
-issue1937_rowbreak_footnote_overpagination.hwp	132
+issue1937_rowbreak_footnote_overpagination.hwp	134
 issue1949_giant_cell_nested_tables_perf.hwp	8
 issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
@@ -126,7 +133,7 @@ rowbreak-problem-pages.hwpx	1
 table_giant_cell_overfill.hwpx	16
 tac-img-02.hwp	1
 tac-img-02.hwpx	1
-task1725/text_footnote_tail_overpagination.hwp	38
+task1725/text_footnote_tail_overpagination.hwp	39
 task1725/text_footnote_tail_overpagination.hwpx	34
 task1768/distribution_doc.hwpx	1
 task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	48
@@ -138,4 +145,4 @@ task2279/36404953_gyeoljae.hwpx	1
 # 이후 표 조판 묶음으로 37 까지 내려갔다. 33쪽 겹침은 0 이다. 여유 없이 실측으로 조인다.
 task2287/1342000_edu_curriculum_map.hwp	37
 정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	53
-정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	218
+정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	251

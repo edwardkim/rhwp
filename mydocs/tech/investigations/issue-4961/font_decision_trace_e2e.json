@@ -41,11 +41,11 @@
       "expectedStatus": "complete",
       "expectedCounts": {
         "runsSeen": 194,
-        "charactersSeen": 1336,
-        "recordsEmitted": 1336,
+        "charactersSeen": 1333,
+        "recordsEmitted": 1333,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "038db08108fbc97f8bf21a2d44162d57830955ef286f6f49f56ba718d33bcab2"
+      "expectedLayoutHash": "7e0e4c8eb11f1c8fa30fe23e3f95cd96761e6f8a03bba76341fbcb11dcc95f36"
     },
     {
       "id": "missing-face",
