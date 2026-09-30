@@ -3,7 +3,9 @@
 use super::clipboard::{
     clip_paragraph_text_range_for_clipboard, strip_structural_controls_for_text_clipboard,
 };
-use super::formatting::{char_shape_mods_affect_text_flow, para_shape_mods_affect_text_flow};
+use super::formatting::{
+    char_shape_mods_affect_text_flow, para_shape_mods_affect_text_flow, restore_para_meta,
+};
 use crate::document_core::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_char_shape_mods,
     parse_json_i16_array, parse_para_shape_mods,
@@ -428,7 +430,7 @@ impl DocumentCore {
             }
             let mut new_para = paragraphs[hf_para_idx].split_at(char_offset);
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             new_para
         };

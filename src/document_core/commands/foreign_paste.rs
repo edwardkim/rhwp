@@ -14,6 +14,7 @@ use crate::model::image::Picture;
 use crate::model::paragraph::{CharShapeRef, Paragraph};
 use crate::model::shape::ShapeObject;
 use crate::model::style::HeadType;
+use crate::renderer::composer::restamp_indentation;
 use std::collections::HashMap;
 
 impl crate::document_core::DocumentCore {
@@ -145,8 +146,12 @@ impl crate::document_core::DocumentCore {
                     let first = &foreign_paras[0];
                     (first.para_shape_id, first.char_shapes.clone())
                 };
+                let (old_indent, new_indent) =
+                    self.para_shape_indents(target.para_shape_id, shape_id);
                 let target = &mut self.document.sections[section_idx].paragraphs[para_idx];
                 target.para_shape_id = shape_id;
+                // [#7490] 빈 문단의 옛 줄 기록(bit 20)을 붙여넣은 들여쓰기에 맞춘다.
+                restamp_indentation(&mut target.line_segs, old_indent, new_indent);
                 if !char_shapes.is_empty() {
                     target.char_shapes = char_shapes;
                 }

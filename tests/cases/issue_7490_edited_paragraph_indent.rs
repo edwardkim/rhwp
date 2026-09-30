@@ -7,7 +7,8 @@
 
 use std::path::Path;
 
-use rhwp::model::paragraph::LineSeg;
+use rhwp::model::control::Control;
+use rhwp::model::paragraph::{LineSeg, ParaMeta};
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
 
@@ -165,6 +166,88 @@ fn indent_on_empty_paragraph_moves_caret_before_typing() {
     assert!(
         (typed - indented).abs() < 0.5,
         "첫 글자를 넣어도 캐럿 시작이 튀지 않는다 — 입력 전 {indented}, 입력 후 {typed}"
+    );
+}
+
+#[test]
+fn merge_undo_keeps_indent_of_restored_paragraph() {
+    // 병합 undo 는 앞 문단(들여쓰기 0)의 첫 줄 기록을 물려받은 새 문단에 원래 문단
+    // 모양(들여쓰기 3000)을 되돌린다.
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank document");
+    doc.insert_text_native(0, 0, 0, "가나다")
+        .expect("insert first");
+    doc.split_paragraph_native(0, 0, 3, None).expect("enter");
+    doc.insert_text_native(0, 1, 0, TEXT)
+        .expect("insert second");
+    doc.apply_para_format_native(0, 1, r#"{"indent":3000}"#)
+        .expect("apply indent");
+    let before = line_starts(&doc, 1);
+
+    let merged = doc.merge_paragraph_native(0, 1).expect("backspace merge");
+    let merged: serde_json::Value = serde_json::from_str(&merged).expect("merge JSON");
+    let meta: ParaMeta =
+        serde_json::from_value(merged["removedParaMeta"].clone()).expect("removed meta");
+    doc.split_paragraph_native(0, 0, 3, Some(meta))
+        .expect("undo merge");
+    let after = line_starts(&doc, 1);
+    assert!(
+        after.len() == before.len() && after.iter().zip(&before).all(|(a, b)| (a - b).abs() < 0.5),
+        "병합을 되돌리면 들여쓰기도 돌아온다 — 병합 전 {before:?}, 되돌린 뒤 {after:?}"
+    );
+}
+
+#[test]
+fn pasting_into_blank_paragraph_draws_pasted_indent() {
+    // 143E433F503322BD33.hwp 문단 9: indent 2000, 저장 줄 bit 20 [켜짐, 꺼짐…].
+    // 빈 문단에 붙여넣으면 대상이 이 문단 모양을 물려받는다.
+    const PARA: usize = 9;
+    let source = open("samples/143E433F503322BD33.hwp");
+    let mut foreign = source.document().clone();
+    let para = foreign.sections[0].paragraphs[PARA].clone();
+    foreign.sections.truncate(1);
+    foreign.sections[0].paragraphs = vec![para];
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank document");
+    doc.paste_foreign_document_native(0, 0, 0, foreign)
+        .expect("paste");
+    let starts = line_starts(&doc, 0);
+    assert!(
+        starts.len() >= 2 && starts[0] - starts[1] > 5.0,
+        "붙여넣은 문단의 첫 줄은 들여쓴다: {starts:?}"
+    );
+}
+
+#[test]
+fn applying_indent_in_cell_marks_first_line() {
+    // 새 표의 셀 줄은 bit 20 이 모두 꺼져 있다. 셀 재조판은 이 기록을 읽으므로 문단
+    // 모양을 바꿀 때 기록도 새 들여쓰기에 맞춰야 한다.
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank document");
+    let table = doc
+        .create_table_native(0, 0, 0, 1, 1)
+        .expect("create table");
+    let table: serde_json::Value = serde_json::from_str(&table).expect("table JSON");
+    let para = table["paraIdx"].as_u64().expect("paraIdx") as usize;
+    let control = table["controlIdx"].as_u64().expect("controlIdx") as usize;
+    doc.insert_text_in_cell_native(0, para, control, 0, 0, 0, TEXT)
+        .expect("insert cell text");
+    doc.apply_para_format_in_cell_native(0, para, control, 0, 0, r#"{"indent":3000}"#)
+        .expect("apply cell indent");
+
+    let Control::Table(table) = &doc.document().sections[0].paragraphs[para].controls[control]
+    else {
+        panic!("표가 아니다");
+    };
+    let bits: Vec<bool> = table.cells[0].paragraphs[0]
+        .line_segs
+        .iter()
+        .map(|line| line.tag & LineSeg::TAG_INDENTATION != 0)
+        .collect();
+    assert!(
+        bits.len() >= 2 && bits[0] && !bits[1..].iter().any(|&bit| bit),
+        "셀 문단의 들여쓰기는 첫 줄에만 적용된다: {bits:?}"
     );
 }
 
