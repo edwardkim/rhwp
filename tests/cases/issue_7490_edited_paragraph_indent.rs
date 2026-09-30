@@ -183,6 +183,10 @@ fn merge_undo_keeps_indent_of_restored_paragraph() {
     doc.apply_para_format_native(0, 1, r#"{"indent":3000}"#)
         .expect("apply indent");
     let before = line_starts(&doc, 1);
+    assert!(
+        before.len() >= 2 && before[0] - before[1] > 5.0,
+        "병합 전 둘째 문단의 첫 줄은 들여쓴다: {before:?}"
+    );
 
     let merged = doc.merge_paragraph_native(0, 1).expect("backspace merge");
     let merged: serde_json::Value = serde_json::from_str(&merged).expect("merge JSON");
