@@ -2751,6 +2751,22 @@ pub(crate) fn frame_metrics_for_line(
     }
 }
 
+/// [#7490] 새로 조판한 줄에 한글처럼 `TAG_INDENTATION`(bit 20)을 단다.
+///
+/// 들여쓰기는 첫 줄에, 내어쓰기는 둘째 줄부터 적용된다(한글 저장본의 줄별 기록과
+/// 같다). 렌더러는 이 비트가 꺼진 저장 줄에 들여쓰기를 얹지 않으므로(#6190), 비운 채
+/// 발행하면 편집한 문단의 들여쓰기·내어쓰기가 그려지지 않는다.
+fn mark_indented_lines(lines: &mut [LineSeg], first_line_index: usize, indent_px: f64) {
+    for (line_index, line) in (first_line_index..).zip(lines.iter_mut()) {
+        let indented = (indent_px > 0.0 && line_index == 0) || (indent_px < 0.0 && line_index > 0);
+        if indented {
+            line.tag |= LineSeg::TAG_INDENTATION;
+        } else {
+            line.tag &= !LineSeg::TAG_INDENTATION;
+        }
+    }
+}
+
 /// Lay out the small scalar/Picture-band paragraph subset through a
 /// caller-owned physical frame.
 ///
@@ -3092,7 +3108,9 @@ fn layout_paragraph_in_frame_impl(
         if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
             frame.absorb_whitespace_only_rows(&para.text, first_row);
         }
-        Some(frame.project_line_segs_since(first_row))
+        let mut lines = frame.project_line_segs_since(first_row);
+        mark_indented_lines(&mut lines, 0, indent_px);
+        Some(lines)
     })();
 
     let kerning_failed = kerning_break_session
@@ -4183,6 +4201,11 @@ fn reflow_line_segs_impl(
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
+    mark_indented_lines(
+        &mut new_line_segs[preserved_prefix_len..],
+        preserved_prefix_len,
+        indent_px,
+    );
 
     para.replace_line_segs(new_line_segs);
     preserved_prefix_len > 0
