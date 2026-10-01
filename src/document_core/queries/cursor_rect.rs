@@ -824,6 +824,15 @@ impl DocumentCore {
         } else {
             None
         };
+        // [#7418] 마커 글자 x 에서 본문 시작까지 — 배치가 쓴 마커 기하(영역·정렬)와 같은 값.
+        let list_marker_body_dx = if is_list_para {
+            self.get_render_paragraph_ref(section_idx, para_idx)
+                .ok()
+                .and_then(|para| crate::renderer::layout::list_marker_geometry(para, &self.styles))
+                .map(|geometry| -geometry.marker_dx_px)
+        } else {
+            None
+        };
 
         // 렌더 트리에서 커서 위치를 찾는 재귀 함수
         // exact_only: true이면 정확한 매칭(zero-width 앵커)만 반환
@@ -1187,6 +1196,7 @@ impl DocumentCore {
             para: usize,
             is_list_para: bool,
             list_marker_char_shape_id: Option<u32>,
+            list_marker_body_dx: Option<f64>,
             styles: &crate::renderer::style_resolver::ResolvedStyleSet,
             hit: &mut ParaLineHit,
         ) {
@@ -1202,10 +1212,12 @@ impl DocumentCore {
                         && text_run.field_marker
                             == crate::renderer::render_tree::FieldMarkerType::None
                     {
-                        let marker_width = list_marker_char_shape_id
-                            .map(|cs_id| {
-                                let marker_style = resolved_to_text_style(styles, cs_id, 0);
-                                estimate_text_width(&text_run.text, &marker_style)
+                        let marker_width = list_marker_body_dx
+                            .or_else(|| {
+                                list_marker_char_shape_id.map(|cs_id| {
+                                    let marker_style = resolved_to_text_style(styles, cs_id, 0);
+                                    estimate_text_width(&text_run.text, &marker_style)
+                                })
                             })
                             .unwrap_or(node.bbox.width);
                         hit.marker_end_x.get_or_insert(node.bbox.x + marker_width);
@@ -1221,6 +1233,7 @@ impl DocumentCore {
                     para,
                     is_list_para,
                     list_marker_char_shape_id,
+                    list_marker_body_dx,
                     styles,
                     hit,
                 );
@@ -1234,6 +1247,7 @@ impl DocumentCore {
             para: usize,
             is_list_para: bool,
             list_marker_char_shape_id: Option<u32>,
+            list_marker_body_dx: Option<f64>,
             styles: &crate::renderer::style_resolver::ResolvedStyleSet,
         ) -> Option<ParaLineHit> {
             if let RenderNodeType::TextLine(ref line) = node.node_type {
@@ -1251,6 +1265,7 @@ impl DocumentCore {
                         para,
                         is_list_para,
                         list_marker_char_shape_id,
+                        list_marker_body_dx,
                         styles,
                         &mut hit,
                     );
@@ -1282,6 +1297,7 @@ impl DocumentCore {
                     para,
                     is_list_para,
                     list_marker_char_shape_id,
+                    list_marker_body_dx,
                     styles,
                 ) {
                     return Some(r);
@@ -1424,6 +1440,7 @@ impl DocumentCore {
             para_idx,
             is_list_para,
             list_marker_char_shape_id,
+            list_marker_body_dx,
             &self.styles,
         ) {
             let x = line_hit.cursor_x(is_list_para, char_offset);
@@ -3222,8 +3239,10 @@ impl DocumentCore {
             .set_hidden_empty_paras(&pr.hidden_empty_paras);
         self.layout_engine
             .set_pre_emitted_host_paras(&pr.pre_emitted_host_paras);
-        self.layout_engine
-            .set_pre_emitted_host_heights(&pr.pre_emitted_host_heights);
+        self.layout_engine.set_pre_emitted_host_heights(
+            &pr.pre_emitted_host_heights,
+            &pr.pre_emitted_host_content_heights,
+        );
         let layout = &page_content.layout;
         self.layout_engine.prime_column_layout_env(layout);
 

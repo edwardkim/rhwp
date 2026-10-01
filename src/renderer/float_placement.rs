@@ -382,6 +382,22 @@ impl ParagraphFloatPlacement {
     /// Paragraph boundaries already live in the IR; an internal hard break ends
     /// the preceding text line even when the control has the same scalar offset.
     /// Missing character mapping is not evidence of a tail attachment.
+    /// 표 제어문자가 글 맨 앞(첫 줄 시작)에 있고 뒤에 보이는 글이 있을 때의 위치(0).
+    fn text_head_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
+        let text_len = para.text.chars().count();
+        if text_len == 0 || para.char_offsets.len() != text_len {
+            return None;
+        }
+        let position = *para.control_text_positions().get(control_index)?;
+        (position == 0
+            && !para.text.contains('\n')
+            && para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'))
+        .then_some(position)
+    }
+
     fn text_tail_control_position(para: &Paragraph, control_index: usize) -> Option<usize> {
         let text_len = para.text.chars().count();
         if text_len == 0 || para.char_offsets.len() != text_len {
@@ -409,6 +425,39 @@ impl ParagraphFloatPlacement {
         dpi: f64,
     ) -> Option<Self> {
         let char_pos = Self::text_tail_control_position(para, control_index)?;
+        Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
+    }
+
+    /// [#7418] 표 제어문자가 글 **앞**에 있는 host 의 계산 줄 배치.
+    ///
+    /// 글 끝 앵커 모델(`from_computed_host`, #6950 이 논리 순서를 지킨다)과 따로 둔다. 같은
+    /// 기하 검사 — «모든 host 줄이 문단 기준 오프셋 위끝 전에 끝난다» — 를 통과할 때만 글이
+    /// 표 위에 선다(한/글 자리차지: 오프셋 안에 자리가 있으면 글을 위에 둔다). 70833 pi=83
+    /// (`- 규제 차등화…`, 줄 20px ≤ 오프셋 23.8)·21298295 pi=4(16 ≤ 20.2)·156403546 pi=22
+    /// (20 ≤ 26.4)가 정본에서 표 위 제목이다. 오프셋이 줄보다 작으면(pr-1674: 0) None — 글은
+    /// 표 아래로 간다.
+    pub fn from_computed_head_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let char_pos = Self::text_head_control_position(para, control_index)?;
+        Self::from_computed_host_at(char_pos, para, table, text_origin, lines, table_height, dpi)
+    }
+
+    fn from_computed_host_at(
+        char_pos: usize,
+        para: &Paragraph,
+        table: &Table,
+        text_origin: f64,
+        lines: &[ParagraphHostLine],
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()
@@ -1454,8 +1503,10 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
 /// (86712 p28: 141 HU, PDF first border 77.5px versus body top 75.6px).
 /// Keep this separate from the broad empty-host margin rule disproved by #2097:
 /// the observed contract is a cut inside the final row of a wide multi-column
-/// table. One-column giant cells (#2214) and two-column nested-fragment tables
-/// (76076 p34) already align with the PDF without reopening this margin.
+/// table. One-column giant cells (#2214) align with the PDF without reopening this margin.
+/// [#7418] Two-column tables reopen it too: the first border of 76076 p34 is 77.3px (HWP
+/// 2020) / 77.5px (2024) and of 78494 p20·p21 77.5px, all body top 75.6 + 141 HU. The
+/// former `col_count > 2` narrowing read 76076 p34 as aligned without the margin.
 pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout: bool,
     table: &Table,
@@ -1466,7 +1517,7 @@ pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout
         && is_continuation
         && table.row_count > 1
-        && table.col_count > 2
+        && table.col_count > 1
         && start_row + 1 == table.row_count as usize
         && !start_cut.is_empty()
         && table.outer_margin_top > 0

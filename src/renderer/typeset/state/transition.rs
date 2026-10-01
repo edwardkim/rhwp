@@ -66,6 +66,7 @@ impl TypesetState {
                 prefilled_paras: std::collections::HashSet::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
                 pre_emitted_host_heights: std::collections::HashMap::new(),
+                pre_emitted_host_content_heights: std::collections::HashMap::new(),
                 skip_safety_margin_once: false,
                 skip_footnote_margin_once: false,
                 tail_saved_bounds_once: None,

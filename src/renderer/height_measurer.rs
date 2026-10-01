@@ -577,6 +577,51 @@ impl MeasuredParagraph {
     }
 }
 
+/// [#7418] 저장 줄 없는 빈 문단이 **TAC 표만** 품을 때 그 줄 뒤의 줄간격(px).
+///
+/// TAC 표는 host 줄 안에 서서 줄 높이가 곧 표 상자다(`#2169` 가 host 몫을 0 으로 두고 표를
+/// 따로 더하는 이유). 그러나 줄간격은 그 줄 **뒤**에 붙는다 — 한/글은 글자 크기로 잰
+/// 줄간격(비율 줄간격이면 글자 크기 × (비율 − 100%))을 표 아래에 둔다. 70833 pi=83 5행:
+/// 10pt·160% host 의 표 아래 8.0px 가 한/글 행 387.7 과 rhwp 380.2 의 차이다.
+/// 칸의 마지막 줄 뒤 줄간격은 칸을 채우지 않으므로(측정 규칙) 호출자가 마지막 문단을 뺀다.
+///
+/// 줄이 **하나도 없는** 문단만 해당한다. rhwp 가 합성한 줄(tag 0x8…)이 있으면 그 줄의
+/// 줄간격을 배치가 이미 전진시킨다 — 36384689 칸[2] host 는 합성 줄 ls=600 으로 다음 문단을
+/// 한/글 저장 vpos 28760(= 28160 + 600)에 놓는데, 여기서 또 더하면 8.0px 가 두 번 실린다.
+pub(crate) fn no_ls_tac_table_host_trailing_spacing_px(
+    p: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
+    if !p.line_segs.is_empty()
+        || !p.text.trim().is_empty()
+        || p.controls.is_empty()
+        || !p
+            .controls
+            .iter()
+            .all(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+    {
+        return None;
+    }
+    let fs = p
+        .char_shapes
+        .first()
+        .and_then(|cs| styles.char_styles.get(cs.char_shape_id as usize))
+        .map(|cs| cs.font_size)
+        .unwrap_or(0.0);
+    let ps = styles.para_styles.get(p.para_shape_id as usize)?;
+    if fs <= 0.0 {
+        return None;
+    }
+    let line = crate::renderer::corrected_line_height(
+        hwpunit_to_px(400, dpi),
+        fs,
+        ps.line_spacing_type,
+        ps.line_spacing,
+    );
+    Some((line - fs).max(0.0))
+}
+
 /// 표의 측정된 높이 정보
 #[derive(Debug, Clone)]
 pub struct MeasuredTable {
@@ -1867,6 +1912,14 @@ impl HeightMeasurer {
                     pairs.extend(metrics);
                 }
             }
+            // [#7418] typeset `format_paragraph_for_flow` 와 같은 표 host 줄 (측정 정합).
+            if pairs.is_empty() {
+                if let Some(metric) =
+                    crate::renderer::tac_table_host_line_metrics(para, self.dpi, styles, para_style)
+                {
+                    pairs.push(metric);
+                }
+            }
             pairs.into_iter().unzip()
         } else if !para.line_segs.is_empty() {
             // 누름틀(ClickHere) 안내문이 LINE_SEG에 포함되면 줄 수가 실제보다 많음
@@ -2807,7 +2860,16 @@ impl HeightMeasurer {
                                     // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
                                     // (anchor 사다리: row = nested+pad 정확).
                                     // 중첩 몫은 cell_controls_height 가산이 전담.
-                                    0.0
+                                    // [#7418] 단 칸의 마지막 문단이 아니면 그 줄 뒤
+                                    // 줄간격은 남는다(`no_ls_tac_table_host_trailing_spacing_px`).
+                                    if is_last_para {
+                                        0.0
+                                    } else {
+                                        no_ls_tac_table_host_trailing_spacing_px(
+                                            p, styles, self.dpi,
+                                        )
+                                        .unwrap_or(0.0)
+                                    }
                                 } else if crate::renderer::para_has_no_stored_line_segs(p)
                                     && p.controls
                                         .iter()
@@ -3794,7 +3856,16 @@ impl HeightMeasurer {
                                     // [#2169] TAC 중첩 표 anchor 빈 문단 몫 = 0
                                     // (anchor 사다리: row = nested+pad 정확).
                                     // 중첩 몫은 cell_controls_height 가산이 전담.
-                                    0.0
+                                    // [#7418] 단 칸의 마지막 문단이 아니면 그 줄 뒤
+                                    // 줄간격은 남는다(`no_ls_tac_table_host_trailing_spacing_px`).
+                                    if is_last_para {
+                                        0.0
+                                    } else {
+                                        no_ls_tac_table_host_trailing_spacing_px(
+                                            p, styles, self.dpi,
+                                        )
+                                        .unwrap_or(0.0)
+                                    }
                                 } else if crate::renderer::para_has_no_stored_line_segs(p)
                                     && p.controls
                                         .iter()
@@ -4269,7 +4340,16 @@ impl HeightMeasurer {
                 // [#2195] stale-min(x0.5) 한정을 일반 발동으로 완화 — 한글은 콘텐츠가
                 // 선언보다 작아도 표 선언높이를 유지한다 (80168 pi=419). #2070 당시 전면
                 // 발동의 163쪽 폭발은 타 축 미정합 상태의 결과.
-                declared_rows_sum < common_h * 0.5 || raw_table_height + 0.5 < common_h
+                //
+                // [#7418] 단, 칸 선언(cellSz)이 **모든 행을 이미 담고 있으면**(내용이 어느 행도
+                // 키우지 않았으면) 칸 선언이 권위다 — 표 선언은 낡은 값이다. `70833`(전기안전관리법
+                // 규제영향분석서) `pi=79` 는 칸 선언 행합 159.2px 가 내용을 담고 표 선언만 823.8px 인데,
+                // 한/글 2020 정본의 괘선은 34.8·31.2·31.0·31.0·31.0px(합 159px)로 칸 선언 그대로다.
+                // 80168 `pi=354` 는 칸 선언이 284HU 로 내용보다 작아(행이 내용으로 자람) 종전대로
+                // 표 선언을 따른다.
+                let content_grew_rows = raw_table_height > declared_rows_sum + 0.5;
+                content_grew_rows
+                    && (declared_rows_sum < common_h * 0.5 || raw_table_height + 0.5 < common_h)
             }
         {
             // [#2070] 비-TAC 표는 선언 표높이(size.height)가 최소 높이다 — 한글은
@@ -4521,15 +4601,18 @@ impl HeightMeasurer {
                 // "가장 큰 중첩 표 하나"로 축소되고 텍스트 줄높이를 통째로 가린다.
                 // 그 경우 줄높이 누적합 + 미흡수 중첩 표 합으로 가산한다.
                 //
-                // NO_LS 셀(저장 lineseg 자체가 없음)은 기존 max 경로를 유지한다 —
-                // #2148 캘리브레이션 대상이고 사다리 유무를 논할 저장분이 없다.
                 let all_no_ls = cell
                     .paragraphs
                     .iter()
                     .all(crate::renderer::para_has_no_stored_line_segs);
                 let ladder_collapsed =
                     !all_no_ls && !crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs);
-                mc.total_content_height = if ladder_collapsed {
+                // [#7418] NO_LS 셀도 가산이다 — 행 높이(`content_height`, #2148)가 이미
+                // `cell_all_no_ls` 를 가산 경로로 보낸다. 여기만 max 로 남아 있어 같은 칸의
+                // 내용 높이가 둘이었다. 70833 pi=83 5행: 행은 글 248.0 + 중첩 표 128.4 로
+                // 재는데 이 값은 248.0 이라, 선언 높이 축소(`fit_measured_table_to_declared_height`)
+                // 의 "글줄을 자르면 건너뛴다"(#5879) 가드가 376.4 → 371.5 축소를 못 막았다.
+                mc.total_content_height = if ladder_collapsed || all_no_ls {
                     mc.total_content_height
                         + self.unabsorbed_nested_tables_height(&cell.paragraphs, styles, depth)
                 } else {

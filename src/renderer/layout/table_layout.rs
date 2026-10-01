@@ -4976,6 +4976,7 @@ impl LayoutEngine {
         pad_left: f64,
         pad_right: f64,
         cell_w: f64,
+        inner_height_px: f64,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
@@ -4989,6 +4990,7 @@ impl LayoutEngine {
             pad_left,
             pad_right,
             cell_w,
+            inner_height_px,
             composed_paras,
             paragraphs,
             styles,
@@ -5439,7 +5441,16 @@ impl LayoutEngine {
                 {
                     anchor_y
                 } else {
-                    y_start
+                    // [#7418] 바로 앞이 이 표의 host 글 조각이면 바닥은 그 글의 **내용 바닥**
+                    // 이다. `y_start` 는 host 마지막 줄의 줄간격까지 지난 흐름 y 라, 문단 기준
+                    // 오프셋이 그 줄간격 띠 안을 가리키는 표를 띠 아래로 밀었다. 한/글은 띠
+                    // 안에 둔다 — 78494 9쪽 pi=90: host 공백 줄 175.9..195.9(줄간격 12px 로
+                    // 흐름 207.9), 표 위끝 한/글 199.3 = 문단 상단 175.9 + 오프셋 21.65 + 1.9.
+                    // 다른 앞 항목(앞 문단·같은 문단의 앞 표)은 값이 없어 종전대로 `y_start`.
+                    self.table_push_floor
+                        .get()
+                        .filter(|floor| *floor < y_start)
+                        .unwrap_or(y_start)
                 };
                 let pushed =
                     if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom) {
@@ -7806,6 +7817,18 @@ impl LayoutEngine {
             if rendered_top_and_bottom_non_inline {
                 para_y += self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
             }
+            // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다
+            // (`no_ls_tac_table_host_trailing_spacing_px`, 측정·조각 배치와 같은 값).
+            // 칸의 마지막 문단은 뒤에 이을 줄이 없어 더하지 않는다.
+            if cp_idx + 1 < cell.paragraphs.len() {
+                if let Some(spacing) =
+                    crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                        para, styles, self.dpi,
+                    )
+                {
+                    para_y += spacing;
+                }
+            }
             if let Some(bottom) = tac_flow_bottom {
                 para_y = para_y.max(bottom);
             }
@@ -8230,6 +8253,7 @@ impl LayoutEngine {
                 pad_left,
                 pad_right,
                 cell_w,
+                (cell_h - pad_top - pad_bottom).max(0.0),
                 &composed_paras,
                 &cell.paragraphs,
                 styles,
@@ -8405,7 +8429,52 @@ impl LayoutEngine {
                 );
                 let wrap_object_bottom =
                     self.calc_cell_wrap_objects_bottom_height(&cell.paragraphs);
+                // [#7418] 저장 줄이 하나도 없는 칸의 중첩 표는 글과 **차례로 쌓인다** —
+                // 측정(`height_measurer` 의 NO_LS 가산, #2148)이 행 높이를 그렇게 재고, 배치도
+                // 글 → 표 → 글 순으로 놓는다. 위 세 후보는 그 합을 모른다: composed 는 표를
+                // 빼고(#1658), vpos 는 저장 줄이 없어 0, nested_bottom 은 host 위치가 저장
+                // vpos 라 0 에서 잰다. 70833 pi=83 5행은 그래서 글 253.3 을 내용으로 잡고
+                // (칸 367 − 253.3)/2 = 56.8px 내려 그렸다 — 실제 내용은 칸을 채운다.
+                let no_ls_nested_flow = if cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+                {
+                    let nested_sum: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .flat_map(|p| p.controls.iter())
+                        .filter_map(|ctrl| match ctrl {
+                            Control::Table(t) => Some(
+                                self.calc_nested_table_height(t, styles)
+                                    .max(hwpunit_to_px(t.common.height as i32, self.dpi))
+                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
+                            ),
+                            _ => None,
+                        })
+                        .sum();
+                    // TAC 표 host 줄 뒤 줄간격(칸 마지막 문단 제외) — 측정과 같은 몫.
+                    let host_lines: f64 = cell
+                        .paragraphs
+                        .iter()
+                        .take(cell.paragraphs.len().saturating_sub(1))
+                        .filter_map(|p| {
+                            crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                p, styles, self.dpi,
+                            )
+                        })
+                        .sum();
+                    if nested_sum > 0.0 {
+                        composed_height + nested_sum + host_lines
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
                 composed_height
+                    .max(no_ls_nested_flow)
                     .max(vpos_height)
                     .max(nested_bottom)
                     .max(wrap_object_bottom)
@@ -11610,8 +11679,20 @@ impl LayoutEngine {
                             let row_is_auto_height = !row_cells.is_empty()
                                 && (row_cells.iter().all(|cell| cell.height == 0)
                                     || (declared_is_stub && *rh > row_declared_px + 0.5));
+                            // [#7418] 행을 대표하는 칸의 내용이 **또 하나의 중첩 표**(유닛이 모두
+                            // 그 표의 행)이면 선언 높이가 실제 값이어도 그 표의 행 경계에서 끊는다.
+                            // `70833` 조문대비표는 2×2 → 7×1 → 12×3 의 세 단 RowBreak 표다. 한/글
+                            // 2020 정본 4쪽은 7×1 의 행 3(선언 479px, 12×3 표 하나) 안에서 12×3 의
+                            // 행 경계로 끊어 쪽을 채운다. 행 3 을 원자로 두면 4쪽이 443.6px 에서
+                            // 끝나 조문대비표가 한 쪽 늘어난다. 안쪽 표도 RowBreak 라 행 단위
+                            // 분할이 그 표의 계약이다.
+                            let driver_is_nested_table_rows = driver.is_some_and(|driver_index| {
+                                let units = &row_units[driver_index];
+                                !units.is_empty()
+                                    && units.iter().all(|unit| unit.nested_row.is_some())
+                            });
                             if let Some(driver_index) = driver.filter(|driver_index| {
-                                row_is_auto_height
+                                (row_is_auto_height || driver_is_nested_table_rows)
                                     && !row_has_crossing_span
                                     && row_units[*driver_index].len() > 1
                             }) {
@@ -11882,6 +11963,19 @@ impl LayoutEngine {
                                     if charge {
                                         uh += hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
                                     }
+                                }
+                            }
+                            // [#7418] 저장 줄이 없는 host 는 증명할 사다리가 없다 — 그 줄의
+                            // 줄간격을 글자 크기로 잰 값을 계상한다(측정 행 높이·조각 배치와
+                            // 같은 `no_ls_tac_table_host_trailing_spacing_px`). 칸의 마지막
+                            // 문단이면 뒤에 이을 줄이 없어 더하지 않는다.
+                            if pi + 1 < cell.paragraphs.len() {
+                                if let Some(spacing) =
+                                    crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                        p, styles, self.dpi,
+                                    )
+                                {
+                                    uh += spacing;
                                 }
                             }
                         }
@@ -18462,10 +18556,13 @@ mod row_cut_tests {
         let composed = vec![composed_text("12345678901234567890")];
         let paragraphs = vec![Paragraph::default()];
 
+        // [#7413] 칸 안쪽 높이. 0.0 은 "높이를 모른다"는 뜻이라 높이 판정을 건너뛰고
+        // 종전 동작(폭만 보고 축소)을 그대로 검사한다.
         let shrunk = eng.shrink_cell_padding_for_overflow(
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,
@@ -18481,6 +18578,7 @@ mod row_cut_tests {
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,
@@ -18499,6 +18597,7 @@ mod row_cut_tests {
             20.0,
             20.0,
             30.0,
+            0.0,
             &composed,
             &paragraphs,
             &styles,

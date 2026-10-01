@@ -111,6 +111,8 @@ struct PartialTableHostContext<'a> {
     control_index: usize,
     repeat_fragment_outer_margin: bool,
     pre_emitted_host_height: f64,
+    /// [#7418] 같은 host 글의 내용 높이(마지막 줄간격 제외). 없으면 `pre_emitted_host_height`.
+    pre_emitted_host_content_height: f64,
     host_line_spacing: f64,
     resolved_table_top: Option<f64>,
 }
@@ -1331,15 +1333,30 @@ impl LayoutEngine {
                     .map(|p| crate::renderer::composer::compose_paragraph_in_context(p, styles))
                     .collect();
 
+                // [#7080] **쪽 경계에 걸친 칸은 여백을 보존한다.**
+                //
+                // 이 경로의 `cell_h` 는 칸 전체 높이가 아니라 **이 조각의 높이**다. 그래서
+                // #7413 의 높이 판정("줄바꿈한 결과가 칸 높이를 넘는가")에 조각 높이가
+                // 들어가면, 쪽을 넘는 긴 칸은 어느 조각에서도 줄바꿈 결과가 그 조각 높이를
+                // 넘으므로 **늘 "넘친다"** 로 판정돼 여백이 1px 까지 깎인다(80168 75쪽:
+                // 23734 → 23866). 반면 컷을 정하는 측정(`cell_units_uncached`)은 원 패딩으로
+                // 재므로 측정과 배치가 서로 다른 폭을 쓴다(AGENTS.md "측정과 배치의 공통 결과").
+                //
+                // 조각 높이로는 이 판정을 할 수 없으니 여기서는 깎지 않는다. 칸 전체 높이를
+                // 아는 경로(`table_layout.rs`·`table_cell_content.rs`)의 판정은 그대로다.
+                let fragment_cell =
+                    is_in_split_row || straddles_fragment_start || straddles_fragment_end;
+
                 // 텍스트 오버플로우 시 좌우 패딩 축소
                 let (new_pl, new_pr) = self.shrink_cell_padding_for_overflow(
                     pad_left,
                     pad_right,
                     cell_w,
+                    (cell_h - pad_top - pad_bottom).max(0.0),
                     &composed_paras,
                     &cell.paragraphs,
                     styles,
-                    cell.apply_inner_margin,
+                    cell.apply_inner_margin || fragment_cell,
                     cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 );
                 pad_left = new_pl;
@@ -2491,6 +2508,15 @@ impl LayoutEngine {
                     let split_cell_tac_flow = cut_units.is_some();
                     let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
+                    // [#7418] 이 조각이 중첩 표를 **끝까지** 그렸나 — host 줄간격은 표 뒤에만 선다.
+                    let nested_row_count = para.controls.iter().find_map(|c| match c {
+                        Control::Table(t) => Some(t.row_count as usize),
+                        _ => None,
+                    });
+                    let mut nested_table_continues = nested_cursor_split.is_some()
+                        || nested_cut_rows
+                            .zip(nested_row_count)
+                            .is_some_and(|((_, end), rows)| end < rows);
 
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                         match ctrl {
@@ -3526,6 +3552,12 @@ impl LayoutEngine {
                                             || s.offset_within_start > 0.5
                                             || s.visible_height + 0.5 < nested_h
                                     });
+                                    if split_ref.is_some_and(|s| {
+                                        s.end_row < nested_table.row_count as usize
+                                            || s.visible_height + 0.5 < nested_h
+                                    }) {
+                                        nested_table_continues = true;
+                                    }
 
                                     let nested_ctx = cell_context_opt.as_ref().map(|ctx| {
                                         let mut new_ctx = ctx.clone();
@@ -3571,6 +3603,7 @@ impl LayoutEngine {
                                                 control_index: 0,
                                                 repeat_fragment_outer_margin: false,
                                                 pre_emitted_host_height: 0.0,
+                                                pre_emitted_host_content_height: 0.0,
                                                 host_line_spacing: 0.0,
                                                 resolved_table_top: None,
                                             },
@@ -3660,6 +3693,28 @@ impl LayoutEngine {
                     if rendered_top_and_bottom_non_inline {
                         para_y +=
                             self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                    }
+                    // [#7418] 저장 줄 없는 빈 host 의 TAC 표 줄 뒤에는 그 줄의 줄간격이 붙는다 —
+                    // 측정(`no_ls_tac_table_host_trailing_spacing_px`)이 행 높이에 넣은 몫이다.
+                    // 중첩 표가 이 조각에서 끝나지 않으면(쪽을 넘어 이어짐) 그 뒤 줄간격은
+                    // 이 조각에 없다 — tac_object_host_line_height 2쪽: 3×3 표가 쪽 바닥까지
+                    // 이어지는데 줄간격을 더해 칸 가운데 정렬이 6px 어긋났다.
+                    // 줄간격은 **뒤에 이을 줄**이 이 조각에 있을 때만 공간을 쓴다 — 칸의
+                    // 마지막 문단이거나 다음 문단이 다음 조각으로 가면 조각 끝의 말미다.
+                    let next_para_in_fragment = match line_ranges.as_ref() {
+                        Some(ranges) => ranges
+                            .get(cp_idx + 1)
+                            .is_some_and(|&(start, end)| start < end),
+                        None => cp_idx + 1 < cell.paragraphs.len(),
+                    };
+                    if next_para_in_fragment && !nested_table_continues {
+                        if let Some(spacing) =
+                            crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                para, styles, self.dpi,
+                            )
+                        {
+                            para_y += spacing;
+                        }
                     }
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
@@ -3934,6 +3989,12 @@ impl LayoutEngine {
             .get(&para_index)
             .copied()
             .unwrap_or(0.0);
+        let pre_emitted_host_content_height = self
+            .pre_emitted_host_content_heights
+            .borrow()
+            .get(&para_index)
+            .copied()
+            .unwrap_or(pre_emitted_host_height);
         let host_line_spacing = para
             .line_segs
             .first()
@@ -3950,6 +4011,7 @@ impl LayoutEngine {
                 control_index,
                 repeat_fragment_outer_margin,
                 pre_emitted_host_height,
+                pre_emitted_host_content_height,
                 host_line_spacing,
                 resolved_table_top,
             },
@@ -4020,6 +4082,7 @@ impl LayoutEngine {
             control_index,
             repeat_fragment_outer_margin,
             pre_emitted_host_height,
+            pre_emitted_host_content_height,
             host_line_spacing,
             resolved_table_top,
         } = host;
@@ -4121,7 +4184,13 @@ impl LayoutEngine {
             // (부동 RowBreak 표 91.2px 오버플로우). 표의 참 상단 = para_start+vert_off =
             // y_start+(vert_off−host_h). typeset 예산도 동일 감액을 적용한다.
             // host pre-emit 이 아니면 host_h=0 → 종전과 동일(회귀 없음).
-            (hwpunit_to_px(vert_off_signed, self.dpi) - pre_emitted_host_height).max(0.0)
+            //
+            // [#7418] 바닥은 host 글의 **내용** 끝이다 — 표는 host 마지막 줄의 줄간격 띠 안까지
+            // 올라온다(표 위끝 = 문단 상단 + max(오프셋, host 내용 높이)). 70833 pi=83: host 줄
+            // 20 + 줄간격 12, 오프셋 23.8 → 표는 host 끝(32)이 아니라 23.8 에 선다(한/글 정본).
+            hwpunit_to_px(vert_off_signed, self.dpi)
+                .max(pre_emitted_host_content_height.min(pre_emitted_host_height))
+                - pre_emitted_host_height
         } else {
             0.0
         };

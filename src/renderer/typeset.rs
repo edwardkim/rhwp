@@ -5207,7 +5207,13 @@ impl TypesetEngine {
         st.advance_flow_by(host_h);
         st.mark_pre_emitted_host(para_idx);
         // [#2015] vert_offset 이중계상 보정용 host 높이 기록.
-        st.record_pre_emitted_host_height(para_idx, host_h);
+        let host_trailing_spacing = host_fmt
+            .line_spacings
+            .last()
+            .copied()
+            .unwrap_or(0.0)
+            .max(0.0);
+        st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
         true
     }
 

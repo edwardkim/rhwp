@@ -480,6 +480,12 @@ impl DocumentCore {
             .canvas_metrics
             .as_ref()
             .and_then(canvas_metrics::CanvasMetricSession::active_snapshot);
+        // [#7436] 번호 문자열은 문단 모양·번호 정의에서 정해지므로 스타일과 함께 다시 계산한다.
+        // 문서를 열 때의 재조판(저장 줄 없는 문단)도 번호 폭을 알고 줄을 나눈다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.

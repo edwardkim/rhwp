@@ -27,7 +27,7 @@ use super::utils::{
 use super::{CellContext, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
-use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::paragraph::{LineSeg, MarkerHead, NumberingMarker, Paragraph};
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap,
     VertRelTo,
@@ -554,6 +554,311 @@ fn inline_table_stored_line_top_offset_px(
         return None;
     }
     (delta > 0).then(|| hwpunit_to_px(delta, dpi))
+}
+
+/// 글머리표 문단의 마커 문자열. 없거나 그릴 수 없으면 `None`.
+fn bullet_marker_text(
+    para_style: &crate::renderer::style_resolver::ResolvedParaStyle,
+    styles: &ResolvedStyleSet,
+) -> Option<(String, MarkerHead)> {
+    if para_style.head_type != HeadType::Bullet {
+        return None;
+    }
+    // Bullet: numbering_id(1-based)로 Bullet 참조
+    let bullet_id = para_style.numbering_id;
+    if bullet_id == 0 {
+        return None;
+    }
+    let bullet = styles.bullets.get((bullet_id - 1) as usize)?;
+    // U+FFFF는 이미지 글머리표 표시자 — 문자 렌더링 불가, 건너뜀
+    if bullet.bullet_char == '\u{FFFF}' {
+        return None;
+    }
+    // PUA 문자(0xF000~0xF0FF)를 표준 Unicode로 매핑
+    // HWP는 Symbol 폰트 문자를 PUA(0xF000+code)로 저장
+    let bullet_ch = match map_pua_bullet_char(bullet.bullet_char) {
+        // [#7418] 글머리표 자리의 soft hyphen(U+00AD)은 한/글이 반각 하이픈으로 그린다
+        // (`footnote-01-hwp-2020.pdf` 1쪽: 마커 8673 → 본문 10079, 14pt 에서 마커+공백
+        // 1406 HWPUNIT). 본문의 soft hyphen 은 보이지 않아야 하므로 `map_pua_bullet_char`
+        // 가 아니라 글머리표 문자열에서만 바꾼다. 종전에는 보이지 않는 1em 글자로 재어
+        // 본문이 694 HWPUNIT 늦게 시작했다.
+        '\u{00AD}' => '-',
+        other => other,
+    };
+    // 본문과의 거리는 문자열이 아니라 마커 영역([`list_marker_geometry`])이 정한다.
+    Some((
+        bullet_ch.to_string(),
+        MarkerHead {
+            attr: bullet.attr,
+            width_adjust: bullet.width_adjust,
+            text_distance: bullet.text_distance,
+            char_shape_id: bullet.char_shape_id,
+        },
+    ))
+}
+
+/// 번호·개요 문단의 번호 문자열과 그 수준의 문단 머리 속성. 계수기를 한 칸 진행한다.
+///
+/// 배치의 계수기 경로와 문서 순서 사전 계산([`assign_numbering_markers`])이 같은 규칙을
+/// 쓰도록 한 곳에 둔다.
+pub(crate) fn numbering_head_text(
+    para: &Paragraph,
+    para_style: &crate::renderer::style_resolver::ResolvedParaStyle,
+    styles: &ResolvedStyleSet,
+    outline_numbering_id: u16,
+    state: &mut super::NumberingState,
+) -> Option<(String, MarkerHead)> {
+    let numbering_id = resolve_numbering_id(
+        para_style.head_type,
+        para_style.numbering_id,
+        outline_numbering_id,
+    );
+    let level = para_style.para_level;
+    // [#3307] 개요 문단이 유효한 정의에 도달하지 못하면 한컴 내장
+    // 기본 모양(전 수준 ^N)으로 fallback 한다. NUMBER 는 불변 —
+    // 정의 없는 NUMBER 는 종전대로 번호를 그리지 않는다.
+    let synthesized_default;
+    let numbering = match numbering_id
+        .checked_sub(1)
+        .and_then(|i| styles.numberings.get(i as usize))
+    {
+        Some(n) => n,
+        None if para_style.head_type == HeadType::Outline => {
+            synthesized_default = crate::renderer::layout::utils::default_outline_numbering();
+            &synthesized_default
+        }
+        None => return None,
+    };
+
+    let counters = state.advance(numbering_id, level, para.numbering_restart);
+    let start_numbers = numbering.level_start_numbers;
+
+    let level_idx = (level as usize).min(6);
+    let format_str = &numbering.level_formats[level_idx];
+    if format_str.is_empty() {
+        return None;
+    }
+
+    let text = expand_numbering_format(format_str, &counters, numbering, &start_numbers, level_idx);
+    if text.is_empty() {
+        return None;
+    }
+    let head = numbering.heads.get(level_idx).copied().unwrap_or_default();
+    Some((
+        text,
+        MarkerHead {
+            attr: head.attr,
+            width_adjust: head.width_adjust,
+            text_distance: head.text_distance,
+            char_shape_id: head.char_shape_id,
+        },
+    ))
+}
+
+/// [#7436] 번호·개요 문단의 번호 문자열을 **문서 순서로 한 번** 계산해 문단에 둔다.
+///
+/// 줄 나눔은 문단 하나만 보고 줄을 채우므로 계수기를 가질 수 없다. 쪽 나누기 전에 여기서
+/// 번호를 정해 두면 줄 나눔(마커 폭)과 배치(그리는 번호)가 같은 문자열을 쓴다.
+///
+/// 순서는 구역 → 문단 → 그 문단의 표 칸 문단(재귀)이다. 계수기는 구역을 넘어 이어진다
+/// (배치의 쪽별 재생과 같은 연속). 빈 기본 표 앵커 문단은 배치가 계수기를 진행하지 않으므로
+/// 여기서도 건너뛴다.
+pub(crate) fn assign_numbering_markers(
+    sections: &mut [crate::model::document::Section],
+    styles: &ResolvedStyleSet,
+) {
+    fn visit(
+        para: &mut Paragraph,
+        styles: &ResolvedStyleSet,
+        outline_numbering_id: u16,
+        state: &mut super::NumberingState,
+    ) {
+        para.numbering_marker = match styles.para_styles.get(para.para_shape_id as usize) {
+            Some(style)
+                if matches!(style.head_type, HeadType::Number | HeadType::Outline)
+                    && !super::para_is_empty_topbottom_table_anchor(para) =>
+            {
+                match numbering_head_text(para, style, styles, outline_numbering_id, state) {
+                    Some((text, head)) => NumberingMarker::Text(text, head),
+                    None => NumberingMarker::Absent,
+                }
+            }
+            _ => NumberingMarker::Absent,
+        };
+        for control in &mut para.controls {
+            if let Control::Table(table) = control {
+                for cell in &mut table.cells {
+                    for cell_para in &mut cell.paragraphs {
+                        visit(cell_para, styles, outline_numbering_id, state);
+                    }
+                }
+            }
+        }
+    }
+    let mut state = super::NumberingState::default();
+    for section in sections {
+        let outline_numbering_id = section.section_def.outline_numbering_id;
+        for para in &mut section.paragraphs {
+            visit(para, styles, outline_numbering_id, &mut state);
+        }
+    }
+}
+
+/// [#7418] 목록 마커(글머리표·번호)가 문단 줄 상자에 더하는 기하(px).
+///
+/// 한/글은 마커 뒤에서 본문을 시작한다. 마커 **영역**은 마커 글자 폭 + 너비 보정 + 본문과의
+/// 거리(글자 크기의 % 또는 HWPUNIT)이고, 자동 내어쓰기가 켜져 있으면 이어지는 줄도 첫 줄
+/// 본문을 기준으로 내어 쓴다. 한/글 2024 합성 문서(글머리표 43조합: 너비 보정 −1000~3000,
+/// 거리 0·50·100%, 들여쓰기 −1200·0·1000, 자동 내어쓰기 0/1, 정렬 셋)의 본문 시작을
+/// 모두 재현한 규칙이다. 문단 왼쪽 여백 기준으로
+///
+/// | | 첫 줄 본문 | 이어지는 줄 |
+/// |---|---|---|
+/// | 자동 내어쓰기 | `max(영역, max(들여쓰기,0))` | 첫 줄 − 들여쓰기 |
+/// | 끔 | `max(들여쓰기,0) + 영역` | `max(−들여쓰기,0)` |
+///
+/// 마커는 첫 줄 본문 바로 앞 영역에 그리고, 가운데·오른쪽 정렬은 영역 안에서 글자 위치만 바꾼다.
+/// 영역이 마커 글자보다 좁으면 글자가 본문과 겹친 채 그리고, 영역이 0 이하면 그리지 않는다
+/// (같은 합성 문서의 한/글 PDF: 보정 −1000·거리 50% 는 겹쳐 그리고, 보정 −1000·거리 0% 는 없다).
+///
+/// 값은 문단 들여쓰기가 이미 준 줄 시작(`paragraph_line_indent`) **위에** 얹는 양이다.
+/// 줄 나눔(`layout_paragraph_in_frame`·`reflow_line_segs`)과 배치
+/// (`layout_composed_paragraph_in_frame`)가 이 값 하나를 쓴다. 스타일은 배치의 마커 스타일
+/// (`numbering_marker_text_style`, 첫 run)과 같은 입력 — 첫 글자의 글자 모양과 언어 — 이다.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct ListMarkerGeometry {
+    /// 첫 줄 시작에 더하는 양.
+    pub first_line_px: f64,
+    /// 이어지는 줄 시작에 더하는 양.
+    pub rest_line_px: f64,
+    /// 마커 글자의 x — 첫 줄 본문 시작 기준(보통 음수).
+    pub marker_dx_px: f64,
+    /// 영역이 있어 마커를 그린다.
+    pub marker_visible: bool,
+}
+
+impl ListMarkerGeometry {
+    pub(crate) fn line_px(&self, visual_line_idx: usize) -> f64 {
+        if visual_line_idx == 0 {
+            self.first_line_px
+        } else {
+            self.rest_line_px
+        }
+    }
+
+    /// 줄 나눔용 상자: `(가용폭에서 뺄 양, 합성 들여쓰기)`.
+    ///
+    /// 줄 채움은 첫 줄에서 `max(들여쓰기,0)`, 이어지는 줄에서 `max(−들여쓰기,0)` 을 뺀다.
+    /// 마커를 얹은 두 차감(첫 줄 R1, 이어지는 줄 R2)을 같은 규칙으로 나타내려면
+    /// `min(R1,R2)` 를 가용폭에서 빼고 `R1 − R2` 를 들여쓰기로 준다.
+    pub(crate) fn breaker_box(&self, indent_px: f64) -> (f64, f64) {
+        let first = indent_px.max(0.0) + self.first_line_px;
+        let rest = (-indent_px).max(0.0) + self.rest_line_px;
+        (first.min(rest), first - rest)
+    }
+}
+
+/// 문단의 목록 마커 기하. 글머리표는 문단 모양만으로, 번호·개요는 문서 순서로 미리 계산한
+/// 번호(#7436, [`assign_numbering_markers`])로 문자열을 정한다. 아직 계산하지 않은 번호
+/// 문단은 폭을 모르므로 `None` 이다.
+pub(crate) fn list_marker_geometry(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> Option<ListMarkerGeometry> {
+    let para_style = styles.para_styles.get(para.para_shape_id as usize)?;
+    let (text, head) = match para_style.head_type {
+        HeadType::Bullet => bullet_marker_text(para_style, styles)?,
+        HeadType::Number | HeadType::Outline => match &para.numbering_marker {
+            NumberingMarker::Text(text, head) => (text.clone(), *head),
+            _ => return None,
+        },
+        HeadType::None => return None,
+    };
+    let char_shape_id = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
+        .unwrap_or(0);
+    let lang = para
+        .text
+        .chars()
+        .next()
+        .map(crate::renderer::style_resolver::detect_lang_category)
+        .unwrap_or(0);
+    let style = marker_char_style(styles, head, &text)
+        .unwrap_or_else(|| resolved_to_text_style(styles, char_shape_id, lang));
+    Some(list_marker_geometry_for(
+        &text,
+        head,
+        &style,
+        para_style.indent,
+        para_style.head_type == HeadType::Bullet,
+    ))
+}
+
+/// 머리 모양이 글자 모양을 직접 참조하면 마커는 그 글자 모양으로 재고 그린다.
+///
+/// `pr-1674.hwp` 글머리표 1(Wingdings `U+F06C`, 글자 모양 26 = 10pt, 거리 30%)의 문단 본문은
+/// 14pt 다. 한/글 2024 PDF 12쪽의 마커는 9.96pt 로 그려지고 영역은 1296 HWPUNIT
+/// (= 1000 + 30% × 1000)이다 — 본문 글자 모양으로 재면 1820 이 되어 한 줄 문단이 두 줄로 넘친다.
+/// `u32::MAX` 는 참조 없음이다. 0 도 참조 없음으로 본다 — 편집기·HWP3 가 만드는 기본 머리 모양이
+/// 글자 모양 필드를 0 으로 두며, 문서의 0번 글자 모양은 본문 기본 모양이라 첫 글자 모양과 같은 자리다.
+fn marker_char_style(styles: &ResolvedStyleSet, head: MarkerHead, text: &str) -> Option<TextStyle> {
+    let id = head.char_shape_id;
+    if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
+        return None;
+    }
+    let lang = text
+        .chars()
+        .next()
+        .map(crate::renderer::style_resolver::detect_lang_category)
+        .unwrap_or(0);
+    Some(resolved_to_text_style(styles, id, lang))
+}
+
+fn list_marker_geometry_for(
+    text: &str,
+    head: MarkerHead,
+    style: &TextStyle,
+    indent_px: f64,
+    bullet: bool,
+) -> ListMarkerGeometry {
+    let hu = |v: i16| hwpunit_to_px(v as i32, crate::renderer::DEFAULT_DPI);
+    // 한/글은 ASCII 가 아닌 글머리표 글자를 글자 크기 1em 칸으로 잰다 — 글꼴에 없는 `❍`
+    // (맑은 고딕 10pt, 대체 글꼴 폭 0.97em → 한/글 1000), Wingdings `U+F09F`(글리프 폭
+    // 0.46em → 12pt 에서 한/글 영역 792 = 1200 − 1000 + 600, `chemical-labeling` 54쪽).
+    // ASCII 글머리표(`-`)는 글자 폭 그대로다(`footnote-01` 14pt 반각 706).
+    let glyph_px = if bullet && !text.is_ascii() {
+        style.font_size * text.chars().count() as f64
+    } else {
+        estimate_text_width(text, style)
+    };
+    let distance_px = if head.attr & (1 << 4) != 0 {
+        hu(head.text_distance)
+    } else {
+        style.font_size * head.text_distance as f64 / 100.0
+    };
+    let area_px = (glyph_px + hu(head.width_adjust) + distance_px).max(0.0);
+    let (first_line_px, rest_line_px) = if head.attr & (1 << 3) != 0 {
+        // 첫 줄 본문 = max(영역, 들여쓰기⁺), 이어지는 줄 = 첫 줄 − 들여쓰기.
+        // 문단 들여쓰기가 준 시작 위에 얹는 양은 두 줄이 같다.
+        let extra = (area_px - indent_px.max(0.0)).max(0.0);
+        (extra, extra)
+    } else {
+        (area_px, 0.0)
+    };
+    // 가운데·오른쪽 정렬은 영역에서 본문과의 거리를 뺀 칸 안에서 글자를 옮긴다.
+    let cell_px = area_px - distance_px;
+    let align_dx = match head.attr & 0x03 {
+        1 => ((cell_px - glyph_px) / 2.0).max(0.0),
+        2 => (cell_px - glyph_px).max(0.0),
+        _ => 0.0,
+    };
+    ListMarkerGeometry {
+        first_line_px,
+        rest_line_px,
+        marker_dx_px: align_dx - area_px,
+        marker_visible: area_px > 0.0,
+    }
 }
 
 fn paragraph_active_text_style(
@@ -4405,21 +4710,36 @@ impl LayoutEngine {
             .get(start_line..end)
             .map_or(true, |slice| slice.iter().all(|l| l.runs.is_empty()));
 
-        // 개요 번호/글머리표 마커 폭 사전 계산 (첫 줄 가용폭 차감용)
-        let numbering_width = if start_line == 0 {
-            if let Some(ref num_text) = composed.numbering_text {
-                let num_style = numbering_marker_text_style(
-                    styles,
-                    para,
-                    composed.lines.first().and_then(|l| l.runs.first()),
-                );
-                estimate_text_width(num_text, &num_style)
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
+        // [#7418] 개요 번호/글머리표 마커 기하 — 줄 나눔과 같은 정의
+        // ([`list_marker_geometry`])를 쓴다. 쪽을 넘어 이어지는 조각도 이어지는 줄의
+        // 시작을 같은 양만큼 옮긴다(마커는 문단 첫 줄에만 그린다).
+        let marker_geometry = composed.numbering_text.as_ref().map(|(num_text, head)| {
+            para.and_then(|p| list_marker_geometry(p, styles))
+                .unwrap_or_else(|| {
+                    let num_style =
+                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
+                            numbering_marker_text_style(
+                                styles,
+                                para,
+                                composed.lines.first().and_then(|l| l.runs.first()),
+                            )
+                        });
+                    let bullet = styles
+                        .para_styles
+                        .get(composed.para_style_id as usize)
+                        .is_some_and(|ps| ps.head_type == HeadType::Bullet);
+                    list_marker_geometry_for(num_text, *head, &num_style, indent, bullet)
+                })
+        });
+        // 이어지는 조각은 번호를 다시 붙이지 않는다(카운터를 두 번 전진시키지 않으려고
+        // `apply_paragraph_numbering` 을 첫 조각에서만 부른다). 그래도 마커 영역은 문단의
+        // 속성이다 — 없으면 이어지는 줄이 영역만큼 왼쪽으로 붙는다(70833 pi=83 6행: 13쪽의
+        // 이어진 두 줄이 한/글 266.7 대신 246.8). 마커는 첫 줄에만 그리므로 그리기는 불변.
+        let marker_geometry = marker_geometry.or_else(|| {
+            (start_line > 0)
+                .then(|| para.and_then(|p| list_marker_geometry(p, styles)))
+                .flatten()
+        });
 
         // 배경/테두리 렌더링을 위한 시작 위치 기록
         // 문단 경계 = 이전 문단 끝 = y_start (spacing_before 적용 전)
@@ -5483,12 +5803,9 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            // 번호/글머리표 마커: 모든 줄에서 마커 폭만큼 가용폭 차감 (행잉 인덴트)
-            let num_offset = if numbering_width > 0.0 {
-                numbering_width
-            } else {
-                0.0
-            };
+            // 번호/글머리표 마커: 줄마다 마커 기하가 정한 양만큼 본문 시작을 옮기고
+            // 가용폭을 줄인다 (행잉·자동 내어쓰기).
+            let num_offset = marker_geometry.map_or(0.0, |g| g.line_px(line_idx));
             let available_width = line_avail_w_override
                 .map(|w| w - inline_offset - num_offset)
                 .unwrap_or(
@@ -5883,12 +6200,7 @@ impl LayoutEngine {
                 && line_node.bbox.width <= 110.0
                 && effective_text_width >= line_node.bbox.width * 0.75;
 
-            // 비첫줄에서 번호 마커 오프셋 (첫 줄은 마커 렌더링이 x를 전진시킴)
-            let num_x_offset = if num_offset > 0.0 && !(line_idx == start_line && start_line == 0) {
-                num_offset
-            } else {
-                0.0
-            };
+            let num_x_offset = num_offset;
             // [Task #604 R3] wrap_anchor 가 있으면 col_area.x + line_cs_offset 기준,
             // 아니면 effective_col_x (Task #489) 기준.
             let x_base = if wrap_anchor.is_some() {
@@ -6012,9 +6324,14 @@ impl LayoutEngine {
 
             // 개요 번호/글머리표: 첫 줄에서 별도 TextRunNode로 렌더링 (char_start: None)
             if line_idx == start_line && start_line == 0 {
-                if let Some(ref num_text) = composed.numbering_text {
+                if let (Some((num_text, head)), Some(geometry)) = (
+                    composed.numbering_text.as_ref(),
+                    marker_geometry.filter(|g| g.marker_visible),
+                ) {
                     let num_style =
-                        numbering_marker_text_style(styles, para, comp_line.runs.first());
+                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
+                            numbering_marker_text_style(styles, para, comp_line.runs.first())
+                        });
                     let num_width = estimate_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = RenderNode::new(
@@ -6039,10 +6356,9 @@ impl LayoutEngine {
                             layout_positions: None,
                             display_text: None,
                         }),
-                        BoundingBox::new(x, y, num_width, line_height),
+                        BoundingBox::new(x + geometry.marker_dx_px, y, num_width, line_height),
                     );
                     line_node.children.push(num_node);
-                    x += num_width;
                 }
             }
 
@@ -9524,85 +9840,20 @@ impl LayoutEngine {
 
         let head_text = match para_style.head_type {
             HeadType::None => return None,
-            HeadType::Outline | HeadType::Number => {
-                let numbering_id = resolve_numbering_id(
-                    para_style.head_type,
-                    para_style.numbering_id,
+            // [#7436] 문서 순서로 미리 계산한 번호가 있으면 그것을 그린다 — 줄 나눔이 같은
+            // 문자열의 폭으로 줄을 채웠다. 계산 전이면(엔진 단독 사용) 종전처럼 계수기를 쓴다.
+            HeadType::Outline | HeadType::Number => match &para.numbering_marker {
+                NumberingMarker::Text(text, head) => (text.clone(), *head),
+                NumberingMarker::Absent => return None,
+                NumberingMarker::Unresolved => numbering_head_text(
+                    para,
+                    para_style,
+                    styles,
                     outline_numbering_id,
-                );
-                let level = para_style.para_level;
-                // [#3307] 개요 문단이 유효한 정의에 도달하지 못하면 한컴 내장
-                // 기본 모양(전 수준 ^N)으로 fallback 한다. NUMBER 는 불변 —
-                // 정의 없는 NUMBER 는 종전대로 번호를 그리지 않는다.
-                let synthesized_default;
-                let numbering = match numbering_id
-                    .checked_sub(1)
-                    .and_then(|i| styles.numberings.get(i as usize))
-                {
-                    Some(n) => n,
-                    None if para_style.head_type == HeadType::Outline => {
-                        synthesized_default =
-                            crate::renderer::layout::utils::default_outline_numbering();
-                        &synthesized_default
-                    }
-                    None => return None,
-                };
-
-                let counters = self.numbering_state.borrow_mut().advance(
-                    numbering_id,
-                    level,
-                    para.numbering_restart,
-                );
-                let start_numbers = numbering.level_start_numbers;
-
-                let level_idx = (level as usize).min(6);
-                let format_str = &numbering.level_formats[level_idx];
-                if format_str.is_empty() {
-                    return None;
-                }
-
-                let text = expand_numbering_format(
-                    format_str,
-                    &counters,
-                    numbering,
-                    &start_numbers,
-                    level_idx,
-                );
-                if text.is_empty() {
-                    return None;
-                }
-                let has_distance = numbering
-                    .heads
-                    .get(level_idx)
-                    .map(|h| h.text_distance > 0)
-                    .unwrap_or(false);
-                if has_distance {
-                    format!("{} ", text)
-                } else {
-                    text
-                }
-            }
-            HeadType::Bullet => {
-                // Bullet: numbering_id(1-based)로 Bullet 참조
-                let bullet_id = para_style.numbering_id;
-                if bullet_id == 0 {
-                    return None;
-                }
-                let bullet = styles.bullets.get((bullet_id - 1) as usize)?;
-                // U+FFFF는 이미지 글머리표 표시자 — 문자 렌더링 불가, 건너뜀
-                if bullet.bullet_char == '\u{FFFF}' {
-                    return None;
-                }
-                // PUA 문자(0xF000~0xF0FF)를 표준 Unicode로 매핑
-                // HWP는 Symbol 폰트 문자를 PUA(0xF000+code)로 저장
-                let bullet_ch = map_pua_bullet_char(bullet.bullet_char);
-                // 글머리 기호 + 본문과의 거리(text_distance)에 따른 간격
-                if bullet.text_distance > 0 {
-                    format!("{} ", bullet_ch)
-                } else {
-                    format!("{}", bullet_ch)
-                }
-            }
+                    &mut self.numbering_state.borrow_mut(),
+                )?,
+            },
+            HeadType::Bullet => bullet_marker_text(para_style, styles)?,
         };
 
         // 번호 텍스트를 별도 필드에 저장 (첫 run에 prepend하지 않음)

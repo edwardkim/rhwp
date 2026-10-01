@@ -159,6 +159,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// layout(table_partial.rs) 배치가 동일 감액을 적용해 정합한다.
     pub(in crate::renderer::typeset) pre_emitted_host_heights:
         std::collections::HashMap<usize, f64>,
+    /// [#7418] 같은 host 글의 **내용** 높이(px) — 마지막 줄의 줄간격을 뺀 값. 표는 그
+    /// 줄간격 띠 안까지 올라올 수 있다(문단 상단 + max(오프셋, 이 값)).
+    pub(in crate::renderer::typeset) pre_emitted_host_content_heights:
+        std::collections::HashMap<usize, f64>,
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
     pub(in crate::renderer::typeset) skip_safety_margin_once: bool,

@@ -403,7 +403,9 @@ impl TypesetEngine {
                 });
                 let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
                 st.align_flow_to(st.current_height.max(placement_para_start_height + host_h));
-                st.record_pre_emitted_host_height(para_idx, host_h);
+                let host_trailing_spacing =
+                    fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
+                st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
             }
             st.mark_pre_emitted_host(para_idx);
         }

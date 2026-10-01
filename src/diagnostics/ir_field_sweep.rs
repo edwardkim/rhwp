@@ -661,6 +661,8 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         layout_only_fill_lines: _,
         cell_format_vpos_dirty: _,
         cell_vpos_reset: _,
+        // [#7436] 문서 순서로 계산한 번호 문자열 — 파일에 실리지 않는 파생값이라 비교 대상 아님.
+        numbering_marker: _,
     } = a;
 
     macro_rules! f {
