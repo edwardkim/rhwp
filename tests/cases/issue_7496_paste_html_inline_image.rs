@@ -190,3 +190,119 @@ fn pasting_into_the_first_paragraph_keeps_its_column_definition() {
         );
     }
 }
+
+/// 글 없이 개체만 든 문단으로 붙는 HTML: 문단 그림, 맨 위 그림, 표. 그림은 30px(2250)이다.
+fn object_only_htmls() -> [String; 3] {
+    let img = format!(r#"<img src="data:image/png;base64,{PNG}" width="30" height="30">"#);
+    [
+        format!("<p>{img}</p>"),
+        img,
+        "<table><tr><td>표</td></tr></table>".to_string(),
+    ]
+}
+
+/// 본문 그림 너비(정렬)와 표 수
+fn objects(core: &DocumentCore) -> (Vec<u32>, usize) {
+    let controls = paragraphs(core).iter().flat_map(|p| &p.controls);
+    let mut widths: Vec<u32> = controls
+        .clone()
+        .filter_map(|control| match control {
+            Control::Picture(picture) => Some(picture.common.width),
+            _ => None,
+        })
+        .collect();
+    widths.sort();
+    let tables = controls
+        .filter(|control| matches!(control, Control::Table(_)))
+        .count();
+    (widths, tables)
+}
+
+/// 붙인 개체가 하나 더해진 기대값
+fn plus_pasted(html: &str, (mut widths, tables): (Vec<u32>, usize)) -> (Vec<u32>, usize) {
+    if html.starts_with("<table>") {
+        return (widths, tables + 1);
+    }
+    widths.push(2250);
+    widths.sort();
+    (widths, tables)
+}
+
+fn assert_objects_saved_and_rendered(
+    core: &DocumentCore,
+    expected: &(Vec<u32>, usize),
+    html: &str,
+) {
+    assert_eq!(&objects(core), expected, "{html}");
+    assert_eq!(
+        core.document().doc_info.bin_data_list.len(),
+        expected.0.len(),
+        "{html}: 그림 데이터는 그림 수만큼이다"
+    );
+    for (format, bytes) in [
+        ("HWP", core.export_hwp_native()),
+        ("HWPX", core.export_hwpx_native()),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes.expect("export")).expect(format);
+        assert_eq!(&objects(&reopened), expected, "{html}: {format} 저장 뒤");
+    }
+    for page in 0..core.page_count() {
+        core.render_page_svg_native(page).expect("SVG");
+    }
+}
+
+#[test]
+fn object_paste_keeps_the_caret_paragraphs_picture_after_the_caret() {
+    // 그림만 든 문단의 그림 앞, 'abc' 와 그림 사이에 캐럿을 둔다.
+    for text in ["", "abc"] {
+        for html in object_only_htmls() {
+            let mut core = document_with(text);
+            let caret = text.chars().count();
+            let png = include_bytes!("../../assets/logo/logo-16.png");
+            core.insert_picture_native(
+                0,
+                0,
+                caret,
+                &[],
+                png,
+                1500,
+                1500,
+                16,
+                16,
+                "png",
+                "",
+                None,
+                None,
+            )
+            .expect("그림 삽입");
+            core.paste_html_native(0, 0, caret, &html)
+                .expect("HTML paste");
+
+            assert_eq!(paragraphs(&core)[0].text, text, "{html}");
+            assert_objects_saved_and_rendered(
+                &core,
+                &plus_pasted(&html, (vec![1500], 0)),
+                &format!("{text:?} {html}"),
+            );
+        }
+    }
+}
+
+#[test]
+fn pasting_an_object_twice_into_a_blank_document_keeps_both() {
+    for html in object_only_htmls() {
+        let mut core = document_with("");
+        let (mut para, mut offset) = (0, 0);
+        for _ in 0..2 {
+            let result = core
+                .paste_html_native(0, para, offset, &html)
+                .expect("HTML paste");
+            let caret: serde_json::Value = serde_json::from_str(&result).expect("JSON");
+            para = caret["paraIdx"].as_u64().expect("paraIdx") as usize;
+            offset = caret["charOffset"].as_u64().expect("charOffset") as usize;
+        }
+
+        let expected = plus_pasted(&html, plus_pasted(&html, (vec![], 0)));
+        assert_objects_saved_and_rendered(&core, &expected, &html);
+    }
+}

@@ -133,10 +133,11 @@ impl DocumentCore {
                 para_idx + 1 + clip_count
             };
 
-            // 오른쪽 반이 비어있지 않으면 새 문단으로 추가
+            // 오른쪽 반에 글이나 개체가 있으면 새 문단으로 추가한다.
+            // 글 없이 캐럿 뒤 그림·표만 든 오른쪽 반도 버리면 그 개체가 지워진다.
             let last_para_idx;
             let merge_point;
-            if !right_half.text.is_empty() {
+            if !right_half.text.is_empty() || !right_half.controls.is_empty() {
                 self.document.sections[section_idx]
                     .paragraphs
                     .insert(insert_idx, right_half);
