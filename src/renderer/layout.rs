@@ -3322,6 +3322,9 @@ pub struct LayoutEngine {
     /// [Task #1246] 현재 섹션 미주의 between-notes 마진(HWPUNIT, 0=미적용). HeightCursor 가 미주
     /// 사이 min-gap 보정(gap 부족 시 끌어올림)에 사용한다. 섹션 렌더 셋업마다 갱신.
     endnote_between_notes_hu: std::cell::Cell<i32>,
+    /// [#7470] 지금 배치 중인 단이 미주 흐름인가. 미주는 별도 조판 경로라 본문 전용 흐름 규칙
+    /// (빈 host 줄의 그림 띠 흡수)을 배치에만 적용하지 않도록 가른다.
+    column_is_endnote_flow: std::cell::Cell<bool>,
     /// 현재 섹션 미주의 정규화된 "구분선 위" 마진(HWPUNIT).
     endnote_separator_above_hu: std::cell::Cell<i32>,
     /// 현재 섹션 미주의 정규화된 "구분선 아래" 마진(HWPUNIT).
@@ -3501,6 +3504,7 @@ impl LayoutEngine {
             endnote_para_base: std::cell::Cell::new(usize::MAX),
             endnote_para_sources: std::cell::RefCell::new(Vec::new()),
             endnote_between_notes_hu: std::cell::Cell::new(0),
+            column_is_endnote_flow: std::cell::Cell::new(false),
             endnote_separator_above_hu: std::cell::Cell::new(0),
             endnote_separator_below_hu: std::cell::Cell::new(0),
             active_field: std::cell::RefCell::new(None),
@@ -7278,6 +7282,7 @@ impl LayoutEngine {
         };
 
         self.prime_column_layout_env(layout);
+        self.column_is_endnote_flow.set(col_content.endnote_flow);
 
         // TopAndBottom 글상자/표/이미지의 앵커 문단별 예약 높이 목록
         let mut shape_reserved = self.calculate_shape_reserved_heights(
@@ -14848,7 +14853,14 @@ impl LayoutEngine {
                             {
                                 let has_visible_text =
                                     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                                if !has_visible_text {
+                                // [#7470] host 줄이 그림 띠에 흡수된 빈 host(`sw=0`)는 더하지 않는다.
+                                if !has_visible_text
+                                    && (self.column_is_endnote_flow.get()
+                                        || !crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                                            para,
+                                            &pic.common,
+                                        ))
+                                {
                                     let line_advance = para
                                         .line_segs
                                         .first()
