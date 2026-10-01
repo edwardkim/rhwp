@@ -332,6 +332,22 @@ fn focused_cursor_local_geometry(
         if alignment == Alignment::Justify && style.letter_spacing < -0.01 {
             return None;
         }
+        // 등록 글꼴로 커닝하는 run은 커닝 전 폭과 그린 자리가 다르다. exact 경로에 맡긴다.
+        let kerning_slot =
+            crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index);
+        if style.kerning
+            && styles
+                .kerning_measurement_context
+                .as_ref()
+                .is_some_and(|context| {
+                    context
+                        .layout_session()
+                        .source_handle(kerning_slot)
+                        .is_some()
+                })
+        {
+            return None;
+        }
         let positions = compute_char_positions(&run.text, &style);
         if positions.len() != run_len + 1 {
             return None;
