@@ -29,7 +29,7 @@ Zero-adjustment and already-baked image payloads retain their existing path.
 Validation commands, with a prepared review worktree and native-skia CLI:
 
 ```sh
-node scripts/run-rust-test.mjs issue_4764_pdf_raster_fidelity -- \
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
   --cargo-profile release-test --features native-skia --target-dir <shared-target>
 rhwp export-pdf 'samples/2025 행정업무운영 편람(최종).hwp' \
   --backend direct --profile print --font-path ttfs/opensource -p 2 -o page3.pdf
