@@ -105,8 +105,16 @@ impl DocumentCore {
                 .is_empty();
 
             let insert_idx = if left_empty {
-                // 빈 왼쪽 문단을 첫 번째 파싱 문단으로 대체
-                self.document.sections[section_idx].paragraphs[para_idx] = parsed_paras[0].clone();
+                let host = &mut self.document.sections[section_idx].paragraphs[para_idx];
+                if host.controls.is_empty() {
+                    // 빈 왼쪽 문단을 첫 번째 파싱 문단으로 대체
+                    *host = parsed_paras[0].clone();
+                } else {
+                    // 구역 첫 문단처럼 구역·단 정의가 든 빈 문단을 갈아 끼우면 그 정의가 사라진다.
+                    // 첫 파싱 문단을 병합하고 문단 모양만 그 문단을 따른다.
+                    host.merge_from(&parsed_paras[0]);
+                    host.para_shape_id = parsed_paras[0].para_shape_id;
+                }
                 let idx = para_idx + 1;
                 for i in 1..clip_count {
                     self.document.sections[section_idx]
@@ -236,7 +244,8 @@ impl DocumentCore {
             .into_iter()
             .map(|mut p| {
                 if !p.controls.is_empty() {
-                    let text = if p.text.is_empty() || p.text == "\u{0002}" {
+                    let keep_text = !(p.text.is_empty() || p.text == "\u{0002}");
+                    let text = if !keep_text {
                         match p.controls.first() {
                             Some(Control::Table(tbl)) => tbl
                                 .cells
@@ -259,19 +268,40 @@ impl DocumentCore {
                     p.text = text;
                     // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
                     p.char_count = p.text.encode_utf16().count() as u32 + 1;
-                    p.char_offsets = p
-                        .text
-                        .chars()
-                        .scan(0u32, |acc, c| {
-                            let off = *acc;
-                            *acc += c.len_utf16() as u32;
-                            Some(off)
-                        })
-                        .collect();
+                    let gapped_offsets = std::mem::replace(
+                        &mut p.char_offsets,
+                        p.text
+                            .chars()
+                            .scan(0u32, |acc, c| {
+                                let off = *acc;
+                                *acc += c.len_utf16() as u32;
+                                Some(off)
+                            })
+                            .collect(),
+                    );
+                    if keep_text {
+                        // 글 사이 그림을 빼면 그 자리(8칸 갭)도 사라진다.
+                        // 글자 모양 시작을 같은 글자의 새 위치로 옮긴다.
+                        for cs in &mut p.char_shapes {
+                            let idx = gapped_offsets.partition_point(|&off| off < cs.start_pos);
+                            cs.start_pos =
+                                p.char_offsets.get(idx).copied().unwrap_or(p.char_count - 1);
+                        }
+                    }
                 }
                 p
             })
             .collect()
+    }
+
+    /// 셀에 붙일 문단. 셀에는 개체를 넣지 않으므로 파싱하며 등록한 그림 데이터도 되돌린다.
+    fn parse_html_to_cell_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
+        let bin_content_len = self.document.bin_data_content.len();
+        let bin_list_len = self.document.doc_info.bin_data_list.len();
+        let parsed_paras = self.parse_html_to_paragraphs(html);
+        self.document.bin_data_content.truncate(bin_content_len);
+        self.document.doc_info.bin_data_list.truncate(bin_list_len);
+        Self::normalize_html_paragraphs_for_cell_paste(parsed_paras)
     }
 
     fn paste_html_paragraphs_into_cell_paragraphs(
@@ -332,11 +362,10 @@ impl DocumentCore {
         char_offset: usize,
         html: &str,
     ) -> Result<String, HwpError> {
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        let parsed_paras = self.parse_html_to_cell_paragraphs(html);
         if parsed_paras.is_empty() {
             return Ok("{\"ok\":false,\"error\":\"empty html\"}".to_string());
         }
-        let parsed_paras = Self::normalize_html_paragraphs_for_cell_paste(parsed_paras);
 
         let (last_para_idx, merge_point) = {
             let section =
@@ -397,11 +426,10 @@ impl DocumentCore {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
 
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        let parsed_paras = self.parse_html_to_cell_paragraphs(html);
         if parsed_paras.is_empty() {
             return Ok("{\"ok\":false,\"error\":\"empty html\"}".to_string());
         }
-        let parsed_paras = Self::normalize_html_paragraphs_for_cell_paste(parsed_paras);
 
         let cell_para_idx = path[path.len() - 1].2;
         let (last_para_idx, merge_point) = {
@@ -649,7 +677,8 @@ impl DocumentCore {
                     };
                     let mut para = Paragraph::default();
                     self.parse_inline_content(&mut para, li_inner);
-                    if !para.text.trim().is_empty() {
+                    // 그림만 든 항목도 버리지 않는다 — 버리면 등록한 그림 데이터만 문서에 남는다.
+                    if !para.text.trim().is_empty() || !para.controls.is_empty() {
                         para.text = format!("• {}", para.text);
                         // 글머리 기호("• ")만큼 글자 위치와 스타일 구간을 오른쪽으로 민다.
                         // 다시 세지 않고 밀어야 글 사이 그림의 자리(8칸 갭)가 남는다.
@@ -702,7 +731,7 @@ impl DocumentCore {
                             .collect();
                         let mut para = Paragraph::default();
                         self.parse_inline_content(&mut para, &span_inner);
-                        if !para.text.trim().is_empty() {
+                        if !para.text.trim().is_empty() || !para.controls.is_empty() {
                             paragraphs.push(para);
                         }
                         pos = span_end;
