@@ -1262,8 +1262,9 @@ impl<'a> KerningSourceSession<'a> {
 
     /// Exact handle 하나를 session에 준비한다.
     ///
-    /// 최초 호출만 provider 조회, SHA-256 대사, SFNT parse를 수행한다. 성공과 실패를 모두
-    /// cache하므로 동일 layout/reflow 중 host 상태 변화가 결과를 비결정적으로 바꾸지 않는다.
+    /// 최초 호출만 provider 조회, handle 대사, SFNT parse를 수행한다. SHA-256은 등록 때 해시한
+    /// registry가 아닌 provider만 다시 계산한다. 성공과 실패를 모두 cache하므로 동일
+    /// layout/reflow 중 host 상태 변화가 결과를 비결정적으로 바꾸지 않는다.
     pub(crate) fn prepare(&mut self, handle: &ExactFontSourceHandle) -> KerningSourceSessionTrace {
         if let Some(entry) = self.entries.get(handle) {
             let mut trace = entry.trace.clone();

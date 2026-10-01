@@ -370,6 +370,9 @@ fn issue_7503_cell_typing_caret_delta_follows_kerned_origin() {
 }
 
 /// 커닝 문단에서 입력·쪽 렌더 트리·캐럿 조회를 한 번 하는 시간(ms)의 최솟값.
+///
+/// 공개 API로는 해시 횟수를 셀 수 없고, 제품 소스에 `#[cfg(test)]` 계수기를 둘 수 없다.
+/// 그래서 같은 프로세스에서 잰 SHA-256 한 번과 비교해 장비 속도에 기대지 않는다.
 fn fastest_typing_cycle_ms(font: &[u8]) -> f64 {
     let mut core = kerning_blank();
     core.insert_text_native(0, 0, 0, &"AVTo ".repeat(8))
