@@ -188,6 +188,24 @@ pub(crate) fn replay_positions_or_compute<'a>(
         })
 }
 
+/// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
+///
+/// 커닝은 글자 사이만 좁힌다. 커닝한 경계로 폭을 맞추면 쌍의 앞 글자가 커닝만큼
+/// 눌린다. 커닝을 요청한 run이 layout positions로 그려지면 커닝 전 경계로 폭을
+/// 맞추고, 그리는 자리는 호출자의 layout positions를 그대로 쓴다.
+pub(crate) fn glyph_fit_positions<'a>(
+    replay_text: &str,
+    style: &TextStyle,
+    layout_positions: Option<&[f64]>,
+    char_positions: &'a [f64],
+) -> std::borrow::Cow<'a, [f64]> {
+    if style.kerning && validated_replay_positions(replay_text, layout_positions).is_some() {
+        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+    } else {
+        std::borrow::Cow::Borrowed(char_positions)
+    }
+}
+
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
