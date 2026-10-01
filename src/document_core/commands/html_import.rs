@@ -88,8 +88,11 @@ impl DocumentCore {
             ));
         }
 
-        // 컨트롤(표/이미지 등)을 포함하는 문단이 있는지 확인
-        let has_controls = parsed_paras.iter().any(|p| !p.controls.is_empty());
+        // 글 없이 개체만 든 문단(표·단독 그림)이 있는지 확인한다.
+        // 글 사이에 든 그림은 아래 다중 문단 경로가 글과 함께 캐럿 문단에 병합한다.
+        let has_controls = parsed_paras
+            .iter()
+            .any(|p| p.text.is_empty() && !p.controls.is_empty());
 
         if has_controls {
             // 컨트롤 포함 문단은 merge 불가 → 직접 삽입
@@ -648,19 +651,14 @@ impl DocumentCore {
                     self.parse_inline_content(&mut para, li_inner);
                     if !para.text.trim().is_empty() {
                         para.text = format!("• {}", para.text);
-                        para.char_offsets = para
-                            .text
-                            .chars()
-                            .scan(0u32, |acc, c| {
-                                let off = *acc;
-                                *acc += c.len_utf16() as u32;
-                                Some(off)
-                            })
-                            .collect();
-                        para.char_count = para.text.encode_utf16().count() as u32 + 1;
-                        // 글머리 기호("• ")만큼 스타일 구간을 오른쪽으로 밀어 정렬을 맞춘다.
-                        // start_pos 는 UTF-16 코드유닛 단위(위 char_offsets 와 동일 축).
+                        // 글머리 기호("• ")만큼 글자 위치와 스타일 구간을 오른쪽으로 민다.
+                        // 다시 세지 않고 밀어야 글 사이 그림의 자리(8칸 갭)가 남는다.
+                        // start_pos 는 UTF-16 코드유닛 단위(char_offsets 와 동일 축).
                         let bullet_len = "• ".encode_utf16().count() as u32;
+                        para.char_offsets = (0..bullet_len)
+                            .chain(para.char_offsets.iter().map(|off| off + bullet_len))
+                            .collect();
+                        para.char_count += bullet_len;
                         for cs in &mut para.char_shapes {
                             cs.start_pos += bullet_len;
                         }
@@ -781,6 +779,8 @@ impl DocumentCore {
         let mut full_text = String::new();
         // (char_start, char_end, char_shape_id) 형태의 스타일 범위
         let mut style_runs: Vec<(usize, usize, u32)> = Vec::new();
+        // (그림 앞 글자 수, 그림) — 글 사이에 든 그림
+        let mut pictures: Vec<(usize, crate::model::image::Picture)> = Vec::new();
 
         let chars: Vec<char> = html.chars().collect();
         let len = chars.len();
@@ -861,6 +861,18 @@ impl DocumentCore {
                     full_text.push('\n');
                     pos = tag_end + 1;
                     continue;
+                } else if tag_lower.starts_with("<img") {
+                    // 글 사이 그림은 그 자리에 글자처럼 취급하는 그림으로 넣는다.
+                    // 종전에는 기타 태그로 버려 `<p>앞<img>뒤</p>` 의 그림이 사라졌다.
+                    if let Some(pic) =
+                        crate::document_core::html_table_import::html_img_src(&tag_str)
+                            .filter(|src| src.starts_with("data:"))
+                            .and_then(|src| self.html_data_img_picture(&tag_str, src))
+                    {
+                        pictures.push((full_text.chars().count(), pic));
+                    }
+                    pos = tag_end + 1;
+                    continue;
                 } else {
                     // 기타 태그 무시
                     pos = tag_end + 1;
@@ -938,6 +950,17 @@ impl DocumentCore {
                     start_pos: utf16_pos,
                     char_shape_id: *char_shape_id,
                 });
+        }
+
+        // 그림은 확장 제어문자 8칸을 차지한다. 그 자리를 char_offsets 의 갭으로 남겨야
+        // control_text_positions 가 그림을 글 사이에 되짚는다.
+        for (char_idx, pic) in pictures {
+            para.shift_for_inline_control_insert(char_idx);
+            para.char_count += 8;
+            para.controls.push(Control::Picture(Box::new(pic)));
+            para.ctrl_data_records.push(None);
+            para.control_mask |= 0x0000_0800;
+            para.has_para_text = true;
         }
     }
 
