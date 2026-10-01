@@ -565,7 +565,8 @@ fn issue_4764_pdf_image_streams(pdf: &[u8]) -> Vec<Issue4764PdfImageStream> {
             continue;
         };
         let dict = &pdf[dict_start..dict_end + 2];
-        if !dict.windows(b"/Subtype /Image".len())
+        if !dict
+            .windows(b"/Subtype /Image".len())
             .any(|window| window == b"/Subtype /Image")
             || !dict
                 .windows(b"/ColorSpace /DeviceRGB".len())
@@ -625,14 +626,17 @@ fn issue_4764_pdf_image_streams(pdf: &[u8]) -> Vec<Issue4764PdfImageStream> {
 }
 
 #[cfg(feature = "native-skia")]
-fn issue_4764_pdf_images_contain_rgb(images: &[Issue4764PdfImageStream], expected: [u8; 3]) -> bool {
+fn issue_4764_pdf_images_contain_rgb(
+    images: &[Issue4764PdfImageStream],
+    expected: [u8; 3],
+) -> bool {
     images.iter().any(|image| {
         image.width > 0
             && image.height > 0
             && image.pixels.chunks_exact(3).any(|rgb| {
                 rgb.iter()
-                .zip(expected)
-                .all(|(actual, expected)| actual.abs_diff(expected) <= 2)
+                    .zip(expected)
+                    .all(|(actual, expected)| actual.abs_diff(expected) <= 2)
             })
     })
 }
@@ -651,7 +655,11 @@ fn issue_4764_direct_pdf_image_tree(
         LayerNode::leaf(
             page,
             None,
-            vec![PaintOp::image(BoundingBox::new(8.0, 8.0, 16.0, 16.0), image, None)],
+            vec![PaintOp::image(
+                BoundingBox::new(8.0, 8.0, 16.0, 16.0),
+                image,
+                None,
+            )],
         ),
         RenderProfile::Print,
     )
@@ -694,30 +702,35 @@ fn issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels() {
     use rhwp::renderer::render_tree::ImageNode;
 
     let source = [80, 100, 120];
-    let mut image = ImageNode::new(
-        1,
-        Some(issue_4764_png_rgba(
-            4,
-            4,
-            [source[0], source[1], source[2], 255],
-        )),
-    );
-    image.fill_mode = Some(ImageFillMode::FitToSize);
-    image.brightness = 20;
-    image.contrast = 20;
+    for (brightness, contrast) in [(20, 0), (0, 20), (0, 8)] {
+        let mut image = ImageNode::new(
+            1,
+            Some(issue_4764_png_rgba(
+                4,
+                4,
+                [source[0], source[1], source[2], 255],
+            )),
+        );
+        image.fill_mode = Some(ImageFillMode::FitToSize);
+        image.brightness = brightness;
+        image.contrast = contrast;
 
-    let pdf = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)])
-        .expect("direct PDF export");
-    let images = issue_4764_pdf_image_streams(&pdf);
+        let pdf = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)])
+            .expect("direct PDF export");
+        let images = issue_4764_pdf_image_streams(&pdf);
 
-    assert!(
-        issue_4764_pdf_images_contain_rgb(&images, issue_4764_adjusted_rgb(source, 20, 20)),
-        "PDF image streams should contain brightness/contrast adjusted pixels"
-    );
-    assert!(
-        !issue_4764_pdf_images_contain_rgb(&images, source),
-        "PDF image streams should not keep the unadjusted source pixels"
-    );
+        assert!(
+            issue_4764_pdf_images_contain_rgb(
+                &images,
+                issue_4764_adjusted_rgb(source, brightness, contrast)
+            ),
+            "PDF image streams should contain brightness/contrast adjusted pixels"
+        );
+        assert!(
+            !issue_4764_pdf_images_contain_rgb(&images, source),
+            "PDF image streams should not keep the unadjusted source pixels"
+        );
+    }
 }
 
 #[cfg(feature = "native-skia")]
@@ -760,11 +773,96 @@ fn issue_4764_direct_pdf_still_rejects_pattern8x8_images() {
 
     let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [80, 100, 120, 255])));
     image.effect = ImageEffect::Pattern8x8;
-    image.brightness = 20;
+    image.brightness = 0;
     image.contrast = 20;
 
     let error = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)]).unwrap_err();
 
-    assert!(error.contains("Pattern8x8 effect"), "unexpected error: {error}");
-    assert!(error.contains("use the svg backend"), "unexpected error: {error}");
+    assert!(
+        error.contains("Pattern8x8 effect"),
+        "unexpected error: {error}"
+    );
+    assert!(
+        error.contains("use the svg backend"),
+        "unexpected error: {error}"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_still_rejects_unbaked_image_watermark_tone_or_opacity() {
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::ImageNode;
+
+    for (brightness, contrast) in [(70, -50), (20, 20)] {
+        let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [80, 100, 120, 255])));
+        image.brightness = brightness;
+        image.contrast = contrast;
+        assert!(image.is_watermark());
+
+        let error = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)]).unwrap_err();
+        assert!(
+            error.contains("unbaked image watermark tone or opacity"),
+            "unexpected error: {error}"
+        );
+    }
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_still_rejects_unbaked_background_watermark_tone() {
+    use rhwp::model::image::ImageEffect;
+    use rhwp::model::style::ImageFillMode;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::PageBackgroundImage;
+
+    let image = PageBackgroundImage {
+        data: issue_4764_png_rgba(4, 4, [80, 100, 120, 255]),
+        fill_mode: ImageFillMode::FitToSize,
+        brightness: -50,
+        contrast: 70,
+        effect: ImageEffect::RealPic,
+    };
+    assert!(image.is_real_picture_watermark_tone_preset());
+    let error =
+        layer_trees_to_pdf(&[issue_4764_direct_pdf_page_background_tree(image)]).unwrap_err();
+    assert!(
+        error.contains("unbaked RealPic watermark tone"),
+        "unexpected error: {error}"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_does_not_adjust_baked_watermark_pixels_twice() {
+    use rhwp::paint::{LayerNodeKind, PaintOp, ResolvedImageKind, ResolvedImagePayload};
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::ImageNode;
+    use std::sync::Arc;
+
+    let baked = [80, 100, 120];
+    let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [20, 30, 40, 255])));
+    image.brightness = 70;
+    image.contrast = -50;
+    let mut tree = issue_4764_direct_pdf_image_tree(image);
+    let LayerNodeKind::Leaf { ops } = &mut tree.root.kind else {
+        panic!("image leaf")
+    };
+    let PaintOp::Image { resolved, .. } = &mut ops[0] else {
+        panic!("image paint op")
+    };
+    *resolved = Some(Arc::new(ResolvedImagePayload {
+        data: issue_4764_png_rgba(4, 4, [baked[0], baked[1], baked[2], 255]),
+        mime: "image/png",
+        kind: ResolvedImageKind::BakedWatermark,
+        suppress_effects: true,
+    }));
+
+    let pdf = layer_trees_to_pdf(&[tree]).expect("baked watermark PDF export");
+    let images = issue_4764_pdf_image_streams(&pdf);
+    assert!(issue_4764_pdf_images_contain_rgb(&images, baked));
+    assert!(!issue_4764_pdf_images_contain_rgb(
+        &images,
+        issue_4764_adjusted_rgb(baked, 70, -50)
+    ));
 }

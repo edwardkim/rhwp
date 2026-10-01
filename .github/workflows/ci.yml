@@ -1266,6 +1266,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4764_pdf_raster_fidelity -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --profile release-test --features native-skia --verbose
@@ -1277,6 +1278,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4764_pdf_raster_fidelity -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --release --features native-skia --verbose
