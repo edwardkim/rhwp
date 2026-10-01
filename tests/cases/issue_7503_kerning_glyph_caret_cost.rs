@@ -161,6 +161,36 @@ fn issue_7503_kerned_glyphs_keep_their_natural_width() {
     );
 }
 
+#[test]
+fn issue_7503_middle_dot_stays_centred_in_its_drawn_advance() {
+    use rhwp::renderer::svg::SvgRenderer;
+    use rhwp::renderer::{Renderer, TextStyle};
+
+    // `·`는 글리프 대신 원으로 그린다. 원은 커닝 전 폭이 아니라 그린 칸 가운데에 둔다(Skia와 같다).
+    let style = TextStyle {
+        font_family: "함초롬바탕".to_string(),
+        font_size: 20.0,
+        kerning: true,
+        ..TextStyle::default()
+    };
+    let circle_cx = |positions: Option<&[f64]>| {
+        let mut svg = SvgRenderer::new();
+        svg.draw_text_positioned("\u{00B7}V", 0.0, 20.0, &style, positions);
+        let output = svg.output();
+        svg_attr(&output[output.find("<circle").expect("`·` 원")..], "cx").expect("cx")
+    };
+    let natural_cx = circle_cx(None);
+    assert!(natural_cx > 2.0, "`·` 칸 폭: {natural_cx}");
+    // 다음 글자를 2px 당긴 커닝 자리
+    let kerned_advance = natural_cx * 2.0 - 2.0;
+    let kerned_cx = circle_cx(Some(&[0.0, kerned_advance, kerned_advance + 20.0]));
+    assert!(
+        (kerned_cx - kerned_advance / 2.0).abs() <= 1e-3,
+        "`·` 원 {kerned_cx} ≠ 그린 칸 가운데 {}",
+        kerned_advance / 2.0
+    );
+}
+
 fn json(text: &str) -> serde_json::Value {
     serde_json::from_str(text).expect("JSON")
 }
