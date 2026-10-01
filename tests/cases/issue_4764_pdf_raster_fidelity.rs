@@ -545,6 +545,37 @@ fn issue_4764_pdf_dict_usize(dict: &[u8], key: &str) -> Option<usize> {
 }
 
 #[cfg(feature = "native-skia")]
+fn issue_4764_pdf_rgb_color_space(pdf: &[u8], dict: &[u8]) -> bool {
+    let dict = String::from_utf8_lossy(dict);
+    if dict.contains("/ColorSpace /DeviceRGB") {
+        return true;
+    }
+    // Skia preserves an sRGB ICC profile on unfiltered PNG images.
+    let Some((_, reference)) = dict.split_once("/ColorSpace [/ICCBased ") else {
+        return false;
+    };
+    let Some(id) = reference
+        .split_whitespace()
+        .next()
+        .and_then(|id| id.parse::<usize>().ok())
+    else {
+        return false;
+    };
+    let marker = format!("\n{id} 0 obj");
+    let Some(start) = pdf
+        .windows(marker.len())
+        .position(|bytes| bytes == marker.as_bytes())
+    else {
+        return false;
+    };
+    let object = &pdf[start + marker.len()..];
+    let Some(end) = object.windows(2).position(|bytes| bytes == b">>") else {
+        return false;
+    };
+    issue_4764_pdf_dict_usize(&object[..end], "/N") == Some(3)
+}
+
+#[cfg(feature = "native-skia")]
 fn issue_4764_pdf_image_streams(pdf: &[u8]) -> Vec<Issue4764PdfImageStream> {
     use flate2::read::ZlibDecoder;
     use std::io::Read;
@@ -568,9 +599,7 @@ fn issue_4764_pdf_image_streams(pdf: &[u8]) -> Vec<Issue4764PdfImageStream> {
         if !dict
             .windows(b"/Subtype /Image".len())
             .any(|window| window == b"/Subtype /Image")
-            || !dict
-                .windows(b"/ColorSpace /DeviceRGB".len())
-                .any(|window| window == b"/ColorSpace /DeviceRGB")
+            || !issue_4764_pdf_rgb_color_space(pdf, dict)
             || !dict
                 .windows(b"/BitsPerComponent 8".len())
                 .any(|window| window == b"/BitsPerComponent 8")
@@ -735,6 +764,45 @@ fn issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels() {
 
 #[cfg(feature = "native-skia")]
 #[test]
+fn issue_4764_native_adjustments_preserve_alpha_and_object_opacity() {
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    use rhwp::renderer::render_tree::ImageNode;
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+
+    let source = [80, 100, 120];
+    for (brightness, contrast, opacity) in [(20, 0, 1.0), (0, 20, 1.0), (0, 8, 0.5), (0, 0, 1.0)] {
+        let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [80, 100, 120, 128])));
+        image.brightness = brightness;
+        image.contrast = contrast;
+        image.opacity = opacity;
+        let output = SkiaLayerRenderer::new()
+            .render_raster_with_options(
+                &issue_4764_direct_pdf_image_tree(image),
+                RasterRenderOptions {
+                    transparent: true,
+                    ..Default::default()
+                },
+            )
+            .expect("transparent raster export");
+        let rgba = image::load_from_memory(&output.bytes)
+            .expect("decode PNG")
+            .to_rgba8();
+        let pixel = rgba.get_pixel(16, 16).0;
+        let expected = issue_4764_adjusted_rgb(source, brightness, contrast);
+        assert!(
+            pixel[..3]
+                .iter()
+                .zip(expected)
+                .all(|(actual, expected)| actual.abs_diff(expected) <= 3),
+            "unexpected adjusted pixel: {pixel:?}, expected RGB: {expected:?}"
+        );
+        assert!(pixel[3].abs_diff((128.0 * opacity).round() as u8) <= 1);
+        assert_eq!(rgba.get_pixel(0, 0).0[3], 0);
+    }
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
 fn issue_4764_direct_pdf_embeds_adjusted_page_background_pixels_in_display_order() {
     use rhwp::model::image::ImageEffect;
     use rhwp::model::style::ImageFillMode;
@@ -838,7 +906,6 @@ fn issue_4764_direct_pdf_does_not_adjust_baked_watermark_pixels_twice() {
     use rhwp::paint::{LayerNodeKind, PaintOp, ResolvedImageKind, ResolvedImagePayload};
     use rhwp::renderer::pdf::layer_trees_to_pdf;
     use rhwp::renderer::render_tree::ImageNode;
-    use std::sync::Arc;
 
     let baked = [80, 100, 120];
     let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [20, 30, 40, 255])));
@@ -851,7 +918,7 @@ fn issue_4764_direct_pdf_does_not_adjust_baked_watermark_pixels_twice() {
     let PaintOp::Image { resolved, .. } = &mut ops[0] else {
         panic!("image paint op")
     };
-    *resolved = Some(Arc::new(ResolvedImagePayload {
+    *resolved = Some(Box::new(ResolvedImagePayload {
         data: issue_4764_png_rgba(4, 4, [baked[0], baked[1], baked[2], 255]),
         mime: "image/png",
         kind: ResolvedImageKind::BakedWatermark,
