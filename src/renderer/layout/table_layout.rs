@@ -2225,15 +2225,19 @@ impl LayoutEngine {
     /// 겹친다는 좁은 증거가 있을 때만, paragraph origin부터 가장 먼 bottom까지의
     /// physical band를 반환한다. 서로 다른 세로 band나 stale negative offset을 가진
     /// 개체는 `None`으로 돌려 기존 합산 계약을 그대로 보존한다.
+    /// `clamp_negative_offset` 은 저장 사다리가 없는 문단용이다. 음수 문단 기준 오프셋도
+    /// 띠 판정에 받고, 띠 바닥은 측정(`cell_wrap_object_visual_bottom`)처럼 오프셋을 0 으로
+    /// 올려 잰다.
     fn paragraph_parallel_other_non_inline_flow_band_height(
         &self,
         controls: &[Control],
+        clamp_negative_offset: bool,
     ) -> Option<f64> {
         if controls.len() < 2 {
             return None;
         }
 
-        let mut latest_start = 0.0f64;
+        let mut latest_start = f64::NEG_INFINITY;
         let mut earliest_end = f64::INFINITY;
         let mut furthest_bottom = 0.0f64;
         for control in controls {
@@ -2252,9 +2256,10 @@ impl LayoutEngine {
                 return None;
             }
             let offset_hu = signed_hwpunit(common.vertical_offset);
-            if offset_hu < 0 {
+            if offset_hu < 0 && !clamp_negative_offset {
                 return None;
             }
+            // 나란히 놓였는지는 실제 오프셋으로 판정하고, 띠 바닥만 측정처럼 문단 위에서 잰다.
             let start = hwpunit_to_px(offset_hu, self.dpi);
             let height = self.cell_non_inline_control_flow_height(common);
             if height <= 0.5 {
@@ -2263,7 +2268,7 @@ impl LayoutEngine {
             let end = start + height;
             latest_start = latest_start.max(start);
             earliest_end = earliest_end.min(end);
-            furthest_bottom = furthest_bottom.max(end);
+            furthest_bottom = furthest_bottom.max(start.max(0.0) + height);
         }
 
         (latest_start + 0.5 < earliest_end).then_some(furthest_bottom)
@@ -11451,14 +11456,23 @@ impl LayoutEngine {
                     _ => None,
                 })
                 .sum();
-            let para_other_non_inline_h =
-                (if native_hwp5_rowbreak_float_ladder && p.text.trim().is_empty() {
-                    self.paragraph_parallel_other_non_inline_flow_band_height(&p.controls)
-                        .unwrap_or(summed_para_other_non_inline_h)
-                } else {
-                    summed_para_other_non_inline_h
-                } - stored_square_picture_flow_h)
-                    .max(0.0);
+            // [#7500] 저장 줄이 없는 공백 문단도 나란히 놓인 그림 띠를 한 번만 센다 — 측정과
+            // 배치는 그림을 가로로 늘어놓은 높이를 쓰는데, 합산하면 행 나눔 장부만 그
+            // 띠를 그림 수만큼 부풀려 행이 쪽에 못 들어간다.
+            let no_stored_ladder = crate::renderer::para_has_no_stored_line_segs(p);
+            let para_other_non_inline_h = (if (native_hwp5_rowbreak_float_ladder
+                || no_stored_ladder)
+                && p.text.trim().is_empty()
+            {
+                self.paragraph_parallel_other_non_inline_flow_band_height(
+                    &p.controls,
+                    no_stored_ladder,
+                )
+                .unwrap_or(summed_para_other_non_inline_h)
+            } else {
+                summed_para_other_non_inline_h
+            } - stored_square_picture_flow_h)
+                .max(0.0);
             let para_other_non_inline_controls =
                 self.paragraph_cell_other_non_inline_control_heights(&p.controls);
             let para_other_non_inline_controls: Vec<(usize, f64)> = para_other_non_inline_controls

@@ -1094,6 +1094,16 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             if let Some(nl) = chars[offset..max_end].iter().position(|&c| c == '\n') {
                 end = offset + nl + 1;
             }
+            // [#7500] 남은 글자가 공백뿐이면 이 줄이 흡수한다 — 한/글은 말미 공백에 줄상자를
+            // 주지 않는다(#7160 `absorb_whitespace_only_rows` 와 같은 규칙). 끊어 두면
+            // 공백만 든 줄이 생겨 뒤 내용을 그 줄 수만큼 밀어낸다.
+            if end < total
+                && chars[end..]
+                    .iter()
+                    .all(|&c| matches!(c, ' ' | '\t' | '\u{3000}'))
+            {
+                end = total;
+            }
             let line_text: String = chars[offset..end].iter().collect();
             let is_last_line = end >= total;
             // 이 폴백(PARA_LINE_SEG 누락 문단)도 CharShapeRef 경계를 존중한다 —
