@@ -1,5 +1,5 @@
 //! [#7503] 등록 글꼴로 커닝한 글자를 커닝 전 폭으로, 커닝한 자리에 그린다.
-//! 캐럿·클릭 위치는 그린 자리를 따른다.
+//! 캐럿·클릭 위치는 그린 자리를 따르고, 입력마다 등록 글꼴을 다시 해시하지 않는다.
 //!
 //! 글꼴은 저장소의 합성 글꼴이다(`pos A V -80`, `pos T o -40`, 1000 em, advance 600).
 //! 26pt(34.67px)에서 `A`의 advance는 24.47px이고 `AV` 커닝은 -2.77px이다.
@@ -337,4 +337,50 @@ fn issue_7503_cell_typing_caret_delta_follows_kerned_origin() {
             "deltaX {delta} ≠ 실제 캐럿 이동 {kerned_move}"
         );
     }
+}
+
+/// 커닝 문단에서 입력·쪽 렌더 트리·캐럿 조회를 한 번 하는 시간(ms)의 최솟값.
+fn fastest_typing_cycle_ms(font: &[u8]) -> f64 {
+    let mut core = kerning_blank();
+    core.insert_text_native(0, 0, 0, &"AVTo ".repeat(8))
+        .expect("본문 입력");
+    register_all(&mut core, font);
+    core.build_page_render_tree(0).expect("쪽 트리");
+    (0..5)
+        .map(|_| {
+            let len = core.document().sections[0].paragraphs[0]
+                .text
+                .chars()
+                .count();
+            let start = std::time::Instant::now();
+            core.insert_text_native(0, 0, len, "A").expect("입력");
+            core.build_page_render_tree(0).expect("쪽 트리");
+            core.get_cursor_rect_native(0, 0, len + 1).expect("캐럿");
+            start.elapsed().as_secs_f64() * 1_000.0
+        })
+        .fold(f64::INFINITY, f64::min)
+}
+
+#[test]
+fn issue_7503_registered_source_is_not_rehashed_per_layout() {
+    use sha2::{Digest, Sha256};
+
+    // 뒤에 0을 붙여 크기만 키운 같은 face다. 표는 offset으로 읽는다.
+    let mut large = KERNING_FONT.to_vec();
+    large.resize(8 * 1024 * 1024, 0);
+    let one_hash_ms = (0..3)
+        .map(|_| {
+            let start = std::time::Instant::now();
+            std::hint::black_box(Sha256::digest(std::hint::black_box(&large)));
+            start.elapsed().as_secs_f64() * 1_000.0
+        })
+        .fold(f64::INFINITY, f64::min);
+
+    let small_ms = fastest_typing_cycle_ms(KERNING_FONT);
+    let large_ms = fastest_typing_cycle_ms(&large);
+    assert!(
+        large_ms - small_ms < one_hash_ms / 2.0,
+        "입력 한 번에 등록 글꼴을 다시 해시한다: 1.2KB {small_ms:.2}ms, 8MB {large_ms:.2}ms, \
+         8MB SHA-256 한 번 {one_hash_ms:.2}ms"
+    );
 }

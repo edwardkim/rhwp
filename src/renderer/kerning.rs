@@ -116,11 +116,18 @@ struct OwnedExactFontSource {
 ///
 /// provider의 반환값은 신뢰하지 않는다. 반드시 [`resolve_exact_font_source`]가
 /// byte length, face index, SHA-256을 다시 대사한 뒤 capability/shaping에 전달한다.
+/// 등록 때 해시한 registry만 SHA-256 재계산을 건너뛴다.
 pub(crate) trait ExactFontSourceProvider {
     fn source_for_handle<'a>(
         &'a self,
         handle: &ExactFontSourceHandle,
     ) -> Option<ExactFontSource<'a>>;
+
+    /// 등록할 때 bytes로 handle을 만들고 그 handle로만 bytes를 돌려주는 provider면 true다.
+    /// 이때 [`resolve_exact_font_source`]는 SHA-256을 다시 계산하지 않는다.
+    fn hashed_on_registration(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -339,6 +346,12 @@ impl ExactFontSourceProvider for ExactFontSourceRegistry {
             bytes: &source.bytes,
             face_index: handle.face_index,
         })
+    }
+
+    /// `register`가 같은 bytes로 handle을 만들고 불변 Arc를 그 handle에 묶는다.
+    /// layout마다 글꼴 전체를 다시 해시하면 커닝 문단의 입력마다 그 비용이 붙는다.
+    fn hashed_on_registration(&self) -> bool {
+        true
     }
 }
 
@@ -1055,7 +1068,9 @@ pub(crate) fn resolve_exact_font_source<'a>(
     if source.bytes.len() != handle.font_bytes {
         return Err(ExactFontSourceResolutionReason::ByteLengthMismatch);
     }
-    if font_source_sha256(source.bytes) != handle.font_source_sha256 {
+    if !provider.hashed_on_registration()
+        && font_source_sha256(source.bytes) != handle.font_source_sha256
+    {
         return Err(ExactFontSourceResolutionReason::Sha256Mismatch);
     }
     Ok(source)
