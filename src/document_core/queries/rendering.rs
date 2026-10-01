@@ -3145,9 +3145,10 @@ impl DocumentCore {
 
     /// 구역의 쪽 테두리/배경 설정을 JSON으로 반환한다.
     pub fn get_page_border_fill_native(&self, section_idx: usize) -> Result<String, HwpError> {
-        use crate::document_core::helpers::{border_line_type_to_u8_val, color_ref_to_css};
+        use crate::document_core::helpers::{
+            border_line_type_to_u8_val, color_ref_to_css, fill_json_values,
+        };
         use crate::model::page::PageBorderUiBasis;
-        use crate::model::style::FillType;
 
         let section = self
             .document
@@ -3197,15 +3198,7 @@ impl DocumentCore {
                     .collect::<Vec<_>>()
                     .join(",");
                 let (fill_type, fill_color, pattern_color, pattern_type) =
-                    match (&bf.fill.fill_type, &bf.fill.solid) {
-                        (FillType::Solid, Some(solid)) => (
-                            "solid",
-                            color_ref_to_css(solid.background_color),
-                            color_ref_to_css(solid.pattern_color),
-                            solid.pattern_type,
-                        ),
-                        _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
-                    };
+                    fill_json_values(&bf.fill);
                 border_json = format!(
                     "{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{}",
                     borders, fill_type, fill_color, pattern_color, pattern_type

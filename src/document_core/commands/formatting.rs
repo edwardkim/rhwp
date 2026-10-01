@@ -1,8 +1,9 @@
 //! 글자모양/문단모양 조회·적용 관련 native 메서드
 
 use super::super::helpers::{
-    border_line_type_to_u8_val, build_tab_def_from_json, color_ref_to_css, json_has_border_keys,
-    json_has_tab_keys, parse_char_shape_mods, parse_json_i16_array, parse_para_shape_mods,
+    border_line_type_to_u8_val, build_tab_def_from_json, color_ref_to_css, fill_json_values,
+    json_has_border_keys, json_has_tab_keys, parse_char_shape_mods, parse_json_i16_array,
+    parse_para_shape_mods,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
@@ -644,7 +645,6 @@ impl DocumentCore {
             .get((bf_id - 1) as usize);
         match bf {
             Some(bf) => {
-                use crate::model::style::FillType;
                 let dir_names = ["Left", "Right", "Top", "Bottom"];
                 let borders_json: Vec<String> = bf.borders.iter().enumerate().map(|(i, b)| {
                     format!(
@@ -655,13 +655,7 @@ impl DocumentCore {
                         color_ref_to_css(b.color),
                     )
                 }).collect();
-                let (fill_type_str, fill_color, pat_color, pat_type) = match &bf.fill.solid {
-                    Some(sf) if bf.fill.fill_type == FillType::Solid => {
-                        ("solid", color_ref_to_css(sf.background_color),
-                         color_ref_to_css(sf.pattern_color), sf.pattern_type)
-                    }
-                    _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
-                };
+                let (fill_type_str, fill_color, pat_color, pat_type) = fill_json_values(&bf.fill);
                 format!(
                     "\"borderFillId\":{},{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{}",
                     bf_id,
@@ -684,7 +678,7 @@ impl DocumentCore {
 
     /// 문단 속성 JSON 생성 헬퍼
     pub(crate) fn build_para_properties_json(&self, para_shape_id: u16, sec_idx: usize) -> String {
-        use crate::model::style::{Alignment, FillType, HeadType};
+        use crate::model::style::{Alignment, HeadType};
         let ps = self.styles.para_styles.get(para_shape_id as usize);
 
         // 탭 정의 조회
@@ -743,15 +737,7 @@ impl DocumentCore {
                         )
                     })
                     .collect();
-                let (fill_type_str, fill_color, pat_color, pat_type) = match &bf.fill.solid {
-                    Some(sf) if bf.fill.fill_type == FillType::Solid => (
-                        "solid",
-                        color_ref_to_css(sf.background_color),
-                        color_ref_to_css(sf.pattern_color),
-                        sf.pattern_type,
-                    ),
-                    _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
-                };
+                let (fill_type_str, fill_color, pat_color, pat_type) = fill_json_values(&bf.fill);
                 format!(
                     "\"borderFillId\":{},{},\"fillType\":\"{}\",\"fillColor\":\"{}\",\"patternColor\":\"{}\",\"patternType\":{}",
                     bf_id, borders.join(","), fill_type_str, fill_color, pat_color, pat_type,
