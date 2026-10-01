@@ -1401,10 +1401,10 @@ impl SkiaLayerRenderer {
                                 .map(|payload| &payload.data[..])
                                 .or(image.data.as_deref());
                             if let Some(data) = data {
-                                let effect = if resolved
+                                let suppress_effects = resolved
                                     .as_deref()
-                                    .is_some_and(|payload| payload.suppress_effects)
-                                {
+                                    .is_some_and(|payload| payload.suppress_effects);
+                                let effect = if suppress_effects {
                                     ImageEffect::RealPic
                                 } else {
                                     image.effect
@@ -1428,8 +1428,16 @@ impl SkiaLayerRenderer {
                                     image.crop,
                                     image.original_size_hu,
                                     effect,
-                                    0,
-                                    0,
+                                    if suppress_effects {
+                                        0
+                                    } else {
+                                        image.brightness
+                                    },
+                                    if suppress_effects {
+                                        0
+                                    } else {
+                                        image.contrast
+                                    },
                                 );
                                 if opacity < 1.0 {
                                     canvas.restore();

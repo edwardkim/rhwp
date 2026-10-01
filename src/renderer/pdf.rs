@@ -221,13 +221,6 @@ fn validate_direct_pdf_tree(
                                     page_index,
                                     "page background image",
                                 )?;
-                                if image.brightness != 0 || image.contrast != 0 {
-                                    return Err(unsupported(
-                                        page_index,
-                                        "page background image",
-                                        "unbaked brightness or contrast",
-                                    ));
-                                }
                                 if image.effect == ImageEffect::Pattern8x8 {
                                     return Err(unsupported(
                                         page_index,
@@ -338,14 +331,6 @@ fn validate_direct_pdf_tree(
                             let effects_are_baked = resolved
                                 .as_deref()
                                 .is_some_and(|payload| payload.suppress_effects);
-                            if !effects_are_baked && (image.brightness != 0 || image.contrast != 0)
-                            {
-                                return Err(unsupported(
-                                    page_index,
-                                    "image",
-                                    "unbaked brightness or contrast",
-                                ));
-                            }
                             if !effects_are_baked && image.effect == ImageEffect::Pattern8x8 {
                                 return Err(unsupported(page_index, "image", "Pattern8x8 effect"));
                             }

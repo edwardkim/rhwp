@@ -497,3 +497,274 @@ fn issue_4764_pdf_page_manifest_builds() {
     }
     assert!(built > 20, "built too few PDF fixtures: {built}");
 }
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_png_rgba(width: u32, height: u32, rgba: [u8; 4]) -> Vec<u8> {
+    let pixels = image::RgbaImage::from_pixel(width, height, image::Rgba(rgba));
+    let mut bytes = std::io::Cursor::new(Vec::new());
+    pixels
+        .write_to(&mut bytes, image::ImageFormat::Png)
+        .expect("encode test PNG");
+    bytes.into_inner()
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_adjusted_rgb(rgb: [u8; 3], brightness: i8, contrast: i8) -> [u8; 3] {
+    let brightness = brightness.clamp(-100, 100) as f32 / 100.0;
+    let slope = (100.0 + contrast.clamp(-100, 100) as f32) / 100.0;
+    let intercept = ((0.5 - 0.5 * slope) + brightness) * 255.0;
+    rgb.map(|channel| {
+        ((channel as f32 * slope) + intercept)
+            .round()
+            .clamp(0.0, 255.0) as u8
+    })
+}
+
+#[cfg(feature = "native-skia")]
+struct Issue4764PdfImageStream {
+    width: usize,
+    height: usize,
+    pixels: Vec<u8>,
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_rfind(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    haystack
+        .windows(needle.len())
+        .rposition(|window| window == needle)
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_pdf_dict_usize(dict: &[u8], key: &str) -> Option<usize> {
+    let dict = String::from_utf8_lossy(dict);
+    let start = dict.find(key)? + key.len();
+    dict[start..]
+        .split_whitespace()
+        .next()
+        .and_then(|value| value.parse::<usize>().ok())
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_pdf_image_streams(pdf: &[u8]) -> Vec<Issue4764PdfImageStream> {
+    use flate2::read::ZlibDecoder;
+    use std::io::Read;
+
+    let mut images = Vec::new();
+    let mut cursor = 0;
+    while let Some(relative_start) = pdf[cursor..]
+        .windows(b"stream".len())
+        .position(|window| window == b"stream")
+    {
+        let stream_marker = cursor + relative_start;
+        let Some(dict_start) = issue_4764_rfind(&pdf[..stream_marker], b"<<") else {
+            cursor = stream_marker + b"stream".len();
+            continue;
+        };
+        let Some(dict_end) = issue_4764_rfind(&pdf[..stream_marker], b">>") else {
+            cursor = stream_marker + b"stream".len();
+            continue;
+        };
+        let dict = &pdf[dict_start..dict_end + 2];
+        if !dict.windows(b"/Subtype /Image".len())
+            .any(|window| window == b"/Subtype /Image")
+            || !dict
+                .windows(b"/ColorSpace /DeviceRGB".len())
+                .any(|window| window == b"/ColorSpace /DeviceRGB")
+            || !dict
+                .windows(b"/BitsPerComponent 8".len())
+                .any(|window| window == b"/BitsPerComponent 8")
+        {
+            cursor = stream_marker + b"stream".len();
+            continue;
+        }
+        let Some(width) = issue_4764_pdf_dict_usize(dict, "/Width") else {
+            cursor = stream_marker + b"stream".len();
+            continue;
+        };
+        let Some(height) = issue_4764_pdf_dict_usize(dict, "/Height") else {
+            cursor = stream_marker + b"stream".len();
+            continue;
+        };
+        let mut start = stream_marker + b"stream".len();
+        if pdf.get(start..start + 2) == Some(b"\r\n") {
+            start += 2;
+        } else if pdf.get(start) == Some(&b'\n') {
+            start += 1;
+        }
+        let Some(relative_end) = pdf[start..]
+            .windows(b"endstream".len())
+            .position(|window| window == b"endstream")
+        else {
+            break;
+        };
+        let end = start + relative_end;
+        let raw = &pdf[start..end];
+        let pixels = if dict
+            .windows(b"/Filter /FlateDecode".len())
+            .any(|window| window == b"/Filter /FlateDecode")
+        {
+            let mut decoded = Vec::new();
+            if ZlibDecoder::new(raw).read_to_end(&mut decoded).is_err() {
+                cursor = end + b"endstream".len();
+                continue;
+            }
+            decoded
+        } else {
+            raw.to_vec()
+        };
+        if pixels.len() == width.saturating_mul(height).saturating_mul(3) {
+            images.push(Issue4764PdfImageStream {
+                width,
+                height,
+                pixels,
+            });
+        }
+        cursor = end + b"endstream".len();
+    }
+    images
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_pdf_images_contain_rgb(images: &[Issue4764PdfImageStream], expected: [u8; 3]) -> bool {
+    images.iter().any(|image| {
+        image.width > 0
+            && image.height > 0
+            && image.pixels.chunks_exact(3).any(|rgb| {
+                rgb.iter()
+                .zip(expected)
+                .all(|(actual, expected)| actual.abs_diff(expected) <= 2)
+            })
+    })
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_direct_pdf_image_tree(
+    image: rhwp::renderer::render_tree::ImageNode,
+) -> rhwp::paint::PageLayerTree {
+    use rhwp::paint::{LayerNode, PaintOp, RenderProfile};
+    use rhwp::renderer::render_tree::BoundingBox;
+
+    let page = BoundingBox::new(0.0, 0.0, 32.0, 32.0);
+    rhwp::paint::PageLayerTree::with_profile(
+        32.0,
+        32.0,
+        LayerNode::leaf(
+            page,
+            None,
+            vec![PaintOp::image(BoundingBox::new(8.0, 8.0, 16.0, 16.0), image, None)],
+        ),
+        RenderProfile::Print,
+    )
+}
+
+#[cfg(feature = "native-skia")]
+fn issue_4764_direct_pdf_page_background_tree(
+    image: rhwp::renderer::render_tree::PageBackgroundImage,
+) -> rhwp::paint::PageLayerTree {
+    use rhwp::paint::{LayerNode, PaintOp, RenderProfile};
+    use rhwp::renderer::render_tree::{BoundingBox, PageBackgroundNode};
+
+    let page = BoundingBox::new(0.0, 0.0, 32.0, 32.0);
+    rhwp::paint::PageLayerTree::with_profile(
+        32.0,
+        32.0,
+        LayerNode::leaf(
+            page,
+            None,
+            vec![PaintOp::page_background(
+                page,
+                PageBackgroundNode {
+                    background_color: None,
+                    border_color: None,
+                    border_width: 0.0,
+                    gradient: None,
+                    image: Some(image),
+                },
+            )],
+        ),
+        RenderProfile::Print,
+    )
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels() {
+    use rhwp::model::style::ImageFillMode;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::ImageNode;
+
+    let source = [80, 100, 120];
+    let mut image = ImageNode::new(
+        1,
+        Some(issue_4764_png_rgba(
+            4,
+            4,
+            [source[0], source[1], source[2], 255],
+        )),
+    );
+    image.fill_mode = Some(ImageFillMode::FitToSize);
+    image.brightness = 20;
+    image.contrast = 20;
+
+    let pdf = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)])
+        .expect("direct PDF export");
+    let images = issue_4764_pdf_image_streams(&pdf);
+
+    assert!(
+        issue_4764_pdf_images_contain_rgb(&images, issue_4764_adjusted_rgb(source, 20, 20)),
+        "PDF image streams should contain brightness/contrast adjusted pixels"
+    );
+    assert!(
+        !issue_4764_pdf_images_contain_rgb(&images, source),
+        "PDF image streams should not keep the unadjusted source pixels"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_embeds_adjusted_page_background_pixels_in_display_order() {
+    use rhwp::model::image::ImageEffect;
+    use rhwp::model::style::ImageFillMode;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::PageBackgroundImage;
+
+    let source = [120, 90, 60];
+    let image = PageBackgroundImage {
+        data: issue_4764_png_rgba(4, 4, [source[0], source[1], source[2], 255]),
+        fill_mode: ImageFillMode::FitToSize,
+        brightness: 35,
+        contrast: -10,
+        effect: ImageEffect::RealPic,
+    };
+
+    let pdf = layer_trees_to_pdf(&[issue_4764_direct_pdf_page_background_tree(image)])
+        .expect("direct PDF export");
+    let images = issue_4764_pdf_image_streams(&pdf);
+
+    assert!(
+        issue_4764_pdf_images_contain_rgb(&images, issue_4764_adjusted_rgb(source, -10, 35)),
+        "page background must apply display brightness/contrast order"
+    );
+    assert!(
+        !issue_4764_pdf_images_contain_rgb(&images, issue_4764_adjusted_rgb(source, 35, -10)),
+        "page background must not use the raw stored brightness/contrast order"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn issue_4764_direct_pdf_still_rejects_pattern8x8_images() {
+    use rhwp::model::image::ImageEffect;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::ImageNode;
+
+    let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [80, 100, 120, 255])));
+    image.effect = ImageEffect::Pattern8x8;
+    image.brightness = 20;
+    image.contrast = 20;
+
+    let error = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)]).unwrap_err();
+
+    assert!(error.contains("Pattern8x8 effect"), "unexpected error: {error}");
+    assert!(error.contains("use the svg backend"), "unexpected error: {error}");
+}
