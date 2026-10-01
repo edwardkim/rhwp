@@ -3470,10 +3470,6 @@ impl Renderer for SvgRenderer {
             }
         }
 
-        // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 위 char_positions가 정한다.
-        let fit_positions =
-            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
-
         // Task #257: `·`(U+00B7) 를 <text> 대신 <circle> 로 렌더한다.
         //
         // 폰트 대체(휴먼명조→Batang 등)로 각 폰트의 `·` 글리프 LSB 와 글리프
@@ -3484,15 +3480,22 @@ impl Renderer for SvgRenderer {
         //   cx = advance box 수평 중앙
         //   cy = baseline(y) − font_size × MIDDLE_DOT_CY_OFFSET_EM  (CJK x-height 중앙)
         //   r  = font_size × MIDDLE_DOT_RADIUS_EM  (한글 COM PDF 실측, #2999)
-        let cluster_advance = |char_idx: usize, cluster_str: &str| -> f64 {
+        let advance_in = |positions: &[f64], char_idx: usize, cluster_str: &str| -> f64 {
             let n = cluster_str.chars().count();
             let end = char_idx + n;
-            if end < fit_positions.len() {
-                fit_positions[end] - fit_positions[char_idx]
+            if end < positions.len() {
+                positions[end] - positions[char_idx]
             } else {
                 0.0
             }
         };
+        let cluster_advance =
+            |char_idx: usize, cluster_str: &str| advance_in(&char_positions, char_idx, cluster_str);
+        // 글리프 폭(`textLength`)은 커닝 전 advance에 맞춘다. 자리와 `·` 중앙은 char_positions를 따른다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+        let glyph_advance =
+            |char_idx: usize, cluster_str: &str| advance_in(&fit_positions, char_idx, cluster_str);
         let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
         let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
         let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
@@ -3525,7 +3528,7 @@ impl Renderer for SvgRenderer {
                 let char_y = y + dy;
                 let length_attrs = svg_cluster_text_length_attrs(
                     cluster_str,
-                    cluster_advance(*char_idx, cluster_str),
+                    glyph_advance(*char_idx, cluster_str),
                     style,
                     script_advance_scale,
                     ratio,
@@ -3652,7 +3655,7 @@ impl Renderer for SvgRenderer {
                 let char_x = x + char_positions[*char_idx];
                 let length_attrs = svg_cluster_text_length_attrs(
                     cluster_str,
-                    cluster_advance(*char_idx, cluster_str),
+                    glyph_advance(*char_idx, cluster_str),
                     style,
                     script_advance_scale,
                     ratio,
