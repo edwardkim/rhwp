@@ -2270,6 +2270,9 @@ impl Renderer for WebCanvasRenderer {
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
         let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
 
         if !self.suppress_text_glyphs {
             // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
@@ -2436,8 +2439,8 @@ impl Renderer for WebCanvasRenderer {
                     } else {
                         let cluster_advance = {
                             let end = *char_idx + cluster_str.chars().count();
-                            if end < char_positions.len() {
-                                char_positions[end] - char_positions[*char_idx]
+                            if end < fit_positions.len() {
+                                fit_positions[end] - fit_positions[*char_idx]
                             } else {
                                 0.0
                             }

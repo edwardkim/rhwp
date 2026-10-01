@@ -3470,6 +3470,10 @@ impl Renderer for SvgRenderer {
             }
         }
 
+        // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 위 char_positions가 정한다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+
         // Task #257: `·`(U+00B7) 를 <text> 대신 <circle> 로 렌더한다.
         //
         // 폰트 대체(휴먼명조→Batang 등)로 각 폰트의 `·` 글리프 LSB 와 글리프
@@ -3483,8 +3487,8 @@ impl Renderer for SvgRenderer {
         let cluster_advance = |char_idx: usize, cluster_str: &str| -> f64 {
             let n = cluster_str.chars().count();
             let end = char_idx + n;
-            if end < char_positions.len() {
-                char_positions[end] - char_positions[char_idx]
+            if end < fit_positions.len() {
+                fit_positions[end] - fit_positions[char_idx]
             } else {
                 0.0
             }
