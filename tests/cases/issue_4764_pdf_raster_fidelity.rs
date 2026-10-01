@@ -510,13 +510,25 @@ fn issue_4764_png_rgba(width: u32, height: u32, rgba: [u8; 4]) -> Vec<u8> {
 
 #[cfg(feature = "native-skia")]
 fn issue_4764_adjusted_rgb(rgb: [u8; 3], brightness: i8, contrast: i8) -> [u8; 3] {
-    let brightness = brightness.clamp(-100, 100) as f32 / 100.0;
-    let slope = (100.0 + contrast.clamp(-100, 100) as f32) / 100.0;
-    let intercept = ((0.5 - 0.5 * slope) + brightness) * 255.0;
+    // Independent sRGB transfer equations from CSS Color 4. SVG filter
+    // primitives use linearRGB by default (Filter Effects 1 section 10).
+    let brightness = brightness.clamp(-100, 100) as f64 / 100.0;
+    let slope = (100.0 + contrast.clamp(-100, 100) as f64) / 100.0;
+    let intercept = (0.5 - 0.5 * slope) + brightness;
     rgb.map(|channel| {
-        ((channel as f32 * slope) + intercept)
-            .round()
-            .clamp(0.0, 255.0) as u8
+        let encoded = channel as f64 / 255.0;
+        let linear = if encoded <= 0.04045 {
+            encoded / 12.92
+        } else {
+            ((encoded + 0.055) / 1.055).powf(2.4)
+        };
+        let adjusted = (linear * slope + intercept).clamp(0.0, 1.0);
+        let encoded = if adjusted <= 0.0031308 {
+            adjusted * 12.92
+        } else {
+            1.055 * adjusted.powf(1.0 / 2.4) - 0.055
+        };
+        (encoded * 255.0).round().clamp(0.0, 255.0) as u8
     })
 }
 
@@ -803,13 +815,35 @@ fn issue_4764_native_adjustments_preserve_alpha_and_object_opacity() {
 
 #[cfg(feature = "native-skia")]
 #[test]
+fn issue_4764_direct_pdf_applies_grayscale_before_linear_contrast() {
+    use rhwp::model::image::ImageEffect;
+    use rhwp::renderer::pdf::layer_trees_to_pdf;
+    use rhwp::renderer::render_tree::ImageNode;
+
+    let mut image = ImageNode::new(1, Some(issue_4764_png_rgba(4, 4, [80, 100, 120, 255])));
+    image.effect = ImageEffect::GrayScale;
+    image.contrast = 50;
+    let pdf = layer_trees_to_pdf(&[issue_4764_direct_pdf_image_tree(image)])
+        .expect("grayscale then contrast PDF export");
+    // Linear luminance is about 0.1202. Applying contrast afterward gives
+    // 1.5 * 0.1202 - 0.25 < 0; reversing the filters leaves blue ink.
+    assert!(issue_4764_pdf_images_contain_rgb(
+        &issue_4764_pdf_image_streams(&pdf),
+        [0, 0, 0]
+    ));
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
 fn issue_4764_direct_pdf_embeds_adjusted_page_background_pixels_in_display_order() {
     use rhwp::model::image::ImageEffect;
     use rhwp::model::style::ImageFillMode;
     use rhwp::renderer::pdf::layer_trees_to_pdf;
     use rhwp::renderer::render_tree::PageBackgroundImage;
 
-    let source = [120, 90, 60];
+    // Keep the displayed linearRGB adjustment away from clipping all channels
+    // to black so an incorrectly scaled offset cannot pass this regression.
+    let source = [180, 190, 200];
     let image = PageBackgroundImage {
         data: issue_4764_png_rgba(4, 4, [source[0], source[1], source[2], 255]),
         fill_mode: ImageFillMode::FitToSize,
