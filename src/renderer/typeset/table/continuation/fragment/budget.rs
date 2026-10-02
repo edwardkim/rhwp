@@ -689,15 +689,19 @@ impl TypesetEngine {
                             .get(&para_idx)
                             .copied()
                             .unwrap_or(0.0);
+                    let frame_height =
+                        hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, self.dpi);
+                    // 호스트 내용이 원점을 전진시켰다면 저장 앵커의 끝만으로
+                    // 현재 본문에서 프레임을 수용할 수 있다고 판단하지 않는다.
+                    // 행 예산과 그리기가 공유하는 실제 원점에서도 경계를 확인한다.
+                    let placed_frame_fits = fragment_placement.is_none_or(|placement| {
+                        placement.table_top + frame_height
+                            <= source_first_fragment_flow_bottom + 0.5
+                    });
                     ((anchor_px - para_start).abs() <= 0.5
-                        && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5)
-                        .then_some((
-                            hwpunit_to_px(
-                                table.common.height.min(i32::MAX as u32) as i32,
-                                self.dpi,
-                            ),
-                            flow_bottom_px,
-                        ))
+                        && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
+                        && placed_frame_fits)
+                        .then_some((frame_height, flow_bottom_px))
                 })
         } else {
             None
