@@ -131,3 +131,35 @@ fn square_wrap_full_width_tail_is_drawn_below_table_and_prefix_lines() {
         next_lines[0].y
     );
 }
+
+/// 같은 표본 1쪽 머리: pi1 은 저장 줄 하나(`lh 3448 = 표 2882 + 바깥여백 566`,
+/// `ls -600`)에 글자처럼취급 표 하나를 싣는다. 저장 사다리는 다음 문단을
+/// `vpos + lh + ls` 에 두고(한/글 2020 PDF 도 같은 자리), 조판도 그 값을 쓴다.
+/// 수정 전 렌더는 표 바닥까지 전진해 뒤 본문 전체를 4.2px 내렸다.
+/// 관계 검사: pi1 표 윗변 → pi3 표 윗변 간격 = 저장 vpos 차(두 표 바깥여백 같음).
+#[test]
+fn single_stored_line_with_negative_spacing_advances_by_stored_line() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
+    let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
+        .unwrap_or_else(|e| panic!("parse {SAMPLE}: {e}"));
+    let json = document
+        .get_page_render_tree(0)
+        .expect("render tree page 0");
+    let tree: serde_json::Value = serde_json::from_str(&json).expect("parse render tree json");
+
+    let table_top = |pi: u64| {
+        let mut found = Vec::new();
+        collect(&tree, "Table", pi, &mut found);
+        assert_eq!(found.len(), 1, "1쪽에 pi={pi} 표가 하나 있어야 한다");
+        found[0].y
+    };
+    // 저장 LineSeg: pi1 vpos 5699, pi3 vpos 9027 (HWPUNIT, 75 = 1px @96dpi).
+    let stored_gap_px = (9027.0 - 5699.0) / 75.0;
+    let rendered_gap_px = table_top(3) - table_top(1);
+    assert!(
+        (rendered_gap_px - stored_gap_px).abs() <= 1.0,
+        "pi1→pi3 표 윗변 간격 {rendered_gap_px:.1}px 가 저장 사다리 {stored_gap_px:.1}px 와 \
+         다르다 — #4599 회귀: 음수 줄간격 저장 줄을 표 바닥까지 전진시켰다"
+    );
+}
