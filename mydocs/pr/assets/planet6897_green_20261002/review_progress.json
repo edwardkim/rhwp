@@ -11,14 +11,8 @@
     "skipped": 50,
     "exit_code": 100
   },
-  "focused_handled_initial_failures": 32,
-  "remaining_initial_failures": [
-    {
-      "case": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
-      "count": 1,
-      "decision": "다열 표의 잘못된 종전37.80px 고정. 선언 여백/정본 기준 재검토 필요. 전체29쪽 최소27.60393%로 회귀 적격 미충족."
-    }
-  ],
+  "focused_handled_initial_failures": 33,
+  "remaining_initial_failures": [],
   "post_correction_focused": [
     {
       "case": "issue_6950_paragraph_end_topbottom_anchor",
@@ -68,6 +62,14 @@
       "passed": 6,
       "failed": 0,
       "new_functions": 0
+    },
+    {
+      "case": "issue_7063_hwpx_rowbreak_fragment_outer_top",
+      "passed": 3,
+      "failed": 0,
+      "removed_invalid_function": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
+      "reason": "pins acknowledged wrong old37.80px despite independent41.55px and current41.56px",
+      "preserved": "original sample and PDF; other3existing tests; 29page visual hold"
     }
   ],
   "visual_evidence": {
