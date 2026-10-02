@@ -3053,15 +3053,16 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
         && matches!(table.page_break, TablePageBreak::RowBreak)
 }
 
-/// A saved native RowBreak table can finish a cut cell on a fresh page.  Hancom
-/// reopens its outer top margin even when the host has no positive object offset
-/// (86712 p28: 141 HU, PDF first border 77.5px versus body top 75.6px).
-/// Keep this separate from the broad empty-host margin rule disproved by #2097:
-/// the observed contract is a cut inside the final row of a wide multi-column
-/// table. One-column giant cells (#2214) align with the PDF without reopening this margin.
-/// [#7418] Two-column tables reopen it too: the first border of 76076 p34 is 77.3px (HWP
-/// 2020) / 77.5px (2024) and of 78494 p20·p21 77.5px, all body top 75.6 + 141 HU. The
-/// former `col_count > 2` narrowing read 76076 p34 as aligned without the margin.
+/// 저장된 native RowBreak 표는 새 쪽에서 잘린 셀을 마칠 수 있다. 호스트의 양수
+/// 개체 오프셋이 없어도 한컴은 바깥 위 여백을 다시 연다(86712 p28: 141HU,
+/// PDF 첫 괘선 77.5px, 본문 상단 75.6px).
+/// #2097에서 반증한 광범위한 빈 호스트 여백 규칙과 구분한다. 확인된 계약은
+/// 다열 표의 마지막 행 내부 컷이다. 한 열의 거대 셀(#2214)은 이 여백을
+/// 다시 열지 않아야 PDF와 맞는다.
+/// [#7418] 두 열 표도 여백을 다시 연다. 76076 p34의 첫 괘선은 77.3px(HWP
+/// 2020) / 77.5px(2024), 78494 p20·p21은 77.5px이다. 모두 본문 상단
+/// 75.6px에 141HU를 더한 값이다. 이전 `col_count > 2` 조건은 76076 p34가
+/// 여백 없이 정렬된 것으로 잘못 판단했다.
 pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
     native_hwp5_layout: bool,
     table: &Table,

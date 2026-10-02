@@ -226,30 +226,29 @@ impl ParagraphBox {
         Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
     }
 
-    /// [#7407] A nested flow's content box **inset by the paragraph's own margins**.
+    /// [#7407] 중첩 흐름의 내용 상자에 문단 자체의 양쪽 여백을 반영한다.
     ///
-    /// `content_width_px` hands the flow's full inner width with the origin at 0,
-    /// which is right only for a paragraph whose style has no side margins. A cell
-    /// paragraph has the same `margin_left`/`margin_right` a body paragraph has, and
-    /// dropping them gave the *same paragraph* two different boxes depending on the
-    /// route that reached it — the disagreement [`ParagraphBox::body`] exists to end.
+    /// `content_width_px`는 원점 0에서 흐름의 전체 안쪽 폭을 준다. 이는 문단에
+    /// 양쪽 여백이 없을 때만 맞는다. 셀 문단에도 본문과 같은 `margin_left`와
+    /// `margin_right`가 있으므로 이를 빼먹으면 같은 문단이 호출 경로에 따라
+    /// 다른 상자를 갖게 된다. [`ParagraphBox::body`]와 같은 상자 계약을 쓴다.
     ///
-    /// Measured on `samples/issue6639/issue6639-hancom-160.hwpx` cell 31, whose ten
-    /// paragraphs share `paraPr 18` (`margin_left = margin_right = 1600` in the IR's
-    /// 2x scale, i.e. 800 HWPUNIT each):
+    /// `samples/issue6639/issue6639-hancom-160.hwpx`의 셀 31에서 확인했다.
+    /// 문단 10개는 `paraPr 18`을 공유한다. IR의 2배 단위에서 양쪽 여백은
+    /// 각각 1600이며 실제로는 각각 800 HWPUNIT이다.
     ///
     /// | | 줄 폭 | 줄 원점 |
     /// | --- | ---: | ---: |
     /// | 한/글 저장 `hp:lineseg` | `39208` | `800` |
     /// | `content_width_px` | `40808` | `0` |
-    /// | this | `39206` | `800` |
+    /// | 이 함수 | `39206` | `800` |
     ///
-    /// The 1600 HWPUNIT surplus fits one more glyph per line, which is why the same
-    /// cell came out three lines shorter than the reference print.
+    /// 여분 1600 HWPUNIT에 줄마다 글자가 하나 더 들어가면서 같은 셀의
+    /// 줄 수가 기준 출력보다 세 줄 줄어들었다.
     ///
-    /// Unlike [`ParagraphBox::body`] the width is **not** snapped: a cell's inner
-    /// width never went through the column solver's quantization, so applying the
-    /// column quantum here would move an edge the cell never had.
+    /// 셀 안쪽 폭에는 단 계산의 양자화가 적용되지 않았으므로
+    /// [`ParagraphBox::body`]의 폭 스냅을 적용하지 않는다. 여기서 단 양자화를
+    /// 적용하면 원래 없던 셀 경계를 만들게 된다.
     pub(crate) fn content_for_style(
         content_width_px: f64,
         style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
@@ -393,10 +392,9 @@ pub(crate) struct PhysicalRow {
 /// - Column-solver quantization belongs in `ParagraphBox::body`, before
 ///   paragraph margins. This predicate must not absorb it a second time.
 ///
-/// `origin_shift` is `0` whenever the frame's origin is authoritative, which is
-/// every case but the withheld-origin one — see
-/// [`LayoutFrame::origin_is_authoritative`]. With `0` this is exactly the rule
-/// above: `column_start` and `segment_width` by equality, no tolerance.
+/// 원점을 보류한 경우를 제외하면 프레임의 원점이 확정되므로 `origin_shift`는
+/// `0`이다. [`LayoutFrame::origin_is_authoritative`]를 참조한다. 이동량이 0이면
+/// 위 규칙대로 `column_start`와 `segment_width`가 허용 오차 없이 같아야 한다.
 fn stored_row_matches_frame_expectation(
     expected: &Range<i32>,
     stored: &LineSeg,
