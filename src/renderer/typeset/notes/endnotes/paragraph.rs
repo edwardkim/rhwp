@@ -2,6 +2,7 @@
 
 use crate::renderer::typeset::notes::endnotes::content::prepend_endnote_marker_text;
 use crate::renderer::typeset::notes::endnotes::debug::debug_print_endnote_line_segments;
+use crate::renderer::typeset::notes::endnotes::measure::EndnoteRenderInkFit;
 use crate::renderer::typeset::notes::endnotes::profile::{
     en_ssot_debug, en_ssot_level, endnote_between_notes_margin,
     endnote_has_absorbed_between_notes_gap, endnote_has_visible_separator,
@@ -1309,7 +1310,27 @@ impl TypesetEngine {
                 }
             }
             if advance_for_fit {
-                st.advance_column_or_new_page();
+                // [#6574] 렌더 경로로 그려 이 문단이 현재 단에 통째로 들어가면 누계 기반 일반
+                // fit 판정으로 단을 넘기지 않는다. 누계는 렌더와 다른 항(제목의 저장 사다리
+                // 점프)을 실어 들어가는 문단을 넘긴다. 저장 사다리 되감김 등 다른 단 넘김
+                // 신호는 그대로 둔다.
+                let render_fits_current_column = matches!(
+                    self.judge_endnote_render_ink_fit(
+                        st,
+                        paragraphs,
+                        styles,
+                        available,
+                        en_col_w,
+                        en_para_idx,
+                        fmt.line_heights.len(),
+                        fmt.total_height,
+                        ep_idx == 0,
+                    ),
+                    EndnoteRenderInkFit::Fits
+                );
+                if !render_fits_current_column {
+                    st.advance_column_or_new_page();
+                }
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
                 if internal_rewind_split == Some(1) {
@@ -1511,6 +1532,31 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#6574] 렌더 경로로 그린 글줄이 단 하단을 넘으면 그 문단은 현재 단에
+            // 들어가지 않는다. 위 판정들은 누계(`current_height`)로 정하는데, 누계는 미주
+            // 사이 간격 등을 렌더와 다르게 실어 글줄을 단 아래로 흘린다. 같은 단 항목을
+            // scratch 렌더로 다시 그려 잉크 하단을 확인하고, 앞 줄만 들어가면 거기서 나누고
+            // 한 줄도 안 들어가면 다음 단에서 시작한다.
+            let render_fit_split = match self.judge_endnote_render_ink_fit(
+                st,
+                paragraphs,
+                styles,
+                available,
+                en_col_w,
+                en_para_idx,
+                fmt.line_heights.len(),
+                fmt.total_height,
+                ep_idx == 0,
+            ) {
+                EndnoteRenderInkFit::Unjudged | EndnoteRenderInkFit::Fits => None,
+                EndnoteRenderInkFit::SplitAt(split) => Some(split),
+                EndnoteRenderInkFit::NextColumn => {
+                    st.advance_column_or_new_page();
+                    prev_en_bottom_vpos = None;
+                    prev_en_content_bottom_vpos = None;
+                    None
+                }
+            };
             maybe_register_square_picture_wrap_anchor(
                 &mut *st,
                 paragraphs,
@@ -1703,6 +1749,10 @@ impl TypesetEngine {
                 }
             } else {
                 split_candidate
+            };
+            let split_candidate = match (split_candidate, render_fit_split) {
+                (Some(split), Some(render_split)) => Some(split.min(render_split)),
+                (split, render_split) => split.or(render_split),
             };
             if self.emit_endnote_split(
                 st,

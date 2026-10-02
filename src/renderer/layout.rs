@@ -7124,7 +7124,17 @@ impl LayoutEngine {
     /// 전달한다. `col_area` 는 상대 프레임(`y=0`)으로 둔다. 표/그림 개체는 measured_tables/
     /// bin_data 없이 측정(미주 단은 텍스트/수식 지배 — 표 미주는 근사). numbering/overflow 등
     /// 상태는 매 호출 새 scratch 엔진이라 격리된다([[tech_endnote_overflow_nonmonotonic_gate]]).
-    pub(crate) fn measure_endnote_column_bottom(
+    ///
+    /// [#6574] 커서 하단과 함께 그린 글줄(`TextLine`)의 **잉크 하단**도 돌려준다. 커서 하단은
+    /// 마지막 줄의 줄간격과 문단 뒤 간격까지 포함하므로, 글줄이 단 하단을 넘는지는 잉크
+    /// 하단으로 판정한다. 글줄이 하나도 없으면 잉크 하단은 `None` 이다. `sources` 는 로컬
+    /// 문단 순서의 미주 출처다 — 렌더는 다줄 미주 문단의 마지막 줄 줄간격을 **같은 미주의
+    /// 다음 문단**이 있을 때만 싣는데(`endnote_para_has_same_endnote_successor`), 출처가
+    /// 없으면 그 판정이 늘 거짓이 되어 측정이 줄간격만큼 짧아진다. `placements` 도 같은
+    /// 이유로 로컬 인덱스로 옮긴 단 배치 메타데이터다(어울림 anchor·인라인·문단 float 배치).
+    /// 렌더는 단을 닫을 때 받는 이 값으로 줄 폭과 개체 host 줄의 진행을 정하므로, 빠지면
+    /// 측정이 렌더와 갈린다.
+    pub(crate) fn measure_endnote_column_extent(
         &self,
         items: Vec<PageItem>,
         paragraphs: &[Paragraph],
@@ -7133,14 +7143,18 @@ impl LayoutEngine {
         col_area: &LayoutRect,
         start_height: f64,
         section_index: usize,
-        between_notes_hu: i32,
-    ) -> f64 {
-        self.endnote_between_notes_hu.set(between_notes_hu);
+        (separator_above_hu, between_notes_hu, separator_below_hu): (i32, i32, i32),
+        sources: &[EndnoteParaSource],
+        placements: EndnoteColumnPlacements,
+    ) -> (f64, Option<f64>) {
+        // 실제 렌더 셋업(`set_endnote_shape_margins_hu`)과 같은 미주 모양 여백을 싣는다.
+        // 사이 간격만 실으면 위·아래 여백이 0 으로 남아 영 여백 프로필로 오인된다.
+        self.set_endnote_shape_margins_hu(separator_above_hu, between_notes_hu, separator_below_hu);
         // 로컬 paras 는 전부 미주 para(0-기반 재색인). `endnote_para_base=0` 으로 미주 vpos
         // 정규화 경로(`endnote_line_vpos_base`: para_index >= base)를 활성화한다 — 미설정 시
         // usize::MAX 라 정규화가 꺼져 para 의 절대 파일-vpos 가 그대로 새어 단독 측정이
         // 폭발한다(수식 para 35px→13721px).
-        self.endnote_para_base.set(0);
+        self.set_endnote_para_sources(0, sources);
         let layout_info = PageLayoutInfo {
             page_width: col_area.width,
             page_height: col_area.y + col_area.height,
@@ -7165,12 +7179,12 @@ impl LayoutEngine {
             zone_y_offset: 0.0,
             wrap_around_paras: Vec::new(),
             used_height: 0.0,
-            wrap_anchors: std::collections::HashMap::new(),
+            wrap_anchors: placements.wrap_anchors,
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
-            inline_placements: Default::default(),
-            inline_flow_plans: Default::default(),
-            paragraph_float_placements: Default::default(),
+            inline_placements: placements.inline_placements,
+            inline_flow_plans: placements.inline_flow_plans,
+            paragraph_float_placements: placements.paragraph_float_placements,
         };
         let page_content = PageContent {
             page_index: 0,
@@ -7178,7 +7192,9 @@ impl LayoutEngine {
             page_number_restarted: false,
             section_index,
             layout: layout_info.clone(),
-            column_contents: Vec::new(),
+            // 렌더는 쪽의 단 내용으로 빈 float host 문단의 줄 예약을 판정한다
+            // (`para_has_visible_textless_float_shape_item`). 측정 단도 같은 쪽 내용에 싣는다.
+            column_contents: vec![col_content.clone()],
             active_header: None,
             active_footer: None,
             page_number_pos: None,
@@ -7191,7 +7207,7 @@ impl LayoutEngine {
         // [#4277] 높이 측정 전용 — paint 트리가 아니라 흐름 상태만 만든다.
         let mut frame = PageLayoutContext::new(0, col_area.width, col_area.y + col_area.height);
         let mut paper_images: Vec<RenderNode> = Vec::new();
-        let (_node, y_offset) = self.build_single_column(
+        let (node, y_offset) = self.build_single_column(
             &mut frame,
             &mut paper_images,
             &col_content,
@@ -7210,7 +7226,22 @@ impl LayoutEngine {
         );
         // y_offset 은 col_area 절대 프레임의 단 콘텐츠 bottom. 호출부가 `current_height`
         // (=col_area.y 가 단 시작) 프레임과 정합하도록 그대로 반환한다.
-        y_offset
+        // 글줄의 하단은 줄 상자(줄 위 + 줄 높이)다. 수식·그림 자식이 TextLine bbox 를 줄
+        // 높이보다 키워도 한컴은 줄 상자가 단 안에 들면 그 줄을 같은 단에 둔다.
+        fn max_text_line_bottom(node: &RenderNode) -> Option<f64> {
+            let own = match &node.node_type {
+                RenderNodeType::TextLine(line) => {
+                    Some(node.bbox.y + line.line_height.min(node.bbox.height))
+                }
+                _ => None,
+            };
+            node.children
+                .iter()
+                .filter_map(max_text_line_bottom)
+                .chain(own)
+                .reduce(f64::max)
+        }
+        (y_offset, max_text_line_bottom(&node))
     }
 
     /// [Task #2120] 문단 테두리/배경 연속 그룹 병합 렌더링 (Task #321 v6) —
@@ -7910,6 +7941,9 @@ impl LayoutEngine {
         // 새 쪽 첫 표로 새면 앞 쪽 좌표가 문단 상단이 된다(1480000 4구역: 칸 줄 550개가
         // 용지 밖 1.5px).
         self.host_text_content_bottom.set(None);
+        // [#6574] 미주 흐름에서 마지막으로 그린 글줄의 잉크 하단. 그림·도형 항목은 이 값을
+        // 남기지 않으므로(`last_item_content_bottom` 을 비운다) 새 문항 제목의 기준으로 따로 든다.
+        let mut last_endnote_content_bottom_y: Option<f64> = None;
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
                 (item_ordinal == 0)
@@ -8162,6 +8196,29 @@ impl LayoutEngine {
                 None
             };
             hcursor.prev_item_content_bottom_y = prev_item_content_bottom_y;
+            if col_content.endnote_flow {
+                // 자리차지(비-TAC) 그림 항목 뒤의 흐름 y 는 그림 바닥이다.
+                let prev_float_shape = item_ordinal
+                    .checked_sub(1)
+                    .and_then(|idx| col_content.items.get(idx))
+                    .and_then(|prev_item| match prev_item {
+                        PageItem::Shape {
+                            para_index,
+                            control_index,
+                        } => paragraphs.get(*para_index)?.controls.get(*control_index),
+                        _ => None,
+                    })
+                    .is_some_and(|ctrl| match ctrl {
+                        Control::Picture(pic) => !pic.common.treat_as_char,
+                        Control::Shape(shape) => !shape.common().treat_as_char,
+                        _ => false,
+                    });
+                if prev_float_shape {
+                    last_endnote_content_bottom_y = Some(y_offset);
+                } else if prev_item_content_bottom_y.is_some() {
+                    last_endnote_content_bottom_y = prev_item_content_bottom_y;
+                }
+            }
             hcursor.prev_item_flow_line_bottom_y = if item_ordinal > 0 {
                 let bottom = self.last_item_flow_line_bottom.get();
                 bottom.is_finite().then_some(bottom)
@@ -8631,6 +8688,34 @@ impl LayoutEngine {
                     let delta = min_y - y_offset;
                     y_offset = min_y;
                     hcursor.shift_vpos_base_for_rendered_delta(delta);
+                }
+            }
+            // [#6574] 새 문항 제목은 직전 미주의 마지막 글줄 잉크 하단 + 미주 사이 간격에
+            // 놓인다(한컴 정본: 그림·수식 꼬리 뒤에서도 같은 값). 저장 사다리의 전방 점프는
+            // 이 값보다 클 수 있어 제목이 내려가고 단 하단을 넘긴다.
+            if current_is_endnote_question_title && col_content.endnote_flow && item_ordinal > 0 {
+                let prev_is_endnote_para = col_content
+                    .items
+                    .get(item_ordinal - 1)
+                    .and_then(|prev_item| match prev_item {
+                        PageItem::FullParagraph { para_index }
+                        | PageItem::PartialParagraph { para_index, .. }
+                        | PageItem::Shape { para_index, .. } => Some(*para_index),
+                        _ => None,
+                    })
+                    .is_some_and(|pi| pi >= self.endnote_para_base.get());
+                if let Some(prev_bottom) =
+                    last_endnote_content_bottom_y.filter(|_| prev_is_endnote_para)
+                {
+                    let gap = hwpunit_to_px(self.endnote_between_notes_hu.get(), self.dpi);
+                    let target_y = prev_bottom + gap;
+                    let delta = target_y - y_offset;
+                    if delta > 0.05 {
+                        hcursor.shift_vpos_base_for_rendered_delta(delta);
+                    } else if delta < -0.05 {
+                        hcursor.shift_vpos_base_for_rendered_backtrack(-delta);
+                    }
+                    y_offset = target_y;
                 }
             }
             let current_vpos_rewinds_from_prev = hcursor
@@ -15569,8 +15654,29 @@ impl LayoutEngine {
                             {
                                 let has_visible_text =
                                     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
-                                // [#7470] host 줄이 그림 띠에 흡수된 빈 host(`sw=0`)는 더하지 않는다.
-                                if !has_visible_text
+                                // [#6574] 미주 문단은 같은 미주의 다음 문단 저장 vpos 가 한컴이 이
+                                // 그림 뒤에 둔 자리다. 사다리가 그림 바닥까지만 진행하면 호스트
+                                // 빈 줄을 따로 더하지 않는다(그림 바닥에 바로 이어진다).
+                                let endnote_stored_successor_y = (para_index
+                                    >= self.endnote_para_base.get()
+                                    && self.endnote_para_has_same_endnote_successor(para_index))
+                                .then(|| {
+                                    let first = para.line_segs.first()?.vertical_pos;
+                                    let next_first = paragraphs
+                                        .get(para_index + 1)?
+                                        .line_segs
+                                        .first()?
+                                        .vertical_pos;
+                                    let stored_y = saved_y_offset
+                                        + hwpunit_to_px(next_first - first, self.dpi);
+                                    (next_first > first && stored_y + 0.5 >= result_y)
+                                        .then_some(stored_y)
+                                })
+                                .flatten();
+                                if let Some(stored_y) = endnote_stored_successor_y {
+                                    result_y = stored_y;
+                                } else if !has_visible_text
+                                    // [#7470] host 줄이 그림 띠에 흡수된 빈 host(`sw=0`)는 더하지 않는다.
                                     && (self.column_is_endnote_flow.get()
                                         || !crate::renderer::empty_host_line_absorbed_by_topbottom_float(
                                             para,
@@ -16817,4 +16923,22 @@ fn compute_tac_leading_width(
         }
     }
     width
+}
+
+/// [#6574] 조판 중 scratch 미주 단 측정에 싣는 단 배치 메타데이터(로컬 문단 인덱스).
+/// 실제 렌더는 단을 닫을 때 같은 값을 `ColumnContent` 로 받는다.
+#[derive(Default)]
+pub(crate) struct EndnoteColumnPlacements {
+    pub(crate) wrap_anchors:
+        std::collections::HashMap<usize, crate::renderer::pagination::WrapAnchorRef>,
+    pub(crate) inline_placements: std::collections::HashMap<
+        (usize, usize),
+        crate::renderer::float_placement::InlineBoxPlacement,
+    >,
+    pub(crate) inline_flow_plans:
+        std::collections::HashMap<usize, crate::renderer::inline_flow::InlineFlowPlan>,
+    pub(crate) paragraph_float_placements: std::collections::HashMap<
+        (usize, usize),
+        crate::renderer::float_placement::ParagraphFloatPlacement,
+    >,
 }

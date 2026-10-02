@@ -322,6 +322,10 @@ pub struct TypesetEngine {
         std::cell::RefCell<Vec<crate::renderer::float_placement::FloatCarveEvidence>>,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// [#6574] 미주 단 렌더 판정의 재사용 상태(같은 단 상태의 판정 결과·커서 상한).
+    endnote_render_fit_cache: std::cell::RefCell<
+        crate::renderer::typeset::notes::endnotes::measure::EndnoteRenderFitCache,
+    >,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -3465,6 +3469,7 @@ impl TypesetEngine {
             profile: std::cell::Cell::new(Default::default()),
             uniform_filler_ladder: std::cell::Cell::new(false),
             float_carve_evidence: std::cell::RefCell::new(Vec::new()),
+            endnote_render_fit_cache: std::cell::RefCell::new(Default::default()),
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
