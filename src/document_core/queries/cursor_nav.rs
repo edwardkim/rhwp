@@ -1916,11 +1916,13 @@ impl DocumentCore {
                 }
 
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    if tr.section_index == Some(sec)
-                        && tr.para_index == Some(para)
-                        && tr.cell_context.is_none()
-                    {
-                        let cs = tr.char_start.unwrap_or(0);
+                    // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                    if let (true, Some(cs)) = (
+                        tr.section_index == Some(sec)
+                            && tr.para_index == Some(para)
+                            && tr.cell_context.is_none(),
+                        tr.char_start,
+                    ) {
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
@@ -2004,8 +2006,8 @@ impl DocumentCore {
                             path,
                         } => path_cell_ctx_matches(ctx, parent_para_idx, path, cpi),
                     });
-                    if matches_cell {
-                        let cs = tr.char_start.unwrap_or(0);
+                    // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                    if let (true, Some(cs)) = (matches_cell, tr.char_start) {
                         let cc = tr.text.chars().count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
