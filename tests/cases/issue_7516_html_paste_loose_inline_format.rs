@@ -41,7 +41,14 @@ fn pasted(html: &str) -> Vec<(String, String)> {
 }
 
 fn one(text: &str, marks: &str) -> Vec<(String, String)> {
-    vec![(text.to_string(), marks.to_string())]
+    lines(&[(text, marks)])
+}
+
+fn lines(expected: &[(&str, &str)]) -> Vec<(String, String)> {
+    expected
+        .iter()
+        .map(|(text, marks)| (text.to_string(), marks.to_string()))
+        .collect()
 }
 
 #[test]
@@ -93,4 +100,53 @@ fn span_inside_a_paragraph_keeps_inner_formats_and_images() {
         .map(|(_, position)| position)
         .collect();
     assert_eq!((paragraph.text.as_str(), pictures), ("앞뒤", vec![1]));
+}
+
+#[test]
+fn numeric_bold_weights_stay_bold() {
+    for (html, expected) in [
+        (
+            r#"<p>앞<strong style="font-weight: 600;">굵게</strong></p>"#,
+            one("앞굵게", ".BB"),
+        ),
+        (
+            r#"<p>앞<strong style="font-weight: 800;">굵게</strong></p>"#,
+            one("앞굵게", ".BB"),
+        ),
+        (
+            r#"<p dir="auto">앞 <strong style="color: rgb(31, 35, 40); font-weight: 600;">굵게</strong> 뒤</p>"#,
+            one("앞 굵게 뒤", "..BB.."),
+        ),
+        // 가장 안쪽 요소의 굵기를 따른다.
+        (
+            r#"<p><b>가<span style="font-weight:400">나</span></b></p>"#,
+            one("가나", "B."),
+        ),
+    ] {
+        assert_eq!(pasted(html), expected, "{html}");
+    }
+}
+
+#[test]
+fn line_break_inside_a_format_keeps_lines_and_format() {
+    for html in [
+        "<p>a</p><b><br></b><p>b</p>",
+        "<div>a</div><div><b><br></b></div><div>b</div>",
+    ] {
+        assert_eq!(
+            pasted(html),
+            lines(&[("a", "."), ("", ""), ("b", ".")]),
+            "{html}"
+        );
+    }
+    // Google 문서는 끝 줄바꿈을 서식 태그 밖 <br> 로 쓴다.
+    let docs = r#"<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-0"><p dir="ltr"><span style="font-weight:400;">a</span></p><br><p dir="ltr"><span style="font-weight:400;">b</span></p></b><br class="Apple-interchange-newline">"#;
+    assert_eq!(
+        pasted(docs),
+        lines(&[("a", "."), ("", ""), ("b", "."), ("", "")])
+    );
+    assert_eq!(
+        pasted("<b>가<br>나</b>"),
+        lines(&[("가", "B"), ("나", "B")])
+    );
 }
