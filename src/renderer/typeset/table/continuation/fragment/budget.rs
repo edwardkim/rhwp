@@ -111,6 +111,18 @@ impl TypesetEngine {
             .map_or(fragment_outer_bottom_overhead, |placement| {
                 placement.occupied_bottom - placement.table_top - total_rows_h
             });
+        let source_cut_opens_outer_top = is_continuation
+            && st.current_height <= 0.5
+            && std::ptr::eq(row_geometry_table, table)
+            && prepared
+                .layout_engine
+                .intra_paragraph_rowbreak_reopens_outer_top(
+                    para,
+                    table,
+                    cursor_row,
+                    start_cut,
+                    input.source.styles,
+                );
         let fragment_opens_outer_top = std::ptr::eq(row_geometry_table, table)
             && crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
                 st.profile.hwpx_stored_layout(),
@@ -136,7 +148,9 @@ impl TypesetEngine {
             );
         let host_before_overhead = host_before_overhead
             + if is_continuation
-                && (fragment_opens_outer_top || terminal_fragment_opens_outer_top)
+                && (fragment_opens_outer_top
+                    || terminal_fragment_opens_outer_top
+                    || source_cut_opens_outer_top)
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment
             {

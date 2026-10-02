@@ -4522,6 +4522,17 @@ impl LayoutEngine {
         // 저장된 자리차지 RowBreak 표는 저장 앵커(첫 조각) 또는
         // 다음 쪽 본문 상단(이어지는 조각) 뒤에 상단 바깥여백을 연다.
         // 중첩 표와 쪽 중간에서 이어지는 조각은 별도 흐름 좌표를 쓴다.
+        let source_cut_reopens_outer_top = is_continuation
+            && enclosing_cell_ctx.is_none()
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5
+            && self.intra_paragraph_rowbreak_reopens_outer_top(
+                &paragraphs[para_index],
+                table,
+                start_row,
+                start_cut,
+                styles,
+            );
         let rowbreak_reopens_outer_top = !repeat_fragment_outer_margin
             && enclosing_cell_ctx.is_none()
             && crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
@@ -4570,6 +4581,7 @@ impl LayoutEngine {
         let y_start = if (single_cell_page_fragment
             || terminal_multirow_reopens_outer_top
             || rowbreak_reopens_outer_top
+            || source_cut_reopens_outer_top
             || native_repeated_header_reopens_outer_top
             || empty_opening_continuation
             || empty_opening_first_fragment)

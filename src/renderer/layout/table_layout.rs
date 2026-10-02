@@ -15281,20 +15281,41 @@ impl LayoutEngine {
             || table.row_count <= 1
             // 종료 컷보다 앞에서 완결된 제목 병합은 이어받는 행의 소유를 바꾸지 않는다.
             || (!two_line_source_cut && table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && cell.row as usize + cell.row_span as usize > end_row.saturating_sub(1)
+                if cell.row_span <= 1
+                    || cell.row as usize + cell.row_span as usize <= end_row.saturating_sub(1)
+                {
+                    return false;
+                }
+                // 경계를 가로지르는 라벨도 모든 원본 내용이 첫 프레임 안에
+                // 완결되면 다음 조각의 내용 컷을 소유하지 않는다.
+                let rows = table.get_raw_row_heights();
+                let before = rows.iter().take(cell.row as usize)
+                    .map(|height| hwpunit_to_px(*height as i32, self.dpi)).sum::<f64>()
+                    + hwpunit_to_px(table.cell_spacing as i32, self.dpi) * f64::from(cell.row);
+                let units = self.cell_units(cell, table, styles);
+                let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+                cell.row as usize >= end_row.saturating_sub(1)
+                    || cell.paragraphs.iter().any(|para| !para.controls.is_empty()
+                        || para.stored_text_partition_is_dirty()
+                        || para.line_segs.is_empty()
+                        || para.line_segs.iter().any(|line| line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0))
+                    || units.iter().any(|unit| unit.page_frame_reset_before)
+                    || before + units.iter().map(|unit| unit.height).sum::<f64>() + top + bottom
+                        > hwpunit_to_px(table.common.height as i32, self.dpi)
             }))
             || table.cells.iter().any(|cell| cell.dirty_flag || cell.paragraphs.iter().any(|p|
                 p.stored_text_partition_is_dirty() || p.cell_format_vpos_dirty))
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
-            || (!two_line_source_cut && !self.row_cut_ends_at_plain_text_saved_reset(
-                table,
-                end_row - 1,
-                start_cut,
-                end_cut,
-                styles,
-            ))
+            || (!two_line_source_cut && !(self.row_cut_ends_at_plain_text_saved_reset(
+                table, end_row - 1, start_cut, end_cut, styles,
+            ) || (table.cells.iter().any(|cell| {
+                cell.row_span > 1
+                    && (cell.row as usize) < end_row.saturating_sub(1)
+                    && cell.row as usize + cell.row_span as usize > end_row.saturating_sub(1)
+            }) && self.row_cut_starts_intra_paragraph_stored_frame(
+                table, end_row - 1, end_cut, styles,
+            ))))
         {
             return None;
         }
@@ -17182,6 +17203,55 @@ impl LayoutEngine {
         )
     }
 
+    /// 같은 문단 안의 저장 쪽 경계를 현재 행 컷이 소유하는지 확인한다.
+    pub(crate) fn row_cut_starts_intra_paragraph_stored_frame(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let mut cells: Vec<_> = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+            .collect();
+        cells.sort_by_key(|cell| cell.col);
+        cells.iter().enumerate().any(|(index, cell)| {
+            cut.get(index).is_some_and(|&next| {
+                let units = self.cell_units(cell, table, styles);
+                self.stored_paragraph_allows_orphan_split(table, cell, &units, next, styles)
+            })
+        })
+    }
+
+    /// 원본 문단 내부에서 재개하는 표 프레임의 위 여백. 예약과 paint가
+    /// 같은 컷·앵커를 읽으며 첫 조각의 양수 개체 오프셋은 다시 적용하지 않는다.
+    pub(crate) fn intra_paragraph_rowbreak_reopens_outer_top(
+        &self,
+        host: &Paragraph,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        !table.common.treat_as_char
+            && table.row_count > 1
+            && table.outer_margin_top > 0
+            && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+            && table.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
+            && table.page_break == crate::model::table::TablePageBreak::RowBreak
+            && host.text.is_empty()
+            && matches!(host.controls.as_slice(), [Control::Table(_)])
+            && !host.stored_text_partition_is_dirty()
+            && host.line_segs.first().is_some_and(|line| {
+                line.vertical_pos >= line.line_height
+                    && line.line_height > 0
+                    && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            && self.row_cut_starts_intra_paragraph_stored_frame(table, row, cut, styles)
+    }
+
     /// 고아 줄 방지가 꺼진 원본 문단의 새 프레임 첫 슬롯에서 쪽 경계를 유지한다.
     /// 두 줄을 함께 이월하면 한컴의 1+1줄 분할이 0+2줄로 바뀐다.
     /// 편집본과 수동 줄 사다리는 기존 보호 경로를 사용한다.
@@ -17193,7 +17263,8 @@ impl LayoutEngine {
         next: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        if !self.profile.get().hwp5_stored_pagination_layout()
+        if !(self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
             || self
                 .render_normalization
@@ -17217,6 +17288,10 @@ impl LayoutEngine {
         let Some(para) = cell.paragraphs.get(previous.para_idx) else {
             return false;
         };
+        if para.stored_text_partition_is_dirty() {
+            return false;
+        }
+        // 컨테이너와 무관하게 온전한 원본 줄의 쪽 소속을 보존한다.
         // 다음 저장 줄이 새 프레임의 첫 슬롯에서 시작해야 한다. 양수 슬롯이면
         // 이월된 앞 줄의 자리도 다음 프레임에 남으므로 기존 문단 보호를 유지한다
         // (k-water: 다음 줄1652HU, 심사지표: 다음 줄0HU).

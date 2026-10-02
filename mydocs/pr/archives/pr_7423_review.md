@@ -227,3 +227,21 @@ last_verified: 2026-10-02
 - Native/fresh WASM 4쪽51.96358%→99.85457%; 보호3·8·9·10쪽99.05706%/98.91222%/98.55869%/99.70891%. 내용 컷·왼쪽 빈 칸 소유를 유지하며 오른쪽 내용을 실제 예약 프레임 안에서 가운데 정렬합니다. 다음 본문도 PDF 위치로 복원했습니다.
 - 기존110/110 PASS(exit0,12.520초),29쪽 일치·용지 밖0건. HWP 반례37쪽·기존 용지 밖1건 유지. 새 테스트·baseline 완화 없음. Native 전29쪽에서4쪽만 변화했으며 미달7·14·20·21·28쪽은 남았습니다. fresh WASM은29쪽 export/선택5쪽 raster 검증이며 전29쪽검증을 대신하지 않습니다.
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_terminal_margin_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_terminal_margin_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_terminal_margin_wasm_selected.tsv), [4쪽 비교](../assets/planet6897_green_20261002/sample2_terminal_margin_p4_review.png). Mac WASM은 로컬 `--no-opt` 대체 빌드입니다. 최종 전체 검증·통합 PR 준비는 계속 보류입니다.
+
+### 메인터너 보정 준비: 7쪽 문단 내부 저장 쪽 경계
+
+- 독립 PDF7쪽은 입목 설명의 두 번째 줄에서 시작하지만 현재 출력은 첫 줄부터 이어받습니다. 원본 pi69/셀12/문단2는 첫 줄vpos5,400HU, 둘째 줄vpos0HU이며 현재 컷은[2,3]입니다. 전체29쪽은 동일합니다.
+- 예산 진단: 첫 조각 가용1,039.1px, 실제 내용 소비1,006.4px이며 단순 용지 부족과 원본 저장 줄 경계를 구분해야 합니다. 현재 유닛의 문단/줄 소속과 scanner의 컷, paint에서 재사용하는 범위를 추적한 뒤 수정합니다. 출력 숨김·임의 위치 이동·baseline 완화는 사용하지 않습니다. 진단용 출력 조건 변경은 원인 확인 후 제거합니다.
+
+- 실제 원장: 유닛3=문단2/첫 줄24px, 유닛4=동일 문단/둘째 줄20px·hard/stored reset=true. scanner가4에서 멈춘 뒤 `stored_paragraph_allows_orphan_split`의 HWP5 전용 게이트가 원본1+1줄 소유를 거부해3으로 되감았습니다. 유효한 원본 줄·첫 슬롯0·고아/문단 보호 비활성 조건은 유지하고 HWPX 저장 계보도 수용합니다. dirty 문단은 제외하고 임시 진단 조건은 제거했습니다.
+
+- 쪽 소속만 보정한 후보는112/112PASS이나7쪽39.69340%로 미달입니다. 이어지는 걸침 라벨의 물리 프레임을 보존한 후보는6쪽99.84829%·7쪽93.08766%로 개선됐으나, 병합 없는20쪽까지 같은 선언 최소높이를 강제해30쪽이 되는 반례를 확인했습니다. 첫 조각에서 모든 내용이 완결된 걸침 라벨의 실제 물리 공간을 공유하는 경우에만 문단 내부 컷의 선언 프레임을 재사용하며, 일반 비병합 행은 기존 내용/최소높이 회계를 유지합니다. 후보 결과는 최종 수용 근거가 아닙니다.
+
+- 추가 반례: 원시 행 잔여를 기존 문단 간 첫 조각에도 전달한 후보는2쪽 table bbox와 후속 표를 겹치게 했고, 기존 off-canvas partition14의113424_evaluation_guideline.hwpx를1→2건으로 악화시켰습니다(112개111PASS/1FAIL). 원시 잔여는 위에서 보존한 병합 공간·문단 내부 저장 컷에서만 소비하고, 기존 문단 간 이어받기 회계는 유지합니다. 이 후보는 수용하지 않으며 baseline 변경은 없습니다.
+
+#### 7쪽 보정 최종 결과
+
+- Native/fresh WASM 6쪽99.84829%·7쪽93.08766%; 7쪽50.34444%→93.08766%. 2쪽99.75557% 유지. 원본1+1줄 소속, 걸침 라벨의 첫 조각 소유, 실제 다음 프레임 높이와 정렬을 공유했습니다. 첫 프레임 높이는 내용 컷을 더 소비하지 않으며, 다음 시작 행의 원시 잔여는 검증한 문단 내부 컷만 소비합니다.
+- 기존112/112 PASS(exit0,12.500초),29쪽 일치·용지 밖0건·표 겹침0건.113424_evaluation_guideline.hwpx46쪽·기존 용지 밖1건 복원. 새 검사·fixture·baseline 변경 없음.
+- Native 전29쪽에서 변경된 점수는6·7·21쪽뿐입니다. 21쪽71.10302%→88.03303%이나 여전히 미달이며14·20·28쪽도 보류입니다. fresh WASM 선택4쪽 중21쪽이 미달이라visual exit1이며, 실행 실패나 전쪽 통과로 해석하지 않습니다. 전체29쪽 fresh WASM raster 및 최종 전체 회귀/lint는 후속 필수 게이트입니다.
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_intra_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_intra_frame_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_intra_frame_wasm_selected.tsv), [6쪽](../assets/planet6897_green_20261002/sample2_intra_frame_p6_review.png), [7쪽](../assets/planet6897_green_20261002/sample2_intra_frame_p7_review.png).

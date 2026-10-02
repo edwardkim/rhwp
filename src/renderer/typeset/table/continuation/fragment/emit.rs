@@ -305,7 +305,18 @@ impl TypesetEngine {
             && (crate::renderer::float_placement::object_only_saved_table_anchor(
                 input.source.paragraph,
                 table,
-            ) || saved_closing_frame.is_some())
+            ) || saved_closing_frame.is_some()
+                || (input.source.paragraph.text.is_empty()
+                    && matches!(
+                        input.source.paragraph.controls.as_slice(),
+                        [crate::renderer::typeset::Control::Table(_)]
+                    )
+                    && layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                        table,
+                        end_row - 1,
+                        &split_end_cut,
+                        styles,
+                    )))
             && saved_opening_frame.is_some_and(|frame_height| {
                 frame_height > partial_height + 0.5
                     && frame_height <= avail_for_rows + header_overhead
@@ -896,6 +907,19 @@ impl TypesetEngine {
         let next_start_row_height_override = empty_opening_next_height
             .or(complete_block_next_height)
             .or(saved_closing_frame.filter(|_| first_fragment_blank_band))
+            .or_else(|| {
+                // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
+                // 기존 문단 간 내용 조각은 선언 최소높이를 다시 예약하지 않는다.
+                if !first_fragment_blank_band
+                    || !layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                        table, end_row - 1, &next_cut, styles,
+                    )
+                { return None; }
+                let first = end_row_height_override?;
+                let raw = *table.get_raw_row_heights().get(end_row.checked_sub(1)?)?;
+                let remaining = hwpunit_to_px(raw as i32, self.dpi) - first;
+                (remaining > 0.0).then_some(remaining)
+            })
             .or_else(|| end_row_height_override
             .filter(|_| !first_fragment_blank_band && !source_frame_trailing_trim_applied)
             .and_then(|limit| {
