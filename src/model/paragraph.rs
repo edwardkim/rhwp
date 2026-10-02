@@ -1012,7 +1012,11 @@ impl Paragraph {
     }
 
     /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
-    fn shift_position_metadata_for_stream_insertion(&mut self, insert_pos: u32, shift: u32) {
+    pub(crate) fn shift_position_metadata_for_stream_insertion(
+        &mut self,
+        insert_pos: u32,
+        shift: u32,
+    ) {
         if shift == 0 {
             return;
         }
