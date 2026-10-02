@@ -436,6 +436,7 @@ pub(super) fn try_place_stored_tac_paragraph(
     ) {
         // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
         // 연결해 다음 문단의 lazy 역산이 그 간격을 다시 더하지 않게 한다.
+        let rebase_line_origin = placement.rebase_line_origin;
         let lazy_origin = para.line_segs.first().map(|seg| {
             seg.vertical_pos
                 .saturating_add(seg.line_height)
@@ -443,9 +444,13 @@ pub(super) fn try_place_stored_tac_paragraph(
                 .saturating_sub(crate::renderer::px_to_hwpunit(placement.end, dpi))
         });
         st.commit_stored_tac_control(para_idx, placement);
-        st.commit_deferred_table_anchor(para_idx);
-        st.record_vpos_lazy_origin(lazy_origin);
-        st.mark_vpos_ladder_dirty();
+        // 원본 저장 줄의 좌표축은 이미 확립돼 있다. 합성 줄의 확정 끝만
+        // lazy 원점으로 역산하며, 실제 저장 표 뒤 사다리는 유지한다.
+        if rebase_line_origin {
+            st.commit_deferred_table_anchor(para_idx);
+            st.record_vpos_lazy_origin(lazy_origin);
+            st.mark_vpos_ladder_dirty();
+        }
         return true;
     }
     // A closed preceding object frame already owns its successor's leading

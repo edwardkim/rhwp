@@ -261,3 +261,23 @@ last_verified: 2026-10-02
 - 14쪽 시작 행의 잔여38.6px를76.88px로 복원하고 완전 행64.613/47.280px를 유지했습니다. 가운데 정렬과 후속 감점 본문·노란 강조 줄 위치를 PNG로 대조했습니다.13쪽 라벨과 앞 조각의 내용 소유도 유지합니다. fresh WASM 선택4쪽은2쪽99.75557%·8쪽98.91222%·13쪽92.22927%·14쪽99.37435%로 Native와 같습니다(exit0). 전체29쪽 export/선택4쪽 raster이며 전쪽 WASM 또는 최종 전체 검증 완료로 판정하지 않습니다. Mac 로컬 `--no-opt` 대체 빌드이며 Docker 검증은 아닙니다.
 
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_block_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_block_frame_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_block_frame_wasm_selected.tsv), [13쪽](../assets/planet6897_green_20261002/sample2_block_frame_p13_review.png), [14쪽](../assets/planet6897_green_20261002/sample2_block_frame_p14_review.png).
+
+### 메인터너 보정 준비: 20쪽 단일 TAC 저장 상자
+
+- Native20쪽85.82574%. pi184 제목 표 본체2,614HU+바깥여백141HU×2=저장 줄높이2,896HU이며, 줄간격440HU까지 더한3,336HU는 다음 pi185 원점22,440−19,104HU와 정확히 같습니다. 현재 제목 표와 후속 표가 PDF보다 각각 약1.88px·3.76px 위에 있습니다.
+- 기존 완전 저장 TAC 단축은 여러 표 줄 또는 앞 공백 줄만 허용하고, 단일 원본 표는 computed/단 맨 위 양수 원점만 수용합니다. 실제 원본 줄·다음 원점이 닫고 측정 본체+바깥여백이 저장 줄높이와 같은 단일 표를 같은 배치 계획으로 수용합니다. edited/합성 줄/원본 좌표 변경/앞뒤 문단 간격/캡션·각주는 제외합니다. 원점·여백·뒤 간격을 한번씩 소비하고 source/PDF는 유지합니다. 19~21쪽과 전29쪽, 기존 TAC/분할/용지 밖 회귀·fresh WASM 확인 후 수용합니다.
+
+- Native 선행 결과:20쪽85.82574→92.01064%,19쪽99.86666%,13·14쪽92.22927/99.37435% 유지.29쪽·용지밖0·표겹침0.21쪽88.03303%는 그대로이며,20쪽 마지막 행과21쪽 이어받는 물리 프레임의 잔존 차이는 별도 보정 대상입니다. 제목·후속 표 시작 위치 복원과 전체 프레임 완료를 구분하며, 기존 회귀·전29쪽TSV·freshWASM은 검증 중입니다.
+
+- 보호 회귀 첫 실행116개115PASS/1FAIL(#7312). 실제 저장 상자를 수용한 뒤 합성 줄용 lazy 원점 역산을 적용해 마지막 본문이 저장 사다리보다3.78px 올라갔습니다. 측정·물리 여백과 함께 실제 저장 원점 소유를 유지하고, 합성 줄/기존 단 위 특례의 원점 확립만 역산합니다. 좌표 기대값 완화나 검사 삭제는 하지 않습니다.
+
+- 원점 재설정 억제 후에도 #7312 마지막 본문 차이가 동일했습니다. 호출부의 `commit_deferred_table_anchor`가 저장 TAC 확정 직후 쪽/lazy 기준을 먼저 비우는 것을 확인했습니다. 실제 저장 줄은 기존 다중 TAC 계획과 같이 원점을 보존하고, 합성 줄 경로에서만 deferred 앵커 확정과 lazy 역산을 함께 수행하도록 보정합니다.
+
+- 직전30bb77d6a의 #7312는1/1PASS(exit0). 동일 진단에서 조판 lazy 기준283HU와 paint의 단 첫 표 기준0HU가 다른 것을 확인했습니다. 새로운 확정 좌표 계획이 lazy 기준을 paint에 고정하면서 기존 정상 복원을 막았습니다. closed 저장 줄은 기존 computed 경로에서 공유하는 단 첫 완전 표 원점도 소비하며, 실제 쪽 기준이 있으면 그것을 우선합니다. 앞선 원점 재설정 추정만으로 원인 해결을 선언하지 않습니다.
+
+#### 단일 TAC 보정 단계 결과
+
+- Native/fresh WASM20쪽92.01064%,19쪽99.86666%,21쪽88.03303%. 전29쪽·용지 밖0건·표 겹침0건, 기존116/116PASS(exit0,15.333초), fmt exit0. #7312직전커밋PASS→첫후보FAIL→좌표축 공유 보정PASS, 독립 PDF Native/fresh WASM97.51354%. 검사 기대값·baseline 변경 없음.
+- 전쪽 변화는1쪽97.95558→96.95128,2쪽99.75557→99.76191,20쪽85.82574→92.01064이며 나머지는 유지.1쪽 PNG를 직접 대조했고 내용 순서·쪽 소속을 유지합니다. fresh WASM 선택5쪽,29쪽export이며21쪽미달로visual exit1입니다. 전쪽WASM·최종전체검증 완료로 판정하지 않습니다. Mac로컬no-opt 대체빌드(exit0,3m42s), Docker검증은 아닙니다.
+- 사용자가20쪽99%근접 개선을 요청했습니다. 마지막 기타사항 행의 물리 프레임/정렬은 후속 보정이며 제목 원점 단계 수용과 전체 승인 완료를 구분합니다.
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_single_tac_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_single_tac_native.tsv), [WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_single_tac_wasm_selected.tsv), [20쪽](../assets/planet6897_green_20261002/sample2_single_tac_p20_review.png), [#7312](../assets/planet6897_green_20261002/sample2_single_tac_7312_review.png).

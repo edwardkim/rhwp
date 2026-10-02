@@ -30,11 +30,11 @@ pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
     pub control_index: usize,
     pub inline: InlineBoxPlacement,
     pub end: f64,
+    pub rebase_line_origin: bool,
 }
 
-/// A TAC line remains an independent flow owner when a coanchored float starts
-/// outside its saved band. Commit just this control, so the float still takes
-/// the ordinary split path. Fit and paint consume the same saved pen and end.
+/// 같은 문단의 float가 저장 밴드 밖에서 시작해도 TAC 줄은 독립된 흐름을 소유한다.
+/// 이 개체만 확정하여 float의 일반 분할 경로를 보존하고 fit과 paint는 같은 원점·끝을 쓴다.
 pub(super) fn prepare_coanchored_first_line(
     control_index: usize,
     para: &Paragraph,
@@ -117,11 +117,12 @@ pub(super) fn prepare_coanchored_first_line(
             advance_end: Some(end),
         },
         end,
+        rebase_line_origin: false,
     })
 }
 
-/// 저장 좌표가 없는 단일 개체 줄은 현재 흐름에서 물리 점유를 확정한다.
-/// 원점과 후행 간격을 같은 결과로 넘겨 저장 사다리의 차감·상한을 재적용하지 않는다.
+/// 단일 개체 줄의 물리 점유를 같은 배치 결과로 전달한다.
+/// 실제 저장 줄은 다음 원점이 닫는 상자만 수용하며, 원점·여백·뒤 간격을 한번씩 소비한다.
 pub(super) fn prepare_computed(
     para_idx: usize,
     para: &Paragraph,
@@ -159,7 +160,26 @@ pub(super) fn prepare_computed(
         && page.current_height < 1.0
         && saved_top > 0.0
         && saved_top <= fmt.spacing_before + 0.5;
-    if !computed && !saved_column_top {
+    // 편집되지 않은 원본 한 줄과 후속 원점이 상자를 정확히 닫으면
+    // 바깥 여백을 버리는 일반 단일 TAC 경로로 되돌아가지 않는다.
+    let closed_stored_line = !computed
+        && !para.stored_text_partition_is_dirty()
+        && source_vpos == seg.vertical_pos
+        && fmt.spacing_before == 0.0
+        && fmt.spacing_after == 0.0
+        && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next_para.is_some_and(|next| {
+            !next.stored_text_partition_is_dirty()
+                && next.line_segs.first().is_some_and(|after| {
+                    after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && after.vertical_pos > seg.vertical_pos
+                        && i64::from(after.vertical_pos)
+                            == i64::from(seg.vertical_pos)
+                                + i64::from(seg.line_height)
+                                + i64::from(seg.line_spacing)
+                })
+        });
+    if !computed && !saved_column_top && !closed_stored_line {
         return None;
     }
     if !table.common.treat_as_char
@@ -213,6 +233,19 @@ pub(super) fn prepare_computed(
                 )
             })
             .unwrap_or(flow_origin)
+    } else if closed_stored_line {
+        flow_origin.max(
+            page.vpos_col_anchor
+                + hwpunit_to_px(
+                    seg.vertical_pos.saturating_sub(
+                        page.vpos_page_base
+                            .or(page.stored_table_column_base)
+                            .or(page.vpos_lazy_base)
+                            .unwrap_or(0),
+                    ),
+                    dpi,
+                ),
+        )
     } else {
         flow_origin
     };
@@ -231,7 +264,7 @@ pub(super) fn prepare_computed(
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
     // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.
     // 저장 좌표가 없는 합성 줄에서만 기존 빈 문단 간격 분배를 적용한다.
-    let trailing_fraction = if saved_column_top || full_trailing_spacing {
+    let trailing_fraction = if saved_column_top || closed_stored_line || full_trailing_spacing {
         1.0
     } else {
         0.5
@@ -252,6 +285,7 @@ pub(super) fn prepare_computed(
             advance_end: Some(end),
         },
         end,
+        rebase_line_origin: !closed_stored_line,
     })
 }
 
@@ -494,6 +528,7 @@ impl StoredTacPlan {
                 advance_end: Some(end),
             },
             end,
+            rebase_line_origin: false,
         }
     }
 }
