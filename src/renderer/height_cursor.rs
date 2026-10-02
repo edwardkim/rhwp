@@ -1863,6 +1863,7 @@ mod tests {
     fn styles(spacing_before: f64) -> ResolvedStyleSet {
         ResolvedStyleSet {
             hwp3_variant: false,
+            hft_ascii_halfwidth: false,
             para_styles: vec![ResolvedParaStyle {
                 spacing_before,
                 ..Default::default()

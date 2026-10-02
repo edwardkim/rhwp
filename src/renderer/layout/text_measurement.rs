@@ -832,7 +832,7 @@ pub(crate) fn resolved_to_text_style(
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
-            hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
+            hft_hangul_face: styles.hft_ascii_halfwidth && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size_for_lang(lang_index),
             color: cs.text_color,
             bold: cs.bold,

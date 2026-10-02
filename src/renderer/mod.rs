@@ -34,6 +34,7 @@ pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
+pub(crate) mod hft_ascii_evidence;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;

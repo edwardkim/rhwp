@@ -80,6 +80,7 @@ mod tests {
         let styles = ResolvedStyleSet {
             page_number_char_style_id: None,
             hwp3_variant: false,
+            hft_ascii_halfwidth: false,
             char_styles: vec![ResolvedCharStyle::default()],
             para_styles: vec![ResolvedParaStyle {
                 border_fill_id: 1,

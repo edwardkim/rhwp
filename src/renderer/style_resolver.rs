@@ -416,6 +416,10 @@ pub struct ResolvedStyleSet {
     /// [#2070] HWP3 → HWP5 변환본 여부 (Document::is_hwp3_variant 전파).
     /// 변환본 한정 레거시 폭 규칙(전체 폭) 게이트에 사용.
     pub hwp3_variant: bool,
+    /// [#7051] HFT 한글 전용 face 의 ASCII 를 반각으로 잰다. HWP3 변환본(`hwp3_variant`)이거나,
+    /// 그 신호가 없는 저장본에서 문서 자신의 저장 줄이 반각 조판을 증언할 때 켠다
+    /// (`hft_ascii_evidence`). `hwp3_variant` 의 다른 보정(문단 간격 등)과는 독립이다.
+    pub hft_ascii_halfwidth: bool,
     /// 한 pagination/edit transaction의 모든 fresh-layout 소비자가 함께 읽는
     /// exact-font source snapshot. Font payload는 registry의 Arc에 한 번만 있고,
     /// 스타일 복제는 snapshot owner만 공유한다.
@@ -439,6 +443,8 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
     let profile = document.layout_profile();
     let mut styles = resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout());
+    // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
+    styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
     if profile.hwpx_stored_layout() {
         // 같은 14pt 한양신명조라도 일반 본문과 표 안의 공백 조판은 다르다.
         // 검증 HWPX의 일반 본문은 반각, 표 안은 기존 저장 메트릭을 쓴다.
@@ -576,6 +582,7 @@ pub fn resolve_styles_with_variant(
         numberings,
         bullets,
         hwp3_variant: is_hwp3_variant,
+        hft_ascii_halfwidth: is_hwp3_variant,
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
         supplemental_metrics: None,

@@ -745,6 +745,7 @@ fn test_layout_with_composed_styles() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_family: "함초롬돋움".to_string(),
@@ -888,6 +889,7 @@ fn test_layout_multi_run_x_position() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_size: 16.0,
@@ -981,6 +983,7 @@ fn test_resolved_to_text_style() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
             font_size: 14.0,
@@ -1018,6 +1021,7 @@ fn test_resolved_to_text_style_with_ratio() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_size: 16.0,
@@ -1292,6 +1296,7 @@ fn test_layout_table_basic() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
         ..Default::default()
     };
@@ -2030,6 +2035,7 @@ fn test_tac_leading_width_block_table_full_line() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             letter_spacing: -1.6,
@@ -2127,6 +2133,7 @@ fn test_tac_leading_width_inline_table_partial() {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             ..Default::default()
@@ -2831,6 +2838,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {
             fill_color: Some(0x00F0F0F0),
             image_fill: Some(ResolvedImageFill {
