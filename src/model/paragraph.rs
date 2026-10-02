@@ -852,6 +852,53 @@ impl Paragraph {
         self.shift_position_metadata_for_stream_insertion(existing_room, shift);
     }
 
+    /// [`Self::reserve_leading_extended_control_slots`] 의 역연산 — 떼어낸 선행 확장
+    /// 제어문자의 자리를 첫 텍스트 앞에서 거둔다.
+    ///
+    /// 자리를 남기면 `char_offsets` 만 그만큼 뒤로 밀린 채 남는다. 다른 문단에 병합하면
+    /// `char_count`(텍스트 + 남은 컨트롤로 다시 셈)보다 뒤의 글자가 줄 밖으로 밀려
+    /// 그려지지 않는다.
+    ///
+    /// 호출 전에 제어문자를 `controls` 에서 빼고, 뺀 선두 연속 개수를 넘긴다. 선행 공간이
+    /// 그보다 작으면 있는 만큼만 거둔다.
+    pub(crate) fn release_leading_extended_control_slots(&mut self, control_count: usize) {
+        let released = u32::try_from(control_count)
+            .unwrap_or(u32::MAX)
+            .saturating_mul(8)
+            .min(self.char_offsets.first().copied().unwrap_or(0));
+        if released == 0 {
+            return;
+        }
+
+        for offset in &mut self.char_offsets {
+            *offset -= released;
+        }
+        // 거둔 자리 안에서 시작한 글자모양 중 첫 글자에 닿는 마지막 것만 남긴다.
+        if let Some(first_kept) = self
+            .char_shapes
+            .iter()
+            .rposition(|cs| cs.start_pos <= released)
+        {
+            self.char_shapes.drain(..first_kept);
+        }
+        for cs in &mut self.char_shapes {
+            cs.start_pos = cs.start_pos.saturating_sub(released);
+        }
+        for rt in &mut self.range_tags {
+            rt.start = rt.start.saturating_sub(released);
+            rt.end = rt.end.saturating_sub(released);
+        }
+        for mark in &mut self.markpen_marks {
+            if let Some(pos) = &mut mark.utf16_pos {
+                *pos = pos.saturating_sub(released);
+            }
+        }
+        for seg in &mut self.line_segs {
+            seg.text_start = seg.text_start.saturating_sub(released);
+        }
+        self.char_count = self.char_count.saturating_sub(released);
+    }
+
     /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
     fn shift_position_metadata_for_stream_insertion(&mut self, insert_pos: u32, shift: u32) {
         if shift == 0 {
