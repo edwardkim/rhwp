@@ -18999,6 +18999,59 @@ impl LayoutEngine {
         max_padding
     }
 
+    /// [#5585] 행을 처음부터 그리는 조각의 위 안 여백 — 보이는 내용이 있는 `row_span == 1`
+    /// 칸 중 최댓값. 행을 쪽 경계에서 자르면 위 안 여백과 자른 지점까지의 내용 영역만
+    /// 이 쪽에 남고, 아래 안 여백은 행의 나머지와 함께 다음 쪽으로 간다.
+    pub(crate) fn row_visible_top_padding_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .filter(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| Self::cell_unit_has_visible_content(cell, unit))
+            })
+            .map(|cell| self.resolve_cell_padding(cell, table).2)
+            .fold(0.0f64, f64::max)
+    }
+
+    /// [#5585] 행을 선언 높이(`row_total`)로 그릴 때 보이는 내용이 있는 칸의 내용이 행 위에서
+    /// 어디까지 내려오는가. `need` 는 행의 내용+안 여백 높이(칸 중 최댓값)다. 가운데·아래
+    /// 정렬 칸은 남는 높이만큼 내용이 내려가므로 위 정렬보다 아래에서 끝난다. 칸별 내용이
+    /// `need` 이하라 이 값은 보수적인 상한이다.
+    pub(crate) fn row_aligned_content_bottom(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        need: f64,
+        row_total: f64,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        use crate::model::table::VerticalAlign;
+        let slack = (row_total - need).max(0.0);
+        table
+            .cells
+            .iter()
+            .filter(|c| c.row as usize == row && c.row_span == 1)
+            .filter(|cell| {
+                self.cell_units(cell, table, styles)
+                    .iter()
+                    .any(|unit| Self::cell_unit_has_visible_content(cell, unit))
+            })
+            .map(|cell| match cell.vertical_align {
+                VerticalAlign::Top => need,
+                VerticalAlign::Center => need + slack / 2.0,
+                VerticalAlign::Bottom => need + slack,
+            })
+            .fold(need, f64::max)
+    }
+
     /// 실제 선택한 중첩 표 구간의 추가 점유 공간을 구한다. 종결 컷은 비종결 컷과
     /// 다른 뷰포트 꼬리를 소유할 수 있으므로 끝 컷을 `units.len()-1`로 추정하지 않는다.
     fn row_cut_mixed_nested_reserve(

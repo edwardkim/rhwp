@@ -252,6 +252,11 @@ impl TypesetEngine {
             && split_end_limit == 0.0
             && fragment_placement.is_none()
             && terminal_outer_bottom_overhead == 0.0
+            // [#5585] 끝 조각 뒤 흐름을 중첩 자식의 저장 빈 Enter(`terminal_host_spacing`)가
+            // 소유하면 그 간격이 이미 표 아래를 닫는다. 바깥 아래 여백을 따로 열면 둘을
+            // 겹쳐 더한다 — 한글 2024 PDF 86712 26쪽: 조각 아래 괘선 145.76px 뒤 다음 표
+            // 193.87px 은 Enter 간격만 더한 위치다(여백까지 더하면 +1.9px).
+            && terminal_host_spacing <= 0.0
             && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
             && !st.profile.session_edited()
             && st.col_count == 1
