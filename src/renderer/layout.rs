@@ -1098,6 +1098,14 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
     }
 }
 
+/// 항목이 그리는 첫 줄 서수 — 문단 중간에서 시작하는 조각만 0 이 아니다.
+fn page_item_first_line(item: &PageItem) -> usize {
+    match item {
+        PageItem::PartialParagraph { start_line, .. } => *start_line,
+        _ => 0,
+    }
+}
+
 /// [#6778] 저장 사다리가 이 문단을 **개체 오른쪽 레인**에 두었는가.
 ///
 /// 두 조건을 **모두** 요구한다. 둘 다 개체 상자와 직접 대조하므로, 폭만 우연히 맞는
@@ -1113,8 +1121,14 @@ fn page_item_para_index(item: &PageItem) -> Option<usize> {
 /// 놓이고 글이 왼쪽으로 흐르는 형상(`#4090` 156492236: `horz=문단(26319)`, 후속
 /// 문단 `cs=0`)이 여기 해당한다 — 렌더가 이미 제자리에 놓으므로 손대지 않는다.
 /// 이 축이 고치는 것은 **오른쪽 레인**뿐이다.
+///
+/// 판정 대상은 항목이 **실제로 그리는 첫 줄**이다(`first_line`). 접두 줄만 개체 옆
+/// 레인에 두고 나머지를 전폭 `PartialParagraph` 로 내보낸 문단(#4599, 156714641
+/// p1 pi13 lines 7..9)에서 문단 첫 줄을 보면 전폭 꼬리를 레인으로 오판해, 흐름이
+/// host 줄 높이로 되감기고 꼬리가 표·접두 줄 위에 겹쳐 그려진다.
 fn stored_seg_is_side_lane(
     para: Option<&Paragraph>,
+    first_line: usize,
     col_w_hu: i32,
     object_left_hu: i32,
     object_right_hu: i32,
@@ -1122,7 +1136,12 @@ fn stored_seg_is_side_lane(
     let Some(para) = para else {
         return false;
     };
-    let Some(seg) = para.line_segs.iter().find(|s| s.tag & 0x8000_0000 == 0) else {
+    let Some(seg) = para
+        .line_segs
+        .iter()
+        .skip(first_line)
+        .find(|s| s.tag & 0x8000_0000 == 0)
+    else {
         return false;
     };
     let cs = seg.column_start as i64;
@@ -8917,6 +8936,7 @@ impl LayoutEngine {
             if let Some((bottom, lane_left_hu, lane_right_hu)) = square_beside_band {
                 if !stored_seg_is_side_lane(
                     paragraphs.get(item_para),
+                    page_item_first_line(item),
                     col_w_hu,
                     lane_left_hu,
                     lane_right_hu,
@@ -9380,14 +9400,14 @@ impl LayoutEngine {
                     // 왼쪽 레인이라 술어를 통과하지 못한다(실측: 해당 문서의 Square
                     // 표 15곳 전부 `next_is_lane=false`). 이 겹을 빼면 그 문서의
                     // 레인과 표 아래 꼬리가 함께 위로 밀려 글자겹침이 4 → 64건이 된다.
-                    let next_is_lane = col_content
-                        .items
-                        .get(item_ordinal + 1)
+                    let next_item = col_content.items.get(item_ordinal + 1);
+                    let next_is_lane = next_item
                         .and_then(page_item_para_index)
                         .and_then(|next_pi| paragraphs.get(next_pi))
                         .is_some_and(|next| {
                             stored_seg_is_side_lane(
                                 Some(next),
+                                next_item.map_or(0, page_item_first_line),
                                 col_w_hu,
                                 lane_left_hu,
                                 lane_right_hu,
