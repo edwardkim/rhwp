@@ -29,6 +29,18 @@
     ]
   },
   "full_215_visual": "not run on correction",
-  "fresh_wasm": "building",
+  "fresh_wasm": {
+    "code_head": "8ee77497f",
+    "build_exit_code": 0,
+    "scope_pages": [
+      182,
+      183
+    ],
+    "document_pages": 215,
+    "pdf_pages": 215,
+    "minimum_percent": 99.89879,
+    "wasm_sha256": "570476bd8359d662d023291f8a20cdc0c813199af075e2d65217a29153e7af9e",
+    "local_build": "Mac --no-opt; not Docker optimized"
+  },
   "original_input_and_pdf": "preserved"
 }

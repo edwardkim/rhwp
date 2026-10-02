@@ -2,7 +2,7 @@
   "date": "2026-10-02",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
-  "latest_code_correction": "0305f8f22",
+  "latest_code_correction": "8ee77497f",
   "latest_comment_translation": "facdbf948",
   "initial_full": {
     "run": 10283,
@@ -110,7 +110,7 @@
       }
     ]
   },
-  "merge_decision": "보류. 최초33개 개별 처리 후 전체 재실행에서 새17개 실패. 정상 글꼴 환경 정책연구216/PDF215쪽. 개별 보정과 최종 전체 검증 필요.",
+  "merge_decision": "보류. d2ef8693a 전체 검사 새17개 실패의 개별 처리 중. 정책연구 쪽수는 최신 Native/fresh WASM에서215/PDF215복원, 전215쪽 최신 시각 및 최종 전체검증은 미완료.",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -120,6 +120,18 @@
       "page3_before": 58.48267,
       "page3_after": 97.64619,
       "evidence": "issue2004_stored_gap_evidence.json"
+    },
+    "policy_page_count": {
+      "before_native": 216,
+      "after_native": 215,
+      "after_fresh_wasm": 215,
+      "pdf": 215,
+      "scope_pages": [
+        182,
+        183
+      ],
+      "minimum_percent": 99.89879,
+      "full_215_visual": "pending"
     }
   },
   "corrected_full_run": {
