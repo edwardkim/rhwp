@@ -335,3 +335,12 @@ last_verified: 2026-10-02
 
 
 - #7095 기존2건의 절대 아래끝1022.99·1020.27·1007.63px 핀을 원본 용지/본문/표 바깥 아래 여백 관계로 교정했습니다. 넘친 조각은본문 경계 안에 가시 글줄을 담고, 짧은 조각은 경계까지 늘리지 않습니다. nextest2PASS/0FAIL·suite Clippy exit0, 신규검사0·renderer변경0. 독립7쪽 Native/fresh WASM 최저97.74445%의 이전증적을연결하며최신전수완료로쓰지않습니다. [교정기록](../assets/planet6897_green_20261002/branch_pixel_contract_7095_validation.json).
+
+
+### 여러 저장 쪽 행의 물리 잔여 통배치 보정
+
+- 원인: 시작행의 원시 잔여 높이 override를 소비한 scan은 행 전체를 완료합니다. #5875 행4의 추가 저장 쪽 컷을 건너뛰어 12쪽 원본을11쪽으로 줄였습니다. 일반 행/rowspan 블록 컷의 실제 셀 순서를 보존하고 현재행 잔여에 추가 hard/stored/page-frame 경계가 없을 때만 통배치를 허용합니다. 첫 재개 유닛의 경계는 새조각 소유입니다. 검사 기대값·baseline 변경·신규검사 추가0건입니다.
+- 첫 후보는 블록 컷을 일반 행 컷으로 읽어 sample2 14쪽58.34091%로 기각했습니다. 정정 후보의 Native/fresh WASM 전29쪽 최저92.22927%·미달0쪽(exit0), 페이지별점수 모두같음. Native SVG·render tree도 이전정상29쪽과 모두같습니다.
+- #5875/#5782 각각12쪽·용지밖0·표겹침0 복원. 직전실패27건 선택nextest는13PASS/14FAIL(exit100,85.485초), 기존px교정5건5PASS(exit0). threads8·locked·release-test·no-fail-fast이며 전체회귀완료가 아닙니다. Native/freshWASM빌드·필수Clippy3단계·workspace빌드·fmt·diff·base고정suite manifest exit0. Mac WASM은no-opt 로컬대체이며Docker검증이 아닙니다.
+- 중첩HWP 전12쪽 Native 비교는7쪽미달·최저2쪽31.95012%(exit1). 새2쪽PNG를 직접확인했고 표높이·가운데정렬 차이가 남았습니다. 쪽수와기존회귀복원을 시각완료로 간주하지 않습니다. 잔존14건·다른문서전쪽비교·최종전체검증으로 통합PR은 보류합니다.
+- [검증원장](../assets/planet6897_green_20261002/single_frame_tail_validation.json), [Native29쪽](../assets/planet6897_green_20261002/single_frame_tail_sample2_native.tsv), [freshWASM29쪽](../assets/planet6897_green_20261002/single_frame_tail_sample2_wasm.tsv), [중첩12쪽미달](../assets/planet6897_green_20261002/single_frame_tail_5875_native.tsv), [2쪽보류PNG](../assets/planet6897_green_20261002/single_frame_tail_5875_p2_hold.png).

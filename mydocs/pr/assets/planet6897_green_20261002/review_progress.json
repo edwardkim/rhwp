@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-02",
+  "date": "2026-10-03",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
   "latest_code_correction": "54704ab32",
@@ -140,7 +140,7 @@
       }
     ]
   },
-  "merge_decision": "보류. sample2 8쪽 용지 밖·정렬은 Native/fresh WASM98.91222%로 해결. 나머지 시각 미달과 최종 전체 검증 미완료.",
+  "merge_decision": "보류. 선택27건 중14FAIL, 중첩12쪽 문서7쪽 시각미달, 다른 문서 전쪽 검증과 최종 전체 회귀가 남음. sample2 Native/fresh WASM 전29쪽 최저92.22927%.",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -976,5 +976,30 @@
     "log_sha256": "b0546e550045fbcdef7d4e7dbd3e25a22994846bb1e209f9bdb4d79f3abdaeba",
     "integration_pr_ready": false
   },
-  "integration_pr_ready": false
+  "integration_pr_ready": false,
+  "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "latest_stage_evidence": "single_frame_tail_validation.json",
+  "current_focused_failures": {
+    "run": 27,
+    "passed": 13,
+    "failed": 14,
+    "exit_code": 100,
+    "failed_cases": [
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_0"
+    ],
+    "scope": "직전 전체 검증 실패27건 선택 재실행"
+  }
 }

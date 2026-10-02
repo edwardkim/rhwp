@@ -921,6 +921,9 @@ impl TypesetEngine {
                 // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
                 // 기존 문단 간 내용 조각은 선언 최소높이를 다시 예약하지 않는다.
                 if !first_fragment_blank_band
+                    || !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table, end_row - 1, &next_cut, split_block_start, styles,
+                    )
                     || !(saved_block_opening_frame.is_some()
                         || layout_engine.row_cut_starts_intra_paragraph_stored_frame(
                             table, end_row - 1, &next_cut, styles,

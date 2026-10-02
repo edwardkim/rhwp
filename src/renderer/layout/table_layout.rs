@@ -17401,6 +17401,47 @@ impl LayoutEngine {
         })
     }
 
+    /// 행의 남은 내용이 한 저장 프레임에서 끝나는지 확인한다.
+    /// 첫 재개 유닛은 자기 쪽 경계를 소유하지만 뒤의 경계는 별도 컷이 필요하다.
+    pub(crate) fn row_cut_remaining_is_single_stored_frame(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        block_start: Option<usize>,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        // 블록 컷은 걸침 셀까지 포함한 (행, 열) 순서이고 일반 행 컷은
+        // 해당 행의 비병합 셀 순서다. 실제 컷 생산 경로와 같은 공간을 읽는다.
+        let mut cells = if let Some(start) = block_start {
+            let (begin, end) = super::table_partial::rowspan_block_range(table, start);
+            let mut cells = Self::row_block_cells(table, begin, end);
+            cells.sort_by_key(|cell| (cell.row, cell.col));
+            cells
+        } else {
+            Self::row_cut_cell_order(table, row)
+                .into_iter()
+                .filter_map(|index| table.cells.get(index))
+                .collect()
+        };
+        if cells.is_empty() || cells.len() != cut.len() {
+            return false;
+        }
+        cells.iter_mut().zip(cut).all(|(cell, &start)| {
+            // 뒤 행의 셀은 현재 행의 물리 잔여를 소비하지 않는다.
+            if cell.row as usize > row || cell.row as usize + cell.row_span as usize <= row {
+                return true;
+            }
+            let units = self.cell_units(cell, table, styles);
+            start <= units.len()
+                && units.iter().skip(start.saturating_add(1)).all(|unit| {
+                    !unit.hard_break_before
+                        && !unit.stored_frame_break_before
+                        && !unit.page_frame_reset_before
+                })
+        })
+    }
+
     /// 원본 문단 내부에서 재개하는 표 프레임의 위 여백. 예약과 paint가
     /// 같은 컷·앵커를 읽으며 첫 조각의 양수 개체 오프셋은 다시 적용하지 않는다.
     pub(crate) fn intra_paragraph_rowbreak_reopens_outer_top(
