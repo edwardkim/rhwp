@@ -657,6 +657,49 @@ impl TypesetEngine {
                 {
                     consumed += cs_before + row_total;
                     end_row = row_count;
+                } else if mt.allows_row_break_split()
+                    && r > cursor_row
+                    && !rowspan_touched[r]
+                    && ordinary_band_row_shape(table, r, row_total, self.dpi)
+                    && ordinary_band_content_fits(
+                        &res.end_cut,
+                        res.consumed_height,
+                        layout_engine.row_aligned_content_bottom(
+                            table,
+                            r,
+                            res.consumed_height + padding,
+                            row_total,
+                            styles,
+                        ),
+                        avail_for_rows - consumed - cs_before,
+                    )
+                {
+                    // [#5585] 일반 행의 밴드 컷: «쪽 경계에서 나눔»(값 2) 표에서 행 **내용과
+                    // 안 여백**은 남은 쪽에 다 들어가는데 선언 행 높이만 넘칠 때, 한글은 행을
+                    // 통째로 넘기지 않고 내용을 이 쪽에 둔 채 쪽 경계에서 행을 자른다.
+                    // 선언 높이의 남은 빈 밴드는 다음 쪽 첫머리로 이어진다(148776468 14→15쪽:
+                    // 한글 2020 PDF 는 행 3 의 내용을 14쪽에 두고 15쪽 행 4 를 빈 밴드만큼
+                    // 내려 시작한다 — 통째 이월하던 rhwp 는 14쪽에 186px 를 비워 18쪽).
+                    // 자르는 자리는 이 쪽 내용 영역의 끝(`budget`)이다 — 이 쪽에는 위 안 여백과
+                    // 그 내용 영역이 남고, 아래 안 여백을 포함한 선언 높이의 나머지는 다음
+                    // 조각의 시작 행 높이로 넘어간다(한글 14쪽 행 밴드 178px · 15쪽 빈 밴드
+                    // 17px, 선언 196.3px). 표를 끝내는 마지막 행이면 이어질 물리 행이 없으므로
+                    // 빈 밴드는 쪽 경계에서 끝난다(#5714 와 같은 계약).
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = budget.max(res.consumed_height);
+                    consumed += cs_before + split_end_limit;
+                    if r + 1 < row_count {
+                        let top_padding =
+                            layout_engine.row_visible_top_padding_height(table, r, styles);
+                        end_row_height_override = Some(split_end_limit + top_padding);
+                    }
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN ORDINARY_BAND_CUT r={} content={:.1} padding={:.1} row_total={:.1}",
+                            r, res.consumed_height, padding, row_total
+                        );
+                    }
                 } else {
                     end_row = r;
                 }
@@ -1065,4 +1108,75 @@ impl TypesetEngine {
             keep_scanning,
         }
     }
+}
+
+/// [#5585] 일반 행 밴드 컷(내용과 안 여백은 남은 쪽에 다 들어가지만 선언 행 높이가 넘치는
+/// 행을 쪽 경계에서 자름)을 받을 수 있는 행의 형상. rowspan 이 걸친 행은 `#2236` 밴드 컷이
+/// 따로 맡고, 쪽의 첫 행은 이미 강제 배치된다(호출부 조건).
+///
+/// 칸 내용이 글줄 유닛만으로 이뤄진 행만 자른다. 칸 안의 그림·도형·표·수식·각주 등
+/// 개체는 내용 컷(`end_cut`)에 높이가 잡히지 않아, 글줄이 다 들어가도 개체가 선언 높이를
+/// 채우고 있을 수 있다 — 한글도 그런 행은 통째로 넘긴다(1220000-202100003 23쪽 13×7 표
+/// 행 3: 글앞으로 그림 세 장이 선언 247.6px 를 채우고 글줄은 29.3px, 한글 41쪽 유지).
+///
+/// 빈 밴드는 선언 행 높이가 내용보다 클 때만 생긴다 — 측정 행 높이가 칸의 선언 높이를
+/// 넘으면 그 높이는 내용이 만든 것이고 내용 컷이 그 내용을 다 담지 못한 것이므로 기존
+/// 행내 분할 경로에 맡긴다.
+fn ordinary_band_row_shape(
+    table: &crate::model::table::Table,
+    row: usize,
+    row_total: f64,
+    dpi: f64,
+) -> bool {
+    row_content_is_line_units_only(table, row)
+        && row_total <= declared_row_height_px(table, row, dpi) + 0.5
+}
+
+/// [#5585] 일반 행 밴드 컷의 내용이 남은 쪽(`rest`)에 들어가는가. 25px 고아 기준은 다른
+/// 행내 분할과 같다.
+///
+/// 들어가는지는 그려지는 내용의 끝(`aligned_content_bottom`)으로 판정한다. 가운데·아래 정렬
+/// 칸은 내용의 자리가 쪽 경계 너머의 선언 높이로 정해지므로, 내용 높이가 남은 쪽에
+/// 들어가도 그린 내용은 경계를 넘을 수 있다 — 한글도 그런 행은 통째로 넘긴다
+/// (1480000-201900042 표시기준 54→55쪽 `유럽` 행: 가운데 정렬, 내용+여백 56.7px,
+/// 선언 69.2px → 내용 끝 62.95px > 남은 쪽 59.0px).
+fn ordinary_band_content_fits(
+    end_cut: &[usize],
+    content_height: f64,
+    aligned_content_bottom: f64,
+    rest: f64,
+) -> bool {
+    !end_cut.is_empty() && content_height >= MIN_TOP_KEEP_PX && aligned_content_bottom <= rest + 0.5
+}
+/// 행의 선언 높이 — 이 행에서 시작해 이 행에서 끝나는 칸의 저장 높이 중 최댓값(px).
+fn declared_row_height_px(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span <= 1)
+        .map(|cell| crate::renderer::hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max)
+}
+
+/// 행의 칸들이 글줄 유닛 밖의 개체(표·도형·그림·수식·양식·각주/미주)를 품지 않는가.
+fn row_content_is_line_units_only(table: &crate::model::table::Table, row: usize) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .flat_map(|cell| cell.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .all(|control| {
+            !matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::Unknown(_)
+            )
+        })
 }

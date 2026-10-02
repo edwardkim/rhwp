@@ -262,6 +262,14 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
     });
     // 저장 앵커가 첫 글줄 안에서 시작하면 그 글줄이 표 위 여백을 이미 소유한다.
     // 독립된 본문 밴드 뒤에서 시작하는 앵커만 첫 조각과 다음 쪽에 여백을 연다.
+    // [#5585] 이어받은 조각의 이 계약은 저장 HWPX 와 저장 쪽 나눔을 쓰는 HWP5 에 같다 —
+    // 한글 2020 PDF 는 HWP5 문단 기준 표(148776468 pi=169·pi=121)의 이어받은 조각도 쪽
+    // 머리에서 바깥 위 여백(140HU)만큼 내려 그리고, 다음 문단은 저장 vpos 그대로 그 아래에
+    // 둔다. HWP5 의 첫 조각은 호스트 간격이 이미 위 여백을 소유하므로 넓히지 않는다
+    // (넓히면 hwpspec 178→180쪽). 위 행에서 내려온 병합 칸 한가운데서 이어지는 조각은
+    // 앞 조각의 칸 상자가 계속되는 것이라 여백을 다시 열지 않는다 — 한글 2020 PDF 는
+    // 1371000-201200057 8·10·14·15쪽(지역 열 병합 칸 안에서 이어짐)의 조각을 본문 위에
+    // 붙여 그린다.
     let para_anchor_below_first_line = native_host.is_some_and(|host| {
         object_only_saved_table_anchor(host, table)
             && host
@@ -273,7 +281,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
         && !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && (table.common.horz_rel_to == HorzRelTo::Column
-            || (hwpx_stored
+            || ((hwpx_stored || (is_continuation && !rowspan_straddles_row(table, start_row)))
                 && table.common.horz_rel_to == HorzRelTo::Para
                 && table.common.vert_rel_to == VertRelTo::Para
                 && para_anchor_below_first_line))
@@ -283,12 +291,19 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
             || (is_continuation
                 && starts_at_column_top
                 && (table.common.horz_rel_to == HorzRelTo::Column
-                    || (hwpx_stored
-                        && native_host.is_some_and(|host| {
-                            !host.stored_text_partition_is_dirty()
-                                && !host.cell_format_vpos_dirty
-                                && !host.line_segs.is_empty()
-                        })))))
+                    || (native_host.is_some_and(|host| {
+                        !host.stored_text_partition_is_dirty()
+                            && !host.cell_format_vpos_dirty
+                            && !host.line_segs.is_empty()
+                    })))))
+}
+
+/// 위 행에서 시작한 병합 칸이 `row` 를 걸쳐 내려오는가 (`row` 가 그 칸의 첫 행이 아님).
+fn rowspan_straddles_row(table: &Table, row: usize) -> bool {
+    table.cells.iter().any(|cell| {
+        let top = cell.row as usize;
+        top < row && top + (cell.row_span as usize).max(1) > row
+    })
 }
 
 pub(crate) fn column_rowbreak_caption_outer_spacing_px(
