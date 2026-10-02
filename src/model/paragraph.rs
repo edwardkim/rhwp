@@ -2182,7 +2182,11 @@ impl Paragraph {
 
     /// 범위 적용과 원본 ID 수집이 같은 UTF-16 경계를 사용한다.
     /// 마지막 텍스트 뒤의 문단 끝 모양은 적용 범위에 포함하지 않는다.
+    /// 글자가 없는 문단은 문단 끝 모양이 곧 이어 입력할 글자의 모양이므로 문단 전체가 범위다.
     fn char_shape_range_bounds(&self, start: usize, end: usize) -> Option<(u32, u32, u32)> {
+        if self.text.is_empty() {
+            return (start == 0).then_some((0, u32::MAX, 0));
+        }
         if start >= end {
             return None;
         }
