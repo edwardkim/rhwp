@@ -319,3 +319,10 @@ last_verified: 2026-10-02
 
 - 독립 PDF는12쪽이며7쪽 표1~4·8쪽 표5~8의 캡션 소속을 확인했습니다. mixed 쪽 신호와 인라인 프레임 여백만의 진단은 중첩 문서를 복원하지 못했습니다. d2ef8693a renderer를 현행 HWP 파서와 대조한 Native는 #5875/#5782 모두12쪽·용지 밖0·표 겹침0으로 복원됐습니다. 변경 구간을 확인한 진단이며 수정 구현·90% 시각 통과로 판정하지 않습니다.
 - 단일 TAC 변경 전 대조에서는 시험지4쪽·표 겹침0 복원, 중첩 문서는11쪽 유지로 원인이 분리됐습니다. 검사 기대값·baseline은 그대로 보존합니다. 사용자가 최신 `upstream/devel` 동기화와리베이스를 지시했으므로 이 분석·독립 PDF를 커밋한 후 리베이스하고, 최신 코드에서 실패와 원인을 다시 확인합니다. [선행 대조 증적](../assets/planet6897_green_20261002/remaining27_pre_rebase_diagnosis.json).
+
+
+### 2026-10-03 최신 devel 리베이스와 잔존 실패 재확인
+
+- 로컬 devel을 `ab4dcfaca`로 fast-forward하고 검토105개 커밋을 리베이스했습니다. 재적용 head `d877e753e`. 오늘할일 충돌1건은 upstream #7487 기록과 검토 기록을 모두 보존했습니다.105개 제목·순서 일치,104개 patch-id 동일입니다. 백업 브랜치를 유지합니다.
+- 새 Native 빌드·최신 base suite manifest exit0. 기존 실패27건을 nextest threads8·locked·release-test·no-fail-fast로 모두 재실행했으며27FAIL/0PASS(exit100,72.091초), 실패 이름은 동일합니다. upstream Enter/빈 끝쪽 경계5건PASS(exit0). 이는 선택 검사 결과이며 최신 head 전체 회귀 완료가 아닙니다.
+- #5875 첫 실제 차이는2쪽 행4: 정상 대조 renderer는 `[1,4,19]`에서 잘랐지만 현행은행 전체를 소비해본문1,009.1px에1,061.2px를 배치합니다. 같은분할 회귀가리베이스 후에도존재합니다. 검사/baseline은변경하지않고원인보정을계속합니다. 리베이스 전Native/WASM시각증적은역사적결과로보존하며최신전수통과로재사용하지않습니다. [리베이스검증기록](../assets/planet6897_green_20261002/rebase_20261003_validation.json).
