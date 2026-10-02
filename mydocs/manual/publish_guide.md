@@ -96,9 +96,13 @@ Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 기�
 | --- | --- | --- | --- |
 | Linux x86_64 | `x86_64-unknown-linux-gnu` | `ubuntu-latest` | `linux-x86_64` |
 | Linux AArch64 | `aarch64-unknown-linux-gnu` | `ubuntu-24.04-arm` | `linux-aarch64` |
-| macOS x86_64 | `x86_64-apple-darwin` | `macos-14` | `macos-x86_64` |
-| macOS AArch64 | `aarch64-apple-darwin` | `macos-14` | `macos-aarch64` |
+| macOS x86_64 | `x86_64-apple-darwin` | `macos-15` | `macos-x86_64` |
+| macOS AArch64 | `aarch64-apple-darwin` | `macos-15` | `macos-aarch64` |
 | Windows x86_64 | `x86_64-pc-windows-msvc` | `windows-latest` | `windows-x86_64` |
+
+macOS 두 target은 Apple Silicon `macos-15`에서 빌드한다. Intel target은 교차 빌드하고,
+두 target 모두 같은 runner에서 `rhwp --version`을 확인한다. Cargo cache key와 restore prefix는
+Rust target과 runner label을 함께 포함해 이전 macOS SDK의 `target/`를 복원하지 않는다.
 
 Linux AArch64는 cross compile이나 self-hosted runner가 아니라 GitHub 표준 native ARM64 runner에서
 빌드하고 같은 runner에서 `rhwp --version`을 실행한다. runner label의 현재 지원 여부는
