@@ -1147,7 +1147,7 @@ impl DocumentCore {
         }
 
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_paragraph_deferred_in_batch(sec_idx, para_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec_idx,
             para: para_idx,
@@ -1157,14 +1157,15 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
-    /// 셀 서식 뮤테이터의 파생 재계산 꼬리 — 배치 여부에 따라 재구성·재페이지네이션을
+    /// 서식 뮤테이터의 파생 재계산 꼬리 — 배치 여부에 따라 재구성·재페이지네이션을
     /// 지연하거나 즉시 전체 rebuild 로 마친다.
     ///
     /// 배치 중(`begin_batch`~`end_batch`)에는 재구성·재페이지네이션을 `end_batch_native`
     /// 의 paginate() 1회로 미루고 구역만 dirty 로 표시한다 — 셀 텍스트 편집의 지연
-    /// 계약(#2424)과 같은 모양이다. 서식 변경은 composed 구조를 바꾸지 않으므로
-    /// 재구성 없이 flush 시점 재처리로 충분하다. 새 서식 id 가 doc_info 에 추가됐을
-    /// 수 있으므로 스타일 해석만 즉시 갱신한다(O(스타일 수) — 재조판 비용과 무관).
+    /// 계약(#2424)과 같은 모양이다. 셀 문단은 composed 에 없으므로 재구성 없이 flush
+    /// 시점 재처리로 충분하다(본문 문단은 `rebuild_paragraph_deferred_in_batch`).
+    /// 새 서식 id 가 doc_info 에 추가됐을 수 있으므로 스타일 해석만 즉시 갱신한다
+    /// (O(스타일 수) — 재조판 비용과 무관).
     /// 배치 밖에서는 종전대로 전체 rebuild 이다(#4118).
     ///
     /// 패스스루(raw_stream) 무효화는 #2724 가드가 뮤테이터 본문의 직접 토큰을 요구하므로
@@ -1179,6 +1180,19 @@ impl DocumentCore {
             self.mark_section_dirty(sec_idx);
         } else {
             self.rebuild_section(sec_idx);
+        }
+    }
+
+    /// 본문 문단 서식 뮤테이터의 꼬리 — `rebuild_section_deferred_in_batch` 와 같되,
+    /// 배치 중에는 그 문단을 바로 다시 조합한다.
+    ///
+    /// 본문 문단은 셀과 달리 composed 에 글자 모양 런을 들고 있다. 다시 조합하지 않으면
+    /// `end_batch` 의 paginate 가 옛 런으로 재고 그린다. 배치 밖에서는 전체 rebuild 가
+    /// 구역을 다시 조합하므로 따로 할 일이 없다.
+    pub(crate) fn rebuild_paragraph_deferred_in_batch(&mut self, sec_idx: usize, para_idx: usize) {
+        self.rebuild_section_deferred_in_batch(sec_idx);
+        if self.batch_mode {
+            self.recompose_paragraph(sec_idx, para_idx);
         }
     }
 
@@ -1486,7 +1500,7 @@ impl DocumentCore {
         self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_section_deferred_in_batch(sec_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec_idx,
             para: parent_para_idx,
