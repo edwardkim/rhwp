@@ -5287,8 +5287,17 @@ impl LayoutEngine {
         // 접는 양은 그 행 **모든 칸**이 내놓는 여분의 최솟값이다. 셀 하나만 방출하는
         // `probe`(#4149 캐럿 fast path)는 그 행을 통째로 보지 못하므로, 대상 셀이 그 행의
         // 유일한 칸일 때만 접는다. 그 밖의 형상은 호출자가 legacy 로 폴백한다.
+        // 줄간격 축소는 실제 이어받는 조각만 소유하지만, 완료 조각도 쪽 상한을 넘을 수 있다.
+        let page_cap = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+            table,
+            col_area.y + col_area.height,
+            self.dpi,
+        );
+        let page_cap_fold = (table_y + partial_table_height - page_cap).max(0.0);
         let fold_last_row = render_rows.last().copied().filter(|&fold_row| {
-            (end_row < table.row_count as usize || end_cut.iter().any(|&unit| unit > 0))
+            (end_row < table.row_count as usize
+                || end_cut.iter().any(|&unit| unit > 0)
+                || page_cap_fold > 0.5)
                 && enclosing_cell_ctx.is_none()
                 && !align_saved_opening_frame
                 && budget_row_height_0.is_none()
@@ -5395,14 +5404,7 @@ impl LayoutEngine {
             // ```
             //
             // 내용이 상한보다 먼저 끝나는 조각(issue7336 p3·p4)은 이 값이 0 이라 접지 않는다.
-            let cap_fold = {
-                let cap = crate::renderer::float_placement::single_cell_page_fragment_bottom(
-                    table,
-                    col_area.y + col_area.height,
-                    self.dpi,
-                );
-                (table_y + partial_table_height - cap).max(0.0)
-            };
+            let cap_fold = page_cap_fold;
             // 두 사유(줄간격 · 쪽 상한) 중 **큰 쪽**만큼 접되, 실제로 남은 여분을 넘지 않는다.
             let fold = trail.max(cap_fold).min(fold_slack).max(0.0);
             if fold > 0.5 && partial_table_height > fold + 1.0 {

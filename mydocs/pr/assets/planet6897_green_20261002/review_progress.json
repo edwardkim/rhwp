@@ -70,6 +70,13 @@
       "removed_invalid_function": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
       "reason": "pins acknowledged wrong old37.80px despite independent41.55px and current41.56px",
       "preserved": "original sample and PDF; other3existing tests; 29page visual hold"
+    },
+    {
+      "case": "terminal page cap and counterparts",
+      "passed": 45,
+      "failed": 1,
+      "evidence": "issue7336_terminal_cap_evidence.json",
+      "resolved_new_full_failure": "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it"
     }
   ],
   "visual_evidence": {
@@ -141,6 +148,8 @@
     "failed": 17,
     "skipped": 50,
     "exit_code": 100,
-    "evidence": "nextest_corrected_d2ef8693a.json"
+    "evidence": "nextest_corrected_d2ef8693a.json",
+    "focused_resolved_after_run": 1,
+    "remaining_not_yet_full_reverified": 16
   }
 }
