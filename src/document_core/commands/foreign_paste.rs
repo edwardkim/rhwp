@@ -870,10 +870,10 @@ fn collect_max_field_id_from_shape(shape: &crate::model::shape::ShapeObject, max
 /// 구역이 갈린다. 내부 클립보드도 같은 정규화를 거치므로(`clipboard.rs` 의
 /// `strip_structural_controls_for_text_clipboard`) 같은 함수를 쓴다.
 ///
-/// 그 함수는 컨트롤만 떼고 텍스트 축의 자리표시자는 두는데, 한글 클립보드 조각은
-/// **언제나** `secPr` 을 갖고 있어(HWPX 파서가 `\u{0002}` 한 글자와 8 코드유닛을 함께
-/// 세운다) 자리표시자를 남기면 커서 자리에 보이지 않는 글자가 하나 들어간다.
-/// 그래서 선행 슬롯만 함께 지운다.
+/// 한글 클립보드 조각은 **언제나** `secPr` 을 갖고 있다. HWPX 파서는 정의마다 텍스트에
+/// 글자를 넣지 않고 `char_offsets` 에 8칸 갭만 세운다. 그 함수가 정의를 뗄 때 이 선행 갭도
+/// 함께 거둔다. 갭이 남으면 붙인 첫 문단 글이 줄 밖으로 밀려 그려지지 않는다(#7506).
+/// `drop_leading_control_slots` 는 자리표시자가 `\u{0002}` 글자로 텍스트에 남은 문단만 지운다.
 fn strip_section_scoped_controls(para: &mut Paragraph) {
     let leading = para
         .controls
