@@ -1256,8 +1256,7 @@ impl DocumentCore {
             let ti = css_text_indent.unwrap_or(0);
             ps.margin_left = (ml + ti).max(0);
             ps.indent = ti;
-            // [#4898] 한컴은 hp:case(HwpUnitChar) 를 먼저 읽는다 — switch 로 되쓰면 여백이 절반이 된다.
-            // 한글이 내보낸 원본처럼 평문 표기로 적어야 내어쓰기가 그대로 보인다(실측: 31.4pt → 15.7pt 로 줄었다).
+            // 평문 표기를 유지하되, 여백은 직렬화기가 공통 IR에서 물리 단위로 되돌린다.
             ps.hwpx_plain_para_margin = true;
         }
         if let Some(v) = parse_css_value(&css_lower, "margin-top") {

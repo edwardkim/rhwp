@@ -2,12 +2,12 @@
 //! 되쓴다.
 //!
 //! 한글은 `hp:switch` 가 있으면 `hp:case`(HwpUnitChar) 를 우선 읽는다. 평문 원본을 switch 형태로
-//! 바꿔 쓰면서 case 에 저장값의 절반을 넣으면, 한글이 보는 여백·고정 줄간격이 절반이 돼 조판이
-//! 밀리고 쪽수가 늘어난다.
+//! 바꿔 쓰면 고정 줄간격의 단위 해석이 달라져 조판이 밀릴 수 있다. 여백은 평문 HWPUNIT과
+//! HwpUnitChar case 모두 물리 단위이므로 공통 IR의 절반으로 출력한다.
 //!
 //! 한글 2022 오라클 10k 전수(x2x) 실측: 산출이 실제로 바뀌는 문서 290건을 전수 측정해 쪽수 결함
-//! 23건이 원본 쪽수로 복귀했고 새로 깨진 문서는 0건이다. HWP5 저장 축(x2h) 산출은 한 건도 바뀌지
-//! 않는다(파서 무변경).
+//! 23건이 원본 쪽수로 복귀했고 새로 깨진 문서는 0건이었다(당시 파서는 무변경)。
+//! 후속 보정은 한컴 저장본으로 확인한 평문 여백 단위를 공통 IR로 정규화하고 재저장 값을 보존한다.
 
 use rhwp::model::document::Document;
 use rhwp::model::style::{LineSpacingType, ParaShape};
@@ -59,15 +59,21 @@ fn issue_4898_plain_source_keeps_plain_margin_notation() {
 
     assert!(
         !block.contains("<hp:switch>"),
-        "평문 원본은 switch 없이 되써야 한다 — case 에 절반값이 들어가면 한글 여백이 반토막 난다"
+        "평문 원본의 고정 줄간격 계약은 switch 없이 보존해야 한다"
     );
     assert!(
-        block.contains(&format!("<hc:left value=\"{MARGIN_LEFT}\"")),
-        "평문 표기에는 저장값이 그대로 나가야 한다: {block}"
+        block.contains(&format!("<hc:left value=\"{}\"", MARGIN_LEFT / 2)),
+        "평문 HWPUNIT 여백은 공통 IR의 절반인 물리 단위여야 한다: {block}"
     );
     assert!(
         block.contains(&format!("value=\"{LINE_SPACING_FIXED}\"")),
         "고정 줄간격도 저장값 그대로여야 한다: {block}"
+    );
+    let parsed = rhwp::parser::parse_document(&bytes).expect("평문 여백 왕복 파싱");
+    assert_eq!(parsed.doc_info.para_shapes[0].margin_left, MARGIN_LEFT);
+    assert_eq!(
+        parsed.doc_info.para_shapes[0].line_spacing,
+        LINE_SPACING_FIXED
     );
 }
 

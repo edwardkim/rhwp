@@ -1191,11 +1191,23 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
         return;
     }
 
+    // 분기 없는 HWPUNIT 여백은 물리 단위다. 한컴 HWP 저장본의 공통 IR은 2배다.
+    // 단위가 없는 이전 표기는 그대로 읽고, switch/default는 별도 왕복 계약을 따른다.
+    let unit = ce
+        .attributes()
+        .flatten()
+        .find_map(|attr| (attr.key.as_ref().as_bytes() == b"unit").then(|| attr_str(&attr)));
     for attr in ce.attributes().flatten() {
         if attr.key.as_ref().as_bytes() != b"value" {
             continue;
         }
-        let value = parse_i32(&attr);
+        let raw = parse_i32(&attr);
+        let value = match unit.as_deref() {
+            Some("HWPUNIT") => raw.saturating_mul(2),
+            // CHAR는 반 단위가 남는 홀수 IR 값의 보존 표기다.
+            Some("CHAR") => raw.saturating_mul(2).saturating_add(1),
+            _ => raw,
+        };
         match local {
             b"intent" => ps.indent = value,
             b"left" => ps.margin_left = value,
@@ -2704,6 +2716,9 @@ mod tests {
         assert_eq!(ps.head_type, HeadType::Number);
         assert_eq!(ps.numbering_id, 3);
         assert_eq!(ps.para_level, 0);
+        // 분기 없는 HWPUNIT도 한컴 HWP 저장본과 같은 2배 IR 단위다.
+        assert_eq!(ps.indent, -4520);
+        assert_eq!(ps.spacing_after, 680);
     }
 
     #[test]

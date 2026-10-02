@@ -1076,10 +1076,10 @@ fn write_para_pr<W: Write>(
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
     //
     // [#4898] 단, 원본 HWPX 가 switch 없이 평문으로 적었으면 그 표기를 지킨다. 한글은
-    // case(HwpUnitChar) 를 우선 읽는데, 평문 저장값을 case 에 넣으며 절반으로 줄이면
-    // 한글이 보는 여백·고정 줄간격이 절반이 돼 조판이 밀리고 쪽수가 늘어난다.
+    // 평문 HWPUNIT 여백도 물리 단위이므로 공통 IR의 절반으로 되쓴다.
+    // 고정 줄간격은 여백과 별도 계약이므로 기존 평문 저장값을 유지한다.
     if ps.hwpx_plain_para_margin {
-        write_para_margin(w, ps, false)?;
+        write_para_margin(w, ps, true)?;
         write_para_line_spacing(w, ps, false)?;
     } else {
         write_para_margin_switch(w, ps)?;
