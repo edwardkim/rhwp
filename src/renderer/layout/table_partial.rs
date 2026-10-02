@@ -2066,13 +2066,29 @@ impl LayoutEngine {
                 }
                 self.stored_frame_origin_for_cut(cell, table, styles, su)
             });
-            // First-fragment compatibility keeps its existing small-offset
-            // boundary. A stored continuation frame has an explicit source
-            // origin; the table's paragraph-relative offset does not change
-            // coordinates inside that cell frame.
+            // 저장 첫 빈 줄과 다음 줄이 연결된 원본 HWPX는 셀 내부 원점을
+            // 보존한다. 표 바깥의 문단 상대 앵커 오프셋은 셀 내부 줄 좌표를
+            // 바꾸지 않는다. 명시적 원점이 없는 다른 첫 조각은 종전 범위를 쓴다.
             let preserve_linear_single_cell_vpos = linear_single_cell
                 && ((cut_units.is_some_and(|(su, _)| su == 0)
-                    && (table.common.vertical_offset as i32).unsigned_abs() <= 141)
+                    && ((table.common.vertical_offset as i32).unsigned_abs() <= 141
+                        || (self.profile.get().hwpx_stored_layout()
+                            && !self.profile.get().session_edited()
+                            && cell.paragraphs.first().is_some_and(|first| {
+                                first.text.is_empty()
+                                    && first.controls.is_empty()
+                                    && !first.stored_text_partition_is_dirty()
+                                    && first.line_segs.len() == 1
+                                    && first.line_segs[0].vertical_pos == 0
+                                    && cell.paragraphs.get(1).is_some_and(|next| {
+                                        !next.stored_text_partition_is_dirty()
+                                            && next.line_segs.first().is_some_and(|line| {
+                                                line.vertical_pos
+                                                    == first.line_segs[0].line_height
+                                                        + first.line_segs[0].line_spacing
+                                            })
+                                    })
+                            }))))
                     || resumed_stored_frame_origin.is_some());
             let vpos_origin = if preserve_linear_single_cell_vpos {
                 resumed_stored_frame_origin
@@ -3359,6 +3375,23 @@ impl LayoutEngine {
                                 cell_node.children.push(eq_node);
                             }
                             Control::Table(nested_table) => {
+                                // 텍스트 줄만 선택된 조각은 같은 문단의 다른 저장 줄에
+                                // 실린 TAC 표를 소유하지 않는다. 실제 중첩 행·재귀 컷이
+                                // 선택된 경우에는 그 컷이 원본 줄 대신 소유권을 정한다.
+                                if nested_table.common.treat_as_char
+                                    && cut_units.is_some()
+                                    && nested_cut_rows.is_none()
+                                    && nested_cursor_split.is_none()
+                                    && mixed_nested_split.is_none()
+                                    && !para.stored_text_partition_is_dirty()
+                                    && para.line_segs.iter().all(|line| {
+                                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                    })
+                                    && crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
+                                        .is_some_and(|owner| owner < start_line || owner >= end_line)
+                                {
+                                    continue;
+                                }
                                 let nested_h = self.calc_nested_table_height(nested_table, styles);
 
                                 // [Task #993] 컷 모델: 중첩 표는 atomic 유닛이라
