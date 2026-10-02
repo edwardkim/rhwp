@@ -12493,8 +12493,33 @@ impl LayoutEngine {
                         let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                         let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
                         let n = frags.len();
+                        // [Refs #7387] 조각은 칸 글줄로만 나뉘어, 옆 칸의 **쪼갤 수 없는
+                        // 개체**(Square·글 앞/뒤 그림 — 저장 줄이 담지 않는다)가 정하는 행
+                        // 높이를 모른다. 그 개체 바닥 + 칸 상하 안 여백보다 조각 합이 작으면
+                        // 모자란 몫을 끝 조각에 싣는다. 선언 표 높이(`common.height`)는 낡은
+                        // 뷰포트일 수 있어(위 `native_short_parent` 주석) 기준으로 쓰지 않는다.
+                        // hwpx_sample2.hwp 19쪽 pi=182 p[30] 1×2 표: 글줄 조각 합 97.9px,
+                        // 그림 칸 103.95 + 안 여백 3.76 = 107.7px(한/글 PDF 표 965.8~1073.4 =
+                        // 107.6px). 종전에는 조각 상자가 표를 101.6px 로 잘라 그렸다.
+                        let object_row_floor = nt
+                            .cells
+                            .iter()
+                            .map(|c| {
+                                let obj = self.calc_cell_wrap_objects_bottom_height(&c.paragraphs);
+                                if obj <= 0.0 {
+                                    return 0.0;
+                                }
+                                let pad = c.effective_padding(&nt.padding);
+                                obj + hwpunit_to_px(i32::from(pad.top), self.dpi)
+                                    + hwpunit_to_px(i32::from(pad.bottom), self.dpi)
+                            })
+                            .fold(0.0f64, f64::max);
+                        let row_deficit = (object_row_floor - total_frag_h).max(0.0);
                         for (fi, fragment) in frags.into_iter().enumerate() {
                             let mut uh = fragment.height;
+                            if fi + 1 == n {
+                                uh += row_deficit;
+                            }
                             let hard_break_before =
                                 fragment.hard_break_before || (reset_before && fi == 0);
                             let mut vpos_gap_before = vpos_gap_before_para && fi == 0;
