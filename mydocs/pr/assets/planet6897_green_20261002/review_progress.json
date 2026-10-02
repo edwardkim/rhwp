@@ -2,7 +2,7 @@
   "date": "2026-10-02",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
-  "latest_code_correction": "8ee77497f",
+  "latest_code_correction": "7d5bcae5f",
   "latest_comment_translation": "facdbf948",
   "initial_full": {
     "run": 10283,
@@ -85,6 +85,13 @@
       "parser_passed": 54,
       "evidence": "plain_margin_version_validation.json",
       "resolved_new_full_failure": "hwpx_to_hwp_adapter::task903_hwpx_h_01_para_shape_margin_children_are_parsed"
+    },
+    {
+      "case": "figure11 declared physical fit tolerance and counterparts",
+      "passed": 48,
+      "failed": 0,
+      "evidence": "figure11_declared_fit_tolerance_evidence.json",
+      "resolved_new_full_failure": "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
     }
   ],
   "visual_evidence": {
@@ -157,7 +164,7 @@
     "skipped": 50,
     "exit_code": 100,
     "evidence": "nextest_corrected_d2ef8693a.json",
-    "focused_resolved_after_run": 2,
-    "remaining_not_yet_full_reverified": 15
+    "focused_resolved_after_run": 3,
+    "remaining_not_yet_full_reverified": 14
   }
 }

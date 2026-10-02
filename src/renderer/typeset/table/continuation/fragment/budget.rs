@@ -895,6 +895,10 @@ impl TypesetEngine {
                 && start_cut.is_empty()
                 && !strict_following_plain_text_fit
                 && total_rows_h > base
+                // 원본 높이도 넘으면 측정 오차가 아닌 실제 수용 불가다.
+                // 저장 프레임이 들어갈 때만 작은 실측 증가를 보조 허용한다.
+                && hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, self.dpi)
+                    <= base + 0.5
                 && total_rows_h <= base + WHOLE_TABLE_FIT_TOLERANCE_PX
             {
                 total_rows_h
