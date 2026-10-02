@@ -222,8 +222,20 @@ impl ParagraphBox {
     /// Public because the cell rebuild it feeds
     /// (`composer::recompose_cell_lines_in_frame`) is public, and a caller that
     /// cannot name its own coordinate system cannot use that entry at all.
+    ///
+    /// [#7412] 한/글은 셀 안 줄 폭도 본문 단과 같은 4 HWPUNIT 격자에 내려서 저장한다.
+    /// `samples/**/*.hwpx` 56문서의 `hp:lineseg/@horzsize` 19,837개 중 19,766개(99.64%)가
+    /// 4의 배수이고, 예외는 단일 차트 합성 fixture 뿐이다. 그래서 내용 상자의 오른쪽 끝을
+    /// 같은 격자로 내린다(원점 0 은 이미 격자 위). `80168_regulatory_analysis` p121
+    /// 「7.규제내용」 셀(내용 폭 34626 HU)은 34624 HU 로 줄을 나눠야 한/글 2022·2024 PDF 와
+    /// 같이 「…시ㆍ도조 / 례로…」에서 끊긴다.
     pub fn content_width_px(width_px: f64, dpi: f64) -> Self {
-        Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
+        Self::content(
+            0..snap_base_right(
+                crate::renderer::px_to_hwpunit(width_px, dpi),
+                COLUMN_WIDTH_QUANTUM_HWP,
+            ),
+        )
     }
 
     /// The box after the geometry pitch — the single source for both the
@@ -384,13 +396,9 @@ pub(crate) struct LayoutFrame {
     pub(crate) minimum_width: i32,
     /// 저장 HWPX의 KoPub 양쪽 정렬 줄은 공백을 글꼴 전진폭까지 줄일 수 있다.
     pub(crate) kopub_justified_space: bool,
-    /// Whether `horizontal` is a column edge pair.
-    ///
-    /// The geometry pitch snaps the column's edge pair. A table cell's content
-    /// width and `reflow_line_segs`'
-    /// width-only box are not column edges, so snapping them has no native
-    /// basis — and doing so moves cell frame widths that the table owner
-    /// already resolved.
+    /// 이 프레임에 확정된 물리 줄. 가로 범위는 생성자가 이미 격자를 적용한 값이다 —
+    /// 본문은 [`ParagraphBox::body`]가 단 폭을, 셀 등 내용 흐름은
+    /// [`ParagraphBox::content_width_px`]가 내용 폭을 4 HWPUNIT 격자로 내린다(#7412).
     rows: Vec<PhysicalRow>,
 }
 
@@ -998,8 +1006,10 @@ mod tests {
     /// The contrast is one misaligned full column width with a one-unit left
     /// paragraph margin. Native first truncates the full width `1002 → 1000`,
     /// then applies the margin, producing `1..1000`. It does not independently
-    /// snap those post-margin edges to `4..1000`. A content box is already
-    /// resolved by its owner and is unchanged.
+    /// snap those post-margin edges to `4..1000`. An explicit `content()` range
+    /// is published exactly as stated; a cell width handed over in pixels
+    /// (`content_width_px`) takes the same full-width truncation `1002 → 1000`
+    /// that Hancom applies to stored cell rows (#7412).
     fn the_column_solver_quantizes_before_paragraph_margins() {
         let misaligned = 1..1_002;
         let column = ParagraphBox::column(misaligned.clone());
@@ -1027,9 +1037,10 @@ mod tests {
         let cell = ParagraphBox::content_width_px(1_002.0, crate::renderer::HWPUNIT_PER_INCH);
         assert_eq!(
             cell.effective(),
-            0..1_002,
-            "content_width_px() is not, so a resolved cell width stays put"
+            0..1_000,
+            "content_width_px() truncates the full cell width to the 4-unit grid (#7412)"
         );
+        assert_eq!(carved(&cell), vec![0..1_000]);
 
         // Withholding the origin still changes only the origin.
         let width_only = ParagraphBox::column(misaligned).with_derivable_origin(false);
