@@ -111,6 +111,7 @@ impl TypesetState {
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
+                vpos_snapped_flow_start: None,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
