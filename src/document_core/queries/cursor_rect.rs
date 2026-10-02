@@ -138,8 +138,8 @@ fn find_cursor_in_cell_node(
                 && ctx.path[0].cell_index == c_idx
                 && ctx.path[0].cell_para_index == cp_idx
         });
-        if matches_cell {
-            let char_start = text_run.char_start.unwrap_or(0);
+        // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+        if let (true, Some(char_start)) = (matches_cell, text_run.char_start) {
             let char_count = effective_char_count(text_run);
 
             if offset >= char_start && offset <= char_start + char_count {
@@ -3689,8 +3689,11 @@ impl DocumentCore {
                 if let Some(ref mut ctx) = cell_context {
                     core.repair_unwrapped_wrapper_cell_context(section_idx, ctx);
                 }
-                if cell_context_matches(&cell_context, parent_para, path) {
-                    let cs = tr.char_start.unwrap_or(0);
+                // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                if let (true, Some(cs)) = (
+                    cell_context_matches(&cell_context, parent_para, path),
+                    tr.char_start,
+                ) {
                     let cc = effective_char_count(tr);
                     if offset >= cs && offset <= cs + cc {
                         let positions = if tr.char_overlap.is_some() && cc == 1 {
