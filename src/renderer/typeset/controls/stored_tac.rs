@@ -228,7 +228,14 @@ pub(super) fn prepare_computed(
                     == next_seg.vertical_pos
             })
     });
-    let trailing_fraction = if full_trailing_spacing { 1.0 } else { 0.5 };
+    // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
+    // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.
+    // 저장 좌표가 없는 합성 줄에서만 기존 빈 문단 간격 분배를 적용한다.
+    let trailing_fraction = if saved_column_top || full_trailing_spacing {
+        1.0
+    } else {
+        0.5
+    };
     let end = origin
         + height
         + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction

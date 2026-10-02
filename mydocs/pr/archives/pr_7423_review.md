@@ -102,3 +102,18 @@ last_verified: 2026-10-02
 - 최초 전체 nextest는 10,283개 중10,250PASS/33FAIL/50SKIP, exit100으로 완료했습니다. 그 뒤 PR별 보정과 focused 재검증으로 최초 실패28개를 처리했으며 5개가 남았습니다. 전체 재실행 통과로 바꾸어 보고하지 않습니다.
 - 각주 빈 번호·합성 사다리·다열 표 대조군·중첩 표 후속 원점의 잔존 5개와 whole fixture 시각 보류를 [현재 검증 기록](../assets/planet6897_green_20261002/review_progress.json)에 기록했습니다. 원 PR별 기존 분석·커밋 출처는 위 내용을 유지합니다.
 - **현재 통합 승인/머지 보류**입니다. 원 PR의 green CI는 누적 후보의 실패 또는 미완료 Native/fresh WASM 시각 검증을 대체하지 않습니다. 새 통합 PR 생성·push·머지는 하지 않았습니다.
+
+### 메인터너 보정 준비: 단일 TAC 저장 원점
+
+- 원본 `samples/issue2004_cell_image_stack.hwpx`는 한컴 저장 줄을 가진 8쪽 문서입니다. 독립 `pdf/issue2004_cell_image_stack-hwpx-2020.pdf`의 3쪽 명단 표 상단은 약 225.19px입니다. 저장 vpos 10382HU와 바깥 위여백 283HU는 약 225.35px를 지시하지만 현재 출력은 약 220.5px입니다.
+- 생산 결과 `composer::stored_tac_lines`는 줄 높이가 선언 표 높이와 위·아래 여백의 합과 정확히 같은지 확인한 뒤 단일 표라는 이유로 버립니다. 소비자인 `stored_tac::prepare`는 측정 높이 일치·쪽 수용을 검사하고 저장/현재 흐름의 큰 원점을 선택합니다. 확정 placement는 layout의 `inline_placements`에서 위여백을 한 번 더해 paint에 전달됩니다.
+- 검토할 수정은 다른 줄이 없는 빈 host의 단일 저장 표에도 이 계약을 적용하는 것입니다. 글자가 있는 host, 편집/합성 줄, 측정 높이가 달라진 표, 수용되지 않는 표는 기존 재조판을 유지합니다. 각주 예약은 일반 경로에 남깁니다. 표 크기·문서 ID로 예외를 만들지 않습니다. 정상 TAC·공백 캐리어·분할 경계를 집중 검사하고 8쪽 Native/fresh WASM을 다시 비교합니다. 아직 결과 미확정입니다.
+
+- 1차 진단: 단일 표 개방만 적용한 Native 3쪽은 58.48267%로 변화가 없었습니다. 기존 TAC·분할 검사 33개 중 32개 통과, #7312 후속 문단 저장 사다리 검사가 3.78px 차이로 실패했습니다. 이 후보는 수용하지 않으며, 실제 측정 수용과 원점 선택을 추가 추적합니다. 출력·로그는 `output/pr-review/planet6897-green-20261002/single-tac-*`에 남겼습니다.
+
+- 실제 원인 재확인: 진단에서 명단 표의 측정·수용은 모두 참이었고 저장 원점 자체가 이미 낮았습니다. 첫 표 pi36은 `prepare_computed`의 양수 저장 단 상단 경로를 사용합니다. 원본 줄간격 720HU 중 절반만 소비한 뒤 `controls::try_place_stored_tac_paragraph`가 전량 포함 저장 끝으로 lazy 기준축을 역산하여 360HU의 잘못된 base를 기록했습니다. 이후 pi39 저장 vpos에서도 이 값이 차감되었습니다.
+- 수정 범위 재설정: 단일 표 개방과 임시 진단 코드는 되돌립니다. 원본 저장 단 상단 줄은 저장 줄간격을 전량 소비하며, 저장 좌표 없는 합성 줄의 빈 후속 문단 간격 분배는 유지합니다. 생산 `prepare_computed.end` → 소비 `record_vpos_lazy_origin` → 다음 저장 원점과 paint가 같은 끝점을 쓰게 합니다. 절대 위치 clamp나 fixture별 예외는 없습니다.
+
+- 보정 결과: Native 8/8쪽, PDF 8쪽으로 일치합니다. [전쪽 TSV](../assets/planet6897_green_20261002/issue2004_stored_gap_native.tsv)의 최저값은 95.85551%, 3쪽은 58.48267% → 97.64619%입니다. [3쪽 review PNG](../assets/planet6897_green_20261002/issue2004_p3_stored_gap_native.png)를 직접 확인했으며 명단 15명과 표의 모든 행·열이 보존됩니다. 원본 HWPX·기준 PDF는 변경하지 않았습니다.
+- 정상 대조군: #7312 1개, #6737 2개, #6298 2개, #6950 28개, 총 33개 PASS(nextest release-test, threads8, no-fail-fast, exit0). 앞선 단일 표 개방 시 실패했던 #7312도 통과합니다. 기존 함수/fixture 추가·삭제는 없습니다.
+- [출처·범위 기록](../assets/planet6897_green_20261002/issue2004_stored_gap_evidence.json)의 Native 증적을 커밋합니다. fresh WASM과 최종 전체 회귀는 아직 미완료이므로 PR 최종 판정은 보류를 유지합니다.
