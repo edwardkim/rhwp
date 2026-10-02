@@ -37,7 +37,7 @@ YAML의 구조를 기준 base와 비교해 runner 두 값·cache key/prefix 외�
 3. 최신 PR head required CI와 dry-run 결과를 검토한 뒤 merge 승인을 받는다.
 4. 정상 devel → main 승격과 다음 tag의 workflow 포함을 확인한다. 이 경계까지는 이슈를 닫지 않는다.
 
-등록된 이슈는 OPEN, 담당 edwardkim, milestone v1.0.0, labels ci/github_actions/packaging이다. 원격 push·PR 생성·workflow dispatch·merge·close는 수행하지 않았다.
+등록된 이슈는 OPEN, 담당 edwardkim, milestone v1.0.0, labels ci/github_actions/packaging이다. 사용자 승인 후 원격 branch push와 [PR #7556](https://github.com/edwardkim/rhwp/pull/7556) 생성을 완료했다. [self-review](../pr/archives/pr_7556_review.md)와 오늘할일을 같은 branch에 포함한 뒤 승인된 exact-head dry-run을 실행한다. merge·실제 publish·close는 수행하지 않았다.
 
 ## 복구
 
