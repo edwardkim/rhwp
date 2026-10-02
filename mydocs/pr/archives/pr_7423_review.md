@@ -161,3 +161,17 @@ last_verified: 2026-10-02
 - 중첩 행 존재만으로 가르는 후보는 이 입력의 TAC 원자 줄을 판별하지 못했습니다. 관련 기존96개 중95PASS/1FAIL, 8쪽62.05908%로 여전히 보류입니다. 이 가드는 제거하고, 변경되지 않은 원본 저장 줄의 control 소유 줄과 현재 줄 범위를 직접 비교하는 후보로 좁혔습니다.
 - 결과: 원본 저장 줄 소유 보정에서 29쪽 유지, off-canvas 1→0입니다. 선택된 기존 integration 검사95개 모두PASS(13.030s, exit0); 앞 후보96개 실행과 달리 이번에는 해당 integration binary를 명시해 lib unit 검사는 포함하지 않았습니다. 기존 테스트·기대값을 바꾸지 않았습니다.
 - Native8쪽62.98797%/9쪽52.67182%는 아직 보류입니다. 다음 보정은 글줄과 TAC 표가 같은 문단에 있다는 이유만으로, 텍스트 뒤의 쪽 경계를 중첩 표 내부 컷으로 오인하는 가운데 정렬 제외 판정을 확인합니다. [증적](../assets/planet6897_green_20261002/sample2_source_line_owner_validation.json).
+
+### 메인터너 보정 사전 분석: 8쪽 텍스트 끝 경계의 가운데 정렬
+
+- 용지 밖 중복 배치는643913756에서 해결했습니다. 남은8쪽62.98797%는 원본 셀의 가운데 정렬 차이입니다.
+- `centers_pinned_fragment`는 양쪽 유닛이 같은 문단이고 문단에 표가 하나라도 있으면 중첩 표 내부 컷으로 판정합니다. 문단21의 제목 글줄과 다음 쪽 TAC 표 줄은 같은 문단이지만, 현재 컷은 제목만 소유합니다.
+- 배치에 사용한 원본 control 소유 줄 판정을 정렬 경계에서도 공유합니다. 실제 중첩 행/재귀 컷은 보존하며, 원본 저장 줄이 유효하지 않거나 수정·합성된 경우에는 기존 판정을 유지합니다.
+- 텍스트/TAC 소유 줄을 정렬 경계와 공유한 후보만으로는8쪽62.98797%가 변하지 않았습니다. 보정 완료로 채택하지 않고 저장 쪽 프레임 reset 인식과 실제 정렬 경계의 진단을 이어갑니다.
+- 실제 진단은 `cut=0..34 total=50 reset=false start_cross=false end_cross=false`입니다. 중첩 내부 컷 오인은 해소했지만, 원본 두 번째 줄의 쪽 재시작 신호가 mixed 중첩 유닛을 생성하는 경로에서 `page_frame_reset_before:false`로 버려지고 있었습니다. 원본 TAC 소유 줄의 검증된 저장 프레임 재시작을 첫 중첩 유닛에만 전달합니다.
+- 기존 stored-frame 판정은 직접 HWPX에서 중첩 표가 있는 셀을 제외하므로, 전달만 한 후보에서도reset=false였습니다. 원본 TAC 소유 줄이vpos0으로 재시작하고 직전 저장 내용+패딩이 선언 첫 프레임 안에 들어가며, 셀 전체 선언 높이는 그보다 큰 형상을 별도로 확인합니다. hard-break 강제 분할은 추가하지 않고 실제 선택 컷의 프레임 소유 신호만 보존합니다.
+- 선언 프레임 후보도reset=false여서 폐기했습니다. 실제 컷34는 중첩 fragment가 아니라 TAC를 품은 저장 글줄 유닛입니다. 이 mixed 글줄 경로는 이미 계산한 `hard_break_before`를 page-frame 신호에 옮기지 않고false를 넣습니다. 일반 글줄 경로와 같은 전달로 수정하며, 앞 후보의 선언 높이 추가 조건과 mixed fragment 승격은 제거했습니다.
+- 결과:8쪽 Native/fresh WASM 모두98.91222%,원본/PDF/Native/WASM29쪽,off-canvas0입니다. 기존integration95개모두PASS(14.451s,exit0). 새검사/기대값/baseline변경없음. Mac fresh WASM은로컬대체--no-opt빌드exit0이며Docker검증으로보고하지않습니다.
+- Native전29쪽완료,미달2·4·7·9·10·14·20·21·28쪽. freshWASM선택8·9쪽검사exit1은9쪽52.67182%때문이며8쪽은통과입니다. 전체문서의90%통과나최종전체검증완료로간주하지않습니다.
+- 20쪽의종전92.01046%는none폰트공급,현재85.82574%는full공급으로조건이다릅니다. 보정전359896c29와현재20쪽렌더트리기하는동일하므로이번보정이20쪽기하를퇴행시켰다고단정하지않습니다. 실제full공급미달은추가검토합니다.
+- [검증기록](../assets/planet6897_green_20261002/sample2_mixed_line_reset_validation.json), [Native29쪽TSV](../assets/planet6897_green_20261002/sample2_mixed_line_reset_native.tsv), [freshWASM선택TSV](../assets/planet6897_green_20261002/sample2_mixed_line_reset_wasm_selected.tsv), [8쪽PNG](../assets/planet6897_green_20261002/sample2_mixed_line_reset_p8_review.png).

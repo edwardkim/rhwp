@@ -331,6 +331,26 @@ fn stored_nested_table_line_offset_px(
     (delta > 0).then(|| crate::renderer::hwpunit_to_px(delta as i32, dpi))
 }
 
+/// 변경되지 않은 원본 줄에서 컨트롤을 현재 글줄 창이 소유하는지 판정한다.
+/// 배치와 정렬 경계가 같은 원본 소유 관계를 사용한다.
+fn stored_control_owned_by_line_window(
+    para: &crate::model::paragraph::Paragraph,
+    control_index: usize,
+    start_line: usize,
+    end_line: usize,
+) -> Option<bool> {
+    if para.line_segs.len() < 2
+        || para.stored_text_partition_is_dirty()
+        || para.line_segs.iter().any(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        })
+    {
+        return None;
+    }
+    crate::renderer::layout::control_line_seg_index(para, control_index)
+        .map(|owner| start_line <= owner && owner < end_line)
+}
+
 impl CellComposedStore {
     fn get(
         &mut self,
@@ -2116,9 +2136,21 @@ impl LayoutEngine {
                     let hosts_table = |unit: Option<&super::table_layout::CellUnit>| {
                         unit.and_then(|u| cell.paragraphs.get(u.para_idx))
                             .is_some_and(|para| {
-                                para.controls
-                                    .iter()
-                                    .any(|control| matches!(control, Control::Table(_)))
+                                para.controls.iter().enumerate().any(|(index, control)| {
+                                    let Control::Table(nested) = control else {
+                                        return false;
+                                    };
+                                    !nested.common.treat_as_char
+                                        || line_ranges
+                                            .as_ref()
+                                            .and_then(|ranges| {
+                                                let (start, end) = *ranges.get(unit?.para_idx)?;
+                                                stored_control_owned_by_line_window(
+                                                    para, index, start, end,
+                                                )
+                                            })
+                                            .is_none_or(|owned| owned)
+                                })
                             })
                     };
                     let cuts_through_table =
@@ -2126,6 +2158,15 @@ impl LayoutEngine {
                             (Some(a), Some(b)) => a.para_idx == b.para_idx && hosts_table(Some(a)),
                             _ => false,
                         };
+                    if std::env::var("RHWP_DIAG_CELLPARA").is_ok() {
+                        eprintln!(
+                            "DIAG_CENTER_BOUNDARY pi={} cut={}..{} total={} reset={} start_cross={} end_cross={}",
+                            para_index, start_unit, end_unit, units.len(),
+                            self.cell_unit_opens_stored_page_frame(cell, table, styles, end_unit),
+                            start_unit > 0 && cuts_through_table(start_unit - 1, start_unit),
+                            cuts_through_table(end_unit - 1, end_unit),
+                        );
+                    }
                     // 가운데 정렬의 기준인 조각 내용은 한/글 자신의 쪽 프레임이어야 한다 — 컷이
                     // 저장 프레임 되감김에서 끝나지 않으면 rhwp 조각이 한/글 쪽과 다른 내용을
                     // 담아(1382000 22쪽) 여유를 잘못 잰다.
@@ -3383,12 +3424,10 @@ impl LayoutEngine {
                                     && nested_cut_rows.is_none()
                                     && nested_cursor_split.is_none()
                                     && mixed_nested_split.is_none()
-                                    && !para.stored_text_partition_is_dirty()
-                                    && para.line_segs.iter().all(|line| {
-                                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                                    })
-                                    && crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
-                                        .is_some_and(|owner| owner < start_line || owner >= end_line)
+                                    && stored_control_owned_by_line_window(
+                                        para, ctrl_idx, start_line, end_line,
+                                    )
+                                    .is_some_and(|owned| !owned)
                                 {
                                     continue;
                                 }

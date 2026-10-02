@@ -140,7 +140,7 @@
       }
     ]
   },
-  "merge_decision": "보류. d2ef8693a 전체 검사 새17개 실패의 개별 처리 중. 정책연구 쪽수는 최신 Native/fresh WASM에서215/PDF215복원, 전215쪽 최신 시각 및 최종 전체검증은 미완료.",
+  "merge_decision": "보류. sample2 8쪽 용지 밖·정렬은 Native/fresh WASM98.91222%로 해결. 나머지 시각 미달과 최종 전체 검증 미완료.",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -258,5 +258,22 @@
       "latest215page whole Native/fresh WASM validation pending"
     ],
     "integration_pr_ready": false
+  },
+  "sample2_p8_correction": {
+    "evidence": "sample2_mixed_line_reset_validation.json",
+    "off_canvas": 0,
+    "native_percent": 98.91222,
+    "fresh_wasm_percent": 98.91222,
+    "remaining_native_below90_pages": [
+      2,
+      4,
+      7,
+      9,
+      10,
+      14,
+      20,
+      21,
+      28
+    ]
   }
 }

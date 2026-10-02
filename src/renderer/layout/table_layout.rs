@@ -12925,7 +12925,10 @@ impl LayoutEngine {
                             height: lh,
                             hard_break_before,
                             stored_frame_break_before: stored_frame_break_before(li),
-                            page_frame_reset_before: false,
+                            // 일반 글줄 경로와 같이 가시성 게이트 전의 저장
+                            // 되감김을 보존한다. TAC 줄을 포함한 mixed 문단도
+                            // 같은 원본 쪽 프레임 경계를 가진다.
+                            page_frame_reset_before: hard_break_before,
                             vpos_gap_before,
                             para_idx: pi,
                             vis_start: li,
