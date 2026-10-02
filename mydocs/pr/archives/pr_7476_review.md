@@ -241,3 +241,9 @@ last_verified: 2026-10-02
 - [Native 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_native.tsv), [fresh WASM 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_wasm.tsv)는 `bf5eced2a`에서 생성한 전체 PNG를 재사용해 같은 실루엣 계산식으로 산출했습니다. 추가 원문 재출력으로 기록하지 않습니다.
 - [fresh WASM 1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_fresh_wasm.png), [fresh WASM 2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_fresh_wasm.png). Mac `--no-opt` 대체 빌드 통과이며 Docker 최적화 빌드 통과는 아닙니다.
 - 다른 실물 fixture의 잔존 시각 차이와 최종 전체 게이트 때문에 원 PR #7476의 최종 판정은 계속 보류입니다. 사다리 보류 사유만 이번 근거로 해소했습니다.
+
+### 보정 10의 기존 검사 보완
+
+- 전체 Native/fresh WASM 선행 기준을 통과했으므로, 기존 host 줄간격 검사 한 개에 이미 저장소에 있던 사다리의 쪽·뒤 문단 소속 계약을 보완합니다. 신규 test 함수나 fixture는 추가하지 않습니다. 이전 출력의 1쪽/기준 2쪽 차이를 의미로 검사하고, 절대 픽셀 위치를 기대값으로 추가하지 않습니다.
+
+- 보완한 기존 #7418 검사 7개가 모두 통과했습니다. 사다리 계약은 정확한 2쪽, 1쪽 표 유지, 뒤 문단의 2쪽 단일 출현, 표의 임의 분할 금지를 확인합니다. test 함수 수는 7개 그대로이며 새 fixture를 추가하지 않았습니다. 생성 suite는 003으로 재배정되어 wrapper의 실제 7개 실행을 확인했습니다.

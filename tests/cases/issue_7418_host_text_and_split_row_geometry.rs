@@ -235,4 +235,42 @@ fn host_line_spacing_is_not_added_again_over_a_synthesized_host_line() {
         1.0,
         "36384689 `붙임` 줄 − host 줄 위끝",
     );
+
+    // 셀 글줄을 새로 계산한 표도 옛 host 줄높이로 다시 압축해서는 안 된다.
+    // 같은 원본의 독립 한컴 PDF는 2쪽이며, 표 뒤 문단은 두 번째 쪽에만 있다.
+    // Native/fresh WASM 전체 두 쪽의 최소 일치율 90.86083%를 확인한 입력이다.
+    let ladder = load("samples/task2070/hy_ladder3.hwpx");
+    assert_eq!(
+        ladder.page_count(),
+        2,
+        "실측 표 뒤 문단은 독립 PDF처럼 새 쪽이어야 한다"
+    );
+    let first = page(&ladder, 0);
+    let second = page(&ladder, 1);
+    assert!(
+        lines(&first)
+            .iter()
+            .all(|(_, _, text)| !text.contains("NEXTPARAGRAPH")),
+        "표 뒤 문단이 첫 쪽의 표와 함께 쪽 밖으로 밀렸다"
+    );
+    assert_eq!(
+        lines(&second)
+            .iter()
+            .filter(|(_, _, text)| text == "NEXTPARAGRAPH")
+            .count(),
+        1,
+        "표 뒤 문단을 두 번째 쪽에 한 번 보존해야 한다"
+    );
+    assert!(
+        nodes(&first)
+            .iter()
+            .any(|node| matches!(node.node_type, RenderNodeType::Table(_))),
+        "표 본체는 첫 쪽에 남아야 한다"
+    );
+    assert!(
+        nodes(&second)
+            .iter()
+            .all(|node| !matches!(node.node_type, RenderNodeType::Table(_))),
+        "원본의 글자처럼 취급 표를 임의로 분할하지 않는다"
+    );
 }
