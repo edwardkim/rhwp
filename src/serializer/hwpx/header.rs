@@ -17,9 +17,9 @@ use quick_xml::Writer;
 
 use crate::model::document::{DocInfo, DocProperties, Document};
 use crate::model::style::{
-    border_width_mm_str, Alignment, BorderFill, BorderLine, BorderLineType, CenterLine, CharShape,
-    DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering, ParaShape, Style,
-    SubstFont, TabDef,
+    border_width_mm_str, para_line_wrap_str, Alignment, BorderFill, BorderLine, BorderLineType,
+    CenterLine, CharShape, DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering,
+    ParaShape, Style, SubstFont, TabDef,
 };
 use crate::model::ColorRef;
 use crate::parser::tags;
@@ -994,7 +994,7 @@ fn write_para_pr<W: Write>(
     // keepWithNext, keepLines, pageBreakBefore} 를 상수로 하드코딩해, 파서가
     // attr1 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
     // BASELINE, breakNonLatinWord=BREAK_WORD → KEEP_WORD). 이제 보존 비트에서
-    // 역매핑한다. (breakLatinWord/lineWrap 은 파서가 아직 미수집 → 상수 유지.)
+    // 역매핑한다. lineWrap 은 attr2 bits 0-1 에서 역매핑한다(#6875).
     let vertical = vertical_alignment_str((ps.attr1 >> 20) & 0x03);
     // attr1 bit7: KEEP_WORD=1, BREAK_WORD=0 (parse_para_shape_child 와 정합).
     let break_non_latin = if (ps.attr1 >> 7) & 1 == 1 {
@@ -1045,7 +1045,9 @@ fn write_para_pr<W: Write>(
             ("keepWithNext", &keep_with_next),
             ("keepLines", &keep_lines),
             ("pageBreakBefore", &page_break_before),
-            ("lineWrap", "BREAK"),
+            // [#6875] 종전 상수 "BREAK" — "한 줄로 입력" 문단(attr2 bits 0-1 = 1)을
+            // 한/글이 여러 줄로 다시 나눠 h2x 쪽수가 갈렸다.
+            ("lineWrap", para_line_wrap_str(ps.attr2)),
         ],
     )?;
 
