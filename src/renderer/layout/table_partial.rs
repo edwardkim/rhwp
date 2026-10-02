@@ -333,7 +333,7 @@ fn stored_nested_table_line_offset_px(
 
 /// 변경되지 않은 원본 줄에서 컨트롤을 현재 글줄 창이 소유하는지 판정한다.
 /// 배치와 정렬 경계가 같은 원본 소유 관계를 사용한다.
-fn stored_control_owned_by_line_window(
+pub(super) fn stored_control_owned_by_line_window(
     para: &crate::model::paragraph::Paragraph,
     control_index: usize,
     start_line: usize,
@@ -2133,40 +2133,18 @@ impl LayoutEngine {
                 && matches!(cell.vertical_align, VerticalAlign::Center)
                 && cut_units.is_some_and(|(start_unit, end_unit)| {
                     let units = self.cell_units(cell, table, styles);
-                    let hosts_table = |unit: Option<&super::table_layout::CellUnit>| {
-                        unit.and_then(|u| cell.paragraphs.get(u.para_idx))
-                            .is_some_and(|para| {
-                                para.controls.iter().enumerate().any(|(index, control)| {
-                                    let Control::Table(nested) = control else {
-                                        return false;
-                                    };
-                                    !nested.common.treat_as_char
-                                        || line_ranges
-                                            .as_ref()
-                                            .and_then(|ranges| {
-                                                let (start, end) = *ranges.get(unit?.para_idx)?;
-                                                stored_control_owned_by_line_window(
-                                                    para, index, start, end,
-                                                )
-                                            })
-                                            .is_none_or(|owned| owned)
-                                })
-                            })
+                    let hosts_table = |unit: &super::table_layout::CellUnit| {
+                        cell.paragraphs
+                            .get(unit.para_idx)
+                            .is_some_and(|para| unit.owns_table_in_paragraph(para))
                     };
                     let cuts_through_table =
                         |before: usize, after: usize| match (units.get(before), units.get(after)) {
-                            (Some(a), Some(b)) => a.para_idx == b.para_idx && hosts_table(Some(a)),
+                            (Some(a), Some(b)) => {
+                                a.para_idx == b.para_idx && hosts_table(a) && hosts_table(b)
+                            }
                             _ => false,
                         };
-                    if std::env::var("RHWP_DIAG_CELLPARA").is_ok() {
-                        eprintln!(
-                            "DIAG_CENTER_BOUNDARY pi={} cut={}..{} total={} reset={} start_cross={} end_cross={}",
-                            para_index, start_unit, end_unit, units.len(),
-                            self.cell_unit_opens_stored_page_frame(cell, table, styles, end_unit),
-                            start_unit > 0 && cuts_through_table(start_unit - 1, start_unit),
-                            cuts_through_table(end_unit - 1, end_unit),
-                        );
-                    }
                     // 가운데 정렬의 기준인 조각 내용은 한/글 자신의 쪽 프레임이어야 한다 — 컷이
                     // 저장 프레임 되감김에서 끝나지 않으면 rhwp 조각이 한/글 쪽과 다른 내용을
                     // 담아(1382000 22쪽) 여유를 잘못 잰다.

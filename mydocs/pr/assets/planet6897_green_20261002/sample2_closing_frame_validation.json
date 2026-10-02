@@ -1,0 +1,66 @@
+{
+  "parent_head": "875bac2f3",
+  "source_code_sha256": {
+    "src/renderer/float_placement.rs": "cf4192bbf62be0614f1f3ca6312542d2c988c799bafc19110117758c25353162",
+    "src/renderer/layout/table_layout.rs": "607617b012dd8729c9f68845d212b12c748137b75b1b769d50b635daf3a65ad3",
+    "src/renderer/layout/table_partial.rs": "2b0ce8ea7a2b8c477fcd4b5a3b1b92fe60f3b54936eabdba52a761b3aebaa86c",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "b8ee618619c4180c00d186f34d653db899b248ff0b1bbb3a30393e696e3cb63c"
+  },
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "source_frame_identity_hu": {
+    "p9": {
+      "cell": 104143,
+      "opening": 64259,
+      "successor": 39884
+    },
+    "p10": {
+      "cell": 52646,
+      "opening": 34927,
+      "successor": 17719
+    }
+  },
+  "native_all_pages": {
+    "completed": 29,
+    "below90_pages": [
+      2,
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "tsv": "sample2_closing_frame_native.tsv",
+    "comparison_to_parent": "Only pages 9 and 10 changed in full-font TSV; all other 27 values identical."
+  },
+  "native_selected_percent": {
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "focused_integration": {
+    "run": 95,
+    "passed": 95,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 13.943
+  },
+  "off_canvas_count": 0,
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm": 29
+  },
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "decision": "8·9·10쪽 Native/fresh WASM ≥98%. 남은 7쪽 및 최종 전체 검증 보류.",
+  "fresh_wasm_selected_percent": {
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+  "wasm_visual_exit_code": 0,
+  "wasm_binary_sha256": "9ae94fdb86446a879b9e5b19635c3398b6973f961af4bdf53595048586ab110a"
+}

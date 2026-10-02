@@ -876,6 +876,53 @@ pub(crate) fn stored_rowbreak_closing_frame_height(
     (remaining == i64::from(after.vertical_pos)).then(|| hwpunit_to_px(after.vertical_pos, dpi))
 }
 
+/// 단일 셀의 전체 선언 높이와 첫 개체 프레임의 차이를 뒤 빈 문단이
+/// 정확히 닫으면 종료 조각의 물리 높이이다. 내용 높이와 빈 밴드를 구분한다.
+pub(crate) fn stored_single_cell_closing_frame_height(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    let [cell] = table.cells.as_slice() else {
+        return None;
+    };
+    let [next] = successor.line_segs.as_slice() else {
+        return None;
+    };
+    if table.row_count != 1
+        || table.col_count != 1
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.caption.is_some()
+        || table.outer_margin_bottom != 0
+        || table.common.height == 0
+        || table.common.height >= cell.height
+        || cell.height > i32::MAX as u32
+        || !host.text.is_empty()
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || !successor.text.is_empty()
+        || !successor.controls.is_empty()
+        || host.stored_text_partition_is_dirty()
+        || successor.stored_text_partition_is_dirty()
+        || host.line_segs.is_empty()
+        || host
+            .line_segs
+            .iter()
+            .chain(&successor.line_segs)
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let remaining = cell.height - table.common.height;
+    (i64::from(next.vertical_pos) == i64::from(remaining))
+        .then(|| hwpunit_to_px(next.vertical_pos, dpi))
+}
+
 /// 다음 빈 문단이 누적 저장 원점과 개체 프레임의 끝을 정확히 잇는 경우,
 /// 선언 높이를 첫 RowBreak 조각의 물리 높이로 반환한다.
 pub(crate) fn stored_cumulative_rowbreak_opening_frame_height(

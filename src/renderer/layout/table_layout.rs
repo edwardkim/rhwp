@@ -1752,6 +1752,28 @@ pub(super) struct CellUnit {
     non_inline_control_range: Option<(usize, usize)>,
 }
 
+impl CellUnit {
+    /// 문단의 표 존재와 현재 유닛의 표 소유를 구분한다.
+    pub(super) fn owns_table_in_paragraph(&self, para: &Paragraph) -> bool {
+        if self.nested_row.is_some() || self.mixed_nested_fragment {
+            return true;
+        }
+        para.controls.iter().enumerate().any(|(index, control)| {
+            let Control::Table(table) = control else {
+                return false;
+            };
+            !table.common.treat_as_char
+                || super::table_partial::stored_control_owned_by_line_window(
+                    para,
+                    index,
+                    self.vis_start,
+                    self.vis_end,
+                )
+                .is_none_or(|owned| owned)
+        })
+    }
+}
+
 /// mixed nested unit의 source-owner 판정에 필요한 최소 의미 정보.
 ///
 /// `CellUnit` 전체를 helper에 노출하지 않아도 viewport reservation 규칙을 독립적으로
@@ -10755,7 +10777,7 @@ impl LayoutEngine {
     /// 저장 쪽 프레임에서 재개하는 컷의 원점. 가시 줄 범위 대신 같은 source unit을
     /// 읽으므로 프레임 앞의 빈 문단도 원점과 소유권을 잃지 않는다.
     /// [#7095] `unit` 앞에 한/글이 저장한 쪽 프레임 되감김이 있는가(가시-텍스트 게이트 전).
-    pub(super) fn cell_unit_opens_stored_page_frame(
+    pub(crate) fn cell_unit_opens_stored_page_frame(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,

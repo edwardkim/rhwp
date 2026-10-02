@@ -70,6 +70,42 @@ impl TypesetEngine {
         // 행 컷이 소비한 내용과 header의 요구 높이. 저장 상자의 빈 밴드는
         // 아래에서 별도로 물리 점유에 포함하며 컷 유닛을 더 소비하지 않는다.
         let mut partial_height: f64 = consumed + header_overhead;
+        // 종료 조각의 빈 저장 밴드도 같은 물리 행 높이로 예약·배치한다.
+        // 실제 컷이 새 원본 쪽 프레임에서 시작한 경우에만 선언 차이를 쓴다.
+        let single_cell_closing_frame = (is_continuation
+            && cursor_row == 0
+            && end_row == 1
+            && split_end_cut.is_empty()
+            && start_cut.len() == 1
+            && start_cut[0] > 0
+            && !st.profile.session_edited()
+            && st.profile.hwpx_stored_layout()
+            && !self.render_normalization.table_text_reflowed(table)
+            && table_footnotes.is_empty()
+            && table.cells.first().is_some_and(|cell| {
+                layout_engine.cell_unit_opens_stored_page_frame(cell, table, styles, start_cut[0])
+            }))
+        .then(|| {
+            input
+                .source
+                .paragraphs_all
+                .get(para_idx + 1)
+                .and_then(|next| {
+                    crate::renderer::float_placement::stored_single_cell_closing_frame_height(
+                        input.source.paragraph,
+                        next,
+                        table,
+                        self.dpi,
+                    )
+                })
+        })
+        .flatten();
+        if let Some(height) = single_cell_closing_frame
+            .filter(|height| *height >= partial_height && *height <= avail_for_rows)
+        {
+            end_row_height_override = Some(height);
+            partial_height = height;
+        }
         // #7095의 동일한 쪽 하단 상자를 저장 rowspan 경계에도 적용한다.
         // 내용 컷과 물리 빈 밴드를 분리하며 다음 조각은 실제 남은 행에서 재개한다.
         let stored_rowspan_frame = (is_continuation

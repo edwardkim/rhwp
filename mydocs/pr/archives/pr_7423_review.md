@@ -175,3 +175,17 @@ last_verified: 2026-10-02
 - Native전29쪽완료,미달2·4·7·9·10·14·20·21·28쪽. freshWASM선택8·9쪽검사exit1은9쪽52.67182%때문이며8쪽은통과입니다. 전체문서의90%통과나최종전체검증완료로간주하지않습니다.
 - 20쪽의종전92.01046%는none폰트공급,현재85.82574%는full공급으로조건이다릅니다. 보정전359896c29와현재20쪽렌더트리기하는동일하므로이번보정이20쪽기하를퇴행시켰다고단정하지않습니다. 실제full공급미달은추가검토합니다.
 - [검증기록](../assets/planet6897_green_20261002/sample2_mixed_line_reset_validation.json), [Native29쪽TSV](../assets/planet6897_green_20261002/sample2_mixed_line_reset_native.tsv), [freshWASM선택TSV](../assets/planet6897_green_20261002/sample2_mixed_line_reset_wasm_selected.tsv), [8쪽PNG](../assets/planet6897_green_20261002/sample2_mixed_line_reset_p8_review.png).
+
+### 메인터너 보정 사전 분석: 9·10쪽 종료 프레임
+
+- 8쪽 확정 `875bac2f3` 후 9쪽 52.67182%를 개별 분석했습니다. 셀 높이 104143HU − 첫 개체 높이 64259HU = 39884HU이며, 다음 빈 문단75의 저장 vpos도 39884HU로 정확히 같습니다. 현재 종료 조각은 내용 높이 510.9px만 소비하므로 저장 종료 프레임 531.7867px보다 약 20.9px 짧습니다.
+- 10쪽도 셀 높이 52646HU − 첫 개체 높이 34927HU = 후속 빈 문단78의 저장 vpos 17719HU로 같은 계약입니다. 문서 이름·쪽 번호로 분기하지 않고 이 원본 동일성을 공유합니다.
+- 기존 닫힌 프레임 helper는 여러 행과 호스트 좌표 되감김만 받아 이 단일 셀 프레임을 처리하지 않습니다. 원본 단일 셀·빈 호스트·빈 후속 문단·선언 높이 동일성·검증된 시작 컷의 쪽 프레임에서만 종료 높이를 공유하고, 내용 유닛을 추가 소비하지 않습니다. 실제 내용 높이 이상이며 현재 예산 안에 들어가는 경우에만 예약과 배치에 같은 물리 높이를 전달합니다.
+- 정렬 경계도 문단 전체가 아닌 양쪽 각 유닛의 실제 글줄/중첩 소유를 판정합니다. 제목→TAC 표 경계는 표 내부 컷이 아니며 실제 중첩 fragment 경계는 보존합니다.
+
+### 9·10쪽 종료 프레임 보정 결과
+
+- Native 및 새 WASM에서 8쪽 98.91222%, 9쪽 98.55869%, 10쪽 99.70891%입니다. 원본/PDF/Native/WASM 모두 29쪽이며 용지 밖 표는 0건입니다. 9쪽의 조회방법 표와 뒤 모바일 제목, 10쪽 표 외곽과 현장방문 내용이 함께 맞습니다. 원본과 기준 PDF는 변경하지 않았습니다.
+- 기존 integration 95개 모두 PASS(13.943초, nextest release-test/threads8/no-fail-fast, exit0). 검사 추가·삭제나 기대값 변경은 없습니다. 새 WASM은 Mac 로컬 대체 `--no-opt` 빌드이며 Docker 검증은 아닙니다.
+- Native 전29쪽 TSV를 직전 `875bac2f3`의 같은 full-font 조건과 비교하면 9·10쪽만 바뀌고 나머지 27쪽 값은 동일합니다. 미달 2·4·7·14·20·21·28쪽과 최종 전체 검증은 후속 보정 대상입니다. 선택 3쪽 WASM 통과를 전29쪽 시각 완료로 확대하지 않습니다.
+- [증적](../assets/planet6897_green_20261002/sample2_closing_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_closing_frame_native.tsv), [새 WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_closing_frame_wasm_selected.tsv), [9쪽 PNG](../assets/planet6897_green_20261002/sample2_closing_frame_p9_review.png), [10쪽 PNG](../assets/planet6897_green_20261002/sample2_closing_frame_p10_review.png).

@@ -268,12 +268,30 @@
       2,
       4,
       7,
-      9,
-      10,
       14,
       20,
       21,
       28
     ]
+  },
+  "sample2_closing_frame_correction": {
+    "evidence": "sample2_closing_frame_validation.json",
+    "native_and_fresh_wasm_selected_percent": {
+      "8": 98.91222,
+      "9": 98.55869,
+      "10": 99.70891
+    },
+    "focused_pass": 95,
+    "off_canvas": 0,
+    "remaining_native_below90_pages": [
+      2,
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "final_full_validation": "pending"
   }
 }
