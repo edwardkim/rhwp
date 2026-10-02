@@ -2414,19 +2414,45 @@ impl DocumentCore {
         //
         // 글상자 안 표 셀 (textbox 안 cell) 매칭이 textbox 영역보다 specific 이므로
         // clicked_cell 을 textbox_hit 보다 먼저 처리한다.
+
+        // 2. 셀 bbox 기반으로 클릭한 셀 판별 (글상자 안 표 셀 포함)
+        // hit_cell 반환 전에 미리 계산한다 — 바깥 칸 run 이 안쪽 칸의 빈 영역·괘선을
+        // 덮는지 판별하기 위해 필요 (#7442).
+        let clicked_cell: Option<&CellBboxInfo> = cell_bboxes
+            .iter()
+            .filter(|cb| cb.has_meta)
+            .filter(|cb| x >= cb.x && x <= cb.x + cb.w && y >= cb.y && y <= cb.y + cb.h)
+            .min_by_key(|cb| ((cb.w.max(0.0) * cb.h.max(0.0)) * 1000.0) as i64);
+
+        // [#7442] 중첩 표를 품은 바깥 칸의 run은 TAC 줄 높이만큼 bbox가 커서 안쪽 칸의
+        // 빈 영역·괘선까지 덮는다. hit_cell이 있어도 클릭된 칸이 그 run보다 더 깊은
+        // 경로(같은 parent_para_index 아래 run 경로를 (control,cell) 접두사로 갖는
+        // 자손 칸)를 가리키면 run hit를 건너뛰고 그 칸 분기를 사용한다. 같은 깊이나
+        // 무관한 경로에서는 지금처럼 텍스트 run 정밀도가 우선한다.
+        let hit_cell = hit_cell.filter(|&(idx, _)| {
+            match (
+                runs[idx].cell_context.as_ref(),
+                clicked_cell.and_then(|cb| cb.cell_context.as_ref()),
+            ) {
+                (Some(run_ctx), Some(cell_ctx)) => {
+                    let clicked_is_descendant = cell_ctx.parent_para_index
+                        == run_ctx.parent_para_index
+                        && cell_ctx.path.len() > run_ctx.path.len()
+                        && run_ctx.path.iter().zip(&cell_ctx.path).all(|(r, c)| {
+                            r.control_index == c.control_index && r.cell_index == c.cell_index
+                        });
+                    !clicked_is_descendant
+                }
+                _ => true,
+            }
+        });
+
         if let Some((idx, offset)) = hit_cell {
             return Ok(format_hit(&runs[idx], offset, page_num));
         }
 
         // 클릭 좌표가 속한 칼럼 결정 (다단 지원)
         let click_column = self.find_column_at_x(page_num, x);
-
-        // 2. 셀 bbox 기반으로 클릭한 셀 판별 (글상자 안 표 셀 포함)
-        let clicked_cell: Option<&CellBboxInfo> = cell_bboxes
-            .iter()
-            .filter(|cb| cb.has_meta)
-            .filter(|cb| x >= cb.x && x <= cb.x + cb.w && y >= cb.y && y <= cb.y + cb.h)
-            .min_by_key(|cb| ((cb.w.max(0.0) * cb.h.max(0.0)) * 1000.0) as i64);
 
         // 셀 내부 클릭이면: 해당 셀의 run만 검색하여 가장 가까운 위치 반환
         if let Some(cb) = clicked_cell {

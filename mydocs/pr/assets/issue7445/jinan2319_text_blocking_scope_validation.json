@@ -1,0 +1,3264 @@
+{
+  "stage": 125,
+  "analysis": {
+    "head": "a02fad8c49f1829cab893e7af3da941a6a112c65",
+    "input": "samples/task2319/20544835_jinan_apt_form.hwp",
+    "sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25",
+    "download_identical": true,
+    "saved_with": {
+      "confidence": "metadata",
+      "product": "hancom-office-2022",
+      "version": "12.0.0.4204"
+    },
+    "current_page_count": 2,
+    "analysis": "#7382 실제 text 신규5건만 재현하고 같은 원문 한컴 PDF를 지정 서비스/engine2020으로 생성. 전체2쪽 Native 비교 및 직접 review/overlay 판독으로 판단. 90미만이면 실패 text 입력만 #7445 보류. 90이상이면 실제 겹침/판정 원인 메인터너 보정. 기존 정상 2함수/모든다른축/원문 유지. 기대값/공차 완화나 신규회귀 없음."
+  },
+  "before": [
+    {
+      "head": "a02fad8c49f1829cab893e7af3da941a6a112c65",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_024",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_9)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.666952125262469,
+      "summary": [
+        "Summary [   0.589s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    }
+  ],
+  "pdf": {
+    "path": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+    "pages": 2,
+    "metadata": {
+      "format": "PDF 1.4",
+      "title": "",
+      "author": "SYSTEM",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2020 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260929014302+09'00'",
+      "modDate": "D:20260929014302+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "text_by_page": [
+      "[별지제1호서식]\n(앞면)\n공동주택지원신청서\n신청단지\n공동주택명\n연락처\n주\n소\n동수/세대수\n동\n세대\n입주자대표회또는\n의결기구의의결일\n년\n월\n일\n사용검사일\n년\n월\n일\n지원신청내용\n사\n업\n명\n사업비(단위:천원)\n사업기간\n소\n계\n자체부담\n지원신청\n착수예정일\n완료예정일\n총\n계\n「진안군 공동주택관리및지원 조례」제6조제1항에따라위와같이공동주택지원사업을\n신청합니다.\n년\n월\n일\n신청인\n관리주체( 또는관리인)\n(인)\n입주자대표회의회장\n(인)\n(또는의결기구대표)\n진안군수귀하\n구비서류 : 1. 입주자대표회의 또는 의결기구 의결을 증명하는 서류\n※ 단, 입주자대표회의나 의결기구가 없는 경우에는 입주민 2/3이상 동의서 \n2. 사업계획서(현장사진, 도면, 사업비 산출근거 등 관련사항 포함)\n3. 자부담능력 입증자료\n4. 사업의 청렴이행 서약서\n5. 그 밖에 군수가 필요하다고 인정하는 서류\n",
+      "(뒷면)\n처리절차\n사업신청\n⇒\n신청사업검토\n⇒\n위원회심의및심의결과\n통보\n⇒\n지원금교부신청\n입주자대표회의\n또는의결기구\n군\n군\n사업대상자\n▪추진사업확정\n▪지원사업신청\n▪관련자료검토\n▪현장확인\n▪공동주택지원심의위원회\n▪사업선정및통보\n▪신청자료첨부\n▪실행계획서제출\n⇒\n지원금교부결정\n⇒\n지원사업추진\n⇒\n사업완료(준공)보고\n군\n사업대상자\n사업대상자\n▪지원금결정액\n▪사업수행\n▪관련자료첨부\n▪현장확인\n⇒\n지원금지급\n⇒\n정산보고\n군\n사업대상자\n▪지원금결정액\n▪관련자료첨부\n지원제외대상\n가. 해당연도현재「공동주택관리법시행령」제36조에따른하자보수책임기간이도래하지\n아니한시설\n나. 전년도지원금정산서를제출하지않거나허위로제출한관리주체가신청하는사업\n다. 지원사업비를과대하게산정하여신청하는공동주택\n라. 지원신청전에시행한공사또는사업\n마. 재건축또는리모델링의추진을위하여조합설립추진위원회를구성하여군수의승인을받\n은공동주택(단, 조합설립추진위원회와입주자대표회의가지원금신청일을기준으로5년이내\n공사착공이어렵다고판단하여지원을요청한경우위기간내공사착공시지원금전액을회\n수하는조건으로지원가능)\n바. 그밖에「공동주택관리법」및「주택법」등관련법령에부합되지않는사업\n"
+    ]
+  },
+  "conversion": {
+    "start": {
+      "job_id": "a604106a-795b-4d65-bfee-00c50d59eb4b",
+      "status": "queued",
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-09-28T16:42:53.315Z",
+      "completed_at": null
+    },
+    "status": {
+      "job_id": "a604106a-795b-4d65-bfee-00c50d59eb4b",
+      "status": "succeeded",
+      "terminal": true,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-09-28T16:42:53.315Z",
+      "completed_at": "2026-09-28T16:43:08.575Z"
+    },
+    "download": {
+      "job_id": "a604106a-795b-4d65-bfee-00c50d59eb4b",
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+      "output_filename": "20544835_jinan_apt_form-hwp-2020.pdf",
+      "size": 158869,
+      "sha256": "4df6c4788cc4e57bc11c216135b6fe40cee08b6e92cff61deeffe44fac8e035e"
+    }
+  },
+  "native_manifest": {
+    "key": "jinan2319",
+    "hwp": "samples/task2319/20544835_jinan_apt_form.hwp",
+    "pdf": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+    "requested_pages": [
+      1,
+      2
+    ],
+    "completed_pages": [
+      1,
+      2
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/run_manifest.json",
+    "exported_svg_pages": 2,
+    "exported_render_tree_pages": 2,
+    "exported_pdf_pages": 2,
+    "rasterized_svg_pages": 2,
+    "rasterized_pdf_pages": 2,
+    "svg_pages": 2,
+    "render_tree_pages": 2,
+    "pdf_pages": 2,
+    "compare_pages": 2,
+    "overlay_pages": 2,
+    "review_pages": 2,
+    "pdf_question_markers": 0,
+    "contact_sheet": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/contact_sheet.png",
+    "overlay_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/review_contact_sheet.png",
+    "analysis_dir": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/analysis",
+    "overlay_dir": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/overlay",
+    "review_dir": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 2,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 91.70173,
+      "worst_pixel_match_percent": 91.5819,
+      "average_ink_match_percent": 21.79428,
+      "worst_ink_match_percent": 10.30589,
+      "average_visual_accuracy_proxy_percent": 21.79428,
+      "worst_visual_accuracy_proxy_percent": 10.30589,
+      "average_tolerant_content_match_percent": 61.70682,
+      "worst_tolerant_content_match_percent": 51.96856,
+      "worst_pages": [
+        1,
+        2
+      ]
+    },
+    "overlay_metrics_json": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/overlay/overlay_metrics.json",
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 51.96856
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 71.44508
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "visual_metrics": {
+      "analyzed_pages": 2,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/analysis/question_flow.json"
+    },
+    "flagged_pages": [],
+    "native_document_pages": 2,
+    "native_export_metadata": "output/pr-review/planet6897-7382-20260926/stage125-jinan-text/visual-native/jinan2319/native-export.json"
+  },
+  "native_provenance": {
+    "hwp": {
+      "path": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25"
+    },
+    "pdf": {
+      "path": "pdf/task2319/20544835_jinan_apt_form-hwp-2020.pdf",
+      "sha256": "4df6c4788cc4e57bc11c216135b6fe40cee08b6e92cff61deeffe44fac8e035e"
+    },
+    "git_head": "a02fad8c49f1829cab893e7af3da941a6a112c65",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "a7462a8744544e6ab06c5b7485616a80f058233ab9ece44614bad41dc549d86c"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/H2GPRM.TTF",
+          "sha256": "5d44c3bf2ab83b773e292eb91d6373fdbc11364532064ebb961ee8181ae54335"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/H2HDRM.TTF",
+          "sha256": "06074546ec4aaab621e5045228751ebe7ea20307cba4c6f5968af798d7a9740d"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Bold.ttf",
+          "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Light.ttf",
+          "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Medium.ttf",
+          "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/batang.ttc",
+          "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/gulim.ttc",
+          "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/굴림.ttf",
+          "sha256": "31f4f4a4b34503e33092660d3cbaff8077ecbd5325727ddd4dcd6380d89375fa"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/굴림체.ttf",
+          "sha256": "cdee7d952357ddf1de77119e47c2f41d917038ffa7e4835f7c144ab5862375ba"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/궁서.ttf",
+          "sha256": "7ac042176ff12d4a91fd2b1020ebc5ddf12f35db85c257a864c960bda9c24336"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/궁서체.ttf",
+          "sha256": "65b51b6a3af0ca074d138e90bbe47e04c82a0046b8d2d753c19597632b2c1520"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/돋움.ttf",
+          "sha256": "8bcada2295c6b9b534335b50608c6e341ef744ffdb5b6f56e7cc6de0099596f1"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/돋움체.ttf",
+          "sha256": "6fe4635a019ce270b6ec971864a6facd2da4ff040f95ce9ff59d0535beb45f9a"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/바탕.ttf",
+          "sha256": "314198c3387034ad04ae3e640c4e1fd210310a84b3777c04d948c1bce605ac6d"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/바탕체.ttf",
+          "sha256": "3ae057adc393fe0d46c0f7207420d57d5abbd299e0c4a9dd18af90a12f58a2b9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulHangangL_0.ttf",
+          "sha256": "6793b31ca528322aa4d369eb49360204fb985f9a2ab7953fb9134e44d27eef56"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulHangangM_0.ttf",
+          "sha256": "4bd80365078c98852ba91a6bfe2e36762aa9e3f238a025c4a2887be5b2a6f66a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulNamsanB_0.ttf",
+          "sha256": "e72882a145bcf200ad89f740ad1bf72dfd844952fa0e944a8b49e349e198bba6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulNamsanEB_0.ttf",
+          "sha256": "b8aaae919e18e877f15d38285672af1e3e8f52691b8e7f55a1dbac15a427ebd8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulNamsanL_0.ttf",
+          "sha256": "7805881fd7157b26ac517ccb0c00e53275942c55c6c7791ffe3b34924b480d09"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulNamsanM_0.ttf",
+          "sha256": "be12d26dd257467ac6cafffd1f71ea4b612cc87bb34207288a6b30dce0e61101"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/08SeoulNamsanvert_0.ttf",
+          "sha256": "7202a9d5d83072f0647faeceb2c52e9e39a0e3b976d0b1c7b88009f7e8ac5686"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/60sSTRIPE.otf",
+          "sha256": "beffb81e3a5238a4c166f94da874f7aa313beb24495b918040717be59a78bc3c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/60sSTRIPE.ttf",
+          "sha256": "dcbdf4b4ef4db2fe1d17ee29f1f9f8f6353a4df8ae94a237d0d0991df24b1587"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/62570.ttf",
+          "sha256": "46ccdd968970504c19f6e746f267598f1f41705604168747335755f229c9834e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이가을담은체.otf",
+          "sha256": "3f45b8d95c1a04770b07d31a8e9e5cb61271ffb1f36398b79f9892b63fba03da"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이가을담은체.ttf",
+          "sha256": "1620d55b173d2a44e81ac5b6d178a90a7e2d7fe9a3b058de5aeeb5a497c3a218"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이마음고운체.otf",
+          "sha256": "ffcf57e765a87800a3ed6dc3f9215e1f5ad86325de946732a06b150701233926"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이마음고운체.ttf",
+          "sha256": "1ba647ba4150c29496e39cf200fe8b28825fe6d69116762c509e1751a7800f18"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이하늘맑은체.otf",
+          "sha256": "7bb89840a53cc8d3788b6b1d2f7e04bd3b648ad1c11e37ea94518f58cd4c8444"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ACC어린이하늘맑은체.ttf",
+          "sha256": "7d043feedeaaf3b9620aab2a3529a1dd9bdcfc9c6deb409dc88cfff8009c1977"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMDOHYEON_otf.otf",
+          "sha256": "7d056916a8f67af5c6b098422a101b29713c66023a237c9b18efade3d6bec19e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMDOHYEON_ttf.ttf",
+          "sha256": "43a71996b1205786ba7a793d870d4f9d28b9dc71e22cc4c9078a5e5f24f23971"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMEULJIRO.otf",
+          "sha256": "4b2f704ea8bb3a38bc4ea24ed5ad2695def434a3db5060df376a73762fee2d04"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMEULJIROTTF.ttf",
+          "sha256": "9267f884385258c45b7e796dfa242508c756542a1a80059d03556e0d1903adf4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNAAir_otf.otf",
+          "sha256": "c9682d9e42959f43e7c479f80b1139e6c261a51b9347b5348468e6833d10a233"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNAAir_ttf.ttf",
+          "sha256": "6f60f7d9615c22927acbc0073650cbeff776f2c6b0ca31c79529e074c9cebeba"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNAPro.ttf",
+          "sha256": "46dd67f836604840fe5abf9695d7982f396406260465fc225136ea23bed18e0a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNAProOTF.otf",
+          "sha256": "27f40674104a29801039378033e213831c0cf5f543f6d3a0b09ea00c2f10032c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNA_11yrs_otf.otf",
+          "sha256": "f0196563784b77731097fe7582abec8cd88ac1ff132bc29629404e1458a9e4a7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMHANNA_11yrs_ttf.ttf",
+          "sha256": "7abaedf3f61f1613ff8833ad6319115ea1def5a2d1b5a1203a957d6abd2f8f18"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMJUA_otf.otf",
+          "sha256": "93a5f9606eb054a9e0be2bc65bfe3ff099adfddb19f2d1169740ee862a6d174e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMJUA_ttf.ttf",
+          "sha256": "e8e6aa8b1b662c7bf0d7f136f29e822e0985176458a6e5d0ba08afc4a5c901a9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMKIRANGHAERANG-OTF.otf",
+          "sha256": "3690af360d4b0b5a64ed089a95fc42a19eeda1813738e75da0b81bea61871ed3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMKIRANGHAERANG-TTF.ttf",
+          "sha256": "d0973f3a497b42d999af2f163c63e2ebe4952c5de645d61228d2dbda13457a3f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMYEONSUNG_otf.otf",
+          "sha256": "8d018e885b7bbf28c0e1bbec932306085badebc2c6c011e2a356a53fa97a006c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BMYEONSUNG_ttf.ttf",
+          "sha256": "154d22ee908e6d5ac11acb3526a8dd5c6963a9379abe81330df0b1453080f63e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BOKEH.otf",
+          "sha256": "442c3c60802216b19d94372455ec07a3fce33042d877195e8200bff59a8d197d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BOKEH.ttf",
+          "sha256": "90b0c6d63595cd02741396adb41d52c8cf4f0e37ccc4e6d9d2a59df9c0031b26"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Bank Gothic Light Regular.otf",
+          "sha256": "939f424cda64133a38aab6b332e21b99fba98a6d842dab2f869def23568b1c8d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BankGothic Bold.ttf",
+          "sha256": "c3d11e882461f1f6ef10b672ec1a1bf8c50a090fb3a3bb67c4c207abbf7e12ec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BankGothic Md BT.ttf",
+          "sha256": "4f7f00a3b32e21bcecc719de170768c69195cc26731317625c179085db65ca5e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/BankGothicMediumBT.ttf",
+          "sha256": "f5212159604c4f3dbc189cafb787820ba2617e9955657068b123a5c975f1b609"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Batang.ttf",
+          "sha256": "4a9dce7310abb1e29097020599ceb9ba5e6b0c0f5e2b71b327a097e52784bbe9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/CROOKED.otf",
+          "sha256": "9f0d40cec112dd4bbc3361da9bc77eedbaa7f423144a286bdac6920845bda80b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/CROOKED.ttf",
+          "sha256": "eddaba1672157201eb03fd116248a44990047d132ec316e266b3e7c2e4fee6b3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_Cye.otf",
+          "sha256": "6320d3897169ccf69a9b0670eebf32d805c470132525fad421e641319c4d6b03"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_Cye.ttf",
+          "sha256": "c1f170ecf343dd2318b55e20333cb5d7595677188e7dab0b21328323ad3d09c9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_Kaj.otf",
+          "sha256": "ee9c9217d4425ac24beb989659808e9441a8d71e7bbb6dedc874ad1c0af1037c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_Kaj.ttf",
+          "sha256": "5bb6568b3a6f7739e31a3250eec512b3d6137c78da5b99218c4c1fe8dc19bc67"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_kyb.otf",
+          "sha256": "bff1c1108fc1beb294f4c122d8a09bd750947ea3fea324594c623d509f44886c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_kyb.ttf",
+          "sha256": "2ea5361338b7728230d3f54184aa3a96a58950db091243628f89e97970d774f3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_ljh.otf",
+          "sha256": "9bc3d3acecb6ad5f4464206de4ea3f6f20c6bae2b6e2e44502ed194d0dae174b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_ljh.ttf",
+          "sha256": "0dc6e517fc6051b5e2d70c01eb6570ad1196427586d778daf445b02299dde87e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_lws.otf",
+          "sha256": "a858b05fb505970e797faca6d9c36ba0cf4a6f2d112298e30befdf0d20a98ede"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Chilgok_lws.ttf",
+          "sha256": "6ee03fda832f364a01c93c16483ee444810c57ab93f4e616cb44c2bc6789de12"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ChusaLove.ttf",
+          "sha256": "0c6f24881f4210ef739ba304e26ba372bc16e957526c6fc2f49976236ded69e5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ChusaLoveBold.ttf",
+          "sha256": "38b57cd6a3f8fab863c1ac080d36b4e4a4df24c52c8058dda6a3531d35d1f548"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/D2Coding-Ver1.3.2-20180524-all.ttc",
+          "sha256": "3722c0295b77510e969003241e12cdbffe27e30e80f3c73137439d18e23b9bdb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/DalseoDarling.ttf",
+          "sha256": "67fc81def294302aa911b696a1be4158e4c74eedd192a1d41d25d28e726179ec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/DalseoHealingBold.ttf",
+          "sha256": "3bffd001701e45813c1de1619991f36ffcd54b6b23fdca8c7ef36f2c4d16904a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/DalseoHealingMedium.ttf",
+          "sha256": "00959b43236113778800cd9860165d34b5485821977759e5bd79d1d1c06b2101"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Delta Universe.otf",
+          "sha256": "128a4f945b6b972a6062031f930deed17456c592a54e2bf835fb2fab72c2f1d5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Delta Universe.ttf",
+          "sha256": "50b6b6a287f6914188f970aefbf5e3888e5ec79f2833d853d484da32a23cf8d9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Dobong_Cultural_Routes(OTF).otf",
+          "sha256": "7ce85c26f37ccb8a07618a9f1fe5f1b4da7bc8c2bf80718578585ac0c4d8be14"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Dobong_Cultural_Routes(TTF).ttf",
+          "sha256": "8df0e77eb0f3907b9e828da01d6336782d6484a00a4c85ed5cdd54d5749427ea"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBERNF.TTF",
+          "sha256": "0ad88056a8866af6826ebf30110a540cb9091a694637b949c8ee13c08b88ce3d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBLBK.TTF",
+          "sha256": "6025f9b7fc6ff79269050ab0320fa5d99bcade7e123b810e54c0ab035502aa34"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBODB.TTF",
+          "sha256": "ae65d2f1a0711d075b816a2c64c93a176c4b2c2cc8fd7aa89378ba4a55d3c2c9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBODBI.TTF",
+          "sha256": "34e546560ea6f0ec820912c0a6d8855c21b004980eb4ee88f373f7a79ad88b4d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBODBK.TTF",
+          "sha256": "814967fddca9479f35bff5c3701eb5b41123cb8720520f6a9b87dc453abb51f0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBODBKI.TTF",
+          "sha256": "7781edd9c807fb707ad2c4bb9d6b2d347140d87fc5ccc621df52286f97c2c3d9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBRODWY.TTF",
+          "sha256": "ba843d0b65d7ecd2fea052bec7e7e7f565cbdb229d793ab0b08be65fbb5b048f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENBRUSH.TTF",
+          "sha256": "06ae1708ae7e87b166dccf3d742389342ca0515e9b9b7dbf78b8492f04217279"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCOBK.TTF",
+          "sha256": "eae41b1b4423a28329aa906bf4187a0dacbdc3041545608a6dc06acf3cf4219c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCOBKI.TTF",
+          "sha256": "98ff37e47d3002f2c24aaab5e89eea4b80a6ba085ae6f0bf9dc56dde1a2e26b9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCOSCPT.TTF",
+          "sha256": "b033b9c8960646038015329f41c903f1efcfe7cef51d915b27d86ed519c3bb8b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCR10B.TTF",
+          "sha256": "e4c0b52508d7cf5e0ba89e30f5fb8b83c80ed3770d6091975baf571dac877c9e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCR10BI.TTF",
+          "sha256": "8d2a93d6bac3c1005d5b6ad74e1623bb32e07b14184ce1f3e5de88d386694c71"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCSCH.TTF",
+          "sha256": "214d6d2e89a8c8c432cb1bf33d3981702f13207245e04c8d48a983de7328bcaa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCSCHB.TTF",
+          "sha256": "e7f90aac53222f04eb711ca32e1b0782813007c220b4f3435d1eedbf28f5ce70"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCSCHBI.TTF",
+          "sha256": "b7ed15847563373a956317e7858b057d16d5f4459e29e32ff16ad72bd3b29e26"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENCSCHI.TTF",
+          "sha256": "30df16012ebbf92579d1b37f4aec1b5da4beece665fb76d03bc8ea697215090f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENDOMCA.TTF",
+          "sha256": "cb8f3f35a47de30c38c8cc83e45caeb963c6842f413ce307d9bb0ab058b51b7a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENFREEHD.TTF",
+          "sha256": "1b3e621ab0246f32bee1ad0176e5d263a3dac17aa0f181a8c00b739e31fc4cfb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENFUTUBK.TTF",
+          "sha256": "dff4c5ad61d76e863c4ca72467c153c4eaca9e2b095d0f1fff7607014d072bf4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGARM.TTF",
+          "sha256": "865ef7de7a80c0c045efa12a9d5aa4addf9620a25b72bbf7dfe7890fe68f734c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGARMB.TTF",
+          "sha256": "93b051bc1e391fd8403fc346978d839496cdde8ccbeb69e2e7b2aa12d3012634"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGARMBI.TTF",
+          "sha256": "18b4733435b05a3f01d7245e927dc09cdf3560bf9ee2a587d29ac33073036476"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGARMI.TTF",
+          "sha256": "f2193d35fc38eda98fb95afcaee5df67eb223a084b30864792830caa606dd913"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGDOS.TTF",
+          "sha256": "2e9597977f44fa49d6edd956747c0b6acfea6e5e019c4372193b68dc3ff248a2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGDOSB.TTF",
+          "sha256": "fa28d8027011b8934a21f870c869162f423ecf1cc6d56c135e9dc6a4d53d5c9c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGDOSBI.TTF",
+          "sha256": "37f10e013c2187ac76885efff27b11b458e0a0bbd488984e7dd27d0bc6dc3c9d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENGDOSI.TTF",
+          "sha256": "e376b5f1b480ea9cba8c57581672cd7a8884e4dd66eccc1ff5788bc21de91b64"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENHOBO.TTF",
+          "sha256": "52e628215bc76c375733891b4879ca6fa6770f2ac01cc2adef9e4859e786e25c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENLIBRTY.TTF",
+          "sha256": "5239deff17f19afaa080b2d70c9a581d5e0db452d9be1790c97952c8602e8d0e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENMUHB.TTF",
+          "sha256": "38ec236cd2d579f55b9482de680dbe8c2805056fa753be22cbeb47f9fee9e54d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENOCRA.TTF",
+          "sha256": "ba5bb6d273fa991590ea30a69d66dcd204b51c29708b8f952853adad5ce790b7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENOCRB10.TTF",
+          "sha256": "a0c9161e265257236faa7b3c0b6d787218ea05befa179a5f6dfdcbe0f1293e40"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENORAT10.TTF",
+          "sha256": "271d911994353485c44302eacf8b2255751445ef289d87c43b37a553fe937a2a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENORBITB.TTF",
+          "sha256": "d936a4b5e80a6ab1b3888e2d62d42389b8192db164f6dde35c66bd07ad4fbb90"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENPKAV.TTF",
+          "sha256": "5419a7354b744c4e24928960ed7512b66f737762d5eeeb1a0be42c10751e0a08"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENS721LI.TTF",
+          "sha256": "5e53762163be5aae5176b9b0e4a1c5d2ef10e800a0b6a1b0f8d1e6d943be22bb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENSTEN.TTF",
+          "sha256": "375fb99ec6e5c61789099bee2b581d4ec93e83d6b453147523ad2c7cd4cedffb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/ENSW721L.TTF",
+          "sha256": "15e9ef1143fb27343cdf759ed3e92d0d690b4bbee9bfe3360af5668b38eb4863"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/EunpyeongSagaDogseoText-Regular.otf",
+          "sha256": "339ca6fb140766ca1019e9908ccafc6b8d5db2c2c373f95d7f49f504f63bf9e4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/EunpyeongSagaDogseoText-Regular.ttf",
+          "sha256": "f4ed63498e3847d1f28b8e6cf6876d125d0ca792ae913cb0fc1c7b455593fe8e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/EunpyeongSagaDogseoTitle-Regular.otf",
+          "sha256": "9f42660601c5c35366280167660ecb6fd2e84a68231917694892205736d9cfc3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/EunpyeongSagaDogseoTitle-Regular.ttf",
+          "sha256": "c7e40878c834618124251383bf31b8e11250ae85fd009c5f117af6673a106af8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/EuroStyle Normal.ttf",
+          "sha256": "4427dc087901ebff7a5c9f61ba5847f88f40edd7ba4b970842203f8ecd06bacf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Eurostile-Bold Regular.ttf",
+          "sha256": "91e885b1ef2deef4084cc2a4825ebed5be14627c772871fb98d6b195f5cf5b97"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/FOUREYES.otf",
+          "sha256": "652443645f60f87fa79fc9e908c9e8dbfb010b760ad805327c70141baf3c5fa8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/FOUREYES.ttf",
+          "sha256": "56796ef86c9230e75bf97519a3aea995ee23bb1ce41d879f37ec6b340d816eb7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ghanachocolate.otf",
+          "sha256": "e2394abb8bb6887689408c2b787fc3852219ce4db377a94bb22d01a3c857dd9a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ghanachocolate.ttf",
+          "sha256": "c0776e24ab5f473cb4d66a3369abe26fa7399775e501a0c601a070eec83e2f5e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GimhaeGayaB.otf",
+          "sha256": "ef96d375ea82df7862e460ef6d6566538fb1805b0b860ffe14c26892ce227c64"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GimhaeGayaB.ttf",
+          "sha256": "744dc229d1da7ce51de0eed58b0e8c6943b47d0e901d1db999f12f28d6b1eb73"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GimhaeGayaR.otf",
+          "sha256": "243d7351d92155e325e78c8c3798a2c7188a8706ada04831dc18b1134d0f4db4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GimhaeGayaR.ttf",
+          "sha256": "13ff778132eae04b4c86c08f6c0c40a273fc3f693d83dab507ffbbcd8b647bf7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansBold.otf",
+          "sha256": "0773544f5de7f45b6f12ee53a08f961fb92ba16ab55270a0f018b621bc260cec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansLight.otf",
+          "sha256": "4d0e36f3449e0e334d625b2f246adbb2c575d1764d750b49bc6bb9bc83922317"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansMedium.otf",
+          "sha256": "39845e70b83555398b0710e85fa389702757dcb22a7241d5a196e90bc23ac9c8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansTTFBold.ttf",
+          "sha256": "ff7c354dd1a324e4cecc1223c4f71e74fa81be7027e0c7f6324c475909cacefc"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansTTFLight.ttf",
+          "sha256": "7e8e8c70349ed94acf3ea4c6962a56417fdfa0a8803bc6cf9dc36324d5656849"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/GmarketSansTTFMedium.ttf",
+          "sha256": "c6b9a2c10bfdb55975948ce191f9cf638955b5cfdc99149969add5b579262fc1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Gwangyang Sunshine Bold(TTF용).ttf",
+          "sha256": "4135bf7fc533e9c240a8534a02d3aa2b868e565d9a29d64531461662141e2425"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Gwangyang Sunshine Regular(TTF용).ttf",
+          "sha256": "e94518558be47806a652ea302e96ac6409e3c5596811752be955588314b41a60"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Gwangyang Touching(TTF용).ttf",
+          "sha256": "1a43aee451edbe1d9d2d870fa8440ffe20be686f5e83508a634de033139a2230"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HANAMDAUM(Mac).otf",
+          "sha256": "f258dce8e67010b79195479201655165bebe1b808aa8af725e359e5e43be094d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HANAMDAUM(Windows).ttf",
+          "sha256": "c9a60fe8852e2a8663c137586cf5ec6510f6bab79b395bc429e94ca6224dbc2a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HANAMDAUM_Body(Mac)_a.otf",
+          "sha256": "594a1bc433c8b652af82b8f37a77f9dec16a2a3b9524c9c5011a74a60dc827ef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HANAMDAUM_Body(Windows)_a.ttf",
+          "sha256": "d07d2401729e696c6df668d263842daab95b4482ef2ec11147730e5a40752143"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKBA.TTF",
+          "sha256": "cc22cac573873a21c4bff0ad9d73f8ceb7ebb8cc193489c34bbb4389bbbcdf88"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKBP.TTF",
+          "sha256": "213bc87a8084630de5bfb52c3baa008168e6af8b3e6a4e896237926fa5a436eb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKBS.TTF",
+          "sha256": "efb71564a8e46b080b7435ca80b7ecef173fa46a543144ba619dd0a3f04ed0ec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKLA.TTF",
+          "sha256": "bc49a5c560d24619b2b2e7271be09759ed0775d1fb947d4233cba61621e27a92"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKLP.TTF",
+          "sha256": "144ac8b82cb3731561a7c977a4cb96a127a00d00e37b2af1d8ca7f4fb331a80e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKLS.TTF",
+          "sha256": "be2468b6f1a911ecf32dc5df2aafd7ff48c3702c03e49579942721ba86179575"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMA.TTF",
+          "sha256": "70bf51ed923da6f1a95fe551c0ce5bff1c094f67ef74acba3fef11c9790ddd5b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMOLD.TTF",
+          "sha256": "5d30232f01d0cf5be49d3f1660a0db95aef2a0b992deb716affadb95e0fc42cc"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMP.TTF",
+          "sha256": "d384088bca9ff77a1066900421a1f6f0693a31ebe89de57b393d6d8f1a52ae1f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HMKMS.TTF",
+          "sha256": "ee6a20e72056e7bd8dd0f3cf0dae3bd28c17363f3ae8be1830d824c07b89a5ce"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYBSRB.TTF",
+          "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYCYSM.TTF",
+          "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYGSRB.TTF",
+          "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYGTRE.TTF",
+          "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYMJRE.TTF",
+          "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYMPRL.TTF",
+          "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYPORM.TTF",
+          "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HYSNRL.TTF",
+          "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HY울릉도M.TTF",
+          "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Allimjang TTF B.ttf",
+          "sha256": "6c99fc277790f100a44908e27d68cb2d2060fd56690d0085cc562c85898a149f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Allimjang TTF R.ttf",
+          "sha256": "3f8615c5c675967886bd4f0b27fb6bd3f95c01b1e5a6d81c50a849011327b4bc"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Badasseugi TTF B.ttf",
+          "sha256": "c7b6c7c4dd367d3b343b0c9dfb346202080eafb3afe6daa051831f36f7b067db"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Badasseugi TTF L.ttf",
+          "sha256": "408c847d580b746fa83d3376171efd6040f36f9ad22df4506df96346ef138bc3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Byeolbichhaneul TTF B.ttf",
+          "sha256": "b5be016d733f0ef358b47aa392fda7bd38594815528925ac828944febf59f5e0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Byeolbichhaneul TTF L.ttf",
+          "sha256": "cb83d0b4907e08a075e249155532c27fe5103431b90c9f282d3f2c279924f9ad"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Byeoljari TTF B.ttf",
+          "sha256": "affeec851390b293d2a546d712a4050d29ef052a31ceb5979b598243cb6d75ce"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Byeoljari TTF L.ttf",
+          "sha256": "6089bfbcdd53d0b2a71b6358b154f576f9f5dd585e72b8837ae5ed02d39d7b7d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Chilpanjiugae TTF B.ttf",
+          "sha256": "78e1fc40fc3e1422bd895a7e2655942511b36ac4bf047d73feee508d29c06473"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Chilpanjiugae TTF L.ttf",
+          "sha256": "fa1788fc41dc7e8c6ac43bf6088a3f71a7afc59a70b604b3adb6eb335d4bbb88"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Chulseokbu TTF B.ttf",
+          "sha256": "235af696ed156271a980eb081e9a945a8c1e5656e4b2d1cc7fc08d0e37ea7e97"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Chulseokbu TTF L.ttf",
+          "sha256": "cfaa8e5324cd5f94a8a0e2711271b1fcdaca9ff90ed0ab70eca21f65e8afd6c7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Dunggeunmiso TTF B.ttf",
+          "sha256": "a950214eaf940d3e2653ed1061300f2dd6a3d69e3c0dd8c2013771ca912ff912"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Dunggeunmiso TTF R.ttf",
+          "sha256": "76166186940892216709556329cc5a6f195417ee2d5d3ae3acfec632337cd4ff"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Geurimilgi TTF R.ttf",
+          "sha256": "fc9ae61a91357ef876449f5eb1cfd8ebfe9d5084e6f547e1ade8d76ebc07b147"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Nadeuri TTF B.ttf",
+          "sha256": "fb4e4a6932103954c594bb3edd9ba6606ab32e1b76a88f8d669f34cb5c254246"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Nadeuri TTF L.ttf",
+          "sha256": "d2386a664b2dcf87aa11a4df0f99355d81a34a1d05d046ad3f7f358aad30b04d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Puzzle TTF Black.ttf",
+          "sha256": "6af1175c4ef3697cbe441e2941c279fa0bbcd4d61923be9503b7d1d4a7e7071e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim Puzzle TTF Outline.ttf",
+          "sha256": "748b6d9503755d9b9dcb4428a1d94908bf1e6196ec1e1dce06dc2be1450d3b24"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBareonbatangB.ttf",
+          "sha256": "f262789f002803bdf4e55b82d34ac6ba1f5f1440bb1f49dbf4105961b5369199"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBareonbatangR.ttf",
+          "sha256": "a7ab8757f6c02e2bd715639d289e792892a04f6771da7308a70b815d4bb415b3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBareondotumB.ttf",
+          "sha256": "1916434f685368e5398e9f723bb1e8cbb86950d8b57c4ccbf878c2828c8f272d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBareondotumR.ttf",
+          "sha256": "401d3da9631e7641c60c9273f12c571e759f6aefc66011afbcd3804c89c06efd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBombanghakR.ttf",
+          "sha256": "1e3272bf840cb7f73823e97168d1dad652374498084963bcb95761ba5bdf7ad0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimBunpilR.ttf",
+          "sha256": "aae87bebd8b963b103dba04cc28c35c9e5eba8a1c355804f35f6caff0a199c0d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimButpenB.ttf",
+          "sha256": "76454874405a1e004b0638514f6cc2312e00f6592d502f2b8ab8ee0e08bb5ae5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimButpenL.ttf",
+          "sha256": "574460ceb5ccf17261e55597220b6d22f6604413d533b50fc9b0e38818bc43e1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimButpenM.ttf",
+          "sha256": "d575f20aff612d97426beca8c94d894404756dc13a781375b66b57ece35fbe75"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimDoldamB.ttf",
+          "sha256": "fcb76ef4577e36450be23ef6fc4ee7a360d15d7ea385ad867155a8a3f09ae21e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimDoldamL.ttf",
+          "sha256": "36985e4a0b3a0853ef9f3e63e8e9fc57ab7db321df7defce0b873347a6652494"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimDoldamM.ttf",
+          "sha256": "b3d582a4cdd690956e2f7d6de4be6a7a0296f2ec5f4cfe1027ef187d1a2dc774"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimDotbogiR.ttf",
+          "sha256": "9749a457847d53af0b4d7471bdb940c2d5a0b33e4c5f4e2d467fcf05155e4257"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimEunhasuR.ttf",
+          "sha256": "9d2c8673885097c8eafba00e15c68af3a294640961f28329d8823a7bad679826"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGaeulsopungB.ttf",
+          "sha256": "bc0d61ed0de3f229cf7125cde9787ac47ead820d272d443db5e3d2b7dd2a2f90"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGaeulsopungL.ttf",
+          "sha256": "d67385538973961e80ac26dde31c9a5826342b23ded847f1fa7b1648a36bd70f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGgooreogiR.ttf",
+          "sha256": "67fcb7b391b6d45e355570dca56b97b7c33e99d12d151f71859b467bc5998f0b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGodeunjemokB.ttf",
+          "sha256": "7a9f9a2f0c7d48c66dd710501e3b0098f929620e2f1802b6941b961f0aea06e6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGodeunjemokM.ttf",
+          "sha256": "17e59280b89c882f493e63ddf383d4e93e18ff56f6e0827209160f5237d277b9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimGureumR.ttf",
+          "sha256": "4a41895f1932adf77a0cd6c8594da95fc135daa5d4730aa03289ba77e32e2afb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimJeomsimsiganB.ttf",
+          "sha256": "c18333f4f57dbd898129d999d6041fdf61dda95a11bb87be2ef11b54b718fa4b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimJiugaeR.ttf",
+          "sha256": "33d2c043ebc109a1fd952018b92cf45d21cc352cf846d359ba359f0df479f25e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimKkokkomaR.ttf",
+          "sha256": "66ed08c8d56aa2f7cb92fb42a4ae7c55899ffcb64cb7142cddb9584ef5b3cc63"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimKkwabaegiR.ttf",
+          "sha256": "ba0c1ef857d1553ab0442f6fdeba51b6ad1f3fab512bc4811005299d68a7fdc5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimKossuyeomR.ttf",
+          "sha256": "d48912c12644e2b146e53325aaa3ef953f7424ba916fe4bfc01042c9f8fb4f7b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMabeopsaR.ttf",
+          "sha256": "657af10f08468faf48bdb6203a9520e27918a6160fb4f91cc929d5de519f4d41"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMalgeunnalB.ttf",
+          "sha256": "6e9404e9f54008410402e2fb74b9c2f4cfbd1fea39b954a94fc22f9f79fc550a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMalgeunnalM.ttf",
+          "sha256": "e048ab4875cfe1469d52922df2df2e2934c870d54d5a82347f5025518bc0fbbe"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMoheomgaB.ttf",
+          "sha256": "cc1505bbfe76eb59ecdab25d1f01ecc7ff4201d08b81d14c40b091564103dd7f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMoheomgaR.ttf",
+          "sha256": "e6a9cb1084ed781fe93e1d6a9fbc25385229f9e8f81d60a9701d41dbe027449c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMonggeulmonggeulR.ttf",
+          "sha256": "83c1de3f8aeb4c719ba0e68d9751476ad4108653f4d73c959116abb1de31f3ac"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMulgyeolB.ttf",
+          "sha256": "a26ff42bbc0c6ba73495cb4a76f70b83b220e098284cb62489038e7c2da9043c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimMulgyeolR.ttf",
+          "sha256": "29f3127f9d38936e910167e2209e447706e3a3e07035981d4cef2ab0653bcfe5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimNamuL.ttf",
+          "sha256": "22324adc60d6f782e230371ed3cfa4eb62326c25ac93ce5f0ca193ff6f6ebf65"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimNamuR.ttf",
+          "sha256": "21201085a63d12542f698c4f673db5be2273561ea5cd453453fb5b1c02ae3178"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimRikodeoR.ttf",
+          "sha256": "6cfb38609b655c8514f7271db5e0edbe39b0c38b9148317ca60364041b832080"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSamulhamR.ttf",
+          "sha256": "fbf3a612d0d5406e3010149d8082548f6ddec5368b335f2ed4ec84fb0ef7841e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSantteutbatangL.ttf",
+          "sha256": "cd32451d9cc0b19c0e6b22e12ea93044ca09784acb87e8c3989756097b25c970"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSantteutbatangM.ttf",
+          "sha256": "dad6506fff2a7105f64e9309d3446488bc6619c1f61f3708da3d4d8f41ef2a59"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSantteutdotumL.ttf",
+          "sha256": "2faf0addbed6afcd612c2611d531a1bfd1db87d5b894a3ae527ce8cf7a660a64"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSantteutdotumM.ttf",
+          "sha256": "9f029f8a6acd3435401683cdf9ab4fcc5b21bed6f4ef0a677e84a02dd1a70a8b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimSonagiR.ttf",
+          "sha256": "2eac24a396cd686e3de7dc11eba6c3d902738e1aca7174df086587d4659fb45e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimTtwimteulR.ttf",
+          "sha256": "42ac19f834e91c32dff98faec2fe98e79afd5a1700bad50b0d137b9939160314"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimTuhoR.ttf",
+          "sha256": "ab2fbf8b669c90f369ec75c02f9fd1d0e4a05238c3bbed5848dd91dfabd38d37"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimUndongjangL.ttf",
+          "sha256": "447c019c596f1413a587f4af2f31b3a06e61cbf1c7e5ff192537d4f6948a5be1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimUsanR.ttf",
+          "sha256": "6dc0a4d3fe4f018b7409cc58f305b205de8e56b9156ec5204f87b9d108621779"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimWoojuR.ttf",
+          "sha256": "ad06ed248356ca6043be8cd220edacaaa2ad2ea2cb3f28b59a9bd52760ea7e8f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/HakgyoansimYeohaengR.ttf",
+          "sha256": "ba05935329cbdf918dc718e316b03c8e360f306fedc984e574c38ad7a2233f45"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_BandalL.ttf",
+          "sha256": "76d3d2165be6fc97b559c66b4872cecbdd188550c25bb7a502c2bc1bd428ffb7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_BandalOTFL.otf",
+          "sha256": "da87ddba9e90cc2887a2a21fbc16d80c8ea1d40040923084e7b83a2d44efef0d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_BoardmarkerOTFR.otf",
+          "sha256": "a4e4370ed6179272ae9884de0b8329b8de0de105cba4d5e3fc2375ff4ef17d28"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_BoardmarkerR.ttf",
+          "sha256": "01e1649a0664bf4c30eb5393821f632b1a4c518ed8f25f37728b3c3763511c58"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_ChaekgalpiOTFR.otf",
+          "sha256": "372280de920da85596e9322c02146be58b162f5bd813d64f0cafccebc348e681"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_ChaekgalpiR.ttf",
+          "sha256": "a9a24de881bc3e26da0186a953f78c6f750e0ecb8eda52b051fa013cd1453587"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_EohangkkumigiB.ttf",
+          "sha256": "452ed26f5cfc36cff56740ad2862e802f162fb697f406045cf39b0b4a34d329a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_EohangkkumigiOTFB.otf",
+          "sha256": "38dea03eb72c996b825c83e144194430db0f79c5c8600b4a071410016281cad7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_GongryongalOTFR.otf",
+          "sha256": "e1b3be3bd48c94fd42bf8244d1eec4836a6c89aad1f3c4532633cc29fb26d399"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_GongryongalR.ttf",
+          "sha256": "59d91c57f4ff58272dde974a21a563d67c77e86b802f8f395eec0eb6e65f6239"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_JayeonOTFR.otf",
+          "sha256": "f80ec241be95edf2f5f9d101f9659c2cfce3c88147ae6736bb37f0fa2ab73bc6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_JayeonR.ttf",
+          "sha256": "8b40277c5e782b5137e2060608ea41daf9d853c864ce2a293fdd82b4ccf08967"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_JayusiganOTFR.otf",
+          "sha256": "130114b829e784b1b0c512548c0c67f825d045da3a021ba3e82c9c0e1fb727a6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_JayusiganR.ttf",
+          "sha256": "e85bef13bdf96f6d3087ea22183e9d7f4e69aacfe02151bdbd42427b240247ce"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_KidaripungseonL.ttf",
+          "sha256": "9416cbe5c2be20a3cfc10535ac2e8d8b19ca2e292b4d72e2348fc2efa075da7b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_KidaripungseonOTFL.otf",
+          "sha256": "b06937df7acd81fc40c21cde7aeb732252cd24e32d21095d47d02f126674f3bb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_ManitoOTFR.otf",
+          "sha256": "7ba27e712a7b898a37ea5a42b819bef205f26096bb5e0aa39afda6b98a8fdd25"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_ManitoR.ttf",
+          "sha256": "f4b477c0b9db87d5f1a581d0133d59a889776c471a7b89405afd59204210bead"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_MindeulleholssiOTFR.otf",
+          "sha256": "b706747897d9972b93acfccab2628aff18a515d6b73f410170249762f45d098b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_MindeulleholssiR.ttf",
+          "sha256": "85e8668ec305ef49ebb432f042b92bb40496edef125caa6b9858535530631066"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_MondangbunfilOTFR.otf",
+          "sha256": "026f14a636258b4cdfe64e92961528a1834814257180778259adc1978ff6232d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_MondangbunfilR.ttf",
+          "sha256": "718a708380f71c1226837eb66e6a2c7afd919e481b9407191b1811839672e75d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_NalgaeOTFR.otf",
+          "sha256": "4d79e05783f0b91ceb4ed8f90e8aeecbc6a257fbc3b7f544c98fb8d51169603a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_NalgaeR.ttf",
+          "sha256": "822835f9403cf06a0a24554dd28b2edd95f48098342ec390d3aa6eb780f56419"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_OcarinaOTFR.otf",
+          "sha256": "c3519a3e7c28f953dd24045e4b26b959e076b2dd7ff7bdca4d03b6993132a400"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_OcarinaR.ttf",
+          "sha256": "81757e29122c9073f4007465ca172c4cfc87ecd110173f365f4c7eab61cc97df"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_PosterB.ttf",
+          "sha256": "a467088245accb94772e891f31b9de396402656f54c7206b252b0f46f944b21c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_PosterOTFB.otf",
+          "sha256": "dfa2ca58c875f52176c8faed5001b7bc82f85c5e503e71b53147ea396741dba6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SaekyeonpilOTFR.otf",
+          "sha256": "eaa1e32c7836eb7f36bd04bba591433e04c40384272ac6e2eb4d85863d5e3fdb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SaekyeonpilR.ttf",
+          "sha256": "f75d16412426b15c0e841bd9167529776e961b2dd92bf80be998b3d88fc393f4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SangjangOTFR.otf",
+          "sha256": "16c47807465a2da090881997ed4ea654bd891b6f3a0172ac6bf831ec68262d6e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SangjangR.ttf",
+          "sha256": "5344caba897c0d3583fcc65cd8a1b866f008a7f761ecc57aeac0f76606e12e70"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SiganpyoOTFR.otf",
+          "sha256": "7c8c01c198c82d621ca73e148cbcf97a0e6ab986be76b77d316cc435c92a004d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SiganpyoR.ttf",
+          "sha256": "8b79e7cd02fc3ab2e08da03a469dd5eeffa871602b5223bd5f8947dc8fc37288"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SketchbookOTFR.otf",
+          "sha256": "bd7b952cc69ab21cf6009577008e4882a51f462dff99d63e47745a78df2b3c4c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SketchbookR.ttf",
+          "sha256": "759a36c754fa1c318f03d84d3983a3cd87374ef6792c44403774c23ef98df125"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SusukkangL.ttf",
+          "sha256": "24e34bbe9804685a32b4f9100c79cc23fba1ef6cc5054ec1dbd1925e224844dd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_SusukkangOTFL.otf",
+          "sha256": "7fe0246ab3b1b0ff24e13d88946d0bcc14f5108b6d01101474f227392af1e4c7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_TteokbokkiB.ttf",
+          "sha256": "2f1eba3e4d45e8bf2bd4ae54f0572a4d54ad8e75aa635b8005c2720ea3b71be7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_TteokbokkiOTFB.otf",
+          "sha256": "8b822bd258d267f10a26e7a208a731f9eedd0257f60b3215af3ee83ef9c7b29c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_YieodalligiL.ttf",
+          "sha256": "8eb129613124d63acbf034ab596044f0bb9010e8bce490c78c3a7540f5ac6929"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hakgyoansim_YieodalligiOTFL.otf",
+          "sha256": "48f9b578e86dd57652bfc3afaeaf3bc2d7cb8780e2e154cced805c953a1fa0ff"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hancom Gothic Bold.ttf",
+          "sha256": "387905d447e92bce4d12462c7f90820d859d17a17151f822d907984867317ad9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hancom Gothic Regular.ttf",
+          "sha256": "4a80e6a87aae6c779ccdf85116f4e8cb5b0027f71a28f538bb01a953265e6649"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hangeuljaemin6.0-Regular.otf",
+          "sha256": "68c5a84f390b4c1d7791dede76bcef24b485a1bf4fcdcf8a51d3a3ccedce8ebd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hangeuljaemin6.0-Regular.ttf",
+          "sha256": "756c43ba6fcb595aee60bd06bebc4273d4249ec363eaa239b258669c8e256fde"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hangeuljaemin6CN-Regular.otf",
+          "sha256": "99a0a2c80b0f020087b4450a65b9bfd5947f73561bb453ca7b3be975fe6ef247"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hangeuljaemin6CN-Regular.ttf",
+          "sha256": "53cab51772d5693553cdd15c9bec89d461b281e1b9b1d57182f0924826ca71d8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hoengseong Hanu.otf",
+          "sha256": "6e2e42de4027086dacb09f429b71bb3a5d5295f9b7de77e6c44b80cf9b67fa3d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Hoengseong Hanu.ttf",
+          "sha256": "233bf9d9b021b137fd29cc80aa7390dee8bcff9b4ca110539254d7ffcfc81052"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/I AM A PLAYER.otf",
+          "sha256": "fb44d45106b99122f616e66ae4be7b2fba75f388ceff4b804e542564c002b0ce"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/I AM A PLAYER.ttf",
+          "sha256": "38e9d9b4a67b3e7e8367437cebbe5dc5cd719f07fd71b333e58091378d777abc"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirang.otf",
+          "sha256": "d61b2d78e2a86a5cc5e5bcc2a10ec7290f03ad459f2786a1ea3b9b6980d9c797"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirang.ttf",
+          "sha256": "57f0cabc439ed6503d84f2d66a1d54a6c07a3ac57384c5aa9b86607b35e884ec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirangHON.otf",
+          "sha256": "48105b93272e993cdbf41db66559b462bd262de3a12622dedad25f326b871b73"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirangHON.ttf",
+          "sha256": "7ffcda1221d18c8cba0995db3b8267f2b17f2de9eb56638ef95f5ec4b4d7595d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirangPPURI.otf",
+          "sha256": "d3e4fc929753e92e4b0aa91114c387e6873dece2ea693c8067ebc6c0d986ad74"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSArirangPPURI.ttf",
+          "sha256": "927b94cc38db31af67810d26b7ebe1e02d61a31db827e0503b73857407ff401e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSDongkang-Bold.otf",
+          "sha256": "a49951474a6849b1bbbd41233cb429882318d4e5a01b35e9dca3aa6be73b1a41"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSDongkang-Bold.ttf",
+          "sha256": "cf9f19656997a60f8149e90db4ad6b373ce709d0bac28ec108e36fb38217e8b4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSDongkang-Regular.otf",
+          "sha256": "06cdd6bd5092aad398b38d527a64ed57f90cdef2835802983d3c8b844a5424d6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JSDongkang-Regular.ttf",
+          "sha256": "83b7e3533567fd3703c13a548f22de942dc40dae609544bcd33fdb396e8ad90a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Jaemin.otf",
+          "sha256": "7ae3ad97eb9945823272a3173c484ee871919f6651bc3d4e5a490c207def8ca9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Jaemin.ttf",
+          "sha256": "28a440bf07345147198c38656b81a5e19971ce6819d9c31d6c928c99e8726d39"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Jaemin3-Regular.otf",
+          "sha256": "f273946777806e5261d2cafbdae134fa0f3f5dc1c6e475b3860447185048c992"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Jaemin_v2.otf",
+          "sha256": "c77290a03b53f76611d428b2052778e5729efe5629297fba351e22ae5bcba106"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuGothic.ttf",
+          "sha256": "49f919f989ea5945eab4635a65949792a89deef3103edf66ba3a2a0904b082b2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuGothicOTF.otf",
+          "sha256": "14e6a7375f468a5aa2bf0e6e24a7459e39be148c4de422a7f0c8573fadd85900"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuHallasan.ttf",
+          "sha256": "077b5203e507fbc83b4cdfafd2d7e4f242a247237c3d5c22143dbd85e3a0f39d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuHallasanOTF.otf",
+          "sha256": "d5360658eadbc57feba89293735e9fc1eef2bc41efcfd995f1c182677a0840e0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuMyeongjo.ttf",
+          "sha256": "471b5585a043f06bfc8da34745837a9db012924b023e99952ed19eee70f4a0bf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/JejuMyeongjoOTF.otf",
+          "sha256": "5658b2d8863339513f405816155b685bc2fc75856ec044a930833dbae5050ec9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Ahnchangho.otf",
+          "sha256": "b492965e7a4411d39e36ab21a5c466fd758f95c84326562df78ffa8f433cc7a3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Ahnchangho.ttf",
+          "sha256": "b34ad192c5736965427b6e8e1d78d2c3b35d6d5abe62e96dba12eefa40a3efaf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Ganpan.otf",
+          "sha256": "c47d2ff3e4e9f33b407d6b29d40060389900bc3b324e52fbc91e8896d3628534"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Ganpan.ttf",
+          "sha256": "906b1fd74e69ace2a34b6761c3a808956a56b95b259211b1047654948a27224d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Hanbit.otf",
+          "sha256": "12bdb6475cdf0b43982bebf4d3a1d5dd1bb03512e92faff9137d48fc62de315b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Hanbit.ttf",
+          "sha256": "fffc2d3951e60b7875fbf6bb4e2369b13ad0c9178bdfb70a1c8816e2c8617ead"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Jeongbeom.otf",
+          "sha256": "c385f2312784b511f726eb2be2b11cf3bd42325b46439277c7489b3e6c80c106"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Jeongbeom.ttf",
+          "sha256": "e1ad481b9d7d3d7beeb7882cfc8d77edfab4e9cc41b331043f588786dc1b88e1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Kimhwanki.otf",
+          "sha256": "f93f9f7bfb39053255c236c74e0751ca90db08ab71030085962085ea1d6016cb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Kimhwanki.ttf",
+          "sha256": "7c2b824936d1e7394200a875e6f5e5e6aa0e82752294ed5a769eca0d37b4ddb1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Sonkeechung.otf",
+          "sha256": "f145a7111bb2886e31136fb07de87678e847d2abaca473d3ce99cfbe74b5b036"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC-Sonkeechung.ttf",
+          "sha256": "4ea8d0b5ce78cdcc727c6223c0f5868e24ee2de4faf8cc8f29bad09f74f155a0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCAhnjunggeun.otf",
+          "sha256": "7615f52b7e0bb6feec812a39ca22484c2a03e5338d898cb0d826f6ae19181e4f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCAhnjunggeun.ttf",
+          "sha256": "bf826e645cb48983e1f05b58ddc558c6a5bedf8162ab45288bd79856e3e653fe"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCBangJeonghwanTTF.ttf",
+          "sha256": "f6904a9d4930134f2fad5aced3a79c85f4be83e77902fd851aeb714ef67ca6ef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCBangJeonghwanVTTF.ttf",
+          "sha256": "93cd0f0d3fee6288b3f4c9a907f6f340e1b22a3f59283756b079c27b17e39825"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCChassam.otf",
+          "sha256": "cdaeeede9407c34427952219cf4b0fde0bc7829c0290fb70af5f7b57842fe9b1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCChassam.ttf",
+          "sha256": "5d267767eaecd4c1be5d39bf0fe53cc6df21f1ea1570ae426bd23ee6ec31237d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCDodamdodam.ttf",
+          "sha256": "7fb32db1bdf91e878e4d80d4a1f62a609410f4eb7b65668c465c909159394d19"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCDodamdodam_OTF.otf",
+          "sha256": "dfd532eafa800c891ac38993e68168bb5e030d9e5e88031cb1408b649a68396b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCHyerim.otf",
+          "sha256": "a8b396a56788291938fe00be692b008536b164cf1b3cc3d8db4a60676775afb5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCHyerimTTF.ttf",
+          "sha256": "7f8c54a2aa0a176986bc0ddd90c1d725c775d9175417bf6da57df8d74108fd7d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCImkwontaek.otf",
+          "sha256": "5d2bac746a68ec505b7b47da4932b3f4b938d86cbc593ebb76a959918169b0b6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCImkwontaek.ttf",
+          "sha256": "c01a0b8b8a42df03055660c2bff5ccdf7f2eace8f652ba03d89fe13cebb87682"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCMurukmuruk (1).otf",
+          "sha256": "09375d5e8d3951d050119357910ede950381fb7ba3cb053e0c3bbe01a08627ab"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCCMurukmuruk (1).ttf",
+          "sha256": "05a78d7ad9ab5639617574f30ec93917b76442a6c2b0b4b23a2e22937007a904"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC김훈체.otf",
+          "sha256": "797807047b3c4eb90e518adaed52f20f73a6f83bab993c9d67e0925f39598b47"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC김훈체.ttf",
+          "sha256": "a3021fc23d63fb0dd9ab65feb76a9d50018972fb1f7fbbd760bbb6ebe1ee92a6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC은영체.otf",
+          "sha256": "91e22ba6149365b94ebcceabeea30e81b106471100cf7b4b28989425d0bc60e2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KCC은영체.ttf",
+          "sha256": "5d26cc165440ff9db849c749b9fbad7d4cd08698047e0bca2e112d713942ec58"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KHNPHDotfB.otf",
+          "sha256": "12c80749b8dc747dd1d27b2afc39f278a13023b80f51bd9bf79580919eec8ac0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KHNPHDotfR.otf",
+          "sha256": "2edc0e17e765d8a2b8c1791b36ba903c7c2034c7ba1c810772512031dd5d5480"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KHNPHUotfR.otf",
+          "sha256": "78030dca20fe66d4ed9191768d76fd75e74c17fb8848a6f9cbeec4be9abc2401"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSBandali.otf",
+          "sha256": "d5cd263c4055a993c2bb373e128571af82f50ff00555c9483aed9f20720b0b41"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSBandali.ttf",
+          "sha256": "0455d1e88872f6eb5120e7ebc176bcb02f9909bde045e3a852f539c85f9e5faa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSBandaliKkomiicon.otf",
+          "sha256": "067ab76a3887c4f06da326155fc85e3a4291658f76b00e3910fc46c1a06ecdd5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSBandaliKkomiicon.ttf",
+          "sha256": "03aeb1740510c2faf97d5f3389e57c3dabbeab334ed808258f9f057be880c75e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSKkomi.otf",
+          "sha256": "d47cb66a6dcd8481d8dde9d2c766a04fefa4ad5c38f573720c187db228945c5b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KNPSKkomi.ttf",
+          "sha256": "522498c581dedc251fb83c736261a1080267255b38fc25a3c76162a2488fff8a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA HOPE.otf",
+          "sha256": "bc807a6a4bd9f6987bd032ccfb1a5e0996a36994519b7838ff4b1143df14c0f7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA HOPE.ttf",
+          "sha256": "17e2cfc1d0692f019045487a9e45bcc1451a232ae10d0e57c1b53f43e39ccfe4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA LEAP.otf",
+          "sha256": "e2c803b14eaa294554216aa1e6138ed11f2009bbeda8ef81b5e9faecb1938833"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA LEAP.ttf",
+          "sha256": "72cd05206d88de397405a12fc5fa81c4d5a4fd300c1af40e2ac99cabd2719982"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_BOLD.otf",
+          "sha256": "c4d4b739780341800513f8d1dec2bcfef8a9b4b5435c305426b6ab1024d9285a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_BOLD.ttf",
+          "sha256": "51aebb3e7178da86348ae9595dbd1bcbe59b87dbb87feb18171844bd1e64f25d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_GOTHIC.otf",
+          "sha256": "ff99eea270bf934ac581b7b3886f01e14dcff79c91e2bd79e4f2f7e0b22f6125"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_GOTHIC.ttf",
+          "sha256": "07ccdaf4255ac8a6cb5ddb5e18c45f44813ac1cc7a35a6f268409cb5f34daac9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_SONGEULSSI.otf",
+          "sha256": "cf44511632ebad3a9e8d45040ca1eb7b21e928611fd7f019b1ee9b79c21ace65"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KOTRA_SONGEULSSI.ttf",
+          "sha256": "00d318b4a852fb9aa8c05ba7a6f551d524c677ee578cb74d3f3273de22b596a4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Katuri.otf",
+          "sha256": "229486dffef9292ad4e4a77b1ff025c20921b97efc62018ff5870584a39fc9c5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Katuri.ttf",
+          "sha256": "4eb738ec277b39ecf1d9cbad14ae19e829ebf509e728149de3263bcdf3d20711"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Bold.otf",
+          "sha256": "92891d0d2950f3ee5d817c0d1a982a9e87709312cee00721203f37b150749a77"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Bold.ttf",
+          "sha256": "b7a33b3aabddc380ae166fb8071c1eb835736e8a018db74215b000abc79cf588"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Light.otf",
+          "sha256": "4e984ae5f92a3803be2cb6af4da461717984c734a4ff29f40202523ae4fdaecf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Light.ttf",
+          "sha256": "f26f10f73ad8f7ae1a31ce060400fc545363599819a9e9cfb0b36df8ea34c99a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Regular.otf",
+          "sha256": "54b94794067c94cb1412c855e4c46bc72e321e3736c4daae057c64d349edb1e0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KimjungchulScript-Regular.ttf",
+          "sha256": "8a08fb0ccb0bdc5c9017f3d51b8a0ea532c01c0266c3e88beb01a22b403b8226"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Batang Bold.ttf",
+          "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Batang Light.ttf",
+          "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Batang Medium.ttf",
+          "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Bold.ttf",
+          "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Light.ttf",
+          "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Medium.ttf",
+          "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Batang Bold.ttf",
+          "sha256": "72122f815cad001c97269bb99337647336b5597d2c3f749a49fb879c9e6ae9ff"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Batang Light.ttf",
+          "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Batang Medium.ttf",
+          "sha256": "f2c31ffd195ea0fe74c9e720592930ed528c52ee7876baffaeff24d42c133d6d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Dotum Bold.ttf",
+          "sha256": "c9dc58e806cf639ad33d7c59b06848d2f4c3cf3b367ce52cd456f79a68407635"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Dotum Light.ttf",
+          "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoPubWorld Dotum Medium.ttf",
+          "sha256": "6269624bd0c5ae8746a8e731b8087f056088af930a7bbc0efb76902bf732a293"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-Bold.otf",
+          "sha256": "23973cb011f9abbb2e10555d197188dd380924335496ff9763ab8e7a6d30fb22"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-Bold.ttf",
+          "sha256": "30890b3e5e7164cfb7d7769d18650404d81ef9febebcb98e2ddac797980b4ff3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-ExtraBold.otf",
+          "sha256": "771af92df4ccb6830b8b2874cee1ec774538d247665fee4224959305ca66b63d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-ExtraBold.ttf",
+          "sha256": "bbd81b49624728e66c17d373712f9c1231d3b8dd5285bbf6ebce299811e555a4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-Regular.otf",
+          "sha256": "901b48c1bb7b89df2f37d661714057b5ad6014cffc54f60413f132096a70a75b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/KoddiUDOnGothic-Regular.ttf",
+          "sha256": "0a118cc91f54d888f2de80f69ccfeee4beb471604b5ee2f73376996308b28de5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/LH B.ttf",
+          "sha256": "fb8da00ff2d6acb8bed6c77e3f7743144f7040c89e2ef27e99a0e7855527bb6d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/LH L.ttf",
+          "sha256": "a981a477b00524e1b37374c339a12920393b558689e85d8dd46ec0b18c514ed9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/LH M.ttf",
+          "sha256": "23e6a7edc0b9e236bb2ccdcdece7ffeb433758afcc5819c95b51e143f5e3926e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MAKGEOLLI.ttf",
+          "sha256": "1be059d2dcc332b8d84ba6591476defddfce9548d8b6076e3ca3c3c104cdcb64"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MALGUN.TTF",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MALGUNBD.TTF",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MALGUNSL.TTF",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoAgape.otf",
+          "sha256": "5244a2f55246503fb86cef73d67172769f445c506948ed37adb9e9d813ebbc36"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoAgape.ttf",
+          "sha256": "bfcc61b2e1f806677ccce9b1512cdb14df1681fdb8cdad39994d3c6a251ee11c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoBackpacking.otf",
+          "sha256": "c0db13d62498c4baf3e91a4c7b14a5ddf72e14d0e76b35b293cc90fc833cd611"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoBackpacking.ttf",
+          "sha256": "89a5d8998547e1e61722955fa7701285983034760c2727f4010eba3d5699dcd7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoDPP.otf",
+          "sha256": "317874bd286242d178d14dbf088c92e4e7c4c1f85e5b9ff24976b758cb73882d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoDPP.ttf",
+          "sha256": "e35c18a894a9266afac2d1bf010f2efb56b8326bc293ccd4a6bb95807c6afdbe"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoDacapo.otf",
+          "sha256": "1037272b9166ae2721ff1b8a35279a17caf4ecaf30f6c8db574c5b9066c395c9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoDacapo.ttf",
+          "sha256": "886c8fcff09745048b5bc6cc56105ead0a6070cd3484ff93290344e2c42c9d79"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoFlowerIsland.otf",
+          "sha256": "5d51da6ba969266bfce0bf5874e32d53aaeec5a22a93ba67e7597222eccde6a7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoFlowerIsland.ttf",
+          "sha256": "7b0099da12bbea4c48af22cd12a81df156fa945c89c24643ab041ac0db86da52"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoGoldenPier.otf",
+          "sha256": "473a2f16feaf43e622fb8806d6c7ff7def0c581a9dfd76776cbf0c7e71605c11"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoGoldenPier.ttf",
+          "sha256": "83e13587a1cbd4759fb7536fb83a675e8f222b7df94dcfb1c0bec5786fd8e3a8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoHongdaeFreedom.otf",
+          "sha256": "ae6031a186f89269e30632850de772ec96bb9743d27a4ce52112fc7301d0fd33"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoHongdaeFreedom.ttf",
+          "sha256": "b82e6607a554ac2f33fac6eb154363ababd2d87bc99616657f248768274463e5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoMaponaru.otf",
+          "sha256": "36d10e63170d76208ccc864ff064a5f8f00c594ebd2ac74c7648a6dad8304297"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoMaponaru.ttf",
+          "sha256": "68f66653ebdab78a1455ecf3e15ec03e95a206e807013b233730f14b3e6852a6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoPeacefull.otf",
+          "sha256": "15b536f610fe98b64fdcc093d0a334824cb07331a40d98280ce472e8bd953c16"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MapoPeacefull.ttf",
+          "sha256": "3fbb0fb9eba3494a211112bcd6077f460f103524054c354a7ce04a4a3fe5b55f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MesloLGS NF Bold Italic.ttf",
+          "sha256": "56b4131adecec052c4b324efb818dd326d586dbc316fc68f98f1cae2eb8d1220"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MesloLGS NF Bold.ttf",
+          "sha256": "b6c0199cf7c7483c8343ea020658925e6de0aeb318b89908152fcb4d19226003"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MesloLGS NF Italic.ttf",
+          "sha256": "6f357bcbe2597704e157a915625928bca38364a89c22a4ac36e7a116dcd392ef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/MesloLGS NF Regular.ttf",
+          "sha256": "d97946186e97f8d7c0139e8983abf40a1d2d086924f2c5dbf1c29bd8f2c6e57d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumGothic.ttf",
+          "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumGothicBold.ttf",
+          "sha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumGothicExtraBold.ttf",
+          "sha256": "e0288775c8f021f327fd77f9eb251eea80e4601bbbb068478c7878caa23e8f92"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumGothicLight.ttf",
+          "sha256": "da39544c39be58124a4fcb296eafc2bf73530b3dbd1b19aa802c5c3fd227e31c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumPen.ttf",
+          "sha256": "0e1e2cc07fd5c5d181936ecaf97363263a8d4ae6b6151039ea83cb9002b63152"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareB.otf",
+          "sha256": "708ba74b146b52d6b15517cc7306f38b287d86832fcce4d70069b34499b31b07"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareB.ttf",
+          "sha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareEB.otf",
+          "sha256": "73a2e26f81e64dd98f280d9bc24846e5daf2c76e83fd422cddcee9b017f045e9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareEB.ttf",
+          "sha256": "6608adc320ff8514630d04a53e16cc7a5d54f5cbdbe3769109f311dcb3b48f80"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareL.otf",
+          "sha256": "533a202f020e3ee60106c293079449e72c7c1321a16d0d225c635840c4b433e5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareL.ttf",
+          "sha256": "b2f68affc8b5d450fd0cb1b6f1523888a70e236fff942889c30f832727152da4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareOTF_acB.otf",
+          "sha256": "51576163fdbb078780cedab8793c49356379385811c768b76951b730875069f0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareOTF_acEB.otf",
+          "sha256": "49353a363ab6c0c9e47c9c0197d8f14000f2c19d1c4c7a8cdd5d56aaacc05666"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareOTF_acL.otf",
+          "sha256": "4f1fc6d5a51f9fadc2572fcd6051b8f1df83056a56bcfa547e2611b1eab52953"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareOTF_acR.otf",
+          "sha256": "7022769b1a01760c619912991268b0a93f406ccc519d27705333d09e6ce54efd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareR.otf",
+          "sha256": "f27ff60a5eb472bb0107ddbe9e564a10efea484ecde3814beacd2fc0a0e2f999"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquareR.ttf",
+          "sha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquare_acB.ttf",
+          "sha256": "1a266ecb0450fcdd0c7659090b8be784a2029a2f78a4a9501de3394ee284864d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquare_acEB.ttf",
+          "sha256": "5348d0f43d0b1d01e6ac888aafba2048178adc2304dbc5c8f4b3418438f02554"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquare_acL.ttf",
+          "sha256": "046cb1b1a4666e9a01ec09bc6109d32194351df18668709a3469967e50587372"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/NanumSquare_acR.ttf",
+          "sha256": "a8c3aa53d5dbab550e7784281801f71f7af54619ca8d33a6e5e7d34d4f06d7e2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/OSeongandHanEum-Bold.ttf",
+          "sha256": "a3148ea4510415c0185523c26d711fe45840db67db2c9b26ebb2208d271927b5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/OSeongandHanEum-Regular.ttf",
+          "sha256": "b6cddcb752cf1fa38a618d0958b15e0df2c1910b0a1ecf1f191cbc7e8b69f38a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ownglyph_2022_UWY_Da_Gyeong-Rg.ttf",
+          "sha256": "715c493c83357c412f66d7930b389619e2b5da941a043f51644e87e6515ef333"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ownglyph_2022_UWY_Jae_Seon-Rg.ttf",
+          "sha256": "e6889f77e14e50531b423276a88d422e39bc6e156d30e2ae31b21e9b4e4eb33b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ownglyph_2022_UWY_Joo_Bin-Rg.ttf",
+          "sha256": "88906961cccc5f0008c4a97a9c7fa7b940cda1aa483568fdf15df7eb62d90dde"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ownglyph_2022_UWY_Si_Woo-Rg.ttf",
+          "sha256": "176116ba3449f1eb548fcca6e9b4afe9f45a8f49fae8b2d97377d55bb4a50af3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Ownglyph_2022_UWY_Yoon_Yeong-Rg.ttf",
+          "sha256": "d30ddc44cbb1b63e5a3f8a7c87a2e08047d21881f18705075a3d86846f089656"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PENHL.TTF",
+          "sha256": "626a24fd2acf89e2443fc57b6ffa8ae736c7fdf19e10815dd5269f6272e78104"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Pak_Yong_jun.otf",
+          "sha256": "8cf621e5f837036e096680e7f93a6af7fb4c07382d23bc5295f10ed9cb4d844c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Pak_Yong_jun.ttf",
+          "sha256": "4333694a1449e5ecb10caf5fd8fcfe690248d5bce3641c41babe7d1a35735753"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Bold.otf",
+          "sha256": "c1323f5e5ce4e6c144515835beb6c634cc13f1cfe170823736b17bc2205e8ef7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Bold.ttf",
+          "sha256": "0baacc36c231d0eea89908b97685dd0d40f30b0d41d9d1242df9a33928c83dde"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Light.otf",
+          "sha256": "1fd36d4b2bc22b8d324e3b9618c1b0fc0ef9016f85e1c4b0390ba9e88d3d62aa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Light.ttf",
+          "sha256": "764c2b2966d67965a54d43e2dc7d84f9ecb941c808d4041f1c72484da80f12af"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Medium.otf",
+          "sha256": "12ba1d5b55965289e3feacca5363c24b8b9e7f3cdf5f2597ce17a24861364a49"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureBatang-Medium.ttf",
+          "sha256": "6de2cf265142ee3d683ac0929a71b7b60baf92c118578be2c2b770d32fa42db4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureunJeonnam-Bold.ttf",
+          "sha256": "9bf04e1e1e34d8fc4b74f98e8ec389e3563a1fa641b211f0d0d259da3c191d2a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureunJeonnam-Medium.ttf",
+          "sha256": "701794b1577152d3bd92141ab41dd20388b218e87a6af91f84cc9479cf0ebfc2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/PureunJeonnam.ttf",
+          "sha256": "0e4c1fe83a23cfeb546f1abe39a6c6d17544156b6cbeef0abe067f14497c4858"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Dajungdagam.otf",
+          "sha256": "7c7e9e81c0ac249676e6b05475ac3ee8e1f634e1aa6d00e8f41270a5021648d4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Dajungdagam.ttf",
+          "sha256": "72de0c08bf1768f96eb371809c001335f581aaa06eb18d525c68ba80e6e236e8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Gotgam.otf",
+          "sha256": "74681eb9d59d6974dd0a9b94cec69100b5135ed4c2cc5868a7c2e3ef9d0f61f5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Gotgam.ttf",
+          "sha256": "571a4607ef77219de8b5cd411b0ee6a4465a37318c45d3acf9c4252e76f8ae78"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Gyeongcheon Island.otf",
+          "sha256": "c6d0622da3093bab63ac32c809df5afa85090e977bd968e177e9074ca328fe2a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Gyeongcheon Island.ttf",
+          "sha256": "e2fa0d657465299f6055fa60ec4842227cd3c2b1876c156abd6c63162aae7486"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Haerye.otf",
+          "sha256": "12126db0124cc1ccd283e411461d6dbb23c92532c8863f281dd0e6ac101e3070"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SANGJU Haerye.ttf",
+          "sha256": "337038283cccc9479de211d6c933d6d85d4e87f6b996a6d9943aeb86aa2286bf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SOYO Maple Bold.otf",
+          "sha256": "b7eff962855bb14c642f34035c86ef6b27d2a8eee0432bce5b612dc1680e54c3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SOYO Maple Bold.ttf",
+          "sha256": "1ce05aa382e18781226ec8d0397ca06133a470eb6cf48800764278527be0135d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SOYO Maple Regular.otf",
+          "sha256": "69868cd99b608dc8eaf9887eef33ec296c637e321c3ac837244ba3fe537747ff"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SOYO Maple Regular.ttf",
+          "sha256": "b73c48d6dabf3628c9e1feb7babeb1971b27c28db169c9970f115c00d6bb1488"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SacheonHangGong-Regular.ttf",
+          "sha256": "c44817a833f854eb4623c61ded7739cc252f743bc5b7f1669795aa4570d100d9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SacheonHangGongOTF-Regular.otf",
+          "sha256": "f241c34321f1bc0ceb7405153e3a459eae73c86307c99c3a05216fa88133cd2d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SacheonUju-Regular.ttf",
+          "sha256": "7349d01e3da2ca8e980bbe9ec7befc6e408ce86cec3e749b19d76cc5ad329aa3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SacheonUjuOTF-Regular.otf",
+          "sha256": "6256b8a1f5ff5937bd1112b562c36a46fb2b1882a17925ecee229c3a2bad5ce0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Saenggeo Jincheon.otf",
+          "sha256": "9cfd591891b00caa28f7516d1763cf36aba554efc1c3c5ed1d16c07283bd728c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Saenggeo Jincheon.ttf",
+          "sha256": "ecda385b408d2ba6b42db12807139eeb9d794def1bd53516009f26b4a1ff8b32"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrim-Bold.otf",
+          "sha256": "b24468d28089a9dbdd304105ce55ea34c31309d369e8970cdf94cc4fad081f98"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrim-ExtraBold.otf",
+          "sha256": "c26a9bfb47118fafee15c10ec483bc0079e58bd052342d51423f50f1febe332c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrim-Heavy.otf",
+          "sha256": "d154c5657fa6aaab21645fe2bd2c351962ba1f8d959fdcdcb82e8edf8f1e28f0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrim-Medium.otf",
+          "sha256": "b4c34e1f9804465af68767025cd3f9c861310828513d319986f3aa4f60b91414"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrimTTF-Bold.ttf",
+          "sha256": "eb0420723b27ca16bf2f42d734263a97ff23353143d452c29afa2c1d5a370ce9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrimTTF-ExtraBold.ttf",
+          "sha256": "b1787506286ea2d94f02de7988bada228447496969b6dbc8a70cdb59e3af12e8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrimTTF-Heavy.ttf",
+          "sha256": "732ce68b13e107f6c6f282877ea44598db1edad3787b9eed719e01fab53b0465"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulAlrimTTF-Medium.ttf",
+          "sha256": "6e00e4c55c765cc48b142c9770bdbf84a2794a763126147a929092f3075e73e5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulHangangB.ttf",
+          "sha256": "c33bab9596c0b60ada7ea9b3456e00e1cfd8ee63c599db2f0ef71a84ba54769b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulHangangEB.ttf",
+          "sha256": "60d6a471e9a14f4ba563612d2577b9b6ccb2d1c599a69191b3f9f82ef80a19d1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulHangangL.ttf",
+          "sha256": "0a6d4183e64b62c5f2a8bbd157cfa0484c5a88366101d368916e85c2eb7cb71f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulHangangM.ttf",
+          "sha256": "d27e1b26b55e507bec1045962c954cf426d79605009c720fad1c9ef808e312cb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulNamsanB.ttf",
+          "sha256": "fa449948b17d6ff79bc786c9e4281baa62a54ec2ee42f6c4691917518574efe1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulNamsanEB.ttf",
+          "sha256": "8dfdfcbafd332d2fe856133974eeb09415b5c213802573e134881f7e1d0d98ec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulNamsanL.ttf",
+          "sha256": "7ba07c9c395d065fa7a64323d878c71e8a655e300e1b59d60f944dd0269ba783"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulNamsanM.ttf",
+          "sha256": "b4bb3c3926431fc1cddc37f4e0869546afd1b113c9ed87eecdd53b3dcce1432d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SeoulNamsanvert.ttf",
+          "sha256": "8ac60d4d201e161b738ffb106c1d6fc317df3524290264fc424fdee0152b450a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaBatang.otf",
+          "sha256": "684dfd22d6818c9ccf346247864f252bdaf5b4a2f47a5e62563d4035baaee084"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaBatang.ttf",
+          "sha256": "6d3d6b36ce6d45f158b724cf17bbd7acd408e83a7d589d79eb0bfa1904e970cd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaCalligraphy.otf",
+          "sha256": "a0ee82b91764bc84fb5006253e2519254076c63737fe86af48f6769e02ce6daf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaCalligraphy.ttf",
+          "sha256": "d29058d617a26924577699b86cd92abd5fcd427e3b34b3f53474a4c04eb377e2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaDotum.otf",
+          "sha256": "c2c832383b945210dba5ec1ebbe92f287ca34a335b3e760bb4b574a1347c172b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SokchoBadaDotum.ttf",
+          "sha256": "7499322f6338fd5ac3d8caa11e59431344e80726babf087970c68792658d760a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Bold.ttf",
+          "sha256": "5a6b9b258145e243dfd5f70cc869119c6af708843658e380304bdfe3d4f4eaef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Regular.ttf",
+          "sha256": "1f56c8535b6592672ea7f540a67bb5792c34558d72875fc504166a3e2b28b4b1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SuncheonB.ttf",
+          "sha256": "869b7e17201ff7067a9253ae2e98660090275e10272917edb21de724574f3325"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SuncheonR.ttf",
+          "sha256": "130a7e79546b1bf68845842e98c45352202967244d2d47678c53dba4601dd839"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SuseongBatang.ttf",
+          "sha256": "77df5a66884277a14e74ea7b8ca0f3ceb5741a0ddf076593bcb32cc93b4b0fa0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SuseongDotum.ttf",
+          "sha256": "dcfd475da9d43339941cab68aaa836ce725c02cd9615909a15897ce5dd8fbeef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/SuseongHyejeong.ttf",
+          "sha256": "3e533930627dc34cec5f6781b4c7eb965600d77051567e21601edf722dcbcacc"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/TAEBAEK font.otf",
+          "sha256": "3e969d970f426cafc0ae956454ad7d15c18492d930f3463e9bb37c9019dd13da"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/TAEBAEK font.ttf",
+          "sha256": "70d953b7ef7f120f765116e3f3502b3a4a2872db4779bbe1d5e77fef0779d95e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/TAEBAEK milkyway.otf",
+          "sha256": "28209fa7d7603cb5dced69c0795973414cda66c6f2164aa366e8b8bfe263ef18"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/TAEBAEK milkyway.ttf",
+          "sha256": "0d3314af91aaed14c7683ca35f31d914299e8af18672e66851689f7ec8f4b6ab"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/TAENMR.TTF",
+          "sha256": "d8ee1119fe8e80de2dc9debf627770b91aaaaf2524d0c6d251c2240cf580d6e6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Title.ttf",
+          "sha256": "93f8331299bafc3e864cac2948ba84e05e67a0e9c042cb79ccf2547a25bacca8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Title_Light.otf",
+          "sha256": "3d124a4a8fc041477f84b130a209550fca82d0b807a024d0375ca0cb26247b4d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Tlab신영복체.otf",
+          "sha256": "810cc51633635b5ca661b491a072de569a1269d48ac833fa37e0204da0b99867"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Tlab신영복체.ttf",
+          "sha256": "59ef4c8e7ee07c20bd10ab29e4283b5a2946861bab67fd1162e7155016987a41"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/UNI_HSR.TTF",
+          "sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WAGURI TTF.ttf",
+          "sha256": "ec1583c2f73a706e50ae898b69b55b3ee5964e4beadf98b5eabc80837f52e4f7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WAGURI.otf",
+          "sha256": "c8e987477d1a44de3c0c273d9b8b55b4abb6906b0aef8d631a257d3671d81da9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WandocleanseaB.ttf",
+          "sha256": "7c8047854aba238b8b7436e8aa78e88eeeadb7d6453fb0e542587f495d571433"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WandocleanseaR.ttf",
+          "sha256": "44762625df1eee12585df29d517a0c423a545d68fda7d620da25d0f8c09b05fb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WandohopeB.ttf",
+          "sha256": "6823b46d41dff0e6b8060b2a2a12529175bc0d2c34e00caac8db800962a96432"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/WandohopeR.ttf",
+          "sha256": "a99a7a7cda3b4f3096a82166b09d0fc77e017c661b381a3477f56991754629c4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Wolyeonggyo.otf",
+          "sha256": "b19e8ecdc05e12f73b92ac416db63154f35b4534a167b0ee0469ed8a7af8fdc8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Wolyeonggyo.ttf",
+          "sha256": "e2cf3fd2a7ccae76951b6768b549b5013c7a13cdabaff1b14510336d9e042d17"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YBLA05.TTF",
+          "sha256": "d9a9b607f1c49d832811222163822a99f2175e8a304341721624db7b6d3a725e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YBLO05.TTF",
+          "sha256": "1b791ad4b7f5a9023b3ff7de6231ffe35520645036083c94a53042a6c37f0c0c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YBMG05.TTF",
+          "sha256": "12ef56e1d9f7b857dcf30207384a67585806e76e6daf346964e001ca97b9f859"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YBUU02.TTF",
+          "sha256": "688ee65c9ee477084fc4fde4b8317137971475c950ab7f73eefac6e126892cef"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YCHM08.TTF",
+          "sha256": "2f14bf261a71911ebd9bbef52e11bddd7bfe8bf40a5db42cc3ecc649ed3d34bd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YDOO08.TTF",
+          "sha256": "d05ee6613702210cdb233bd33543d51188fc59e3cbc9602df25cb33725ad05a2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YDUG05.TTF",
+          "sha256": "4a5e0c6baf71f4b62089625c94cfd07edd2151c4ed6d2d68dc96552774b2d612"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YDWM05.TTF",
+          "sha256": "07e12531a46f092e76aa73e51fc5fa2b905c36d7b7866a09308bd6e862740be4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YEONGJUPunggiGinseng.otf",
+          "sha256": "8525783186b412777c8c29c28b80af58b8e2d064520b5dd1aa55e97a9dcd38b8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YEONGJUPunggiGinseng.ttf",
+          "sha256": "2ccce9b201e2c03b21c30f7eec547d5d9ac87572c7843d848c724a09e35d2581"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YEONGJUSeonbi.otf",
+          "sha256": "efd8347c5ff66ae292f36b4ac27b154a2332d1ea7f588be5f9fb5a216a75a35b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YEONGJUSeonbi.ttf",
+          "sha256": "aaec1b817dd4f2511a3ffeff8b05585fc17db6ae05e7e0761fdf59ec6c987026"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YGBI08.TTF",
+          "sha256": "f652e4dabd7b81c4e2b4e1ba0c2ec6f2a8a48fbaea2b95f3fb9c0428bf5f63d7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YGGE05.TTF",
+          "sha256": "84f65bfb8dfff0dd59135dde8d2e58b940ec105919c3d5faa8f15d3be90aa4d0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YINJ05.TTF",
+          "sha256": "b1b31b4d2397a120c4373c90009e8a9799fcfad0419554f0cbccff6702dfee43"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YINP05.TTF",
+          "sha256": "43698214bd77cfffbf34aa68ad929dea6c18c28223f6ba8b5ba8eb59271ab63d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YMAE07.TTF",
+          "sha256": "8f3c3e07ad0d77347aecc4bd8578cfbf271bf1369d7b29893a85720569913da1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YNCH05.TTF",
+          "sha256": "d398aac5b56ab85b49343a3815ddad857e8b4dee01bc4f6c07eabe518faf2be9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YSHN05.TTF",
+          "sha256": "356b8bf6e33c76a41b5fae84dc477b711984b5355e5ecad45796cd12a109623b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YSOS07.TTF",
+          "sha256": "bbcf9c8957dfb984a729ad11dc25e3352d3d9fa6aaa82c2c05d657c1e7000666"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YTTE08.TTF",
+          "sha256": "5d94f438ff41fdf898dcc74582e33b437943bd5267c93394917830ddde7873a0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YWDA05.TTF",
+          "sha256": "af56d2e0afd17e2f17edb5d08a14588cdc818606123165cc42c6b91b1d388a8d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YangJuByeolsan.otf.otf",
+          "sha256": "653d2f27f80d8425ea6e9009df22fd5dd70c068238db24a76610e0d6c7c0cbd3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YangJuByeolsan.ttf.ttf",
+          "sha256": "1d8c91b40c15365d6b1ea4a303d502c11250b7966ff1e5180b7cd0f9d5c10d1e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeojuCeramic TTF.ttf",
+          "sha256": "144f028f86ce9e59072e06b1a2ef9c225d4a199eb237730c9beedd37666c06b7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeojuCeramic dingbat.otf",
+          "sha256": "98aaddc83788fbb1b7d510883196b0184e203e59bbf94384f3d43697dd382218"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeojuCeramic dingbat.ttf",
+          "sha256": "7fb37a4f877f55ebdd246fda3bb7778ce2e888751019eb9696883e3cee0543b2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeojuCeramic.otf",
+          "sha256": "78a36922f71078341d90d6ac27d6cb915655aedfd1dc32f4283a6392b04eb13f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Yeongdo-Bold.ttf",
+          "sha256": "36b42920d04dfc92958c83c80b6c1adce125d612b9bbd597b615a0d1fa798c1f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Yeongdo-Heavy.ttf",
+          "sha256": "54e2554a56b0eef0a8576f51980be3bbb31b60cc927b79067bddfd24d50e39e3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/Yeongdo-Regular.ttf",
+          "sha256": "2fd336e64abe89f515e6f28fdd747a9c36e45189b6d9617148624e7ec25b5d16"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeongdoOTF-Bold.otf",
+          "sha256": "de8d49770cd14490d8c4557a4c8311307225be0990634c4f0a353337c4ed11fa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeongdoOTF-Heavy.otf",
+          "sha256": "69c752aa7a2c7f4a77331e7971ca54f638a5e2a16a3997c3be9859f174258b6f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/YeongdoOTF-Regular.otf",
+          "sha256": "f0f4011c0d24789af060d049aa2f72681f5a28aa2128d836bdbd91e8ab1e82ba"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/andante.otf",
+          "sha256": "1dbe09b63517f0c70256ccf4ed9cd3fe26b8366af15ba81cc774abf295fd905a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/andante.ttf",
+          "sha256": "0961d3195584ca186d3f77f03269b2e3b6469484ce2b31b4aefa119afd65c5ab"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/bank gothic medium bt.ttf",
+          "sha256": "3a0e078160d7a0e9d0d17c246ba3937ebe4ae264c0a19955f59b2557c4500a95"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/eurostile.TTF",
+          "sha256": "6e0b0f0ad71db6f064bc4f3f5cb065a3bbb5f9d954f3c9779732d37b0cdb1790"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_bombaram.otf",
+          "sha256": "ea206e9f28ec94fcd8744c79b206a66746101fb3d6f6bbb72e79e59276afdcdb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_bombaram.ttf",
+          "sha256": "3540230d9cefdd0f1f7b85657798a5913448828b92bd920f58df327d03ee595f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_napjakBlock.otf",
+          "sha256": "8a2fdbc57a1fd5d94bb663c27a2caa14c41d94d02e990756ee96bdec6ee2a467"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_napjakBlock.ttf",
+          "sha256": "5cd2f415fd94944e707823bc3959c0330bb765cf058168fc44184bf8dce6b068"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_solmee.otf",
+          "sha256": "7a2f1c7b1c05e16d23695e4dd1aec527edd09d1564a138a887eeb622d4e42656"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/gabia_solmee.ttf",
+          "sha256": "51d47511102cc5742750db8bc993323aa42ae10b5f982ea4c34a43ff3d3f23e8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/high1 Wonchuri Body B.ttf",
+          "sha256": "96d996a2025df34586c6d407cfc1c386497ecf0e6a810e05cf2701e339daf04f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/high1 Wonchuri Body R.ttf",
+          "sha256": "bb4dbdd1682dd77842b2a99a863c6364d9aed00ba1e8f595a0472666e5590621"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/high1 Wonchuri Title B.ttf",
+          "sha256": "9c155cfa8a6dc75e07490ae97eaf5499e94ce91a19d7eabfd0ef1903f941e3e6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/high1 Wonchuri Title L.ttf",
+          "sha256": "3539eccd733273265b73895eff0cbb7c39d0e2c0603238d8bdcbce21c923eaa7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/high1 Wonchuri Title M.ttf",
+          "sha256": "a6a590138cc37fcd75b84af724cc3f0400d93b92cae88a76f67496a37dfeb733"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/yangpyeong_B.ttf",
+          "sha256": "a0b6634e1dd4e7ec25e83ef0061ef07335b9d31bc1310882468af0c913b67be6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/yangpyeong_L.ttf",
+          "sha256": "3c5e106a4f2ff6c4605e9d9bdafc1733238c3e2b5f1a6d9edd9687f51f9a5d56"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/yangpyeong_M.ttf",
+          "sha256": "da5c39448d5ba18dbe2a9076057df935dcc0716f5d8ad03c816b2fea7ffda9a2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드감탄체.otf",
+          "sha256": "6c858d5efc1610980bbae0a860d9638c391c48970df0d731127d2e40ab95e8aa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드감탄체.ttf",
+          "sha256": "cf370895b1333ae076cea9055dd75cb1b0987e9d64954214d25b7a14002755c0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Bold.otf",
+          "sha256": "c95631a77dddaaedfc465e11ff42a7df777e542db18e7748435a096730d349e7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Bold.ttf",
+          "sha256": "4ce454e0f228071a30b8c7bb30ccd58878826fdfee3599f906e92662b73b1bc1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Regular.otf",
+          "sha256": "64bda53746fe0136c17191c8e7e26c185fbb5b3096520c099c2cd1930808de60"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Regular.ttf",
+          "sha256": "f326173e2064decf2bcc6024d20a787a7ad303e92839c38940556b3e57b1ec0f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Thin.otf",
+          "sha256": "ab09e78969de4784960108a06bf334a9ba6974b61087e7b3ebb2ae93ee16ff05"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드돋움체 Thin.ttf",
+          "sha256": "54b565c98dc1fbad3956b1930598451467f4b55776a4074c6c6ca3a90a4a238d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Bold.otf",
+          "sha256": "7802d84d84e7b5dd8e861eb61f04321cdc5cdfcb83386333944952e59408869c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Bold.ttf",
+          "sha256": "5f92ec02e727f26aa7655dfadcf46def2a6081a665789ba5c4a5b29842f84ea8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Regular.otf",
+          "sha256": "626d9f2012cd55e4b728e2ce66fd0118cb240e346bb9923f4c36751b63614a9d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Regular.ttf",
+          "sha256": "07c492f90262d04d3e9056fcf5472611b0239360ee9fc31bd30ab1b8f7ac9849"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Thin.otf",
+          "sha256": "4aafb458fe5f159a9aae6d0b2b12f1f5e943f3771b6eecc3b7e2d9615d03cd4a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드바탕체 Thin.ttf",
+          "sha256": "9c591410959ca225a42bce6374a353a346fb0cfde36d46ca437199c4ac722e46"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드탄탄체.otf",
+          "sha256": "b784ebcaad408db3987cbe674848e7780d243735a968253d62f36c9d50d6857f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/감탄로드탄탄체.ttf",
+          "sha256": "2c074d91448c6381a4aa3887deabb9fd71b734488b64c95118160168d2c2163d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년바탕OTF_Bold.otf",
+          "sha256": "63365a53d7531484c85306a225d3842ed1319e6b635eb5566db3245cf33b36fe"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년바탕OTF_Regular.otf",
+          "sha256": "88288c795fd604dafcc39acac98db640820b266aceae6051a982fa8eade35cf0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년바탕_Bold.ttf",
+          "sha256": "df13902fb156d207d8b9f3e63e21099311e77cdb4de6e7868fe24ce941bbe6e3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년바탕_Regular.ttf",
+          "sha256": "bb6c078983dc2f4e1db2c3e3c307f3408805fda1347903e1ba20c7e99968c3b3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목OTFV_Bold.otf",
+          "sha256": "d6488dbe2c52780db25037fe8e4e7b1e08d4faefedc8a833bf3d1969b9e0e1f5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목OTF_Bold.otf",
+          "sha256": "1bf5ab83ea07b144196abb35256392d0fca0474ed2bea624ee10f5bcf14f9f51"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목OTF_Light.otf",
+          "sha256": "61deba61ad58fbbeb36265c0e292ab4c43f099facadbdaf82bde3b2153581009"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목OTF_Medium.otf",
+          "sha256": "67c9fb08e623fd896e9d1dd29395cb3dbad93123ff1b77d145ff85ea491ab551"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목V_Bold.ttf",
+          "sha256": "e3043b1abdf85558a570380d9fdf456d4f80244e5b2ba103d1cb4dbdce47cad6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목_Bold.ttf",
+          "sha256": "f490194d9bf161f70076d01c9fb0a24d0019a324102de46c5fef579188ee96e6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목_Light.ttf",
+          "sha256": "7b6e388d92d1ba8a146d4124d8e2ba2728ca8810979c128c275ac1b85df2f41d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경기천년제목_Medium.ttf",
+          "sha256": "11a877937389617c0fa4ba621d0a75da2e36b22556d0faded51401697ff29fb0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문B.otf",
+          "sha256": "7dddebf7e8c244b6ea42fe3b097510a9eab5b1b8fa58eb9fb8834565d774fc86"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문B.ttf",
+          "sha256": "231096460890f564c1bcc8cc1ba239fbaa37cb5d67fa5df2e0bc766fbfb3dfb3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문L.otf",
+          "sha256": "4ca62dd32a802383469cee50f2f6a2d3064da810d43903a56c3d0521e88a7fc1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문L.ttf",
+          "sha256": "b52ee986dc519333e80682a7d8299bc308496c85faf767e0c6c14b08c04ea66a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문M.otf",
+          "sha256": "3d70af41c2ff5ccc4eecbc2ba461935d245f90e6a23eab3578599fadf9f87e75"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_본문M.ttf",
+          "sha256": "d7deeeea0e5b32822fadfa9a0099227dae45c3514f27333c66c227bdf298b719"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목B.otf",
+          "sha256": "23546ede8ffb5249bb7726aeca04938d716690d5ebb73e8d77bc1dedfdfebdb9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목B.ttf",
+          "sha256": "0ed59a97663a15b44f0aa30d5d7dc2d6e103b6fc90bb22ac12c94c1d70f1b19b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목L.otf",
+          "sha256": "af74fbc21ce887f47144db274bbfa0a29ad1042661a074b2bd7df3ecd51c9fec"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목L.ttf",
+          "sha256": "ee46fe58712063b707cad9e063647e1c05bd818d96d9c050a5a9b537396e4ba4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목M.otf",
+          "sha256": "ac01427732b48f6ba20a63325698cc1c8c48a783feeb057680d1d8c4e08f0ce6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/경복궁 수문장_제목M.ttf",
+          "sha256": "dbbe53e2149d05d205386d86f2f246d9f0aa3c0dca1122cbb1d99da72a5fc398"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고성 금강누리체(맥용).otf",
+          "sha256": "b24b3f70371175bf929d2be0bd5f5a80c77cbd5bea5b8dde88a28f91ab2925aa"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고성 금강누리체(윈도우용).ttf",
+          "sha256": "4af7266bfe87418924f19ba7db1a3e0d38955fa28b53cffbd9b3425134c304de"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고양덕양 B.ttf",
+          "sha256": "3d0dee4a6f4d95a6d4ce977cd461a160e3e8454240f9b66a7071e319ff7d44cf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고양덕양 EB.ttf",
+          "sha256": "7de08b11e1ede5dcf8c6bfafb8b8e5c5758d0b584b7798facd0ce763b5a9d372"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고양일산 L.ttf",
+          "sha256": "d2412d81a33732254ff33762f619c174ebee18a80ef5664f5d0152763eaa3731"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/고양일산 R.ttf",
+          "sha256": "c80ab82ade7a97592263f059eef6ee0b466b14f4261235fd272709278f22406d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식B.otf",
+          "sha256": "294da1196f8bc65dc4875cdb3ff5c62d0fb4b997d9880ca9506dd3bed48f0b7d"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식B.ttf",
+          "sha256": "526a1759442550613d84aec935d1ae4174e2f1c1d002dce0a2260135dad0f99c"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식L.otf",
+          "sha256": "a01883669495fe9b2ded190163cac1b5ce6b2a790f09d1ced344fb2d391233e2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식L.ttf",
+          "sha256": "f1ca197ee51484cbca70ee938ced36ba4e7c4004e53b0c1055f7b0798c98f816"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식M.otf",
+          "sha256": "7c542b24a4ca45ddc1341b269364210721eeedd6f4985d100e7a569741bda4cd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/국립박물관문화재단클래식M.ttf",
+          "sha256": "5a044d01c2baedfe3fb8839ceb807054b6b31d3e38379d97630c121913319716"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/그리운김정원체.ttf",
+          "sha256": "c4980313bbe093b8598a97072f354c8ee7b78d136760e25030ba538f53f09637"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/기상청 달콤기후체-SVG.ttf",
+          "sha256": "4c537a4802a1ec6621ee8152cbcab9cd334bba3b9a5c6a6cfee9c7ac7e9abd31"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/기상청 달콤기후체.ttf",
+          "sha256": "80258585615411fb7e9224dccc48bf68711e8c3f6849d11a30fa0e75da4c732b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/김포평화고딕체(Bold).ttf",
+          "sha256": "9cec0ec372f04a88fb348f00529d3722751fc267a8f4426b47e066fc3d8e0f37"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/김포평화고딕체(Regular).ttf",
+          "sha256": "7e7f7d05c5f62da0dd9bc4b545252141d8b767e396c40df7d24e07dfded3640f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/나눔손글씨붓.ttf",
+          "sha256": "bbd77f2fda3e8d1db6ed00adb5d9a2a88f6b5cd6c205d3199791bdbea7f25dc6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/문화재돌봄체 Bold.ttf",
+          "sha256": "95e2a612290925c088bb35297e7a2c92ea8606ea933c6230076dac424fcb47e3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/문화재돌봄체 Regular.ttf",
+          "sha256": "d935bd04d1b3da2c33d252e101538b06b427f34bd33446d64331e71345f8da4a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/빛고을광주_Bold.ttf",
+          "sha256": "820102bd3d0a290a1c23116fe1bc544c06831395d88ba08dd046dd398b9cd55a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/빛고을광주_Light.ttf",
+          "sha256": "d36d96926c2cf70acde6763247e043d649442b130837aaf1cfe98162652a2b7e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/빛고을광주_Medium.ttf",
+          "sha256": "25c3aa66976af39dfbcd2ff844498f80957f69289f2d4ba6498e6e1342f461a3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울남산 장체B.ttf",
+          "sha256": "12d933dd2eff04a2aaa03431b3ba32b89543f0877271ffcacb616b1820deb4c9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울남산 장체BL.ttf",
+          "sha256": "a16e42d4c7d9d1419941c39cec81b45d91a72e4da200002808cadc1e26d51bae"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울남산 장체EB.ttf",
+          "sha256": "ce692e6d37455199241dfa400b414fbf397e837a45e71d2b3e89b3f2f9b99f26"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울남산 장체L.ttf",
+          "sha256": "04d9a31e29e45dae84845722505809fb068af129c52098bbfaca8ceec71f2a1a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울남산 장체M.ttf",
+          "sha256": "b197172e87ddb5ec5b2ba6cecb3be2715e374d253e6ef3a1acdac2d4c707a2d6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울한강 장체B.ttf",
+          "sha256": "e9ccad8b6e38781759764adbb04481ebfdb613542ddd4027aa485ef36389eb7a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울한강 장체BL.ttf",
+          "sha256": "7b3e16b8ccd97d903520f87f22ff970d0ab0594231807d0a0b752eb8fcb670f4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울한강 장체EB.ttf",
+          "sha256": "04776aadbd7074454627e7e81c426a2439c4276d0062e3070897dce099967500"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울한강 장체L.ttf",
+          "sha256": "027b66cc6af4bd5bdc3ae82ddc4016170fa6117d2bfae61a93ea0bc85ee45b80"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/서울한강 장체M.ttf",
+          "sha256": "575d05a80e612812d6e114a9cc8a9e28c80af8298be2142d1dfb0000c69cd83f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/솔뫼 김대건 Light.ttf",
+          "sha256": "0c4e12b302481a6a50f54fb402aff736065b040231c8be0424014b809526255e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/솔뫼 김대건 Medium.ttf",
+          "sha256": "e6318eb5a64ecedf33a6028079cef4c2c811d302b164c2d446e68ff652edcbc5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/솔뫼 김대건OTF Light.otf",
+          "sha256": "b0a9c1ef64b4b6a00204a3eba21787b85314f292dc104391aef2f4c3fd9c4a6e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/솔뫼 김대건OTF Medium.otf",
+          "sha256": "ea7838d109f5d9db762a914d7933548b428e40b7b98427e7541859a3a8e021a1"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/송암 이형식.ttf",
+          "sha256": "aa1d808bf5e3355fc80bbaae8665e829f9925c6c496c46af9c960ca6299d926e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/야놀자 야체 Bold.ttf",
+          "sha256": "a295aabb6e4313581dea111bb7e3743e995e0e41351834058cee7cbafdf1b4cf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/야놀자 야체 Regular.ttf",
+          "sha256": "b5fa20faae8fc24ed0a687a89e18240c8bfd8734fed3abaef45eb054e5ee5f15"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/영양군 음식디미방.otf",
+          "sha256": "b69387e853e4aaeb68712718fc16981a0987667cc2260715852e648338fcdff4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/영양군 음식디미방.ttf",
+          "sha256": "647d7710ed205c005892d96a468996c1f8fcba135f41bf975a5eba2c86de7326"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주누리체 Regular.ttf",
+          "sha256": "3cf29c002d0ae3869e7cb16252aa862e8186b4e3763b0959f12c574b5035db94"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주누리체OTF Regular.otf",
+          "sha256": "1c4fd5121bfa9e7113cd711f0067862059771f03ac6610398c03b55f2bddce7b"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주대둔산체 Bold.ttf",
+          "sha256": "253ebefdd2e556c2c5036ad0217a67fb907ce3d5918a835cb6510b0bfce7158a"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주대둔산체 Regular.ttf",
+          "sha256": "871fc62c83b4678f5caaba115fbb0f0bb0d67235e3291ea81ecd3631fcc89094"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주대둔산체OTF Bold.otf",
+          "sha256": "dda805559a86700c5ec429124b672aa36e3dce1bc44866e2a6d06c646cb4cfe2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/완주대둔산체OTF Regular.otf",
+          "sha256": "eec0f4a7aefa91daf6333b0991bdf8978ffb2ac1e0530b090c0cf372889eb705"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/유앤피플 고딕 KS OTF.otf",
+          "sha256": "7bc17c96bbba0b2432cecabb1acbf04b0ee8903e1aee00c173dc0f5ca48f95ab"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/유앤피플 고딕 KS.ttf",
+          "sha256": "e26dc4f325e79151029d8c165b0b23f81298c2ee22e1701332d8a70ef0e7ea62"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/유앤피플 고딕 UNI OTF.otf",
+          "sha256": "1d0eaaf1dc12112d603a24a9a60a69260ef30193287673eb6e7c0d7eec4ed62f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/유앤피플 고딕 UNI.ttf",
+          "sha256": "eed9c46a5e5627d5c837facb8eae2c246489f1995edf5e4d02ba54c4bc0fff58"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/이순신Bold.ttf",
+          "sha256": "0d39e0ed7e8e68e039d053851c35a7158aeac48296673382eee01123ebd0a42e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/이순신Regular.ttf",
+          "sha256": "32742de1743b154957e1c851b800ca1270083046e8c322d09cbe8b197146f5f3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/이순신돋움체B.ttf",
+          "sha256": "f31681127b04d359d28bf5ebb40cd9e1b7989f7f1f6a4c068b3b3026391925f6"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/이순신돋움체L.ttf",
+          "sha256": "77ca25a000433a72e699da619fd4ade6762df42b23798d3f58fe5dc743b98001"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/이순신돋움체M.ttf",
+          "sha256": "bd9be5eedc85296ee289f2c3cfb76fd0c3f434505870457dfd7ac0a44fba3749"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전기안전체 Bold.otf",
+          "sha256": "88e1f2d88863a45ab7b4023137944ab3bbefd3016090d6aadb21fcd3fa6c5787"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전기안전체 Bold.ttf",
+          "sha256": "7cc5cc1df25c543fb4d40bf3dfd8897bd75331a72c7d6d071754e53b07f391be"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전기안전체 Regular.otf",
+          "sha256": "5da1a7c5b0f5aa47eeecb124a4143dbb4c663fe2a9a5e386d7b484a41dff9b75"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전기안전체 Regular.ttf",
+          "sha256": "a55d4858a169aa92000f015a8e0eb2546a38a76ffb92ffec608b34fa6b301d21"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각B.otf",
+          "sha256": "4a556390cbe5f55f44fac74e987924df531dff3f240950eabaf23653422241e5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각B.ttf",
+          "sha256": "64f602ebbd82b0ad58e88c42aca0dc70230a61fd598bbd34e0712ad3ca970ddd"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각L.otf",
+          "sha256": "f393195a42bdf6535ceab7ad16a092c762a668323e9904b553686c45fbdd48d9"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각L.ttf",
+          "sha256": "a42220109801a7552c97bbd4554a1573b63520dabfac0c783e5984fc8e730b83"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각R.otf",
+          "sha256": "fc3cf9aaf3d3a480c56b829431b92cc6f46590ed1e02fd3ed2c3ff0e2def3c26"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 각R.ttf",
+          "sha256": "1f283b85d409670bfe33b3204563995a1af06fbf01ecbfcfe2a91ab51306d904"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순B.otf",
+          "sha256": "f54ab3dc79ccf88a3b5f857fb3f42f4a58f840772ed55ab2bb7e38e56a039eac"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순B.ttf",
+          "sha256": "5247f40b21c1a9833a73d03fa14834f65b4153dfd2b6a0ca9a4e43274a9a03d7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순L.otf",
+          "sha256": "1363a435d0bc6894e5738f2524a6e18d482e73f51936b9a832d93e4b02c43784"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순L.ttf",
+          "sha256": "ae2b21093d15394a0faff4fb6ba0ff5f6a3bb6a32ae1df136844d3eac49855db"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순R.otf",
+          "sha256": "e2b5556ead6e97ec493d53f3409ad1e9ab714aa86855fe8e2db6f910e4358d0f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/전주완판본 순R.ttf",
+          "sha256": "30d616d3fa73ef77ca6380dfd0994a01908dc968ad8ee1bdf7a357496e22375f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/중나좋체 Light.ttf",
+          "sha256": "db8ccf4ade02e9c2da3b85ddcdd91e45dab77a45aba2c2d6f2773ad6d97300b3"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/중나좋체 Medium.ttf",
+          "sha256": "17559246336d58ad2966e2792bb55befffd48fe00a5a6a4c5f6ea447f7febbd4"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/중나좋체 OTF Light.otf",
+          "sha256": "5350a40748e29729a315eded273c9c5dde2357812b2841f2334e9b2e6f1f7fcb"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/중나좋체 OTF Medium.otf",
+          "sha256": "d8ff42448123aa96eaae82c35d518e6b02c22c5382338419ae090a1b1bbe4f90"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/창원단감아삭체.otf",
+          "sha256": "c53f28f2db1d654741eafde25c494460f196e19a103fcabc3563f94f377a6fdf"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/창원단감아삭체.ttf",
+          "sha256": "715298a4fb4384948e3a998f9b55dd129d21c934255aaebc8a0e054347db1566"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/충북대70주년체B.ttf",
+          "sha256": "bc4f7a1d82792b7fedb2297ae38f4952aec01f0e1bbfece7e85830b769ccb608"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/충북대70주년체R.ttf",
+          "sha256": "118035988337082999207e833af15fc6a83129095faa7191e857560daa44ad05"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/충북대직지체.ttf",
+          "sha256": "d69a31ac8fc3ca4836cbfee0874cf0dd9f22b275dfc5832637e49d34b4db4e8f"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/한국기계연구원_Light.ttf",
+          "sha256": "448b35efc48213a86ceb611d2cffe5bb5e88b43918ec9b5b47017770729bff94"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/한국기계연구원_bold.ttf",
+          "sha256": "0190443c33c3e4972d9ad30abc9f2c1b94fe158e499c518b5d11c0e586732ad7"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/한수원_한돋음_B.ttf",
+          "sha256": "7a5dc398de569d25e52b2668c9284cdfbd23e76a157e27b254721b707999e543"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/한수원_한돋음_R.ttf",
+          "sha256": "e03a0e6d13312cbaab784ae8a04fb62a59bc932faa8c8207f8c6d429ed1a5382"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/한수원_한울림_R.ttf",
+          "sha256": "9a07334e3ba06ef5a118abcf8ddcb8382984415a6511454a1f1952364660ec2e"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/해남체.otf",
+          "sha256": "3203d18b39aaaeb42d1104a8b30912ece06099481c28a2c110eec3bfdc542670"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/해남체.ttf",
+          "sha256": "6687be4719ad7266c20676891b16553d29c68abddf9eb8de294251522c3703b0"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥B.otf",
+          "sha256": "54212911647e2f674afa89d25fd983755ed266c48e80a3ed60f1468b11372280"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥B.ttf",
+          "sha256": "42142638c45042b0ca06d956062b056a00efcac62d8eed0c5bc6eed3c06af566"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥L.otf",
+          "sha256": "0972a8a260967dc9620525c07ca5e0894fb546d8eb40841f138a48f448517df8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥L.ttf",
+          "sha256": "41873c4670a4ff219fcf00015e1fbe8d28023ffea5d6e53101fa6e57a72b0bca"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥M.otf",
+          "sha256": "4aea3c5f48604bd4f5e2c5b66f64a5b4845c2e083e802fc913015cb87f87d6f8"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/행복고흥M.ttf",
+          "sha256": "33d4120f8f091f0a4f1865a323c1e8f7549d78f4d9fc7fe0c63d6a12631e1be2"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/환경B.otf",
+          "sha256": "9eab9f0e4b1389d03ce958ef21fcbfb27f83adae36eb034d4318383643da3f65"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/환경B.ttf",
+          "sha256": "4a9c1efc02cda9f5dbc210a35a9cd0cfbd865f51537559ce4fc84b3c5bdfc0c5"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/환경R.otf",
+          "sha256": "38a32caab6f684656601be58f74d509a0ae0b1ff790e2da7304181b25890b164"
+        },
+        {
+          "path": "/Users/tsjang/Library/Fonts/환경R.ttf",
+          "sha256": "163c29069869804fea747cb3df40c7f13ebccec34553878b2353ce2dc6f3aea1"
+        }
+      ]
+    }
+  },
+  "direct_inspection": {
+    "review_001": "지원신청내용/날짜/신청인/수신자 부분의 행 높이와 구비서류 경계가 다르고 진안군수귀하와 구비서류가 겹침.",
+    "overlay_002": "처리절차 각상자 높이와 지원제외대상 상단/본문줄 위치 차이. 표선도 어긋나 글꼴 예외 아님."
+  },
+  "scope": {
+    "deferred": [
+      "text-overlap 입력 task2319/20544835_jinan_apt_form.hwp 하나"
+    ],
+    "kept": [
+      "기존 issue2319 2함수/쪽수 및 표 소유",
+      "body/cell/off/oracle·IR의 모든 축/문서",
+      "원문 samples 및 독립 PDF"
+    ],
+    "baseline_relaxed": false,
+    "new_test_functions": 0,
+    "production_changed": false
+  },
+  "after_summary": [
+    "Summary [  54.136s] 18 tests run: 18 passed, 399 skipped"
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "a02fad8c49f1829cab893e7af3da941a6a112c65",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "(test(text_overlap_baseline::)) or (test(issue_2319_no_lineseg_tac_table_height::))"
+        ],
+        "exit_code": 0,
+        "seconds": 65.05742412479594
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.285533084068447
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.380901041906327
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2291589160449803
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3663051249459386
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.975052542053163
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.5720545002259314
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.348158624954522
+      }
+    ]
+  },
+  "whole_native_pages": 2,
+  "fresh_wasm": "미실행; 부정증거로만 사용",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874475817",
+  "final_validation": "다른축/최종37개별/전체회귀/원PR Native freshWASM 대기",
+  "code_commit": "45edbe87fcde65296760f7d79e4907dfcc73e97d"
+}

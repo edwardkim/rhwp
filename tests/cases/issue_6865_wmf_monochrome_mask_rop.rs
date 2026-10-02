@@ -198,6 +198,26 @@ fn issue_6865_monochrome_mask_blit_is_not_painted() {
         !svg.contains("rop_pat"),
         "1비트 마스크는 보이는 칠로 나가면 안 된다:\n{svg}"
     );
+    // 동일한 비트 연산이 벡터 윤곽 사이에 저장된 정상 한컴 WMF도 대조한다.
+    // 월간 수출입 보도자료 BinData/BIN0003.wmf의 원본 바이트이며, 독립 PDF1쪽은
+    // 붉은 사각형 대신 8×8 흑백 패턴을 적용한 꺾은선으로 표시한다.
+    let curve = to_svg(include_bytes!("../fixtures/wmf_monthly_trade_curve.wmf"));
+    assert!(
+        curve.contains("rop_vector_mask"),
+        "벡터 윤곽의 마스크를 보존해야 한다"
+    );
+    assert!(
+        curve.contains("fill=\"#C00000\""),
+        "원본 선 색을 보존해야 한다"
+    );
+    assert!(
+        !curve.contains("height=\"162\" id=\"elem511\""),
+        "첫 XOR을 붉은 면으로 칠하지 않는다"
+    );
+    assert!(
+        !curve.contains("height=\"162\" id=\"elem524\""),
+        "마지막 XOR을 붉은 면으로 칠하지 않는다"
+    );
 }
 
 #[test]
@@ -318,6 +338,30 @@ fn issue_6865_incomplete_idiom_keeps_middle_draw() {
         svg.contains("rop_pat0"),
         "EOF must not erase an unconfirmed draw"
     );
+    let mut curve = include_bytes!("../fixtures/wmf_monthly_trade_curve.wmf").to_vec();
+    // 첫 꺾은선의 마지막 PATINVERT만 DSTINVERT로 바꾼다. 완성되지 않은 쌍은
+    // 가운데 윤곽을 임의로 색칠하거나 첫 사각형을 상쇄하면 안 된다.
+    let mut offset = 18usize;
+    let mut xor_count = 0;
+    while offset + 6 <= curve.len() {
+        let words = u32::from_le_bytes(curve[offset..offset + 4].try_into().unwrap()) as usize;
+        assert!(words >= 3);
+        let function = u16::from_le_bytes(curve[offset + 4..offset + 6].try_into().unwrap());
+        if function == 0x0940 && curve[offset + 6..offset + 10] == PATINVERT.to_le_bytes() {
+            xor_count += 1;
+            if xor_count == 2 {
+                curve[offset + 6..offset + 10].copy_from_slice(&0x0055_0009u32.to_le_bytes());
+                break;
+            }
+        }
+        offset += words * 2;
+    }
+    assert_eq!(xor_count, 2);
+    let svg = to_svg(&curve);
+    assert!(
+        svg.contains("height=\"162\" id=\"elem511\""),
+        "불완전한 벡터 연산의 첫 칠을 보존한다"
+    );
 }
 
 #[test]
@@ -401,6 +445,23 @@ fn issue_6865_colored_one_bit_pattern_is_preserved() {
         &[select_object(0), brush_blit(PATINVERT)],
     );
     assert!(svg.contains("rop_pat0"));
+    let mut curve = include_bytes!("../fixtures/wmf_monthly_trade_curve.wmf").to_vec();
+    // 검은 팔레트를 붉은색으로 바꾸면 흑백 마스크 계약을 적용할 수 없다.
+    let palette = [0u8, 0, 0, 0, 255, 255, 255, 0];
+    let positions = curve
+        .windows(palette.len())
+        .enumerate()
+        .filter_map(|(i, bytes)| (bytes == palette).then_some(i))
+        .collect::<Vec<_>>();
+    assert!(!positions.is_empty());
+    for position in positions {
+        curve[position + 2] = 255;
+    }
+    let svg = to_svg(&curve);
+    assert!(
+        !svg.contains("rop_vector_mask"),
+        "다색 1비트 패턴을 흑백으로 처리하지 않는다"
+    );
 }
 
 #[test]

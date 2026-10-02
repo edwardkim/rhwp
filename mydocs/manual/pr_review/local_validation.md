@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-24
+last_verified: 2026-10-01
 ---
 
 # 로컬 사전 검증
@@ -187,7 +187,7 @@ renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스
 cargo build --profile release-test --target-dir target/pr-review
 RHWP_BIN=target/pr-review/release-test/rhwp \
   venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작쪽> <끝쪽> \
-  --out-dir /tmp/rhwp-fidelity-<키>
+  --out-dir output/pr-review/<review-id>/fidelity-<키>
 ~~~
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
@@ -700,6 +700,17 @@ sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 �
 - `nextest list`: 6,541개, ignored 38개, runnable 6,503개
 - 전체 실행: 종료 코드 0, 실패 0건
 - warm `nextest list`: 0.19초
+
+페이지별 일치율 수집은 [TSV 전용 절차](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용한다.
+검증 대상 전체 페이지를 Native/fresh WASM으로 비교해 쪽수·최저값·90% 미만/누락 쪽을 기록한다.
+낮은 점수·구조 차이·대표 경계는 별도 output의 일반 모드 PNG로 직접 판독한다.
+TSV 측정 성공/`not_evaluated`는 PR 승인이나 fixture 적합성 통과가 아니며,
+각주 수량·문단 소속·내용 누락/중복·전체 쪽수를 별도로 검증한다. 기존 PNG 재사용의 원 실행과
+최신 head 재출력을 혼동하지 않는다. 상세 명령과 증적은 위 정본을 따른다.
+
+렌더링 변경의 신규 회귀는 [시각 검증 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 먼저 충족한다.
+관련 모든 페이지·fixture·Native/fresh WASM 출력의 최저 일치율이 90% 미만이거나 측정 불가이면
+추가하지 않는다. 쪽수 검사는 전체 페이지를 비교하며 실제 출력을 개선한 뒤 새 코드로 재검증한다.
 
 신규 회귀 test source는 `tests/cases/`에만 추가한다. PR review는
 `node scripts/rust-test-suite-manifest.mjs --prepare`로 기존 suite에 자동 배정한 뒤 검증하며,

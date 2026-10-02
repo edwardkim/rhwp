@@ -1,0 +1,688 @@
+{
+  "stage": 110,
+  "code_commit": "501888148359749aef460291e3282a65ebe1eb96",
+  "analysis": {
+    "head": "f6a5da09f417529905f9b8997da2d84948c3123f",
+    "scope": "자체 과잉제외를 복구. 보정69 이후 이동한22입력 중 남은20개 원본의 정상 corpus 검사 복구. 보정69 이전 사용자가 지정한 거대문서는 대상 아님. 새 함수·생산·기대값·공차 변경 없음.",
+    "inputs": [
+      {
+        "original": "samples/exam_eng.hwp",
+        "asset": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+        "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+        "size": 3486208,
+        "restore_needed": false
+      },
+      {
+        "original": "samples/hwp3-sample16-hwp5-2010.hwp",
+        "asset": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+        "size": 3043328,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "asset": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "size": 3048448,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/hwp3-sample16-hwp5.hwp",
+        "asset": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+        "size": 3043328,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/hwp3-sample16-hwp5.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "size": 3061900,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/hwpctl_API_v2.4.hwp",
+        "asset": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+        "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+        "size": 262144,
+        "restore_needed": false
+      },
+      {
+        "original": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+        "asset": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+        "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+        "size": 147456,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+        "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+        "size": 433664,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+        "asset": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+        "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+        "size": 61810688,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6023/30269_reform_recommendation.hwp",
+        "asset": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+        "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+        "size": 470016,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6031/3249937_asset_management_rules.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+        "sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77",
+        "size": 423622,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "asset": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+        "size": 12851712,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "size": 576512,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "asset": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "size": 193536,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+        "asset": "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+        "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+        "size": 470016,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+        "asset": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+        "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+        "size": 70656,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "size": 8468,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "size": 7755,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/rowbreak-problem-pages.hwp",
+        "asset": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+        "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+        "size": 553984,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+        "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f",
+        "size": 51205,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/task2097/75544_pii_bunseok.hwpx",
+        "asset": "mydocs/pr/assets/issue7445/75544_pii_bunseok.hwpx",
+        "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+        "size": 162611,
+        "restore_needed": true
+      },
+      {
+        "original": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "asset": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "size": 342528,
+        "restore_needed": true
+      }
+    ],
+    "known_blocking_axes": {
+      "body": [
+        "exam_eng.hwp",
+        "hwpctl_API_v2.4.hwp",
+        "hwp3-sample16-hwp5.hwp",
+        "hwp3-sample16-hwp5-2010.hwp",
+        "hwp3-sample16-hwp5-2022.hwp",
+        "issue3637/press_release_split_cell_nested_table.hwpx",
+        "issue6031/3249937_asset_management_rules.hwpx",
+        "task2097/75544_pii_bunseok.hwpx",
+        "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "issue6023/30269_reform_recommendation.hwp",
+        "issue6844/30269-anticorruption-recommendation-toc.hwp",
+        "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+        "rowbreak-problem-pages.hwp"
+      ],
+      "text": [
+        "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "issue1937_rowbreak_footnote_overpagination.hwp",
+        "task1749/saved_bounds_cumulative_page_break.hwpx",
+        "issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "pr4093/outline_navigation_panel_demo.hwpx",
+        "pr4093/outline_navigation_table_cell_number.hwpx",
+        "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "한글문서파일형식_5.0_revision1.3.hwp"
+      ],
+      "page": [
+        "samples/hwp3-sample16-hwp5.hwp",
+        "samples/hwp3-sample16-hwp5-2010.hwp",
+        "samples/hwp3-sample16-hwp5-2022.hwp",
+        "samples/hwp3-sample16-hwp5.hwpx",
+        "samples/task2097/75544_pii_bunseok.hwpx"
+      ]
+    },
+    "independent_negative_evidence_refs": [
+      "mydocs/pr/assets/issue7445/neartop5941_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/anticorruption6844_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/sample16_2022_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/air6764_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/roadmap5941_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/savedbounds1749_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/chemical6782_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/press3637_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/sample16_2010_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/pii75544_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/rowbreak_hwp_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/outline_minimal4093_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/electrical6854_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/chemical_full6782_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/outline4093_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/exam_eng_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/sample16_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/assets6031_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/footnote1937_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/decree6776_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/format_spec13_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/sample16hwpx_test_removal_validation.json",
+      "mydocs/pr/assets/issue7445/api24_test_removal_validation.json"
+    ],
+    "decision": "확인된 차단 축만 명시적으로 보류. 다른 축은 원래 기대값으로 실행. 새로 발생한 실패는 제외 목록에 자동 추가하지 않고 개별 분석한다. neartop body17/19 PASS를 실패로 취급하지 않으며 해당 정상 원장도 복원.",
+    "remaining38_plan": "mydocs/pr/assets/pr7382_20260926/remaining38_regression_plan.json"
+  },
+  "restored_rows": {
+    "tests/fixtures/body_overflow_baseline.tsv": [
+      "hwp3-sample16-hwp5.hwpx\t7",
+      "issue1937_rowbreak_footnote_overpagination.hwp\t7",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t19",
+      "issue6776/78494-virtual-convergence-industry-decree.hwpx\t1",
+      "issue6782/1480000-201900042-chemical-labeling-standards.hwp\t6",
+      "task1749/saved_bounds_cumulative_page_break.hwpx\t1",
+      "한글문서파일형식_5.0_revision1.3.hwp\t8"
+    ],
+    "tests/fixtures/off_canvas_baseline.tsv": [
+      "hwp3-sample16-hwp5.hwpx\t3",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t2",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t5",
+      "rowbreak-problem-pages.hwp\t1",
+      "task2097/75544_pii_bunseok.hwpx\t2",
+      "한글문서파일형식_5.0_revision1.3.hwp\t1"
+    ],
+    "tests/fixtures/text_overlap_baseline.tsv": [
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t10",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7",
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t5",
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ],
+    "tests/fixtures/oracle_page_count_baseline.tsv": [
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13",
+      "samples/rowbreak-problem-pages.hwp\t18\t18"
+    ],
+    "tests/fixtures/render_page_samples.tsv": [
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13\t1",
+      "samples/rowbreak-problem-pages.hwp\t18\t18\t0"
+    ],
+    "tests/fixtures/overflow_cell_baseline.tsv": [
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ]
+  },
+  "focused_summary": [
+    "Summary [ 110.901s] 86 tests run: 63 passed (3 slow), 23 failed, 1086 skipped"
+  ],
+  "actual_failed_corpus_tests": [
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    },
+    {
+      "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_9",
+      "observations": [
+        "신규 발생: issue6035/cgmp_evaluation_table.hwpx — 7줄 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "observations": [
+        "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 19건"
+      ]
+    },
+    {
+      "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_8",
+      "observations": [
+        "증가: task2097/21217935_simsa_jipyo.hwp — 24 → 26줄"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "observations": [
+        "증가: rowbreak-problem-pages.hwpx — 1 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0",
+      "observations": [
+        "samples/issue3637/regulatory_impact_nested_table_escape.hwpx: 정답지 [31] 대비 격차가 커졌다 — 기준 31쪽(차 0) → 현재 32쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "observations": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1",
+      "observations": [
+        "samples/2025 행정업무운영 편람(최종).hwp: 정답지 [384] 대비 격차가 커졌다 — 기준 384쪽(차 0) → 현재 383쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+      "observations": [
+        "samples/hwpctl_ParameterSetID_Item_v1.2.hwp: 정답지 [74] 대비 격차가 커졌다 — 기준 74쪽(차 0) → 현재 75쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14",
+      "observations": [
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp: 정답지 [17] 대비 격차가 커졌다 — 기준 17쪽(차 0) → 현재 21쪽(차 4)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+      "observations": [
+        "신규 발생: issue7196/156760012_page_top_spacing_trim.hwpx — 2건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5",
+      "observations": [
+        "samples/task2146/21761835_jeonjik_exemption_table.hwp: 정답지 [6] 대비 격차가 커졌다 — 기준 6쪽(차 0) → 현재 7쪽(차 1)",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp: 정답지 [215] 대비 격차가 커졌다 — 기준 215쪽(차 0) → 현재 216쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+      "observations": [
+        "증가: issue1853_caption_precedes_body_split.hwpx — 0 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+      "observations": [
+        "증가: hwpx/issue2019_floating_form_74312.hwpx — 2 → 3건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_11",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "observations": [
+        "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)",
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: issue6031/3249937_asset_management_rules.hwpx — 1 → 12건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "observations": [
+        "신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "observations": [
+        "신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "f6a5da09f417529905f9b8997da2d84948c3123f",
+    "selection": {
+      "body_overflow_baseline": "확인된 본문 보류13입력을 제외하고 전체16분할 실행",
+      "text_overlap_baseline": "확인된 겹침 보류8입력을 제외하고 전체16분할 실행",
+      "off_canvas_baseline": "복원22입력을 포함한 전체16분할 실행",
+      "overflow_cell_baseline": "복원22입력을 포함한 전체16분할 실행",
+      "oracle_page_count_baseline": "복원 정상2원문을 포함한 전체16분할 실행"
+    },
+    "plans": [
+      {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_022",
+        "grouped": true
+      },
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_009",
+        "grouped": true
+      },
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_027",
+        "grouped": true
+      },
+      {
+        "caseName": "overflow_cell_baseline",
+        "target": "overflow_cell_baseline",
+        "grouped": false
+      },
+      {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_014",
+        "grouped": true
+      },
+      {
+        "caseName": "render_page_samples_fixture_contract",
+        "target": "regression_suite_010",
+        "grouped": true
+      }
+    ],
+    "steps": [
+      {
+        "step": "focused-restored",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "overflow_cell_baseline",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_010",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_022",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(body_overflow_baseline::) or test(text_overlap_baseline::) or test(off_canvas_baseline::) or test(overflow_cell_lines_do_not_grow_partition_) or test(oracle_page_count_baseline::) or test(render_page_samples_fixture_contract::)"
+        ],
+        "exit_code": 100,
+        "seconds": 132.71786012500525
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.565612208098173
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.41593858366832137
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22764145908877254
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3551699579693377
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.449234125204384
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4897258752025664
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 7.8650091253221035
+      }
+    ]
+  },
+  "renderer_manifest": {
+    "samples": 122,
+    "status": "actual load and digest PASS; no backend capture claim"
+  },
+  "frozen_before_after_probe": [
+    {
+      "binary": "output/pr-review/planet6897-7382-20260926/stage67-block6101/candidate-final/rhwp",
+      "binary_sha256": "5fae66c54143d3b32706fe13a405c5a9894c47b1d8ef277234f0d5a72c8bf13d",
+      "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "input_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+      "command": [
+        "output/pr-review/planet6897-7382-20260926/stage67-block6101/candidate-final/rhwp",
+        "info",
+        "--json",
+        "samples/hwpctl_ParameterSetID_Item_v1.2.hwp"
+      ],
+      "exit_code": 0,
+      "page_count": 75
+    },
+    {
+      "binary": "output/pr-review/planet6897-7382-20260926/stage67-block6101/candidate-final/rhwp",
+      "binary_sha256": "5fae66c54143d3b32706fe13a405c5a9894c47b1d8ef277234f0d5a72c8bf13d",
+      "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "command": [
+        "output/pr-review/planet6897-7382-20260926/stage67-block6101/candidate-final/rhwp",
+        "info",
+        "--json",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp"
+      ],
+      "exit_code": 0,
+      "page_count": 216
+    },
+    {
+      "binary": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+      "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "input_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+      "command": [
+        "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "info",
+        "--json",
+        "samples/hwpctl_ParameterSetID_Item_v1.2.hwp"
+      ],
+      "exit_code": 0,
+      "page_count": 75
+    },
+    {
+      "binary": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+      "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "command": [
+        "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "info",
+        "--json",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp"
+      ],
+      "exit_code": 0,
+      "page_count": 216
+    }
+  ],
+  "source_sha256": {
+    "samples/hwp3-sample16-hwp5-2010.hwp": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+    "samples/hwp3-sample16-hwp5-2022.hwp": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+    "samples/hwp3-sample16-hwp5.hwp": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+    "samples/hwp3-sample16-hwp5.hwpx": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "samples/issue1937_rowbreak_footnote_overpagination.hwp": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+    "samples/issue3637/press_release_split_cell_nested_table.hwpx": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+    "samples/issue5941/1480000-201900698-native-neartop-reset.hwp": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+    "samples/issue6023/30269_reform_recommendation.hwp": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+    "samples/issue6031/3249937_asset_management_rules.hwpx": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77",
+    "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+    "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+    "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+    "samples/issue6844/30269-anticorruption-recommendation-toc.hwp": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+    "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+    "samples/pr4093/outline_navigation_panel_demo.hwpx": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+    "samples/pr4093/outline_navigation_table_cell_number.hwpx": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+    "samples/rowbreak-problem-pages.hwp": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "samples/task1749/saved_bounds_cumulative_page_break.hwpx": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f",
+    "samples/task2097/75544_pii_bunseok.hwpx": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+    "samples/한글문서파일형식_5.0_revision1.3.hwp": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+    "tests/cases/body_overflow_baseline.rs": "56ceea95fa92881ed1c503572eab9c12386e5205b3f194122ada159cbfc35238",
+    "tests/cases/text_overlap_baseline.rs": "5b0a4317f972c510931fe827ea947ca39f8e7765e50617d474a711ff7b69176e",
+    "tests/fixtures/body_overflow_baseline.tsv": "77cd3adf9e9759068a292c6260831add66e555f7650b4814660a527ea675c209",
+    "tests/fixtures/off_canvas_baseline.tsv": "ee30038140d5a1d2e5807acdaa15c1d87450c4e270a39bde9ae46639c57a3a7c",
+    "tests/fixtures/oracle_page_count_baseline.tsv": "452ff487cfb730e5bba4bdc686f066d21ba72b1fff9b9cc9139303508ed83668",
+    "tests/fixtures/overflow_cell_baseline.tsv": "18b1bda1de2329ff8cc5ccbb331aab88e387de262f752bce6f11476cf328d90b",
+    "tests/fixtures/render_page_samples.tsv": "524202bfc7d139bb9aff293ab03b29f3b35f8d03d44421bae7b6760fd87eabad",
+    "tests/fixtures/text_overlap_baseline.tsv": "0e9be9608f59492e13eb781f473d831d60f7235874f1e57d05d88a2995aecd36"
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "remaining": "63 PASS 유지. 23실패 corpus 함수와 보정106 뒤 남은15개 개별 실패를 자동제외하지 않고 원문/축 별로 분석. 기존38 완료 표시는 과거 snapshot이며 최종 재실행/전체 nextest/최종시각 완료가 아님.",
+  "limits": "동일 원문 다른 축의 PASS를 피델리티 90%나 문서 승인으로 세지 않음. 기존 사용자 지정 거대문서 제외는 복원하지 않음. 부정시각근거는 원문별 기존 JSON 참조. frozen67/69 비교는 이 두 binary 사이만 검증하며 devel 무회귀 판정 아님.",
+  "own_diagnostic_errors": "보고 스크립트의 nextest stderr 대소문자 조건을 교정. 테스트 실패/렌더링 결함으로 세지 않음."
+}

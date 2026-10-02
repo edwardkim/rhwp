@@ -18,8 +18,8 @@ test('비텍스트 포커스의 활성 편집기는 undo/redo를 dispatcher로 �
   const main = source('src/main.ts');
   const setup = slice(main, 'function setupGlobalShortcuts(): void {', '\nfunction setupFileInput');
 
-  assert.match(setup, /if \(target instanceof HTMLInputElement \|\| target instanceof HTMLTextAreaElement\) return/,
-    'textarea가 받는 단축키는 InputHandler가 계속 소유');
+  assert.match(setup, /if \(isTextEditingTarget\(e\.target\)\) return/,
+    '편집 가능한 대상의 단축키는 해당 입력 요소가 계속 소유');
   assert.match(setup, /matchShortcut\(e, defaultShortcuts\)/, '기존 shortcut map으로 판정');
   assert.match(setup, /commandId === 'edit:undo' \|\| commandId === 'edit:redo'/,
     'fallback 범위를 undo/redo로 제한');

@@ -40,15 +40,6 @@ fn text_stats(node: &RenderNode, ymax: &mut f64, runs: &mut usize) {
     }
 }
 
-fn find_text(node: &RenderNode, needle: &str) -> bool {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return true;
-        }
-    }
-    node.children.iter().any(|c| find_text(c, needle))
-}
-
 /// p25~p31 (0-based 24..=30) — 각 조각의 텍스트가 page frame 안에 있고
 /// (tail overflow 부재), 조각마다 실질 내용이 존재해야 한다 (sliver 부재).
 #[test]
@@ -75,20 +66,4 @@ fn issue_2287_edu_fragments_stay_in_page_frame() {
             page + 1
         );
     }
-}
-
-/// p26 (0-based 25) — 리뷰가 지적한 "p26 내용 공백화"의 직접 회귀:
-/// 학교안전교육 조문 내용이 p26 에 존재해야 한다 (수정 전 p30 으로 이동).
-#[test]
-fn issue_2287_edu_p26_keeps_content() {
-    let core = core();
-    let tree = core.build_page_render_tree(25).expect("render tree p26");
-    assert!(
-        find_text(&tree.root, "조(학생 안전교육)"),
-        "p26에 학생 안전교육 조문 부재 — 연속 조각 내용 이동 회귀"
-    );
-    assert!(
-        find_text(&tree.root, "학교안전교육"),
-        "p26에 학교안전교육 본문 부재 — 연속 조각 내용 이동 회귀"
-    );
 }

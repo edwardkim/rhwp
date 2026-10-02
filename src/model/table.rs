@@ -209,8 +209,7 @@ impl Cell {
 
     /// [Task #1785] 렌더에 실제 적용되는 축별 안 여백 선택 규칙 (단일 출처).
     ///
-    /// HWP 스펙: aim=true → cell.padding(단, 0 은 표 기본으로 폴백), aim=false →
-    /// table.padding.
+    /// HWP 스펙: aim=true → 유효한 cell.padding(0 포함), aim=false → table.padding.
     /// 레이아웃(resolve_cell_padding)과 높이 측정(height_measurer)이 반드시 같은 값을
     /// 봐야 한다 — 규칙이 갈리면 예약 높이와 실제 렌더가 어긋나 표 높이가 틀어진다.
     pub fn use_cell_padding_axis(&self, cell_padding: i16, table_padding: i16) -> bool {
@@ -297,17 +296,29 @@ impl Cell {
         cell_height_px > 0.0 && total_v_pad_px >= cell_height_px
     }
 
-    /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
-    /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad.
-    /// **수직 축 전용** — 근거가 수직뿐이다: 86712 구분선(한글 PDF 괘선 21.1px =
-    /// 셀 141 상하 포함) 실측. 수평 축은 한글이 전축 0 을 진짜 0 으로 쓴다:
-    /// exam_social p2 머리말을 한글 2020/2022 인쇄 PDF 로 각각 실측한 글리프
-    /// 좌단(73.9/74.3px)이 셀 pad 적용 원점(77.47)보다 왼쪽이라 적용이 불가능하고,
-    /// 같은 문서 전축0 표의 저장 sw 52/52 가 pad 미적용(±3HU)이다. 종전 수평
-    /// 근거였던 issue_1100 x=77.47 핀은 한글 실측이 아니라 rhwp HWP↔HWPX 패리티
-    /// 자기-핀이었다. 상세: `mydocs/plans/cell_width_authority.md`.
-    /// pad 사다리의 '표 기본' 실측은 표 기본이 일부 축만 0(0,0,141,141)인
-    /// 케이스 — 전축 0 과 구분된다.
+    /// 1×1 표의 선언된 바깥 높이는 유일한 셀의 물리 높이이기도 하다.
+    /// 여러 쪽에 걸치는 표도 셀에는 작은 초기 행 높이를 저장할 수 있다.
+    /// 이 초기값만으로 판단하면 실제 안 여백이 축소된다(#7406, PrEP 39–40쪽:
+    /// 셀 282HU, 표 68738HU, 위·아래 안 여백 각각 850HU).
+    /// 저장 안 여백이 초기 높이를 초과해야 한다. 둘이 같은 경우는 일반적인
+    /// 조밀한 표(80168)에도 있으므로 바깥 상자가 여백을 소유한다는 근거가 아니다.
+    /// 측정과 배치는 이 높이를 함께 사용해 안 여백의 비정상 여부를 판단한다.
+    pub fn vertical_padding_guard_height_hu(&self, table: &Table) -> u32 {
+        let pad = self.effective_padding(&table.padding);
+        if table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && table.common.height < 0x8000_0000
+            && table.common.height > self.height
+            && i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
+        {
+            table.common.height
+        } else {
+            self.height
+        }
+    }
+
+    /// 표 기본 안 여백이 네 축 모두 0인지 확인한다.
     pub fn table_padding_unspecified(table_padding: &crate::model::Padding) -> bool {
         table_padding.left == 0
             && table_padding.right == 0
@@ -315,50 +326,42 @@ impl Cell {
             && table_padding.bottom == 0
     }
 
+    /// 축별 선택 규칙을 측정과 실제 배치의 네 축에 동일하게 적용한다.
+    /// hasMargin=false인 셀의 보존 여백은 표 기본값 0도 덮어쓰지 않는다.
     pub fn effective_padding(
         &self,
         table_padding: &crate::model::Padding,
     ) -> crate::model::Padding {
-        let unspec = !self.apply_inner_margin && Self::table_padding_unspecified(table_padding);
-        let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
-            // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
-            // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.
-            // [#6358] 음수는 깨진 저장값(37787 셀 pad=-19215). `c < 2500` 만 보면
-            // 통과해 안쪽 높이가 부풀어 Center 정렬이 셀 밖 +130px 로 나간다.
-            // aim=true 경로(`use_cell_padding_axis`: `cell_padding >= 0`)와 같이
-            // 결측 센티널로 보고 표 기본으로 폴백한다.
-            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t) {
+        let pick = |c: i16, t: i16| -> i16 {
+            // hasMargin이 꺼져 있으면 0을 포함한 표 기본 여백을 사용한다.
+            // 셀에 남은 저장값은 측정이나 배치에서 되살리지 않는다.
+            // 음수 셀 여백의 결측 처리는 축별 공통 규칙을 따른다.
+            if self.use_cell_padding_axis(c, t) {
                 c
             } else {
                 t
             }
         };
         crate::model::Padding {
-            // 수평은 전축0 도 진짜 0 (`table_padding_unspecified` 주석의 실측).
-            left: pick(self.padding.left, table_padding.left, false),
-            right: pick(self.padding.right, table_padding.right, false),
-            top: pick(self.padding.top, table_padding.top, unspec),
-            bottom: pick(self.padding.bottom, table_padding.bottom, unspec),
+            left: pick(self.padding.left, table_padding.left),
+            right: pick(self.padding.right, table_padding.right),
+            top: pick(self.padding.top, table_padding.top),
+            bottom: pick(self.padding.bottom, table_padding.bottom),
         }
     }
 
-    /// Padding that bounds a newly generated paragraph layout frame.
-    ///
-    /// An all-zero table padding is a real zero-width frame boundary for
-    /// stored HWP LineSeg geometry. `effective_padding()` deliberately keeps
-    /// a separate paint/measurement compatibility fallback to the cell's
-    /// saved padding, so frame construction must not reuse that exception.
+    /// 행 축소 하한도 실제 측정·배치와 같은 상하 여백을 사용한다.
+    pub fn effective_vertical_padding_hu(&self, table_padding: &crate::model::Padding) -> i32 {
+        let padding = self.effective_padding(table_padding);
+        i32::from(padding.top) + i32::from(padding.bottom)
+    }
+
+    /// 새 문단 프레임도 높이 측정·배치와 같은 유효 안 여백을 사용한다.
     pub(crate) fn paragraph_frame_padding(
         &self,
         table_padding: &crate::model::Padding,
     ) -> crate::model::Padding {
-        if self.apply_inner_margin {
-            self.padding
-        } else if Self::table_padding_unspecified(table_padding) {
-            crate::model::Padding::default()
-        } else {
-            self.effective_padding(table_padding)
-        }
+        self.effective_padding(table_padding)
     }
 
     pub fn cell_protect(&self) -> bool {

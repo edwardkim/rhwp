@@ -137,7 +137,16 @@ impl SourceFrameQuery<'_> {
         let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
             && r + 1 < row_count
             && consumed + cs_before + row_total <= avail_for_rows + 0.5;
-        let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
+        // 전체 행의 선언 프레임 여유가 셀의 명시적인 다음 쪽 꼬리를 흡수하지 않는다.
+        // 실제 예산 안에 들어가는 행은 기존대로 수용하고, 초과 수용만 컷에 맡긴다.
+        let terminal_zero_origin_cut = (profile.hwpx_stored_layout()
+            || profile.hwp5_stored_pagination_layout())
+            && !table_text_reflowed()
+            && layout_engine
+                .row_stored_terminal_zero_origin_cut(table, r, styles)
+                .is_some();
+        let source_frame_whole_row_fits = !terminal_zero_origin_cut
+            && source_first_fragment_overflow_allowance > 0.0
             && source_first_fragment_row_end == Some(r + 1)
             && consumed + cs_before + row_total
                 <= avail_for_rows + source_first_fragment_overflow_allowance;

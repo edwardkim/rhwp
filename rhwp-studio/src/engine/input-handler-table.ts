@@ -58,12 +58,16 @@ function clampResizePosition(pos: number, bounds: { min: number; max: number }):
   return Math.min(Math.max(pos, bounds.min), bounds.max);
 }
 
-function selectTableObjectFromResize(this: any, tableRef: { sec: number; ppi: number; ci: number }): void {
+function selectTableObjectFromResize(this: any, tableRef: TableRef): void {
   this.cursor.clearSelection();
   this.cursor.exitCellSelectionMode();
   this.cellSelectionRenderer?.clear();
   this.exitPictureObjectSelectionIfNeeded();
-  this.cursor.enterTableObjectSelectionDirect(tableRef.sec, tableRef.ppi, tableRef.ci);
+  // [#7442] 드래그 state 의 표 참조가 중첩 경로를 들고 있으면 안쪽 표를 선택한다.
+  this.cursor.enterTableObjectSelectionDirect(
+    tableRef.sec, tableRef.ppi, tableRef.ci,
+    tableRef.path && tableRef.path.length > 1 ? [...tableRef.path] : undefined,
+  );
   this.active = true;
   this.caret.hide();
   this.fieldMarker.hide();
@@ -853,9 +857,16 @@ function applyKeyboardResize(
   const range = this.cursor.getSelectedCellRange();
   if (!ctx || !range) return;
 
+  // [#7442] 중첩 표 컨텍스트는 경로 API로 bbox를 얻고 경로 API로 적용한다 —
+  // 평면 질의는 최외곽 표를 가리켜 Ctrl+방향키가 바깥 표 칸을 재는 결함이 있었다.
+  const nestedPath = ctx.cellPath && ctx.cellPath.length > 1 ? ctx.cellPath : undefined;
+  const nestedPathJson = nestedPath ? JSON.stringify(nestedPath) : undefined;
+
   let bboxes: CellBbox[];
   try {
-    bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
+    bboxes = nestedPathJson
+      ? this.wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, nestedPathJson)
+      : this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
   } catch { return; }
 
   const updates = build(bboxes, range, key);
@@ -866,7 +877,11 @@ function applyKeyboardResize(
       kind: 'snapshot',
       operationType,
       operation: (wasm: any) => {
-        wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        if (nestedPathJson) {
+          wasm.resizeTableCellsByPath(ctx.sec, ctx.ppi, nestedPathJson, updates);
+        } else {
+          wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        }
         return this.cursor.getPosition();
       },
     });
@@ -890,8 +905,15 @@ export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' 
   const isHoriz = (key === 'ArrowLeft' || key === 'ArrowRight');
   const delta = (key === 'ArrowRight' || key === 'ArrowDown') ? DELTA : -DELTA;
 
+  // [#7442] 중첩 표 컨텍스트는 경로 API로 조회·적용한다 (applyKeyboardResize 와 동일).
+  const nestedPathJson = ctx.cellPath && ctx.cellPath.length > 1
+    ? JSON.stringify(ctx.cellPath)
+    : undefined;
+
   try {
-    const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
+    const bboxes = nestedPathJson
+      ? this.wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, nestedPathJson)
+      : this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
     const updates: Array<{ cellIdx: number; widthDelta?: number; heightDelta?: number }> = [];
     const processed = new Set<number>();
 
@@ -909,7 +931,11 @@ export function resizeTableProportional(this: any, key: 'ArrowUp' | 'ArrowDown' 
       kind: 'snapshot',
       operationType: 'resizeTableProportional',
       operation: (wasm: any) => {
-        wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        if (nestedPathJson) {
+          wasm.resizeTableCellsByPath(ctx.sec, ctx.ppi, nestedPathJson, updates);
+        } else {
+          wasm.resizeTableCells(ctx.sec, ctx.ppi, ctx.ci, updates);
+        }
         return this.cursor.getPosition();
       },
     });

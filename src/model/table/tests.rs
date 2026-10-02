@@ -105,13 +105,13 @@ fn paragraph_frame_padding_keeps_all_zero_table_boundary() {
         (frame.left, frame.right, frame.top, frame.bottom),
         (0, 0, 0, 0)
     );
-    // 전축0 미지정 폴백은 수직 전용 — 수평은 한글이 진짜 0 으로 쓴다
-    // (exam_social p2 한글 2020/2022 인쇄 PDF 실측 + 저장 sw 52/52,
-    // mydocs/plans/cell_width_authority.md).
+    // #6101 정상 한컴 PDF 3쪽 표 높이150.24px와 전체 시각 검증에서
+    // 비활성 보존 여백은 수직에도 적용되지 않음을 확인했다.
+    // 측정 프레임과 실제 paint가 같은 유효 여백을 소비한다.
     let paint = cell.effective_padding(&table_padding);
     assert_eq!(
         (paint.left, paint.right, paint.top, paint.bottom),
-        (0, 0, 141, 141)
+        (0, 0, 0, 0)
     );
 }
 

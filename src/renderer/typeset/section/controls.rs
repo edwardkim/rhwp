@@ -128,12 +128,46 @@ impl TypesetEngine {
                         continue;
                     }
                     if !has_table {
+                        // 다음 본문이 그림 전체 높이에서 시작하는 저장 이월은 호스트와
+                        // 개체의 쪽 소유를 분리한다. 현재 쪽 하단을 clamp해 그림을 끼우지 않는다.
+                        if st.col_count == 1
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                            && !self.profile.get().session_edited()
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            if let Some(placement) =
+                                crate::renderer::float_placement::stored_picture_next_page_placement(
+                                    para,
+                                    &paragraphs[para_idx + 1..],
+                                    st.vpos_page_base.unwrap_or(0),
+                                    picture_host_origin.2,
+                                    st.available_height(),
+                                    self.dpi,
+                                )
+                                .or_else(|| crate::renderer::float_placement::stored_background_picture_next_page_placement(
+                                    para, &paragraphs[para_idx + 1..],
+                                    st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
+                                    st.available_height(), self.dpi))
+                            {
+                                st.defer_stored_frame(
+                                    crate::renderer::typeset::DeferredStoredFrameControl {
+                                        kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                        para_index: para_idx,
+                                        control_index: ctrl_idx,
+                                        placement,
+                                    },
+                                );
+                                continue;
+                            }
+                        }
                         // [#3738 Stage 22] page-tail Square picture는 anchor 본문을
                         // 현재 쪽에 남기되 그림만 다음 physical page의 narrow wrap
                         // band에 배치한다. p155 그림 64처럼 현재 PageItem에 넣으면
                         // caption이 기존 FootnoteArea와 겹친다.
                         if let Some((wrap_target_para_indices, wrap_anchor)) = self
-                            .native_hwp5_square_picture_next_page_owner(
+                            .stored_square_picture_next_page_owner(
                                 &st, para_idx, para, paragraphs, ctrl, styles,
                             )
                         {
@@ -180,18 +214,72 @@ impl TypesetEngine {
                                 == (picture_host_origin.0, picture_host_origin.1))
                             .then_some(picture_host_origin.2);
                         st.register_side_wrap_picture(para_idx, ctrl_idx, para, host_top, styles);
-                        if self.profile.get().hwp5_stored_pagination_layout()
+                        // 뒤 저장 어울림 줄이 소유 줄의 그림 프레임을 증명한 경우,
+                        // 예약과 실제 출력이 같은 앵커 계획을 소비한다.
+                        if !self.profile.get().session_edited()
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                            && st.current_items.iter().any(|item| {
+                                matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
+                            })
+                        {
+                            if let Some(placement) = paragraphs.get(para_idx + 1).and_then(|next| {
+                                crate::renderer::float_placement::stored_tail_square_picture_placement(
+                                    para, next, ctrl_idx, picture_host_origin.2, self.dpi,
+                                )
+                            }) {
+                                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                                st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(placement.anchor_y), styles);
+                            }
+                        }
+                        // 저장된 그림 앞 공간과 뒤 호스트 줄을 하나의 프레임으로 예약한다.
+                        // 저장 줄이 있는 원본의 현재 단에서만 확정하고 편집 흐름에는 적용하지 않는다.
+                        if (self.profile.get().hwp5_stored_pagination_layout()
+                            || self.profile.get().hwpx_stored_layout())
+                            && !self.profile.get().session_edited()
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                            && st.current_items.iter().any(|item| {
+                                matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
+                            })
+                        {
+                            let saved = para_idx.checked_sub(1).and_then(|previous| {
+                                let previous = paragraphs.get(previous)?;
+                                let next = paragraphs.get(para_idx + 1)?;
+                                let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
+                                let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
+                                crate::renderer::float_placement::stored_picture_before_host_placement(
+                                    previous, para, next, host_style.spacing_after,
+                                    next_style.spacing_before, st.vpos_page_base.unwrap_or(0),
+                                    picture_host_origin.2, self.dpi,
+                                ).or_else(|| crate::renderer::float_placement::stored_picture_empty_host_placement(
+                                    previous, para, next, next_style.spacing_before,
+                                    st.vpos_page_base.unwrap_or(0), picture_host_origin.2, self.dpi,
+                                ))
+                            });
+                            if let Some(placement) = saved.filter(|p| {
+                                p.paragraph_end(st.current_height, 0.0) <= st.available_height()
+                                    && p.paragraph_end(st.current_height, 0.0) >= st.current_height
+                            }) {
+                                st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                                st.align_flow_to(placement.paragraph_end(st.current_height, 0.0));
+                                continue;
+                            }
+                        }
+                        if (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
                                 && !self.profile.get().session_edited()
+                                && (st.pages.len(), st.current_column)
+                                    == (picture_host_origin.0, picture_host_origin.1)
                                 && st.current_items.iter().any(|item| {
                                     matches!(item, PageItem::FullParagraph { para_index } if *para_index == para_idx)
                                 })
                             {
                                 let saved = paragraphs.get(para_idx + 1).and_then(|next| {
-                                    // An earlier picture with measured flow leaves
-                                    // the column's painted origin outside this
-                                    // stored reservation contract. Do not resume
-                                    // absolute saved coordinates midway through
-                                    // that chain and paint over preceding text.
+                                    // 앞 그림의 측정 흐름이 저장 원점과 다르면 중간부터
+                                    // 절대 저장 좌표를 재개해 선행 본문을 덮지 않는다.
                                     let unresolved_picture_flow = st.current_items.iter().any(|item| {
                                         let PageItem::Shape { para_index: owner, control_index } = item else { return false; };
                                         if *owner == para_idx { return false; }
@@ -203,9 +291,8 @@ impl TypesetEngine {
                                     if unresolved_picture_flow { return None; }
                                     let host_style = styles.para_styles.get(para.para_shape_id as usize)?;
                                     let next_style = styles.para_styles.get(next.para_shape_id as usize)?;
-                                    // The first stored line may retain its paragraph's
-                                    // spacing-before at column top. That is an inset,
-                                    // not the origin of the source coordinate system.
+                                    // 단 상단 첫 저장 줄의 앞 간격은 inset이며
+                                    // 원본 저장 좌표계의 원점으로 빼지 않는다.
                                     let first_para = st.current_items.iter().find_map(|item| {
                                         match item {
                                             PageItem::FullParagraph { para_index } => paragraphs.get(*para_index),
@@ -216,9 +303,9 @@ impl TypesetEngine {
                                     let base = st.vpos_page_base.unwrap_or(0);
                                     let retained_before = first_before.max(0.0).min(hwpunit_to_px(base.max(0), self.dpi));
                                     let frame_vpos = base - crate::renderer::px_to_hwpunit(retained_before, self.dpi);
-                                    crate::renderer::float_placement::stored_picture_successor_placement(
-                                        para, next, host_style.spacing_before,
-                                        next_style.spacing_before, frame_vpos, self.dpi,
+                                    crate::renderer::float_placement::stored_picture_successor_with_following_placement(
+                                        para, next, paragraphs.get(para_idx + 2), host_style.spacing_before,
+                                        next_style.spacing_before, frame_vpos, picture_host_origin.2, self.dpi,
                                     )
                                 });
                                 if let Some(placement) = saved.filter(|p| {

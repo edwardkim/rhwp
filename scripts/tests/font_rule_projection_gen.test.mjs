@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 830 registry rules', () => {
+test('five backend projections are deterministic and close all 831 registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,13 +81,13 @@ test('five backend projections are deterministic and close all 830 registry rule
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 830);
+  assert.equal(first.manifest.summary.activeRuleCount, 831);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 153,
     'canvaskit-sfnt': 158,
-    'rust-layout-metric': 67,
+    'rust-layout-metric': 68,
     'rust-layout-name': 171,
   });
   assert.deepEqual(
@@ -98,6 +98,8 @@ test('five backend projections are deterministic and close all 830 registry rule
     { ...SEALED_PROJECTION_SHA256,
       // Issue-scoped replacements preserve the sealed historical hashes above.
       'canvas2d-webfont': 'b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245',
+      // #7196: 같은 실물 글꼴의 한글 이름을 기존 영문 메트릭에 연결한다.
+      'rust-layout-metric': '10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c',
       // #6936 changes only the New Gulim layout-name decision.
       'rust-layout-name': 'b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142',
     },
@@ -217,7 +219,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 829);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 830);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 

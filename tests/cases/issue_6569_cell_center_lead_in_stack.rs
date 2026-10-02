@@ -23,19 +23,22 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6542/156678235_mid_para_vpos_rewind.hwp";
 
-fn collect(node: &RenderNode, runs: &mut Vec<(f64, String)>, hlines: &mut Vec<f64>) {
-    match &node.node_type {
-        RenderNodeType::TextRun(r) => runs.push((node.bbox.y, r.text.clone())),
-        RenderNodeType::Line(l) if (l.y1 - l.y2).abs() < 0.5 => hlines.push(l.y1),
-        _ => {}
-    }
-    for c in &node.children {
-        collect(c, runs, hlines);
-    }
+fn has_text(node: &RenderNode, needle: &str) -> bool {
+    matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains(needle))
+        || node.children.iter().any(|child| has_text(child, needle))
 }
 
-/// 제목 칸의 첫 줄은 표 상단에서 **23.6px**(한/글) 아래여야 한다 — `lead` 를 정렬
-/// 공간에서 빼면 그 절반(3.3px)만큼 위로 쏠린다.
+fn table_with_text<'a>(node: &'a RenderNode, needle: &str) -> Option<&'a RenderNode> {
+    if matches!(node.node_type, RenderNodeType::Table { .. }) && has_text(node, needle) {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| table_with_text(child, needle))
+}
+
+/// 제목의 두 글줄은 같은 셀 안에 남고, 저장된 첫 문단 여백이 상단에 보존된다.
+/// 첫 문단 여백을 정렬 공간에서 다시 빼면 상·하단 여백이 거의 같아진다.
 #[test]
 fn centered_cell_does_not_subtract_lead_the_stack_already_holds() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -43,35 +46,27 @@ fn centered_cell_does_not_subtract_lead_the_stack_already_holds() {
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     let page = core.build_page_render_tree(0).expect("1쪽 render tree");
 
-    let mut runs = Vec::new();
-    let mut hlines = Vec::new();
-    collect(&page.root, &mut runs, &mut hlines);
-
-    // 제목 표는 1쪽 세 번째 표다 — 상단 괘선 227.8px(=170.85pt) 부근.
-    hlines.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    hlines.dedup_by(|a, b| (*a - *b).abs() < 0.05);
-    let table_top = hlines
+    let table = table_with_text(&page.root, "사후소득").expect("제목 표는 1쪽에 있어야 한다");
+    let cell = table
+        .children
         .iter()
-        .copied()
-        .find(|y| (*y - 227.8).abs() < 3.0)
-        .unwrap_or_else(|| panic!("제목 표 상단 괘선을 못 찾았다 — 시험 설정 오류. {hlines:?}"));
-
-    let title_top = runs
+        .find(|child| {
+            matches!(child.node_type, RenderNodeType::TableCell(_)) && has_text(child, "사후소득")
+        })
+        .expect("제목은 제목 표의 셀에 속해야 한다");
+    let lines: Vec<_> = cell
+        .children
         .iter()
-        .filter(|(_, t)| t.contains("사후소득"))
-        .map(|(y, _)| *y)
-        .fold(f64::INFINITY, f64::min);
+        .filter(|child| matches!(child.node_type, RenderNodeType::TextLine(_)))
+        .collect();
+    assert_eq!(lines.len(), 2, "제목 셀의 두 글줄이 보존돼야 한다");
+    assert!(has_text(lines[0], "사후소득"));
+    assert!(has_text(lines[1], "노후생활"));
+    let top_gap = lines[0].bbox.y - cell.bbox.y;
+    let bottom_gap = cell.bbox.y + cell.bbox.height - lines[1].bbox.y - lines[1].bbox.height;
     assert!(
-        title_top.is_finite(),
-        "제목 글줄을 못 찾았다 — 시험 설정 오류"
-    );
-
-    // 한/글 2024: 23.57px(글자 상단). 렌더 트리 TextRun 상단으로는 종전 19.77px.
-    let gap = title_top - table_top;
-    assert!(
-        (gap - 23.57).abs() <= 1.2,
-        "제목 칸 첫 줄이 표 상단에서 23.6px 아래여야 한다(한/글 2024) — #6569 회귀. \
-         got {gap:.2}px (lead 를 정렬 공간에서 빼면 19.77)"
+        top_gap > bottom_gap * 1.1,
+        "첫 문단 위 여백이 셀 정렬에서 두 번 빠졌다 — 상단 {top_gap:.2}, 하단 {bottom_gap:.2}"
     );
 }
 

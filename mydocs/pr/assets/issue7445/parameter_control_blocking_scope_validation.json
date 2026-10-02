@@ -1,0 +1,299 @@
+{
+  "stage": 133,
+  "preanalysis": {
+    "stage": 133,
+    "head": "b7f8fc8e421d911c779bf0945259cc20e5f9fa80",
+    "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+    "input_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+    "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+    "pdf_sha256": "b23d4836b9d1eb8dd9582e5541aeca34dfb54718d5829b21af4f7969085dd746",
+    "pdf_pages": 74,
+    "native_pages": 75,
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "analysis": "기존oracle74→75를개별재현하고정상#6307/6656 세함수를대조. 독립한컴2022 PDF는#6656실측근거로이미연결되었음. 3쪽줄/11쪽분할/말미73·74쪽Visual Sweep과추가75쪽판독으로실패진위를판정. 90미만일때도실제실패oracle이입력행만보류하며정상함수/모든다른축/원문PDF유지. 기준완화/새함수추가금지."
+  },
+  "code_commit": "59c1aa39f943bd5c89060c4e3b4afe3f0dc54b77",
+  "before": [
+    {
+      "case": "oracle_page_count_baseline",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 9.866850583348423
+    },
+    {
+      "case": "issue_6307_landscape_splittable_row_absorb",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_6307_landscape_splittable_row_absorb::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 5.905960500240326
+    },
+    {
+      "case": "issue_6656_line_advance_text_height",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(issue_6656_line_advance_text_height::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.883908207993954
+    }
+  ],
+  "deferred_scope": "실제실패oracle이입력74/74행한개만",
+  "preserved_scope": [
+    "#6307 행분할/본문하한",
+    "#6656 아이콘줄/저장사다리측정 기존두함수",
+    "모든다른함수/입력/축/원문/PDF"
+  ],
+  "visual_command": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "parameter-control",
+    "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+    "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+    "--pages",
+    "1,3,11,12,73,74",
+    "--dpi",
+    "96",
+    "--rhwp-bin",
+    "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "--embed-fonts=full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage133-parameter-control/visual-native"
+  ],
+  "selected_pages": [
+    1,
+    3,
+    11,
+    12,
+    73,
+    74
+  ],
+  "native_pages": 75,
+  "pdf_pages": 74,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 83.55165
+      },
+      {
+        "page": 73,
+        "tolerant_content_match_percent": 29.93398
+      },
+      {
+        "page": 74,
+        "tolerant_content_match_percent": 29.90644
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "direct_inspection": "73쪽overlay와74쪽review/추가75쪽직접확인. PDF73쪽Type변환표는Native74쪽,PDF74쪽HWPUNIT·URC 설명은Native75쪽으로이월. 글꼴예외아님.",
+  "after_summary": {
+    "passed": 17,
+    "failed": 2,
+    "skipped": 640,
+    "normal_tests_passed": 3,
+    "oracle_partitions_passed": 14,
+    "oracle_partitions_failed": 2,
+    "summary": [
+      "     Summary [   4.904s] 19 tests run: 17 passed, 2 failed, 640 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "b7f8fc8e421d911c779bf0945259cc20e5f9fa80",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_004",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_021",
+          "-E",
+          "(test(oracle_page_count_baseline::)) or (test(issue_6307_landscape_splittable_row_absorb::)) or (test(issue_6656_line_advance_text_height::))"
+        ],
+        "exit_code": 100,
+        "seconds": 22.367007416673005
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.624151833821088
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4307187497615814
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23556604189798236
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38196987519040704
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.701019125059247
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.5540916668251157
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.624621042050421
+      }
+    ]
+  },
+  "issue_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5875602474",
+  "stable_image_sha256": {
+    "parameter_control_native_review_074.png": "eb6944fcf1525ea5589770a4b1144daf2222da0fb6a2e503a42db89f88e67587",
+    "parameter_control_native_overlay_073.png": "3e6d775038774d6516b078b18b3c9874537fd20e84cec2c7a48b63eeece7177a",
+    "parameter_control_native_extra_075.png": "0db3cb321c18b7879b12a56cbeca5a37194c7e6cd7a1040a4d4e773e28304e80"
+  },
+  "limits": [
+    "전74쪽/freshWASM미실행. 선택6쪽부정증거이며전체피델리티승인아님",
+    "다른oracle2실패와기존다른축/최종개별/전체회귀·PR준비미완료",
+    "생산/기존Rust함수/기대값/공차변경없음"
+  ]
+}

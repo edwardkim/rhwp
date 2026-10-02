@@ -1,0 +1,375 @@
+{
+  "parent_sha": "292ba2161e1ce5ca90429bbb87ded48f8e661b5c",
+  "checks": {
+    "before": {
+      "exit_code": 100,
+      "elapsed_seconds": 119.05798208294436,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(captioned_saved_rowbreak_terminal_fragment_keeps_outer_frame)"
+      ],
+      "log_sha256": "80e3073f0020bcf87e10e6c433214d75c12362316af6db1fa43fba86c2343afd",
+      "nextest_summary": "2 tests run: 1 passed, 1 failed, 215 skipped",
+      "test_runtime": "0.253s"
+    },
+    "after": {
+      "exit_code": 0,
+      "elapsed_seconds": 131.28415937535465,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(captioned_saved_rowbreak_terminal_fragment_keeps_outer_frame)"
+      ],
+      "log_sha256": "75d26f2ae6bef2d943fd88f17d02fd1636b5a69a3ef76b46f939a650b8ab5df4",
+      "nextest_summary": "2 tests run: 2 passed, 212 skipped",
+      "test_runtime": "0.262s"
+    },
+    "expanded": {
+      "exit_code": 0,
+      "elapsed_seconds": 104.93965854169801,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6190_stored_lineseg_indentation_flag) | test(issue_6034_footnote_area_reflow_width) | test(issue_5708_footnote_line_height) | test(issue_7174_hwp3) | test(issue_7172_hwp3_hanging_indent_margin) | test(issue_5598_cell_hanging_indent_clamp)"
+      ],
+      "log_sha256": "0c74362fc322a766017f8c6711d595bfc4e62c1ac7a7c1ec2b0269a538d5b958",
+      "nextest_summary": "245 tests run: 245 passed, 4564 skipped",
+      "test_runtime": "9.793s"
+    },
+    "cli-build": {
+      "exit_code": 0,
+      "elapsed_seconds": 106.33784245792776,
+      "cli_sha256": "2f67ae90ed5f1809a82dae92641859e8aa29a519fe1a484fd5cebe4057e3e896",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "log_sha256": "82ab06e825c23093e94098558d8f6e9388973c6eb972bc2b5447f909ff190b05"
+    },
+    "manifest": {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.0649243746884167,
+      "log_sha256": "b32687b683839d701de95e921df6849499f2886f016652ca9825f017cc4ec6c6"
+    },
+    "source-unit": {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 19.5075398334302,
+      "log_sha256": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32"
+    },
+    "fmt-check": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 15.58585745934397,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "native_before": [
+    {
+      "kind": "hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage40-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-before-hwpx-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "66,67,68"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 89.12923166668043
+    },
+    {
+      "kind": "hwp",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage40-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-before-hwp-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "66,67,68"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 22.7912772083655
+    }
+  ],
+  "native_after": [
+    {
+      "kind": "hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage41-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-after-hwpx-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "66,67,68"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 17.37559208413586
+    },
+    {
+      "kind": "hwp",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage41-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-after-hwp-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "66,67,68"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 16.731183541938663
+    }
+  ],
+  "native_extra": [
+    {
+      "phase": "before",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage40-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-extra-before-hwp-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "77"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 7.120011833962053
+    },
+    {
+      "phase": "after",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage41-after-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage41-extra-after-hwp-native",
+        "--dpi",
+        "96",
+        "--pages",
+        "77"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.146841416601092
+    }
+  ],
+  "visual": {
+    "hwpx": {
+      "scores": {
+        "before": {
+          "66": 98.94767,
+          "67": 96.21756,
+          "68": 96.59031
+        },
+        "after": {
+          "66": 98.94767,
+          "67": 96.21756,
+          "68": 96.59031
+        }
+      },
+      "png_identical": [
+        "review/review_066.png",
+        "overlay/overlay_066.png",
+        "review/review_067.png",
+        "overlay/overlay_067.png",
+        "review/review_068.png",
+        "overlay/overlay_068.png"
+      ]
+    },
+    "hwp": {
+      "scores": {
+        "before": {
+          "66": 88.72983,
+          "67": 74.6401,
+          "68": 96.59031
+        },
+        "after": {
+          "66": 98.94767,
+          "67": 96.21756,
+          "68": 96.59031
+        }
+      },
+      "png_identical": [
+        "review/review_068.png",
+        "overlay/overlay_068.png"
+      ]
+    },
+    "hwp_extra_77": {
+      "before": 43.20381,
+      "after": 98.35157
+    }
+  },
+  "visual_review": {
+    "png_count": 28,
+    "directly_read_unique_png": 20,
+    "byte_identical_reused_png": 8,
+    "scope": "두 형식66/67/68쪽 및 HWP77쪽 전후; 같은 바이트의8개는 해시 대조 후 직접 판독한 기존 이미지로 확인"
+  },
+  "not_completed": [
+    "전체 nextest",
+    "세 Clippy",
+    "Skia",
+    "fresh WASM",
+    "현재 수정 후 전체 Native 시각"
+  ]
+}

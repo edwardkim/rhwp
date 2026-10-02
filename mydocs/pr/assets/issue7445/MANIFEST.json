@@ -1,0 +1,57 @@
+{
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "head_before": "ef09f1b19ca0cf1b8e787907ddfb6ff2ed20edf6",
+  "issue": "https://github.com/edwardkim/rhwp/issues/7445",
+  "files_before": {
+    "samples/80250_regulatory_analysis.hwp": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+    "samples/issue1891/80250_regulatory_analysis.hwpx": "eec54040f66f9b67caa1df9010fa57810b13a884e35f3162dd7e5eb266ff167b",
+    "tests/issue_1891.rs": "46aee819e7206254277b9b51da1b611c4606c87837b48b6990bdc64a67b5c21f",
+    "tests/fixtures/ir_field_sweep_baseline.tsv": "27c82529fc01c45e98cb58fe3fa7bcfaf1488adc10d7f5657c7b8f7e6699070f",
+    "tests/fixtures/text_overlap_baseline.tsv": "db56eb0aa97bf26b58c376c64f0ffdd51f48dac8ab3f67d0d1647f30d94d4195"
+  },
+  "user_authorization": "Remove 80250 tests themselves and defer whole fidelity correction to a separately registered issue",
+  "scope": "Remove two document matrix entries and three baseline rows. Preserve both documents byte-identically in issue assets; no corpus exclusion helper or ignore attributes.",
+  "removed_baseline_rows": [
+    {
+      "file": "tests/fixtures/text_overlap_baseline.tsv",
+      "removed_rows": [
+        "issue1891/80250_regulatory_analysis.hwpx\t2"
+      ]
+    },
+    {
+      "file": "tests/fixtures/ir_field_sweep_baseline.tsv",
+      "removed_rows": [
+        "hwp5rb\t80250_regulatory_analysis.hwp\tsections[].paragraphs[].controls[].cells[].list_header_width_ref\t124",
+        "hwp5rb\t80250_regulatory_analysis.hwp\tsections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref\t5"
+      ]
+    }
+  ],
+  "runtime_changed": false,
+  "tolerances_changed": false,
+  "removal_is_resolution": false,
+  "moves_reverted_on_user_correction": true,
+  "current_inputs": [
+    {
+      "path": "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwp",
+      "sha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwpx",
+      "sha256": "eec54040f66f9b67caa1df9010fa57810b13a884e35f3162dd7e5eb266ff167b"
+    }
+  ],
+  "correction": "The user clarified that moving documents into issue reproduction assets is acceptable. Temporary original-path restoration and corpus-exclusion helper changes were superseded; their in-flight validation is not final evidence.",
+  "moves": [
+    {
+      "old": "samples/80250_regulatory_analysis.hwp",
+      "new": "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwp",
+      "sha256": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589"
+    },
+    {
+      "old": "samples/issue1891/80250_regulatory_analysis.hwpx",
+      "new": "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwpx",
+      "sha256": "eec54040f66f9b67caa1df9010fa57810b13a884e35f3162dd7e5eb266ff167b"
+    }
+  ],
+  "final_user_authorization": "User explicitly accepted moving original documents into mydocs/pr/assets/issue7445; documents must be preserved, not deleted."
+}

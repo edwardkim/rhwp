@@ -99,7 +99,37 @@ impl TypesetEngine {
                                 .unwrap_or(0)
                                 >= max_tbl_h
                         };
-                    if !host_line_covers_object {
+                    // 확정 인라인 끝점은 이미 간격을 소비한 현재 흐름과 연결돼 있다.
+                    // 후처리에서 그 기준을 지우면 다음 lazy 역산이 같은 간격을 재가산한다.
+                    let resolved_inline_end = match last {
+                        Some(PageItem::Table {
+                            para_index,
+                            control_index,
+                        }) => st
+                            .inline_placements
+                            .get(&(*para_index, *control_index))
+                            .and_then(|placement| placement.advance_end)
+                            .is_some_and(|end| (end - st.current_height).abs() < 0.01),
+                        _ => false,
+                    };
+                    // 저장 컷으로 본문을 나눈 어울림 표는 마지막 글줄의 실제
+                    // 흐름을 보존한다. 표 기하로 기준을 지워 후속 줄을 다시
+                    // 역산하면 표 옆의 줄까지 표 하단으로 밀린다.
+                    let resolved_stored_wrap_fragment = st.current_items.iter().any(|item| {
+                        matches!(item, PageItem::PartialParagraph { para_index, start_line, .. }
+                            if *para_index == para_idx && *start_line > 0)
+                    }) && st.paragraph_float_placements.iter().any(|(&(owner, _), placement)| {
+                        owner == para_idx
+                            && placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                            && para.line_segs.last().is_some_and(|line| {
+                                (crate::renderer::hwpunit_to_px(line.vertical_pos, self.dpi)
+                                    - placement.anchor_y).abs() <= self.dpi / 7200.0
+                            })
+                    });
+                    if !host_line_covers_object
+                        && !resolved_inline_end
+                        && !resolved_stored_wrap_fragment
+                    {
                         // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);
                         st.record_vpos_lazy_origin(None);

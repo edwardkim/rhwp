@@ -1,4 +1,4 @@
-//! Ordinary row scan step. Queries keep the page state read-only; this step owns scan-result updates.
+//! 일반 행을 스캔한다. 조회는 쪽 상태를 보존하고 이 단계에서 스캔 결과를 갱신한다.
 
 use crate::renderer::typeset::{
     controls, is_reparsed_single_column_cell_split_row, paragraph,
@@ -313,10 +313,14 @@ impl TypesetEngine {
                 let table::scan::row_entry::TerminalNoteProbe {
                     remaining_band,
                     source_cut,
+                    visible_height,
                 } = row_entry.terminal_note_probe(avail_for_rows, consumed, cs_before);
                 if remaining_band > 0.0
                     && source_cut.fully_consumed
                     && source_cut.consumed_height > 0.0
+                    // 첫 유닛 강제 전진은 완전 소비여도 예산 수용의 증거가 아니다.
+                    // 최종 배치가 쓰는 패딩 포함 표시 높이가 같은 밴드에 들어가야 한다.
+                    && visible_height <= remaining_band + 0.5
                 {
                     // 마지막 주석의 실제 저장 line이 남은 band 안에 모두 있으므로,
                     // 선언 row 높이의 빈 아래 영역은 별도 physical page를 소유하지 않는다.
@@ -365,7 +369,36 @@ impl TypesetEngine {
                 return false;
             }
             let padding = row_entry.padding();
-            let content_budget = (avail_for_rows - consumed - cs_before - padding).max(0.0);
+            // 여러 쪽에 걸치는 1×1 셀은 작은 초기 셀 높이만 저장하고
+            // 바깥 표가 물리 상자를 소유할 수 있다. 전체 수직 안 여백을 복원하면
+            // HU에서 픽셀로 변환할 때의 반올림으로 마지막 저장 글줄이
+            // 수치 예산을 한 픽셀 미만 초과할 수 있다.
+            // 그 줄은 원본 프레임에 유지한다(#7406, 39→40쪽).
+            // 일반 행과 이어받기 조각은 정확한 예산을 유지한다.
+            let source_cell_rounding_slack = if st.profile.hwpx_stored_layout()
+                && r == cursor_row
+                && row_start_cut.is_empty()
+                && table.row_count == 1
+                && table.col_count == 1
+                && table.cells.len() == 1
+                && table.cells[0].height < table.common.height
+                && table.cells[0].paragraphs.windows(2).any(|pair| {
+                    pair[0]
+                        .line_segs
+                        .last()
+                        .is_some_and(|line| line.vertical_pos > 0)
+                        && pair[1]
+                            .line_segs
+                            .first()
+                            .is_some_and(|line| line.vertical_pos == 0)
+                }) {
+                1.0
+            } else {
+                0.0
+            };
+            let content_budget = (avail_for_rows - consumed - cs_before - padding
+                + source_cell_rounding_slack)
+                .max(0.0);
             let native_hwp5_internal_reset_row_tail = row_entry.native_reset_tail(&st.profile);
             // A visible terminal response followed by a no-text/no-control row is
             // a two-part physical row: the spacer owns no ink, while the
@@ -486,6 +519,41 @@ impl TypesetEngine {
                     }
                 }
             }
+            // 직접 저장한 HWPX 1×1 표는 첫 조각의 물리 높이를 마지막 글줄과
+            // 다음 프레임의 vpos=0 문단과 함께 저장할 수 있다.
+            // 일반 용량 계산이 그 경계 한 줄 앞에서 멈추면
+            // 선언 프레임 상자가 현재 쪽에 들어갈 때에만 사용한다.
+            // 종료 안 여백은 그 물리 조각에 남겨 중복 예약하지 않는다
+            // (#7406, 34→35쪽).
+            let mut saved_opening_frame_height = None;
+            if r == cursor_row && !is_continuation && consumed == 0.0 {
+                saved_opening_frame_height = layout_engine
+                    .saved_single_cell_opening_frame_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                    .filter(|height| *height <= avail_for_rows - cs_before + 0.5);
+                if saved_opening_frame_height.is_none() {
+                    if let Some((source_cut, frame_height)) = layout_engine
+                        .saved_single_cell_opening_frame_tail(
+                            table,
+                            r,
+                            row_start_cut,
+                            &res.end_cut,
+                            styles,
+                        )
+                    {
+                        if frame_height <= avail_for_rows - cs_before + 0.5 {
+                            budget = source_cut.consumed_height;
+                            res = source_cut;
+                            saved_opening_frame_height = Some(frame_height);
+                        }
+                    }
+                }
+            }
             if res.fully_consumed {
                 // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
                 // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
@@ -569,10 +637,21 @@ impl TypesetEngine {
                     two_line_terminal_response_source_frame.is_some_and(|source_frame_height| {
                         row_total <= budget + source_frame_height + 0.5
                     });
+                // 전체 내용이 들어간 행을 저장·측정 경계의 반올림 차이만으로 다음 쪽에
+                // 다시 시작하지 않는다. 기존 0.5px 경계 안에서도 내용과 안 여백은
+                // 실제 예산에 들어가야 하며, 선언 높이는 줄이지 않고 그대로 예약한다.
+                let whole_row_rounding_fits = row_start_cut.is_empty()
+                    && consumed + cs_before + row_total <= avail_for_rows + 0.5
+                    && res.consumed_height + padding <= avail_for_rows - consumed - cs_before;
                 // 단일 유닛 행 — 분할 불가, 페이지 시작이면 강제, 아니면 다음으로.
                 if r == cursor_row {
                     consumed += cs_before + row_total;
                     end_row = r + 1;
+                } else if whole_row_rounding_fits {
+                    consumed += cs_before + row_total;
+                    r += 1;
+                    end_row = r;
+                    return true;
                 } else if stored_terminal_response_tail_fits
                     || two_line_terminal_response_source_frame_fits
                 {
@@ -586,8 +665,9 @@ impl TypesetEngine {
             // 분할 행의 표시 높이(per-cell content+visible pad). advance_row_cut 의
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
-            let split_total =
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles);
+            let split_total = saved_opening_frame_height.unwrap_or_else(|| {
+                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles)
+            });
             // [#3738 Stage 15] native HWP5의 RowBreak 표에 저장된 셀 내부 reset은
             // 같은 row의 앞부분을 현재 쪽 끝에 두고 tail을 다음 쪽에서 재개하라는
             // 물리 경계다. 이때 content-only 첫 cut은 25px orphan 경계에 몇 px
@@ -673,15 +753,70 @@ impl TypesetEngine {
                                 .is_some_and(|(_, confirmed)| confirmed.contains(&cut))
                         })
                 };
-            if r > cursor_row
+            // 한 셀의 마지막 저장 줄만 다음 쪽으로 이어지는 컷도 한 줄을 남긴다.
+            // 완결된 다른 셀까지 동일한 컷인지 확인하고 실제 높이 예산은 아래에서 검사한다.
+            let stored_terminal_zero_origin_keep = (st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && mt.allows_row_break_split()
+                && !table.common.treat_as_char
+                && row_start_cut.is_empty()
+                && !self.render_normalization.table_text_reflowed(table)
+                && layout_engine
+                    .row_stored_terminal_zero_origin_cut(table, r, styles)
+                    .is_some_and(|cut| cut == res.end_cut);
+            // 저장된 물리 컷 근거가 없는 다줄 행에서 현재 쪽에 첫 유닛 하나만
+            // 남고 행 전체가 새 쪽에 들어가면 행 경계에서 이월한다. 내용 높이가
+            // 25px을 조금 넘는다는 이유만으로 첫 줄을 떼면 한컴의 행 시작과
+            // 다음 쪽의 짧은 셀 소유가 모두 달라진다. 저장 reset이나 명시적인
+            // 첫 줄 컷은 아래 기존 경로가 그대로 보존한다.
+            let defer_single_unit_row_start = st.profile.hwpx_stored_layout()
+                && mt.allows_row_break_split()
+                && r > cursor_row
+                && row_start_cut.is_empty()
+                && !self.render_normalization.table_text_reflowed(table)
+                && !res.fully_consumed
+                && res.end_cut.contains(&1)
+                && res.end_cut.iter().all(|units| *units <= 1)
+                && {
+                    // 짧은 셀의 저장 글줄은 완결되지만 이웃한 다줄 셀은 아직
+                    // 진행 중인 비대칭 행이다. 단일 거대 셀이나 양쪽이 계속되는
+                    // 행에는 이월 규칙을 적용하지 않는다.
+                    let mut single_line_cell = false;
+                    let mut multi_line_cell = false;
+                    for cell in table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == r && cell.row_span == 1)
+                    {
+                        let saved_lines: usize = cell
+                            .paragraphs
+                            .iter()
+                            .map(|para| para.line_segs.len())
+                            .sum();
+                        single_line_cell |= saved_lines == 1;
+                        multi_line_cell |= saved_lines > 1;
+                    }
+                    single_line_cell && multi_line_cell
+                }
+                && row_total <= (st.layout.body_area.height - header_overhead).max(0.0)
                 && !cellbreak_complete_unit_keep
                 && !landscape_boundary_band_keep
                 && !stored_zero_origin_rewind_keep
-                && !row_split_meets_min_top_keep(
-                    res.consumed_height,
-                    split_total,
-                    row_split_min_keep_uses_painted_height,
-                )
+                && !stored_terminal_zero_origin_keep
+                && !uses_source_frame_tail
+                && !rowbreak_row_has_internal_saved_vpos_reset(table, r)
+                && !row_has_stored_cross_paragraph_zero_reset(table, r);
+            if r > cursor_row
+                && (defer_single_unit_row_start
+                    || (!cellbreak_complete_unit_keep
+                        && !landscape_boundary_band_keep
+                        && !stored_zero_origin_rewind_keep
+                        && !stored_terminal_zero_origin_keep
+                        && !row_split_meets_min_top_keep(
+                            res.consumed_height,
+                            split_total,
+                            row_split_min_keep_uses_painted_height,
+                        )))
             {
                 end_row = r;
             } else {

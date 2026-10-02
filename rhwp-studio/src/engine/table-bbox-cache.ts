@@ -64,7 +64,11 @@ export function tableIdentity(tableRef: TableRef): string {
   const base = `${tableRef.sec}:${tableRef.ppi}:${tableRef.ci}`;
   const path = tableRef.path;
   if (!path || path.length <= 1) return base;
-  return `${base}|${path.map((s) => `${s.controlIndex}.${s.cellIndex}.${s.cellParaIndex}`).join('/')}`;
+  // 경유 셀·문단은 표의 위치를 식별하지만 마지막 셀·문단은 그 표 안의
+  // 커서 위치다. ByPath 조회와 같은 표 단위를 사용해 셀 이동에도 재사용한다.
+  return `${base}|${path.map((s, i) => i === path.length - 1
+    ? `${s.controlIndex}`
+    : `${s.controlIndex}.${s.cellIndex}.${s.cellParaIndex}`).join('/')}`;
 }
 
 function sameTable(a: TableRef, b: TableRef): boolean {
@@ -73,6 +77,38 @@ function sameTable(a: TableRef, b: TableRef): boolean {
 
 function failureKey(tableRef: TableRef, pageIdx: number): string {
   return `${tableIdentity(tableRef)}:${pageIdx}`;
+}
+
+/**
+ * [#7442] `hitTest` 가 돌려준 칸 경로가 `ctxPath` 컨텍스트의 **같은 표**를
+ * 가리키는가 — 중첩 표(깊이 ≥2) 전용.
+ *
+ * 경로의 마지막 마디는 칸 좌표라 다를 수 있으므로 `controlIndex`만 비교하고,
+ * 그 위의 마디들은 `(controlIndex, cellIndex, cellParaIndex)`가 모두 같아야
+ * 한다. 깊이 1이나 형제 표 경로를 그대로 셀 (row,col)로 해석하면 엉뚱한 표의
+ * 칸을 가리키므로 이 조건을 통과하지 못하면 호출자가 거부한다.
+ */
+export function isSameNestedTablePath(
+  ctxPath: readonly CellPathStep[] | undefined,
+  hitPath: readonly CellPathStep[] | undefined,
+): boolean {
+  if (!ctxPath || ctxPath.length < 2 || !hitPath) return false;
+  if (ctxPath.length !== hitPath.length) return false;
+  for (let i = 0; i < ctxPath.length - 1; i++) {
+    const a = ctxPath[i];
+    const b = hitPath[i];
+    if (
+      a.controlIndex !== b.controlIndex ||
+      a.cellIndex !== b.cellIndex ||
+      a.cellParaIndex !== b.cellParaIndex
+    ) {
+      return false;
+    }
+  }
+  return (
+    ctxPath[ctxPath.length - 1].controlIndex ===
+    hitPath[hitPath.length - 1].controlIndex
+  );
 }
 
 /** 성공한 bbox 조회를 한 번에 기록하고, 같은 범위의 과거 실패를 해제한다. */

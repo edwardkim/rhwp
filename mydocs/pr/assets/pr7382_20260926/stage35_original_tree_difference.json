@@ -1,0 +1,23 @@
+[
+  {
+    "format": "hwpx",
+    "changed_pages": [
+      126,
+      127,
+      155,
+      156
+    ],
+    "tree_count": 215,
+    "before": "output/pr-review/planet6897-7382-20260926/visual/stage35-before-hwpx-native/liver7379",
+    "after": "output/pr-review/planet6897-7382-20260926/visual/stage35-after-hwpx-native/liver7379"
+  },
+  {
+    "format": "hwp",
+    "changed_pages": [
+      156
+    ],
+    "tree_count": 215,
+    "before": "output/pr-review/planet6897-7382-20260926/visual/stage35-before-hwp-native/liver7379",
+    "after": "output/pr-review/planet6897-7382-20260926/visual/stage35-after-hwp-native/liver7379"
+  }
+]

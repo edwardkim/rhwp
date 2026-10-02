@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.53054,
+    "worst_pixel_match_percent": 99.32261,
+    "average_ink_match_percent": 17.08544,
+    "worst_ink_match_percent": 9.689,
+    "average_visual_accuracy_proxy_percent": 17.08544,
+    "worst_visual_accuracy_proxy_percent": 9.689,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      1,
+      2
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 6040,
+      "diff_ratio": 0.00677387,
+      "pixel_match_percent": 99.32261,
+      "ink_union_pixels": 6688,
+      "ink_diff_pixels": 6040,
+      "ink_diff_ratio": 0.90311005,
+      "ink_match_percent": 9.689,
+      "visual_accuracy_proxy_percent": 9.689,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.013,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        1018
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/rhwp_png/rhwp_002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/pdf_png/pdf-2.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-after-resaved-native/resaved/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 2332,
+      "diff_ratio": 0.00261534,
+      "pixel_match_percent": 99.73847,
+      "ink_union_pixels": 3088,
+      "ink_diff_pixels": 2332,
+      "ink_diff_ratio": 0.75518135,
+      "ink_match_percent": 24.48187,
+      "visual_accuracy_proxy_percent": 24.48187,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.397,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        122
+      ]
+    }
+  ]
+}

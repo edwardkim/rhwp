@@ -43,3 +43,20 @@ test('모두 바꾸기(doReplaceAll)는 스냅샷으로 undo 기록된다', () =
     '모두 바꾸기는 편집 라우터의 snapshot 명령으로 기록되어야 함',
   );
 });
+
+test('Find hit count는 추가 전체 검색 없이 탐색 결과를 사용한다', () => {
+  const dialog = source('src/ui/find-dialog.ts');
+
+  assert.match(dialog, /result\.totalMatchCount/, 'searchText 결과의 count를 UI에 표시해야 함');
+  assert.doesNotMatch(dialog, /searchAllText\s*\(/, '더 넓은 searchAllText 의미를 사용하면 안 됨');
+  assert.match(dialog, /find-dialog-match-count/, '일시 상태와 분리된 count 라벨이어야 함');
+  assert.match(dialog, /showMatchCount\(0\)/, '검색 실패는 0건으로 표시해야 함');
+});
+
+test('Find hit count는 한국어와 영어 locale에 등록된다', () => {
+  const ko = source('src/i18n/locales/ko.ts');
+  const en = source('src/i18n/locales/en.ts');
+
+  assert.match(ko, /"dialog\.find\.matchCountLabel\.text": "검색 결과 \{p1\}개"/);
+  assert.match(en, /"dialog\.find\.matchCountLabel\.text": "\{p1\} matches"/);
+});

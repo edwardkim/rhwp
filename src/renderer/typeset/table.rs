@@ -12,7 +12,8 @@ use crate::renderer::float_placement::is_para_topbottom_float;
 use crate::renderer::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
-    trim_stored_hwpx_inline_row_trailing_spacing, MeasuredTable,
+    fit_stored_hwpx_no_adjust_rowspans, trim_stored_hwpx_inline_row_trailing_spacing,
+    MeasuredTable,
 };
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -131,10 +132,13 @@ pub(super) fn format(
                     let fn_height = estimate_footnote_note_height(fn_ctrl, dpi);
                     table_footnote_height += fn_height;
                     table_footnote_count += 1;
-                    let fragment_split = profile()
-                        .hwp5_stored_pagination_layout()
-                        .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, dpi))
-                        .flatten();
+                    // 두 저장 컨테이너 모두 같은 명시적 각주 줄 재시작을 보존한다.
+                    // 조회는 저장 줄과 구성 줄의 일대일 대응을 확인하며,
+                    // 편집·합성 메타데이터를 분할 신호로 쓰지 않는다.
+                    let fragment_split = (profile().hwp5_stored_pagination_layout()
+                        || (profile().hwpx_stored_layout() && !profile().session_edited()))
+                    .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, dpi))
+                    .flatten();
                     table_footnotes.push(TableCellFootnote {
                         number: fn_ctrl.number,
                         cell_index: cell_idx,
@@ -177,6 +181,13 @@ pub(super) fn fit_measured_for_host(
     dpi: f64,
     profile: impl Fn() -> LayoutCompatibilityProfile,
 ) -> Option<MeasuredTable> {
+    if profile().hwpx_stored_layout() && !profile().session_edited() {
+        if let Some(fitted) =
+            mt.and_then(|measured| fit_stored_hwpx_no_adjust_rowspans(measured, table, dpi))
+        {
+            return Some(fitted);
+        }
+    }
     if table.common.treat_as_char && profile().hwpx_stored_layout() && !profile().session_edited() {
         if let Some(fitted) = mt
             .and_then(|measured| trim_stored_hwpx_inline_row_trailing_spacing(measured, table, dpi))

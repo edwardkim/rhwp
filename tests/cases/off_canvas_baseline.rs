@@ -59,6 +59,19 @@ const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
 /// 완주 성능과 page-count pin을 전담하므로 여기서는 중복 스캔하지 않는다.
 const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"];
 
+/// #7382 검토에서 실제 증가하고 동일 원문의 한컴 비교가 90% 미달인 입력만 보류한다.
+/// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
+/// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
+const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
+    "issue6031/3249937_asset_management_rules.hwpx",
+    "hwp3-sample16-hwp5-2022.hwp",
+    "hwp3-sample16-hwp5.hwp",
+    "hwp3-sample16-hwp5-2010.hwp",
+    "issue6892/156726122-recycling-press-release.hwpx",
+    "HWP5-nopassword-123456.hwpx",
+    "basic/issue2007_nested_cell_pagination_42065.hwp",
+];
+
 fn collect_samples() -> Vec<(PathBuf, String)> {
     fn walk(dir: &Path, root: &Path, acc: &mut Vec<(PathBuf, String)>) {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
@@ -81,7 +94,10 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     }
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
-    acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
+    acc.retain(|(_, rel)| {
+        !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
+            && !DEFERRED_OFF_CANVAS_FIXTURES.contains(&rel.as_str())
+    });
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc

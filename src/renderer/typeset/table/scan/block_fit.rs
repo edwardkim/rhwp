@@ -132,7 +132,22 @@ impl BlockCutQuery<'_> {
         } = *self;
         let rowbreak_rowspan_block = block.rowbreak_rowspan_block;
         if rowbreak_rowspan_block {
-            r == cursor_row || (res.hit_hard_break && res.consumed_height >= MIN_TOP_KEEP_PX)
+            // 원본 여러 셀의 첫 프레임이 완결되면 한 줄 높이여도 물리 경계다.
+            // 일반 고아 방지 최소 높이 때문에 유효한 저장 컷을 다음 쪽으로 보내지 않는다.
+            let complete_source_frame = res.consumed_height > 0.0
+                && self
+                    .rows
+                    .layout_engine
+                    .row_block_cut_ends_at_saved_first_line_restart(
+                        self.rows.table,
+                        (block.b_start, block.b_end),
+                        self.blk_start_cut,
+                        &res.end_cut,
+                        self.rows.styles,
+                    );
+            r == cursor_row
+                || (res.hit_hard_break
+                    && (res.consumed_height >= MIN_TOP_KEEP_PX || complete_source_frame))
         } else {
             r == cursor_row || (genuinely_page_larger && res.consumed_height >= MIN_TOP_KEEP_PX)
         }
@@ -155,7 +170,9 @@ impl BlockCutQuery<'_> {
         } = *self;
         let mt = rows.mt;
         let rowbreak_use_row_offsets = block.rowbreak_use_row_offsets;
-        (res.fully_consumed || !allow_block_split)
+        let painted_cut_exceeds_budget = !res.hit_hard_break
+            && rows.fragment_height(block, block.b_end, blk_start_cut, &res.end_cut) > budget + 0.5;
+        (res.fully_consumed || !allow_block_split || painted_cut_exceeds_budget)
             && mt.allows_row_break_split()
             && can_intra_split
             && !rowbreak_use_row_offsets

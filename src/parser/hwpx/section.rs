@@ -4071,6 +4071,18 @@ fn parse_rendering_info(
 
 /// `<hp:lineShape>` 요소에서 ShapeBorderLine을 파싱한다.
 fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
+    // HWP5 테두리 속성과 직렬화의 같은 모양 비트를 사용한다.
+    fn arrow_shape(value: &str) -> u32 {
+        match value {
+            "ARROW" => 1,
+            "SPEAR" => 2,
+            "CONCAVE_ARROW" => 3,
+            "FILLED_DIAMOND" | "EMPTY_DIAMOND" => 4,
+            "FILLED_CIRCLE" | "EMPTY_CIRCLE" => 5,
+            "FILLED_BOX" | "EMPTY_BOX" => 6,
+            _ => 0,
+        }
+    }
     fn arrow_size(value: &str) -> Option<u32> {
         match value {
             "SMALL_SMALL" => Some(0),
@@ -4120,6 +4132,12 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
                     _ => 0,
                 };
                 bl.attr = (bl.attr & !(0x0F << 6)) | ((end_cap & 0x0F) << 6);
+            }
+            b"headStyle" => {
+                bl.attr = (bl.attr & !(0x3F << 10)) | (arrow_shape(&attr_str(&attr)) << 10);
+            }
+            b"tailStyle" => {
+                bl.attr = (bl.attr & !(0x3F << 16)) | (arrow_shape(&attr_str(&attr)) << 16);
             }
             b"headfill" => {
                 if parse_bool(&attr) {
@@ -5881,6 +5899,25 @@ fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: b
         return;
     }
     if paragraph.line_segs.len() <= 1 {
+        return;
+    }
+
+    // 자기 쪽 원점에서 시작한 각주는 양수 위치 뒤 다시 시작할 수 있다
+    // (예: 0/1172/0). 이는 각주 영역의 물리 페이지 경계다.
+    // 첫 줄이 이미 양수에서 시작하는 후속0 연속줄 보정과 구분한다.
+    // 반복 페이지 시작0/0/1172도 두 번째 줄을 다음 물리 쪽에 둔다.
+    // 기존 미주 정규화와2344/0 연속줄 보정 계약은 유지한다.
+    if preserve_all_zero
+        && paragraph.line_segs[0].vertical_pos == 0
+        && (paragraph.line_segs.windows(2).any(|lines| {
+            lines[0].vertical_pos > 0
+                && lines[1].vertical_pos == 0
+                && lines.iter().all(|line| line.tag & 0x8000_0000 == 0)
+        }) || (paragraph.line_segs[1].vertical_pos == 0
+            && paragraph.line_segs[..2]
+                .iter()
+                .all(|line| line.tag & 0x8000_0000 == 0)))
+    {
         return;
     }
 

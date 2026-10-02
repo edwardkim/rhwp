@@ -331,6 +331,7 @@ pub(super) fn try_place_empty_para_float_table(
     styles: &ResolvedStyleSet,
     para_start_height: f64,
     lanes: &mut FloatLaneSet,
+    table_reflowed: bool,
     dpi: f64,
 ) -> bool {
     let Some(placement) = empty_float::prepare(
@@ -345,6 +346,7 @@ pub(super) fn try_place_empty_para_float_table(
         para_start_height,
         lanes,
         st.empty_float_page(),
+        table_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
         dpi,
     ) else {
@@ -409,13 +411,38 @@ pub(super) fn try_place_stored_tac_paragraph(
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     dpi: f64,
+    paragraphs: &[Paragraph],
 ) -> bool {
+    if let Some(placement) = stored_tac::prepare_computed(
+        para_idx,
+        para,
+        paragraphs.get(para_idx + 1),
+        fmt,
+        measured_tables,
+        st.stored_tac_page(paragraphs),
+        || st.available_height(),
+        dpi,
+    ) {
+        // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
+        // 연결해 다음 문단의 lazy 역산이 그 간격을 다시 더하지 않게 한다.
+        let lazy_origin = para.line_segs.first().map(|seg| {
+            seg.vertical_pos
+                .saturating_add(seg.line_height)
+                .saturating_add(seg.line_spacing)
+                .saturating_sub(crate::renderer::px_to_hwpunit(placement.end, dpi))
+        });
+        st.commit_stored_tac_control(para_idx, placement);
+        st.commit_deferred_table_anchor(para_idx);
+        st.record_vpos_lazy_origin(lazy_origin);
+        st.mark_vpos_ladder_dirty();
+        return true;
+    }
     let Some(plan) = stored_tac::prepare(
         para_idx,
         para,
         fmt,
         measured_tables,
-        st.stored_tac_page(),
+        st.stored_tac_page(paragraphs),
         || st.available_height(),
         dpi,
     ) else {

@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.32817,
+    "worst_pixel_match_percent": 89.05022,
+    "average_ink_match_percent": 35.5502,
+    "worst_ink_match_percent": 28.03016,
+    "average_visual_accuracy_proxy_percent": 35.5502,
+    "worst_visual_accuracy_proxy_percent": 28.03016,
+    "average_tolerant_content_match_percent": 99.67833,
+    "worst_tolerant_content_match_percent": 99.56583,
+    "worst_pages": [
+      94,
+      108
+    ]
+  },
+  "pages": [
+    {
+      "page": 94,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/rhwp_png/rhwp_094.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/pdf_png/pdf-094.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/overlay/overlay_094.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 97635,
+      "diff_ratio": 0.10949777,
+      "pixel_match_percent": 89.05022,
+      "ink_union_pixels": 135661,
+      "ink_diff_pixels": 97635,
+      "ink_diff_ratio": 0.71969837,
+      "ink_match_percent": 28.03016,
+      "visual_accuracy_proxy_percent": 28.03016,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.56583,
+      "mean_abs_channel_delta": 11.215,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        104,
+        718,
+        1063
+      ]
+    },
+    {
+      "page": 108,
+      "rhwp_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/rhwp_png/rhwp_108.png",
+      "pdf_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/pdf_png/pdf-108.png",
+      "overlay_png": "/tmp/claude-1002/-home-planet-rhwp/cd906f3a-ab54-4c4d-98da-528dec694cfa/scratchpad/vs90B/kopub/overlay/overlay_108.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 74845,
+      "diff_ratio": 0.08393876,
+      "pixel_match_percent": 91.60612,
+      "ink_union_pixels": 131469,
+      "ink_diff_pixels": 74845,
+      "ink_diff_ratio": 0.56929771,
+      "ink_match_percent": 43.07023,
+      "visual_accuracy_proxy_percent": 43.07023,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.79083,
+      "mean_abs_channel_delta": 9.47,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        93,
+        718,
+        1063
+      ]
+    }
+  ]
+}

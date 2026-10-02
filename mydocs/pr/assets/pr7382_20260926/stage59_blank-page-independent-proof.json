@@ -1,0 +1,146 @@
+[
+  {
+    "page": 2,
+    "rhwp": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_002.png",
+    "pdf": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-002.png",
+    "sizes": [
+      [
+        794,
+        1123
+      ],
+      [
+        794,
+        1122
+      ]
+    ],
+    "rhwp_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "pdf_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "same_pixel_bytes": false,
+    "sha256": {
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_002.png": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-002.png": "9adcdad107f56ee0e60fde53ac733090fc4adb29cda4f534fff051fbcc6b9a3f"
+    }
+  },
+  {
+    "page": 4,
+    "rhwp": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_004.png",
+    "pdf": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-004.png",
+    "sizes": [
+      [
+        794,
+        1123
+      ],
+      [
+        794,
+        1122
+      ]
+    ],
+    "rhwp_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "pdf_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "same_pixel_bytes": false,
+    "sha256": {
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_004.png": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-004.png": "9adcdad107f56ee0e60fde53ac733090fc4adb29cda4f534fff051fbcc6b9a3f"
+    }
+  },
+  {
+    "page": 10,
+    "rhwp": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_010.png",
+    "pdf": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-010.png",
+    "sizes": [
+      [
+        794,
+        1123
+      ],
+      [
+        794,
+        1122
+      ]
+    ],
+    "rhwp_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "pdf_extrema": [
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ],
+      [
+        255,
+        255
+      ]
+    ],
+    "same_pixel_bytes": false,
+    "sha256": {
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/rhwp_png/rhwp_010.png": "30ed46a7edadbcd4c76ee4cf0c8212367f9f270dd4227febb6c023d5ede9f213",
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-full-native/prep2006/pdf_png/pdf-010.png": "9adcdad107f56ee0e60fde53ac733090fc4adb29cda4f534fff051fbcc6b9a3f"
+    }
+  }
+]

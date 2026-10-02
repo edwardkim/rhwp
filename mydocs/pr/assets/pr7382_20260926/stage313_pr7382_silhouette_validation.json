@@ -1,0 +1,101 @@
+{
+  "command": [
+    "python3",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--png-pair",
+    "output/pr-review/planet6897-7382-20260926/stage308-native/liver7379/rhwp_png",
+    "output/pr-review/planet6897-7382-20260926/stage308-native/liver7379/pdf_png",
+    "--key",
+    "liver7379",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage313-pr7382-tsv"
+  ],
+  "elapsed_seconds": 23.711,
+  "exit_code": 1,
+  "compared_pages": 215,
+  "exact_existing_overlay_metric_matches": 215,
+  "minimum_percent": 38.30328,
+  "below_90": [
+    {
+      "page": 10,
+      "percent": 67.90467
+    },
+    {
+      "page": 17,
+      "percent": 64.97015
+    },
+    {
+      "page": 28,
+      "percent": 88.24856
+    },
+    {
+      "page": 74,
+      "percent": 86.98592
+    },
+    {
+      "page": 75,
+      "percent": 52.88891
+    },
+    {
+      "page": 88,
+      "percent": 89.58124
+    },
+    {
+      "page": 107,
+      "percent": 38.30328
+    },
+    {
+      "page": 169,
+      "percent": 42.83023
+    },
+    {
+      "page": 199,
+      "percent": 89.9419
+    },
+    {
+      "page": 207,
+      "percent": 89.61032
+    },
+    {
+      "page": 208,
+      "percent": 85.36044
+    },
+    {
+      "page": 211,
+      "percent": 81.6385
+    }
+  ],
+  "source_capture_provenance": {
+    "hwp": {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+    },
+    "pdf": {
+      "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+    },
+    "git_head": "01a2dcaa45516ee03d0bef165658604374cb9b9c",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "0be68dce6dfb545a867b8ec9043d58efbd77b4db37f9f7a029f7f6f57bf883ec"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "86b756bc81d8d897f332a9f6263d8030c5058fcebd66d9019498d87a7e54f067"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "capture_directory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage308-native/liver7379",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage313-pr7382-tsv/silhouette.tsv",
+  "tsv_sha256": "d8532c856eaf8a748f89b0b8492fd00cd125f134690426caed9fdf6d2007ca3f",
+  "generated_png_count": 0,
+  "scope": "보정308의 기존 215쪽 raster 재산출 지표. 현재 HEAD 재출력/각주 소유 검증을 대체하지 않음."
+}

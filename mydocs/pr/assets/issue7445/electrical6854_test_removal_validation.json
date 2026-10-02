@@ -1,0 +1,662 @@
+{
+  "stage": 84,
+  "analysis": {
+    "head": "989b728ae24042a445047c81ad944ceb8efae35a",
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "analysis": "기존6번의 전기안전관리규정 본문하단2→3건. 빈 문단/명시 쪽나눔과 본문 실제 점유의 계약을 구분한다. 같은 원문 독립 한컴 PDF에서 영향쪽과 마지막 내용 소유를 먼저 확인. 최저90%미달이면 사용자 승인 원문 이관/해당 회귀 제거,90%이상일 때 생산 결함이나 독립 기대값을 판단한다.",
+    "files": {
+      "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp": {
+        "size": 70656,
+        "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb"
+      },
+      "pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf": {
+        "size": 532111,
+        "sha256": "ae8b6bd5a07fa543dd9f69be750690851846a3e4e09668e3158bb05fa71bc126",
+        "pages": 18,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260908155753+09'00'",
+          "modDate": "D:20260908155753+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "한양중고딕",
+        "나눔바른고딕",
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "한양중고딕",
+        "HCI Poppy",
+        "나눔바른고딕",
+        "함초롬바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "한양중고딕",
+        "나눔바른고딕",
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "한양중고딕",
+        "나눔바른고딕",
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "나눔바른고딕",
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "한양신명조",
+        "한양중고딕",
+        "나눔바른고딕",
+        "한컴바탕",
+        "굴림",
+        "맑은 고딕",
+        "바탕체",
+        "한컴바탕",
+        "휴먼고딕",
+        "휴먼명조",
+        "HY신명조",
+        "명조",
+        "나눔바른고딕"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.6402"
+      },
+      "pageCount": 18,
+      "paraCount": 165,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 70656,
+      "source": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "title": "규제영향분석서",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.1",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 5,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 18,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 921.4399999999999,
+                "w": 656.0399999999998,
+                "x": 77.46666666666667,
+                "y": 107.60000000000001
+              },
+              "boundary": {
+                "h": 971.3066666666667,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 75.60000000000001
+              },
+              "maxOver": 15.386666666666429,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 15.386666666666429,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table1"
+            }
+          ],
+          "overlap": [],
+          "page": 1,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 799.2933333333334,
+                "w": 656.0399999999998,
+                "x": 77.46666666666667,
+                "y": 75.60000000000001
+              },
+              "boundary": {
+                "h": 971.3066666666667,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 75.60000000000001
+              },
+              "maxOver": 15.386666666666429,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 15.386666666666429,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 2,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 973.7133333333331,
+                "w": 640.4266666666666,
+                "x": 77.46666666666667,
+                "y": 77.48
+              },
+              "boundary": {
+                "h": 971.3066666666667,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 75.60000000000001
+              },
+              "maxOver": 4.286666666666406,
+              "nodeType": "Table",
+              "overBottom": 4.286666666666406,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 4,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 973.2999999999997,
+                "w": 640.4266666666666,
+                "x": 77.46666666666667,
+                "y": 77.48
+              },
+              "boundary": {
+                "h": 971.3066666666667,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 75.60000000000001
+              },
+              "maxOver": 3.873333333332994,
+              "nodeType": "Table",
+              "overBottom": 3.873333333332994,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 5,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 53.78666666666667,
+                "w": 638.2266666666667,
+                "x": 77.46666666666667,
+                "y": 1004.8666666666666
+              },
+              "boundary": {
+                "h": 971.3066666666667,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 75.60000000000001
+              },
+              "maxOver": 11.746666666666442,
+              "nodeType": "Table",
+              "overBottom": 11.746666666666442,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table17"
+            }
+          ],
+          "overlap": [],
+          "page": 9,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 12,
+          "storedLineEscape": [],
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 448.00499999999994,
+                "x": 249.00833333333335,
+                "y": 975.6111992599114
+              },
+              "bboxB": {
+                "h": 13.333333333333336,
+                "w": 12.533333333333335,
+                "x": 241.02666666666667,
+                "y": 969.1382977955278
+              },
+              "overlapArea": 31.22639905683652,
+              "overlapH": 6.860431868949831,
+              "overlapW": 4.551666666666648,
+              "pathA": "Page/Body/Column0/Table5/Cell18/TextLine11/TextRun0",
+              "pathB": "Page/Body/Column0/Table5/Cell21/TextLine0/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 448.00499999999994,
+                "x": 249.00833333333335,
+                "y": 975.6111992599114
+              },
+              "bboxB": {
+                "h": 13.333333333333336,
+                "w": 436.6533333333333,
+                "x": 260.02666666666664,
+                "y": 969.1382977955278
+              },
+              "overlapArea": 2995.6304436831733,
+              "overlapH": 6.860431868949831,
+              "overlapW": 436.6533333333333,
+              "pathA": "Page/Body/Column0/Table5/Cell18/TextLine11/TextRun0",
+              "pathB": "Page/Body/Column0/Table5/Cell21/TextLine0/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 437.0266666666667,
+                "x": 259.9866666666667,
+                "y": 996.9445325932447
+              },
+              "bboxB": {
+                "h": 13.333333333333336,
+                "w": 436.3866666666666,
+                "x": 260.02666666666664,
+                "y": 990.4716311288612
+              },
+              "overlapArea": 2993.800995184786,
+              "overlapH": 6.860431868949831,
+              "overlapW": 436.38666666666654,
+              "pathA": "Page/Body/Column0/Table5/Cell18/TextLine12/TextRun0",
+              "pathB": "Page/Body/Column0/Table5/Cell21/TextLine1/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 326.66666666666663,
+                "x": 259.9866666666667,
+                "y": 1018.2778659265781
+              },
+              "bboxB": {
+                "h": 13.333333333333336,
+                "w": 93.67866666666667,
+                "x": 260.02666666666664,
+                "y": 1011.8049644621946
+              },
+              "overlapArea": 642.6761102407283,
+              "overlapH": 6.860431868949831,
+              "overlapW": 93.67866666666669,
+              "pathA": "Page/Body/Column0/Table5/Cell18/TextLine13/TextRun0",
+              "pathB": "Page/Body/Column0/Table5/Cell21/TextLine2/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 326.66666666666663,
+                "x": 259.9866666666667,
+                "y": 1018.2778659265781
+              },
+              "bboxB": {
+                "h": 13.333333333333336,
+                "w": 337.16266666666667,
+                "x": 359.4506666666667,
+                "y": 1011.8049644621946
+              },
+              "overlapArea": 1558.7084151103852,
+              "overlapH": 6.860431868949831,
+              "overlapW": 227.20266666666663,
+              "pathA": "Page/Body/Column0/Table5/Cell18/TextLine13/TextRun0",
+              "pathB": "Page/Body/Column0/Table5/Cell21/TextLine2/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 5,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  },
+  "removed_functions": [
+    "issue_6854_hwp_sample_has_no_body_less_page",
+    "issue_6854_hwp_sample_matches_the_2020_oracle_page_count"
+  ],
+  "removed_rows": {
+    "body_overflow_baseline.tsv": [
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t2\n"
+    ],
+    "text_overlap_baseline.tsv": [
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t5\n"
+    ]
+  },
+  "preserved_source": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+  "independent_pdf": "pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf",
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "retained_controls": [
+    "issue_6854_hwpx_sample_has_no_body_less_page",
+    "issue_6854_hwpx_sample_matches_the_2020_oracle_page_count"
+  ],
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb"
+    },
+    "pdf": {
+      "path": "pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf",
+      "sha256": "ae8b6bd5a07fa543dd9f69be750690851846a3e4e09668e3158bb05fa71bc126"
+    },
+    "git_head": "989b728ae24042a445047c81ad944ceb8efae35a",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage84-electrical6854/visual-native/electrical6854/run_manifest.json"
+    }
+  },
+  "selected_native": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 37.05508
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 35.31196
+      },
+      {
+        "page": 10,
+        "tolerant_content_match_percent": 19.83933
+      },
+      {
+        "page": 18,
+        "tolerant_content_match_percent": 20.13671
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 5,
+      "tolerant_content_match_percent": 37.05508
+    },
+    {
+      "page": 6,
+      "tolerant_content_match_percent": 35.31196
+    },
+    {
+      "page": 10,
+      "tolerant_content_match_percent": 19.83933
+    },
+    {
+      "page": 14,
+      "tolerant_content_match_percent": 93.80158
+    },
+    {
+      "page": 18,
+      "tolerant_content_match_percent": 20.13671
+    }
+  ],
+  "direct_inspection": "5쪽은 앞 표가 반복되고 기준의 다음 표가 표시되지 않음.10쪽은 기준의 규제 적정성/영향평가 대신 이전 이해관계자 표/대안 설명/규제목표가 표시됨. 각각 실제 review 직접 판독. 원문18/기준18쪽만으로 소유 일치로 판정하지 않음.",
+  "whole_native": "미실행",
+  "fresh_wasm": "미실행",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870144757",
+  "code_commit": "5dcf8eb2c96da81b4b8054c888d0892ae25d8a2d",
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "989b728ae24042a445047c81ad944ceb8efae35a",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_3) or test(/(^|::)issue_6854_empty_para_orphan_page::/)"
+        ],
+        "exit_code": 0,
+        "seconds": 60.59970274986699
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.791797374840826
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4590256670489907
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.24446062510833144
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3829007907770574
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 8.128565208055079
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.495469792280346
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 9.089585833717138
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [  47.223s] 3 tests run: 3 passed, 466 skipped"
+  ],
+  "limits": "선택Native의 부적합 증거에 따른 사용자 승인 제외. 원문 피델리티 해결/전체 회귀 통과나 최종PR 수용으로 세지 않음."
+}

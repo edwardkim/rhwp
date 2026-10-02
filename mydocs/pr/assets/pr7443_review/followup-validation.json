@@ -1,0 +1,180 @@
+{
+  "base": "013bc846fca3434ccb1e4167744bed9440c6da6a",
+  "head": "9e1cffccfc9401262fff806f16b388180d5a663c",
+  "results": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 9.4
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 8.9
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 25.5
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 21.7
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 22.8
+    },
+    {
+      "name": "clippy-all",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 37.6
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "013bc846fca3434ccb1e4167744bed9440c6da6a"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7
+    },
+    {
+      "name": "focused-rust",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7442_nested_cell_hit_test",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 256.3
+    },
+    {
+      "name": "e2e-manifest",
+      "command": [
+        "python3",
+        "scripts/check_e2e_manifest.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "name": "studio-test",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "test"
+      ],
+      "exit_code": 0,
+      "seconds": 20.3
+    },
+    {
+      "name": "studio-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 4.6
+    }
+  ],
+  "provenance": {
+    "base": "013bc846fca3434ccb1e4167744bed9440c6da6a",
+    "head": "9e1cffccfc9401262fff806f16b388180d5a663c",
+    "tree": "98aee4a4a45a1b4d9e11582fb644845f9f9f6d77",
+    "original_candidate": "7af493cb68a6dd94f6dc087e723d44b0738b7939",
+    "e2e_exit_code": 0,
+    "sha256": {
+      "rhwp-studio/src/engine/input-handler.ts": "f94c58c03bcf66fe31d6a6a1b9c4ea8512e39b2fd7275d5a5d55f4aaa417c7b3",
+      "rhwp-studio/src/engine/table-bbox-cache.ts": "d173aa64067002f82e54031e94bdeaa77d14450dbac3777a090059103726a5ab",
+      "samples/basic/issue1994_behindtext_table_20200830.hwp": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+    },
+    "wasm_sha256": "91d8dfb9e44560338b1915fe1e6554b15278fe819b11ebe58feb8fdcc052909a"
+  },
+  "e2e": {
+    "command": "CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' VITE_PORT=7701 node e2e/run-with-vite.mjs -- node e2e/issue-7442-nested-table-pointer.test.mjs --mode=headless",
+    "cwd": "rhwp-studio",
+    "exit_code": 0
+  }
+}

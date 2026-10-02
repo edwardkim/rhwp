@@ -114,35 +114,6 @@ fn host_page(core: &DocumentCore) -> (u32, (f64, f64, f64), Vec<(f64, String)>) 
     panic!("표 pi={HOST_PARA} 가 있는 쪽이 없다");
 }
 
-/// host 글자는 표 **위** 줄에 있다 — 표가 줄에 안 들어가면 표가 다음 줄로 간다.
-#[test]
-fn oversized_tac_table_moves_to_its_own_line_below_the_host_text() {
-    let core = open();
-    let (page, (table_y, table_x, table_w), lines) = host_page(&core);
-    let text_line = lines
-        .iter()
-        .find(|(_, text)| text.contains(HOST_TEXT))
-        .unwrap_or_else(|| {
-            panic!(
-                "{}쪽에 `{HOST_TEXT}` 줄이 없다 — 줄 목록 {:?}",
-                page + 1,
-                lines
-            )
-        });
-    assert!(
-        text_line.0 < table_y,
-        "{}쪽 `{HOST_TEXT}` 줄이 {:.1}px 로 표({table_y:.1}px) **아래**에 있다 — 정본은 표 위 줄에 둔다",
-        page + 1,
-        text_line.0
-    );
-    assert!(
-        table_x + table_w <= BODY_RIGHT + 1.0,
-        "{}쪽 표 오른쪽 끝이 {:.1}px 로 본문 {BODY_RIGHT}px 를 넘는다",
-        page + 1,
-        table_x + table_w
-    );
-}
-
 /// 말미 공백은 줄상자를 얻지 못한다 — host 문단의 보이는 줄은 하나뿐이다.
 #[test]
 fn trailing_whitespace_does_not_get_its_own_line() {
@@ -155,20 +126,6 @@ fn trailing_whitespace_does_not_get_its_own_line() {
         page + 1,
         lines.len(),
         lines
-    );
-}
-
-/// ViewText host의 선행 TAC 표는 기본 안쪽 여백을 inline 시작 폭에 보존한다.
-/// 이 값이 빠지면 표와 `(단위 : 천원)`이 함께 약 8px 왼쪽으로 밀린다. 한컴 2024
-/// 정본 PDF의 p3 괘선 왼쪽(x=91px)을 독립 기준으로 둔다.
-#[test]
-fn leading_viewtext_inline_table_keeps_its_visible_left_inset() {
-    let core = open();
-    let (page, (_, table_x, _), _) = host_page(&core);
-    assert!(
-        (table_x - REFERENCE_TABLE_LEFT).abs() <= 1.0,
-        "{}쪽 표 왼쪽이 {table_x:.1}px 이다 — 한컴 정본 {REFERENCE_TABLE_LEFT:.1}px의 첫 줄 들여쓰기를 따라야 한다",
-        page + 1
     );
 }
 

@@ -804,6 +804,8 @@ export interface FormObjectInfoResult {
 /** 텍스트 검색 결과 */
 export interface SearchResult {
   found: boolean;
+  /** Find/F3가 실제로 순회할 수 있는 전체 매치 수. 이전 WASM에서는 없을 수 있다. */
+  totalMatchCount?: number;
   wrapped?: boolean;
   sec?: number;
   para?: number;

@@ -742,8 +742,16 @@ export function onClick(this: any, e: MouseEvent): void {
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
             // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
             // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
-            const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
-            cacheTableCellBboxes(this, ctx, pageIdx, bboxes);
+            // [#7442] 중첩 표 ctx 는 경로 API 로 bbox 를 얻고, 캐시 신원에도
+            // 경로를 실어야 finishResizeDrag 가 resizeTableCellsByPath 로 보낸다.
+            const nested = (ctx.cellPath?.length ?? 0) > 1;
+            const bboxes = nested
+              ? this.wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, JSON.stringify(ctx.cellPath))
+              : this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
+            const ref = nested
+              ? { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, path: ctx.cellPath }
+              : { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
+            cacheTableCellBboxes(this, ref, pageIdx, bboxes);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -1039,10 +1047,23 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 표 경계선 클릭 감지 → 표 객체 선택 (셀 내부에서 외곽 클릭)
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      if (this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+      // [#7442] hit 의 칸 경로가 중첩 표 안이면 안쪽 표의 외곽 경계를 먼저 본다.
+      // 평면 bbox 는 최외곽 표만 돌려줘 안쪽 표 테두리 클릭을 개체 선택으로 못 올렸다.
+      const nestedPath = Array.isArray(hit.cellPath) && hit.cellPath.length > 1
+        ? hit.cellPath
+        : undefined;
+      const nestedBorder = nestedPath !== undefined &&
+        this.isNestedTableBorderClick(
+          pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, nestedPath,
+        );
+      if (nestedBorder ||
+          this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
         this.cursor.clearSelection();
         this.cursor.moveToHit(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
-        this.cursor.enterTableObjectSelectionDirect(hit.sectionIndex, hit.parentParaIndex, hit.controlIndex);
+        this.cursor.enterTableObjectSelectionDirect(
+          hit.sectionIndex, hit.parentParaIndex, hit.controlIndex,
+          nestedBorder ? nestedPath : undefined,
+        );
         this.active = true;
         this.caret.hide();
         this.selectionRenderer.clear();

@@ -7,10 +7,10 @@ use super::supplemental_clusters::ParagraphMetricScope;
 use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
-use crate::model::style::LineSpacingType;
+use crate::model::style::{Alignment, LineSpacingType};
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
-    is_cjk_char, resolved_letter_spacing,
+    is_cjk_char, kopub_justified_space_width, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -296,6 +296,9 @@ pub(crate) enum SpaceMetric {
     /// 재조판된 내부 공백을 **0.5em 칸**으로 잰다. 그 규칙이 없으면 프레임이 셀
     /// 안에서 한컴보다 넓게 재고, 줄이 밀려 셀이 쪽 밖으로 자란다.
     HalfCell,
+    /// 양쪽 정렬에서 KoPub 공백이 줄 채움 중 실제 글꼴 폭까지 압축되는 경계.
+    /// 다른 face는 저장 metric을 그대로 쓴다.
+    KoPubJustified,
 }
 
 impl SpaceMetric {
@@ -306,12 +309,29 @@ impl SpaceMetric {
             Self::HancomRegenerated => hancom_regenerated_space_width(style)
                 .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
             Self::HalfCell => super::regenerated_half_space_width(style),
+            Self::KoPubJustified => kopub_justified_space_width(style)
+                .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
         }
     }
 }
 
 /// `space_metric` 은 공백 advance 규칙이다. 일반 HWP/HWPX tokenization 은 저장
 /// `LINE_SEG` 호환성을 위해 [`SpaceMetric::Stored`] 를 쓴다.
+/// 상대 크기는 글리프 폭과 표시 크기이며 기본 줄 상자를 줄이지 않는다.
+/// 원본 LineSeg도 상대 크기95%에서 기준 크기의 textheight를 보존한다.
+fn token_line_font_size(
+    styles: &ResolvedStyleSet,
+    style_id: u32,
+    style: &crate::renderer::TextStyle,
+) -> f64 {
+    let base = styles
+        .char_styles
+        .get(style_id as usize)
+        .map(|s| s.font_size)
+        .unwrap_or(12.0);
+    base.max(style.font_size).max(0.0)
+}
+
 fn tokenize_paragraph_with_regenerated_space_metric(
     text_chars: &[char],
     char_offsets: &[u32],
@@ -351,11 +371,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
             let ts = metric_scope.style(styles, style_id, current_lang, i);
-            let font_size = if ts.font_size > 0.0 {
-                ts.font_size
-            } else {
-                12.0
-            };
+            let font_size = token_line_font_size(styles, style_id, &ts);
             tokens.push(BreakToken::Tab {
                 idx: i,
                 max_font_size: font_size,
@@ -373,11 +389,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             };
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
             let ts = metric_scope.style(styles, style_id, current_lang, i);
-            let font_size = if ts.font_size > 0.0 {
-                ts.font_size
-            } else {
-                12.0
-            };
+            let font_size = token_line_font_size(styles, style_id, &ts);
             let inline_width = inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Space {
                 idx: i,
@@ -431,11 +443,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         detected
                     };
                     let ts = metric_scope.style(styles, style_id, lang, i);
-                    let fs = if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    };
+                    let fs = token_line_font_size(styles, style_id, &ts);
                     if fs > max_fs {
                         max_fs = fs;
                     }
@@ -464,11 +472,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         detected
                     };
                     let ts = metric_scope.style(styles, style_id, lang, i);
-                    let fs = if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    };
+                    let fs = token_line_font_size(styles, style_id, &ts);
                     if fs > max_fs {
                         max_fs = fs;
                     }
@@ -518,11 +522,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 let style_id = find_active_char_shape(char_shapes, utf16_pos);
                 current_lang = detect_lang_category(ch);
                 let ts = metric_scope.style(styles, style_id, current_lang, i);
-                let fs = if ts.font_size > 0.0 {
-                    ts.font_size
-                } else {
-                    12.0
-                };
+                let fs = token_line_font_size(styles, style_id, &ts);
                 let mut w = estimate_text_width_unrounded(&ch.to_string(), &ts)
                     + inline_width_px_at(inline_controls, i);
                 // 글자 모드에서도 **줄 머리 금칙**을 지킨다.
@@ -597,11 +597,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         let style_id = find_active_char_shape(char_shapes, utf16_pos);
                         let lang = 1usize; // English
                         let ts = metric_scope.style(styles, style_id, lang, i);
-                        let fs = if ts.font_size > 0.0 {
-                            ts.font_size
-                        } else {
-                            12.0
-                        };
+                        let fs = token_line_font_size(styles, style_id, &ts);
                         if fs > max_fs {
                             max_fs = fs;
                         }
@@ -623,11 +619,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         1
                     };
                     let ts = metric_scope.style(styles, style_id, lang, i);
-                    let fs = if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    };
+                    let fs = token_line_font_size(styles, style_id, &ts);
                     if fs > max_fs {
                         max_fs = fs;
                     }
@@ -683,11 +675,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 let style_id = find_active_char_shape(char_shapes, utf16_pos);
                 current_lang = 1;
                 let ts = metric_scope.style(styles, style_id, current_lang, i);
-                let fs = if ts.font_size > 0.0 {
-                    ts.font_size
-                } else {
-                    12.0
-                };
+                let fs = token_line_font_size(styles, style_id, &ts);
                 let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
                     + inline_width_px_at(inline_controls, i);
                 tokens.push(BreakToken::Text {
@@ -714,11 +702,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
             current_lang = detect_lang_category(ch);
             let ts = metric_scope.style(styles, style_id, current_lang, i);
-            let fs = if ts.font_size > 0.0 {
-                ts.font_size
-            } else {
-                12.0
-            };
+            let fs = token_line_font_size(styles, style_id, &ts);
             let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
                 + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Text {
@@ -750,11 +734,7 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 detected
             };
             let ts = metric_scope.style(styles, style_id, lang, i);
-            let fs = if ts.font_size > 0.0 {
-                ts.font_size
-            } else {
-                12.0
-            };
+            let fs = token_line_font_size(styles, style_id, &ts);
             let w = estimate_text_width_unrounded(&ch.to_string(), &ts)
                 + inline_width_px_at(inline_controls, i);
             tokens.push(BreakToken::Text {
@@ -2351,7 +2331,9 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
             Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
             Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
-            Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
+            Control::Equation(eq) if eq.common.treat_as_char => {
+                Some(crate::renderer::equation::flow_height_hwp(eq) as i32)
+            }
             Control::Form(form) if form.common.treat_as_char => Some(form.height as i32),
             _ => None,
         })
@@ -2373,9 +2355,10 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
             let width = table.flow_width_hu() as i32;
             (width, table.common.height as i32)
         }
-        Control::Equation(eq) if eq.common.treat_as_char => {
-            (eq.common.width as i32, eq.common.height as i32)
-        }
+        Control::Equation(eq) if eq.common.treat_as_char => (
+            crate::renderer::equation::flow_width_hwp(eq) as i32,
+            crate::renderer::equation::flow_height_hwp(eq) as i32,
+        ),
         Control::Form(form) if form.common.treat_as_char => (form.width as i32, form.height as i32),
         _ => return None,
     };
@@ -2432,11 +2415,9 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
             }
             let (width_hwp, height_hwp) = inline_control_size_hwp(control)?;
             let baseline_distance_hwp = match control {
-                Control::Equation(equation) if equation.baseline > 0 => Some(
-                    height_hwp
-                        .saturating_mul(i32::from(equation.baseline))
-                        .saturating_div(100),
-                ),
+                Control::Equation(equation) if equation.baseline > 0 => {
+                    Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
+                }
                 _ => None,
             };
             (char_position < text_len).then_some(FlowInlineControl {
@@ -2532,10 +2513,48 @@ fn control_is_line_width_neutral_float_table(control: &Control) -> bool {
             && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
 }
 
+/// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
+/// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
+pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
+    let positions = super::find_render_inline_control_positions(para);
+    para.controls
+        .iter()
+        .enumerate()
+        .filter_map(|(index, control)| {
+            let Control::Equation(equation) = control else {
+                return None;
+            };
+            if !equation.common.treat_as_char
+                || crate::renderer::equation::flow_width_hwp(equation) == equation.common.width
+            {
+                return None;
+            }
+            let position = *positions.get(index)?;
+            let chars = para.text.chars().count();
+            para.line_segs
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(row, _)| {
+                    let (start, _) = super::utf16_range_to_text_range(
+                        &para.char_offsets,
+                        para.line_seg_text_start(row),
+                        u32::MAX,
+                        chars,
+                    );
+                    (start <= position).then_some(row)
+                })
+        })
+        .min()
+}
+
 pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
+    let remeasured = remeasured_equation_start_row(para).is_some();
     para.controls.iter().all(|control| {
         control_is_width_neutral_marker(control)
             || control_is_line_width_neutral_float_table(control)
+            || (remeasured && matches!(control, Control::Equation(eq) if eq.common.treat_as_char))
+            || (remeasured && matches!(control, Control::Footnote(_)))
     })
 }
 
@@ -2746,7 +2765,7 @@ pub(crate) fn layout_paragraph_in_frame(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
-    layout_paragraph_in_frame_impl(para, frame, styles, dpi, true)
+    layout_paragraph_in_frame_impl(para, frame, styles, dpi, true, 0)
 }
 
 fn layout_paragraph_in_frame_impl(
@@ -2755,6 +2774,7 @@ fn layout_paragraph_in_frame_impl(
     styles: &ResolvedStyleSet,
     dpi: f64,
     allow_kerning: bool,
+    start_char: usize,
 ) -> Option<Vec<LineSeg>> {
     // [#6102] 폭-중립 자리차지 표 host 도 fill 대상 — 표는 줄 폭을 소비하지
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
@@ -2800,6 +2820,10 @@ fn layout_paragraph_in_frame_impl(
     let space_metric =
         if super::missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(para, styles) {
             SpaceMetric::HalfCell
+        } else if frame.kopub_justified_space
+            && para_style.is_some_and(|style| style.alignment == Alignment::Justify)
+        {
+            SpaceMetric::KoPubJustified
         } else {
             SpaceMetric::Stored
         };
@@ -2880,14 +2904,11 @@ fn layout_paragraph_in_frame_impl(
                 .filter_map(|control| match control {
                     Control::Equation(equation)
                         if equation.common.treat_as_char
-                            && equation.common.height as i32 == height_hwp
+                            && crate::renderer::equation::flow_height_hwp(equation) as i32
+                                == height_hwp
                             && equation.baseline > 0 =>
                     {
-                        Some(
-                            height_hwp
-                                .saturating_mul(i32::from(equation.baseline))
-                                .saturating_div(100),
-                        )
+                        Some(crate::renderer::equation::flow_metrics_hwp(equation).2)
                     }
                     _ => None,
                 })
@@ -2905,7 +2926,7 @@ fn layout_paragraph_in_frame_impl(
         .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY);
     let first_row = frame.row_count();
     let frame_checkpoint = frame.clone();
-    let mut cursor = FillCursor::new(0, true);
+    let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
 
     let result = (|| {
         while !cursor.finished {
@@ -2947,10 +2968,16 @@ fn layout_paragraph_in_frame_impl(
                     .flatten();
                 let mut row_terminated = false;
                 for interval in intervals {
+                    // 부분 재조판도 배치가 예약하는 글머리표 본문 내어쓰기를 제외한다.
+                    let marker_width = if start_char > 0 {
+                        super::bullet_marker_width(para, styles)
+                    } else {
+                        0.0
+                    };
                     let available_width_px = crate::renderer::hwpunit_to_px(
                         interval.end.saturating_sub(interval.start),
                         dpi,
-                    );
+                    ) - marker_width;
                     let terminal = terminal_tokens.as_ref().and_then(|terminal_tokens| {
                         let mut replay = FillCursor::replay_from_boundary(
                             terminal_tokens,
@@ -3013,11 +3040,13 @@ fn layout_paragraph_in_frame_impl(
                             _ => Some((control.height_hwp, control.baseline_distance_hwp)),
                         };
                     }
-                    let text_start = if frame.row_count() == first_row && segments.is_empty() {
-                        0
-                    } else {
-                        char_index_to_utf16_offset(para, line.start_idx)
-                    };
+                    let text_start =
+                        if start_char == 0 && frame.row_count() == first_row && segments.is_empty()
+                        {
+                            0
+                        } else {
+                            char_index_to_utf16_offset(para, line.start_idx)
+                        };
                     let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
                     segments.push(RowSegment::new(text_start..text_end, interval, source_tag));
 
@@ -3086,7 +3115,7 @@ fn layout_paragraph_in_frame_impl(
     if kerning_failed {
         // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
         // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
-        return layout_paragraph_in_frame_impl(para, frame, styles, dpi, false);
+        return layout_paragraph_in_frame_impl(para, frame, styles, dpi, false, start_char);
     }
     result
 }
@@ -3260,6 +3289,37 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
             known_square_band,
         )
     {
+        return None;
+    }
+
+    // 수식 대체 폭이 달라진 곳부터만 채운다. 앞행은 같은 프레임의 수용 검사와
+    // 저장 줄 출처를 통과해야 하며, 실패하면 이 부분 경로는 결과를 남기지 않는다.
+    if let Some(start_row) = remeasured_equation_start_row(para) {
+        let checkpoint = frame.clone();
+        if !para.stored_text_partition_is_dirty()
+            && !stored_rows_require_external_geometry(
+                para,
+                frame,
+                float_carve_evidence,
+                known_square_band,
+            )
+            && (start_row == 0
+                || frame.try_admit_stored_rows(&para.line_segs[..start_row], |row| {
+                    stored_row_metrics(para, styles, dpi, row)
+                }))
+        {
+            let (start_char, _) = super::utf16_range_to_text_range(
+                &para.char_offsets,
+                para.line_seg_text_start(start_row),
+                u32::MAX,
+                para.text.chars().count(),
+            );
+            if layout_paragraph_in_frame_impl(para, frame, styles, dpi, true, start_char).is_some()
+            {
+                return Some(StoredRowResolution::Reflowed);
+            }
+        }
+        frame.restore_checkpoint(checkpoint);
         return None;
     }
 
@@ -3684,11 +3744,9 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
 
 /// 저장 `LINE_SEG` 사다리가 배치 권위를 갖는 구역의 합성 문단을 재조판한다.
 ///
-/// [#2243] 익명화·부분 편집으로 저장 seg 가 빠진 문단이 저장 문단들 사이에 끼어 있는
-/// 문서다. 개체만 있는 줄의 줄간격 기준을 글자모양 크기로 올리면(한컴 규칙) 그 구역의
-/// 절대 vpos 스냅과 맞물려 쪽 경계 여유를 넘긴다 — 한컴 쪽수 핀이 어긋난다. 이런 구역은
-/// 양수 간격은 종전 기준(12px)을 유지한다. 음수 Percent 간격은 겹침 해제용 여백이
-/// 아니라 글자 크기에 따른 전진 감소량이므로 실제 글자 크기를 쓴다.
+/// 익명화·부분 편집으로 저장 줄이 빠졌어도 새 개체 줄의 간격 기준은
+/// 호스트 글자모양이다. 저장 좌표와의 혼합은 소비 경로에서 구분하며,
+/// 쪽수 핀을 맞추기 위해 글자 크기를 고정 기본값으로 낮추지 않는다.
 /// 전면 합성 문서는 `reflow_line_segs` 를 쓴다.
 pub(crate) fn reflow_line_segs_in_stored_section(
     para: &mut Paragraph,
@@ -3696,7 +3754,7 @@ pub(crate) fn reflow_line_segs_in_stored_section(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, false);
+    let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, true);
 }
 
 fn reflow_line_segs_impl(
@@ -4139,9 +4197,17 @@ fn reflow_line_segs_impl(
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
-        if let Some(height_hwp) = inline_control_line_height_hwp(para) {
-            // 기존 인라인 TAC 개체는 해당 문단의 최초 line box에 남긴다.
-            if let Some(seg) = new_line_segs.first_mut() {
+        for (control, position) in para.controls.iter().zip(para.control_text_positions()) {
+            let Some((_, height_hwp)) = inline_control_size_hwp(control) else {
+                continue;
+            };
+            // 명시적 개행으로 정해진 개체 줄에 높이를 싣는다. 최초 줄에 일괄
+            // 적용하면 표 앞 제목이 표 줄로 오인되어 표 뒤로 재배치된다.
+            let line_index = line_breaks
+                .iter()
+                .rposition(|line| line.start_idx <= position)
+                .unwrap_or(0);
+            if let Some(seg) = new_line_segs.get_mut(preserved_prefix_len + line_index) {
                 apply_inline_control_line_height(seg, height_hwp);
             }
         }

@@ -18,6 +18,7 @@ impl TypesetState {
             data: StateView {
                 pages: Vec::new(),
                 current_items: Vec::new(),
+                paragraph_fragment_content_bottoms: Default::default(),
                 current_height: 0.0,
                 current_start_height: 0.0,
                 current_endnote_flow: false,
@@ -37,6 +38,8 @@ impl TypesetState {
                 square_band_bottom: 0.0,
                 square_band_top: None,
                 current_footnote_height: 0.0,
+                current_footnote_body_bottom_reserved: false,
+                deferred_hwpx_note_body: false,
                 current_bottom_fixed_exclusion: 0.0,
                 bottom_fixed_consumed_flow: 0.0,
                 page_has_page_abs_top_table: false,
@@ -60,6 +63,8 @@ impl TypesetState {
                 deferred_table_controls: Vec::new(),
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
+                deferred_next_page_stored_frames: Vec::new(),
+                page_start_stored_frames: Vec::new(),
                 fragment_queued_table_footnotes: std::collections::HashSet::new(),
                 reset_vpos_after_queued_table_footnote_page: false,
                 prefilled_paras: std::collections::HashSet::new(),
@@ -105,6 +110,7 @@ impl TypesetState {
                 vpos_lazy_base: None,
                 vpos_page_base_stored: false,
                 vpos_ladder_dirty: false,
+                vpos_compacted_stored_delta: 0.0,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
@@ -137,6 +143,7 @@ impl TypesetState {
         self.data.vpos_lazy_base = None;
         self.data.vpos_page_base_stored = false;
         self.data.vpos_ladder_dirty = false;
+        self.data.vpos_compacted_stored_delta = 0.0;
         self.data.vpos_prev_layout_para = None;
         self.data.vpos_prev_partial_table = false;
         self.data.vpos_col_anchor = self.data.current_height;
@@ -156,8 +163,30 @@ impl TypesetState {
         // 보수적으로 밴드를 회수하지 않는다.
         let footnote_penalty =
             (self.data.current_footnote_height - self.footer_band_reclaim()).max(0.0);
-        // [#3707 진단] 가용 높이의 차감 내역. 두 문서에서 avail 이 21.4px 다른데
-        // 본문 영역은 같으므로, 어느 항목이 그 차이를 만드는지 가른다. 동작 불변.
+        let available = (base
+            - footnote_penalty
+            - fn_margin
+            - self.data.current_zone_y_offset
+            - self.data.current_bottom_fixed_exclusion)
+            .max(0.0);
+        let available = if self.data.profile.hwpx_stored_layout()
+            && self.data.deferred_hwpx_note_body
+            && self.data.current_footnote_height > 0.0
+        {
+            // HWPX의 FootnoteArea는 본문 하단에서 위로 자리를 차지한다.
+            // 비어 있는 footer 밴드 회수만 믿고 본문을 각주 영역 안으로
+            // 허용하지 않는다. 측정과 줄 분할이 같은 물리 경계를 쓴다.
+            available.min(
+                (base
+                    - self.data.current_footnote_height
+                    - self.data.current_zone_y_offset
+                    - self.data.current_bottom_fixed_exclusion)
+                    .max(0.0),
+            )
+        } else {
+            available
+        };
+        // [#3707 진단] 가용 높이의 차감 내역과 최종 물리 경계를 함께 기록한다.
         if std::env::var("RHWP_DIAG_AVAIL").is_ok() {
             eprintln!(
                 "DIAG_AVAIL base={:.1} fn_h={:.1} reclaim={:.1} penalty={:.1} fn_margin={:.1} zone_y={:.1} bottom_fixed={:.1} → {:.1}",
@@ -168,17 +197,10 @@ impl TypesetState {
                 fn_margin,
                 self.data.current_zone_y_offset,
                 self.data.current_bottom_fixed_exclusion,
-                (base - footnote_penalty - fn_margin - self.data.current_zone_y_offset
-                    - self.data.current_bottom_fixed_exclusion)
-                    .max(0.0),
+                available,
             );
         }
-        (base
-            - footnote_penalty
-            - fn_margin
-            - self.data.current_zone_y_offset
-            - self.data.current_bottom_fixed_exclusion)
-            .max(0.0)
+        available
     }
 
     /// 기본 가용 높이 (각주/존 미차감)
@@ -188,7 +210,7 @@ impl TypesetState {
 
     /// 동일 표의 terminal fragment가 아직 current column에 있는지, 직전에 flush된
     /// page에 있는지 구분한다. `Some(true)`는 current, `Some(false)`는 flushed다.
-    pub(in crate::renderer::typeset) fn native_table_host_terminal_fragment_placement(
+    pub(in crate::renderer::typeset) fn table_host_terminal_fragment_placement(
         &self,
         para_index: usize,
         control_index: usize,
@@ -304,6 +326,7 @@ impl TypesetState {
         if self.data.current_items.is_empty()
             && self.data.current_column_wrap_around_paras.is_empty()
             && self.data.page_start_square_pictures.is_empty()
+            && self.data.page_start_stored_frames.is_empty()
         {
             return;
         }
@@ -361,6 +384,20 @@ impl TypesetState {
                 control_index: deferred.control_index,
             })
             .collect::<Vec<_>>();
+        items.extend(
+            std::mem::take(&mut self.data.page_start_stored_frames)
+                .into_iter()
+                .map(|deferred| match deferred.kind {
+                    crate::renderer::typeset::DeferredStoredFrameKind::Picture => PageItem::Shape {
+                        para_index: deferred.para_index,
+                        control_index: deferred.control_index,
+                    },
+                    crate::renderer::typeset::DeferredStoredFrameKind::Table => PageItem::Table {
+                        para_index: deferred.para_index,
+                        control_index: deferred.control_index,
+                    },
+                }),
+        );
         items.append(&mut self.data.current_items);
         items
     }
@@ -525,6 +562,22 @@ impl TypesetState {
             }
             self.data.page_start_square_pictures.push(deferred);
         }
+        // 저장 그림과 첫 본문이 같은 상단 프레임을 소비한다. 실제 출력도 이 계획을 쓴다.
+        for deferred in std::mem::take(&mut self.data.deferred_next_page_stored_frames) {
+            let next_flow_y = match deferred.placement.flow {
+                crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture {
+                    next_flow_y,
+                } => next_flow_y,
+                _ => deferred.placement.occupied_bottom,
+            };
+            self.data.current_height = self.data.current_height.max(next_flow_y);
+            self.data.vpos_page_base = Some(0);
+            self.data.paragraph_float_placements.insert(
+                (deferred.para_index, deferred.control_index),
+                deferred.placement,
+            );
+            self.data.page_start_stored_frames.push(deferred);
+        }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.data.pending_body_wide_top_reserve = 0.0;
         // [#4568] 앞 쪽에서 잘린 overlay 표의 잔여 행을 이 쪽 최상단에 이어 그린다.
@@ -574,6 +627,8 @@ impl TypesetState {
         self.data.current_endnote_flow = false;
         self.data.column_had_compact_endnote_rewind = false;
         self.data.current_footnote_height = 0.0;
+        self.data.current_footnote_body_bottom_reserved = false;
+        self.data.deferred_hwpx_note_body = false;
         self.data.current_bottom_fixed_exclusion = 0.0;
         self.data.bottom_fixed_consumed_flow = 0.0;
         self.data.page_has_page_abs_top_table = false;

@@ -1,0 +1,11 @@
+{
+  "base": "c80a8370ab294259557c850c2e54495ecd0e79c0",
+  "source_sha": "69d4c5ddd0d0b705381f9e1631fb068b8847ad0d",
+  "scope": "이번 통합에서 추가한 Rust/Python/JS/Shell 설명 주석",
+  "english_explanatory_comment_candidates": [],
+  "count": 0,
+  "allowed_non_korean_lines": [
+    "Markdown 코드 블록의 text 언어 태그 4줄"
+  ],
+  "added_comment_lines_checked": 850
+}

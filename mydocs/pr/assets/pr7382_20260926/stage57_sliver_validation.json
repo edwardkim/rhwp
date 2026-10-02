@@ -1,0 +1,2689 @@
+{
+  "status": "#2243 개별 검증 결과; 고정38개 전체 해결/전수 완료를 뜻하지 않음",
+  "provenance": {
+    "base": "443844b593c62a722cf9cc3d9d0256e94ab88cb8",
+    "head": "e82a946d8208e419bdb783f46adddf795dfd1081",
+    "sources": {
+      "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+      "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+      "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+      "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+      "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+      "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+      "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+      "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+      "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+      "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+      "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+      "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+      "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+      "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+    },
+    "native_sha256": "add7d0fa14d8edccb8392b528451d9029d766a981b5f87f6b65bafb7e70beee6",
+    "wasm": {
+      "rhwp.js": {
+        "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+      },
+      "rhwp_bg.wasm": {
+        "pkg/rhwp_bg.wasm": "8df29189d379c0030f2d1030243d14223809e7f595e300e4015024039c662a8a",
+        "rhwp-studio/public/rhwp_bg.wasm": "8df29189d379c0030f2d1030243d14223809e7f595e300e4015024039c662a8a",
+        "output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg/rhwp_bg.wasm": "8df29189d379c0030f2d1030243d14223809e7f595e300e4015024039c662a8a"
+      }
+    }
+  },
+  "gates": [
+    {
+      "command": [
+        "git",
+        "fetch",
+        "upstream",
+        "devel"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6665379591286182
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7072928748093545
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 7.333813125267625
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 18.67921291710809
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 16.39914512494579
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 35.12510100007057
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 40.41728862468153
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "exit_code": 0,
+      "seconds": 2.3363002501428127
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "exit_code": 0,
+      "seconds": 8.951937000267208
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 117.7862076247111
+    },
+    {
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 162.74766412517056
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.11287470813840628
+    }
+  ],
+  "focused": [
+    {
+      "case": "issue_2243",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2243",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 127.93977429065853,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 1
+    },
+    {
+      "case": "issue_7160_tac_table_line_break",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7160_tac_table_line_break",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.9254640829749405,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 6
+    },
+    {
+      "case": "issue_6300_hardbreak_inline_object",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6300_hardbreak_inline_object",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 0.5718802092596889,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 2
+    },
+    {
+      "case": "issue_6300_forced_break_at_line_end",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6300_forced_break_at_line_end",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.276830915827304,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 2
+    },
+    {
+      "case": "issue_6167_leading_space_tac_table_own_line",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6167_leading_space_tac_table_own_line",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.173546125181019,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 1
+    },
+    {
+      "case": "issue_6190_stored_lineseg_indentation_flag",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6190_stored_lineseg_indentation_flag",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.132007000036538,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 1
+    },
+    {
+      "case": "issue_4138_split_cell_stale_linesegs",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_4138_split_cell_stale_linesegs",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 17.590917416848242,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 2
+    },
+    {
+      "case": "issue_1658_page_bottom_fixed_exclusion",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_1658_page_bottom_fixed_exclusion",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.975321457721293,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 3
+    },
+    {
+      "case": "issue_6797_table_item_clears_float_band",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6797_table_item_clears_float_band",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.50611816579476,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 5
+    },
+    {
+      "case": "issue_6312_float_anchor_line_uses_source_vpos",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6312_float_anchor_line_uses_source_vpos",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7155684581957757,
+      "sources": {
+        "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+        "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+        "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+        "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+        "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+        "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+        "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+        "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+        "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+        "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+        "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+        "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58",
+        "tests/issue_1658_page_bottom_fixed_exclusion.rs": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "tests/issue_2243.rs": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52"
+      },
+      "passed_functions": 6
+    }
+  ],
+  "passed_functions": 29,
+  "revised_test_before": {
+    "records": [
+      {
+        "implementation_head": "e82a946d8208e419bdb783f46adddf795dfd1081",
+        "test": "tests/issue_2243.rs",
+        "test_sha256": "6d22e154fe7e303a3338c4f0f85accb6aa3a5e69ab74463bfc019de52689fe52",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_022",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(/^issue_2243::issue_2243_gyeoljae_sliver_page_pins$/)"
+        ],
+        "exit_code": 100,
+        "seconds": 130.7966752918437
+      },
+      {
+        "implementation_head": "e82a946d8208e419bdb783f46adddf795dfd1081",
+        "test": "tests/issue_1658_page_bottom_fixed_exclusion.rs",
+        "test_sha256": "3f6555f9286ef5e2639d21bbe140b6d94675e81a34b2cbb341a2abb8fcf56171",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_017",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(/^issue_1658_page_bottom_fixed_exclusion::gwanak_bottom_fixed_frame_renders_at_page_bottom$/)"
+        ],
+        "exit_code": 100,
+        "seconds": 6.124605624936521
+      }
+    ],
+    "sources_restored": true,
+    "after_sources": {
+      "src/document_core/commands/document.rs": "3db61743640a1872c926d749b74fe7fc1b7d5c1c5bdd337a0fcf31ebc0f94c78",
+      "src/renderer/composer.rs": "2d65dc4e4ec4a0817e079c3321f80fd929321253558776a6dc0876e749933a21",
+      "src/renderer/composer/line_breaking.rs": "b76d1534bd03a73a2bf3eb07debd52d46844b8cf531fdd115169b41f72f022f7",
+      "src/renderer/float_placement.rs": "18ef6461ad2085512c7137f2daaf45158b2e3fa98c5eaf3d59a7d786993e7157",
+      "src/renderer/layout.rs": "a3db9ef595d5f835c85219da1ae8f014b26e0ef08759fe3aa788504752de5b64",
+      "src/renderer/typeset.rs": "c517a35db29b8bb0ec451873f575560ea11f1586b594f6f44e1a75e7e777d691",
+      "src/renderer/typeset/controls.rs": "8865fa9117d300f87bec62d5578b13469770c656a005b6bf9907d9fbf037fe6e",
+      "src/renderer/typeset/controls/paragraph_flow.rs": "f2b541ac623605462b440fae3371198cda59077f8f48c0777e4129bb2bde9c3e",
+      "src/renderer/typeset/controls/stored_tac.rs": "6f03aa8168fe37f978a529e1caeb8868c4b321d4173e985797f7aa85dea94c8f",
+      "src/renderer/typeset/controls/tac_flow.rs": "fb26c41a9596fa66304338cf31e5977fbb2b881d01c1c2d3ea01280a1fc4c965",
+      "src/renderer/typeset/section/post_flow.rs": "f6e55f9e15c083edf10029d43298fcb9105c72485d5b9193bf86f9f6a9bb8061",
+      "src/renderer/typeset/state.rs": "ef618d28beefcb739f506f417829d3267aa5ce1402314ba55e72b95da8373d58"
+    }
+  },
+  "visual_commands": [
+    {
+      "key": "traffic2243",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+        "--pdf",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+        "--key",
+        "traffic2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 16.042307457886636,
+      "inputs": {
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx": "1a1814462b84a968729d08e1a2c162223b8a9431d5cf4d12f3e776934081aace",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf": "3853ed3d458dc2d9eca11b4344363ebcc3e4a0580b47b9c1b40c2693996f426e"
+      }
+    },
+    {
+      "key": "gwanak1658",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf",
+        "--key",
+        "gwanak1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 4.198925415985286,
+      "inputs": {
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx": "a8b5e2604e2bd35e3caf35c94d46999182240fa7d5747c79c15f00ee53fdb504",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf": "a2478a92b30d6fa383af2fb9febdec4859ffd8844ba287570486afec01e0cfa7"
+      }
+    },
+    {
+      "key": "normal6797",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "--pdf",
+        "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "--key",
+        "normal6797",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "7",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 5.405325917061418,
+      "inputs": {
+        "samples/issue6797/156160455-social-pig-farm-income.hwp": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+        "pdf/156160455-social-pig-farm-income-2020.pdf": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65"
+      }
+    },
+    {
+      "key": "nested1133-hwp",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue_1133.hwp",
+        "--pdf",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 13.35773004218936,
+      "inputs": {
+        "samples/issue_1133.hwp": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+      }
+    },
+    {
+      "key": "nested1133-hwpx",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 13.131155792158097,
+      "inputs": {
+        "samples/hwpx/issue_1133.hwpx": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+        "pdf/hwpx/issue_1133.pdf": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+      }
+    },
+    {
+      "key": "pc-shutdown1658",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf",
+        "--key",
+        "pc-shutdown1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 4.298726916778833,
+      "inputs": {
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx": "8652b57784984a15e7e26a3d676b01b202c614f568059d78bf2f493a3745b2fc",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf": "828d9570dfcf7133ac015471dd6fda9a1abba3d6948d8341295114b3a54aaf92"
+      }
+    },
+    {
+      "key": "distribution7160",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task1768/distribution_doc.hwpx",
+        "--pdf",
+        "pdf/distribution_doc-2024.pdf",
+        "--key",
+        "distribution7160",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 1,
+      "seconds": 14.21180083276704,
+      "inputs": {
+        "samples/task1768/distribution_doc.hwpx": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+        "pdf/distribution_doc-2024.pdf": "f910b0297ddc8b4c37ec93fda50c1a75f3553034cfe4464707abef7c8903d2eb"
+      }
+    },
+    {
+      "key": "consulting2243",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+        "--pdf",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+        "--key",
+        "consulting2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 23.871399874798954,
+      "inputs": {
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx": "a0bd691420456e4b6c0b0127d526b6a38d7c1afc3f07e9b84cddb01495e48b0d",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf": "edf4f1556e987dfddae27bf1aec75afd44c959c4736985958db20efac77e585d"
+      }
+    },
+    {
+      "key": "sewoon2243",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+        "--pdf",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+        "--key",
+        "sewoon2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 22.782781041692942,
+      "inputs": {
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx": "fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf": "9deb1c17e79b02761b29d54075b600c8a9f10eb31fa862a28503fa8533e21528"
+      }
+    },
+    {
+      "key": "taxi2243",
+      "backend": "native",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/156631374_taxi_press.hwpx",
+        "--pdf",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+        "--key",
+        "taxi2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 6.326015249826014,
+      "inputs": {
+        "samples/task2243/156631374_taxi_press.hwpx": "eae05a534e26912030a698bb72dbeeea5ccb2bc8f8cc5fd5f5c51808edf4a143",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf": "b719d85ebb3337eacc10c2e1dec9f73450a7d60d11c2946d7c88a500c0266066"
+      }
+    },
+    {
+      "key": "traffic2243",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+        "--pdf",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+        "--key",
+        "traffic2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 16.475747792050242,
+      "inputs": {
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx": "1a1814462b84a968729d08e1a2c162223b8a9431d5cf4d12f3e776934081aace",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf": "3853ed3d458dc2d9eca11b4344363ebcc3e4a0580b47b9c1b40c2693996f426e"
+      }
+    },
+    {
+      "key": "gwanak1658",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf",
+        "--key",
+        "gwanak1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 5.825106457807124,
+      "inputs": {
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx": "a8b5e2604e2bd35e3caf35c94d46999182240fa7d5747c79c15f00ee53fdb504",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf": "a2478a92b30d6fa383af2fb9febdec4859ffd8844ba287570486afec01e0cfa7"
+      }
+    },
+    {
+      "key": "normal6797",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "--pdf",
+        "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "--key",
+        "normal6797",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "7",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 6.945173582993448,
+      "inputs": {
+        "samples/issue6797/156160455-social-pig-farm-income.hwp": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+        "pdf/156160455-social-pig-farm-income-2020.pdf": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65"
+      }
+    },
+    {
+      "key": "nested1133-hwp",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue_1133.hwp",
+        "--pdf",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 15.071354917250574,
+      "inputs": {
+        "samples/issue_1133.hwp": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+      }
+    },
+    {
+      "key": "nested1133-hwpx",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 14.851168166846037,
+      "inputs": {
+        "samples/hwpx/issue_1133.hwpx": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+        "pdf/hwpx/issue_1133.pdf": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+      }
+    },
+    {
+      "key": "pc-shutdown1658",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf",
+        "--key",
+        "pc-shutdown1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 5.928820959292352,
+      "inputs": {
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx": "8652b57784984a15e7e26a3d676b01b202c614f568059d78bf2f493a3745b2fc",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf": "828d9570dfcf7133ac015471dd6fda9a1abba3d6948d8341295114b3a54aaf92"
+      }
+    },
+    {
+      "key": "distribution7160",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task1768/distribution_doc.hwpx",
+        "--pdf",
+        "pdf/distribution_doc-2024.pdf",
+        "--key",
+        "distribution7160",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 1,
+      "seconds": 16.98240016726777,
+      "inputs": {
+        "samples/task1768/distribution_doc.hwpx": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+        "pdf/distribution_doc-2024.pdf": "f910b0297ddc8b4c37ec93fda50c1a75f3553034cfe4464707abef7c8903d2eb"
+      }
+    },
+    {
+      "key": "consulting2243",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+        "--pdf",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+        "--key",
+        "consulting2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 25.88045108318329,
+      "inputs": {
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx": "a0bd691420456e4b6c0b0127d526b6a38d7c1afc3f07e9b84cddb01495e48b0d",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf": "edf4f1556e987dfddae27bf1aec75afd44c959c4736985958db20efac77e585d"
+      }
+    },
+    {
+      "key": "sewoon2243",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+        "--pdf",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+        "--key",
+        "sewoon2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 21.46707083284855,
+      "inputs": {
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx": "fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf": "9deb1c17e79b02761b29d54075b600c8a9f10eb31fa862a28503fa8533e21528"
+      }
+    },
+    {
+      "key": "taxi2243",
+      "backend": "wasm",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/156631374_taxi_press.hwpx",
+        "--pdf",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+        "--key",
+        "taxi2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 5.790398625191301,
+      "inputs": {
+        "samples/task2243/156631374_taxi_press.hwpx": "eae05a534e26912030a698bb72dbeeea5ccb2bc8f8cc5fd5f5c51808edf4a143",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf": "b719d85ebb3337eacc10c2e1dec9f73450a7d60d11c2946d7c88a500c0266066"
+      }
+    }
+  ],
+  "visual_manifests": {
+    "native/traffic2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 91.73884
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 97.90609
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.8063
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 93.72483,
+        "worst_pixel_match_percent": 89.60424,
+        "average_ink_match_percent": 41.28663,
+        "worst_ink_match_percent": 37.81859,
+        "average_visual_accuracy_proxy_percent": 41.28663,
+        "worst_visual_accuracy_proxy_percent": 37.81859,
+        "average_tolerant_content_match_percent": 95.48374,
+        "worst_tolerant_content_match_percent": 91.73884,
+        "worst_pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+        "--pdf",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+        "--key",
+        "traffic2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx": "1a1814462b84a968729d08e1a2c162223b8a9431d5cf4d12f3e776934081aace",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf": "3853ed3d458dc2d9eca11b4344363ebcc3e4a0580b47b9c1b40c2693996f426e"
+      }
+    },
+    "native/gwanak1658": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.60662
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.2892,
+        "worst_pixel_match_percent": 94.2892,
+        "average_ink_match_percent": 27.36985,
+        "worst_ink_match_percent": 27.36985,
+        "average_visual_accuracy_proxy_percent": 27.36985,
+        "worst_visual_accuracy_proxy_percent": 27.36985,
+        "average_tolerant_content_match_percent": 97.60662,
+        "worst_tolerant_content_match_percent": 97.60662,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf",
+        "--key",
+        "gwanak1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx": "a8b5e2604e2bd35e3caf35c94d46999182240fa7d5747c79c15f00ee53fdb504",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf": "a2478a92b30d6fa383af2fb9febdec4859ffd8844ba287570486afec01e0cfa7"
+      }
+    },
+    "native/normal6797": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        7
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 93.59494
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.05322,
+        "worst_pixel_match_percent": 91.05322,
+        "average_ink_match_percent": 50.13533,
+        "worst_ink_match_percent": 50.13533,
+        "average_visual_accuracy_proxy_percent": 50.13533,
+        "worst_visual_accuracy_proxy_percent": 50.13533,
+        "average_tolerant_content_match_percent": 93.59494,
+        "worst_tolerant_content_match_percent": 93.59494,
+        "worst_pages": [
+          7
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "--pdf",
+        "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "--key",
+        "normal6797",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "7",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/issue6797/156160455-social-pig-farm-income.hwp": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+        "pdf/156160455-social-pig-farm-income-2020.pdf": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65"
+      }
+    },
+    "native/nested1133-hwp": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.24979
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.272
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.264,
+        "worst_pixel_match_percent": 89.43849,
+        "average_ink_match_percent": 32.4737,
+        "worst_ink_match_percent": 25.96055,
+        "average_visual_accuracy_proxy_percent": 32.4737,
+        "worst_visual_accuracy_proxy_percent": 25.96055,
+        "average_tolerant_content_match_percent": 98.50726,
+        "worst_tolerant_content_match_percent": 96.24979,
+        "worst_pages": [
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue_1133.hwp",
+        "--pdf",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/issue_1133.hwp": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+      }
+    },
+    "native/nested1133-hwpx": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.1041
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.25401
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.2428,
+        "worst_pixel_match_percent": 89.38129,
+        "average_ink_match_percent": 32.40557,
+        "worst_ink_match_percent": 25.77957,
+        "average_visual_accuracy_proxy_percent": 32.40557,
+        "worst_visual_accuracy_proxy_percent": 25.77957,
+        "average_tolerant_content_match_percent": 98.4527,
+        "worst_tolerant_content_match_percent": 96.1041,
+        "worst_pages": [
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/hwpx/issue_1133.hwpx": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+        "pdf/hwpx/issue_1133.pdf": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+      }
+    },
+    "native/pc-shutdown1658": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.05407
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.39613,
+        "worst_pixel_match_percent": 95.39613,
+        "average_ink_match_percent": 54.29332,
+        "worst_ink_match_percent": 54.29332,
+        "average_visual_accuracy_proxy_percent": 54.29332,
+        "worst_visual_accuracy_proxy_percent": 54.29332,
+        "average_tolerant_content_match_percent": 96.05407,
+        "worst_tolerant_content_match_percent": 96.05407,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf",
+        "--key",
+        "pc-shutdown1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx": "8652b57784984a15e7e26a3d676b01b202c614f568059d78bf2f493a3745b2fc",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf": "828d9570dfcf7133ac015471dd6fda9a1abba3d6948d8341295114b3a54aaf92"
+      }
+    },
+    "native/distribution7160": {
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 89.36485
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 95.36095
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 89.36485
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 93.55742
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.57787,
+        "worst_pixel_match_percent": 89.02174,
+        "average_ink_match_percent": 36.2451,
+        "worst_ink_match_percent": 28.27887,
+        "average_visual_accuracy_proxy_percent": 36.2451,
+        "worst_visual_accuracy_proxy_percent": 28.27887,
+        "average_tolerant_content_match_percent": 92.76107,
+        "worst_tolerant_content_match_percent": 89.36485,
+        "worst_pages": [
+          3,
+          1,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task1768/distribution_doc.hwpx",
+        "--pdf",
+        "pdf/distribution_doc-2024.pdf",
+        "--key",
+        "distribution7160",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/task1768/distribution_doc.hwpx": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+        "pdf/distribution_doc-2024.pdf": "f910b0297ddc8b4c37ec93fda50c1a75f3553034cfe4464707abef7c8903d2eb"
+      }
+    },
+    "native/consulting2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 95.71558
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 98.69255
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.77042
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 96.36512
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.76053
+        }
+      ],
+      "summary": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.93102,
+        "worst_pixel_match_percent": 92.74456,
+        "average_ink_match_percent": 61.42051,
+        "worst_ink_match_percent": 44.45381,
+        "average_visual_accuracy_proxy_percent": 61.42051,
+        "worst_visual_accuracy_proxy_percent": 44.45381,
+        "average_tolerant_content_match_percent": 97.86084,
+        "worst_tolerant_content_match_percent": 95.71558,
+        "worst_pages": [
+          1,
+          3,
+          2,
+          4,
+          5
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+        "--pdf",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+        "--key",
+        "consulting2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx": "a0bd691420456e4b6c0b0127d526b6a38d7c1afc3f07e9b84cddb01495e48b0d",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf": "edf4f1556e987dfddae27bf1aec75afd44c959c4736985958db20efac77e585d"
+      }
+    },
+    "native/sewoon2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.82275
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.64628
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.4361
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 98.98801
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.81783
+        }
+      ],
+      "summary": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.05698,
+        "worst_pixel_match_percent": 92.39398,
+        "average_ink_match_percent": 41.71574,
+        "worst_ink_match_percent": 33.55075,
+        "average_visual_accuracy_proxy_percent": 41.71574,
+        "worst_visual_accuracy_proxy_percent": 33.55075,
+        "average_tolerant_content_match_percent": 98.54219,
+        "worst_tolerant_content_match_percent": 96.4361,
+        "worst_pages": [
+          4,
+          5,
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+        "--pdf",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+        "--key",
+        "sewoon2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx": "fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf": "9deb1c17e79b02761b29d54075b600c8a9f10eb31fa862a28503fa8533e21528"
+      }
+    },
+    "native/taxi2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 94.79597
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.29527,
+        "worst_pixel_match_percent": 89.29527,
+        "average_ink_match_percent": 19.31053,
+        "worst_ink_match_percent": 19.31053,
+        "average_visual_accuracy_proxy_percent": 19.31053,
+        "worst_visual_accuracy_proxy_percent": 19.31053,
+        "average_tolerant_content_match_percent": 94.79597,
+        "worst_tolerant_content_match_percent": 94.79597,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/156631374_taxi_press.hwpx",
+        "--pdf",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+        "--key",
+        "taxi2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "inputs": {
+        "samples/task2243/156631374_taxi_press.hwpx": "eae05a534e26912030a698bb72dbeeea5ccb2bc8f8cc5fd5f5c51808edf4a143",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf": "b719d85ebb3337eacc10c2e1dec9f73450a7d60d11c2946d7c88a500c0266066"
+      }
+    },
+    "wasm/traffic2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 91.73884
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 97.90609
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.8063
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 93.72483,
+        "worst_pixel_match_percent": 89.60424,
+        "average_ink_match_percent": 41.28663,
+        "worst_ink_match_percent": 37.81859,
+        "average_visual_accuracy_proxy_percent": 41.28663,
+        "worst_visual_accuracy_proxy_percent": 37.81859,
+        "average_tolerant_content_match_percent": 95.48374,
+        "worst_tolerant_content_match_percent": 91.73884,
+        "worst_pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+        "--pdf",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+        "--key",
+        "traffic2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx": "1a1814462b84a968729d08e1a2c162223b8a9431d5cf4d12f3e776934081aace",
+        "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf": "3853ed3d458dc2d9eca11b4344363ebcc3e4a0580b47b9c1b40c2693996f426e"
+      }
+    },
+    "wasm/gwanak1658": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.60662
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.2892,
+        "worst_pixel_match_percent": 94.2892,
+        "average_ink_match_percent": 27.36985,
+        "worst_ink_match_percent": 27.36985,
+        "average_visual_accuracy_proxy_percent": 27.36985,
+        "worst_visual_accuracy_proxy_percent": 27.36985,
+        "average_tolerant_content_match_percent": 97.60662,
+        "worst_tolerant_content_match_percent": 97.60662,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf",
+        "--key",
+        "gwanak1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177).hwpx": "a8b5e2604e2bd35e3caf35c94d46999182240fa7d5747c79c15f00ee53fdb504",
+        "pdf/hwpx/opengov/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-hwpx-2020.pdf": "a2478a92b30d6fa383af2fb9febdec4859ffd8844ba287570486afec01e0cfa7"
+      }
+    },
+    "wasm/normal6797": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        7
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 93.59494
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.05322,
+        "worst_pixel_match_percent": 91.05322,
+        "average_ink_match_percent": 50.13533,
+        "worst_ink_match_percent": 50.13533,
+        "average_visual_accuracy_proxy_percent": 50.13533,
+        "worst_visual_accuracy_proxy_percent": 50.13533,
+        "average_tolerant_content_match_percent": 93.59494,
+        "worst_tolerant_content_match_percent": 93.59494,
+        "worst_pages": [
+          7
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "--pdf",
+        "pdf/156160455-social-pig-farm-income-2020.pdf",
+        "--key",
+        "normal6797",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "7",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/issue6797/156160455-social-pig-farm-income.hwp": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+        "pdf/156160455-social-pig-farm-income-2020.pdf": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65"
+      }
+    },
+    "wasm/nested1133-hwp": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.24979
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.272
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.264,
+        "worst_pixel_match_percent": 89.43849,
+        "average_ink_match_percent": 32.4737,
+        "worst_ink_match_percent": 25.96055,
+        "average_visual_accuracy_proxy_percent": 32.4737,
+        "worst_visual_accuracy_proxy_percent": 25.96055,
+        "average_tolerant_content_match_percent": 98.50726,
+        "worst_tolerant_content_match_percent": 96.24979,
+        "worst_pages": [
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/issue_1133.hwp",
+        "--pdf",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/issue_1133.hwp": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+      }
+    },
+    "wasm/nested1133-hwpx": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.1041
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.25401
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.2428,
+        "worst_pixel_match_percent": 89.38129,
+        "average_ink_match_percent": 32.40557,
+        "worst_ink_match_percent": 25.77957,
+        "average_visual_accuracy_proxy_percent": 32.40557,
+        "worst_visual_accuracy_proxy_percent": 25.77957,
+        "average_tolerant_content_match_percent": 98.4527,
+        "worst_tolerant_content_match_percent": 96.1041,
+        "worst_pages": [
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/hwpx/issue_1133.hwpx": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+        "pdf/hwpx/issue_1133.pdf": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+      }
+    },
+    "wasm/pc-shutdown1658": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 96.05407
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.39613,
+        "worst_pixel_match_percent": 95.39613,
+        "average_ink_match_percent": 54.29332,
+        "worst_ink_match_percent": 54.29332,
+        "average_visual_accuracy_proxy_percent": 54.29332,
+        "worst_visual_accuracy_proxy_percent": 54.29332,
+        "average_tolerant_content_match_percent": 96.05407,
+        "worst_tolerant_content_match_percent": 96.05407,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx",
+        "--pdf",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf",
+        "--key",
+        "pc-shutdown1658",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx": "8652b57784984a15e7e26a3d676b01b202c614f568059d78bf2f493a3745b2fc",
+        "pdf/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-hwpx-2020.pdf": "828d9570dfcf7133ac015471dd6fda9a1abba3d6948d8341295114b3a54aaf92"
+      }
+    },
+    "wasm/distribution7160": {
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 89.36485
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 95.36095
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 89.36485
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 93.55742
+        }
+      ],
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.57787,
+        "worst_pixel_match_percent": 89.02174,
+        "average_ink_match_percent": 36.2451,
+        "worst_ink_match_percent": 28.27887,
+        "average_visual_accuracy_proxy_percent": 36.2451,
+        "worst_visual_accuracy_proxy_percent": 28.27887,
+        "average_tolerant_content_match_percent": 92.76107,
+        "worst_tolerant_content_match_percent": 89.36485,
+        "worst_pages": [
+          3,
+          1,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task1768/distribution_doc.hwpx",
+        "--pdf",
+        "pdf/distribution_doc-2024.pdf",
+        "--key",
+        "distribution7160",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/task1768/distribution_doc.hwpx": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+        "pdf/distribution_doc-2024.pdf": "f910b0297ddc8b4c37ec93fda50c1a75f3553034cfe4464707abef7c8903d2eb"
+      }
+    },
+    "wasm/consulting2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 95.71558
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 98.69255
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.77042
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 96.36512
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.76053
+        }
+      ],
+      "summary": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.93102,
+        "worst_pixel_match_percent": 92.74456,
+        "average_ink_match_percent": 61.42051,
+        "worst_ink_match_percent": 44.45381,
+        "average_visual_accuracy_proxy_percent": 61.42051,
+        "worst_visual_accuracy_proxy_percent": 44.45381,
+        "average_tolerant_content_match_percent": 97.86084,
+        "worst_tolerant_content_match_percent": 95.71558,
+        "worst_pages": [
+          1,
+          3,
+          2,
+          4,
+          5
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+        "--pdf",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+        "--key",
+        "consulting2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/task2243/36395325_gyeoljae_consulting.hwpx": "a0bd691420456e4b6c0b0127d526b6a38d7c1afc3f07e9b84cddb01495e48b0d",
+        "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf": "edf4f1556e987dfddae27bf1aec75afd44c959c4736985958db20efac77e585d"
+      }
+    },
+    "wasm/sewoon2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.82275
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.64628
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.4361
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 98.98801
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.81783
+        }
+      ],
+      "summary": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.05698,
+        "worst_pixel_match_percent": 92.39398,
+        "average_ink_match_percent": 41.71574,
+        "worst_ink_match_percent": 33.55075,
+        "average_visual_accuracy_proxy_percent": 41.71574,
+        "worst_visual_accuracy_proxy_percent": 33.55075,
+        "average_tolerant_content_match_percent": 98.54219,
+        "worst_tolerant_content_match_percent": 96.4361,
+        "worst_pages": [
+          4,
+          5,
+          1,
+          3,
+          2
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+        "--pdf",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+        "--key",
+        "sewoon2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1-5",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/task2243/36386907_gyeoljae_sewoon.hwpx": "fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723",
+        "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf": "9deb1c17e79b02761b29d54075b600c8a9f10eb31fa862a28503fa8533e21528"
+      }
+    },
+    "wasm/taxi2243": {
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 94.79597
+        }
+      ],
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.29527,
+        "worst_pixel_match_percent": 89.29527,
+        "average_ink_match_percent": 19.31053,
+        "worst_ink_match_percent": 19.31053,
+        "average_visual_accuracy_proxy_percent": 19.31053,
+        "worst_visual_accuracy_proxy_percent": 19.31053,
+        "average_tolerant_content_match_percent": 94.79597,
+        "worst_tolerant_content_match_percent": 94.79597,
+        "worst_pages": [
+          1
+        ]
+      },
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "samples/task2243/156631374_taxi_press.hwpx",
+        "--pdf",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+        "--key",
+        "taxi2243",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/wasm-pkg"
+      ],
+      "inputs": {
+        "samples/task2243/156631374_taxi_press.hwpx": "eae05a534e26912030a698bb72dbeeea5ccb2bc8f8cc5fd5f5c51808edf4a143",
+        "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf": "b719d85ebb3337eacc10c2e1dec9f73450a7d60d11c2946d7c88a500c0266066"
+      }
+    }
+  },
+  "main_trees": [
+    {
+      "key": "main-hwp",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/main-hwp-tree"
+      ],
+      "pages": 215,
+      "changed_from_stage56": [],
+      "before_pages": 215
+    },
+    {
+      "key": "main-hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation2/main-hwpx-tree"
+      ],
+      "pages": 215,
+      "changed_from_stage56": [],
+      "before_pages": 215
+    }
+  ],
+  "boundary_adjudication": {
+    "pdf": "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+    "page": 3,
+    "coordinate_scale": 1.3333333333333333,
+    "pdf_lines": [
+      {
+        "rect": [
+          67.04399871826172,
+          457.29998779296875,
+          531.5540161132812,
+          457.29998779296875
+        ],
+        "width_points": 1.4390000104904175,
+        "center_y_px": 609.7333170572916
+      },
+      {
+        "rect": [
+          67.04399871826172,
+          767.1610107421875,
+          531.5540161132812,
+          767.1610107421875
+        ],
+        "width_points": 1.4390000104904175,
+        "center_y_px": 1022.88134765625
+      },
+      {
+        "rect": [
+          67.04399871826172,
+          767.1610107421875,
+          531.5540161132812,
+          767.1610107421875
+        ],
+        "width_points": 1.4390000104904175,
+        "center_y_px": 1022.88134765625
+      },
+      {
+        "rect": [
+          67.04399871826172,
+          457.29998779296875,
+          531.5540161132812,
+          457.29998779296875
+        ],
+        "width_points": 1.4390000104904175,
+        "center_y_px": 609.7333170572916
+      }
+    ],
+    "native_top_px": 610.4133333333333,
+    "native_height_px": 413.58666666666664,
+    "native_bottom_px": 1024.0,
+    "pdf_top_px": 609.7333170572916,
+    "pdf_height_px": 413.14803059895837,
+    "residual_bottom_px": 1.11865234375,
+    "decision": "새 좌표 검사는 위치와 크기를 각각 독립 PDF 값과 1px 이내로 비교한다. 절대 하단 1.119px 차이는 잔여 차이로 보존하며 픽셀 완전 일치로 보고하지 않는다. 기존 쪽수 기대값이나 기존 허용치를 변경하지 않는다."
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_consulting2243_review_005.png",
+      "sha256": "e0ffb9bb715a85d5f10143931ce67cd80c04b78a1bc64c8c04cd82024babaac9"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_traffic2243_review_003.png",
+      "sha256": "6aca691ac015890940315fef3a47f8febef3f98f73ecbe7b05daedd27b7e7eb0"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_sewoon2243_review_003.png",
+      "sha256": "71a124f2b70ff42c271c899181a5704b621c05c82c6333de47ebe346986cb7d6"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_sewoon2243_review_004.png",
+      "sha256": "0f5df87099ebb084132efdae181b727ecd79cbf2bba7e0e14554b47e20824213"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_sewoon2243_review_005.png",
+      "sha256": "07393d2c8bff3d982902fba228dfcd9c3bb2fd77c9f47bcfc51207cc10102b9f"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_consulting2243_review_005.png",
+      "sha256": "ca66f2fd764a4f4a9f28557a4138e19d2cbe26628e9263e5b2dc52636a426317"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_traffic2243_review_003.png",
+      "sha256": "7186de3b0c1de4e029b94e57a82a933e1d4d87832075dce72b0e782f31d507fd"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_sewoon2243_review_003.png",
+      "sha256": "756c4bfea561ced76afaf12a4fa7cefc7996b9a5f00d3232efe0316afafba7d4"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_sewoon2243_review_005.png",
+      "sha256": "0ecefae3236a68f2e9c865fe4d680abd35e39b70ed99871d8266aeed7b4a61b6"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_sewoon2243_overlay_004.png",
+      "sha256": "407536c578e5e3ece6ac590931e67c9fca12548b91d379df3046a8707376fef9"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_native_gwanak1658_review_001.png",
+      "sha256": "9ec4ec0671679ae2e59bcc0d95a0841cbddc13c2756d5acf8fc5437c5396105d"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage57_after_wasm_gwanak1658_overlay_001.png",
+      "sha256": "4801fe27e56af041766e3eaaeb833895071858aa5dedee82b0365c15877524e4"
+    }
+  ],
+  "test_changes": "기존 issue_2243 및 gwanak_bottom_fixed_frame 함수 보완. 새 #[test] 없음. PDF와 같은 5/3/5/1 유지. 위치·크기·기준선·내용 소유·본문 점유 검사.",
+  "baseline_changes": "없음",
+  "residuals": [
+    "2px 관용 내용 실루엣 점수는 픽셀 완전 일치가 아님",
+    "세운3쪽 표 절대 하단 1.119px 잔여 차이",
+    "주문서215/PDF217 및 다른 기존 보류 유지",
+    "Mac fresh WASM은 --no-opt 로컬 대체 빌드이며 Docker 최적화 검증 아님"
+  ],
+  "guidance": {
+    "commit": "e82a946d8",
+    "changed_guidance_files": 12,
+    "markdown_links": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation/guidance-links.log"
+    },
+    "contributor_skill": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage57-sliver2243/final-validation/contributor-skill-validation-venv.log"
+    },
+    "diff_check_exit_code": 0,
+    "new_regression_rule": "모든 관련 페이지/fixture/Native/fresh WASM 결과의 최저 2px 이웃 관용 내용 실루엣 일치율 90% 이상. 미달/측정 불가이면 추가 보류. 쪽수는 전체 페이지. 기존 검사는 자동 삭제하지 않음.",
+    "metadata_diagnostic": "--help 미지원인 기존 metadata 검사기를 실행해 기존 4개 비변경 기술문서의 메타데이터 누락 16건을 확인했다. 이번 지침 수정 파일은 포함되지 않으며 전체 metadata 통과로 보고하지 않는다."
+  },
+  "code_sha": "1c82df86f3fe8db6837b23d3e28b890723c617bf"
+}

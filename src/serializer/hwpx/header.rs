@@ -1311,13 +1311,12 @@ fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), S
 // =====================================================================
 fn write_compatible_document<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
     start_tag_attrs(w, "hh:compatibleDocument", &[("targetProgram", "HWP201X")])?;
-    super::utils::start_tag(w, "hh:layoutCompatibility")?;
-    empty_tag(w, "hh:char", &[])?;
-    empty_tag(w, "hh:paragraph", &[])?;
-    empty_tag(w, "hh:section", &[])?;
-    empty_tag(w, "hh:object", &[])?;
-    empty_tag(w, "hh:field", &[])?;
-    end_tag(w, "hh:layoutCompatibility")?;
+    // 한컴 산출물(2014 저장 빈 문서 · samples/hwpx/ref/ref_empty.hwpx)과 같이 자기닫힘으로
+    // 쓴다. 종전의 <hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/> 다섯은
+    // HWP5 LayoutCompatibility 레코드의 필드 묶음 이름이지 HWPX 요소가 아니며, 엄격한
+    // 소비자(한글 2014)는 이 다섯이 있으면 열기에서 종료한다. 원본 꼬리를 splice 하는
+    // 경로(`write_header_splices_doc_settings_tail_verbatim`)와 같은 꼴이 된다.
+    empty_tag(w, "hh:layoutCompatibility", &[])?;
     end_tag(w, "hh:compatibleDocument")?;
     Ok(())
 }
@@ -1583,8 +1582,12 @@ mod tests {
         let ctx = SerializeContext::collect_from_document(&doc);
         let xml = String::from_utf8(write_header(&doc, &ctx).unwrap()).unwrap();
         assert!(
-            xml.contains("<hh:layoutCompatibility><hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/></hh:layoutCompatibility>"),
-            "원본 부재 시 하드코딩 폴백: {xml}"
+            xml.contains("<hh:layoutCompatibility/></hh:compatibleDocument>"),
+            "원본 부재 시 폴백도 한컴 산출물과 같은 자기닫힘이어야 함: {xml}"
+        );
+        assert!(
+            !xml.contains("<hh:char/>"),
+            "폴백에 HWPX 요소가 아닌 자식(<hh:char/> 등)이 없어야 함: {xml}"
         );
         // 종전에는 `flags="0"` 을 못 박았다. 그 값은 실측으로 틀렸다 — 한글은 0 인 문서를
         // 같은 내용인데도 한 쪽 더 늘려 연다(00295: 원본 1쪽 / 저장본 2쪽 / 이 값만 56 으로

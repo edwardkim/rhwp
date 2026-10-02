@@ -33,6 +33,7 @@ pub(in crate::renderer::typeset) struct EmptyFloatPlacement {
     pub x_end: f64,
     pub raw_top: f64,
     pub reserved_height: f64,
+    pub resolved: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
 }
 
 /// 예산 조회는 기존 수평 범위 계산 뒤에만 실행한다. 거절된 후보에는 상태 효과가 없다.
@@ -49,6 +50,7 @@ pub(super) fn prepare(
     para_start_height: f64,
     lanes: &FloatLaneSet,
     page: EmptyFloatPage<'_>,
+    table_reflowed: bool,
     available_height: impl FnOnce() -> f64,
     dpi: f64,
 ) -> Option<EmptyFloatPlacement> {
@@ -122,7 +124,19 @@ pub(super) fn prepare(
         .with_body_area(page.layout.body_area)
         .with_paper_width(page.layout.page_width)
         .with_host_margins(effective_margin, margin_right);
-    let (x_start, x_end) = horizontal_range(&table.common, width_px, placement_ctx, dpi);
+    let (x_start, mut x_end) = horizontal_range(&table.common, width_px, placement_ctx, dpi);
+    let square_outer_frame = !page.profile.session_edited()
+        && (page.profile.native_hwp5_layout() || page.profile.hwpx_stored_layout())
+        && page.layout.column_areas.len() == 1
+        && !table_reflowed
+        && crate::renderer::float_placement::stored_square_sibling_outer_frame(para);
+    if square_outer_frame {
+        // lane은 바깥 상자, 실제 표 원점은 그 안의 왼쪽 여백을 소비한다.
+        x_end += hwpunit_to_px(
+            i32::from(table.outer_margin_left) + i32::from(table.outer_margin_right),
+            dpi,
+        );
+    }
 
     let available = available_height();
 
@@ -193,6 +207,13 @@ pub(super) fn prepare(
     if !stored_single_rowbreak_declared_height_is_trustworthy {
         return None;
     }
+    let saved_page_top = saved_page_top.map(|top| {
+        if square_outer_frame && signed_hwpunit(table.common.vertical_offset) > 0 {
+            top + v_offset_px
+        } else {
+            top
+        }
+    });
     let raw_top = saved_page_top
         .or(stored_single_topbottom_top)
         .unwrap_or_else(|| (para_start_height + v_offset_px).max(para_start_height));
@@ -262,7 +283,53 @@ pub(super) fn prepare(
         ft.effective_height + ft.host_spacing.after_for_fit
     };
     let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
-    let lane_bottom = lane_top + reserved_height;
+    // HWPX의 빈 호스트 형제 표는 각 개체의 바깥 상자를 차례로 점유한다.
+    // 위여백을 누락하고 아래여백을 fit 면제와 함께 버리면 뒤 표가 누적해서
+    // 올라간다. 마지막 아래여백의 적합성 면제와 형제의 실제 예약을 구분한다.
+    let square_resolved = (square_outer_frame && saved_page_top.is_some()).then(|| {
+        let top = lane_top + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        crate::renderer::float_placement::ParagraphFloatPlacement {
+            flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+            anchor_y: saved_page_top.expect("유효 저장 호스트 프레임"),
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: Some(
+                x_start - column_area.x + hwpunit_to_px(i32::from(table.outer_margin_left), dpi),
+            ),
+            table_top: top,
+            occupied_bottom: top
+                + ft.effective_height
+                + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi),
+        }
+    });
+    let resolved = square_resolved.or_else(|| {
+        (page.profile.hwpx_stored_layout()
+            && is_topbottom_para_float
+            && topbottom_float_count >= 2
+            && matches!(
+                table.common.vert_align,
+                crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+            ))
+        .then(|| {
+            let top = lane_top + ft.host_spacing.before;
+            crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y: para_start_height,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: top,
+                occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
+            }
+        })
+    });
+    let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
+        if square_resolved.is_some() {
+            p.occupied_bottom
+        } else {
+            p.table_top + ft.effective_height + ft.host_spacing.after_for_fit
+        }
+    });
 
     if lane_bottom > available + 0.5 {
         return None;
@@ -272,6 +339,7 @@ pub(super) fn prepare(
         x_start,
         x_end,
         raw_top,
-        reserved_height,
+        reserved_height: resolved.map_or(reserved_height, |p| p.occupied_bottom - lane_top),
+        resolved,
     })
 }

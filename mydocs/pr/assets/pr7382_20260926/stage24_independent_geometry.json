@@ -1,0 +1,52 @@
+{
+  "stage": 24,
+  "before_source_sha": "6fa58aef8",
+  "independent_inputs": [
+    {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+    },
+    {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+    },
+    {
+      "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+    },
+    {
+      "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916"
+    }
+  ],
+  "source_hu": {
+    "common_first_fragment_height": 13678,
+    "first_cell_declared_height": 25619,
+    "picture_height": 17772,
+    "vertical_padding": 282,
+    "caption_height": 1282,
+    "outer_top": 283,
+    "outer_bottom": 283,
+    "next_paragraph_vpos": 19902
+  },
+  "source_closure": "max(25619-13678,17772+282)+1282+283+283=19902",
+  "hancom_border_control": {
+    "pdf": "liver7379-table250-visible-border-2024.pdf",
+    "sha256": "c45fa135fbcc787368cb4c5c19f55c2cb246e43de97da947284eccc2416c10ee",
+    "original_text_and_image_bbox_equal_all_215_pages": true,
+    "first_blank_fragment_px": [
+      820.062663,
+      1002.263997
+    ],
+    "continuation_borders_px": [
+      86.945312,
+      327.32137,
+      344.422689
+    ]
+  },
+  "counter_boundaries": [
+    "높이0 대조군의 각주8 앞쪽 이동은 원본 적합 증거가 아님",
+    "높이40000 대조군은 선언 높이 전체 무시를 기각하는 반례",
+    "noAdjust 변경은 원인이 아님"
+  ]
+}

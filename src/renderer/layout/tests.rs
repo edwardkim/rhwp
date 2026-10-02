@@ -1820,6 +1820,7 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
+    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
     assert!(matches!(
         numbering_format_to_number_format(0),
         NumFmt::Digit

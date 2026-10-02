@@ -1,0 +1,92 @@
+{
+  "baseHead": "1e53edf0bb0067c417845f0493b1027261b39eb6",
+  "sourceFiles": {
+    "src/renderer/composer.rs": "55bd35a499ca3a923959165e5843835075445534f80c16d04b86a1a69318e946",
+    "src/renderer/height_cursor.rs": "34d911357435442bd5d18f3f6f3aea83c5fe2a10ff4dc9ff1b7619992d47d0dd"
+  },
+  "nativeBuildExit": 0,
+  "freshWasmBuildExit": 0,
+  "nativeSweepExit": 0,
+  "wasmSweepExit": 0,
+  "nativePageCount": 215,
+  "wasmPageCount": 215,
+  "pdfPageCount": 215,
+  "pages": [
+    {
+      "stage": "stage332-native-review",
+      "pages": [
+        {
+          "page": 87,
+          "silhouette": 99.83337,
+          "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+        },
+        {
+          "page": 88,
+          "silhouette": 98.62448,
+          "pngSha256": "f61f51e5e194677fd723474df3f4a782300ebc8d58bcaa0cffd82234360779b7"
+        },
+        {
+          "page": 89,
+          "silhouette": 98.72103,
+          "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+        }
+      ]
+    },
+    {
+      "stage": "stage332-wasm-review",
+      "pages": [
+        {
+          "page": 87,
+          "silhouette": 99.83337,
+          "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+        },
+        {
+          "page": 88,
+          "silhouette": 98.62448,
+          "pngSha256": "f61f51e5e194677fd723474df3f4a782300ebc8d58bcaa0cffd82234360779b7"
+        },
+        {
+          "page": 89,
+          "silhouette": 98.72103,
+          "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+        }
+      ]
+    }
+  ],
+  "existingTests": {
+    "passed": 124,
+    "failed": 0,
+    "exit": 0,
+    "features": [
+      "native-skia"
+    ],
+    "testThreads": 8,
+    "scope": "기존 height_cursor·번호 lib 검사와 기존 6개 suite의 수식·문단 머리·표 각주 예약 검사",
+    "log": "output/pr-review/planet6897-7382-20260926/stage332-focused.log"
+  },
+  "rustTestFunctionsAdded": 0,
+  "semanticChecks": {
+    "normalizedParagraphTextSamePages": [
+      87,
+      88,
+      89
+    ],
+    "unchangedRasterPages": [
+      87,
+      89
+    ],
+    "footnote139Visible": true,
+    "equationFollowingLineEnds": "장기의 질과 안전",
+    "nextLineStarts": "기준 지침",
+    "lastParagraphBeforeY": 981.03,
+    "lastParagraphAfterY": 975.84,
+    "pdfLastParagraphTextTopY": 974.98,
+    "coordinateNote": "rhwp layout line top와 PDF font bbox top는 서로 다른 메트릭. 같은 raster에서 직접 판독했으며5.19px 과대 이동은 해소."
+  },
+  "remaining": [
+    "최신 head 전체215쪽 Native/fresh WASM 검증 및 전체 회귀/lint",
+    "수식 기호와 글꼴 raster의 미세한 형상·위치 차이는 존재하며 완전한 픽셀 동일을 주장하지 않음"
+  ],
+  "nativeSkiaDirectPdfVisual": "미실행; native-skia feature 검사와 Native SVG/fresh WASM의 직접 시각 비교를 구분",
+  "metadataChangedManualErrors": 0
+}

@@ -1466,9 +1466,14 @@ impl SkiaLayerRenderer {
                             } else {
                                 1.0
                             };
-                            if (scale_x - 1.0).abs() > 0.01 {
+                            let scale_y = crate::renderer::equation::stored_vertical_scale(
+                                bbox.height,
+                                equation.layout_box.height,
+                                equation.font_size,
+                            );
+                            if (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01 {
                                 canvas.translate((bbox.x as f32, bbox.y as f32));
-                                canvas.scale((scale_x as f32, 1.0));
+                                canvas.scale((scale_x as f32, scale_y as f32));
                                 render_equation(
                                     canvas,
                                     &self.font_mgr,

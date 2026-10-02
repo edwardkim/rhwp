@@ -1,0 +1,305 @@
+{
+  "stage": 119,
+  "code_commit": "f1083037faac517f7dde23bba4a1f97e5eb8ed64",
+  "analysis": {
+    "head": "5a37e86e6ede798de77bd182fa174a5cbeb02ee7",
+    "analysis": "#7382 실제 차단은 HWPX pi52 end_cut=[3] assertion 하나이며 현재[2]. 전체5쪽·host먼저 순서·HWP5쪽/컷[3]·HWPX IR52[1,2,2,2,2,1]/57[2,2]는 정상. 이 assertion만 #7445 보류하고 기존함수의 나머지·같은파일의나머지2함수/모든 다른 축·원문/PDF 유지. [3]을[2]로 완화하지 않음.",
+    "matching_input_pdf": {
+      "samples/task1749/saved_bounds_cumulative_page_break.hwpx": {
+        "size": 51205,
+        "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f"
+      },
+      "samples/task1749/saved_bounds_cumulative_page_break.hwp": {
+        "size": 77824,
+        "sha256": "49478ec2a01315594bcc5bf0bbbdbc43b86c134cefba3c979d617180bfd43f81"
+      },
+      "samples/task1749/saved_bounds_cumulative_page_break-2024.pdf": {
+        "size": 234701,
+        "sha256": "68c09b6df2aa5f6c89272193c69013a7a7417e0f587e5bb473274e50ef0e7e70",
+        "pages": 5,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2024 13.0.0.3622",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260702222351+09'00'",
+          "modDate": "D:20260702222351+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "visual_provenance": {
+      "hwp": {
+        "path": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+        "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f"
+      },
+      "pdf": {
+        "path": "samples/task1749/saved_bounds_cumulative_page_break-2024.pdf",
+        "sha256": "68c09b6df2aa5f6c89272193c69013a7a7417e0f587e5bb473274e50ef0e7e70"
+      },
+      "git_head": "28e2dbf4b8bc6e063fd0d8f9560ed580f25c65e6",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+        "full_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage94-savedbounds1749/visual-native/savedbounds1749/run_manifest.json"
+      }
+    },
+    "native_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 82.65886
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 72.63884
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 30.44845
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "native_metrics": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 94.04792
+      },
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 98.06349
+      },
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 82.65886
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 72.63884
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 30.44845
+      }
+    ],
+    "exact_observations": "hwpx page_count=5\n\n=== 페이지 4 (global_idx=3, section=0, page_num=3) ===\n  body_area: x=68.0 y=96.0 w=657.7 h=930.5\n  단 0 (items=7, used=909.5px)\n    FullParagraph  pi=47  h=110.4 (sb=0.0 lines=110.4 lh=61.3 ls=49.1 sa=0.0)  vpos=209324..214904  ls=3[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=81 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (신규위원) 4차 분과회의는 신규위원들 포함해서 신청을 받고 있으며\"\n    FullParagraph  pi=48  h=74.4 (sb=0.0 lines=74.4 lh=41.3 ls=33.1 sa=0.0)  vpos=217604..220484  ls=2[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=41 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (기존위원) 하반기에 분과가 다른 형태로 전환하기 때문에 기존위원을\"\n    FullParagraph  pi=49  h=74.4 (sb=0.0 lines=74.4 lh=41.3 ls=33.1 sa=0.0)  vpos=223184..226064  ls=2[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=42 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (정책제안) 의제 관심사 위주로 팀빌딩으로 구성할 예정이며, 당일 \"\n    Table          pi=50 ci=0  3x3  642.9x383.6px  wrap=TopAndBottom tac=true  vpos=228764  ls=1[ts=0 lh=28769 th=28769 bl=24454 gap=1200 cs=0 sw=49324]\n    FullParagraph  pi=51  h=12.0 (sb=0.0 lines=12.0 lh=6.7 ls=5.3 sa=0.0)  vpos=258733  ls=1[ts=0 lh=500 th=500 bl=425 gap=400 cs=0 sw=49324]  \"(빈)\"\n    PartialParagraph  pi=52  lines=0..4  vpos=259633..267913  ls=4[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=129 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]\n    PartialTable   pi=52 ci=0  rows=0..3  cont=false  3x3  vpos=259633..267913  ls=4[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=129 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  start_cut=[] end_cut=[2]\n\nhwpx pi=52 row2col0 line_counts=[1, 2, 2, 2, 2, 1]\nhwpx pi=57 row2col0 line_counts=[2, 2]\nhwp page_count=5\n\n=== 페이지 4 (global_idx=3, section=0, page_num=3) ===\n  body_area: x=68.0 y=96.0 w=657.7 h=930.5\n  단 0 (items=6, used=923.6px)\n    FullParagraph  pi=47  h=110.4 (sb=0.0 lines=110.4 lh=61.3 ls=49.1 sa=0.0)  vpos=0..5580  ls=3[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=81 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (신규위원) 4차 분과회의는 신규위원들 포함해서 신청을 받고 있으며\"\n    FullParagraph  pi=48  h=74.4 (sb=0.0 lines=74.4 lh=41.3 ls=33.1 sa=0.0)  vpos=8280..11160  ls=2[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=41 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (기존위원) 하반기에 분과가 다른 형태로 전환하기 때문에 기존위원을\"\n    FullParagraph  pi=49  h=74.4 (sb=0.0 lines=74.4 lh=41.3 ls=33.1 sa=0.0)  vpos=13860..16740  ls=2[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=42 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  \" ㅇ (정책제안) 의제 관심사 위주로 팀빌딩으로 구성할 예정이며, 당일 \"\n    Table          pi=50 ci=0  3x3  642.9x383.6px  wrap=TopAndBottom tac=true  vpos=19440  ls=1[ts=0 lh=28769 th=28769 bl=24454 gap=1200 cs=0 sw=49324]\n    FullParagraph  pi=51  h=12.0 (sb=0.0 lines=12.0 lh=6.7 ls=5.3 sa=0.0)  vpos=49409  ls=1[ts=0 lh=500 th=500 bl=425 gap=400 cs=0 sw=49324]  \"(빈)\"\n    PartialTable   pi=52 ci=0  rows=0..3  cont=false  3x3  vpos=50309..58589  ls=4[first ts=0 lh=1600 th=1600 bl=1360 gap=1280 cs=0 sw=49324; last ts=129 lh=1500 th=1500 bl=1275 gap=1200 cs=0 sw=49324]  start_cut=[] end_cut=[3]\n\nhwp pi=52 row2col0 line_counts=[1, 2, 2, 2, 2, 1]\nhwp pi=57 row2col0 line_counts=[2, 2]\n",
+    "direct_visual": "동일 HWPX 독립 한컴2024 PDF5쪽. 전체Native5쪽 최저5쪽30.44845%,영향4쪽72.63884%.4쪽review 직접 판독에서 사회기여 host글줄과작은표 겹침·표내용소유/후속문단 차이. freshWASM 미실행, 정상HWP출력을HWPX정답대용으로쓰지않음.",
+    "reuse": "원문/PDF 및 생산binary 해시동일, 보정69대비src빈diff. 신규회귀 없음. 정상IR/쪽수/host순서 검사를 피델리티 승인으로 승격하지않음.",
+    "checks": [
+      [
+        "issue_1749_saved_bounds_page_break",
+        "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference"
+      ]
+    ],
+    "plans": [
+      {
+        "caseName": "issue_1749_saved_bounds_page_break",
+        "target": "regression_suite_016",
+        "grouped": true
+      }
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(=issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.84754570806399,
+      "summary": [
+        "Summary [   0.024s] 1 test run: 0 passed, 1 failed, 209 skipped"
+      ],
+      "observations": []
+    }
+  ],
+  "mutation": {
+    "removed_assertions": [
+      "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference — HWPX pi52 end_cut=[3] only"
+    ],
+    "removed_functions": [],
+    "kept": "동일 함수의 HWPX5쪽/host먼저 소비·HWP5쪽/컷[3]/HWPX IR52 및 나머지2함수/모든 다른 축·원문/PDF 유지. 기존 실제 text/body 보류 유지.",
+    "changed_expected_values_or_tolerances": false
+  },
+  "focused_summary": [
+    "Summary [   0.028s] 3 tests run: 3 passed, 205 skipped"
+  ],
+  "normal_results": [
+    "PASS [   0.020s] (1/3) rhwp::regression_suite_005 issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi57_tac_rowbreak_cell_uses_saved_height",
+    "PASS [   0.020s] (2/3) rhwp::regression_suite_005 issue_1749_saved_bounds_page_break::issue_1749_v2_pi26_stays_on_page_2",
+    "PASS [   0.027s] (3/3) rhwp::regression_suite_005 issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference"
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "5a37e86e6ede798de77bd182fa174a5cbeb02ee7",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_005",
+          "-E",
+          "(test(issue_1749_saved_bounds_page_break::))"
+        ],
+        "exit_code": 0,
+        "seconds": 5.894876749720424
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.994349916931242
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2971249590627849
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23060229187831283
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3536529582925141
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.356521958950907
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2895838329568505
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.635664667002857
+      }
+    ]
+  },
+  "source_before_sha256": "cff6b7aa9cdfba8b868742191fd0d785a2ddf9bd50fab8502b55deb55fdcde4f",
+  "source_after_sha256": "41765db3c23d985535d02818a670e57d894e054a712c165672a88ee289968311",
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/savedbounds1749_native_review_004.png",
+    "mydocs/pr/assets/issue7445/savedbounds1749_native_overlay_004.png"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870886007",
+  "new_test_functions": 0,
+  "production_changes": false,
+  "remaining": "복원16실패 중1각주기대페이지 독립보정/13실패전용함수 보류/2혼합함수의 실제 assertion만보류해정상부분 유지. 이 전용실패목록 미해결 없음. corpus text/off 최근8실패 및 다른축/최종37개별/전체검증/PR준비 미완료."
+}

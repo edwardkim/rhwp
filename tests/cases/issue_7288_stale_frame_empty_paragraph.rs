@@ -35,8 +35,8 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/task1725/text_footnote_tail_overpagination.hwp";
-/// 검사 대상 쪽 (0-based). 7×7 «나누지 않음» 표 `표 7.4-2` 가 통째로 놓이는 쪽.
-const PAGE: u32 = 63;
+/// 정상 PDF의 물리63쪽(0기반62). 7×7 «나누지 않음» 표 `표 7.4-2`가 통째로 놓이는 쪽.
+const PAGE: u32 = 62;
 /// 그 쪽에서 표 뒤 첫 본문 문단.
 const PARA: usize = 1374;
 /// 저장 사다리가 지시하는 위치 — `21640HU / 75 + 본문 상단 75.5867px`.

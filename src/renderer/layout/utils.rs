@@ -257,7 +257,7 @@ pub(crate) fn expand_numbering_format(
     result
 }
 
-/// HWP 표 43 번호 형식 코드 → NumberFormat 변환
+/// HWP 표 41 번호 형식 코드 → NumberFormat 변환
 pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
     match code {
         0 => NumFmt::Digit,         // 1, 2, 3
@@ -267,6 +267,7 @@ pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
         4 => NumFmt::LatinUpper,    // A, B, C
         5 => NumFmt::LatinLower,    // a, b, c
         8 => NumFmt::HangulGaNaDa,  // 가, 나, 다
+        10 => NumFmt::HangulJamo,   // ㄱ, ㄴ, ㄷ
         12 => NumFmt::HangulNumber, // 일, 이, 삼
         13 => NumFmt::HanjaNumber,  // 一, 二, 三
         _ => NumFmt::Digit,

@@ -1,0 +1,331 @@
+{
+  "stage": 118,
+  "code_commit": "838c6387bf3e988d2fdd5bd6e5f88b85c48b59b8",
+  "analysis": {
+    "head": "cbf429924ba61e97fdd3a98e88584319442aadcb",
+    "analysis": "#7382 차단 범위만 처리. #6706 뒤의 제목/그림 좌표·소유/뒤 제목은 모두 기존 assertion 범위에 들어온다. 쪽수 65/64 assertion만 #7445로 보류하고 이 함수 및 모든 뒤 assertion을 유지한다. #2158 쪽수 전용 한 함수만 보류하며 온새미로·정상 HWPX 다른 함수·모든 corpus 축과 원문/PDF는 유지한다.",
+    "matching_input_pdf": {
+      "samples/hwp3-sample16-hwp5.hwpx": {
+        "size": 3061900,
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf": {
+        "size": 2234074,
+        "sha256": "87cf9b7e3ed3abf529fd3e6bd34104d62d5a1b2e308532556069de0d50efa187"
+      },
+      "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp": {
+        "size": 26874272,
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      }
+    },
+    "negative_visual": {
+      "backend": "frozen Native negative proof",
+      "actual_pages": 65,
+      "oracle_pages": 64,
+      "selected": [
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 44.78343
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 58.6314
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 22.67417
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 67.8613
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 22.32296
+        },
+        {
+          "page": 24,
+          "tolerant_content_match_percent": 41.72462
+        },
+        {
+          "page": 64,
+          "tolerant_content_match_percent": 11.02735
+        }
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "direct_review": "6쪽 본문·표·수식의 세로 위치 차이와64쪽 앞 내용/합의각서의 페이지 소유 차이 확인",
+      "whole_document_and_fresh_wasm": "미실행. 선택 Native의90%미만 증거로 사용자 승인 제외를 판단했으며 피델리티 개선이나 승인으로 세지 않음"
+    },
+    "exact_downstream_observations": "page_count=65\npage_width=793.706666666667\ntitle x=107.093333333333 y=302.613333333333 baseline=318.480000000000\nimage x=108.053333333333 y=340.160000000000 right=716.533333333333 bottom=752.053333333333\nthird_title y=770.933333333333 text=나. 주요 과업내용\ntitles=1 pictures=1\n",
+    "independent_pdf_page18": "동일 HWPX 한컴2024 PDF18쪽 baseline238.919998pt×96/72=318.559998, image좌상단80.956/254.842pt×96/72=107.941335/339.789388. 기존값318.89/107.9/339.8 허용0.7을 바꾸지 않는다. 제목 baseline318.48,image108.0533/340.16,뒤제목770.9333>그림끝752.0533. 각1개/페이지너비 이내.",
+    "direct_visual": "18쪽 review 직접 판독: 그림 내부 색/글자 차이 및 문단 글줄 차이가 있으며67.8613%. 선택64쪽11.02735%,65/64쪽. 전체Native/freshWASM 승인아님. 정상 좌표 계약은 별도로 유지.",
+    "diagnostic_note": "CLI -p는0기준. 첫 -p18은19쪽이며 잘못된 인덱스 진단을 제외하고 -p17의18쪽 및 public DocumentCore exact 진단으로 확인했다. output의diagnose.rs는진단 main이며회귀 함수추가없음.",
+    "checks": [
+      [
+        "issue_6706_stored_inline_control_rows",
+        "stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership"
+      ],
+      [
+        "issue_2158_hwpx_vpos_reset_preserve",
+        "hwp3_sample16_hwpx_matches_hwp5_and_hangul"
+      ]
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6706_stored_inline_control_rows",
+        "target": "regression_suite_004",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_2158_hwpx_vpos_reset_preserve",
+        "target": "regression_suite_024",
+        "grouped": true
+      }
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(=issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.08923066733405,
+      "summary": [
+        "Summary [   0.093s] 1 test run: 0 passed, 1 failed, 212 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_024",
+        "-E",
+        "test(=issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.433785875327885,
+      "summary": [
+        "Summary [   0.174s] 1 test run: 0 passed, 1 failed, 218 skipped"
+      ],
+      "observations": [
+        "left: (65, 65)",
+        "right: (64, 64)"
+      ]
+    }
+  ],
+  "mutation": {
+    "removed_assertions": [
+      "issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership — page_count()==64 only"
+    ],
+    "removed_functions": [
+      "issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul"
+    ],
+    "kept": "#6706 함수/모든 뒤 위치·개수·소유 assertion, #2158 온새미로 및 정상 수식/따옴표/IR·모든 다른 HWPX 함수·corpus 축/원문/PDF 유지. 기존 실제 body/oracle 보류 축은 유지.",
+    "changed_expected_values_or_tolerances": false
+  },
+  "focused_summary": [
+    "Summary [   0.151s] 10 tests run: 10 passed, 1091 skipped"
+  ],
+  "normal_results": [
+    "PASS [   0.047s] ( 1/10) rhwp::regression_suite_002 issue_1008_gradient::hwp3_sample16_font_name_mapped_to_hwp5_convention",
+    "PASS [   0.049s] ( 2/10) rhwp::regression_suite_002 issue_1008_gradient::hwp3_sample16_business_box_has_gradient",
+    "PASS [   0.049s] ( 3/10) rhwp::regression_suite_002 issue_1008_gradient::hwpx_sample16_business_box_gradient_colors_materialized",
+    "PASS [   0.053s] ( 4/10) rhwp::regression_suite_002 issue_1008_gradient::hwp3_sample16_heading_decoration_stripped",
+    "PASS [   0.054s] ( 5/10) rhwp::regression_suite_002 issue_1008_gradient::hwp3_sample16_business_box_border_solid",
+    "PASS [   0.082s] ( 6/10) rhwp::regression_suite_005 issue_2158_hwpx_vpos_reset_preserve::onsaemiro_hwpx_page_count_matches_hangul",
+    "PASS [   0.122s] ( 7/10) rhwp::regression_suite_003 issue_6060_fullwidth_cjk_quote::issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap",
+    "PASS [   0.128s] ( 8/10) rhwp::regression_suite_020 issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership",
+    "PASS [   0.092s] ( 9/10) rhwp::regression_suite_026 issue_6527_standalone_equation_text::standalone_equations_are_extracted_once_in_reading_order",
+    "PASS [   0.098s] (10/10) rhwp::regression_suite_026 issue_6527_standalone_equation_text::inline_equations_are_extracted_once_in_reading_order"
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "cbf429924ba61e97fdd3a98e88584319442aadcb",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_002",
+          "--test",
+          "regression_suite_003",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "(test(issue_6706_stored_inline_control_rows::)) or (test(issue_2158_hwpx_vpos_reset_preserve::)) or (test(issue_6527_standalone_equation_text::)) or (test(issue_6060_fullwidth_cjk_quote::)) or (test(issue_1008_gradient::))"
+        ],
+        "exit_code": 0,
+        "seconds": 22.96086912509054
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.961718500126153
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3034154581837356
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.25516195921227336
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3724344586953521
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.825523499865085
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4378584581427276
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.212000207975507
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/issue_6706_stored_inline_control_rows.rs": "a3233e1451425f346663ace02af5ff5530c9de608bd47394f7beb3f54b54bd20",
+    "tests/issue_2158_hwpx_vpos_reset_preserve.rs": "4445a5bf3868d3d7e6b6b700d67b83dc047235862e863d563f439e89cdc30d36"
+  },
+  "source_after_sha256": {
+    "tests/cases/issue_6706_stored_inline_control_rows.rs": "0b73cbb8b823e163de79dd966a1cedfa0dc0ac3e024cd33626694e2504893f75",
+    "tests/issue_2158_hwpx_vpos_reset_preserve.rs": "85dfe2dd009cd003e22acf83da229cc1beffe1dbb62ad35e9c18476064040f4b"
+  },
+  "representative_assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_review_018.png",
+      "sha256": "df0a522119eaafbf5dad47d8419084e79e3e953e23379371decde048480a23a4"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_overlay_018.png",
+      "sha256": "f61b575d486388d790067b7db1021b83c38c3644eed8321c9e99184d2eec81e4"
+    }
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869485533",
+  "new_test_functions": 0,
+  "production_changes": false,
+  "remaining": "실제 복원15실패 중12함수 보류, 추가 #2158 한함수 보류/#6706 쪽수 assertion만 보류하며 위치함수 정상PASS. 미해결 dedicated #1749 혼합검사 한개. text/off 최근8실패·다른축/최종37개별/전체검증/PR준비 미완료."
+}

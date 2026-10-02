@@ -1,0 +1,96 @@
+{
+  "source_commit": "016aba9bf",
+  "source_sha256": "4f0691fd8d8b6ed78c28eaa841e014d437553b7e6f4742c347915cf4ef43dd3c",
+  "hwp_before_pages": 216,
+  "hwp_after_pages": 215,
+  "hwpx_before_pages": 216,
+  "hwpx_after_pages": 215,
+  "independent_pdf_pages": 215,
+  "wasm_document_pages": 215,
+  "wasm_selected_pages": [
+    11,
+    12,
+    215
+  ],
+  "wasm_gate": {
+    "status": "passed",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "wasm_selected_metrics": [
+    {
+      "page": 11,
+      "tolerant_content_match_percent": 99.57078
+    },
+    {
+      "page": 12,
+      "tolerant_content_match_percent": 99.93582
+    },
+    {
+      "page": 215,
+      "tolerant_content_match_percent": 96.77735
+    }
+  ],
+  "previous_215_body_owner_comparison": {
+    "old_count": 215,
+    "new_count": 215,
+    "matching_owner_pages": 215,
+    "differing_pages": []
+  },
+  "focused_and_build_results": [
+    {
+      "name": "original-focus",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7379_rowbreak_table_footnote_reservation",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.487
+    },
+    {
+      "name": "collision-focus",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_5585_sibling_table_anchor_offset",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.405
+    },
+    {
+      "name": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 213.842
+    }
+  ],
+  "full_nextest_status": "진행 중",
+  "native_full_sweep_status": "진행 중; 전쪽 시각 승인 아님",
+  "logs_root": "output/pr-review/planet6897-7382-20260926"
+}

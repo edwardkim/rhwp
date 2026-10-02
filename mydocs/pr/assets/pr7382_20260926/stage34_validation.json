@@ -1,0 +1,305 @@
+{
+  "source_sha": "e7985dc9a8b86760e0a77412172172d174fd573f",
+  "files": {
+    "src/renderer/typeset/table/block.rs": "ec11f45d1a4d9957ef1ec261db148be8b7e6e2dc19f5084be742ac310717f7e5",
+    "src/renderer/typeset/table/block/entry.rs": "d4af3d345d05f920c7bbeedcc62872d988a98c88bbab008583497bc4a83236f8",
+    "src/renderer/typeset/table/block/prepare.rs": "e92b05dd5079487228d488263799f032a2eb708e42ebd51b22389e3208e96d62",
+    "src/renderer/typeset/table/block/whole_fit.rs": "ca7fa6e253a685bb845acaf4c5af81477f75a0ece10edce872db0d0654dc0897",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "8a2f372846d7851c6c4b927a151082d16477e8b7b72a234834835dbd0d5abc09",
+    "src/renderer/typeset/table/scan/row_entry.rs": "6c0cdaabd7845dfcf8972dbf8e5446b78a2bb8f30bbf53d262fe093ad4acc3ba",
+    "src/renderer/typeset/table/scan/runner/row_step.rs": "b4b9b8ea9779f64836a278b4d817fbc88091e648eb91e7c8eb7f3d14522dc24f",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "61b56c7433007182e87072ac511898d511bf38ef7bd14ac05f696ddd094b1a92"
+  },
+  "runtime_diff_sha256": "c3f77ef9a19c3a0a48305f7ce665742262cd48ec718e6295a82580d554ccf403",
+  "test_diff_sha256": "fcb3c1b0289e755d40f981b4b0c05a4f554f2e10bad51cb48c6d49a9dbf57712",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "before": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 0.204,
+    "independent_expectation": "원본 닫힘45803+948+283+17819+283=65136HU, 본문 원점6239HU와한컴PDF"
+  },
+  "after": {
+    "passed": 155,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 5.742,
+    "threads": 8,
+    "wall_seconds": 166.1158039169386
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_001",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_004",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_007",
+    "--test",
+    "regression_suite_010",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_013",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_019",
+    "--test",
+    "regression_suite_020",
+    "--test",
+    "regression_suite_021",
+    "--test",
+    "regression_suite_022",
+    "--test",
+    "regression_suite_023",
+    "--test",
+    "regression_suite_026",
+    "--test",
+    "regression_suite_027",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5833_cell_multi_para_float_pics) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6313_cell_picture_own_displacement) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6782_cell_float_full_original) | test(issue_5551_caption_owner) | test(issue_6284_picture_top_caption_rendered) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6575_tac_caption_box_baseline) | test(issue_5875_nested_text_caption) | test(issue_5875_nested_table_text_caption) | test(issue_5714_completed_row_tail_band) | test(issue_5906_float_stack_declared_tail) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_7358_terminal_rowbreak_outer_top)"
+  ],
+  "attempts": [
+    {
+      "log_filename": "stage34-before.log",
+      "log_sha256": "7acb2abd857d2365c957e31ad7f0cde88182ba486412afa6829122046f2e3b16",
+      "classification": "원본 결함 검출",
+      "exit_code": 100,
+      "cause": "독립 표 상단710.306667px와 원래706.506667px 불일치",
+      "summary": "Summary [   0.204s] 2 tests run: 0 passed, 2 failed, 216 skipped"
+    },
+    {
+      "log_filename": "stage34-after-original-initial.log",
+      "log_sha256": "419f54ab8ad0dcbb39443354db3a27cff007de19463c968e5acd1e3ed6a8d662",
+      "classification": "자체 빌드 오류",
+      "exit_code": 101,
+      "cause": "단 번호u16을usize 튜플로 선언",
+      "summary": null
+    },
+    {
+      "log_filename": "stage34-after-original-type-fixed.log",
+      "log_sha256": "95a4491cd956f09c0c6505e338710b5b93b84df495db9e585184f34c617553f9",
+      "classification": "자체 빌드 오류",
+      "exit_code": 101,
+      "cause": "빈 텍스트 검사 helper import 누락",
+      "summary": null
+    },
+    {
+      "log_filename": "stage34-counter.log",
+      "log_sha256": "e83277a85f9cca676d876b6cbb47d0320a8e3123a6a2cdfd9051e4b47d2d4f84",
+      "classification": "후보 분할 경계 미충족",
+      "exit_code": 100,
+      "cause": "좁은 본문에서17.1px 행을6px밴드로 예약한 뒤 통째 표로 복원,7.3px넘침",
+      "summary": "Summary [   0.294s] 1 test run: 0 passed, 1 failed, 215 skipped"
+    },
+    {
+      "log_filename": "stage34-counter-fixed.log",
+      "log_sha256": "8b1776a5b08bd5c2a71d5204e6ff21893e3071f86917843264e9523b71a5d007",
+      "classification": "검사 가정 오류",
+      "exit_code": 100,
+      "cause": "온전한 행 조각에도 page_fragment=true를 요구",
+      "summary": "Summary [   0.335s] 3 tests run: 2 passed, 1 failed, 213 skipped"
+    },
+    {
+      "log_filename": "stage34-counter-rows.log",
+      "log_sha256": "bdf56642f511dd00a3a21d34bf21d137633cf7c289894ee29d3683ff8b08f7cf",
+      "classification": "검사 가정 오류",
+      "exit_code": 100,
+      "cause": "Native와HWPX의BinData 번호가 같다고 가정",
+      "summary": "Summary [   0.612s] 3 tests run: 2 passed, 1 failed, 212 skipped"
+    },
+    {
+      "log_filename": "stage34-counter-picture.log",
+      "log_sha256": "182c0572c4506b7e071760e032d6961612848353934f7f806549f8bc6aca6f75",
+      "classification": "수정 후 경계 통과",
+      "exit_code": 0,
+      "cause": "원본2형식과6개 수동 IR 예산에서 위치·내용·물리 점유 확인",
+      "summary": "Summary [   0.959s] 3 tests run: 3 passed, 213 skipped"
+    }
+  ],
+  "policies": {
+    "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "fmt_exit_code": 0,
+    "manifest_exit_code": 0,
+    "static_test_attrs": 6219,
+    "unit_exit_code": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "cli_build": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 82.81677087489516,
+    "binary": "output/pr-review/planet6897-7382-20260926/bin/stage34-after-rhwp",
+    "sha256": "78c7c980affb494ae0f5a07e4e50960f419e1f0f4f9dd1313729fe217f415a6b"
+  },
+  "visual": {
+    "before_hwpx": {
+      "pages": [
+        14
+      ],
+      "scores": [
+        [
+          14,
+          90.37937
+        ]
+      ],
+      "directly_read_review_and_overlay_pages": [
+        14
+      ]
+    },
+    "hwpx": {
+      "pages": [
+        11,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        [
+          11,
+          98.39093
+        ],
+        [
+          14,
+          97.52614
+        ],
+        [
+          23,
+          99.62374
+        ],
+        [
+          68,
+          95.61071
+        ],
+        [
+          210,
+          99.9168
+        ]
+      ],
+      "directly_read_review_and_overlay_pages": [
+        11,
+        14,
+        23,
+        68,
+        210
+      ]
+    },
+    "hwp": {
+      "pages": [
+        11,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        [
+          11,
+          98.39093
+        ],
+        [
+          14,
+          97.54155
+        ],
+        [
+          23,
+          99.62374
+        ],
+        [
+          68,
+          95.61071
+        ],
+        [
+          210,
+          99.9168
+        ]
+      ],
+      "directly_read_review_and_overlay_pages": [
+        11,
+        14,
+        23,
+        68,
+        210
+      ]
+    },
+    "before_terminal_hwpx": {
+      "pages": [
+        154,
+        155
+      ],
+      "scores": [
+        [
+          154,
+          94.6101
+        ],
+        [
+          155,
+          53.07895
+        ]
+      ],
+      "directly_read_review_and_overlay_pages": [
+        154,
+        155
+      ]
+    },
+    "terminal_hwpx": {
+      "pages": [
+        154,
+        155
+      ],
+      "scores": [
+        [
+          154,
+          99.83033
+        ],
+        [
+          155,
+          75.49194
+        ]
+      ],
+      "directly_read_review_and_overlay_pages": [
+        154,
+        155
+      ]
+    }
+  },
+  "english_added_explanatory_comments": 0,
+  "remaining": [
+    "HWPX155쪽 그림64겹침/기준출력 위치",
+    "issue6782원본76/78쪽",
+    "보정16실제TABLE편집",
+    "보정27보존wrapper실제분할/이월",
+    "최신전체215쪽Native/freshWASM",
+    "최종전체nextest/세Clippy/Skia"
+  ]
+}

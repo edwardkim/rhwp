@@ -1,0 +1,119 @@
+{
+  "source": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+  "source_sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+  "engine": 2020,
+  "job_id": "fce324ca-d751-4a86-8580-b343d80c4294",
+  "conversion_status": "succeeded",
+  "elapsed_seconds": 17,
+  "pdf": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+  "pdf_sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+  "pdf_page_count": 4,
+  "pdf_metadata": {
+    "format": "PDF 1.4",
+    "title": "",
+    "author": "SYSTEM",
+    "subject": "",
+    "keywords": "",
+    "creator": "Hwp 2020 0.0.0.0",
+    "producer": "Hancom PDF 1.3.0.550",
+    "creationDate": "D:20260927020842+09'00'",
+    "modDate": "D:20260927020842+09'00'",
+    "trapped": "",
+    "encryption": null
+  },
+  "page_rects_pt": [
+    [
+      0.0,
+      0.0,
+      595.0,
+      841.0
+    ],
+    [
+      0.0,
+      0.0,
+      595.0,
+      841.0
+    ],
+    [
+      0.0,
+      0.0,
+      595.0,
+      841.0
+    ],
+    [
+      0.0,
+      0.0,
+      595.0,
+      841.0
+    ]
+  ],
+  "source_hu": {
+    "cell_minimum": 2994,
+    "logo_empty_line": 1000,
+    "logo_picture_height": 2568,
+    "logo_vertical_offset": 136,
+    "right_inline_line": 3194,
+    "effective_top_bottom_padding": [
+      141,
+      141
+    ],
+    "row_minimum_to_cover_inline_line": 3476,
+    "host_source_vpos": 17129,
+    "next_source_vpos": 19829,
+    "host_line_advance": 2700,
+    "last_table_outer_bottom": 283,
+    "body_top": 7085
+  },
+  "pdf_first_body_visible_bbox_pt": [
+    56.609317779541016,
+    268.6846923828125,
+    528.6688232421875,
+    282.7132263183594
+  ],
+  "pdf_first_header_rules_px": [
+    98.132,
+    144.3227
+  ],
+  "pdf_last_title_rules_px": [
+    196.7454,
+    318.692
+  ],
+  "private_source_structural_comparison": {
+    "private_original_sha256": "ae51668bed34f06822ef83e35f97a7fcb54daf7256ab9213e224244276d33893",
+    "unchanged_non_bindata_entries": [
+      "Contents/content.hpf",
+      "Contents/header.xml",
+      "Contents/section0.xml",
+      "META-INF/container.rdf",
+      "META-INF/container.xml",
+      "META-INF/manifest.xml",
+      "Preview/PrvImage.png",
+      "Preview/PrvText.txt",
+      "mimetype",
+      "settings.xml",
+      "version.xml"
+    ],
+    "different_non_bindata_entries": [],
+    "claim": "각 XML/구조 항목의 동일성만 비교; private 원본은 공개 증적에 포함하지 않음"
+  },
+  "pdf_page1_image_bbox_px": [
+    [
+      82.03600056966145,
+      973.9746907552084,
+      717.6946614583334,
+      1024.638671875
+    ],
+    [
+      106.50266520182292,
+      105.00534057617188,
+      217.16267903645834,
+      139.2080078125
+    ],
+    [
+      527.8760172526041,
+      99.89063517252605,
+      697.7040201822916,
+      142.40397135416666
+    ]
+  ]
+}

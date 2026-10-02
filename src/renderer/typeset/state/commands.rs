@@ -59,6 +59,13 @@ impl TypesetState {
     ) {
         self.data.deferred_next_page_square_pictures.push(picture);
     }
+    /// 저장 프레임의 다음 쪽 소유를 현재 호스트 흐름과 분리해 보관한다.
+    pub(in crate::renderer::typeset) fn defer_stored_frame(
+        &mut self,
+        picture: crate::renderer::typeset::DeferredStoredFrameControl,
+    ) {
+        self.data.deferred_next_page_stored_frames.push(picture);
+    }
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
     }
@@ -83,6 +90,9 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn mark_vpos_ladder_dirty(&mut self) {
         self.data.vpos_ladder_dirty = true;
+    }
+    pub(in crate::renderer::typeset) fn record_compacted_stored_rows(&mut self, delta: f64) {
+        self.data.vpos_compacted_stored_delta += delta.max(0.0);
     }
     pub(in crate::renderer::typeset) fn request_vpos_reset_after_queued_footnote(&mut self) {
         self.data.reset_vpos_after_queued_table_footnote_page = true;
@@ -214,6 +224,16 @@ impl TypesetState {
     ) {
         self.data.paragraph_float_placements.insert(key, placement);
     }
+    /// 뒤 줄간격과 문단 아래 여백을 제외한 확정 본문 하단을 보존한다.
+    pub(in crate::renderer::typeset) fn record_paragraph_content_bottom(
+        &mut self,
+        key: (usize, usize),
+        content_height: f64,
+    ) {
+        self.data
+            .paragraph_fragment_content_bottoms
+            .insert(key, self.data.current_height + content_height);
+    }
     pub(in crate::renderer::typeset) fn append_endnote_paragraph(
         &mut self,
         paragraph: crate::model::paragraph::Paragraph,
@@ -314,6 +334,9 @@ impl TypesetState {
         if let Some(page) = self.data.pages.last_mut() {
             page.footnotes.push(note);
         }
+    }
+    pub(in crate::renderer::typeset) fn mark_deferred_hwpx_note_body(&mut self) {
+        self.data.deferred_hwpx_note_body = true;
     }
     pub(in crate::renderer::typeset) fn shift_endnote_render_lines(
         &mut self,

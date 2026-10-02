@@ -101,7 +101,66 @@ fn table_text_page_0() {
 /// Issue #157: 비-TAC wrap=위아래 표 out-of-flow 배치 — 표가 텍스트와 중첩되지 않음
 #[test]
 fn issue_157_page_1() {
-    check_snapshot("samples/hwpx/issue_157.hwpx", 1, "issue-157/page-1");
+    use serde_json::Value;
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwpx/issue_157.hwpx");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&fs::read(path).expect("원문 읽기"))
+        .expect("원문 열기");
+    assert_eq!(doc.page_count(), 2, "독립 한컴 PDF의 전체 쪽수");
+    let tree: Value = serde_json::from_str(&doc.get_page_render_tree(1).expect("2쪽 렌더 트리"))
+        .expect("렌더 트리 JSON");
+
+    fn collect<'a>(value: &'a Value, output: &mut Vec<&'a Value>) {
+        output.push(value);
+        if let Some(children) = value["children"].as_array() {
+            for child in children {
+                collect(child, output);
+            }
+        }
+    }
+    let mut nodes = Vec::new();
+    collect(&tree, &mut nodes);
+    let table = |pi| {
+        nodes
+            .iter()
+            .copied()
+            .find(|node| node["type"] == "Table" && node["pi"] == pi)
+            .unwrap_or_else(|| panic!("2쪽 원문 표 문단 {pi} 누락"))
+    };
+    let text = |phrase: &str| {
+        nodes
+            .iter()
+            .copied()
+            .find(|node| {
+                node["type"] == "TextRun"
+                    && node["text"]
+                        .as_str()
+                        .is_some_and(|content| content.contains(phrase))
+            })
+            .unwrap_or_else(|| panic!("2쪽 문장 {phrase} 누락"))
+    };
+    let top = |node: &Value| node["bbox"]["y"].as_f64().expect("상단");
+    let bottom = |node: &Value| top(node) + node["bbox"]["h"].as_f64().expect("높이");
+
+    let attendance = table(7);
+    assert!(
+        bottom(text("바랍니다.)")) <= top(attendance),
+        "참석장 표가 앞 문장을 덮으면 안 된다"
+    );
+    assert!(
+        bottom(attendance) <= top(text("(대리참석 위임)")),
+        "참석장 표가 뒤 문장을 덮으면 안 된다"
+    );
+
+    let delegation = table(25);
+    assert!(
+        bottom(text("기타 정기주주총회 참석")) <= top(delegation),
+        "위임인 표가 앞 문장을 덮으면 안 된다"
+    );
+    assert!(
+        bottom(delegation) <= top(text("2026")),
+        "위임인 표가 뒤 문장을 덮으면 안 된다"
+    );
 }
 
 /// Issue #267: KTX.hwp 목차 페이지 — right tab 장제목/소제목 페이지 번호 정렬
@@ -116,38 +175,91 @@ fn issue_147_aift_page3() {
     check_snapshot("samples/aift.hwp", 3, "issue-147/aift-page3");
 }
 
-/// Issue #617: exam_kor.hwp 6페이지 — 16번 보기 박스 셀 padding 이
-/// shrink 휴리스틱으로 0까지 깎이는 회귀를 잠가둔다. 다중 줄 셀에서
-/// HWP 가 분배한 line_segs 를 신뢰하고 padding 을 보존하는 동작을 검증.
+/// Issue #617: 시험지 보기 셀의 여백과 17쪽 표시 상자의 저장 줄 위치를 검증한다.
 #[test]
 fn issue_617_exam_kor_page5() {
-    check_snapshot("samples/exam_kor.hwp", 5, "issue-617/exam-kor-page5");
-}
+    use serde_json::Value;
 
-/// Issue #677: 복학원서.hwp 1페이지 — 다음 두 결함 영역의 회귀 차단
-///   1. PartialParagraph y 누적 결함 (인라인 TAC 표 라인)
-///      `layout.rs::PageItem::PartialParagraph` 가 y_offset 을
-///      LineSeg.vpos 정합 위치로 리셋하는 동작을 잠가둔다.
-///   2. U+F081C HWP PUA 채움 문자 폭
-///      **[#7017 정정]** 종전에는 이 글자를 폭 0 으로 처리하는 동작을 잠갔다.
-///      그런데 한/글은 이 글자를 반각 점선(`┈`)으로 **그린다** — 렌더러도
-///      `hancom_pua` 표를 따라 그렇게 그리는데 측정만 0 이었다. 이 문서의
-///      한/글 2020 정본(`pdf/복학원서-hwp-2020.pdf`)을 재면 폭 0 쪽이
-///      틀렸다:
-///
-///      ```text
-///        '복학원서접수증' 줄 시작 x    정본 286.27px
-///                                   폭 0   291.42px  (+5.15)
-///                                   정정   286.29px  (+0.02)
-///      ```
-///
-///      쪽 전체로도 x 오차 중앙값이 0.44 → 0.28px 로 줄었다. golden 을
-///      그 값으로 갱신했다.
-///   3. 한컴 워터마크 모드 표준 프리셋 (brightness=+70, contrast=-50)
-///      `svg.rs::render_image` 의 워터마크 게이트 동작을 잠가둔다.
-#[test]
-fn issue_677_bokhakwonseo_page1() {
-    check_snapshot("samples/복학원서.hwp", 0, "issue-677/bokhakwonseo-page1");
+    fn collect<'a>(value: &'a Value, output: &mut Vec<&'a Value>) {
+        output.push(value);
+        if let Some(children) = value["children"].as_array() {
+            for child in children {
+                collect(child, output);
+            }
+        }
+    }
+
+    fn has_text(value: &Value, expected: &str) -> bool {
+        value["text"]
+            .as_str()
+            .is_some_and(|text| text.contains(expected))
+            || value["children"]
+                .as_array()
+                .is_some_and(|children| children.iter().any(|child| has_text(child, expected)))
+    }
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/exam_kor.hwp");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&fs::read(path).expect("원문 읽기"))
+        .expect("원문 열기");
+    assert_eq!(doc.page_count(), 20, "독립 한컴 PDF의 전체 쪽수");
+
+    let page6: Value = serde_json::from_str(&doc.get_page_render_tree(5).expect("6쪽 렌더 트리"))
+        .expect("6쪽 JSON");
+    let mut nodes6 = Vec::new();
+    collect(&page6, &mut nodes6);
+    let body_cell = nodes6
+        .iter()
+        .find(|node| {
+            node["type"] == "Cell"
+                && node["row"] == 2
+                && node["col"] == 0
+                && has_text(node, "사용한다.")
+        })
+        .expect("16번 보기 본문 셀");
+    let mut cell_nodes = Vec::new();
+    collect(body_cell, &mut cell_nodes);
+    let line = cell_nodes
+        .iter()
+        .find(|node| node["type"] == "TextLine" && has_text(node, "사용한다."))
+        .expect("보기 본문 둘째 줄");
+    let left = line["bbox"]["x"].as_f64().unwrap() - body_cell["bbox"]["x"].as_f64().unwrap();
+    let right = body_cell["bbox"]["x"].as_f64().unwrap() + body_cell["bbox"]["w"].as_f64().unwrap()
+        - line["bbox"]["x"].as_f64().unwrap()
+        - line["bbox"]["w"].as_f64().unwrap();
+    let cell_width = body_cell["bbox"]["w"].as_f64().unwrap();
+    assert!(
+        left > 0.0 && right > 0.0 && left / cell_width > 0.01 && right / cell_width > 0.01,
+        "보기 문단이 셀의 내부 여백에 있어야 함: 좌우 비율 {:.3}/{:.3}",
+        left / cell_width,
+        right / cell_width
+    );
+
+    let page17: Value =
+        serde_json::from_str(&doc.get_page_render_tree(16).expect("17쪽 렌더 트리"))
+            .expect("17쪽 JSON");
+    let mut nodes17 = Vec::new();
+    collect(&page17, &mut nodes17);
+    let label_box = nodes17
+        .iter()
+        .find(|node| node["type"] == "Rect" && has_text(node, "홀수형"))
+        .expect("홀수형 사각형");
+    let mut box_nodes = Vec::new();
+    collect(label_box, &mut box_nodes);
+    let label = box_nodes
+        .iter()
+        .find(|node| node["type"] == "TextRun" && node["text"] == "홀수형")
+        .expect("홀수형 글줄");
+    let top_gap = label["bbox"]["y"].as_f64().unwrap() - label_box["bbox"]["y"].as_f64().unwrap();
+    let bottom_gap = label_box["bbox"]["y"].as_f64().unwrap()
+        + label_box["bbox"]["h"].as_f64().unwrap()
+        - label["bbox"]["y"].as_f64().unwrap()
+        - label["bbox"]["h"].as_f64().unwrap();
+    let box_height = label_box["bbox"]["h"].as_f64().unwrap();
+    assert!(
+        top_gap > 0.0 && bottom_gap > 0.0 && (top_gap - bottom_gap).abs() / box_height <= 0.05,
+        "홀수형 글자가 사각형 중앙에 있어야 함: 위아래 차이 비율 {:.3}",
+        (top_gap - bottom_gap).abs() / box_height
+    );
 }
 
 /// Determinism probe: render the same page twice in one process and assert

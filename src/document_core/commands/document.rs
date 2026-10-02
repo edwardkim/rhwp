@@ -666,12 +666,7 @@ impl DocumentCore {
                                 }
                             }
                             if include_empty && is_rowbreak_table {
-                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(
-                                    cell,
-                                    styles,
-                                    dpi,
-                                    table.common.treat_as_char,
-                                );
+                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(cell, styles, dpi);
                             }
                         }
                     }
@@ -725,8 +720,82 @@ impl DocumentCore {
                         ))
                     })
                     .collect();
+                // 재구성 전에 실제 글줄 끝과 다음 줄 전진 끝을 함께 고정한다.
+                let orig_plain_tail: Vec<Option<(i32, i32)>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, para)| {
+                        if reflowed_paras.contains(&i)
+                            || para.stored_text_partition_dirty
+                            || !para.controls.is_empty()
+                            || para.line_segs.iter().any(|line| {
+                                line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                            })
+                        {
+                            return None;
+                        }
+                        let last = para.line_segs.last()?;
+                        let painted_end = last.vertical_pos.saturating_add(last.line_height);
+                        Some((
+                            painted_end,
+                            painted_end.saturating_add(last.line_spacing.max(0)),
+                        ))
+                    })
+                    .collect();
+                // 원본 줄 사이의 빈 물리 공간도 저장 조판의 일부다. 합성 줄을
+                // 끼워 넣더라도 뒤의 원본 앵커가 확보한 공간을 삭제하지 않는다.
+                // 합성 내용이 자랐으면 이미 소비한 끝점을 유지하여 되감지 않는다.
+                let mut source_anchor_end: Option<(i32, i32)> = None;
+                let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
+                    // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
+                    // 차지하지 않는다. 필드가 있다는 이유로 저장 간격을 끊으면
+                    // 다음 문단의 빈 물리 공간이 사라진다.
+                    let text_only_controls = para
+                        .controls
+                        .iter()
+                        .all(|control| matches!(control, Control::Field(_)));
+                    // 저장 줄이 없는 글자취급 그림의 높이는 재구성 사다리가 이미
+                    // 소비한다. 직전 저장 글줄의 앵커를 유지해야 그림 뒤 원본 줄의
+                    // 저장 간격과 재구성된 그림 높이 중 큰 쪽을 사용할 수 있다.
+                    // 별도 부동 배치나 저장 줄을 지닌 개체는 좌표계가 달라 끊는다.
+                    let inline_reflowed_picture = was_reflowed
+                        && orig_span[pi].is_none()
+                        && !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
+                        });
+                    // 저장된 글자취급 표의 첫 줄이 앞 본문 끝보다 뒤에 있으면
+                    // 그 차이는 표 문단의 원본 간격이다. 현 문단의 개체 때문에
+                    // 앞 앵커를 먼저 끊으면 이 간격이 재계산에서 사라진다.
+                    let inline_saved_table = !was_reflowed
+                        && orig_span[pi].is_some()
+                        && !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Table(table) if table.common.treat_as_char)
+                        })
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_span[prev])
+                            .zip(orig_span[pi])
+                            .is_some_and(|((_, prev_end), (first, _))| {
+                                let before = styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|ps| (ps.spacing_before * 7200.0 / dpi).round() as i32)
+                                    .unwrap_or(0);
+                                before > 0
+                                    && prev_end > 0
+                                    && first <= body_height_hu
+                                    && first == prev_end.saturating_add(before)
+                            });
+                    if !text_only_controls && !inline_reflowed_picture && !inline_saved_table {
+                        source_anchor_end = None;
+                    }
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
                         matches!(c, Control::Table(t)
                         if !t.common.treat_as_char
@@ -739,7 +808,64 @@ impl DocumentCore {
                                 crate::model::shape::VertAlign::Bottom
                             ))
                     });
-                    if !was_reflowed
+                    let first_source = para.line_segs.first();
+                    // 구역의 첫 문단에 붙은 Section 표지는 새 쪽으로 이월할
+                    // 이전 문단이 없으므로 저장 양수 vpos의 재기준 근거가 아니다.
+                    let source_page_break = pi > 0
+                        && !was_reflowed
+                        && orig_span[pi].is_some()
+                        // 명시적 쪽나눔은 조판기가 처리한다. 양수 프레임 원점만
+                        // 위 간격을 담으며, 0은 누적 축의 생성본에서도 쓰인다.
+                        && first_source.is_some_and(|line| {
+                            line.vertical_pos > 0 && line.vertical_pos < body_height_hu
+                        })
+                        && matches!(
+                            para.column_type,
+                            crate::model::paragraph::ColumnBreakType::Page
+                                | crate::model::paragraph::ColumnBreakType::Section
+                        );
+                    // 저장 TAC 줄 전체가 다음 프레임을 소유하고, 직전 끝의 간격까지
+                    // 이어서는 본문에 들어가지 않으면 원래 0 원점을 보존한다.
+                    // 단순한 생성기 0 좌표나 같은 프레임에 들어가는 표에는 적용하지 않는다.
+                    let source_tac_reset = !was_reflowed
+                        && crate::renderer::composer::stored_first_tac_line(para)
+                            .is_some_and(|line| line.vertical_pos == 0)
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_span[prev])
+                            .zip(first_source)
+                            .is_some_and(|((_, end), line)| {
+                                end > 0 && end.saturating_add(line.line_height) > body_height_hu
+                            });
+                    // 일반 저장 글줄도 앞 프레임의 실제 끝은 본문 안에 있으나
+                    // 다음 글줄을 이어 담을 공간이 없으면 0은 다음 쪽의 원점이다.
+                    // 누적 축·개체·합성/편집 줄의 0을 물리 경계로 추측하지 않는다.
+                    let source_plain_reset = !was_reflowed
+                        && !para.stored_text_partition_dirty
+                        && para.controls.is_empty()
+                        && orig_span[pi].is_some()
+                        && orig_plain_tail[pi].is_some()
+                        && first_source
+                            .is_some_and(|line| line.vertical_pos == 0 && line.line_height > 0)
+                        // 이 구역에 앞서 실제 0 원점을 기록한 저장 줄이 있어야
+                        // 현재 0을 쪽-상대 프레임 리셋으로 읽을 수 있다. 시작부터
+                        // 누적 좌표만 가진 구역은 뒤의 0을 독립 쪽 근거로 삼지 않는다.
+                        && orig_span[..pi]
+                            .iter()
+                            .any(|span| span.is_some_and(|(first, _)| first == 0))
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_plain_tail[prev])
+                            .is_some_and(|(painted_end, advance_end)| {
+                                painted_end > 0
+                                    && painted_end <= body_height_hu
+                                    && advance_end.saturating_add(
+                                        first_source.expect("저장 첫 줄").line_height,
+                                    ) > body_height_hu
+                            });
+                    if source_page_break || source_tac_reset || source_plain_reset {
+                        running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
+                    } else if !was_reflowed
                         && hosts_bottom_fixed_frame
                         && prev_stored_last_vpos > 5000
                         && para.line_segs.first().map(|s| s.vertical_pos) == Some(0)
@@ -806,6 +932,17 @@ impl DocumentCore {
                             running_vpos = 0;
                         }
                     }
+                    if let (Some((original_first, _)), Some((source_end, rebuilt_end))) =
+                        (orig_span[pi], source_anchor_end)
+                    {
+                        // 저장 쪽·단 리셋은 위 경계 처리의 소유다. 같은 축의
+                        // 후속 앵커만 변환하며 원본 높이로 합성 내용의 성장을 덮지 않는다.
+                        if original_first >= source_end {
+                            let anchored = rebuilt_end
+                                .saturating_add(original_first.saturating_sub(source_end));
+                            running_vpos = running_vpos.max(anchored);
+                        }
+                    }
                     let original_last_vpos = if was_reflowed {
                         None
                     } else {
@@ -827,6 +964,18 @@ impl DocumentCore {
                         para.source_line_seg_vertical_pos =
                             Some(para.line_segs.iter().map(|s| s.vertical_pos).collect());
                     }
+                    let source_positions: Vec<_> = para
+                        .line_segs
+                        .iter()
+                        .map(|line| line.vertical_pos)
+                        .collect();
+                    let preserve_source_frames = !was_reflowed
+                        && para.controls.is_empty()
+                        && !para.stored_text_partition_dirty
+                        && para.line_segs.iter().all(|line| {
+                            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        });
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;
@@ -834,7 +983,24 @@ impl DocumentCore {
                     // 문단 내 LINE_SEG vpos 재계산 (문단 내 누적)
                     // TAC 표가 lh에 포함된 경우: 다음 줄 vpos = th + ls (HWP 동작)
                     let mut inner_vpos = running_vpos;
-                    for seg in para.line_segs.iter_mut() {
+                    let mut previous_source_end = None;
+                    for (line_index, seg) in para.line_segs.iter_mut().enumerate() {
+                        let source_vpos = source_positions[line_index];
+                        if preserve_source_frames
+                            && line_index > 0
+                            && source_vpos == 0
+                            && previous_source_end.is_some_and(|end: i32| {
+                                end > 0 && end.saturating_add(seg.line_height) > body_height_hu
+                            })
+                        {
+                            // 정상 저장 줄의 물리 경계를 합성 줄의 연속 축으로 지우지 않는다.
+                            inner_vpos = source_vpos;
+                        }
+                        previous_source_end = Some(
+                            source_vpos
+                                .saturating_add(seg.line_height)
+                                .saturating_add(seg.line_spacing),
+                        );
                         seg.vertical_pos = inner_vpos;
                         let advance = if seg.line_height > seg.text_height && seg.text_height > 0 {
                             // lh가 th보다 큼 = TAC 컨트롤 높이 포함 → th 기준 누적
@@ -923,6 +1089,12 @@ impl DocumentCore {
                         }
                     }
                     running_vpos = inner_vpos;
+                    if let Some((_, original_end)) = orig_span[pi].filter(|_| text_only_controls) {
+                        source_anchor_end = Some((original_end, running_vpos));
+                    } else if inline_saved_table {
+                        // 표 높이는 다음 일반 글줄의 저장 간격으로 재가산하지 않는다.
+                        source_anchor_end = None;
+                    }
                     if let Some(v) = original_last_vpos {
                         prev_stored_last_vpos = v;
                     }
@@ -1220,7 +1392,6 @@ impl DocumentCore {
         cell: &mut crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         dpi: f64,
-        allow_without_anchor: bool,
     ) {
         if cell.height == 0 || cell.paragraphs.len() < 2 {
             return;
@@ -1240,7 +1411,9 @@ impl DocumentCore {
                 && para.line_segs[0].vertical_pos > 0
                 && para.line_segs[0].segment_width > 0
         });
-        if !has_stored_anchor && !allow_without_anchor {
+        // 선언 셀 높이의 빈 공간은 추가 글줄의 증거가 아니다. 실제 저장
+        // anchor가 없는 셀은 재조판한 줄 경계를 그대로 사용한다.
+        if !has_stored_anchor {
             return;
         }
         if !cell.paragraphs.iter().any(para_is_synthetic) {

@@ -1,0 +1,65 @@
+{
+  "changes": [
+    {
+      "page": 84,
+      "before": [
+        131,
+        132
+      ],
+      "after": [
+        131,
+        132,
+        133
+      ]
+    },
+    {
+      "page": 85,
+      "before": [
+        133,
+        134,
+        135,
+        136
+      ],
+      "after": [
+        134,
+        135,
+        136
+      ]
+    }
+  ],
+  "pages": 215,
+  "focused_nextest": {
+    "passed": 14,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "native_silhouette_tsv": "page\ttolerant_content_match_percent\tbelow_90\n84\t97.06154\t0\n85\t95.14701\t0\n131\t94.77080\t0\n132\t99.77961\t0\n",
+  "direct_visual_inspection": [
+    84,
+    85
+  ],
+  "unchanged_note180_control": [
+    131,
+    132
+  ],
+  "hwp84_notes": [
+    131,
+    132,
+    133
+  ],
+  "fresh_wasm": {
+    "build_exit_code": 0,
+    "build_seconds": 165,
+    "local_alternative_not_docker": true,
+    "sweep_exit_code": 0,
+    "tsv": "page\ttolerant_content_match_percent\tbelow_90\n84\t97.06154\t0\n85\t95.14701\t0\n131\t94.77080\t0\n132\t99.77961\t0\n",
+    "native_png_equal": {
+      "84": true,
+      "85": true,
+      "131": true,
+      "132": true
+    }
+  },
+  "full_nextest": "not yet rerun",
+  "limitations": "각주100 및90% 미만12쪽은 미해결; 이번 Native 전쪽 소유 비교는84/85 이외 번호 변화없음"
+}

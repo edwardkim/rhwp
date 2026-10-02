@@ -211,7 +211,7 @@ pub(in crate::renderer::typeset) fn flow_hints(
     // [#6753] 트림된 `sb` 되돌리기는 **저장 사다리가 권위인 네이티브 HWP5** 에 한정한다.
     //
     // HWPX 의 `vpos` 리셋은 writer-local 재시작일 수 있어 별도 기계(`#5801` 의 HWPX 전용
-    // dirty 철회 · `#6063` · `hwpx_saved_reset_fragment_matches_current_flow`)가 따로 다룬다.
+    // dirty 철회 · `#6063` · `stored_body_reset_fragment_matches_current_flow`)가 따로 다룬다.
     // 전 포맷에 켠 판은 `samples/` 전수에서 `issue1880_*.hwpx` 2건을 악화시켰다
     // (5쪽 넘침 1 → 4, 최대 +82.65px). 같은 판에서 HWP5 문서는 3건 전부 개선이었다.
     let trimmed_sb_gate = if profile.hwp5_stored_pagination_layout() {

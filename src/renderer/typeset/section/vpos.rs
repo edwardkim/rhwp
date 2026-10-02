@@ -50,6 +50,7 @@ impl TypesetEngine {
             col_anchor_y: st.vpos_col_anchor,
             vpos_page_base: st.vpos_page_base,
             vpos_lazy_base: st.vpos_lazy_base,
+            stored_column_origin: st.vpos_page_base.map(|base| (base, st.vpos_col_anchor)),
             prev_layout_para: st.vpos_prev_layout_para,
             prev_item_was_partial_table: st.vpos_prev_partial_table,
             skip_spacing_before_prededuct: st.skip_spacing_before_prededuct,
@@ -61,11 +62,20 @@ impl TypesetEngine {
             uniform_filler_ladder: self.uniform_filler_ladder.get(),
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
+            prev_item_flow_line_bottom_y: None,
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
+        // 옛 행 수를 담고 있다. 동일 쪽에서 회수한 높이를 뺀 뒤 흐름 뒤로만 스냅한다.
+        if st.profile.hwpx_stored_layout()
+            && st.vpos_compacted_stored_delta > 0.0
+            && y > st.current_height
+        {
+            y = (y - st.vpos_compacted_stored_delta).max(st.current_height);
+        }
         // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
         // 계상 교정으로 확보한 표 밴드 위로 저장 vpos 스냅으로 되감기지 못한다.
         if y < st.ladder_band_floor {
@@ -183,7 +193,8 @@ impl TypesetEngine {
                 st.vpos_col_anchor,
             );
         }
-        // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
+        // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
+        st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
         st.align_flow_to(y);
     }

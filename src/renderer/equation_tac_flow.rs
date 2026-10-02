@@ -155,6 +155,31 @@ fn pack_equation_tac_rows(
     (tac_rows, row + 1)
 }
 
+/// 본문과 번호 있는 각주는 같은 원본 줄 번호와 저장 들여쓰기 플래그를 소비한다.
+/// 셀 또는 줄 수가 바뀐 재조판에서는 문단의 줄별 들여쓰기 규칙을 사용한다.
+pub(crate) fn paragraph_line_indent_for_source(
+    indent: f64,
+    visual_line_idx: usize,
+    paragraph: Option<&Paragraph>,
+    composed_line_count: usize,
+    respect_stored_ladder: bool,
+) -> f64 {
+    use crate::model::paragraph::LineSeg;
+    let stored_seg_denies_indent = respect_stored_ladder
+        && paragraph.is_some_and(|para| para.line_segs.len() == composed_line_count)
+        && paragraph
+            .and_then(|para| para.line_segs.get(visual_line_idx))
+            .is_some_and(|seg| {
+                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.tag & LineSeg::TAG_INDENTATION == 0
+            });
+    if stored_seg_denies_indent {
+        0.0
+    } else {
+        paragraph_line_indent(indent, visual_line_idx)
+    }
+}
+
 pub(crate) fn paragraph_line_indent(indent: f64, visual_line_idx: usize) -> f64 {
     paragraph_line_indent_with_scale(indent, visual_line_idx, 1.0)
 }

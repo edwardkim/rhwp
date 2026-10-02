@@ -1,0 +1,46 @@
+{
+  "stage": 184,
+  "scope": "#6078 한 쪽 HWP3 표·캡션·체크박스 피델리티 복원과 의미 기반 회귀 검사",
+  "head_before": "74e612015d39cf971c8b96ed5b714d2ed494b680",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "hwp": "samples/hwp3-table-caption.hwp",
+  "hwp_sha256": "e8ac29656b1ca41f96b1dd9f6ef88be294c61165e2daf40f75873814291795e1",
+  "hancom_pdf": "mydocs/pr/assets/pr_6191/hancom/issue_6078_hancom_2020.pdf",
+  "pdf_sha256": "48940a3579d0fb3a9545c68e0b3d00da1094c9eea67773a1d781b958c7319305",
+  "pages": 1,
+  "independent_evidence": "한컴 2020 PDF는 표 왼쪽 경계 약 107px, 위 경계 124px이며 추천기관 체크박스 3개를 텍스트 추출과 이미지로 확인했다. HWP3 원본 표 정보의 캡션 높이는 463 원본 단위이고 추천기관 세 칸의 원시 문자값은 0x2F00이다.",
+  "cause_and_fix": [
+    "같은 문단의 앞 글줄 공백 폭을 표 폭과 합산하여 별도 저장 글줄의 가운데 정렬이 왼쪽 정렬로 붕괴했다. 표 소유 글줄의 내어쓰기·정렬·선언 폭을 사용해 표 원점을 계산한다.",
+    "HWP3 표 정보의 캡션 세로 크기를 버려 캡션과 표가 겹쳤다. 위·아래 캡션에서 원본 캡션 높이와 저장 줄간격을 공통 Caption.spacing으로 전달하여 측정과 배치가 함께 소비한다. 좌·우 캡션의 가로 간격은 변경하지 않는다.",
+    "HWP3 사적 문자 0x2F00을 미지원 코드로 건너뛰어 빈 체크박스 세 개가 사라졌다. 한컴 PDF의 □ 추출과 일치하도록 일반 문자 매핑에 추가한다."
+  ],
+  "before_visual_percent": 30.47054,
+  "visual": {
+    "native_percent": 91.47674,
+    "wasm_percent": 91.47674,
+    "gate": "passed",
+    "font_mismatch_exception": false,
+    "native_summary": "output/pr-review/planet6897-7382-20260926/stage184-issue6078/visual-final-native/summary.json",
+    "wasm_summary": "output/pr-review/planet6897-7382-20260926/stage184-issue6078/visual-final-wasm/summary.json",
+    "native_wasm_png_sha256": "54d7a6b73afeb58816248d147ecda543bfe6d6a7b68d34a6f20b508cd96c6b6f",
+    "native_review_png": "mydocs/pr/assets/pr7382_20260926/stage184_issue6078_native_review_001.png",
+    "native_overlay_png": "mydocs/pr/assets/pr7382_20260926/stage184_issue6078_native_overlay_001.png",
+    "wasm_overlay_png": "mydocs/pr/assets/pr7382_20260926/stage184_issue6078_wasm_overlay_001.png",
+    "direct_review": "표 외곽, 제목, 셀 경계, 후행 용지 규격 문단, 추천기관 체크박스 3개를 기준 PDF와 직접 대조했다. 작은 글자 폭·글꼴 차이는 남지만 2px 관용 내용 실루엣은 90% 이상이다."
+  },
+  "regression": "기존 #6078 검사를 복구하고 절대 y=994.5±1px 핀을 제거했다. 한 쪽에서 캡션·표·용지 규격 문단의 순서, 캡션 물리 간격, 두 번째 저장 글줄의 가운데 정렬, 추천기관 체크박스 3개를 확인한다.",
+  "focused_nextest": "2 passed: #6078 의미 검사와 HWP3 문자 매핑 검사",
+  "control_nextest": "2 passed: #5563 같은 HWP3 원문 LineSeg 축과 #6874 다른 HWP3 캡션 표",
+  "lint": {
+    "fmt": "pass",
+    "clippy_default": "pass",
+    "clippy_wasm": "pass",
+    "workspace_build": "pass",
+    "clippy_all_targets": "pass",
+    "manifest_base_check": "pass after final prepare",
+    "unit_tier_base_check": "pass"
+  },
+  "wasm_build": "pass: Mac local --no-opt alternative",
+  "full_nextest": "이 개별 보정 단계에서는 실행하지 않음. 다른 PR #7382 차단 함수 검토 후 최신 head에서 전체 재검증 필요",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage184-issue6078/"
+}

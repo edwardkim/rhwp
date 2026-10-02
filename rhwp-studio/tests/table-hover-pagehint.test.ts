@@ -37,7 +37,7 @@ test('hover 가 pageHint 불일치를 early return 으로 처리하는 구조가
 
 test('pageHint 는 채움 지점들이 pageIdx 로 기록한다', () => {
   // 셀 선택 mousedown 경로.
-  assert.match(src, /cacheTableCellBboxes\(this, ctx, pageIdx, bboxes\);/,
+  assert.match(src, /cacheTableCellBboxes\(this, (?:ctx|ref), pageIdx, bboxes\);/,
     'mousedown 성공도 공통 채움 지점으로 실패 메모와 페이지 membership을 함께 갱신해야 한다');
   // hover 채움(choke point) 경로.
   assert.match(cache, /pageHint: pageIdx/,
@@ -45,7 +45,7 @@ test('pageHint 는 채움 지점들이 pageIdx 로 기록한다', () => {
 
   // pageIdx 산출보다 뒤에서 대입해야 한다(선언 전 사용 방지).
   const pageIdxAt = src.search(/const pageIdx = this\.virtualScroll\.getPageAtPoint\(/);
-  const assignAt = src.search(/cacheTableCellBboxes\(this, ctx, pageIdx, bboxes\);/);
+  const assignAt = src.search(/cacheTableCellBboxes\(this, (?:ctx|ref), pageIdx, bboxes\);/);
   assert.ok(pageIdxAt >= 0 && assignAt >= 0, 'pageIdx 산출과 대입이 모두 존재해야 함');
   assert.ok(pageIdxAt < assignAt, 'pageHint 대입은 pageIdx 산출 뒤여야 함');
 });

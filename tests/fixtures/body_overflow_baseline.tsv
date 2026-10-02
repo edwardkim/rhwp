@@ -25,6 +25,7 @@
 # 값으로 올려 적는다.
 #
 # 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
+issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6921/148733091-briefing-stenographic-record.hwp	0
 156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
 2022년 국립국어원 업무계획.hwp	1
@@ -69,7 +70,6 @@ basic/issue1994_behindtext_table_20200830.hwp	1
 basic/sungeo.hwp	4
 byeolpyo1.hwp	2
 byeolpyo4.hwp	10
-exam_eng.hwp	3
 hcar-001.hwp	1
 hwp-3.0-HWPML.hwp	2
 hwp3-sample10-hwp5.hwp	42
@@ -77,11 +77,8 @@ hwp3-sample10-hwpx.hwpx	0
 hwp3-sample11-hwp5.hwp	14
 hwp3-sample11-hwpx.hwpx	10
 hwp3-sample11.hwp	10
-hwp3-sample16-hwp5-2010.hwp	1
 hwp3-sample16-hwp5-2018.hwp	1
-hwp3-sample16-hwp5-2022.hwp	2
 hwp3-sample16-hwp5-2024.hwp	1
-hwp3-sample16-hwp5.hwp	1
 hwp3-sample16-hwp5.hwpx	7
 hwp3-sample16.hwp	0
 hwp3-sample4-hwp5.hwp	4
@@ -92,7 +89,6 @@ hwp3-sample5-hwp5.hwp	18
 hwp_table_test-m.hwp	1
 hwp_table_test.hwp	1
 hwp_table_test_saved.hwp	1
-hwpctl_API_v2.4.hwp	0
 hwpctl_Action_Table__v1.1.hwp	1
 hwpctl_ParameterSetID_Item_v1.2.hwp	2
 hwpspec.hwp	2
@@ -109,7 +105,6 @@ hwpx/pr-1674.hwpx	1
 hwpx_sample2.hwp	2
 issue-986-receipt.hwp	0
 issue1835_tac_stale_height.hwp	1
-issue1853_caption_precedes_body_split.hwpx	0
 issue1858_paper_anchor_float_stack.hwpx	1
 issue1891/76076_regulatory_analysis.hwpx	2
 issue1891/80168_regulatory_analysis.hwpx	1
@@ -127,9 +122,7 @@ issue2559/1341000_research_report_footnotes.hwp	2
 issue2813/dangjik_dutylog.hwpx	1
 issue3587/b-table-repeated.hwp	1
 issue3587/b-table-repeated.hwpx	1
-issue3637/press_release_split_cell_nested_table.hwpx	2
 issue3637/press_release_topbottom_float.hwpx	1
-issue3637/regulatory_impact_nested_table_escape.hwpx	2
 issue3751/vpos_reset_midparagraph_fit.hwpx	1
 issue4090/156492236_규제샌드박스_min.hwpx	0
 issue4491/30213_1.혼합단지등 제도개선 방안.hwp	1
@@ -153,10 +146,8 @@ issue5866/memo_field_hwp5.hwp	1
 issue5870/empty_host_float_flow_advance.hwp	1
 issue5877/fragment_ghost_vrules.hwp	2
 issue5941/1480000-201900698-native-neartop-reset.hwp	19
-issue5941/1490000-201600081_roadmap_research.hwp	47
 issue5941/3240179_efficiency_test_orgs.hwpx	4
 issue5966/1130000-202100008_franchise_review_report.hwp	8
-issue6031/3249937_asset_management_rules.hwpx	1
 issue6035/cgmp_evaluation_table.hwpx	2
 issue6036/156509073_police_press_release.hwpx	0
 issue6044/156513948.hwpx	1
@@ -178,16 +169,11 @@ issue6451/underline_run_fragments.hwpx	1
 issue6524/30098_float_host_split_lineseg.hwp	2
 issue6551/113424_evaluation_guideline.hwpx	1
 issue6601/36331407_side_by_side_tac_tables.hwpx	1
-issue6697/80550-agricultural-machinery-act-amendment.hwpx	2
 issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	1
 issue6718/27469-child-allowance-retroactive-support.hwp	0
-issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	39
-issue6776/78494-virtual-convergence-industry-decree.hwpx	1
 issue6782/1480000-201900042-chemical-labeling-standards.hwp	6
-issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6795/1341000-201100013-cyber-university-application.hwp	4
 issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx	0
-issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	2
 issue6879/156767332-broadcast-revenue-attachment.hwp	2
 issue6882/synth_cell_enter_table_growth.hwp	0
 issue6888/156730935-marine-mobility-expo.hwpx	1
@@ -218,7 +204,6 @@ task2097/18095317_eogu_geumji.hwp	1
 task2097/21217935_simsa_jipyo.hwp	2
 task2097/21298295_byeolpyo5_disaster.hwp	1
 task2097/3023771_wichokjang.hwpx	2
-task2097/75544_pii_bunseok.hwpx	1
 task2097/none_table_declared_fits.hwpx	1
 task2097/rowbreak_midpage_declared_fits.hwpx	1
 task2105/rowbreak_table_declared_fits.hwpx	1

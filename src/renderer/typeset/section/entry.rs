@@ -88,6 +88,55 @@ impl TypesetEngine {
             return None;
         }
 
+        let closed_frame_guide = (para.text.is_empty()
+            && para.controls.is_empty()
+            && st.col_count == 1
+            && !profile.session_edited()
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout()))
+        .then(|| {
+            (0..para_idx).rev().find_map(|owner| {
+                let host = &paragraphs[owner];
+                if host.controls.is_empty() && host.text.is_empty() {
+                    return None;
+                }
+                Some((owner, host))
+            })
+        })
+        .flatten()
+        .is_some_and(|(owner, host)| {
+            let [Control::Table(table)] = host.controls.as_slice() else {
+                return false;
+            };
+            crate::renderer::float_placement::stored_table_frame_with_guides(
+                paragraphs, owner, table,
+            )
+            .is_some_and(|frame| {
+                frame.guide_range.contains(&para_idx)
+                    && st
+                        .paragraph_float_placements
+                        .get(&(owner, 0))
+                        .is_some_and(|placement| {
+                            (placement.table_top
+                                - crate::renderer::hwpunit_to_px(frame.top_hu, self.dpi))
+                            .abs()
+                                <= 0.5
+                                && (placement.occupied_bottom
+                                    - crate::renderer::hwpunit_to_px(frame.bottom_hu, self.dpi))
+                                .abs()
+                                    <= 0.5
+                        })
+            })
+        });
+        if closed_frame_guide {
+            // 표 배치가 이 정확한 원본 프레임을 이미 수용했다.
+            // 안내 줄을 두 번 소비하지 않고 문단 출처를 보존한다.
+            st.hide_empty_paragraph(para_idx);
+            st.append_item(PageItem::FullParagraph {
+                para_index: para_idx,
+            });
+            return None;
+        }
+
         let is_native_hwp5_figure_table_overlay_guide_empty = profile
             .hwp5_stored_pagination_layout()
             && native_hwp5_figure_table_overlay_guide_empty(para_idx, para, paragraphs);

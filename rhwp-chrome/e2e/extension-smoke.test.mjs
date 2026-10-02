@@ -8,12 +8,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { saveFailureDiagnostics } from './failure-diagnostics.mjs';
 
 const CURRENT_FILE = fileURLToPath(import.meta.url);
 const HERE = path.dirname(CURRENT_FILE);
 const EXTENSION_DIR = path.resolve(HERE, '..');
 const ROOT = path.resolve(EXTENSION_DIR, '..');
-const DIST_DIR = path.join(EXTENSION_DIR, 'dist');
+const DIST_DIR = path.resolve(process.env.RHWP_EXTENSION_DIST_DIR ?? path.join(EXTENSION_DIR, 'dist'));
 const FIXTURE_FILE = path.join(ROOT, 'samples', 'hwp3-pagedef-1915.hwp');
 const SURFACE_TIMEOUT_MS = positiveInteger(
   process.env.RHWP_EXTENSION_SMOKE_TIMEOUT_MS,
@@ -258,6 +259,9 @@ async function runOnce(prefix) {
     assert.equal(diagnostics.unexpectedPageTargets.length, 0, formatDiagnostics(diagnostics));
     process.stdout.write(`${prefix}extension=${extensionId} worker=${workerTarget.url()}\n`);
   } catch (error) {
+    await saveFailureDiagnostics(browser, 'smoke', diagnostics).catch(diagnosticError => {
+      process.stderr.write(`Could not save smoke diagnostics: ${diagnosticError.message}\n`);
+    });
     failure = new Error(`${error.message ?? error}\n${formatDiagnostics(diagnostics)}`, { cause: error });
   } finally {
     const cleanupErrors = [];
@@ -279,7 +283,7 @@ async function runOnce(prefix) {
   if (failure) throw failure;
 }
 
-function chromeArgs(fixtureOrigin) {
+export function chromeArgs(fixtureOrigin) {
   const args = [
     '--disable-background-networking',
     '--disable-breakpad',

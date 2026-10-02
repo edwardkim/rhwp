@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction10; final gates pending",
+  "producer_head": "9b0e7cece8773c0f84a9a2f58380f49f6963c43b",
+  "producer_worktree_rust_diff_sha256": "33865cc367f2c3d67acb55c1ccbcd608654ff8a0569a0a4c149f24372e9992ab",
+  "before": {
+    "passed": 1,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.327,
+    "actual_top_px": 123.4533333333,
+    "pdf_top_px": 86.945
+  },
+  "first_candidate": {
+    "passed": 19,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 2.024,
+    "cause": "clean deferral / scanner whole-table emit did not consume placement"
+  },
+  "focused_and_normal": {
+    "passed": 71,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 2.65
+  },
+  "page_count": {
+    "actual": 215,
+    "pdf": 215,
+    "status": "matched; visual/final regression required"
+  },
+  "native": {
+    "pages": [
+      182,
+      183
+    ],
+    "tolerant_content_match_percent": [
+      99.87143,
+      99.91466
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review182",
+      "overlay182",
+      "review183",
+      "overlay183"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "terminal caption budget failure boundary",
+    "Body footnote30/240 source owners",
+    "final full Rust/lint/Skia/fresh WASM/full Native"
+  ]
+}

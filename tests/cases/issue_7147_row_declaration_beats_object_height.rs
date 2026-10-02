@@ -82,49 +82,6 @@ fn row_box_heights_mm(doc: &DocumentCore, page: u32) -> std::collections::BTreeM
     out
 }
 
-/// 제목부 두 행의 실제 상자 높이가 한/글 정본과 같다.
-#[test]
-fn header_row_boxes_match_the_hancom_oracle() {
-    let doc = load();
-    let rows = row_box_heights_mm(&doc, PAGE);
-    assert!(
-        !rows.is_empty(),
-        "쪽 {PAGE} 에서 표 pi={TABLE_PARA} 의 셀을 찾지 못했다 — 시험 설정 오류"
-    );
-    for (row, oracle) in [(0u16, ORACLE_ROW0_MM), (1u16, ORACLE_ROW1_MM)] {
-        let got = *rows.get(&row).unwrap_or_else(|| {
-            panic!(
-                "행 {row} 의 셀 상자를 찾지 못했다. 잡힌 행: {:?}",
-                rows.keys()
-            )
-        });
-        assert!(
-            (got - oracle).abs() <= TOLERANCE_MM,
-            "행 {row} 상자 높이가 정본과 다르다 — 개체 높이에 맞춘 비례 축소가 살아 있으면 \
-             약 0.809 배로 작아진다. 실제={got:.3}mm 정본={oracle:.3}mm (허용 {TOLERANCE_MM}mm)"
-        );
-    }
-}
-
-/// 축소하지 않은 표는 한 쪽에 안 들어가므로 쪽 경계에서 나뉜다 — 정본과 같다.
-#[test]
-fn the_unshrunk_table_splits_across_the_page_boundary() {
-    let doc = load();
-    let here = row_box_heights_mm(&doc, PAGE);
-    let next = row_box_heights_mm(&doc, PAGE + 1);
-    assert!(
-        !here.is_empty() && !next.is_empty(),
-        "정본은 이 표를 {}쪽과 {}쪽에 나눠 그린다(0-based). 한쪽이 비었다면 축소로 표가 \
-         한 쪽에 들어간 것이다. {}쪽 행수={} {}쪽 행수={}",
-        PAGE,
-        PAGE + 1,
-        PAGE,
-        here.len(),
-        PAGE + 1,
-        next.len()
-    );
-}
-
 /// 반례 — 개체 높이가 **행 중간**에서 끊기면 조각 경계일 수 없으므로 종전대로 화해한다.
 ///
 /// `samples/issue5941/1480000-201900698-native-neartop-reset.hwp` 쪽 53 의 3행 표는

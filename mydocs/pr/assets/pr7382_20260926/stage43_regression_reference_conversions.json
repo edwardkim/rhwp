@@ -1,0 +1,785 @@
+[
+  {
+    "input": "samples/issue6535/36404612_page_anchored_footer_block.hwpx",
+    "sha256": "c187c26644dcdece4b784751250fbcaaa274b34e7662de73505fe0bab6bc013e",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.8227"
+    },
+    "engine": "2020",
+    "filename": "36404612_page_anchored_footer_block-2020.pdf",
+    "job_id": "a9b93558-96d7-4134-92c2-579c5a17596a",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:06Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:24Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+      "output_filename": "36404612_page_anchored_footer_block-2020.pdf",
+      "size": 62455,
+      "sha256": "6b6aff710e6fc1c943cbd56e05a924e8514b58e6030add7d6c8db5d8e2bb2f97"
+    }
+  },
+  {
+    "input": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+    "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2010",
+      "version": "8.5.8.1453"
+    },
+    "engine": "2020",
+    "filename": "1490000-201600081_roadmap_research-2020.pdf",
+    "job_id": "ff4b553b-47b8-4330-a401-dfe1eb1bd0e4",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:07Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:25Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:42Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:59Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:16Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:33Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:51Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:09Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:26Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:44Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+      "output_filename": "1490000-201600081_roadmap_research-2020.pdf",
+      "size": 4342169,
+      "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7"
+    }
+  },
+  {
+    "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+    "sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2018",
+      "version": "10.0.0.14515"
+    },
+    "engine": "2020",
+    "filename": "156726122-recycling-press-release-2020.pdf",
+    "job_id": "369bd461-ef5e-4f03-bdff-febb2351e766",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:07Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:25Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:42Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:59Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:16Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:34Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:52Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:09Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:26Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:45Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:03Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf",
+      "output_filename": "156726122-recycling-press-release-2020.pdf",
+      "size": 1026038,
+      "sha256": "c92ad7d204afbb2db9b88f0365d43ba70f018e3cc444cdfd04ce945a1fa1ef88"
+    }
+  },
+  {
+    "input": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+    "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.8362"
+    },
+    "engine": "2020",
+    "filename": "80550-agricultural-machinery-act-amendment-2020.pdf",
+    "job_id": "23740847-f09b-46d1-9738-a267e38ae296",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:07Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:25Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:42Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:00Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:34Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:52Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:09Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:27Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:46Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:04Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:22Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:39Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "output_filename": "80550-agricultural-machinery-act-amendment-2020.pdf",
+      "size": 565939,
+      "sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad"
+    }
+  },
+  {
+    "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+    "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": null,
+      "version": "9.1.1.5656"
+    },
+    "engine": "2020",
+    "filename": "issue1937_rowbreak_footnote_overpagination-2020.pdf",
+    "job_id": "43e28539-6dd8-4547-a0d3-c63f8ab864ee",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:08Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:26Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:43Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:00Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:35Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:52Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:10Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:27Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:46Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:05Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:23Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:40Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:58Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:14Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "output_filename": "issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "size": 766874,
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb"
+    }
+  },
+  {
+    "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+    "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.3524"
+    },
+    "engine": "2020",
+    "filename": "outline_navigation_table_cell_number-2020.pdf",
+    "job_id": "99f0ab52-9320-419a-bbb2-98d60d84484b",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:08Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:26Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:43Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:00Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:35Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:53Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:10Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:27Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:47Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:05Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:23Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:41Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:58Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:15Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:32Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "output_filename": "outline_navigation_table_cell_number-2020.pdf",
+      "size": 14962,
+      "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+    }
+  },
+  {
+    "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+    "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.3524"
+    },
+    "engine": "2020",
+    "filename": "outline_navigation_panel_demo-2020.pdf",
+    "job_id": "dcf433d9-7db6-4a1e-9963-364ed092464c",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:08Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:26Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:43Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:00Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:35Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:53Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:10Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:28Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:47Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:06Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:24Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:42Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:58Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:16Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:33Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:49Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+      "output_filename": "outline_navigation_panel_demo-2020.pdf",
+      "size": 31954,
+      "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be"
+    }
+  },
+  {
+    "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2018",
+      "version": "10.0.0.7282"
+    },
+    "engine": "2020",
+    "filename": "한글문서파일형식_5.0_revision1.3-2020.pdf",
+    "job_id": "2dac4b57-7e6b-41b0-9d74-ea62b76d79b5",
+    "status": "failed",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:09Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:26Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:51:44Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:01Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:18Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:36Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:52:53Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:11Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:29Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:53:47Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:07Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:24Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:42Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:54:59Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:34Z"
+      },
+      {
+        "status": "failed",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:50Z"
+      }
+    ]
+  }
+]

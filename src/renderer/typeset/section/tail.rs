@@ -81,8 +81,8 @@ impl TypesetEngine {
 
         // [Task #1733] 페이지 하단 빈 줄이 다음 vpos-reset 흐름 앞에 1개 이상 끼는 경우.
         // 기존 가드는 "현재 빈 문단 바로 다음이 reset" 인 경우만 흡수한다. 국제고속선기준은
-        // 빈 줄 2개 뒤 본문이 새 쪽 상단으로 reset 되거나, 빈 줄 뒤 하단 제목 1줄이 있고
-        // 그 다음 본문이 reset 되는 형태가 있어 near-empty 페이지가 남는다. 현재 빈 문단이
+        // 빈 줄 2개 뒤 본문이 새 쪽 상단으로 reset 되는 형태가 있어 단독 꼬리 쪽이 남는다.
+        // 빈 줄 뒤 첫 본문이 소유한 경계만 확인한다. 현재 빈 문단이
         // 이미 페이지 하단 vpos 를 가지고 있고, 뒤쪽 저장 flow 가 reset 을 명확히 보일 때만
         // 0-높이로 흡수한다.
         let empty_tail_bridge_to_reset = !next_will_vpos_reset
@@ -115,27 +115,9 @@ impl TypesetEngine {
                         st.col_count,
                         st.profile.hwp3_layout(),
                     );
-                    let high_tail_heading_then_reset = para_has_visible_text(next_para)
-                        && next_para.controls.is_empty()
-                        && next_para.line_segs.first().is_some_and(|seg| {
-                            let body_h_hu = crate::renderer::px_to_hwpunit(
-                                st.layout.body_area.height,
-                                self.dpi,
-                            );
-                            seg.vertical_pos > body_h_hu * 70 / 100
-                        })
-                        && paragraphs.get(idx + 1).is_some_and(|after| {
-                            after.column_type != ColumnBreakType::Page
-                                && after.column_type != ColumnBreakType::Section
-                                && paragraph_saved_vpos_reset_starts_new_page_after(
-                                    next_para,
-                                    after,
-                                    st.col_count,
-                                    st.profile.hwp3_layout(),
-                                )
-                        });
-
-                    found = reset_after_empty_run || high_tail_heading_then_reset;
+                    // 글이 있는 문단은 앞 빈 줄의 뒤쪽 경계다. 그 문단 다음의
+                    // reset을 앞당겨 적용하면 실제 본문 앞 빈 줄의 점유가 사라진다.
+                    found = reset_after_empty_run;
                     break;
                 }
                 found

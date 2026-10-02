@@ -1,0 +1,556 @@
+{
+  "stage": 82,
+  "code_commit": "1d91421c4d0b885e3fec99d549d490758876de1c",
+  "analysis": {
+    "head": "73a6acd60173281e05f8d2de1d566bdc726f183a",
+    "analysis": "기존5번 본문초과의 관제교육39→40건을 같은 원문의 독립 한컴 PDF로 비교한다. 실제201/기준204쪽. 선택39·103쪽의 일반 본문,124·194쪽의 본문초과 표와201쪽 끝쪽의 내용 소유를 확인한다. 전용 검사는182·183쪽 및 전체 표 용지 초과를 검사하며 이번 선택 캡처로 그 경계의 정확성을 주장하지 않는다. 낮은 피델리티면 사용자 승인 범위의 해당 문서 렌더링/페이지 검사만 이관하며 다른 문서와 공차를 유지한다.",
+    "files": {
+      "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp": {
+        "size": 12851712,
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf": {
+        "size": 3819664,
+        "sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+        "pages": 204,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "황승옥",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260908155910+09'00'",
+          "modDate": "D:20260908155910+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "한양중고딕",
+        "휴먼명조",
+        "-윤명조130",
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "Times New Roman",
+        "한양중고딕",
+        "HCI Poppy",
+        "휴먼명조",
+        "함초롬바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "MS Mincho",
+        "휴먼명조",
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "MS Mincho",
+        "휴먼명조",
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "한양신명조",
+        "휴먼명조",
+        "-윤명조130",
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "휴먼명조",
+        "한컴바탕",
+        "맑은 고딕",
+        "함초롬바탕",
+        "HY헤드라인M",
+        "명조",
+        "휴먼명조",
+        "-윤명조130"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.0.0.7888"
+      },
+      "pageCount": 201,
+      "paraCount": 1223,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 5,
+      "sizeBytes": 12851712,
+      "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "title": "항공교통관제사 역량기반교육 및",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.1",
+      "warnings": []
+    },
+    "anomaly_summary": {
+      "pageCount": 201,
+      "overflowTolerancePx": 2.0,
+      "overflowCount": 56,
+      "offCanvasCount": 4,
+      "overlapCount": 1
+    },
+    "body_bottom_overflow": [
+      {
+        "page": 27,
+        "over_bottom": 2.6666666666667425,
+        "path": "Page/Body/Column0/TextLine26"
+      },
+      {
+        "page": 43,
+        "over_bottom": 2.1066666666670244,
+        "path": "Page/Body/Column0/TextLine24"
+      },
+      {
+        "page": 43,
+        "over_bottom": 31.973333333333585,
+        "path": "Page/Body/Column0/TextLine25"
+      },
+      {
+        "page": 71,
+        "over_bottom": 2.6666666666667425,
+        "path": "Page/Body/Column0/TextLine26"
+      },
+      {
+        "page": 71,
+        "over_bottom": 30.666666666666742,
+        "path": "Page/Body/Column0/TextLine27"
+      },
+      {
+        "page": 124,
+        "over_bottom": 43.62666666666678,
+        "path": "Page/Body/Column0/Table25"
+      },
+      {
+        "page": 136,
+        "over_bottom": 58.75999999999999,
+        "path": "Page/Body/Column0/Table2"
+      },
+      {
+        "page": 138,
+        "over_bottom": 35.7733333333332,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 139,
+        "over_bottom": 10.199999999999818,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 140,
+        "over_bottom": 5.959999999999923,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 141,
+        "over_bottom": 35.773333333333085,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 143,
+        "over_bottom": 22.91999999999996,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 144,
+        "over_bottom": 5.826666666666483,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 145,
+        "over_bottom": 31.399999999999864,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 147,
+        "over_bottom": 31.39999999999975,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 148,
+        "over_bottom": 15.986666666666679,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 151,
+        "over_bottom": 65.80000000000007,
+        "path": "Page/Body/Column0/Table1"
+      },
+      {
+        "page": 153,
+        "over_bottom": 14.439999999999827,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 155,
+        "over_bottom": 14.43999999999994,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 157,
+        "over_bottom": 5.959999999999923,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 160,
+        "over_bottom": 5.826666666666597,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 161,
+        "over_bottom": 27.159999999999968,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 162,
+        "over_bottom": 10.066666666666492,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 163,
+        "over_bottom": 31.53333333333319,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 164,
+        "over_bottom": 31.399999999999864,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 165,
+        "over_bottom": 34.066666666666606,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 166,
+        "over_bottom": 23.773333333333312,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 168,
+        "over_bottom": 70.04000000000008,
+        "path": "Page/Body/Column0/Table1"
+      },
+      {
+        "page": 169,
+        "over_bottom": 10.06666666666672,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 170,
+        "over_bottom": 14.439999999999827,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 171,
+        "over_bottom": 14.440000000000055,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 172,
+        "over_bottom": 14.439999999999827,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 173,
+        "over_bottom": 31.53333333333319,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 174,
+        "over_bottom": 14.440000000000055,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 175,
+        "over_bottom": 35.7733333333332,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 176,
+        "over_bottom": 5.826666666666483,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 177,
+        "over_bottom": 22.919999999999845,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 179,
+        "over_bottom": 10.199999999999818,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 180,
+        "over_bottom": 10.066666666666606,
+        "path": "Page/Body/Column0/Table0"
+      },
+      {
+        "page": 194,
+        "over_bottom": 9.239999999999895,
+        "path": "Page/Body/Column0/Table0"
+      }
+    ]
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+    },
+    "pdf": {
+      "path": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+      "sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b"
+    },
+    "git_head": "73a6acd60173281e05f8d2de1d566bdc726f183a",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage82-air6764/visual-native/air6764/run_manifest.json"
+    }
+  },
+  "selected_native": {
+    "run_state": "complete",
+    "pages": [
+      {
+        "page": 39,
+        "tolerant_content_match_percent": 98.12011
+      },
+      {
+        "page": 103,
+        "tolerant_content_match_percent": 37.65331
+      },
+      {
+        "page": 124,
+        "tolerant_content_match_percent": 23.8889
+      },
+      {
+        "page": 194,
+        "tolerant_content_match_percent": 38.95167
+      },
+      {
+        "page": 201,
+        "tolerant_content_match_percent": 11.45426
+      }
+    ],
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 37.65331
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 23.8889
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 38.95167
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 11.45426
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "exit_code": 1,
+    "direct_inspection": "103쪽의3단계 확산/그림24/후속 설명 대신 이전 내용.201쪽은 기준의 역량 표와 달리 부록5영문 평가양식이 표시됨. 각각 실제 review 직접 확인. 쪽수201/204, 전체/fresh WASM 미실행."
+  },
+  "removal": {
+    "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "preserved_source": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "removed_functions": [
+      "para_float_band_keeps_the_next_table_fragment_on_paper",
+      "repaired_public_table_keeps_its_leading_rows_inside_the_paper",
+      "issue_6855_band_page_paints_nothing_below_the_paper",
+      "issue_6855_rewound_line_starts_the_next_page"
+    ],
+    "removed_baseline_rows": {
+      "body_overflow_baseline.tsv": [
+        "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t39\n"
+      ],
+      "off_canvas_baseline.tsv": [
+        "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t5\n"
+      ],
+      "text_overlap_baseline.tsv": [
+        "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7\n"
+      ]
+    },
+    "production_changes": false,
+    "new_test_functions": 0,
+    "threshold_relaxation": false
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956",
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "73a6acd60173281e05f8d2de1d566bdc726f183a",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_2)"
+        ],
+        "exit_code": 0,
+        "seconds": 7.637137624900788
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.268485166598111
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3970464998856187
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22419670782983303
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36835283413529396
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.375822457950562
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.233484750147909
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.585223500151187
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   0.803s] 1 test run: 1 passed, 239 skipped"
+  ],
+  "limits": "사용자 승인에 따른 원문 회귀 제외. 원문 피델리티 개선/다른 원문의 해결/전체 회귀 통과로 세지 않음."
+}

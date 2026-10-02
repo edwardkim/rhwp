@@ -18,9 +18,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     pub(in crate::renderer::typeset) row: usize,
     pub(in crate::renderer::typeset) start_cut: Vec<usize>,
     pub(in crate::renderer::typeset) start_cut_is_block: bool,
-    /// 앞 조각에서 셀 내용은 전부 소비됐지만 그 행의 빈 하단 밴드는 다음
-    /// 조각에 남는 경우의 물리 높이. `start_cut`이 내용을 숨기고 이 값은
-    /// 테두리/그리드만 이어 준다.
+    /// 분할된 행의 이어받기 물리 높이. 빈 시작 조각은 유닛을 전혀 소비하지
+    /// 않을 수 있고, 빈 꼬리 조각은 내용을 전부 소비한 뒤에도 공간을 남긴다.
+    /// 내용 소유는 `start_cut`, 행 상자의 점유는 이 값으로 각각 보존한다.
     pub(in crate::renderer::typeset) start_row_height_override: Option<f64>,
     pub(in crate::renderer::typeset) is_continuation: bool,
     pub(in crate::renderer::typeset) fragments_emitted: usize,
@@ -96,10 +96,16 @@ impl TableContinuationCursor {
 
 /// [#2424] continuation loop 진입 전에 한번 계산하는 owned 준비 상태.
 pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
+    /// 첫 행을 전혀 소비하지 못해 저장 호스트 쪽을 떠난 실제 전이 사실.
+    /// 예산과 출력은 새 쪽에서 문단 앵커 거리를 다시 적용하지 않는다.
+    pub(in crate::renderer::typeset) first_anchor_offset_consumed: bool,
     /// 현재 host frame에서 확정한 좌표. 다른 단으로 진행하면 앵커 거리는 소진된다.
     pub(in crate::renderer::typeset) host_placement:
         Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     pub(in crate::renderer::typeset) host_frame: (usize, u16, u64),
+    /// 저장 첫 조각이 비가시 공간만 소비할 때의 공통 행 프레임.
+    pub(in crate::renderer::typeset) empty_opening_row_frame:
+        Option<crate::renderer::float_placement::StoredEmptyOpeningRowFrame>,
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) cell_spacing: f64,
     pub(in crate::renderer::typeset) can_intra_split: bool,
@@ -111,6 +117,7 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// 행 전체가 fragment에 남는지 판정할 때의 paint footprint. RowBreak의 실제
     /// intra-row cut 계산은 `cut_row_heights`를 계속 사용한다.
     pub(in crate::renderer::typeset) whole_row_fit_heights: Vec<f64>,
+    pub(in crate::renderer::typeset) stored_rewinding_rowbreak_uses_painted_row_footprint: bool,
     /// native HWP5 rewind 표의 첫 whole-row fragment가 footer 경계에 남겨야 하는
     /// paint-local slack. continuation과 intra-row cut에는 적용하지 않는다.
     pub(in crate::renderer::typeset) first_fragment_painted_row_footer_guard: f64,
@@ -126,11 +133,11 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     pub(in crate::renderer::typeset) host_spacing_after_only: f64,
     /// 마지막 RowBreak child 뒤의 저장 empty-host line spacing. 첫 anchor
     /// fragment가 아니라 terminal continuation 뒤에서 한 번만 소비한다.
-    pub(in crate::renderer::typeset) terminal_nested_child_host_line_spacing: f64,
+    pub(in crate::renderer::typeset) terminal_host_spacing: f64,
     pub(in crate::renderer::typeset) strict_following_plain_text_fit: bool,
     pub(in crate::renderer::typeset) budget_para_start_height: f64,
-    /// native HWP5 RowBreak 표가 기존 FootnoteArea 직전까지의 물리 경계를
-    /// 사용해도 되는 것으로 조판 전에 확인됐을 때의 첫 fragment 절대 경계.
+    /// 원본 RowBreak 표가 기존 FootnoteArea 직전까지의 물리 경계를
+    /// 사용할 수 있음을 조판 전에 확인한 첫 조각의 절대 경계.
     /// 일반 표에는 `None`으로 기존 보수 budget을 유지한다.
     pub(in crate::renderer::typeset) first_fragment_actual_footnote_boundary: Option<f64>,
     /// 다음 host의 양수 vpos rewind가 현재 RowBreak 표의 continuation source
@@ -163,6 +170,7 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationSource<'a> {
     pub(in crate::renderer::typeset) para_index: usize,
     pub(in crate::renderer::typeset) control_index: usize,
     pub(in crate::renderer::typeset) paragraph: &'a Paragraph,
+    pub(in crate::renderer::typeset) paragraphs_all: &'a [Paragraph],
     /// 페이지 항목과 부동 배치 속성은 바깥 표의 것으로 보존한다. 다만 빈 1×1
     /// 래퍼는 측정기와 렌더러가 내부 표를 직접 쓰므로, 행 컷 계산도 같은 유효
     /// 표를 사용해야 `MeasuredTable`의 행 수와 컷 대상 행 수가 일치한다.

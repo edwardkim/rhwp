@@ -43,7 +43,8 @@ SEC0_NAMES = (
     "Contents/section7.xml",
 )
 
-SPEC_SAMPLE_HWP = "samples/한글문서파일형식_5.0_revision1.3.hwp"
+# #7445 이관 원문의 저장 IR을 읽는 진단 경로이며 시각 승인 검사가 아니다.
+SPEC_SAMPLE_HWP = "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp"
 ISSUE_5128 = 5128
 PINNED_PAGES = 69
 PINNED_SECTIONS = 6

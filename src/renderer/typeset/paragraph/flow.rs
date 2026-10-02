@@ -3,6 +3,7 @@
 //! 엔진 profile은 예산 준비 시, state profile은 강제 경계 준비 후에 각각 읽는다.
 
 use crate::model::paragraph::Paragraph;
+use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::typeset::paragraph::{self, metrics::FormattedParagraph};
 use crate::renderer::typeset::TypesetState;
@@ -30,6 +31,27 @@ pub(in crate::renderer::typeset) fn place(
         styles,
         is_last_in_section,
     } = input;
+    let stored_frame_shared_spacing =
+        crate::renderer::float_placement::stored_frame_successor_shared_spacing_px(
+            &st.paragraph_float_placements,
+            para_idx,
+            fmt.spacing_before,
+            st.current_height,
+        );
+    st.reclaim_flow_by(stored_frame_shared_spacing.min(st.current_height));
+    let previous_is_partial_table = st.current_items.last().is_some_and(
+        |item| matches!(item, PageItem::PartialTable { para_index, .. } if *para_index < para_idx),
+    );
+    let shared_spacing =
+        crate::renderer::float_placement::hwpx_empty_after_partial_table_shared_spacing_px(
+            st.profile.hwpx_stored_layout(),
+            previous_is_partial_table,
+            para,
+            fmt.spacing_before,
+            st.current_height,
+            dpi,
+        );
+    st.reclaim_flow_by(shared_spacing.min(st.current_height));
     let paragraph::FitBudget {
         strict_after_empty_host_float,
         layout_drift_safety_px,

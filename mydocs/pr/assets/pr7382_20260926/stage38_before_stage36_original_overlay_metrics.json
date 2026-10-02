@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.44374,
+    "worst_pixel_match_percent": 99.30041,
+    "average_ink_match_percent": 15.70716,
+    "worst_ink_match_percent": 15.43988,
+    "average_visual_accuracy_proxy_percent": 15.70716,
+    "worst_visual_accuracy_proxy_percent": 15.43988,
+    "average_tolerant_content_match_percent": 71.23125,
+    "worst_tolerant_content_match_percent": 64.42264,
+    "worst_pages": [
+      1,
+      2
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 6238,
+      "diff_ratio": 0.00699592,
+      "pixel_match_percent": 99.30041,
+      "ink_union_pixels": 7377,
+      "ink_diff_pixels": 6238,
+      "ink_diff_ratio": 0.84560119,
+      "ink_match_percent": 15.43988,
+      "visual_accuracy_proxy_percent": 15.43988,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 78.03985,
+      "mean_abs_channel_delta": 1.097,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        1022
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/rhwp_png/rhwp_002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/pdf_png/pdf-2.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native/fragmentstart/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 3682,
+      "diff_ratio": 0.00412937,
+      "pixel_match_percent": 99.58706,
+      "ink_union_pixels": 4382,
+      "ink_diff_pixels": 3682,
+      "ink_diff_ratio": 0.84025559,
+      "ink_match_percent": 15.97444,
+      "visual_accuracy_proxy_percent": 15.97444,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 64.42264,
+      "mean_abs_channel_delta": 0.596,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        94,
+        609,
+        126
+      ]
+    }
+  ]
+}

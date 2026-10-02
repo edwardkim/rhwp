@@ -10,6 +10,8 @@ use crate::renderer::pagination::PageItem;
 pub(in crate::renderer::typeset) struct ParagraphFragment {
     pub item: PageItem,
     pub height: f64,
+    /// 줄·문단 뒤 간격을 제외한 점유 높이. 일반 분할의 확정 메트릭에서 생산한다.
+    pub content_height: Option<f64>,
 }
 
 /// None이면 아직 아무 항목도 배치하지 않았으며 다음 단/쪽에서 같은 시작 줄을 재시도한다.
@@ -69,9 +71,17 @@ pub(in crate::renderer::typeset) fn plan_fragment(
             end_line,
         }
     };
+    // 음수 줄간격은 흐름 전진량을 줄여도 앞선 줄 상자의 점유 영역을 지우지 않는다.
+    let mut line_top = sp_b;
+    let mut content_height = sp_b;
+    for line_idx in cursor_line..end_line.min(fmt.line_count()) {
+        content_height = content_height.max(line_top + fmt.line_heights[line_idx]);
+        line_top += fmt.line_advance(line_idx);
+    }
     Some(ParagraphFragment {
         item,
         height: part_height,
+        content_height: Some(content_height),
     })
 }
 

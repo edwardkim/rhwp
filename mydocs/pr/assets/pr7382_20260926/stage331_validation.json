@@ -1,0 +1,76 @@
+{
+  "baseHead": "b6ab7a1934871514239c06b3c2d1c640fca6c3b9",
+  "sourceFiles": {
+    "src/renderer/composer.rs": "1f9caf081e3f56955ab23501bf82ff8d5f1d537f5da239c86d6ca866d8cce7e7",
+    "src/renderer/composer/line_breaking.rs": "edfdd7e4a69869d9490888435af5a68d19c88cfb02039c02674c1e3128574084",
+    "src/renderer/equation/canvas_render.rs": "edcf21b6f79d1bf56b3e6de91e322436d365cf448bb34f704d0ed0db7f157422",
+    "src/renderer/equation/layout.rs": "a489d758b1c81f5451154bc9872ecc4c2ee9ff41eb563b63c70450982515af5e",
+    "src/renderer/equation/mod.rs": "d625690db573267e5c66c9befbcca9d0a6954035eea9749543eb9ce81497b880",
+    "src/renderer/equation/svg_render.rs": "c4cf3ed8f7e773dcb853a5b1aeec92a50c8bb824e29deff13fcbc619b950e7e0",
+    "src/renderer/layout/paragraph_layout.rs": "f0a346ab0cbb76d5785df31b4c5376b63b0ab3024a770560337fe62db6ff1004",
+    "src/renderer/layout/shape_layout.rs": "4d98f6644471e31f4b08127083d6d62b040493817a230f6d1cb54d59fe6e6612",
+    "src/renderer/layout/table_layout.rs": "4dccdc241e86a835d9c4c2ae969b23e1163601c42eac7fa01856951af037cf15",
+    "src/renderer/layout/table_partial.rs": "1b5794ea686c96a5a958eed21059c870a7779b5b8f515db99c3e990ec0757438",
+    "src/renderer/skia/equation_conv.rs": "ef81cc2f78a2f3e76ed7395641b20f9229da007a031ebaad76a68e0ce6b2847f"
+  },
+  "nativeBuildExit": 0,
+  "freshWasmBuildExit": 0,
+  "nativeSweepExit": 0,
+  "wasmSweepExit": 0,
+  "nativePageCount": 215,
+  "wasmPageCount": 215,
+  "pdfPageCount": 215,
+  "pages": [
+    {
+      "stage": "stage331-native-review-r2",
+      "pages": [
+        {
+          "page": 87,
+          "silhouette": 99.83337,
+          "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+        },
+        {
+          "page": 88,
+          "silhouette": 96.43691,
+          "pngSha256": "72b2a1a951513b99db24673c3a6fc45e12e7177edf27a9b4b0a7dedce57d04e1"
+        },
+        {
+          "page": 89,
+          "silhouette": 98.72103,
+          "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+        }
+      ]
+    },
+    {
+      "stage": "stage331-wasm-review-r2",
+      "pages": [
+        {
+          "page": 87,
+          "silhouette": 99.83337,
+          "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+        },
+        {
+          "page": 88,
+          "silhouette": 96.43691,
+          "pngSha256": "72b2a1a951513b99db24673c3a6fc45e12e7177edf27a9b4b0a7dedce57d04e1"
+        },
+        {
+          "page": 89,
+          "silhouette": 98.72103,
+          "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+        }
+      ]
+    }
+  ],
+  "existingTests": {
+    "passed": 36,
+    "failed": 0,
+    "exit": 0,
+    "log": "output/pr-review/planet6897-7382-20260926/stage331-focused.log"
+  },
+  "rustTestFunctionsAdded": 0,
+  "remaining": [
+    "다음 문단 저장 vpos가 실제 수식 재조판의 높이 변화5.19px를 복원해 마지막 문단이 내려가는 문제. 보정332로 개별 해결.",
+    "최종 전체 PR 검증"
+  ]
+}

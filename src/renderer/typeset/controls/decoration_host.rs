@@ -30,6 +30,7 @@ pub(super) fn plan(
                     end_line: total_lines,
                 },
                 height: fmt.line_advances_sum(0..total_lines),
+                content_height: None,
             });
         }
     } else if decoration_host_text_pending && !flow_table_owns_host_text {
@@ -55,6 +56,7 @@ pub(super) fn plan(
                     para_index: para_idx,
                 },
                 height: hwpunit_to_px(advance_hu, dpi),
+                content_height: None,
             });
         }
     }

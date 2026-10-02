@@ -69,11 +69,31 @@ pub(super) fn resolve(
 
     // [#2195 stage50 실험] 자리차지(TopAndBottom) 표도 outer_margin_top 계상 —
     // 86712 구분선 표(566HU) 한글 PDF 괘선 실측: 상단 마진 7.55px 포함.
-    let outer_top = if is_tac || is_para_topbottom_float(&table.common) {
-        hwpunit_to_px(table.outer_margin_top as i32, dpi)
-    } else {
-        0.0
-    };
+    // 절대 위치 표의 뒤 본문은 별도 PartialParagraph가 줄간격을 소비한다.
+    // 표 예약에는 host 줄간격 대신 실제 바깥 여백을 사용한다.
+    let absolute_table_with_post_text = !is_tac
+        && matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::TopAndBottom
+        )
+        && matches!(
+            table.common.vert_rel_to,
+            crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper
+        )
+        && para_has_non_whitespace_text(para)
+        && signed_hwpunit(table.common.vertical_offset) <= 0
+        && para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, crate::model::control::Control::Table(_)))
+            .count()
+            == 1;
+    let outer_top =
+        if is_tac || is_para_topbottom_float(&table.common) || absolute_table_with_post_text {
+            hwpunit_to_px(table.outer_margin_top as i32, dpi)
+        } else {
+            0.0
+        };
     // [Task #1841] visible-host 자리차지(TopAndBottom) 표는 outer_margin_bottom 을
     // 후속 재개 간격에 포함한다 (layout 재개 y 가산과 대칭 — 렌더/pagination 정합).
     // 한글 실측: 표 하단→첫 줄 gap 한글 18.7pt = rhwp 10.2pt + outer_bottom 8.5pt
@@ -87,7 +107,7 @@ pub(super) fn resolve(
     // 페이지 적합 판정에서는 제외(trailing 간격 면제 — hwpspec 178쪽 핀 #1086).
     let is_empty_host_float =
         is_para_topbottom_float(&table.common) && !para_has_non_whitespace_text(para);
-    let outer_bottom = if is_tac || is_visible_host_float {
+    let outer_bottom = if is_tac || is_visible_host_float || absolute_table_with_post_text {
         hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
     } else if is_empty_host_float {
         hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
@@ -172,7 +192,7 @@ pub(super) fn resolve(
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
-    let host_line_spacing = if suppress_empty_anchor_spacing {
+    let host_line_spacing = if suppress_empty_anchor_spacing || absolute_table_with_post_text {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs

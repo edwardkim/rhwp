@@ -183,6 +183,31 @@ impl ParagraphBox {
         }
     }
 
+    /// 원본의 가시 목록 줄이 실제 문단 여백 원점을 사용하면 그 물리 상자를 복원한다.
+    /// 빈 목록과 편집 줄의 원점 발행 차단은 유지하며, 저장 폭·모든 행의 원점·
+    /// 텍스트 유효성은 이후 공통 프레임 수용 검사가 그대로 검증한다.
+    pub(crate) fn for_stored_body_rows(self, para: &crate::model::paragraph::Paragraph) -> Self {
+        let has_original_origin = !self.origin_is_derivable
+            && para.text.chars().any(|ch| !ch.is_whitespace())
+            && !para.stored_text_partition_is_dirty()
+            && para
+                .line_segs
+                .first()
+                .is_some_and(|line| line.column_start == self.horizontal.start)
+            && para
+                .line_segs
+                .iter()
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+        if has_original_origin {
+            Self {
+                origin_is_derivable: true,
+                ..self
+            }
+        } else {
+            self
+        }
+    }
+
     /// A box in a nested flow's own coordinates. Pass the real inset when the
     /// caller has one; `0..width` when the flow's left edge *is* the origin.
     pub(crate) fn content(horizontal: Range<i32>) -> Self {
@@ -397,6 +422,8 @@ pub(crate) struct LayoutFrame {
     pub(crate) current_intervals: Vec<Range<i32>>,
     pub(crate) next_geometry_event: Option<i32>,
     pub(crate) minimum_width: i32,
+    /// 저장 HWPX의 KoPub 양쪽 정렬 줄은 공백을 글꼴 전진폭까지 줄일 수 있다.
+    pub(crate) kopub_justified_space: bool,
     /// Whether `horizontal` is a column edge pair.
     ///
     /// The geometry pitch snaps the column's edge pair. A table cell's content
@@ -417,6 +444,7 @@ impl LayoutFrame {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }
@@ -928,6 +956,7 @@ mod tests {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: 1,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }

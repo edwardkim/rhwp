@@ -833,7 +833,7 @@ pub(crate) fn resolved_to_text_style(
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
             hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
-            font_size: cs.font_size,
+            font_size: cs.font_size_for_lang(lang_index),
             color: cs.text_color,
             bold: cs.bold,
             italic: cs.italic,
@@ -979,6 +979,28 @@ fn quantize_hwp_px(px: f64) -> f64 {
     hwp as f64 / 75.0
 }
 
+/// [#7390] `KoPubDotum` 기본 라틴 문자(U+0020~U+007E) 전진폭, 1000em 기준.
+///
+/// KOPUS 배포본 `ttfs/kopub/KoPubDotum-{Light,Medium,Bold}.ttf` 의 `cmap`+`hmtx` 직독.
+/// 굵기 3종이 완전히 같아 한 벌만 둔다. 공백(첫 항목 290)은 **쓰지 않는다** —
+/// 위 `kopub_char_width` 의 반각 갈래가 먼저 반환한다.
+static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
+    290, 300, 320, 590, 590, 874, 706, 180, 310, 310, 446, 590, 300, 570, 300, 446, 563, 563, 563,
+    563, 563, 563, 563, 563, 563, 563, 316, 316, 425, 590, 425, 486, 882, 662, 664, 664, 713, 609,
+    555, 712, 718, 283, 500, 609, 555, 872, 718, 758, 609, 758, 664, 601, 555, 718, 621, 990, 609,
+    609, 555, 310, 446, 310, 434, 490, 291, 506, 562, 506, 562, 562, 341, 562, 562, 232, 232, 506,
+    232, 891, 562, 549, 562, 562, 341, 506, 341, 562, 504, 802, 506, 504, 451, 310, 386, 310, 527,
+];
+
+/// [#7390] `KoPubBatang` 기본 라틴 문자 전진폭. 위와 같은 출처·같은 규약이다.
+static KOPUB_BATANG_LATIN_0: [u16; 95] = [
+    312, 312, 312, 573, 573, 745, 789, 312, 312, 312, 419, 648, 312, 503, 312, 468, 573, 573, 573,
+    573, 573, 573, 573, 573, 573, 573, 312, 312, 484, 556, 484, 468, 834, 668, 640, 708, 770, 590,
+    554, 768, 770, 352, 358, 746, 552, 874, 778, 812, 612, 816, 672, 532, 652, 740, 686, 954, 708,
+    706, 638, 312, 468, 312, 477, 540, 312, 558, 606, 536, 592, 548, 360, 548, 624, 324, 282, 564,
+    288, 900, 612, 612, 632, 596, 416, 432, 350, 604, 506, 772, 588, 516, 476, 312, 468, 312, 648,
+];
+
 fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
     let lower = primary_name.to_lowercase();
     let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
@@ -987,20 +1009,43 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return None;
     }
 
+    // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
+    // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
+    // `pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf`(KoPub 설치 환경
+    // 인쇄, 서브셋 내장)를 세 방법으로 재면 모두 같은 곳을 가리킨다.
+    //
+    // ```text
+    //   연속 공백 쌍        n=359   0.4767 em (그려진 폭)
+    //   공백 4개 이상 덩어리 n=59    0.4767 em
+    //   183줄 최소제곱      장평 k=0.9510 · 자연 공백 0.5045 em
+    //     고정값별 잔차 중앙: 0.290 -> 0.669 · 0.436 -> 0.314 · 0.484 -> 0.249 · 0.500 -> 0.269
+    // ```
+    //
+    // 글꼴 값 0.290 은 잔차가 2.7배로 가장 나쁘다. 반각 0.5 를 유지한다.
     if c == ' ' {
         return Some(quantize_hwp_px(font_size * 0.5));
     }
+    // [#7390] ASCII 는 종전에 **일률 0.5em** 이었다. 실제 KoPub 은 비례 글꼴이라
+    // `i` 232 · `N`/`H` 718 처럼 3배 넘게 갈린다(1000em 기준). 아래 표는 KOPUS 배포본
+    // `KoPubDotum-*.ttf` / `KoPubBatang-*.ttf` 의 `cmap`+`hmtx` 직독이고, 굵기 3종의
+    // ASCII 전진폭이 **완전히 같아** 계열당 한 벌이면 된다. 같은 표가 위 정본에 내장된
+    // `KoPubDotumLight` 서브셋의 `/Widths` 와 검사한 18글자 전건에서 일치한다.
+    if let Some(index) = (c as u32)
+        .checked_sub(0x20)
+        .filter(|_| ('\u{20}'..='\u{7E}').contains(&c))
+    {
+        let table = if is_dotum {
+            &KOPUB_DOTUM_LATIN_0
+        } else {
+            &KOPUB_BATANG_LATIN_0
+        };
+        let units = table[index as usize];
+        if units > 0 {
+            return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
+        }
+    }
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    // [#2239] 괄호 — KoPub 경로는 86712 한컴 PDF 글리프 직독 실측(13px 문서
-    // 괄호 4px ≈ 0.3em, #2195 stage23)으로 narrow 유지. is_narrow_punctuation
-    // 의 괄호가 폰트 한정(is_narrow_paren_for_font)으로 빠지면서 여기서 보존.
-    if matches!(c, '(' | ')') {
-        return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    if c.is_ascii() {
-        return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
         // [#6389] KoPub돋움체 한글 전각은 872/1000em — 편람 kopub 오라클 PDF 의
@@ -1018,6 +1063,30 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     }
 
     None
+}
+
+/// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
+/// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
+pub(crate) fn kopub_justified_space_width(style: &TextStyle) -> Option<f64> {
+    let primary = style.font_family.split(',').next()?.trim();
+    let lower = primary.to_lowercase();
+    let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        290.0
+    } else if primary.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        312.0
+    } else {
+        return None;
+    };
+    let (font_size, ratio, _) = style_params(style);
+    let base = quantize_hwp_px(font_size * units / 1000.0);
+    let mut width = base * ratio
+        + glyph_letter_spacing(style.letter_spacing, base * ratio, font_size)
+        + style.extra_char_spacing
+        + style.extra_word_spacing;
+    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+        width = width.max(base * ratio * 0.5);
+    }
+    Some(width)
 }
 
 /// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
@@ -1214,6 +1283,13 @@ fn measure_char_width_embedded_decision_for_font<'a>(
                 character_match: "miss",
             };
         };
+        // HMKMM TrueType의 가운뎃점은512/512 전각이며 독립 PDF도 같은 전진폭이다.
+        // 같은 face 이름의 HFT 출력은 좁은 호환 폭을 쓰므로 명시적 프로그램
+        // 선택이 확인된 세션만 바꾼다. 따옴표는 TrueType 글리프가 전각이어도
+        // 한컴 문단 조판에서 반각 처리되므로 기존 기호 규칙을 유지한다.
+        let human_true_type_punct = font_metric_trusted
+            && matches!(primary_name, "휴먼명조" | "HumanMyeongJo")
+            && c == '\u{00B7}';
         // [#7051] HWP3 변환본의 HFT 한글 전용 face 는 ASCII 를 반각(`em/2`)으로 전진시킨다.
         //
         // HWP3 시절 HFT 글꼴(`명조`·`신명 세명조`·`한양신명조` 등)은 한글 전용이고 ASCII
@@ -1275,7 +1351,9 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             && glyph_w >= mm.metric.em_size
             && !is_monospace_metric(mm.metric)
             && (!font_metric_trusted || latin1_table_is_uninformative(mm.metric));
-        if hft_hangul_halfwidth_ascii {
+        if human_true_type_punct {
+            (mm.metric.em_size, "metricTrueTypeGlyph")
+        } else if hft_hangul_halfwidth_ascii {
             (mm.metric.em_size / 2, "metricHftHangulHalfwidthAscii")
         } else if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact
         {
@@ -2921,10 +2999,10 @@ mod tests {
     ///   표를 믿는다.
     /// - **신명 신신명조(HFT → HY신명조로 대체)** — 점선 리더 26점이 150.6px 칸에 들어간다
     ///   (`samples/issues/2809/jubo_20260104.hwp`). 전각이면 381px 라 불가능하다 → 좁힌다.
-    /// - **휴먼명조** — 이 글꼴의 `·` 슬롯은 오버레이가 307(0.3em)로 갈라 두었고, 정본이
-    ///   TrueType 1.000 ↔ Type3 0.384 로 갈려 이 변경에서는 움직이지 않는다. 표 값이
-    ///   em 미만이라 신뢰 여부와 무관하게 적힌 폭 그대로다(`font_metrics_overlays.rs` 주석).
-    ///   같은 face 의 작은따옴표는 갈리지 않아 아래 따옴표 시험이 따로 잠근다.
+    /// - **휴먼명조** — 보정325의 독립 한컴 PDF208쪽과 HMKMM.TTF의 hmtx는
+    ///   TrueType 가운뎃점이512/512 전각임을 확인한다. 명시적 TrueType 선택이
+    ///   확인된 신뢰 경로는1.0em, 비신뢰 HFT 호환 경로는 종전0.3em을 유지한다.
+    ///   작은따옴표의 별도 조판 규칙은 변경하지 않는다.
     ///
     /// 대체 안 된 HFT 가 전각이라는 정본은 아직 없어 그 경우는 종전대로 좁힌다.
     #[test]
@@ -2939,13 +3017,13 @@ mod tests {
                 ..Default::default()
             };
             let positions = m.compute_char_positions("가\u{00B7}나", &style);
-            assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
+            assert!(positions.len() >= 3, "세 글자의 원점이 모두 있어야 한다");
             (positions[2] - positions[1]) / style.font_size
         };
         for (family, trusted, expected_em) in [
             ("HY신명조", true, 1.0),
             ("HY신명조", false, 0.3),
-            ("휴먼명조", true, 0.3),
+            ("휴먼명조", true, 1.0),
             ("휴먼명조", false, 0.3),
             ("한양신명조", true, 0.384),
         ] {

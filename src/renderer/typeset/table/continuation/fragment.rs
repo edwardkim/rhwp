@@ -114,6 +114,12 @@ impl TypesetEngine {
 
         let budget = self.prepare_table_fragment_budget(st, input);
         let scan = self.scan_table_fragment(st, input, &budget, profile);
+        if scan.end_row == cursor_row && scan.consumed == 0.0 {
+            // 캡션 종료 예산 때문에 마지막 유닛 전체를 이월했다.
+            // 현재 조각에서는 내용이나 물리 높이를 소비하지 않았다.
+            st.advance_column_or_new_page();
+            return TableContinuationIteration::Skipped;
+        }
         self.emit_table_fragment(st, continuation, input, &budget, scan)
     }
 }
