@@ -79,6 +79,21 @@ impl TypesetEngine {
                 st.align_flow_to(offset);
             }
         }
+        // 닫힌 원본 프레임은 안내 줄까지 이미 소유한 전체 물리 상자다.
+        // 같은 조회 결과의 원점과 아래 여백을 예산·확정 배치에 함께 전달한다.
+        let closed_source_frame_placement =
+            (!is_continuation && cursor_row == 0 && start_cut.is_empty())
+                .then(|| {
+                    self.query_closed_source_frame_placement(
+                        st,
+                        input.source.paragraphs_all,
+                        para_idx,
+                        table,
+                        total_rows_h,
+                        table_available.min(st.available_height()),
+                    )
+                })
+                .flatten();
         let (host_before_overhead, fragment_outer_bottom_overhead) =
             partial_rowbreak_fragment_spacing_px(
                 table,
@@ -92,6 +107,10 @@ impl TypesetEngine {
                 ),
                 self.dpi,
             );
+        let fragment_outer_bottom_overhead = closed_source_frame_placement
+            .map_or(fragment_outer_bottom_overhead, |placement| {
+                placement.occupied_bottom - placement.table_top - total_rows_h
+            });
         let fragment_opens_outer_top = std::ptr::eq(row_geometry_table, table)
             && crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
                 st.profile.hwpx_stored_layout(),
@@ -370,34 +389,36 @@ impl TypesetEngine {
             0.0,
         );
         let captioned_object_frame = captioned_current_placement.is_some();
-        let fragment_placement = prepared.host_placement.map(|original| {
-            if !is_continuation
-                && prepared.host_frame
-                    == (
-                        st.pages.len(),
-                        st.current_column,
-                        st.current_zone_y_offset.to_bits(),
-                    )
-            {
-                original
-            } else {
-                // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
-                let unanchored_fragment =
-                    crate::renderer::float_placement::ParagraphFloatPlacement {
-                        flow: original.flow,
-                        anchor_y: st.current_height,
-                        stored_host_origin: None,
-                        stored_successor_line_origin: None,
-                        table_left: None,
-                        table_top: st.current_height + host_before_overhead,
-                        occupied_bottom: st.current_height + host_before_overhead,
-                    };
-                // 내용 소비 없이 이월한 첫 유닛은 원래 문단 오프셋을 계속 소유한다.
-                // 이어받기 조각은 그 앵커를 이미 소비했다.
-                captioned_current_placement
-                    .filter(|_| !is_continuation)
-                    .unwrap_or(unanchored_fragment)
-            }
+        let fragment_placement = closed_source_frame_placement.or_else(|| {
+            prepared.host_placement.map(|original| {
+                if !is_continuation
+                    && prepared.host_frame
+                        == (
+                            st.pages.len(),
+                            st.current_column,
+                            st.current_zone_y_offset.to_bits(),
+                        )
+                {
+                    original
+                } else {
+                    // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
+                    let unanchored_fragment =
+                        crate::renderer::float_placement::ParagraphFloatPlacement {
+                            flow: original.flow,
+                            anchor_y: st.current_height,
+                            stored_host_origin: None,
+                            stored_successor_line_origin: None,
+                            table_left: None,
+                            table_top: st.current_height + host_before_overhead,
+                            occupied_bottom: st.current_height + host_before_overhead,
+                        };
+                    // 내용 소비 없이 이월한 첫 유닛은 원래 문단 오프셋을 계속 소유한다.
+                    // 이어받기 조각은 그 앵커를 이미 소비했다.
+                    captioned_current_placement
+                        .filter(|_| !is_continuation)
+                        .unwrap_or(unanchored_fragment)
+                }
+            })
         });
         // A resolved host origin is shared with paint. Single-cell fragments
         // open their top margin here once, so the replacement budget cannot
