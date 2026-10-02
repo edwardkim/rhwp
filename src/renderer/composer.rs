@@ -4324,38 +4324,6 @@ mod re_sample_gen;
 #[cfg(test)]
 mod tests;
 
-/// 글머리표 문자열과 본문 내어쓰기 폭을 조판·배치에서 함께 사용한다.
-pub(crate) fn bullet_marker_text(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<String> {
-    let style = styles.para_styles.get(para.para_shape_id as usize)?;
-    if style.head_type != crate::model::style::HeadType::Bullet {
-        return None;
-    }
-    let bullet = styles
-        .bullets
-        .get(style.numbering_id.checked_sub(1)? as usize)?;
-    if bullet.bullet_char == '\u{FFFF}' {
-        return None;
-    }
-    let ch = map_pua_bullet_char(bullet.bullet_char);
-    Some(if bullet.text_distance > 0 {
-        format!("{} ", ch)
-    } else {
-        ch.to_string()
-    })
-}
-
-pub(crate) fn bullet_marker_width(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
-    let Some(text) = bullet_marker_text(para, styles) else {
-        return 0.0;
-    };
-    let style_id = para
-        .char_shapes
-        .first()
-        .map_or(0, |shape| shape.char_shape_id);
-    let lang = para.text.chars().next().map_or(0, detect_lang_category);
-    estimate_text_width(&text, &resolved_to_text_style(styles, style_id, lang))
-}
-
 /// 공유 프레임이 저장 수식 메트릭을 실제 부분 재조판하는 경로인지 판별한다.
 pub(crate) fn uses_remeasured_equation_frame(para: &Paragraph) -> bool {
     line_breaking::remeasured_equation_start_row(para).is_some()

@@ -5041,11 +5041,10 @@ impl LayoutEngine {
                     hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) + 0.5
                         >= pinned_height
                 });
-            let d7063_pin = true;
-            if (starts_at_body_top || content_is_top_anchored || d7063_pin)
+            if (starts_at_body_top || content_is_top_anchored)
                 && stored_cell_spans_page_box
                 && !projected_content
-                && (starts_at_body_top || d7063_pin || stored_reset_paint_geometry.is_none())
+                && (starts_at_body_top || stored_reset_paint_geometry.is_none())
             {
                 // 내용 행 높이에는 조각 마지막 줄 뒤 줄간격이 들어 있어 상자보다 클 수 있다
                 // (30269 10쪽: 줄 바닥 1010.2 + 줄간격 → 1032.1, 정본 상자 1022.9). 한/글은 그
