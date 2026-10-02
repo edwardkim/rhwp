@@ -1865,9 +1865,18 @@ mod tests {
     /// lh 정의. layout_table_item TAC after-spacing 분기 (layout.rs:2491-2497) 가
     /// outer_margin_bottom 미적용 → 다음 paragraph 가 8 px 위로 시프트.
     ///
-    /// PDF 한컴 2010: 박스 bottom → ① 첫 답안 gap ≈ 20 px
-    /// 수정 전: gap = 12.27 px (-7.7 px shortfall)
-    /// 수정 후: gap = 20.27 px (PDF ±2 px 정합)
+    /// 기준: 같은 원본의 한컴 2020(`samples/exam_eng-2020.pdf`)·2022
+    /// (`pdf/exam_eng-2022.pdf`) PDF. 표 테두리는 그려지지 않으므로 표 상단을 같은
+    /// 문단 기준 글뒤 그림 상단(243.6px)으로 잡고 선언 높이 21607HU(288.1px)를 더한
+    /// 표 하단 531.7px 에서 ① 기준선(2022 555.84 · 2020 555.60)까지 ≈ 24.0px.
+    /// 저장 사다리도 같다: pi104 vpos 2254 + lh 22207(표+outMargin.bottom 600)
+    /// + ls 344 = pi105 vpos 24805.
+    ///
+    /// #521 수정 전: gap = 12.27 px (outer_margin_bottom 8px 누락)
+    /// #7431 수정 전: gap = 20.27 px (글뒤 그림 뒤 TAC host 줄간격 344HU=4.6px 누락).
+    /// 종전 기대값 20px 은 쪽 배치가 다른 한컴 2010 PDF(이 문제가 3쪽 왼쪽 단)에서
+    /// 읽은 값이라 이 쪽의 기준이 아니다.
+    /// #7431 수정 후: gap ≈ 24.9 px
     #[test]
     fn test_521_tac_table_outer_margin_bottom_p2() {
         let Some(core) = load_document("samples/exam_eng.hwp") else {
@@ -1957,13 +1966,13 @@ mod tests {
 
         // gap 검증
         let gap = answer_y - box_bottom;
-        let pdf_expected_gap: f64 = 20.0;
+        let pdf_expected_gap: f64 = 24.0;
 
         assert!(
             (gap - pdf_expected_gap).abs() < 2.0,
             "박스 bottom y={:.2} → ① y={:.2} gap={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
-             일치해야 함. 버그(수정 전): gap=12.27 (-7.7 px shortfall, \
-             layout_table_item TAC after-spacing 의 outer_margin_bottom 미적용).",
+             일치해야 함. 버그: gap=12.27 (#521 outer_margin_bottom 미적용), \
+             gap=20.27 (#7431 글뒤 그림 뒤 TAC host 줄간격 미적용).",
             box_bottom,
             answer_y,
             gap,
