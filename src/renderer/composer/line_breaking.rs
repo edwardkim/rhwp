@@ -2336,6 +2336,59 @@ fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option
         })
 }
 
+/// 비-글자취급 개체(표·그림·도형)의 기준 문자 위치(텍스트 문자 인덱스)와 그 문자의 글꼴 크기(px).
+///
+/// 개체가 글자처럼 흐르지 않아도 기준 문자는 문단 텍스트의 한 글자이고, 한컴은 그 글자의
+/// 글자모양을 줄 높이에 넣는다. 한컴 저장본에서 첫 줄의 개체 기준 문자 글자모양이 그 줄의
+/// 다른 글자보다 클 때 저장 줄 높이는 언제나 기준 문자 쪽 크기다(`samples/`·10k 코퍼스 HWP
+/// 표본 스캔 11/11, 반례 0 — 예: 1600/1200 → 1600, 2000/1400 → 2000). 기준 문자가 더 작으면
+/// 텍스트 크기가 남는다(71건). 글자처럼 취급하는 개체는 개체 높이로 줄을 만드는 별도 경로가
+/// 소유한다.
+fn floating_anchor_char_font_sizes(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> Vec<(usize, f64)> {
+    if para.controls.is_empty() || para.char_shapes.is_empty() {
+        return Vec::new();
+    }
+    let text_positions = para.control_text_positions();
+    let utf16_positions = para.control_utf16_positions();
+    para.controls
+        .iter()
+        .zip(text_positions)
+        .zip(utf16_positions)
+        .filter(|((ctrl, _), _)| match ctrl {
+            Control::Table(table) => !table.common.treat_as_char,
+            Control::Picture(pic) => !pic.common.treat_as_char,
+            Control::Shape(shape) => !shape.common().treat_as_char,
+            _ => false,
+        })
+        .filter_map(|((_, text_pos), utf16_pos)| {
+            let id = find_active_char_shape(&para.char_shapes, utf16_pos);
+            styles
+                .char_styles
+                .get(id as usize)
+                .map(|style| style.font_size)
+                .filter(|fs| *fs > 0.0)
+                .map(|fs| (text_pos, fs))
+        })
+        .collect()
+}
+
+/// `range` 줄에 놓인 개체 기준 문자의 가장 큰 글꼴 크기(px). 문단 끝 기준 문자는 마지막 줄 소속이다.
+fn floating_anchor_font_size_px(
+    anchors: &[(usize, f64)],
+    range: Range<usize>,
+    is_last_line: bool,
+    text_len: usize,
+) -> f64 {
+    anchors
+        .iter()
+        .filter(|(pos, _)| range.contains(pos) || (is_last_line && *pos == text_len))
+        .map(|(_, fs)| *fs)
+        .fold(0.0, f64::max)
+}
+
 fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
     para.controls
         .iter()
@@ -4154,6 +4207,7 @@ fn reflow_line_segs_impl(
             )
         })
         .flatten();
+    let floating_anchors = floating_anchor_char_font_sizes(para, styles);
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for (line_idx, lb) in line_breaks.iter().enumerate() {
@@ -4167,6 +4221,13 @@ fn reflow_line_segs_impl(
         } else {
             paragraph_font_size_px(para, styles).unwrap_or(12.0)
         };
+        // 줄 안에 놓인 비-글자취급 개체의 기준 문자도 그 줄의 글자다.
+        let fs = fs.max(floating_anchor_font_size_px(
+            &floating_anchors,
+            lb.start_idx..lb.end_idx,
+            lb.end_idx == text_len,
+            text_len,
+        ));
         let mut text_seg = make_line_seg(utf16_start, fs);
         if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
             let (_, height_hwp) = forced_inline_line.expect("checked inline control");
