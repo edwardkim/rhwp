@@ -151,6 +151,55 @@ fn a_self_contradicting_ladder_is_reflowed_to_the_hancom_breaks() {
     );
 }
 
+/// 사다리를 버려 줄 수가 줄었으면, 뒤 문단은 버린 사다리의 저장 vpos 가 아니라 다시 조판한
+/// 앞 문단 바로 뒤에 놓인다 — 문단 사이에 빈 줄 띠가 생기지 않는다.
+///
+/// 문단 2 는 저장 4 줄 → 재조판 3 줄이다. 저장 vpos 를 앵커로 쓰면 `문단 3` 머리가 4 줄 자리에
+/// 놓여 앞 줄과의 간격이 줄 피치의 두 배가 된다(한/글 PDF 는 한 피치).
+#[test]
+fn following_paragraphs_flow_after_the_reflowed_rows() {
+    let lines = rendered_lines_with_y(&load(ORIGINAL));
+    let long_gaps: Vec<f64> = lines
+        .windows(2)
+        .filter(|w| w[0].1.chars().count() >= 40 && w[1].1.chars().count() >= 40)
+        .map(|w| w[1].0 - w[0].0)
+        .collect();
+    assert!(
+        long_gaps.len() >= 5,
+        "전제: 연속 긴 줄 쌍 {}개",
+        long_gaps.len()
+    );
+    let pitch = long_gaps.iter().cloned().fold(f64::INFINITY, f64::min);
+    let idx = lines
+        .iter()
+        .position(|(_, text)| text == "문단3")
+        .expect("`문단 3` 머리 줄을 찾지 못했다 — 시험 설정 오류");
+    assert!(idx > 0, "`문단 3` 앞 줄이 없다");
+    let gap = lines[idx].0 - lines[idx - 1].0;
+    assert!(
+        gap <= pitch * 1.5,
+        "`문단 3` 이 앞 줄보다 {gap:.1}px 아래(줄 피치 {pitch:.1}px)에 놓였다 — 버린 사다리의          저장 vpos 를 앵커로 쓰면 다시 조판해 줄어든 줄만큼 빈 띠가 생긴다."
+    );
+}
+
+fn rendered_lines_with_y(core: &DocumentCore) -> Vec<(f64, String)> {
+    let page = core.build_page_render_tree(0).expect("1쪽 render tree");
+    let mut runs = Vec::new();
+    collect_runs(&page.root, &mut runs);
+    runs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let mut lines: Vec<(f64, String)> = Vec::new();
+    for (y, _x, text) in runs {
+        match lines.last_mut() {
+            Some((prev_y, buf)) if (*prev_y - y).abs() < 0.5 => buf.push_str(&text),
+            _ => lines.push((y, text)),
+        }
+    }
+    lines
+        .into_iter()
+        .map(|(y, text)| (y, text.chars().filter(|c| !c.is_whitespace()).collect()))
+        .collect()
+}
+
 /// 반례: 같은 선언 폭에서 포화된 한/글 사다리는 그대로 수용된다.
 #[test]
 fn a_saturated_hancom_ladder_is_kept_as_stored() {
