@@ -260,3 +260,11 @@ last_verified: 2026-10-02
 - #903 기존 독립 HWP 대조 기대값은 유지했습니다. #903/#4898/#6875 기존5개 PASS, 파서 기존54개 PASS, Clippy --lib release-test exit0. #4898 기존 함수에서1.2/1.3/1.4의 평문 왕복을 검증했으며 새 함수·fixture는 없습니다. 이 보정의 목적은 기존 파싱·저장 계약이며 새 렌더링 golden을 등록하지 않았습니다. [한컴 통제 실험](../assets/planet6897_green_20261002/plain_margin_version_oracle.json), [검증 증적](../assets/planet6897_green_20261002/plain_margin_version_validation.json).
 - 정상 hy_ladder3는 원본/기준/Native/fresh WASM 모두2쪽, 전쪽 최저90.86083%를 유지했습니다. Mac fresh WASM --no-opt exit0이며 Docker 최적화 검증이 아닙니다.
 - h01은 원본/기준/Native/fresh WASM 모두9쪽입니다. 2~9쪽은98% 이상이나1쪽은양쪽53.03132%입니다. 비교 PNG에서 제목 프레임과 이후 본문/표의 위쪽 이동을 직접 확인했습니다. 단위 실패 해결과 전체 문서 승인 판단을 분리합니다. [1쪽 review](../assets/planet6897_green_20261002/plain_margin_version_h01_p1_review.png). 9쪽 문서는 이 브랜치에서 추가 보정할 보류이며 #7445로 이관하거나 renderer 기대값을 느슨하게 하지 않습니다. 전체 회귀 재실행 전이므로 PR 최종 판정은 보류입니다.
+
+### 메인터너 검토 준비: 이미 이관한 Q29 물리쪽의 남은 반대 단정
+
+- 현재17개 재실행은15PASS/2FAIL입니다. #3930 혼합 검사에 `p296은Q29를가지면안된다`는 반대 단정이 남아 있습니다. 독립 한컴2024 PDF의 물리296쪽을 pdftotext로 다시 읽으면 Q27/Q28/Q29가 있고 Q29 표제와 응답이 모두 있습니다. 과거 #7382 보정146도 같은 PDF/원본 SHA로296쪽의Q27/Q29를 확인하고 실패 물리쪽 전제를 #7445 issuecomment-5883936903에 이관했습니다. 현재 단정은 독립 기준과 반대로 기대하므로 renderer를 바꿔 통과시키면 기준에서 멀어집니다.
+- 이 단계는 이미이관한Q29의 잘못된 부정 단정 하나와 전용 상수만 제거합니다. 원본384쪽과 PDF, 나머지 같은 쪽 배치·셀넘침·저장전후13쪽 동일성·바탕쪽/IR 계약을 유지합니다. 현재296쪽을 새로운golden으로 등록하지 않으며, 전체90% 미달 문서의 쪽수나 새로운 렌더링 검사는 추가하지 않습니다. 기존 #7445 기록을 연결하고 새 공개 댓글은 게시하지 않습니다.
+
+- 실행 결과: 잘못된Q29 부재 단정 한곳과 미사용상수만 제거했습니다. 나머지 혼합 계약과 같은파일 기존3함수 모두PASS(nextest release-test threads8, exit0). 저장전후13쪽 결과동일성·기존바탕쪽/IR/표/그림조건을 유지했습니다. 독립 PDF SHA는 기존 #7445 증적과동일합니다. [검증 증적](../assets/planet6897_green_20261002/handbook_q29_inverse_assertion_validation.json). 큰문서의 전체피델리티 이슈나 원본/PDF는 제거하지 않았고 새로운현재쪽 golden도 등록하지 않았습니다.
+- 직전17개 집중재실행은15PASS/2FAIL이며 이중#3930은본단계기존3검사로해결했습니다. 현재남은재현FAIL은 `hwpx_sample2.hwpx`의 off_canvas partition1입니다. 전체 nextest/최종visual은아직미완료입니다.
