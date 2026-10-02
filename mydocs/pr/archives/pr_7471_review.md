@@ -47,3 +47,13 @@ last_verified: 2026-10-02
 ### 누적 후보 검증 시작
 
 - 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.
+
+### 메인터너 보정 사전 분석: 각주 검사 표시 문자열
+
+- 최초 통합 전체 결과: 10,250 PASS /33 FAIL /50 SKIP, exit100. 2개 #7379 합성 소유 검사는 표시 번호가 `display_text`에 있는 현재 번호 경로에서 `run.text`의 모델 공백만 읽어 footer 없음으로 판정합니다. 원 PR의 #3738 검사 helper도 같은 이유로 표시 문자열을 사용하도록 바뀌었습니다.
+- 독립 계약은 번호의 표시·쪽 소유·단일 출현입니다. 모델 공백과 화면 번호는 다른 표현이며 모델 글자 인덱스를 그대로 유지해야 합니다. 이 helper를 `display_or_text()`로 바꾸고 두 검사의 누락/중복 및 marker/footer 동시 소유 조건을 유지하겠습니다. 허용값·페이지 범위·제품 각주 배치는 바꾸지 않습니다.
+
+### 메인터너 보정 결과: 표시 문자열 검사
+
+- 기존 helper의 원문 공백 읽기를 표시 문자열 읽기로 교정했습니다. 번호·marker/footer 소유·단일 출현 조건과 모든 제품 코드는 그대로 유지했습니다.
+- `run-rust-test.mjs issue_7379_rowbreak_table_footnote_reservation`을 nextest release-test/threads8/no-fail-fast로 실행해 기존 14개 전부 PASS, exit0(4.175초)입니다. 최초 2개 footer 누락 실패는 이 검사 표현 오류였습니다. 전체 33FAIL 중 다른 실패와 최종 통합 검증은 아직 해결·완료되지 않았습니다.
