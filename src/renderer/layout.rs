@@ -7226,22 +7226,7 @@ impl LayoutEngine {
         );
         // y_offset 은 col_area 절대 프레임의 단 콘텐츠 bottom. 호출부가 `current_height`
         // (=col_area.y 가 단 시작) 프레임과 정합하도록 그대로 반환한다.
-        // 글줄의 하단은 줄 상자(줄 위 + 줄 높이)다. 수식·그림 자식이 TextLine bbox 를 줄
-        // 높이보다 키워도 한컴은 줄 상자가 단 안에 들면 그 줄을 같은 단에 둔다.
-        fn max_text_line_bottom(node: &RenderNode) -> Option<f64> {
-            let own = match &node.node_type {
-                RenderNodeType::TextLine(line) => {
-                    Some(node.bbox.y + line.line_height.min(node.bbox.height))
-                }
-                _ => None,
-            };
-            node.children
-                .iter()
-                .filter_map(max_text_line_bottom)
-                .chain(own)
-                .reduce(f64::max)
-        }
-        (y_offset, max_text_line_bottom(&node))
+        (y_offset, max_text_line_box_bottom(&node))
     }
 
     /// [Task #2120] 문단 테두리/배경 연속 그룹 병합 렌더링 (Task #321 v6) —
@@ -7944,6 +7929,7 @@ impl LayoutEngine {
         // [#6574] 미주 흐름에서 마지막으로 그린 글줄의 잉크 하단. 그림·도형 항목은 이 값을
         // 남기지 않으므로(`last_item_content_bottom` 을 비운다) 새 문항 제목의 기준으로 따로 든다.
         let mut last_endnote_content_bottom_y: Option<f64> = None;
+        let mut prev_item_first_child = col_node.children.len();
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
                 (item_ordinal == 0)
@@ -8213,12 +8199,19 @@ impl LayoutEngine {
                         Control::Shape(shape) => !shape.common().treat_as_char,
                         _ => false,
                     });
+                // 직전 항목이 그린 글줄의 줄 상자 하단. `last_item_content_bottom` 은 수식만 있는
+                // 줄을 빈 줄로 보아 줄 위를 남기므로 제목 간격의 기준으로 쓰지 않는다.
+                let prev_item_line_bottom = col_node
+                    .children
+                    .get(prev_item_first_child..)
+                    .and_then(|nodes| nodes.iter().filter_map(max_text_line_box_bottom).reduce(f64::max));
                 if prev_float_shape {
                     last_endnote_content_bottom_y = Some(y_offset);
-                } else if prev_item_content_bottom_y.is_some() {
-                    last_endnote_content_bottom_y = prev_item_content_bottom_y;
+                } else if prev_item_line_bottom.is_some() {
+                    last_endnote_content_bottom_y = prev_item_line_bottom;
                 }
             }
+            prev_item_first_child = col_node.children.len();
             hcursor.prev_item_flow_line_bottom_y = if item_ordinal > 0 {
                 let bottom = self.last_item_flow_line_bottom.get();
                 bottom.is_finite().then_some(bottom)
@@ -16941,4 +16934,19 @@ pub(crate) struct EndnoteColumnPlacements {
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+}
+
+/// [#6574] 렌더 트리에서 글줄(`TextLine`) 줄 상자(줄 위 + 줄 높이) 하단의 최댓값. 수식·그림
+/// 자식이 TextLine bbox 를 줄 높이보다 키워도 한컴은 줄 상자를 글줄의 자리로 쓴다(단 하단
+/// 수용, 다음 문항 제목 간격의 기준).
+fn max_text_line_box_bottom(node: &RenderNode) -> Option<f64> {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line) => Some(node.bbox.y + line.line_height.min(node.bbox.height)),
+        _ => None,
+    };
+    node.children
+        .iter()
+        .filter_map(max_text_line_box_bottom)
+        .chain(own)
+        .reduce(f64::max)
 }
