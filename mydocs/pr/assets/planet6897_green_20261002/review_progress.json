@@ -11,13 +11,8 @@
     "skipped": 50,
     "exit_code": 100
   },
-  "focused_handled_initial_failures": 31,
+  "focused_handled_initial_failures": 32,
   "remaining_initial_failures": [
-    {
-      "case": "issue_7469_footnote_number_paragraph_indent::empty_footnote_keeps_its_number_and_line_box",
-      "count": 1,
-      "decision": "156쪽 고정에서 각주가 없음. 기준 PDF의 각주48은155쪽이며 빈46/47은 기준 PDF 텍스트에 없음. 현재 쪽 번호 재고정으로 통과시키지 않음."
-    },
     {
       "case": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
       "count": 1,
@@ -53,6 +48,14 @@
         "after": 12
       },
       "independent_whole_native_and_fresh_wasm_min_percent": 90.86083
+    },
+    {
+      "case": "issue_7469_footnote_number_paragraph_indent",
+      "passed": 4,
+      "failed": 0,
+      "old_failed_case": "empty_footnote_keeps_its_number_and_line_box",
+      "replacement": "empty_footnote_without_number_placeholder_does_not_add_a_footer_line",
+      "validation": "empty_notes_validation.json"
     }
   ],
   "visual_evidence": {

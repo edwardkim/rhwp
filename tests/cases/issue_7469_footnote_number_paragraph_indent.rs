@@ -20,15 +20,11 @@ const POLICY: &str =
 /// 한/글 정본과 쪽수(215)가 같은 원본의 67쪽.
 const POLICY_PAGE: u32 = 66;
 const EMPTY_NOTES: &str = "samples/task1725/text_footnote_tail_overpagination.hwp";
-/// 내용 없이 번호만 있는 각주 46·47 이 놓이는 쪽.
-const EMPTY_NOTES_PAGE: u32 = 155;
 /// 각주 문단 모양의 내어쓰기 1310HU 를 96dpi px 로 바꾼 값.
 const HANGING_INDENT_PX: f64 = 1310.0 * 96.0 / 7200.0;
 
 struct NoteLine {
     x: f64,
-    y: f64,
-    height: f64,
     text: String,
 }
 
@@ -59,8 +55,6 @@ fn footnote_lines(core: &DocumentCore, page: u32) -> Vec<NoteLine> {
                 .collect();
             out.push(NoteLine {
                 x: runs.first().map_or(node.bbox.x, |run| run.bbox.x),
-                y: node.bbox.y,
-                height: node.bbox.height,
                 text,
             });
         }
@@ -73,7 +67,6 @@ fn footnote_lines(core: &DocumentCore, page: u32) -> Vec<NoteLine> {
         .unwrap_or_else(|e| panic!("{}쪽 render tree: {e:?}", page + 1));
     let mut out = Vec::new();
     walk(&tree.root, false, &mut out);
-    assert!(!out.is_empty(), "{}쪽에 각주 글줄이 없다", page + 1);
     out
 }
 
@@ -138,29 +131,52 @@ fn unnumbered_footnote_paragraph_keeps_hanging_indent() {
     );
 }
 
-/// 대조군 — 내용 없이 번호만 있는 각주는 종전 번호 경로를 그대로 쓴다. 번호가 남고 줄
-/// 상자가 내용 있는 각주와 같아야 한다(번호를 기본 글자 모양으로 붙이면 줄이 커진다).
+/// 자리표시도 본문도 없는 원본 각주는 footer 글줄을 만들지 않는다.
+/// 독립 한컴 PDF도 46·47 줄을 출력하지 않으며, 내용 있는 48은 한 번 보존한다.
 #[test]
-fn empty_footnote_keeps_its_number_and_line_box() {
-    let lines = footnote_lines(&core(EMPTY_NOTES), EMPTY_NOTES_PAGE);
-    let (_, empty) = line_starting_with(&lines, "46)");
-    let (_, filled) = line_starting_with(&lines, "48)");
+fn empty_footnote_without_number_placeholder_does_not_add_a_footer_line() {
+    let doc = core(EMPTY_NOTES);
+    let empty_numbers: Vec<u16> = doc
+        .document()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|para| &para.controls)
+        .filter_map(|control| match control {
+            rhwp::model::control::Control::Footnote(note) if matches!(note.number, 46 | 47) => {
+                assert!(
+                    note.paragraphs
+                        .iter()
+                        .all(|para| para.text.trim().is_empty() && para.controls.is_empty()),
+                    "빈 각주 {}의 본문/자리표시 전제가 바뀌었다",
+                    note.number
+                );
+                Some(note.number)
+            }
+            _ => None,
+        })
+        .collect();
     assert_eq!(
-        empty.text.trim_end(),
-        "46)",
-        "빈 각주 46 의 번호가 사라지거나 바뀌었다"
+        empty_numbers,
+        vec![46, 47],
+        "원본 빈 각주 데이터를 보존해야 한다"
     );
+
+    let lines: Vec<NoteLine> = (0..doc.page_count())
+        .flat_map(|page| footnote_lines(&doc, page))
+        .collect();
     assert!(
-        (empty.height - filled.height).abs() <= 0.01,
-        "빈 각주 46 줄 높이 {:.2} ≠ 내용 있는 각주 48 줄 높이 {:.2}",
-        empty.height,
-        filled.height
+        lines
+            .iter()
+            .all(|line| !line.text.starts_with("46)") && !line.text.starts_with("47)")),
+        "원본에 없는 각주 번호 글줄을 생성했다"
     );
-    let (_, next_empty) = line_starting_with(&lines, "47)");
-    assert!(
-        next_empty.y > empty.y,
-        "빈 각주 47 이 46 아래에 놓여야 한다 (46 y={:.1}, 47 y={:.1})",
-        empty.y,
-        next_empty.y
+    assert_eq!(
+        lines
+            .iter()
+            .filter(|line| line.text.starts_with("48)"))
+            .count(),
+        1,
+        "내용 있는 각주 48의 첫 줄을 한 번 보존해야 한다"
     );
 }
