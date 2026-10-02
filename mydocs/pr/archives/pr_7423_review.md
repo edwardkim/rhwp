@@ -215,3 +215,15 @@ last_verified: 2026-10-02
 - Native 전29쪽 TSV의 미달은 4·7·14·20·21·28쪽입니다. 새 WASM은 영향 5쪽만 PNG로 비교했으며 전29쪽 비교 또는 최종 전체 회귀 완료로 확대하지 않습니다. Mac 로컬 대체 `--no-opt` 빌드이며 Docker 검증은 아닙니다.
 - 9쪽 `h01`의 1쪽은 이번 보정 뒤에도 53.03132%로, 이 브랜치의 별도 보정 대상입니다. 다른 문서의 전쪽 시각과 최종 전체 검증도 보류를 유지합니다.
 - [증적](../assets/planet6897_green_20261002/sample2_closed_inline_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_closed_inline_native.tsv), [새 WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_closed_inline_wasm_selected.tsv), [2쪽 PNG](../assets/planet6897_green_20261002/sample2_closed_inline_p2_review.png).
+
+### 메인터너 보정 준비: 4쪽 종료 행과 바깥 여백
+
+- 독립 PDF의 4쪽 종료 표 프레임은 약369px이나 현재335px입니다. 원본 pi32 행합49,504HU에서 첫 프레임21,804HU를 빼면 종료27,700HU이며, 후속 pi33 원점27,982HU는 종료 높이와 상·하 바깥여백141HU씩의 합과 정확히 일치합니다. 제목과 후속 문단이 각각 약16px·34px 위에 있습니다.
+- 원인 경로: `stored_rowbreak_closing_frame_height`의 아래여백 거부 → emit의 종료 물리 높이 누락 → 마지막 행 override/예약 → paint에서 내용 높이로 상자 축소·Center를 Top으로 전환. 저장 상자 높이와 여백 소유를 분리하고, 같은 검증된 높이를 예약·paint·선택된 내용의 가운데 정렬에 사용합니다.
+- 마지막 한 행의 종료 컷·온전한 저장 원점만 적용하며, 편집/재조판·중첩 개체 컷·불충분한 예산은 제외합니다. 원본 컷의 내용이나 기존 baseline을 바꾸지 않습니다. 3·4쪽 직접 비교와 보호 페이지, 기존 분할/정렬/용지 밖 반례 검증 후 결과를 기록합니다. 현재 구현 후보의 수용 여부는 미정입니다.
+
+#### 4쪽 종료 프레임 보정 결과
+
+- Native/fresh WASM 4쪽51.96358%→99.85457%; 보호3·8·9·10쪽99.05706%/98.91222%/98.55869%/99.70891%. 내용 컷·왼쪽 빈 칸 소유를 유지하며 오른쪽 내용을 실제 예약 프레임 안에서 가운데 정렬합니다. 다음 본문도 PDF 위치로 복원했습니다.
+- 기존110/110 PASS(exit0,12.520초),29쪽 일치·용지 밖0건. HWP 반례37쪽·기존 용지 밖1건 유지. 새 테스트·baseline 완화 없음. Native 전29쪽에서4쪽만 변화했으며 미달7·14·20·21·28쪽은 남았습니다. fresh WASM은29쪽 export/선택5쪽 raster 검증이며 전29쪽검증을 대신하지 않습니다.
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_terminal_margin_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_terminal_margin_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_terminal_margin_wasm_selected.tsv), [4쪽 비교](../assets/planet6897_green_20261002/sample2_terminal_margin_p4_review.png). Mac WASM은 로컬 `--no-opt` 대체 빌드입니다. 최종 전체 검증·통합 PR 준비는 계속 보류입니다.

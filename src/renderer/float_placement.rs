@@ -862,7 +862,6 @@ pub(crate) fn stored_rowbreak_closing_frame_height(
         || table.row_count <= 1
         || table.common.height == 0
         || table.caption.is_some()
-        || table.outer_margin_bottom != 0
     {
         return None;
     }
@@ -873,7 +872,11 @@ pub(crate) fn stored_rowbreak_closing_frame_height(
     let whole = rows.iter().map(|height| i64::from(*height)).sum::<i64>()
         + i64::from(table.cell_spacing) * (rows.len() - 1) as i64;
     let remaining = whole - i64::from(table.common.height);
-    (remaining == i64::from(after.vertical_pos)).then(|| hwpunit_to_px(after.vertical_pos, dpi))
+    // 뒤 문단 원점은 표 상자와 바깥 여백을 함께 닫는다. 반환 높이는
+    // 표 상자만 소유하고 여백은 기존 조각 배치가 별도로 예약한다.
+    let margins = i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom);
+    (remaining > 0 && remaining + margins == i64::from(after.vertical_pos))
+        .then(|| remaining as f64 * dpi / 7200.0)
 }
 
 /// 단일 셀의 전체 선언 높이와 첫 개체 프레임의 차이를 뒤 빈 문단이

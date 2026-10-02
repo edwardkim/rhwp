@@ -174,6 +174,20 @@ impl TypesetEngine {
                 })
         })
         .flatten();
+        // 종료 행의 원본 프레임은 현재 컷의 내용 높이와 독립적으로 닫힌다.
+        // 마지막 한 행의 이어받기일 때 동일 높이를 예약과 paint에 전달한다.
+        if is_continuation
+            && cursor_row + 1 == end_row
+            && split_end_cut.is_empty()
+            && start_cut.iter().any(|&cut| cut > 0)
+        {
+            if let Some(height) = saved_closing_frame
+                .filter(|height| *height >= partial_height && *height <= avail_for_rows)
+            {
+                end_row_height_override = Some(height);
+                partial_height = height;
+            }
+        }
         // 원본 누적 좌표가 닫는 첫 물리 프레임은 내용 컷과 별도로 소유한다.
         // 첫 조각과 이어받기 조각에 같은 행 높이 경계를 전달한다.
         let cumulative_opening_frame = (!is_continuation

@@ -5018,11 +5018,35 @@ impl LayoutEngine {
         // `valign` 을 조각 내용으로 적용한다 — 정본 10쪽 첫 줄은 상자 위에서 9.8px 아래다.
         // [#7063 레인②] 상자를 쪽이 정할 때 **내용이 쓸 높이**(예산이 자른 값)를 따로 든다.
         let mut budget_row_height_0: Option<f64> = None;
-        let mut center_pinned_single_cell = single_cell_page_fragment
-            && row_count == 1
+        // 종료 원점으로 입증된 마지막 저장 행은 컷 이후 내용의 정렬 프레임이다.
+        // 페이지네이터가 예약한 같은 물리 높이일 때만 가운데 정렬을 재사용한다.
+        let stored_terminal_frame = enclosing_cell_ctx.is_none()
             && is_continuation
+            && start_row + 1 == end_row
+            && end_row == row_count
             && end_cut.is_empty()
-            && end_row_height_override.is_some();
+            && start_cut.iter().any(|&cut| cut > 0)
+            && !self.profile.get().session_edited()
+            && self.profile.get().hwpx_stored_layout()
+            && paragraphs
+                .get(para_index + 1)
+                .and_then(|next| {
+                    crate::renderer::float_placement::stored_rowbreak_closing_frame_height(
+                        &paragraphs[para_index],
+                        next,
+                        table,
+                        self.dpi,
+                    )
+                })
+                .is_some_and(|height| {
+                    end_row_height_override.is_some_and(|limit| (limit - height).abs() < 0.01)
+                });
+        let mut center_pinned_single_cell = stored_terminal_frame
+            || (single_cell_page_fragment
+                && row_count == 1
+                && is_continuation
+                && end_cut.is_empty()
+                && end_row_height_override.is_some());
         let owns_declared_opening_frame = end_row_height_override
             == Some(hwpunit_to_px(table.common.height as i32, self.dpi))
             && row_count == 1
