@@ -2,7 +2,7 @@
   "date": "2026-10-02",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
-  "latest_code_correction": "5b8be2ac8",
+  "latest_code_correction": "bf5eced2a38d5c39dd8227214cf50aba20490ad3",
   "latest_comment_translation": "facdbf948",
   "initial_full": {
     "run": 10283,
@@ -11,13 +11,8 @@
     "skipped": 50,
     "exit_code": 100
   },
-  "focused_handled_initial_failures": 30,
+  "focused_handled_initial_failures": 31,
   "remaining_initial_failures": [
-    {
-      "case": "hy_ladder3 cell overflow baseline",
-      "count": 1,
-      "decision": "Native 2/2쪽·최소90.86083%로 단위와 후속 문단 소속 보정. 원장12줄, 기존7 유지. fresh WASM/잘림 비교 대기."
-    },
     {
       "case": "issue_7469_footnote_number_paragraph_indent::empty_footnote_keeps_its_number_and_line_box",
       "count": 1,
@@ -47,6 +42,17 @@
       "passed": 39,
       "failed": 0,
       "source": "worktree on 5b8be2ac8; hy_ladder3_current_band_validation.json source hashes"
+    },
+    {
+      "case": "hy_ladder3 overflow_cell partition14",
+      "passed": 1,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/hy-ladder3-baseline-verified.log",
+      "baseline": {
+        "before": 7,
+        "after": 12
+      },
+      "independent_whole_native_and_fresh_wasm_min_percent": 90.86083
     }
   ],
   "visual_evidence": {

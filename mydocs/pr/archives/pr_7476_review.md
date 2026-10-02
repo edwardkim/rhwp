@@ -228,3 +228,16 @@ last_verified: 2026-10-02
 - 원본 사다리의 Native 전체 2쪽은 기준 PDF와 쪽수가 일치합니다. 1쪽 90.86083%, 2쪽 100.00000%이며, `NEXT PARAGRAPH`는 1쪽에서 사라지고 2쪽에 한 번 나타납니다. 실측 셀 높이를 작은 host 줄로 되돌리는 사후 상한도 제거했습니다.
 - [1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_current_band.png), [2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_current_band.png), [현재 코드 해시·검증 기록](../assets/planet6897_green_20261002/hy_ladder3_current_band_validation.json).
 - 넘침 원장 partition14는 원본의 잘못된 들여쓰기 복원 뒤 12줄을 관측해 기존 7줄 기준에서 실패했습니다(그 외 78개 입력은 증가 없음). 7→12 변경은 아직 하지 않았습니다. fresh WASM 전체 2쪽 및 기준 PDF의 잘림 경계를 확인한 뒤 의도된 변화 여부를 판단합니다. 이 원본 표 자체는 한컴도 1쪽에 통배치하고 아래쪽 내용을 자릅니다. 쪽수 복원을 원본 모든 셀 내용의 가시성 확보로 확대하지 않습니다.
+
+### 메인터너 보정 11 사전 판정: 사다리 원장의 의도된 변화
+
+- `bf5eced2a` fresh WASM 전체 2쪽도 Native와 동일하게 90.86083%/100.00000%로 통과했습니다. 기준 PDF와 2/2쪽이며, 실제 WASM SVG·WASM render tree 출처를 확인했습니다.
+- 기존 7줄은 들여쓰기를 절반으로 읽고 뒤 문단까지 같은 쪽 밖으로 보내던 Native 출력의 관측값입니다. 올바른 내어쓰기와 한컴처럼 2쪽으로 이월되는 뒤 문단을 복구한 현재 출력에서 12줄을 관측합니다. 한컴 원본 PDF도 TAC 표를 1쪽에 통배치하고 아래 셀을 자르므로, 표를 임의로 나눠 원장 수만 낮추지 않습니다. 이 판단은 source가 제안한 11줄을 그대로 채택한 것이 아닙니다.
+- 전체 Native/fresh WASM ≥90% 및 쪽·뒤 문단 소속을 확인한 뒤 사다리의 기존 원장 한 행만 7→12로 갱신합니다. 다른 입력의 허용값이나 전체 threshold는 변경하지 않습니다. 기존 partition14와 인접 원장 검사를 실행한 뒤 결과를 기록합니다. 신규 회귀 검사나 입력은 추가하지 않습니다.
+
+#### 보정 11 결과
+
+- 기존 overflow-cell partition14가 통과했습니다(79개 입력, 다른 입력의 증가 없음). 최초 전체 실패 중 사다리 1건을 추가로 처리해 집중 검증으로 처리한 항목은 31/33개입니다. 최종 전체 재실행은 아직 아닙니다.
+- [Native 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_native.tsv), [fresh WASM 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_wasm.tsv)는 `bf5eced2a`에서 생성한 전체 PNG를 재사용해 같은 실루엣 계산식으로 산출했습니다. 추가 원문 재출력으로 기록하지 않습니다.
+- [fresh WASM 1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_fresh_wasm.png), [fresh WASM 2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_fresh_wasm.png). Mac `--no-opt` 대체 빌드 통과이며 Docker 최적화 빌드 통과는 아닙니다.
+- 다른 실물 fixture의 잔존 시각 차이와 최종 전체 게이트 때문에 원 PR #7476의 최종 판정은 계속 보류입니다. 사다리 보류 사유만 이번 근거로 해소했습니다.
