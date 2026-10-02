@@ -642,6 +642,10 @@ fn declared_space_advance_em(css_family_chain: &str, bold: bool, italic: bool) -
         .trim()
         .trim_matches('\'')
         .trim_matches('"');
+    // KoPub 은 메트릭 DB 가 아니라 전용 표가 폭을 소유한다 — 같은 출처에서 공백을 읽는다.
+    if let Some(em) = crate::renderer::layout::kopub_declared_space_em(primary) {
+        return Some(em);
+    }
     let decision = crate::renderer::font_metrics_data::find_metric_decision(primary, bold, italic)?;
     let em = decision.metric.em_size;
     if em == 0 {

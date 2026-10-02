@@ -3686,8 +3686,8 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_exact,
     estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
-    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, kopub_space_advance_em,
-    resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, kopub_declared_space_em,
+    kopub_space_advance_em, resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
     trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
