@@ -152,6 +152,57 @@ fn inserted_total_page_field_survives_save_and_reopen() {
     }
 }
 
+/// 붙여 넣은 필드도 저장본에서 제자리를 지킨다. 파일 이름 바로 앞의 쪽 번호·전체 쪽수가
+/// 파일 이름 필드 안으로 들어가면 HWPX 에는 필드 끝이 시작보다 앞서 범위를 잃고, HWP 에는
+/// 자리표 공백이 필드 글자에 섞인다.
+#[test]
+fn adjacent_fields_survive_save_and_reopen() {
+    const NAME: &str = "a.hwp";
+    // 필드 종류(1 쪽 번호 · 2 전체 쪽수 · 3 파일 이름)를 머리말 앞에서부터 차례로 넣는다.
+    for kinds in [&[1, 3][..], &[2, 3], &[1, 2, 3]] {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native().expect("빈 문서");
+        doc.set_file_name(NAME);
+        doc.create_header_footer_native(0, true, 0)
+            .expect("머리말 생성");
+        for (offset, &kind) in kinds.iter().enumerate() {
+            doc.insert_field_in_hf_native(0, true, 0, 0, offset, kind)
+                .expect("필드 넣기");
+        }
+        let before = page_text(&doc, 0);
+
+        for format in [Format::Hwp, Format::Hwpx] {
+            let reopened = reopen(&doc, format);
+            assert_eq!(
+                page_text(&reopened, 0),
+                before,
+                "{kinds:?} {format:?} 저장본도 같은 머리말을 그려야 한다"
+            );
+            let para = &header_paragraphs(&reopened)[0];
+            let range = para
+                .field_ranges
+                .iter()
+                .find(|range| {
+                    matches!(
+                        para.controls.get(range.control_idx),
+                        Some(Control::Field(field)) if field.field_type == FieldType::Path
+                    )
+                })
+                .unwrap_or_else(|| panic!("{kinds:?} {format:?} 파일 이름 필드 범위"));
+            let field_text: String = para
+                .text
+                .chars()
+                .skip(range.start_char_idx)
+                .take(range.end_char_idx - range.start_char_idx)
+                .collect();
+            assert_eq!(
+                field_text, NAME,
+                "{kinds:?} {format:?} 파일 이름 필드는 파일 이름만 감싸야 한다"
+            );
+        }
+    }
+}
+
 /// 저장은 편집 중인 문서를 바꾸지 않는다 — 마커는 그대로 남아 이후 편집·되돌리기가
 /// 종전처럼 한 글자 단위로 동작한다.
 #[test]
