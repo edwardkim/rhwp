@@ -2335,6 +2335,33 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
 /// 있어 정확 일치를 요구하지 않는다. 진짜 어울림 배제는 이보다 훨씬 크게 벌어진다.
 const EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU: i32 = 200;
 
+/// [#7548] 문단의 전폭 저장 줄(가장 넓은 원본 줄)의 시작 cs 와 끝(cs+sw).
+/// 모든 줄이 같은 폭이면(좁혀진 줄이 없으면) None — 기준으로 쓸 대비가 없다.
+fn stored_full_width_line_box(para: &Paragraph) -> Option<(i32, i32)> {
+    // 같은 vpos 를 공유하는 세그먼트(개체 양옆으로 갈린 한 줄)는 전폭 기준이 될 수 없다.
+    let original: Vec<_> = para
+        .line_segs
+        .iter()
+        .filter(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && seg.segment_width > 0)
+        .filter(|seg| {
+            para.line_segs
+                .iter()
+                .filter(|other| other.vertical_pos == seg.vertical_pos)
+                .count()
+                == 1
+        })
+        .collect();
+    let widest = original.iter().map(|seg| seg.segment_width).max()?;
+    if original.iter().all(|seg| seg.segment_width == widest) {
+        return None;
+    }
+    let full = original
+        .iter()
+        .filter(|seg| seg.segment_width == widest)
+        .min_by_key(|seg| seg.column_start)?;
+    Some((full.column_start, full.column_start + full.segment_width))
+}
+
 impl LayoutEngine {
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
@@ -5498,6 +5525,25 @@ impl LayoutEngine {
                         None
                     };
                     (absorbed_cs, sw_px)
+                } else if let Some((base_cs, base_end)) = para
+                    .and_then(stored_full_width_line_box)
+                    .filter(|_| seg.is_some())
+                {
+                    // [#7548] 같은 문단의 전폭 저장 줄을 기준으로 이 줄이 얼마나 좁혀졌는지만
+                    // 반영한다. 전폭 줄은 일반 경로(단 + 여백)와 같은 자리에 놓이므로, 좁혀진
+                    // 줄은 그 자리에서 cs 차이만큼 들어가고 줄 끝 차이만큼 짧아진다.
+                    // cs 에 여백을 다시 더하면 여백이 있는 문단에서 줄이 여백만큼 밀린다
+                    // (21_언어 14쪽 pi=300: 전폭 cs=852=왼 여백, 좁힌 첫 줄 cs=3455 →
+                    // +11.4px 오른쪽, 폭 −22.8px).
+                    // 전폭 줄 상자는 단 + base_cs 에서 시작하고, 일반 경로는 그 줄을 단 +
+                    // effective_margin_left 에 둔다. 좁힌 줄은 같은 상대 위치를 cs 만큼 옮긴
+                    // 자리에서 시작해 저장 줄 상자 끝(cs + sw)에서 끝난다.
+                    let _ = base_end;
+                    let shift = crate::renderer::hwpunit_to_px(cs + mr - base_cs, self.dpi);
+                    let avail =
+                        crate::renderer::hwpunit_to_px((sw - mr + base_cs).max(0), self.dpi)
+                            - effective_margin_left;
+                    (shift, Some(avail.max(0.0)))
                 } else {
                     let sw_px = if sw > 0 {
                         Some(
