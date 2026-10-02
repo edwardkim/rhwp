@@ -12339,9 +12339,11 @@ impl LayoutEngine {
                     // [#4533 ⑥] 표는 예약 공간(앵커 위)에 이미 놓였다 — 흐름은
                     // 전진하지 않는다(앵커·후속 문단이 사다리 위치 유지).
                     table_y_before
-                } else if square_successor_starts_beside_table(
+                } else if crate::renderer::float_placement::square_successor_starts_beside_table(
                     para,
-                    paragraphs.get(para_index + 1),
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
                     t,
                 ) {
                     // [#7548] 어울림 표는 흐름을 표 하단까지 밀지 않는다. 다음 문단의
@@ -16259,57 +16261,6 @@ impl LayoutEngine {
 /// 경로와 동일한 공식을 사용하여, paragraph border box 가 표를 둘러쌀 수
 /// 있도록 한다. 인용 따옴표 ｢｣ 처럼 col_area 우측을 horizontal_offset 만큼
 /// 넘는 표를 정확히 처리한다.
-/// [#7548] 어울림(Square) 표 host 다음 문단의 저장 첫 줄이 표 옆 차선에서 시작하는가.
-///
-/// 한/글은 어울림 표로 흐름을 밀지 않는다. 표 띠와 겹치는 줄은 옆 공간이 있으면
-/// 좁혀서 그 자리에 두고, 없으면 띠 아래로 넘긴다. 저장 LineSeg 가 그 결과다.
-/// host 의 저장 줄이 표 옆 차선(전폭보다 좁은 cs/sw)을 증언하고, 다음 문단의
-/// 첫 줄이 그 차선 안에 있으면 그 줄은 표 옆에 놓인 것이다(21_언어 14쪽 pi=300:
-/// host·다음 첫 줄 모두 cs=3455 sw=27581, 둘째 줄부터 전폭 cs=852 sw=30184).
-/// host 차선이 없거나(빈 host sw=0) 다음 줄이 표와 가로로 겹치면 종전대로
-/// 표 하단에서 이어진다.
-fn square_successor_starts_beside_table(
-    host: &Paragraph,
-    next: Option<&Paragraph>,
-    table: &crate::model::table::Table,
-) -> bool {
-    use crate::model::paragraph::LineSeg;
-    if table.common.treat_as_char
-        || !matches!(
-            table.common.text_wrap,
-            crate::model::shape::TextWrap::Square
-        )
-    {
-        return false;
-    }
-    let Some(next) = next else {
-        return false;
-    };
-    let original = |seg: &&LineSeg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
-    let (Some(host_first), Some(next_first)) = (
-        host.line_segs.first().filter(original),
-        next.line_segs.first().filter(original),
-    ) else {
-        return false;
-    };
-    let Some(next_full_width) = next
-        .line_segs
-        .iter()
-        .filter(original)
-        .map(|seg| seg.segment_width)
-        .max()
-    else {
-        return false;
-    };
-    let host_lane = host_first.column_start..host_first.column_start + host_first.segment_width;
-    host_first.segment_width > 0
-        && host_first.segment_width < next_full_width
-        && next_first.vertical_pos >= host_first.vertical_pos
-        && next_first.segment_width > 0
-        && next_first.column_start >= host_lane.start
-        && next_first.column_start + next_first.segment_width <= host_lane.end
-}
-
 fn compute_square_wrap_tbl_x_right(
     t: &crate::model::table::Table,
     col_area: &LayoutRect,
