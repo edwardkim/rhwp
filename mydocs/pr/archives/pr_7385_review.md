@@ -41,3 +41,9 @@ last_verified: 2026-10-02
 ### 누적 후보 검증 시작
 
 - 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.
+
+### 메인터너 보정: 보류 입력의 검사 재등록 방지
+
+- 분석: 통합 전체 nextest에서 새 검사 `non_tac_float_stays_on_its_anchor_page_so_the_text_does_not_overflow`는 입력 누락으로 실패했습니다. 원본은 없어진 것이 아니라 기존 #7382 보정66에서 `mydocs/pr/assets/issue7445/`로 이동·보존된 자료입니다. 정상 PDF302쪽과 다른 잠정304쪽·하단100px 허용·큰 노드500px 존재는 정상 소유 쪽의 독립 승인 근거가 아닙니다.
+- 수정: 이 보류 입력을 다시 회귀 대상으로 삼은 새 검사만 제거합니다. HWP/PDF 증적과 제품의 비-TAC 앵커 줄 라우팅 변경, 기존 정상 대조군은 유지합니다. 정식 승인까지 원본과 실제 소유 쪽에 대한 독립 검증이 필요합니다.
+- 결과: 원본 파일을 되돌려 samples 자동 수집에 넣거나 검사 기대를 현재 값으로 바꾸지 않았습니다. 전체 검증 코드 head의 최초 실패 기록은 그대로 보존하며 후속 후보에서 대조군을 재실행합니다. 현재 판정은 보류입니다.
