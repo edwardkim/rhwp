@@ -5288,7 +5288,9 @@ impl LayoutEngine {
         // `probe`(#4149 캐럿 fast path)는 그 행을 통째로 보지 못하므로, 대상 셀이 그 행의
         // 유일한 칸일 때만 접는다. 그 밖의 형상은 호출자가 legacy 로 폴백한다.
         let fold_last_row = render_rows.last().copied().filter(|&fold_row| {
-            true && enclosing_cell_ctx.is_none()
+            (end_row < table.row_count as usize || end_cut.iter().any(|&unit| unit > 0))
+                && enclosing_cell_ctx.is_none()
+                && !align_saved_opening_frame
                 && budget_row_height_0.is_none()
                 && probe.is_none_or(|p| {
                     table.cells.iter().enumerate().all(|(idx, cell)| {
