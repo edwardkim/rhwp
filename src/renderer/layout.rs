@@ -16095,14 +16095,7 @@ impl LayoutEngine {
             let max_fs = line
                 .runs
                 .iter()
-                .map(|r| {
-                    let ts = r.text_style(styles);
-                    if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    }
-                })
+                .map(|r| r.line_box_font_size(styles))
                 .fold(0.0f64, f64::max);
             if (raw_lh - shape_height_px).abs() <= 4.0 && raw_lh > max_fs * 2.0 {
                 let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());

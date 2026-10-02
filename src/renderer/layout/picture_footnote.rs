@@ -1117,14 +1117,7 @@ impl LayoutEngine {
         let max_fs = comp_line
             .runs
             .iter()
-            .map(|run| {
-                let ts = run.text_style(styles);
-                if ts.font_size > 0.0 {
-                    ts.font_size
-                } else {
-                    12.0
-                }
-            })
+            .map(|run| run.line_box_font_size(styles))
             .fold(0.0f64, f64::max);
         let para_style = styles.para_styles.get(para_style_id as usize);
         let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
