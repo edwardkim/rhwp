@@ -611,7 +611,7 @@ impl TypesetEngine {
                     // 스캔에서 해당 유닛을 수용할 때 함께 예약한다.
                     fragment_outer_bottom_overhead
                 } else {
-                    hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                    fragment_outer_bottom_overhead
                 }
                 - if !is_continuation && start_cut.is_empty() {
                     first_fragment_painted_row_footer_guard

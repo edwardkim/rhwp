@@ -440,7 +440,9 @@ impl TypesetEngine {
                             fragment_outer_bottom_overhead
                         }
                     } else {
-                        hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                        // 실제로 예약한 조각 뒤 여백만 후속 흐름에 전달한다.
+                        // 바깥 위 여백의 재개가 아래 여백 재개까지 뜻하지는 않는다.
+                        fragment_outer_bottom_overhead
                     };
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(
