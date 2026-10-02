@@ -7,6 +7,18 @@ use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 
+/// parse_inline_content 가 서식으로 읽는 span·b·strong·i·em·u 태그면
+/// (태그 이름, 닫는 태그인지)를 돌려준다.
+fn inline_format_tag(tag_lower: &str) -> Option<(&str, bool)> {
+    let tag = tag_lower.strip_prefix('<')?;
+    let (closing, tag) = match tag.strip_prefix('/') {
+        Some(rest) => (true, rest),
+        None => (false, tag),
+    };
+    let name = tag.split(|c: char| !c.is_ascii_alphanumeric()).next()?;
+    matches!(name, "span" | "b" | "strong" | "i" | "em" | "u").then_some((name, closing))
+}
+
 impl DocumentCore {
     pub fn paste_html_native(
         &mut self,
@@ -543,6 +555,7 @@ impl DocumentCore {
         let mut pos = 0;
         let chars: Vec<char> = content.chars().collect();
         let len = chars.len();
+        // 블록 밖 인라인 구간: 글과 <span>·<b> 등 서식 태그 원문
         let mut pending_text = String::new();
 
         while pos < len {
@@ -558,11 +571,7 @@ impl DocumentCore {
                 let tag_lower = tag_str.to_lowercase();
 
                 if tag_lower.starts_with("<table") {
-                    // 보류 중인 텍스트 처리
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     // 표 전체 추출
                     let table_end = find_closing_tag_chars(&chars, pos, "table");
@@ -571,20 +580,13 @@ impl DocumentCore {
                     pos = table_end;
                     continue;
                 } else if tag_lower.starts_with("<img") {
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     self.parse_img_html(&mut paragraphs, &tag_str);
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("<p") {
-                    // 보류 중인 텍스트 처리
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     // <p> 블록 추출
                     let p_content_start = tag_end + 1;
@@ -616,6 +618,7 @@ impl DocumentCore {
                     pos = p_end;
                     continue;
                 } else if tag_lower.starts_with("<div") {
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     // div 내부의 콘텐츠를 재귀적으로 처리
                     let div_content_start = tag_end + 1;
                     let div_end = find_closing_tag_chars(&chars, pos, "div");
@@ -635,10 +638,7 @@ impl DocumentCore {
                     // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 목록 태그
                     // 자체는 컨테이너일 뿐이라 <div>처럼 내부를 재귀 처리한다 — <li> 각각이
                     // 실제 항목 문단이 된다.
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
-                    }
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     let list_tag_name = if tag_lower.starts_with("<ul") {
                         "ul"
                     } else {
@@ -663,10 +663,7 @@ impl DocumentCore {
                     // <li> 내부 전체(중첩 span/strong 등 포함)를 한 문단으로 묶어
                     // parse_inline_content 로 서식까지 보존해 파싱하고, 글머리 기호를
                     // 앞에 붙인다. 표 없는 최상위 <p> 처리와 동일한 패턴.
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
-                    }
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     let li_content_start = tag_end + 1;
                     let li_end = find_closing_tag_chars(&chars, pos, "li");
                     let li_inner: String =
@@ -699,12 +696,23 @@ impl DocumentCore {
                 } else if tag_lower.starts_with("<br") {
                     // <br> → 문단 구분
                     if !pending_text.is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
+                        self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     } else {
                         // 빈 문단 추가
                         paragraphs.push(Paragraph::default());
                     }
+                    pos = tag_end + 1;
+                    continue;
+                } else if tag_lower.starts_with("<span") {
+                    // Chrome 은 문단 중간부터 고른 글을 <p> 없이 <span style>·<b style> 로 쓴다.
+                    // 서식 태그를 앞뒤 글과 한 인라인 구간에 모아 한 문단으로 읽는다.
+                    // span 은 안쪽 그림까지 통째로 넣는다.
+                    let span_end = find_closing_tag_chars(&chars, pos, "span");
+                    pending_text.extend(&chars[pos..span_end.min(len)]);
+                    pos = span_end;
+                    continue;
+                } else if inline_format_tag(&tag_lower).is_some() {
+                    pending_text.push_str(&tag_str);
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("</") {
@@ -712,32 +720,7 @@ impl DocumentCore {
                     pos = tag_end + 1;
                     continue;
                 } else {
-                    // 기타 태그 무시 (span 등 인라인은 <p> 밖에서 직접 올 수 있음)
-                    if tag_lower.starts_with("<span") {
-                        // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 예전
-                        // 코드는 span 내부(중첩 <u>/<strong>/주석 포함)를 첫 ">" 뒤부터
-                        // 그대로 pending_text 에 밀어 넣어, 태그 자체가 문서에 문자로
-                        // 그대로 찍혔다. <p> 처리와 같은 방식으로 parse_inline_content 에
-                        // 넘겨 중첩 서식(굵게 등)까지 해석한 문단으로 만든다.
-                        if !pending_text.trim().is_empty() {
-                            self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                            pending_text.clear();
-                        }
-                        let span_end = find_closing_tag_chars(&chars, pos, "span");
-                        let inner_start = tag_end + 1;
-                        let inner_end = span_end.saturating_sub(7); // "</span>".len()
-                        let span_inner: String = chars
-                            [inner_start..inner_end.max(inner_start).min(len)]
-                            .iter()
-                            .collect();
-                        let mut para = Paragraph::default();
-                        self.parse_inline_content(&mut para, &span_inner);
-                        if !para.text.trim().is_empty() || !para.controls.is_empty() {
-                            paragraphs.push(para);
-                        }
-                        pos = span_end;
-                        continue;
-                    }
+                    // 기타 태그 무시
                     pos = tag_end + 1;
                     continue;
                 }
@@ -749,9 +732,7 @@ impl DocumentCore {
         }
 
         // 남은 텍스트 처리
-        if !pending_text.trim().is_empty() {
-            self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-        }
+        self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
         // 빈 결과 시 최소 처리 — flush_text_to_paragraphs 재사용으로 줄바꿈 분리와
         // 긴 줄 강제 절단(FLUSH_LINE_CHAR_CAP)을 여기도 동일하게 적용한다.
@@ -775,6 +756,23 @@ impl DocumentCore {
     /// 개행 없는 50만자 이상 단일 문단을 만들어 화면이 겹쳐 보이는 결과로 이어졌다. 문단
     /// 하나가 이 정도로 크면 줄바꿈 계산 등 조판 경로가 원래 가정하지 않은 크기라 무너진다.
     const FLUSH_LINE_CHAR_CAP: usize = 4000;
+
+    /// 블록 밖 인라인 구간을 문단으로 만들고 비운다.
+    /// 서식 태그가 있으면 `<p>` 안처럼 한 문단으로 읽어 서식을 살린다.
+    /// 글뿐이면 종전처럼 줄마다 문단을 나눈다.
+    fn flush_inline_run(&mut self, paragraphs: &mut Vec<Paragraph>, run: &mut String) {
+        let run = std::mem::take(run);
+        // 글 속 '<' 는 엔티티로 남으므로 '<' 가 있으면 서식 태그가 든 구간이다.
+        if !run.contains('<') {
+            self.flush_text_to_paragraphs(paragraphs, &run);
+            return;
+        }
+        let mut para = Paragraph::default();
+        self.parse_inline_content(&mut para, run.trim());
+        if !para.text.trim().is_empty() || !para.controls.is_empty() {
+            paragraphs.push(para);
+        }
+    }
 
     /// 텍스트를 문단으로 변환하여 추가한다 (줄바꿈 기준 분리, 개행 없는 긴 줄은 추가 절단).
     pub(crate) fn flush_text_to_paragraphs(&self, paragraphs: &mut Vec<Paragraph>, text: &str) {
@@ -816,10 +814,8 @@ impl DocumentCore {
         let len = chars.len();
         let mut pos = 0;
 
-        // 중첩 볼드/이탤릭/밑줄 추적
-        let mut inherited_bold = false;
-        let mut inherited_italic = false;
-        let mut inherited_underline = false;
+        // 열린 서식 요소(span·b·i·u 등)의 이름과 style. 서식은 닫힐 때까지 안쪽 글에 이어진다.
+        let mut open_styles: Vec<(String, String)> = Vec::new();
 
         while pos < len {
             if chars[pos] == '<' {
@@ -831,60 +827,30 @@ impl DocumentCore {
                 let tag_str: String = chars[pos..=tag_end].iter().collect();
                 let tag_lower = tag_str.to_lowercase();
 
-                if tag_lower.starts_with("<span") {
-                    // [붙여넣기 무한루프/응답없음 방지] span_end_tag(깊이 인식 탐색)가 이미
-                    // 정확한 닫는 위치를 갖고 있는데, 예전 코드는 그 뒤에 또 "</span>" 리터럴을
-                    // 처음부터 선형 재탐색했다 — 중첩 span이 많은 Gmail류 클립보드(span 수백
-                    // 개)에서 O(n) 재탐색이 span마다 반복돼 실질적으로 O(n²)이 됐고, 게다가
-                    // 깊이를 무시한 첫 "</span>" 매치라 중첩 span에서는 내부 span의 닫는
-                    // 태그를 잘못 집는 경계 버그이기도 했다. span_end_tag 하나로 통일한다
-                    // ("</span>".len() == 7 만큼 빼면 내용 끝 위치).
-                    let span_end_tag = find_closing_tag_chars(&chars, pos, "span");
-                    let inner_start = tag_end + 1;
-                    let inner_end = span_end_tag.saturating_sub(7);
-                    let inner: String = chars[inner_start..inner_end.max(inner_start).min(len)]
-                        .iter()
-                        .collect();
-                    let inner_text = decode_html_entities(&html_strip_tags(&inner));
-
-                    if !inner_text.is_empty() {
-                        let css = parse_inline_style(&tag_str);
-                        let char_shape_id = self.css_to_char_shape_id(
-                            &css,
-                            inherited_bold,
-                            inherited_italic,
-                            inherited_underline,
-                        );
-                        let start = full_text.chars().count();
-                        full_text.push_str(&inner_text);
-                        let end = full_text.chars().count();
-                        style_runs.push((start, end, char_shape_id));
+                if let Some((name, closing)) = inline_format_tag(&tag_lower) {
+                    // span 도 건너뛰지 않고 안쪽을 계속 읽는다.
+                    // 그래야 span 자기 style 과 안쪽 <strong>·<u>·<br>·그림이 함께 남는다.
+                    if closing {
+                        if let Some(i) = open_styles.iter().rposition(|(open, _)| open == name) {
+                            open_styles.truncate(i);
+                        }
+                    } else {
+                        let mut css = parse_inline_style(&tag_str);
+                        // Chrome 은 <b style="…"> 처럼 style 을 붙여 쓴다.
+                        // style 이 그 속성을 정하면 따른다(Google 문서의 <b style="font-weight:normal">).
+                        let implied = match name {
+                            "b" | "strong" => Some(("font-weight", "bold")),
+                            "i" | "em" => Some(("font-style", "italic")),
+                            "u" => Some(("text-decoration", "underline")),
+                            _ => None,
+                        };
+                        if let Some((property, value)) = implied {
+                            if parse_css_value(&css.to_lowercase(), property).is_none() {
+                                css = format!("{css};{property}:{value}");
+                            }
+                        }
+                        open_styles.push((name.to_string(), css));
                     }
-
-                    pos = span_end_tag;
-                    continue;
-                } else if tag_lower.starts_with("<b>") || tag_lower.starts_with("<strong") {
-                    inherited_bold = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</b>") || tag_lower.starts_with("</strong") {
-                    inherited_bold = false;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<i>") || tag_lower.starts_with("<em") {
-                    inherited_italic = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</i>") || tag_lower.starts_with("</em") {
-                    inherited_italic = false;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<u>") {
-                    inherited_underline = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</u>") {
-                    inherited_underline = false;
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("<br") {
@@ -917,30 +883,16 @@ impl DocumentCore {
                 let raw: String = chars[text_start..pos].iter().collect();
                 let decoded = decode_html_entities(&raw);
                 if !decoded.is_empty() {
-                    if inherited_bold || inherited_italic || inherited_underline {
-                        let css_parts: Vec<String> = [
-                            if inherited_bold {
-                                Some("font-weight:bold".to_string())
-                            } else {
-                                None
-                            },
-                            if inherited_italic {
-                                Some("font-style:italic".to_string())
-                            } else {
-                                None
-                            },
-                            if inherited_underline {
-                                Some("text-decoration:underline".to_string())
-                            } else {
-                                None
-                            },
-                        ]
-                        .into_iter()
-                        .flatten()
-                        .collect();
-                        let fake_css = css_parts.join(";");
-                        let char_shape_id =
-                            self.css_to_char_shape_id(&fake_css, false, false, false);
+                    // 서식 구간 뒤의 평문도 구간을 새로 연다.
+                    // 안 열면 앞 구간의 굵게 등이 문단 끝까지 이어진다.
+                    if !open_styles.is_empty() || !style_runs.is_empty() {
+                        // parse_css_value 는 처음 찾은 값을 쓰므로 안쪽 요소를 앞에 둔다.
+                        let css: Vec<&str> = open_styles
+                            .iter()
+                            .rev()
+                            .map(|(_, css)| css.as_str())
+                            .collect();
+                        let char_shape_id = self.css_to_char_shape_id(&css.join(";"));
                         let start = full_text.chars().count();
                         full_text.push_str(&decoded);
                         let end = full_text.chars().count();
@@ -995,13 +947,7 @@ impl DocumentCore {
     }
 
     /// CSS 인라인 스타일 → CharShape ID 변환 (기존에서 검색 또는 신규 생성).
-    pub(crate) fn css_to_char_shape_id(
-        &mut self,
-        css: &str,
-        inherited_bold: bool,
-        inherited_italic: bool,
-        inherited_underline: bool,
-    ) -> u32 {
+    pub(crate) fn css_to_char_shape_id(&mut self, css: &str) -> u32 {
         use crate::model::style::{CharShape, UnderlineType};
 
         // 기본 CharShape를 기반으로 수정
@@ -1103,17 +1049,15 @@ impl DocumentCore {
         }
 
         // font-weight
-        let is_bold = inherited_bold
-            || css_lower.contains("font-weight:bold")
+        let is_bold = css_lower.contains("font-weight:bold")
             || css_lower.contains("font-weight: bold")
             || css_lower.contains("font-weight:700")
             || css_lower.contains("font-weight: 700");
         cs.bold = is_bold;
 
         // font-style
-        let is_italic = inherited_italic
-            || css_lower.contains("font-style:italic")
-            || css_lower.contains("font-style: italic");
+        let is_italic =
+            css_lower.contains("font-style:italic") || css_lower.contains("font-style: italic");
         cs.italic = is_italic;
 
         // color
@@ -1124,8 +1068,7 @@ impl DocumentCore {
         }
 
         // text-decoration
-        let has_underline = inherited_underline
-            || css_lower.contains("text-decoration:underline")
+        let has_underline = css_lower.contains("text-decoration:underline")
             || css_lower.contains("text-decoration: underline")
             || css_lower.contains("text-decoration-line:underline")
             || css_lower.contains("text-decoration-line: underline");
@@ -1400,7 +1343,7 @@ mod tests {
     #[test]
     fn html_paste_char_shape_drops_stale_raw_data() {
         let mut core = core_with_parsed_shapes();
-        let id = core.css_to_char_shape_id("font-weight:bold;color:#ff0000", false, false, false);
+        let id = core.css_to_char_shape_id("font-weight:bold;color:#ff0000");
         let cs = &core.document.doc_info.char_shapes[id as usize];
         assert!(cs.bold, "전제: CSS 가 반영돼야 함");
         assert!(
@@ -1434,7 +1377,7 @@ mod textdecoline_tests {
         let mut core = DocumentCore::new_empty();
         core.document = doc;
 
-        let id = core.css_to_char_shape_id("text-decoration-line: underline", false, false, false);
+        let id = core.css_to_char_shape_id("text-decoration-line: underline");
         let cs = &core.document.doc_info.char_shapes[id as usize];
         assert_ne!(
             cs.underline_type,
