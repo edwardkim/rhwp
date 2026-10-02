@@ -247,3 +247,16 @@ last_verified: 2026-10-02
 - 전체 Native/fresh WASM 선행 기준을 통과했으므로, 기존 host 줄간격 검사 한 개에 이미 저장소에 있던 사다리의 쪽·뒤 문단 소속 계약을 보완합니다. 신규 test 함수나 fixture는 추가하지 않습니다. 이전 출력의 1쪽/기준 2쪽 차이를 의미로 검사하고, 절대 픽셀 위치를 기대값으로 추가하지 않습니다.
 
 - 보완한 기존 #7418 검사 7개가 모두 통과했습니다. 사다리 계약은 정확한 2쪽, 1쪽 표 유지, 뒤 문단의 2쪽 단일 출현, 표의 임의 분할 금지를 확인합니다. test 함수 수는 7개 그대로이며 새 fixture를 추가하지 않았습니다. 생성 suite는 003으로 재배정되어 wrapper의 실제 7개 실행을 확인했습니다.
+
+### 메인터너 보정 준비: 평문 여백의 패키지 버전 계약
+
+- 전체 실패 `task903_hwpx_h_01_para_shape_margin_children_are_parsed`는 유효합니다. 원본 패키지 xmlVersion1.2의 문단10 들여쓰기 -2800은 이번 한컴2020 재저장에서도 HWP IR -2800으로 유지됩니다. 이전 5b8be2ac8은 이 값을 -5600으로 잘못 확대했습니다.
+- 원본 내용을 그대로 둔 통제 실험: header.xml의 head version만 1.4로 바꾸면 HWP IR은 -2800 그대로입니다. version.xml의 xmlVersion을1.4로 함께 바꾸면 -5600이 됩니다. 반대 방향으로 hy_ladder3 패키지 xmlVersion을1.2로 낮추면 원본 -2440/-4880이 그대로 저장됩니다. h01의 xmlVersion1.3도 -2800입니다. 처리 기준은 파일명·한컴 제품명이 아닌 실제 패키지 XML 버전입니다.
+- 수정 계획: version.xml의 xmlVersion이1.4 이상일 때만 평문 HWPUNIT 여백을 공통 IR 2배로 읽고, 기존1.2/1.3은 원값을 유지합니다. 평문 저장 시에도 같은 읽기 출처를 보존하여 역변환을 적용합니다. switch/default·고정 줄간격은 변경하지 않습니다. 기존 #903 정답 기대값을 유지하고 #4898·#6875·기존 파서 단위 검사 및 정상 hy_ladder3 전2쪽을 검증합니다. 새 회귀 함수·문서는 추가하지 않습니다.
+
+### 패키지 단위 보정 결과와 별도 시각 보류
+
+- `version.xml`의 xmlVersion을 읽어 1.4 이상에서만 평문 물리 여백을 2배 공통 IR로 변환합니다. 읽기 출처를 문단 모양에 보존하여 평문 저장 때 동일한 역변환을 적용합니다. 구버전·판본 미상은 기존 원값, switch/default·고정 줄간격은 기존 계약입니다. 기존 HWP 파서는 이 출처를 사용하지 않습니다.
+- #903 기존 독립 HWP 대조 기대값은 유지했습니다. #903/#4898/#6875 기존5개 PASS, 파서 기존54개 PASS, Clippy --lib release-test exit0. #4898 기존 함수에서1.2/1.3/1.4의 평문 왕복을 검증했으며 새 함수·fixture는 없습니다. 이 보정의 목적은 기존 파싱·저장 계약이며 새 렌더링 golden을 등록하지 않았습니다. [한컴 통제 실험](../assets/planet6897_green_20261002/plain_margin_version_oracle.json), [검증 증적](../assets/planet6897_green_20261002/plain_margin_version_validation.json).
+- 정상 hy_ladder3는 원본/기준/Native/fresh WASM 모두2쪽, 전쪽 최저90.86083%를 유지했습니다. Mac fresh WASM --no-opt exit0이며 Docker 최적화 검증이 아닙니다.
+- h01은 원본/기준/Native/fresh WASM 모두9쪽입니다. 2~9쪽은98% 이상이나1쪽은양쪽53.03132%입니다. 비교 PNG에서 제목 프레임과 이후 본문/표의 위쪽 이동을 직접 확인했습니다. 단위 실패 해결과 전체 문서 승인 판단을 분리합니다. [1쪽 review](../assets/planet6897_green_20261002/plain_margin_version_h01_p1_review.png). 9쪽 문서는 이 브랜치에서 추가 보정할 보류이며 #7445로 이관하거나 renderer 기대값을 느슨하게 하지 않습니다. 전체 회귀 재실행 전이므로 PR 최종 판정은 보류입니다.

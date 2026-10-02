@@ -359,8 +359,11 @@ pub struct ParaShape {
     pub para_level: u8,
     /// [#4898] HWPX 원본이 `hp:switch` 없이 여백·줄간격을 평문으로 적었는지 보존한다.
     /// 평문 고정 줄간격은 switch와 다른 저장 계약이므로 원본 표기를 유지한다.
-    /// 여백은 표기와 무관하게 공통 IR 단위이며 직렬화할 때 물리 HWPUNIT으로 되돌린다.
+    /// 평문 여백의 패키지 버전별 단위는 아래 출처와 함께 보존한다.
     pub hwpx_plain_para_margin: bool,
+    /// 패키지 xmlVersion 1.4 이상에서 평문 여백이 물리 HWPUNIT인지 보존한다.
+    /// 이전 버전은 저장값이 이미 공통 IR 단위이므로 직렬화에서도 절반으로 줄이지 않는다.
+    pub hwpx_plain_para_margin_physical: bool,
     /// [#1986] HWPX breakSetting@breakLatinWord 원문 보존
     /// (BREAK_WORD/KEEP_WORD/HYPHENATION). 파서 미수집 시 None → 직렬화 기본값
     /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.

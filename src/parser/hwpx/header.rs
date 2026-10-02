@@ -116,6 +116,14 @@ pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
 
 /// header.xml을 파싱하여 DocInfo와 DocProperties를 생성한다.
 pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxError> {
+    parse_hwpx_header_with_plain_margin_units(xml, true)
+}
+
+/// 패키지 버전이 정한 평문 여백 단위를 헤더 소비자까지 전달한다.
+pub(super) fn parse_hwpx_header_with_plain_margin_units(
+    xml: &str,
+    physical_plain_margin: bool,
+) -> Result<(DocInfo, DocProperties), HwpxError> {
     let mut doc_info = DocInfo::default();
     let mut doc_props = DocProperties::default();
 
@@ -160,7 +168,7 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                         parse_char_shape(e, &mut reader, &mut doc_info)?;
                     }
                     b"paraPr" => {
-                        parse_para_shape(e, &mut reader, &mut doc_info)?;
+                        parse_para_shape(e, &mut reader, &mut doc_info, physical_plain_margin)?;
                     }
                     b"style" => parse_style(e, &mut doc_info),
                     b"borderFill" => {
@@ -883,6 +891,7 @@ fn parse_para_shape(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
     doc_info: &mut DocInfo,
+    physical_plain_margin: bool,
 ) -> Result<(), HwpxError> {
     // `lineSpacing` 요소가 없는 paraPr 은 종전 0 이 그대로 남았다.
     // 0% 를 실값으로 존중하도록 고친 뒤(`compute_line_spacing_hwp`)로는 그 0 이
@@ -936,6 +945,7 @@ fn parse_para_shape(
                         ParaShapeChildKind::Margin => {
                             // [#4898] switch 밖 평문 여백 — 원본 표기를 보존한다.
                             ps.hwpx_plain_para_margin = true;
+                            ps.hwpx_plain_para_margin_physical = physical_plain_margin;
                             parse_para_shape_margin_children(reader, &mut ps)?;
                         }
                         ParaShapeChildKind::Switch => {
@@ -1191,7 +1201,8 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
         return;
     }
 
-    // 분기 없는 HWPUNIT 여백은 물리 단위다. 한컴 HWP 저장본의 공통 IR은 2배다.
+    // 패키지 xmlVersion 1.4 이상에서만 평문 HWPUNIT은 물리 단위다.
+    // 이전 버전은 한컴 HWP 저장본과 같은 IR 값이므로 확대하지 않는다.
     // 단위가 없는 이전 표기는 그대로 읽고, switch/default는 별도 왕복 계약을 따른다.
     let unit = ce
         .attributes()
@@ -1203,9 +1214,11 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
         }
         let raw = parse_i32(&attr);
         let value = match unit.as_deref() {
-            Some("HWPUNIT") => raw.saturating_mul(2),
+            Some("HWPUNIT") if ps.hwpx_plain_para_margin_physical => raw.saturating_mul(2),
             // CHAR는 반 단위가 남는 홀수 IR 값의 보존 표기다.
-            Some("CHAR") => raw.saturating_mul(2).saturating_add(1),
+            Some("CHAR") if ps.hwpx_plain_para_margin_physical => {
+                raw.saturating_mul(2).saturating_add(1)
+            }
             _ => raw,
         };
         match local {

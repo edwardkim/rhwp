@@ -433,7 +433,33 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
 
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
-    let (mut doc_info, doc_properties) = header::parse_hwpx_header(&header_xml)?;
+    // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
+    let physical_plain_margin = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path == "version.xml")
+        .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
+        .and_then(|xml| {
+            let mut version_reader = quick_xml::Reader::from_str(xml);
+            loop {
+                match version_reader.read_event() {
+                    Ok(quick_xml::events::Event::Start(e) | quick_xml::events::Event::Empty(e)) => {
+                        if let Some(value) = e.attributes().flatten().find_map(|attr| {
+                            (attr.key.as_ref() == "xmlVersion").then(|| attr.value.to_string())
+                        }) {
+                            let (major, minor) = value.split_once('.')?;
+                            return Some(
+                                (major.parse::<u32>().ok()?, minor.parse::<u32>().ok()?) >= (1, 4),
+                            );
+                        }
+                    }
+                    Ok(quick_xml::events::Event::Eof) | Err(_) => return None,
+                    _ => {}
+                }
+            }
+        })
+        .unwrap_or(false);
+    let (mut doc_info, doc_properties) =
+        header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
     resolve_embedded_font_references(&mut doc_info, &package_info.bin_data_items);
 
     // [Task #1608] head version("1.4")은 HWPML **스키마 버전**일 뿐 HWP3→HWPX 변환 지표가

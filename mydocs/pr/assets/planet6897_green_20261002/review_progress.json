@@ -77,6 +77,14 @@
       "failed": 1,
       "evidence": "issue7336_terminal_cap_evidence.json",
       "resolved_new_full_failure": "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it"
+    },
+    {
+      "case": "package-version plain margin; task903/4898/6875",
+      "passed": 5,
+      "failed": 0,
+      "parser_passed": 54,
+      "evidence": "plain_margin_version_validation.json",
+      "resolved_new_full_failure": "hwpx_to_hwp_adapter::task903_hwpx_h_01_para_shape_margin_children_are_parsed"
     }
   ],
   "visual_evidence": {
@@ -149,7 +157,7 @@
     "skipped": 50,
     "exit_code": 100,
     "evidence": "nextest_corrected_d2ef8693a.json",
-    "focused_resolved_after_run": 1,
-    "remaining_not_yet_full_reverified": 16
+    "focused_resolved_after_run": 2,
+    "remaining_not_yet_full_reverified": 15
   }
 }
