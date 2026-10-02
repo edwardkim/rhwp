@@ -2,7 +2,7 @@
 
 use super::super::para_has_visible_text;
 use super::metrics::FormattedParagraph;
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::renderer::pagination::PageItem;
 
 pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
@@ -16,8 +16,58 @@ pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
 
 pub(super) enum TailDisposition {
     Continue,
-    Hidden,
     Unadvanced,
+}
+
+/// 분할 표의 배치를 끝내고 바로 만나는 구역 종료 문단은 저장본의 종료 guide일 수 있다.
+/// 저장 줄이 원래 쪽 안에 있고 명시적/저장 쪽 경계가 없을 때만 fit 실패를 흡수한다.
+/// 반복 Enter는 앞 항목이 본문 문단이므로 이 경로에 들어오지 않는다.
+pub(super) fn is_stored_table_closing_guide(
+    para: &Paragraph,
+    para_idx: usize,
+    paragraphs: &[Paragraph],
+    is_last_in_section: bool,
+    dpi: f64,
+    page: &EmptyTailPage<'_>,
+) -> bool {
+    if !is_last_in_section
+        || page.col_count != 1
+        || para_has_visible_text(para)
+        || !para.controls.is_empty()
+        || matches!(
+            para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        )
+    {
+        return false;
+    }
+    let Some(PageItem::PartialTable { para_index, .. }) = page.current_items.last() else {
+        return false;
+    };
+    // paragraph flow는 table coordinator가 모든 조각을 소비한 뒤에 호출된다.
+    // 뒤에 다른 문단을 거친 빈 줄 묶음은 표의 종료 guide로 해석하지 않는다.
+    if para_index.checked_add(1) != Some(para_idx) {
+        return false;
+    }
+    let Some(previous) = paragraphs.get(*para_index) else {
+        return false;
+    };
+    if crate::renderer::typeset::stored_vpos_top_collision(previous, para) {
+        return false;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    if crate::renderer::typeset::is_synthetic_line_seg(line)
+        || line.tag & crate::model::paragraph::LineSeg::TAG_FIRST_SEGMENT == 0
+        || line.segment_width <= 0
+        || line.line_height <= 0
+    {
+        return false;
+    }
+    line.vertical_pos >= crate::renderer::px_to_hwpunit(page.current_zone_y_offset, dpi)
+        && line.vertical_pos.saturating_add(line.line_height)
+            <= crate::renderer::px_to_hwpunit(page.body_height, dpi)
 }
 
 pub(super) fn hide_rowbreak_guide(
@@ -72,7 +122,6 @@ pub(super) fn hide_overflowing_empty(
 pub(super) fn trailing_disposition(
     para: &Paragraph,
     fmt: &FormattedParagraph,
-    paragraphs: &[Paragraph],
     is_last_in_section: bool,
     available: f64,
     layout_drift_safety_px: f64,
@@ -95,24 +144,8 @@ pub(super) fn trailing_disposition(
             let fit_fail_only_after_footnote_reserve = page.current_footnote_height > 0.0
                 && total_h > available
                 && total_h <= base_available;
-            let prior_trailing_drift = page.current_height > available
-                && page.current_height <= available + layout_drift_safety_px + 0.5;
-            let previous_item_is_empty_para = page
-                .current_items
-                .last()
-                .and_then(|item| match item {
-                    PageItem::FullParagraph { para_index } => Some(*para_index),
-                    _ => None,
-                })
-                .and_then(|prev_idx| paragraphs.get(prev_idx))
-                .map(|prev_para| {
-                    let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
-                    trimmed.trim().is_empty() && prev_para.controls.is_empty()
-                })
-                .unwrap_or(false);
-            if prior_trailing_drift && previous_item_is_empty_para {
-                return TailDisposition::Hidden;
-            }
+            // 앞 줄의 누적 간격이 조금 넘쳤어도 다음 줄 상자의 점유는 별개다.
+            // 이 문단 자체가 fit할 때만 흡수하고, 아니면 정상 이월을 진행한다.
             if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
                 return TailDisposition::Unadvanced;
             }
