@@ -2579,6 +2579,9 @@ pub(crate) fn stored_rows_are_stale(
     }) {
         return true;
     }
+    if stored_rows_underfill_inside_token(composed, para, inner_width_px, styles) {
+        return true;
+    }
     // [#6102] **비말미** 저장 줄의 과밀: 이어지는 줄이 있는데도 자기 폭(저장
     // segment_width 와 내폭 둘 다)을 넘는 텍스트를 담았다고 주장하는 줄은
     // 물리적으로 성립하지 않는다 — 한글은 줄을 다 채우기 **전에** 끊는다.
@@ -2610,6 +2613,118 @@ pub(crate) fn stored_rows_are_stale(
         .zip(para.line_segs.iter())
         .take(composed.lines.len().saturating_sub(1))
         .any(|(line, seg)| non_last_overfull(line, seg))
+}
+
+/// [#7416] 저장 줄 사다리가 **제 선언 폭과 모순되는** 과소충전.
+///
+/// `#6102` 의 과밀(줄이 제 폭보다 많이 담았다)과 대칭인 쪽이다. 비말미 저장 줄이
+///
+/// 1. **어절 안**에서 끊겼고(앞 줄 끝 글자와 다음 줄 첫 글자가 모두 한글 음절),
+/// 2. 줄에 **공백이 없고**,
+/// 3. 문단이 **늘려 채우는 정렬**(양쪽·배분·나눔)이 아니며,
+/// 4. 그 줄의 측정 폭 뒤에 **평균 글자 두 개 이상**이 더 들어갈 자리가 선언
+///    `segment_width`(문단 들여쓰기/내어쓰기를 줄별로 뺀 값)에 남아 있으면,
+///
+/// 단, 선언 폭이 그 줄이 실제로 놓인 상자(`inner_width_px`)보다 넓으면 판정하지 않는다.
+/// 그때 선언은 줄 나눔이 쓴 폭이 아니라서(좁은 칸 안의 줄에 쪽 폭을 적은 사다리)
+/// «제 폭에 비해 남겼다» 는 비교 자체가 성립하지 않는다.
+///
+/// 그 사다리는 «다음 글자가 안 들어가서 끊었다» 는 줄 나눔의 유일한 이유와
+/// 모순된다. 어절 줄바꿈이 아니므로 줄 나눔 규칙이 끊을 까닭이 없고, 늘릴 공백도
+/// 정렬도 없으므로 자연 폭이 곧 배치 폭이다.
+///
+/// 비교 대상은 **그 줄 자신의 선언 폭**이지 우리 carve 가 아니다 — 위 과밀 판정과
+/// 같은 이유로 우리 상자 재현에 기대지 않는다.
+///
+/// 문턱 2.0 은 맞춘 값이 아니라 `samples/**` 1,148건 전수에서 난 틈이다
+/// (2026-09-25, `#7416` 코멘트). 조건 1~3 을 만족하는 한/글 저장본(`lastSavedWith`
+/// 가 한컴인 1,044건)의 줄 316개는 여유가 최대 1.94글자이고, 2.0 이상은 한 줄도 없다.
+/// 2.0 이상인 문서는 4건뿐이고 전부 저장 계보가 없다. 같은 원본을 한/글이 다시 저장한
+/// 쌍둥이(`issue6639-hancom-160.hwpx`)는 같은 `horzsize` 로 포화(0.7글자 남김)라
+/// 한 줄도 걸리지 않는다. 한/글은 이 원본의 사다리를 쓰지 않는다 — 사다리를 지운
+/// 입력과 원본의 한/글 PDF 가 화소 단위로 같다.
+///
+/// 양쪽 정렬을 빼는 이유: 공백을 늘려 줄을 선언 폭까지 채우므로 자연 폭 비교가
+/// 성립하지 않는다(종전 census 발화 줄의 99.8% 가 양쪽 정렬이었다).
+fn stored_rows_underfill_inside_token(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    use crate::model::style::Alignment;
+    const MIN_SPARE_CHARS: f64 = 2.0;
+
+    if composed.lines.len() < 2 {
+        return false;
+    }
+    let Some(para_style) = styles.para_styles.get(para.para_shape_id as usize) else {
+        return false;
+    };
+    if matches!(
+        para_style.alignment,
+        Alignment::Justify | Alignment::Distribute | Alignment::Split
+    ) {
+        return false;
+    }
+    let is_syllable = |c: char| ('\u{ac00}'..='\u{d7a3}').contains(&c);
+    let line_text =
+        |line: &ComposedLine| -> String { line.runs.iter().map(|run| run.text.as_str()).collect() };
+    // 글자 폭에 잡히지 않는 개체·각주·탭이 줄 안에 있으면 자연 폭을 잴 수 없다.
+    let has_opaque_inline = |start: usize, end: usize| {
+        composed
+            .tac_controls
+            .iter()
+            .any(|&(pos, _, _)| (start..end).contains(&pos))
+            || composed
+                .footnote_positions
+                .iter()
+                .any(|&(pos, _, _)| (start..end).contains(&pos))
+    };
+    let first_line_indent = para_style.indent.max(0.0);
+    let hanging_indent = (-para_style.indent).max(0.0);
+
+    composed
+        .lines
+        .windows(2)
+        .zip(para.line_segs.iter())
+        .enumerate()
+        .any(|(idx, (pair, seg))| {
+            let (line, next) = (&pair[0], &pair[1]);
+            if line.has_line_break {
+                return false;
+            }
+            let text = line_text(line);
+            let next_text = line_text(next);
+            let nchars = text.chars().count();
+            if nchars == 0
+                || text.chars().any(|c| c.is_whitespace())
+                || !text.chars().last().is_some_and(is_syllable)
+                || !next_text.chars().next().is_some_and(is_syllable)
+                || has_opaque_inline(line.char_start, next.char_start)
+            {
+                return false;
+            }
+            let used = estimate_composed_line_width(line, styles);
+            if used <= 0.0 {
+                return false;
+            }
+            let indent = if idx == 0 {
+                first_line_indent
+            } else {
+                hanging_indent
+            };
+            let seg_width_px = hwpunit_to_px(seg.segment_width, 96.0);
+            // 선언 폭이 그 줄이 실제로 놓인 상자보다 넓으면 «제 폭» 이라는 전제가 서지
+            // 않는다 — 그 값은 줄 나눔이 쓴 폭이 아니다(좁은 칸 안의 줄에 쪽 폭을 적은
+            // 사다리가 있다). 상자와 어긋난 선언은 이 판정의 대상이 아니다.
+            if seg_width_px > inner_width_px + 1.0 {
+                return false;
+            }
+            let declared = seg_width_px - indent;
+            let avg_char = used / nchars as f64;
+            declared - used >= avg_char * MIN_SPARE_CHARS
+        })
 }
 
 /// Resolve a paragraph's rows through the physical frame its own geometry

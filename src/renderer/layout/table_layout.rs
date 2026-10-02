@@ -5900,8 +5900,27 @@ impl LayoutEngine {
                         seg.vertical_pos == 0 && (prior_para_idx > 0 || line_idx > 0)
                     })
                 });
-            let has_stored_para_anchor =
-                !local_vpos_restart_seen && crate::renderer::first_seg_vpos_is_anchor(para, cp_idx);
+            // [#7416] 앞 문단의 저장 줄 사다리를 버리고 다시 조판해 **줄 수가 달라졌으면**,
+            // 뒤 문단들의 저장 vpos 는 버린 사다리의 줄 수를 전제로 적힌 값이다. 그 값을
+            // 앵커로 쓰면 다시 조판한 줄 수와 무관하게 옛 자리로 되돌아가 빈 띠나 겹침이
+            // 생긴다(issue6639 원본: 칸 31 이 저장 28 줄 → 재조판 25 줄인데 문단 3~10 이
+            // 28 줄 자리에 그려져 칸 아래로 밀렸다). 한/글은 이 사다리를 통째로 무시한다.
+            // 위 reset 과 같이, 그 뒤로는 누적 흐름을 쓴다.
+            let prior_row_count_changed = composed_paras
+                .iter()
+                .zip(cell.paragraphs.iter())
+                .take(cp_idx)
+                .any(|(prior_composed, prior)| {
+                    !prior.line_segs.is_empty()
+                        && prior.line_segs.iter().all(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        })
+                        && prior_composed.lines.len() != prior.line_segs.len()
+                });
+            let has_stored_para_anchor = !local_vpos_restart_seen
+                && !prior_row_count_changed
+                && crate::renderer::first_seg_vpos_is_anchor(para, cp_idx);
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
