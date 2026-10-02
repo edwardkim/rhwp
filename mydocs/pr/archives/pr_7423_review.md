@@ -326,3 +326,9 @@ last_verified: 2026-10-02
 - 로컬 devel을 `ab4dcfaca`로 fast-forward하고 검토105개 커밋을 리베이스했습니다. 재적용 head `d877e753e`. 오늘할일 충돌1건은 upstream #7487 기록과 검토 기록을 모두 보존했습니다.105개 제목·순서 일치,104개 patch-id 동일입니다. 백업 브랜치를 유지합니다.
 - 새 Native 빌드·최신 base suite manifest exit0. 기존 실패27건을 nextest threads8·locked·release-test·no-fail-fast로 모두 재실행했으며27FAIL/0PASS(exit100,72.091초), 실패 이름은 동일합니다. upstream Enter/빈 끝쪽 경계5건PASS(exit0). 이는 선택 검사 결과이며 최신 head 전체 회귀 완료가 아닙니다.
 - #5875 첫 실제 차이는2쪽 행4: 정상 대조 renderer는 `[1,4,19]`에서 잘랐지만 현행은행 전체를 소비해본문1,009.1px에1,061.2px를 배치합니다. 같은분할 회귀가리베이스 후에도존재합니다. 검사/baseline은변경하지않고원인보정을계속합니다. 리베이스 전Native/WASM시각증적은역사적결과로보존하며최신전수통과로재사용하지않습니다. [리베이스검증기록](../assets/planet6897_green_20261002/rebase_20261003_validation.json).
+
+
+### 브랜치 관련 고정 px 기대값 교정: #7063 위 여백 3건
+
+- 사용자 지시에 따라 저장소 전수가 아니라 이 브랜치의 추가·수정 검사와 실제 차단만 먼저 다룹니다. #7063 첫/이어받기/위 여백0 대조의89.91·39.64·37.76px 정답 핀을 제거했습니다. 같은 세 함수에서 원본 PageDef·host LineSeg·outMargin.top을 독립 입력으로 읽고, 이어받는 쪽에 이전 host 거리를 반복하지 않는 관계를 검사합니다. HU/96DPI 환산과 기존 반올림 허용은 유지하며 구현 helper의 계산값을 정답으로 재인용하지 않습니다.
+- 기존 검사3개만 교정, 신규0개·renderer/baseline 변경0건. nextest3PASS/0FAIL(exit0), 해당suite Clippy·fmt·diff check exit0입니다. sample2 리베이스 전Native/fresh WASM 전29쪽최저92.22927% 증적을 연결하며 최신전수재검증완료로쓰지않습니다. 나머지브랜치px후보는독립기대값·시각증적확인후한단계씩교정합니다. [교정검증기록과잔존후보](../assets/planet6897_green_20261002/branch_pixel_contract_7063_validation.json).

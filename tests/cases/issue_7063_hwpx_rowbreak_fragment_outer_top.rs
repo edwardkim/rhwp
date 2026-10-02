@@ -32,7 +32,8 @@
 //!
 //! 기존 세 검사는 정본 위여백과 0 대조군을 유지한다. 다행·다열의 잘못된 종전
 //! 좌표 37.80px를 동결하던 검사는 제거했다(정본 41.55px, 현재 41.56px).
-//! 29쪽 전체 시각 일치율은 별도 보류이며 이 세 검사의 통과로 승인하지 않는다.
+//! 리베이스 전 전29쪽 Native/fresh WASM 최저92.22927% 증적은 별도로 보존한다.
+//! 현재 검사는 원본 HU 관계를 검증하며 그 통과만으로 최신 시각 검증·PR 승인을 선언하지 않는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -40,15 +41,6 @@ use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/hwpx_sample2.hwpx";
-
-fn load_page(page_index: u32) -> RenderNode {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let bytes = std::fs::read(&path).expect("재현물 읽기");
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
-    core.build_page_render_tree(page_index)
-        .expect("render tree")
-        .root
-}
 
 /// 본문 최상위 표(칸 안 중첩 표 제외)의 윗변.
 fn find_table_top(node: &RenderNode, para_index: usize) -> Option<f64> {
@@ -62,40 +54,53 @@ fn find_table_top(node: &RenderNode, para_index: usize) -> Option<f64> {
         .find_map(|child| find_table_top(child, para_index))
 }
 
-/// 정본 좌표와 0.3px 안에서 맞는지. 잔차 실측이 ≤0.09px 이므로 이 공차는
-/// 반올림만 흡수하고 1.88px 이탈은 잡는다.
-fn assert_oracle_top(page_index: u32, para_index: usize, oracle: f64, before: f64) {
-    let root = load_page(page_index);
-    let top = find_table_top(&root, para_index)
+/// 표 윗변은 본문 원점과 원본 쪽 소유·바깥 위 여백의 합이다.
+/// PDF 실측 좌표를 동결하지 않고 저장 HU와 실제 배치의 관계를 검사한다.
+fn assert_source_outer_top(page_index: u32, para_index: usize, continuation: bool) {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(&path).expect("재현물 읽기");
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let section = &core.document().sections[0];
+    let host = &section.paragraphs[para_index];
+    let rhwp::model::control::Control::Table(source) = &host.controls[0] else {
+        panic!("대상 문단의 원본 표가 없음");
+    };
+    let page = &section.section_def.page_def;
+    let body_top_hu = f64::from(page.margin_top) + f64::from(page.margin_header);
+    let host_top_hu = if continuation {
+        0.0
+    } else {
+        f64::from(host.line_segs.first().expect("저장 host 줄").vertical_pos)
+    };
+    let expected_offset_hu = host_top_hu + f64::from(source.outer_margin_top);
+    let tree = core.build_page_render_tree(page_index).expect("대상 쪽");
+    let top = find_table_top(&tree.root, para_index)
         .unwrap_or_else(|| panic!("{}쪽 표 pi={para_index} — 시험 설정", page_index + 1));
+    // 기본 96 DPI의 HU 환산만 사용한다. 반올림 허용은 좌표 정답이 아니다.
+    let actual_offset_hu = top * 7200.0 / 96.0 - body_top_hu;
     assert!(
-        (top - oracle).abs() <= 0.3,
-        "{}쪽 표 pi={para_index} 윗변이 한/글 정본({oracle:.2}px) 0.3px 안이어야 한다 \
-         (수정 전 {before:.2}): {top:.2}",
-        page_index + 1
+        (actual_offset_hu - expected_offset_hu).abs() <= 7200.0 / 96.0 * 0.3,
+        "{}쪽 표 pi={para_index}: 본문 기준 원본 host+위 여백 {}HU, 실제 {}HU",
+        page_index + 1,
+        expected_offset_hu,
+        actual_offset_hu
     );
 }
 
-/// 이슈 본문의 19쪽 표2 — 쪽 중간에서 시작하는 **첫 조각**.
+/// 첫 조각은 해당 쪽의 원본 host 원점과 위 여백을 한 번 소유한다.
 #[test]
 fn issue_7063_hwpx_first_fragment_opens_outer_top_margin() {
-    assert_oracle_top(18, 182, 89.91, 88.10);
+    assert_source_outer_top(18, 182, false);
 }
 
-/// 같은 표의 20쪽 **이어받은 조각** — 쪽 상단에서도 같은 여백을 연다.
+/// 이어받은 조각은 이전 쪽 host 거리를 반복하지 않고 위 여백만 다시 연다.
 #[test]
 fn issue_7063_hwpx_continuation_fragment_opens_outer_top_margin() {
-    assert_oracle_top(19, 182, 39.64, 37.80);
+    assert_source_outer_top(19, 182, true);
 }
 
-/// 0 대조군 — `outMargin.top` 이 0 인 표는 수정 전후 모두 정본과 맞는다.
-/// 규칙이 조각 전부로 번지면 이 검사가 깨진다.
+/// 위 여백이 없는 이어받기 조각은 본문 원점과 같은 위치에 선다.
 #[test]
 fn issue_7063_hwpx_zero_outer_top_fragment_is_untouched() {
-    let root = load_page(8);
-    let top = find_table_top(&root, 74).expect("9쪽 표 pi=74 — 시험 설정");
-    assert!(
-        (top - 37.76).abs() <= 0.3,
-        "outMargin.top=0 인 표는 종전 좌표(37.76px)를 유지해야 한다: {top:.2}"
-    );
+    assert_source_outer_top(8, 74, true);
 }
