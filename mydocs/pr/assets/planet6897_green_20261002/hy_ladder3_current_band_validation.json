@@ -1,0 +1,24 @@
+{
+  "status": "native_complete_fresh_wasm_pending",
+  "source_base_head": "5b8be2ac8",
+  "source_worktree_modified": true,
+  "native_pages": 2,
+  "pdf_pages": 2,
+  "native_page_percent": {
+    "1": 90.86083,
+    "2": 100.0
+  },
+  "semantic_observation": "table on page1; NEXT PARAGRAPH only on page2",
+  "existing_neighbor_tests_passed": 39,
+  "baseline_original": 7,
+  "baseline_observed": 12,
+  "baseline_changed": false,
+  "fresh_wasm": "not_run",
+  "sha256": {
+    "src/renderer/typeset.rs": "678a0178d550976d0d4ec4e3a5f77680de36d7248cc80d667144270b228776b9",
+    "src/renderer/typeset/controls.rs": "978d3d60cd2717e99e88b89ace727273c3e50d775433ea8556b1fec91bb38119",
+    "src/renderer/typeset/controls/tac_fit.rs": "4b3b676935fc70489ffab66c9b5fbb9ae9781f157fca9910de49f6f8d6928056",
+    "src/renderer/typeset/controls/tac_flow.rs": "eb036312692d99e90790a9f3d42e7b97dd747d1c262b73a17876430aa07dbbe0",
+    "target/pr-review/release-test/rhwp": "040e98e5c910cdea86bad9ae59768d06675f06d4a7294610ce497687f0b4e9ad"
+  }
+}

@@ -2,7 +2,7 @@
   "date": "2026-10-02",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
-  "latest_code_correction": "cf5cc04ca",
+  "latest_code_correction": "5b8be2ac8",
   "latest_comment_translation": "facdbf948",
   "initial_full": {
     "run": 10283,
@@ -11,12 +11,12 @@
     "skipped": 50,
     "exit_code": 100
   },
-  "focused_handled_initial_failures": 28,
+  "focused_handled_initial_failures": 30,
   "remaining_initial_failures": [
     {
       "case": "hy_ladder3 cell overflow baseline",
       "count": 1,
-      "decision": "기존 7을 유지하며 7→11 완화 보류. 독립 전체 시각/저장 줄 증거 미완료."
+      "decision": "Native 2/2쪽·최소90.86083%로 단위와 후속 문단 소속 보정. 원장12줄, 기존7 유지. fresh WASM/잘림 비교 대기."
     },
     {
       "case": "issue_7469_footnote_number_paragraph_indent::empty_footnote_keeps_its_number_and_line_box",
@@ -27,11 +27,6 @@
       "case": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
       "count": 1,
       "decision": "다열 표의 잘못된 종전37.80px 고정. 선언 여백/정본 기준 재검토 필요. 전체29쪽 최소27.60393%로 회귀 적격 미충족."
-    },
-    {
-      "case": "issue_7243_nested_fragment_padding",
-      "count": 2,
-      "decision": "후속 표 상대 원점118.14667 vs 정본116.353. 직접 한컴2020/2024 PDF 괘선이 같아 DPI로 설명 불가. 픽셀 기대값 유지하며 원인 분석중."
     }
   ],
   "post_correction_focused": [
@@ -46,6 +41,12 @@
       "passed": 7,
       "failed": 0,
       "log": "output/pr-review/planet6897-green-20261002/nextest-7476-host-counterguards.log"
+    },
+    {
+      "case": "current TAC band and #7243 neighbors",
+      "passed": 39,
+      "failed": 0,
+      "source": "worktree on 5b8be2ac8; hy_ladder3_current_band_validation.json source hashes"
     }
   ],
   "visual_evidence": {

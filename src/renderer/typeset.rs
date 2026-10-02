@@ -4323,7 +4323,12 @@ impl TypesetEngine {
                 hwpunit_to_px(table.common.height as i32, self.dpi),
                 ft.total_height,
             );
-        let owns_tac_band = ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line;
+        let unstored_cell_band = self
+            .tac_flow_query()
+            .single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            && ft.total_height > table_height + 0.5;
+        let owns_tac_band =
+            ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line || unstored_cell_band;
         let table_height = if owns_tac_band {
             if std::env::var("RHWP_5699_DBG").is_ok() {
                 eprintln!(
@@ -4497,7 +4502,9 @@ impl TypesetEngine {
             // 이 형상은 host LINE_SEG가 표의 물리 하단을 전혀 나타내지 않는다.
             // 표 뒤 일반 문단도 실제 표 하단을 기준으로 trailing spacing까지 포함해
             // 한 번 엄격하게 적합성을 판정해야 다음 쪽으로 올바르게 이월된다.
-            ft.strict_following_plain_text_fit || hwpx_rowbreak_tac_missing_owned_line,
+            ft.strict_following_plain_text_fit
+                || hwpx_rowbreak_tac_missing_owned_line
+                || unstored_cell_band,
             styles,
         );
         // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —

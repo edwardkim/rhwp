@@ -215,3 +215,16 @@ last_verified: 2026-10-02
 - 한컴은 2쪽이고 Native는 여전히 1쪽입니다. 다음 문단이 쪽 밖으로 밀리는 측정/배치 불일치는 별도 보정 대상입니다. fresh WASM 및 전체 쪽 비교는 아직 통과하지 않았으며 #7476 머지 보류를 유지합니다.
 - [독립 한컴 PDF](../../../pdf/task2070/hy-ladder3-2020.pdf), [수정 전 PNG](../assets/planet6897_green_20261002/hy_ladder3_p1_before.png), [단위 보정 PNG](../assets/planet6897_green_20261002/hy_ladder3_p1_margin_fixed.png), [해시·검증 기록](../assets/planet6897_green_20261002/hy_ladder3_margin_validation.json).
 - 앞선 #7243 여백 예약 보정의 새 Native 26쪽은 93.84389%이며, [직접 비교 PNG](../assets/planet6897_green_20261002/regulatory86712_p26_reserved_margin.png)를 확인했습니다. 전체 64쪽의 다른 시각 보류는 별도로 유지합니다.
+
+### 메인터너 보정 10 사전 분석: 미저장 셀의 TAC 흐름 높이
+
+- 단위 보정 뒤에도 사다리 전체 쪽은 1/2로 다릅니다. `RHWP_DIAG_TACCAP`에서 실측 표+후행 간격은 1330.4px인데 host 저장 줄 기반 상한은 55.5px이고 실제 조판 사용 높이는 76.8px입니다. paint는 커진 셀을 그려 뒤 문단까지 쪽 밖으로 밀지만, fit·상한은 작은 host 줄만 예약합니다.
+- 원본은 모든 셀 글줄의 저장 LineSeg가 없는 수동 생성본입니다. 셀은 실제 텍스트로 다시 조판하면서 host의 옛 짧은 줄을 현재 개체 높이의 근거로 쓰는 모순입니다. 독립 한컴 PDF는 표 뒤 `NEXT PARAGRAPH`를 2쪽에 둡니다.
+- 현재 `tac_fit`의 편집 성장 하한 → `typeset_tac_table`의 실제 전진 → `tac_reconcile`의 사후 상한을 추적했습니다. 미저장 텍스트 셀의 실제 높이도 같은 하한으로 연결하고 후속 저장 사다리의 되감기를 막는 방향으로 보정합니다. 저장 셀 줄이 있는 정상 문서는 기존 계약을 유지합니다. 쪽/문단 소속과 전체 2쪽 비교로 결과를 판단하며 baseline은 변경하지 않습니다.
+
+#### 보정 10 결과
+
+- 최종 변경에서 #7418 7개·#5699 2개·#6950 28개·#7243 2개, 기존 관련 검사 총 39개가 통과했습니다. 생성 suite가 재배정된 #7243은 wrapper로 실제 2개 실행을 다시 확인했습니다.
+- 원본 사다리의 Native 전체 2쪽은 기준 PDF와 쪽수가 일치합니다. 1쪽 90.86083%, 2쪽 100.00000%이며, `NEXT PARAGRAPH`는 1쪽에서 사라지고 2쪽에 한 번 나타납니다. 실측 셀 높이를 작은 host 줄로 되돌리는 사후 상한도 제거했습니다.
+- [1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_current_band.png), [2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_current_band.png), [현재 코드 해시·검증 기록](../assets/planet6897_green_20261002/hy_ladder3_current_band_validation.json).
+- 넘침 원장 partition14는 원본의 잘못된 들여쓰기 복원 뒤 12줄을 관측해 기존 7줄 기준에서 실패했습니다(그 외 78개 입력은 증가 없음). 7→12 변경은 아직 하지 않았습니다. fresh WASM 전체 2쪽 및 기준 PDF의 잘림 경계를 확인한 뒤 의도된 변화 여부를 판단합니다. 이 원본 표 자체는 한컴도 1쪽에 통배치하고 아래쪽 내용을 자릅니다. 쪽수 복원을 원본 모든 셀 내용의 가시성 확보로 확대하지 않습니다.

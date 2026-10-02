@@ -22,7 +22,7 @@ pub(in crate::renderer::typeset) struct TacFitPlan {
     pub tac_count: usize,
     pub has_tac: bool,
     // 뒤쪽 저장 높이 cap도 동일한 편집 후 실측 결과를 소비한다.
-    pub session_grown_tac_total: Option<f64>,
+    pub measured_tac_floor: Option<f64>,
     pub advance_before_place: bool,
 }
 
@@ -63,22 +63,28 @@ pub(super) fn prepare(
     } else {
         None
     };
-    // [편집 세션] TAC 표가 셀 편집으로 자라면 저장 줄높이(표 선언 인코딩)
+    // 셀 편집 또는 저장 줄 없는 셀 텍스트로 TAC 표가 자라면 저장 줄높이(표 선언 인코딩)
     // 기반 fit 은 과소가 된다 — 실측(mt)을 하한으로 써야 넘친 표가 pre-flush
     // 로 새 쪽에 간다(셀 Enter 재현: 실측이 선언 fit 으로 1쪽에 남아 하단이
     // 잘림). 저장 bounds 특례도 성장 표에는 무효다(저장 좌표는 편집 전 형상).
-    let session_grown_tac_total = (has_tac && flow.session_edited())
+    let measured_tac_floor = has_tac
         .then(|| {
             para.controls.iter().enumerate().find_map(|(ci, ctrl)| {
                 let Control::Table(t) = ctrl else { return None };
-                if !flow.is_effective_tac_table(para, t, fmt) {
+                if !flow.is_effective_tac_table(para, t, fmt)
+                    || !(flow.session_edited()
+                        || flow.single_tac_line_has_unstored_cell_text(para, t, fmt, tac_count))
+                {
                     return None;
                 }
                 let declared = hwpunit_to_px(t.common.height as i32, dpi);
                 measured_tables
                     .iter()
                     .find(|m| m.para_index == para_idx && m.control_index == ci)
-                    .filter(|m| m.total_height > declared + 8.0)
+                    .filter(|m| {
+                        let tolerance = if flow.session_edited() { 8.0 } else { 0.5 };
+                        m.total_height > declared + tolerance
+                    })
                     .map(|m| m.total_height)
             })
         })
@@ -105,7 +111,7 @@ pub(super) fn prepare(
         .map(|height| hwpunit_to_px(height, dpi));
     let height_for_fit = if let Some(height) = owned_single_tac_frame {
         let base = height + fmt.spacing_before;
-        session_grown_tac_total.map_or(base, |grown| base.max(grown))
+        measured_tac_floor.map_or(base, |grown| base.max(grown))
     } else if has_tac {
         // 글자처럼 취급되는 표는 **바깥 여백(위·아래)까지 쪽 예산을 차지**한다.
         // 한컴 저장 lineseg 의 vertsize 가 `표 선언높이 + outMargin.top + outMargin.bottom`
@@ -127,13 +133,11 @@ pub(super) fn prepare(
             })
             .fold(0.0f64, f64::max);
         let base = first_line_tac_height.unwrap_or(fmt.height_for_fit) + tac_outer_margin_px;
-        session_grown_tac_total.map_or(base, |grown| base.max(grown))
+        measured_tac_floor.map_or(base, |grown| base.max(grown))
     } else {
         fmt.total_height
     };
-    let saved_single_tac_bottom_fits = if has_tac
-        && tac_count <= 1
-        && session_grown_tac_total.is_none()
+    let saved_single_tac_bottom_fits = if has_tac && tac_count <= 1 && measured_tac_floor.is_none()
     {
         para.controls
             .iter()
@@ -204,7 +208,7 @@ pub(super) fn prepare(
     TacFitPlan {
         tac_count,
         has_tac,
-        session_grown_tac_total,
+        measured_tac_floor,
         advance_before_place,
     }
 }

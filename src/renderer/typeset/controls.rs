@@ -206,7 +206,7 @@ pub(super) fn reconcile_tac_height(
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
-    session_grown_tac_total: Option<f64>,
+    measured_tac_floor: Option<f64>,
     flow: tac_flow::TacFlowQuery<'_>,
 ) {
     let dpi = flow.dpi();
@@ -267,12 +267,21 @@ pub(super) fn reconcile_tac_height(
         st.tac_height_page(),
         dpi,
     );
-    let cap = tac_reconcile::effective_cap(
-        cap,
-        ladder_total,
-        ladder_omits_spacing,
-        session_grown_tac_total,
-    );
+    let cap =
+        tac_reconcile::effective_cap(cap, ladder_total, ladder_omits_spacing, measured_tac_floor);
+    // 현재 조판한 단일 표 줄의 확정 끝점에는 바깥 여백과 후행 간격도 들어 있다.
+    // 셀 실측 본체만으로 다시 상한을 걸면 이미 예약한 물리 공간을 회수하게 된다.
+    let cap = if measured_tac_floor.is_some()
+        && para.controls.iter().any(|control| match control {
+            Control::Table(table) => {
+                flow.single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            }
+            _ => false,
+        }) {
+        cap.max(st.tac_height_page().current_height - snapped_base)
+    } else {
+        cap
+    };
     if std::env::var("RHWP_DIAG_TACCAP").is_ok() {
         eprintln!(
             "DIAG_TACCAP pi={} tac_seg_total={:.1} cap={:.1} fmt_total={:.1} sb={:.1} cur_h={:.1} snapped_base={:.1} clamp={}",

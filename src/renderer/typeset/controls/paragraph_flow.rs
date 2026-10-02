@@ -83,7 +83,7 @@ pub(in crate::renderer::typeset) fn place(
     let controls::tac_fit::TacFitPlan {
         tac_count,
         has_tac,
-        session_grown_tac_total,
+        measured_tac_floor,
         ..
     } = controls::prepare_tac_paragraph(
         st,
@@ -285,7 +285,7 @@ pub(in crate::renderer::typeset) fn place(
             measured_tables,
             tac_count,
             height_before,
-            session_grown_tac_total,
+            measured_tac_floor,
             engine.tac_flow_query(),
         );
     }
