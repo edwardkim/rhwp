@@ -619,5 +619,92 @@
     "new_tests": 0,
     "baseline_changes": 0,
     "decision": "단일 TAC 제목 원점 보정 수용. 사용자 재검토 요청에 따라20쪽 마지막 행 물리 프레임 추가 개선,21/28쪽·다른 문서·최종 전체 검증은 미완료."
+  },
+  "sample2_plain_row_frame_correction": {
+    "parent_head": "ec4d6db52",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "비병합 행의 저장 문단 내부 쪽 경계에서 첫 물리 밴드를 버리고, 종료 행의 온전한 내용 fit을 수치 상한만으로 거절하는 회계",
+    "source_geometry_hu": {
+      "opening_frame": 54589,
+      "rows_before_split": 44108,
+      "split_row": 52986,
+      "first_split_part": 10481,
+      "remaining_split_part": 42505
+    },
+    "native_target_percent": {
+      "20": 99.92951,
+      "21": 94.47593
+    },
+    "fresh_wasm_selected_percent": {
+      "20": 99.92951,
+      "21": 94.47593
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      28
+    ],
+    "native_changed_pages": [
+      20,
+      21
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm_export": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "focused_integration": {
+      "run": 116,
+      "passed": 116,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 11.767
+    },
+    "text_ownership": {
+      "20": {
+        "text_run_count_before": 190,
+        "text_run_count_after": 190,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "3a3ec21554e3ec4c9910760ff7867830bb2a165cb9223b70d4b2cb00503df249"
+      },
+      "21": {
+        "text_run_count_before": 101,
+        "text_run_count_after": 101,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "baf5ce8095c481f180289a514b0a9598722b5c37b6be3b6d56847533b5a89c36"
+      }
+    },
+    "counterexample": {
+      "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "page_count": 46,
+      "off_canvas": 1,
+      "original_off_canvas": 1,
+      "overlap": 1,
+      "original_overlap": 1
+    },
+    "rejected_candidate": {
+      "description": "첫 프레임만 복원하여 종료 행의 내용 완결 fit을 수용하지 않는 후보",
+      "page_count": 30,
+      "off_canvas": 0,
+      "overlap": 0
+    },
+    "fmt_exit": 0,
+    "wasm_build": "Mac local replacement --no-opt; exit0; 3m06s; not Docker validation",
+    "wasm_selected_visual_exit": 0,
+    "wasm_raster_pages": [
+      20,
+      21
+    ],
+    "source_code_sha256": {
+      "src/renderer/layout/table_layout.rs": "61191001ba4a04282125c1cfe906d38c0777dec423ed164c78941a06a59cd22b",
+      "src/renderer/typeset/table/scan/runner/row_step.rs": "bdff6327d4bd724df49dd45b03759ed1e9ed592cef42814d94d123c13942fb52"
+    },
+    "native_binary_sha256": "0e0833e4874b98567d95c11896c12cff3c912049d9bbf810ab677e9a186740db",
+    "wasm_binary_sha256": "75a74bfa4257fbb049dbf15cf452974eaebc6b6843e6c7cf88211189102a595a",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "사용자 요청20쪽99% 이상 개선 및21쪽90% 이상 복원. 28쪽·다른 문서 시각과 최종 전체 검증은 미완료."
   }
 }

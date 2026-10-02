@@ -15337,13 +15337,9 @@ impl LayoutEngine {
             || table.common.height > i32::MAX as u32
             || (!two_line_source_cut && !(self.row_cut_ends_at_plain_text_saved_reset(
                 table, end_row - 1, start_cut, end_cut, styles,
-            ) || (table.cells.iter().any(|cell| {
-                cell.row_span > 1
-                    && (cell.row as usize) < end_row.saturating_sub(1)
-                    && cell.row as usize + cell.row_span as usize > end_row.saturating_sub(1)
-            }) && self.row_cut_starts_intra_paragraph_stored_frame(
+            ) || self.row_cut_starts_intra_paragraph_stored_frame(
                 table, end_row - 1, end_cut, styles,
-            ))))
+            )))
         {
             return None;
         }

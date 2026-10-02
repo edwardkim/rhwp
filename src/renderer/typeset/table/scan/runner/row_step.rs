@@ -566,16 +566,37 @@ impl TypesetEngine {
                 // 상수 그대로(1741000 실측 기반), 중간 블록의 압축/이월 판별
                 // 불가(kps-ai 반증)는 말미-행 한정으로 배제한다.
                 let squeeze_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                // 실제 저장 쪽 경계의 물리 잔여 뒤에서는 종료 행의 모든 내용이
+                // 현재 쪽 밴드에 들어가면 선언 빈 공간만 다음 쪽을 만들지 않는다.
+                // 일반 종료 행의 수치 허용치를 넓히지 않고 같은 컷·안 여백을 소비한다.
+                let stored_terminal_band_fits = is_continuation
+                    && start_row_height_override.is_some()
+                    && layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                        table, cursor_row, start_cut, styles,
+                    )
+                    && squeeze_rest > 0.0
+                    && res.consumed_height + padding <= squeeze_rest
+                    && table.cells.iter().filter(|cell| cell.row as usize == r).all(|cell| {
+                        cell.paragraphs.iter().all(|para| {
+                            para.controls.is_empty()
+                                && !para.stored_text_partition_is_dirty()
+                                && !para.line_segs.is_empty()
+                                && para.line_segs.iter().all(|line| {
+                                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                })
+                        })
+                    });
                 let terminal_row_bottom_squeeze = r + 1 == row_count
                     && r > cursor_row
                     && mt.allows_row_break_split()
                     && !rowspan_touched[r]
                     && row_start_cut.is_empty()
                     && row_total > squeeze_rest + 0.5
-                    && row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
-                    && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
-                    && squeeze_rest - (res.consumed_height + padding)
-                        >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX
+                    && (stored_terminal_band_fits
+                        || (row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                            && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
+                            && squeeze_rest - (res.consumed_height + padding)
+                                >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX))
                     && !table.cells.iter().any(|cell| {
                         cell.row as usize == r
                             && cell.paragraphs.iter().any(|paragraph| {

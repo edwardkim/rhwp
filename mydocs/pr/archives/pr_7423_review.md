@@ -281,3 +281,17 @@ last_verified: 2026-10-02
 - 전쪽 변화는1쪽97.95558→96.95128,2쪽99.75557→99.76191,20쪽85.82574→92.01064이며 나머지는 유지.1쪽 PNG를 직접 대조했고 내용 순서·쪽 소속을 유지합니다. fresh WASM 선택5쪽,29쪽export이며21쪽미달로visual exit1입니다. 전쪽WASM·최종전체검증 완료로 판정하지 않습니다. Mac로컬no-opt 대체빌드(exit0,3m42s), Docker검증은 아닙니다.
 - 사용자가20쪽99%근접 개선을 요청했습니다. 마지막 기타사항 행의 물리 프레임/정렬은 후속 보정이며 제목 원점 단계 수용과 전체 승인 완료를 구분합니다.
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_single_tac_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_single_tac_native.tsv), [WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_single_tac_wasm_selected.tsv), [20쪽](../assets/planet6897_green_20261002/sample2_single_tac_p20_review.png), [#7312](../assets/planet6897_green_20261002/sample2_single_tac_7312_review.png).
+
+### 메인터너 보정 준비: 20쪽 기타사항 물리 프레임
+
+- 사용자 재검토 요청. 마지막 행 현재121.5px의 상자가 PDF보다약19px 짧고 내용도 위로 이동합니다. 원본 표 첫 상자54,589HU에서 선행 세 행44,108HU를 빼면 첫 부분행10,481HU, 원본 r3 전체52,986HU의 잔여42,505HU입니다. 내용 컷[5,5]는 오른쪽 문단 안의 양수→0 저장 쪽 재시작이며 내용 소유와 빈 물리 밴드를 구분해야 합니다.
+- 기존 첫 프레임 판정은 문단 내부 컷에 앞서 걸침 셀이 있어야만 선언 상자를 보존합니다. 비병합 행의 동일한 저장 쪽 계약과 선택 내용의 가운데 정렬을 검토합니다. 이전 광역 후보의30쪽 증가 반례를 재현해 종료 행의 fit 회계까지 확인하며,20·21쪽을 동시에 대조합니다. 절대좌표 기대값·PDF·비교기준 변경은 하지 않습니다.
+
+- 첫 프레임 후보는30쪽·용지밖0·겹침0으로 재현됐습니다. 마지막 r4의 cut 결과는fully=true, 내용470.0px+패딩3.8px이며예산474.6px 안에 모두 들어갑니다. 선언높이479.9px만 넘지만 기존 terminal squeeze의잔여100px상한·12px여유하한으로 통행 전체를 다음 쪽에 넘깁니다. 임계값을 광역 완화하지 않고, 실제 저장 문단 내부 쪽 경계에서 물리 행 잔여를 전달받은 이어받기·온전한 원본 텍스트 종료 행에서 같은 내용 fit을 수용하고 현재 쪽의 유한 밴드로 닫습니다.
+
+#### 20·21쪽 물리 프레임 최종 결과
+
+- Native/fresh WASM20쪽92.01064→99.92951%,21쪽88.03303→94.47593%. 전29쪽 TSV에서 변경은20·21쪽뿐이며 남은미달은28쪽50.63333%입니다. 29쪽일치·용지밖0·표겹침0, 기존116/116PASS(exit0,11.767초), fmt exit0. 앞 후보의30쪽 증가를 배제하고 종료 행의 내용470.0px+패딩3.8px가현재밴드478.3px 안에 완결되는 것을 수용합니다. 일반 종료행 수치 허용치는 유지합니다.
+- 두쪽 PNG를 직접 확인했고 기타사항 상자·가운데 정렬·다음쪽 내용소속을 대조했습니다.20쪽190개·21쪽101개TextRun의 내용·순서는 보정 전후 같으며 쪽 소속·누락·중복 변화가 없습니다. #6551대조군46쪽·기존용지밖1건·기존겹침1건 유지. 새검사·baseline·PDF·비교기준 변경은 없습니다.
+- fresh WASM 선택2쪽은Native와동일(exit0),전29쪽export/선택2쪽raster입니다. Mac로컬no-opt 대체빌드(exit0,3m06s)이며Docker검증·전쪽WASM·최종전체검증 완료로 판정하지 않습니다.28쪽과 다른문서·최종전체검증은후속필수게이트입니다.
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_plain_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_plain_frame_native.tsv), [WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_plain_frame_wasm_selected.tsv), [20쪽](../assets/planet6897_green_20261002/sample2_plain_frame_p20_review.png), [21쪽](../assets/planet6897_green_20261002/sample2_plain_frame_p21_review.png).
