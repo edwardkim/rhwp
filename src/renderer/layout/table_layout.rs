@@ -15310,6 +15310,7 @@ impl LayoutEngine {
             // 종료 컷보다 앞에서 완결된 제목 병합은 이어받는 행의 소유를 바꾸지 않는다.
             || (!two_line_source_cut && table.cells.iter().any(|cell| {
                 if cell.row_span <= 1
+                    || cell.row as usize >= end_row
                     || cell.row as usize + cell.row_span as usize <= end_row.saturating_sub(1)
                 {
                     return false;
@@ -15322,7 +15323,15 @@ impl LayoutEngine {
                     + hwpunit_to_px(table.cell_spacing as i32, self.dpi) * f64::from(cell.row);
                 let units = self.cell_units(cell, table, styles);
                 let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
-                cell.row as usize >= end_row.saturating_sub(1)
+                // 컷 행에서 시작한 병합도 선언이 원본 행합과 같고 라벨이
+                // 첫 프레임 안에 완결되면 이후 내용 컷의 소유를 바꾸지 않는다.
+                let span_end = cell.row as usize + cell.row_span as usize;
+                let opening_span_disagrees = cell.row as usize == end_row.saturating_sub(1)
+                    && (span_end > rows.len()
+                        || rows.iter().skip(cell.row as usize).take(cell.row_span as usize)
+                            .map(|height| u64::from(*height)).sum::<u64>() != u64::from(cell.height));
+                cell.row as usize > end_row.saturating_sub(1)
+                    || opening_span_disagrees
                     || cell.paragraphs.iter().any(|para| !para.controls.is_empty()
                         || para.stored_text_partition_is_dirty()
                         || para.line_segs.is_empty()

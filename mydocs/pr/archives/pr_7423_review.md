@@ -295,3 +295,18 @@ last_verified: 2026-10-02
 - 두쪽 PNG를 직접 확인했고 기타사항 상자·가운데 정렬·다음쪽 내용소속을 대조했습니다.20쪽190개·21쪽101개TextRun의 내용·순서는 보정 전후 같으며 쪽 소속·누락·중복 변화가 없습니다. #6551대조군46쪽·기존용지밖1건·기존겹침1건 유지. 새검사·baseline·PDF·비교기준 변경은 없습니다.
 - fresh WASM 선택2쪽은Native와동일(exit0),전29쪽export/선택2쪽raster입니다. Mac로컬no-opt 대체빌드(exit0,3m06s)이며Docker검증·전쪽WASM·최종전체검증 완료로 판정하지 않습니다.28쪽과 다른문서·최종전체검증은후속필수게이트입니다.
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_plain_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_plain_frame_native.tsv), [WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_plain_frame_wasm_selected.tsv), [20쪽](../assets/planet6897_green_20261002/sample2_plain_frame_p20_review.png), [21쪽](../assets/planet6897_green_20261002/sample2_plain_frame_p21_review.png).
+
+### 메인터너 보정 준비: 28쪽 시작 병합 라벨의 물리 잔여
+
+- 마지막 미달28쪽50.63333%. pi207/r14 원시높이23,607HU,첫상자74,405HU−선행행63,595HU=첫부분10,810HU,잔여12,797HU(170.627px)입니다. 현재 시작행은약한글줄 높이만큼짧아뒤행 전체가위로이동합니다. 내용컷[2,4,8,1]의우측본문은원본문단 내부vpos9,100→0쪽경계이고소유는변경하지않습니다.
+- 총자산 라벨은컷행에서18행걸침으로시작하며 선언72,792HU가동일범위원시행합과일치하고 실제한줄내용은첫상자에완결됩니다. 첫프레임 helper가컷행에서시작한걸침셀을일괄거절해 물리잔여전달을막습니다. 원본병합선언=행합·유효범위·전체라벨내용의첫프레임포함을검증해같은저장프레임계약을공유하고,27·28쪽의내용순서/소속과전29쪽·기존회귀·freshWASM을대조합니다.
+
+- 시작 병합 선언을 검증한 첫 후보는29쪽·용지밖0·겹침0이나28쪽50.63333%로변화없습니다. helper가현재첫프레임과교차하지않는뒤행의병합셀까지검사해거절하는 것을 추가확인했습니다. 뒤프레임에서시작하는셀은현재첫상자소유판정에서제외하고,실제경계를가로지르는라벨의선언/전체내용계약만대조합니다. 첫후보를수용하지않습니다.
+
+#### 28쪽 보정과 현재 전체 검증 결과
+
+- Native 전29쪽 비교 완료(exit0): 최저13쪽92.22927%, 90% 미만0쪽. 변경은27쪽98.26175→99.56009%,28쪽50.63333→99.91253%뿐입니다. 29쪽·용지 밖0건·표 겹침0건, 두 쪽의 TextRun 153개·93개 내용과 순서가 같습니다. 27·28쪽 PNG를 직접 대조했습니다.
+- 현재 후보 전체 nextest:10,281개 중10,254PASS/27FAIL/50SKIP(exit100,556.165초). 셀/본문/개체 용지 밖·텍스트 겹침·시험지 및 중첩 표 쪽 소속 등이 실패했습니다. 직전7a71a3ee3을 실제 재빌드하여 실패 원본4종을 대조한 쪽수/용지 밖/표 겹침 수는 이번 후보와 같았습니다. 이는4종의 문제만 이번28쪽 변경 전에 있었다는 근거이며,27개 실패 전부의 원인을 배제한 결과는 아닙니다.
+- #6551 대조군46쪽·기존 용지 밖1건·겹침1건 유지. fmt 및diff check exit0. 전체 문서 metadata는4문서 필수항목 누락16건(exit1)으로 별도 제출 차단입니다. 검사·baseline·PDF·비교 임계값은 변경하지 않았습니다. fresh WASM 전29쪽 비교는Native와모든점수가같고최저92.22927%,미달0쪽(exit0)입니다. Native root·workspace all-target·WASM32 Clippy와suite manifest 모두exit0입니다. Mac로컬no-opt대체빌드이며Docker검증은아닙니다. 전체회귀27FAIL/metadata16건및다른문서시각보류로통합PR준비는보류입니다.
+
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_crossing_span_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_crossing_span_native.tsv), [fresh WASM 전쪽 TSV](../assets/planet6897_green_20261002/sample2_crossing_span_wasm.tsv), [27쪽](../assets/planet6897_green_20261002/sample2_crossing_span_p27_review.png), [28쪽](../assets/planet6897_green_20261002/sample2_crossing_span_p28_review.png). 실루엣 수치는2px허용 보조값이며 엄밀한 픽셀 일치율로 해석하지 않습니다.
