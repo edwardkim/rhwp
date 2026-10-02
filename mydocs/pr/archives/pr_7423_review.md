@@ -332,3 +332,6 @@ last_verified: 2026-10-02
 
 - 사용자 지시에 따라 저장소 전수가 아니라 이 브랜치의 추가·수정 검사와 실제 차단만 먼저 다룹니다. #7063 첫/이어받기/위 여백0 대조의89.91·39.64·37.76px 정답 핀을 제거했습니다. 같은 세 함수에서 원본 PageDef·host LineSeg·outMargin.top을 독립 입력으로 읽고, 이어받는 쪽에 이전 host 거리를 반복하지 않는 관계를 검사합니다. HU/96DPI 환산과 기존 반올림 허용은 유지하며 구현 helper의 계산값을 정답으로 재인용하지 않습니다.
 - 기존 검사3개만 교정, 신규0개·renderer/baseline 변경0건. nextest3PASS/0FAIL(exit0), 해당suite Clippy·fmt·diff check exit0입니다. sample2 리베이스 전Native/fresh WASM 전29쪽최저92.22927% 증적을 연결하며 최신전수재검증완료로쓰지않습니다. 나머지브랜치px후보는독립기대값·시각증적확인후한단계씩교정합니다. [교정검증기록과잔존후보](../assets/planet6897_green_20261002/branch_pixel_contract_7063_validation.json).
+
+
+- #7095 기존2건의 절대 아래끝1022.99·1020.27·1007.63px 핀을 원본 용지/본문/표 바깥 아래 여백 관계로 교정했습니다. 넘친 조각은본문 경계 안에 가시 글줄을 담고, 짧은 조각은 경계까지 늘리지 않습니다. nextest2PASS/0FAIL·suite Clippy exit0, 신규검사0·renderer변경0. 독립7쪽 Native/fresh WASM 최저97.74445%의 이전증적을연결하며최신전수완료로쓰지않습니다. [교정기록](../assets/planet6897_green_20261002/branch_pixel_contract_7095_validation.json).

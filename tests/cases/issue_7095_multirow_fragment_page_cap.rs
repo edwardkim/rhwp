@@ -46,7 +46,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 const SAMPLE: &str = "samples/issue7336/stored_frame_page_larger_rowbreak.hwpx";
 
 /// 본문 최상위 표(칸 안 중첩 표 제외)의 아래끝.
-fn top_level_table_bottom(sample: &str, page_index: u32, para_index: usize) -> f64 {
+fn fragment_bounds(sample: &str, page_index: u32, para_index: usize) -> (f64, f64, f64) {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
     let bytes = std::fs::read(&path).expect("재현물 읽기");
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
@@ -68,35 +68,62 @@ fn top_level_table_bottom(sample: &str, page_index: u32, para_index: usize) -> f
             .find_map(|child| find(child, para_index, inside))
     }
     let table = find(&root, para_index, false).expect("대상 표 — 시험 설정");
-    table.bbox.y + table.bbox.height
+    let section = &core.document().sections[0];
+    let page = &section.section_def.page_def;
+    let rhwp::model::control::Control::Table(source) = &section.paragraphs[para_index].controls[0]
+    else {
+        panic!("원본 표 — 시험 설정");
+    };
+    // 본문과 표 바깥 아래 여백은 원본 HU로 계산한다. PDF 실측 좌표를 동결하지 않는다.
+    let cap_hu = f64::from(page.height)
+        - f64::from(page.margin_bottom)
+        - f64::from(page.margin_footer)
+        - f64::from(source.outer_margin_bottom);
+    fn last_visible_line(node: &RenderNode) -> Option<f64> {
+        let own = (node.visible && matches!(node.node_type, RenderNodeType::TextLine(_)))
+            .then_some(node.bbox.y + node.bbox.height);
+        own.into_iter()
+            .chain(node.children.iter().filter_map(last_visible_line))
+            .max_by(f64::total_cmp)
+    }
+    (
+        table.bbox.y + table.bbox.height,
+        cap_hu * 96.0 / 7200.0,
+        last_visible_line(table).expect("조각의 가시 글줄"),
+    )
 }
 
-/// ① 상한을 넘는 다행 조각은 쪽 상한까지 접힌다.
+/// 넘친 조각은 본문과 바깥 아래 여백의 경계 안에 있고 내용을 자르지 않는다.
 #[test]
 fn a_multirow_fragment_past_the_page_cap_is_folded_to_it() {
-    for (page_index, before) in [(1u32, 1037.30_f64), (4, 1029.50)] {
-        let bottom = top_level_table_bottom(SAMPLE, page_index, 3);
+    for page_index in [1, 4] {
+        let (bottom, cap, content_bottom) = fragment_bounds(SAMPLE, page_index, 3);
         assert!(
-            (bottom - 1022.99).abs() <= 2.0,
-            "① {}쪽 조각 상자 아래는 한/글 정본(1022.99px) 2px 안이어야 한다 \
-             (수정 전 {before:.2}): {bottom:.2}",
+            bottom <= cap + 0.5,
+            "{}쪽 조각 아래 {bottom}가 원본 본문/바깥 여백 경계 {cap}를 넘음",
+            page_index + 1
+        );
+        assert!(
+            content_bottom <= bottom + 0.5,
+            "{}쪽 조각의 글줄 아래 {content_bottom}가 표 아래 {bottom}에서 잘림",
             page_index + 1
         );
     }
 }
 
-/// ② 상한 안에서 끝나는 조각은 건드리지 않는다.
-///
-/// 상한을 **무조건** 적용하면 내용이 먼저 끝난 짧은 조각이 상한까지 늘어난다. 이 두 쪽은
-/// 정본이 각각 1020.27 · 1007.63 에서 끝나고 rhwp 도 이미 0.05px 안에서 맞는다.
+/// 짧은 조각은 자기 내용을 담고 쪽 하단의 빈 공간을 그대로 남긴다.
 #[test]
 fn a_fragment_that_ends_before_the_cap_is_left_alone() {
-    for (page_index, oracle) in [(2u32, 1020.27_f64), (3, 1007.63)] {
-        let bottom = top_level_table_bottom(SAMPLE, page_index, 3);
+    for page_index in [2, 3] {
+        let (bottom, cap, content_bottom) = fragment_bounds(SAMPLE, page_index, 3);
         assert!(
-            (bottom - oracle).abs() <= 2.0,
-            "② {}쪽 조각은 상한(1022.99) 전에 끝나므로 정본({oracle:.2}px) 자리를 지켜야 한다: \
-             {bottom:.2}",
+            bottom < cap - 0.5,
+            "{}쪽 짧은 조각 아래 {bottom}를 원본 쪽 경계 {cap}까지 늘림",
+            page_index + 1
+        );
+        assert!(
+            content_bottom <= bottom + 0.5,
+            "{}쪽 짧은 조각의 내용 아래 {content_bottom}가 표 아래 {bottom}에서 잘림",
             page_index + 1
         );
     }
