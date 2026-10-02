@@ -19,6 +19,27 @@ fn inline_format_tag(tag_lower: &str) -> Option<(&str, bool)> {
     matches!(name, "span" | "b" | "strong" | "i" | "em" | "u").then_some((name, closing))
 }
 
+/// 인라인 구간 끝까지 닫히지 않은 서식 여는 태그들을 순서대로 이어 돌려준다.
+fn open_format_tags(run: &str) -> String {
+    let mut open: Vec<(String, &str)> = Vec::new();
+    for (start, _) in run.match_indices('<') {
+        let Some(end) = run[start..].find('>') else {
+            break;
+        };
+        let tag = &run[start..=start + end];
+        match inline_format_tag(&tag.to_lowercase()) {
+            Some((name, true)) => {
+                if let Some(i) = open.iter().rposition(|(open, _)| open == name) {
+                    open.truncate(i);
+                }
+            }
+            Some((name, false)) => open.push((name.to_string(), tag)),
+            None => {}
+        }
+    }
+    open.into_iter().map(|(_, tag)| tag).collect()
+}
+
 impl DocumentCore {
     pub fn paste_html_native(
         &mut self,
@@ -694,13 +715,16 @@ impl DocumentCore {
                     pos = li_end;
                     continue;
                 } else if tag_lower.starts_with("<br") {
-                    // <br> → 문단 구분
-                    if !pending_text.is_empty() {
-                        self.flush_inline_run(&mut paragraphs, &mut pending_text);
-                    } else {
-                        // 빈 문단 추가
+                    // <br> → 문단 구분. 서식 태그만 든 구간(<b><br></b>)도 빈 줄이다.
+                    let blank = pending_text.is_empty() || pending_text.contains('<');
+                    let reopen = open_format_tags(&pending_text);
+                    let before = paragraphs.len();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
+                    if blank && paragraphs.len() == before {
                         paragraphs.push(Paragraph::default());
                     }
+                    // <b>가<br>나</b> 의 "나" 도 굵게 남도록 열린 서식을 다음 줄에 다시 연다.
+                    pending_text = reopen;
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("<span") {
@@ -1048,12 +1072,10 @@ impl DocumentCore {
             }
         }
 
-        // font-weight
-        let is_bold = css_lower.contains("font-weight:bold")
-            || css_lower.contains("font-weight: bold")
-            || css_lower.contains("font-weight:700")
-            || css_lower.contains("font-weight: 700");
-        cs.bold = is_bold;
+        // font-weight — 안쪽 요소의 값이 앞에 오므로 처음 찾은 값을 따른다.
+        // GitHub 등은 <strong> 을 600 으로 쓰므로 600 이상을 굵게 본다.
+        cs.bold = parse_css_value(&css_lower, "font-weight")
+            .is_some_and(|w| w.starts_with("bold") || w.parse::<u16>().is_ok_and(|n| n >= 600));
 
         // font-style
         let is_italic =
