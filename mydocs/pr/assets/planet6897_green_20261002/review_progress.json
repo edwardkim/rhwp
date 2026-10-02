@@ -110,7 +110,7 @@
       }
     ]
   },
-  "merge_decision": "보류. 최종 전체 nextest와 Native/fresh WASM 및 영향 문서 전체 시각 검증은 완료되지 않음. 새 통합 PR/push/merge 없음.",
+  "merge_decision": "보류. 최초33개 개별 처리 후 전체 재실행에서 새17개 실패. 정상 글꼴 환경 정책연구216/PDF215쪽. 개별 보정과 최종 전체 검증 필요.",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -121,5 +121,14 @@
       "page3_after": 97.64619,
       "evidence": "issue2004_stored_gap_evidence.json"
     }
+  },
+  "corrected_full_run": {
+    "head": "d2ef8693a",
+    "run": 10281,
+    "passed": 10264,
+    "failed": 17,
+    "skipped": 50,
+    "exit_code": 100,
+    "evidence": "nextest_corrected_d2ef8693a.json"
   }
 }
