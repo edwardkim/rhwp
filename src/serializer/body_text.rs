@@ -24,6 +24,16 @@ use crate::parser::tags;
 
 /// Section을 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_section(section: &Section) -> Vec<u8> {
+    serialize_section_inner(section, None)
+}
+
+/// FileHeader에 실제 기록할 버전으로 새 문단 헤더를 완성한다.
+/// version은 FileHeader[32..36]의 little-endian UINT32다.
+pub(crate) fn serialize_section_for_version(section: &Section, version: u32) -> Vec<u8> {
+    serialize_section_inner(section, Some(version))
+}
+
+fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
     // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립).
     //
     // [#4488] 다만 공개 모델 직접 변경은 raw_stream 을 무효화하지 않으므로,
@@ -93,6 +103,17 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
         serialize_memo_tail(section, &memo_lists, &mut records);
     }
     serialize_master_page_tail(section, &mut records);
+    // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
+    // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
+    // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
+    if version.is_some_and(|v| v >= 0x0500_0302) {
+        for record in &mut records {
+            if record.tag_id == tags::HWPTAG_PARA_HEADER && record.data.len() == 22 {
+                record.data.extend_from_slice(&0u16.to_le_bytes());
+                record.size = record.data.len() as u32;
+            }
+        }
+    }
     write_records(&records)
 }
 
@@ -288,7 +309,7 @@ fn serialize_paragraph_with_msb(
     let actual_char_count = if let Some(ref td) = text_data {
         (td.len() / 2) as u32
     } else {
-        para.char_count.min(1)
+        1
     };
 
     // [#5961] 저장 lineseg 의 `textpos` 를 **HWP5 문단 축으로 올려서** 내보낸다.
@@ -548,9 +569,9 @@ fn serialize_para_header_with_mask(
         let extra = &para.raw_header_extra[6..];
         w.write_bytes(extra).unwrap();
     } else {
-        // 새 문단 (HWPX 출처, raw_header_extra 없음): instanceId(4)만 기록.
-        // 한컴 정답지 footnote-01.hwp 의 PARA_HEADER size=22 = 18 (heading) + 4 (instanceId).
-        // 변경추적 UINT16 (size=24 형식) 은 한컴 정답지에 미사용.
+        // 새 문단: 공통 instanceId만 기록한다. 변경추적 UINT16은 섹션의
+        // 레코드를 인코딩하기 전에 실제 출력 FileHeader 버전에 맞춰 추가한다.
+        // footnote-01.hwp의 22바이트 헤더는 5.0.3.0 형식이다.
         w.write_u32(0).unwrap();
     }
 

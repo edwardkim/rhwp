@@ -1,0 +1,311 @@
+{
+  "source_sha": "f72725ac240aa6a7d1845313a62df3a9ddc80101",
+  "runtime_diff_sha256": "04d8650632b2c2c7930776f77db2c7c3d8792a47da3f179b4bd110f07d3d4d28",
+  "test_diff_sha256": "541b4e4c5fe02f38df4b2b81ce0eb19b41dae768c4416e9c4879ff6ceb65bccf",
+  "files": {
+    "src/renderer/float_placement.rs": "03de833d319b3d2fc88b32a7a4e103cf2a0a4f608bf743faa93ba81802df8f05",
+    "src/renderer/height_measurer.rs": "9a923e22aa7978eed9d1d4a07b024542beccc1c756c2d9c79b08cae9aa9539d9",
+    "src/renderer/layout/table_layout.rs": "9330d445c1e223527fad7cb4efab7bf4292ce11f7469f34b62355965e096d0c2",
+    "src/renderer/layout/table_partial.rs": "2d1344f2fbe2ac2119b717e035f81b89478f0f231079c5a0bf319cf99d302520",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "cad8d297abded9036f9aaf3646cd2d4db5da6a5140e51284007b9f7bcf77c7ad",
+    "tests/cases/issue_6782_cell_float_offset_outside_cell.rs": "0f3617d7a1ea034bcf00e1ec72c9faa04a1571280a53ac0829482f2845a81184"
+  },
+  "final_test_diff_sha256": "5cda190d4ebd2099f9cc59bfe1294be1c24a02099031aa2c2400d0f815aadacb",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "immutable_cli_sha256": "1129c5d53fb7e5360449caa15ed4c715a52c26ef529b53725509819da372d0f7",
+  "before_original": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 0.218,
+    "cause": "오른쪽 지도87.08px vs 독립95.096029px"
+  },
+  "initial_after_original": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.261
+  },
+  "expanded": {
+    "total": 126,
+    "passed": 124,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 4.696,
+    "threads": 8,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_023",
+      "--test",
+      "regression_suite_026",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5833_cell_multi_para_float_pics) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6313_cell_picture_own_displacement) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6782_cell_float_full_original)"
+    ],
+    "failed_tests": [
+      "cell_picture_bottom_caption_has_one_owner",
+      "japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom"
+    ],
+    "classification": "캡션 중복과 보정 전후 동일한 일본 마크 위치는 개별 후속 보정 대상"
+  },
+  "partial_counter": {
+    "passed": 1,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.448,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_022",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(continued_centered_image_uses_the_reserved_forward_space)"
+    ],
+    "variants": [
+      -187,
+      0,
+      187
+    ],
+    "scope": "원본103쪽 문서의 실제 이어받기 조각을 수동 IR로 변형; 물리 중앙 정렬 불변식·그림12개 보존",
+    "pre_fix_run": "미실행; 수정 전 결함 검출 증거로 세지 않는 수정 후 경계 대조"
+  },
+  "original_partial_plan": {
+    "bodyArea": {
+      "height": 895.7333333333333,
+      "width": 604.72,
+      "x": 94.49333333333334,
+      "y": 132.28
+    },
+    "columns": [
+      {
+        "hwpUsedHeight": null,
+        "index": 0,
+        "itemCount": 1,
+        "items": [
+          {
+            "controlIndex": 0,
+            "endCut": [],
+            "endRow": 14,
+            "endnoteSource": null,
+            "isContinuation": true,
+            "isEndnote": false,
+            "kind": "partialTable",
+            "lineSegs": {
+              "count": 1,
+              "first": {
+                "baselineDistance": 1105,
+                "columnStart": 0,
+                "lineHeight": 1300,
+                "lineSpacing": 780,
+                "segmentWidth": 0,
+                "textHeight": 1300,
+                "textStart": 0
+              },
+              "last": {
+                "baselineDistance": 1105,
+                "columnStart": 0,
+                "lineHeight": 1300,
+                "lineSpacing": 780,
+                "segmentWidth": 0,
+                "textHeight": 1300,
+                "textStart": 0
+              }
+            },
+            "paraIndex": 118,
+            "startCut": [],
+            "startRow": 3,
+            "table": {
+              "colCount": 4,
+              "rowCount": 14
+            },
+            "vpos": {
+              "first": 51320,
+              "last": 51320,
+              "resets": [],
+              "rewinds": []
+            }
+          }
+        ],
+        "usedDiff": null,
+        "usedHeight": 840.1999999999999,
+        "zoneYOffset": 0.0
+      }
+    ],
+    "displayPage": 77,
+    "extras": [],
+    "pageIndex": 76,
+    "pageNumber": 55,
+    "section": 4
+  },
+  "policies": {
+    "fmt": 0,
+    "manifest": 0,
+    "unit": 0,
+    "static_test_attrs": 6211,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "cli_build": {
+    "command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "exit_code": 0,
+    "duration": "1m21s"
+  },
+  "visual": {
+    "hwpx": {
+      "pages": [
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        98.39093,
+        99.76685,
+        94.5134,
+        90.37937,
+        99.61877,
+        90.85432,
+        99.9168
+      ],
+      "directly_read_review_overlay_pages": [
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "exit_code": 0,
+      "page_count": [
+        215,
+        215
+      ],
+      "remaining": "23쪽 캡션 중복,14쪽 그림11 위치 차이; 점수 통과가 의미 충족은 아님"
+    },
+    "hwp": {
+      "pages": [
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        98.39093,
+        99.76685,
+        96.29076,
+        91.00235,
+        99.61877,
+        90.85432,
+        99.9168
+      ],
+      "directly_read_review_overlay_pages": [
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "exit_code": 0,
+      "page_count": [
+        215,
+        215
+      ],
+      "remaining": "23쪽 캡션 중복,14쪽 그림11 위치 차이; 점수 통과가 의미 충족은 아님"
+    }
+  },
+  "visual_commands": {
+    "hwpx": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage31-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage31-after-hwpx-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "11,12,13,14,23,68,210"
+    ],
+    "hwp": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage31-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage31-after-hwp-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "11,12,13,14,23,68,210"
+    ]
+  },
+  "snapshot_boundary": "시각 캡처 뒤 이어받기 반례 검사만 추가했다. 검증한 runtime4파일/diff 해시는 동일하며 CLI와 캡처는 재사용된 중간 source+diff 증거다. 최종 exact head 증거가 아니다.",
+  "english_added_explanatory_comments": 0,
+  "remaining": [
+    "셀 그림 캡션 중복",
+    "14쪽 그림11",
+    "기존 일본 마크 위치",
+    "최신215쪽 전수/fresh WASM",
+    "보정16 실제 TABLE 편집 반례",
+    "보정27 실제 분할·이월",
+    "최종 전체 nextest/lint/Skia"
+  ]
+}

@@ -1,4 +1,4 @@
-//! Flow reservation helpers for non-inline floating objects.
+//! 부동 개체의 흐름 예약과 실제 배치가 함께 쓰는 프레임.
 
 use std::ops::Range;
 
@@ -17,17 +17,843 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
-/// 문단 상대 자리차지 개체의 확정된 세로 배치. 모든 값은 단 상대 px다.
+/// 자리차지 개체가 흐름에 추가하는 문단 기준 앞 공간.
+/// 음수 오프셋은 앞 공간을 만들지 않는다. 셀의 가운데 정렬도 이 점유 프레임을
+/// 소비하므로 음수 저장값을 별도의 정렬 이동으로 다시 적용하지 않는다.
+pub(crate) fn topbottom_flow_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
+    signed_hwpunit(common.vertical_offset).max(0)
+}
+
+/// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
+/// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
+/// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.
+/// 빈 줄도 포함하며, 편집·재조판·개체·되감김은 이 계약의 입력으로 받지 않는다.
+pub(crate) fn stored_hwpx_no_adjust_cell_content_end(
+    cell: &crate::model::table::Cell,
+    table: &Table,
+    dpi: f64,
+    hwpx_stored: bool,
+    session_edited: bool,
+    text_reflowed: bool,
+    padding_in_stored_frame: bool,
+) -> Option<f64> {
+    if !padding_in_stored_frame
+        || !hwpx_stored
+        || session_edited
+        || text_reflowed
+        || table.raw_table_record_attr & 0x08 == 0
+        || cell.text_direction != 0
+        || cell.paragraphs.is_empty()
+    {
+        return None;
+    }
+    let mut previous = None;
+    let mut end = 0i64;
+    for (pi, para) in cell.paragraphs.iter().enumerate() {
+        if !para.controls.is_empty() || para.line_segs.is_empty() {
+            return None;
+        }
+        for (li, seg) in para.line_segs.iter().enumerate() {
+            if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || seg.vertical_pos < 0
+                || seg.line_height <= 0
+                || (previous.is_none() && seg.vertical_pos != 0)
+                || (previous.is_some()
+                    && (seg.is_first_line_of_page() || seg.is_first_line_of_column()))
+                || previous.is_some_and(|pos| {
+                    seg.vertical_pos < pos || (pi > 0 && li == 0 && seg.vertical_pos == pos)
+                })
+            {
+                return None;
+            }
+            previous = Some(seg.vertical_pos);
+            end = end.max(i64::from(seg.vertical_pos) + i64::from(seg.line_height));
+        }
+    }
+    i32::try_from(end).ok().map(|hu| hwpunit_to_px(hu, dpi))
+}
+
+/// 그림 띠 뒤의 빈 마지막 줄을 담는 원본 셀 프레임.
+/// 그림들은 같은 띠의 원점에서 움직이며 각 그림 높이로 원점을 따로 역산하지 않는다.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct StoredEmptyPictureCellFrame {
+    pub line_offset_hu: i32,
+    pub picture_band_origin_hu: i32,
+    pub content_height_hu: i32,
+}
+
+pub(crate) fn stored_empty_picture_cell_frame(
+    cell: &crate::model::table::Cell,
+    table: &Table,
+) -> Option<StoredEmptyPictureCellFrame> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::table::VerticalAlign;
+    if cell.row_span != 1
+        || cell.text_direction != 0
+        || cell.vertical_align != VerticalAlign::Bottom
+    {
+        return None;
+    }
+    let [para] = cell.paragraphs.as_slice() else {
+        return None;
+    };
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if !para.text.trim().is_empty()
+        || para.column_type != crate::model::paragraph::ColumnBreakType::None
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.controls.is_empty()
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos <= 0
+        || line.line_height <= 0
+    {
+        return None;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    let tail_height = line
+        .line_height
+        .checked_add(i32::from(padding.top))?
+        .checked_add(i32::from(padding.bottom))?;
+    let row_height = table
+        .cells
+        .iter()
+        .filter(|other| other.row == cell.row && other.row_span == 1)
+        .map(|other| signed_hwpunit(other.height))
+        .max()?;
+    // 빈 셀의 선언 높이는 마지막 줄과 안 여백이며, 저장 줄 위치까지 더하면 행을 닫는다.
+    if padding.top < 0
+        || padding.bottom < 0
+        || signed_hwpunit(cell.height) != tail_height
+        || line.vertical_pos.checked_add(tail_height)? != row_height
+    {
+        return None;
+    }
+    let mut picture_band_end = 0;
+    let mut has_flow_picture = false;
+    for control in &para.controls {
+        let Control::Picture(picture) = control else {
+            return None;
+        };
+        let common = &picture.common;
+        let offset = signed_hwpunit(common.vertical_offset);
+        if common.treat_as_char
+            || !common.flow_with_text
+            || picture.caption.is_some()
+            || common.vert_rel_to != VertRelTo::Para
+            || common.vert_align != VertAlign::Top
+            || !matches!(
+                common.text_wrap,
+                TextWrap::TopAndBottom | TextWrap::InFrontOfText
+            )
+            || offset < 0
+            || signed_hwpunit(common.height) <= 0
+            || common.margin.top != 0
+            || common.margin.bottom != 0
+        {
+            return None;
+        }
+        has_flow_picture |= common.text_wrap == TextWrap::TopAndBottom;
+        picture_band_end = picture_band_end.max(offset.checked_add(signed_hwpunit(common.height))?);
+    }
+    if !has_flow_picture || picture_band_end > line.vertical_pos {
+        return None;
+    }
+    Some(StoredEmptyPictureCellFrame {
+        line_offset_hu: line.vertical_pos,
+        picture_band_origin_hu: line.vertical_pos - picture_band_end,
+        content_height_hu: line.vertical_pos.checked_add(line.line_height)?,
+    })
+}
+
+/// 내용 유닛을 소비하지 않는 시작 행의 물리 공간과 이어받는 행의 요구 높이.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct StoredEmptyOpeningRowFrame {
+    pub opening_height: f64,
+    pub continuation_height: f64,
+}
+
+/// 빈 문단의 원본 어울림 형제 표가 공유하는 저장 호스트 프레임.
+/// 음수 세로 오프셋은 같은 저장 줄에 놓인 형제의 별도 상단이 아니다.
+/// 한컴 단일 속성 대조군에서 이를 0으로 바꿔도 전체 텍스트/그림 배치는 같다.
+pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
+    if !para.text.trim().is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.controls.len() < 2
+        || !matches!(para.line_segs.as_slice(), [line]
+            if line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos > 0 && line.line_height > 0)
+    {
+        return false;
+    }
+    para.controls.iter().all(|control| {
+        matches!(control, Control::Table(t)
+        if !t.common.treat_as_char && t.common.flow_with_text
+            && t.caption.is_none()
+            && signed_hwpunit(t.common.width) > 0 && signed_hwpunit(t.common.height) > 0
+            && t.common.text_wrap == TextWrap::Square
+            && t.common.vert_rel_to == VertRelTo::Para
+            && t.common.vert_align == VertAlign::Top
+            && t.common.horz_rel_to == HorzRelTo::Column
+            && t.common.horz_align == HorzAlign::Left
+            && signed_hwpunit(t.common.horizontal_offset) >= 0
+            && t.cells.iter().all(|cell| cell.paragraphs.iter().all(|p|
+                !p.stored_text_partition_is_dirty() && !p.cell_format_vpos_dirty)))
+    })
+}
+
+/// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
+/// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
+pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {
+    !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && para.text.is_empty()
+        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && matches!(para.line_segs.as_slice(), [line] if line.segment_width == 0 && line.tag & 0x8000_0000 == 0)
+}
+
+pub(crate) fn block_table_caption_host_spacing_px(
+    para: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> f64 {
+    if object_only_saved_table_anchor(para, table) {
+        0.0
+    } else {
+        para.line_segs
+            .first()
+            .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, dpi))
+    }
+}
+
+/// 바깥 여백은 셀 열 수와 무관하게 개체 프레임에 속한다.
+/// 이미 결정된 배치 원점과 중첩 프레임은 호출자가 처리한다.
+pub(crate) fn column_rowbreak_fragment_opens_outer_top(
+    hwpx_stored: bool,
+    native_host: Option<&Paragraph>,
+    table: &Table,
+    is_continuation: bool,
+    start_row: usize,
+    start_cut: &[usize],
+    starts_at_column_top: bool,
+) -> bool {
+    // 빈 저장 앵커와 표제 아래에 열리는 표는 같은 개체 프레임이다.
+    // 표제의 쪽나눔 유무는 Para 앵커가 소유하는 바깥 여백을 바꾸지 않는다.
+    // 표제의 글줄 잉크와 표의 바깥 여백은 별도로 소유하며 캡션 간격도 별도로 계산한다.
+    let native_object_frame = native_host.is_some_and(|para| {
+        if object_only_saved_table_anchor(para, table) {
+            return true;
+        }
+        let [line] = para.line_segs.as_slice() else {
+            return false;
+        };
+        para_has_non_whitespace_text(para)
+            && matches!(para.controls.as_slice(), [Control::Table(_)])
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && line.vertical_pos >= 0
+            && line.line_height > 0
+            && table.common.vert_rel_to == VertRelTo::Para
+            && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+            && signed_hwpunit(table.common.vertical_offset) >= line.line_height
+    });
+    // 저장 앵커가 첫 글줄 안에서 시작하면 그 글줄이 표 위 여백을 이미 소유한다.
+    // 독립된 본문 밴드 뒤에서 시작하는 앵커만 첫 조각과 다음 쪽에 여백을 연다.
+    let para_anchor_below_first_line = native_host.is_some_and(|host| {
+        object_only_saved_table_anchor(host, table)
+            && host
+                .line_segs
+                .first()
+                .is_some_and(|line| line.vertical_pos >= line.line_height)
+    });
+    (hwpx_stored || native_object_frame)
+        && !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && (table.common.horz_rel_to == HorzRelTo::Column
+            || (hwpx_stored
+                && table.common.horz_rel_to == HorzRelTo::Para
+                && table.common.vert_rel_to == VertRelTo::Para
+                && para_anchor_below_first_line))
+        && table.page_break == TablePageBreak::RowBreak
+        && table.outer_margin_top > 0
+        && ((!is_continuation && start_row == 0 && start_cut.is_empty())
+            || (is_continuation
+                && starts_at_column_top
+                && (table.common.horz_rel_to == HorzRelTo::Column
+                    || (hwpx_stored
+                        && native_host.is_some_and(|host| {
+                            !host.stored_text_partition_is_dirty()
+                                && !host.cell_format_vpos_dirty
+                                && !host.line_segs.is_empty()
+                        })))))
+}
+
+pub(crate) fn column_rowbreak_caption_outer_spacing_px(
+    fragment_opens_outer_margin: bool,
+    para: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> f64 {
+    if fragment_opens_outer_margin
+        && object_only_saved_table_anchor(para, table)
+        && table.caption.as_ref().is_some_and(|caption| {
+            matches!(
+                caption.direction,
+                crate::model::shape::CaptionDirection::Top
+                    | crate::model::shape::CaptionDirection::Bottom
+            )
+        })
+    {
+        hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
+    } else {
+        0.0
+    }
+}
+
+/// 종료 표 조각 바로 뒤의 저장 빈 문단은 조각의 물리 하단에서 시작할 수 있다.
+/// 그 문단의 spacing_before는 이미 공유 경계에 반영되어 있으므로
+/// 쪽 나눔과 실제 배치가 같은 값을 재사용해 중복 예약하지 않는다
+/// (#7406, 39–40쪽).
+pub(crate) fn hwpx_empty_after_partial_table_shared_spacing_px(
+    hwpx_stored: bool,
+    previous_is_partial_table: bool,
+    para: &Paragraph,
+    spacing_before: f64,
+    flow_from_body_top: f64,
+    dpi: f64,
+) -> f64 {
+    if !hwpx_stored
+        || !previous_is_partial_table
+        || spacing_before <= 0.0
+        || !para.text.trim().is_empty()
+        || !para.controls.is_empty()
+    {
+        return 0.0;
+    }
+    let Some(first) = para.line_segs.first() else {
+        return 0.0;
+    };
+    if first.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return 0.0;
+    }
+    let saved_top = hwpunit_to_px(first.vertical_pos, dpi);
+    if saved_top > 0.0 && (saved_top - flow_from_body_top).abs() <= 1.0 {
+        spacing_before
+    } else {
+        0.0
+    }
+}
+
+/// 캡션이 있는 떠 있는 그림의 끝과 다음 저장 글줄의 시작이 일치할 수 있다.
+/// 이 경우 다음 문단의 앞 간격은 그림·캡션 배치 경계에 이미 포함되어 있으므로
+/// 다시 더하지 않는다.
+pub(crate) fn hwpx_after_picture_caption_shared_spacing_px(
+    hwpx_stored: bool,
+    previous: Option<&Paragraph>,
+    para: &Paragraph,
+    spacing_before: f64,
+    flow_from_body_top: f64,
+    dpi: f64,
+) -> f64 {
+    if !hwpx_stored || spacing_before <= 0.0 {
+        return 0.0;
+    }
+    let has_bottom_caption = previous.is_some_and(|previous| {
+        previous.controls.iter().any(|control| {
+            matches!(control,
+                Control::Picture(picture)
+                    if !picture.common.treat_as_char
+                        && picture.common.text_wrap == TextWrap::TopAndBottom
+                        && picture.caption.as_ref().is_some_and(|caption|
+                            caption.direction == crate::model::shape::CaptionDirection::Bottom))
+        })
+    });
+    if !has_bottom_caption {
+        return 0.0;
+    }
+    let Some(first) = para.line_segs.first() else {
+        return 0.0;
+    };
+    if first.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return 0.0;
+    }
+    let saved_top = hwpunit_to_px(first.vertical_pos, dpi);
+    if saved_top > 0.0 && (saved_top - flow_from_body_top).abs() <= 1.0 {
+        spacing_before
+    } else {
+        0.0
+    }
+}
+
+/// 다시 시작하는 뒤 문단이 선언된 개체 바깥 상자를 정확히 닫는다.
+/// 사이의 저장된 빈 줄 사다리는 이 프레임에 속하며 별도 문단 전진이 아니다.
+/// 이 원본 관계는 새 단의 개체 원점도 결정한다.
+/// 원래 문단 기준 오프셋은 이월 전에 이미 소비됐다.
+#[derive(Debug, Clone)]
+pub(crate) struct StoredTableFrameWithGuides {
+    pub guide_range: Range<usize>,
+    pub top_hu: i32,
+    pub bottom_hu: i32,
+}
+
+pub(crate) fn stored_table_frame_with_guides(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    table: &Table,
+) -> Option<StoredTableFrameWithGuides> {
+    use crate::model::paragraph::{ColumnBreakType, LineSeg};
+    let host = paragraphs.get(host_index)?;
+    if !host.text.is_empty()
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || host.column_type != ColumnBreakType::None
+        || host.stored_text_partition_is_dirty()
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.common.horz_rel_to != HorzRelTo::Column
+        || table.page_break != TablePageBreak::RowBreak
+        || signed_hwpunit(table.common.vertical_offset) <= 0
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+    {
+        return None;
+    }
+    let [anchor] = host.line_segs.as_slice() else {
+        return None;
+    };
+    if anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || anchor.vertical_pos <= 0 {
+        return None;
+    }
+    let top_hu = i32::from(table.outer_margin_top);
+    let bottom_hu = i32::try_from(
+        i64::from(top_hu) + i64::from(table.common.height) + i64::from(table.outer_margin_bottom),
+    )
+    .ok()?;
+    let mut end = host_index + 1;
+    let mut previous = anchor;
+    while let Some(guide) = paragraphs.get(end) {
+        if guide.para_shape_id != host.para_shape_id
+            || !guide.text.is_empty()
+            || !guide.controls.is_empty()
+            || guide.column_type != ColumnBreakType::None
+            || guide.stored_text_partition_is_dirty()
+        {
+            break;
+        }
+        let [line] = guide.line_segs.as_slice() else {
+            return None;
+        };
+        if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || previous.line_height.saturating_add(previous.line_spacing) <= 0
+            || line.vertical_pos
+                != previous
+                    .vertical_pos
+                    .checked_add(previous.line_height)?
+                    .checked_add(previous.line_spacing)?
+        {
+            return None;
+        }
+        previous = line;
+        end += 1;
+    }
+    if end == host_index + 1 {
+        return None;
+    }
+    let successor = paragraphs.get(end)?;
+    if successor.stored_text_partition_is_dirty() || successor.column_type != ColumnBreakType::None
+    {
+        return None;
+    }
+    let first = successor.line_segs.first()?;
+    if first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || first.vertical_pos != bottom_hu
+        || first.vertical_pos >= anchor.vertical_pos
+    {
+        return None;
+    }
+    Some(StoredTableFrameWithGuides {
+        guide_range: host_index + 1..end,
+        top_hu,
+        bottom_hu,
+    })
+}
+
+/// 문단 내부 컨트롤은 그 원시 UTF-16 위치가 속한 저장 줄을 앵커로 사용한다.
+/// 전체 표 높이와 바깥여백이 뒤 문단의 저장 원점을 정확히 닫는 경우만
+/// 원점을 확정한다. 첫/끝 줄의 기존 배치와 편집·재조판은 호출자가 분리한다.
+pub(crate) fn stored_interior_control_table_frame(
+    host: &Paragraph,
+    successor: &Paragraph,
+    control_index: usize,
+    table: &Table,
+    measured_height: f64,
+    frame_vpos: i32,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::LineSeg;
+    let valid = |para: &Paragraph| {
+        !para.stored_text_partition_is_dirty()
+            && !para.line_segs.is_empty()
+            && para
+                .line_segs
+                .iter()
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+            && para.line_segs.windows(2).all(|pair| {
+                pair[1].text_start > pair[0].text_start
+                    && pair[1].vertical_pos > pair[0].vertical_pos
+            })
+    };
+    if !valid(host)
+        || !valid(successor)
+        || host.text.trim().is_empty()
+        || host.controls.len() != 1
+        || !matches!(host.controls.first(), Some(Control::Table(_)))
+        || !table.common.flow_with_text
+        || !is_para_topbottom_float(&table.common)
+        || table.common.horz_rel_to != HorzRelTo::Column
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || signed_hwpunit(table.common.vertical_offset) <= 0
+        || table.page_break != TablePageBreak::RowBreak
+        || table.caption.is_some()
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || (measured_height * 7200.0 / dpi).round() != f64::from(table.common.height)
+    {
+        return None;
+    }
+    let line_index = *stored_control_line_indices(host)?.get(control_index)?;
+    if line_index == 0 || line_index + 1 >= host.line_segs.len() {
+        return None;
+    }
+    let anchor = host.line_segs.get(line_index)?.vertical_pos;
+    let top = i64::from(anchor)
+        + i64::from(signed_hwpunit(table.common.vertical_offset))
+        + i64::from(table.outer_margin_top);
+    let bottom = top + i64::from(table.common.height) + i64::from(table.outer_margin_bottom);
+    let host_end = host
+        .line_segs
+        .iter()
+        .map(|line| i64::from(line.vertical_pos) + i64::from(line.line_height))
+        .max()?;
+    // 남은 호스트 글줄과 표가 겹치지 않는 독립 저장 프레임이어야 한다.
+    if anchor < frame_vpos
+        || top < host_end
+        || bottom != i64::from(successor.line_segs.first()?.vertical_pos)
+    {
+        return None;
+    }
+    let px = |value: i64| (value - i64::from(frame_vpos)) as f64 * dpi / 7200.0;
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y: px(i64::from(anchor)),
+        stored_host_origin: None,
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: px(top),
+        occupied_bottom: px(bottom),
+    })
+}
+
+/// 폭0 빈 호스트와 다음 저장 줄이 전체 개체 바깥 상자를 정확히 닫는다.
+/// 실측 본체·수직 캡션이 전체 선언 프레임과 같을 때 오프셋·양쪽 여백을 한 번 소비한다.
+/// 분할 조각의 선언 높이, 편집 뒤 캐시, 합성 줄은 이 원점의 증거가 아니다.
+pub(crate) fn stored_empty_control_table_frame(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    measured_height: f64,
+    frame_vpos: i32,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::{ColumnBreakType, LineSeg};
+    let [anchor] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let next = successor.line_segs.first()?;
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    // 구역 재계산이 만든 누적 vpos와 원본 쪽 상대 프레임을 섞지 않는다.
+    // 실제 저장본 스냅샷이 있으면 호스트와 후속 닫힘을 같은 원본 축으로 읽는다.
+    let anchor_vpos = ladder_vpos(host, 0, anchor.vertical_pos);
+    let next_vpos = ladder_vpos(successor, 0, next.vertical_pos);
+    if !host.text.trim().is_empty()
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || host.stored_text_partition_is_dirty()
+        || successor.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || successor.cell_format_vpos_dirty
+        || host.column_type != ColumnBreakType::None
+        || successor.column_type != ColumnBreakType::None
+        || anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || anchor.segment_width != 0
+        || anchor.line_height <= 0
+        || next.line_height <= 0
+        || anchor_vpos < frame_vpos
+        || !table.common.flow_with_text
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para
+        )
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || offset < 0
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || !measured_height.is_finite()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+    {
+        return None;
+    }
+    // 위/아래 캡션은 본체와 같은 수직 개체 상자를 소유한다. 측정·배치가
+    // 공유하는 캡션 높이와 저장 후속 줄이 모두 일치할 때만 원점을 재사용한다.
+    let caption_extent = if let Some(caption) = &table.caption {
+        use crate::model::shape::CaptionDirection;
+        if !matches!(
+            caption.direction,
+            CaptionDirection::Top | CaptionDirection::Bottom
+        ) || caption.spacing < 0
+            || caption.paragraphs.is_empty()
+            || caption.paragraphs.iter().any(|para| {
+                para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+                    || !para.controls.is_empty()
+                    || para.line_segs.is_empty()
+                    || para.line_segs.iter().any(|line| {
+                        line.line_height <= 0
+                            || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    })
+            })
+        {
+            return None;
+        }
+        let height = super::composer::caption_height_px(&table.caption, dpi);
+        if height <= 0.0 || !height.is_finite() {
+            return None;
+        }
+        height * 7200.0 / dpi + f64::from(caption.spacing)
+    } else {
+        0.0
+    };
+    let measured_extent = (measured_height * 7200.0 / dpi).round();
+    if measured_extent != (f64::from(table.common.height) + caption_extent).round() {
+        return None;
+    }
+    let top = i64::from(anchor_vpos) + i64::from(offset) + i64::from(table.outer_margin_top);
+    let bottom = top + measured_extent as i64 + i64::from(table.outer_margin_bottom);
+    if bottom != i64::from(next_vpos) {
+        return None;
+    }
+    let px = |value: i64| (value - i64::from(frame_vpos)) as f64 * dpi / 7200.0;
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y: px(i64::from(anchor_vpos)),
+        stored_host_origin: None,
+        stored_successor_line_origin: Some(px(bottom)),
+        table_left: None,
+        table_top: px(top),
+        occupied_bottom: px(bottom),
+    })
+}
+
+/// 앞 글줄의 전진 끝에 있는 저장 표 앵커와 다음 쪽의 본문 재시작이다.
+/// 표가 원래 줄 폭을 가진 빈 호스트에 저장되어도 개체 원점은 같은 바깥 상자다.
+/// 앞 줄 사다리와 실측 본체 높이를 확인해 호스트 줄 높이를 별도로 더하지 않는다.
+pub(crate) fn stored_adjacent_line_table_frame(
+    previous: &Paragraph,
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    measured_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::{ColumnBreakType, LineSeg};
+    let [anchor] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let before = previous.line_segs.last()?;
+    let after = successor.line_segs.first()?;
+    let valid = |para: &Paragraph| {
+        !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para.column_type == ColumnBreakType::None
+            && !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|line| {
+                line.line_height > 0 && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+    };
+    if !valid(previous)
+        || !valid(host)
+        || !valid(successor)
+        || !previous.controls.is_empty()
+        || !successor.controls.is_empty()
+        || para_has_non_whitespace_text(host)
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || anchor.vertical_pos <= 0
+        || before.vertical_pos <= 0
+        || after.vertical_pos != 0
+        || i64::from(anchor.vertical_pos)
+            != i64::from(before.vertical_pos)
+                + i64::from(before.line_height)
+                + i64::from(before.line_spacing)
+        || table.common.treat_as_char
+        || !table.common.flow_with_text
+        || !is_para_topbottom_float(&table.common)
+        || table.common.horz_rel_to != HorzRelTo::Column
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.caption.is_some()
+        || signed_hwpunit(table.common.vertical_offset) < 0
+        || table.common.height == 0
+        || !measured_height.is_finite()
+        || dpi <= 0.0
+        || (measured_height * 7200.0 / dpi).round() != f64::from(table.common.height)
+    {
+        return None;
+    }
+    let anchor_y = hwpunit_to_px(anchor.vertical_pos, dpi);
+    let table_top = anchor_y
+        + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+        + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y,
+        stored_host_origin: Some(anchor_y),
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top,
+        occupied_bottom: table_top
+            + measured_height
+            + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi),
+    })
+}
+
+/// 마지막 행이 이어지는 저장 표에서 전체 행 프레임과 첫 개체 프레임의
+/// 차이가 뒤 문단의 저장 원점을 정확히 닫으면 종료 조각의 물리 높이이다.
+/// 내용 유닛에 없는 빈 밴드도 보존하며, 편집·로컬 재시작은 증거로 쓰지 않는다.
+pub(crate) fn stored_rowbreak_closing_frame_height(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    let before = host.line_segs.first()?;
+    let after = successor.line_segs.first()?;
+    if host.stored_text_partition_is_dirty()
+        || successor.stored_text_partition_is_dirty()
+        || host
+            .line_segs
+            .iter()
+            .chain(&successor.line_segs)
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || !successor.controls.is_empty()
+        || after.vertical_pos <= 0
+        || before.vertical_pos <= after.vertical_pos
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.row_count <= 1
+        || table.common.height == 0
+        || table.caption.is_some()
+        || table.outer_margin_bottom != 0
+    {
+        return None;
+    }
+    let rows = table.get_raw_row_heights();
+    if rows.len() != usize::from(table.row_count) || rows.contains(&0) {
+        return None;
+    }
+    let whole = rows.iter().map(|height| i64::from(*height)).sum::<i64>()
+        + i64::from(table.cell_spacing) * (rows.len() - 1) as i64;
+    let remaining = whole - i64::from(table.common.height);
+    (remaining == i64::from(after.vertical_pos)).then(|| hwpunit_to_px(after.vertical_pos, dpi))
+}
+
+/// 다음 빈 문단이 누적 저장 원점과 개체 프레임의 끝을 정확히 잇는 경우,
+/// 선언 높이를 첫 RowBreak 조각의 물리 높이로 반환한다.
+pub(crate) fn stored_cumulative_rowbreak_opening_frame_height(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    dpi: f64,
+) -> Option<f64> {
+    let first = host.line_segs.first()?;
+    let next = successor.line_segs.first()?;
+    if host.stored_text_partition_is_dirty()
+        || successor.stored_text_partition_is_dirty()
+        || !para_has_non_whitespace_text(host)
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || !successor.text.is_empty()
+        || !successor.controls.is_empty()
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.row_count <= 1
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+    {
+        return None;
+    }
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    let expected =
+        i64::from(first.vertical_pos) + i64::from(offset) + i64::from(table.common.height);
+    (offset > 0 && expected == i64::from(next.vertical_pos))
+        .then(|| hwpunit_to_px(table.common.height as i32, dpi))
+}
+
+/// 종료 조각의 실제 하단과 뒤 원본 줄 사이에 저장된 바깥 아래 여백이다.
+/// 원본 줄의 시작점과 프레임의 종료식이 맞는 경우만 반환한다.
+pub(crate) fn stored_terminal_rowbreak_outer_margin_px(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    fragment_bottom: f64,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::paragraph::LineSeg;
+    let line = successor.line_segs.first()?;
+    if para_has_non_whitespace_text(host)
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || host.stored_text_partition_is_dirty()
+        || successor.stored_text_partition_is_dirty()
+        || host
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos <= 0
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.outer_margin_bottom == 0
+    {
+        return None;
+    }
+    let margin = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+    ((fragment_bottom + margin - hwpunit_to_px(line.vertical_pos, dpi)).abs() <= 0.5)
+        .then_some(margin)
+}
+
+/// 문단 상대 떠 있는 개체의 확정된 배치. 모든 값은 단 상대 px다.
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ParagraphFloatPlacement {
-    /// Geometry alone does not consume paragraph flow. A floating exclusion may
-    /// leave room for following text above it.
+    /// 기하만으로 문단 흐름을 소비하지 않는다. 떠 있는 배제 영역 위에
+    /// 후속 텍스트가 들어갈 공간이 남을 수 있다.
     pub flow: ParagraphFloatFlow,
     pub anchor_y: f64,
-    /// Validated single-line stored host origin, shared with text creation.
-    /// None keeps the existing flowing-host contract (including continuations).
+    /// 텍스트 생성과 공유하는 유효 단일 저장 줄 호스트 원점.
+    /// None이면 이어받기를 포함한 기존 흐름 호스트 계약을 유지한다.
     pub stored_host_origin: Option<f64>,
+    /// 전체 저장 프레임이 닫는 후속 첫 글줄 원점. 후속 문단의 앞 간격도 이 경계에 포함된다.
+    pub stored_successor_line_origin: Option<f64>,
+    /// 바깥여백을 이미 소비한 표 왼쪽 원점. None이면 기존 가로 배치 계약이다.
+    pub table_left: Option<f64>,
     /// 표와 캡션을 함께 담는 배치 상자의 상단. 위 캡션은 이 상자 안에서 배치한다.
     pub table_top: f64,
     pub occupied_bottom: f64,
@@ -45,6 +871,27 @@ pub enum ParagraphFloatFlow {
     },
 }
 
+/// 확정 개체 프레임의 후속 줄은 이미 앞 간격을 포함한 저장 원점을 소유한다.
+/// 실제 커서가 그 경계에 있을 때만 측정과 배치가 같은 앞 간격을 한 번 소비한다.
+pub(crate) fn stored_frame_successor_shared_spacing_px(
+    placements: &std::collections::HashMap<(usize, usize), ParagraphFloatPlacement>,
+    para_index: usize,
+    spacing_before: f64,
+    current_y: f64,
+) -> f64 {
+    if spacing_before <= 0.0 {
+        return 0.0;
+    }
+    placements
+        .iter()
+        .find_map(|(&(owner, _), placement)| {
+            let origin = placement.stored_successor_line_origin?;
+            (owner.checked_add(1) == Some(para_index) && (origin - current_y).abs() <= 0.5)
+                .then_some(spacing_before)
+        })
+        .unwrap_or(0.0)
+}
+
 /// 실제 재조판에서 확정한 호스트 줄. 문자 위치는 `Paragraph.text`의 scalar 축,
 /// 세로 위치는 spacing-before를 제외한 첫 텍스트 줄 상대 px다.
 #[derive(Debug, Clone, Copy)]
@@ -54,20 +901,42 @@ pub struct ParagraphHostLine {
     pub height: f64,
 }
 
-/// Recover an empty picture host's saved flow only when an empty successor
-/// spacer with positive spacing-before starts exactly at the picture frame end.
-/// That spacer proves the reserved before-gap belongs to the object boundary.
-/// A text successor, or a line without such a gap, does not prove exclusive
-/// ownership of paragraph flow merely by touching the picture geometrically.
-/// A zero-width host line belongs to the blocking object, not a second text line
-/// to append below it. Missing/stale lines, explicit breaks and edited sessions
-/// must keep measured flow (the caller supplies the stored-layout capability).
+/// 양수 앞 간격을 가진 빈 후속 줄의 기존 저장 프레임 계약.
+/// 다음 문단/실제 앞 커서를 받지 않는 호출은 0앞간격으로 흐름을 되감지 않는다.
 pub fn stored_picture_successor_placement(
     para: &Paragraph,
     successor: &Paragraph,
     spacing_before: f64,
     successor_spacing_before: f64,
     frame_vpos: i32,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    stored_picture_successor_with_following_placement(
+        para,
+        successor,
+        None,
+        spacing_before,
+        successor_spacing_before,
+        frame_vpos,
+        f64::NAN,
+        dpi,
+    )
+}
+
+/// 빈 그림 호스트의 저장 프레임 끝과 빈 후속 줄이 같은 흐름을 소유하는지 확인한다.
+/// 양수 앞 간격이 없는 후속 줄은 다음 저장 줄까지의 전진과 실제 앞 커서도
+/// 일치해야 한다. 그림과 줄이 기하적으로 닿는다는 사실만으로 흐름을 되감지 않는다.
+/// 호스트의 0폭 줄은 그림이 소유하며, 후속 빈 줄은 자신의 음수 간격도 보존한다.
+/// 편집/합성·명시 경계는 호출자와 이 함수의 저장 계약에서 제외한다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn stored_picture_successor_with_following_placement(
+    para: &Paragraph,
+    successor: &Paragraph,
+    following: Option<&Paragraph>,
+    spacing_before: f64,
+    successor_spacing_before: f64,
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
     dpi: f64,
 ) -> Option<ParagraphFloatPlacement> {
     let [Control::Picture(picture)] = para.controls.as_slice() else {
@@ -97,7 +966,7 @@ pub fn stored_picture_successor_placement(
         || dpi <= 0.0
         || !spacing_before.is_finite()
         || !successor_spacing_before.is_finite()
-        || successor_spacing_before <= 0.0
+        || successor_spacing_before < 0.0
     {
         return None;
     }
@@ -108,7 +977,22 @@ pub fn stored_picture_successor_placement(
     let bottom =
         top + hwpunit_to_px(height, dpi) + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
     let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
-    // The allowance is one integer HWPUNIT of rounding, not pixel slack.
+    if successor_spacing_before == 0.0 {
+        let following = following?;
+        let after = following.line_segs.first()?;
+        let advance = next.line_height.checked_add(next.line_spacing)?;
+        if successor.line_segs.len() != 1
+            || following.column_type != crate::model::paragraph::ColumnBreakType::None
+            || after.tag & 0x8000_0000 != 0
+            || advance <= 0
+            || after.vertical_pos.checked_sub(next.vertical_pos)? != advance
+            || !actual_host_flow_y.is_finite()
+            || (actual_host_flow_y - anchor_y).abs() > dpi / 7200.0
+        {
+            return None;
+        }
+    }
+    // 정수 HWPUNIT의 반올림 1단위만 허용하며 픽셀 여유를 더하지 않는다.
     if anchor_y < 0.0 || height <= 0 || (bottom - next_y).abs() > dpi / 7200.0 {
         return None;
     }
@@ -118,9 +1002,529 @@ pub fn stored_picture_successor_placement(
         },
         anchor_y,
         stored_host_origin: Some(host_y),
+        stored_successor_line_origin: None,
+        table_left: None,
         table_top: top,
         occupied_bottom: bottom,
     })
+}
+
+/// 본문 끝 그림의 소유 줄과 뒤 문단의 저장 어울림 경계가 같은 프레임을 증명한다.
+/// 첫 줄 기준 추정 대신 컨트롤의 UTF-16 소유 줄을 배치와 예약에 함께 전달한다.
+pub(crate) fn stored_tail_square_picture_placement(
+    para: &Paragraph,
+    successor: &Paragraph,
+    control_index: usize,
+    actual_host_flow_y: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::LineSeg;
+    let Control::Picture(picture) = para.controls.get(control_index)? else {
+        return None;
+    };
+    let common = &picture.common;
+    let valid = |para: &Paragraph| {
+        !para.stored_text_partition_is_dirty()
+            && !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|line| {
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && line.line_height > 0
+            })
+            && para.line_segs.windows(2).all(|pair| {
+                pair[1].vertical_pos >= pair[0].vertical_pos
+                    && pair[1].text_start >= pair[0].text_start
+            })
+    };
+    if !valid(para)
+        || !valid(successor)
+        || para.text.trim().is_empty()
+        || common.treat_as_char
+        || common.text_wrap != TextWrap::Square
+        || common.vert_rel_to != VertRelTo::Para
+        || common.horz_rel_to != HorzRelTo::Column
+        || common.vert_align != VertAlign::Top
+        || common.horz_align != HorzAlign::Left
+        || !common.flow_with_text
+        || !actual_host_flow_y.is_finite()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+    {
+        return None;
+    }
+    let owner = *stored_control_line_indices(para)?.get(control_index)?;
+    if owner == 0 || owner + 1 != para.line_segs.len() {
+        return None;
+    }
+    let first = para.line_segs.first()?;
+    let line = para.line_segs.get(owner)?;
+    let top = i64::from(line.vertical_pos) + i64::from(signed_hwpunit(common.vertical_offset));
+    let left = signed_hwpunit(common.horizontal_offset);
+    let (width, height) = picture_flow_frame_size_hu(picture);
+    let right = left.checked_add(width)?;
+    // 마지막 본문 줄은 그림 위에서 완결되고, 뒤 저장 줄의 양쪽 경계는
+    // 같은 그림의 좌우를 정확히 가리켜야 한다. 줄 위치만으로는 인정하지 않는다.
+    if width <= 0
+        || height <= 0
+        || line.vertical_pos <= first.vertical_pos
+        || top < i64::from(line.vertical_pos) + i64::from(line.line_height)
+        || !successor.line_segs.iter().any(|before| {
+            let end = i64::from(before.vertical_pos) + i64::from(before.line_height);
+            i64::from(before.vertical_pos) <= top
+                && top < end
+                && before.column_start + before.segment_width as i32 == left
+                && successor.line_segs.iter().any(|after| {
+                    after.vertical_pos == before.vertical_pos && after.column_start == right
+                })
+        })
+    {
+        return None;
+    }
+    let anchor_y = actual_host_flow_y + hwpunit_to_px(line.vertical_pos - first.vertical_pos, dpi);
+    let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::Exclusion,
+        anchor_y,
+        stored_host_origin: Some(actual_host_flow_y),
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: top,
+        occupied_bottom: top + hwpunit_to_px(height, dpi),
+    })
+}
+
+/// 그림 앞의 저장 줄 끝, 그림 프레임, 뒤쪽 호스트 줄과 후속 줄이 모두
+/// 같은 저장 축에서 닫힐 때만 그림이 호스트 텍스트 앞의 공간을 소유한다.
+/// 실제 앞 흐름도 그 경계에 있어야 하므로 편집되거나 누락된 공간을 되감지 않는다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn stored_picture_before_host_placement(
+    previous: &Paragraph,
+    para: &Paragraph,
+    successor: &Paragraph,
+    spacing_after: f64,
+    successor_spacing_before: f64,
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let prev = previous.line_segs.last()?;
+    let next = successor.line_segs.first()?;
+    let common = &picture.common;
+    if !para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || para.column_type != crate::model::paragraph::ColumnBreakType::None
+        || successor.column_type != crate::model::paragraph::ColumnBreakType::None
+        || [prev, host, next]
+            .iter()
+            .any(|line| line.tag & 0x8000_0000 != 0 || line.line_height <= 0)
+        || common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !actual_host_flow_y.is_finite()
+        || !spacing_after.is_finite()
+        || !successor_spacing_before.is_finite()
+    {
+        return None;
+    }
+    let prev_end = prev
+        .vertical_pos
+        .checked_add(prev.line_height)?
+        .checked_add(prev.line_spacing)?;
+    let anchor_y = hwpunit_to_px(prev_end.checked_sub(frame_vpos)?, dpi);
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let bottom = top
+        + hwpunit_to_px(height, dpi)
+        + hwpunit_to_px(
+            i32::from(common.margin.top) + i32::from(common.margin.bottom),
+            dpi,
+        );
+    let host_end = host_y
+        + hwpunit_to_px(host.line_height.checked_add(host.line_spacing)?, dpi)
+        + spacing_after;
+    let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let next_flow_y = next_y - successor_spacing_before;
+    let unit = dpi / 7200.0;
+    if anchor_y < 0.0
+        || top < anchor_y
+        || height <= 0
+        || (actual_host_flow_y - anchor_y).abs() > unit
+        || (bottom - host_y).abs() > unit
+        || (host_end - next_flow_y).abs() > unit
+    {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::StoredPicture { next_flow_y },
+        anchor_y,
+        stored_host_origin: Some(host_y),
+        stored_successor_line_origin: Some(next_y),
+        table_left: None,
+        table_top: top,
+        occupied_bottom: bottom,
+    })
+}
+
+/// 빈 개체 호스트 줄이 그림 프레임을 소유하고 후속 줄이 그 하단에서 시작하는
+/// 완전한 저장 흐름. 앞 줄 끝과 현재 커서까지 일치해야 글줄 점유를 중복하지 않는다.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn stored_picture_empty_host_placement(
+    previous: &Paragraph,
+    para: &Paragraph,
+    successor: &Paragraph,
+    successor_spacing_before: f64,
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let prev = previous.line_segs.last()?;
+    let next = successor.line_segs.first()?;
+    let common = &picture.common;
+    if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || para.column_type != crate::model::paragraph::ColumnBreakType::None
+        || successor.column_type != crate::model::paragraph::ColumnBreakType::None
+        || [prev, host, next]
+            .iter()
+            .any(|line| line.tag & 0x8000_0000 != 0 || line.line_height <= 0)
+        || common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !actual_host_flow_y.is_finite()
+        || !successor_spacing_before.is_finite()
+    {
+        return None;
+    }
+    let prev_end = prev
+        .vertical_pos
+        .checked_add(prev.line_height)?
+        .checked_add(prev.line_spacing)?;
+    if prev_end != host.vertical_pos {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let top = host_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let bottom = top
+        + hwpunit_to_px(height, dpi)
+        + hwpunit_to_px(
+            i32::from(common.margin.top) + i32::from(common.margin.bottom),
+            dpi,
+        );
+    let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let unit = dpi / 7200.0;
+    if host_y < 0.0
+        || top < host_y
+        || height <= 0
+        || (actual_host_flow_y - host_y).abs() > unit
+        || (bottom - next_y).abs() > unit
+    {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::StoredPicture {
+            next_flow_y: next_y - successor_spacing_before,
+        },
+        anchor_y: host_y,
+        stored_host_origin: Some(host_y),
+        stored_successor_line_origin: Some(next_y),
+        table_left: None,
+        table_top: top,
+        occupied_bottom: bottom,
+    })
+}
+
+/// 앞 쪽의 호스트는 남고 그림만 다음 쪽 상단을 소유하는 저장 경계.
+/// 현재 프레임의 물리 초과와 다음 본문 원점의 전체 그림 높이가 함께 이를 입증한다.
+pub(crate) fn stored_picture_next_page_placement(
+    para: &Paragraph,
+    following: &[Paragraph],
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    available_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let common = &picture.common;
+    if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || host.tag & 0x8000_0000 != 0
+        || host.line_height <= 0
+        || common.treat_as_char
+        || common.allow_overlap
+        || !common.flow_with_text
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !available_height.is_finite()
+        || !actual_host_flow_y.is_finite()
+    {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let frame_height = height
+        .checked_add(i32::from(common.margin.top))?
+        .checked_add(i32::from(common.margin.bottom))?;
+    let bottom = hwpunit_to_px(frame_height, dpi);
+    if host_y < 0.0
+        || offset < 0.0
+        || frame_height <= 0
+        || bottom > available_height
+        || (actual_host_flow_y - host_y).abs() > dpi / 7200.0
+        || host_y + offset + bottom <= available_height
+    {
+        return None;
+    }
+    let mut previous_end = host.vertical_pos;
+    for next in following {
+        if !next.controls.is_empty() {
+            return None;
+        }
+        let first = next.line_segs.first()?;
+        if next
+            .line_segs
+            .iter()
+            .any(|line| line.tag & 0x8000_0000 != 0 || line.line_height <= 0)
+        {
+            return None;
+        }
+        if first.vertical_pos < previous_end {
+            if first.vertical_pos != frame_height
+                || !next.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+            {
+                return None;
+            }
+            return Some(ParagraphFloatPlacement {
+                flow: ParagraphFloatFlow::StoredPicture {
+                    next_flow_y: bottom,
+                },
+                anchor_y: -offset,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: 0.0,
+                occupied_bottom: bottom,
+            });
+        }
+        previous_end = next.line_segs.last()?.vertical_pos;
+    }
+    None
+}
+
+/// 앞쪽에서 프레임이 넘친 배경 그림은 다음 원점의 겹침 허용 레이블과 같은
+/// 쪽을 소유한다. 배경은 보이지만 글줄을 전진시키지 않으므로 예약 높이는 0이다.
+pub(crate) fn stored_background_picture_next_page_placement(
+    para: &Paragraph,
+    following: &[Paragraph],
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    available_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::LineSeg;
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let common = &picture.common;
+    if para_has_non_whitespace_text(para)
+        || para.stored_text_partition_is_dirty()
+        || host.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || host.line_height <= 0
+        || common.treat_as_char
+        || !common.allow_overlap
+        || !common.flow_with_text
+        || common.text_wrap != TextWrap::BehindText
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture.caption.is_some()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !actual_host_flow_y.is_finite()
+        || !available_height.is_finite()
+    {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let picture_height = hwpunit_to_px(height, dpi);
+    if host_y < 0.0
+        || offset < 0.0
+        || height <= 0
+        || offset + picture_height > available_height
+        || (actual_host_flow_y - host_y).abs() > dpi / 7200.0
+        || host_y + offset + picture_height <= available_height
+    {
+        return None;
+    }
+    let mut previous = host;
+    for next in following {
+        let [line] = next.line_segs.as_slice() else {
+            return None;
+        };
+        if next.stored_text_partition_is_dirty()
+            || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || para_has_non_whitespace_text(next)
+        {
+            return None;
+        }
+        if line.vertical_pos < previous.vertical_pos {
+            if line.vertical_pos != 0
+                || next.controls.is_empty()
+                || !next.controls.iter().all(|control| {
+                    matches!(control, Control::Table(table)
+                    if !table.common.treat_as_char && table.common.allow_overlap
+                        && table.common.vert_rel_to == VertRelTo::Para
+                        && table.common.horz_rel_to == HorzRelTo::Column
+                        && signed_hwpunit(table.common.vertical_offset) >= 0
+                        && i64::from(signed_hwpunit(table.common.vertical_offset))
+                            + i64::from(table.common.height) <= i64::from(height))
+                })
+            {
+                return None;
+            }
+            return Some(ParagraphFloatPlacement {
+                flow: ParagraphFloatFlow::StoredPicture { next_flow_y: 0.0 },
+                // 이월된 프레임은 새 쪽 원점에서 시작한다. 출력에서 원본
+                // 호스트 오프셋을 다시 더하므로 같은 계획에 역변환을 기록한다.
+                anchor_y: -offset,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: 0.0,
+                occupied_bottom: picture_height,
+            });
+        }
+        if i64::from(line.vertical_pos)
+            != i64::from(previous.vertical_pos)
+                + i64::from(previous.line_height)
+                + i64::from(previous.line_spacing)
+        {
+            return None;
+        }
+        previous = line;
+    }
+    None
+}
+
+/// 나누지 않는 표의 전체 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
+/// 표만 다음 쪽을 소유한다. 재시작 전 본문/빈 줄은 원래 쪽에 보존한다.
+pub(crate) fn stored_table_next_page_placement(
+    para: &Paragraph,
+    following: &[Paragraph],
+    table: &Table,
+    measured_height: f64,
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    available_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::LineSeg;
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if !matches!(para.controls.as_slice(), [Control::Table(_)])
+        || para_has_non_whitespace_text(para)
+        || para.stored_text_partition_is_dirty()
+        || host.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || host.line_height <= 0
+        || table.page_break != TablePageBreak::None
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !table.common.flow_with_text
+        || table.common.vert_align != VertAlign::Top
+        || table.common.horz_rel_to != HorzRelTo::Column
+        || table.caption.is_some()
+        || !measured_height.is_finite()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !available_height.is_finite()
+        || !actual_host_flow_y.is_finite()
+        || (measured_height * 7200.0 / dpi).round() != f64::from(table.common.height)
+    {
+        return None;
+    }
+    let top = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    let frame_height_hu = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    let bottom = frame_height_hu as f64 * dpi / 7200.0;
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    if host_y <= 0.0
+        || offset < 0.0
+        || bottom > available_height
+        || (actual_host_flow_y - host_y).abs() > dpi / 7200.0
+        || host_y + offset + bottom <= available_height
+    {
+        return None;
+    }
+    let mut previous = host;
+    for next in following {
+        if next.stored_text_partition_is_dirty() || next.line_segs.is_empty() {
+            return None;
+        }
+        for line in &next.line_segs {
+            if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || line.line_height <= 0 {
+                return None;
+            }
+            if line.vertical_pos < previous.vertical_pos {
+                if i64::from(line.vertical_pos) != frame_height_hu
+                    || !para_has_non_whitespace_text(next)
+                {
+                    return None;
+                }
+                return Some(ParagraphFloatPlacement {
+                    flow: ParagraphFloatFlow::NextLine,
+                    anchor_y: 0.0,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: bottom,
+                });
+            }
+            if i64::from(line.vertical_pos)
+                != i64::from(previous.vertical_pos)
+                    + i64::from(previous.line_height)
+                    + i64::from(previous.line_spacing)
+            {
+                return None;
+            }
+            previous = line;
+        }
+    }
+    None
 }
 
 /// A saved CellBreak table can store its first fragment height in common.height.
@@ -241,6 +1645,8 @@ impl ParagraphFloatPlacement {
         host_line_height: f64,
         dpi: f64,
     ) -> Self {
+        // 부분 조각은 전체 저장 프레임의 후속 줄 원점을 증명하지 않는다.
+        self.stored_successor_line_origin = None;
         let box_tail = self.occupied_bottom - self.table_top;
         let paragraph_anchor = self.anchor_y - applied_spacing_before;
         let positioned_top =
@@ -380,6 +1786,8 @@ impl ParagraphFloatPlacement {
                 flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
                 stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
                 table_top,
                 occupied_bottom,
             })
@@ -448,6 +1856,8 @@ impl ParagraphFloatPlacement {
                 flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
                 stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
                 table_top,
                 occupied_bottom,
             })
@@ -730,7 +2140,46 @@ pub(crate) struct NestedTableGroup {
     pub(crate) side_by_side: bool,
 }
 
-pub(crate) fn nested_table_groups(para: &Paragraph) -> Vec<NestedTableGroup> {
+/// 저장 HWPX의 글 뒤로 표는 문단 앵커를 공유하는 배경이며 흐름을 전진하지 않는다.
+/// 가로 기준이 단/문단인 경우 모두 같은 역할이다. TAC와 HWP5 기존 경로는 보존한다.
+pub(crate) fn nested_table_is_hwpx_overlay(table: &Table, hwpx_stored: bool) -> bool {
+    hwpx_stored
+        && !table.common.treat_as_char
+        && table.common.text_wrap == TextWrap::BehindText
+        && table.common.flow_with_text
+        && table.common.vert_rel_to == VertRelTo::Para
+        && matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para
+        )
+}
+
+/// 흐름 표는 나란함/적층을 따르지만 배경의 시각 높이는 같은 앵커에서 최댓값으로 합친다.
+/// 측정과 셀 정렬이 같은 결과를 소비하며 배경을 뒤에 놓인 새 흐름으로 더하지 않는다.
+pub(crate) fn nested_group_occupied_height(
+    para: &Paragraph,
+    group: &NestedTableGroup,
+    heights: &[f64],
+    hwpx_stored: bool,
+) -> f64 {
+    let mut flow_height = 0.0_f64;
+    let mut overlay_height = 0.0_f64;
+    for &ci in &group.controls {
+        let Control::Table(table) = &para.controls[ci] else {
+            continue;
+        };
+        if nested_table_is_hwpx_overlay(table, hwpx_stored) {
+            overlay_height = overlay_height.max(heights[ci]);
+        } else if group.side_by_side {
+            flow_height = flow_height.max(heights[ci]);
+        } else {
+            flow_height += heights[ci];
+        }
+    }
+    flow_height.max(overlay_height)
+}
+
+pub(crate) fn nested_table_groups(para: &Paragraph, hwpx_stored: bool) -> Vec<NestedTableGroup> {
     let lines = para_nested_table_line_indices(para);
     let mut groups: Vec<NestedTableGroup> = Vec::new();
     for (ci, ctrl) in para.controls.iter().enumerate() {
@@ -753,7 +2202,9 @@ pub(crate) fn nested_table_groups(para: &Paragraph) -> Vec<NestedTableGroup> {
             .controls
             .iter()
             .filter_map(|&ci| match &para.controls[ci] {
-                Control::Table(t) => Some(t.as_ref()),
+                Control::Table(t) if !nested_table_is_hwpx_overlay(t, hwpx_stored) => {
+                    Some(t.as_ref())
+                }
                 _ => None,
             })
             .collect();
@@ -1010,6 +2461,26 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// 쪽·종이 기준 표의 외곽 여백을 포함한 가시 원점과 흐름 하단.
+/// 예약과 paint가 같은 가장자리 정렬 결과를 소비한다.
+pub(crate) fn absolute_table_vertical_geometry(
+    table: &Table,
+    ref_y: f64,
+    ref_h: f64,
+    height: f64,
+    dpi: f64,
+) -> (f64, f64) {
+    let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    let top_margin = hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+    let bottom_margin = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+    let top = match table.common.vert_align {
+        VertAlign::Top | VertAlign::Inside => ref_y + offset + top_margin,
+        VertAlign::Center => ref_y + (ref_h - height) / 2.0 + offset,
+        VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - height - offset - bottom_margin,
+    };
+    (top, top + height + bottom_margin)
 }
 
 /// A positive-offset empty host float whose next, generated body paragraph has
@@ -1374,6 +2845,32 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
         && matches!(table.page_break, TablePageBreak::RowBreak)
 }
 
+/// A saved native RowBreak table can finish a cut cell on a fresh page.  Hancom
+/// reopens its outer top margin even when the host has no positive object offset
+/// (86712 p28: 141 HU, PDF first border 77.5px versus body top 75.6px).
+/// Keep this separate from the broad empty-host margin rule disproved by #2097:
+/// the observed contract is a cut inside the final row of a wide multi-column
+/// table. One-column giant cells (#2214) and two-column nested-fragment tables
+/// (76076 p34) already align with the PDF without reopening this margin.
+pub(crate) fn native_terminal_multirow_rowbreak_reopens_outer_top(
+    native_hwp5_layout: bool,
+    table: &Table,
+    is_continuation: bool,
+    start_row: usize,
+    start_cut: &[usize],
+) -> bool {
+    native_hwp5_layout
+        && is_continuation
+        && table.row_count > 1
+        && table.col_count > 2
+        && start_row + 1 == table.row_count as usize
+        && !start_cut.is_empty()
+        && table.outer_margin_top > 0
+        && is_para_topbottom_float(&table.common)
+        && matches!(table.page_break, TablePageBreak::RowBreak)
+        && signed_hwpunit(table.common.vertical_offset) == 0
+}
+
 /// Physical bottom of a nonterminal single-cell page fragment. Callers use
 /// the same column-relative boundary for row fitting and page-relative painting.
 pub(crate) fn single_cell_page_fragment_bottom(table: &Table, body_bottom: f64, dpi: f64) -> f64 {
@@ -1474,7 +2971,8 @@ pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32>
 /// IR `RowBreak` 로 들어온다. 모든 원본 HWPX 표·연속 block 표(#1133)에
 /// 더하면 간격이 3.8px 줄고 글자 겹침 기준선이 커지므로, native helper 와
 /// 같은 형상만 연다: 비-TAC TopAndBottom(vert=문단), 단·왼쪽, RowBreak,
-/// 다행 1열, 사방 균등 양의 outMargin, 오프셋 0.
+/// 하나 이상의 행·1열, 사방 균등 양의 outMargin, 오프셋 0. 단일 셀도
+/// 같은 바깥 상자를 쓰므로 행 수는 상단 여백을 없앨 근거가 아니다.
 pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
     original_hwpx: bool,
     table: &Table,
@@ -1489,7 +2987,7 @@ pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
         || signed_hwpunit(table.common.horizontal_offset) != 0
         || signed_hwpunit(table.common.vertical_offset) != 0
         || !matches!(table.page_break, TablePageBreak::RowBreak)
-        || table.row_count <= 1
+        || table.row_count == 0
         || table.col_count != 1
         || table.cells.len() != usize::from(table.row_count)
         || !table.cells.iter().enumerate().all(|(row, cell)| {

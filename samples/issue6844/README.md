@@ -1,9 +1,13 @@
-# #6844 정식 회귀 입력
+# #6844 재현 원문과 과거 회귀 근거
+
+> 2026-09-28: 같은 원문의 실제 Native 비교가90%미만이므로 #7445에 원문을 보존하고
+> 전용 렌더링 회귀를 제거했습니다. 아래 설명은 최초 수정의 역사적 근거입니다.
+> 순수 개체 속성 저장·복원 계약은 유지하며 이관을 피델리티 개선으로 세지 않습니다.
 
 [이슈 #6844](https://github.com/edwardkim/rhwp/issues/6844)의 공개 문서를 원본 바이트로
 등록했다. 비공개 PC 경로 또는 환경 변수가 없어 검사를 건너뛰는 방식은 사용하지 않는다.
 
-- 파일: [30269-anticorruption-recommendation-toc.hwp](30269-anticorruption-recommendation-toc.hwp) (459 KB)
+- 파일: [30269-anticorruption-recommendation-toc.hwp](../../mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp) (459 KB)
 - 출처: 국민권익위원회 제도개선 권고안 (`30269_붙임1)제도개선권고안.hwp`)
 - 저장 제품: 미상(`lastSavedWith.product = null`, `7.5.12.614`) → 기준 엔진 **`2020`**
 - 기준 PDF: `pdf/30269-anticorruption-recommendation-toc-2020.pdf` — **22쪽**

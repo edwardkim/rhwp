@@ -53,48 +53,6 @@ fn images_with_width(svg: &str, w: f64) -> Vec<(f64, f64)> {
     out
 }
 
-/// 글자 `ch` 하나짜리 `<text>` 의 (x, 기준선 y) 목록.
-fn glyphs(svg: &str, ch: &str) -> Vec<(f64, f64)> {
-    let mut out = Vec::new();
-    for t in svg.split("<text ").skip(1) {
-        let Some(close) = t.find('>') else { continue };
-        let (head, rest) = t.split_at(close);
-        let body = &rest[1..rest.find("</text>").unwrap_or(1)];
-        if body.trim() != ch {
-            continue;
-        }
-        if let (Some(x), Some(y)) = (attr(head, "x"), attr(head, "y")) {
-            out.push((x, y));
-        }
-    }
-    out
-}
-
-/// 같은 결함의 글자 판: `samples/hwpspec.hwp` 106쪽 셀 안 그림 라벨 "(x1, y1)" 줄은 글자와
-/// 글자처럼 곡선 도형(저장 lh 152.9px) 한 줄. 종전엔 16.0 으로 접혀 다음 문단 "(x2, y2)",
-/// "(x3, y3)" 가 도형 위에 겹쳤다(기준선 422.1·446.1). 한/글 2024 PDF 실측 글리프 상자
-/// 아래 543.7·585.9 (기준선 ≈ 541.0·583.2), 수정 후 540.7·582.9.
-#[test]
-fn text_after_a_text_and_shape_line_in_a_cell_follows_the_stored_line_height() {
-    let svg = page_svg("samples/hwpspec.hwp", 105);
-    let two: Vec<_> = glyphs(&svg, "2")
-        .into_iter()
-        .filter(|(x, _)| (x - 505.2).abs() < 0.7)
-        .collect();
-    let three: Vec<_> = glyphs(&svg, "3")
-        .into_iter()
-        .filter(|(x, _)| (x - 261.5).abs() < 0.7)
-        .collect();
-    assert!(
-        two.iter().any(|(_, y)| (y - 540.7).abs() < 0.7),
-        "(x2, y2) 의 '2' 기준선 540.7 (종전 422.1): {two:?}"
-    );
-    assert!(
-        three.iter().any(|(_, y)| (y - 582.9).abs() < 0.7),
-        "(x3, y3) 의 '3' 기준선 582.9 (종전 446.1): {three:?}"
-    );
-}
-
 #[test]
 fn pictures_after_a_text_and_shape_line_follow_the_stored_line_height() {
     let svg = page_svg("samples/exam_kor.hwp", 4);

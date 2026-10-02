@@ -1,0 +1,113 @@
+name: "문서 표시·조판 오류"
+description: "줄바꿈, 표 배치, 글꼴, 표시 누락, 페이지 차이를 알려주세요."
+labels:
+  - "bug"
+body:
+  - type: "markdown"
+    attributes:
+      value: "먼저 [기존 이슈](https://github.com/edwardkim/rhwp/issues)를 검색해주세요. 사용법 질문은 [Discussions](https://github.com/edwardkim/rhwp/discussions)를 이용해주세요.\n\n문서가 기대와 다르게 보일 때 사용하는 폼입니다. 원본이나 한컴 PDF를 제공할 수 없어도 신고할 수 있습니다."
+  - type: "dropdown"
+    id: "surface"
+    attributes:
+      label: "사용 경로"
+      description: "관련된 사용 경로를 선택해주세요. 기타·모름·해당 없음도 선택할 수 있습니다."
+      options:
+        - "Studio"
+        - "CLI"
+        - "브라우저 확장"
+        - "라이브러리/API"
+        - "MCP"
+        - "기타"
+        - "모름"
+        - "해당 없음"
+    validations:
+      required: true
+  - type: "input"
+    id: "version"
+    attributes:
+      label: "rhwp 버전 또는 접속 URL"
+      description: "CLI는 rhwp --version, 패키지는 설치 버전, 웹은 접속 URL을 적어주세요. 모르면 모름으로 적어주세요."
+    validations:
+      required: true
+  - type: "dropdown"
+    id: "os"
+    attributes:
+      label: "운영체제"
+      options:
+        - "Windows"
+        - "macOS"
+        - "Linux"
+        - "기타"
+        - "모름"
+    validations:
+      required: true
+  - type: "input"
+    id: "environment"
+    attributes:
+      label: "상세 실행 환경"
+      description: "가능하면 OS 버전, 브라우저·버전, Node.js 등 실행 환경을 적어주세요."
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "format"
+    attributes:
+      label: "문서 형식"
+      description: "확장자가 .hwp여도 옛 한글 (HWP3)인지 모르면 모름을 선택해주세요."
+      options:
+        - "HWP (HWP5)"
+        - "HWPX"
+        - "옛 한글 (HWP3)"
+        - "모름"
+        - "해당 없음"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "problem"
+    attributes:
+      label: "표시 문제와 기대 결과"
+      description: "무엇이 어떻게 다르게 보이나요? 기대 결과의 근거(한컴 화면 등)를 알면 함께 적어주세요."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "reproduction"
+    attributes:
+      label: "재현 순서·문제 페이지"
+      description: "문서를 여는 과정부터 적어주세요. 페이지는 화면에서 센 순서(1부터)로 적고, 인쇄된 쪽번호와 다르면 구별해주세요."
+      placeholder: "1. 문서를 엽니다.\n2. 화면에서 3번째 페이지의 표를 확인합니다.\n3. 표 아래 문단이 겹칩니다."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "materials"
+    attributes:
+      label: "원본 문서·재현 자료"
+      description: "개인정보를 제거한 최소 재현 문서나 공개 링크를 넣어주세요. 첨부가 지원되지 않는 확장자는 ZIP으로 묶어주세요. 공개할 수 없거나 파일이 없는 경우 사유를 적어주세요. 비공개 자료를 공개 이슈에 올리지 마세요."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "comparison"
+    attributes:
+      label: "비교 화면·PDF"
+      description: "가능하면 같은 페이지의 한컴 화면/PDF와 rhwp 화면을 첨부해주세요. 한컴 버전과 관련 글꼴도 알면 적어주세요. 필수는 아닙니다."
+    validations:
+      required: false
+  - type: "dropdown"
+    id: "symptoms"
+    attributes:
+      label: "관련 증상"
+      description: "해당하는 항목이 있으면 선택해주세요. 원인 분석은 필요하지 않습니다."
+      multiple: true
+      options:
+        - "표"
+        - "글꼴"
+        - "저장 후 내용 변경·유실"
+        - "느림·메모리 사용"
+        - "기타"
+    validations:
+      required: false
+  - type: "input"
+    id: "previous"
+    attributes:
+      label: "이전에 정상 동작한 버전"
+      description: "알고 있다면 적어주세요. 처음 사용했거나 모르면 비워두셔도 됩니다."
+    validations:
+      required: false

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "native-clippy",
+    "exit_code": 0,
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ]
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 7.836
+  },
+  {
+    "name": "wasm-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 44.503
+  },
+  {
+    "name": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr-review"
+    ],
+    "exit_code": 0,
+    "seconds": 65.571
+  },
+  {
+    "name": "workspace-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 88.011
+  },
+  {
+    "name": "suite-policy",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "02530b9ed567a44663edb26c65fb565c4a79f00d"
+    ],
+    "exit_code": 1,
+    "seconds": 0.464
+  },
+  {
+    "name": "suite-policy-after-prepare",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "02530b9ed567a44663edb26c65fb565c4a79f00d"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "unit-policy-final",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "02530b9ed567a44663edb26c65fb565c4a79f00d"
+    ],
+    "exit_code": 0
+  }
+]

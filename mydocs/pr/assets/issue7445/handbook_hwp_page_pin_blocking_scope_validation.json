@@ -1,0 +1,234 @@
+{
+  "stage": 145,
+  "source_head": "9879dd922276c0e9c091577aac098e064bbcc71d",
+  "preanalysis": "편람 HWP #3930의 Q8 같은쪽 표제 검사는 통과하지만 전체384쪽 단정에서383쪽으로 실패. 동일원문 독립PDF384/선택Native최저6.48027%이므로 전체쪽수 전제한곳만 이관한다. Q8 기존배치검사/다른HWPX와바탕쪽/IR검사/모든원문 유지. 현재383으로 재고정하지않고생산변경안함.",
+  "independent_evidence": "mydocs/pr/assets/issue7445/handbook_hwp_blocking_scope_validation.json",
+  "minimum_selected_native_percent": 6.48027,
+  "inputs": [
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
+      "sha256": "34db2aeefa4ae00b38c464571e7e17eef375ffd3ec29eb6d89ddcd67b63bb670",
+      "matches_commit": true
+    }
+  ],
+  "code_commit": "b7551d228c36d6fdef4b3287bfb1edf4af6c6e2c",
+  "scope": {
+    "removed_page_count_assertions": 1,
+    "all_other_code_unchanged": true,
+    "preserved_Q8_assertion": true,
+    "test_functions_removed": 0,
+    "production_changed": false
+  },
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_011",
+      "-E",
+      "test(=issue_3930_hwpx_hwp_save_layout::issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_3930_hwpx_hwp_save_layout",
+        "target": "regression_suite_011",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 9.780460292007774,
+    "summary": [
+      "Summary [   0.444s] 1 test run: 0 passed, 1 failed, 199 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_006",
+      "-E",
+      "test(=issue_3930_hwpx_hwp_save_layout::issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_3930_hwpx_hwp_save_layout",
+        "target": "regression_suite_006",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 14.158211334142834,
+    "summary": [
+      "Summary [   0.661s] 1 test run: 1 passed, 202 skipped"
+    ]
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1848167502321303
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 10.61119220778346
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.0358325829729438
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage145-handbook-hwp-page-pin/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 14.597550165839493
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 10.850219416897744
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.47812383295968175
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.27298029186204076
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.42152554215863347
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 10.718770917039365
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 3.1504913331009448
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 11.205545083619654
+    }
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883899549",
+  "limits": "동일생산 보정134 Native 부정증거 재사용. 원문보존. freshWASM/전체재실행 미완료."
+}

@@ -1239,10 +1239,12 @@ impl WebCanvasRenderer {
         } else {
             1.0
         };
+        let scale_y =
+            super::equation::stored_vertical_scale(bbox.height, eq.layout_box.height, eq.font_size);
         self.ctx.save();
         let _ = self.ctx.translate(bbox.x, bbox.y);
-        if (scale_x - 1.0).abs() > 0.01 {
-            let _ = self.ctx.scale(scale_x, 1.0);
+        if (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01 {
+            let _ = self.ctx.scale(scale_x, scale_y);
         }
         super::equation::canvas_render::render_equation_canvas(
             &self.ctx,
@@ -2284,10 +2286,8 @@ impl Renderer for WebCanvasRenderer {
             let has_effect =
                 style.outline_type > 0 || style.shadow_type > 0 || style.emboss || style.engrave;
 
-            // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
-            // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
-            // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
-            // svg.rs 와 같은 결정이다.
+            // 연속 하이픈은 저장 글자 위치마다 그린다. 원 글꼴의 획이
+            // 글자 간격보다 넓어 겹치는 경우만 낱글자별 짧은 획을 쓴다.
 
             if has_effect {
                 self.draw_text_with_effects(
@@ -2346,6 +2346,28 @@ impl Renderer for WebCanvasRenderer {
                     let char_x = x + char_positions[*char_idx];
 
                     let ch = cluster_str.chars().next().unwrap_or(' ');
+
+                    if cluster_str == "-" {
+                        if let Some((start, end, y_offset, stroke)) =
+                            super::overlapping_dash_leader_segment(
+                                text,
+                                style,
+                                *char_idx,
+                                &char_positions,
+                                font_size,
+                            )
+                        {
+                            self.ctx.save();
+                            self.ctx.set_stroke_style_str(&color_to_css(style.color));
+                            self.ctx.set_line_width(stroke);
+                            self.ctx.begin_path();
+                            self.ctx.move_to(char_x + start, y + y_offset);
+                            self.ctx.line_to(char_x + end, y + y_offset);
+                            self.ctx.stroke();
+                            self.ctx.restore();
+                            continue;
+                        }
+                    }
 
                     if cluster_str.chars().count() == 1 {
                         if let Some(number) = super::boxed_pua_number(ch) {

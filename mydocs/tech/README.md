@@ -49,6 +49,9 @@ last_verified: 2026-09-03
 
 ## 현재 구조를 읽는 법
 
+- 조판 코드의 현재 책임 위치·상태 소유·규칙 변경 절차는
+  [조판 책임 경계와 변경 지도](typesetting_architecture.md)를 따른다. 표의 의미 규칙과 출력 backend
+  계약을 대신하지 않으며, 기존 예외의 근거 재검토 항목도 구분한다.
 - `hwp_*`, `hwpx_*`, `document_ir_*`, `rendering_*`, `table_*`, `font_*` 문서는 장기 참조 후보이지만,
   파일명만으로 권위 문서라고 가정하지 않는다. 위 표 또는 각 문서의 명시적 링크를 우선한다.
 - `task_m100_*`, `*_root_cause`, `*_diagnosis`, `*_investigation`은 이슈별 조사일 가능성이 높다. 다만

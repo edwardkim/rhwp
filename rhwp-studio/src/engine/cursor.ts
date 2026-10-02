@@ -42,6 +42,8 @@ type PictureSelectionRef = {
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
   /** [Task #2230] 그림 미지정 placeholder — 더블클릭 시 그림 지정 진입. */
   missing?: boolean;
+  /** 마우스 hit 당시의 실제 page layout. 동일 주소의 분할 항목 선택에 사용한다. */
+  pageIndex?: number;
 };
 
 /** 커서 상태를 관리한다 */
@@ -1283,6 +1285,49 @@ export class CursorState {
     }
   }
 
+  /**
+   * 현재 셀/글상자 내용 전체를 선택한다 (한컴 ⌘A 정합) — 셀 첫 문단 시작 ~
+   * 마지막 문단 끝. 중첩 표·글상자는 cellPath/flat 축 구분을 기존 셀 이동과 같이 따른다.
+   */
+  selectAllInCell(): boolean {
+    if (!this.isInCell()) return false;
+    const pos = this.position;
+    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellPath } = pos;
+    if (ppi === undefined) return false;
+    // 글상자(1-depth)는 flat 축, 표 셀·중첩은 경로 기반 — moveToCellByIndex 와 같은 규약.
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    try {
+      const paraCount = useCellPath && cellPath
+        ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
+        : this.wasm.getCellParagraphCount(sec, ppi, ci!, cei!);
+      const lastCpi = Math.max(0, paraCount - 1);
+      const pathAtCpi = (cpi: number): CellPathEntry[] | undefined => cellPath
+        ? cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi })
+        : cellPath;
+      const lastPath = pathAtCpi(lastCpi);
+      const lastLen = lastPath && useCellPath
+        ? this.wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(lastPath))
+        : this.wasm.getCellParagraphLength(sec, ppi, ci!, cei!, lastCpi);
+      const atCpi = (cpi: number, charOffset: number): DocumentPosition => ({
+        ...pos,
+        paragraphIndex: cpi,
+        cellParaIndex: cpi,
+        charOffset,
+        cellPath: pathAtCpi(cpi),
+      });
+      // setAnchor()는 기존 anchor를 유지하므로, 부분 선택 상태에서 ⌘A를 눌러도
+      // 범위가 셀 시작부터 잡히도록 먼저 선택을 비운다.
+      this.clearSelection();
+      this.moveTo(atCpi(0, 0));
+      this.setAnchor();
+      this.moveTo(atCpi(lastCpi, lastLen));
+      return true;
+    } catch (e) {
+      console.warn('[CursorState] selectAllInCell 실패:', e);
+      return false;
+    }
+  }
+
   /** 표 밖으로 나가기 (delta: +1=다음 위치, -1=이전 위치) — Tab/Shift+Tab 전용 */
   private exitTable(delta: number): void {
     const { sectionIndex: sec, parentParaIndex: ppi } = this.position;
@@ -1770,10 +1815,18 @@ export class CursorState {
     return true;
   }
 
-  /** 지정한 표를 객체 선택한다 (커서 위치와 무관). */
-  enterTableObjectSelectionDirect(sec: number, ppi: number, ci: number): void {
+  /** 지정한 표를 객체 선택한다 (커서 위치와 무관).
+   *
+   *  [#7442] `cellPath`(깊이 ≥2)가 오면 중첩 표를 가리킨다 — 테두리 클릭으로
+   *  안쪽 표를 선택할 때 사용. 깊이 1 이하면 평면 참조와 동일하므로 버린다.
+   */
+  enterTableObjectSelectionDirect(
+    sec: number, ppi: number, ci: number,
+    cellPath?: CellPathEntry[],
+  ): void {
     this._tableObjectSelected = true;
-    this.selectedTableRef = { sec, ppi, ci };
+    this.selectedTableRef =
+      cellPath && cellPath.length > 1 ? { sec, ppi, ci, cellPath } : { sec, ppi, ci };
   }
 
   /** 표 객체 선택을 해제한다. */
@@ -1854,10 +1907,11 @@ export class CursorState {
     cellPath?: CellPathEntry[],
     noteRef?: any,
     missing?: boolean,
+    pageIndex?: number,
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing, pageIndex };
     this.selectedPictureRefs = [{ ...this.selectedPictureRef }];
   }
 

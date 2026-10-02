@@ -1202,9 +1202,16 @@ impl LayoutEngine {
                             };
                             // TAC: 문단 시작 위치 (표의 왼쪽 상단)
                             let pic_x = inner_x;
-                            // vpos 기반 y 위치: LINE_SEG의 vertical_pos 사용
-                            let pic_y = if let Some(first_ls) = para.line_segs.first() {
-                                cell_y + pad_top + hwpunit_to_px(first_ls.vertical_pos, self.dpi)
+                            // 셀 안의 빈-control stream은 control마다 8 unit을 보존한다.
+                            // 앞선 InFrontOfText 주석 뒤의 TAC 그림은 두 번째 저장 줄을
+                            // 소유할 수 있으므로, 첫 줄을 고정으로 쓰면 그림만 1600HU
+                            // 위로 올라간다(#7333 p40~47). 본문 TAC와 같은 사영으로 실제
+                            // control 소유 줄을 고른다.
+                            let picture_line = super::control_line_seg_index(para, ctrl_idx);
+                            let pic_y = if let Some(line) =
+                                picture_line.and_then(|line| para.line_segs.get(line))
+                            {
+                                cell_y + pad_top + hwpunit_to_px(line.vertical_pos, self.dpi)
                             } else {
                                 para_y - fit_h
                             };

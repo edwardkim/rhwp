@@ -72,15 +72,20 @@ export class FindDialog {
   private caseSensitiveCheck!: HTMLInputElement;
   private replaceRow!: HTMLDivElement;
   private replaceButtonRow!: HTMLDivElement;
+  private matchCountLabel!: HTMLSpanElement;
   private statusLabel!: HTMLSpanElement;
   private titleLabel!: HTMLSpanElement;
   private keyCaptureHandler: ((e: KeyboardEvent) => void) | null = null;
 
   /** 현재 검색 결과 (바꾸기 시 위치 참조용) */
   private currentHit: SearchResult | null = null;
+  private searchedQuery: string | null = null;
+  private queryComposing = false;
+  private pendingSearchDirection: boolean | null = null;
 
   /** [Task #2339] history-jumped 구독 해제 핸들 (열려 있는 동안만 구독). */
   private historyJumpOff: (() => void) | null = null;
+  private documentMutationOff: (() => void) | null = null;
 
   constructor(services: CommandServices, mode: FindMode) {
     this.services = services;
@@ -100,15 +105,31 @@ export class FindDialog {
     this.installKeyCaptureHandler();
     // [Task #2339] undo/redo 로 문서가 되돌려지면 currentHit(sec/para/charOffset)이 stale 이
     // 되어 바꾸기가 엉뚱한 위치를 치환한다 → history-jumped 구독으로 무효화(열려 있는 동안만).
-    this.historyJumpOff = this.services.eventBus.on('history-jumped', () => { this.currentHit = null; });
+    this.historyJumpOff = this.services.eventBus.on('history-jumped', () => {
+      this.currentHit = null;
+      this.clearMatchCount();
+      this.statusLabel.textContent = '';
+      // undo/redo는 afterEdit의 document-mutated에서 count를 한 번 갱신한다.
+    });
+    this.documentMutationOff = this.services.eventBus.on('document-mutated', () => {
+      this.currentHit = null;
+      this.statusLabel.textContent = '';
+      this.refreshMatchCount();
+    });
     this.focusInput();
   }
 
   hide(): void {
     this._open = false;
+    this.queryComposing = false;
+    this.pendingSearchDirection = null;
+    this.searchedQuery = null;
+    this.currentHit = null;
     this.removeKeyCaptureHandler();
     this.historyJumpOff?.();
     this.historyJumpOff = null;
+    this.documentMutationOff?.();
+    this.documentMutationOff = null;
     this.wrap?.remove();
   }
 
@@ -164,6 +185,27 @@ export class FindDialog {
     this.queryInput.addEventListener('keydown', (e) => e.stopPropagation());
     this.queryInput.addEventListener('keyup', (e) => e.stopPropagation());
     this.queryInput.addEventListener('keypress', (e) => e.stopPropagation());
+    this.queryInput.addEventListener('input', () => {
+      // IME 종료의 늦은 input이 같은 문자열의 검색 결과를 지우지 않도록 한다.
+      if (this.queryInput.value === this.searchedQuery) return;
+      this.currentHit = null;
+      this.searchedQuery = null;
+      this.clearMatchCount();
+      this.statusLabel.textContent = '';
+    });
+    this.queryInput.addEventListener('compositionstart', () => {
+      this.queryComposing = true;
+    });
+    this.queryInput.addEventListener('compositionend', () => {
+      this.queryComposing = false;
+      const forward = this.pendingSearchDirection;
+      this.pendingSearchDirection = null;
+      if (forward === null) return;
+      const input = this.queryInput;
+      setTimeout(() => {
+        if (this._open && this.queryInput === input) this.doSearch(forward);
+      }, 0);
+    });
     findRow.appendChild(findLabel);
     findRow.appendChild(this.queryInput);
     body.appendChild(findRow);
@@ -190,16 +232,31 @@ export class FindDialog {
     this.caseSensitiveCheck = document.createElement('input');
     this.caseSensitiveCheck.type = 'checkbox';
     this.caseSensitiveCheck.id = 'find-case-sensitive';
+    this.caseSensitiveCheck.addEventListener('change', () => {
+      this.currentHit = null;
+      this.searchedQuery = null;
+      this.clearMatchCount();
+      this.statusLabel.textContent = '';
+    });
     const caseLabel = document.createElement('label');
     caseLabel.htmlFor = 'find-case-sensitive';
     caseLabel.textContent = t('dialog.find.caseLabel.text');
     optRow.appendChild(this.caseSensitiveCheck);
     optRow.appendChild(caseLabel);
 
+    this.matchCountLabel = document.createElement('span');
+    this.matchCountLabel.className = 'find-dialog-match-count';
+    this.matchCountLabel.hidden = true;
+    optRow.appendChild(this.matchCountLabel);
+
     this.statusLabel = document.createElement('span');
     this.statusLabel.className = 'find-dialog-status';
-    optRow.appendChild(this.statusLabel);
+    this.statusLabel.setAttribute('role', 'status');
     body.appendChild(optRow);
+    const statusRow = document.createElement('div');
+    statusRow.className = 'find-dialog-status-row';
+    statusRow.appendChild(this.statusLabel);
+    body.appendChild(statusRow);
 
     this.wrap.appendChild(body);
 
@@ -207,8 +264,12 @@ export class FindDialog {
     const btnRow = document.createElement('div');
     btnRow.className = 'find-dialog-buttons';
 
-    const prevBtn = this.createButton(t('dialog.find.createButton.label'), () => this.findPrev());
-    const nextBtn = this.createButton(t('dialog.find.createButton.label.xa65469'), () => this.findNext());
+    const prevBtn = this.createSearchButton(t('dialog.find.previous'), false);
+    const nextBtn = this.createSearchButton(t('dialog.find.next'), true);
+    prevBtn.title = t('dialog.find.createButton.label');
+    nextBtn.title = t('dialog.find.createButton.label.xa65469');
+    prevBtn.setAttribute('aria-label', prevBtn.title);
+    nextBtn.setAttribute('aria-label', nextBtn.title);
     btnRow.appendChild(prevBtn);
     btnRow.appendChild(nextBtn);
     this.wrap.appendChild(btnRow);
@@ -234,6 +295,25 @@ export class FindDialog {
     return btn;
   }
 
+  private createSearchButton(text: string, forward: boolean): HTMLButtonElement {
+    const btn = this.createButton(text, () => this.doSearch(forward));
+    let handledImeRelease = false;
+    btn.addEventListener('pointerdown', () => { handledImeRelease = false; });
+    btn.addEventListener('mouseup', (e) => {
+      // macOS IME가 down/click을 소비하면 detail=0인 up만 남고 입력창에 포커스가 유지된다.
+      if (e.button !== 0 || e.detail !== 0 || document.activeElement !== this.queryInput) return;
+      handledImeRelease = true;
+      this.doSearch(forward);
+    });
+    btn.addEventListener('click', (e) => {
+      const alreadyRequested = handledImeRelease
+        && (e.detail > 0 || (e instanceof PointerEvent && e.pointerType !== ''));
+      handledImeRelease = false;
+      if (alreadyRequested) e.stopImmediatePropagation();
+    }, true);
+    return btn;
+  }
+
   private installKeyCaptureHandler(): void {
     if (this.keyCaptureHandler) return;
     this.keyCaptureHandler = (e: KeyboardEvent) => {
@@ -245,6 +325,11 @@ export class FindDialog {
         e.preventDefault();
         e.stopPropagation();
         this.hide();
+        return;
+      }
+
+      if (isInDialog && target instanceof HTMLButtonElement && e.key === 'Enter') {
+        e.stopPropagation();
         return;
       }
 
@@ -284,11 +369,22 @@ export class FindDialog {
   }
 
   private doSearch(forward: boolean): void {
+    if (this.queryComposing) {
+      this.pendingSearchDirection = forward;
+      return;
+    }
     const query = this.queryInput.value;
-    if (!query) { this.statusLabel.textContent = ''; return; }
+    if (!query) {
+      this.currentHit = null;
+      this.searchedQuery = null;
+      this.clearMatchCount();
+      this.statusLabel.textContent = '';
+      return;
+    }
 
     FindDialog.lastQuery = query;
     FindDialog.lastCaseSensitive = this.caseSensitiveCheck.checked;
+    this.searchedQuery = query;
 
     const ih = this.services.getInputHandler();
     if (!ih) return;
@@ -306,6 +402,7 @@ export class FindDialog {
       fromChar = this.currentHit.charOffset!;
     }
 
+    const hadHit = Boolean(this.currentHit?.found);
     const result = this.services.wasm.searchText(
       query,
       fromSec,
@@ -320,18 +417,48 @@ export class FindDialog {
 
     if (result.found) {
       this.currentHit = result;
+      if (typeof result.totalMatchCount === 'number') {
+        this.showMatchCount(result.totalMatchCount);
+      } else {
+        this.clearMatchCount();
+      }
       this.navigateToHit(result);
-      if (result.wrapped) {
-        this.statusLabel.style.color = '#0066cc';
+      const wrapped = result.wrapped && hadHit;
+      this.statusLabel.dataset.state = wrapped ? 'wrapped' : '';
+      if (wrapped) {
         this.statusLabel.textContent = forward ? t('dialog.find.statusLabel.text') : t('dialog.find.statusLabel.text.x2dd4d3');
       } else {
         this.statusLabel.textContent = '';
       }
     } else {
       this.currentHit = null;
-      this.statusLabel.style.color = '#c00';
+      this.showMatchCount(0);
+      this.statusLabel.dataset.state = '';
       this.statusLabel.textContent = t('dialog.find.statusLabel.text.x88cec1');
     }
+  }
+
+  /** 편집 후 count만 갱신한다. 검색 히트 선택이나 본문 커서를 움직이지 않는다. */
+  private refreshMatchCount(): void {
+    const query = this.queryInput.value;
+    if (!query) { this.clearMatchCount(); return; }
+    const result = this.services.wasm.searchText(
+      query, 0, 0, 0, true, this.caseSensitiveCheck.checked, true,
+    );
+    if (!result.found) this.showMatchCount(0);
+    else if (typeof result.totalMatchCount === 'number') this.showMatchCount(result.totalMatchCount);
+    else this.clearMatchCount();
+  }
+
+  private showMatchCount(count: number): void {
+    this.matchCountLabel.textContent = t('dialog.find.matchCountLabel.text', { p1: count });
+    this.matchCountLabel.hidden = false;
+  }
+
+  private clearMatchCount(): void {
+    if (!this.matchCountLabel) return;
+    this.matchCountLabel.textContent = '';
+    this.matchCountLabel.hidden = true;
   }
 
   private navigateToHit(hit: SearchResult): void {
@@ -412,6 +539,7 @@ export class FindDialog {
     if (result.ok) {
       this.statusLabel.textContent = t('dialog.find.statusLabel.text.xf6f3e3', { p1: result.count });
       this.currentHit = null;
+      this.clearMatchCount();
     }
   }
 

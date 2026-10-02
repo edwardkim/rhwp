@@ -183,6 +183,31 @@ impl ParagraphBox {
         }
     }
 
+    /// 원본의 가시 목록 줄이 실제 문단 여백 원점을 사용하면 그 물리 상자를 복원한다.
+    /// 빈 목록과 편집 줄의 원점 발행 차단은 유지하며, 저장 폭·모든 행의 원점·
+    /// 텍스트 유효성은 이후 공통 프레임 수용 검사가 그대로 검증한다.
+    pub(crate) fn for_stored_body_rows(self, para: &crate::model::paragraph::Paragraph) -> Self {
+        let has_original_origin = !self.origin_is_derivable
+            && para.text.chars().any(|ch| !ch.is_whitespace())
+            && !para.stored_text_partition_is_dirty()
+            && para
+                .line_segs
+                .first()
+                .is_some_and(|line| line.column_start == self.horizontal.start)
+            && para
+                .line_segs
+                .iter()
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+        if has_original_origin {
+            Self {
+                origin_is_derivable: true,
+                ..self
+            }
+        } else {
+            self
+        }
+    }
+
     /// A box in a nested flow's own coordinates. Pass the real inset when the
     /// caller has one; `0..width` when the flow's left edge *is* the origin.
     pub(crate) fn content(horizontal: Range<i32>) -> Self {
@@ -357,6 +382,8 @@ pub(crate) struct LayoutFrame {
     pub(crate) current_intervals: Vec<Range<i32>>,
     pub(crate) next_geometry_event: Option<i32>,
     pub(crate) minimum_width: i32,
+    /// 저장 HWPX의 KoPub 양쪽 정렬 줄은 공백을 글꼴 전진폭까지 줄일 수 있다.
+    pub(crate) kopub_justified_space: bool,
     /// Whether `horizontal` is a column edge pair.
     ///
     /// The geometry pitch snaps the column's edge pair. A table cell's content
@@ -377,6 +404,7 @@ impl LayoutFrame {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }
@@ -743,6 +771,65 @@ impl LayoutFrame {
         !self.exclusions.is_empty()
     }
 
+    /// [#7160] 공백만인 줄을 앞 줄이 흡수한다 — 한/글은 말미 공백에 줄상자를 주지 않는다.
+    ///
+    /// 저장 `PARA_LINE_SEG` 전수(`samples/` HWP5 614파일·문단 436,267)에서 말미가 공백인
+    /// 여러 줄 문단 5,786건 중 **공백만인 마지막 줄은 0건**이다(강제 개행 0x0D 제외). 앞 줄의
+    /// 마지막 조각이 그 공백까지 덮게 범위를 늘리고 그 줄을 뗀 뒤, 뒤 줄들을 그만큼 끌어올린다.
+    ///
+    /// 강제 개행이 든 줄은 한/글도 줄을 끝내는 자리라 대상이 아니다.
+    pub(crate) fn absorb_whitespace_only_rows(&mut self, text: &str, first_row: usize) -> usize {
+        let chars: Vec<char> = text.chars().collect();
+        let is_absorbable = |row: &PhysicalRow| -> bool {
+            let mut saw_char = false;
+            for segment in &row.segments {
+                for index in segment.text_range.start as usize..segment.text_range.end as usize {
+                    let Some(ch) = chars.get(index) else {
+                        return false;
+                    };
+                    if *ch == '\r' || *ch == '\n' {
+                        return false;
+                    }
+                    if !ch.is_whitespace() {
+                        return false;
+                    }
+                    saw_char = true;
+                }
+            }
+            saw_char
+        };
+
+        let mut absorbed = 0usize;
+        let mut index = self.rows.len();
+        while index > first_row.saturating_add(1) {
+            index -= 1;
+            if !is_absorbable(&self.rows[index]) {
+                continue;
+            }
+            let row = self.rows.remove(index);
+            let shift = row
+                .metrics
+                .line_height
+                .saturating_add(row.metrics.line_spacing);
+            let end = row
+                .segments
+                .last()
+                .map(|segment| segment.text_range.end)
+                .unwrap_or(0);
+            if let Some(previous) = self.rows.get_mut(index - 1) {
+                if let Some(last) = previous.segments.last_mut() {
+                    last.text_range.end = last.text_range.end.max(end);
+                }
+            }
+            for later in self.rows.iter_mut().skip(index) {
+                later.metrics.vertical_pos = later.metrics.vertical_pos.saturating_sub(shift);
+            }
+            self.top = self.top.saturating_sub(shift);
+            absorbed += 1;
+        }
+        absorbed
+    }
+
     pub(crate) fn row_count(&self) -> usize {
         self.rows.len()
     }
@@ -829,6 +916,7 @@ mod tests {
             current_intervals: Vec::new(),
             next_geometry_event: None,
             minimum_width: 1,
+            kopub_justified_space: false,
             rows: Vec::new(),
         }
     }

@@ -1,0 +1,19 @@
+{
+  "issue": 7336,
+  "files": [
+    {
+      "path": "nested_table_fragment_cut.hwp",
+      "sha256": "53f4abb0f76f6366931e0c1b3610c58ca44ad3120869a4ea8e86a0ab7ff42543",
+      "bytes": 146944,
+      "source": "공개 공고 첨부 서식 (대전 중소기업 창업 지원 공고)",
+      "purpose": "Block-split fragment that ends inside a rowspan block must paint the straddling cell's consumed nested table"
+    },
+    {
+      "path": "stored_frame_page_larger_rowbreak.hwpx",
+      "sha256": "042633046ab469b971aa155417ecd568c8825d586d37f87a76194145edb903dc",
+      "bytes": 83747,
+      "source": "공개 공고 첨부 서식 (상주시 중소기업 맞춤형 인재양성 지원사업 신청서)",
+      "purpose": "Stored RowBreak object frame must not claim whole-page ownership for a table measured larger than one body page"
+    }
+  ]
+}

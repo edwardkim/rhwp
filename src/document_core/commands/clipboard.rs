@@ -133,6 +133,11 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
     // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
     // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
     para.invalidate_layout_inputs();
+    let leading_defs = para
+        .controls
+        .iter()
+        .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
@@ -159,6 +164,8 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
         .collect();
     para.controls = new_controls;
     para.ctrl_data_records = new_records;
+    // 구역 첫 문단을 0 부터 복사하면 secd/cold 의 선행 자리(16)가 char_offsets 에 남는다.
+    para.release_leading_extended_control_slots(leading_defs);
     para.control_mask = recompute_clipboard_control_mask(para);
     if !para.field_ranges.is_empty() {
         rebuild_char_offsets(para);

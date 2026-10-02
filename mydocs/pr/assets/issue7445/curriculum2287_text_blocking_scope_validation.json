@@ -1,0 +1,541 @@
+{
+  "stage": 123,
+  "code_commit": "5117536ee0e1cee0b9ac23547fd3ce0bebeb9e02",
+  "analysis": {
+    "head": "f4c80a9745033043836109a2c22e5321befcb3b9",
+    "analysis": "#7382 text-overlap37→90 실제증가만 판단. 같은입력/독립한컴PDF415쪽은#7244검토의해시/출처에연결한다. 현재모든증가페이지/실제겹침좌표를읽어영향쪽Native를새로비교한뒤90%미달시실제text축만보류. 정상기존실물/IR 함수 및모든다른축/문서·원문PDF 유지. 원장37을90으로완화하지않음.",
+    "files": {
+      "samples/task2287/1342000_edu_curriculum_map.hwp": {
+        "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+        "bytes": 1324032
+      },
+      "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf": {
+        "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197",
+        "bytes": 2611647
+      },
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp": {
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+        "bytes": 26874272
+      }
+    },
+    "mapping": "mydocs/pr/archives/pr_7244_review_impl.md",
+    "production_same_since": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "pdf_info": {
+      "pages": 415,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "법제처 국가법령정보센터",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830180438+09'00'",
+        "modDate": "D:20260830180438+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "visual_provenance": {
+      "hwp": {
+        "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+        "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+      },
+      "pdf": {
+        "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+        "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+      },
+      "git_head": "f4c80a9745033043836109a2c22e5321befcb3b9",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage123-curriculum-text/visual-native/curriculum2287/run_manifest.json"
+      }
+    },
+    "native_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 25,
+          "tolerant_content_match_percent": 86.2782
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 88.66352
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 77.50575
+        },
+        {
+          "page": 361,
+          "tolerant_content_match_percent": 70.62993
+        },
+        {
+          "page": 366,
+          "tolerant_content_match_percent": 68.47008
+        },
+        {
+          "page": 377,
+          "tolerant_content_match_percent": 69.36841
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "native_metrics": [
+      {
+        "page": 25,
+        "tolerant_content_match_percent": 86.2782
+      },
+      {
+        "page": 124,
+        "tolerant_content_match_percent": 88.66352
+      },
+      {
+        "page": 131,
+        "tolerant_content_match_percent": 77.50575
+      },
+      {
+        "page": 361,
+        "tolerant_content_match_percent": 70.62993
+      },
+      {
+        "page": 366,
+        "tolerant_content_match_percent": 68.47008
+      },
+      {
+        "page": 377,
+        "tolerant_content_match_percent": 69.36841
+      }
+    ],
+    "actual_anomaly": {
+      "page_count": 413,
+      "text_overlap_count": 90,
+      "affected_pages": [
+        {
+          "page": 124,
+          "count": 3
+        },
+        {
+          "page": 127,
+          "count": 3
+        },
+        {
+          "page": 129,
+          "count": 3
+        },
+        {
+          "page": 131,
+          "count": 3
+        },
+        {
+          "page": 134,
+          "count": 3
+        },
+        {
+          "page": 136,
+          "count": 3
+        },
+        {
+          "page": 148,
+          "count": 3
+        },
+        {
+          "page": 152,
+          "count": 3
+        },
+        {
+          "page": 156,
+          "count": 3
+        },
+        {
+          "page": 164,
+          "count": 2
+        },
+        {
+          "page": 177,
+          "count": 2
+        },
+        {
+          "page": 199,
+          "count": 3
+        },
+        {
+          "page": 201,
+          "count": 3
+        },
+        {
+          "page": 203,
+          "count": 3
+        },
+        {
+          "page": 221,
+          "count": 3
+        },
+        {
+          "page": 224,
+          "count": 1
+        },
+        {
+          "page": 228,
+          "count": 3
+        },
+        {
+          "page": 248,
+          "count": 1
+        },
+        {
+          "page": 257,
+          "count": 1
+        },
+        {
+          "page": 268,
+          "count": 3
+        },
+        {
+          "page": 280,
+          "count": 1
+        },
+        {
+          "page": 283,
+          "count": 2
+        },
+        {
+          "page": 294,
+          "count": 3
+        },
+        {
+          "page": 329,
+          "count": 2
+        },
+        {
+          "page": 339,
+          "count": 2
+        },
+        {
+          "page": 354,
+          "count": 2
+        },
+        {
+          "page": 357,
+          "count": 3
+        },
+        {
+          "page": 359,
+          "count": 3
+        },
+        {
+          "page": 360,
+          "count": 3
+        },
+        {
+          "page": 361,
+          "count": 5
+        },
+        {
+          "page": 363,
+          "count": 3
+        },
+        {
+          "page": 364,
+          "count": 3
+        },
+        {
+          "page": 365,
+          "count": 1
+        },
+        {
+          "page": 366,
+          "count": 5
+        }
+      ]
+    },
+    "individual_before": [
+      {
+        "head": "f4c80a9745033043836109a2c22e5321befcb3b9",
+        "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_6)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 3.7161347502842546,
+        "summary": [
+          "Summary [   2.722s] 1 test run: 0 passed, 1 failed, 236 skipped"
+        ],
+        "observations": [
+          "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건",
+          "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+        ]
+      }
+    ],
+    "planned_input": "task2287/1342000_edu_curriculum_map.hwp",
+    "planned_row": "task2287/1342000_edu_curriculum_map.hwp\t37",
+    "decision": "같은원문/독립PDF415쪽,현재413쪽. 선택6쪽전부90미만/최저366쪽68.47008%.366쪽review에서행내용소유/학교급·교과·성취기준 코드와표경계가다름,131쪽standalone overlay에서행높이/글줄/셀내용차이직접확인. text입력/기존37건행만 #7445보류. 정상기존실물/IR함수와모든다른축/문서·원문PDF 유지.37을90으로완화하지않음.",
+    "limits": "선택6쪽NegativeNative증거. 전수415쪽/freshWASM 미실행, 정상기존검사통과를독립Hancom정답/전체피델리티로승격하지않음. oracle원장의415/413도있는기존차이이며현재oracle실패관측이없어제외하지않음."
+  },
+  "individual_before": [
+    {
+      "head": "f4c80a9745033043836109a2c22e5321befcb3b9",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_6)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 3.7161347502842546,
+      "summary": [
+        "Summary [   2.722s] 1 test run: 0 passed, 1 failed, 236 skipped"
+      ],
+      "observations": [
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건",
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    }
+  ],
+  "mutation": {
+    "deferred_axis_input": "task2287/1342000_edu_curriculum_map.hwp",
+    "removed_row": "task2287/1342000_edu_curriculum_map.hwp\t37",
+    "removed_functions": [],
+    "kept": "같은원문의기존실물/IR 및모든다른축/문서·원문/PDF·공차 유지. #6761의시장별도실패도그대로남겨후속개별분석"
+  },
+  "focused_summary": [
+    "Summary [  57.641s] 35 tests run: 33 passed, 2 failed, 1092 skipped"
+  ],
+  "normal_results": [
+    "PASS [   1.548s] ( 1/35) rhwp::regression_suite_012 issue_2287_edu_rowspan_block_fragments::issue_2287_edu_p26_keeps_content",
+    "PASS [   1.573s] ( 2/35) rhwp::regression_suite_010 issue_6761_stored_vpos_rewind_page_break::partial_retreat_inside_a_page_does_not_break",
+    "PASS [   1.581s] ( 3/35) rhwp::regression_suite_011 issue_2291_rowspan_declared_residual::issue_2291_rowspan_declared_residual_expands_last_spanned_row",
+    "PASS [   1.603s] ( 4/35) rhwp::regression_suite_011 issue_2291_rowspan_declared_residual::issue_2291_stored_single_seg_paragraph_rewraps_full_text",
+    "PASS [   1.617s] ( 5/35) rhwp::regression_suite_012 issue_2287_edu_rowspan_block_fragments::issue_2287_edu_fragments_stay_in_page_frame",
+    "PASS [   1.750s] ( 6/35) rhwp::regression_suite_017 issue_7226_rowspan_only_row_cut::same_row_reservation_survives_neighboring_page_budgets",
+    "PASS [   1.568s] ( 7/35) rhwp::regression_suite_017 issue_7226_rowspan_only_row_cut::the_fix_does_not_add_a_page",
+    "PASS [   0.044s] ( 8/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::giant_straddle_cell_that_must_be_cut_is_not_grown",
+    "PASS [   1.566s] ( 9/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::consumed_start_cut_does_not_grow_the_fragment_past_the_body",
+    "PASS [   1.604s] (10/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::completed_terminal_cut_does_not_allocate_an_empty_page",
+    "PASS [   3.272s] (11/35) rhwp::regression_suite_017 issue_7226_rowspan_only_row_cut::the_continuation_page_has_no_text_overlap",
+    "PASS [   0.222s] (12/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::straddle_cell_whose_last_row_is_cut_again_is_not_grown",
+    "PASS [   3.216s] (13/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::continuation_height_respects_varying_page_budgets",
+    "PASS [   3.645s] (14/35) rhwp::regression_suite_017 issue_7226_rowspan_only_row_cut::the_last_owned_line_is_inside_the_reserved_cell_and_body",
+    "PASS [   2.084s] (15/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::physical_blank_band_is_not_reserved_again_on_continuation",
+    "PASS [   6.708s] (18/35) rhwp::regression_suite_017 issue_7226_rowspan_only_row_cut::the_rowspan_only_row_is_split_inside_and_never_repainted",
+    "PASS [   5.146s] (20/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::no_occurrence_of_the_line_escapes_its_cell",
+    "PASS [  14.393s] (31/35) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::the_pages_that_carry_it_have_no_escaped_line"
+  ],
+  "text_axis_results": "전체16분할15PASS/1FAIL(진안신규5). 정상기존18PASS/시장 별도입력6761 1FAIL, 합계33PASS/2FAIL/1092SKIP.",
+  "actual_remaining_failures": [
+    {
+      "test_result": "FAIL [   0.894s] (28/35) rhwp::regression_suite_024 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [  22.749s] (34/35) rhwp::regression_suite_010 issue_6761_stored_vpos_rewind_page_break::stored_rewind_paragraph_starts_the_next_page",
+      "observations": [
+        "left: 317",
+        "right: 315"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "f4c80a9745033043836109a2c22e5321befcb3b9",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_010",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_024",
+          "-E",
+          "(test(text_overlap_baseline::)) or (test(issue_2287_edu_rowspan_block_fragments::)) or (test(issue_2291_rowspan_declared_residual::)) or (test(issue_6981_split_straddle_row_height::)) or (test(issue_7226_rowspan_only_row_cut::)) or (test(issue_6761_stored_vpos_rewind_page_break::))"
+        ],
+        "exit_code": 100,
+        "seconds": 83.54622325021774
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.473841707687825
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.41791824996471405
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2281098747625947
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.373091250192374
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.148095500189811
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.238932666834444
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.848988082725555
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "f93ea4c33020768369199f1f269bf65b7d552c6acf69a983d2b4c9f7e2aee80b",
+    "tests/fixtures/text_overlap_baseline.tsv": "11e7c0c1028d102855202d1abc8ea0600cb92e522b281518dbe061b6a98f9908"
+  },
+  "source_after_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "e956df8440fc966d4c1232ef2684a9262a6e1b735a5c7fce5c189e68a85a489d",
+    "tests/fixtures/text_overlap_baseline.tsv": "79e2599d436d822f42dab1f0fad7c6cfd39944ad3d3255e3f4c39962fbacb55b"
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874264216",
+  "representative_assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/curriculum2287_native_review_366.png",
+      "sha256": "4c6102f8f248f49c8dc778876ba8548f4066f1b86fe01eeed8b6c7ed60689897"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/curriculum2287_native_overlay_131.png",
+      "sha256": "1347ea84fe5034ba982711cb76bafd25c94ac95944d5ff88d2651f801103507a"
+    }
+  ],
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "remaining": "진안text 및별도시장6761 317/315·이미관측한시장7147두실패/off및다른축·최종37개별/전체검증/PR준비 미완료"
+}

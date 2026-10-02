@@ -19,6 +19,11 @@
 //! 96dpi 래스터로 겹쳐 재면 수정 전 −21px 이던 잉크 차가 수정 후 **−9px 로 균일**해진다
 //! (남는 −9 는 칸 첫 내용 상단 여백 축이며 이 수정 밖이다).
 //!
+//! 그 −9 는 `#7095` 가 닫았다 — 쪽이 정한 조각 상자 안에서 칸 `valign=Center` 를 조각 내용
+//! 높이로 적용하고, 표 host 뒤 빈 문단(p19)의 저장 쪽 프레임을 알아보게 했다. 아래 절대
+//! 좌표는 그래서 **정본 2쪽 제목 상자 상단 57.06** 을 기준으로 한다. 이 시험의 계약인 빈
+//! 문단 몫(11.8px)과 그 아래 상대 배치는 그대로다.
+//!
 //! 반례: 앞 문단의 슬롯이 이 문단 vpos 에 닿지 않는 빈 문단(장식용 겹침 스페이서)과 다음
 //! 문단이 저장 seg 를 가진 경우는 종전 collapse 계약 그대로다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -56,7 +61,7 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
     let core = load();
     let nodes = page_nodes(&core, 1);
 
-    // 제목 상자는 47.2..87.0 그대로다.
+    // 제목 상자 상단은 정본 57.06 이다(#7095 전에는 상자 위에 붙어 49.1).
     let title_box = nodes
         .iter()
         .find_map(|n| match &n.node_type {
@@ -65,15 +70,15 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
         })
         .expect("제목 상자(39.8px)");
     assert!(
-        (title_box.y - 49.1).abs() < 0.5,
-        "#7086: 제목 상자 위치(#7095 로 +1.9)는 49.1 이어야 한다: {:.1}",
+        (title_box.y - 57.2).abs() < 0.5,
+        "#7086: 제목 상자 위치는 정본 57.06(rhwp 57.2)이어야 한다: {:.1}",
         title_box.y
     );
 
     // p[17] 의 빈 줄 — 저장 lh=600 = 8.0px. 접히면 이 줄이 아예 없다.
     let spacer = nodes.iter().find_map(|n| match &n.node_type {
         RenderNodeType::TextLine(_)
-            if (n.bbox.y - 98.9).abs() < 0.5 && (n.bbox.height - 8.0).abs() < 0.5 =>
+            if (n.bbox.y - 106.9).abs() < 0.5 && (n.bbox.height - 8.0).abs() < 0.5 =>
         {
             Some(n.bbox)
         }
@@ -81,10 +86,10 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
     });
     assert!(
         spacer.is_some(),
-        "#7086: 제목 상자와 3×3 표 사이의 빈 문단 줄(y=98.9 h=8.0)이 있어야 한다"
+        "#7086: 제목 상자와 3×3 표 사이의 빈 문단 줄(y=106.9 h=8.0)이 있어야 한다"
     );
 
-    // 3×3 표는 그 빈 문단의 몫(600+284HU = 11.8px)만큼 내려간다 — 접히면 97.0 이다.
+    // 3×3 표는 그 빈 문단의 몫(600+284HU = 11.8px)만큼 내려간다 — 접히면 106.9 이다.
     let grid = nodes
         .iter()
         .find_map(|n| match &n.node_type {
@@ -93,8 +98,8 @@ fn issue_7086_empty_paragraph_between_two_table_hosts_keeps_its_line() {
         })
         .expect("3×3 표");
     assert!(
-        (grid.y - 110.7).abs() < 0.5,
-        "#7086: 3×3 표는 98.9 + 11.8 = 110.7 에서 시작해야 한다 — 접히면 98.9: {:.1}",
+        (grid.y - 118.7).abs() < 0.5,
+        "#7086: 3×3 표는 106.9 + 11.8 = 118.7 에서 시작해야 한다 — 접히면 106.9: {:.1}",
         grid.y
     );
 }
@@ -110,10 +115,10 @@ fn issue_7086_downstream_content_shifts_by_the_same_slot() {
             _ => None,
         })
         .expect("도해 그림");
-    // 548.1 + 11.8. 그 아래 상대 배치(#7062·#7079)는 그대로다.
+    // 558.0 + 11.8 (#7095 의 칸 가운데 정렬 +8.1 포함). 그 아래 상대 배치(#7062·#7079)는 그대로다.
     assert!(
-        (image.y - 561.7).abs() < 0.5,
-        "#7086: 도해 그림도 같은 11.8px 만큼 내려간다(#7095 로 +1.9): {:.1}",
+        (image.y - 569.8).abs() < 0.5,
+        "#7086: 도해 그림도 같은 11.8px 만큼 내려간다(#7095 가운데 정렬 포함): {:.1}",
         image.y
     );
     let table = nodes

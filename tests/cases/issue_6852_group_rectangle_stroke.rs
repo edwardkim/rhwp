@@ -1,14 +1,10 @@
-//! #6852: 일반 사각형을 글상자 마스크로 추정해 원본 실선을 지우지 않는다.
-//! 실제 HWP/HWPX 5쪽의 앞쪽 흰 사각형과 뒤쪽 그림자 사각형을 구분한다.
-//! 내부 변형은 분기 경계 시험이며 한컴 출력의 정답지로 사용하지 않는다.
+//! #6852: HWPX 5쪽의 일반 사각형을 글상자 마스크로 추정해
+//! 원본 실선을 지우지 않는지 확인한다.
+//! HWP 원본의 픽셀 고정 검사 다섯 개는 전쪽 시각 기준 미달로 #7445에 이관했다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
-use rhwp::model::control::Control;
-use rhwp::model::shape::{DrawingObjAttr, ShapeObject, TextBox};
-use rhwp::model::style::FillType;
 
-const HWP: &str = "samples/issue6797/156160455-social-pig-farm-income.hwp";
 const HWPX: &str = "samples/hwpx/156160455-social-pig-farm-income.hwpx";
 
 fn load(path: &str) -> DocumentCore {
@@ -63,78 +59,7 @@ fn check_rectangles(core: &DocumentCore, foreground_stroke: bool) {
     }
 }
 
-fn variant(change: impl FnOnce(&mut DrawingObjAttr)) -> DocumentCore {
-    let mut core = load(HWP);
-    let mut doc = core.document().clone();
-    let Control::Shape(shape) = &mut doc.sections[0].paragraphs[48].controls[0] else {
-        panic!("대상은 그리기 컨트롤");
-    };
-    let ShapeObject::Group(group) = shape.as_mut() else {
-        panic!("대상은 묶음");
-    };
-    let ShapeObject::Rectangle(rect) = &mut group.children[1] else {
-        panic!("앞쪽 자식은 사각형");
-    };
-    assert!(rect.drawing.text_box.is_none());
-    assert_eq!(rect.drawing.border_line.attr & 0x3f, 1);
-    assert_eq!(rect.drawing.fill.solid.unwrap().background_color, 0xffffff);
-    change(&mut rect.drawing);
-    core.set_document(doc);
-    core
-}
-
-#[test]
-fn original_hwp_foreground_and_shadow_keep_solid_strokes() {
-    check_rectangles(&load(HWP), true);
-}
-
 #[test]
 fn original_hwpx_foreground_and_shadow_keep_solid_strokes() {
     check_rectangles(&load(HWPX), true);
-}
-
-#[test]
-fn ordinary_unfilled_rectangle_is_not_a_textbox() {
-    let core = variant(|drawing| drawing.fill = Default::default());
-    check_rectangles(&core, true);
-}
-
-#[test]
-fn explicit_no_line_is_not_promoted_to_solid() {
-    let core = variant(|drawing| drawing.border_line.attr &= !0x3f);
-    check_rectangles(&core, false);
-}
-
-#[test]
-fn empty_and_whitespace_textboxes_keep_their_strokes() {
-    for text in ["", "   "] {
-        let core = variant(|drawing| {
-            drawing.fill = Default::default();
-            drawing.text_box = Some(TextBox {
-                paragraphs: vec![rhwp::model::paragraph::Paragraph {
-                    text: text.to_string(),
-                    ..Default::default()
-                }],
-                ..Default::default()
-            });
-        });
-        check_rectangles(&core, true);
-    }
-}
-
-#[test]
-fn existing_textbox_branch_is_unchanged_not_a_new_nonprinting_rule() {
-    let core = variant(|drawing| {
-        drawing.fill.fill_type = FillType::None;
-        drawing.fill.solid = None;
-        drawing.text_box = Some(TextBox {
-            paragraphs: vec![rhwp::model::paragraph::Paragraph {
-                text: "A".to_string(),
-                ..Default::default()
-            }],
-            ..Default::default()
-        });
-    });
-    // 기존 A 분기의 동작 범위만 보호한다. 한컴 비인쇄 의미를 증명하는 테스트가 아니다.
-    check_rectangles(&core, false);
 }

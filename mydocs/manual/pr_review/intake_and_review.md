@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-09-17
+last_verified: 2026-10-01
 ---
 
 # PR 접수와 리뷰 기록
@@ -139,6 +139,11 @@ fit 실패 뒤 작은 높이로 수용하는 fallback, 최종 컷 뒤 페이지 
 쓰지 않는다. 규칙·공통 결과의 문제를 샘플 속성 조건 추가로 덮도록 요청하지 않으며,
 현재 수정 범위의 보완에 엔진 전체 재작성을 필수 조건으로 붙이지 않는다.
 
+신규 렌더링 회귀가 포함되면 [회귀 추가 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)의
+관련 모든 페이지·fixture·Native/fresh WASM 최저 일치율 90% 이상과 직접 판독 증거를 확인한다.
+90% 미만은 `미충족`, 측정 불가·필수 경로 미실행은 `미검증`으로 기록하고 신규 회귀 추가를 보류한다.
+평균값·글꼴 예외·CI 통과로 충족 처리하거나 기존 검사를 자동 삭제하지 않는다.
+
 ## 2.8 검증 입력 커밋 확인
 
 이 항목도 역할·작성자와 관계없이 모든 정식 PR review에 적용한다. 직접 검증에 사용한 HWP/HWPX와
@@ -178,8 +183,18 @@ mydocs/pr/pr_N_review_impl.md
 
 review 문서에는 최소한 다음을 포함한다.
 
+새 review는 [PR review 템플릿](review_template.md)을 사용한다. **`## 최종 판정`을 제목 바로 다음
+첫 절에 둔다.** 접수 정보·검증 표·시각 증적을 보기 전에도 현재 결론과 blocker 또는 merge 전
+조건을 확인할 수 있어야 한다. 검증 중인 초안에는 `머지 보류`와 아직 완료되지 않은 검증을
+해제 조건으로 쓰고, 완료 후 판정과 근거를 갱신한다. 아래 상세 근거 절에 다른 최종 판정을
+중복 작성하지 않는다.
+
 - PR metadata 표: 번호, 작성자, base, 규모, mergeable 작성 시점 참고값
 - 관련 issue 요약과 변경 범위: 핵심 기능, metadata 변경, 범위 밖 변경
+- Native/fresh WASM 페이지별 TSV의 비교 범위·최저값·90% 미만/누락 쪽, 입력 및 source/build/font 출처.
+  [TSV 전용 절차](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용하며,
+  기존 PNG 재사용을 새 head 재출력으로 취급하지 않는다. 낮은 점수·구조 차이·대표 경계의 직접 PNG
+  판독과 각주 수량·문단 소속·전체 쪽수 검증을 함께 확인한다. TSV 성공/`not_evaluated`만으로 승인하지 않는다.
 - 렌더 영향과 visual sweep 필요 여부
 - 공통 조판 원칙 적용 여부와 근거; 적용 대상은 2.7의 원칙별 준수 판정·증거·미검증·보류 해제 조건
 - 검증 입력 커밋 확인: 2.8의 판정, 실제 사용한 HWP/HWPX/PDF 목록·저장소 경로·출처·SHA-256·확인한 commit SHA
@@ -197,6 +212,11 @@ review 문서에는 최소한 다음을 포함한다.
 `mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
 SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
+
+또한 reviewer는 merge 전 PR 본문에서 실제 Visual Sweep 증적이 보이는지 확인한다. 최종 PR head의
+repository·SHA로 고정한 Native/fresh WASM review·overlay 이미지가 실행한 출력 경로별로 표시되어야 하며,
+asset 경로·임시 output·review 문서 링크만 있으면 증적 부족으로 기록한다. 이 확인은 merge 뒤 contributor
+comment의 merge SHA 고정 증적과 별개다. 정본은 [Visual Sweep PR 본문 직접 증적](../verification/visual_sweep_guide.md#pr-body-visual-evidence)이다.
 
 ### 3.2 implementation 계획서
 

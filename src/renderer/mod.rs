@@ -147,6 +147,61 @@ pub(crate) fn clamp_tab_leader_end_x(
         .unwrap_or(leader.end_x)
 }
 
+/// 글꼴 원래 하이픈 폭이 저장 글자 간격보다 커서 연속 하이픈이 실선으로
+/// 겹칠 때만, 각 글자의 짧은 획을 그릴 공통 기하를 돌려준다.
+/// 글자마다 별도 획을 남겨 한컴 출력의 파선과 문자 소유를 보존한다.
+pub(crate) fn overlapping_dash_leader_segment(
+    text: &str,
+    style: &TextStyle,
+    char_index: usize,
+    positions: &[f64],
+    font_size: f64,
+) -> Option<(f64, f64, f64, f64)> {
+    if style.shadow_type > 0 || style.outline_type > 0 || style.emboss || style.engrave {
+        return None;
+    }
+    let face = style
+        .font_family
+        .split(',')
+        .next()?
+        .trim()
+        .trim_matches(['\'', '"']);
+    if face != "한양신명조" || positions.len() <= char_index + 1 {
+        return None;
+    }
+    let chars: Vec<char> = text.chars().collect();
+    if chars.get(char_index) != Some(&'-') {
+        return None;
+    }
+    let left = chars[..char_index]
+        .iter()
+        .rev()
+        .take_while(|ch| **ch == '-')
+        .count();
+    let right = chars[char_index + 1..]
+        .iter()
+        .take_while(|ch| **ch == '-')
+        .count();
+    if left + right + 1 < 3 {
+        return None;
+    }
+    let advance = positions[char_index + 1] - positions[char_index];
+    // 저장 폭 표는 좁은 획(588/1024em)을 쓰지만 실제 SVG 글꼴은
+    // H2MJSM의 넓은 하이픈(853/1024em)을 칠한다. 겹침 판정은 칠할
+    // 글꼴의 폭으로 해야 한다.
+    let metric =
+        font_metrics_data::find_metric_decision("HYSinMyeongJo-Medium", style.bold, style.italic)?;
+    let natural_width =
+        f64::from(metric.metric.get_width('-')?) * font_size / f64::from(metric.metric.em_size);
+    if advance <= 0.0 || natural_width <= advance + 0.25 {
+        return None;
+    }
+    // 한컴 출력의 하이픈 획은 저장 글자 원점에서 시작하며 기준선보다
+    // 0.43em 위에 있다. 길이는 저장 advance 안에서만 남긴다.
+    let end = (font_size * 0.38).min(advance * 0.7);
+    Some((0.0, end, -font_size * 0.43, font_size * 0.054))
+}
+
 /// Backend replay 직전의 optional scalar positions를 한 번 더 검증한다.
 ///
 /// `TextRunNode` accessor와 positioned `Renderer` 직접 호출이 같은 bounded
@@ -291,6 +346,41 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_metric_trusted: bool,
+    /// [#7391] 폭을 잴 때만 `font_family` 대신 쓸 face 이름.
+    ///
+    /// legacy-latin 폴백은 표시할 글꼴이 없는 환경을 위해 라틴 face 를 한글 face 로
+    /// 보낸다(`AmeriGarmnd BT` → `HY견명조`). 표시로는 뜻이 있어도 폭은 범주가 다르다.
+    /// rhwp 가 선언 face 자신의 표를 이미 가진 경우에만 그 이름이 들어오며, 근거는
+    /// [`crate::renderer::style_resolver::ResolvedCharStyle::font_families_metric_face`] 에 있다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub metric_font_family: Option<String>,
+    /// [#7387] 명시적으로 확인한 공백 전진폭(em). 주로
+    /// `CharShape.use_font_space`가 켜진 run의 **영문 슬롯** 글꼴 폭이며,
+    /// 저장 문서의 독립 출력에서 다른 폭이 확인되면 프로필이 덮어쓸 수 있다.
+    /// `None`이면 아래 일반 글꼴 측정 규칙을 따른다.
+    ///
+    /// 한/글은 이 속성이 켜지면 공백을 반각이 아니라 영문 슬롯 글꼴의 제 공백
+    /// 글리프 전진폭으로 전진시킨다. `1382000_domestic_violence_survey` 정본
+    /// (`Hwp 2018 11.0.0.1623`)의 같은 문서·같은 쪽 대조가 값을 말한다 —
+    /// 미정렬 줄만 골라 charPr 에 붙여 재면:
+    ///
+    /// ```text
+    ///   ufs=0  charPr 12  자간 0   n=37   0.500 em   (반각 그대로)
+    ///   ufs=0  charPr 6·33 자간 -5 n=729  0.469 em   (0.5 x 0.95)
+    ///   ufs=1  charPr 65·54·53·59  자간 0 n=763  0.337 em
+    ///   ufs=1  charPr 24  자간 0   n=18   0.337 em
+    ///   ufs=1  charPr 26  자간 0   n=38   0.489 em  <- 영문 슬롯이 휴먼명조
+    /// ```
+    ///
+    /// 마지막 줄이 상수가 아님을 말한다: 같은 `ufs=1` 이라도 영문 슬롯이 대체 없이
+    /// 쓰인 휴먼명조면 그 글꼴의 제 공백 0.5 em 이 나오고, Batang 으로 대체된
+    /// 슬롯이면 0.333 em(341/1024)이 나온다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_space_em: Option<f64>,
     /// [#7051] 이 run 의 글꼴이 **HFT 한글 전용 face** 라서 대체됐는지
     /// (`FontSubstitutionBoundary::Hft`). 그런 글꼴의 ASCII 는 한컴이 반각(`em/2`)으로
     /// 전진시키므로 대체 글꼴의 비례 폭을 그대로 쓰면 안 된다. 진짜 영문 HFT
@@ -315,8 +405,23 @@ impl TextStyle {
     /// 모은 것이다 (#2771). 레이아웃 advance 는 본문 run 기준을 유지하고 실제
     /// 글리프 크기와 baseline 만 조정한다는 계약은 종전과 같다.
     ///
-    /// 비첨자 run 은 인자를 그대로 돌려주므로 기존 출력이 비트 단위로 보존된다.
+    /// HY신명조의 그리기 기준선은 한컴 PDF와 비교한 글꼴 메트릭 차이를 반영한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
+        // exam_kor 한컴 PDF 17쪽 T5와 동일 글자 79개의 가로 원점을 맞춰 대조하면
+        // SVG의 HY신명조 기준선이 1.43~1.56px 낮다(글꼴 크기 약 15px).
+        // 줄 상자와 전진폭은 유지하고 표시 기준선만 글꼴 크기의 0.1em 올린다.
+        let primary_font = self
+            .font_family
+            .split(',')
+            .next()
+            .unwrap_or(&self.font_family)
+            .trim()
+            .trim_matches(['\'', '"']);
+        let baseline_y = if primary_font == "HY신명조" {
+            baseline_y - base_font_size * 0.1
+        } else {
+            baseline_y
+        };
         if self.superscript {
             (
                 base_font_size * SCRIPT_FONT_SCALE,
@@ -462,6 +567,8 @@ impl Default for TextStyle {
             strike_color: 0,
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
+            metric_font_family: None,
+            font_space_em: None,
             hft_hangul_face: false,
         }
     }
@@ -1019,6 +1126,7 @@ pub(crate) fn composed_line_max_font_size(
     let run_max = line
         .runs
         .iter()
+        .filter(|run| composed_run_reserves_font_height(run))
         .filter_map(|run| {
             styles
                 .char_styles
@@ -1031,11 +1139,44 @@ pub(crate) fn composed_line_max_font_size(
         return run_max;
     }
 
+    // 개체 마커만 있는 줄은 개체/저장 줄 상자가 높이를 소유한다.
+    // 빈 문단의 글꼴 폴백과 달리 U+FFFC 자체의 글자 크기를 예약하지 않는다.
+    if !line.runs.is_empty()
+        && line
+            .runs
+            .iter()
+            .all(|run| !composed_run_reserves_font_height(run))
+    {
+        return 0.0;
+    }
+
     para.char_shape_id_at(line.char_start)
         .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
         .and_then(|shape_id| styles.char_styles.get(shape_id as usize))
         .map(|style| style.font_size)
         .unwrap_or(0.0)
+}
+
+/// 공백도 글꼴 줄 상자를 가지지만 개체 대체 문자와 제어 문자에는 가시 글꼴이 없다.
+pub(crate) fn composed_run_reserves_font_height(run: &composer::ComposedTextRun) -> bool {
+    run.text.chars().any(|c| c != '\u{FFFC}' && !c.is_control())
+}
+
+/// 유효 저장 빈 문단 하나만 가진 각주는 본문 없는 인라인 참조다.
+/// 공백·개체·명시 번호와 무효/합성 줄은 기존 각주 본문 계약으로 남긴다.
+pub(crate) fn stored_footnote_is_bodyless(footnote: &crate::model::footnote::Footnote) -> bool {
+    let [paragraph] = footnote.paragraphs.as_slice() else {
+        return false;
+    };
+    let [line] = paragraph.line_segs.as_slice() else {
+        return false;
+    };
+    paragraph.text.is_empty()
+        && paragraph.controls.is_empty()
+        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && line.vertical_pos == 0
+        && line.line_height > 0
+        && line.segment_width > 0
 }
 
 /// 순수 텍스트 줄의 저장 metrics가 글자와 문단 스타일로부터 가능한 줄 advance보다
@@ -1717,6 +1858,166 @@ pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
     hwpunit as f64 * dpi / HWPUNIT_PER_INCH
 }
 
+/// 다단 뒤의 단일 단 제목은 저장 한 줄 여백을 온전히 보존한다.
+/// 다른 단 전환은 기존 1200HU 간격을 따른다.
+pub(crate) fn solo_zone_pad_px(entering_solo: bool, prior_multicol: bool, dpi: f64) -> f64 {
+    hwpunit_to_px(
+        if entering_solo && prior_multicol {
+            1500
+        } else {
+            1200
+        },
+        dpi,
+    )
+}
+
+/// 명시 단나누기가 다단에서 다음 다단 밴드를 시작할 때 저장 한 줄 간격.
+pub(crate) fn multicol_band_break_pad_px(dpi: f64) -> f64 {
+    hwpunit_to_px(1500, dpi)
+}
+
+/// 큰 디자인 간격의 한 줄 표 헤더 앞뒤에 나누어 예약할 직전 제목의 줄간격.
+pub(crate) fn solo_header_gap_half_px(
+    title: &crate::model::paragraph::Paragraph,
+    header: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    if title.line_segs.len() != 1
+        || title.text.trim().is_empty()
+        || header.line_segs.len() != 1
+        || !title.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+        })
+        || title.controls.iter().any(|control| matches!(control, Control::Table(_)))
+        || !header.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing > 283)
+        })
+        || !header.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.common.treat_as_char
+                && matches!(table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
+        })
+    {
+        return None;
+    }
+    let spacing = title.line_segs.first()?.line_spacing;
+    (spacing > 0).then(|| hwpunit_to_px(spacing, dpi) / 2.0)
+}
+
+/// 저장 한 줄 소제목에서 다단 본문으로 넘어갈 때 본문 두 줄 진행을 확보한다.
+/// 제목에서 이미 소비한 줄 상자와 별도로 더할 디자인 간격은 예약에서 제외한다.
+pub(crate) fn solo_title_exit_pad_px(
+    title: &crate::model::paragraph::Paragraph,
+    body: &crate::model::paragraph::Paragraph,
+    title_design_px: f64,
+    body_design_px: f64,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    if title.line_segs.len() != 1
+        || !title.text.trim_start().starts_with('<')
+        || !title.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+        })
+        || !body.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) > 1)
+        })
+    {
+        return None;
+    }
+    let title_line = title.line_segs.first()?;
+    let body_line = body.line_segs.first()?;
+    let title_advance = title_line
+        .line_height
+        .saturating_add(title_line.line_spacing);
+    let body_advance = body_line.line_height.saturating_add(body_line.line_spacing);
+    if title_advance <= 0 || body_advance <= 0 {
+        return None;
+    }
+    Some(
+        (2.0 * hwpunit_to_px(body_advance, dpi)
+            - hwpunit_to_px(title_advance, dpi)
+            - title_design_px / 2.0
+            - body_design_px / 2.0)
+            .max(0.0),
+    )
+}
+
+/// 같은 저장 줄을 끝으로 갖는 다단에서 빈 마지막 문단의 추가 줄간격.
+/// 글자가 있는 다른 단의 줄 상자는 유지하고, 빈 단의 뒤쪽 여백만 다음 구역에서 제외한다.
+pub(crate) fn parallel_blank_tail_spacing_excess_px(
+    columns: &[pagination::ColumnContent],
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    dpi: f64,
+) -> f64 {
+    let Some(last_col) = columns.last() else {
+        return 0.0;
+    };
+    if last_col
+        .zone_layout
+        .as_ref()
+        .is_none_or(|layout| layout.column_areas.len() < 2)
+    {
+        return 0.0;
+    }
+    let mut visible = Vec::new();
+    let mut blank = Vec::new();
+    for col in columns
+        .iter()
+        .rev()
+        .take_while(|col| (col.zone_y_offset - last_col.zone_y_offset).abs() < 0.1)
+    {
+        let Some(pagination::PageItem::FullParagraph { para_index }) = col.items.last() else {
+            continue;
+        };
+        let Some(para) = paragraphs.get(*para_index) else {
+            continue;
+        };
+        let Some(line) = para.line_segs.last() else {
+            continue;
+        };
+        let key = (line.vertical_pos, line.line_height);
+        if para.text.trim().is_empty() && para.controls.is_empty() {
+            blank.push((key, line.line_spacing));
+        } else if !para.text.trim().is_empty() {
+            visible.push((key, line.line_spacing));
+        }
+    }
+    let excess_hu = blank
+        .iter()
+        .flat_map(|(blank_key, blank_spacing)| {
+            visible
+                .iter()
+                .filter(move |(visible_key, _)| visible_key == blank_key)
+                .map(move |(_, visible_spacing)| blank_spacing - visible_spacing)
+        })
+        .max()
+        .unwrap_or(0)
+        .max(0);
+    hwpunit_to_px(excess_hu, dpi)
+}
+
+/// 한 줄 표 헤더 뒤의 예약 높이. 아래 바깥여백은 저장 줄에서 이미 소비했다.
+pub(crate) fn single_tac_header_tail_px(table_height_hu: u32, margin_top_hu: i16, dpi: f64) -> f64 {
+    (hwpunit_to_px(table_height_hu.min(i32::MAX as u32) as i32, dpi)
+        + hwpunit_to_px(i32::from(margin_top_hu), dpi))
+    .max(0.0)
+}
+
+/// 저장 줄을 먼저 소비한 헤더 띠 뒤의 잔여 높이.
+/// 표 본체와 아래 여백은 남고, 선행 줄의 마지막 줄간격 절반은 이미 소비됐다.
+pub(crate) fn partial_tac_header_tail_px(
+    table_height_hu: u32,
+    margin_bottom_hu: i16,
+    line_spacing_hu: i32,
+    dpi: f64,
+) -> f64 {
+    (hwpunit_to_px(table_height_hu.min(i32::MAX as u32) as i32, dpi)
+        + hwpunit_to_px(i32::from(margin_bottom_hu), dpi)
+        - hwpunit_to_px(line_spacing_hu, dpi) / 2.0)
+        .max(0.0)
+}
+
 /// 픽셀을 HWPUNIT으로 변환
 #[inline]
 pub fn px_to_hwpunit(px: f64, dpi: f64) -> i32 {
@@ -2320,6 +2621,8 @@ pub enum NumberFormat {
     LatinLower,
     /// 한글 가나다: 가, 나, 다
     HangulGaNaDa,
+    /// 한글 자모: ㄱ, ㄴ, ㄷ
+    HangulJamo,
     /// 한글 일이삼: 일, 이, 삼
     HangulNumber,
     /// 한자 一二三: 一, 二, 三
@@ -2354,6 +2657,16 @@ pub fn format_number(number: u16, format: NumberFormat) -> String {
         NumberFormat::LatinUpper => format_latin(number, true),
         NumberFormat::LatinLower => format_latin(number, false),
         NumberFormat::HangulGaNaDa => format_hangul_ganada(number),
+        NumberFormat::HangulJamo => {
+            const JAMO: [char; 14] = [
+                'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+            ];
+            number
+                .checked_sub(1)
+                .and_then(|index| JAMO.get(index as usize))
+                .map(char::to_string)
+                .unwrap_or_else(|| number.to_string())
+        }
         NumberFormat::HangulNumber => format_hangul_number(number),
         NumberFormat::HanjaNumber => format_hanja_number(number),
     }
@@ -3361,6 +3674,9 @@ mod tests {
 
     #[test]
     fn test_format_number_hangul() {
+        for (number, expected) in [(1, "ㄱ"), (2, "ㄴ"), (4, "ㄹ"), (14, "ㅎ")] {
+            assert_eq!(format_number(number, NumberFormat::HangulJamo), expected);
+        }
         assert_eq!(format_number(1, NumberFormat::HangulGaNaDa), "가");
         assert_eq!(format_number(2, NumberFormat::HangulGaNaDa), "나");
         assert_eq!(format_number(1, NumberFormat::HangulNumber), "일");

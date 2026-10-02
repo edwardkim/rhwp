@@ -17,8 +17,8 @@ const PINS: &[(&str, u32)] = &[
     ("samples/task2097/1741000_project_application.hwp", 2),
     // 압축 컷 수용 (p1 잔여 32.5 에 첫 줄 36.8 압축, 3→2쪽)
     ("samples/task2097/21298295_byeolpyo5_disaster.hwp", 2),
-    // 밴드 컷(#2236) + 압축 수용 결합 게이트 — rowspan 블록 중간 행 만충 정합
-    ("samples/task2146/21761835_jeonjik_exemption_table.hwp", 6),
+    // #7445: #7382 후보에서 6→7쪽으로 실패한 task2146 쪽수 항목만 보류합니다.
+    // 다른 두 압축 수용 입력과 원문·독립 PDF는 유지합니다.
 ];
 
 #[test]

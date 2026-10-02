@@ -10,11 +10,13 @@
     "build": "node build.mjs",
     "test:e2e:smoke": "npm run build && node --test e2e/page-budget.test.mjs && node e2e/extension-smoke.test.mjs",
     "test:e2e:download": "npm run build && node e2e/download-interceptor.test.mjs",
-    "clean": "rm -rf dist"
+    "test:e2e:lifecycle": "npm run build && node --test e2e/tab-monitor.test.mjs && node e2e/extension-lifecycle.test.mjs",
+    "clean": "rm -rf dist",
+    "test:e2e": "node e2e/run.mjs"
   },
   "devDependencies": {
-    "puppeteer": "^25.11.0",
+    "puppeteer": "^25.12.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.0"
+    "vite": "^8.3.1"
   }
 }

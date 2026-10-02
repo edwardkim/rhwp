@@ -933,22 +933,7 @@ impl DocumentCore {
     /// <img> 태그를 파싱하여 이미지 데이터를 문서에 추가한다.
     /// (base64 data URI만 지원)
     pub(crate) fn parse_img_html(&mut self, paragraphs: &mut Vec<Paragraph>, img_tag: &str) {
-        // src="data:image/...;base64,..." 추출
-        let src = if let Some(src_start) = img_tag.find("src=\"") {
-            let after = &img_tag[src_start + 5..];
-            if let Some(end) = after.find('"') {
-                &after[..end]
-            } else {
-                return;
-            }
-        } else if let Some(src_start) = img_tag.find("src='") {
-            let after = &img_tag[src_start + 5..];
-            if let Some(end) = after.find('\'') {
-                &after[..end]
-            } else {
-                return;
-            }
-        } else {
+        let Some(src) = html_img_src(img_tag) else {
             return;
         };
 
@@ -971,42 +956,10 @@ impl DocumentCore {
             return;
         }
 
-        // data:image/png;base64,XXXXX 파싱
-        let after_data = &src[5..]; // "image/png;base64,XXXXX"
-        let base64_start = if let Some(comma) = after_data.find(',') {
-            comma + 1
-        } else {
+        let Some(pic) = self.html_data_img_picture(img_tag, src) else {
             return;
         };
-        let base64_str = &after_data[base64_start..];
-
-        use base64::Engine;
-        let decoded = match base64::engine::general_purpose::STANDARD.decode(base64_str) {
-            Ok(d) => d,
-            Err(_) => return,
-        };
-
-        if decoded.is_empty() {
-            return;
-        }
-
-        // 종전에는 bin_data_content 에만 넣어 DocInfo BinData 레코드가 없었다 —
-        // HWPX 로는 나가지만 HWP(5.0) 저장에서 그림이 통째로 사라졌다(클라우드 '웹 저장' 실측).
-        // 그림 삽입 경로와 같은 register_embedded_bin_data 로 등록해 두 형식 모두에서 살아남게 한다.
-        let extension = detect_clipboard_image_mime(&decoded)
-            .split('/')
-            .nth(1)
-            .unwrap_or("png")
-            .to_string();
-        let new_bin_id = self.register_embedded_bin_data(&decoded, &extension);
-
-        // width/height 추출
-        let width = parse_html_attr_f64(img_tag, "width").unwrap_or(200.0);
-        let height = parse_html_attr_f64(img_tag, "height").unwrap_or(150.0);
-
-        // px → HWPUNIT
-        let w_hu = crate::renderer::px_to_hwpunit(width, self.dpi) as u32;
-        let h_hu = crate::renderer::px_to_hwpunit(height, self.dpi) as u32;
+        let (w_hu, h_hu) = (pic.common.width, pic.common.height);
 
         // 종전에는 본문 텍스트를 "[이미지]" 로 두고 Picture 컨트롤만 붙여
         // 저장·렌더 어느 쪽도 그림을 보지 못했다(HWPX 에 <hp:pic> 없음, 화면엔 글자 "[이미지]").
@@ -1046,6 +999,49 @@ impl DocumentCore {
             tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
             ..Default::default()
         }];
+        para.controls.push(Control::Picture(Box::new(pic)));
+        para.ctrl_data_records = vec![None];
+
+        paragraphs.push(para);
+    }
+
+    /// `data:` URI `<img>` 를 글자처럼 취급하는 그림 컨트롤로 만든다.
+    /// 그림 데이터는 문서에 등록한다. 디코드할 수 없으면 None.
+    pub(crate) fn html_data_img_picture(
+        &mut self,
+        img_tag: &str,
+        src: &str,
+    ) -> Option<crate::model::image::Picture> {
+        // data:image/png;base64,XXXXX 파싱
+        let after_data = src.strip_prefix("data:")?; // "image/png;base64,XXXXX"
+        let base64_str = &after_data[after_data.find(',')? + 1..];
+
+        use base64::Engine;
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(base64_str)
+            .ok()?;
+
+        if decoded.is_empty() {
+            return None;
+        }
+
+        // 종전에는 bin_data_content 에만 넣어 DocInfo BinData 레코드가 없었다 —
+        // HWPX 로는 나가지만 HWP(5.0) 저장에서 그림이 통째로 사라졌다(클라우드 '웹 저장' 실측).
+        // 그림 삽입 경로와 같은 register_embedded_bin_data 로 등록해 두 형식 모두에서 살아남게 한다.
+        let extension = detect_clipboard_image_mime(&decoded)
+            .split('/')
+            .nth(1)
+            .unwrap_or("png")
+            .to_string();
+        let new_bin_id = self.register_embedded_bin_data(&decoded, &extension);
+
+        // width/height 추출
+        let width = parse_html_attr_f64(img_tag, "width").unwrap_or(200.0);
+        let height = parse_html_attr_f64(img_tag, "height").unwrap_or(150.0);
+
+        // px → HWPUNIT
+        let w_hu = crate::renderer::px_to_hwpunit(width, self.dpi) as u32;
+        let h_hu = crate::renderer::px_to_hwpunit(height, self.dpi) as u32;
 
         // Picture 컨트롤 — insert_picture_native 와 같은 절대 크기 기준, 인라인(글자처럼 취급).
         let mut pic = crate::model::image::Picture::default();
@@ -1088,11 +1084,16 @@ impl DocumentCore {
         // img_dim 은 crop 과 같은 좌표계(px × 75)다 — 픽셀값을 그대로 넣으면 HWPX 직렬화기가
         // imgClip 보다 작은 imgDim 을 보고 그림을 버린다(실측: <hp:pic> 자체가 사라졌다).
         pic.img_dim = (nat_w * 75, nat_h * 75);
-        para.controls.push(Control::Picture(Box::new(pic)));
-        para.ctrl_data_records = vec![None];
-
-        paragraphs.push(para);
+        Some(pic)
     }
+}
+
+/// `<img>` 태그의 src 값(따옴표 양쪽 지원).
+pub(crate) fn html_img_src(img_tag: &str) -> Option<&str> {
+    ['"', '\''].into_iter().find_map(|quote| {
+        let after = &img_tag[img_tag.find(&format!("src={quote}"))? + 5..];
+        Some(&after[..after.find(quote)?])
+    })
 }
 
 /// 태그에서 속성 문자열을 그대로 뽑는다(따옴표 양쪽 지원).

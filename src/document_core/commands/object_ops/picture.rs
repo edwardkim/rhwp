@@ -1081,10 +1081,13 @@ impl DocumentCore {
                 pic.common.attr &= !(1 << 20);
             }
         }
-        if pic.common.flow_with_text {
-            pic.common.allow_overlap = false;
-            pic.common.attr &= !(1 << 14);
-        }
+        // [#6806] 「쪽 영역 안으로 제한」이 켜졌다는 이유로 「서로 겹침 허용」을 끄지
+        // 않는다 — 한컴은 두 플래그를 **동시에 켜서 저장**한다(코퍼스: 그림 518 중 70,
+        // 도형 894 중 12, 표 5428 중 39). 이 강제는 봉지에 무엇이 있든 돌아서, 게터가
+        // 내보낸 `allowOverlap:true` 를 되먹이기만 해도 false 로 뒤집었다(get∘set 비항등).
+        // 사용자가 실제로 「쪽 영역 제한」을 켜는 편집은 위 `restrictInPage` 갈래가
+        // 종전대로 겹침을 끄므로 그 계약은 그대로다. 도형·수식이 쓰는 공용 경로
+        // (`apply_common_obj_attr_from_json`)에는 이 강제가 이미 없다.
         if let Some(v) = json_i32(props_json, "vertOffset") {
             pic.common.vertical_offset = v as u32;
         }

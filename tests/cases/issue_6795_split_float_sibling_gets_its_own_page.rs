@@ -31,13 +31,15 @@
 //!                    pi=113 ci=1  y=158.2..854.2  → 같은 쪽, 548.0 × 401.9px 겹침
 //!            idx 31  pi=114 ci=0                  (형제 표가 없어 한 쪽씩 앞당겨진다)
 //!            idx 32  pi=121 ci=0
-//!   수정 후  idx 30  pi=113 ci=0 단독 (y=143.6..560.1)
-//!            idx 31  pi=113 ci=1 단독 (y=143.6..839.6, 본문 143.6..854.2 안)
+//!   수정 후  idx 30  pi=113 ci=0 단독
+//!            idx 31  pi=113 ci=1 단독 (본문 안)
 //!            idx 32  pi=114 ci=0 단독
 //! ```
+//! 조각 하단의 과거 절대 좌표 검사는 독립 PDF의 관련 쪽 피델리티가 90% 미만이라
+//! #7445로 이관했다. 남은 검사는 형제의 쪽 소유·순서·비겹침을 확인한다.
 //!
-//! 역적용 판에서 아래 다섯 중 **넷이 실패**하고, `#2813` 음성 통제군만 통과한다 —
-//! 가드가 대상 형상만 잡고 통제군을 건드리지 않는다는 증거다.
+//! 최초 역적용 판에서는 당시 다섯 검사 중 **넷이 실패**하고 `#2813` 음성 통제군만
+//! 통과했다. 그중 절대 좌표로 조각 하단을 고정한 검사는 #7445로 이관했다.
 //!
 //! 한/글 **2020** 오라클(`lastSavedWith.product = null`, `version 6.7.6.1002` → 저장소
 //! 정책 §3.5.1 의 2022 이하 버킷)도 같은 순서다 — 인쇄 쪽번호 `- 27 -` 조각,
@@ -110,30 +112,6 @@ fn page_tables(document: &HwpDocument, page: u32) -> Vec<TableBox> {
 
 /// 괘선 두께·반올림을 넘는 실질 겹침만 센다.
 const TOLERANCE_PX: f64 = 8.0;
-
-/// 조각이 차지한 쪽에는 형제 표가 함께 오지 않는다 — 겹침의 직접 계약.
-#[test]
-fn split_fragment_page_holds_only_the_fragment() {
-    let document = HwpDocument::from_bytes(&read(SAMPLE)).expect("문서 로드");
-
-    let fragment_page = page_tables(&document, 30);
-    assert_eq!(
-        fragment_page.len(),
-        1,
-        "쪽 idx 30 에는 조각 하나만 있어야 한다 — 회귀 시 `pi=113 ci=1` 이 함께 와 \
-         548.0 × 401.9px 겹친다. got {fragment_page:?}"
-    );
-    let (pi, ci, y0, y1, ..) = fragment_page[0];
-    assert_eq!(
-        (pi, ci),
-        (Some(113), Some(0)),
-        "쪽 idx 30 의 표는 27×10 표의 마지막 조각(pi=113 ci=0)이어야 한다"
-    );
-    assert!(
-        (y0 - 143.6).abs() < TOLERANCE_PX && (y1 - 560.1).abs() < TOLERANCE_PX,
-        "조각 상자가 실측(y=143.6..560.1)에서 벗어났다 — got {y0:.1}..{y1:.1}"
-    );
-}
 
 /// 형제 표는 **자기 쪽 상단**에 단독으로, 본문 안에 놓인다.
 #[test]

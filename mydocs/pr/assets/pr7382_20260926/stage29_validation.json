@@ -1,0 +1,182 @@
+{
+  "source_sha": "d27af09f690496fa4482362af57c7c2b1eef6433",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "files": {
+    "src/renderer/height_cursor.rs": "9cff958dd44fb0a0effb493d111bfd7b54468aa39d9115cb46cb3b88315cc515",
+    "src/renderer/layout.rs": "0410047db9110eeacc051c8979b5dc8782e829b3b247567972d52f2704a6a166",
+    "src/renderer/layout/paragraph_layout.rs": "f133ef93492822e28c8c8a81b7cee37f9257cb077b2aa7381984a446c6ceaa2c",
+    "src/renderer/typeset/section/vpos.rs": "3419cddb7321879773b19c0ec5cd7a08973a45ac96d1376c183f6e5bb058f1c3",
+    "src/renderer/typeset.rs": "83566418b24e0d1f78f32661f6bb91133e541dfddc4db1cafb4e0e1b48a4a6f4",
+    "tests/cases/issue_6312_float_anchor_line_uses_source_vpos.rs": "47c02340dfc3da211fc52b208c324d4cbda7dfea2769dc849e65adcce13b6952"
+  },
+  "runtime_and_source_unit_diff_sha256": "5381b96040f7a3444ca4a3fe6367001ce477ea720a977956884527a691ac6e49",
+  "integration_test_diff_sha256": "e101e3556eabdf2d3e994305029366e875cb0c3f1fb6903d53708ea2e7ba2687",
+  "immutable_cli_sha256": "cd96c6f42aede342777c9f5b0d9a94d53c4275cb2b9a2c097c12da3fdb36b5d1",
+  "before": {
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.03,
+    "cause": "다음 본문469.12px; 원본 논리 시작458.826667px에 저장 간격772HU 재가산"
+  },
+  "initial_after": {
+    "passed": 5,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.399,
+    "cause": "가시 콘텐츠 하단은 빈 줄 상자의 끝을 입증하지 못함"
+  },
+  "expanded_rejected_candidate": {
+    "passed": 104,
+    "failed": 1,
+    "seconds": 4.004,
+    "exit_code": 100,
+    "cause": "분할 표 시작의 미확정 원점을 실제 간격 소비만으로 확정함"
+  },
+  "after": {
+    "passed": 105,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 4.0,
+    "threads": 8
+  },
+  "unit": {
+    "passed": 56,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.072,
+    "threads": 8,
+    "boundaries": "미소비/미수집/비연속/합성 이전·현재/편집/미확정·다른 원점8개를 기존 lazy 검사에 포함"
+  },
+  "policies": {
+    "fmt_exit_code": 0,
+    "manifest_exit_code": 0,
+    "static_test_attrs": 6203,
+    "source_unit_exit_code": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "cli_build": {
+    "command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "exit_code": 0,
+    "duration": "1m36s"
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_008",
+    "--test",
+    "regression_suite_011",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_016",
+    "--test",
+    "regression_suite_021",
+    "--test",
+    "regression_suite_028",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_7379_rowbreak_table_footnote_reservation)"
+  ],
+  "visual": {
+    "6312": {
+      "pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "scores": [
+        96.76471,
+        92.79928,
+        99.6848,
+        99.88721
+      ],
+      "directly_read_review_overlay_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "exit_code": 0,
+      "page_count": [
+        4,
+        4
+      ]
+    },
+    "6950": {
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "scores": [
+        98.66178,
+        99.1346,
+        99.78442
+      ],
+      "directly_read_review_overlay_pages": [
+        1,
+        2,
+        3
+      ],
+      "exit_code": 0,
+      "page_count": [
+        3,
+        3
+      ]
+    },
+    "hwpx": {
+      "pages": [
+        11,
+        12,
+        13,
+        14,
+        174,
+        175
+      ],
+      "scores": [
+        66.828,
+        99.76685,
+        94.95824,
+        81.51575,
+        99.85942,
+        92.46177
+      ],
+      "directly_read_review_overlay_pages": [
+        11,
+        12,
+        13,
+        14,
+        174,
+        175
+      ],
+      "exit_code": 1,
+      "page_count": [
+        215,
+        215
+      ]
+    }
+  },
+  "setup_correction": "보정24에서 추가한 empty_opening_row_frame을 기존 issue2424 단위 초기화에 None으로 명시; 최초 단위 빌드 exit101은 결함 검출이 아님",
+  "policy_correction": "source-unit2개 추가 후보는 총량 정책으로 거절됐다. 기준 상향 없이 기존 lazy 기준 검사를 보완해4205 유지",
+  "english_added_explanatory_comments": 0,
+  "remaining": [
+    "#7382 11/14쪽 위치·최신 전수/fresh WASM",
+    "보정16 실제 TABLE 편집 반례",
+    "보정27 보존 셀의 실제 분할·이월",
+    "최종 전체 nextest/lint/Skia"
+  ]
+}

@@ -85,6 +85,9 @@ fn maintainer_float_variant(
         panic!("pi=71 ci=0 표가 필요하다");
     };
     table.common.vertical_offset = vertical_offset;
+    // 원문 페이지 계획을 재사용하지 않고 변형 IR로 측정·배치 파생 상태를 재구성한다.
+    let document = core.document().clone();
+    core.set_document(document);
     page_column(&core, 6)
 }
 
@@ -210,6 +213,12 @@ fn table_item_clears_the_previous_float_band() {
         owner_bottom,
         follower.bbox.y,
         follower.bbox.y + follower.bbox.height
+    );
+    // 같은 입력의 한컴2020 PDF7쪽 가로 괘선(96dpi)으로 절대 원점도 확인한다.
+    assert!(
+        (follower.bbox.y - 298.393_310_546_875).abs() <= 0.5,
+        "후속 표는 독립 PDF의 괘선 원점을 유지해야 한다: y={}",
+        follower.bbox.y
     );
 }
 

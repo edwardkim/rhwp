@@ -47,6 +47,10 @@ impl Node {
         self
     }
 
+    pub(super) fn attr(&self, name: &str) -> Option<&str> {
+        self.attrs.get(name).map(String::as_str)
+    }
+
     fn escape_text(value: impl ToString) -> String {
         value
             .to_string()

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-09-04
+last_verified: 2026-10-02
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -237,6 +237,29 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 - 여러 service endpoint를 병렬로 쓰는 client wrapper는 `start`에 성공한 endpoint를 해당 job의
   `status`와 `download`까지 고정해야 한다. 서로 다른 endpoint에 상태 조회나 결과 저장을 보내면
   그 서버에는 job journal과 result blob이 없어 `job_id was not found or has expired`가 반환될 수 있다.
+
+### 문서 열기 보안 경고: 수동 PDF 생성
+
+한컴이 문서를 여는 중 다음 경고를 표시하면 MCP는 무인 변환을 중단하고 오류로 반환한다.
+비동기 job은 `failed`가 되며 결과 파일은 없으므로 download하지 않는다. 실패한 job은 활성
+변환 슬롯과 대기열을 반환하고, 상태 조회용 실패 기록은 보존 기간 동안 남는다.
+
+| 한컴 경고 | MCP 오류 코드 |
+| --- | --- |
+| 문서가 손상되었거나 변조되었을 가능성이 있으며 문서 보안 설정을 낮춰야 한다는 경고 | `HANCOM_DOCUMENT_OPEN_REJECTED` |
+| 파일 접근에 따른 손상·유출 위험을 알리며 접근 허용 여부를 묻는 경고 | `HANCOM_FILE_ACCESS_APPROVAL_REQUIRED` |
+
+이 경우에는 timeout을 늘려 재시도하지 말고, 보안 검토가 가능한 대화형 한컴 환경에서
+**수동으로 PDF를 생성한다**. MCP는 확인·접근 허용 버튼을 자동으로 누르거나 문서 보안 설정을
+낮추지 않는다.
+
+1. 원본의 출처와 저장 제품을 확인하고 적합한 한컴 버전에서 직접 연다. 접근 권한 요청은 사용자가
+   파일과 작업을 검토한 뒤 판단한다. 손상·변조 경고 때문에 안전하게 열 수 없다면 보안 설정을
+   낮추지 말고 원본 제공자에게 정상 사본을 요청한다.
+2. 정상적으로 열린 문서의 내용·쪽수·조판을 확인한 뒤 한컴의 PDF 저장 기능으로 생성한다.
+   기준 PDF 이름은 위의 저장 제품별 `-2020.pdf` / `-2024.pdf` 규칙을 따른다.
+3. 생성된 PDF를 직접 열어 누락·빈 페이지·출력 손상을 확인한다. 원본과 생성 PDF를 함께 보존하고,
+   검증 기록에는 MCP 실패 코드, 수동 생성 사실과 실제 사용한 한컴 버전을 남긴다.
 
 ## VS Code MCP 등록
 

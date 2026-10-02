@@ -1,0 +1,909 @@
+{
+  "runtime_head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "source_failures": 43,
+  "all_43_confirmed_distinct_renderer_defects": false,
+  "current_full_nextest_rerun_after_test_corrections": true,
+  "all_selected_pages_directly_read": false,
+  "policy": "독립 기대/실제 출력/미검증을 구분하고 허용치 자동 갱신 금지",
+  "tests": [
+    {
+      "number": 1,
+      "test": "issue_6535_low_slack_absorb_keeps_page::low_slack_anchor_block_is_absorbed_into_the_same_page",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "기준1쪽의 결재선/주소가 현재 다음 쪽으로 이동. 마진50px라는 옛 설명은 현재 원인을 입증하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "PASS",
+      "current_expectation_status": "현재1쪽 내용 소유 PASS; 정확한 하단 위치/시각 보류는 유지"
+    },
+    {
+      "number": 2,
+      "test": "issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "독립PDF94/108 대상 줄 확인; 줄 폭은 전후414.2/574.1px 동일. 폭 assertion 전에 페이지 찾기가 실패하므로 폭 회귀로 보고하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 3,
+      "test": "issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "독립PDF94/108 대상 줄 확인; 줄 폭은 전후414.2/574.1px 동일. 폭 assertion 전에 페이지 찾기가 실패하므로 폭 회귀로 보고하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 4,
+      "test": "issue_6102_section_first_line_overflow::issue_6102_first_line_breaks_inside_margin_36310257",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "기준1쪽의 결재선/주소가 현재 다음 쪽으로 이동. 마진50px라는 옛 설명은 현재 원인을 입증하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "PASS",
+      "current_expectation_status": "현재1쪽 내용 소유 PASS; 정확한 하단 위치/시각 보류는 유지"
+    },
+    {
+      "number": 5,
+      "test": "issue_6101_block_tac_table_text_order::issue_6101_table_after_control_text_renders_and_table_stays_left",
+      "frozen_runtime_result": "FAIL",
+      "status": "기존 잠정 핀과 실제 추가 분할 구분; 보류",
+      "finding": "기준11/전12/후13.7쪽 장 소유 차이 직접 확인,12는 정답이 아닌 기존 잔여 핀",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 6,
+      "test": "issue_1733::issue_1733_hwpx_matches_hancom_pdf_page_count",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "독립PDF242쪽 마지막 부속서는 base242쪽에 있으나 current242쪽에는 앞 부속서 꼬리, actual243쪽. 기존242 기대 유효",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 7,
+      "test": "issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "동일 입력 PDF/전후 대표 review를 직접 대조",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 8,
+      "test": "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "동일 입력 PDF/전후 대표 review를 직접 대조",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 9,
+      "test": "issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "동일 입력 PDF/전후 대표 review를 직접 대조",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 10,
+      "test": "issue_5585_sibling_table_anchor_offset::sibling_tables_do_not_recharge_the_paragraph_anchor_offset",
+      "frozen_runtime_result": "FAIL",
+      "status": "미검증; 보류",
+      "finding": "PDF86/base86/head85의 실제 꼬리 내용/행 소유 대조가 더 필요",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 11,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+          "visual_fixture": {
+            "key": "4a571f73751e",
+            "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+            "input_sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+            "pdf": "pdf/task1725/text_footnote_tail_overpagination-hwp-2024.pdf",
+            "pdf_sha256": "03ddf66494ebd1b25cfe49344039f0c6e324a0a837d3d4dce9f26bc14141e8af",
+            "pages": [
+              33,
+              35,
+              111
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 242,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "HWP111쪽은 PDF의 제9장 대신 앞 생존정/구조정 내용이 표시된다. HWPX242쪽의 새 꼬리 이월과 형식을 구분한다."
+        },
+        {
+          "input": "samples/task2097/75544_pii_bunseok.hwpx",
+          "visual_fixture": {
+            "key": "1f7f3c06753e",
+            "input": "samples/task2097/75544_pii_bunseok.hwpx",
+            "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+            "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+            "pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+            "pages": [
+              22
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 66,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "22쪽 실제 표 하단이본문끝을3.253px 넘고 PDF 하단1037.745px보다 길다. 점수 개선은 overflow 증가의 승인 근거가 아니다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 12,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+          "visual_fixture": {
+            "key": "e0fa7ba72220",
+            "input": "samples/issue6023/30269_reform_recommendation.hwp",
+            "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+            "pdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+            "pdf_sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+            "pages": [
+              5
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 22,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "5쪽에 PDF가 다음 쪽에 두는 일반현황 제목 상자가 쪽번호 영역까지 들어왔다. exact-byte 별칭2개를 독립 결함2개로 세지 않는다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 13,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+          "visual_fixture": {
+            "key": "7889b5405e2d",
+            "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+            "pdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+            "pdf_sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+            "pages": [
+              71,
+              121
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 204,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "121쪽 뒤 표 위로 앞 문단 마지막 글줄이 겹친다. base의 분리 상태를 직접 확인했으며 PDF와 장 소유 차이는 전후 모두 별도 존재한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 14,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue1853_caption_precedes_body_split.hwpx",
+          "visual_fixture": {
+            "key": "5d1e28985f08",
+            "input": "samples/issue1853_caption_precedes_body_split.hwpx",
+            "input_sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+            "pdf": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+            "pdf_sha256": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8",
+            "pages": [
+              14,
+              44
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 52,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "14/44쪽은 직접 읽었으나 본문끝 초과2건의 물리 원인 계약은 미검증이다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 15,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+          "visual_fixture": {
+            "key": "09ade75fcd13",
+            "input": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+            "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+            "pdf": "pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf",
+            "pdf_sha256": "de6a57ee0d28cfb66acab4e477cc0b95e31a7939d3ca2e165de46fd5a487296e",
+            "pages": [
+              2
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 12,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "2쪽 글자 크기/배치 차이가 크다. 원본 폰트 공급과 새 본문 넘침의 경계를 별도로 검증하며 폰트 예외를 사용하지 않는다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 16,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6023/30269_reform_recommendation.hwp",
+          "visual_fixture": {
+            "key": "e0fa7ba72220",
+            "input": "samples/issue6023/30269_reform_recommendation.hwp",
+            "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+            "pdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+            "pdf_sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+            "pages": [
+              5
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 22,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "5쪽에 PDF가 다음 쪽에 두는 일반현황 제목 상자가 쪽번호 영역까지 들어왔다. exact-byte 별칭2개를 독립 결함2개로 세지 않는다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 17,
+      "test": "issue_3738_hwp_caption_cell_alignment::hwp_page23_bottom_caption_is_centered_as_one_visual_block",
+      "frozen_runtime_result": "FAIL",
+      "status": "기존 기대 오류 교정 완료",
+      "finding": "동일2024 PDF 독립 좌표,±3px 유지,보정44같은 검사1PASS",
+      "evidence": [],
+      "c4ce9ff96_execution": "PASS",
+      "current_expectation_status": "독립 기대 교정 후 PASS; 보정44/45 근거 유지"
+    },
+    {
+      "number": 18,
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+          "visual_fixture": {
+            "key": "4a571f73751e",
+            "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+            "input_sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+            "pdf": "pdf/task1725/text_footnote_tail_overpagination-hwp-2024.pdf",
+            "pdf_sha256": "03ddf66494ebd1b25cfe49344039f0c6e324a0a837d3d4dce9f26bc14141e8af",
+            "pages": [
+              33,
+              35,
+              111
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 242,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "HWP111쪽은 PDF의 제9장 대신 앞 생존정/구조정 내용이 표시된다. HWPX242쪽의 새 꼬리 이월과 형식을 구분한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 19,
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+          "visual_fixture": {
+            "key": "9ce9ef02ea42",
+            "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+            "input_sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+            "pdf": "pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf",
+            "pdf_sha256": "c92ad7d204afbb2db9b88f0365d43ba70f018e3cc444cdfd04ce945a1fa1ef88",
+            "pages": [
+              7
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 8,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "7쪽 도식 내부 이미지가 PDF와 다르다. 용지 밖444.907px raw 중첩 상자와 ancestor clip/실제 페인트를 따로 검토한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 20,
+      "test": "issue_6797_table_item_clears_float_band::maintainer_an_already_clear_offset_table_is_not_snapped_again",
+      "frozen_runtime_result": "FAIL",
+      "status": "미검증; 보류",
+      "finding": "원본 raw bbox 교차와 실제 paint/clip 경계 대조. 수동 변형에 원본 PDF 기대를 전용하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL",
+      "additional_evidence": "stage48_float6797_reassessment.json"
+    },
+    {
+      "number": 21,
+      "test": "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+      "frozen_runtime_result": "FAIL",
+      "status": "미검증; 보류",
+      "finding": "원본 raw bbox 교차와 실제 paint/clip 경계 대조. 수동 변형에 원본 PDF 기대를 전용하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL",
+      "additional_evidence": "stage48_float6797_reassessment.json"
+    },
+    {
+      "number": 22,
+      "test": "issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "PDF92/93 캡션과105 연구비 표의 쪽 소유가 현재 다음 쪽으로 이동. 기존 페이지 기대는 유효",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 23,
+      "test": "issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "PDF92/93 캡션과105 연구비 표의 쪽 소유가 현재 다음 쪽으로 이동. 기존 페이지 기대는 유효",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 24,
+      "test": "issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "PDF92/93 캡션과105 연구비 표의 쪽 소유가 현재 다음 쪽으로 이동. 기존 페이지 기대는 유효",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 25,
+      "test": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/task1725/text_footnote_tail_overpagination.hwpx",
+          "visual_fixture": null,
+          "finding": "한컴 변환 실패로 기준 PDF 미확보; 입력 비정상이라고 추정하지 않음"
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 26,
+      "test": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+          "visual_fixture": null,
+          "finding": "한컴 변환 실패로 기준 PDF 미확보; 입력 비정상이라고 추정하지 않음"
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 27,
+      "test": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/hwpx/issue1948_cross_para_fieldend.hwpx",
+          "visual_fixture": {
+            "key": "field1948",
+            "input": "samples/hwpx/issue1948_cross_para_fieldend.hwpx",
+            "input_sha256": "38244a9ce101e1b24f012bf856bdb5bdc2e006632542b66813a615488cbf0066",
+            "pdf": "pdf/hwpx/issue1948_cross_para_fieldend-hwpx-2020.pdf",
+            "pdf_sha256": "e300ed55e58565dd2af6755562b8bec00e5b188c638132e57c073b14fbc676d8",
+            "pages": [
+              1
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 1
+          },
+          "finding": "PDF1쪽의 뒤 붙임과 결재선/주소가 현재1쪽에서 사라졌다. base의 기존 field/간격 차이와 구분한다."
+        }
+      ],
+      "c4ce9ff96_execution": "PASS"
+    },
+    {
+      "number": 28,
+      "test": "issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow",
+      "frozen_runtime_result": "FAIL",
+      "status": "기존 잠정 기대 부적절; 보류",
+      "finding": "304는 한컴302와 다른 잠정 핀.303으로 바꾸지 않으며 마지막 행 소유 검토",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 29,
+      "test": "issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_pin",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "동일PDF140쪽 기준, 현재141쪽이며 캡션/뒤 연구비 장 이월을 직접 확인",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 30,
+      "test": "issue_6535_page_anchored_block_keeps_page::issue_6535_page_anchored_block_stays_on_its_page",
+      "frozen_runtime_result": "FAIL",
+      "status": "기준 기대 유효/실제 페이지 소유 회귀; 보류",
+      "finding": "기준1쪽의 결재선/주소가 현재 다음 쪽으로 이동. 마진50px라는 옛 설명은 현재 원인을 입증하지 않음",
+      "evidence": [],
+      "c4ce9ff96_execution": "PASS",
+      "current_expectation_status": "현재1쪽 내용 소유 PASS; 정확한 하단 위치/시각 보류는 유지"
+    },
+    {
+      "number": 31,
+      "test": "issue_1133_nested_table_valign::issue_1133_hwpx_preserves_gap_between_consecutive_block_tables",
+      "frozen_runtime_result": "FAIL",
+      "status": "상대 기대 불충분; 보류",
+      "finding": "PDF 괘선113.476px와 HWP111.6/HWPX113.4를 비교. 양쪽 오답을 잡을 독립 원점 계약 필요",
+      "evidence": [],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 32,
+      "test": "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "frozen_runtime_result": "FAIL",
+      "status": "기존 기대 오류 교정 완료",
+      "finding": "원본141HU 위여백/독립PDF 괘선,0.2px 유지,보정45검사군5PASS",
+      "evidence": [],
+      "c4ce9ff96_execution": "PASS",
+      "current_expectation_status": "독립 기대 교정 후 PASS; 보정44/45 근거 유지"
+    },
+    {
+      "number": 33,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "visual_fixture": {
+            "key": "be43923bc64f",
+            "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+            "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+            "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+            "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+            "pages": [
+              45,
+              76
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 103,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "45쪽/기존76쪽 독립 비교를 확인했다. 새 text-overlap2건의 실제 잉크/clip 경계는 미검증이다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 34,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+          "visual_fixture": {
+            "key": "28af64a4fe1e",
+            "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+            "input_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+            "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+            "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+            "pages": [
+              20
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 31,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "20쪽 하단 표 개선과 앞 제목/내부 텍스트 차이를 확인했다. exact-byte 별칭은 중복 실제 결함으로 세지 않으며 새6건의 실제 글리프 경계는 추가 검토한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 35,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "visual_fixture": {
+            "key": "efcce265e106",
+            "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+            "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+            "pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+            "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+            "pages": [
+              45,
+              76
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 103,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "동명 standards 입력과 바이트가 다르므로 별도 기준PDF를 쓴다.2건의 상세 가시 충돌 계약은 미검증이다."
+        },
+        {
+          "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "visual_fixture": null,
+          "finding": "한컴 변환 실패로 기준 PDF 미확보; 입력 비정상이라고 추정하지 않음"
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 36,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+          "visual_fixture": {
+            "key": "c6c74825a377",
+            "input": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+            "input_sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+            "pdf": "pdf/issue5941-1480000-201900698-2020.pdf",
+            "pdf_sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+            "pages": [
+              39,
+              49,
+              153,
+              160
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 205,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "39쪽 제목이 표 헤더와 겹친다. base에서 제목과 표가 떨어져 있던 경계도 직접 확인했다. PDF와 기존 쪽 소유 차이는 별도다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 37,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+          "visual_fixture": {
+            "key": "ace93bea2459",
+            "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+            "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+            "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+            "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+            "pages": [
+              44
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 50,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "44쪽 각주41의 겹침은 base에서도 보인다.132→133이라는 건수만으로 새 가시 충돌을 입증하지 않으며 새 진단 쌍을 따로 검토한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 38,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_4",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "visual_fixture": {
+            "key": "c694ae353384",
+            "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+            "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+            "pdf": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+            "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+            "pages": [
+              1
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 1,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "1쪽 셀 번호/뒤 요구사항 간격이 좁아졌다. 원시 런 교차와 실제 글리프 경계의 상세 계약은 추가 검토한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 39,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "visual_fixture": {
+            "key": "ad6e457a55fe",
+            "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+            "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+            "pdf": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+            "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+            "pages": [
+              3
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 3,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "3쪽 표 셀 번호/하위 개요의 세로 간격이 줄어 제목 두 줄이 붙었다. base와 직접 대조했다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 40,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+          "visual_fixture": {
+            "key": "022d38a5f3be",
+            "input": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+            "input_sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+            "pdf": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+            "pdf_sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+            "pages": [
+              65,
+              82,
+              90,
+              94,
+              99,
+              104,
+              107,
+              112,
+              114,
+              123,
+              127,
+              131,
+              147,
+              148,
+              150,
+              159,
+              161,
+              175,
+              233,
+              258,
+              259,
+              261,
+              267,
+              280,
+              301
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 302,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "선택25쪽 자동 전후 비교와 동일 꼬리 직접 비교가 있다. 쪽 이주를25개 독립 결함으로 세지 않고 row 소유/내용 보존 계약을 검토한다."
+        },
+        {
+          "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+          "visual_fixture": {
+            "key": "7889b5405e2d",
+            "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+            "pdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+            "pdf_sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+            "pages": [
+              71,
+              121
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 204,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "121쪽 뒤 표 위로 앞 문단 마지막 글줄이 겹친다. base의 분리 상태를 직접 확인했으며 PDF와 장 소유 차이는 전후 모두 별도 존재한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 41,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue1891_external_bindata_link.hwpx",
+          "visual_fixture": {
+            "key": "544060979baa",
+            "input": "samples/issue1891_external_bindata_link.hwpx",
+            "input_sha256": "ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924",
+            "pdf": "pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf",
+            "pdf_sha256": "1a230300ab4e4f7f3bf7e1b56ee96e71b087f0c855e2d874993316ce53ae9bf8",
+            "pages": [
+              15,
+              40,
+              42,
+              47,
+              70
+            ],
+            "unpaired_pages": [
+              71
+            ],
+            "pdf_pages": 70,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "70쪽은 현재와 PDF의 표 소유가 다르다. clip을 고려한 신규 텍스트 교차의 상세 판독은 미검증이다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 42,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+          "visual_fixture": {
+            "key": "28af64a4fe1e",
+            "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+            "input_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+            "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+            "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+            "pages": [
+              20
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 31,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "20쪽 하단 표 개선과 앞 제목/내부 텍스트 차이를 확인했다. exact-byte 별칭은 중복 실제 결함으로 세지 않으며 새6건의 실제 글리프 경계는 추가 검토한다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    },
+    {
+      "number": 43,
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "frozen_runtime_result": "FAIL",
+      "status": "래칫 진단 증가; 개별 가시성 검토/보류",
+      "finding": "런 상자/본문 하단/ancestor clip과 독립 PDF를 대조. 건수만으로 새 가시 결함을 확정하거나 허용치를 늘리지 않음",
+      "evidence": [
+        {
+          "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+          "visual_fixture": {
+            "key": "44b04f8c4d4f",
+            "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+            "input_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+            "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf",
+            "pdf_sha256": "c48e3bba704a20f319d1782868123a8cf484cce9e6d8c060f7e018f0fceb9d4f",
+            "pages": [
+              70
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 74,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "70쪽 코드 배경이 앞 설명 글자의 아래 부분을 가린다.96.19%여도 실제 보류다."
+        },
+        {
+          "input": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+          "visual_fixture": {
+            "key": "b6b0122559c3",
+            "input": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+            "input_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+            "pdf": "pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+            "pdf_sha256": "89ff2583598e1bb8ab9d95b754fcc0cf42e3409547aec4dbe01ac0f4207b312e",
+            "pages": [
+              100,
+              139
+            ],
+            "unpaired_pages": [],
+            "pdf_pages": 315,
+            "diagnostic_page_index_base": 0,
+            "visual_page_number_base": 1
+          },
+          "finding": "139쪽은 전후 모두PDF의2017년 표와 다른2016년 표다. 현재 표 제목이 헤더에 더 붙은 경계도 확인했지만6개 증가 전부를 새 가시 결함으로 확정하지 않는다."
+        }
+      ],
+      "c4ce9ff96_execution": "FAIL"
+    }
+  ],
+  "current_runtime_head": "c4ce9ff96436d94468557f09794ee0fa84b35ce6",
+  "current_full_nextest_pass": 10335,
+  "current_full_nextest_fail": 38,
+  "current_full_nextest_skipped": 50,
+  "new_failed_tests": [
+    "issue_1658_page_bottom_fixed_exclusion::gwanak_bottom_fixed_frame_renders_at_page_bottom"
+  ],
+  "new_failure_reassessment": {
+    "test": "issue_1658_page_bottom_fixed_exclusion::gwanak_bottom_fixed_frame_renders_at_page_bottom",
+    "finding": "최하단 TextLine의 TextRun은 빈 문자열; 기존 검사의 가시 내용 설명과 물리 줄 점유를 분리 검토",
+    "evidence": "stage48_gwanak1658_review_001.png",
+    "physical_empty_line_placement_verified": false
+  }
+}

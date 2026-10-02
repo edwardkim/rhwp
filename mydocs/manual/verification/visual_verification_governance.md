@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-09-17
+last_verified: 2026-10-01
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -18,10 +18,30 @@ last_verified: 2026-09-17
 2. **자동 도구는 보조, 판정은 사람.** sweep/OVR/게이트류는 후보 검출·범위 축소·무회귀
    증명용이다. **최종 시각 판정 권위는 작업지시자(확인한 한컴 편집기·동일 원문 기준 PDF)** 이며
    어떤 도구 통과도 이를 대체하지 않는다 (자기검증 ≠ 한컴 호환).
+   다만 `scripts/visual_sweep.py`의 review PNG를 `승인` 근거로 제시한 경우에는 2px 이웃 관용 내용 실루엣
+   일치율이 90% 미만인 쪽을 승인할 수 없다. 기여자가 자기 branch에서 원인을 수정하고 새 PNG로 재검토받는
+   것이 먼저이며 reviewer가 메인터너 보정으로 대신하지 않는다. 실제 글꼴이 완전히 다른 사실을 UTF-8 증거로
+   남긴 경우만 도구의 점수 gate 예외가 된다. 예외여도 작업지시자의 직접 판독은 남는다.
 3. **원인과 발동 범위가 이미 정해진 렌더링 PR**은 [visual_sweep_guide.md](visual_sweep_guide.md)를
    기본 진입점으로 사용한다. 독립 정답지와 실제 사용자-visible 실패에서 결함을 찾고 원인·범위를
    판정하는 작업은 [버그 헌팅 playbook](../bug_hunting_playbook.md)이 상위 절차이며, visual sweep은
    그 안의 후보 검출·수정 전후 무회귀 도구다.
+
+렌더링 변경의 새 회귀 테스트 추가는 [회귀 추가 선행 조건](../pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)에 따라 관련 모든 페이지·fixture·
+Native/fresh WASM 출력의 최저 일치율 90% 이상을 먼저 입증한다. 미달·측정 불가이면 회귀를 추가하지
+않고 실제 출력을 개선한다. 평균값·글꼴 예외·CI 성공으로 면제하지 않으며 기존 검사는 자동 삭제하지 않는다.
+
+## 페이지별 일치율 산출과 직접 판독
+
+검증 대상으로 정한 문서의 전체 페이지 일치율은 [TSV 전용 절차](visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)로 먼저 확인한다.
+Native/fresh WASM의 비교 쪽수·최저값·90% 미만/누락 쪽과 입력/빌드 출처를 기록한다.
+전쪽 overlay 합성은 기본 요구가 아니다. 미달 쪽, 각주·문단 소속 같은 구조 차이 쪽과
+대표 변경 경계에는 비교 PNG를 추가 생성하고 사람이 독립 PDF와 직접 판독한다.
+실루엣 도구가 이진화 경계의 유사한 유색 픽셀을 대조한 경우 원값·조정 픽셀 수도 함께 검토한다.
+세부 계산은 [실루엣 TSV 절차](visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 따르며,
+실제 흰 배경의 그림 누락이나 위치 차이를 숨기는 색상 보정은 허용하지 않는다.
+TSV 성공 또는 `not_evaluated`는 측정 완료만 뜻한다. 평균·90% 이상 점수로 각주 수량,
+쪽수·내용 누락/중복 차이를 승인하지 않으며 대표 PR 이미지 제출 의무도 유지한다.
 
 ## bug-hunter와 visual sweep 라우팅
 
@@ -36,6 +56,11 @@ last_verified: 2026-09-17
 따라서 sweep의 `flagged`, pixel/ink 지표는 발견의 입력일 뿐 원인 판정이나 수용 결론이 아니다.
 glyph 겹침 같은 반복 차이도 bug-hunter의 정답지 provenance, source→IR→layout→paint 원인 경로와
 사람 판정을 거쳐야 코드 수정 대상으로 승격한다.
+
+한컴 PDF와 대조하는 Visual Sweep은 Native와 fresh WASM 모두 인쇄 프로필로 캡처한다.
+PDF에 없는 빈 누름틀 안내문과 기타 편집 전용 표시는 출력 단계에서 제외하고, 누름틀에
+입력된 실제 본문과 쪽 구성은 계속 비교한다. 세부 명령·프로필 증적은
+[Visual Sweep 가이드](visual_sweep_guide.md#pdf와-같은-인쇄-프로필)를 따른다.
 
 ## 도구 매핑 — 무엇을 확인할 때 무엇을 쓰나
 

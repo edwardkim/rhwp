@@ -25,6 +25,7 @@ HWP/HWPX/PDF를 검증에 사용하면 실제 실행 파일과 검토 대상 com
 | 문서 | 읽는 시점 |
 | --- | --- |
 | [intake_and_review.md](intake_and_review.md) | 모든 정식 PR review의 접수, reviewer assign, review 문서 작성 |
+| [review_template.md](review_template.md) | 새 PR review를 작성할 때 최종 판정을 제목 바로 아래에 두는 기본 골격 |
 | [maintainer_general.md](maintainer_general.md) | maintainer가 외부 PR을 일반 경로로 처리 |
 | [collaborator_self_merge.md](collaborator_self_merge.md) | collaborator 자신의 PR을 준비·merge |
 | [collaborator_external_pr.md](collaborator_external_pr.md) | collaborator가 contributor PR head를 보정하거나 기록을 더함 |

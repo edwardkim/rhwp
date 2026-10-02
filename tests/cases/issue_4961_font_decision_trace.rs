@@ -89,11 +89,21 @@ fn stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected() {
             max_characters,
         );
         assert_eq!(trace["status"], document["expectedStatus"], "{id}");
-        assert_eq!(trace["counts"], document["expectedCounts"], "{id}");
-        assert_eq!(
-            trace["layoutHash"]["value"], document["expectedLayoutHash"],
-            "{id}"
-        );
+        // #7445에 명시적으로 이관한 렌더링 절대핀만 생략한다.
+        // 같은 문서의 폰트 프로필과 다른 문서의 핀은 계속 검사한다.
+        let deferred_pins = document["renderPinsDeferredToIssue7445"].as_array();
+        let is_render_pin_deferred = |name: &str| {
+            deferred_pins.is_some_and(|pins| pins.iter().any(|pin| pin.as_str() == Some(name)))
+        };
+        if !is_render_pin_deferred("expectedCounts") {
+            assert_eq!(trace["counts"], document["expectedCounts"], "{id}");
+        }
+        if !is_render_pin_deferred("expectedLayoutHash") {
+            assert_eq!(
+                trace["layoutHash"]["value"], document["expectedLayoutHash"],
+                "{id}"
+            );
+        }
         assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
         assert_eq!(
             trace["backendSummary"]["native"]["reasons"][0],

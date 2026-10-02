@@ -432,7 +432,8 @@ pub enum FootnoteSource {
 /// 한 각주를 물리 페이지 경계에서 나눈 line fragment.
 ///
 /// `start_line..end_line`은 각주 안의 문단을 순서대로 compose한 뒤의 평탄 line index다.
-/// `end_line`은 exclusive다. 첫 fragment만 separator와 번호를 그린다.
+/// `end_line`은 끝 줄을 포함하지 않는다. 번호는 첫 조각에만 표시하며,
+/// 물리 쪽의 각주 구분선 표시는 번호와 별도로 결정한다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FootnoteFragment {
     pub start_line: usize,

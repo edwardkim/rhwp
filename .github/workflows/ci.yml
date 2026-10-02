@@ -1071,6 +1071,7 @@ jobs:
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
       - name: Validate workflow contracts
         run: |
+          node --test scripts/tests/issue-form-labels.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
           node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs

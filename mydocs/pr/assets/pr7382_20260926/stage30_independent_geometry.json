@@ -1,0 +1,52 @@
+{
+  "source_sha": "e114fa58c2211bbcbf8adf910267075b5a27cd9a",
+  "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "input_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "reference_pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "reference_pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+  "page": 11,
+  "units_per_96dpi_px": 75,
+  "source_hu": {
+    "body_origin": 6239,
+    "host_240": 21265,
+    "vertical_offset": 319,
+    "outer_top": 283,
+    "table_height": 22400,
+    "outer_bottom": 283,
+    "successor_241": 44550,
+    "heading_242": 46550,
+    "picture_height": 20836,
+    "picture_cell_padding": 282,
+    "caption_row": 1282
+  },
+  "closure": "21265 + 319 + 283 + 22400 + 283 = 44550; 20836 + 282 + 1282 = 22400",
+  "expected_logical_px": {
+    "table_top": 374.74666666666667,
+    "table_height": 298.6666666666667,
+    "successor_top": 677.1866666666666,
+    "heading_top": 703.8533333333334
+  },
+  "pdf_visible_image_bbox": [
+    105.063995,
+    376.229329,
+    650.53068,
+    653.685303
+  ],
+  "pdf_visible_text_top": {
+    "caption": 658.0526,
+    "heading": 703.781006,
+    "body": 730.5011
+  },
+  "before_actual_px": {
+    "table_top": 371.09333333333336,
+    "image_top": 373.0,
+    "heading_top": 692.17
+  },
+  "before_formal": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 0.197
+  },
+  "distinction": "한컴 가시 글자·그림 좌표와 저장 논리 줄 좌표를 같은 기대값으로 취급하지 않음"
+}

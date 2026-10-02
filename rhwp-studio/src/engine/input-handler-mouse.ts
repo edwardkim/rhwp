@@ -112,6 +112,35 @@ function selectOleObjectFromHit(this: any, oleHit: any): void {
   this.textarea.focus();
 }
 
+/**
+ * 연결선은 표 셀·글상자 위에 그려질 수 있다. 본문 hit-test를 먼저 처리하면 그
+ * 컨테이너가 선택을 소비하므로, 선 자체의 적중을 먼저 객체 선택으로 확정한다.
+ */
+function selectLineObjectFromHit(this: any, lineHit: any): void {
+  this.cursor.clearSelection();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
+    lineHit.sec,
+    lineHit.ppi,
+    lineHit.ci,
+    'line',
+    lineHit.cellIdx,
+    lineHit.cellParaIdx,
+    lineHit.headerFooter,
+    lineHit.outerTableControlIdx,
+    lineHit.cellPath,
+    lineHit.noteRef,
+    lineHit.missing,
+    lineHit.pageIndex,
+  );
+  this.active = true;
+  this.caret.hide();
+  this.selectionRenderer.clear();
+  this.renderPictureObjectSelection();
+  this.eventBus.emit('picture-object-selection-changed', true);
+  this.textarea.focus();
+}
+
 function selectProtectedCell(this: any, hit: any): void {
   hideProtectedCellHover(this);
   this.cursor.clearSelection();
@@ -713,8 +742,16 @@ export function onClick(this: any, e: MouseEvent): void {
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
             // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
             // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
-            const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
-            cacheTableCellBboxes(this, ctx, pageIdx, bboxes);
+            // [#7442] 중첩 표 ctx 는 경로 API 로 bbox 를 얻고, 캐시 신원에도
+            // 경로를 실어야 finishResizeDrag 가 resizeTableCellsByPath 로 보낸다.
+            const nested = (ctx.cellPath?.length ?? 0) > 1;
+            const bboxes = nested
+              ? this.wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, JSON.stringify(ctx.cellPath))
+              : this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
+            const ref = nested
+              ? { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, path: ctx.cellPath }
+              : { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
+            cacheTableCellBboxes(this, ref, pageIdx, bboxes);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -853,6 +890,7 @@ export function onClick(this: any, e: MouseEvent): void {
             (picHit as any).cellPath,
             undefined,
             (picHit as any).missing,
+            (picHit as any).pageIndex,
           );
           this.active = true;
           this.caret.hide();
@@ -988,9 +1026,13 @@ export function onClick(this: any, e: MouseEvent): void {
     } catch { /* 무시 */ }
   }
 
-  const earlyOleHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-  if (earlyOleHit?.type === 'ole') {
-    selectOleObjectFromHit.call(this, earlyOleHit);
+  const earlyObjectHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+  if (earlyObjectHit?.type === 'ole') {
+    selectOleObjectFromHit.call(this, earlyObjectHit);
+    return;
+  }
+  if (earlyObjectHit?.type === 'line') {
+    selectLineObjectFromHit.call(this, earlyObjectHit);
     return;
   }
 
@@ -1005,10 +1047,23 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 표 경계선 클릭 감지 → 표 객체 선택 (셀 내부에서 외곽 클릭)
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      if (this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+      // [#7442] hit 의 칸 경로가 중첩 표 안이면 안쪽 표의 외곽 경계를 먼저 본다.
+      // 평면 bbox 는 최외곽 표만 돌려줘 안쪽 표 테두리 클릭을 개체 선택으로 못 올렸다.
+      const nestedPath = Array.isArray(hit.cellPath) && hit.cellPath.length > 1
+        ? hit.cellPath
+        : undefined;
+      const nestedBorder = nestedPath !== undefined &&
+        this.isNestedTableBorderClick(
+          pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, nestedPath,
+        );
+      if (nestedBorder ||
+          this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
         this.cursor.clearSelection();
         this.cursor.moveToHit(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
-        this.cursor.enterTableObjectSelectionDirect(hit.sectionIndex, hit.parentParaIndex, hit.controlIndex);
+        this.cursor.enterTableObjectSelectionDirect(
+          hit.sectionIndex, hit.parentParaIndex, hit.controlIndex,
+          nestedBorder ? nestedPath : undefined,
+        );
         this.active = true;
         this.caret.hide();
         this.selectionRenderer.clear();
@@ -1086,6 +1141,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           hit.sectionIndex, hit.parentParaIndex, hit.controlIndex, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1106,6 +1162,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           shapeHit.sec, shapeHit.ppi, shapeHit.ci, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1134,6 +1191,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (tbPic as any).cellPath,
           (tbPic as any).noteRef,
           (tbPic as any).missing,
+          (tbPic as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();
@@ -1181,21 +1239,7 @@ export function onClick(this: any, e: MouseEvent): void {
         }
 
         if (picHit.type === 'line') {
-          // 직선 → 맨 앞으로 이동 후 객체 선택
-          bringShapeToFront.call(this, picHit);
-          this.cursor.clearSelection();
-          this.exitPictureObjectSelectionIfNeeded();
-          // [Task #825] picHit.headerFooter 동반 시 머리말/꼬리말 그림 marker 보존.
-          this.cursor.enterPictureObjectSelectionDirect(
-            picHit.sec, picHit.ppi, picHit.ci, 'line',
-            undefined, undefined, (picHit as any).headerFooter,
-          );
-          this.active = true;
-          this.caret.hide();
-          this.selectionRenderer.clear();
-          this.renderPictureObjectSelection();
-          this.eventBus.emit('picture-object-selection-changed', true);
-          this.textarea.focus();
+          selectLineObjectFromHit.call(this, picHit);
           return;
         }
         if (picHit.type === 'shape') {
@@ -1230,6 +1274,7 @@ export function onClick(this: any, e: MouseEvent): void {
             this.cursor.enterPictureObjectSelectionDirect(
               picHit.sec, picHit.ppi, picHit.ci, 'shape',
               undefined, undefined, (picHit as any).headerFooter,
+              undefined, undefined, undefined, undefined, (picHit as any).pageIndex,
             );
             this.active = true;
             this.caret.hide();
@@ -1252,6 +1297,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (picHit as any).cellPath,
           (picHit as any).noteRef,
           (picHit as any).missing,
+          (picHit as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();

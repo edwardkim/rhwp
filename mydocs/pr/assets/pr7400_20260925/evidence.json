@@ -1,0 +1,60 @@
+{
+  "schema": "rhwp.pr7400.visual-evidence.v1",
+  "source_pr": 7400,
+  "source_head": "667cf5f4ade2536d2a65b4093add3ba88b5b8d73",
+  "code_head": "177acf40054f2bbb4bbe65cd9f4267d3df308f8f",
+  "base": "a7458aa39ca4ac8636a52e4c7a607d55973bf3a6",
+  "pages": [
+    1
+  ],
+  "results": {
+    "native": {
+      "pr_review_gate": "passed",
+      "tolerant_content_match_percent": 99.9979,
+      "input_sha256": "526f8d3bd173bc336328e3184f8ad8ca134b2c0be773bf01e648a3c653dffc0e",
+      "oracle_pdf_sha256": "15cf805298b4c9214fb1b1f3b107d246761b5744468ef431e286968eba3798a0",
+      "rhwp_binary_sha256": "38a7be7c1d205b35d108704be168736bb81f182fb18272dc0b6ceff1ee93bc1a",
+      "font_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20260924/pr7400-hcr-fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        }
+      ],
+      "review_png": "native_review_001.png",
+      "overlay_png": "native_overlay_001.png",
+      "render_png_sha256": "0f50a7a40316f19171b8fa0903db290e1422f721e1fdd7511de113417c560f3a"
+    },
+    "wasm": {
+      "pr_review_gate": "passed",
+      "tolerant_content_match_percent": 99.9979,
+      "input_sha256": "526f8d3bd173bc336328e3184f8ad8ca134b2c0be773bf01e648a3c653dffc0e",
+      "oracle_pdf_sha256": "15cf805298b4c9214fb1b1f3b107d246761b5744468ef431e286968eba3798a0",
+      "rhwp_binary_sha256": "38a7be7c1d205b35d108704be168736bb81f182fb18272dc0b6ceff1ee93bc1a",
+      "font_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20260924/pr7400-hcr-fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        }
+      ],
+      "review_png": "wasm_review_001.png",
+      "overlay_png": "wasm_overlay_001.png",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "2d4729c90981b79da267ca9ce95618f35526380bb73bab08641b1bf2ac5a1dda"
+        }
+      ],
+      "render_png_sha256": "0f50a7a40316f19171b8fa0903db290e1422f721e1fdd7511de113417c560f3a"
+    },
+    "before_native": {
+      "pr_review_gate": "passed",
+      "tolerant_content_match_percent": 100.0,
+      "review_png": "before_native_review_001.png",
+      "overlay_png": "before_native_overlay_001.png"
+    }
+  }
+}

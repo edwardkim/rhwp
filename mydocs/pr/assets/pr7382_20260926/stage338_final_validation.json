@@ -1,0 +1,153 @@
+{
+  "head": "cd85bdf434f5c2522f2a24c3a59f3413f644a5a4",
+  "results": [
+    {
+      "name": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 97.086,
+      "binarySha256": "406658c405fa32afdc2ebd71672721d2ef6717334802488534df94e745ab5d09"
+    },
+    {
+      "name": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 173.548
+    },
+    {
+      "name": "nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 935.233
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 212.107
+    },
+    {
+      "name": "skia-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 135.265
+    },
+    {
+      "name": "skia-p37",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 9.48
+    },
+    {
+      "name": "doc-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 56.579
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.804
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "upstream/devel...HEAD"
+      ],
+      "exit_code": 0,
+      "seconds": 1.691
+    }
+  ],
+  "frozenArtifacts": {
+    "rhwp": "output/pr-review/planet6897-7382-20260926/stage338-final-head/rhwp-current",
+    "wasmPkg": "output/pr-review/planet6897-7382-20260926/stage338-final-head/pkg-current",
+    "wasmSha256": "9d4ade28146bdc70875a8c1dab3737790b6976a619f3685422908280781bb30e"
+  }
+}

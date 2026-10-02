@@ -1,4 +1,5 @@
 import { VirtualScroll } from '@/view/virtual-scroll';
+import { objectSelectionViewportBox } from './object-selection-page';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -209,10 +210,18 @@ export class TableObjectRenderer {
       const pageOffset = this.virtualScroll.getPageOffset(tableBBox.pageIndex);
       const pageLeft = this.virtualScroll.getPageLeftResolved(tableBBox.pageIndex, contentWidth);
 
-      const left = pageLeft + tableBBox.x * zoom;
-      const top = pageOffset + tableBBox.y * zoom;
-      const width = tableBBox.width * zoom;
-      const height = tableBBox.height * zoom;
+      const { left, top, width, height } = objectSelectionViewportBox(
+        {
+          pageIndex: tableBBox.pageIndex,
+          x: tableBBox.x,
+          y: tableBBox.y,
+          w: tableBBox.width,
+          h: tableBBox.height,
+        },
+        zoom,
+        pageLeft,
+        pageOffset,
+      );
 
       // 외곽선 — HWP 스타일 (검은색 실선)
       const border = document.createElement('div');
@@ -228,13 +237,20 @@ export class TableObjectRenderer {
     // 각 페이지 bbox마다 8개 핸들 생성
     const hs = TableObjectRenderer.HANDLE_SIZE;
     for (const bbox of bboxes) {
-      const po = this.virtualScroll.getPageOffset(bbox.pageIndex);
-      const pdw = this.virtualScroll.getPageWidth(bbox.pageIndex);
-      const pl = (contentWidth - pdw) / 2;
-      const l = pl + bbox.x * zoom;
-      const t = po + bbox.y * zoom;
-      const w = bbox.width * zoom;
-      const h = bbox.height * zoom;
+      const pageOffset = this.virtualScroll.getPageOffset(bbox.pageIndex);
+      const pageLeft = this.virtualScroll.getPageLeftResolved(bbox.pageIndex, contentWidth);
+      const { left: l, top: t, width: w, height: h } = objectSelectionViewportBox(
+        {
+          pageIndex: bbox.pageIndex,
+          x: bbox.x,
+          y: bbox.y,
+          w: bbox.width,
+          h: bbox.height,
+        },
+        zoom,
+        pageLeft,
+        pageOffset,
+      );
 
       const positions: { dir: HandleDirection; cx: number; cy: number }[] = [
         { dir: 'nw', cx: l, cy: t },

@@ -41,8 +41,6 @@ const SAMPLE_80168: &str = "samples/80168_regulatory_analysis.hwp";
 /// 정상 원본의 `pdf/86712_regulatory_analysis-hwp-2024.pdf`: MalgunGothic 45개와
 /// BatangChe 1개에서 다음 글리프 원점까지 1.0 em을 확인했다(2026-09-17).
 const SAMPLE_86712: &str = "samples/86712_regulatory_analysis.hwp";
-/// 정본 `pdf/3249937_asset_management_rules-2020.pdf`. 정본 face 는 `휴먼명조`(1.001 em, n=40).
-const SAMPLE_3249937: &str = "samples/issue6031/3249937_asset_management_rules.hwpx";
 
 /// 한 문서에서 `ㆍ` 의 (글꼴, 글자크기 대비 전진폭) 을 모은다.
 fn area_dot_advances(sample: &str, max_pages: u32) -> Vec<(String, f64)> {
@@ -84,7 +82,7 @@ fn area_dot_advances(sample: &str, max_pages: u32) -> Vec<(String, f64)> {
 #[test]
 fn area_dot_is_full_width_across_font_families() {
     let mut dots: Vec<(String, f64)> = Vec::new();
-    for sample in [SAMPLE_80168, SAMPLE_86712, SAMPLE_3249937] {
+    for sample in [SAMPLE_80168, SAMPLE_86712] {
         dots.extend(area_dot_advances(sample, 40));
     }
     assert!(

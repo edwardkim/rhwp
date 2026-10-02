@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import html as html_lib
 import importlib.util
+import io
 import json
 import os
 import platform
@@ -19,7 +21,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
@@ -101,7 +103,9 @@ FRAME_TAIL_LINE_OVERFLOW_MIN_PX = 4.0
 COLUMN_X_OVERLAP_LIMIT = 0.55
 QUESTION_MARKER_Y_DRIFT_LIMIT_PX = 42.0
 DEFAULT_PIXEL_DIFF_THRESHOLD = 32
-VISUAL_SWEEP_RUN_SCHEMA_VERSION = 1
+SILHOUETTE_METHOD = "threshold_boundary_color_support_v1"
+PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT = 90.0
+VISUAL_SWEEP_RUN_SCHEMA_VERSION = 2
 VISUAL_SWEEP_PAGE_SCHEMA_VERSION = 1
 LARGE_INK_TILE_SIZE = 16
 LARGE_INK_TILE_MIN_PIXELS = 20
@@ -619,6 +623,7 @@ def sweep_provenance(
             "sha256": sha256_file(Path(__file__).resolve()),
         },
         "svg_rasterizer": svg_rasterizer,
+        "comparison_profile": "print",
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }
 
@@ -631,12 +636,27 @@ def wasm_package_provenance(root: Path, package: Path) -> dict[str, object]:
     return {
         "files": [{"path": str(path.resolve()), "sha256": sha256_file(path)} for path in files],
         "exporter_sha256": sha256_file(exporter),
-        "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+        "comparison_profile": "print",
+        "font_policy": "same-input native export-svg --font-style --profile print; font-face CSS only",
         "render_tree": "WASM getPageRenderTree",
     }
 
 
-def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
+def svg_font_face_rules(svg_path: Path) -> list[str]:
+    """Read only the leading CSS; embedded SVG page content can be gigabytes."""
+    chunks: list[bytes] = []
+    tail = b""
+    with svg_path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            chunks.append(chunk)
+            if b"</style>" in tail + chunk:
+                break
+            tail = chunk[-8:]
+    css = b"".join(chunks).split(b"</style>", 1)[0].decode("utf-8")
+    return re.findall(r"@font-face\s*\{[^{}]*\}", css, re.IGNORECASE)
+
+
+def apply_svg_font_policy(svg: str, policy_rules: list[str]) -> str:
     """글꼴 별칭만 보충한다. WASM의 텍스트·좌표·그리기 노드는 그대로 보존한다."""
     def family(rule: str) -> str:
         match = re.search(r"font-family\s*:\s*([^;}]+)", rule, re.IGNORECASE)
@@ -644,7 +664,26 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
 
     faces = re.compile(r"@font-face\s*\{[^{}]*\}", re.IGNORECASE)
     declared = {family(rule) for rule in faces.findall(svg)}
-    rules = list(dict.fromkeys(rule for rule in faces.findall(policy_svg) if family(rule) not in declared))
+    # 선언된 글꼴 목록과 실제 페이지의 참조를 구분한다. 다른 쪽의 글꼴은 넣지 않는다.
+    content = faces.sub("", svg)
+    references = [value for _, value in re.findall(
+        r"\bfont-family\s*=\s*([\"'])(.*?)\1", content, re.IGNORECASE | re.DOTALL
+    )]
+    styles = re.findall(r"<style\b[^>]*>(.*?)</style>", content, re.IGNORECASE | re.DOTALL)
+    styles += [html_lib.unescape(value) for _, value in re.findall(
+        r"\bstyle\s*=\s*([\"'])(.*?)\1", content, re.IGNORECASE | re.DOTALL
+    )]
+    references += [value for style in styles for value in re.findall(
+        r"\bfont-family\s*:\s*([^;}]+)", style, re.IGNORECASE
+    )]
+    used = {
+        name.strip().strip("\"'").casefold()
+        for value in references
+        for name in re.findall(r'"[^\"]*"|\'[^\']*\'|[^,]+', html_lib.unescape(value))
+    }
+    rules = list(dict.fromkeys(
+        rule for rule in policy_rules if family(rule) in used and family(rule) not in declared
+    ))
     if not rules:
         return svg
     opening = re.search(r"<svg\b[^>]*>", svg)
@@ -654,11 +693,33 @@ def apply_svg_font_policy(svg: str, policy_svg: str) -> str:
     return svg[:end] + "<style>" + "\n".join(rules) + "</style>" + svg[end:]
 
 
+def default_sweep_font_paths() -> list[Path]:
+    """Find the installed fonts used by the local renderer when no path was given."""
+    configured = os.environ.get("RHWP_FONT_PATH", "")
+    if configured:
+        return [Path(value) for value in configured.split(os.pathsep) if value]
+    if platform.system() == "Darwin":
+        user_fonts = Path.home() / "Library/Fonts"
+        if user_fonts.is_dir():
+            return [user_fonts]
+    return []
+
+
 def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
     """명시적 검증 폰트 공급과 hash를 고정한다. 폰트 파일은 scratch SVG에만 포함한다."""
+    if mode == "subset":
+        raise SystemExit(
+            "SVG 서브셋 임베딩은 Unicode cmap을 보존하지 않아 검증에 사용할 수 없습니다. "
+            "--embed-fonts=full 또는 설치 글꼴을 쓰는 기본 모드로 재실행하세요."
+        )
     if paths and mode is None:
         raise SystemExit("--font-path는 --embed-fonts와 함께 사용해야 합니다.")
-    args = [f"--embed-fonts={mode}"] if mode == "full" else ["--embed-fonts"] if mode else ["--font-style"]
+    source = "explicit" if paths else "none"
+    if mode == "full" and not paths:
+        paths = default_sweep_font_paths()
+        if paths:
+            source = "RHWP_FONT_PATH" if os.environ.get("RHWP_FONT_PATH") else "macOS_user_fonts"
+    args = ["--embed-fonts=full"] if mode == "full" else ["--font-style"]
     files = []
     for directory in paths:
         directory = resolve_input_path(root, directory)
@@ -668,7 +729,62 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
         for path in sorted(directory.rglob("*")):
             if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
                 files.append({"path": str(path), "sha256": sha256_file(path)})
-    return args, {"mode": mode or "local", "files": files}
+    if mode == "full" and paths and not files:
+        raise SystemExit("공급한 폰트 디렉터리에 지원하는 글꼴 파일이 없습니다.")
+    return args, {"mode": mode or "local", "source": source, "files": files}
+
+
+def inspect_svg_embedded_fonts(svg_path: Path) -> list[dict[str, object]]:
+    """픽셀 점수 전에 임베딩 폰트의 Unicode 매핑을 검사한다.
+
+    cmap이 없는 PDF용 subset은 glyph가 있어도 SVG text를 표시할 수 없다.
+    이 검사는 실제 글꼴 선택이나 모든 글자의 표시를 입증하지 않는다.
+    local()/외부 URL 폰트는 이 검사 밖이며 직접 PNG 판독이 계속 필요하다.
+    """
+    records: list[dict[str, object]] = []
+    svg = svg_path.read_text(encoding="utf-8")
+    for rule in re.findall(r"@font-face\s*\{[^{}]*\}", svg, re.IGNORECASE):
+        family = re.search(r"font-family\s*:\s*([^;}]+)", rule, re.IGNORECASE)
+        name = family.group(1).strip().strip("\"'") if family else "(unknown)"
+        for data_url in re.findall(r"url\(\s*[\"']?(data:[^\"')]+)", rule, re.IGNORECASE):
+            record: dict[str, object] = {"family": name}
+            try:
+                from fontTools.ttLib import TTFont
+
+                header, payload = data_url.split(",", 1)
+                if not header.lower().endswith(";base64"):
+                    raise ValueError("base64 font data URI가 아님")
+                data = base64.b64decode(re.sub(r"\s+", "", payload), validate=True)
+                record["sha256"] = hashlib.sha256(data).hexdigest()
+                with TTFont(io.BytesIO(data), fontNumber=0) as font:
+                    cmap = font.getBestCmap() if "cmap" in font else None
+                    if not cmap:
+                        raise ValueError("Unicode cmap이 없거나 비어 있음")
+                    record["unicode_mapping_count"] = len(cmap)
+                record["status"] = "passed"
+            except ImportError:
+                record.update(status="failed", reason="임베딩 폰트 검사를 위해 fonttools 설치 필요")
+            except Exception as error:
+                # FontTools는 손상된 SFNT/WOFF마다 다른 예외를 사용한다.
+                record.update(status="failed", reason=str(error))
+            records.append(record)
+    return records
+
+
+def check_sweep_embedded_fonts(svg_paths: list[Path], report_path: Path) -> None:
+    pages = [{"svg": str(path), "fonts": inspect_svg_embedded_fonts(path)} for path in svg_paths]
+    failures = [
+        f"{Path(page['svg']).name}: {font['family']}: {font['reason']}"
+        for page in pages for font in page["fonts"] if font["status"] == "failed"
+    ]
+    write_json_atomic(report_path, {
+        "status": "failed" if failures else "passed",
+        "embedded_font_count": sum(len(page["fonts"]) for page in pages),
+        "scope": "embedded font Unicode cmap only; direct PNG inspection still required",
+        "pages": pages,
+    })
+    if failures:
+        raise SystemExit("임베딩 글꼴 검사 실패 — 캡처/시각 통과 판정을 중단합니다.\n" + "\n".join(failures))
 
 
 def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None) -> None:
@@ -685,7 +801,8 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
         cwd=root, log_path=base / "wasm-export.log",
     )
     run(
-        [rhwp_bin, "export-svg", str(hwp), *(font_args or ["--font-style"]), "-o", str(policy_dir), *environment_args],
+        [rhwp_bin, "export-svg", str(hwp), *(font_args or ["--font-style"]),
+         "--profile", "print", "-o", str(policy_dir), *environment_args],
         cwd=root, log_path=base / "font-policy.log",
     )
     policies = {page_num(path): path for path in policy_dir.glob("*.svg")}
@@ -697,13 +814,89 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
     if not expected or set(raw) != expected or set(trees) != expected or not policies:
         raise SystemExit("WASM SVG/render tree 페이지가 누락됐거나 글꼴 정책이 없습니다.")
     # 별칭은 문서의 폰트 공급 계약이다. Native의 페이지 소속을 WASM에 강제하지 않는다.
-    policy = "\n".join(path.read_text(encoding="utf-8") for path in policies.values())
+    # 전체 글꼴 SVG에는 본문도 있다. CSS만 읽어 긴 문서의 반복 스캔을 피한다.
+    policy_rules = list(dict.fromkeys(
+        rule for path in policies.values() for rule in svg_font_face_rules(path)
+    ))
     for page in sorted(expected):
-        svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy)
+        svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy_rules)
         (base / "svg" / raw[page].name).write_text(svg, encoding="utf-8")
         shutil.copyfile(trees[page], base / "render_tree" / trees[page].name)
     # output 복사까지 끝난 경우에만 export 완료를 표시한다.
     write_json_atomic(base / "wasm-export-complete.json", manifest)
+
+
+def export_native_target(
+    root: Path, hwp: Path, rhwp_bin: str, base: Path,
+    selected_pages: list[int] | None, font_args: list[str], environment_args: list[str],
+) -> None:
+    """선택 쪽만 내보내고, 전체 문서 쪽수와 실제 산출물 개수를 구분한다."""
+    svg_dir = base / "svg"
+    tree_dir = base / "render_tree"
+    metadata_path = base / "native-export.json"
+    metadata = load_json_object(metadata_path, "Native export") if metadata_path.exists() else {}
+    page_count = metadata.get("pageCount")
+    svg_paths = list(svg_dir.glob("*.svg"))
+    svg_pages = {page_num(path) for path in svg_paths}
+    # 단일 쪽 문서는 쪽 번호 없이 원문 파일명으로 저장된다. 일부 쪽만 있는 다쪽
+    # 문서를 단일 쪽으로 오인하지 않도록 CLI의 단일 쪽 파일명 계약만 허용한다.
+    if (svg_dir / f"{hwp.stem}.svg").is_file():
+        svg_pages = {1}
+    tree_pages = {page_num(path) for path in tree_dir.glob("*.json")}
+    if selected_pages and isinstance(page_count, int) and max(selected_pages) > page_count:
+        raise SystemExit(f"요청 쪽이 Native 전체 {page_count}쪽 범위를 벗어납니다.")
+
+    if selected_pages:
+        missing_svg = [page for page in selected_pages if page not in svg_pages]
+        missing_tree = [page for page in selected_pages if page not in tree_pages]
+    else:
+        # 부분 export를 resume하면서 전체 쪽을 요청하면 전체를 다시 내보낸다.
+        partial = bool(metadata) and not metadata.get("all_pages_exported", False)
+        expected_pages = set(range(1, page_count + 1)) if isinstance(page_count, int) else None
+        missing_svg = [None] if (
+            not svg_paths or partial or (expected_pages is not None and svg_pages != expected_pages)
+        ) else []
+        missing_tree = [None] if (
+            not tree_pages or partial or (expected_pages is not None and tree_pages != expected_pages)
+        ) else []
+    for page in missing_svg:
+        page_args = ["-p", str(page - 1)] if page is not None else []
+        log_name = f"export_{page:03}.log" if page is not None else "export.log"
+        proc = run(
+            [rhwp_bin, "export-svg", str(hwp), *font_args, "--profile", "print", "-o", str(svg_dir),
+             *page_args, *environment_args, "--json"],
+            cwd=root, log_path=base / log_name,
+        )
+        try:
+            envelope = json.loads(proc.stdout)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise SystemExit("Native export stdout JSON을 읽을 수 없습니다.") from exc
+        count = envelope.get("pageCount") if isinstance(envelope, dict) else None
+        pages = envelope.get("pages") if isinstance(envelope, dict) else None
+        if not isinstance(count, int) or count < 1 or not isinstance(pages, list):
+            raise SystemExit("Native export 전체 쪽수 또는 산출물 목록이 올바르지 않습니다.")
+        expected = {page - 1} if page is not None else set(range(count))
+        actual = {item.get("page") for item in pages if isinstance(item, dict)}
+        if actual != expected or envelope.get("renderedCount") != len(expected):
+            raise SystemExit("Native export 요청 쪽의 산출물이 누락됐습니다.")
+        if page_count is not None and count != page_count:
+            raise SystemExit("동일 입력의 Native 전체 쪽수가 export 사이에 달라졌습니다.")
+        page_count = count
+        metadata = {"pageCount": count, "all_pages_exported": False}
+        write_json_atomic(metadata_path, metadata)
+    for page in missing_tree:
+        page_args = ["-p", str(page - 1)] if page is not None else []
+        log_name = f"render_tree_{page:03}.log" if page is not None else "render_tree.log"
+        run(
+            [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir),
+             *page_args, *environment_args],
+            cwd=root, log_path=base / log_name,
+        )
+    if selected_pages and isinstance(page_count, int) and max(selected_pages) > page_count:
+        raise SystemExit(f"요청 쪽이 Native 전체 {page_count}쪽 범위를 벗어납니다.")
+    if selected_pages is None and metadata:
+        metadata["all_pages_exported"] = True
+        write_json_atomic(metadata_path, metadata)
 
 
 def run_manifest_path(base: Path) -> Path:
@@ -720,6 +913,7 @@ def run_manifest_for_target(
     provenance: dict[str, object],
     dpi: int,
     pixel_diff_threshold: int,
+    font_mismatch_evidence: dict[str, str] | None = None,
     *,
     resume: bool,
 ) -> dict[str, object]:
@@ -730,6 +924,7 @@ def run_manifest_for_target(
         "provenance": provenance,
         "dpi": dpi,
         "pixel_diff_threshold": pixel_diff_threshold,
+        "font_mismatch_evidence": font_mismatch_evidence,
     }
     if not resume:
         manifest = {
@@ -856,9 +1051,15 @@ def overlay_summary_for_metrics(
         for item in metrics
         if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
     ]
+    tolerant_matches = [
+        float(item["tolerant_content_match_percent"])
+        for item in metrics
+        if isinstance(item.get("tolerant_content_match_percent"), (int, float))
+    ]
     worst_pixel = min(pixel_matches) if pixel_matches else None
     worst_ink = min(ink_matches) if ink_matches else None
     worst_proxy = min(proxy_matches) if proxy_matches else None
+    worst_tolerant = min(tolerant_matches) if tolerant_matches else None
     return {
         "compared_pages": len(metrics),
         "pixel_diff_threshold": pixel_diff_threshold,
@@ -880,6 +1081,14 @@ def overlay_summary_for_metrics(
         "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
         if worst_proxy is not None
         else None,
+        "average_tolerant_content_match_percent": round(
+            sum(tolerant_matches) / len(tolerant_matches), 5
+        )
+        if tolerant_matches
+        else None,
+        "worst_tolerant_content_match_percent": round(worst_tolerant, 5)
+        if worst_tolerant is not None
+        else None,
         "worst_pages": [
             item["page"]
             for item in sorted(
@@ -887,6 +1096,74 @@ def overlay_summary_for_metrics(
                 key=lambda row: float(row.get("visual_accuracy_proxy_percent", 100.0)),
             )[:10]
         ],
+    }
+
+
+def pr_review_gate(
+    metrics: list[dict[str, object]],
+    *,
+    expected_pages: list[int] | None = None,
+    font_mismatch_evidence: dict[str, str] | None = None,
+) -> dict[str, object]:
+    """Return the PR-review disposition for the rendered review PNGs.
+
+    A 2px tolerant silhouette result below 90% is not an approval signal.  The
+    caller still receives all raster artifacts so the maintainer can diagnose
+    the mismatch, but the output manifest records that another review is
+    required and ``main`` returns failure.  Font mismatch is deliberately an
+    explicit, hashed evidence exception: automatic raster heuristics cannot
+    tell a substituted face from a layout regression.
+    """
+    below_threshold: list[dict[str, object]] = []
+    unavailable: list[object] = []
+    measured_pages: set[int] = set()
+    for item in metrics:
+        page = item.get("page")
+        if isinstance(page, int):
+            measured_pages.add(page)
+        value = item.get("tolerant_content_match_percent")
+        if not isinstance(value, (int, float)):
+            unavailable.append(page)
+        elif value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT:
+            below_threshold.append(
+                {
+                    "page": page,
+                    "tolerant_content_match_percent": round(float(value), 5),
+                }
+            )
+
+    if expected_pages is not None:
+        unavailable.extend(
+            page for page in sorted(set(expected_pages)) if page not in measured_pages
+        )
+
+    if font_mismatch_evidence is not None:
+        status = "font_mismatch_exception"
+    elif below_threshold or unavailable:
+        status = "re_review_required"
+    else:
+        status = "passed"
+    return {
+        "status": status,
+        "minimum_tolerant_content_match_percent": PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT,
+        "below_threshold_pages": below_threshold,
+        "unavailable_metric_pages": unavailable,
+        "font_mismatch_evidence": font_mismatch_evidence,
+    }
+
+
+def font_mismatch_evidence_record(root: Path, evidence: Path | None) -> dict[str, str] | None:
+    """Record the only permitted automatic-score exception without trusting a label."""
+    if evidence is None:
+        return None
+    resolved = resolve_input_path(root, evidence)
+    if not resolved.is_file():
+        raise SystemExit(f"--font-mismatch-evidence 파일이 없습니다: {resolved}")
+    if not resolved.read_text(encoding="utf-8").strip():
+        raise SystemExit("--font-mismatch-evidence는 양쪽 실제 글꼴을 설명하는 비어 있지 않은 UTF-8 파일이어야 합니다.")
+    return {
+        "path": safe_rel_str(root, resolved),
+        "sha256": sha256_file(resolved),
     }
 
 
@@ -900,6 +1177,12 @@ def select_source_page_paths(
     tree_paths = filter_paths_by_pages(all_tree_paths, selected_pages)
     pdf_paths = filter_paths_by_pages(all_pdf_paths, selected_pages)
     singleton_page: int | None = None
+    if not selected_pages and len(svg_paths) == len(tree_paths) == len(pdf_paths) == 1:
+        # 전체 한 쪽을 내보내면 SVG 이름에는 문서번호가 남을 수 있다.
+        # 실제 쪽 번호를 가진 트리와 PDF가 일치할 때 그 번호를 사용한다.
+        tree_page = page_num(tree_paths[0])
+        if tree_page == page_num(pdf_paths[0]):
+            singleton_page = tree_page
     if selected_pages:
         selected_groups = {
             "svg": svg_paths,
@@ -934,8 +1217,8 @@ def select_source_page_paths(
     pages: list[tuple[int, Path, Path, Path]] = []
     seen: set[int] = set()
     for svg_path, tree_path, pdf_path in zip(svg_paths, tree_paths, pdf_paths):
-        # A document stem such as "wrap-2020" is not physical page 2020.
-        # Keep fallback pairing, filenames and metrics on the requested page.
+        # 문서명 속 연도·문서번호 대신 확인한 실제/선택 쪽을
+        # 짝짓기, 파일명과 측정 기록에 일관되게 사용한다.
         page = singleton_page if singleton_page is not None else page_num(svg_path)
         if page in seen:
             raise SystemExit(f"선택 페이지 번호가 중복되었습니다: {page}")
@@ -1061,6 +1344,7 @@ def write_target_status(
     compact_shapes: list[dict[str, object]],
     pdf_question_markers: list[dict[str, object]],
     pixel_diff_threshold: int,
+    font_mismatch_evidence: dict[str, str] | None = None,
 ) -> dict[str, object]:
     completed = valid_page_manifests(base)
     completed_pages = sorted(completed)
@@ -1083,6 +1367,11 @@ def write_target_status(
         if isinstance(page.get("visual_metrics"), dict)
     ]
     overlay_summary = overlay_summary_for_metrics(overlay_metrics, pixel_diff_threshold)
+    review_gate = pr_review_gate(
+        overlay_metrics,
+        expected_pages=requested_pages or completed_pages,
+        font_mismatch_evidence=font_mismatch_evidence,
+    )
     overlay_metrics_path = base / "overlay" / "overlay_metrics.json"
     write_json_atomic(
         overlay_metrics_path,
@@ -1156,9 +1445,15 @@ def write_target_status(
         "note_shape_json": safe_rel_str(root, analysis_dir / "note_shape.json"),
         "overlay_metrics": overlay_summary,
         "overlay_metrics_json": safe_rel_str(root, overlay_metrics_path),
+        "pr_review_gate": review_gate,
         "visual_metrics": visual_summary,
         "flagged_pages": flagged_pages,
     }
+    native_metadata_path = base / "native-export.json"
+    if native_metadata_path.exists():
+        native_metadata = load_json_object(native_metadata_path, "Native export")
+        manifest["native_document_pages"] = native_metadata["pageCount"]
+        manifest["native_export_metadata"] = safe_rel_str(root, native_metadata_path)
     write_json_atomic(base / "manifest.json", manifest)
     update_root_summary(out_root, manifest)
     return manifest
@@ -1179,6 +1474,8 @@ def render_target(
     font_environment: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
+    font_mismatch_evidence: Path | None = None,
+    silhouette_only: bool = False,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1189,6 +1486,7 @@ def render_target(
         raise SystemExit(f"HWP 파일이 없습니다: {hwp}")
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
+    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence)
 
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
@@ -1206,17 +1504,10 @@ def render_target(
         # 기본 실행은 이 target의 이전 산출물을 새 실행과 섞지 않는다. 기존과 달리
         # --resume일 때만 이 디렉터리를 보존한다.
         clean_dir(base)
-    for directory in (
-        svg_dir,
-        rhwp_png_dir,
-        pdf_png_dir,
-        compare_dir,
-        overlay_dir,
-        review_dir,
-        analysis_dir,
-        tree_dir,
-        page_manifest_dir(base),
-    ):
+    directories = [svg_dir, rhwp_png_dir, pdf_png_dir, tree_dir, analysis_dir]
+    if not silhouette_only:
+        directories.extend([compare_dir, overlay_dir, review_dir, page_manifest_dir(base)])
+    for directory in directories:
         directory.mkdir(parents=True, exist_ok=True)
 
     environment_args = []
@@ -1241,6 +1532,7 @@ def render_target(
         provenance,
         dpi,
         pixel_diff_threshold,
+        font_mismatch_record,
         resume=resume,
     )
 
@@ -1250,35 +1542,39 @@ def render_target(
     else:
         note_shape = load_note_shape(root, hwp, rhwp_bin, note_shape_path)
     compact_shapes = compact_note_shape(note_shape)
-    export_log = base / "export.log"
-    tree_log = base / "render_tree.log"
     if wasm_pkg is not None:
         if not (base / "wasm-export-complete.json").is_file():
             export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args)
-    elif not any(svg_dir.glob("*.svg")):
-        # 증적 SVG는 원 문서의 legacy face를 그대로 쓰되, `--font-style`이
-        # `한양중고딕 → HY중고딕/HYGothic-Medium` 같은 설치명 alias를 @font-face
-        # local()로 명시한다. 렌더 위치는 rhwp가 이미 확정한 SVG 좌표를 유지하므로
-        # PDF 비교의 layout oracle을 바꾸지 않으며, 검증 host에서 한글이 두부(□)로
-        # rasterize되는 것을 막는다. 실제 폰트 데이터는 저작권 폰트를 증적에 복제하지
-        # 않도록 넣지 않고, portable 판정본은 아래 PNG review/compare로 보관한다.
-        run(
-            [rhwp_bin, "export-svg", str(hwp), *font_args, "-o", str(svg_dir), *environment_args],
-            cwd=root,
-            log_path=export_log,
-        )
-    if wasm_pkg is None and not any(tree_dir.glob("*.json")):
-        run(
-            [rhwp_bin, "export-render-tree", str(hwp), "-o", str(tree_dir), *environment_args],
-            cwd=root,
-            log_path=tree_log,
-        )
+    else:
+        export_native_target(root, hwp, rhwp_bin, base, selected_pages, font_args, environment_args)
 
     all_svg_paths = sorted(svg_dir.glob("*.svg"), key=page_num)
     all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
     print(f"SVG export pages: {len(all_svg_paths)}", flush=True)
     if not all_svg_paths or not all_tree_paths:
         raise SystemExit("SVG 또는 render tree export 산출물이 없습니다.")
+
+    # Native와 WASM, 새 실행과 resume 모두 raster/checkpoint 재사용 전에 검사한다.
+    # font-mismatch 예외도 손상된 폰트 데이터의 검사를 우회하지 못한다.
+    font_check_path = analysis_dir / "embedded_font_check.json"
+    try:
+        check_sweep_embedded_fonts(
+            raster_paths_for_selected_pages(all_svg_paths, selected_pages),
+            font_check_path,
+        )
+    except SystemExit:
+        # resume 중 손상된 SVG를 발견했을 때도 과거 passed 요약을 남기지 않는다.
+        run_manifest["run_state"] = "failed"
+        write_json_atomic(run_manifest_path(base), run_manifest)
+        failure = {
+            "key": target.key,
+            "run_state": "failed",
+            "embedded_font_check": str(font_check_path),
+            "pr_review_gate": {"status": "re_review_required", "reason": "invalid_embedded_font"},
+        }
+        write_json_atomic(base / "manifest.json", failure)
+        update_root_summary(out_root, failure)
+        raise
 
     pdf_prefix = pdf_png_dir / "pdf"
     if not resume and selected_pages is None:
@@ -1289,6 +1585,28 @@ def render_target(
         for page in requested_pdf_pages:
             if page not in existing_pdf_pages:
                 run(pdf_raster_commands(pdf, dpi, pdf_prefix, [page])[0], cwd=root)
+    if silhouette_only:
+        all_pdf_pngs = sorted(pdf_png_dir.glob("*.png"), key=page_num)
+        sources = select_source_page_paths(
+            all_svg_paths, all_tree_paths, all_pdf_pngs, selected_pages
+        )
+        pairs = []
+        for page, svg_path, _, pdf_path in sources:
+            png = rhwp_png_dir / f"rhwp_{page:03d}.png"
+            run(
+                svg_raster_command(root, svg_path, png, dpi / 96.0, svg_rasterizer),
+                cwd=root, verbose=False,
+            )
+            pairs.append((page, png, pdf_path))
+        manifest = write_silhouette_tsv(pairs, base, target.key)
+        manifest["provenance"] = provenance
+        manifest["exported_svg_pages"] = len(all_svg_paths)
+        manifest["exported_render_tree_pages"] = len(all_tree_paths)
+        manifest["exported_pdf_pages"] = len(all_pdf_pngs)
+        write_json_atomic(base / "silhouette_manifest.json", manifest)
+        update_root_summary(out_root, manifest)
+        return manifest
+
     # PDF text layer is a candidate-only input for question-marker drift. Some
     # legacy HWP PDFs contain PUA strings that make Poppler's pdftotext abort,
     # while their raster pages remain valid visual oracles. Keep the raster
@@ -1337,6 +1655,7 @@ def render_target(
         compact_shapes,
         pdf_question_markers,
         pixel_diff_threshold,
+        font_mismatch_record,
     )
 
     svg_zoom = dpi / 96.0
@@ -1423,6 +1742,7 @@ def render_target(
             compact_shapes,
             pdf_question_markers,
             pixel_diff_threshold,
+            font_mismatch_record,
         )
 
     manifest = write_target_status(
@@ -1437,6 +1757,7 @@ def render_target(
         compact_shapes,
         pdf_question_markers,
         pixel_diff_threshold,
+        font_mismatch_record,
     )
     print(
         f"Raster PNG pages: rhwp={len(valid_page_manifests(base))}, pdf={len(all_pdf_pngs)}",
@@ -1450,6 +1771,84 @@ def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
     if r >= 244 and g >= 244 and b >= 244:
         return False
     return min(r, g, b) < 232 or max(r, g, b) - min(r, g, b) > 24
+
+
+def subpixel_tolerant_content_match_details(
+    rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
+) -> dict[str, object]:
+    """작은 rasterization 오프셋을 허용해 내용 실루엣을 비교한다.
+
+    엄격 ink 지표는 색상·픽셀 차이의 검토 기준으로 남기고, 이 값은
+    anti-aliasing·sub-pixel 차이를 구분해 보여 주는 보조 지표다.
+    """
+    if radius_px < 0:
+        raise ValueError("radius_px must be non-negative")
+    rhwp, pdf = padded_pair(rhwp.convert("RGB"), pdf.convert("RGB"))
+    # 8비트 RGB에서 채널차>24이면 최소 채널은230 이하이므로,
+    # 기존 is_content_pixel 판정은 최소 채널<232와 정확히 같다.
+    # PIL 연산으로 같은 마스크를 만들며 임계값이나 비교 영역은 바꾸지 않는다.
+    def content_mask(image: Image.Image) -> Image.Image:
+        r, g, b = image.split()
+        minimum = ImageChops.darker(ImageChops.darker(r, g), b)
+        return minimum.point([255 if value < 232 else 0 for value in range(256)])
+
+    rhwp_mask = content_mask(rhwp)
+    pdf_mask = content_mask(pdf)
+    if radius_px:
+        kernel = radius_px * 2 + 1
+        rhwp_near = rhwp_mask.filter(ImageFilter.MaxFilter(kernel))
+        pdf_near = pdf_mask.filter(ImageFilter.MaxFilter(kernel))
+    else:
+        rhwp_near = rhwp_mask
+        pdf_near = pdf_mask
+
+    content_union = ImageChops.lighter(rhwp_mask, pdf_mask).histogram()[255]
+    unresolved_mask = ImageChops.lighter(
+        ImageChops.subtract(rhwp_mask, pdf_near),
+        ImageChops.subtract(pdf_mask, rhwp_near),
+    )
+    raw_mismatched = unresolved_mask.histogram()[255]
+    mismatched = raw_mismatched
+    # 이진화 경계의 양쪽에 걸친 유사한 유색 픽셀도 같은 위치에 내용이 있다.
+    # 진짜 흰 배경은 제외하므로 옅은 그림의 누락을 색상 허용치로 숨기지 않는다.
+    rhwp_channels, pdf_channels = rhwp.split(), pdf.split()
+    rhwp_min = ImageChops.darker(ImageChops.darker(*rhwp_channels[:2]), rhwp_channels[2])
+    pdf_min = ImageChops.darker(ImageChops.darker(*pdf_channels[:2]), pdf_channels[2])
+    visible = ImageChops.multiply(
+        rhwp_min.point([255 if value < 244 else 0 for value in range(256)]),
+        pdf_min.point([255 if value < 244 else 0 for value in range(256)]),
+    )
+    delta_channels = [ImageChops.difference(a, b) for a, b in zip(rhwp_channels, pdf_channels)]
+    max_delta = ImageChops.lighter(ImageChops.lighter(*delta_channels[:2]), delta_channels[2])
+    similar = max_delta.point([
+        255 if value <= DEFAULT_PIXEL_DIFF_THRESHOLD else 0 for value in range(256)
+    ])
+    boundary_disagreement = ImageChops.difference(rhwp_mask, pdf_mask)
+    same_position_support = ImageChops.multiply(
+        boundary_disagreement, ImageChops.multiply(visible, similar)
+    )
+    reconciled = ImageChops.multiply(unresolved_mask, same_position_support).histogram()[255]
+    mismatched -= reconciled
+    details = {
+        "silhouette_method": SILHOUETTE_METHOD,
+        "silhouette_raw_match_percent": round((1.0 - raw_mismatched / content_union) * 100.0, 5)
+        if content_union else 100.0,
+        "silhouette_boundary_reconciled_pixels": reconciled,
+        "silhouette_color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD,
+        "silhouette_content_union_pixels": content_union,
+        "tolerant_content_match_percent": round((1.0 - mismatched / content_union) * 100.0, 5)
+        if content_union else 100.0,
+    }
+    return details
+
+
+def subpixel_tolerant_content_match_percent(
+    rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
+) -> float:
+    """공통 실루엣 계산 결과의 일치율만 반환한다."""
+    return float(subpixel_tolerant_content_match_details(
+        rhwp, pdf, radius_px=radius_px
+    )["tolerant_content_match_percent"])
 
 
 def is_dark_pixel(pixel: tuple[int, int, int]) -> bool:
@@ -4583,6 +4982,60 @@ def label_font() -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def label_line_height(font: ImageFont.ImageFont) -> int:
+    """라벨 한 줄의 높이(px). 글꼴이 비어 있어도 최소 높이를 보장한다."""
+    bbox = font.getbbox("Ag가")
+    return max(12, bbox[3] - bbox[1] + 4)
+
+
+def wrap_label_lines(
+    text: str, font: ImageFont.ImageFont, max_width: int
+) -> list[str]:
+    """[#7349] 라벨을 canvas 폭 안에서 접는다.
+
+    긴 key 와 metric 조합이 한 줄로 그려져 오른쪽에서 잘렸다. 문서 이미지는 그대로 두고
+    라벨만 여러 줄로 나눈다. 공백 기준으로 접되, 한 낱말이 폭보다 길면 문자 단위로 자른다.
+    """
+    if max_width <= 0:
+        return [text]
+
+    def width_of(value: str) -> int:
+        bbox = font.getbbox(value)
+        return bbox[2] - bbox[0]
+
+    lines: list[str] = []
+    current = ""
+    for token in text.split(" "):
+        candidate = f"{current} {token}".strip()
+        if current and width_of(candidate) > max_width:
+            lines.append(current)
+            current = token
+        else:
+            current = candidate
+        while width_of(current) > max_width and len(current) > 1:
+            cut = len(current)
+            while cut > 1 and width_of(current[:cut]) > max_width:
+                cut -= 1
+            lines.append(current[:cut])
+            current = current[cut:]
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def draw_label_block(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    fill: tuple[int, int, int],
+) -> None:
+    x, y = xy
+    step = label_line_height(font)
+    for index, line in enumerate(lines):
+        draw.text((x, y + index * step), line, fill=fill, font=font)
+
+
 def padded_pair(left_image: Image.Image, right_image: Image.Image) -> tuple[Image.Image, Image.Image]:
     width = max(left_image.width, right_image.width)
     height = max(left_image.height, right_image.height)
@@ -4675,26 +5128,37 @@ def make_overlay_page(
     pixel_match_percent = (1.0 - diff_ratio) * 100.0
     ink_match_percent = (1.0 - ink_diff_ratio) * 100.0 if ink_union_pixels else None
     visual_accuracy_proxy_percent = ink_match_percent if ink_match_percent is not None else pixel_match_percent
+    tolerant_radius_px = 2
+    silhouette_details = subpixel_tolerant_content_match_details(
+        rhwp, pdf, radius_px=tolerant_radius_px
+    )
+    tolerant_content_match_percent = silhouette_details["tolerant_content_match_percent"]
     diff_bbox = None
     if bbox_max_x >= 0:
         diff_bbox = [bbox_min_x, bbox_min_y, bbox_max_x, bbox_max_y]
 
-    label_h = 42
-    canvas = Image.new("RGB", (width, height + label_h), "white")
+    font = label_font()
+    title_lines = wrap_label_lines(f"{key} p{page_index + 1:03d}", font, width - 16)
+    comment_lines = wrap_label_lines(
+        review_comment_line(
+            {
+                "visual_accuracy_proxy_percent": visual_accuracy_proxy_percent,
+                "tolerant_content_match_percent": tolerant_content_match_percent,
+                **silhouette_details,
+            }
+        ),
+        font,
+        width - 16,
+    )
+    # [#7349] 긴 target key와 한국어 검토 코멘트를 모두 canvas 폭 안에서 접는다.
+    label_h = max(30, 10 + len(title_lines) * label_line_height(font))
+    footer_h = max(30, 10 + len(comment_lines) * label_line_height(font))
+    canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
     canvas.paste(overlay, (0, label_h))
     draw = ImageDraw.Draw(canvas)
-    font = label_font()
-    ink_match_label = f"{ink_match_percent:.3f}%" if ink_match_percent is not None else "n/a"
-    draw.text(
-        (8, 6),
-        (
-            f"{key} p{page_index + 1:03d} overlay "
-            f"pixel_match={pixel_match_percent:.3f}% "
-            f"ink_match={ink_match_label} "
-            f"diff={diff_pixels}/{total_pixels}"
-        ),
-        fill=(20, 20, 20),
-        font=font,
+    draw_label_block(draw, (8, 5), title_lines, font, (20, 20, 20))
+    draw_label_block(
+        draw, (8, label_h + height + 5), comment_lines, font, (20, 20, 20)
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(out_path)
@@ -4716,6 +5180,8 @@ def make_overlay_page(
         "ink_diff_ratio": round(ink_diff_ratio, 8) if ink_union_pixels else None,
         "ink_match_percent": round(ink_match_percent, 5) if ink_match_percent is not None else None,
         "visual_accuracy_proxy_percent": round(visual_accuracy_proxy_percent, 5),
+        "tolerant_content_match_radius_px": tolerant_radius_px,
+        **silhouette_details,
         "mean_abs_channel_delta": round(total_abs_delta / (total_pixels * 3), 3)
         if total_pixels
         else 0.0,
@@ -4749,53 +5215,7 @@ def make_overlay_compares(
         pages.append(out)
         metrics.append(page_metrics)
 
-    pixel_matches = [
-        float(item["pixel_match_percent"])
-        for item in metrics
-        if isinstance(item.get("pixel_match_percent"), (int, float))
-    ]
-    ink_matches = [
-        float(item["ink_match_percent"])
-        for item in metrics
-        if isinstance(item.get("ink_match_percent"), (int, float))
-    ]
-    proxy_matches = [
-        float(item["visual_accuracy_proxy_percent"])
-        for item in metrics
-        if isinstance(item.get("visual_accuracy_proxy_percent"), (int, float))
-    ]
-    worst_pixel = min(pixel_matches) if pixel_matches else None
-    worst_ink = min(ink_matches) if ink_matches else None
-    worst_proxy = min(proxy_matches) if proxy_matches else None
-    summary = {
-        "compared_pages": count,
-        "pixel_diff_threshold": pixel_diff_threshold,
-        "average_pixel_match_percent": round(sum(pixel_matches) / len(pixel_matches), 5)
-        if pixel_matches
-        else None,
-        "worst_pixel_match_percent": round(worst_pixel, 5)
-        if worst_pixel is not None
-        else None,
-        "average_ink_match_percent": round(sum(ink_matches) / len(ink_matches), 5)
-        if ink_matches
-        else None,
-        "worst_ink_match_percent": round(worst_ink, 5)
-        if worst_ink is not None
-        else None,
-        "average_visual_accuracy_proxy_percent": round(sum(proxy_matches) / len(proxy_matches), 5)
-        if proxy_matches
-        else None,
-        "worst_visual_accuracy_proxy_percent": round(worst_proxy, 5)
-        if worst_proxy is not None
-        else None,
-        "worst_pages": [
-            item["page"]
-            for item in sorted(
-                metrics,
-                key=lambda row: float(row.get("visual_accuracy_proxy_percent", 100.0)),
-            )[:10]
-        ],
-    }
+    summary = overlay_summary_for_metrics(metrics, pixel_diff_threshold)
     metrics_path = out_dir / "overlay_metrics.json"
     metrics_path.write_text(
         json.dumps({"summary": summary, "pages": metrics}, ensure_ascii=False, indent=2) + "\n",
@@ -4805,9 +5225,17 @@ def make_overlay_compares(
 
 
 def review_comment_line(metrics: dict[str, object] | None) -> str:
-    percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
-    if isinstance(percent, (int, float)):
-        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {percent:.2f}%."
+    strict_percent = metrics.get("visual_accuracy_proxy_percent") if metrics else None
+    tolerant_percent = metrics.get("tolerant_content_match_percent") if metrics else None
+    if isinstance(strict_percent, (int, float)) and isinstance(tolerant_percent, (int, float)):
+        raw = metrics.get("silhouette_raw_match_percent") if metrics else None
+        boundary_note = f" 이진화 원값 {raw:.2f}%." if isinstance(raw, (int, float)) else ""
+        return (
+            "코멘트: 2px 이웃 관용 내용 실루엣 일치율 보조값 = 약 "
+            f"{tolerant_percent:.2f}% (엄격 내용 픽셀: {strict_percent:.2f}%)." + boundary_note
+        )
+    if isinstance(strict_percent, (int, float)):
+        return f"코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 {strict_percent:.2f}%."
     return "코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 확인 불가."
 
 
@@ -4818,16 +5246,8 @@ def make_review_panels(
     out_dir: Path,
 ) -> list[Path]:
     overlays_by_page = {page_num(path): path for path in overlay_pages}
-    metrics_by_page = {
-        int(item["page"]): item
-        for item in overlay_metrics
-        if isinstance(item.get("page"), int)
-    }
     review_pages: list[Path] = []
     gutter = 18
-    footer_padding_x = 18
-    footer_padding_y = 14
-    font = label_font()
     for compare_path in compare_pages:
         page = page_num(compare_path)
         overlay_path = overlays_by_page.get(page)
@@ -4836,29 +5256,13 @@ def make_review_panels(
         compare = Image.open(compare_path).convert("RGB")
         overlay = Image.open(overlay_path).convert("RGB")
         width = compare.width + gutter + overlay.width
-        image_height = max(compare.height, overlay.height)
-        comment_line = review_comment_line(metrics_by_page.get(page))
-        bbox = font.getbbox(comment_line)
-        line_height = bbox[3] - bbox[1]
-        overlay_footer_height = footer_padding_y * 2 + line_height
-        height = max(image_height, overlay.height + overlay_footer_height)
+        # overlay 자체가 상단 key와 하단 한국어 지표를 이미 포함한다. review에서 같은
+        # footer를 다시 만들면 지표가 두 번 출력되므로, 두 패널의 최대 높이만 사용한다.
+        height = max(compare.height, overlay.height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
         overlay_x = compare.width + gutter
         canvas.paste(overlay, (overlay_x, 0))
-        draw = ImageDraw.Draw(canvas)
-        separator_y = overlay.height + 1
-        draw.line(
-            [(overlay_x, separator_y), (overlay_x + overlay.width, separator_y)],
-            fill=(210, 210, 210),
-            width=2,
-        )
-        draw.text(
-            (overlay_x + footer_padding_x, overlay.height + footer_padding_y),
-            comment_line,
-            fill=(20, 20, 20),
-            font=font,
-        )
         out = out_dir / f"review_{page:03d}.png"
         out.parent.mkdir(parents=True, exist_ok=True)
         canvas.save(out)
@@ -4876,12 +5280,18 @@ def make_compares(rhwp_pngs: list[Path], pdf_pngs: list[Path], out_dir: Path, ke
         page_number = page_num(rhwp_pngs[index])
         width = max(rhwp.width, pdf.width)
         height = max(rhwp.height, pdf.height)
-        label_h = 30
         gutter = 16
+        # [#7349] 좌·우 라벨도 각 패널 폭 안에서 접는다.
+        left_lines = wrap_label_lines(f"{key} p{page_number:03d} rhwp", font, width - 16)
+        right_lines = wrap_label_lines(f"{key} p{page_number:03d} pdf", font, width - 16)
+        label_h = max(
+            30,
+            10 + max(len(left_lines), len(right_lines)) * label_line_height(font),
+        )
         canvas = Image.new("RGB", (width * 2 + gutter, height + label_h), "white")
         draw = ImageDraw.Draw(canvas)
-        draw.text((8, 5), f"{key} p{page_number:03d} rhwp", fill=(20, 20, 20), font=font)
-        draw.text((width + gutter + 8, 5), f"{key} p{page_number:03d} pdf", fill=(20, 20, 20), font=font)
+        draw_label_block(draw, (8, 5), left_lines, font, (20, 20, 20))
+        draw_label_block(draw, (width + gutter + 8, 5), right_lines, font, (20, 20, 20))
         canvas.paste(rhwp, (0, label_h))
         canvas.paste(pdf, (width + gutter, label_h))
         out = out_dir / f"compare_{page_number:03d}.png"
@@ -4917,6 +5327,71 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out_path)
     return out_path
+
+
+def write_silhouette_tsv(
+    pairs: list[tuple[int, Path, Path]], out_dir: Path, key: str
+) -> dict[str, object]:
+    """이미지 증적을 새로 만들지 않고 같은 2px 보조 지표와 입력 해시만 저장한다."""
+    if not pairs:
+        raise SystemExit("실루엣 비교 입력이 없습니다.")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    tsv = out_dir / "silhouette.tsv"
+    metrics = []
+    inputs = []
+    with tsv.open("w", encoding="utf-8") as stream:
+        stream.write("page\ttolerant_content_match_percent\tbelow_90\tsilhouette_raw_match_percent\tsilhouette_boundary_reconciled_pixels\n")
+        for page, rhwp_path, pdf_path in pairs:
+            with Image.open(rhwp_path) as rhwp, Image.open(pdf_path) as pdf:
+                details = subpixel_tolerant_content_match_details(rhwp, pdf)
+                value = details["tolerant_content_match_percent"]
+            metrics.append({"page": page, **details})
+            stream.write(f"{page}\t{value:.5f}\t{int(value < PR_REVIEW_MIN_TOLERANT_CONTENT_MATCH_PERCENT)}"
+                         f"\t{details['silhouette_raw_match_percent']:.5f}"
+                         f"\t{details['silhouette_boundary_reconciled_pixels']}\n")
+            inputs.append({
+                "page": page,
+                "rhwp_png": str(rhwp_path),
+                "rhwp_sha256": hashlib.sha256(rhwp_path.read_bytes()).hexdigest(),
+                "pdf_png": str(pdf_path),
+                "pdf_sha256": hashlib.sha256(pdf_path.read_bytes()).hexdigest(),
+            })
+    gate = pr_review_gate(metrics, font_mismatch_evidence=None)
+    if gate["status"] == "passed":
+        gate = {"status": "not_evaluated", "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"}
+    manifest = {
+        "key": key, "mode": "silhouette_only", "run_state": "complete",
+        "requested_pages": [page for page, _, _ in pairs],
+        "completed_pages": [page for page, _, _ in pairs],
+        "missing_pages": [], "tsv": str(tsv), "radius_px": 2,
+        "inputs": inputs, "metrics": metrics, "silhouette_method": SILHOUETTE_METHOD,
+        "color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD, "pr_review_gate": gate,
+    }
+    write_json_atomic(out_dir / "silhouette_manifest.json", manifest)
+    print(f"실루엣 보조값 {len(pairs)}쪽: {tsv}", flush=True)
+    return manifest
+
+
+def silhouette_png_pairs(
+    rhwp_dir: Path, pdf_dir: Path, selected_pages: list[int] | None
+) -> list[tuple[int, Path, Path]]:
+    """기존 raster를 읽을 때 번호 누락·중복을 묵인하거나 작은 쪽수에 맞춰 자르지 않는다."""
+    def indexed(directory: Path) -> dict[int, Path]:
+        result = {}
+        for path in sorted(directory.glob("*.png")):
+            page = page_num(path)
+            if page in result:
+                raise SystemExit(f"중복 raster 쪽 번호: {directory} p{page}")
+            result[page] = path
+        return result
+
+    rhwp = indexed(rhwp_dir)
+    pdf = indexed(pdf_dir)
+    requested = selected_pages or sorted(set(rhwp) | set(pdf))
+    missing = [page for page in requested if page not in rhwp or page not in pdf]
+    if missing:
+        raise SystemExit(f"실루엣 입력 쪽 누락: {missing}; rhwp={len(rhwp)}, pdf={len(pdf)}")
+    return [(page, rhwp[page], pdf[page]) for page in requested]
 
 
 def custom_targets_from_args(args: argparse.Namespace) -> list[Target]:
@@ -4956,6 +5431,14 @@ def main() -> None:
             "target과 일반 파일 입력을 모두 생략하면 전체 preset을 실행합니다."
         ),
     )
+    parser.add_argument(
+        "--silhouette-only", action="store_true",
+        help="overlay·compare·review PNG 및 상세 분석을 생략하고 같은2px 실루엣 보조값만 TSV로 저장합니다.",
+    )
+    parser.add_argument(
+        "--png-pair", nargs=2, type=Path, metavar=("RHWP_PNG_DIR", "PDF_PNG_DIR"),
+        help="--silhouette-only에서 기존 raster 두 디렉터리를 비교합니다. 원문 재출력 없이 입력 해시를 기록합니다.",
+    )
     parser.add_argument("--out", default="output/task1274")
     parser.add_argument(
         "--rhwp-bin",
@@ -4966,9 +5449,17 @@ def main() -> None:
         ),
     )
     parser.add_argument("--dpi", type=int, default=96)
-    parser.add_argument("--embed-fonts", nargs="?", const="subset", choices=("subset", "full"), help="진단 SVG에 검증 글꼴을 명시적으로 공급합니다. 공개 증적은 PNG로 보존합니다.")
+    parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
+    parser.add_argument(
+        "--font-mismatch-evidence",
+        type=Path,
+        help=(
+            "한컴 PDF와 rhwp 출력의 실제 글꼴이 완전히 다르다는 검토 증거 UTF-8 파일입니다. "
+            "지정하면 90%% 실루엣 gate를 예외 처리하되, 경로와 SHA-256을 manifest에 남깁니다."
+        ),
+    )
     parser.add_argument(
         "--wasm-pkg", type=Path,
         help="새 WASM web package를 Chrome에서 실행해 SVG와 render tree를 비교합니다. rhwp CLI는 글꼴 별칭과 note-shape만 제공합니다.",
@@ -5025,6 +5516,19 @@ def main() -> None:
         raise SystemExit("--pixel-diff-threshold는 0 이상 255 이하로 지정해야 합니다.")
     selected_pages = parse_page_selection(args.page, args.pages)
 
+    if args.silhouette_only and args.resume:
+        parser.error("실루엣 전용 모드는 일반 PNG checkpoint의 --resume을 사용하지 않습니다.")
+    if args.png_pair:
+        if not args.silhouette_only:
+            parser.error("--png-pair는 --silhouette-only와 함께 사용합니다.")
+        if args.target or args.hwp or args.pdf or args.file_target or args.wasm_pkg:
+            parser.error("--png-pair와 원문 export 입력은 함께 사용하지 않습니다.")
+        pairs = silhouette_png_pairs(*args.png_pair, selected_pages)
+        manifest = write_silhouette_tsv(pairs, Path(args.out), args.key or "png-pair")
+        if manifest["pr_review_gate"]["status"] == "re_review_required":
+            raise SystemExit("실루엣 보조값 90% 미만: TSV를 확인하고 직접 검토하세요.")
+        return
+
     root = Path.cwd()
     if args.wasm_pkg is not None:
         args.wasm_pkg = resolve_input_path(root, args.wasm_pkg)
@@ -5044,8 +5548,9 @@ def main() -> None:
     selected = dedupe_target_keys([*selected, *custom_targets])
     out_root = root / args.out
     out_root.mkdir(parents=True, exist_ok=True)
+    re_review_targets: list[str] = []
     for target in selected:
-        render_target(
+        manifest = render_target(
             root,
             target,
             out_root,
@@ -5059,9 +5564,25 @@ def main() -> None:
             font_environment=args.font_environment,
             embed_fonts=args.embed_fonts,
             font_paths=args.font_path,
+            font_mismatch_evidence=args.font_mismatch_evidence,
+            silhouette_only=args.silhouette_only,
         )
+        gate = manifest.get("pr_review_gate")
+        if isinstance(gate, dict) and gate.get("status") == "re_review_required":
+            pages = gate.get("below_threshold_pages")
+            page_text = ", ".join(
+                f"p{item.get('page')}={item.get('tolerant_content_match_percent')}%"
+                for item in pages
+                if isinstance(item, dict)
+            )
+            re_review_targets.append(f"{target.key} ({page_text or '실루엣 지표 없음'})")
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")
+    if re_review_targets:
+        raise SystemExit(
+            "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. "
+            "메인터너 보정 후 새 review PNG로 재검토하세요: " + "; ".join(re_review_targets)
+        )
 
 
 if __name__ == "__main__":

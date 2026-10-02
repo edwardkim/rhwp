@@ -46,6 +46,7 @@ enum Conversion {
     WatermarkJpeg,
     RealPictureTone,
     RealPictureFillTone,
+    BlackWhite,
 }
 
 #[derive(Default)]
@@ -127,10 +128,85 @@ fn conversion_key(conversion: Conversion, data: &[u8]) -> u64 {
     hasher.finish()
 }
 
+/// 원본 해상도에서 흑백을 확정할 수 있는 무보정 raster 그림이다.
+pub(crate) fn is_baked_blackwhite_image(image: &ImageNode) -> bool {
+    image.effect == ImageEffect::BlackWhite
+        && image.brightness == 0
+        && image.contrast == 0
+        && image.data.as_deref().is_some_and(|data| {
+            matches!(
+                detect_image_mime_type(data),
+                "image/bmp" | "image/png" | "image/jpeg" | "image/tiff"
+            )
+        })
+}
+
+fn blackwhite_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    memoized(Conversion::BlackWhite, data, || {
+        let format = match detect_image_mime_type(data) {
+            "image/bmp" => image::ImageFormat::Bmp,
+            "image/png" => image::ImageFormat::Png,
+            "image/jpeg" => image::ImageFormat::Jpeg,
+            "image/tiff" => image::ImageFormat::Tiff,
+            _ => return None,
+        };
+        let mut image = decode_image_with_format_limited(data, format)?.to_rgba8();
+        for pixel in image.pixels_mut() {
+            let luma =
+                (299 * u32::from(pixel[0]) + 587 * u32::from(pixel[1]) + 114 * u32::from(pixel[2]))
+                    / 1000;
+            let value = if luma <= 128 { 0 } else { 255 };
+            pixel[0] = value;
+            pixel[1] = value;
+            pixel[2] = value;
+        }
+        let mut output = Vec::new();
+        image::DynamicImage::ImageRgba8(image)
+            .write_to(&mut Cursor::new(&mut output), image::ImageFormat::Png)
+            .ok()?;
+        Some(output)
+    })
+}
+
+/// 신원 key로 조회한 바이트도 실제 paint와 같은 원본 효과 변환을 사용한다.
+pub(crate) fn emitted_source_image_bytes(
+    data: &[u8],
+    variant: crate::paint::SourceImageVariant,
+) -> (&'static str, std::borrow::Cow<'_, [u8]>) {
+    if variant == crate::paint::SourceImageVariant::BakedBlackWhitePng {
+        if let Some(bytes) = blackwhite_bytes_to_png_bytes(data) {
+            return ("image/png", std::borrow::Cow::Owned(bytes));
+        }
+    }
+    emitted_image_bytes(data, variant.bakes_watermark())
+}
+
+/// 이미 바이트에 적용한 효과는 출력 필터에서 다시 적용하지 않는다.
+pub(crate) fn resolved_image_effects(
+    image: &ImageNode,
+    resolved: Option<&ResolvedImagePayload>,
+) -> (ImageEffect, i8, i8) {
+    if resolved.is_some_and(|payload| payload.suppress_effects) {
+        (ImageEffect::RealPic, 0, 0)
+    } else {
+        (image.effect, image.brightness, image.contrast)
+    }
+}
+
 pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
     let data = image.data.as_deref()?;
     let mime = detect_image_mime_type(data);
 
+    if is_baked_blackwhite_image(image) {
+        if let Some(data) = blackwhite_bytes_to_png_bytes(data) {
+            return Some(ResolvedImagePayload {
+                data,
+                mime: "image/png",
+                kind: ResolvedImageKind::FormatConverted,
+                suppress_effects: true,
+            });
+        }
+    }
     match mime {
         "image/bmp" => bmp_bytes_to_png_bytes(data).map(|data| ResolvedImagePayload {
             data,

@@ -20,7 +20,7 @@ for (const method of methods) {
   test(`#4121 ${method}가 WASM과 Studio bridge에 함께 노출된다`, () => {
     assert.match(wasmApi, new RegExp(`js_name\\s*=\\s*${method}`));
     assert.match(bridge, new RegExp(`\\n\\s*${method}\\(`));
-    assert.match(bridge, new RegExp(`\\.${method}\\(`));
+    assert.match(bridge, new RegExp(`\\.${method}!?\\(`));
   });
 }
 

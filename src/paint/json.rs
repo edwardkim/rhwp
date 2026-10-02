@@ -1013,12 +1013,17 @@ impl PaintOp {
                 if let Some((width, height)) = image.original_size_hu {
                     let _ = write!(buf, ",\"originalSizeHu\":[{},{}]", width, height);
                 }
+                let (effect, brightness, contrast) =
+                    crate::renderer::image_resolver::resolved_image_effects(
+                        image,
+                        resolved.as_deref(),
+                    );
                 let _ = write!(
                     buf,
                     ",\"effect\":{},\"brightness\":{},\"contrast\":{}",
-                    json_escape(image_effect_str(image.effect)),
-                    image.brightness,
-                    image.contrast
+                    json_escape(image_effect_str(effect)),
+                    brightness,
+                    contrast
                 );
                 let opacity = image.opacity.clamp(0.0, 1.0);
                 if opacity < 1.0 {

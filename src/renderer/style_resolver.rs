@@ -29,14 +29,44 @@ pub struct ResolvedCharStyle {
     /// (`font_families` 와 같은 순서).
     ///
     /// 참은 [`metric_widths_verified_face`] 가 인정한 face 가 TTF 로 선언되고 대체 규칙이
-    /// 이름을 바꾸지 않았을 때뿐이다. HFT 는 한/글이 자기 글리프로 그리고, 대체된 이름은
+    /// 이름을 바꾸지 않았거나 확인된 TrueType 프로그램을 명시적 환경으로 선택한 때다.
+    /// HFT 는 한/글이 자기 글리프로 그리고, 대체된 이름은
     /// 다른 글꼴의 표를 빌려 오므로 표에 적힌 폭이 그 글꼴의 폭이라는 보장이 없다.
     pub font_families_metric_trusted: Vec<bool>,
     /// [#7051] 언어 슬롯별로 선언 글꼴이 **HFT 한글 전용 face** 여서 치환됐는지.
     /// 그런 글꼴의 ASCII 는 한컴이 반각으로 전진시킨다(측정 전용).
     pub font_families_hft_hangul: Vec<bool>,
+    /// [#7391] 언어 슬롯별로, 폭을 **선언 face 자신의 표**로 재야 하는 경우의 그 이름.
+    ///
+    /// legacy-latin 치환은 표시할 글꼴이 없는 환경의 폴백이라 라틴 face 를 한글 face 로
+    /// 보낸다(`AmeriGarmnd BT` → `HY견명조`). 표시로는 뜻이 있지만 **폭은 범주가 다르다** —
+    /// 한글 명조의 라틴 글리프 폭이 BT 계열 라틴 글꼴의 폭일 리 없다.
+    ///
+    /// rhwp 가 선언 face 자신의 메트릭 표를 이미 갖고 있으면 그 표를 버릴 이유가 없다.
+    /// `1341000_research_report_footnotes` 정본은 `AmeriGarmnd BT` 를 **그 글꼴 자신으로**
+    /// 그렸고(ASCII 13,919자), 그 전진폭을 후보 표와 대조하면 값이 갈린다:
+    ///
+    /// ```text
+    ///   AmeriGarmnd BT 자기 표                     중앙 오차 0.0398 em
+    ///   HY견명조 → HYMyeongJo-Extra (현행 치환 대상)   중앙 오차 0.2134 em   (5.4배)
+    ///   HYGothic-Medium                           중앙 오차 0.1324 em
+    /// ```
+    ///
+    /// 선언 face 의 표가 없으면 `None` 이라 종전 치환 대상의 표를 그대로 쓴다.
+    /// `HCI Poppy` 가 그 경우이며, 그 치환(`Palatino Linotype`)은 정본 ASCII 24,662자
+    /// 대조에서 중앙 오차 0.0040 em 으로 이미 맞다 — 건드리지 않는다.
+    pub font_families_metric_face: Vec<Option<String>>,
+    /// [#7387] 처음에는 `CharShape.use_font_space`가 켜진 run의 **영문 슬롯**(1)
+    /// 공백 글리프 폭이다. 저장 문서 프로필에서 독립 출력에 맞게 보정할 수 있다.
+    /// `None`이면 일반 글꼴 측정 규칙을 따른다.
+    ///
+    /// 한/글은 이 속성이 켜지면 공백을 영문 슬롯 글꼴의 제 공백폭으로 전진시킨다.
+    /// 근거와 문서 내 대조군은 [`crate::renderer::TextStyle::font_space_em`] 에 있다.
+    pub font_space_em: Option<f64>,
     /// 글꼴 크기 (px)
     pub font_size: f64,
+    /// 언어별 상대 크기를 적용한 글리프 크기(px). 기본 줄 크기와 구분한다.
+    pub font_sizes: Vec<f64>,
     /// 진하게
     pub bold: bool,
     /// 기울임
@@ -98,7 +128,10 @@ impl Default for ResolvedCharStyle {
             font_families: Vec::new(),
             font_families_metric_trusted: Vec::new(),
             font_families_hft_hangul: Vec::new(),
+            font_families_metric_face: Vec::new(),
+            font_space_em: None,
             font_size: 12.0,
+            font_sizes: Vec::new(),
             bold: false,
             italic: false,
             text_color: 0,
@@ -172,6 +205,28 @@ impl ResolvedCharStyle {
             .get(slot)
             .copied()
             .unwrap_or(false)
+    }
+
+    /// [#7391] 이 언어 슬롯의 폭을 잴 때 쓸 face. 되돌릴 게 없으면 `None`.
+    pub fn metric_face_for_lang(&self, lang_index: usize) -> Option<&str> {
+        let slot = if lang_index < self.font_families.len()
+            && !self.font_families[lang_index].is_empty()
+        {
+            lang_index
+        } else {
+            0
+        };
+        self.font_families_metric_face
+            .get(slot)
+            .and_then(Option::as_deref)
+    }
+
+    /// 문서의 언어별 상대 크기를 측정과 실제 출력에 함께 적용한다.
+    pub fn font_size_for_lang(&self, lang_index: usize) -> f64 {
+        self.font_sizes
+            .get(lang_index)
+            .copied()
+            .unwrap_or(self.font_size)
     }
 
     /// 지정 언어 카테고리의 자간(px)을 반환한다.
@@ -342,6 +397,9 @@ impl Default for ResolvedBorderStyle {
 /// 해소된 스타일 세트 (DocInfo에서 변환)
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
+    /// 문서의 `쪽 번호` 스타일이 참조하는 글자 모양. 자동 쪽번호는 본문
+    /// 기본 글꼴이 아닌 이 스타일로 출력된다.
+    pub page_number_char_style_id: Option<usize>,
     /// Shared session measurements for DB-missing glyphs, not document styles.
     pub supplemental_metrics:
         Option<std::sync::Arc<super::supplemental_metrics::SupplementalMetricSnapshot>>,
@@ -380,7 +438,71 @@ pub fn resolve_styles(doc_info: &DocInfo, dpi: f64) -> ResolvedStyleSet {
 /// is passed separately to consumers that need it.
 pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> ResolvedStyleSet {
     let profile = document.layout_profile();
-    resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout())
+    let mut styles = resolve_styles_with_variant(&document.doc_info, dpi, profile.hwp3_layout());
+    if profile.hwpx_stored_layout() {
+        // 같은 14pt 한양신명조라도 일반 본문과 표 안의 공백 조판은 다르다.
+        // 검증 HWPX의 일반 본문은 반각, 표 안은 기존 저장 메트릭을 쓴다.
+        // 같은 글자 모양이 양쪽에 쓰이면 전역 스타일 보정으로 구분할 수
+        // 없으므로 원래 측정을 유지한다.
+        let mut body_space_styles = std::collections::HashSet::new();
+        let mut table_space_styles = std::collections::HashSet::new();
+        for section in &document.sections {
+            for para in &section.paragraphs {
+                if !para
+                    .controls
+                    .iter()
+                    .any(|control| matches!(control, crate::model::control::Control::Table(_)))
+                {
+                    collect_paragraph_space_styles(para, &mut body_space_styles);
+                }
+                for control in &para.controls {
+                    if let crate::model::control::Control::Table(table) = control {
+                        collect_table_space_styles(table, &mut table_space_styles);
+                    }
+                }
+            }
+        }
+        for (id, style) in styles.char_styles.iter_mut().enumerate() {
+            if body_space_styles.contains(&(id as u32))
+                && !table_space_styles.contains(&(id as u32))
+                && style.font_size >= 56.0 / 3.0 - 0.01
+                && style.font_family.split(',').next() == Some("한양신명조")
+                && style.font_space_em.is_none()
+            {
+                style.font_space_em = Some(0.5);
+            }
+        }
+    }
+    styles
+}
+
+fn collect_paragraph_space_styles(
+    para: &crate::model::paragraph::Paragraph,
+    ids: &mut std::collections::HashSet<u32>,
+) {
+    for (index, ch) in para.text.chars().enumerate() {
+        if ch == ' ' {
+            if let Some(id) = para.char_shape_id_at(index) {
+                ids.insert(id);
+            }
+        }
+    }
+}
+
+fn collect_table_space_styles(
+    table: &crate::model::table::Table,
+    ids: &mut std::collections::HashSet<u32>,
+) {
+    for cell in &table.cells {
+        for para in &cell.paragraphs {
+            collect_paragraph_space_styles(para, ids);
+            for control in &para.controls {
+                if let crate::model::control::Control::Table(nested) = control {
+                    collect_table_space_styles(nested, ids);
+                }
+            }
+        }
+    }
 }
 
 /// The environment selects the same final face for measurement and every painter.
@@ -405,8 +527,18 @@ pub(crate) fn resolve_styles_with_environment(
                 );
                 if decision.environment_profile_id.is_some() {
                     style.font_families[lang] = decision.css_family_chain.join(",");
-                    // A caller declaration is not independent metric verification.
-                    style.font_families_metric_trusted[lang] = false;
+                    // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
+                    // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
+                    let target = primary_font_name(&style.font_families[lang]);
+                    let explicit_true_type =
+                        environment.is_some_and(|env| env.selects_true_type(target));
+                    style.font_families_metric_trusted[lang] = explicit_true_type
+                        && (metric_widths_verified_face(target)
+                            || matches!(target, "휴먼명조" | "HumanMyeongJo"));
+                    if explicit_true_type {
+                        style.font_families_hft_hangul[lang] = false;
+                        style.font_families_metric_face[lang] = None;
+                    }
                 }
             }
             style.font_family = style.font_families[0].clone();
@@ -430,6 +562,14 @@ pub fn resolve_styles_with_variant(
     let bullets = doc_info.bullets.clone();
 
     ResolvedStyleSet {
+        page_number_char_style_id: doc_info
+            .styles
+            .iter()
+            .find(|style| {
+                style.local_name == "쪽 번호"
+                    || style.english_name.eq_ignore_ascii_case("Page Number")
+            })
+            .map(|style| style.char_shape_id as usize),
         char_styles,
         para_styles,
         border_styles,
@@ -440,6 +580,41 @@ pub fn resolve_styles_with_variant(
         horizontal_shaping_context: None,
         supplemental_metrics: None,
     }
+}
+
+/// [#7391] 이 face 이름으로 **자기 자신의** 메트릭 표를 찾을 수 있는지.
+///
+/// 별칭(`layout-metric` 평면)을 타고 남의 표를 빌려 오는 경우는 거짓이다 — 그건
+/// 치환 대상의 표와 다를 바 없어서 되돌릴 근거가 못 된다.
+fn has_own_metric_table(face: &&str) -> bool {
+    crate::renderer::font_metrics_data::find_metric_decision(face, false, false)
+        .is_some_and(|decision| decision.alias_rule_id.is_none())
+}
+
+/// [#7387] CSS 체인의 첫 face 가 **선언한** 공백 글리프 전진폭(em).
+///
+/// 공백을 반각으로 눌러 두는 [`measure_char_width_embedded_decision_for_font`] 의
+/// `c == ' '` 갈래를 우회해, 글꼴 표에 적힌 U+0020 의 값을 그대로 읽는다.
+/// `use_font_space` 가 켜진 run 에서만 쓴다.
+///
+/// [`measure_char_width_embedded_decision_for_font`]: crate::renderer::layout
+fn declared_space_advance_em(css_family_chain: &str, bold: bool, italic: bool) -> Option<f64> {
+    let primary = css_family_chain
+        .split(',')
+        .next()?
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
+    let decision = crate::renderer::font_metrics_data::find_metric_decision(primary, bold, italic)?;
+    let em = decision.metric.em_size;
+    if em == 0 {
+        return None;
+    }
+    let width = decision.metric.get_width(' ')?;
+    if width == 0 {
+        return None;
+    }
+    Some(f64::from(width) / f64::from(em))
 }
 
 /// CharShape + FontFace → ResolvedCharStyle 목록
@@ -460,8 +635,10 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
     let mut font_families = Vec::with_capacity(LANG_COUNT);
     let mut font_families_metric_trusted = Vec::with_capacity(LANG_COUNT);
     let mut font_families_hft_hangul = Vec::with_capacity(LANG_COUNT);
+    let mut font_families_metric_face: Vec<Option<String>> = Vec::with_capacity(LANG_COUNT);
     let mut letter_spacings = Vec::with_capacity(LANG_COUNT);
     let mut ratios = Vec::with_capacity(LANG_COUNT);
+    let mut font_sizes = Vec::with_capacity(LANG_COUNT);
 
     for lang in 0..LANG_COUNT {
         let font_id = cs.font_ids[lang];
@@ -478,13 +655,56 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         );
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
+        // [#7391] legacy-latin 폴백이 선언 face 를 한글 face 로 보내면서, 우리가 이미 가진
+        // 그 face 자신의 폭 표를 버리는 경우만 되돌린다. HFT/TTF 경계는 손대지 않는다 —
+        // HFT 한글 전용 face 의 반각 ASCII 회계(#7051)가 치환된 이름에 걸려 있다.
+        let singraphic_hft = decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft)
+            && decision.requested_face.as_deref() == Some("신명 신그래픽");
+        font_families_metric_face.push(if singraphic_hft {
+            // exam_kor 한컴 PDF 17쪽의 T16: 괄호는 한글 전진폭의 절반이다.
+            // 굴림 대체 글꼴의 0.375em 괄호를 폭 기준으로 쓰면 가운데 정렬한
+            // 그림과 제목 전체가 오른쪽으로 밀린다. 표시 글꼴은 그대로 둔다.
+            Some("HY신명조".to_string())
+        } else {
+            (decision.substitution_boundary == Some(FontSubstitutionBoundary::LegacyLatin))
+                .then(|| {
+                    decision
+                        .requested_face
+                        .as_deref()
+                        .filter(has_own_metric_table)
+                })
+                .flatten()
+                .map(str::to_string)
+        });
         font_families.push(decision.css_family_chain.join(","));
 
-        let spacing_percent = cs.spacings[lang] as f64;
+        // 같은 PDF의 T16 한글 5자는 44px 글꼴에 장평 90%를 적용한
+        // 39.6px 간격으로 놓인다. 저장 자간 -5%를 다시 빼면 37.4px가 되어
+        // 제목 줄이 약 22px 짧아진다. 이 HFT face의 자간은 출력에서 적용되지 않는다.
+        let spacing_percent = if singraphic_hft {
+            0.0
+        } else {
+            cs.spacings[lang] as f64
+        };
         letter_spacings.push(font_size * spacing_percent / 100.0);
 
         ratios.push(cs.ratios[lang] as f64 / 100.0);
+        // 100%는 저장 줄과 같은 원래 크기를 보존한다. 먼저 곱하고 나누면
+        // 반올림 잔차로 글꼴이 저장 줄보다 커져 유효한 0 간격이 재계산된다.
+        let relative_size = f64::from(cs.relative_sizes[lang]) / 100.0;
+        font_sizes.push(font_size * relative_size);
     }
+
+    // [#7387] 공백은 영문 슬롯(1) 글꼴이 정한다. 속성이 꺼졌거나 그 글꼴의 공백폭을
+    // 모르면 `None` 으로 두어 종전 반각 측정을 그대로 쓴다.
+    let font_space_em = cs
+        .use_font_space
+        .then(|| {
+            font_families
+                .get(1)
+                .and_then(|chain| declared_space_advance_em(chain, cs.bold, cs.italic))
+        })
+        .flatten();
 
     // 한국어(0번) 값을 기본값으로 사용
     let font_family = font_families[0].clone();
@@ -496,7 +716,10 @@ fn resolve_single_char_style(cs: &CharShape, doc_info: &DocInfo, dpi: f64) -> Re
         font_families,
         font_families_metric_trusted,
         font_families_hft_hangul,
+        font_families_metric_face,
+        font_space_em,
         font_size,
+        font_sizes,
         bold: cs.bold,
         italic: cs.italic,
         text_color: cs.text_color,
@@ -746,6 +969,16 @@ pub(crate) fn lookup_font_name_in_environment(
             decision.substitution_rule_id = None;
             decision.environment_profile_id = Some(environment.id().to_string());
         }
+    }
+    if decision.embedded != Some(true)
+        && environment.is_some_and(|env| {
+            decision
+                .normalized_face
+                .as_deref()
+                .is_some_and(|face| env.selects_true_type(face))
+        })
+    {
+        decision.environment_profile_id = environment.map(|env| env.id().to_string());
     }
     decision
 }
@@ -1225,7 +1458,7 @@ mod tests {
 
     #[test]
     fn test_resolve_char_style_size() {
-        let doc_info = make_doc_info_with_font();
+        let mut doc_info = make_doc_info_with_font();
         let styles = resolve_styles(&doc_info, DEFAULT_DPI);
 
         // 2400 HWPUNIT * 96 / 7200 = 32.0 px
@@ -1235,6 +1468,25 @@ mod tests {
         // 1000 HWPUNIT * 96 / 7200 ≈ 13.33 px
         let expected_10pt = 1000.0 * DEFAULT_DPI / 7200.0;
         assert!((styles.char_styles[1].font_size - expected_10pt).abs() < 0.01);
+        // 100%는 모든 언어 슬롯에서 원래 크기와 정확히 같아야 한다.
+        // 미세한 증가도 저장 0 간격을 재계산하는 분기를 잘못 발동시킨다.
+        for style in &styles.char_styles {
+            for lang in 0..LANG_COUNT {
+                assert_eq!(style.font_size_for_lang(lang), style.font_size);
+            }
+        }
+        // 실제 상대 크기 변경은 계속 반영한다.
+        doc_info.char_shapes[1].relative_sizes[1] = 80;
+        doc_info.char_shapes[1].relative_sizes[2] = 125;
+        let styles = resolve_styles(&doc_info, DEFAULT_DPI);
+        assert_eq!(
+            styles.char_styles[1].font_size_for_lang(1),
+            expected_10pt * 0.8
+        );
+        assert_eq!(
+            styles.char_styles[1].font_size_for_lang(2),
+            expected_10pt * 1.25
+        );
     }
 
     #[test]

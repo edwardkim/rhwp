@@ -111,6 +111,10 @@ test('확대·축소는 노트북에서도 가능한 Ctrl/Command +/-로 통일�
   assert.equal(command({ key: '-', code: 'NumpadSubtract', shiftKey: true }), null);
 });
 
+test('Command+Z는 macOS에서도 되돌리기로 매핑한다', () => {
+  assert.equal(command({ key: 'z', code: 'KeyZ', metaKey: true }, 'mac'), 'edit:undo');
+});
+
 test('기본 도구 상자 접기/펴기는 한컴 호환 Ctrl/Command+F1로 매핑한다', () => {
   assert.equal(command({ key: 'F1', ctrlKey: true }), 'view:toolbox-basic');
   assert.equal(command({ key: 'f1', metaKey: true }, 'mac'), 'view:toolbox-basic');

@@ -136,6 +136,8 @@ const rendererSession = new RendererSession(
       );
     },
     async prepareCanvasKitDocument(renderer, report) {
+      // Explicit CanvasKit has no auto-selection report; retain its previous no-preflight behavior.
+      if (!report) return;
       const plan = canvasKitFontPlan(report.requiredFontFamilies);
       if (plan.unavailableFonts.length > 0) {
         throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(", ")}`);

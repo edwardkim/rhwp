@@ -58,15 +58,22 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 
 ### 버그 리포트
 
-HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
+문서 표시 오류나 rhwp 동작 문제를 알려주세요:
 
-1. [이슈 생성](https://github.com/edwardkim/rhwp/issues/new?template=bug_report.md)
-2. **한컴 스크린샷** + **rhwp 스크린샷** 비교 첨부
-3. 가능하면 HWP 파일 첨부 (개인정보 제거 후)
+1. [이슈 생성](https://github.com/edwardkim/rhwp/issues/new/choose)에서 문제에 맞는 폼 선택
+2. 사용 경로·버전과 재현 순서, 기대 결과·실제 결과 입력
+3. 문서 표시 문제라면 가능할 때 원본 문서와 같은 페이지의 한컴/rhwp 비교 화면 첨부
+
+원본을 공개할 수 없으면 제공 불가 사유를 적어주세요. 한컴 PDF나 파일 첨부가 없어도
+신고할 수 있습니다. 첨부 자료에서는 개인정보를 제거해주세요. 사용법 질문은
+[Discussions](https://github.com/edwardkim/rhwp/discussions)를 이용해주세요.
 
 디버깅 정보를 함께 제공하면 수정이 빨라집니다 (아래 "디버깅 가이드" 참고).
 
 ### 코드 기여 — Fork & PR 워크플로우
+
+조판 코드를 추가·수정·삭제할 때는 [조판 책임 경계와 변경 지도](mydocs/tech/typesetting_architecture.md)에서
+담당 모듈·상태 소유자·결과 소비자와 기존 계약을 먼저 찾습니다. 검증 게이트는 아래 체크리스트를 따릅니다.
 
 컨트리뷰터는 **Fork 기반**으로 작업합니다. 저장소에 직접 push할 수 없으며, PR을 통해 코드를 제출합니다.
 
@@ -130,8 +137,54 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
-스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. 메인터너가 특정 기록 파일의 추가를 명시적으로
-요청한 경우에만 그 요청 범위에서 예외로 합니다.
+스크린샷을 PR 본문에 적거나 첨부하면 충분합니다. **렌더링·조판·페이지 배치 변경의 원 PR을 생성하거나
+code head를 갱신할 때는**, 해당 head의 영향 페이지를 한컴 기준 PDF와 Native/fresh WASM
+Visual Sweep으로 비교하세요. 대표 review·overlay PNG를
+`mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 커밋하고, 원 PR 본문에
+head repository·정확한 SHA로 고정한 raw URL의 실제 Markdown 이미지로 표시하세요.
+입력·기준 PDF·페이지·실행 명령·결과·남은 차이도 본문에 적고, 게시 후 본문과 이미지가
+PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 완료 상태로 표시하지 말고
+보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
+메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
+
+페이지별 일치율은 [TSV 전용 절차](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)로 먼저 산출하세요.
+검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
+90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
+전쪽 overlay PNG를 일률 생성할 필요는 없지만 대표 이미지 제출 의무는 유지합니다.
+TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
+실루엣 계산 방법, 이진화 원값과 색상 경계 대조 픽셀 수도 함께 기록하세요.
+색상 경계 대조는 실제 흰 배경의 그림 누락·위치 차이를 제외하는 근거가 아닙니다.
+기존 PNG 재사용은 원 실행의 코드·빌드·글꼴 조건을 확인하며 새 head 검증으로 표시하지 않습니다.
+TSV 산출 exit0 또는 `not_evaluated`는 승인 판정이 아닙니다. 90% 이상이어도 각주 수량·문단 소속,
+내용 누락·중복과 전체 쪽수가 PDF와 다르면 원인을 수정하고 다시 검증합니다.
+
+이 Visual Sweep에서 검증 대상 전체 페이지의 TSV와 대표 review PNG의 2px 이웃 관용 내용
+실루엣 일치율은 모두 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
+PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
+PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
+다른 경우에만 양쪽 font family와 확인 방법을 적은 UTF-8 증거 파일을
+`--font-mismatch-evidence`로 지정할 수 있습니다. 글꼴 이름의 추정, anti-aliasing, CI 녹색은 예외가
+아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
+다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
+원본성·소비 경로를 검증합니다.
+PDF와 비교하는 캡처에는 [인쇄 프로필](mydocs/manual/verification/visual_sweep_guide.md#pdf와-같은-인쇄-프로필)을
+사용합니다. 빈 누름틀 안내문은 인쇄 PDF에 없으므로 출력 단계에서 제외하고, 실제 입력된 본문은
+비교합니다. 이 차이를 가리기 위해 비교 PNG의 영역을 임의로 마스킹하지 않습니다.
+같은 원본과 출력 환경에 대응하는 **한컴 PDF 전체 페이지 수와 rhwp 전체 페이지 수**도 비교합니다.
+영향 쪽만 선택해 비교했더라도 전체 페이지 수가 다르면 PR을 재검토하고, 누락·추가된 쪽의 시작
+경계와 앞뒤 내용을 확인해 원인을 수정한 뒤 새 head에서 다시 검증합니다. 선택한 쪽의 Visual Sweep
+점수나 글꼴 예외가 통과해도 페이지 수 차이를 승인 근거로 바꾸지 않습니다.
+`RHWP_FONT_PATH`를 사용할 때에는 설정한 모든 디렉터리가 실제로 존재하고 입력 문서의 face를 제공하는지
+먼저 확인합니다. 존재하지 않는 과거 경로 때문에 fallback face가 선택된 경우에는 예외로 제출하지 않고,
+올바른 글꼴 공급으로 다시 실행합니다.
+
+차트가 OLE에 들어 있어도 먼저 HWPX `Chart/chartN.xml`과 중첩 CFB
+`OOXMLChartContents`의 편집 가능한 데이터를 확인합니다. OOXML `c:chartSpace`가 있으면
+일반 OOXML 차트 경로로 그리며, 미리보기 그림을 값·레이블의 정본으로 쓰지 않습니다.
+레거시 `Contents`만 있으면 별도 파서의 지원 범위로 분류합니다. 차트 변경 PR은
+값축·범주·계열·누적/백분율·데이터 레이블과 차트 뒤 캡션 위치를 한컴 PDF에서
+직접 대조하고, 값 변경 후 낡은 미리보기가 남는 반례도 확인합니다.
+분류와 폴백의 상세 기준은 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따릅니다.
 
 collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번호가 확정되면,
 [collaborator self 절차](mydocs/manual/pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)에
@@ -220,7 +273,7 @@ rhwp_source_dir="$(git rev-parse --show-toplevel)" &&
 rhwp_review_sha="$(git rev-parse HEAD)" &&
 rhwp_review_base_sha="$(git rev-parse upstream/devel)" &&
 rhwp_review_dir="${rhwp_source_dir}-rust-review" &&
-rhwp_review_target_dir="${rhwp_source_dir}-review-target" &&
+rhwp_review_target_dir="${rhwp_source_dir}/target/pr-review" &&
 (
   set -eu
   git -C "$rhwp_source_dir" status --short
@@ -246,10 +299,12 @@ merge/rebase는 하지 않습니다.
 PASS로 바꾸지 말고 준비된 worktree에서 같은 검사를 다시 실행하세요. 실제 포맷 diff가 나오면 아래
 [포맷 정책](#포맷-정책)에 따라 원본을 보정하고 새 commit을 다시 검증합니다.
 
-target은 source checkout 옆의 이 작업 전용 절대 경로에 둡니다. worktree 이름을 바꾸는 재검증에서도
-`rhwp_review_target_dir`는 유지해 Cargo 캐시를 재사용합니다. 모든 Cargo `--target-dir`과 host WASM의
-`CARGO_TARGET_DIR`가 같은 경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다.
-캐시는 이전 검증 결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다.
+target은 source checkout의 공용 절대 경로 `target/pr-review`에 둡니다. worktree 이름을 바꾸는
+재검증에서도 `rhwp_review_target_dir`가 같은 공용 cache를 가리키도록 하며, issue별·검토별 target
+디렉터리를 새로 만들지 않습니다. 모든 Cargo `--target-dir`과 host WASM의 `CARGO_TARGET_DIR`가 같은
+경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다. 캐시는 이전 검증
+결과를 재사용하는 근거가 아니며 새 SHA의 필수 검사는 다시 실행합니다. 공유 경로를 삭제·초기화하기 전에는
+실행 중인 Cargo/Rust 작업과 소유자를 확인합니다.
 
 #### 2. Rust lint
 
@@ -360,7 +415,7 @@ Rust renderer/layout/typeset/WASM 변경은 같은 worktree에서 Native Skia 3�
 )
 ```
 
-Docker를 사용할 수 없을 때의 진단 경로는 같은 worktree에서
+Docker를 사용할 수 없을 때의 진단 경로는 해당 worktree의 **저장소 루트**에서
 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt`입니다.
 이 경우 Docker 부재·대체 명령을 기록하고, 최적화된 표준 빌드를 통과했다고 쓰지 마세요. Windows native
 wrapper는 아래 프런트엔드 절에 있습니다. 같은 commit으로 이미 WASM을 준비했다면 이어지는 frontend
@@ -434,7 +489,7 @@ head의 required checks를 확인하세요.
 )
 ```
 
-source checkout과 외부 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
+source checkout과 공용 `rhwp_review_target_dir`는 보존됩니다. 보정 commit은 같은 셸에서도 **1번 준비부터**
 다시 시작하세요. 정상 제거 뒤에는 `git worktree prune`을 추가로 실행할 필요가 없습니다.
 
 ### 프런트엔드 변경 검증
@@ -495,18 +550,29 @@ Studio 단독 변경에 Rust 전체 lint·회귀를 요구하는 것과는 구�
 `--dev` 성공을 최적화된 release WASM의 검증으로 기록하지 않습니다. 동일 SHA로 이미 요구되는 WASM을
 준비했다면 package 검사를 위해 재빌드하지 않습니다.
 
-macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. `wasm-pack`의 사전 metadata
+macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니다. 아래 명령과 alias는 반드시
+**저장소 루트**(`scripts/`, 루트 `pkg/`, `rhwp-studio/`가 함께 있는 곳)에서 실행합니다. `rhwp-studio/`
+디렉터리 안에서 실행하면 wrapper를 찾지 못하고, 그 안의 `pkg/`는 Studio 개발 서버가 읽는 package가 아닙니다.
+`wasm-pack`의 사전 metadata
 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
 ```
 
-혼합 변경에서 host WASM 캐시를 재사용하려면 위 명령의 `target/pr-review` 대신
-`"${rhwp_review_target_dir:?}"`를 지정합니다. 반복 실행용 alias도 같은 선택 루트에서만 사용하세요.
+이 wrapper는 성공한 기본 web package의 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을
+`rhwp-studio/public/`에도 자동 동기화합니다. 따라서 개발 서버 검증을 위해 별도 `cp`를 실행하지
+마세요. `npx vite --host 0.0.0.0 --port 7700`으로 확인할 때는 두 경로의 SHA-256이 같은지 확인하고,
+브라우저를 새로고침한 뒤 실제 변경 흐름을 검사합니다. Rust target만 만들거나 wrapper 밖에서 `pkg/`만
+갱신한 결과는 Studio 반영 검증이 아닙니다.
+
+혼합 변경에서도 `rhwp_review_target_dir`는 source checkout의 같은 `target/pr-review`를 가리킵니다.
+worktree에서 명령을 실행할 때는 상대 경로 대신 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}"`를
+지정합니다. 반복 실행용 alias도 **저장소 루트에서만** 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
+직접 확인할 때는 `--dev` 없이 아래 표준 alias를 사용합니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev'
+alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
@@ -603,6 +669,21 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
 버그 수정 PR 에서 리뷰가 가장 먼저 확인하는 항목입니다. 아래 관례를 따르면 검토와 merge 가
 크게 빨라집니다.
 
+실물 문서의 회귀 검사는 **어느 쪽·영역에 어느 문단·표·그림이 속하는지**, 내용의 순서·누락·중복,
+자동번호 치환 등 의미를 기대값으로 정하세요. 나중에 정상 조판이 개선될 수 있으므로 화면의 절대
+픽셀 좌표나 전체 SVG 해시로 배치를 고정하지 않습니다. 배치 결함은 셀 내부 포함·앞뒤 순서·겹침
+여부 등 관계로 검사하고, 실제 위치·글꼴·선의 모양은 독립 PDF와 Visual Sweep으로 확인합니다.
+기존 핀을 재검토할 때도 현재 PR을 막는 범위에서 잘못된 기대값의 근거를 남긴 뒤 의미 검사로
+바꿉니다. 시각 점수와 회귀 검사의 의미 충족은 각각 기록합니다.
+
+렌더링·조판·페이지 배치 변경에서는 **새 회귀 테스트 또는 fixture/golden을 추가하기 전에** 같은
+원본·독립 한컴 PDF의 Native/fresh WASM Visual Sweep을 완료하세요. 관련 모든 페이지·fixture·출력
+경로 중 최저 `tolerant_content_match_percent`가 90% 이상이어야 합니다. 쪽수 검사는 전체 페이지를
+비교합니다. 최저값 90% 미만 또는 측정 불가이면 새 회귀 테스트를 추가하지 않고 실제 출력을 먼저
+개선하세요. 평균값·글꼴 예외·CI 성공으로 대신하지 않으며 이미 존재하는 검사를 자동 삭제하지 않습니다.
+최저 페이지·backend·source SHA와 직접 판독 증거를
+[회귀 추가 선행 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)에 따라 연결하세요.
+
 1. **red→green 회귀 테스트 동봉** — 수정 전 결함을 재현·고정하는 테스트를 함께 제출합니다.
    Rust 파일명 관례: `tests/cases/issue_{이슈번호}_{짧은_설명}.rs`. Studio 회귀는 변경에 맞는 단위 테스트나
    `rhwp-studio/e2e/`에 둡니다. 수정을 되돌리면 실패하고, 수정을 적용하면 통과해야 합니다.
@@ -649,6 +730,12 @@ checks는 기존과 같이 merge gate입니다. 추가 환경 검증에서 심�
    수행하고 사용자·다른 작업의 변경을 되돌리지 않습니다.
 3. **기존 기대값(잠정 핀) 변경 시** — 페이지 수 등 잠정 핀 수치를 바꾸는 PR 은 다음을
    지켜주세요. 임의 갱신은 받지 않습니다.
+   실패한 렌더링·페이지 검사는 먼저 같은 원본과 독립 PDF의 Visual Sweep으로 테스트와 픽스쳐의
+   적절성을 검증합니다. 관련 각 페이지가 90% 이상이어야 하며 쪽수 검사는 전체 페이지를 비교합니다.
+   90% 미만이면 해당 픽스쳐의 실제 출력을 먼저 개선하고 테스트·기대값·baseline 수정은 보류합니다.
+   검사가 정확하면 기대값을 유지하고 구현을 수정합니다. 자세한 순서는
+   [기존 회귀 테스트의 기대값 재검토](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따릅니다.
+   - 기존 테스트 자체의 적절성도 [기대값 재검토](mydocs/manual/pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)에 따라 동일 입력의 기준 PDF와 수정 전·후 Visual Sweep으로 확인해주세요. 실제 회귀·잘못된 기대값·미검증을 구분합니다.
    - 정답지 방향 근거 명시 (예: "PDF 정답 315 방향 +3, 잔여 −3")
    - 테스트 주석에 갱신 이력을 누적 (어떤 이슈의 어떤 정정으로 값이 왜 변했는지 —
      `tests/issue_2070_rowbreak_density.rs` 의 3단 이력 주석이 모범 사례)
@@ -782,8 +869,10 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
 
 다양한 HWP 파일로 테스트할수록 렌더링 품질이 올라갑니다. 개인정보가 없는 공공 문서나 테스트용 파일을 제공해주시면 큰 도움이 됩니다.
 
-- **스크린샷·비교 이미지는 저장소에 커밋하지 말고 PR 본문에 첨부**해주세요 (필요 시
-  메인테이너가 판정 자료를 `mydocs/pr/assets/` 에 반영합니다).
+- **스크린샷·비교 이미지**는 개인정보·대형 원본·탐색용 중간 산출물을 저장소에 커밋하지 말고 PR 본문에
+  첨부해주세요. 렌더링 변경의 공개 가능한 대표 Visual Sweep review·overlay PNG는
+  `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
+  PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
 - **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
   (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
   명시해주세요. 한컴 정본 오라클은 버전·크기와 무관하게 `pdf/**`에 일반 Git blob으로만

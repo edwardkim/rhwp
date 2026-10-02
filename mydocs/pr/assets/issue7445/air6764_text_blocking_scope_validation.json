@@ -1,0 +1,358 @@
+{
+  "stage": 121,
+  "code_commit": "4979472991320a35a622d580245d676d12498b1c",
+  "analysis": {
+    "head": "c378b75d05065c49adfd6a24cf49391ecd74f336",
+    "analysis": "#7382 text-overlap 이 입력7→11 실제증가만 처리. 동일원문/정상한컴PDF/생산binary·빈src diff로103쪽37.65331%,최저201쪽11.45426% 부정증거 재사용. text축 이입력 및7건행만 #7445보류하며정상기존관제4함수/모든다른축·문서·원문PDF유지. 7을11로완화하지않음.",
+    "files": {
+      "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp": {
+        "size": 12851712,
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf": {
+        "size": 3819664,
+        "sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+        "pages": 204,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "황승옥",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260908155910+09'00'",
+          "modDate": "D:20260908155910+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "visual_provenance": {
+      "hwp": {
+        "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "pdf": {
+        "path": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+        "sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b"
+      },
+      "git_head": "73a6acd60173281e05f8d2de1d566bdc726f183a",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage82-air6764/visual-native/air6764/run_manifest.json"
+      }
+    },
+    "negative_visual": {
+      "run_state": "complete",
+      "pages": [
+        {
+          "page": 39,
+          "tolerant_content_match_percent": 98.12011
+        },
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 37.65331
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 23.8889
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 38.95167
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 11.45426
+        }
+      ],
+      "pr_review_gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 103,
+            "tolerant_content_match_percent": 37.65331
+          },
+          {
+            "page": 124,
+            "tolerant_content_match_percent": 23.8889
+          },
+          {
+            "page": 194,
+            "tolerant_content_match_percent": 38.95167
+          },
+          {
+            "page": 201,
+            "tolerant_content_match_percent": 11.45426
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "exit_code": 1,
+      "direct_inspection": "103쪽의3단계 확산/그림24/후속 설명 대신 이전 내용.201쪽은 기준의 역량 표와 달리 부록5영문 평가양식이 표시됨. 각각 실제 review 직접 확인. 쪽수201/204, 전체/fresh WASM 미실행."
+    },
+    "direct_inspection": "103쪽review에서정상3단계확산/그림24 대신이전표/다른본문이위치함. 페이지내용소유/표·문단차이로글꼴예외아님. 선택5쪽/201대204쪽,전수204쪽Native/freshWASM미완료. 정상관제4함수통과를전체피델리티로승격하지않음.",
+    "planned_input": "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "planned_row": "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7",
+    "checks": [
+      [
+        "text_overlap_baseline",
+        "text_overlaps_do_not_grow_partition_2"
+      ]
+    ],
+    "plans": [
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_013",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6764_para_float_band_starts_at_anchor",
+        "target": "regression_suite_004",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6764_public_table_fragment_presence",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6855_float_band_page_fill_rewind",
+        "target": "regression_suite_004",
+        "grouped": true
+      }
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_2)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 3.5064129582606256,
+      "summary": [
+        "Summary [   2.229s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "observations": []
+    }
+  ],
+  "mutation": {
+    "deferred_axis_input": "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "removed_row": "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7",
+    "removed_functions": [],
+    "kept": "관제기존4함수 및 모든다른축/문서·원문/PDF·공차 유지"
+  },
+  "focused_summary": [
+    "Summary [  53.524s] 20 tests run: 17 passed, 3 failed, 854 skipped"
+  ],
+  "normal_results": [
+    "PASS [   1.441s] ( 1/20) rhwp::regression_suite_005 issue_6855_float_band_page_fill_rewind::issue_6855_rewound_line_starts_the_next_page",
+    "PASS [   1.578s] ( 2/20) rhwp::regression_suite_005 issue_6855_float_band_page_fill_rewind::issue_6855_band_page_paints_nothing_below_the_paper",
+    "PASS [   2.425s] ( 4/20) rhwp::regression_suite_021 issue_6764_public_table_fragment_presence::repaired_public_table_keeps_its_leading_rows_inside_the_paper",
+    "PASS [   3.935s] ( 6/20) rhwp::regression_suite_020 issue_6764_para_float_band_starts_at_anchor::para_float_band_keeps_the_next_table_fragment_on_paper"
+  ],
+  "text_axis_results": "전체16분할13PASS/3FAIL. 해당입력없고다른3실패보존. 정상4PASS와합계17PASS/3FAIL/854SKIP.",
+  "actual_remaining_text_failures": [
+    {
+      "test_result": "FAIL [   2.086s] ( 9/20) rhwp::regression_suite_022 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   1.988s] (11/20) rhwp::regression_suite_022 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   5.833s] (17/20) rhwp::regression_suite_022 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+      "observations": [
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "c378b75d05065c49adfd6a24cf49391ecd74f336",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "(test(text_overlap_baseline::)) or (test(issue_6764_para_float_band_starts_at_anchor::)) or (test(issue_6764_public_table_fragment_presence::)) or (test(issue_6855_float_band_page_fill_rewind::))"
+        ],
+        "exit_code": 100,
+        "seconds": 73.40907937474549
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.823342875111848
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4170396253466606
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2321906671859324
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36512554064393044
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.092745332978666
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.3953873333521187
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.810965250246227
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "a441daba3bc131469fd315d02e9e604089c5514ea5e041575f334119ac34904f",
+    "tests/fixtures/text_overlap_baseline.tsv": "f6880dc77437eeb2de6dbb07469bc661df3fa9d2dc784b8f643d8aa50fa6d492"
+  },
+  "source_after_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "223f09647b6383a618e1492caba77c1f8aa8d34e6177ee9c665907c7b404e66d",
+    "tests/fixtures/text_overlap_baseline.tsv": "d5c2d491ccf0039b9e8ee73a202c4b753ab18c213d50db48143fdd97f62cdc3d"
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956",
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/air6764_native_review_103.png",
+    "mydocs/pr/assets/issue7445/air6764_native_overlay_201.png"
+  ],
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "remaining": "다른text3입력/off및다른축 실패·최종37개별/전체검증/PR준비 미완료"
+}

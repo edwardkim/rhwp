@@ -1,0 +1,21 @@
+{
+  "head": "cd85bdf434f5c2522f2a24c3a59f3413f644a5a4",
+  "command": [
+    "node",
+    "scripts/export-wasm-for-sweep.mjs",
+    "--pkg",
+    "output/pr-review/planet6897-7382-20260926/stage338-final-head/pkg-current",
+    "--input",
+    "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage338-final-head/wasm-equivalence/wasm",
+    "--font-environment",
+    "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json"
+  ],
+  "exit_code": 0,
+  "oldCount": 215,
+  "newCount": 215,
+  "sameNames": true,
+  "identical": 215,
+  "different": []
+}

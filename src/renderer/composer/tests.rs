@@ -2270,16 +2270,57 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
     let multirow = para_with_rows(4, 32_339);
     assert_eq!(owned_rowbreak_tac_height(&multirow, 0), Some(32_339));
 
-    let single_row = para_with_rows(1, 32_339);
+    let mut single_row = para_with_rows(1, 32_339);
+    single_row.line_segs[0].line_spacing = 1_200;
     assert_eq!(owned_rowbreak_tac_height(&single_row, 0), None);
+    assert_eq!(
+        stored_first_tac_line(&single_row).map(|line| line.line_height),
+        Some(32_339)
+    );
+    // 저장 간격 1200HU는 96dpi에서 전량 16px를 소비한다.
+    assert_eq!(
+        tac_host_trailing_spacing(&single_row, 0, &single_row.line_segs[0], true, false, 96.0),
+        16.0
+    );
 
     let mut current_single_row = para_with_rows(1, 32_339);
     current_single_row.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    current_single_row.line_segs[0].line_spacing = 1_200;
     assert_eq!(
         owned_rowbreak_tac_height(&current_single_row, 0),
         Some(32_339)
     );
+    // 현재 생성한 개체 소유 줄에만 기존 반간격을 적용한다.
+    assert_eq!(
+        tac_host_trailing_spacing(
+            &current_single_row,
+            0,
+            &current_single_row.line_segs[0],
+            true,
+            false,
+            96.0,
+        ),
+        8.0
+    );
+    assert_eq!(
+        tac_host_trailing_spacing(
+            &current_single_row,
+            0,
+            &current_single_row.line_segs[0],
+            false,
+            false,
+            96.0,
+        ),
+        16.0
+    );
 
     let undersized = para_with_rows(4, 32_338);
     assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
+    assert!(stored_first_tac_line(&undersized).is_none());
+    assert!(stored_first_tac_line(&current_single_row).is_none());
+    single_row.text = "본문".to_owned();
+    assert!(
+        stored_first_tac_line(&single_row).is_none(),
+        "가시 텍스트와 같은 줄은 별도 구성 계약"
+    );
 }

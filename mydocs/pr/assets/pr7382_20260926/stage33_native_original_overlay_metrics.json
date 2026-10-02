@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.22777,
+    "worst_pixel_match_percent": 90.0506,
+    "average_ink_match_percent": 37.23223,
+    "worst_ink_match_percent": 34.65277,
+    "average_visual_accuracy_proxy_percent": 37.23223,
+    "worst_visual_accuracy_proxy_percent": 34.65277,
+    "average_tolerant_content_match_percent": 69.74357,
+    "worst_tolerant_content_match_percent": 49.22912,
+    "worst_pages": [
+      76,
+      77,
+      78
+    ]
+  },
+  "pages": [
+    {
+      "page": 76,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/rhwp_png/rhwp_076.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/pdf_png/pdf-076.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/overlay/overlay_076.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 77773,
+      "diff_ratio": 0.08722251,
+      "pixel_match_percent": 91.27775,
+      "ink_union_pixels": 119015,
+      "ink_diff_pixels": 77773,
+      "ink_diff_ratio": 0.65347225,
+      "ink_match_percent": 34.65277,
+      "visual_accuracy_proxy_percent": 34.65277,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 60.83855,
+      "mean_abs_channel_delta": 11.744,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        95,
+        185,
+        720,
+        1068
+      ]
+    },
+    {
+      "page": 77,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/rhwp_png/rhwp_077.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/pdf_png/pdf-077.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/overlay/overlay_077.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 68168,
+      "diff_ratio": 0.07645049,
+      "pixel_match_percent": 92.35495,
+      "ink_union_pixels": 109323,
+      "ink_diff_pixels": 68168,
+      "ink_diff_ratio": 0.62354674,
+      "ink_match_percent": 37.64533,
+      "visual_accuracy_proxy_percent": 37.64533,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.16303,
+      "mean_abs_channel_delta": 8.738,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        114,
+        133,
+        720,
+        1068
+      ]
+    },
+    {
+      "page": 78,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/rhwp_png/rhwp_078.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/pdf_png/pdf-078.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native/japan6782/overlay/overlay_078.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 88715,
+      "diff_ratio": 0.09949398,
+      "pixel_match_percent": 90.0506,
+      "ink_union_pixels": 146391,
+      "ink_diff_pixels": 88715,
+      "ink_diff_ratio": 0.60601403,
+      "ink_match_percent": 39.3986,
+      "visual_accuracy_proxy_percent": 39.3986,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 49.22912,
+      "mean_abs_channel_delta": 12.971,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        138,
+        720,
+        1068
+      ]
+    }
+  ]
+}

@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "base_sha": "b3e3d4e2170a43ca449e3d832440a9274e4e8ee4",
+  "visual_code_head": "459d5e581eac979e8a3c69a72e71fb7cc3c9ea88",
+  "runs": [
+    {
+      "target": "api",
+      "mode": "native",
+      "input": {
+        "path": "samples/hwpctl_API_v2.4.hwp",
+        "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+      },
+      "reference_pdf": {
+        "path": "pdf/hwpctl_API_v2.4-2022.pdf",
+        "sha256": "a0141ca188ca638b305d896e21749703a39529f7bd8cf2bc806dea4ff9aaac66"
+      },
+      "code_head": "459d5e581eac979e8a3c69a72e71fb7cc3c9ea88",
+      "sweep_script_sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07",
+      "rhwp_binary_sha256": "8eb35ad111c2dedbc7ea74cd5d74cc837112b5005a86ab9855ad669c578f5060",
+      "svg_rasterizer": "webfont",
+      "font_supply_source": "macOS_user_fonts",
+      "font_file_count": 690,
+      "font_supply_record_sha256": "27d1fea105ae337935205a0c371ab684add62df6ef00287d93cd6217808c8f02",
+      "requested_pages": [
+        14,
+        15,
+        21,
+        49,
+        60,
+        88
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "overlay_metrics": {
+        "compared_pages": 6,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.42944,
+        "worst_pixel_match_percent": 95.75052,
+        "average_ink_match_percent": 39.40713,
+        "worst_ink_match_percent": 27.51855,
+        "average_visual_accuracy_proxy_percent": 39.40713,
+        "worst_visual_accuracy_proxy_percent": 27.51855,
+        "average_tolerant_content_match_percent": 98.58226,
+        "worst_tolerant_content_match_percent": 97.18818,
+        "worst_pages": [
+          14,
+          15,
+          49,
+          21,
+          60,
+          88
+        ]
+      },
+      "page_metrics": [
+        {
+          "page": 14,
+          "pixel_match_percent": 96.34155,
+          "tolerant_content_match_percent": 98.07137,
+          "diff_bbox": [
+            140,
+            133,
+            665,
+            999
+          ]
+        },
+        {
+          "page": 15,
+          "pixel_match_percent": 97.13972,
+          "tolerant_content_match_percent": 97.18818,
+          "diff_bbox": [
+            140,
+            133,
+            665,
+            937
+          ]
+        },
+        {
+          "page": 21,
+          "pixel_match_percent": 96.63011,
+          "tolerant_content_match_percent": 98.99232,
+          "diff_bbox": [
+            141,
+            151,
+            664,
+            1003
+          ]
+        },
+        {
+          "page": 49,
+          "pixel_match_percent": 95.75052,
+          "tolerant_content_match_percent": 98.88677,
+          "diff_bbox": [
+            141,
+            150,
+            666,
+            993
+          ]
+        },
+        {
+          "page": 60,
+          "pixel_match_percent": 96.25318,
+          "tolerant_content_match_percent": 99.68109,
+          "diff_bbox": [
+            153,
+            131,
+            682,
+            750
+          ]
+        },
+        {
+          "page": 88,
+          "pixel_match_percent": 96.46155,
+          "tolerant_content_match_percent": 98.67382,
+          "diff_bbox": [
+            141,
+            140,
+            704,
+            943
+          ]
+        }
+      ],
+      "representative_pngs": [
+        "api-native-review-049.png",
+        "api-native-overlay-049.png",
+        "api-native-review-060.png",
+        "api-native-overlay-060.png"
+      ]
+    },
+    {
+      "target": "api",
+      "mode": "wasm",
+      "input": {
+        "path": "samples/hwpctl_API_v2.4.hwp",
+        "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+      },
+      "reference_pdf": {
+        "path": "pdf/hwpctl_API_v2.4-2022.pdf",
+        "sha256": "a0141ca188ca638b305d896e21749703a39529f7bd8cf2bc806dea4ff9aaac66"
+      },
+      "code_head": "459d5e581eac979e8a3c69a72e71fb7cc3c9ea88",
+      "sweep_script_sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07",
+      "rhwp_binary_sha256": "70997f598297b154d9645a745f3d8277708fc188216de5e1907ef7d58c5dca98",
+      "svg_rasterizer": "webfont",
+      "font_supply_source": "macOS_user_fonts",
+      "font_file_count": 690,
+      "font_supply_record_sha256": "27d1fea105ae337935205a0c371ab684add62df6ef00287d93cd6217808c8f02",
+      "requested_pages": [
+        14,
+        15,
+        21,
+        49,
+        60,
+        88
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "overlay_metrics": {
+        "compared_pages": 6,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.40936,
+        "worst_pixel_match_percent": 95.74121,
+        "average_ink_match_percent": 39.24745,
+        "worst_ink_match_percent": 27.51855,
+        "average_visual_accuracy_proxy_percent": 39.24745,
+        "worst_visual_accuracy_proxy_percent": 27.51855,
+        "average_tolerant_content_match_percent": 98.58499,
+        "worst_tolerant_content_match_percent": 97.18818,
+        "worst_pages": [
+          14,
+          15,
+          49,
+          21,
+          60,
+          88
+        ]
+      },
+      "page_metrics": [
+        {
+          "page": 14,
+          "pixel_match_percent": 96.34155,
+          "tolerant_content_match_percent": 98.07137,
+          "diff_bbox": [
+            140,
+            133,
+            665,
+            999
+          ]
+        },
+        {
+          "page": 15,
+          "pixel_match_percent": 97.13972,
+          "tolerant_content_match_percent": 97.18818,
+          "diff_bbox": [
+            140,
+            133,
+            665,
+            937
+          ]
+        },
+        {
+          "page": 21,
+          "pixel_match_percent": 96.62955,
+          "tolerant_content_match_percent": 98.99636,
+          "diff_bbox": [
+            141,
+            151,
+            664,
+            1003
+          ]
+        },
+        {
+          "page": 49,
+          "pixel_match_percent": 95.74121,
+          "tolerant_content_match_percent": 98.89377,
+          "diff_bbox": [
+            141,
+            150,
+            666,
+            993
+          ]
+        },
+        {
+          "page": 60,
+          "pixel_match_percent": 96.15348,
+          "tolerant_content_match_percent": 99.68491,
+          "diff_bbox": [
+            153,
+            131,
+            682,
+            750
+          ]
+        },
+        {
+          "page": 88,
+          "pixel_match_percent": 96.45067,
+          "tolerant_content_match_percent": 98.67535,
+          "diff_bbox": [
+            141,
+            140,
+            704,
+            943
+          ]
+        }
+      ],
+      "representative_pngs": [
+        "api-wasm-review-049.png",
+        "api-wasm-overlay-049.png",
+        "api-wasm-review-060.png",
+        "api-wasm-overlay-060.png"
+      ],
+      "wasm_files": [
+        {
+          "name": "rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "name": "rhwp_bg.wasm",
+          "sha256": "245c310023be3b49d85a1245ecb704d4fa8e3918b2949e56f186b73c9d229a2d"
+        }
+      ]
+    },
+    {
+      "target": "latin",
+      "mode": "native",
+      "input": {
+        "path": "samples/issue2559/1341000_research_report_footnotes.hwp",
+        "sha256": "e9011fe125a76ed5d56ae06a1702e7f82b4ff5550f2a07ead956ca540f1231c8"
+      },
+      "reference_pdf": {
+        "path": "pdf/1341000_research_report_footnotes-2020.pdf",
+        "sha256": "e3093cc14d4653a679ad95df612e55d6741128dd9b74d124ca119b9bd7800498"
+      },
+      "code_head": "459d5e581eac979e8a3c69a72e71fb7cc3c9ea88",
+      "sweep_script_sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07",
+      "rhwp_binary_sha256": "8eb35ad111c2dedbc7ea74cd5d74cc837112b5005a86ab9855ad669c578f5060",
+      "svg_rasterizer": "webfont",
+      "font_supply_source": "macOS_user_fonts",
+      "font_file_count": 690,
+      "font_supply_record_sha256": "27d1fea105ae337935205a0c371ab684add62df6ef00287d93cd6217808c8f02",
+      "requested_pages": [
+        72,
+        76
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "overlay_metrics": {
+        "compared_pages": 2,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.51452,
+        "worst_pixel_match_percent": 92.76576,
+        "average_ink_match_percent": 17.95566,
+        "worst_ink_match_percent": 15.73261,
+        "average_visual_accuracy_proxy_percent": 17.95566,
+        "worst_visual_accuracy_proxy_percent": 15.73261,
+        "average_tolerant_content_match_percent": 97.00888,
+        "worst_tolerant_content_match_percent": 96.19063,
+        "worst_pages": [
+          76,
+          72
+        ]
+      },
+      "page_metrics": [
+        {
+          "page": 72,
+          "pixel_match_percent": 96.26327,
+          "tolerant_content_match_percent": 97.82713,
+          "diff_bbox": [
+            143,
+            188,
+            651,
+            979
+          ]
+        },
+        {
+          "page": 76,
+          "pixel_match_percent": 92.76576,
+          "tolerant_content_match_percent": 96.19063,
+          "diff_bbox": [
+            144,
+            188,
+            650,
+            980
+          ]
+        }
+      ],
+      "representative_pngs": [
+        "latin-native-review-072.png",
+        "latin-native-overlay-072.png",
+        "latin-native-review-076.png",
+        "latin-native-overlay-076.png"
+      ]
+    },
+    {
+      "target": "latin",
+      "mode": "wasm",
+      "input": {
+        "path": "samples/issue2559/1341000_research_report_footnotes.hwp",
+        "sha256": "e9011fe125a76ed5d56ae06a1702e7f82b4ff5550f2a07ead956ca540f1231c8"
+      },
+      "reference_pdf": {
+        "path": "pdf/1341000_research_report_footnotes-2020.pdf",
+        "sha256": "e3093cc14d4653a679ad95df612e55d6741128dd9b74d124ca119b9bd7800498"
+      },
+      "code_head": "459d5e581eac979e8a3c69a72e71fb7cc3c9ea88",
+      "sweep_script_sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07",
+      "rhwp_binary_sha256": "70997f598297b154d9645a745f3d8277708fc188216de5e1907ef7d58c5dca98",
+      "svg_rasterizer": "webfont",
+      "font_supply_source": "macOS_user_fonts",
+      "font_file_count": 690,
+      "font_supply_record_sha256": "27d1fea105ae337935205a0c371ab684add62df6ef00287d93cd6217808c8f02",
+      "requested_pages": [
+        72,
+        76
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "overlay_metrics": {
+        "compared_pages": 2,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.51452,
+        "worst_pixel_match_percent": 92.76576,
+        "average_ink_match_percent": 17.95566,
+        "worst_ink_match_percent": 15.73261,
+        "average_visual_accuracy_proxy_percent": 17.95566,
+        "worst_visual_accuracy_proxy_percent": 15.73261,
+        "average_tolerant_content_match_percent": 97.00888,
+        "worst_tolerant_content_match_percent": 96.19063,
+        "worst_pages": [
+          76,
+          72
+        ]
+      },
+      "page_metrics": [
+        {
+          "page": 72,
+          "pixel_match_percent": 96.26327,
+          "tolerant_content_match_percent": 97.82713,
+          "diff_bbox": [
+            143,
+            188,
+            651,
+            979
+          ]
+        },
+        {
+          "page": 76,
+          "pixel_match_percent": 92.76576,
+          "tolerant_content_match_percent": 96.19063,
+          "diff_bbox": [
+            144,
+            188,
+            650,
+            980
+          ]
+        }
+      ],
+      "representative_pngs": [
+        "latin-wasm-review-072.png",
+        "latin-wasm-overlay-072.png",
+        "latin-wasm-review-076.png",
+        "latin-wasm-overlay-076.png"
+      ],
+      "wasm_files": [
+        {
+          "name": "rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "name": "rhwp_bg.wasm",
+          "sha256": "245c310023be3b49d85a1245ecb704d4fa8e3918b2949e56f186b73c9d229a2d"
+        }
+      ]
+    }
+  ]
+}

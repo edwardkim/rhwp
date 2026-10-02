@@ -1298,6 +1298,7 @@ fn parse_hwp3_object_dispatch(
         table.padding.bottom = cell_padding_bottom;
 
         let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let caption_height = (&info_buf[48..50]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
         let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
 
         let mut cells = Vec::new();
@@ -1638,9 +1639,41 @@ fn parse_hwp3_object_dispatch(
             _ => crate::model::shape::CaptionDirection::Bottom,
         };
         if hwp3_paragraphs_have_renderable_content(&caption_paras) {
+            // HWP3 표 정보에는 캡션의 실제 세로 점유가 따로 저장된다. 텍스트
+            // 줄높이만 예약하면 위 캡션과 표가 겹친다. 남는 물리 높이와 마지막
+            // 저장 줄간격을 캡션-표 간격으로 옮겨 측정과 실제 배치가 함께 소비한다.
+            let text_height = caption_paras
+                .iter()
+                .filter_map(|para| {
+                    para.line_segs
+                        .last()
+                        .map(|last| last.vertical_pos + last.line_height)
+                })
+                .max()
+                .unwrap_or(0);
+            let trailing_spacing = caption_paras
+                .last()
+                .and_then(|para| para.line_segs.last())
+                .map(|seg| seg.line_spacing.max(0))
+                .unwrap_or(0);
+            let caption_gap = if caption_height > 0
+                && matches!(
+                    caption_direction,
+                    crate::model::shape::CaptionDirection::Top
+                        | crate::model::shape::CaptionDirection::Bottom
+                ) {
+                caption_height
+                    .saturating_sub(text_height)
+                    .max(0)
+                    .saturating_add(trailing_spacing)
+                    .min(i16::MAX as i32) as i16
+            } else {
+                0
+            };
             table.caption = Some(crate::model::shape::Caption {
                 direction: caption_direction,
                 width: caption_width as _,
+                spacing: caption_gap,
                 paragraphs: caption_paras,
                 ..Default::default()
             });

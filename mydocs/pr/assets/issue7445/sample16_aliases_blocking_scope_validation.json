@@ -1,0 +1,1227 @@
+{
+  "stage": 117,
+  "code_commit": "7d64760ec7ad4ba78d35eebac00fe934326cc7ef",
+  "analysis": {
+    "head": "b2ba0a7ab4733bb0a1fe0f9d21e4380937854102",
+    "analysis": "복원74/75/102 및76/77 실패. 두파일명은같은SHA의동일입력이고별도저장버전으로간주하지않는다.각독립PDF는64쪽이고파일해시는다르나64쪽전부72DPI래스터가동일하다.현재65쪽/영향Native24쪽7.09794%로fixture미달.실제5함수와두별칭의text/off신규각1건만보류하고모든정상검사/IR/다른버전·축/원문PDF유지.",
+    "aliases": [
+      {
+        "path": "samples/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      {
+        "path": "samples/hwp3-sample16-hwp5-2010.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      }
+    ],
+    "provenance": {
+      "hwp": {
+        "path": "samples/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
+        "sha256": "e776c491269489320f6f1630a2b437fceab8771f7f2c98af64e8ed3beb15c01f"
+      },
+      "git_head": "24a5c69ea67bf8cbd2e697e87e359a7b25b7737f",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage74-body1/visual-native/sample16/run_manifest.json"
+      }
+    },
+    "native_metrics": [
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.53989
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 7.09794
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 15.52702
+      }
+    ],
+    "independent_pdf_equivalence": {
+      "inputs": [
+        {
+          "path": "pdf/hwp3-sample16-hwp5-hwp-2024.pdf",
+          "sha256": "e776c491269489320f6f1630a2b437fceab8771f7f2c98af64e8ed3beb15c01f",
+          "metadata": {
+            "format": "PDF 1.6",
+            "title": "",
+            "author": "Kowaco 대리 Igru",
+            "subject": "",
+            "keywords": "",
+            "creator": "Hwp 2024 0.0.0.0",
+            "producer": "Hancom PDF 1.3.0.550",
+            "creationDate": "D:20260830042308+09'00'",
+            "modDate": "D:20260830042308+09'00'",
+            "trapped": "",
+            "encryption": null
+          }
+        },
+        {
+          "path": "pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf",
+          "sha256": "59e8c3cdf62969885ccdabc32de303cdb7c76456eec7aeabbdfab2a5439143a5",
+          "metadata": {
+            "format": "PDF 1.6",
+            "title": "",
+            "author": "Kowaco 대리 Igru",
+            "subject": "",
+            "keywords": "",
+            "creator": "Hwp 2024 0.0.0.0",
+            "producer": "Hancom PDF 1.3.0.550",
+            "creationDate": "D:20260830033651+09'00'",
+            "modDate": "D:20260830033651+09'00'",
+            "trapped": "",
+            "encryption": null
+          }
+        }
+      ],
+      "pages": 64,
+      "raster_dpi": 72,
+      "identical_page_count": 64,
+      "page_results": [
+        {
+          "page": 1,
+          "raster_sha256": [
+            "251581c25cf041d6def333d6971502affe22cc4f16054efa1cdcb2ffcf861bd8",
+            "251581c25cf041d6def333d6971502affe22cc4f16054efa1cdcb2ffcf861bd8"
+          ],
+          "identical": true
+        },
+        {
+          "page": 2,
+          "raster_sha256": [
+            "ea843a223c1edfbb11f27b7213774565ca305693d296f078ac0c4ab21c24cba8",
+            "ea843a223c1edfbb11f27b7213774565ca305693d296f078ac0c4ab21c24cba8"
+          ],
+          "identical": true
+        },
+        {
+          "page": 3,
+          "raster_sha256": [
+            "451d39cad92ba943ecb80c9264a389b137df35e95e620b2655f43892696c0d07",
+            "451d39cad92ba943ecb80c9264a389b137df35e95e620b2655f43892696c0d07"
+          ],
+          "identical": true
+        },
+        {
+          "page": 4,
+          "raster_sha256": [
+            "1ae77979e2134594f2460ee39e3b1790caccd99ab88e859899428e5ef8dd06e7",
+            "1ae77979e2134594f2460ee39e3b1790caccd99ab88e859899428e5ef8dd06e7"
+          ],
+          "identical": true
+        },
+        {
+          "page": 5,
+          "raster_sha256": [
+            "fbe46b5e107e66f75fecf16a68625743f69d04db1bd394696c2b2fa45a93a75a",
+            "fbe46b5e107e66f75fecf16a68625743f69d04db1bd394696c2b2fa45a93a75a"
+          ],
+          "identical": true
+        },
+        {
+          "page": 6,
+          "raster_sha256": [
+            "6c9907bc1f532fbb4b3f7e40b5b04df344825629cec1dba7a0ce82bdfaabb00a",
+            "6c9907bc1f532fbb4b3f7e40b5b04df344825629cec1dba7a0ce82bdfaabb00a"
+          ],
+          "identical": true
+        },
+        {
+          "page": 7,
+          "raster_sha256": [
+            "17f4dbfe8c4da8f528f803a038b181c59f1b9b29374b050889b7b058d93eedd8",
+            "17f4dbfe8c4da8f528f803a038b181c59f1b9b29374b050889b7b058d93eedd8"
+          ],
+          "identical": true
+        },
+        {
+          "page": 8,
+          "raster_sha256": [
+            "bd8cd6da828c3ff803cc37bfa3b58e80b9d50678f6ebea66ebddc9cd56e386cc",
+            "bd8cd6da828c3ff803cc37bfa3b58e80b9d50678f6ebea66ebddc9cd56e386cc"
+          ],
+          "identical": true
+        },
+        {
+          "page": 9,
+          "raster_sha256": [
+            "a1e36c88f4c73d195cc56707cc4cfd98ce6030895db829c7a012ab235b15a024",
+            "a1e36c88f4c73d195cc56707cc4cfd98ce6030895db829c7a012ab235b15a024"
+          ],
+          "identical": true
+        },
+        {
+          "page": 10,
+          "raster_sha256": [
+            "7947c92b58656a06a5297e4f39a6778af5934ac0186a7275902d9527f66d0bed",
+            "7947c92b58656a06a5297e4f39a6778af5934ac0186a7275902d9527f66d0bed"
+          ],
+          "identical": true
+        },
+        {
+          "page": 11,
+          "raster_sha256": [
+            "d9731d2af774110c2952ca4a1097c544126ea863501af5dca0a0da12dc994c01",
+            "d9731d2af774110c2952ca4a1097c544126ea863501af5dca0a0da12dc994c01"
+          ],
+          "identical": true
+        },
+        {
+          "page": 12,
+          "raster_sha256": [
+            "30877415bd00771ae8ebab55567009d86b589b7658e8990272fe57706b2059d8",
+            "30877415bd00771ae8ebab55567009d86b589b7658e8990272fe57706b2059d8"
+          ],
+          "identical": true
+        },
+        {
+          "page": 13,
+          "raster_sha256": [
+            "d26e9e814b6f091fcda84a5de78b3b238541728949d0ebd478deb7bf7a2dbd3b",
+            "d26e9e814b6f091fcda84a5de78b3b238541728949d0ebd478deb7bf7a2dbd3b"
+          ],
+          "identical": true
+        },
+        {
+          "page": 14,
+          "raster_sha256": [
+            "abab4ad507766071dc037354324c2c3cbc9387f8e1b0f00bf41795bca5be31ad",
+            "abab4ad507766071dc037354324c2c3cbc9387f8e1b0f00bf41795bca5be31ad"
+          ],
+          "identical": true
+        },
+        {
+          "page": 15,
+          "raster_sha256": [
+            "f194f446a896277fa81db2a422eda563ea1bfd0913341afabd2ba545cd570982",
+            "f194f446a896277fa81db2a422eda563ea1bfd0913341afabd2ba545cd570982"
+          ],
+          "identical": true
+        },
+        {
+          "page": 16,
+          "raster_sha256": [
+            "76da90a80014a5fe083db2b3a59cbe47479d369977847b39adfba1b8e10f1e75",
+            "76da90a80014a5fe083db2b3a59cbe47479d369977847b39adfba1b8e10f1e75"
+          ],
+          "identical": true
+        },
+        {
+          "page": 17,
+          "raster_sha256": [
+            "b1ebc7ef546079c450a1b0acbc83fe94ba521d67e81738a77bf7e4c572fa6982",
+            "b1ebc7ef546079c450a1b0acbc83fe94ba521d67e81738a77bf7e4c572fa6982"
+          ],
+          "identical": true
+        },
+        {
+          "page": 18,
+          "raster_sha256": [
+            "338c6e601a3ae1bc83d000e46da8511814e7f72b7c7f6a92d436f09efab93240",
+            "338c6e601a3ae1bc83d000e46da8511814e7f72b7c7f6a92d436f09efab93240"
+          ],
+          "identical": true
+        },
+        {
+          "page": 19,
+          "raster_sha256": [
+            "fefbf0bdc1aadb93db121d3513ad64f0205cd752cb1780c49c1555d373731711",
+            "fefbf0bdc1aadb93db121d3513ad64f0205cd752cb1780c49c1555d373731711"
+          ],
+          "identical": true
+        },
+        {
+          "page": 20,
+          "raster_sha256": [
+            "89abd436ca571a6c229f1949a4f6e4d951214da3da38de11471693d08a4d47e9",
+            "89abd436ca571a6c229f1949a4f6e4d951214da3da38de11471693d08a4d47e9"
+          ],
+          "identical": true
+        },
+        {
+          "page": 21,
+          "raster_sha256": [
+            "91e0e941e173a3fadf63dc5cf5fe8c0da609d99806b509e2311c6dc4e110e1f0",
+            "91e0e941e173a3fadf63dc5cf5fe8c0da609d99806b509e2311c6dc4e110e1f0"
+          ],
+          "identical": true
+        },
+        {
+          "page": 22,
+          "raster_sha256": [
+            "09b5f689dc4de2d96e70274dd06fbc623de890a5d6431c1ee4af28462c057af1",
+            "09b5f689dc4de2d96e70274dd06fbc623de890a5d6431c1ee4af28462c057af1"
+          ],
+          "identical": true
+        },
+        {
+          "page": 23,
+          "raster_sha256": [
+            "f9bf4ec638686ed1b8414d1825da0a143439f052950a6f4ca87a9b4fb7585e03",
+            "f9bf4ec638686ed1b8414d1825da0a143439f052950a6f4ca87a9b4fb7585e03"
+          ],
+          "identical": true
+        },
+        {
+          "page": 24,
+          "raster_sha256": [
+            "8decbd9fa8dcc2a8c343f107a6ed7dcef2b520e0601f94f13e39996029dd0c15",
+            "8decbd9fa8dcc2a8c343f107a6ed7dcef2b520e0601f94f13e39996029dd0c15"
+          ],
+          "identical": true
+        },
+        {
+          "page": 25,
+          "raster_sha256": [
+            "214d4734f5536eaaed3c046e1746c43d9c39881e70a672b23a6b43da5f6590a0",
+            "214d4734f5536eaaed3c046e1746c43d9c39881e70a672b23a6b43da5f6590a0"
+          ],
+          "identical": true
+        },
+        {
+          "page": 26,
+          "raster_sha256": [
+            "4a1a336fc9e21a45b978daaf7f40cd6bb2d993ee135e538774fddb73aeab3be3",
+            "4a1a336fc9e21a45b978daaf7f40cd6bb2d993ee135e538774fddb73aeab3be3"
+          ],
+          "identical": true
+        },
+        {
+          "page": 27,
+          "raster_sha256": [
+            "26e965d725abdc2621ed107619769e2d3ecd8f67544c91741fbf7c4875ee3c18",
+            "26e965d725abdc2621ed107619769e2d3ecd8f67544c91741fbf7c4875ee3c18"
+          ],
+          "identical": true
+        },
+        {
+          "page": 28,
+          "raster_sha256": [
+            "af963ddbf0e8b2a52743d05cbf8cc32120be70d4d0b73f99b5de56b6dd193b0d",
+            "af963ddbf0e8b2a52743d05cbf8cc32120be70d4d0b73f99b5de56b6dd193b0d"
+          ],
+          "identical": true
+        },
+        {
+          "page": 29,
+          "raster_sha256": [
+            "db5ab6509a7c66922d6f69242007ef22ed1f56d3202d307fdaa2463dc1dc5eec",
+            "db5ab6509a7c66922d6f69242007ef22ed1f56d3202d307fdaa2463dc1dc5eec"
+          ],
+          "identical": true
+        },
+        {
+          "page": 30,
+          "raster_sha256": [
+            "328a9035d9954dc69ad51fdd689c7e434a87d35d6e231ed6f58662962f9fa701",
+            "328a9035d9954dc69ad51fdd689c7e434a87d35d6e231ed6f58662962f9fa701"
+          ],
+          "identical": true
+        },
+        {
+          "page": 31,
+          "raster_sha256": [
+            "c5b22b432ff3c2e51fbcbbdee45a84bbcfa093347b1d79b0703d9f919bcd0dc6",
+            "c5b22b432ff3c2e51fbcbbdee45a84bbcfa093347b1d79b0703d9f919bcd0dc6"
+          ],
+          "identical": true
+        },
+        {
+          "page": 32,
+          "raster_sha256": [
+            "be84f1e39c6336588ce8330f2ac533b686ba20c2876da1ebd16b19282c739622",
+            "be84f1e39c6336588ce8330f2ac533b686ba20c2876da1ebd16b19282c739622"
+          ],
+          "identical": true
+        },
+        {
+          "page": 33,
+          "raster_sha256": [
+            "35bfea3f2b3320ed165880fb48a7ec0052b6ad8146e24bdf613a4aba929a9662",
+            "35bfea3f2b3320ed165880fb48a7ec0052b6ad8146e24bdf613a4aba929a9662"
+          ],
+          "identical": true
+        },
+        {
+          "page": 34,
+          "raster_sha256": [
+            "fa70781c69fcb891be251b6815170abbb70ed22ed91f504ad83a220844592940",
+            "fa70781c69fcb891be251b6815170abbb70ed22ed91f504ad83a220844592940"
+          ],
+          "identical": true
+        },
+        {
+          "page": 35,
+          "raster_sha256": [
+            "c434a785bfb17f91795c9c9c3b21ee2b4a8a7db3eb02f1cd674b2ab277f039a6",
+            "c434a785bfb17f91795c9c9c3b21ee2b4a8a7db3eb02f1cd674b2ab277f039a6"
+          ],
+          "identical": true
+        },
+        {
+          "page": 36,
+          "raster_sha256": [
+            "452337e7a4f644e61479204e583290fa15be01bc46445f566b00785a0e1650e4",
+            "452337e7a4f644e61479204e583290fa15be01bc46445f566b00785a0e1650e4"
+          ],
+          "identical": true
+        },
+        {
+          "page": 37,
+          "raster_sha256": [
+            "454fe7e07f5acad263d5bfe5425bf042c1233b226a0d1b99b6281abd5fb3f640",
+            "454fe7e07f5acad263d5bfe5425bf042c1233b226a0d1b99b6281abd5fb3f640"
+          ],
+          "identical": true
+        },
+        {
+          "page": 38,
+          "raster_sha256": [
+            "8fe71b6df6a7bd77ad9ffb8a27e36437e46784934d40656f0a59f05d84123cd2",
+            "8fe71b6df6a7bd77ad9ffb8a27e36437e46784934d40656f0a59f05d84123cd2"
+          ],
+          "identical": true
+        },
+        {
+          "page": 39,
+          "raster_sha256": [
+            "18544e6fe501fd02f69de6be3c00de0b0f9d46f662a47a05c9f320a25e3f83ea",
+            "18544e6fe501fd02f69de6be3c00de0b0f9d46f662a47a05c9f320a25e3f83ea"
+          ],
+          "identical": true
+        },
+        {
+          "page": 40,
+          "raster_sha256": [
+            "d97cbae952403019566aeca2312c4d9c9f0535bf38476e64d2294632afe37df4",
+            "d97cbae952403019566aeca2312c4d9c9f0535bf38476e64d2294632afe37df4"
+          ],
+          "identical": true
+        },
+        {
+          "page": 41,
+          "raster_sha256": [
+            "a33ac3066fdc9e1886bf35add648e39e7b3d478e70538760f1c7a4403c0c5feb",
+            "a33ac3066fdc9e1886bf35add648e39e7b3d478e70538760f1c7a4403c0c5feb"
+          ],
+          "identical": true
+        },
+        {
+          "page": 42,
+          "raster_sha256": [
+            "bda9ad823864cae2419aa833b3d55407fc92f088ee96ba6127dcd7cff285fb9d",
+            "bda9ad823864cae2419aa833b3d55407fc92f088ee96ba6127dcd7cff285fb9d"
+          ],
+          "identical": true
+        },
+        {
+          "page": 43,
+          "raster_sha256": [
+            "e617ba3258725b8fbb9cdb12a621bfa071d566504d639233a10634cc6caf87f4",
+            "e617ba3258725b8fbb9cdb12a621bfa071d566504d639233a10634cc6caf87f4"
+          ],
+          "identical": true
+        },
+        {
+          "page": 44,
+          "raster_sha256": [
+            "a3e8f26efbe8c8d23d0c4f295cc8a802064e0151af224d79de9a42527653fb2d",
+            "a3e8f26efbe8c8d23d0c4f295cc8a802064e0151af224d79de9a42527653fb2d"
+          ],
+          "identical": true
+        },
+        {
+          "page": 45,
+          "raster_sha256": [
+            "aeacdf7ea62cc3e462c426fce66e39525ad74a78344b69f09dc08792d91f4485",
+            "aeacdf7ea62cc3e462c426fce66e39525ad74a78344b69f09dc08792d91f4485"
+          ],
+          "identical": true
+        },
+        {
+          "page": 46,
+          "raster_sha256": [
+            "9a53e0a859a3a9e03b7edd1b60b31f483b34c75b14dacc784fd68f320352aa2e",
+            "9a53e0a859a3a9e03b7edd1b60b31f483b34c75b14dacc784fd68f320352aa2e"
+          ],
+          "identical": true
+        },
+        {
+          "page": 47,
+          "raster_sha256": [
+            "00c338f63261a5c6ec19aeed82f6ad319e8c21e12ee004c6c73696a9216d8969",
+            "00c338f63261a5c6ec19aeed82f6ad319e8c21e12ee004c6c73696a9216d8969"
+          ],
+          "identical": true
+        },
+        {
+          "page": 48,
+          "raster_sha256": [
+            "bc5db7ce221d77e9621b31932ecc6e3f24a84fa74571f542fecebed6c0018bf7",
+            "bc5db7ce221d77e9621b31932ecc6e3f24a84fa74571f542fecebed6c0018bf7"
+          ],
+          "identical": true
+        },
+        {
+          "page": 49,
+          "raster_sha256": [
+            "ad7bd1f19e378fa6b61c17b45daee14877f3dcfcb82dc9da3d18892432ce21cc",
+            "ad7bd1f19e378fa6b61c17b45daee14877f3dcfcb82dc9da3d18892432ce21cc"
+          ],
+          "identical": true
+        },
+        {
+          "page": 50,
+          "raster_sha256": [
+            "0b87f6b72f6c57bb064efd13bf5fe74f4309b2aa87d5e99747cf8ccd26832ffd",
+            "0b87f6b72f6c57bb064efd13bf5fe74f4309b2aa87d5e99747cf8ccd26832ffd"
+          ],
+          "identical": true
+        },
+        {
+          "page": 51,
+          "raster_sha256": [
+            "717e834163308125d507722b6fbc094201591774ea862f59e230b73c94032649",
+            "717e834163308125d507722b6fbc094201591774ea862f59e230b73c94032649"
+          ],
+          "identical": true
+        },
+        {
+          "page": 52,
+          "raster_sha256": [
+            "80f35537b7c0233d5b742b3b2665f486da9ff60f9d1b8a2c555890460a7b2efa",
+            "80f35537b7c0233d5b742b3b2665f486da9ff60f9d1b8a2c555890460a7b2efa"
+          ],
+          "identical": true
+        },
+        {
+          "page": 53,
+          "raster_sha256": [
+            "f386e4ce08b1d7d20e461896386e4271623d242edfd2af206de6697ca60587e8",
+            "f386e4ce08b1d7d20e461896386e4271623d242edfd2af206de6697ca60587e8"
+          ],
+          "identical": true
+        },
+        {
+          "page": 54,
+          "raster_sha256": [
+            "71bf79b1dc6ce770f6deb8a95fe072626f31130f807c5612a58494b2a9d6a021",
+            "71bf79b1dc6ce770f6deb8a95fe072626f31130f807c5612a58494b2a9d6a021"
+          ],
+          "identical": true
+        },
+        {
+          "page": 55,
+          "raster_sha256": [
+            "e8cb3327aa2e626deccdd9bdcd8d92aa566064c778228602d2aaa501cc638a35",
+            "e8cb3327aa2e626deccdd9bdcd8d92aa566064c778228602d2aaa501cc638a35"
+          ],
+          "identical": true
+        },
+        {
+          "page": 56,
+          "raster_sha256": [
+            "82652066ce0abf1ea76d1c7bece172a7348da15fe37b23b93f9304f18cf89d95",
+            "82652066ce0abf1ea76d1c7bece172a7348da15fe37b23b93f9304f18cf89d95"
+          ],
+          "identical": true
+        },
+        {
+          "page": 57,
+          "raster_sha256": [
+            "936a8f422c98f7cdec9fc747c11b252f0b1b3e4ebc807a8a5063cdc75381cb60",
+            "936a8f422c98f7cdec9fc747c11b252f0b1b3e4ebc807a8a5063cdc75381cb60"
+          ],
+          "identical": true
+        },
+        {
+          "page": 58,
+          "raster_sha256": [
+            "5d0182dccaf11caad90b2b945ffa515cf3b59698aca04c0744c753cdbf8ba7ba",
+            "5d0182dccaf11caad90b2b945ffa515cf3b59698aca04c0744c753cdbf8ba7ba"
+          ],
+          "identical": true
+        },
+        {
+          "page": 59,
+          "raster_sha256": [
+            "573205dccc1f31369e1b5cbeca08fc7dfd99880cfdce5edf088779351623b750",
+            "573205dccc1f31369e1b5cbeca08fc7dfd99880cfdce5edf088779351623b750"
+          ],
+          "identical": true
+        },
+        {
+          "page": 60,
+          "raster_sha256": [
+            "c17e972a8bbd85f3613595dc8f2eed45f08632bb65b634c82bd06081f64e9307",
+            "c17e972a8bbd85f3613595dc8f2eed45f08632bb65b634c82bd06081f64e9307"
+          ],
+          "identical": true
+        },
+        {
+          "page": 61,
+          "raster_sha256": [
+            "858daa99e00682adf1f503178e931824e43832a1fc724656a43037a960bab55c",
+            "858daa99e00682adf1f503178e931824e43832a1fc724656a43037a960bab55c"
+          ],
+          "identical": true
+        },
+        {
+          "page": 62,
+          "raster_sha256": [
+            "81d3e64310c6920c93f478d02989c643ee1bc9b53758a53413fef21c26cee8db",
+            "81d3e64310c6920c93f478d02989c643ee1bc9b53758a53413fef21c26cee8db"
+          ],
+          "identical": true
+        },
+        {
+          "page": 63,
+          "raster_sha256": [
+            "2d85b809e4a691c5a2149ceb46e075a517b72d7e34aa4545949c6978d02cbe2e",
+            "2d85b809e4a691c5a2149ceb46e075a517b72d7e34aa4545949c6978d02cbe2e"
+          ],
+          "identical": true
+        },
+        {
+          "page": 64,
+          "raster_sha256": [
+            "904bc8c27fd62506f046a89bc5b487882208fccd20c0fda87541a12a15268466",
+            "904bc8c27fd62506f046a89bc5b487882208fccd20c0fda87541a12a15268466"
+          ],
+          "identical": true
+        }
+      ],
+      "limits": "한컴PDF끼리의 동일 출력 관측이며 Native/freshWASM 피델리티 승인 증거가 아님."
+    },
+    "other_alias_evidence": "mydocs/pr/assets/issue7445/sample16_2010_test_removal_validation.json",
+    "other_alias_native_metrics": [
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 21.76084
+      },
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 22.15574
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.53989
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 7.09794
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 15.52702
+      }
+    ],
+    "direct_inspection": "기본원문24쪽review에서기준본문/표대신한줄만남음,23쪽standalone overlay에서하단글자가표외곽/꼬리말아래로넘고글줄/문단위치차이.같은바이트의별칭및서로동일한독립PDF출력과대조.전체Native/freshWASM완료아님.",
+    "reuse": "두원문동일바이트/각정상PDF해시,같은생산Native binary 및보정69대비빈srcdiff.별칭을다른제품/저장버전으로추정하지않음.",
+    "planned_functions": [
+      "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+      "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+      "hwp3_sample16_hwp5_page_count_64",
+      "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+      "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom"
+    ],
+    "planned_corpus_aliases": [
+      "hwp3-sample16-hwp5.hwp",
+      "hwp3-sample16-hwp5-2010.hwp"
+    ],
+    "prior_evidence": "mydocs/pr/assets/issue7445/sample16_test_removal_validation.json",
+    "plans": [
+      {
+        "caseName": "issue_1086",
+        "target": "regression_suite_013",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1105",
+        "target": "regression_suite_015",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1035_alignment",
+        "target": "regression_suite_026",
+        "grouped": true
+      },
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "checks": [
+      [
+        "issue_1086",
+        "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office"
+      ],
+      [
+        "issue_1105",
+        "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom"
+      ],
+      [
+        "issue_1035_alignment",
+        "hwp3_sample16_hwp5_page_count_64"
+      ],
+      [
+        "issue_1105",
+        "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom"
+      ],
+      [
+        "issue_1105",
+        "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom"
+      ],
+      [
+        "text_overlap_baseline",
+        "text_overlaps_do_not_grow_partition_1"
+      ],
+      [
+        "off_canvas_baseline",
+        "off_canvas_does_not_grow_partition_10"
+      ],
+      [
+        "text_overlap_baseline",
+        "text_overlaps_do_not_grow_partition_13"
+      ],
+      [
+        "off_canvas_baseline",
+        "off_canvas_does_not_grow_partition_12"
+      ]
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "issue_1086::task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "-E",
+        "test(=issue_1086::task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.401259209029377,
+      "summary": [
+        "Summary [   0.108s] 1 test run: 0 passed, 1 failed, 227 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1105::task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=issue_1105::task1105_sample16_hwp5_page_break_before_section_4_matches_hancom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.5026068338192999,
+      "summary": [
+        "Summary [   0.114s] 1 test run: 0 passed, 1 failed, 219 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1035_alignment::hwp3_sample16_hwp5_page_count_64",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(=issue_1035_alignment::hwp3_sample16_hwp5_page_count_64)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.46661304170265794,
+      "summary": [
+        "Summary [   0.117s] 1 test run: 0 passed, 1 failed, 220 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1105::task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=issue_1105::task1105_sample16_hwp5_2010_business_selection_break_matches_hancom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.4371771248988807,
+      "summary": [
+        "Summary [   0.098s] 1 test run: 0 passed, 1 failed, 219 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1105::task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=issue_1105::task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.4545832499861717,
+      "summary": [
+        "Summary [   0.098s] 1 test run: 0 passed, 1 failed, 219 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_1)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9270668751560152,
+      "summary": [
+        "Summary [   0.578s] 1 test run: 0 passed, 1 failed, 232 skipped"
+      ],
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_10)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9661222919821739,
+      "summary": [
+        "Summary [   0.613s] 1 test run: 0 passed, 1 failed, 219 skipped"
+      ],
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9925191248767078,
+      "summary": [
+        "Summary [   0.622s] 1 test run: 0 passed, 1 failed, 232 skipped"
+      ],
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)",
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_12",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_12)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 2.8000552910380065,
+      "summary": [
+        "Summary [   2.456s] 1 test run: 0 passed, 1 failed, 219 skipped"
+      ],
+      "observations": [
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    }
+  ],
+  "mutation": {
+    "removed_functions": [
+      "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+      "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+      "hwp3_sample16_hwp5_page_count_64",
+      "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+      "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom"
+    ],
+    "text_off_deferred_aliases": [
+      "samples/hwp3-sample16-hwp5.hwp",
+      "samples/hwp3-sample16-hwp5-2010.hwp"
+    ],
+    "removed_baseline_rows": [],
+    "kept": "같은 원문의 정상 그림/목차/줄간격/IR·source-unit·저장버전 계약,2018/2024 정상 함수,samples/PDF와모든다른축/문서·기대값/공차 유지. 기존body/oracle 실제보류범위 유지."
+  },
+  "normal_kept_results": [
+    "PASS [   0.068s] ( 1/46) rhwp::regression_suite_006 issue_1105::task1105_k_water_rfp_2024_cover_hides_first_page_footer",
+    "PASS [   0.071s] ( 2/46) rhwp::regression_suite_006 issue_1105::task1105_k_water_rfp_2024_page_count_matches_hancom_pdf",
+    "PASS [   0.072s] ( 3/46) rhwp::regression_suite_006 issue_1105::task1105_k_water_rfp_2024_first_rowspan_table_keeps_line_reset_split",
+    "PASS [   0.120s] ( 4/46) rhwp::regression_suite_006 issue_1105::task1105_hwp3_sample16_page23_square_bullet_matches_hancom",
+    "PASS [   0.137s] ( 5/46) rhwp::regression_suite_006 issue_1105::task1105_sample16_hwp5_2018_server_requirements_page_matches_hancom",
+    "PASS [   0.145s] ( 6/46) rhwp::regression_suite_006 issue_1105::task1105_sample16_hwp5_2018_business_selection_break_matches_hancom",
+    "PASS [   0.159s] ( 7/46) rhwp::regression_suite_006 issue_1105::task1105_sample16_hwp5_2024_clean_linesegs_reflow_is_noop",
+    "PASS [   0.163s] ( 8/46) rhwp::regression_suite_006 issue_1105::task1105_sample16_hwp5_2024_business_selection_break_matches_hancom",
+    "PASS [   0.189s] ( 9/46) rhwp::regression_suite_006 issue_1105::task1105_sample16_hwp5_2024_server_requirements_page_matches_hancom",
+    "PASS [   1.398s] (20/46) rhwp::regression_suite_018 issue_1086::task1086_hwpspec_extended_control_figure_starts_on_next_page",
+    "PASS [   0.486s] (21/46) rhwp::regression_suite_018 issue_1086::task1086_hwpspec_page_count_matches_hancom_office",
+    "PASS [   0.079s] (22/46) rhwp::regression_suite_018 issue_1086::task1086_k_water_rfp_page_count_matches_hancom_pdf",
+    "PASS [   0.183s] (23/46) rhwp::regression_suite_026 issue_1035_alignment::hwp3_sample16_hwp5_2018_page_count_64",
+    "PASS [   0.180s] (24/46) rhwp::regression_suite_026 issue_1035_alignment::hwp3_sample16_hwp5_2024_page_count_64"
+  ],
+  "focused_summary": [
+    "Summary [  68.253s] 46 tests run: 38 passed (1 slow), 8 failed, 850 skipped"
+  ],
+  "axis_results": "text/off32분할24PASS/8FAIL, 정상14함수PASS로합계38PASS/8FAIL/850SKIP.별칭두입력은남은실패에없고다른8실패는자동제외하지않음.",
+  "actual_failed_axis_tests": [
+    {
+      "test_result": "FAIL [   9.984s] (19/46) rhwp::regression_suite_014 off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "observations": [
+        "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   7.691s] (25/46) rhwp::regression_suite_014 off_canvas_baseline::off_canvas_does_not_grow_partition_4",
+      "observations": [
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   8.334s] (26/46) rhwp::regression_suite_014 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "observations": [
+        "신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   3.935s] (32/46) rhwp::regression_suite_026 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   6.258s] (36/46) rhwp::regression_suite_026 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "observations": [
+        "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 19건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   9.211s] (39/46) rhwp::regression_suite_026 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   5.987s] (40/46) rhwp::regression_suite_026 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+      "observations": [
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test_result": "FAIL [  52.931s] (46/46) rhwp::regression_suite_026 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "observations": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "b2ba0a7ab4733bb0a1fe0f9d21e4380937854102",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_006",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_018",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "(test(issue_1086::)) or (test(issue_1105::)) or (test(issue_1035_alignment::)) or (test(text_overlap_baseline::)) or (test(off_canvas_baseline::))"
+        ],
+        "exit_code": 100,
+        "seconds": 84.59005758306012
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.218383958097547
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.37761325016617775
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23900470789521933
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3837786251679063
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 8.832934750244021
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.3035512920469046
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.674457625020295
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/issue_1086.rs": "87198a47fac5557820fb285bc2f71664c77a0da7b8b2b1a94479315d3d05d128",
+    "tests/issue_1105.rs": "517278a74289e6465f0755ed7207fcb0afc5cb10134b3c6de4759b8f9a9e7f62",
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": "6b3a51d1b9d0aa14a50a44d35de411d27bbbcb4c3074656ff519ce48615d329a",
+    "tests/cases/text_overlap_baseline.rs": "a51bff9f96c6faa66b8fb76a92e747e4717969cd46c4e8607aa6161d43e6f661",
+    "tests/cases/off_canvas_baseline.rs": "6b8064d5a46c5e210f9ce97f2437ac3302b67077f40026f287abb9ff72cfd865"
+  },
+  "source_after_sha256": {
+    "tests/issue_1086.rs": "c55673fb22e52388bf4d75ce593345d8f8ec9893c7c373acf3099194ffe208fd",
+    "tests/issue_1105.rs": "4b3f7a4f84549fe11d3b474b94aa311a6c40f9a4ddc5bdd528a7a606d03126b4",
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": "8b0f94f29e50430cbd7cb32f54871227a6b327d058208113bcf24dc41a05e803",
+    "tests/cases/text_overlap_baseline.rs": "a9b5d0a71c25a5500953525865a04c0be56f632066d5c94d4e4a03ece741045f",
+    "tests/cases/off_canvas_baseline.rs": "54868b1188f198966b8b4db007f2d27c5a113ee27e128374f86651891f1d32c1"
+  },
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/sample16_native_review_024.png",
+    "mydocs/pr/assets/issue7445/sample16_native_overlay_023.png"
+  ],
+  "issue_comments": [
+    "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5868738187",
+    "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869562651"
+  ],
+  "comment_changes": "off-canvas입력별 증적포인터를#7445 README로갱신해모든등록입력근거를연결.",
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "fresh_wasm": "미실행. 영향쪽의동일생산후보 부정Native증거재사용이며전수Native/freshWASM승인아님.",
+  "remaining": "복원15미해결중누적12함수만좁게보류해3개대기.최신text/off8실패와다른body/cell/oracle축을개별분석해야함.최종37개별/전체nextest/시각·PR준비미완료."
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "pdf": "pdf/issue1733/text_footnote_tail_overpagination-hwp-2020-20260814.pdf",
+    "pdf_sha256": "d20505d2af9989c2fb03c9992ba50e01b938a86dba69a613b353f4a7bc22ba61",
+    "page": 215,
+    "xref": 1543,
+    "source_image_key": "bin:0:12:bwpng",
+    "converted_sha256": "773c7525f5c89794625797ff0acd416f68dc7711822fdef5ab3e8086ecddd7e8",
+    "wasm_sha256": "f98ad4a4f40ff71d3ce495d7a577f3c76447ab461520dd6cd4c64873be8abc1b",
+    "sizes": [
+      [
+        613,
+        396
+      ],
+      [
+        613,
+        396
+      ]
+    ],
+    "different_pixels": 0,
+    "total_pixels": 242748
+  },
+  {
+    "pdf": "pdf/issue1733/text_footnote_tail_overpagination-hwpx-2020-20260814.pdf",
+    "pdf_sha256": "09caa268b790d553ad8aba6935e550d319bd518a8877654058d8639a886e4c2f",
+    "page": 215,
+    "xref": 1543,
+    "source_image_key": "bin:0:12:bwpng",
+    "converted_sha256": "773c7525f5c89794625797ff0acd416f68dc7711822fdef5ab3e8086ecddd7e8",
+    "wasm_sha256": "f98ad4a4f40ff71d3ce495d7a577f3c76447ab461520dd6cd4c64873be8abc1b",
+    "sizes": [
+      [
+        613,
+        396
+      ],
+      [
+        613,
+        396
+      ]
+    ],
+    "different_pixels": 0,
+    "total_pixels": 242748
+  }
+]

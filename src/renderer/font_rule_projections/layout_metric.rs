@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "355fde530a2f7d40b539ab534c52251bf6697a5632136bee416842a19f2230dd";
+    "e6509d5dcdcec0e412acb1773ca9f510ac4ca8a034f0e6e1556be166f32e673a";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2";
+    "10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1260,6 +1260,23 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
             "font-metric.6cef32736604b65b441e",
         ],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.ygodic230-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("한컴 윤고딕 230"),
+        target_face_or_policy: "Haan YGodic 230",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.f3e4274740daf2960ec1"],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1467,6 +1484,9 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "Noto Serif CJK KR" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[66])
+        }
+        "한컴 윤고딕 230" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[67])
         }
         _ => None,
     }

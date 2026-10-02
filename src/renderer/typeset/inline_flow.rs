@@ -1,7 +1,14 @@
 //! 본문 inline의 측정·fit·배치 결과 소유자.
 
-use super::*;
-use crate::renderer::{float_placement::ObjectPlacementFrame, inline_flow};
+#[path = "inline_flow/plan.rs"]
+pub(super) mod plan;
+
+use super::{TypesetEngine, TypesetState};
+use crate::model::control::Control;
+use crate::model::paragraph::Paragraph;
+use crate::renderer::height_measurer::MeasuredTable;
+use crate::renderer::inline_flow;
+use crate::renderer::style_resolver::ResolvedStyleSet;
 
 impl TypesetEngine {
     pub(super) fn typeset_inline_flow(
@@ -28,40 +35,14 @@ impl TypesetEngine {
             return false;
         }
         let build = |st: &TypesetState, start: f64, preceding: bool| {
-            let column = st.inline_flow_column();
-            let style = styles.para_styles.get(para.para_shape_id as usize)?;
-            let container = super::super::page_layout::LayoutRect {
-                x: column.x + style.margin_left,
-                width: (column.width - style.margin_left - style.margin_right).max(0.0),
-                ..column
-            };
-            let paper = super::super::page_layout::LayoutRect {
-                x: 0.0,
-                y: 0.0,
-                width: st.layout.page_width,
-                height: st.layout.page_height,
-            };
-            let exclusions: Vec<_> = if preceding {
-                st.side_wrap_exclusions.values().cloned().collect()
-            } else {
-                Vec::new()
-            };
-            let frame = ObjectPlacementFrame {
-                container: &container,
-                column: &column,
-                body: &st.layout.body_area,
-                paper: &paper,
-                paragraph_y: column.y + start,
-                alignment: style.alignment,
-                dpi: self.dpi,
-            };
-            let mut plan = if inline_flow::supports_plain_text(para) {
-                inline_flow::plan_plain_text(para, styles, &frame, &exclusions)?
-            } else {
-                inline_flow::plan(para, para_index, styles, tables, &frame, &exclusions)?
-            };
-            plan.relative_to(column.x, column.y);
-            Some(plan)
+            plan::build_plan(
+                st.inline_flow_input(start, preceding),
+                para,
+                para_index,
+                styles,
+                tables,
+                self.dpi,
+            )
         };
         let Some(mut plan) = build(st, st.current_height, true) else {
             return false;
@@ -89,12 +70,7 @@ impl TypesetEngine {
             }
             plan = candidate;
         }
-        st.current_items
-            .push(PageItem::FullParagraph { para_index });
-        st.current_height = plan.end;
-        st.inline_box_flow_bottom = st.inline_box_flow_bottom.max(plan.end);
-        st.inline_flow_plans.insert(para_index, plan);
-        st.vpos_ladder_dirty = true;
+        st.commit_inline_flow(para_index, plan);
         true
     }
 }

@@ -77,6 +77,56 @@ fn gwanak_bottom_fixed_frame_renders_at_page_bottom() {
     let tree = doc
         .build_page_render_tree(0)
         .unwrap_or_else(|e| panic!("render p1: {e}"));
+    // 하단 틀 검사만으로 놓쳤던 본문 표와 뒤 문단의 물리 위치도 확인한다.
+    // 독립 한컴 PDF의 표 벡터와 `끝.` 텍스트 origin을 96dpi로 환산했다.
+    fn body_items(node: &RenderNode) -> Vec<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            return node.children.iter().collect();
+        }
+        if matches!(
+            node.node_type,
+            RenderNodeType::Page(_) | RenderNodeType::Body { .. }
+        ) {
+            return node.children.iter().flat_map(body_items).collect();
+        }
+        Vec::new()
+    }
+    let items = body_items(&tree.root);
+    let tables: Vec<_> = items
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.para_index == Some(4) && table.control_index == Some(0)
+                && table.cell_context.is_none())
+        })
+        .collect();
+    assert_eq!(tables.len(), 1, "본문 표의 누락·중복");
+    assert!(
+        (tables[0].bbox.y - 411.071).abs() <= 1.0,
+        "본문 표 상단 {:.3}px / 한컴 PDF 411.071px",
+        tables[0].bbox.y
+    );
+    assert!(
+        (tables[0].bbox.y + tables[0].bbox.height - 599.344).abs() <= 1.0,
+        "본문 표 하단 {:.3}px / 한컴 PDF 599.344px",
+        tables[0].bbox.y + tables[0].bbox.height
+    );
+    let lines: Vec<_> = items
+        .iter()
+        .filter_map(|node| {
+            if let RenderNodeType::TextLine(line) = &node.node_type {
+                (line.para_index == Some(5)).then_some((node.bbox.y, line.baseline))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(lines.len(), 1, "표 뒤 끝 문단의 누락·중복·잘못된 소유");
+    assert!(
+        (lines[0].0 + lines[0].1 - 626.400).abs() <= 1.0,
+        "표 뒤 끝 문단 기준선 {:.3}px / 한컴 PDF 626.400px",
+        lines[0].0 + lines[0].1
+    );
     let (body_top, body_bottom) = find_body_bbox(&tree.root).expect("body");
     let max_bottom = max_text_line_bottom(&tree.root);
     let threshold = body_top + (body_bottom - body_top) * 0.6;

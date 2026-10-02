@@ -1,0 +1,126 @@
+{
+  "stage": 180,
+  "scope": "#617 시험지 20쪽 조판과 실패한 #617/#6646 회귀 검사를 시각 근거로 수정",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "head_before": "7b30adc49d99b3981c06d4416c5097490747a706",
+  "exam_kor": {
+    "hwp": "samples/exam_kor.hwp",
+    "hwp_sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69",
+    "pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
+    "pdf_sha256": "867fbb82ad03c31eb0fee3ddf991d24db93986264ce7e58c91cf4a02903e2c7d",
+    "before_page17_percent": 84.84018,
+    "native": {
+      "gate": "passed",
+      "pages": 20,
+      "scores": [
+        98.79602,
+        98.32103,
+        97.0582,
+        98.88131,
+        98.59683,
+        98.30348,
+        98.77915,
+        97.02101,
+        96.96851,
+        98.79768,
+        97.34439,
+        97.80095,
+        98.19271,
+        96.23508,
+        98.11117,
+        98.30829,
+        90.66068,
+        97.34948,
+        97.48122,
+        98.69918
+      ],
+      "minimum": 90.66068,
+      "summary": "output/pr-review/planet6897-7382-20260926/stage179-exam617/visual-final-native/summary.json"
+    },
+    "fresh_wasm": {
+      "gate": "passed",
+      "pages": 20,
+      "scores": [
+        98.79602,
+        98.32103,
+        97.0582,
+        98.88131,
+        98.59683,
+        98.30348,
+        98.77915,
+        97.02101,
+        96.96851,
+        98.79768,
+        97.34439,
+        97.80095,
+        98.19271,
+        96.23508,
+        98.11117,
+        98.30829,
+        90.66068,
+        97.34948,
+        97.48122,
+        98.69918
+      ],
+      "minimum": 90.66068,
+      "summary": "output/pr-review/planet6897-7382-20260926/stage179-exam617/visual-final-wasm/summary.json"
+    },
+    "font_mismatch_exception": false,
+    "local_wasm_build": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir output/pr-review/planet6897-7382-20260926/stage179-exam617/wasm-pkg --no-opt",
+    "review_pngs": [
+      "mydocs/pr/assets/pr7382_20260926/stage180_exam617_native_review_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage180_exam617_native_review_017.png",
+      "mydocs/pr/assets/pr7382_20260926/stage180_exam617_wasm_overlay_017.png"
+    ]
+  },
+  "exam_eng_6646": {
+    "hwp": "samples/exam_eng.hwp",
+    "hwp_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+    "pdf": "pdf/exam_eng-hwp-2020.pdf",
+    "pdf_sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+    "visual": {
+      "gate": "re_review_required",
+      "pages": 8,
+      "scores": [
+        96.82579,
+        84.72042,
+        68.8662,
+        55.41673,
+        59.8006,
+        51.23254,
+        48.9281,
+        79.24051
+      ],
+      "minimum": 48.9281,
+      "summary": "output/pr-review/planet6897-7382-20260926/stage179-exam617/visual-exameng6646/summary.json"
+    },
+    "test_scope": "1쪽 7번 문항만. 다른 쪽은 시각 게이트 미달이며 해당 검사로 승인하지 않음",
+    "change": "15~17px 문자 원점 간격 검사 대신 문항 글줄 내용, U+00A0의 일반 공백 측정 갈래 및 양의 전진폭 검사"
+  },
+  "changes": [
+    "저장 상자 내부 vpos를 쪽 원점으로 오인한 감산 방지",
+    "신명 신그래픽 HFT 제목의 폭 측정과 자간 보정",
+    "HY신명조 표시 기준선 0.1em 상승",
+    "기존 #617 스냅샷의 부동소수 직렬화 핀을 문단/셀/표시상자 의미 검사로 교체"
+  ],
+  "direct_review": "exam_kor 6쪽/17쪽 및 exam_eng 1쪽 review/overlay 직접 확인. exam_kor 다른 쪽의 line-band/large-ink 진단 플래그는 잔여 차이로 기록하며 완전한 픽셀 일치를 주장하지 않음.",
+  "focused_nextest": "2 passed, 0 failed: svg_snapshot::issue_617_exam_kor_page5, issue_6646_nbsp_advance_matches_space::issue_6646_nbsp_advance_matches_plain_space",
+  "lint": {
+    "fmt": "pass",
+    "clippy_default": "pass",
+    "clippy_wasm": "pass",
+    "workspace_build": "pass",
+    "clippy_all_targets": "pass",
+    "manifest_base_check": "pass",
+    "unit_tiers_base_check": "pass"
+  },
+  "full_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+    "before": "10229 tests: 10191 passed, 38 failed, 50 skipped",
+    "after": "10229 tests: 10192 passed, 37 failed, 50 skipped",
+    "resolved": "issue_6646_nbsp_advance_matches_space::issue_6646_nbsp_advance_matches_plain_space",
+    "remaining": "37 separate failures; #1772 is next individually analyzed blocker",
+    "log": "output/pr-review/planet6897-7382-20260926/stage179-exam617/final-full-nextest-semantic.log"
+  },
+  "logs": "output/pr-review/planet6897-7382-20260926/stage179-exam617"
+}

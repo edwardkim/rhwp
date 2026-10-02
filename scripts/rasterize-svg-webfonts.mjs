@@ -21,12 +21,34 @@ function fontFaceFamily(rule) {
   return value.replace(/^(['"])(.*)\1$/u, '$2').toLocaleLowerCase('en-US');
 }
 
+// Embedded full fonts can make a single @font-face rule tens of megabytes long.
+// V8's regexp iterator over that rule can exhaust its stack before Chrome runs.
+function fontFaceRanges(source) {
+  const ranges = [];
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf('@', offset);
+    if (start < 0) break;
+    const opening = source.slice(start, start + 64).match(/^@font-face\s*\{/iu);
+    if (!opening) {
+      offset = start + 1;
+      continue;
+    }
+    const close = source.indexOf('}', start + opening[0].length);
+    if (close < 0) break;
+    ranges.push([start, close + 1]);
+    offset = close + 1;
+  }
+  return ranges;
+}
+
 function declaredFontFaceFamilies(source) {
-  return new Set(
-    [...source.matchAll(/@font-face\s*\{[^{}]*\}/giu)]
-      .map(match => fontFaceFamily(match[0]))
-      .filter(family => family !== null),
-  );
+  return new Set(fontFaceRanges(source)
+    .map(([start, end]) => (
+      fontFaceFamily(source.slice(start, Math.min(end, start + 4096)))
+      ?? fontFaceFamily(source.slice(Math.max(start, end - 4096), end))
+    ))
+    .filter(family => family !== null));
 }
 
 export function parseWebfontRules(source) {
@@ -100,13 +122,21 @@ export function prepareSvgForWebfontRaster(svgSource, webfontCss) {
     /font-family=(['"])(.*?)\1/giu,
     (_match, quote, fontList) => `font-family=${quote}${appendTerminalFallback(fontList)}${quote}`,
   );
-  const withCssFallback = withAttributeFallback.replace(
-    /@font-face\s*\{[^{}]*\}|(font-family\s*:\s*)([^;}]+)/giu,
-    // A font-face family descriptor accepts one family, not a fallback list.
-    (match, prefix, fontList) => prefix
-      ? `${prefix}${appendTerminalFallback(fontList)}`
-      : match,
+  // Leave embedded @font-face blocks byte-for-byte intact. A regexp that spans
+  // their data URLs overflows the JS stack on full HCR/Haansoft font exports.
+  const cssFallback = part => part.replace(
+    /(font-family\s*:\s*)([^;}]+)/giu,
+    (_match, prefix, fontList) => `${prefix}${appendTerminalFallback(fontList)}`,
   );
+  const chunks = [];
+  let cursor = 0;
+  for (const [start, end] of fontFaceRanges(withAttributeFallback)) {
+    chunks.push(cssFallback(withAttributeFallback.slice(cursor, start)));
+    chunks.push(withAttributeFallback.slice(start, end));
+    cursor = end;
+  }
+  chunks.push(cssFallback(withAttributeFallback.slice(cursor)));
+  const withCssFallback = chunks.join('');
   return withCssFallback.replace(
     /<svg\b[^>]*>/iu,
     match => `${match}<style>${supplementalCss}</style>`,
@@ -222,6 +252,12 @@ export async function recoverUnavailableLocalBoldFaces(page) {
 }
 
 async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
+  // 전체 글꼴을 포함한 대형 SVG는 로딩 시간이 기본 30초를 넘을 수 있다.
+  // 대기 한도만 조절하며 글꼴·좌표·캡처 완료 조건은 그대로 유지한다.
+  const timeoutMs = Number(process.env.RHWP_VISUAL_RASTER_TIMEOUT_MS ?? '30000');
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error('RHWP_VISUAL_RASTER_TIMEOUT_MS는 양의 정수여야 합니다.');
+  }
   const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
   let puppeteerPath;
   try {
@@ -234,8 +270,8 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     executablePath: chrome,
     headless: true,
     userDataDir: profileDir,
-    timeout: 30000,
-    protocolTimeout: 30000,
+    timeout: timeoutMs,
+    protocolTimeout: timeoutMs,
     args: ['--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files'],
   });
   try {
@@ -247,13 +283,18 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
       height: Math.ceil(viewport.height),
       deviceScaleFactor: zoom,
     });
-    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: 30000 });
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: timeoutMs });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const recoveredFontFaces = await recoverUnavailableLocalBoldFaces(page);
     await page.screenshot({ path: outputPath, type: 'png' });
     return recoveredFontFaces;
   } finally {
     await browser.close();
+    // 브라우저 종료 뒤 자식의 출력 파이프가 남으면 Node가 캡처 완료 후에도
+    // 대기한다. 이 실행이 소유한 스트림만 닫고 화면·글꼴 완료 조건은 유지한다.
+    for (const stream of browser.process()?.stdio ?? []) {
+      stream?.destroy();
+    }
   }
 }
 

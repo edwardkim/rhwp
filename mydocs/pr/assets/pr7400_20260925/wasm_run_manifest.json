@@ -1,0 +1,62 @@
+{
+  "schema_version": 2,
+  "key": "cell7400_after",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue7265/pr7400_cell_char_format_after.hwpx",
+      "sha256": "526f8d3bd173bc336328e3184f8ad8ca134b2c0be773bf01e648a3c653dffc0e"
+    },
+    "pdf": {
+      "path": "pdf/issue7265/pr7400_cell_char_format_after-2020.pdf",
+      "sha256": "15cf805298b4c9214fb1b1f3b107d246761b5744468ef431e286968eba3798a0"
+    },
+    "git_head": "177acf40054f2bbb4bbe65cd9f4267d3df308f8f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "38a7be7c1d205b35d108704be168736bb81f182fb18272dc0b6ceff1ee93bc1a"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "2d4729c90981b79da267ca9ce95618f35526380bb73bab08641b1bf2ac5a1dda"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native --embed-fonts=full --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-20260924/pr7400-hcr-fonts; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20260924/pr7400-hcr-fonts/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}
