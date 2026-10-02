@@ -659,6 +659,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             format: crate::model::provenance::SourceFormat::Hwpx,
             hwp3_lineage: false,
             hwpx_lineage: false,
+            hft_ascii_halfwidth_witnessed: false,
         },
     };
     // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은

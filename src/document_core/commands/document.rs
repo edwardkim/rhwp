@@ -195,7 +195,28 @@ impl DocumentCore {
         }
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
-        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        let mut styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
+        // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
+        if !styles.hft_ascii_halfwidth {
+            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+                &document,
+                &styles,
+                DEFAULT_DPI,
+            );
+            if std::env::var_os("RHWP_DIAG_HFT_EVIDENCE").is_some() {
+                eprintln!(
+                    "[HFT_EVIDENCE] halfwidth={} proportional={} proves={}",
+                    witnesses.halfwidth,
+                    witnesses.proportional,
+                    witnesses.proves_halfwidth()
+                );
+            }
+            if witnesses.proves_halfwidth() {
+                document.provenance.hft_ascii_halfwidth_witnessed = true;
+                styles.hft_ascii_halfwidth = true;
+            }
+        }
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && document
