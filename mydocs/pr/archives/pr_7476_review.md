@@ -9,7 +9,7 @@ last_verified: 2026-10-02
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 통합 코드·직접 시각 검증은 아직 실행 전입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -85,7 +85,7 @@ last_verified: 2026-10-02
 
 ## 실행 결과
 
-체리픽·충돌 보정·최종 검증은 아직 미실행입니다. 분석·코드·결과 보고·commit 순서로 단계별 갱신합니다.
+고유 source commit 63개 체리픽을 완료했습니다. 출처와 보정은 [적용 원장](../assets/planet6897_green_20261002/applied_commits.json)에 기록했습니다. 현재 후보 `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`의 Native Clippy는 exit0이며 전체 nextest는 실행 중입니다. 최종 회귀·시각 검증은 미완료입니다.
 
 ### 체리픽 보정 1: 글머리표 폭과 이어지는 문단
 
@@ -130,3 +130,7 @@ last_verified: 2026-10-02
 ### 통합 후 보정: 미사용 글머리표 중복 함수 정리
 
 - 최종 원 PR의 머리 모양 기하가 줄 나눔·배치의 공통 경로가 되었습니다. 이전 devel의 단순 글머리표 문자열/폭 함수는 참조가 없어 두 중복 함수를 제거했습니다. 새 원 PR의 머리 모양 속성 계산은 유지합니다. 통합 lint와 회귀 검증 대기입니다.
+
+### 누적 후보 검증 시작
+
+- 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.

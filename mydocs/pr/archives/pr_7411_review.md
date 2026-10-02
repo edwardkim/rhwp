@@ -9,7 +9,7 @@ last_verified: 2026-10-02
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 통합 코드·직접 시각 검증은 아직 실행 전입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -35,10 +35,14 @@ last_verified: 2026-10-02
 
 ## 실행 결과
 
-체리픽·충돌 보정·최종 검증은 아직 미실행입니다. 분석·코드·결과 보고·commit 순서로 단계별 갱신합니다.
+고유 source commit 63개 체리픽을 완료했습니다. 출처와 보정은 [적용 원장](../assets/planet6897_green_20261002/applied_commits.json)에 기록했습니다. 현재 후보 `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`의 Native Clippy는 exit0이며 전체 nextest는 실행 중입니다. 최종 회귀·시각 검증은 미완료입니다.
 
 
 ## 단계1 충돌 분석과 보정
 
 - 최신 devel의 KoPub 양쪽 정렬 공백 필드와 원 PR의 원점 권위 필드가 같은 struct/생성자 위치에 추가되어 충돌했습니다. 두 필드와 각 초기값을 함께 유지합니다. 원점 보류 시 첫 슬롯 이동량을 사용하되 폭·슬롯 간격의 정확한 검증은 유지합니다. 새 주석은 한국어로 정리합니다.
 - 원 PR baseline 패치는 #7505에서 실제 대형 차단으로 제외한 issue6764·issue6776 등의 행을 다시 추가하려 했습니다. 통합 후 독립 전쪽 검증 전에는 이전 제외를 되돌리거나 수치 제한을 완화하지 않고 최신 devel baseline 계약을 보존합니다. 적용은 승인 판단이 아니며 집중·시각·통합 전수 검증은 아직 미실행입니다.
+
+### 누적 후보 검증 시작
+
+- 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.

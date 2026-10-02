@@ -9,7 +9,7 @@ last_verified: 2026-10-02
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 통합 코드·직접 시각 검증은 아직 실행 전입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -35,7 +35,7 @@ last_verified: 2026-10-02
 
 ## 실행 결과
 
-체리픽·충돌 보정·최종 검증은 아직 미실행입니다. 분석·코드·결과 보고·commit 순서로 단계별 갱신합니다.
+고유 source commit 63개 체리픽을 완료했습니다. 출처와 보정은 [적용 원장](../assets/planet6897_green_20261002/applied_commits.json)에 기록했습니다. 현재 후보 `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`의 Native Clippy는 exit0이며 전체 nextest는 실행 중입니다. 최종 회귀·시각 검증은 미완료입니다.
 
 
 ## 단계1 각주 분할·번호 경로 충돌 분석과 보정
@@ -43,3 +43,7 @@ last_verified: 2026-10-02
 - 최신 devel은 각주 측정과 paint가 FootnoteParagraphPlacement를 공유하고 저장 빈 줄·원래 autoNum 서식을 보존합니다. source의 번호 일반 문단 조합을 이 공유 route 위에 연결하고 spacing이 전달되는 in_frame 호출을 유지합니다. 첫 fragment 번호 한 번과 후속 tail 무번호 계약을 보존합니다.
 - 새 일반 문단 경로에서도 저장 autoNum의 원래 접두/접미를 사용합니다. 여러 선두 번호 슬롯은 기존 번호 경로로 보내 원본 슬롯 서식을 잃지 않도록 합니다. 번호의 가시 표현을 읽는 기존 helper만 display_or_text로 교정합니다.
 - source에 남아 있던 #7505 이전의 대형 테스트 함수·픽셀 hash/count·겹침 상한218→251을 독립 검증 없이 되살리지 않습니다. 최신 의미 검사와 #7445 보류 표식을 유지하고 baseline 상한을 완화하지 않습니다. 통합 출력의 번호·문단 모양·각주 수량·원본 쪽수와 기존 경계 검증 전에는 승인하지 않습니다.
+
+### 누적 후보 검증 시작
+
+- 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.
