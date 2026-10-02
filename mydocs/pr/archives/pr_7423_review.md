@@ -117,3 +117,9 @@ last_verified: 2026-10-02
 - 보정 결과: Native 8/8쪽, PDF 8쪽으로 일치합니다. [전쪽 TSV](../assets/planet6897_green_20261002/issue2004_stored_gap_native.tsv)의 최저값은 95.85551%, 3쪽은 58.48267% → 97.64619%입니다. [3쪽 review PNG](../assets/planet6897_green_20261002/issue2004_p3_stored_gap_native.png)를 직접 확인했으며 명단 15명과 표의 모든 행·열이 보존됩니다. 원본 HWPX·기준 PDF는 변경하지 않았습니다.
 - 정상 대조군: #7312 1개, #6737 2개, #6298 2개, #6950 28개, 총 33개 PASS(nextest release-test, threads8, no-fail-fast, exit0). 앞선 단일 표 개방 시 실패했던 #7312도 통과합니다. 기존 함수/fixture 추가·삭제는 없습니다.
 - [출처·범위 기록](../assets/planet6897_green_20261002/issue2004_stored_gap_evidence.json)의 Native 증적을 커밋합니다. fresh WASM과 최종 전체 회귀는 아직 미완료이므로 PR 최종 판정은 보류를 유지합니다.
+
+### 저장 간격 보정의 fresh WASM·기존 검사 완료
+
+- 코드 commit `0305f8f22`의 fresh WASM 빌드 exit0입니다. 실제 WASM render tree·SVG로 원본 8쪽 전체를 비교한 [WASM TSV](../assets/planet6897_green_20261002/issue2004_stored_gap_wasm.tsv)도 최저 95.85551%, 3쪽 97.64619%로 Native와 같습니다. 8/8쪽이며 미달·측정 불가 쪽이 없습니다. Mac 로컬 대체 빌드이고 Docker 최적화 빌드는 수행하지 않았습니다.
+- 기존 `issue_2004_projection_preserves_each_picture_identity_and_final_bounds` 안에 3쪽 두 표의 상대 원점 관계를 추가했습니다. 첫 표의 실제 높이로 물리 단위를 환산하여 원본 저장 줄·바깥여백의 상대 차이를 검사합니다. 절대 픽셀 좌표나 전체 SVG 해시는 고정하지 않습니다. 과거 출력 tree에서는 이 관계가 실패하고, 보정 출력 및 실제 기존 case nextest 6개는 통과합니다. 새 함수·fixture는 없습니다.
+- unit tier/base 정책과 suite manifest 검사 exit0입니다. 이 8쪽 문서의 보류 사유는 해결됐으나, 별도 29쪽 다열 표와 누적 후보 최종 전체 검증은 아직 보류입니다. 최초 33개 실패 중 focused 처리32개·잔존1개라는 판정은 유지합니다.
