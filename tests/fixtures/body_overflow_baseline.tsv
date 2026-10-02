@@ -63,10 +63,6 @@ issue6921/148733091-briefing-stenographic-record.hwp	0
 3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx	3
 76076_regulatory_analysis.hwp	1
 80168_regulatory_analysis.hwp	1
-# [#7418] 80250 5쪽: 2열 표 마지막 행 이어진 조각이 바깥 위 여백(141 HU)을 연다 — 정본
-# (samples/issue1891/80250_regulatory_analysis-2024.pdf) 괘선 위끝 77.5 = 본문 75.6 + 1.88 과
-# 같아졌다(종전 75.6). 이 쪽은 종전에도 본문을 0.9px 넘고 있었고 1.9px 내려 2.7px 가 됐다.
-80250_regulatory_analysis.hwp	1
 HWP5-nopassword-123456.hwpx	24
 KTX.hwp	1
 aift.hwp	3
