@@ -5511,8 +5511,13 @@ mod frame_reflow_tests {
             tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
             ..Default::default()
         }];
-        let expected = frozen_scalar_projection(&para, 50.0, &styles, 96.0);
+        let mut expected = frozen_scalar_projection(&para, 50.0, &styles, 96.0);
         assert!(expected.len() > 1, "fixture must exercise row recurrence");
+        // [#7412] 셀 내용 상자는 한/글 저장본처럼 4 HWPUNIT 격자로 내린 폭(3750 → 3748)을
+        // 발행한다. 줄 나눔은 동결 오라클과 같아야 하므로 폭 필드만 격자 값으로 맞춘다.
+        for line in &mut expected {
+            line.segment_width -= line.segment_width.rem_euclid(4);
+        }
 
         reflow_line_segs(
             &mut para,
@@ -5525,7 +5530,7 @@ mod frame_reflow_tests {
         assert!(para
             .line_segs
             .iter()
-            .all(|line| line.segment_width == 3_750 && line.column_start == 0));
+            .all(|line| line.segment_width == 3_748 && line.column_start == 0));
         assert_eq!(para.line_segs[0].vertical_pos, 321);
     }
 

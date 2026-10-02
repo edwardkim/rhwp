@@ -3204,6 +3204,12 @@ mod validate_linesegs_tests {
         }
     }
 
+    /// [#7412] 셀 내용 상자는 한/글 저장본처럼 폭을 4 HWPUNIT 격자로 내려 발행한다.
+    /// 소유자 폭(5002)과 원시 트랙 폭(4998)은 격자 뒤에도 5000 대 4996 으로 갈린다.
+    fn snap_to_cell_width_quantum(width: i32) -> i32 {
+        width - width.rem_euclid(4)
+    }
+
     fn short_table_frame_target_line(document: &Document) -> &LineSeg {
         let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
             panic!("table control");
@@ -3228,10 +3234,10 @@ mod validate_linesegs_tests {
         let line = short_table_frame_target_line(&document);
         assert_eq!(
             line.segment_width,
-            crate::renderer::px_to_hwpunit(
+            snap_to_cell_width_quantum(crate::renderer::px_to_hwpunit(
                 crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, DEFAULT_DPI),
                 DEFAULT_DPI,
-            ),
+            )),
             "eager reflow must use the table-owned frame width and the table's zero padding"
         );
     }
@@ -3255,10 +3261,10 @@ mod validate_linesegs_tests {
         let line = short_table_frame_target_line(core.document());
         assert_eq!(
             line.segment_width,
-            crate::renderer::px_to_hwpunit(
+            snap_to_cell_width_quantum(crate::renderer::px_to_hwpunit(
                 crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, core.dpi),
                 core.dpi,
-            ),
+            )),
             "on-demand reflow must use the table-owned frame width and the table's zero padding"
         );
     }

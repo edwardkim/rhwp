@@ -6818,11 +6818,14 @@ mod tests {
         (core, vec![(0, 0, 0), (0, 1, 0)])
     }
 
+    /// [#7412] 셀 내용 상자는 한/글 저장본처럼 폭을 4 HWPUNIT 격자로 내려 발행한다.
+    /// 소유자 폭(5002)과 원시 폭(4998)은 격자 뒤에도 5000 대 4996 으로 갈린다.
     fn resolved_table_frame_segment_width(dpi: f64) -> i32 {
-        crate::renderer::px_to_hwpunit(
+        let width = crate::renderer::px_to_hwpunit(
             crate::renderer::hwpunit_to_px(RESOLVED_TABLE_FRAME_WIDTH, dpi),
             dpi,
-        )
+        );
+        width - width.rem_euclid(4)
     }
 
     #[test]
