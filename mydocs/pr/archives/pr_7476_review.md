@@ -268,3 +268,8 @@ last_verified: 2026-10-02
 
 - 실행 결과: 잘못된Q29 부재 단정 한곳과 미사용상수만 제거했습니다. 나머지 혼합 계약과 같은파일 기존3함수 모두PASS(nextest release-test threads8, exit0). 저장전후13쪽 결과동일성·기존바탕쪽/IR/표/그림조건을 유지했습니다. 독립 PDF SHA는 기존 #7445 증적과동일합니다. [검증 증적](../assets/planet6897_green_20261002/handbook_q29_inverse_assertion_validation.json). 큰문서의 전체피델리티 이슈나 원본/PDF는 제거하지 않았고 새로운현재쪽 golden도 등록하지 않았습니다.
 - 직전17개 집중재실행은15PASS/2FAIL이며 이중#3930은본단계기존3검사로해결했습니다. 현재남은재현FAIL은 `hwpx_sample2.hwpx`의 off_canvas partition1입니다. 전체 nextest/최종visual은아직미완료입니다.
+
+### 이번 단계 종료 재검증 요약
+
+- head `8927c6ccb`에서 이전 전체 실패17개 이름을 모두 확인했습니다. generated suite 재배정으로16개 실행15PASS/1FAIL과 별도 oracle partition7의1PASS를 합쳐16PASS/1FAIL입니다. 전체10,281개 재실행 결과가 아닙니다. [최종 집중 증적](../assets/planet6897_green_20261002/prior17_final_8927c6ccb.json).
+- 잔존FAIL은29쪽 hwpx_sample2의8쪽표 용지밖1건입니다. h01의1쪽53.03132%와 큰문서 미달쪽, 최신215쪽전쪽Native/freshWASM·전체회귀 검증은 추가보류입니다. 이들을 완료로 간주하거나 blanket baseline 변경·새골든등록·원본삭제를 하지 않았습니다. PR 최종승인/머지준비는미완료입니다.

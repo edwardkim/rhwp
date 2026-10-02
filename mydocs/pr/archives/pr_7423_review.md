@@ -144,3 +144,8 @@ last_verified: 2026-10-02
 - 완료 조각에도 독립 쪽 상한 초과분을 처리하되 실제 모든 칸의 잔여 공간 안에서만 접도록 수정했습니다. 후행 줄간격 축소의 실제 이어받음 조건은 유지했습니다. 기존 #7095의 두 기대값과 테스트 함수는 변경하지 않았습니다.
 - 기존 관련 집중검사 46개는 45 PASS / 1 FAIL(exit100)입니다. #7095 두 검사는 PASS이며 #7243·#6950도 통과했습니다. #7379의 그림11 좁은 본문 예산 반례는 그대로 실패해 별도 보류로 남겼습니다. 새 전체 17개 실패 중 1개를 해결한 focused 결과이며 전체 통과로 보고하지 않습니다.
 - 원본·독립 PDF·Native·fresh WASM 모두 7쪽, 전쪽 최저 일치율은 양쪽 97.74445%입니다. 5쪽은 99.79480%이며 review PNG를 직접 확인했습니다. Mac WASM --no-opt 빌드는 exit0이고 Docker 최적화 검증은 아닙니다. [Native TSV](../assets/planet6897_green_20261002/issue7336_terminal_cap_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/issue7336_terminal_cap_wasm.tsv), [5쪽 비교](../assets/planet6897_green_20261002/issue7336_terminal_cap_p5_native.png), [증적](../assets/planet6897_green_20261002/issue7336_terminal_cap_evidence.json). 원본 문서·기준 PDF는 유지합니다.
+
+### 이번 단계 종료 재검증 요약
+
+- head `8927c6ccb`에서 이전 전체 실패17개 이름을 모두 확인했습니다. generated suite 재배정으로16개 실행15PASS/1FAIL과 별도 oracle partition7의1PASS를 합쳐16PASS/1FAIL입니다. 전체10,281개 재실행 결과가 아닙니다. [최종 집중 증적](../assets/planet6897_green_20261002/prior17_final_8927c6ccb.json).
+- 잔존FAIL은29쪽 hwpx_sample2의8쪽표 용지밖1건입니다. h01의1쪽53.03132%와 큰문서 미달쪽, 최신215쪽전쪽Native/freshWASM·전체회귀 검증은 추가보류입니다. 이들을 완료로 간주하거나 blanket baseline 변경·새골든등록·원본삭제를 하지 않았습니다. PR 최종승인/머지준비는미완료입니다.

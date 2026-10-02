@@ -205,5 +205,58 @@
     ],
     "log_sha256": "bf0a8ba7f38fb287da92c98f6f7426ca499ef857bdbe5172c093cda60749808d",
     "runtime_seconds": 48.999
+  },
+  "latest_validation_head": "8927c6ccb",
+  "prior17_final_focused": {
+    "head": "8927c6ccb",
+    "scope": "exact prior 17 failed test names; two invocations after generated suite reallocation",
+    "coverage": {
+      "run": 17,
+      "passed": 16,
+      "failed": 1
+    },
+    "invocations": [
+      {
+        "run": 16,
+        "passed": 15,
+        "failed": 1,
+        "exit_code": 100
+      },
+      {
+        "run": 1,
+        "passed": 1,
+        "failed": 0,
+        "exit_code": 0
+      }
+    ],
+    "remaining_failed_case": "off_canvas_baseline::off_canvas_does_not_grow_partition_1",
+    "remaining_fixture": "samples/hwpx_sample2.hwpx",
+    "remaining_diagnostic": {
+      "pages": 29,
+      "page": 8,
+      "table_para_index": 74,
+      "off_canvas_count": 1,
+      "off_canvas_bottom_px": 7.6266666666665515,
+      "binary_source": "7d5bcae5f diagnostic CLI; not final candidate approval",
+      "print_tree_observation": "logical table bbox differs from default anomaly profile and contains trailing TextLine outside its frame; no border-only correction accepted"
+    },
+    "logs": [
+      {
+        "path": "output/pr-review/planet6897-green-20261002/prior17-final-focused.log",
+        "sha256": "1c72c00c40494451d15d43616b6bc1e9b76689b3cd9100627854cc16b34866af"
+      },
+      {
+        "path": "output/pr-review/planet6897-green-20261002/prior17-final-oracle.log",
+        "sha256": "c3e4e1c0357db49aedd5fa37c3d419ed1c6d55900d5124e8a061c2c460116f73"
+      }
+    ],
+    "whole_nextest": "not rerun; most recent full d2ef8693a 10264 PASS/17 FAIL remains historical",
+    "visual_holds": [
+      "h01 original9pages p1 53.03132%; p2-9 above98%, current branch correction required",
+      "hwpx_sample2 whole29pages low fidelity and p8 off_canvas",
+      "regulatory86712 whole64pages low pages",
+      "latest215page whole Native/fresh WASM validation pending"
+    ],
+    "integration_pr_ready": false
   }
 }

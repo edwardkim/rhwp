@@ -98,3 +98,8 @@ last_verified: 2026-10-02
 
 - 수정 결과: 원본 선언 높이도 실제 행 예산에 들어갈 때만 종전2px 측정 높이 보조 허용을 적용합니다. 기존48개 모두PASS(nextest release-test threads8, exit0). #7379의 좁은 본문 반례, 그림/캡션/뒤 본문 단일 소유, 원본215쪽 검사 및 #6950/#7243/#7095/#1853 기존 검사를 유지하고 통과했습니다. 새 함수·fixture·허용값 변경은 없습니다. [진단·실행 증적](../assets/planet6897_green_20261002/figure11_declared_fit_tolerance_evidence.json).
 - 이 수정 뒤 전체 회귀와 새로운 Native/fresh WASM 전쪽 비교는 미수행입니다. 이전215쪽 증적이나 다른 코드의 visual sweep을 이 코드의 최종 검증으로 재사용해 보고하지 않습니다. 전체 승인 보류는 유지합니다.
+
+### 이번 단계 종료 재검증 요약
+
+- head `8927c6ccb`에서 이전 전체 실패17개 이름을 모두 확인했습니다. generated suite 재배정으로16개 실행15PASS/1FAIL과 별도 oracle partition7의1PASS를 합쳐16PASS/1FAIL입니다. 전체10,281개 재실행 결과가 아닙니다. [최종 집중 증적](../assets/planet6897_green_20261002/prior17_final_8927c6ccb.json).
+- 잔존FAIL은29쪽 hwpx_sample2의8쪽표 용지밖1건입니다. h01의1쪽53.03132%와 큰문서 미달쪽, 최신215쪽전쪽Native/freshWASM·전체회귀 검증은 추가보류입니다. 이들을 완료로 간주하거나 blanket baseline 변경·새골든등록·원본삭제를 하지 않았습니다. PR 최종승인/머지준비는미완료입니다.
