@@ -4124,7 +4124,10 @@ impl DocumentCore {
                     cd.column_type = col_type;
                     cd.same_width = same_width;
                     cd.spacing = spacing_hu;
-                    if same_width {
+                    // [#7523] HWP 저장은 raw_attr 가 있으면 그 값을 쓴다 — 비워서 바꾼 필드로
+                    // 속성을 다시 만들게 한다. 옛 단 수의 단별 너비도 새 단에 맞지 않는다.
+                    cd.raw_attr = 0;
+                    if same_width || cd.widths.len() != column_count as usize {
                         cd.widths.clear();
                         cd.gaps.clear();
                     }
