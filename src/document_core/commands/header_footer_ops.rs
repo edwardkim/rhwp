@@ -1532,9 +1532,7 @@ pub(crate) fn lower_header_footer_field_markers(
             .char_offsets
             .last()
             .zip(para.text.chars().last())
-            .map_or(0, |(offset, ch)| {
-                offset + if ch == '\t' { 8 } else { ch.len_utf16() as u32 }
-            });
+            .map_or(0, |(offset, ch)| offset + Paragraph::char_stream_len(ch));
         if para.char_count.saturating_sub(text_end) % 8 == 0 {
             para.char_count += 1;
         }
@@ -1551,7 +1549,6 @@ pub(crate) fn lower_header_footer_field_markers(
                     range.control_idx += 1;
                 }
             }
-            para.delete_text_at(idx, 1);
             let ctrl = if marker == '\u{0017}' {
                 let end = insert_field_text(para, idx, file_name);
                 para.field_ranges.push(crate::model::paragraph::FieldRange {
@@ -1583,26 +1580,39 @@ pub(crate) fn lower_header_footer_field_markers(
     }
 }
 
-/// 자동 번호 자리표 공백을 넣고 컨트롤 몫 8칸을 채운다 — 파서가 `0x0012` 를 읽어 만드는
-/// 꼴(자리표 한 글자, 다음 글자는 8칸 뒤)과 같다.
+/// `idx` 의 마커를 자동 번호 자리표 공백으로 바꾸고 컨트롤 몫 8칸을 채운다 — 파서가
+/// `0x0012` 를 읽어 만드는 꼴(자리표 한 글자, 다음 글자는 8칸 뒤)과 같다.
+///
+/// 마커와 공백은 둘 다 1바이트·1유닛이라 제자리에서 바꾼다. 지우고 다시 넣으면 바로 뒤에
+/// 이미 바꾼 파일 이름 필드의 시작 슬롯이 그 자리에 붙고, `insert_text_at` 은 필드 시작
+/// 앞을 가리지 않아 공백이 필드 안으로 들어간다.
 fn insert_auto_number_placeholder(para: &mut Paragraph, idx: usize) {
     const EXTRA: u32 = 7;
-    let at = para.insert_text_at(idx, " ");
-    let slot = para.char_offsets[at];
-    for offset in &mut para.char_offsets[at + 1..] {
+    let Some((byte, _)) = para.text.char_indices().nth(idx) else {
+        return;
+    };
+    para.text.replace_range(byte..byte + 1, " ");
+    let slot = para.char_offsets[idx];
+    for offset in &mut para.char_offsets[idx + 1..] {
         *offset += EXTRA;
     }
     para.shift_position_metadata_for_stream_insertion(slot + 1, EXTRA);
     para.char_count += EXTRA;
 }
 
-/// 필드 글자를 넣고 앞뒤에 필드 시작·끝 슬롯(각 8칸)을 둔다. 필드 끝 글자 위치를 돌려준다.
+/// `idx` 의 마커를 필드 글자로 바꾸고 앞뒤에 필드 시작·끝 슬롯(각 8칸)을 둔다. 필드 끝
+/// 글자 위치를 돌려준다.
+///
+/// 글자를 마커 앞에 넣고 나서 마커를 지운다 — 그래야 글자가 마커 자리에 붙는다. 먼저
+/// 지우면 바로 뒤 파일 이름 필드의 시작 슬롯이 그 자리에 붙어 글자가 그 필드 안으로
+/// 들어간다.
 fn insert_field_text(para: &mut Paragraph, idx: usize, text: &str) -> usize {
     let at = para.insert_text_at(idx, text);
     let end = at + text.chars().count();
     para.shift_for_inline_control_insert(end);
     para.shift_for_inline_control_insert(at);
     para.char_count += 16;
+    para.delete_text_at(end, 1);
     end
 }
 

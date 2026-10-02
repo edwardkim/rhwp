@@ -892,7 +892,7 @@ impl Paragraph {
     ///
     /// 탭은 Rust 문자열에서는 한 문자지만 HWP5에서는 7개 확장 데이터 unit이 뒤따르는
     /// 8-unit 확장 문자다. 문단 좌표와 `char_count`는 이 스트림 폭을 사용해야 한다.
-    fn char_stream_len(c: char) -> u32 {
+    pub(crate) fn char_stream_len(c: char) -> u32 {
         if c == '\t' {
             CTRL_CHAR_CODE_UNITS
         } else {
