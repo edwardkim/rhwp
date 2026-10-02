@@ -293,5 +293,20 @@
       28
     ],
     "final_full_validation": "pending"
+  },
+  "sample2_closed_inline_correction": {
+    "evidence": "sample2_closed_inline_validation.json",
+    "native_and_fresh_wasm_p2_percent": 99.75557,
+    "focused_pass": 110,
+    "off_canvas": 0,
+    "remaining_native_below90_pages": [
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "final_full_validation": "pending"
   }
 }

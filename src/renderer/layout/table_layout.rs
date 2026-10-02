@@ -4284,6 +4284,33 @@ impl LayoutEngine {
             return rh;
         }
 
+        // 저장 개체 높이가 모든 원시 행합을 닫는 인라인 표는 온전한
+        // 셀 프레임이다. 첫 쪽만 선언한 분할 표와 최소 높이 셀은 제외한다.
+        let closed_inline_frame = table.common.treat_as_char
+            && table.common.height > 0
+            && i64::from(table.common.height)
+                == table
+                    .get_raw_row_heights()
+                    .iter()
+                    .map(|&height| i64::from(height))
+                    .sum::<i64>()
+                    + i64::from(table.cell_spacing) * row_count.saturating_sub(1) as i64
+            && table.cells.iter().all(|cell| {
+                cell.row_span == 1
+                    && !cell.paragraphs.is_empty()
+                    && cell.paragraphs.iter().all(|para| {
+                        para.controls.is_empty()
+                            && !para.stored_text_partition_is_dirty()
+                            && !para.line_segs.is_empty()
+                            && para.line_segs.iter().all(|line| {
+                                line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                    })
+                    && crate::renderer::cell_vpos_ladder_is_intact(&cell.paragraphs)
+            });
+
         // 1단계: row_span==1인 셀에서 개별 행 높이 추출
         let mut row_heights = vec![0.0f64; row_count];
         // 행별 **컨텐츠** 하한 — 2단계 축소 규칙(#5910)의 바닥. HeightMeasurer 미러.
@@ -4352,11 +4379,17 @@ impl LayoutEngine {
                         } else {
                             f64::MAX
                         };
-                        let raw_pad_v = if suppress_unused_padding {
-                            hwpunit_to_px(
-                                cell.effective_vertical_padding_hu(&table.padding),
-                                self.dpi,
-                            )
+                        // 온전한 저장 프레임 안에 실효 여백으로 글줄이 들어가면
+                        // 비활성 셀 여백으로 그 프레임을 재성장시키지 않는다.
+                        // 최소 높이·쪽 분할 프레임의 기존 성장 계약은 별도다.
+                        let effective_pad_v = hwpunit_to_px(
+                            cell.effective_vertical_padding_hu(&table.padding),
+                            self.dpi,
+                        );
+                        let raw_pad_v = if suppress_unused_padding
+                            || (closed_inline_frame && line_based + effective_pad_v <= decl_h)
+                        {
+                            effective_pad_v
                         } else {
                             hwpunit_to_px(cell.padding.top as i32, self.dpi)
                                 + hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
@@ -4365,8 +4398,8 @@ impl LayoutEngine {
                         if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
                             && (line_based > decl_h + 1.5 || row_count <= 20)
                         {
-                            // 한글 실좌표는 원(cellMargin) 상하 여백 가산 — resolve
-                            // 축소 pad(0.9×2)가 아니라 저장 1.9×2 로 18.4px 재현.
+                            // 활성 셀/표 기본 여백은 가산하되 비정상 높이 가드로
+                            // 축소한 paint 여백만으로 성장 하한을 낮추지 않는다.
                             // #6030: 줄은 선언 안이지만 여백까지 합치면 반 줄 미만으로
                             // 넘치는 셀도 키운다 (빈 셀 lh≈h #2211 은 제외).
                             // 거대 행 수 표의 행당 수 px 성장은 쪽 밖 셀 페인트로
@@ -14353,7 +14386,7 @@ impl LayoutEngine {
                 }
             }
         }
-        // 원본 HWPX 단일 셀 표는 다음 쪽의 vpos=0 문단 바로 앞에 빈 종료 줄을 저장할 수 있다.
+        // 원본 HWPX 표는 다음 쪽의 vpos=0 문단 바로 앞에 빈 종료 줄을 저장할 수 있다.
         // 종료 줄은 첫 조각에 속하지만 그 줄간격은 해당 쪽을 점유하지 않는다.
         // 컷 선택과 배치 상자가 같은 종료 줄간격 제외 높이를 사용해야 한다.
         if self.profile.get().hwpx_stored_layout()
@@ -14363,8 +14396,6 @@ impl LayoutEngine {
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
             )
-            && table.row_count == 1
-            && table.col_count == 1
             && start_cut == 0
             && end_cut > 1
             && end_cut < units.len()
@@ -14395,6 +14426,29 @@ impl LayoutEngine {
                             && before.vertical_pos > 0
                             && after.vertical_pos == 0
                         {
+                            if table.row_count > 1 {
+                                // 앞 행과 빈 종료 줄의 가시 끝이 선언 첫 프레임 안에
+                                // 있어야 한다. 셀 최소 높이만으로 쪽 경계를 추정하지 않는다.
+                                let preceding_rows: i64 = table
+                                    .get_raw_row_heights()
+                                    .iter()
+                                    .take(cell.row as usize)
+                                    .map(|&height| i64::from(height))
+                                    .sum();
+                                let padding = cell.effective_padding(&table.padding);
+                                let visible_end = preceding_rows
+                                    + i64::from(table.cell_spacing) * i64::from(cell.row)
+                                    + i64::from(before.vertical_pos)
+                                    + i64::from(before.line_height)
+                                    + i64::from(padding.top)
+                                    + i64::from(padding.bottom);
+                                if table.common.height == 0
+                                    || cell.row == 0
+                                    || visible_end > i64::from(table.common.height)
+                                {
+                                    return 0.0;
+                                }
+                            }
                             return hwpunit_to_px(before.line_spacing.max(0), self.dpi)
                                 .min(closing.height);
                         }
