@@ -3,7 +3,9 @@
 use super::clipboard::{
     clip_paragraph_text_range_for_clipboard, strip_structural_controls_for_text_clipboard,
 };
-use super::formatting::{char_shape_mods_affect_text_flow, para_shape_mods_affect_text_flow};
+use super::formatting::{
+    char_shape_mods_affect_text_flow, para_shape_mods_affect_text_flow, restore_para_meta,
+};
 use crate::document_core::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_char_shape_mods,
     parse_json_i16_array, parse_para_shape_mods,
@@ -16,7 +18,7 @@ use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ParaMeta, Paragraph};
-use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
+use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 
 /// HeaderFooterApply → 표시 레이블
 fn apply_label(a: HeaderFooterApply) -> &'static str {
@@ -428,7 +430,7 @@ impl DocumentCore {
             }
             let mut new_para = paragraphs[hf_para_idx].split_at(char_offset);
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             new_para
         };
@@ -1213,11 +1215,13 @@ impl DocumentCore {
         }
 
         let new_id = self.document.find_or_create_para_shape(base_id, &mods);
+        let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
 
         // para_shape_id 갱신
         {
             let para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
             para.para_shape_id = new_id;
+            restamp_indentation(&mut para.line_segs, old_indent, new_indent);
         }
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산.

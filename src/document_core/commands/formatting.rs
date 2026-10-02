@@ -8,7 +8,7 @@ use super::super::helpers::{
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
-use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
+use crate::renderer::composer::{reflow_line_segs, restamp_indentation, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -93,7 +93,39 @@ fn body_paragraph_box_for_para_shape(
     ParagraphBox::body_for_style(col_width, para_style, core.dpi)
 }
 
+/// [#7490] 병합 undo 로 되살린 문단에 사라졌던 문단의 메타를 돌려준다.
+///
+/// 새 문단은 앞 문단의 첫 줄 기록(bit 20)을 물려받는다. 돌려준 문단 모양의 들여쓰기가
+/// 다르면 [`restamp_indentation`] 으로 기록도 고친다. 그대로 두면 재조판이 옛 기록을
+/// "들여쓰기를 적용하지 않은 문단"으로 읽는다.
+pub(super) fn restore_para_meta(
+    para: &mut crate::model::paragraph::Paragraph,
+    meta: crate::model::paragraph::ParaMeta,
+    para_shapes: &[crate::model::style::ParaShape],
+) {
+    let indent = |id: u16| {
+        para_shapes
+            .get(usize::from(id))
+            .map_or(0, |shape| shape.indent)
+    };
+    let (old_indent, new_indent) = (indent(para.para_shape_id), indent(meta.para_shape_id));
+    para.apply_meta(meta);
+    restamp_indentation(&mut para.line_segs, old_indent, new_indent);
+}
+
 impl DocumentCore {
+    /// [#7490] 문단 모양 `old_id` 와 `new_id` 의 들여쓰기(HWPUNIT).
+    pub(crate) fn para_shape_indents(&self, old_id: u16, new_id: u16) -> (i32, i32) {
+        let indent = |id: u16| {
+            self.document
+                .doc_info
+                .para_shapes
+                .get(usize::from(id))
+                .map_or(0, |shape| shape.indent)
+        };
+        (indent(old_id), indent(new_id))
+    }
+
     pub fn get_char_properties_at_native(
         &self,
         sec_idx: usize,
@@ -1522,7 +1554,10 @@ impl DocumentCore {
 
         let base_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
         let new_id = self.document.find_or_create_para_shape(base_id, &mods);
-        self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id = new_id;
+        let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
+        let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
+        para.para_shape_id = new_id;
+        restamp_indentation(&mut para.line_segs, old_indent, new_indent);
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산 (compose는 LineSeg 값을 그대로
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
@@ -1602,8 +1637,11 @@ impl DocumentCore {
         };
 
         {
+            let old_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
+            let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
             para.para_shape_id = para_shape_id;
+            restamp_indentation(&mut para.line_segs, old_indent, new_indent);
             reflow_line_segs(para, available_box, &styles, self.dpi);
         }
 
@@ -1688,6 +1726,7 @@ impl DocumentCore {
                         &self.document.doc_info.para_shapes[new_id as usize],
                     )
                 });
+            let (old_indent, new_indent) = self.para_shape_indents(base_id, new_id);
 
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1697,6 +1736,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = new_id;
+            restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
@@ -1773,6 +1813,7 @@ impl DocumentCore {
                     &self.document.doc_info.para_shapes[para_shape_id as usize],
                 )
             });
+        let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
         {
             let cell_para = self.get_cell_paragraph_mut(
                 sec_idx,
@@ -1782,6 +1823,7 @@ impl DocumentCore {
                 cell_para_idx,
             )?;
             cell_para.para_shape_id = para_shape_id;
+            restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             cell_para.cell_format_vpos_dirty |= affects_vpos;
         }
 
@@ -2187,6 +2229,7 @@ impl DocumentCore {
             Some(old) if current_psid != old.para_shape_id => current_psid,
             _ => self.resolve_style_para_shape_id(style_id, current_psid),
         };
+        let (old_indent, new_indent) = self.para_shape_indents(current_psid, new_para_shape_id);
 
         {
             let cell_para = self.get_cell_paragraph_mut(
@@ -2198,6 +2241,7 @@ impl DocumentCore {
             )?;
             cell_para.style_id = style_id as u8;
             cell_para.para_shape_id = new_para_shape_id;
+            restamp_indentation(&mut cell_para.line_segs, old_indent, new_indent);
             if let Some(old) = old_style {
                 cell_para.replace_style_char_shape_preserving_overrides(
                     old.char_shape_id as u32,

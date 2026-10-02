@@ -7,13 +7,13 @@ use super::supplemental_clusters::ParagraphMetricScope;
 use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
-use crate::model::style::{Alignment, LineSpacingType};
+use crate::model::style::{Alignment, HeadType, LineSpacingType};
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, kopub_justified_space_width, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
-use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
+use crate::renderer::style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet};
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
@@ -2765,6 +2765,67 @@ pub(crate) fn frame_metrics_for_line(
     }
 }
 
+/// [#7490] 새로 조판한 줄에 한글처럼 `TAG_INDENTATION`(bit 20)을 단다.
+///
+/// 들여쓰기는 첫 줄에, 내어쓰기는 둘째 줄부터 적용된다(한글 저장본의 줄별 기록과
+/// 같다). 렌더러는 이 비트가 꺼진 저장 줄에 들여쓰기를 얹지 않으므로(#6190), 비운 채
+/// 발행하면 편집한 문단의 들여쓰기·내어쓰기가 그려지지 않는다.
+///
+/// 기준은 문단 모양의 `indent` 다. 렌더러가 비트를 보고 얹는 값이 이것이므로, 조판용
+/// 지역 `indent_px` 를 넘겨받지 않는다. 한글 기록(`stored`, 조판 전 저장 줄)이 이 규칙과
+/// 다르면 기록을 따른다.
+/// - 들여쓰기가 있는데 저장 줄의 비트가 모두 꺼져 있으면, 한글이 이 문단에 들여쓰기를
+///   적용하지 않은 것이다(#6190 표본). 새 줄도 끈다. 내어쓰기는 둘째 줄이 있어야 이
+///   기록을 읽는다. 들여쓰기를 바꾼 문단은 [`restamp_indentation`] 이 기록을 먼저 고친다.
+/// - 들여쓰기가 0 인 문단 머리(글머리표·번호·개요) 문단은 한글이 둘째 줄부터 비트를
+///   켠다. 저장 줄의 둘째 줄 이후 비트를 잇는다.
+fn mark_indented_lines(
+    lines: &mut [LineSeg],
+    first_line_index: usize,
+    para_style: Option<&ResolvedParaStyle>,
+    stored: &[LineSeg],
+) {
+    let indent = para_style.map_or(0.0, |style| style.indent);
+    let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
+    let hancom_record = !stored.is_empty()
+        && stored
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    let pattern = if hancom_record
+        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
+        && !stored.iter().any(indented)
+    {
+        (false, false)
+    } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
+        (false, hancom_record && stored.iter().skip(1).any(indented))
+    } else {
+        (indent > 0.0, indent < 0.0)
+    };
+    stamp_indentation(lines, first_line_index, pattern);
+}
+
+/// [#7490] 문단 모양이 바뀌어 들여쓰기가 달라졌으면 저장 줄의 bit 20 을 새 들여쓰기로
+/// 다시 단다.
+///
+/// 저장 줄의 비트는 그 줄을 조판할 때의 들여쓰기 기록이다. 옛 기록(모두 꺼짐)을 두면
+/// 다음 재조판이 이를 "들여쓰기를 적용하지 않은 문단"으로 읽어 새 들여쓰기를 버린다.
+pub(crate) fn restamp_indentation(lines: &mut [LineSeg], old_indent: i32, new_indent: i32) {
+    if old_indent != new_indent {
+        stamp_indentation(lines, 0, (new_indent > 0, new_indent < 0));
+    }
+}
+
+/// 첫 줄과 둘째 줄 이후에 각각 bit 20 을 켜거나 끈다.
+fn stamp_indentation(lines: &mut [LineSeg], first_line_index: usize, (first, rest): (bool, bool)) {
+    for (line_index, line) in (first_line_index..).zip(lines.iter_mut()) {
+        if (line_index == 0 && first) || (line_index > 0 && rest) {
+            line.tag |= LineSeg::TAG_INDENTATION;
+        } else {
+            line.tag &= !LineSeg::TAG_INDENTATION;
+        }
+    }
+}
+
 /// Lay out the small scalar/Picture-band paragraph subset through a
 /// caller-owned physical frame.
 ///
@@ -3112,7 +3173,9 @@ fn layout_paragraph_in_frame_impl(
         if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
             frame.absorb_whitespace_only_rows(&para.text, first_row);
         }
-        Some(frame.project_line_segs_since(first_row))
+        let mut lines = frame.project_line_segs_since(first_row);
+        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs);
+        Some(lines)
     })();
 
     let kerning_failed = kerning_break_session
@@ -3956,6 +4019,12 @@ fn reflow_line_segs_impl(
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
+            mark_indented_lines(
+                std::slice::from_mut(&mut seg),
+                0,
+                para_style,
+                &para.line_segs,
+            );
             para.replace_line_segs(vec![seg]);
         }
         return false;
@@ -4240,6 +4309,12 @@ fn reflow_line_segs_impl(
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
+    mark_indented_lines(
+        &mut new_line_segs[preserved_prefix_len..],
+        preserved_prefix_len,
+        para_style,
+        &original_line_segs,
+    );
 
     para.replace_line_segs(new_line_segs);
     preserved_prefix_len > 0
