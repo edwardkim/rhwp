@@ -144,14 +144,24 @@ impl TypesetEngine {
 
         // 저장 첫 조각의 상자는 내용 컷만으로 표현되지 않는 빈 하단 밴드도 소유한다.
         // 뒤 조각의 유닛은 그대로 남기며, 이 밴드를 내용 tail에서 차감하지 않는다.
-        let saved_opening_frame = layout_engine.saved_multirow_opening_frame_height(
-            table,
-            cursor_row,
-            end_row,
-            start_cut,
-            &split_end_cut,
-            styles,
-        );
+        let saved_block_opening_frame = (!is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty())
+        .then(|| split_block_start.filter(|row| *row + 1 == end_row))
+        .flatten()
+        .and_then(|row| {
+            layout_engine.saved_block_reset_opening_frame_height(table, row, &split_end_cut, styles)
+        });
+        let saved_opening_frame = layout_engine
+            .saved_multirow_opening_frame_height(
+                table,
+                cursor_row,
+                end_row,
+                start_cut,
+                &split_end_cut,
+                styles,
+            )
+            .or(saved_block_opening_frame);
         // 마지막 행의 빈 물리 밴드는 다음 문단 원점과 전체 저장 행합으로 입증한다.
         // 첫 프레임과 종료 프레임은 같은 선언 공간을 나누며 내용 컷은 그대로 보존한다.
         let saved_closing_frame = (!st.profile.session_edited()
@@ -273,9 +283,8 @@ impl TypesetEngine {
                 }
             }
         }
-        // A paragraph-local zero origin alone is not a page boundary. When
-        // the selected row has no ordinary saved reset, corroborate its closed
-        // two-line source frame with the host's next original page rewind.
+        // 문단 내부 원점0만으로는 쪽 경계를 입증하지 못한다. 일반 저장 리셋이 없으면
+        // 호스트 뒤 원문의 쪽 원점 되감김으로 닫힌 두 줄 프레임을 확인한다.
         let opening_frame_has_source_boundary =
             layout_engine.row_cut_ends_at_plain_text_saved_reset(
                 table,
@@ -298,14 +307,15 @@ impl TypesetEngine {
                         && b.vertical_pos >= 0 && b.vertical_pos < a.vertical_pos)
                 });
         let first_fragment_blank_band = !is_continuation
-            && opening_frame_has_source_boundary
-            && split_block_start.is_none()
+            && (opening_frame_has_source_boundary || saved_block_opening_frame.is_some())
+            && (split_block_start.is_none() || saved_block_opening_frame.is_some())
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
             && (crate::renderer::float_placement::object_only_saved_table_anchor(
                 input.source.paragraph,
                 table,
             ) || saved_closing_frame.is_some()
+                || saved_block_opening_frame.is_some()
                 || (input.source.paragraph.text.is_empty()
                     && matches!(
                         input.source.paragraph.controls.as_slice(),
@@ -318,7 +328,7 @@ impl TypesetEngine {
                         styles,
                     )))
             && saved_opening_frame.is_some_and(|frame_height| {
-                frame_height > partial_height + 0.5
+                (frame_height > partial_height + 0.5 || saved_block_opening_frame.is_some())
                     && frame_height <= avail_for_rows + header_overhead
             });
         if first_fragment_blank_band {
@@ -911,9 +921,10 @@ impl TypesetEngine {
                 // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
                 // 기존 문단 간 내용 조각은 선언 최소높이를 다시 예약하지 않는다.
                 if !first_fragment_blank_band
-                    || !layout_engine.row_cut_starts_intra_paragraph_stored_frame(
-                        table, end_row - 1, &next_cut, styles,
-                    )
+                    || !(saved_block_opening_frame.is_some()
+                        || layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                            table, end_row - 1, &next_cut, styles,
+                        ))
                 { return None; }
                 let first = end_row_height_override?;
                 let raw = *table.get_raw_row_heights().get(end_row.checked_sub(1)?)?;

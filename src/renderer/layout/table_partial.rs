@@ -464,7 +464,10 @@ pub(crate) enum ProbeCutPlan {
 /// [Task #1025] `row` 를 포함하는 rowspan 블록 범위 `[b_start, b_end)`.
 /// rs>1 셀이 겹치는 행을 전이적으로 확장한다(겹침 없으면 `[row, row+1)`).
 /// 페이지네이터 `mt.row_block_for` / `advance_row_block_cut` 와 동일한 블록 정의.
-fn rowspan_block_range(table: &crate::model::table::Table, row: usize) -> (usize, usize) {
+pub(super) fn rowspan_block_range(
+    table: &crate::model::table::Table,
+    row: usize,
+) -> (usize, usize) {
     let mut b_start = row;
     let mut b_end = row + 1;
     loop {
@@ -1334,15 +1337,19 @@ impl LayoutEngine {
                 && cell_row == start_row
                 && cell.row_span == 1
                 && end_cut.is_empty()
-                && !start_cut_is_block
-                && start_cut
-                    .get(single_row_cut_index(table, cell))
-                    .is_some_and(|&start| {
-                        let units = self.cell_units(cell, table, styles);
-                        self.stored_paragraph_allows_orphan_split(
-                            table, cell, &units, start, styles,
-                        )
-                    });
+                && ((start_cut_is_block
+                    && self
+                        .saved_block_reset_opening_frame_height(table, start_row, start_cut, styles)
+                        .is_some())
+                    || (!start_cut_is_block
+                        && start_cut
+                            .get(single_row_cut_index(table, cell))
+                            .is_some_and(|&start| {
+                                let units = self.cell_units(cell, table, styles);
+                                self.stored_paragraph_allows_orphan_split(
+                                    table, cell, &units, start, styles,
+                                )
+                            })));
             let saved_frame_needs_alignment = (align_saved_opening_frame
                 && cell_row + 1 == end_row
                 || stored_cut_frame_owns_alignment)

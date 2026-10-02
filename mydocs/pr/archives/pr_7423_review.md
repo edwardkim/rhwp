@@ -245,3 +245,19 @@ last_verified: 2026-10-02
 - 기존112/112 PASS(exit0,12.500초),29쪽 일치·용지 밖0건·표 겹침0건.113424_evaluation_guideline.hwpx46쪽·기존 용지 밖1건 복원. 새 검사·fixture·baseline 변경 없음.
 - Native 전29쪽에서 변경된 점수는6·7·21쪽뿐입니다. 21쪽71.10302%→88.03303%이나 여전히 미달이며14·20·28쪽도 보류입니다. fresh WASM 선택4쪽 중21쪽이 미달이라visual exit1이며, 실행 실패나 전쪽 통과로 해석하지 않습니다. 전체29쪽 fresh WASM raster 및 최종 전체 회귀/lint는 후속 필수 게이트입니다.
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_intra_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_intra_frame_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_intra_frame_wasm_selected.tsv), [6쪽](../assets/planet6897_green_20261002/sample2_intra_frame_p6_review.png), [7쪽](../assets/planet6897_green_20261002/sample2_intra_frame_p7_review.png).
+
+### 메인터너 보정 준비: 14쪽 병합 블록의 완전한 행
+
+- 현재 14쪽60.88908%. 원본 pi127/r10·r11의 선언 높이64.613px·47.280px가 이어받는 블록에서41.067px·17.067px로 줄었습니다. 이 행들의 내용은 이전 조각에서 소비되지 않았지만, `row_block_cut_uses_measured_height`의 HWP5 전용 게이트가 측정 행 높이 재사용을 거부하여 내용 높이로 재계산합니다. 이 판정은 scanner와 paint가 함께 사용합니다.
+- HWPX의 편집되지 않고 실제 저장 줄을 유지한 텍스트 행에서만 같은 완전 소유 판정을 적용합니다. 부분 소유 행과 걸침 셀의 미소비 내용은 기존 컷 회계를 유지합니다. 선언 최소높이의 광역 강제나 절대 좌표 변경은 하지 않습니다. 13·14쪽 비교, 전29쪽·기존 회귀 반례·새 WASM 확인 후 수용 여부를 기록합니다.
+
+- 첫 후보는 기존112/112PASS(11.584초)·29쪽·용지 밖0건이나14쪽58.34091%로 미달입니다. 완전 행64.613/47.280px는 복원했으나 부분 행38.6px가 남았습니다. 원본 r9/r10/r11 합29,906HU는 왼쪽 걸침 선언과 정확히 같으며, 첫 프레임40,685HU에서 선행 행24,937HU를 빼면 r9의 첫 공간15,748HU, 잔여5,766HU입니다. 내용 컷만 전달해 이 잔여를 잃고 가운데 정렬을 Top으로 바꾸는 경로를 추가 보정합니다. 첫 후보를 완료로 수용하지 않습니다.
+
+- 임시 유닛 진단에서 r9/c1의 원본 p4 마지막 줄vpos13,884HU→p5 첫 줄0HU에도 `stored_frame_break_before=false`인 것을 확인했습니다. 플래그 완화 대신 dirty/합성 줄/개체를 제외한 실제 저장 줄의 양수→0 경계와 문단 소유를 확인합니다. 종료 줄간격은 다음 프레임 소유로 분리하며, 병합 라벨 전체 소비·뒤 행0소비·병합 선언과 원시 행합 일치까지 요구합니다. 임시 진단 코드는 제거했습니다.
+
+#### 14쪽 보정 최종 결과
+
+- 최종 코드 Native13쪽92.22927%,14쪽99.37435%. 전29쪽 TSV에서 변경은13쪽92.22423→92.22927 및14쪽60.88908→99.37435뿐입니다. 미달20/21/28쪽85.82574/88.03303/50.63333%는 후속 보정 대상입니다. 원본/PDF29쪽과 일치·용지 밖0건·표 겹침0건. 기존112/112PASS(exit0,14.561초), issue6551대조군46쪽·기존 용지 밖1건 유지. 새 검사와 baseline 변경은 없습니다.
+- 14쪽 시작 행의 잔여38.6px를76.88px로 복원하고 완전 행64.613/47.280px를 유지했습니다. 가운데 정렬과 후속 감점 본문·노란 강조 줄 위치를 PNG로 대조했습니다.13쪽 라벨과 앞 조각의 내용 소유도 유지합니다. fresh WASM 선택4쪽은2쪽99.75557%·8쪽98.91222%·13쪽92.22927%·14쪽99.37435%로 Native와 같습니다(exit0). 전체29쪽 export/선택4쪽 raster이며 전쪽 WASM 또는 최종 전체 검증 완료로 판정하지 않습니다. Mac 로컬 `--no-opt` 대체 빌드이며 Docker 검증은 아닙니다.
+
+- 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_block_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_block_frame_native.tsv), [fresh WASM 선택 TSV](../assets/planet6897_green_20261002/sample2_block_frame_wasm_selected.tsv), [13쪽](../assets/planet6897_green_20261002/sample2_block_frame_p13_review.png), [14쪽](../assets/planet6897_green_20261002/sample2_block_frame_p14_review.png).

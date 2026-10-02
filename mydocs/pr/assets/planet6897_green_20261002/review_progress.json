@@ -454,5 +454,78 @@
     "native_binary_sha256": "8970b8cc789b606ff75a395f101421014f8b2346873f1b2ff219be656f49af0f",
     "wasm_binary_sha256": "2c21394aa04524ca11c2b99e372994964157a782b70b7d6250490332fed440a1",
     "decision": "7쪽 보정 검증; 14/20/21/28쪽과 나머지 문서 및 최종 전체 검증은 미완료."
+  },
+  "sample2_block_row_frame_correction": {
+    "parent_head": "45e21bbac",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "HWPX 병합 블록의 완전 행을 내용 높이로 축소하고 저장 부분 행의 물리 잔여를 버리는 조판/paint 경로",
+    "source_geometry_hu": {
+      "first_frame": 40685,
+      "rows_before_split": 24937,
+      "split_row": 21514,
+      "first_split_part": 15748,
+      "remaining_split_part": 5766,
+      "merged_label": 29906,
+      "merged_row_sum": 29906
+    },
+    "native_target_percent": {
+      "13": 92.22927,
+      "14": 99.37435
+    },
+    "fresh_wasm_selected_percent": {
+      "2": 99.75557,
+      "8": 98.91222,
+      "13": 92.22927,
+      "14": 99.37435
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      20,
+      21,
+      28
+    ],
+    "native_changed_pages": [
+      13,
+      14
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm_export": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "focused_integration": {
+      "run": 112,
+      "passed": 112,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 14.561
+    },
+    "counterexample": {
+      "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "page_count": 46,
+      "off_canvas": 1,
+      "original_off_canvas": 1
+    },
+    "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+    "wasm_selected_visual_exit": 0,
+    "wasm_raster_pages": [
+      2,
+      8,
+      13,
+      14
+    ],
+    "source_code_sha256": {
+      "src/renderer/layout/table_layout.rs": "c3a90586160735cba5ff92dc2242e7b18c2bb95215fffb83c32f0c3668b7ac2d",
+      "src/renderer/layout/table_partial.rs": "9a312ededaa257c4d3be27c7b56e99f234fe70170de96dd0fd201ae9c4ec8946",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "20ab0b35242f914a7fa8a7c363823ab21ef286255cb4bc1f43211a581f0ac5e1"
+    },
+    "native_binary_sha256": "e267bbadf58f6429fd924ddf9b47205c8263b45f69dac0d1365e1f75eabdebf2",
+    "wasm_binary_sha256": "8312c23bcd4baf1f09cac7a85ee475fa5bab28def2442ee9e1304cce3a0c6947",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "14쪽 보정 완료. sample2 20/21/28 및 다른 문서 시각과 최종 전체 검증은 미완료."
   }
 }

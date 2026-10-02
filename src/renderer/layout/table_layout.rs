@@ -10576,7 +10576,35 @@ impl LayoutEngine {
         end: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
-        if !self.profile.get().hwp5_stored_pagination_layout()
+        // 온전한 저장 HWPX 행도 조판과 페인트에서 같은 물리 높이를 쓴다.
+        // 부분 소비·편집·개체를 포함한 행은 기존 내용 컷 경로를 유지한다.
+        let stored_hwpx_row = self.profile.get().hwpx_stored_layout()
+            && !self.profile.get().session_edited()
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            && table
+                .cells
+                .iter()
+                .any(|cell| cell.row as usize == row && cell.row_span == 1)
+            && table
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == row)
+                .all(|cell| {
+                    cell.paragraphs.iter().all(|paragraph| {
+                        !paragraph.stored_text_partition_is_dirty()
+                            && paragraph.controls.is_empty()
+                            && !paragraph.line_segs.is_empty()
+                            && paragraph.line_segs.iter().all(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                    })
+                });
+        if !(self.profile.get().hwp5_stored_pagination_layout() || stored_hwpx_row)
             || !self.whole_fragment_row_uses_measured_height(table, row)
         {
             return false;
@@ -15320,6 +15348,149 @@ impl LayoutEngine {
             return None;
         }
         Some(hwpunit_to_px(table.common.height as i32, self.dpi))
+    }
+
+    /// 병합 블록의 저장 쪽 경계에서 첫 물리 상자와 내용 컷을 연결한다.
+    /// 걸침 라벨이 모두 앞쪽 소유이고, 단일 행의 원본 텍스트가 새 쪽에서
+    /// 재개하며, 뒤 행들이 아직 소비되지 않은 경우에만 선언 프레임을 쓴다.
+    pub(crate) fn saved_block_reset_opening_frame_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !self.profile.get().hwpx_stored_layout()
+            || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || table.common.treat_as_char
+            || table.common.height == 0
+            || table.common.height > i32::MAX as u32
+            || table.cell_spacing != 0
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || table.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom
+        {
+            return None;
+        }
+        let block = super::table_partial::rowspan_block_range(table, row);
+        if block.0 != row || block.1 <= row + 1 {
+            return None;
+        }
+        let mut cells = Self::row_block_cells(table, block.0, block.1);
+        cells.sort_by_key(|cell| (cell.row, cell.col));
+        if cells.len() != cut.len() {
+            return None;
+        }
+        let raw = table.get_raw_row_heights();
+        if raw
+            .iter()
+            .any(|height| *height == 0 || *height > i32::MAX as u32)
+        {
+            return None;
+        }
+        let before = raw
+            .iter()
+            .take(row)
+            .map(|h| hwpunit_to_px(*h as i32, self.dpi))
+            .sum::<f64>();
+        let frame = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let first = frame - before;
+        if first <= 0.0 || first >= hwpunit_to_px(*raw.get(row)? as i32, self.dpi) {
+            return None;
+        }
+        let mut reset = false;
+        let mut spanning = false;
+        for (cell, &end) in cells.into_iter().zip(cut) {
+            if cell.paragraphs.iter().any(|p| {
+                p.stored_text_partition_is_dirty()
+                    || !p.controls.is_empty()
+                    || p.line_segs.is_empty()
+                    || p.line_segs.iter().any(|line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                    })
+            }) {
+                return None;
+            }
+            let units = self.cell_units(cell, table, styles);
+            if cell.row as usize > row {
+                if end != 0 {
+                    return None;
+                }
+                continue;
+            }
+            if end == 0 || end > units.len() {
+                return None;
+            }
+            let mut demand = self.cell_cut_visible_height(cell, table, styles, 0, end);
+            if let (Some(closing), Some(next)) = (units.get(end - 1), units.get(end)) {
+                if next.para_idx > closing.para_idx
+                    && next.vis_start == 0
+                    && cell
+                        .paragraphs
+                        .get(next.para_idx)?
+                        .line_segs
+                        .first()?
+                        .vertical_pos
+                        == 0
+                {
+                    let line = cell
+                        .paragraphs
+                        .get(closing.para_idx)?
+                        .line_segs
+                        .get(closing.vis_end.checked_sub(1)?)?;
+                    let already_trimmed = self
+                        .native_saved_reset_cut_trailing_trim(table, cell, &units, 0, end, styles);
+                    demand -=
+                        (hwpunit_to_px(line.line_spacing, self.dpi) - already_trimmed).max(0.0);
+                }
+            }
+            if demand > first + 0.5 {
+                return None;
+            }
+            if cell.row_span > 1 {
+                let raw_span: u64 = raw
+                    .iter()
+                    .skip(row)
+                    .take(cell.row_span as usize)
+                    .map(|h| u64::from(*h))
+                    .sum();
+                if end != units.len() || raw_span != u64::from(cell.height) {
+                    return None;
+                }
+                spanning = true;
+            } else {
+                let previous = units.get(end.checked_sub(1)?)?;
+                let next = units.get(end)?;
+                if next.para_idx <= previous.para_idx
+                    || next.vis_start != 0
+                    || cell
+                        .paragraphs
+                        .get(next.para_idx)?
+                        .line_segs
+                        .first()?
+                        .vertical_pos
+                        != 0
+                    || cell
+                        .paragraphs
+                        .get(previous.para_idx)?
+                        .line_segs
+                        .get(previous.vis_end.checked_sub(1)?)?
+                        .vertical_pos
+                        <= 0
+                {
+                    return None;
+                }
+                reset = true;
+            }
+        }
+        (reset && spanning).then_some(frame)
     }
 
     /// 선언 첫 프레임이 마지막 줄간격까지 포함한 온전한 prefix를 소유하는지 확인한다.
