@@ -95,3 +95,10 @@ last_verified: 2026-10-02
 - 유한 프레임·종료 조각 보정 후 #6950·RowBreak 그림 겹침·#7243 기존 검사 47개를 함께 실행하여 44PASS/3FAIL입니다. `issue_rowbreak_chart_overlap`의 13쪽 실패는 기대값 변경 없이 통과했습니다.
 - 잔존 실패는 #6950의 축소 본문 경계 1개와 #7243의 후속 표 상대 원점 2개입니다. 이전 첫 전체 실행의 실패 33개 중 27개를 focused에서 해결하거나 잘못 재등록된 검사를 제거했으며, 6개와 최종 전체 검증이 남아 있습니다. 전체 통과나 승인 완료로 보고하지 않습니다.
 - 실행 로그: `output/pr-review/planet6897-green-20261002/nextest-remaining-geometry.log`, nextest release-test/threads8/no-fail-fast, exit100.
+
+### 누적 후보 검증 상태 갱신 (2026-10-02)
+
+- GitHub를 다시 조회한 결과 선택 당시의 원 PR head와 CI green 상태가 유지됩니다. #7435는 현재도 non-green이며 선택에 포함하지 않았습니다. 누적 후보는 `review/planet6897-green-20261002`, source 고유 커밋63개입니다.
+- 최초 전체 nextest는 10,283개 중10,250PASS/33FAIL/50SKIP, exit100으로 완료했습니다. 그 뒤 PR별 보정과 focused 재검증으로 최초 실패28개를 처리했으며 5개가 남았습니다. 전체 재실행 통과로 바꾸어 보고하지 않습니다.
+- 각주 빈 번호·합성 사다리·다열 표 대조군·중첩 표 후속 원점의 잔존 5개와 whole fixture 시각 보류를 [현재 검증 기록](../assets/planet6897_green_20261002/review_progress.json)에 기록했습니다. 원 PR별 기존 분석·커밋 출처는 위 내용을 유지합니다.
+- **현재 통합 승인/머지 보류**입니다. 원 PR의 green CI는 누적 후보의 실패 또는 미완료 Native/fresh WASM 시각 검증을 대체하지 않습니다. 새 통합 PR 생성·push·머지는 하지 않았습니다.

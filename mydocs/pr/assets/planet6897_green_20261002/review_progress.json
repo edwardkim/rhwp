@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-02",
+  "branch": "review/planet6897-green-20261002",
+  "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
+  "latest_code_correction": "cf5cc04ca",
+  "latest_comment_translation": "facdbf948",
+  "initial_full": {
+    "run": 10283,
+    "passed": 10250,
+    "failed": 33,
+    "skipped": 50,
+    "exit_code": 100
+  },
+  "focused_handled_initial_failures": 28,
+  "remaining_initial_failures": [
+    {
+      "case": "hy_ladder3 cell overflow baseline",
+      "count": 1,
+      "decision": "기존 7을 유지하며 7→11 완화 보류. 독립 전체 시각/저장 줄 증거 미완료."
+    },
+    {
+      "case": "issue_7469_footnote_number_paragraph_indent::empty_footnote_keeps_its_number_and_line_box",
+      "count": 1,
+      "decision": "156쪽 고정에서 각주가 없음. 기준 PDF의 각주48은155쪽이며 빈46/47은 기준 PDF 텍스트에 없음. 현재 쪽 번호 재고정으로 통과시키지 않음."
+    },
+    {
+      "case": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
+      "count": 1,
+      "decision": "다열 표의 잘못된 종전37.80px 고정. 선언 여백/정본 기준 재검토 필요. 전체29쪽 최소27.60393%로 회귀 적격 미충족."
+    },
+    {
+      "case": "issue_7243_nested_fragment_padding",
+      "count": 2,
+      "decision": "후속 표 상대 원점118.14667 vs 정본116.353. 직접 한컴2020/2024 PDF 괘선이 같아 DPI로 설명 불가. 픽셀 기대값 유지하며 원인 분석중."
+    }
+  ],
+  "post_correction_focused": [
+    {
+      "case": "issue_6950_paragraph_end_topbottom_anchor",
+      "passed": 28,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/nextest-6950-corrected.log"
+    },
+    {
+      "case": "issue_7418_host_text_and_split_row_geometry",
+      "passed": 7,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/nextest-7476-host-counterguards.log"
+    }
+  ],
+  "visual_evidence": {
+    "purpose": "승인 증적이 아닌 잔존 차이 진단",
+    "binary_source": "562948785 before cf5cc04ca boundary correction",
+    "font_supplied_counter_p28": 50.63333,
+    "font_supplied_issue2004_p3": 58.48267,
+    "page_counts": {
+      "hwpx-sample2": [
+        29,
+        29
+      ],
+      "regulatory86712": [
+        64,
+        64
+      ],
+      "issue2004": [
+        8,
+        8
+      ]
+    },
+    "files": [
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/hwpx-sample2_diagnostic_native.tsv",
+        "sha256": "bccdf8d54fa82a11635a7a4288542f9f3cc8d1c35d8ebbd60b3ccf359a8b6075"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/regulatory86712_diagnostic_native.tsv",
+        "sha256": "1b61efd6ad2a93536e2b064c828ad89d80b56e564194131fc2e7edf57c2b5a6e"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/hwpx_sample2_p28_review.png",
+        "sha256": "bf6c3a1e731806d7ae152c7dc6c9f628a874205f3fc1adbadc3f0518328054e7"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/issue2004_p3_review.png",
+        "sha256": "26674e514482d3b11c980f3ee46ad241bf8a9d72761a17e9ea54a36cea6fbe45"
+      }
+    ]
+  },
+  "merge_decision": "보류. 최종 전체 nextest와 Native/fresh WASM 및 영향 문서 전체 시각 검증은 완료되지 않음. 새 통합 PR/push/merge 없음."
+}

@@ -57,3 +57,10 @@ last_verified: 2026-10-02
 
 - 기존 helper의 원문 공백 읽기를 표시 문자열 읽기로 교정했습니다. 번호·marker/footer 소유·단일 출현 조건과 모든 제품 코드는 그대로 유지했습니다.
 - `run-rust-test.mjs issue_7379_rowbreak_table_footnote_reservation`을 nextest release-test/threads8/no-fail-fast로 실행해 기존 14개 전부 PASS, exit0(4.175초)입니다. 최초 2개 footer 누락 실패는 이 검사 표현 오류였습니다. 전체 33FAIL 중 다른 실패와 최종 통합 검증은 아직 해결·완료되지 않았습니다.
+
+### 누적 후보 검증 상태 갱신 (2026-10-02)
+
+- GitHub를 다시 조회한 결과 선택 당시의 원 PR head와 CI green 상태가 유지됩니다. #7435는 현재도 non-green이며 선택에 포함하지 않았습니다. 누적 후보는 `review/planet6897-green-20261002`, source 고유 커밋63개입니다.
+- 최초 전체 nextest는 10,283개 중10,250PASS/33FAIL/50SKIP, exit100으로 완료했습니다. 그 뒤 PR별 보정과 focused 재검증으로 최초 실패28개를 처리했으며 5개가 남았습니다. 전체 재실행 통과로 바꾸어 보고하지 않습니다.
+- 각주 빈 번호·합성 사다리·다열 표 대조군·중첩 표 후속 원점의 잔존 5개와 whole fixture 시각 보류를 [현재 검증 기록](../assets/planet6897_green_20261002/review_progress.json)에 기록했습니다. 원 PR별 기존 분석·커밋 출처는 위 내용을 유지합니다.
+- **현재 통합 승인/머지 보류**입니다. 원 PR의 green CI는 누적 후보의 실패 또는 미완료 Native/fresh WASM 시각 검증을 대체하지 않습니다. 새 통합 PR 생성·push·머지는 하지 않았습니다.
