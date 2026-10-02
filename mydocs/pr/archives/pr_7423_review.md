@@ -310,3 +310,12 @@ last_verified: 2026-10-02
 - #6551 대조군46쪽·기존 용지 밖1건·겹침1건 유지. fmt 및diff check exit0. 전체 문서 metadata는4문서 필수항목 누락16건(exit1)으로 별도 제출 차단입니다. 검사·baseline·PDF·비교 임계값은 변경하지 않았습니다. fresh WASM 전29쪽 비교는Native와모든점수가같고최저92.22927%,미달0쪽(exit0)입니다. Native root·workspace all-target·WASM32 Clippy와suite manifest 모두exit0입니다. Mac로컬no-opt대체빌드이며Docker검증은아닙니다. 전체회귀27FAIL/metadata16건및다른문서시각보류로통합PR준비는보류입니다.
 
 - 증적: [검증 원장](../assets/planet6897_green_20261002/sample2_crossing_span_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/sample2_crossing_span_native.tsv), [fresh WASM 전쪽 TSV](../assets/planet6897_green_20261002/sample2_crossing_span_wasm.tsv), [27쪽](../assets/planet6897_green_20261002/sample2_crossing_span_p27_review.png), [28쪽](../assets/planet6897_green_20261002/sample2_crossing_span_p28_review.png). 실루엣 수치는2px허용 보조값이며 엄밀한 픽셀 일치율로 해석하지 않습니다.
+
+### 남은 전체 실패 보정 준비: 중첩 표 글자 캡션 문서
+
+- 대상 `samples/issue5875/nested_table_text_caption.hwp`: 현재 11쪽·용지 밖 1건. 기존 검사는 12쪽, 7쪽 `<표 1~4>`, 8쪽 `<표 5~8>`의 내용 소속을 요구합니다. 같은 고시의 #5782/#6122 입력에서도 11쪽·용지 밖 1건이므로 내용 소유와 분할 높이를 함께 추적합니다. 검사 기대값의 적절성은 독립 한컴 PDF로 먼저 확인하며, 현재 출력에 맞춰 11쪽으로 바꾸지 않습니다.
+- 저장 제품 `hancom-office-2020`(11.0.0.3524) 확인. 저장소/지정 Mac 수집 경로에서 대응 PDF를 찾지 못해 원본을 engine2020으로 비동기 변환합니다. 사용자 지정 비공개 환경은 값·URL·토큰을 기록하지 않습니다.
+- 선행 진단: mixed 글줄의 `page_frame_reset_before` 신호만 종전 값으로 바꾼 Native를 일시 빌드하고 #5875/#5782 및 시험지 정상 대조군의 쪽수·용지 밖·표 겹침을 확인합니다. 원본 코드와 사용자 변경을 보존·복원하며 진단 후보를 수용 구현으로 취급하지 않습니다. 신호 생산 → 컷/예산 → 이어받는 물리 높이 → paint 내용 소속 순서로 원인을 확인한 뒤 한 보정씩 실행합니다.
+
+- 독립 PDF는12쪽이며7쪽 표1~4·8쪽 표5~8의 캡션 소속을 확인했습니다. mixed 쪽 신호와 인라인 프레임 여백만의 진단은 중첩 문서를 복원하지 못했습니다. d2ef8693a renderer를 현행 HWP 파서와 대조한 Native는 #5875/#5782 모두12쪽·용지 밖0·표 겹침0으로 복원됐습니다. 변경 구간을 확인한 진단이며 수정 구현·90% 시각 통과로 판정하지 않습니다.
+- 단일 TAC 변경 전 대조에서는 시험지4쪽·표 겹침0 복원, 중첩 문서는11쪽 유지로 원인이 분리됐습니다. 검사 기대값·baseline은 그대로 보존합니다. 사용자가 최신 `upstream/devel` 동기화와리베이스를 지시했으므로 이 분석·독립 PDF를 커밋한 후 리베이스하고, 최신 코드에서 실패와 원인을 다시 확인합니다. [선행 대조 증적](../assets/planet6897_green_20261002/remaining27_pre_rebase_diagnosis.json).
