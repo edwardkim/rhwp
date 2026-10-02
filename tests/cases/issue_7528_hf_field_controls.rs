@@ -159,7 +159,7 @@ fn inserted_total_page_field_survives_save_and_reopen() {
 fn adjacent_fields_survive_save_and_reopen() {
     const NAME: &str = "a.hwp";
     // 필드 종류(1 쪽 번호 · 2 전체 쪽수 · 3 파일 이름)를 머리말 앞에서부터 차례로 넣는다.
-    for kinds in [&[1, 3][..], &[2, 3], &[1, 2, 3]] {
+    for kinds in [&[1, 3][..], &[2, 3], &[1, 2, 3], &[3, 1], &[3, 2]] {
         let mut doc = HwpDocument::create_empty();
         doc.create_blank_document_native().expect("빈 문서");
         doc.set_file_name(NAME);

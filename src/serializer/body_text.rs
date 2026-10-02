@@ -813,6 +813,18 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             prev_end += 8;
         }
 
+        // ① 여기서 **끝나는** 필드의 FIELD_END — 이 자리의 무엇보다 먼저 닫는다.
+        //    (그래야 같은 자리에서 시작하는 다음 필드의 BEGIN 과 뒤엉키지 않는다)
+        //    아래 자리표시자 판정보다도 앞서야 한다. 필드 바로 뒤의 자동번호 공백은 이 끝
+        //    슬롯을 지나야 `offset == prev_end` 가 되므로, 늦게 내면 공백을 리터럴로 쓰고
+        //    자동번호를 문단 끝에 덧붙여 다시 열 때 공백이 하나 남는다(#7528).
+        if let Some(markers) = field_ends.get(&i) {
+            for &marker in markers {
+                push_field_end_ctrl(&mut code_units, marker);
+                prev_end += 8;
+            }
+        }
+
         // [Task #1050] AutoNumber placeholder 검출:
         // char_offsets[i] == prev_end 이고 ch == ' ' 이고 다음 char_offset 이 prev_end + 8 +
         // (실제 char 폭)인 경우 = placeholder space (i char 한 자리 차지 + 다음 char 가 8 점프 후).
@@ -885,14 +897,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 예약 없이 갭을 컨트롤로 채우면 FIELD_END 전용 갭(8 cu)을 다음 컨트롤이
         // 선점하여 이후 모든 char_offsets 가 시프트되고, 재파싱 시 lineseg
         // text_start 매핑이 어긋나 줄바꿈 위치가 이동한다 (seoul_0043 글상자).
-        // ① 여기서 **끝나는** 필드의 FIELD_END — 이 자리의 무엇보다 먼저 닫는다.
-        //    (그래야 같은 자리에서 시작하는 다음 필드의 BEGIN 과 뒤엉키지 않는다)
-        if let Some(markers) = field_ends.get(&i) {
-            for &marker in markers {
-                push_field_end_ctrl(&mut code_units, marker);
-                prev_end += 8;
-            }
-        }
+        // ① 여기서 끝나는 필드의 FIELD_END 는 위 자리표시자 판정보다 먼저 냈다.
 
         // ② 갭 채우기 — 빈 필드의 END 자리는 예약해 둔다.
         let pending_field_end_cus = empty_field_ends
