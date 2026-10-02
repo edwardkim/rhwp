@@ -2335,6 +2335,9 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
 /// 있어 정확 일치를 요구하지 않는다. 진짜 어울림 배제는 이보다 훨씬 크게 벌어진다.
 const EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU: i32 = 200;
 
+/// [#6761] 글자처럼 취급하는 개체가 공유 기준선 위에 두는 높이 비율(표 #7049 과 같다).
+const TAC_OBJECT_ASCENT_RATIO: f64 = 0.85;
+
 impl LayoutEngine {
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
@@ -9420,7 +9423,40 @@ impl LayoutEngine {
                                 let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi)
                                     + margin_top
                                     + margin_bottom;
-                                (vars.y + vars.baseline - box_h).max(vars.y)
+                                // [#6761] 같은 줄에 더 높은 글자처럼 그림이 있으면 그 줄의 기준선은
+                                // 가장 높은 상자가 정한다(저장 줄 bl = 0.85 × lh, 1480000-201900042
+                                // 문단 4.195: lh 11206 · bl 9525). 낮은 상자는 글자처럼 그 기준선에
+                                // 85/15 로 앉는다 — 정본 그림 위 끝 226.7 / 216.9px(차 9.8 =
+                                // 0.85 × 11.3). 하단을 기준선에 붙이면 줄 상단으로 clamp 되어
+                                // 가장 높은 상자와 위 끝이 같아진다. 표의 같은 줄 공유 기준선
+                                // 규칙(#7049·#7150)과 같은 비율이다. 줄에 그림이 하나뿐이거나 이
+                                // 상자가 가장 높으면 종전 식이다.
+                                let tallest_box_h = line_tac_offsets
+                                    .iter()
+                                    .filter_map(|&(_, _, ci)| match p.controls.get(ci) {
+                                        Some(Control::Picture(other)) => {
+                                            let (_, other_h) =
+                                                self.resolve_inline_picture_size(other, col_area);
+                                            let (_, _, other_top, other_bottom) =
+                                                tac_picture_outer_margins_px(other, self.dpi);
+                                            Some(
+                                                tac_object_box_height_px(
+                                                    other_h,
+                                                    &other.caption,
+                                                    self.dpi,
+                                                ) + other_top
+                                                    + other_bottom,
+                                            )
+                                        }
+                                        _ => None,
+                                    })
+                                    .fold(box_h, f64::max);
+                                if tallest_box_h > box_h + 0.5 {
+                                    (vars.y + vars.baseline - tallest_box_h).max(vars.y)
+                                        + (tallest_box_h - box_h) * TAC_OBJECT_ASCENT_RATIO
+                                } else {
+                                    (vars.y + vars.baseline - box_h).max(vars.y)
+                                }
                             };
                             let img_y = base_img_y + sibling_reserved_px + margin_top;
                             let bin_data_id = pic.image_attr.bin_data_id;

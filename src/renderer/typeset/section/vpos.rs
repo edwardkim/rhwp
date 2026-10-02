@@ -66,6 +66,7 @@ impl TypesetEngine {
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
+            curr_item_is_table_fragment: false,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
@@ -197,5 +198,6 @@ impl TypesetEngine {
         st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
         st.align_flow_to(y);
+        st.record_vpos_snapped_flow_start(para_idx, y);
     }
 }

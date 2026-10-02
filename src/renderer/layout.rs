@@ -3219,6 +3219,75 @@ fn tac_in_front_decoration_fixed_line_spacing_deduction_hu(
         .then_some(-seg.line_spacing)
 }
 
+/// [#7406 · #7345] 단 머리 문단의 첫 vpos 가 쪽 원점이 아니라 그 문단 앞 간격(원점부터의
+/// 여백)이라는 저장 증거. 첫 vpos = 자기 앞 간격이고, 다음 저장 문단도 앞 줄 끝에서 자기 앞
+/// 간격만큼 전진해야 한다(사다리가 앞 간격을 vpos 에 싣는 문서). 명시적 쪽 나눔 문단은 새
+/// 흐름의 원점이라 제외한다(issue1853 10쪽).
+///
+/// 배치의 단 진입 기준점만 이 판정을 쓴다(HWPX `#7406` 과 같은 범위). 쪽 나눔
+/// (`typeset/section/vpos.rs`)의 스냅 기준점에도 쓰면 한/글이 같은 앞 간격을 두고도 한 쪽에
+/// 담는 문서가 한 쪽씩 늘어난다 — 코퍼스 10k 중 3문서(7→8 · 12→13 · 156→157, 한/글 정본
+/// 7 · 12 · 154). `156478722` 4쪽은 머리 문단 뒤 표가 한/글에서는 그 쪽에 들어가는데 rhwp 는
+/// 6.7px 모자라 표를 나눈다 — 표 높이 회계의 별개 오차다(#6976 축).
+pub(crate) fn stored_column_top_margin_is_page_relative(
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    if !(profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
+        || profile.session_edited()
+    {
+        return false;
+    }
+    let Some(first) = paragraphs.get(para_index) else {
+        return false;
+    };
+    if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
+        return false;
+    }
+    let Some(first_seg) = first.line_segs.first() else {
+        return false;
+    };
+    let Some(last_seg) = first.line_segs.last() else {
+        return false;
+    };
+    let Some(next) = paragraphs.get(para_index + 1) else {
+        return false;
+    };
+    let Some(next_seg) = next.line_segs.first() else {
+        return false;
+    };
+    let before = |para: &Paragraph| {
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|style| style.spacing_before)
+            .unwrap_or(0.0)
+    };
+    let first_before = before(first);
+    let next_before = before(next);
+    let implementation = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    !para_has_overlay_shape(first)
+        && !para_has_overlay_shape(next)
+        && first_seg.tag & implementation == 0
+        && last_seg.tag & implementation == 0
+        && next_seg.tag & implementation == 0
+        && first_before > 0.5
+        && next_before > 0.5
+        && (hwpunit_to_px(first_seg.vertical_pos, dpi) - first_before).abs() <= 0.5
+        && (hwpunit_to_px(
+            next_seg.vertical_pos
+                - last_seg.vertical_pos
+                - last_seg.line_height
+                - last_seg.line_spacing,
+            dpi,
+        ) - next_before)
+            .abs()
+            <= 0.5
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -7544,48 +7613,25 @@ impl LayoutEngine {
                 && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
                     .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
                         && seg.vertical_pos < 30_000));
-        // 저장 HWPX 쪽은 첫 vpos가 문단 앞 간격과 정확히 같은 문단으로 시작할 수 있다.
-        // 이 vpos는 쪽 원점 자체가 아니라 원점부터의 여백이다.
+        // 저장 HWPX·HWP5 쪽은 첫 vpos가 문단 앞 간격과 정확히 같은 문단으로 시작할 수 있다.
+        // 이 vpos는 쪽 원점 자체가 아니라 원점부터의 여백이다(#7406 HWPX, #7345 HWP5).
+        // 첫 줄은 Task #1811 이 그 여백만큼 내리므로, 기준점도 같은 증거로 쪽 원점(0)에
+        // 두어야 뒤 항목이 첫 줄과 같은 축에 놓인다.
         // 이후 항목에 쪽 상대 vpos를 적용하기 전에 다음 저장 문단도 같은
         // 단계별 위치 관계에서 자기 앞 간격을 반영하는지 확인한다(#7406, 90쪽).
         // 명시적으로 쪽을 나누는 문단은 새 흐름을 시작하므로
         // 그 문단의 첫 vpos를 쪽 기준점으로 유지한다
         // (issue1853, 10쪽).
-        let hwpx_first_margin_is_page_relative = matches!(
+        let stored_first_margin_is_page_relative = matches!(
             col_content.items.first(),
             Some(PageItem::FullParagraph { para_index })
-                if self.profile.get().hwpx_stored_layout()
-                    && !self.profile.get().session_edited()
-                    && paragraphs.get(*para_index).is_some_and(|first| {
-                        if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
-                            return false;
-                        }
-                        let Some(first_seg) = first.line_segs.first() else { return false; };
-                        let Some(last_seg) = first.line_segs.last() else { return false; };
-                        let Some(next) = paragraphs.get(*para_index + 1) else { return false; };
-                        let Some(next_seg) = next.line_segs.first() else { return false; };
-                        let first_before = styles.para_styles
-                            .get(first.para_shape_id as usize)
-                            .map(|style| style.spacing_before)
-                            .unwrap_or(0.0);
-                        let next_before = styles.para_styles
-                            .get(next.para_shape_id as usize)
-                            .map(|style| style.spacing_before)
-                            .unwrap_or(0.0);
-                        !para_has_overlay_shape(first)
-                            && !para_has_overlay_shape(next)
-                            && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && first_before > 0.5
-                            && next_before > 0.5
-                            && (hwpunit_to_px(first_seg.vertical_pos, self.dpi) - first_before).abs() <= 0.5
-                            && (hwpunit_to_px(
-                                next_seg.vertical_pos - last_seg.vertical_pos
-                                    - last_seg.line_height - last_seg.line_spacing,
-                                self.dpi,
-                            ) - next_before).abs() <= 0.5
-                    })
+                if stored_column_top_margin_is_page_relative(
+                    self.profile.get(),
+                    paragraphs,
+                    *para_index,
+                    styles,
+                    self.dpi,
+                )
         );
         let vpos_page_base_init: Option<i32> = col_content
             .items
@@ -7617,7 +7663,7 @@ impl LayoutEngine {
                 // vpos(예: 1000HU)는 쪽 원점이 아니다. 도형은 자체 좌표로 그려지고
                 // 뒤따르는 본문은 쪽-상대 vpos를 그대로 따른다. 제목 vpos를
                 // page_base로 빼면 뒤의 문단·표가 그만큼 위로 밀린다.
-                if saved_inline_heading_page || hwpx_first_margin_is_page_relative {
+                if saved_inline_heading_page || stored_first_margin_is_page_relative {
                     0
                 } else {
                     base
@@ -8066,7 +8112,11 @@ impl LayoutEngine {
                 // [Task #1027 Stage C] inter-item VPOS_CORR 보정을 HeightCursor 에 위임 (동작 동일).
                 // 이전 문단 overlay-shape/분할표 bypass, page/lazy base 산출, sb 차감,
                 // ≤8px 백워드 클램프를 모두 캡슐화 (Stage A/B 함수 결합). 렌더러·페이지네이터 공유.
+                // [#7351] 표 조각은 host 문단의 앞 간격을 그리지 않으므로
+                // 스냅의 `sb_N` 사전 차감에서 뺀다.
+                hcursor.curr_item_is_table_fragment = matches!(item, PageItem::PartialTable { .. });
                 y_offset = hcursor.vpos_adjust(y_offset, item_para, paragraphs, styles);
+                hcursor.curr_item_is_table_fragment = false;
             } // !shape_jumped
               // [#5699 H1] 밴드-바닥 활성 단(사다리-미계상 표를 이 단에서 교정): 저장
               // vpos 는 표 밴드를 모르는 좌표계다. 후방 스냅은 순차 흐름과 바닥 중

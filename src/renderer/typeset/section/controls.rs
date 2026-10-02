@@ -303,9 +303,22 @@ impl TypesetEngine {
                                     let base = st.vpos_page_base.unwrap_or(0);
                                     let retained_before = first_before.max(0.0).min(hwpunit_to_px(base.max(0), self.dpi));
                                     let frame_vpos = base - crate::renderer::px_to_hwpunit(retained_before, self.dpi);
+                                    // 실제 앞 커서는 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작이다.
+                                    // 스냅 전 측정 누적에는 앞 문단의 sb·trailing_ls drift 가 남는다.
+                                    // 스냅 좌표계는 `base` 원점이므로 `frame_vpos` 원점으로 옮긴다.
+                                    let actual_host_flow_y = match st.vpos_snapped_flow_start {
+                                        Some((snapped, y)) if snapped == para_idx => {
+                                            y + hwpunit_to_px(base - frame_vpos, self.dpi)
+                                        }
+                                        _ => picture_host_origin.2,
+                                    };
+                                    let following = paragraphs.get(para_idx + 2).and_then(|f| {
+                                        let sb = styles.para_styles.get(f.para_shape_id as usize)?.spacing_before;
+                                        Some((f, sb))
+                                    });
                                     crate::renderer::float_placement::stored_picture_successor_with_following_placement(
-                                        para, next, paragraphs.get(para_idx + 2), host_style.spacing_before,
-                                        next_style.spacing_before, frame_vpos, picture_host_origin.2, self.dpi,
+                                        para, next, following, host_style.spacing_before,
+                                        next_style.spacing_before, frame_vpos, actual_host_flow_y, self.dpi,
                                     )
                                 });
                                 if let Some(placement) = saved.filter(|p| {

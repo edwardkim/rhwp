@@ -923,16 +923,19 @@ pub fn stored_picture_successor_placement(
     )
 }
 
-/// 빈 그림 호스트의 저장 프레임 끝과 빈 후속 줄이 같은 흐름을 소유하는지 확인한다.
-/// 양수 앞 간격이 없는 후속 줄은 다음 저장 줄까지의 전진과 실제 앞 커서도
-/// 일치해야 한다. 그림과 줄이 기하적으로 닿는다는 사실만으로 흐름을 되감지 않는다.
+/// 빈 그림 호스트의 저장 프레임 끝과 후속 줄이 같은 흐름을 소유하는지 확인한다.
+/// 양수 앞 간격이 없거나 글자를 가진 후속 줄은 다음 저장 줄까지의 전진(그 줄의 앞 간격
+/// 포함)과 실제 앞 커서도 일치해야 한다. 그림과 줄이 기하적으로 닿는다는 사실만으로
+/// 흐름을 되감지 않는다 — 글자 있는 후속 줄은 세 독립 기록(그림 하단 = 후속 저장 줄,
+/// 후속 줄 끝 + 다음 앞 간격 = 다음 저장 줄, 스냅된 실제 커서 = 그림 앵커)이 모두 맞을 때만
+/// 이 프레임을 따른다.
 /// 호스트의 0폭 줄은 그림이 소유하며, 후속 빈 줄은 자신의 음수 간격도 보존한다.
 /// 편집/합성·명시 경계는 호출자와 이 함수의 저장 계약에서 제외한다.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn stored_picture_successor_with_following_placement(
     para: &Paragraph,
     successor: &Paragraph,
-    following: Option<&Paragraph>,
+    following: Option<(&Paragraph, f64)>,
     spacing_before: f64,
     successor_spacing_before: f64,
     frame_vpos: i32,
@@ -948,7 +951,6 @@ pub(crate) fn stored_picture_successor_with_following_placement(
     let next = successor.line_segs.first()?;
     let common = &picture.common;
     if para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
-        || !successor.text.is_empty()
         || !successor.controls.is_empty()
         || successor.column_type != crate::model::paragraph::ColumnBreakType::None
         || host.tag & 0x8000_0000 != 0
@@ -977,15 +979,21 @@ pub(crate) fn stored_picture_successor_with_following_placement(
     let bottom =
         top + hwpunit_to_px(height, dpi) + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
     let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
-    if successor_spacing_before == 0.0 {
-        let following = following?;
+    let successor_has_text = !successor.text.is_empty();
+    if successor_spacing_before == 0.0 || successor_has_text {
+        let (following, following_spacing_before) = following?;
         let after = following.line_segs.first()?;
         let advance = next.line_height.checked_add(next.line_spacing)?;
+        let advance_px = hwpunit_to_px(advance, dpi) + following_spacing_before;
+        let after_px = hwpunit_to_px(after.vertical_pos.checked_sub(next.vertical_pos)?, dpi);
         if successor.line_segs.len() != 1
             || following.column_type != crate::model::paragraph::ColumnBreakType::None
             || after.tag & 0x8000_0000 != 0
             || advance <= 0
-            || after.vertical_pos.checked_sub(next.vertical_pos)? != advance
+            || !following_spacing_before.is_finite()
+            || following_spacing_before < 0.0
+            || (successor_has_text && successor_spacing_before != 0.0)
+            || (after_px - advance_px).abs() > dpi / 7200.0
             || !actual_host_flow_y.is_finite()
             || (actual_host_flow_y - anchor_y).abs() > dpi / 7200.0
         {
