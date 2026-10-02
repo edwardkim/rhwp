@@ -8204,7 +8204,12 @@ impl LayoutEngine {
                 let prev_item_line_bottom = col_node
                     .children
                     .get(prev_item_first_child..)
-                    .and_then(|nodes| nodes.iter().filter_map(max_text_line_box_bottom).reduce(f64::max));
+                    .and_then(|nodes| {
+                        nodes
+                            .iter()
+                            .filter_map(max_text_line_box_bottom)
+                            .reduce(f64::max)
+                    });
                 if prev_float_shape {
                     last_endnote_content_bottom_y = Some(y_offset);
                 } else if prev_item_line_bottom.is_some() {
@@ -11375,7 +11380,7 @@ impl LayoutEngine {
     ) -> f64 {
         y_offset += hwpunit_to_px(margin_above as i32, self.dpi);
         let has_separator = line_type != 0 && line_width_raw != 0;
-        let line_width = if has_separator {
+        if has_separator {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();
@@ -11394,11 +11399,10 @@ impl LayoutEngine {
             let sep_bbox = sep_line.ink_bbox();
             let line_node = RenderNode::new(line_id, RenderNodeType::Line(sep_line), sep_bbox);
             col_node.children.push(line_node);
-            line_width
-        } else {
-            0.0
-        };
-        y_offset + line_width + hwpunit_to_px(margin_below as i32, self.dpi)
+        }
+        // [#6574] 첫 미주는 구분선 자리 + 아래 여백에서 시작한다 — 선 굵기는 흐름에 더하지
+        // 않는다(조판 `EndnoteFlowProfile::separator_height_px` 와 같은 값).
+        y_offset + hwpunit_to_px(margin_below as i32, self.dpi)
     }
 
     /// [Task #2091] 표 컨트롤(anchor/TAC/float) 블록 배치 — 원본 무변경 통이동.
@@ -16941,7 +16945,9 @@ pub(crate) struct EndnoteColumnPlacements {
 /// 수용, 다음 문항 제목 간격의 기준).
 fn max_text_line_box_bottom(node: &RenderNode) -> Option<f64> {
     let own = match &node.node_type {
-        RenderNodeType::TextLine(line) => Some(node.bbox.y + line.line_height.min(node.bbox.height)),
+        RenderNodeType::TextLine(line) => {
+            Some(node.bbox.y + line.line_height.min(node.bbox.height))
+        }
         _ => None,
     };
     node.children
