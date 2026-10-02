@@ -1474,6 +1474,37 @@ fn repeats_native_empty_host_rowbreak_fragment_margin(
     .is_some()
 }
 
+/// [#4068] 앵커 문단이 저장 조판에서도 이 단을 시작하는지 — 구역 첫 문단이거나, 저장
+/// 첫 줄 vpos 가 앞 문단 마지막 줄보다 위로 되감긴다(쪽·단 경계).
+///
+/// 앞 쪽 끝에 앵커된 표가 자리가 모자라 이 단 맨 위로 넘어온 경우(되감김 없음)는
+/// 한/글도 테두리를 본문 윗변에 붙인다 — `정책연구용역사업 중간진도보고서` 24쪽 표
+/// (`pi=344`, 저장 vpos 52230 = 앞 쪽 좌표)는 바깥 여백을 넣으면 정본에서 멀어진다.
+fn stored_anchor_starts_column(paragraphs: &[Paragraph], para_index: usize) -> bool {
+    let stored_seg = |paragraph: &Paragraph, last: bool| {
+        let mut segs = paragraph.line_segs.iter().filter(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        });
+        if last {
+            segs.next_back().map(|seg| seg.vertical_pos)
+        } else {
+            segs.next().map(|seg| seg.vertical_pos)
+        }
+    };
+    let Some(prev_index) = para_index.checked_sub(1) else {
+        return true;
+    };
+    let (Some(host_vpos), Some(prev_vpos)) = (
+        paragraphs
+            .get(para_index)
+            .and_then(|p| stored_seg(p, false)),
+        paragraphs.get(prev_index).and_then(|p| stored_seg(p, true)),
+    ) else {
+        return false;
+    };
+    host_vpos < prev_vpos
+}
+
 /// Paint the first, unsplit form of the strict native-HWP empty-host RowBreak table at the
 /// same top coordinate that `layout_partial_table` uses for its first fragment.  The ordinary
 /// float lane intentionally omits outer margins (#2097); only callers that already proved the
@@ -4755,7 +4786,7 @@ impl LayoutEngine {
                             None,
                             false,
                             is_header,
-                            false,
+                            0.0,
                             None,
                             Self::standalone_table_char_border_fill(Some(para), t.as_ref(), styles),
                         );
@@ -5880,7 +5911,7 @@ impl LayoutEngine {
                                         None,
                                         false,
                                         false,
-                                        false,
+                                        0.0,
                                         None,
                                         Self::standalone_table_char_border_fill(
                                             Some(para),
@@ -11612,6 +11643,8 @@ impl LayoutEngine {
                     let body_bottom = layout.body_area.y + layout.body_area.height;
                     tbl_y < layout.body_area.y || tbl_y + tbl_h > body_bottom
                 };
+            // [#4068] 단 맨 위 문단 기준 자리차지 표의 테두리 원점 보정(px, 아래 폴백 갈래에서만).
+            let mut column_top_outer_box_inset_y = 0.0f64;
             if is_current_empty_para_float && !renders_outside_body {
                 let width_px = hwpunit_to_px(signed_hwpunit(t.common.width), self.dpi);
                 if width_px > 0.0 {
@@ -11701,6 +11734,43 @@ impl LayoutEngine {
                     ) {
                         flow_top
                     } else {
+                        // [#4068] 문단 기준 자리차지 표의 세로 오프셋은 바깥 여백 상자의 윗변을
+                        // 가리킨다 — 테두리는 그 아래 `outMargin.top` 에 선다. 흐름은 이미 바깥
+                        // 상자를 예약하므로(`pic-in-table-with-toggle` 저장 다음 줄 vpos 39354 =
+                        // 283 + 38788 + 283) 그림 원점만 옮긴다.
+                        //
+                        // ⚠ 단 맨 위 앵커로 한정한다. 앵커가 앞 내용 아래면 `para_y` 가 이미
+                        // 앞 줄의 줄간격·저장 스냅을 소비해 정본과 맞고(hwpspec 쪽 중간 표
+                        // 36건이 그대로 맞음), 여기서 더하면 두 번 든다. 흐름 커서(`raw_top`)
+                        // 를 올리면 `compute_table_y_position` 의 #6598 저장 앵커 갈래가 깨어나
+                        // 저장 vpos 까지 한 번 더 얹으므로(hwpspec 18쪽 103.6 → 117.8, 정본
+                        // 111.16) 커서가 아니라 paint inset 으로 넣는다.
+                        //
+                        // 앞 쪽에 앵커된 표가 자리가 모자라 이 단 맨 위로 넘어왔으면(저장 vpos
+                        // 되감김 없음) 한/글은 세로 오프셋을 버리고 단 윗변 + 바깥 여백에 둔다
+                        // (`정책연구용역사업 중간진도보고서` 24쪽 `pi=344`: vOff 560HU 인데 정본
+                        // 그림 88.8 = 본문 83.2 + 283HU + 칸 여백 141HU).
+                        if !is_current_empty_square_sibling_float
+                            && is_para_topbottom_float(&t.common)
+                            && t.outer_margin_top > 0
+                            && fragment_outer_top_px == 0.0
+                            && (para_y_for_table - col_area.y).abs() < 0.5
+                            // 앞 문단이 같은 쪽에 있으면 앵커는 단 맨 위가 아니다 — `para_y` 만
+                            // 칼럼 상단으로 들어온 #6598 형상은 저장 앵커 갈래가 맡는다.
+                            && !para_index.checked_sub(1).is_some_and(|prev_index| {
+                                page_content.column_contents.iter().any(|column| {
+                                    column.items.iter().any(|item| item.para_index() == prev_index)
+                                })
+                            })
+                        {
+                            let outer_top_px = hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
+                            column_top_outer_box_inset_y =
+                                if stored_anchor_starts_column(paragraphs, para_index) {
+                                    outer_top_px
+                                } else {
+                                    outer_top_px - v_offset_px.max(0.0)
+                                };
+                        }
                         empty_host_float_raw_top(
                             para_y_for_table,
                             v_offset_px,
@@ -11711,6 +11781,10 @@ impl LayoutEngine {
                         .entry(para_index)
                         .or_default()
                         .pushed_top(x_start, x_end, raw_top);
+                    // 앞선 형제 표 lane 에 밀렸으면 앵커가 단 맨 위가 아니다.
+                    if (lane_top - raw_top).abs() >= 0.01 {
+                        column_top_outer_box_inset_y = 0.0;
+                    }
                     para_float_lane_info = Some((
                         x_start,
                         x_end,
@@ -11753,7 +11827,7 @@ impl LayoutEngine {
                     None,
                     false,
                     false,
-                    false,
+                    0.0,
                     None,
                     Self::standalone_table_char_border_fill(Some(para), t, styles),
                 );
@@ -12135,7 +12209,11 @@ impl LayoutEngine {
                         outer_host_stored_vpos_hu,
                         allow_para_top_bleed,
                         false,
-                        physical_outer_box_paint_inset,
+                        if physical_outer_box_paint_inset {
+                            physical_outer_box_paint_inset_y
+                        } else {
+                            column_top_outer_box_inset_y
+                        },
                         ctx.paragraph_float_placements
                             .get(&(para_index, control_index))
                             .map(|p| {
@@ -12147,7 +12225,27 @@ impl LayoutEngine {
                         Self::standalone_table_char_border_fill(Some(para), t, styles),
                     )
                 };
-                let table_flow_end = table_visual_end - physical_outer_box_paint_inset_y;
+                // [#4068] 단 맨 위 테두리 보정은 표 실물만 옮긴다 — 뒤 문단은 저장 흐름이
+                // 바깥 상자를 이미 계상하므로 흐름 끝에서 되돌린다(hwpspec 35·44·46쪽 다음 표가
+                // 정본 그대로). 단, 같은 host 의 다른 표는 이 표 실물 아래에 쌓인다
+                // (`rowbreak-problem-pages` 13쪽: 컨트롤 순서상 앞인 TAC 띠(`ci=0`)가 표(`ci=1`)
+                // 뒤에 놓이고, 정본에서 표 아랫변 + 바깥 여백 아래다).
+                let column_top_outer_box_inset_y = if physical_outer_box_paint_inset {
+                    0.0
+                } else {
+                    column_top_outer_box_inset_y
+                };
+                let host_stacks_following_table =
+                    para.controls.iter().enumerate().any(|(index, control)| {
+                        index != control_index && matches!(control, Control::Table(_))
+                    });
+                let table_flow_end = table_visual_end
+                    - physical_outer_box_paint_inset_y
+                    - if host_stacks_following_table {
+                        0.0
+                    } else {
+                        column_top_outer_box_inset_y
+                    };
                 if is_tac {
                     let marker_x = tbl_inline_x.unwrap_or(col_area.x + effective_margin);
                     tree.set_inline_shape_position(
@@ -12186,7 +12284,7 @@ impl LayoutEngine {
                         page_content.section_index,
                         para_index,
                         marker_x,
-                        table_y_start,
+                        table_y_start + column_top_outer_box_inset_y,
                         self.dpi,
                     );
                 }
@@ -12223,7 +12321,7 @@ impl LayoutEngine {
                     let outer_bottom_px = hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
                     Some(
                         (table_y_start + declared_height_px + outer_top_px + outer_bottom_px)
-                            .max(table_visual_end + outer_bottom_px),
+                            .max(table_visual_end - column_top_outer_box_inset_y + outer_bottom_px),
                     )
                 } else {
                     None
@@ -13867,7 +13965,7 @@ impl LayoutEngine {
                                 None,
                                 false,
                                 false,
-                                false,
+                                0.0,
                                 None,
                                 Self::standalone_table_char_border_fill(
                                     Some(para),
@@ -15911,7 +16009,7 @@ impl LayoutEngine {
                         None,
                         false,
                         false,
-                        false,
+                        0.0,
                         None,
                         Self::standalone_table_char_border_fill(
                             paragraphs.get(para_index),

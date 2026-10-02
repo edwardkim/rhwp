@@ -128,8 +128,11 @@ fn issue_7062_control_group_page1_and_page_count_unchanged() {
     // 정답지와 같은 10쪽 — TAC 줄 높이 보정이 쪽 경계를 흔들지 않는다.
     assert_eq!(core.page_count(), 10, "#7062 통제군: 쪽수는 10 이어야 한다");
 
-    // 1쪽: TAC 개체가 없는 문단들 — 저장 줄 좌표 그대로여야 한다.
-    // 수정 전 바이너리(devel f537df5ea)에서 잰 같은 좌표다.
+    // 1쪽: TAC 개체가 없는 문단들 — 정본 좌표를 지킨다.
+    // 종전 고정값(137.9 · 265.7)은 수정 전 바이너리(devel f537df5ea)의 출력이었고, 머리 표
+    // 테두리가 바깥 위 여백(283HU)만큼 위에 있던 #4068 결함을 함께 담고 있었다. 정본
+    // `pdf/tac_object_host_line_height-2020.pdf` 의 같은 런은 141.37 · 269.58 이다
+    // (머리 그림 48.96 ↔ 종전 45.3). 1쪽 2px 실루엣 83.82% → 92.85%.
     let nodes = page_nodes(&core, 0);
     let title = nodes
         .iter()
@@ -139,8 +142,8 @@ fn issue_7062_control_group_page1_and_page_count_unchanged() {
         })
         .expect("1쪽 제목 런");
     assert!(
-        (title.y - 137.9).abs() < 0.5,
-        "#7062 통제군: 1쪽 '보 도 자 료' 는 137.9px 그대로여야 한다: y={:.1}",
+        (title.y - 141.37).abs() < 0.5,
+        "#7062 통제군: 1쪽 '보 도 자 료' 는 정본 141.37px 이어야 한다: y={:.1}",
         title.y
     );
     let contact = nodes
@@ -151,8 +154,8 @@ fn issue_7062_control_group_page1_and_page_count_unchanged() {
         })
         .expect("1쪽 책임자 런");
     assert!(
-        (contact.y - 265.7).abs() < 0.5,
-        "#7062 통제군: 1쪽 표 안 줄도 265.7px 불변이어야 한다: y={:.1}",
+        (contact.y - 269.58).abs() < 0.5,
+        "#7062 통제군: 1쪽 표 안 줄은 정본 269.58px 이어야 한다: y={:.1}",
         contact.y
     );
 }

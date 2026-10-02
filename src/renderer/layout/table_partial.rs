@@ -3671,7 +3671,7 @@ impl LayoutEngine {
                                             None,
                                             false,
                                             clamp_header_negative_para_offset,
-                                            false,
+                                            0.0,
                                             stored_float_frame.map(|f| (None, f.table_top)),
                                             Self::standalone_table_char_border_fill(
                                                 Some(para),
