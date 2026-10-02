@@ -2,6 +2,7 @@
 //!
 //! 복사본에서 구역·단 정의를 떼면서 그 자리(16칸)를 `char_offsets` 에 남겼다. 붙일 때
 //! `merge_from` 이 `char_count` 를 글자 수로 다시 세므로, 갭 뒤 글자가 줄 밖으로 밀렸다.
+//! 한글 클립보드 조각도 첫 문단에 두 정의를 달고 와 같은 정리를 거친다.
 
 use rhwp::document_core::DocumentCore;
 
@@ -46,4 +47,27 @@ fn pasting_from_section_first_paragraph_draws_every_pasted_character() {
         .char_shapes
         .windows(2)
         .all(|pair| pair[0].start_pos < pair[1].start_pos));
+}
+
+#[test]
+fn pasting_hancom_fragment_draws_its_section_first_paragraph() {
+    // 한글 클립보드 조각의 첫 문단은 구역 정의(secd)·단 정의(cold)를 달고 온다.
+    let json = r#"{
+        "ro": {
+            "hp": "p0",
+            "p0": {"id": 0, "np": "p1", "ru": [{"cp": "", "ch": [
+                {"cc": 2, "ci": 1936024420, "co": "s0"},
+                {"cc": 2, "ci": 1668246628, "co": "c0"},
+                {"t": "가나다라"}]}]},
+            "p1": {"id": 1, "ru": [{"cp": "", "ch": [{"t": "마바사아"}]}]}
+        },
+        "cs": {"s0": {}, "c0": {}}
+    }"#;
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "XY").unwrap();
+    core.paste_hwp_json_native(0, 0, 1, json).unwrap();
+
+    assert_eq!(core.document().sections[0].paragraphs[0].text, "X가나다라");
+    assert_eq!(rendered_text(&core, 0), "X가나다라");
 }
