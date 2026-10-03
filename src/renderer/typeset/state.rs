@@ -424,6 +424,7 @@ impl TypesetState {
             profile: self.data.profile,
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
+            visible_float_exclusions: &self.data.visible_float_exclusions,
         }
     }
 

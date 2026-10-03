@@ -13758,9 +13758,49 @@ impl LayoutEngine {
                 // HWP5와 그 marker HWPX도 컨트롤 번호와 저장 줄 번호가 다르다.
                 // 앞 텍스트 줄의 음수 줄간격으로 표 뒤 흐름을 되돌리지 않도록,
                 // 표 높이를 담은 실제 소속 줄을 같은 사영으로 고른다.
+                // 용지 고정 그림은 host 줄의 흐름을 소유하지 않는다. 원본
+                // 표 줄과 다음 줄이 정확히 이어지는 경우에는 그 장식 때문에
+                // 표의 후행 간격을 버리지 않는다. 문단 상대 가시 개체는 기존
+                // 이중 가산 방지 계약을 그대로 따른다.
+                let has_only_paper_decoration_before_tac = para.controls
+                    [..control_index.min(para.controls.len())]
+                    .iter()
+                    .all(|control| match control {
+                        Control::Picture(picture) => {
+                            !picture.common.treat_as_char
+                                && picture.common.vert_rel_to
+                                    == crate::model::shape::VertRelTo::Paper
+                        }
+                        Control::Table(_) | Control::Shape(_) => false,
+                        _ => true,
+                    });
+                let continuous_stored_table_line =
+                    self.profile.get().hwp5_stored_pagination_layout()
+                        && has_only_paper_decoration_before_tac
+                        && control_line_seg_index(para, control_index)
+                            .and_then(|index| para.line_segs.get(index))
+                            .is_some_and(|seg| {
+                                crate::renderer::composer::tac_next_line_full_spacing(
+                                    para,
+                                    paragraphs.get(para_index + 1),
+                                    styles
+                                        .para_styles
+                                        .get(para.para_shape_id as usize)
+                                        .map_or(0.0, |shape| shape.spacing_after),
+                                    paragraphs
+                                        .get(para_index + 1)
+                                        .and_then(|next| {
+                                            styles.para_styles.get(next.para_shape_id as usize)
+                                        })
+                                        .map_or(0.0, |shape| shape.spacing_before),
+                                    seg,
+                                    self.profile.get(),
+                                    self.dpi,
+                                )
+                            });
                 let projected_seg = if (self.profile.get().hwp5_stored_pagination_layout()
                     || (self.profile.get().hwpx_stored_layout() && all_segs_stored))
-                    && only_invisible_before_tac
+                    && (only_invisible_before_tac || continuous_stored_table_line)
                 {
                     let table_h = para.controls.get(control_index).and_then(|c| match c {
                         Control::Table(t) if t.common.height < 0x8000_0000 => {

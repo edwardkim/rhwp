@@ -965,7 +965,7 @@
   },
   "integration_pr_ready": false,
   "current_base": "6b3faf77d8085441f9f26d88d65a49791e910352",
-  "latest_stage_evidence": "masked2470_regression_validation.json",
+  "latest_stage_evidence": "social6797_correction_validation.json",
   "current_focused_failures": {
     "run": 19,
     "passed": 14,
@@ -991,7 +991,15 @@
   ],
   "latest_rebase_evidence": "rebase_latest_validation.json",
   "remaining_latest_whole_blockers_after_focused": [
-    "#6797",
     "#1921"
-  ]
+  ],
+  "social6797_correction": {
+    "evidence": "social6797_correction_validation.json",
+    "pages": 11,
+    "native_wasm_min_percent": 95.80181,
+    "below90_pages": [],
+    "existing_test_functions": 5,
+    "focused_passed": 19,
+    "focused_failed": 0
+  }
 }

@@ -1,0 +1,492 @@
+{
+  "stage": "#6797 용지 고정 장식의 TAC 줄간격·앞 float 뒤 저장 상자 원점·후속 앞 간격 소유",
+  "parent_head": "6f4458196",
+  "branch": "review/planet6897-green-20261002",
+  "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "base_refetched_unchanged": true,
+  "source": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+  "source_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+  "pdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+  "pdf_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+  "source_hashes": {
+    "src/renderer/layout.rs": "7ba839b88c207eb9c872744924964eea9746fe467a80b47be127c534e8749614",
+    "src/renderer/typeset/controls/empty_float.rs": "ee4305f04e2869e2bb2ac16b7d85b91264c80ae929ae54516f2a721debfbb645",
+    "src/renderer/typeset/state.rs": "ced620b8cad5fa721a4d5de6c08966bd92157b7bbd67cb245f06b4b75bdbd20c",
+    "tests/cases/issue_6797_table_item_clears_float_band.rs": "46922ac6aae8fd20540a4f1c1b1a98bb4a16dae0318a3e4a2b47a7be29b81f49"
+  },
+  "final_binary_sha256": "81719b56558c7d862691137dd68833832e4058b216c20c56a63164e96b733dd6",
+  "final_package_sha256": {
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "8dce39f8efd3c227dd266237ce611d658718ac89ceb1ed5f6d4b3ecd98c0d81f"
+  },
+  "initial_candidates": [
+    {
+      "focused_run": 5,
+      "passed": 4,
+      "failed": 1,
+      "exit": 100,
+      "visual_p1": 86.12764,
+      "visual_p7": 62.56997
+    },
+    {
+      "focused_run": 19,
+      "passed": 19,
+      "failed": 0,
+      "exit": 0,
+      "visual_p1": 97.78534,
+      "visual_p7": 80.99399
+    }
+  ],
+  "first_clippy_failure": "manual_inspect; 상태 기록 map→inspect로 수정; 동작 불변",
+  "existing_regressions": 5,
+  "new_test_functions": 0,
+  "new_fixtures": 0,
+  "deleted_or_ignored_tests": 0,
+  "final_focused": {
+    "run": 19,
+    "passed": 19,
+    "failed": 0,
+    "exit": 0,
+    "summary": "19 tests run: 19 passed, 5336 skipped; skipped are focus-filter exclusions"
+  },
+  "gates_before_regression_update": [
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 29.054
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 20.786
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 40.81
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 68.383
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 8.399
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.705
+    }
+  ],
+  "final_build_and_test_gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_022",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_6797) | test(issue_7203_float_table) | test(issue_7203_tac_column) | test(issue_4599) | test(issue_5755) | test(issue_6192) | test(test_521)"
+      ],
+      "exit": 0,
+      "seconds": 194.765
+    },
+    {
+      "gate": "fresh-native",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 107.247
+    },
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 183.215
+    }
+  ],
+  "final_test_policy_gates": [
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 13.663
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.329
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.397
+    }
+  ],
+  "pages": 11,
+  "rows": {
+    "native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "97.78534",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.78534",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "97.35597",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.35597",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.41428",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.41428",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "97.66701",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.66701",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "95.80181",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.79908",
+        "silhouette_boundary_reconciled_pixels": "5"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "98.98843",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.16652",
+        "silhouette_boundary_reconciled_pixels": "1196"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "98.05666",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.04662",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.17818",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.60138",
+        "silhouette_boundary_reconciled_pixels": "452"
+      },
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "99.60954",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.60954",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "10",
+        "tolerant_content_match_percent": "99.96675",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.96675",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "11",
+        "tolerant_content_match_percent": "99.41939",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.41939",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "97.78534",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.78534",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "97.35597",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.35597",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.41428",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.41428",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "97.66701",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.66701",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "95.80181",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.79908",
+        "silhouette_boundary_reconciled_pixels": "5"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "98.98843",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.16652",
+        "silhouette_boundary_reconciled_pixels": "1196"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "98.05666",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.04662",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.17818",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.60138",
+        "silhouette_boundary_reconciled_pixels": "452"
+      },
+      {
+        "page": "9",
+        "tolerant_content_match_percent": "99.60954",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.60954",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "10",
+        "tolerant_content_match_percent": "99.96675",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.96675",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "11",
+        "tolerant_content_match_percent": "99.41939",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.41939",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ]
+  },
+  "minimum": {
+    "native": 95.80181,
+    "wasm": 95.80181
+  },
+  "below90": {
+    "native": [],
+    "wasm": []
+  },
+  "native_final_export_proof": [
+    {
+      "kind": "render_tree",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": []
+    },
+    {
+      "kind": "svg",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": []
+    }
+  ],
+  "wasm_final_export_proof": [
+    {
+      "kind": "render_tree",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": []
+    },
+    {
+      "kind": "raw_svg",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": []
+    }
+  ],
+  "visual_reuse_contract": "최종 재빌드의 전11쪽 Native SVG/render_tree·WASM raw_svg/render_tree가 각 실제 전쪽 raster 검증본과 바이트 동일함을 확인했습니다. 비교 PDF·폰트·브라우저는 변경하지 않아 TSV/review PNG를 재사용합니다. 새 raster 재생성으로 표현하지 않습니다.",
+  "native_wasm_all11_png_byte_identical": true,
+  "native_counter_tree_proof": [
+    {
+      "key": "masked2470",
+      "source": "samples/issue2470/36341511_masked.hwpx",
+      "exit": 0,
+      "previous_pages": 8,
+      "current_pages": 8,
+      "changed": []
+    },
+    {
+      "key": "counter2470",
+      "source": "samples/issue2470/36382471_masked.hwpx",
+      "exit": 0,
+      "previous_pages": 2,
+      "current_pages": 2,
+      "changed": []
+    },
+    {
+      "key": "counter5755",
+      "source": "samples/issue5755/rewind_overflow_page_break.hwpx",
+      "exit": 0,
+      "previous_pages": 3,
+      "current_pages": 3,
+      "changed": []
+    }
+  ],
+  "regulatory1921_counter_tree_proof": {
+    "exit": 0,
+    "old_pages": 37,
+    "new_pages": 37,
+    "changed": []
+  },
+  "whole_nextest_validated": false,
+  "native_skia3_final_validated": false,
+  "wasm_build_kind": "Mac no-opt 대체 빌드; Docker 최적화 빌드 아님",
+  "decision": "#6797 전11쪽 피델리티·기존5회귀 보정 완료. #1921 37쪽 보정과 다른 시각 차단·최종 전체 검증이 남아 통합 PR 준비는 미완료입니다.",
+  "documentation_links": {
+    "checked": [
+      "mydocs/pr/archives/pr_7423_review.md",
+      "mydocs/orders/20261003.md"
+    ],
+    "exit": 0
+  }
+}
