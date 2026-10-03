@@ -1015,6 +1015,35 @@ pub fn svg_arc_to_beziers(
     result
 }
 
+/// 한양 HFT 불릿의 원 윤곽을 대체 TTF의 작은 수학 점과 구분한다.
+/// 한컴 PDF Type3 /HFT8: 중심 (500,352), 가로 반지름123.75, 세로123 /1000em.
+/// 명시적으로 검증된 TrueType face와 다른 기호·글꼴은 원 글리프를 유지한다.
+pub(crate) fn legacy_hft_bullet_geometry(
+    text: &str,
+    style: &TextStyle,
+) -> Option<(f64, f64, f64, f64)> {
+    let face = style.font_family.split(',').next().unwrap_or("").trim();
+    if text != "∙"
+        || style.font_metric_trusted
+        || !matches!(face, "한양신명조" | "HanyangSinMyeongJo")
+    {
+        return None;
+    }
+    let size = style.font_size
+        * if style.superscript || style.subscript {
+            SCRIPT_FONT_SCALE
+        } else {
+            1.0
+        };
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    Some((
+        size * ratio * 0.5,
+        -size * 0.352,
+        size * ratio * 0.12375,
+        size * 0.123,
+    ))
+}
+
 /// 렌더러 트레이트 (모든 백엔드가 구현)
 pub trait Renderer {
     /// 페이지 렌더링 시작

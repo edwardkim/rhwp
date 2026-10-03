@@ -447,6 +447,22 @@ impl SkiaTextReplay<'_> {
                         }) {
                             continue;
                         }
+                        if let Some((cx, cy, rx, ry)) =
+                            crate::renderer::legacy_hft_bullet_geometry(cluster, style)
+                        {
+                            let left = bbox.x + char_positions[*char_idx] + cx + f64::from(dx);
+                            let top = y + cy + f64::from(dy);
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (left - rx) as f32,
+                                    (top - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
+                            continue;
+                        }
                         if is_middle_dot(cluster) {
                             let advance = cluster_advance(*char_idx, cluster);
                             let cx = bbox.x as f32

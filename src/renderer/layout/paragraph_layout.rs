@@ -2094,7 +2094,7 @@ fn converge_cell_overflow_char_spacing(
     extra.min(0.0)
 }
 
-/// [Task #2067] 정렬(양쪽/배분/나눔)·오버플로우·셀 underflow 에 따른 여분 간격 계산.
+/// [Task #2067] 명시적 정렬 분배와 실제 오버플로우에 따른 여분 간격 계산.
 /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp). Task #352 dash leader 분배 포함.
 #[allow(clippy::too_many_arguments)]
 fn compute_line_extra_spacing(
@@ -2104,8 +2104,6 @@ fn compute_line_extra_spacing(
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
-    // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄인가 (Justify 문단의 마지막 줄).
-    is_excluded_justify_last_line: bool,
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
@@ -2471,65 +2469,9 @@ fn compute_line_extra_spacing(
             let min_sp = -avg_char_w * 0.5;
             (0.0, raw.max(min_sp), 0.0)
         }
-    } else if in_cell
-        && total_char_count > 1
-        && !has_tabs
-        && alignment != Alignment::Left
-        && total_text_width < available_width
-        && total_text_width > 0.0
-        && comp_line.runs.iter().any(|r| {
-            let ts = r.text_style(styles);
-            ts.letter_spacing < -0.01
-        })
-        && {
-            // 자연 폭(letter_spacing=0)이 셀 inner 폭보다 커야만 "문서가
-            // 셀에 맞추기 위해 음수 자간으로 압축했던" 케이스로 간주. 그렇지
-            // 않으면 음수 자간은 장식적 의도이므로 기존 동작(natural width
-            // 그대로, 좌우 여백 유지)을 유지한다.
-            let natural_w: f64 = comp_line
-                .runs
-                .iter()
-                .map(|r| {
-                    let mut ts = r.text_style(styles);
-                    ts.default_tab_width = tab_width;
-                    ts.letter_spacing = 0.0;
-                    estimate_text_width(&r.text, &ts)
-                })
-                .sum();
-            natural_w > available_width
-        }
-        // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄은 여기서도 늘리지 않는다.
-        //
-        // `needs_word_distribution` 은 Justify 문단의 마지막 줄을 분배에서 뺀다. 그런데
-        // 이 규칙이 같은 줄을 칸 폭까지 되늘리면 두 규칙이 서로를 무효화한다 —
-        // 3123751 8쪽 `산 출 내 역` 열(한 줄짜리 Justify 문단, 자간 −16%)이 그 예로,
-        // 한글은 괘선 22pt 안쪽에서 멈추는데 rhwp 만 괘선까지 채웠다
-        // (글자 전진 한글 8.40pt vs rhwp 8.95pt).
-        && !is_excluded_justify_last_line
-    {
-        // 표 셀 내부 underflow: HWP 편집기가 자연 폭이 셀을 넘는 텍스트를
-        // 음수 자간으로 셀 폭에 맞춰 저장했으므로, 재렌더 시 우리 폰트
-        // 메트릭으로 좁게 측정되더라도 셀 폭을 채우도록 자간을 양수로 보정.
-        //
-        // narrow glyph per-char 클램프가 개입하면 선형 분배와 실제 렌더 폭이
-        // 어긋나므로 수렴 반복으로 보정한다.
-        let mut extra = (available_width - total_text_width) / total_char_count as f64;
-        for _ in 0..3 {
-            let mut measured = 0.0f64;
-            for r in &comp_line.runs {
-                let mut ts = r.text_style(styles);
-                ts.default_tab_width = tab_width;
-                ts.extra_char_spacing = extra;
-                measured += estimate_text_width(&r.text, &ts);
-            }
-            let delta = available_width - measured;
-            if delta.abs() < 0.5 {
-                break;
-            }
-            extra += delta / total_char_count as f64;
-        }
-        (0.0, extra, 0.0)
     } else {
+        // 작성된 자간으로 칸 안에 드는 글줄은 그 폭으로 정렬한다. 자간 없는
+        // 자연 폭이 크다는 이유로 되늘리면 가운데/오른쪽 정렬의 여백을 지운다.
         (0.0, 0.0, 0.0)
     }
 }
@@ -6304,7 +6246,6 @@ impl LayoutEngine {
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify,
-                    alignment == Alignment::Justify && is_last_line_of_para && !needs_justify,
                     false,
                     needs_distribute,
                     has_tabs,
@@ -10401,7 +10342,6 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
-            false,
             5,
             30.0,
             90.0,
@@ -10433,7 +10373,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
-            false,
             false,
             false,
             false,
@@ -10474,7 +10413,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
-            false,
             false,
             false,
             false,
@@ -10525,7 +10463,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
-            false,
             true,
             false,
             false,
@@ -10549,7 +10486,6 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
-            false,
             false,
             false,
             false,
@@ -10595,7 +10531,6 @@ mod issue_4657_distribute_alignment_tests {
             usize::MAX,
             &ResolvedStyleSet::default(),
             Alignment::Distribute,
-            false,
             false,
             false,
             false,

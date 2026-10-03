@@ -965,15 +965,14 @@
   },
   "integration_pr_ready": false,
   "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
-  "latest_stage_evidence": "overtime_flow_full_nextest.json",
+  "latest_stage_evidence": "cell6192_layout_validation.json",
   "current_focused_failures": {
-    "run": 31,
-    "passed": 31,
+    "run": 55,
+    "passed": 55,
     "failed": 0,
     "exit_code": 0,
-    "test_seconds": 70.343,
-    "scope": "하단 고정 표·관련 원점·기존 corpus; 전체 회귀 아님"
+    "scope": "#6192 시작점·불릿 및 관련 정렬·폰트 대조; 전체 회귀 아님"
   },
-  "renderer_candidate": "하단 고정 표의 호스트 줄과 아래 바깥 여백 소비 보정 완료; 전체 nextest 대기",
+  "renderer_candidate": "#6192 제목 여백·인용문 시작점·HFT 불릿 보정; 전2쪽 Native/fresh WASM 최저99.99263%, 기존 검사 유지",
   "current_candidate_whole_nextest_validated": false
 }

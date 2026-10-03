@@ -3594,6 +3594,20 @@ impl Renderer for SvgRenderer {
                         continue;
                     }
                 }
+                if let Some((cx, cy, rx, ry)) =
+                    super::legacy_hft_bullet_geometry(cluster_str, style)
+                {
+                    let char_x = x + char_positions[*char_idx];
+                    self.output.push_str(&format!(
+                        "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                        char_x + cx, y + cy, rx, ry, color,
+                    ));
+                    self.output.push_str(&format!(
+                        "<text x=\"{:.4}\" y=\"{:.4}\" fill-opacity=\"0\">∙</text>\n",
+                        char_x, y,
+                    ));
+                    continue;
+                }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);
                     let cx = x + char_positions[*char_idx] + adv / 2.0;
