@@ -1946,8 +1946,10 @@ impl Paragraph {
         // 다른 부수 마커나 생략된 제어가 있는 스트림에는 이 완전 대응을 추정하지 않는다.
         if !self.text.is_empty()
             || !self.char_offsets.is_empty()
-            // HWPX 구역 머리의 재기준화된 축은 control 개수만으로 역산하지 않는다.
-            || self.hwpx_axis_shift != 0
+            // HWPX 구역 머리는 control 개수만으로 축을 역산하지 않는다.
+            // 저장 시작값 자체가 HWP5 축임을 증명하는 경우에만 동일한
+            // 완전 스트림의 control 위치를 재사용한다.
+            || (self.hwpx_axis_shift != 0 && !self.stored_text_starts_on_hwp5_axis())
             || !self.title_marks.is_empty()
             || !self.field_ranges.is_empty()
             || !self.orphan_field_ends.is_empty()
@@ -2262,6 +2264,18 @@ impl Paragraph {
             let lifted = raw + self.hwpx_axis_shift;
             lifted > self.char_count
                 || (!self.is_hwp5_slot_boundary(lifted) && self.is_hwp5_slot_boundary(raw))
+                // 완전한 제어 전용 스트림의 개체 줄을 보정하면 마지막
+                // 문단부호로 이동하는 경우다. 개체 시작 슬롯은 줄을 소유하지만
+                // 문단부호는 그 개체 줄의 시작이 될 수 없다.
+                || (self.text.is_empty()
+                    && self.char_offsets.is_empty()
+                    && self.char_count == self.controls.len() as u32 * 8 + 1
+                    && raw.is_multiple_of(8)
+                    && lifted >= self.char_count - 1
+                    && self
+                        .controls
+                        .get((raw / 8) as usize)
+                        .is_some_and(Control::is_logical_inline))
         })
     }
 

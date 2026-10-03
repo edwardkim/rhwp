@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-03",
+  "date": "2026-10-04",
   "branch": "review/planet6897-green-20261002",
   "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
   "latest_code_correction": "54704ab32",
@@ -140,7 +140,7 @@
       }
     ]
   },
-  "merge_decision": "보류: #6797 보정 완료, 최신 사용자 지시로 #1921 37쪽 보정을 #7445 이관. 나머지 시각 보류와 최종 전체 검증 필요",
+  "merge_decision": "보류: #6797 보정 완료·#1921 이관 완료. h01 전9쪽 Native/fresh WASM 최저94.28413% 확인, 최종 관계 검사·전체 회귀와 나머지 시각 검증 필요",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -965,7 +965,7 @@
   },
   "integration_pr_ready": false,
   "current_base": "6b3faf77d8085441f9f26d88d65a49791e910352",
-  "latest_stage_evidence": "../issue7445/regulatory1921_deferral_validation.json",
+  "latest_stage_evidence": "h01_correction_validation.json",
   "current_focused_failures": {
     "run": 19,
     "passed": 14,
@@ -1009,5 +1009,13 @@
     "issue": 7445,
     "validation_pending": false,
     "after_focused_passed": 9
+  },
+  "h01_correction": {
+    "pages": 9,
+    "native_wasm_min_percent": 94.28413,
+    "below90_pages": [],
+    "focused_passed": 62,
+    "focused_failed": 0,
+    "final_validation_pending": false
   }
 }

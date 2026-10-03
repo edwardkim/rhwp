@@ -720,7 +720,8 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             Control::SectionDef(_)
             | Control::ColumnDef(_)
             | Control::Header(_)
-            | Control::Footer(_) => continue,
+            | Control::Footer(_)
+            | Control::PageNumberPos(_) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
@@ -736,7 +737,10 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
         {
             return None;
         }
-        if whitespace_carrier
+        // 빈 컨트롤 캐리어도 표 앞에 짧은 저장 줄을 가질 수 있다.
+        // 표 높이가 반복된 line_height 대신 실제 text_height와 다음 원점을
+        // 대조하여 빈 줄의 물리 점유를 보존한다.
+        if (whitespace_carrier || (lines.is_empty() && owner > 0))
             && (table.caption.is_some()
                 || owner == 0
                 || para.line_segs[..owner]
@@ -776,7 +780,9 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
         });
         previous_owner = Some(owner);
     }
-    if lines.len() < 2 && !whitespace_carrier {
+    let single_prefix_carrier = lines.len() == 1
+        && previous_owner.is_some_and(|owner| owner > 0 && owner == para.line_segs.len() - 1);
+    if lines.len() < 2 && !whitespace_carrier && !single_prefix_carrier {
         return None;
     }
     // 글자가 있는 일반 문단이나 같은 줄의 여러 개체는 재조판 경로가 처리한다.

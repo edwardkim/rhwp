@@ -273,3 +273,27 @@ last_verified: 2026-10-02
 
 - head `8927c6ccb`에서 이전 전체 실패17개 이름을 모두 확인했습니다. generated suite 재배정으로16개 실행15PASS/1FAIL과 별도 oracle partition7의1PASS를 합쳐16PASS/1FAIL입니다. 전체10,281개 재실행 결과가 아닙니다. [최종 집중 증적](../assets/planet6897_green_20261002/prior17_final_8927c6ccb.json).
 - 잔존FAIL은29쪽 hwpx_sample2의8쪽표 용지밖1건입니다. h01의1쪽53.03132%와 큰문서 미달쪽, 최신215쪽전쪽Native/freshWASM·전체회귀 검증은 추가보류입니다. 이들을 완료로 간주하거나 blanket baseline 변경·새골든등록·원본삭제를 하지 않았습니다. PR 최종승인/머지준비는미완료입니다.
+
+### h01 1쪽 저장 TAC 앞 빈 줄 보정 사전 분석
+
+- 현재 Native 전9쪽을 재실행해1쪽53.03132%, 나머지98% 이상을 확인했습니다. 첫 로고 표의 괘선은 Native98.2px/PDF100.051px입니다. 호스트의 첫 저장 줄은 빈 줄(text_height100HU+gap44HU), 표 소유 줄은 vpos144HU이며 line_height4091HU가 표3525HU+바깥여백566HU와 정확히 같습니다. 빈 줄의 line_height에는 문단 최대 표 높이가 반복되므로 text_height와 다음 원점이 실제 빈 줄 점유 근거입니다.
+- composer `stored_tac_lines`는 공백 텍스트 캐리어의 앞 빈 줄은 수용하지만 빈 컨트롤 캐리어의 단일 표와 PageNumberPos를 거절합니다. typeset `stored_tac::prepare`의 공통 pen/end가 생성되지 않아 일반 TAC paint/flow가 앞144HU와 뒤 간격을 잃습니다. 쪽번호 위치 지정은 본문 줄을 그리는 개체가 아니므로 저장 빈 줄 연속성·표 소유 높이·단일 마지막 소유 줄을 같은 계약으로 수용합니다. 가시 객체·편집/합성/비연속 줄은 제외합니다.
+- 기존 공통 측정/paint 계획을 사용하고 문서별 수치 보정은 추가하지 않습니다. 첫 표 보정 후 나머지 제목/본문 차이를 별도로 확인하며 기존 관련 검사와 정상 사다리/양돈 자료, Native/fresh WASM 전9쪽을 검증합니다. 신규 검사·fixture·잠정 golden은 추가하지 않습니다.
+
+- 첫 후보는 Native53.03132%로 무변화였습니다. 구역 첫 문단의 `empty_control_stream_position`이 축 보정량이 있다는 이유로 먼저 거절합니다. 초기 진단은 보정량을 잘못 추정했으며 실제 보정량8을 더한ts32는 cc33의 마지막 문단부호입니다. 기존 `stored_text_starts_on_hwp5_axis`는 문단 끝을 넘는 경우만 확인하므로 이 개체 줄을 구별하지 못했습니다. 축 증거가 있는 완전8유닛 스트림만 재사용하고 미확정 HWPX/합성은 계속 거절합니다. 컨트롤 소속 생산 → composer 줄 계획 → typeset pen/end → paint 공통 배치의 연결을 재검증합니다.
+
+- 진단 재확인: cc33/4컨트롤·axis8·offset없음·분할dirty없음·실측47px입니다. 24는 마지막 표의8유닛 슬롯이고32는 문단부호입니다. 완전 제어 스트림의 실제 인라인 개체 시작을 문단부호로 옮기는 보정만 거절하며, 텍스트·불완전 스트림·중간 슬롯의 기존 판정은 유지합니다. 진단용 출력은 최종 코드에서 제거합니다.
+
+- 축 판정 후 첫 표는98.2→100.2px로 PDF100.051px에 맞습니다. 다음 제목 프레임은186.6px/PDF190.192px이며 그 후 본문 차이가 남습니다. p3은 인라인 날짜 표의 소유 줄2131HU가 float offset2346HU 앞에 들어가고, 다음 저장 원점과 차이9067HU가 offset2346+float높이6155+바깥여백566과 정확히 같습니다. 기존 공통 상자 helper가 offset0·표1개만 수용하여 혼합 줄에서 위여백과 전체 점유를 버립니다. 같은 줄의 TAC 소유 높이가 offset 앞 공간에 들어가며 다음 줄이 전체 상자를 닫는 경우만 공통 offset+바깥상자 점유를 생산하여 예약/paint에 전달합니다. 그 밖의 양수 offset, 가시 글자·그림·재조판은 유지합니다.
+
+### h01 시각 보정 중간 결과
+
+- Native/fresh WASM 전9쪽 같은 일치율, 최저1쪽94.28413%, 나머지98% 이상·미달0입니다. 제목/본문/표 위치를 review PNG로 직접 확인했고 마지막 표의 약3px 차이는 잔존합니다. Native/fresh WASM 정상#6797 11쪽·사다리2쪽 렌더 트리는 이전 검증 출력과 전쪽 바이트 동일합니다. 기존 관련62검사62PASS입니다.
+- 새 단일 빈 줄 캐리어에 각주가 있는 경우 공통 단축 대신 기존 일반 예약을 유지하도록 마지막 guard를 보완했습니다. 최종 빌드·lint·출력 동일성·집중 회귀를 재검증합니다. 검증된 기존 h01 검사1개에 저장 빈 줄 점유와 제목 상자의 관계를 보완하며 새 함수/fixture나 절대px 핀을 추가하지 않습니다. 통합PR 준비·최종 전체 검증은 미완료입니다.
+
+### h01 보정 최종 단계 결과
+
+- 마지막 각주 예약 guard·기존 h01 관계 검사 보완 후 기존 관련62건62PASS입니다. Native/fresh WASM 빌드·root/WASM/workspace Clippy·workspace 빌드·fmt·최신base suite 정책·변경 문서 링크 exit0입니다. Mac fresh WASM no-opt 대체 빌드이며 Docker 최적화 검증은 아닙니다.
+- 마지막 생산 코드에서 Native full-font print SVG/렌더 트리와 fresh WASM raw SVG/렌더 트리가 실제 시각 비교 출력과 전9쪽 바이트 동일함을 확인했습니다. 앞선 직접 raster 비교의 Native/WASM 전9쪽 최저94.28413%·미달0 근거를 연결하며 추가 재래스터화로 보고하지 않습니다. 빈 줄 점유·양수offset 바깥상자 관계는 이전 실제 render tree에서2조건 FAIL, 현재2조건 PASS를 확인했고 보완한 Rust 함수도 PASS입니다. 새 test 함수/fixture·baseline·기준 PDF 변경0건입니다.
+- [최종 원장](../assets/planet6897_green_20261002/h01_correction_validation.json), [Native 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_native.tsv), [WASM 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_wasm.tsv), [1쪽 review](../assets/planet6897_green_20261002/h01_corrected_native_p1_review.png), [1쪽 overlay](../assets/planet6897_green_20261002/h01_corrected_native_p1_overlay.png). 첫 페이지에서 마지막 표 약3px 및 제목 글자 미세 차이는 잔존합니다.
+- h01의90% 미달 보류 사유를 해소했습니다. 다른 시각 보류와 최신215쪽 전체 비교·최종 전체 회귀는 별도 미완료이며 #7476/통합 PR 전체를 승인 완료로 표현하지 않습니다. 이 단계 커밋 후 전체 nextest를 실행합니다.

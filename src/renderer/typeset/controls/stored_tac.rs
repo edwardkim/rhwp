@@ -463,8 +463,9 @@ pub(super) fn prepare(
                 let Some(Control::Table(table)) = para.controls.get(line.control) else {
                     return false;
                 };
-                // 새로 수용한 공백 줄 캐리어도 각주 예약은 일반 경로가 담당한다.
-                if !para.text.is_empty() && table_has_notes(table) {
+                // 새로 수용한 단일 빈 줄/공백 캐리어의 각주 예약은
+                // 일반 경로가 담당한다. 기존 복수 제어 줄의 처리는 유지한다.
+                if (lines.len() == 1 || !para.text.is_empty()) && table_has_notes(table) {
                     return false;
                 }
                 measured_tables
