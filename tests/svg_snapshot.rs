@@ -21,9 +21,10 @@
 //! These tests assume:
 //! - `render_page_svg_native` output is deterministic for a fixed input
 //!   (no timestamps, no random IDs, no host-font-dependent glyph IDs).
-//! - The native entry point embeds only document-owned font bytes and emits
-//!   their `@font-face` rules in sorted family-name order. Host font files are
-//!   never read by this path, so host state cannot leak into the snapshot.
+//! - 비교 원문은 문서 내장 폰트만 포함하며 호스트 폰트를 읽지 않는다.
+//!   실패 때 사람이 확인하는 `.actual.svg` 사본만 Full 폰트 API를 사용한다.
+//!   원문은 `output/svg-snapshot/`에 보존하므로 진단 사본의 호스트 폰트가
+//!   snapshot 비교나 golden 기대값에 들어가지 않는다.
 //!
 //! If a flake is observed, the first debugging step is to diff two
 //! back-to-back runs on the same machine. Host-specific variance
@@ -69,16 +70,27 @@ fn check_snapshot(hwpx_relpath: &str, page: u32, golden_name: &str) {
     });
 
     if actual != expected {
-        // Write the actual output next to the golden for local inspection
-        // without polluting the committed tree.
+        // 비교 원문은 output에 보존한다. 사람이 여는 사본은 윤곽선 폰트를
+        // 공급해 Chrome의 로컬 비트맵 폰트 선택으로 생기는 두부문자를 방지한다.
+        // 폰트 공급 사본은 golden 비교나 기대값 갱신에 사용하지 않는다.
+        let raw_path = PathBuf::from(repo_root)
+            .join("output/svg-snapshot")
+            .join(format!("{golden_name}.actual.svg"));
+        fs::create_dir_all(raw_path.parent().unwrap()).expect("비교 원문 디렉터리 생성");
+        fs::write(&raw_path, &actual).expect("비교 원문 SVG 보존");
+        let preview = doc
+            .render_page_svg_with_fonts(page, rhwp::renderer::svg::FontEmbedMode::Full, &[])
+            .expect("폰트 공급 진단 SVG 렌더링");
         let actual_path = golden_path.with_extension("actual.svg");
-        let _ = fs::write(&actual_path, &actual);
+        fs::write(&actual_path, &preview).expect("폰트 공급 진단 SVG 보존");
         panic!(
             "SVG snapshot mismatch for {}.\n  expected: {}\n  actual:   {}\n\
+             raw comparison SVG: {}\n\
              Inspect the diff; if intentional, rerun with UPDATE_GOLDEN=1.",
             golden_name,
             golden_path.display(),
-            actual_path.display()
+            actual_path.display(),
+            raw_path.display()
         );
     }
 }

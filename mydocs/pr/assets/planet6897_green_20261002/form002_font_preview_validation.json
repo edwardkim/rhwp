@@ -1,0 +1,42 @@
+{
+  "paint_svg_unchanged_after_css_removal": true,
+  "embedded_faces": [
+    {
+      "family": "맑은 고딕",
+      "bitmap_tables": []
+    },
+    {
+      "family": "맑은 고딕",
+      "bitmap_tables": []
+    },
+    {
+      "family": "함초롬돋움",
+      "bitmap_tables": []
+    },
+    {
+      "family": "함초롬바탕",
+      "bitmap_tables": []
+    },
+    {
+      "family": "함초롬바탕",
+      "bitmap_tables": []
+    },
+    {
+      "family": "휴먼명조",
+      "bitmap_tables": []
+    },
+    {
+      "family": "휴먼명조",
+      "bitmap_tables": []
+    }
+  ],
+  "snapshot_comparison_still_fails": true,
+  "golden_updated": false,
+  "test_case": "svg_snapshot::form_002_page_0",
+  "focused_exit": 100,
+  "focused_test_result": "FAIL: existing golden geometry mismatch retained",
+  "preview_matches_chrome_checked_cli_svg": true,
+  "raw_comparison_path": "output/svg-snapshot/form-002/page-0.actual.svg",
+  "preview_path": "tests/golden_svg/form-002/page-0.actual.svg",
+  "preview_sha256": "2abbb2ed602e09a1012035da552e6bd457f7a2fd296c429e32448e525e94bec1"
+}
