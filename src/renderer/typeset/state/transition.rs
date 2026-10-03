@@ -95,6 +95,7 @@ impl TypesetState {
                 wrap_around_derived_band: false,
                 behind_float_table_para: None,
                 next_para_first_stored_vpos: None,
+                next_para_lane_probe: None,
                 next_para_is_empty_float_table_anchor: false,
                 next_para_is_plain_text: false,
                 behind_pending_absorbs: Vec::new(),

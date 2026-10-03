@@ -4737,7 +4737,18 @@ impl TypesetEngine {
                 == 2
             && para.line_segs.iter().any(|seg| !is_synthetic_line_seg(seg));
 
-        if is_wrap_around_table && pre_height > 0.0 {
+        if is_wrap_around_table
+            && pre_height > 0.0
+            && crate::renderer::float_placement::square_successor_starts_beside_table(
+                para,
+                st.next_para_lane_probe,
+                table,
+            )
+        {
+            // [#7548] 다음 문단이 표 옆 차선에서 시작하면 표 높이를 흐름에 예약하지
+            // 않는다 — layout 의 같은 판정과 짝(host 본문 끝에서 잇는다).
+            st.advance_flow_by(pre_height);
+        } else if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
             st.advance_flow_by(pre_height.max(table_bottom));

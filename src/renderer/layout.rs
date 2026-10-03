@@ -12339,6 +12339,17 @@ impl LayoutEngine {
                     // [#4533 ⑥] 표는 예약 공간(앵커 위)에 이미 놓였다 — 흐름은
                     // 전진하지 않는다(앵커·후속 문단이 사다리 위치 유지).
                     table_y_before
+                } else if crate::renderer::float_placement::square_successor_starts_beside_table(
+                    para,
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
+                    t,
+                ) {
+                    // [#7548] 어울림 표는 흐름을 표 하단까지 밀지 않는다. 다음 문단의
+                    // 저장 첫 줄이 표 옆 차선에 놓여 있으면 한/글은 그 줄을 표 띠 옆에
+                    // 그린다. 커서는 host 본문 끝(아래 #1218 보정)에서 이어진다.
+                    table_y_before
                 } else {
                     empty_rowbreak_flow_end.unwrap_or(table_flow_end)
                 };

@@ -284,8 +284,10 @@ impl TypesetState {
         vpos: Option<i32>,
         empty_float: bool,
         plain_text: bool,
+        lane_probe: Option<crate::renderer::float_placement::StoredLineLaneProbe>,
     ) {
         self.data.next_para_first_stored_vpos = vpos;
+        self.data.next_para_lane_probe = lane_probe;
         self.data.next_para_is_empty_float_table_anchor = empty_float;
         self.data.next_para_is_plain_text = plain_text;
     }
