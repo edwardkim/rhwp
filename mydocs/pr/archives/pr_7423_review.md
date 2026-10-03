@@ -354,3 +354,20 @@ last_verified: 2026-10-03
 - 결과: 직전 실패27건 선택 nextest22PASS/5FAIL(exit100,86.8초), 기존 px 교정5건 모두PASS(exit0). 검사 기대값·baseline 변경 및 신규 검사0건입니다. Native/fresh WASM 전29쪽 sample2 최저92.22927%, 전4쪽 사회 시험지 최저95.13497%, 미달0쪽이며 페이지별 점수가 모두 같습니다. 사회 시험지 1쪽 PNG를 직접 확인했습니다. Native/WASM32/workspace all-target Clippy와workspace 빌드, fmt/diff 및 base 고정 manifest exit0입니다. Mac no-opt WASM 대체 빌드이며 Docker 검증이 아닙니다.
 - 다음 실제 차단의 독립 PDF를 생성해 진단했습니다: #5755 3쪽 최저73.9298%, #5723 1쪽77.28046%, task2137 1쪽68.6758%. 작은 문서는 현 브랜치에서 개선하며 실패를 기준값 갱신으로 숨기지 않습니다. 중첩 HWP 시각 미달·다른 문서 전쪽 검증·최종 전체 nextest가 남아 통합 PR은 보류합니다.
 - [단계 검증 원장](../assets/planet6897_green_20261002/closed_tac_axis_validation.json), [sample2 Native](../assets/planet6897_green_20261002/closed_tac_axis_sample2_native.tsv), [sample2 fresh WASM](../assets/planet6897_green_20261002/closed_tac_axis_sample2_wasm.tsv), [사회 Native](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_native.tsv), [사회 fresh WASM](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_wasm.tsv), [사회 1쪽 review](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_p1_review.png).
+
+
+### 작은 시각 미달 문서 #5723 보정 분석
+
+- 입력은 원본 14쪽 문단을 절단한 기존 1쪽 fixture `samples/issue5723/coanchored_square_pair_center_slack.hwpx`입니다. engine2020으로 생성한 독립 PDF도1쪽이며 정상 본문→두 표→문제점의 순서를 확인했습니다. Native77.28046%, 텍스트 겹침29건입니다.
+- 생산→소비: typeset과 `build_single_column`의 HeightCursor는 첫 저장 원점15117HU를 단 기준으로 확립합니다. 그런데 `layout_composed_paragraph`의 첫 문단 fallback은 개체 없는 빈 첫 줄에도15117HU를 여백으로 다시 더합니다. 다음 본문은 약201.56px 내려가고, 확정 TAC 배치는 올바른 단 기준을 소비해 본문과 표가 겹칩니다. 빈 줄의17.1px 높이·간격 소비와 누적 저장 원점은 서로 다른 상태입니다.
+- 수정 범위는 개체 없는 빈 시작 줄의 추가 원점 가산만입니다. 글자 또는 그림/도형/수식/표가 있는 첫 줄의 기존 변위 fallback은 유지합니다. 기존 #5723 검사·현재 실제 차단·표 및 그림 시작 대조군과 전체1쪽 Native/fresh WASM을 확인한 뒤 결과를 기록합니다. 새 검사와 baseline 완화는 하지 않습니다.
+
+- 첫 후보 결과: 본문/표 겹침29→0건, 전체1쪽 일치율77.28046→89.23725%로 개선됐으나 미달입니다. 원점 보정만으로 완료하지 않습니다. 직접 PNG와 내장 폰트 이름 테이블을 대조했으며 ‘한컴 고딕’으로 등록된 실제 내장 face가 `Noto Sans KR ExtraLight`임을 확인했습니다. 정상 PDF는 `HancomGothicRegular/Bold`를 내장합니다. Mac에 직접 설치된 두 실제 파일(400/700)이 있음에도 파일명 후보 누락으로 폴백했습니다. 실제 Regular/Bold 이름을 파일 후보와 local 별칭에 연결한 뒤 새 출력으로 판정합니다.
+
+- 가로 배치 근인: 한컴 고딕은 기존 폭 메트릭에 없어 숫자를0.5em 기본 폭으로 측정합니다. Native `2021`25.3px와 독립 PDF 약29.4px의 차이는 설치 TTF hmtx(583/1000em·원본 장평95%)로 설명됩니다. Regular/Bold hmtx와 Unicode cmap에서 ASCII/문장 부호/한글 폭을 추출해 measured overlay 뒤에 추가하며 기존 엔트리 순서와 폭은 변경하지 않습니다. 11,172개 한글은 두 face 모두932/1000em입니다. 원본 비공개 글꼴 파일은 커밋하지 않고 해시·추출값을 증적으로 보존합니다.
+
+- 최종 시각 결과: Native/fresh WASM 각각 전체1쪽90.04699%(exit0), PDF와 쪽수 동일. 직접 review/overlay에서 앞 본문→두 표→문제점의 소속·순서와 누락 없는 출력을 확인했습니다. 텍스트 겹침29→0, 표 겹침/본문 넘침/용지 밖0건입니다. 2px 실루엣 보조값의90% 게이트 통과이며 엄격한 픽셀 일치나 차이0을 주장하지 않습니다. 원본 TTF와 동일한 메트릭/내장 face로 실제 출력이 개선됐고 임계값은 변경하지 않았습니다.
+- 선택 nextest28건24PASS/4FAIL(exit100,77.404초): 직전 실패27건과 기존 #5723 검사1건입니다. 기대값·baseline 변경 및 신규검사0건. 다른 작은 문서 #5755 3쪽은73.9298%, task2137 1쪽은68.6758%로 미달이 유지됩니다. 작은 문서 이관이나 회귀 제거는 하지 않으며 다음 개별 보정으로 처리합니다. 전체 회귀와 다른 문서 전쪽 검증이 남아 통합 PR 준비는 보류입니다.
+- [검증 원장](../assets/planet6897_green_20261002/blank_origin5723_validation.json), [Native TSV](../assets/planet6897_green_20261002/blank_origin5723_native.tsv), [fresh WASM TSV](../assets/planet6897_green_20261002/blank_origin5723_wasm.tsv), [review PNG](../assets/planet6897_green_20261002/blank_origin5723_review.png), [overlay PNG](../assets/planet6897_green_20261002/blank_origin5723_overlay.png), [독립 기준 PDF](../../../pdf/issue5723/coanchored_square_pair_center_slack-2020.pdf). 로그는 ignored output에만 보존합니다.
+
+- 이 후보 Native/WASM32/workspace all-target Clippy, workspace 빌드, fmt/diff 및 base 고정 suite manifest 모두exit0입니다. generated harness는 재준비 후 검사했으며 커밋하지 않습니다. Mac fresh WASM은no-opt 대체 빌드이며 Docker 최적화 검증은 아닙니다.

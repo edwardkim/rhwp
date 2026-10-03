@@ -4863,6 +4863,14 @@ impl LayoutEngine {
             && spacing_before == 0.0
             && is_column_top
             && para_index == 0
+            // 개체 없는 빈 시작 줄의 양수 좌표는 절단 전 저장 사다리의 원점이다.
+            // 줄 높이·간격은 그대로 소비하지만 그 원점을 빈 여백으로 다시 더하지 않는다.
+            && para.is_some_and(|p| {
+                !p.text.trim().is_empty()
+                    || p.controls.iter().any(|control| {
+                        matches!(control, Control::Picture(_) | Control::Shape(_) | Control::Equation(_) | Control::Table(_))
+                    })
+            })
             && !has_para_topbottom_float
             && !suppress_column_top_vpos_fallback
         {
