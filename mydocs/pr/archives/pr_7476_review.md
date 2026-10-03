@@ -413,3 +413,11 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - [기존 #7445 이관 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956)에 두 함수가 명시돼 있음을 확인하고 [현재 실패 추가 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974346179)을 게시했습니다. 현재 실제 차단인 `repaired_public_table_keeps_its_leading_rows_inside_the_paper`와 `issue_6855_rewound_line_starts_the_next_page`만 제거합니다. 원문·PDF·다른baseline·production source는 유지합니다. 통과한 같은파일 `issue_6855_band_page_paints_nothing_below_the_paper`는 그대로 재실행1PASS·실패0입니다.
 - [검증·제외 범위](../assets/planet6897_green_20261002/cbta6764_blocker_analysis.json), [Native TSV](../assets/planet6897_green_20261002/cbta6764_blocker_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/cbta6764_blocker_wasm.tsv), [내용 대응 review PNG](../assets/planet6897_green_20261002/cbta6764_native184_pdf186_review.png). 원본은samples와기존#7445자산에동일SHA로보존하며 새fixture/test함수0건입니다.
 - fmt·Native/WASM Clippy·workspace build/all-target Clippy 통과. 최초manifest는fmt 이후source길이에따른파생suite drift로실패했고, 다시prepare→fmtcheck→all-target Clippy→base대비manifest를수행하여모두exit0을확인했습니다. 공개댓글본문도API로일치·BOM없음을확인했습니다. 이문서의피델리티해결이나최종전체통과로세지않으며 다음은#7359와#5701을개별처리합니다.
+
+### #5701 정확한 슬라이스 정본 및 현재 Skia 완료
+
+- 후보 `6521fe466` Skia 필수검사: lib4109건·missing-picture2건·direct-PDF4건 모두PASS·exit0입니다. 기본 전체 회귀의 알려진 #7359/#5701 차단과 시각 보류는 별도이며 PR 준비 완료로 보고하지 않습니다.
+- #5701의 기존26KB IR 슬라이스를 바이트 동일하게 한컴2020에 전달해 정본을 생성했습니다. job `a49327ba-9db6-49d4-bcb6-0d0ff3a6a7f3`,3쪽74,414B입니다. Native/fresh WASM도3쪽이므로 기존2쪽 전제는 독립 출력과 다릅니다. 그러나 전3쪽 일치율74.52520%·16.00393%·1.68954%이며 양 backend 동일합니다.
+- 첫쪽 review에서 정본이 이월한 표 마지막 두 행을 Native가 한쪽에 남기고, 표 호스트의 앞/뒤 글줄과 후속 문단도 잘못 소유하는 것을 직접 확인했습니다. `dump-pages`는 Table pi7 뒤 PartialParagraph pi7 전체0..4와 FullParagraph pi8을 같은쪽에 둡니다. paint 종료의 하단 보정만으로 쪽 소유를 복구할 수 없습니다. 작은3쪽 입력은 현 브랜치 보정 대상이며 테스트 숫자만 바꾸거나 삭제하지 않습니다.
+- [새 정본 PDF](../../../pdf/issue5701/1270000-202200012-slice-p76-rewound-host-2020.pdf), [분석·정확한 입력/출력 SHA](../assets/planet6897_green_20261002/slice5701_exact_reference_analysis.json), [첫쪽 review](../assets/planet6897_green_20261002/slice5701_before_native_p1_review.png). 원본 문서를 그대로 보존했으며 production/test 변경0건입니다.
+- #7359 전체103쪽 Native TSV 완료:90%미만24쪽·최저79쪽17.93029%, 누락0. [전103쪽 TSV](../assets/planet6897_green_20261002/chemical7359_current_native_all103.tsv). fresh WASM 전103쪽은 미실행이며 해당 회귀의 보정/이관은 아직 결정하지 않았습니다.
