@@ -997,14 +997,15 @@
   },
   "integration_pr_ready": false,
   "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
-  "latest_stage_evidence": "deferred_pr1674_validation.json",
+  "latest_stage_evidence": "overtime_flow_validation.json",
   "current_focused_failures": {
-    "run": 89,
-    "passed": 85,
-    "failed": 4,
-    "exit_code": 100,
-    "test_seconds": 150.809,
-    "scope": "이관 변경 후 관련 corpus와 유지한 기존 검사; 전체 회귀 아님"
+    "run": 31,
+    "passed": 31,
+    "failed": 0,
+    "exit_code": 0,
+    "test_seconds": 70.343,
+    "scope": "하단 고정 표·관련 원점·기존 corpus; 전체 회귀 아님"
   },
-  "renderer_candidate": "미커밋 #2137 후보; 일반성 및 남은 실패 검토 중"
+  "renderer_candidate": "하단 고정 표의 호스트 줄과 아래 바깥 여백 소비 보정 완료; 전체 nextest 대기",
+  "current_candidate_whole_nextest_validated": false
 }

@@ -636,7 +636,8 @@ impl TypesetEngine {
                     }
                     st.advance_column_or_new_page();
                 }
-                let flow_before = st.current_height;
+                // 하단 고정 표 본체는 절대배치되고 호스트 글줄은 본문 흐름을
+                // 소비한다. 본체 높이를 넣고 전부 롤백하면 함께 방출한 공백 줄도 잃는다.
                 self.place_table_with_text(
                     st,
                     para_idx,
@@ -645,16 +646,15 @@ impl TypesetEngine {
                     table,
                     fmt,
                     para_start_height,
-                    block_height,
+                    0.0,
                     is_first_placed,
                     is_last_placed,
                     ft.strict_following_plain_text_fit,
                     styles,
                 );
-                // 배타 모델: 블록은 flow 를 소비하지 않는다(하단 절대배치) — 소비 롤백
-                // 후 하단 배타 영역으로 예약. 저장-flow 소비 누계는 후속 틀 vpos 보정용.
-                let consumed = (st.current_height - flow_before).max(0.0);
-                st.align_flow_to(flow_before);
+                // 저장 사다리에서 뺄 몫도 절대배치 본체만이다. 호스트 글줄의
+                // 전진은 위에서 발행한 PartialParagraph의 같은 메트릭을 유지한다.
+                let consumed = block_height.max(0.0);
                 st.reserve_bottom_fixed_flow(
                     consumed,
                     st.current_bottom_fixed_exclusion.max(block_height + v_off),

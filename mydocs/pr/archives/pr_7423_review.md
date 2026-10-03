@@ -425,3 +425,22 @@ last_verified: 2026-10-03
 - 입력·새정상PDF·IR필드parser검사를보존합니다. PDF는50MB미만으로함께커밋하며다른문서와표배치코드는변경하지않습니다. 전체쪽수/피델리티개선후Native/freshWASM90%이상근거로의미관계회귀를복원해야합니다.
 
 - 이관후관련33건33PASS/0FAIL(72.923초),3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. [공통47쪽TSV](../assets/planet6897_green_20261002/deferred_issue5699_native_partial.tsv),[14쪽review](../assets/planet6897_green_20261002/deferred_issue5699_p14_review.png),[검증원장](../assets/planet6897_green_20261002/deferred_issue5699_validation.json),[#7445추가근거](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5967219175)를보존했습니다. 전체49쪽과WASM검증통과를주장하지않습니다.
+
+
+### 1쪽 PC 셧다운 결재문서의 메인터너 보정 분석
+
+- 입력은`samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx`이며같은fixture를engine2020으로직접재출력한PDF와Native모두1쪽입니다. Native55.15038%,text-overlap1건입니다. 10쪽미만문서는현브랜치에서개선하라는사용자지시에따라이관후보를철회했고기존검사·원장·corpus를모두복원했습니다. 이관커밋/원격등록은없습니다.
+- 원문pi2의‘(서소문청사 1동 4층)’은파싱·렌더트리에존재하나TAC표pi4가약36.96px위로올라와가립니다. 측정lazy원점2772HU와paint원점0의불일치가확정TAC배치에전달됩니다. page-bound하단결재표는흐름을소비하지않아야하고,본문줄은헤더표뒤의공통원점을소비해야합니다. 측정/paint의첫헤더표뒤흐름소비와지연원점확립을추적한뒤공통결과를수정하며픽셀값을새로고정하지않습니다.
+
+- 추가추적에서25.6px는헤더본문의추가줄이아니라하단고정표pi1의별도공백호스트줄로확인했습니다. 측정은표본체와호스트줄을함께가산한뒤전부롤백하지만paint는PartialParagraph줄을소비합니다. 하단절대표는처음부터본체높이0으로발행하고호스트줄의기존메트릭을유지합니다. 저장vpos에서제외하는누계는본체높이만입니다. 첫visiblefloat표의확정프레임없는흐름하단에도paint와같이outer-bottom을포함하며프레임소유경로에는중복가산하지않습니다.
+
+- 첫후보Native1쪽55.15038→97.00756%,정상관악소방서1쪽99.54280%,문장가림과text-overlap1→0건입니다. 관련27건26PASS/1FAIL에서#2439의양수오프셋표아래여백중복소비를반례로확인했습니다. 실패후보의자체WASM/후속gate실행을중단했고성공근거로사용하지않습니다. 즉시흐름전진하는0/음수오프셋경로에만아래여백을소비하고양수오프셋배제밴드는기존재개소비를유지하도록수정합니다.
+- 기존#1658함수수3개를유지하면서PC셧다운검사에청사위치문단→신청표의소속/겹침관계를포함하고관악소방서의고정px3개를실제본문안포함·표→끝문단순서로바꿉니다. 새테스트는추가하지않으며최신후보에서양수오프셋#2439·하단고정·작은문서대조와freshWASM을재검증합니다.
+
+
+### 1쪽 PC 셧다운 호스트 줄·바깥 여백 보정 결과
+
+- Native/fresh WASM 모두1쪽55.15038→97.00756%입니다. 직접 review에서 청사 위치 문구가 신청 표에 가려지지 않고 본문→표→끝 문단 순서와 하단 결재 틀이 보존됨을 확인했습니다. text-overlap1→0,용지밖0,표겹침0건이며 본문 오른쪽 넘침2건은 기준 PDF에도 있는 경계이므로 완전 일치로 표현하지 않습니다. 원문·기존 회귀3함수·corpus·원장을 보존했고 이 문서는#7445로 이관하지 않았습니다.
+- 정상 관악소방서1쪽 Native/fresh WASM99.54280%,#5755전3쪽95.63360/99.13619/99.70540%,sample2전29쪽 Native/fresh WASM최저92.22927%·미달0쪽입니다. 양수 오프셋#2439 반례의텍스트겹침0·용지밖0·표겹침0건도 확인했습니다.
+- 관련31건31PASS/0FAIL(70.343초),최종 문구 assertion 수정후 기존#1658 3건3PASS(0.023초),Native/fresh WASM빌드와3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. 새 테스트0건이며 WASM은Mac no-opt대체빌드입니다. 현재 후보의 전체 nextest는 다음 단계에서 실행하며 통합PR은 아직 보류입니다.
+- [검증 원장](../assets/planet6897_green_20261002/overtime_flow_validation.json),[Native TSV](../assets/planet6897_green_20261002/overtime_flow_native.tsv),[fresh WASM TSV](../assets/planet6897_green_20261002/overtime_flow_wasm.tsv),[Native review](../assets/planet6897_green_20261002/overtime_flow_native_review.png),[fresh WASM review](../assets/planet6897_green_20261002/overtime_flow_wasm_review.png),[정상 대조 Native 전29쪽 TSV](../assets/planet6897_green_20261002/overtime_flow_sample2_native.tsv),[fresh WASM 전29쪽 TSV](../assets/planet6897_green_20261002/overtime_flow_sample2_wasm.tsv).

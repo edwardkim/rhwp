@@ -4881,6 +4881,10 @@ impl TypesetEngine {
                 placement.table_top = table_top;
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 placement.occupied_bottom
+            } else if signed_vertical_offset <= 0 {
+                // 흐름을 바로 전진시키는 표는 paint와 같이 아래 바깥여백까지
+                // 소비한다. 양수 오프셋의 배제 밴드는 후속 재개 경로가 소비한다.
+                table_bottom + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             } else {
                 table_bottom
             };
