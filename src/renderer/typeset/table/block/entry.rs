@@ -99,6 +99,7 @@ impl TypesetEngine {
                         0,
                         line,
                         boundary.current_page_vpos_base.unwrap_or(0),
+                        fmt.spacing_before,
                         self.dpi,
                     )
             }) {

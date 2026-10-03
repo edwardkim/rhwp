@@ -780,6 +780,7 @@ pub(super) fn prepare_forced_page_boundary(
                     0,
                     break_line,
                     current_page_vpos_base.unwrap_or(0),
+                    fmt.spacing_before,
                     dpi,
                 )
         })
@@ -808,6 +809,7 @@ pub(super) fn prepare_forced_page_boundary(
                 0,
                 *break_line,
                 current_page_vpos_base.unwrap_or(0),
+                fmt.spacing_before,
                 dpi,
             )
     });

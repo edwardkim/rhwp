@@ -3164,6 +3164,7 @@ fn stored_body_reset_fragment_matches_current_flow(
     start_line: usize,
     break_line: usize,
     current_page_vpos_base: i32,
+    spacing_before: f64,
     dpi: f64,
 ) -> bool {
     paragraph::scan::stored_body_reset_fragment_matches_current_flow(
@@ -3172,6 +3173,7 @@ fn stored_body_reset_fragment_matches_current_flow(
         start_line,
         break_line,
         current_page_vpos_base,
+        spacing_before,
         dpi,
     )
 }
