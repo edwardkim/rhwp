@@ -4838,18 +4838,14 @@ impl LayoutEngine {
             };
 
             // 최대 폰트 크기 계산 (line_height 최솟값 보정에도 사용)
+            // [#7398] 줄 상자는 선언 크기다. 상대 크기(`relSz`)를 곱한 그리는 크기를
+            // 쓰면 106% 문단의 줄 간격이 6% 늘어 조판(`composed_line_max_font_size`)과
+            // 갈라진다.
             let mut max_fs = comp_line
                 .runs
                 .iter()
                 .filter(|run| crate::renderer::composed_run_reserves_font_height(run))
-                .map(|r| {
-                    let ts = r.text_style(styles);
-                    if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    }
-                })
+                .map(|r| r.line_box_font_size(styles))
                 .fold(0.0f64, f64::max);
             if let Some((_, _, font_size)) = empty_no_lineseg_metrics {
                 max_fs = font_size;

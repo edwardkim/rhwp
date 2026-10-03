@@ -234,8 +234,13 @@ fn stored_empty_full_band_tac_table_top(
 ///
 /// `text_height`는 표의 선언 outer-box와 같고 다음 문단의 `vertical_pos`가
 /// `vertical_pos + text_height + line_spacing`과 일치해야 한다. 따라서 일반 TAC의
-/// 추정 spacing이 아니라 한컴이 저장한 다음 문단 top만 사용한다. 앞 장식 도형 때문에
+/// 추정 spacing이 아니라 한컴이 저장한 다음 문단 top만 사용한다. 앞 장식 개체 때문에
 /// 일반 TAC 후가산 경로가 소유 줄을 찾지 못하는 HWP5 full-band carrier에만 적용한다.
+///
+/// 앞 개체 판정은 "보이는가"가 아니라 "흐름을 전진시키는가"다. 글앞·글뒤 개체(그림·
+/// 도형)는 줄을 점유하지 않으므로 소유 줄의 줄간격이 그대로 다음 문단 top에 남는다
+/// (#7431 exam_eng p2 pi104: 글뒤 그림 2개 + TAC 표, 한컴 2020·2022 PDF 모두 저장
+/// top을 따른다). 자리차지·어울림 개체는 별도 띠로 흐름을 밀기 때문에(#4622) 제외한다.
 fn stored_empty_full_band_tac_table_flow_end(
     para: &Paragraph,
     control_index: usize,
@@ -248,7 +253,7 @@ fn stored_empty_full_band_tac_table_flow_end(
         || !table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || para.stored_text_partition_dirty
-        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
+        || !tac_has_only_non_flow_decorations_before(para, control_index)
     {
         return None;
     }
@@ -3187,6 +3192,27 @@ fn tac_has_only_in_front_decoration_shapes_before(para: &Paragraph, control_inde
                     shape.common().text_wrap,
                     crate::model::shape::TextWrap::InFrontOfText
                 ))
+        })
+}
+
+/// TAC 표 앞 컨트롤이 모두 흐름을 전진시키지 않는 장식 개체(글앞·글뒤의 비-TAC
+/// 그림·도형)인지 판정한다. 가시성은 기준이 아니다 — 글뒤 그림은 보이지만 줄을
+/// 점유하지 않는다. 자리차지·어울림 개체와 글자처럼 개체는 흐름 참여자라 제외한다.
+fn tac_has_only_non_flow_decorations_before(para: &Paragraph, control_index: usize) -> bool {
+    let before = &para.controls[..control_index.min(para.controls.len())];
+    !before.is_empty()
+        && before.iter().all(|control| {
+            let common = match control {
+                Control::Shape(shape) => shape.common(),
+                Control::Picture(picture) => &picture.common,
+                _ => return false,
+            };
+            !common.treat_as_char
+                && matches!(
+                    common.text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                )
         })
 }
 
@@ -16095,14 +16121,7 @@ impl LayoutEngine {
             let max_fs = line
                 .runs
                 .iter()
-                .map(|r| {
-                    let ts = r.text_style(styles);
-                    if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    }
-                })
+                .map(|r| r.line_box_font_size(styles))
                 .fold(0.0f64, f64::max);
             if (raw_lh - shape_height_px).abs() <= 4.0 && raw_lh > max_fs * 2.0 {
                 let runs_all_whitespace = line.runs.iter().all(|r| r.text.trim().is_empty());

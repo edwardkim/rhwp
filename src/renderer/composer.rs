@@ -57,6 +57,22 @@ impl ComposedTextRun {
         }
         style
     }
+
+    /// 줄 상자를 정하는 글자 크기(px). 글자 모양의 **선언 크기**다.
+    ///
+    /// [#7398] 언어별 상대 크기(`relSz`)는 글리프 폭과 그리는 크기에만 곱한다
+    /// ([`Self::text_style`]). 한/글은 줄 상자를 기준 크기로 둔다 — `exam_eng.hwp`
+    /// 의 라틴 106% 문단도 저장 `LINE_SEG` 가 `lh = th = 1150`(기준 크기)이다.
+    /// 조판의 `composed_line_max_font_size` 와 같은 값을 소비해야 측정과 배치의
+    /// 줄 진행이 갈라지지 않는다.
+    pub(crate) fn line_box_font_size(&self, styles: &ResolvedStyleSet) -> f64 {
+        styles
+            .char_styles
+            .get(self.char_style_id as usize)
+            .map(|style| style.font_size)
+            .filter(|size| *size > 0.0)
+            .unwrap_or(12.0)
+    }
 }
 
 pub(crate) mod supplemental_clusters;
