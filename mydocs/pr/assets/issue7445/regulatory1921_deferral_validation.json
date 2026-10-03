@@ -262,5 +262,12 @@
     "failed": 0,
     "scope": "유지한 #1921 4건과 #6797 5건"
   },
-  "document_links_exit": 0
+  "document_links_exit": 0,
+  "publication": {
+    "id": 5970120438,
+    "url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5970120438",
+    "body_sha256": "52494718395680ce4d40700f4fc7034805fb223ddbe60d312764e39e653ee684",
+    "verified_api_body_exact": true,
+    "local_correction_commit": "124c026c9ac4c0ef7d0b0efee08466b673024563"
+  }
 }
