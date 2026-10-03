@@ -743,9 +743,11 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
         if (whitespace_carrier || (lines.is_empty() && owner > 0))
             && (table.caption.is_some()
                 || owner == 0
-                || para.line_segs[..owner]
-                    .iter()
-                    .any(|blank| blank.text_height <= 0 || blank.line_spacing < 0)
+                || para.line_segs[..owner].iter().any(|blank| {
+                    // 음수 줄간격도 실제 줄 전진량이 유효하면 저장 줄의 일부다.
+                    blank.text_height <= 0
+                        || i64::from(blank.text_height) + i64::from(blank.line_spacing) < 0
+                })
                 || i64::from(seg.text_height) != outer_height
                 || para.line_segs[..owner].windows(2).any(|pair| {
                     i64::from(pair[0].vertical_pos)

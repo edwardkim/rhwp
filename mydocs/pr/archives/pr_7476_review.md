@@ -297,3 +297,8 @@ last_verified: 2026-10-02
 - 마지막 생산 코드에서 Native full-font print SVG/렌더 트리와 fresh WASM raw SVG/렌더 트리가 실제 시각 비교 출력과 전9쪽 바이트 동일함을 확인했습니다. 앞선 직접 raster 비교의 Native/WASM 전9쪽 최저94.28413%·미달0 근거를 연결하며 추가 재래스터화로 보고하지 않습니다. 빈 줄 점유·양수offset 바깥상자 관계는 이전 실제 render tree에서2조건 FAIL, 현재2조건 PASS를 확인했고 보완한 Rust 함수도 PASS입니다. 새 test 함수/fixture·baseline·기준 PDF 변경0건입니다.
 - [최종 원장](../assets/planet6897_green_20261002/h01_correction_validation.json), [Native 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_native.tsv), [WASM 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_wasm.tsv), [1쪽 review](../assets/planet6897_green_20261002/h01_corrected_native_p1_review.png), [1쪽 overlay](../assets/planet6897_green_20261002/h01_corrected_native_p1_overlay.png). 첫 페이지에서 마지막 표 약3px 및 제목 글자 미세 차이는 잔존합니다.
 - h01의90% 미달 보류 사유를 해소했습니다. 다른 시각 보류와 최신215쪽 전체 비교·최종 전체 회귀는 별도 미완료이며 #7476/통합 PR 전체를 승인 완료로 표현하지 않습니다. 이 단계 커밋 후 전체 nextest를 실행합니다.
+
+### 전체 검사에서 확인한 메인터너 보정의 반례(#7103)
+
+- h01 메인터너 보정에서 추가한 빈 줄 검증이 음수 줄간격을 무조건 거절해 기존 복수 TAC 표의 원문 계획을 무효화했습니다. 기여자 원 PR의 결함으로 분류하지 않습니다. 원문 빈 줄 높이300HU·간격-92HU·다음 원점208HU는 정상이며, 실제 전진량과 저장 원점 연결을 검사하도록 수정했습니다.
+- 기존4건4FAIL→4PASS, 기존2건의 절대 PDF 좌표를 원문 표 높이·저장 줄 간격·본문 포함·내용 순서로 변경한 뒤에도4PASS입니다. Native/fresh WASM 전1쪽95.54807%, h01 전9쪽 SVG/렌더 트리는 양 backend에서 기존 시각 증적과 바이트 동일합니다. 새 test 함수/fixture/golden은 추가하지 않았습니다. [검증 원장](../assets/planet6897_green_20261002/tac7103_correction_validation.json), [review](../assets/planet6897_green_20261002/tac7103_corrected_native_p1_review.png). 다른 전체 실패와 시각 보류는 미완료입니다.
