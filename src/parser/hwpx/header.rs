@@ -1136,6 +1136,13 @@ fn parse_para_shape_child(
                             ps.attr1 &= !(1 << 19);
                         }
                     }
+                    b"lineWrap" => {
+                        // [#6875] 문단 "한 줄로 입력" — HWP5 ParaShape attr2 bits 0-1.
+                        // 종전엔 읽지 않아 x2h·x2x 왕복에서 SQUEEZE 문단이 BREAK 로
+                        // 굳고, 한/글이 그 문단을 여러 줄로 다시 나눠 쪽수가 갈렸다.
+                        ps.attr2 = (ps.attr2 & !PARA_ATTR2_LINE_WRAP_MASK)
+                            | para_line_wrap_bits(&attr_str(&attr));
+                    }
                     _ => {}
                 }
             }
