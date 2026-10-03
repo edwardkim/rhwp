@@ -809,7 +809,9 @@ pub(crate) fn render_paragraph_parts(
     // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
     // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
     // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
-    if ctx.line_segs_on_hwpx_axis {
+    // [#7526] rhwp 원본 마커 문서는 문단마다 가른다 — HWPX 에서 읽은 그대로인 문단(보정폭
+    // 0 아님)만 날값을 둔다.
+    if ctx.line_segs_on_hwpx_axis || para.hwpx_axis_shift != 0 {
         hwp5_only_slot_positions.clear();
     }
     // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
