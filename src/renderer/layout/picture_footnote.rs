@@ -1604,7 +1604,8 @@ impl LayoutEngine {
                         para_shape_id: None,
                         section_index: Some(marker_section),
                         para_index: Some(marker_para),
-                        char_start: Some(char_offset),
+                        // 번호 대신 그리지 않은 문자는 원본 문단의 주소에는 남는다.
+                        char_start: Some(char_offset + skipped),
                         cell_context: None,
                         is_para_end: false,
                         is_line_break_end: false,
