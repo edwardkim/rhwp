@@ -2494,8 +2494,16 @@ fn paragraph_saved_vpos_reset_starts_new_page_after(
         return false;
     }
 
-    let next_first_vpos = next_para.line_segs.first().map(|s| s.vertical_pos);
-    let curr_last_vpos = current_para.line_segs.last().map(|s| s.vertical_pos);
+    let next_first_vpos = next_para
+        .line_segs
+        .first()
+        .filter(|s| !is_synthetic_line_seg(s))
+        .map(|s| s.vertical_pos);
+    let curr_last_vpos = current_para
+        .line_segs
+        .last()
+        .filter(|s| !is_synthetic_line_seg(s))
+        .map(|s| s.vertical_pos);
     let multi_col = col_count > 1;
     let allowed_top_vpos = if is_hwp3_variant { 1500 } else { 0 };
 
