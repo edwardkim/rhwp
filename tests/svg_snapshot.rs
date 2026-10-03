@@ -97,18 +97,83 @@ fn check_snapshot(hwpx_relpath: &str, page: u32, golden_name: &str) {
 
 #[test]
 fn form_002_page_0() {
-    // [Task #993] 골든 갱신 — 컷 모델이 분할 표의 큰 셀을 vpos 리셋(429.3px)에서
-    // 분할. 한컴 2022 PDF(pdf/hwpx/form-002-2022.pdf) 대조 결과 분할 콘텐츠
-    // 경계가 일치(페이지 1 끝 "…주사제형화 기술 개발", 페이지 2 시작
-    // "ㅇ PFC 나노산소운반체…"). 기존 px 모델은 분할 셀 박스를 콘텐츠보다
-    // 17.5px 길게(페이지 하단까지) 그렸으나 한컴은 콘텐츠 끝까지만 그린다.
-    // [#6976] 골든 재갱신 — 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
-    // 마지막 줄 줄간격(0.96px)을 배치 뒤에 접는다(429.33 -> 428.37). 이 문서는 정본
-    // (`pdf/hwpx/form-002-2022.pdf` 1쪽)이 같은 칸을 585.09..1024.27(h=439.18)로 **쪽까지**
-    // 채우므로 rhwp 상자는 이미 9.85px 짧았고, 접기로 10.81px 로 0.96px 더 짧아진다.
-    // 그 차이의 원인은 조각 상자를 쪽으로 고정하는 축(#7095)이 이 형상에서 발동하지
-    // 않는 것이고, 이 변경의 범위가 아니다 — 미해결로 남긴다.
-    check_snapshot("samples/hwpx/form-002.hwpx", 0, "form-002/page-0");
+    use serde_json::Value;
+
+    // 한컴2020 정본 전10쪽의 Native·fresh WASM 시각 검증을 선행한다.
+    // SVG 바이트·절대 좌표 대신 쪽수, 원본 표 소유, 분할 문단의 소속을 검사한다.
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwpx/form-002.hwpx");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&fs::read(path).expect("원문 읽기"))
+        .expect("원문 열기");
+    assert_eq!(doc.page_count(), 10, "독립 한컴 PDF의 전체 쪽수");
+    let owners = [
+        (0, 26, 27),
+        (0, 26, 27),
+        (2, 29, 28),
+        (2, 29, 28),
+        (3, 27, 27),
+        (3, 27, 27),
+        (4, 27, 27),
+        (4, 27, 27),
+        (5, 27, 27),
+        (5, 27, 27),
+    ];
+    for (page, (paragraph, rows, columns)) in owners.into_iter().enumerate() {
+        let tree: Value = serde_json::from_str(
+            &doc.get_page_render_tree(page as u32)
+                .expect("쪽별 렌더 트리"),
+        )
+        .expect("렌더 트리 JSON");
+        let mut pending = vec![&tree];
+        let table = loop {
+            let node = pending.pop().expect("모든 쪽에 원본 바깥 표가 표시된다");
+            if node["type"] == "Table" {
+                break node;
+            }
+            if let Some(children) = node["children"].as_array() {
+                pending.extend(children.iter().rev());
+            }
+        };
+        assert_eq!(table["pi"], paragraph, "{}쪽 원본 표 소유", page + 1);
+        assert_eq!(table["rows"], rows, "원본 표 행 수");
+        assert_eq!(table["cols"], columns, "원본 표 열 수");
+        if page < 2 {
+            let cell = table["children"]
+                .as_array()
+                .expect("표 자식")
+                .iter()
+                .find(|cell| cell["type"] == "Cell" && cell["row"] == 19 && cell["col"] == 0)
+                .expect("두 쪽에 이어지는 개발내용 칸");
+            let lines: Vec<_> = cell["children"]
+                .as_array()
+                .expect("칸 자식")
+                .iter()
+                .filter(|line| line["type"] == "TextLine")
+                .collect();
+            let (present, absent, phrase) = if page == 0 {
+                (13, 15, "주사제형화기술개발")
+            } else {
+                (15, 13, "PFC나노산소운반체의최적제조공정개발및GMP실증")
+            };
+            assert!(
+                lines.iter().any(|line| line["pi"] == present),
+                "쪽 소유 문단 보존"
+            );
+            assert!(
+                !lines.iter().any(|line| line["pi"] == absent),
+                "다른 쪽 문단 중복 방출 금지"
+            );
+            let text: String = lines
+                .iter()
+                .flat_map(|line| line["children"].as_array().expect("글줄 자식").iter())
+                .filter_map(|run| run["text"].as_str())
+                .collect();
+            let text: String = text.chars().filter(|ch| !ch.is_whitespace()).collect();
+            assert!(
+                text.contains(phrase),
+                "한컴 PDF에서 확인한 분할 경계 문구: {text}"
+            );
+        }
+    }
 }
 
 #[test]
