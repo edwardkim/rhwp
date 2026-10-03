@@ -1750,10 +1750,9 @@ impl TypesetEngine {
             } else {
                 split_candidate
             };
-            let split_candidate = match (split_candidate, render_fit_split) {
-                (Some(split), Some(render_split)) => Some(split.min(render_split)),
-                (split, render_split) => split.or(render_split),
-            };
+            // 렌더로 잰 분할 줄 수가 있으면 그 값을 쓴다 — 단 하단까지 실제로 들어가는 줄 수다.
+            // 저장 사다리 되감김 등 다른 분할 후보는 렌더 판정이 없을 때만 쓴다.
+            let split_candidate = render_fit_split.or(split_candidate);
             if self.emit_endnote_split(
                 st,
                 &fmt,

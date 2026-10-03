@@ -7930,6 +7930,8 @@ impl LayoutEngine {
         // 남기지 않으므로(`last_item_content_bottom` 을 비운다) 새 문항 제목의 기준으로 따로 든다.
         let mut last_endnote_content_bottom_y: Option<f64> = None;
         let mut prev_item_first_child = col_node.children.len();
+        // [#6574] 직전 미주 문단(인덱스, 배치 시작 y) — 같은 미주의 저장 사다리 후속 배치용.
+        let mut last_endnote_para_top: Option<(usize, f64)> = None;
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
                 (item_ordinal == 0)
@@ -9421,6 +9423,59 @@ impl LayoutEngine {
                 if let Some((origin, flow_end)) = picture_bottom_origin {
                     y_offset = origin;
                     saved_picture_empty_flow_end = Some(flow_end);
+                }
+            }
+            // [#6574] 같은 미주 안에서 저장 사다리가 끊김 없이 이어지는 다음 문단(앞 문단 마지막
+            // 줄 vpos + 줄 높이 + 줄간격 == 이 문단 첫 줄 vpos)은 앞 문단 시작 y + 저장 vpos 차에
+            // 놓는다. 저장 사다리는 그 문서를 저장한 한컴의 배치이고, 자리차지 표·빈 그림 host
+            // 뒤에서 rhwp 의 개체 기하 전진이 사다리보다 커지면(표 바깥 여백 등) 뒤 문단이 그만큼
+            // 내려간다.
+            let item_para_start = match item {
+                PageItem::FullParagraph { para_index } | PageItem::Table { para_index, .. } => {
+                    Some(*para_index)
+                }
+                PageItem::PartialParagraph {
+                    para_index,
+                    start_line: 0,
+                    ..
+                } => Some(*para_index),
+                _ => None,
+            };
+            if col_content.endnote_flow {
+                let stored_successor_y = item_para_start
+                    .zip(last_endnote_para_top)
+                    .filter(|(pi, (prev_pi, _))| {
+                        *pi == prev_pi + 1
+                            && *prev_pi >= self.endnote_para_base.get()
+                            && self.endnote_para_has_same_endnote_successor(*prev_pi)
+                    })
+                    .and_then(|(pi, (prev_pi, prev_top))| {
+                        let prev_last = paragraphs.get(prev_pi)?.line_segs.last()?;
+                        let prev_first = paragraphs.get(prev_pi)?.line_segs.first()?.vertical_pos;
+                        let cur_first = paragraphs.get(pi)?.line_segs.first()?.vertical_pos;
+                        let contiguous =
+                            prev_last.vertical_pos + prev_last.line_height + prev_last.line_spacing;
+                        ((cur_first - contiguous).abs() <= 2 && cur_first > prev_first)
+                            .then(|| prev_top + hwpunit_to_px(cur_first - prev_first, self.dpi))
+                    })
+                    // 앞 항목이 그린 글줄·개체 바닥 위로는 당기지 않는다(앞 문단을 사다리보다
+                    // 높게 그린 경우 겹친다).
+                    .filter(|target_y| {
+                        last_endnote_content_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
+                    });
+                if let Some(target_y) = stored_successor_y {
+                    let delta = target_y - y_offset;
+                    if delta > 0.05 {
+                        hcursor.shift_vpos_base_for_rendered_delta(delta);
+                    } else if delta < -0.05 {
+                        hcursor.shift_vpos_base_for_rendered_backtrack(-delta);
+                    }
+                    y_offset = target_y;
+                }
+            }
+            if let Some(pi) = item_para_start {
+                if last_endnote_para_top.is_none_or(|(prev_pi, _)| prev_pi != pi) {
+                    last_endnote_para_top = Some((pi, y_offset));
                 }
             }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을

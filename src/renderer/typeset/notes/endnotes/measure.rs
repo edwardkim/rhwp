@@ -181,6 +181,12 @@ impl TypesetEngine {
                 start_line: 0,
                 end_line: split,
             });
+            if en_ssot_debug() {
+                eprintln!(
+                    "EN_INKFIT_SPLIT pi={} split={} head_ink={:?}",
+                    en_para_idx, split, head
+                );
+            }
             if fits(head) {
                 return EndnoteRenderInkFit::SplitAt(split);
             }
