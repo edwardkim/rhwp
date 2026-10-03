@@ -441,9 +441,24 @@ fn resolve_line_metrics(
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
+            let line_owns_tac_table = comp.lines.len() == para.line_segs.len()
+                && para.controls.iter().enumerate().any(|(ci, control)| {
+                    matches!(control, Control::Table(table)
+                        if table.common.treat_as_char && table.common.height > 0
+                            && crate::renderer::layout::control_line_seg_index(para, ci) == Some(line_idx)
+                            && para.line_segs.get(line_idx).is_some_and(|seg|
+                                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                    && i64::from(seg.line_height) >= i64::from(table.common.height)))
+                });
             // Square wrap host 의 빈 wrap guide 줄은 높이를 제외하되, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 정상 advance 를 보존한다.
-            if has_picture_shape_square_wrap && runs_all_whitespace && !line_has_tac_control {
+            if has_picture_shape_square_wrap
+                && runs_all_whitespace
+                && !line_has_tac_control
+                // 같은 문자 위치 때문에 귀속 범위가 비어도 개체 소유 줄은 안내 줄이 아니다.
+                && !line_owns_tac_object
+                && !line_owns_tac_table
+            {
                 pairs.push((0.0, 0.0));
                 prev_line_reserved_tac_picture_height = None;
                 continue;

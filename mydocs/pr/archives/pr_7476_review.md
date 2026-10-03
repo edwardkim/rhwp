@@ -2,7 +2,7 @@
 kind: snapshot
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-02
+last_verified: 2026-10-04
 ---
 
 # PR #7476 검토 — 수정: #7418 재조판 줄 채움(condense·목록 마커·구두점 폭)과 host 글·칸 조각 기하를 한/글에 맞춤
@@ -313,3 +313,10 @@ last_verified: 2026-10-02
 - 새 한컴2020 PDF로 Native/fresh WASM 전6쪽 TSV가 동일하며 최저1쪽98.10308%·90미달0입니다. 원문2010 저장본의 engine2020 재출력 PDF를 커밋했고 쪽수6/6·쪽별 텍스트 동일을 확인했습니다.5쪽 원문 나눔고딕과 한컴 바탕 대체 글꼴 차이는 남습니다. 색 있는 표 배경의 실루엣100%를 글꼴 일치로 해석하지 않습니다.
 - 기존 각주 검사5함수는 유지하고, 낡은 절대 클릭 좌표를 실제 페이지0 마커의 구역·문단·제어·번호 소속으로 대체했습니다. 커서 offset과 삭제 후 마커 부재를 유지하며,3쪽 첫 줄의 문단 소속·2쪽 중복 부재를 기존 첫 함수에 보완했습니다. 최초 실패2건을 포함해5건5PASS입니다. 신규 `#[test]` 함수/fixture/golden 추가0·검사 삭제0입니다.
 - [검증 원장](../assets/planet6897_green_20261002/footnote598_final_validation.json), [Native 전6쪽](../assets/planet6897_green_20261002/footnote598_final_native_all6.tsv), [WASM 전6쪽](../assets/planet6897_green_20261002/footnote598_final_wasm_all6.tsv), [3쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p3_review.png), [5쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p5_review.png). 다른 전체 회귀 실패와12/215쪽 시각 보류는 남아 있어 통합 PR 승인/준비 완료로 표현하지 않습니다.
+
+### 어울림 그림 뒤 문단의 단 하단 넘침 보정(#6812)
+
+- 통합 후보의 기존 회귀20건 중1건은 그림을 추가했을 때 본문 둘째 줄이 단 하단3.64px 밖에 그려졌습니다. 세 줄 소속과 하단 포함을 확인하는 검사 관계는 정상이며, 기대값을 완화하지 않았습니다.
+- 메인터너 분석에서 첫 TAC 표 소유 줄을 Square 그림의 빈 안내 줄로 제외해 측정은 후행 간격0, paint는12px를 소비하는 불일치를 확인했습니다. 사진·도형 소유 helper에는 표가 포함되지 않으므로 실제 표 제어의 소속 줄과 원본 줄 높이 증거를 보완했습니다. 문서 번호·고정 위치에 따른 예외를 추가하지 않았습니다.
+- 기존20건20PASS와 관련12건12PASS(exit0), 새 검사·픽스쳐·golden 갱신0입니다. [검증 원장](../assets/planet6897_green_20261002/6812_table_owned_line_validation.json), [Native 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_native_all11.tsv), [WASM 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_wasm_all11.tsv), [7쪽 review](../assets/planet6897_green_20261002/6812_social6797_current_p7_review.png).
+- #6797은11/11쪽·최저92.15032%·미달0, #598 각주6쪽은 이전 출력과 동일합니다. fresh WASM 전17쪽 SVG는 Native와 동일합니다. 7쪽 첫 표의6.667px 상향은 이번 보정 이전 실행 파일에서도 확인되었으며 이전 원점 보정의 잔차로 재검토합니다. 전체 회귀 및 다른 문서 시각 보류가 남아 있어 승인/PR 준비 완료가 아닙니다.
