@@ -450,3 +450,16 @@ last_verified: 2026-10-03
 
 - 커밋`4df3f6e63`의 전체 nextest를8threads·no-fail-fast로 완료했습니다. Summary [ 576.984s] 10271 tests run: 10264 passed (9 slow), 7 failed, 50 skipped; exit100입니다. 총 소요903.567초에는 컴파일이 포함됩니다. 관련 집중 검사의 통과와 전체 통과를 구분하며 PR 준비는 보류합니다.
 - 남은 실패는#7062,#6192,#2470,#5941,#7147,#6797,#1921의7건입니다. 작은 문서는 이 브랜치에서 실제 출력을 개선한 후 기존 검사를 의미관계로 수정합니다. 이 단계에서 일괄 삭제·기준값 완화는 하지 않았습니다. [전체 실행 증거](../assets/planet6897_green_20261002/overtime_flow_full_nextest.json).
+
+
+### 2쪽 #6192 원 글꼴 공급과 기존 좌표 검사의 재검토 분석
+
+- 현재 fixture와 대응 PDF는2쪽입니다. 기존 검사의291.36px 등은 발췌 이전 물리4쪽에서 측정한 절대값이며 현재 PDF와 달라 그대로 배치를 고정할 수 없습니다. Native 직접 review는1쪽89.65731%로 경계·문구 위치는 대부분 일치하나 윤고딕 문구 획과 제목 폭이 다릅니다. 최저90%미만이므로 검사만 변경하지 않습니다.
+- SVG에‘한컴 윤고딕240’으로 내장된 face의 이름 테이블은Noto Sans KR ExtraLight였습니다. 검증호스트의HANYGO240.ttf는실제한글/영문family가‘한컴 윤고딕240’/‘Haan YGodic240’이며PDF의HaanYGodic24와대응합니다. Windows Fonts의HANYGO240.ttf와HY헤드라인M의H2HDRM.TTF를Mac Library/Fonts에직접복사했습니다. 설치본파일명과local별칭을연결해원face를공급하고전2쪽Native/freshWASM및정상대조를다시확인합니다. 글꼴파일은저장소에추가하지않습니다.
+
+- 원face공급후Native/freshWASM전2쪽89.19602/100.00000%로동일합니다. 기존폴백89.65731%보다점수가낮아졌어도원글꼴공급과시각통과를구분합니다. 기존회귀를수정/제거하지않고90%미달로보류합니다. Native/freshWASM빌드·3종Clippy/workspace빌드/fmt/suite준비·최신base고정manifest검사exit0입니다. 중간글꼴연결을커밋하고후속배치보정을계속합니다. [검증원장](../assets/planet6897_green_20261002/cell6192_font_validation.json),[Native TSV](../assets/planet6897_green_20261002/cell6192_font_native.tsv),[WASM TSV](../assets/planet6897_green_20261002/cell6192_font_wasm.tsv),[1쪽review](../assets/planet6897_green_20261002/cell6192_font_native_p1_review.png).
+
+### #6192 제목 여백의 사용자 지적 분석
+
+- 제목 셀 좌우 안쪽여백은원본141HU=1.88px이고rhwp에도적용됩니다. 셀x89.93..698.49,가용폭604.8px입니다. 상단텍스트는rhwp132.2/한컴132.048로차이가작으나,제목시작x는rhwp91.81/한컴100.00,끝은rhwp696.61/한컴688.43입니다. 제목전체가중앙을유지하면서양쪽으로늘어나므로단순셀padding누락이아닙니다.
+- 원문가운데정렬·자간−6%를`compute_line_extra_spacing`의음수자간underflow보정이칸가용폭까지양수보정하는경로와대조했습니다(`paragraph_layout.rs`2487..2545→effective_text_width→Center원점). 자연폭이칸보다크다는추정만으로작성된가운데정렬줄을칸폭까지다시채우는가정이여백을지웁니다. 셀margin값을늘리거나제목문구별예외를추가하지않고이폭보정계약을독립출력과반례로재검토할대상입니다. 이분석단계에서는해당조판코드를수정하지않았습니다.
