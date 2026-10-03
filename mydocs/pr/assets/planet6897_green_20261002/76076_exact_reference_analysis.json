@@ -49,7 +49,9 @@
     "suite": "regression_suite_004",
     "exit_code": 100,
     "new_overlap_count": 1,
-    "log": "output/pr-review/planet6897-green-20261002/76076-current-blocker.log"
+    "log": "output/pr-review/planet6897-green-20261002/76076-current-blocker.log",
+    "physical_page": 6,
+    "diagnostic_page_zero_based": 5
   },
   "text_overlap_events": [
     {

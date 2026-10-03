@@ -645,3 +645,9 @@ last_verified: 2026-10-03
 - 이관 변경 후 유지4건·정상#6797 5건, 총9건9PASS/exit0입니다. workspace all-target Clippy·fmt·최신base manifest·변경 문서 링크 exit0입니다. 전체 회귀는 별도 최종 검증이 필요하며 #7445에 전쪽 TSV와 실패 근거를 게시합니다.
 
 - #1921 이관 증적을 [#7445 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5970120438)에 게시하고 API 재조회 본문 일치·한글 보존을 확인했습니다. 이관 커밋 `124c026c9`, 원본/PDF 보존·실패1건 제외·정상4건 유지입니다. 최종 전체 검증은 미완료입니다.
+
+### 원 PR 최신 head·CI 재확인 — 통합 검증과 구분
+
+- 2026-10-04 API 재조회: 원 PR은 OPEN, head `07ec370f2c035d81007efffd415e3b740e752e55`로 기존 접수 기록과 같습니다. 원본 저장소의 해당 SHA check 32건은 skipped 20건, success 12건이며 실패·진행 중인 check는 없습니다.
+- 현재 통합 후보 `a73100f16`에서 form002는 Native/fresh WASM 전10쪽 최저92.96827%와 기존 관련42건·SVG 묶음7건의 통과를 확인했습니다. 원 PR CI 통과를 통합 후보 전체 통과로 대체하지 않습니다. 76076 실제 물리6쪽의 본문/쪽번호 겹침, 다른 시각 보류 및 최종 전체 회귀·Skia 검증이 남아 있어 최종 승인·PR 제출은 계속 보류합니다.
+- [정확한 source SHA별 check 증적](../assets/planet6897_green_20261002/source_ci_refresh_after_form002.json). 원 PR mergeability와 통합 분기 충돌 여부는 별개이며, 원 PR의 직접 병합은 수행하지 않았습니다.

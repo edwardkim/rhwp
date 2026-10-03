@@ -9,7 +9,7 @@ last_verified: 2026-10-04
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 초기 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f`에서 체리픽을 시작했고, 현재는 `upstream/devel 6b3faf77d8085441f9f26d88d65a49791e910352`를 포함한 후보를 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -386,7 +386,13 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 
 ### 76076 남은 겹침 차단 — 정확한 입력 기준 재검증 시작
 
-- 현재 head `16b047b10`에서 기존 partition13 재실행1FAIL(exit100),76076 겹침 증가1건을 확인했습니다.5쪽 본문 표의 글줄과 footer 쪽번호가 겹칩니다. 아직 회귀 제외·baseline 기대값 변경은 하지 않았습니다.
+- 현재 head `16b047b10`에서 기존 partition13 재실행1FAIL(exit100),76076 겹침 증가1건을 확인했습니다.진단의0-based `page=5`, 즉 물리6쪽 본문 표의 글줄과 footer 쪽번호가 겹칩니다. 아직 회귀 제외·baseline 기대값 변경은 하지 않았습니다.
 - `samples/issue1891/76076_regulatory_analysis.hwpx`는 실제 OLE HWP5·2018 저장본·82쪽이며 SHA `49bbcc49…`입니다. 기존2020 PDF 대응 기록(#4764)의 원문 `samples/76076_regulatory_analysis.hwp` SHA `3308ba85…`와 다르므로 정확한 입력의 정본을 새로 산출했습니다. 변환용 `.hwp` 사본은 원문과 바이트 동일하며 output 안에서만 사용했습니다.
 - 실제 한컴2020 MCP job `fc7c5c7b-5997-43d1-8759-f0f8e642a29b`,38초 성공,82쪽638,575B,Creator Hwp2020·Producer Hancom PDF1.3.0.550. [정본 PDF](../../../pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf), [입력·실패 분석](../assets/planet6897_green_20261002/76076_exact_reference_analysis.json). Native 전82쪽 TSV를 전체 페이지 범위로 산출 중입니다. 시각 결과 확인 후 이 문서에 한정해 보정 또는#7445 이관 여부를 판단합니다.
 - `upstream/devel` 재확인 `6b3faf77d8085441f9f26d88d65a49791e910352`, 현재 분기에서 누락된 devel 커밋0입니다. PR 생성·전체 최종 검증은 계속 보류합니다.
+
+### 원 PR 최신 head·CI 재확인 — 통합 검증과 구분
+
+- 2026-10-04 API 재조회: 원 PR은 OPEN, head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`로 기존 접수 기록과 같습니다. 원본 저장소의 해당 SHA check 35건은 skipped 4건, success 31건이며 실패·진행 중인 check는 없습니다.
+- 현재 통합 후보 `a73100f16`에서 form002는 Native/fresh WASM 전10쪽 최저92.96827%와 기존 관련42건·SVG 묶음7건의 통과를 확인했습니다. 원 PR CI 통과를 통합 후보 전체 통과로 대체하지 않습니다. 76076 실제 물리6쪽의 본문/쪽번호 겹침, 다른 시각 보류 및 최종 전체 회귀·Skia 검증이 남아 있어 최종 승인·PR 제출은 계속 보류합니다.
+- [정확한 source SHA별 check 증적](../assets/planet6897_green_20261002/source_ci_refresh_after_form002.json). 원 PR mergeability와 통합 분기 충돌 여부는 별개이며, 원 PR의 직접 병합은 수행하지 않았습니다.
