@@ -822,17 +822,18 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
   );
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
 
-  // 156627451 1쪽 ② 로고 — 실제로 잘린 그림. 고정 75 HU/px 로는 폭이 11% 좁아졌다.
+  // 156627451 1쪽 ② 로고 — 두 축을 모두 자른 그림. #6954 는 여기에 적응 배율을 써서
+  // `x 104.05 / w 739.95` 를 고정했지만, 두 축 모두 crop 이 0 에서 시작하지 않으므로
+  // `right`/`bottom` 은 전체 범위가 아니다(#7015). 한컴 2020 PDF(`pdf/156627451-…-2020.pdf`)
+  // 1쪽 로고의 잉크 폭은 140.50px 이고 75 HU/px 창으로 그린 Native SVG 도 140.50px 이다(#7525).
   const logo = canvasKitImageSourceRect(844, 342, {
     left: 6947, top: 2777, right: 56348, bottom: 24865,
   });
   assert.ok(logo);
-  assert.ok(Math.abs(logo.x - 104.05) < 0.01, `x=${logo.x}`);
-  assert.ok(Math.abs(logo.y - 38.20) < 0.01, `y=${logo.y}`);
-  assert.ok(Math.abs(logo.width - 739.95) < 0.01, `width=${logo.width}`);
-  assert.ok(Math.abs(logo.height - 303.80) < 0.01, `height=${logo.height}`);
-  // 고정 폴백이었다면 658.68 — 11% 좁게 잘라 같은 자리에 늘려 그렸다.
-  assert.ok(Math.abs(logo.width - (56348 - 6947) / HWPUNIT_PER_PIXEL) > 80);
+  assert.ok(Math.abs(logo.x - 92.63) < 0.01, `x=${logo.x}`);
+  assert.ok(Math.abs(logo.y - 37.03) < 0.01, `y=${logo.y}`);
+  assert.ok(Math.abs(logo.width - 658.68) < 0.01, `width=${logo.width}`);
+  assert.ok(Math.abs(logo.height - 294.51) < 0.01, `height=${logo.height}`);
 
   // right/bottom 을 못 쓰면 종전대로 96dpi 가정으로 떨어진다.
   const degenerate = canvasKitImageSourceRect(200, 100, {
@@ -850,36 +851,51 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
 test('image crop scale follows the rust fallback chain for both studio backends', () => {
   // ① imgDim 이 있으면 그것 — 축은 전체 좌표 범위를 디코딩 크기에 대응시킨다.
   assert.deepEqual(
-    imageCropScale([144000, 81000], { right: 144000, bottom: 81000 }, 192, 108),
+    imageCropScale([144000, 81000], { left: 0, top: 0, right: 144000, bottom: 81000 }, 192, 108),
     { scaleX: 750, scaleY: 750 },
   );
 
-  // ② imgDim 이 없으면 crop 의 right/bottom 을 원본 전체 범위로 본다(#3239).
-  const adaptive = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
-  assert.ok(Math.abs(adaptive.scaleX - 56348 / 844) < 1e-9);
-  assert.ok(Math.abs(adaptive.scaleY - 24865 / 342) < 1e-9);
+  // ② imgDim 이 없으면 시작이 0 인 축의 right/bottom 을 원본 전체 범위로 본다(#3239·#7015).
+  // #3239 200dpi 스캔 — 두 축 모두 자르지 않았으므로 두 축 모두 적응 배율(36 HU/px).
+  const adaptive = imageCropScale(null, { left: 0, top: 0, right: 59520, bottom: 84240 }, 1654, 2340);
+  assert.ok(Math.abs(adaptive.scaleX - 59520 / 1654) < 1e-9);
+  assert.ok(Math.abs(adaptive.scaleY - 84240 / 2340) < 1e-9);
   assert.ok(adaptive.scaleX < HWPUNIT_PER_PIXEL, `scaleX=${adaptive.scaleX}`);
+
+  // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(30442 3쪽: x 축 75.0).
+  const oneAxis = imageCropScale(null, { left: 0, top: 20745, right: 88560, bottom: 45453 }, 1181, 945);
+  assert.ok(Math.abs(oneAxis.scaleX - 88560 / 1181) < 1e-9);
+  assert.equal(oneAxis.scaleY, oneAxis.scaleX);
+  const otherAxis = imageCropScale(null, { left: 20745, top: 0, right: 45453, bottom: 47250 }, 945, 945);
+  assert.equal(otherAxis.scaleX, 50);
+  assert.equal(otherAxis.scaleY, 50);
+
+  // 두 축 모두 잘렸으면 전체 범위를 확인할 축이 없어 ③으로 떨어진다.
+  assert.deepEqual(
+    imageCropScale(null, { left: 6947, top: 2777, right: 56348, bottom: 24865 }, 844, 342),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
 
   // ③ 둘 다 못 쓰면 96dpi 가정.
   assert.deepEqual(
-    imageCropScale(null, { right: 0, bottom: 0 }, 200, 100),
+    imageCropScale(null, { left: 0, top: 0, right: 0, bottom: 0 }, 200, 100),
     { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
   );
   assert.deepEqual(
-    imageCropScale([0, 0], { right: -1, bottom: -1 }, 200, 100),
+    imageCropScale([0, 0], { left: 0, top: 0, right: -1, bottom: -1 }, 200, 100),
     { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
   );
 
   // 한 축만 유효한 imgDim 은 rust 와 같이 **쌍으로** 버린다 — 섞으면 원본에 없는 사영이
   // 된다. 여기서는 ②로 내려가 두 축 모두 crop 범위를 쓴다.
   assert.deepEqual(
-    imageCropScale([144000, 0], { right: 96000, bottom: 54000 }, 192, 108),
+    imageCropScale([144000, 0], { left: 0, top: 0, right: 96000, bottom: 54000 }, 192, 108),
     { scaleX: 500, scaleY: 500 },
   );
 
   // 파리티 게이트 픽스처 `pic-crop-01` 2번 배너 — imgDim 이 없고 crop 이 원본 전체
   // 범위다. 고정 75 HU/px 면 세로로 58.21px 만 잘라 와 70px 프레임에 늘려 그린다(+20%).
-  const banner = imageCropScale(null, { right: 47940, bottom: 4366 }, 639, 70);
+  const banner = imageCropScale(null, { left: 0, top: 0, right: 47940, bottom: 4366 }, 639, 70);
   assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
   assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
 
@@ -889,15 +905,34 @@ test('image crop scale follows the rust fallback chain for both studio backends'
   assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 }), null);
 
   // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
-  const scale = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
-  const rect = canvasKitImageSourceRect(844, 342, {
-    left: 6947, top: 2777, right: 56348, bottom: 24865,
-  });
+  const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
+  const scale = imageCropScale(null, crop, 1181, 945);
+  const rect = canvasKitImageSourceRect(1181, 945, crop);
   assert.ok(rect);
-  assert.ok(Math.abs(rect.x - 6947 / scale.scaleX) < 1e-9);
-  assert.ok(Math.abs(rect.y - 2777 / scale.scaleY) < 1e-9);
-  assert.ok(Math.abs(rect.width - (56348 - 6947) / scale.scaleX) < 1e-9);
-  assert.ok(Math.abs(rect.height - (24865 - 2777) / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.y - crop.top / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.height - (crop.bottom - crop.top) / scale.scaleY) < 1e-9);
+});
+
+// [#7525] 30442 권익위 권고문 — studio 의 자르기 창이 rust `compute_image_crop_src`(#7015)와
+// 같아야 한다. 값은 같은 문서의 Native SVG viewBox 이며, 한컴 2020 PDF 와 대조해 3쪽 로고
+// 전체·14쪽 사진 두 장이 같은 것을 확인했다. 수정 전 studio 는 3쪽 `y 431.30 / h 513.70`
+// (로고 아래 절반), 14쪽 `x 967.46 / y 599.38`(화면 캡처의 작업 표시줄)을 잘라 왔다.
+test('image crop source matches rust per-axis fallback for issue7525 pictures', () => {
+  const logo = imageCropSourceRect(1181, 945, { left: 0, top: 20745, right: 88560, bottom: 45453 });
+  assert.ok(logo);
+  assert.equal(logo.x, 0);
+  assert.ok(Math.abs(logo.y - 276.6468) < 1e-3, `y=${logo.y}`);
+  assert.equal(logo.width, 1181);
+  assert.ok(Math.abs(logo.height - 329.4958) < 1e-3, `height=${logo.height}`);
+  // 원본 JPEG 의 로고 잉크 행 y 324..562 를 창이 감싼다(#7015 실측).
+  assert.ok(logo.y < 324 && logo.y + logo.height > 562);
+
+  const photo = imageCropSourceRect(1920, 1080, { left: 48247, top: 30284, right: 95750, bottom: 54568 });
+  assert.ok(photo);
+  assert.ok(Math.abs(photo.x - 643.2933) < 1e-3, `x=${photo.x}`);
+  assert.ok(Math.abs(photo.y - 403.7867) < 1e-3, `y=${photo.y}`);
+  assert.ok(Math.abs(photo.width - 633.3733) < 1e-3, `width=${photo.width}`);
+  assert.ok(Math.abs(photo.height - 323.7867) < 1e-3, `height=${photo.height}`);
 });
 
 test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
