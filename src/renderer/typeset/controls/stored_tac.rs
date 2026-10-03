@@ -328,9 +328,8 @@ pub(super) fn prepare(
         && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
         && page.side_wrap_empty
     {
-        // A saved single object line owns its caption and outer margins.
-        // Whitespace on that same line does not create another text line;
-        // the original owner and complete height below must prove this.
+        // 저장 단일 개체 줄은 캡션과 바깥 여백도 소유한다. 같은 줄의 공백은
+        // 별도 글줄이 아니며 원본 소속과 전체 높이를 아래에서 확인한다.
         let single_saved_object_line = || {
             if !para.text.chars().all(char::is_whitespace)
                 || para.stored_text_partition_is_dirty()
@@ -404,6 +403,10 @@ pub(super) fn prepare(
             .map(|lines| (lines, false))
             .or_else(|| single_saved_object_line().map(|lines| (lines, true)));
         if let Some((lines, single_saved_line)) = owned_lines {
+            // 2024 단일 TAC의 앞 앵커 회수량은 일반 경로에서 후속 쪽 경계와 함께 소비한다.
+            if page.profile.hangul2024_layout() && lines.len() == 1 && lines[0].top > 0 {
+                return None;
+            }
             let source_top = hwpunit_to_px(
                 para.source_line_seg_vertical_pos
                     .as_ref()
@@ -413,9 +416,8 @@ pub(super) fn prepare(
                 dpi,
             );
             let flow_origin = if single_saved_line {
-                // The saved line origin already owns spacing_before. The
-                // current physical flow is its lower bound, not another copy
-                // of that leading band.
+                // 저장 줄 원점은 앞 간격을 이미 소유한다. 현재 물리 흐름은 그 하한이며
+                // 앞 간격을 다시 더하지 않는다.
                 page.current_height
             } else {
                 page.current_height

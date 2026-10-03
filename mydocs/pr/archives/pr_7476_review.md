@@ -302,3 +302,7 @@ last_verified: 2026-10-02
 
 - h01 메인터너 보정에서 추가한 빈 줄 검증이 음수 줄간격을 무조건 거절해 기존 복수 TAC 표의 원문 계획을 무효화했습니다. 기여자 원 PR의 결함으로 분류하지 않습니다. 원문 빈 줄 높이300HU·간격-92HU·다음 원점208HU는 정상이며, 실제 전진량과 저장 원점 연결을 검사하도록 수정했습니다.
 - 기존4건4FAIL→4PASS, 기존2건의 절대 PDF 좌표를 원문 표 높이·저장 줄 간격·본문 포함·내용 순서로 변경한 뒤에도4PASS입니다. Native/fresh WASM 전1쪽95.54807%, h01 전9쪽 SVG/렌더 트리는 양 backend에서 기존 시각 증적과 바이트 동일합니다. 새 test 함수/fixture/golden은 추가하지 않았습니다. [검증 원장](../assets/planet6897_green_20261002/tac7103_correction_validation.json), [review](../assets/planet6897_green_20261002/tac7103_corrected_native_p1_review.png). 다른 전체 실패와 시각 보류는 미완료입니다.
+
+### 2024 호환 경로 반례 복원
+
+- 메인터너 h01 보정의 단일 TAC 선행 줄 계획이 기존 2024 회수량 적립과 후속 쪽 경계 재적합을 건너뛰어 세대 검사2건이 실패했습니다. 2024의 해당 입력은 기존 일반 경로가 담당하도록 복원했고 기존4검사4PASS입니다. 기본2022·해제 후 pi13=2쪽,2024 pi13=1쪽이며 실제 줄이 단 내부에 포함됩니다. h01 Native/fresh WASM 전9쪽 출력은 이전 시각 증적과 동일합니다. [검증](../assets/planet6897_green_20261002/compat5524_correction_validation.json). Native2024 독립 PDF의 전체 시각 일치율은 미검증이므로 그 범위의 완료나 통합 승인으로 표현하지 않습니다.
