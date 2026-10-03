@@ -110,6 +110,11 @@ export abstract class ModalDialog {
         btn?.click();
         return;
       }
+      if (e.key === 'Tab' && this.onTabKey(e)) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
       // 편집 가능한 요소 내부 → 키 입력 허용, 외부 전파만 차단
       e.stopPropagation();
       if (!isEditable) {
@@ -139,6 +144,8 @@ export abstract class ModalDialog {
 
   /** 서브클래스에서 본문 DOM을 생성 */
   protected abstract createBody(): HTMLElement;
+
+  protected onTabKey(_e: KeyboardEvent): boolean { return false; }
 
   /** 서브클래스에서 확인 버튼 동작 구현. false 반환 시 대화상자 유지 */
   protected abstract onConfirm(): void | boolean;

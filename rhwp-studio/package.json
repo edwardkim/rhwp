@@ -19,6 +19,7 @@
     "e2e:plugin-lifecycle": "node e2e/plugin-lifecycle.test.mjs --mode=headless",
     "e2e:hwpctrl-plugin": "node e2e/hwpctrl-plugin.test.mjs --mode=headless",
     "e2e:bridge": "node e2e/bridge-lifecycle.test.mjs --mode=headless",
+    "e2e:cell-block-delete-keys": "node e2e/run-with-vite.mjs -- node e2e/cell-block-delete-keys.test.mjs --mode=headless",
     "e2e:bridge-perf": "node e2e/bridge-perf.test.mjs --mode=headless",
     "gate:bridge:quick": "node ../scripts/gate_bridge.mjs --no-e2e --no-hwpctrl-gate",
     "e2e": "node e2e/text-flow.test.mjs",
