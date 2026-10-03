@@ -12115,6 +12115,7 @@ impl LayoutEngine {
                     // 만큼 아래다. 흐름 커서가 곧 단 상단이라 그 저장값이 위 여백인데,
                     // 빈 앵커 문단은 `paragraph_layout` 을 타지 않아 Task #1811 의
                     // column-top vpos 계약을 못 받고 0 으로 뭉개졌다.
+                    // typeset의 확정 줄 상자에는 이미 이 원점이 있으므로 다시 더하지 않는다.
                     let table_y_start = if is_tac
                         && inline_pos.is_none()
                         && flow_placement.is_none()
