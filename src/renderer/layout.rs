@@ -7932,6 +7932,8 @@ impl LayoutEngine {
         let mut prev_item_first_child = col_node.children.len();
         // [#6574] 직전 미주 문단(인덱스, 배치 시작 y) — 같은 미주의 저장 사다리 후속 배치용.
         let mut last_endnote_para_top: Option<(usize, f64)> = None;
+        // [#6574] 직전 항목이 그린 노드(글줄·수식·개체) 범위 하단.
+        let mut prev_item_ink_bottom_y: Option<f64> = None;
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
                 (item_ordinal == 0)
@@ -8212,6 +8214,11 @@ impl LayoutEngine {
                             .filter_map(max_text_line_box_bottom)
                             .reduce(f64::max)
                     });
+                prev_item_ink_bottom_y = col_node
+                    .children
+                    .get(prev_item_first_child..)
+                    .and_then(|nodes| nodes.iter().map(render_subtree_bottom).reduce(f64::max))
+                    .or(prev_item_ink_bottom_y);
                 if prev_float_shape {
                     last_endnote_content_bottom_y = Some(y_offset);
                 } else if prev_item_line_bottom.is_some() {
@@ -9462,6 +9469,7 @@ impl LayoutEngine {
                     // 높게 그린 경우 겹친다).
                     .filter(|target_y| {
                         last_endnote_content_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
+                            && prev_item_ink_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
                     });
                 if let Some(target_y) = stored_successor_y {
                     let delta = target_y - y_offset;
@@ -17010,4 +17018,13 @@ fn max_text_line_box_bottom(node: &RenderNode) -> Option<f64> {
         .filter_map(max_text_line_box_bottom)
         .chain(own)
         .reduce(f64::max)
+}
+
+/// [#6574] 노드와 그 하위 노드가 차지한 범위 하단의 최댓값. 뒤 문단을 앞으로 당길 때
+/// 앞 항목이 그린 글줄·수식·개체와 겹치지 않게 하는 하한으로 쓴다.
+fn render_subtree_bottom(node: &RenderNode) -> f64 {
+    node.children
+        .iter()
+        .map(render_subtree_bottom)
+        .fold(node.bbox.y + node.bbox.height, f64::max)
 }
