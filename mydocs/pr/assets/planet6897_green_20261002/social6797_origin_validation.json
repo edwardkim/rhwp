@@ -1,0 +1,252 @@
+{
+  "parent_head": "8a6f3a6cb",
+  "source_change": "src/renderer/layout.rs: stored_first_margin_is_page_relative excludes first paragraph TAC Shape",
+  "cause": "첫 제목의 TAC 도형과 공유한 저장 원점을 문단 앞 여백으로 오인하여 뒤 표가500HU 위로 이동",
+  "source": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+  "reference": "pdf/156160455-social-pig-farm-income-2020.pdf",
+  "native_release_build_exit": 0,
+  "focused_nextest_exit": 0,
+  "focused_summary": "32 tests run: 32 passed, 819 skipped",
+  "native_all11_visual_exit": 0,
+  "native_min_percent": 95.80181,
+  "native_below90": 0,
+  "p7_before_percent": 92.15032,
+  "p7_after_percent": 98.05666,
+  "p7_strict_ink_percent": 52.8504,
+  "tree_comparison": [
+    {
+      "page": 1,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 2,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 3,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 4,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 5,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 6,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 7,
+      "identical_to_before_origin_guard": false
+    },
+    {
+      "page": 8,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 9,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 10,
+      "identical_to_before_origin_guard": true
+    },
+    {
+      "page": 11,
+      "identical_to_before_origin_guard": true
+    }
+  ],
+  "footnote598_counter": [
+    {
+      "page": 1,
+      "full_svg_identical": true,
+      "sha256": "37576c3792ef6c45b2df7d534240c6f71180c4193ce32d032e3156dc73cdde3a",
+      "render_tree_identical": true
+    },
+    {
+      "page": 2,
+      "full_svg_identical": true,
+      "sha256": "89b05960c41486dda8238b092cbb1a42fae7096cec096f5962e9aab3e8e2ca40",
+      "render_tree_identical": true
+    },
+    {
+      "page": 3,
+      "full_svg_identical": true,
+      "sha256": "7895e708f9212c5720289705ffb4db0e024d6e9e0f25bbbdc9d6fa13563fd3b9",
+      "render_tree_identical": true
+    },
+    {
+      "page": 4,
+      "full_svg_identical": true,
+      "sha256": "4483f763d714680de0deddb0fb5685dba879166a505f57601f83e015071e30b4",
+      "render_tree_identical": true
+    },
+    {
+      "page": 5,
+      "full_svg_identical": true,
+      "sha256": "644033503944ba7736c87a66693758a9a111d4ea0b347d12ee4a84f4c94c03aa",
+      "render_tree_identical": true
+    },
+    {
+      "page": 6,
+      "full_svg_identical": true,
+      "sha256": "9c09a75d78c713e17fb22ff7fdb0e85ce9770a9b5ff368b6147ef8cd6f26ff8e",
+      "render_tree_identical": true
+    }
+  ],
+  "footnote598_counter_provenance": "current Full SVG and render tree all6 byte-identical to previously validated Native; no new raster claimed",
+  "new_tests": 0,
+  "fixture_or_expectation_changes": 0,
+  "pending": [],
+  "integration_ready": false,
+  "source_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+  "reference_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+  "layout_source_sha256": "1a64d5515476a7a1cff859cf8feea62797d978da24774b137e3b90d3a0657bee",
+  "fresh_wasm_build_exit": 0,
+  "fresh_wasm_all11_visual_exit": 0,
+  "fresh_wasm_min_percent": 95.80181,
+  "fresh_wasm_below90": 0,
+  "native_wasm_tsv_identical": true,
+  "fresh_wasm_actual_raster_pages": 11,
+  "gates": {
+    "base_sha": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "steps": [
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 9.589
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 41.339
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 22.923
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 37.073
+      },
+      {
+        "step": "clippy-all",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 75.321
+      },
+      {
+        "step": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "seconds": 0.836
+      }
+    ]
+  },
+  "doclinks_exit": 0,
+  "changed_document_metadata": {
+    "mydocs/orders/20261004.md": [],
+    "mydocs/pr/archives/pr_7476_review.md": []
+  },
+  "footnote598_fresh_wasm_counter": [
+    {
+      "page": 1,
+      "raw_svg_identical": true
+    },
+    {
+      "page": 2,
+      "raw_svg_identical": true
+    },
+    {
+      "page": 3,
+      "raw_svg_identical": true
+    },
+    {
+      "page": 4,
+      "raw_svg_identical": true
+    },
+    {
+      "page": 5,
+      "raw_svg_identical": true
+    },
+    {
+      "page": 6,
+      "raw_svg_identical": true
+    }
+  ],
+  "remaining_initial_whole_failures_current_focused": {
+    "scope": "original whole failure functions remaining after prior maintainer corrections",
+    "run_count": 4,
+    "failed": 4,
+    "exit": 100,
+    "cases": [
+      "issue_5731_second_cell_float_uses_stored_flow_anchor",
+      "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "svg_snapshot::form_002_page_0",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_13"
+    ],
+    "new_whole_nextest_run": false
+  }
+}

@@ -331,3 +331,11 @@ last_verified: 2026-10-04
 - 원 기여자의 재조판 간격 변경 뒤 기존 golden은59글자의 x 문자열 차이로 실패했으며, 내용140글자·세로 위치·전체223요소는 유지됐습니다. 해당1쪽 문서는 독립 한컴2020 PDF와 현재 release-test Native·fresh WASM 전쪽 비교를 마쳤습니다. 두 실행 실루엣100%이며 review에서 실제 표와 숫자를 확인했습니다. 엄격 픽셀70.58156%는 글꼴 획 차이도 포함하므로 완전 픽셀 일치로 보고하지 않습니다.
 - 메인터너 보정은 기존 `svg_snapshot::table_text_page_0` 한 개를 표18칸의 내용·행열 소유·칸 내부 표시·수치와 증감 제목 가운데 정렬 검사로 전환합니다. 새 함수/fixture/production 변경과 golden 갱신은 없습니다. 셀 상대 허용량은 렌더 트리의 소수점 반올림만 처리하며 절대 위치를 고정하지 않습니다.
 - 집중 해당1건1PASS(exit0). 기존 snapshot 묶음도6PASS·form002 배치1FAIL(exit100)로 재확인했습니다. form002 실패나 최종 전체 검증을 이 결과로 승인하지 않습니다. 필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/tabletext_semantic_validation.json)에 기록합니다. [Native TSV](../assets/planet6897_green_20261002/tabletext_current_native_all1.tsv), [WASM TSV](../assets/planet6897_green_20261002/tabletext_current_wasm_all1.tsv), [검토 PNG](../assets/planet6897_green_20261002/tabletext_current_p1_review.png).
+
+## #6797 7쪽의 저장 원점 재보정 — 2026-10-04
+
+- 독립 재확인에서 #598 보정 후7쪽 첫 표가6.667px 위로 이동하여 이전98.05666%에서92.15032%로 낮아졌습니다. 원 기여자의 표 내용 변경과 별개로 메인터너가 HWP5에도 확대 적용한 쪽 원점 규칙의 영향입니다. 원본 첫문단69의 글자처럼 취급되는 묶음 도형과 제목이500HU 저장 원점을 함께 소유하는데 일반 텍스트 문단 앞 여백으로 판정했습니다.
+- 공통 `stored_first_margin_is_page_relative`에서 첫문단 TAC 도형을 제외해 페이지네이터·렌더러의 저장 원점 판정을 함께 바로잡았습니다. 해당 표만 기존 정상 위치로 돌아오고 다른10쪽 렌더 트리는 수정 전과 동일합니다. 새 검사·fixture·기대값 변경은 없습니다.
+- 현재 Native 전체11쪽90% 미달0건, 최저95.80181%,7쪽98.05666%입니다. 관련 기존 #6797·#598·#6972·#6812 총32검사32PASS(exit0). #598 전6쪽 현재 Full SVG/렌더 트리는 기존 검증본과 바이트 동일하며 새 raster 실행으로 주장하지 않습니다. 실루엣 점수를 글꼴 획의 완전 일치로 보고하지 않습니다. fresh WASM·필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/social6797_origin_validation.json)에 남깁니다. [Native 전쪽 TSV](../assets/planet6897_green_20261002/social6797_origin_native_all11.tsv), [7쪽 review PNG](../assets/planet6897_green_20261002/social6797_origin_p7_review.png). 통합 전체 검증·PR 판정은 보류 상태입니다.
+
+- #6797 최종 단계 결과: 새 WASM 실제 전11쪽 raster·TSV도 Native와 동일하며 미달0건/최저95.80181%,7쪽98.05666%입니다. Native/WASM Clippy·workspace build/all-target Clippy·fmt·고정 base manifest·문서 링크/metadata 검사 모두 exit0. [WASM TSV](../assets/planet6897_green_20261002/social6797_origin_wasm_all11.tsv). 기존 전체 실패 중 남은4함수의 현재 집중 재실행은4FAIL(exit100)로 확인하여 전체 PR 승인으로 보고하지 않습니다.
