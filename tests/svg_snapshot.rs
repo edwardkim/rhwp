@@ -113,7 +113,98 @@ fn form_002_page_0() {
 
 #[test]
 fn table_text_page_0() {
-    check_snapshot("samples/hwpx/table-text.hwpx", 0, "table-text/page-0");
+    use serde_json::Value;
+
+    // 한컴2020 정본의 전1쪽 Native·WASM 시각 검증을 마친 표다.
+    // 글자 간격의 정당한 변화가 표의 내용·셀 소유 검사를 깨지 않게 한다.
+    fn collect<'a>(node: &'a Value, kind: &str, output: &mut Vec<&'a Value>) {
+        if node["type"] == kind {
+            output.push(node);
+        }
+        if let Some(children) = node["children"].as_array() {
+            for child in children {
+                collect(child, kind, output);
+            }
+        }
+    }
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwpx/table-text.hwpx");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&fs::read(path).expect("원문 읽기"))
+        .expect("원문 열기");
+    assert_eq!(doc.page_count(), 1, "정본의 전체 쪽수");
+    let tree: Value = serde_json::from_str(&doc.get_page_render_tree(0).expect("1쪽 렌더 트리"))
+        .expect("렌더 트리 JSON");
+    let mut tables = Vec::new();
+    collect(&tree, "Table", &mut tables);
+    assert_eq!(tables.len(), 1, "기부 통계 표 하나");
+    assert_eq!(tables[0]["rows"], 3);
+    assert_eq!(tables[0]["cols"], 8);
+    let mut cells = Vec::new();
+    collect(tables[0], "Cell", &mut cells);
+    assert_eq!(cells.len(), 18, "상단 병합 두 칸과 하단 두 행의16칸");
+    let expected = [
+        (0, 0, "기부 금액(원, %)"),
+        (0, 4, "기부 건수(건, %)"),
+        (1, 0, "2023년"),
+        (1, 1, "2024년"),
+        (1, 2, "2025년"),
+        (1, 3, "2024년 대비 증감"),
+        (1, 4, "2023년"),
+        (1, 5, "2024년"),
+        (1, 6, "2025년"),
+        (1, 7, "2024년 대비 증감"),
+        (2, 0, "65,063,026,600"),
+        (2, 1, "87,804,677,338"),
+        (2, 2, "151,459,074,040"),
+        (2, 3, "72.5"),
+        (2, 4, "526.278"),
+        (2, 5, "772,712"),
+        (2, 6, "1,391,874"),
+        (2, 7, "80.0"),
+    ];
+    let metric = |node: &Value, key: &str| node["bbox"][key].as_f64().expect("상자 좌표");
+    for (row, col, text) in expected {
+        let owners: Vec<_> = cells
+            .iter()
+            .copied()
+            .filter(|cell| cell["row"] == row && cell["col"] == col)
+            .collect();
+        assert_eq!(owners.len(), 1, "({row},{col}) 칸이 한 번만 출력된다");
+        let cell = owners[0];
+        let mut runs = Vec::new();
+        collect(cell, "TextRun", &mut runs);
+        let content: String = runs
+            .iter()
+            .map(|run| run["text"].as_str().expect("글자"))
+            .collect();
+        assert_eq!(content.trim(), text, "({row},{col}) 칸의 내용과 순서");
+        let tolerance = metric(cell, "w").min(metric(cell, "h")) * 0.005;
+        for run in &runs {
+            for (origin, extent) in [("x", "w"), ("y", "h")] {
+                assert!(
+                    metric(run, origin) >= metric(cell, origin) - tolerance
+                        && metric(run, origin) + metric(run, extent)
+                            <= metric(cell, origin) + metric(cell, extent) + tolerance,
+                    "({row},{col}) 글자가 소유 칸 내부에 표시된다: {run}"
+                );
+            }
+        }
+        if row == 2 || (row == 1 && (col == 3 || col == 7)) {
+            let left = runs
+                .iter()
+                .map(|run| metric(run, "x"))
+                .fold(f64::INFINITY, f64::min);
+            let right = runs
+                .iter()
+                .map(|run| metric(run, "x") + metric(run, "w"))
+                .fold(f64::NEG_INFINITY, f64::max);
+            let center = metric(cell, "x") + metric(cell, "w") / 2.0;
+            assert!(
+                ((left + right) / 2.0 - center).abs() <= tolerance,
+                "({row},{col}) 수치와 증감 제목을 소유 칸 가운데 정렬한다"
+            );
+        }
+    }
 }
 
 /// Issue #157: 비-TAC wrap=위아래 표 out-of-flow 배치 — 표가 텍스트와 중첩되지 않음

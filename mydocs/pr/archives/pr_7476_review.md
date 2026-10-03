@@ -325,3 +325,9 @@ last_verified: 2026-10-04
 
 - `form-002/page-0.actual.svg`를 재생성하니 API의 기본 Full 임베딩에서 휴먼명조 굵은 face가 local()로 남아 파란 핵심 목표 줄이 두부문자로 표시됐습니다. 명시 경로를 쓴 기존 확인본만으로 기본 API 경로를 확인했다고 보지 않았습니다. 공통 기본 탐색에 macOS 표준 `~/Library/Fonts`를 포함하여 설치된 윤곽선 글꼴을 공급했습니다.
 - 기존 폰트 경로5건5PASS와 unit 정책 검사exit0, 새 test 함수0입니다. 현재 파일은 이전 정상 확인 SVG와 해시 동일이며 새 Chrome 캡처도 픽셀 동일합니다. [현재 PNG](../assets/planet6897_green_20261002/form002_font_after_chrome.png), [검증](../assets/planet6897_green_20261002/form002_font_preview_validation.json). CSS를 제외한 비교 원문과 golden 기대값은 변경하지 않았고, 표 기하에 따른 스냅샷 실패는 계속 보류입니다.175MB 진단 SVG는 요청 경로에 남기고 `.gitignore`로 커밋에서 제외합니다.
+
+## 기존 table-text 검사 보정 — 2026-10-04
+
+- 원 기여자의 재조판 간격 변경 뒤 기존 golden은59글자의 x 문자열 차이로 실패했으며, 내용140글자·세로 위치·전체223요소는 유지됐습니다. 해당1쪽 문서는 독립 한컴2020 PDF와 현재 release-test Native·fresh WASM 전쪽 비교를 마쳤습니다. 두 실행 실루엣100%이며 review에서 실제 표와 숫자를 확인했습니다. 엄격 픽셀70.58156%는 글꼴 획 차이도 포함하므로 완전 픽셀 일치로 보고하지 않습니다.
+- 메인터너 보정은 기존 `svg_snapshot::table_text_page_0` 한 개를 표18칸의 내용·행열 소유·칸 내부 표시·수치와 증감 제목 가운데 정렬 검사로 전환합니다. 새 함수/fixture/production 변경과 golden 갱신은 없습니다. 셀 상대 허용량은 렌더 트리의 소수점 반올림만 처리하며 절대 위치를 고정하지 않습니다.
+- 집중 해당1건1PASS(exit0). 기존 snapshot 묶음도6PASS·form002 배치1FAIL(exit100)로 재확인했습니다. form002 실패나 최종 전체 검증을 이 결과로 승인하지 않습니다. 필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/tabletext_semantic_validation.json)에 기록합니다. [Native TSV](../assets/planet6897_green_20261002/tabletext_current_native_all1.tsv), [WASM TSV](../assets/planet6897_green_20261002/tabletext_current_wasm_all1.tsv), [검토 PNG](../assets/planet6897_green_20261002/tabletext_current_p1_review.png).
