@@ -356,3 +356,10 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - #5731 보정 커밋 `14d205d83`: 공식 Native Skia 단위4,109 PASS에 이어 missing-picture2/2, direct-PDF4/4 PASS 및 실제3쪽 PNG 출력0. 직접 Skia3쪽의 한컴 정본 비교도98.07425%입니다. 동일한 기존 관계 검사를 보정 전 Rust 소스에서 실제 실행하자 둘째 그림이 앞 캡션을 덮는 관계 위반으로1 FAIL(exit100)이 재현됐습니다. 보정 소스는 파일별 SHA를 대조해 원상 복원했으며 같은 검사의 수정 후 실행을 진행 중입니다. 새 테스트 함수·기준선 허용치 변경은 없습니다.
 
 - #5731 수정 후 동일 검사1 PASS(exit0)까지 확인했습니다. 보정 전은 컴파일 오류가 아닌 실제 캡션 겹침1 FAIL(exit100)입니다. 13개 보정 Rust 파일의 SHA는 앞서 lint·전쪽 Native/WASM·Skia 검증에 사용한 소스와 동일하게 복원됐습니다. 이 단계 검증은 완료이며, 통합 브랜치의 나머지 차단과 최종 전체 검증을 이어갑니다.
+
+### 메인터너 후속 보정: #1749 재조판 표의 조각 마지막 간격
+
+- 독립 한컴2020 출력에서도4쪽 표의 별표 줄은50/67/10,5쪽은67/22/67/16/67/4입니다. 기존 회귀의 의미 기대값은 유지합니다. 원본 HWPX 셀의 첫5문단에는 저장 LineSeg가 없으므로 저장 프레임 수용 조건을 완화하지 않았습니다.
+- 재조판 마지막 줄 뒤 간격을 현재 조각 끝의 점유로 잘못 더하여10개 별표 줄이5쪽으로 밀렸습니다. 같은 trailing trim을 컷 선택·조각 예약·table_partial 행 배치가 소비하도록 보정했습니다. 저장 줄·개체·중첩 표는 기존 계약을 유지합니다.
+- 기존3검사3 PASS, 관련26검사26 PASS(exit0), Native 전5쪽 최저91.10644%/미달0쪽입니다.5쪽은83.28153→92.61078%. 표 내부 앞 간격과 괘선 표현 차이는 남아 있으며 fresh WASM 전5쪽도 Native와 동일하며 필수 Rust lint/빌드/정책 gate가 모두 통과했습니다. 새 회귀 함수·허용치 변경은 없습니다.
+- [정본 PDF](../../../pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf), [검증 JSON](../assets/planet6897_green_20261002/savedbounds1749_reflow_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/savedbounds1749_reflow_native_all5.tsv), [4쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p4_review.png), [5쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p5_review.png). 다른 보류·최종 전체 검증이 남아 통합 승인 보류를 유지합니다.

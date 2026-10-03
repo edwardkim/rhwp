@@ -14348,11 +14348,13 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        // Two original paragraph-local zero lines can describe two physical
-        // row fragments when their complete line boxes exactly close cellSz
-        // and the object declaration is shorter than the full stored table.
-        // A complete one-line sibling shares that fragment boundary: its
-        // trailing line spacing is not another visible band in this fragment.
+        let reflow_trim = self.reflow_cut_trailing_spacing(cell, table, units, end_cut, styles);
+        if reflow_trim > 0.0 {
+            return reflow_trim;
+        }
+        // 문단별 원점0인 두 줄의 전체 상자가 cellSz를 닫고 개체 선언이 저장 표보다
+        // 짧으면 두 물리 행 조각을 소유한다. 온전한 한 줄 형제도 같은 경계를 공유하므로
+        // 그 뒤 줄 간격을 현재 조각의 별도 가시 밴드로 더하지 않는다.
         let two_line_row_frame = start_cut == 0
             && end_cut == 1
             && self.native_saved_two_line_row_frame(table, usize::from(cell.row), styles);
@@ -14531,19 +14533,16 @@ impl LayoutEngine {
         )
     }
 
-    /// Two paragraph-local zero lines own separate source frames only when
-    /// their line boxes, intervening spacing and padding exactly close cellSz.
-    /// The cut walker and physical opening-frame reservation share this proof.
+    /// 두 문단의 원점0 줄은 줄 상자·중간 간격·패딩이 cellSz를 닫을 때 별도 프레임을 소유한다.
+    /// 컷 순회와 첫 물리 프레임 예약은 같은 근거를 공유한다.
     pub(crate) fn native_saved_two_line_row_frame(
         &self,
         table: &crate::model::table::Table,
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        // A paragraph-local zero origin is not itself a physical page cut.
-        // The row must straddle the first declared object frame; later rows
-        // in a long table can have the same two-line cell geometry while
-        // remaining ordinary content within a continuation page.
+        // 문단 내부 원점0만으로 물리 쪽 컷을 판정하지 않는다. 첫 선언 프레임을
+        // 가로지르는 행만 해당하며 같은 두 줄 형상을 가진 뒤 행은 이어받는 쪽의 일반 내용일 수 있다.
         let raw_rows = table.get_raw_row_heights();
         let preceding_height: i64 = raw_rows.iter().take(row).map(|&h| i64::from(h)).sum();
         let declared_frame = i64::from(table.common.height);
@@ -14611,6 +14610,67 @@ impl LayoutEngine {
                                 .is_some_and(|s| s.spacing_before == 0.0 && s.spacing_after == 0.0)
                         })
                 })
+    }
+
+    /// 재조판 조각의 마지막 줄 뒤 간격은 다음 줄과의 거리다.
+    /// 다음 줄을 이월할 때 현재 조각의 마지막 줄 높이에 그 거리를 더하지 않는다.
+    /// 저장 사다리의 되감김 판정과 구분하며, 컷 선택과 조각 예약이 같은 값을 사용한다.
+    fn reflow_cut_trailing_spacing(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        units: &[CellUnit],
+        end_cut: usize,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if table.common.treat_as_char
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            || end_cut == 0
+            || end_cut >= units.len()
+        {
+            return 0.0;
+        }
+        let closing = &units[end_cut - 1];
+        if closing.empty_spacer
+            || closing.vis_start >= closing.vis_end
+            || closing.mixed_nested_fragment
+            || closing.non_inline_control_range.is_some()
+        {
+            return 0.0;
+        }
+        let Some(para) = cell.paragraphs.get(closing.para_idx) else {
+            return 0.0;
+        };
+        if !para.controls.is_empty()
+            || para.line_segs.is_empty()
+            || para.line_segs.iter().any(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+        {
+            return 0.0;
+        }
+        let (left, right, _, _) = self.resolve_cell_padding(cell, table);
+        let width =
+            hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table);
+        let inner_width =
+            crate::renderer::composer::cell_inner_text_width(width, left, right, self.dpi);
+        let comp = self.compose_cell_unit_paragraph(para, cell.text_direction, inner_width, styles);
+        let Some(line) = comp.lines.get(closing.vis_end - 1) else {
+            return 0.0;
+        };
+        let after = if closing.vis_end == comp.lines.len() {
+            styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map(|style| style.spacing_after)
+                .unwrap_or(0.0)
+        } else {
+            0.0
+        };
+        (hwpunit_to_px(line.line_spacing.max(0), self.dpi) + after).min(closing.height)
     }
 
     fn native_intra_para_saved_reset_trailing_trim(
