@@ -56,6 +56,8 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 개별 정상 회귀와 다른 원장에서는 계속 검사하며 원문은 samples에 유지한다.
 const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
+    // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
+    "issue3637/regulatory_impact_nested_table_escape.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.

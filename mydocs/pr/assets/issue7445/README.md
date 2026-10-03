@@ -575,3 +575,7 @@ HWPX oracle는 격차가 개선되어 실제차단이 아니므로 원장행을 
 ## 2026-10-03 사용자 지시: 86712 두 형식의 렌더링 회귀 이관
 
 `samples/86712_regulatory_analysis.hwp` 및 `samples/issue1891/86712_regulatory_analysis.hwpx`를 함께 전체 피델리티 개선 범위로 이관합니다. 이번 명시 지시로 #5804/#5830/#7243/#2279 렌더링14함수와 쪽수·기하 corpus 항목을 제거합니다. 원문·PDF와 원시 파싱/저장 줄 검사는 유지합니다. 앞선 정상 검사 복원 기록보다 이번 해당 문서의 사용자 지시를 우선합니다. 전64쪽 TSV는 중단했으며 새 전쪽 검증 완료로 쓰지 않습니다. [범위와 검증](../planet6897_green_20261002/deferred_86712_body_scope.json).
+
+## 2026-10-03 사용자 지시: #3637 규제영향분석서 렌더링 회귀 이관
+
+`samples/issue3637/regulatory_impact_nested_table_escape.hwpx` 전31쪽 Native TSV 최저16.17029%,14쪽 미달이며15쪽 PNG에서 본문 누락을 확인했습니다. 전용 px 상한 회귀1함수 및 텍스트 겹침·용지 밖 원장2행을 제거하고 corpus 수집에서 제외합니다. 본문 넘침 제외는 유지합니다. 원문과 PDF는 보존하고, #3637의 다른 보도자료2종은 이 판정에 포함하지 않습니다. [전쪽 TSV](../planet6897_green_20261002/deferred_3637_native.tsv),[15쪽 review](../planet6897_green_20261002/deferred_3637_p15_review.png),[범위](../planet6897_green_20261002/deferred_3637_validation.json).
