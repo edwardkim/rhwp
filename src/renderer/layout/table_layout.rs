@@ -2624,7 +2624,7 @@ impl LayoutEngine {
         outer_host_stored_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
-        physical_outer_box_paint_inset: bool,
+        physical_outer_box_paint_inset_px: f64,
         resolved_table_origin: Option<(Option<f64>, f64)>,
         host_char_border_fill_id: TableCharBorder,
     ) -> f64 {
@@ -2651,7 +2651,7 @@ impl LayoutEngine {
             outer_host_stored_vpos_hu,
             allow_para_top_bleed,
             clamp_header_negative_para_offset,
-            physical_outer_box_paint_inset,
+            physical_outer_box_paint_inset_px,
             resolved_table_origin,
             host_char_border_fill_id,
             false,
@@ -2683,7 +2683,7 @@ impl LayoutEngine {
         outer_host_stored_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
         clamp_header_negative_para_offset: bool,
-        physical_outer_box_paint_inset: bool,
+        physical_outer_box_paint_inset_px: f64,
         resolved_table_origin: Option<(Option<f64>, f64)>,
         host_char_border_fill_id: TableCharBorder,
         wrapper_margin_already_applied: bool,
@@ -2916,7 +2916,7 @@ impl LayoutEngine {
                             None,
                             allow_para_top_bleed,
                             clamp_header_negative_para_offset,
-                            false,
+                            0.0,
                             None,
                             TableCharBorder::default(),
                             true,
@@ -3259,7 +3259,7 @@ impl LayoutEngine {
         // 그 일반 규칙의 **부분집합**이라, 둘 다 실으면 여백이 두 번 든다
         // (`tac-img-02.hwp` 1쪽 표가 본문 75.6 에서 79.4 가 아니라 83.1 로 갔다).
         // 세로 위여백도 확정 원점에 이미 포함됐다면 반복하지 않는다. 호출자는
-        // 확정 계획이 없는 저장 바깥 상자에만 physical_outer_box_paint_inset을 전달한다.
+        // 확정 계획이 없는 저장 바깥 상자에만 physical_outer_box_paint_inset_px 를 전달한다.
 
         let table_text_wrap = if depth == 0 {
             table.common.text_wrap
@@ -3305,12 +3305,7 @@ impl LayoutEngine {
                 computed_y
             }
         };
-        let table_y = flow_table_y
-            + if physical_outer_box_paint_inset {
-                hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
-            } else {
-                0.0
-            };
+        let table_y = flow_table_y + physical_outer_box_paint_inset_px;
         let inline_table_flow_y_shift = if inline_x_override.is_some() {
             para_y
                 .map(|anchor_y| (flow_table_y - anchor_y).max(0.0))
@@ -7744,7 +7739,7 @@ impl LayoutEngine {
                                     None,
                                     false,
                                     clamp_header_negative_para_offset,
-                                    false,
+                                    0.0,
                                     None,
                                     Self::standalone_table_char_border_fill(
                                         Some(para),
@@ -7907,7 +7902,7 @@ impl LayoutEngine {
                                 None,
                                 false,
                                 clamp_header_negative_para_offset,
-                                false,
+                                0.0,
                                 float_x.map(|x| (Some(x), nested_y)),
                                 Self::standalone_table_char_border_fill(
                                     Some(para),
