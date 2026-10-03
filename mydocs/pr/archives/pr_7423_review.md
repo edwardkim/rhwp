@@ -416,3 +416,12 @@ last_verified: 2026-10-03
 - 현재차단text-overlap corpus5건을포함한이문서의렌더링/쪽수회귀를사용자지시에따라#7445로이관합니다. 기존body-overflow보류를유지하고해당text/off-canvas수집과전용2함수,쪽수원장2행만제거합니다. 원문·독립PDF·parser검사와다른#1853표분할구현은보존하며새검사는추가하지않습니다. 전체피델리티90%이상확인후의미관계검사로복원해야합니다.
 
 - 이관후관련39건39PASS/0FAIL(52.626초),3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. [전체TSV](../assets/planet6897_green_20261002/deferred_caption1853_native.tsv),[27쪽review](../assets/planet6897_green_20261002/deferred_caption1853_p27_review.png),[검증원장](../assets/planet6897_green_20261002/deferred_caption1853_validation.json),[#7445추가근거](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5967189734)를보존했습니다. 전체회귀는아직미실행입니다.
+
+
+### #5699 49쪽 기준 문서의 쪽 소속·피델리티 이관 분석
+
+- 같은fixture에서engine2020으로재출력한독립한컴PDF49쪽과Native47쪽이달라정식whole-sweep은쪽수gate에서실패했습니다. 누락Native48/49쪽은TSV에빈값으로남겼으며,기존export의공통47쪽을같은VisualSweep함수로비교한음성증거만사용합니다. 전체49쪽비교완료나90%통과로쓰지않습니다.
+- 공통47쪽최저0.21803%(14쪽),37쪽90%미만입니다. PDF14쪽은쪽번호만있고같은규제개요표는15쪽에있는데Native는14쪽에그립니다. 직접review와PDF텍스트를대조해쪽소속차이를확인했습니다. 현재text-overlap4건차단과같은문서의기존렌더링회귀1함수·본문넘침원장1행을#7445로이관합니다.
+- 입력·새정상PDF·IR필드parser검사를보존합니다. PDF는50MB미만으로함께커밋하며다른문서와표배치코드는변경하지않습니다. 전체쪽수/피델리티개선후Native/freshWASM90%이상근거로의미관계회귀를복원해야합니다.
+
+- 이관후관련33건33PASS/0FAIL(72.923초),3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. [공통47쪽TSV](../assets/planet6897_green_20261002/deferred_issue5699_native_partial.tsv),[14쪽review](../assets/planet6897_green_20261002/deferred_issue5699_p14_review.png),[검증원장](../assets/planet6897_green_20261002/deferred_issue5699_validation.json),[#7445추가근거](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5967219175)를보존했습니다. 전체49쪽과WASM검증통과를주장하지않습니다.
