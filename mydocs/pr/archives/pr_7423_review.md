@@ -610,3 +610,9 @@ last_verified: 2026-10-03
 - 기존 두 함수만 독립2/8쪽과 내용 소속·셀 글줄/여백·후속 제목 순서 관계로 갱신하여2PASS/exit0입니다. 신규 검사·fixture·생산 코드 변경은 없습니다. 동일 생산 소스의 Native/fresh WASM 전쪽 최소96.09636/97.99040% 증적을 재사용하며 새 빌드로 표현하지 않습니다.
 - Clippy·fmt·suite 정책·문서 링크 exit0입니다. 첫 manifest 검사는 fmt 뒤 weight가 바뀌어 generated drift를 검출했습니다. suite를 다시 준비한 뒤 현재suite18에서 두 검사를 재실행하고 모든 게이트를 통과했습니다. 생성 harness는 커밋하지 않습니다. [검증 원장](../assets/planet6897_green_20261002/masked2470_regression_validation.json).
 - 사용자 추가 지시에 따라 #6797의11쪽과 #1921의37쪽은 #7445로 이관하거나 검사를 제거하지 않고 이 브랜치에서 보정합니다. #6797부터 개별 분석·수정·결과·커밋 순으로 진행하며 최종 전체 회귀와 통합 PR 준비는 미완료입니다.
+
+### #6797 기준 PDF 그림 누락 재산출
+
+- 기존 PDF는 전11쪽에 작은 이미지1개만 포함해 사진·그래프가 모두 빠져 있었습니다. 사용자 요청에 따라 같은 원본(한컴2010 저장본)을 지정된2024 MCP client의 engine2020으로 재산출했습니다. 변환 성공·다운로드 검증을 확인했고 새 PDF는11쪽·533,249byte·이미지18항목입니다. 5쪽 돼지 사진과7쪽 그래프가 정상 포함됐음을 review에서 확인하여 정본 PDF를 교체합니다. 누락의 변환 서버 원인은 아직 확정하지 않습니다.
+- 동일 Native raster를96dpi 새 PDF와 전11쪽 비교한 결과90% 미달은7→2쪽(1쪽86.12764%,7쪽62.56997%)입니다. 5쪽39.24193→95.80181%; 나머지9쪽은95.80181% 이상입니다. 그림을 숨기거나 비교 알고리즘을 완화하지 않았습니다. 1쪽 제목과7쪽 표 겹침은 실제 배치 차이로 계속 보정합니다.
+- [PDF 재산출 원장](../assets/planet6897_green_20261002/social6797_refreshed_pdf_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/social6797_refreshed_native.tsv), [5쪽 review](../assets/planet6897_green_20261002/social6797_refreshed_p5_review.png), [7쪽 review](../assets/planet6897_green_20261002/social6797_refreshed_p7_review.png). 생산 코드·기존 회귀 검사는 변경하지 않았으며 fresh WASM 및 전체 회귀는 이 PDF로 아직 재검증하지 않았습니다.
