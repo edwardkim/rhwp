@@ -606,36 +606,51 @@ pub(crate) fn tac_host_trailing_spacing(
 /// 실제 표 소유 줄의 저장 끝에 앞 문단 뒤 간격과 다음 문단 앞 간격을 더한 값이
 /// 다음 저장 줄의 시작과 맞닿으면
 /// 배치 원점에는 후행 간격 전량을 적용한다. 분할 예산의 표 점유는 별도로 센다.
-pub(crate) fn native_tac_next_line_full_spacing(
+pub(crate) fn tac_next_line_full_spacing(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     current_spacing_after_px: f64,
     next_spacing_before_px: f64,
     seg: &LineSeg,
-    native_stored_layout: bool,
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
     dpi: f64,
 ) -> bool {
     let next_spacing_before_hu = (next_spacing_before_px / hwpunit_to_px(1, dpi)).round() as i32;
     let current_spacing_after_hu =
         (current_spacing_after_px / hwpunit_to_px(1, dpi)).round() as i32;
-    native_stored_layout
+    // 원본 저장 줄과 현재 개체 프레임을 소유한 재조판 줄을 구분한다.
+    // 후자는 합성 태그를 가진 현재 사다리를 사용하므로 저장 원본으로 취급하지 않는다.
+    let current_owned_row = profile.hwpx_stored_layout()
+        && para.line_segs.len() == 1
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        && para
+            .controls
+            .iter()
+            .enumerate()
+            .any(|(ci, _)| owned_rowbreak_tac_height(para, ci).is_some());
+    let stored_host = profile.hwp5_stored_pagination_layout()
+        && !profile.session_edited()
         && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    (stored_host || current_owned_row)
         && para
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_para.is_some_and(|next| {
-            !next.stored_text_partition_is_dirty()
+            (current_owned_row || !next.stored_text_partition_is_dirty())
                 && next.line_segs.first().is_some_and(|first| {
-                    first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                        && seg
-                            .vertical_pos
-                            .saturating_add(seg.line_height)
-                            .saturating_add(seg.line_spacing)
-                            .saturating_add(current_spacing_after_hu)
-                            .saturating_add(next_spacing_before_hu)
-                            == first.vertical_pos
+                    (if current_owned_row {
+                        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    } else {
+                        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    }) && seg
+                        .vertical_pos
+                        .saturating_add(seg.line_height)
+                        .saturating_add(seg.line_spacing)
+                        .saturating_add(current_spacing_after_hu)
+                        .saturating_add(next_spacing_before_hu)
+                        == first.vertical_pos
                 })
         })
 }

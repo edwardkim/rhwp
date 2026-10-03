@@ -519,3 +519,20 @@ last_verified: 2026-10-03
 - 마지막 음수 자간을 되돌려 가용폭 안의 글자를 거절하던 경계를 작성된 줄바꿈·문단 끝에서 보정했습니다. Native/fresh WASM 전8쪽은 동일하며 7쪽89.96954%, 8쪽99.03672%입니다. 4/6/7쪽 미달이 남아 기존 회귀 핀은 수정하지 않았습니다. 명시적 줄바꿈만 보정한 중간 8쪽99.96707%와 문단 끝까지 적용한 최종 결과를 구분합니다.
 - 기존 집중33건33PASS, fresh WASM 및 Native/WASM/workspace Clippy, workspace 빌드, fmt, suite 준비·고정 base manifest 모두 exit0입니다. Mac no-opt WASM 대체 빌드이며 Docker 최적화 검증으로 표현하지 않습니다. 신규 검사·fixture 추가 및 회귀 삭제0건입니다.
 - [검증 원장](../assets/planet6897_green_20261002/masked2470_terminal_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_terminal_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_terminal_wasm.tsv), [7쪽 review](../assets/planet6897_green_20261002/masked2470_terminal_native_p7_review.png). 표 앞 간격과 행/셀 위치 차이는 다음 보정 단계로 남기며 통합 PR 준비는 보류합니다.
+
+### #2470 7쪽 제목 뒤 표 원점 차이 분석과 보정 계획
+
+- 사용자 지적대로 표와 행 경계가 PDF보다 위에 있습니다. 재조판 pi73 제목 표의 줄 원점187726HU·높이2746HU·뒤 간격1360HU의 합은 다음 pi74 시작191832HU와 정확히 같습니다. 제목은 일치하지만 실제 배치가 뒤 간격을680HU로 반감하여 표가9.0667px 올라갑니다. 이 줄은 HWPX 재조판 태그가 붙어 기존 HWP5 저장 줄 전량 간격 경로에 들어가지 않습니다.
+- 현재 개체 높이를 온전히 소유하는 TAC 줄과 다음 줄의 원점 연속성을 확인한 경우에도 전량 간격을 배치에 보존하도록 기존 판정을 공통화합니다. 원본 저장 줄은 기존 무편집·비합성 조건을 유지하고, 재조판 줄은 HWPX 개체 소유 프레임과 현재 생성된 다음 줄의 일치를 근거로 사용합니다. 문서 ID·임의 오프셋 예외는 추가하지 않습니다.
+- 생산 LineSeg → composer 원점 연속성 판정 → layout y_offset → 후속 PartialTable 원점을 추적했습니다. typeset/controls/tac_reconcile은 분할 예산의 표 물리 점유를 별도로 계산하며, 다음 줄의 배치 간격을 그 예산에 다시 더하지 않는 기존 계약을 유지합니다. 전8쪽 Native/fresh WASM에서 행 분할·다음 쪽 내용과 정상 TAC 대조를 확인합니다.
+
+### #2470 7쪽 표 원점 보정 결과
+
+- 제목 표의 y739.2px는 유지하고 뒤 표는 y784.9→793.9px로 옮겼습니다. 작성된1360HU 간격을 전량 적용하여 표 상단·행 경계가 독립 PDF와 일치합니다. Native/fresh WASM 전8쪽은 동일하며7쪽89.96954→99.09872%, 다른7쪽 수치는 유지됩니다. 4쪽75.21083/6쪽86.75430%는 남아 기존9쪽 회귀 핀을 아직 변경하지 않습니다.
+- 기존 집중8건8PASS, Native 빌드·fresh Mac no-opt WASM, 3종 Clippy·workspace 빌드·fmt·suite 준비·고정 base manifest 모두 exit0입니다. 정상 대조#5755 Native/fresh WASM 전3쪽은99.32105/99.13619/99.76615%로 이전과 동일합니다. 신규 검사·픽스쳐 추가 및 회귀 삭제0건입니다.
+- 추가 대조 `36382471_masked.hwpx`의2쪽48.16693%는 보정 전 해시가 일치하는 WASM과 보정 후 Native의 두 쪽 PNG 픽셀이 모두 동일하여 기존 차이로 구분했습니다. 이를 시각 통과 근거로 사용하지 않습니다. 작은2쪽 자료의 보류도 기록하며 이번7쪽 보정 완료와 통합 PR 준비 완료를 구분합니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_gap_validation.json), [Native 전8쪽 TSV](../assets/planet6897_green_20261002/masked2470_gap_native.tsv), [WASM 전8쪽 TSV](../assets/planet6897_green_20261002/masked2470_gap_wasm.tsv).
+
+![7쪽 Native 표 원점 보정](../assets/planet6897_green_20261002/masked2470_gap_native_p7_review.png)
+
+![7쪽 fresh WASM 표 원점 보정](../assets/planet6897_green_20261002/masked2470_gap_wasm_p7_review.png)

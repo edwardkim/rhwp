@@ -13794,7 +13794,7 @@ impl LayoutEngine {
                         let native_stored_layout =
                             self.profile.get().hwp5_stored_pagination_layout()
                                 && !self.profile.get().session_edited();
-                        y_offset += if crate::renderer::composer::native_tac_next_line_full_spacing(
+                        y_offset += if crate::renderer::composer::tac_next_line_full_spacing(
                             para,
                             paragraphs.get(para_index + 1),
                             styles
@@ -13808,7 +13808,7 @@ impl LayoutEngine {
                                 })
                                 .map_or(0.0, |shape| shape.spacing_before),
                             seg,
-                            native_stored_layout,
+                            self.profile.get(),
                             self.dpi,
                         ) {
                             hwpunit_to_px(seg.line_spacing, self.dpi)
