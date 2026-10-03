@@ -170,7 +170,9 @@ pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoEr
 /// HWPX 는 같은 값을 `settings.xml` 의
 /// `<config:config-item name="PrintMethod">` 로 싣는다.
 fn parse_doc_data_print_method(data: &[u8]) -> Option<u32> {
-    data.chunks_exact(8)
+    data.as_chunks::<8>()
+        .0
+        .iter()
         .find(|kv| {
             u32::from_le_bytes([kv[0], kv[1], kv[2], kv[3]])
                 == crate::model::document::HWP5_DOC_DATA_KEY_PRINT_METHOD

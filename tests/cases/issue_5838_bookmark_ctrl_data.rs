@@ -143,7 +143,9 @@ fn bookmark_name_survives_hwpx_to_hwp_and_matches_the_oracle() {
     let chars = u16::from_le_bytes([payload[10], payload[11]]) as usize;
     let name: String = char::decode_utf16(
         payload[12..12 + chars * 2]
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|pair| u16::from_le_bytes([pair[0], pair[1]])),
     )
     .map(|ch| ch.unwrap_or('\u{fffd}'))

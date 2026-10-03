@@ -502,20 +502,26 @@ fn append_shape_usages(
 }
 
 fn decode_char_shape_ids(data: &[u8]) -> Vec<usize> {
-    data.chunks_exact(8)
+    data.as_chunks::<8>()
+        .0
+        .iter()
         .map(|entry| u32::from_le_bytes(entry[4..8].try_into().expect("8-byte entry")) as usize)
         .collect()
 }
 
 fn decode_line_seg_tags(data: &[u8]) -> Vec<u32> {
-    data.chunks_exact(36)
+    data.as_chunks::<36>()
+        .0
+        .iter()
         .map(|entry| u32::from_le_bytes(entry[32..36].try_into().expect("36-byte entry")))
         .collect()
 }
 
 fn decode_para_text(data: &[u8]) -> String {
     let units: Vec<u16> = data
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
         .collect();
     let mut text = String::new();

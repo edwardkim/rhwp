@@ -3575,7 +3575,9 @@ mod tests {
         assert_eq!(&data[20..22], &27_u16.to_le_bytes());
 
         let text: Vec<u16> = data[22..]
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
             .collect();
         assert_eq!(

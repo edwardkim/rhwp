@@ -219,7 +219,7 @@ fn execute_redact(args: RedactArgs<'_>) -> i32 {
             targets.push((f.raw.clone(), f.masked.clone()));
         }
     }
-    targets.sort_by(|a, b| b.0.chars().count().cmp(&a.0.chars().count()));
+    targets.sort_by_key(|target| std::cmp::Reverse(target.0.chars().count()));
 
     let mut redacted_count = 0usize;
     if !dry_run {
@@ -485,7 +485,9 @@ fn sanitize_summary_information(data: &mut [u8]) -> Vec<(String, String)> {
                     continue;
                 };
                 let units: Vec<u16> = raw
-                    .chunks_exact(2)
+                    .as_chunks::<2>()
+                    .0
+                    .iter()
                     .map(|c| u16::from_le_bytes([c[0], c[1]]))
                     .take_while(|u| *u != 0)
                     .collect();

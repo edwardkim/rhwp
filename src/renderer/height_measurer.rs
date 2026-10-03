@@ -333,9 +333,7 @@ pub fn fit_measured_table_to_declared_height(
             }
         } else {
             let per_row = target_row_sum / row_count as f64;
-            for row_height in &mut fitted.row_heights {
-                *row_height = per_row;
-            }
+            fitted.row_heights.fill(per_row);
         }
     }
 

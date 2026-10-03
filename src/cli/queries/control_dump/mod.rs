@@ -345,7 +345,7 @@ fn dump_para_shape(document: &Document, paragraph: &Paragraph) {
             shape.numbering_id,
             shape.attr1,
             shape.attr2,
-            &paragraph.raw_header_extra
+            paragraph.raw_header_extra
         );
     }
     dump_tab_def(document, shape.tab_def_id);

@@ -280,7 +280,9 @@ fn ctrl_header_key(data: &[u8]) -> String {
     let command_end = command_start + command_len * 2;
     let command = if command_end <= data.len() {
         let chars: Vec<u16> = data[command_start..command_end]
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
             .collect();
         String::from_utf16_lossy(&chars)
@@ -386,7 +388,9 @@ struct DecodedParaText {
 
 fn decode_para_text(data: &[u8]) -> DecodedParaText {
     let units: Vec<u16> = data
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
         .collect();
     let mut plain = String::new();

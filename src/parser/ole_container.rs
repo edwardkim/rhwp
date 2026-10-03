@@ -261,7 +261,9 @@ pub fn parse_equation_contents_script(data: &[u8]) -> Option<String> {
         return None;
     }
     let units: Vec<u16> = data[72..72 + len]
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|c| u16::from_le_bytes([c[0], c[1]]))
         .collect();
     let script = String::from_utf16_lossy(&units)

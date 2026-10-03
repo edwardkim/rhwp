@@ -13031,7 +13031,7 @@ impl LayoutEngine {
                 insert_before_para_text(
                     col_node,
                     para_index,
-                    temp_parent.children.drain(..).collect(),
+                    std::mem::take(&mut temp_parent.children),
                 );
             } else if is_paper_based {
                 let mut temp_parent = RenderNode::new(

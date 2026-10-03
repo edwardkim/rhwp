@@ -37,7 +37,7 @@ impl RgbaPage {
             .and_then(|n| n.checked_mul(4))
             .ok_or_else(|| "rgba page size overflow".to_string())?;
         let mut pixels = vec![0u8; len];
-        for chunk in pixels.chunks_exact_mut(4) {
+        for chunk in pixels.as_chunks_mut::<4>().0.iter_mut() {
             chunk.copy_from_slice(&fill);
         }
         Self::new(width, height, pixels)

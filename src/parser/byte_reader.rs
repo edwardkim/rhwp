@@ -118,7 +118,9 @@ impl<'a> ByteReader<'a> {
         let bytes = self.read_bytes(byte_count)?;
 
         let utf16: Vec<u16> = bytes
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
             .collect();
 

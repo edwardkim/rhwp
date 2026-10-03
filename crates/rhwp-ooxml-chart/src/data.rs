@@ -705,12 +705,14 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                     // 자기닫힘 `<c:marker/>` 는 열고 바로 닫는다.
                     b"marker" if state.cur.is_some() => {}
                     // 자기닫힘 `<c:spPr/>`(코퍼스 0건, 방어) — 계열 최상위일 때만 구간으로.
-                    b"spPr" if state.cur.is_some() => {
-                        if state.sp_pr_depth == 0 && state.marker_depth == 0 {
-                            if let Some(ser) = state.cur.as_mut() {
-                                if ser.sp_pr_span.is_none() {
-                                    ser.sp_pr_span = Some(tag_range.clone());
-                                }
+                    b"spPr"
+                        if state.cur.is_some()
+                            && state.sp_pr_depth == 0
+                            && state.marker_depth == 0 =>
+                    {
+                        if let Some(ser) = state.cur.as_mut() {
+                            if ser.sp_pr_span.is_none() {
+                                ser.sp_pr_span = Some(tag_range.clone());
                             }
                         }
                     }

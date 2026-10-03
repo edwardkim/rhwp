@@ -218,7 +218,7 @@ pub fn probe_ole_chart_contents(bytes: &[u8]) -> Result<OleChartContentsProbe, O
     signature.copy_from_slice(&bytes[..16]);
 
     let mut first_words_le = [0u32; 4];
-    for (i, chunk) in bytes[..16].chunks_exact(4).enumerate() {
+    for (i, chunk) in bytes[..16].as_chunks::<4>().0.iter().enumerate() {
         first_words_le[i] = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
     }
 

@@ -287,6 +287,6 @@ pub fn build_menu(f: &DocFacts) -> Vec<Affordance> {
     ));
 
     // 우선순위 내림차순 안정 정렬 — 같은 우선순위는 삽입 순서를 유지한다.
-    items.sort_by(|a, b| b.0.cmp(&a.0));
+    items.sort_by_key(|item| std::cmp::Reverse(item.0));
     items.into_iter().map(|(_, a)| a).collect()
 }
