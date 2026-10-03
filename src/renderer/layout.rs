@@ -10415,7 +10415,15 @@ impl LayoutEngine {
                             } else {
                                 0.0
                             };
-                        if !is_column_top {
+                        // Stored first-line positions keep paragraph spacing
+                        // at a section start or an explicit page break. Natural
+                        // page and column transitions still trim it.
+                        let keeps_top_spacing = para_index == 0
+                            || matches!(
+                                para.column_type,
+                                crate::model::paragraph::ColumnBreakType::Page
+                            );
+                        if !is_column_top || keeps_top_spacing {
                             let spacing_before = styles
                                 .para_styles
                                 .get(ps_id)
