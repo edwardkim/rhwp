@@ -235,7 +235,7 @@
   "before_existing_test": {
     "log": "output/pr-review/planet6897-green-20261002/social6797-origin-remaining-blockers.log",
     "result": "FAIL: 둘째 그림 y647.5, 앵커679.5가 작은 셀에 제한됨",
-    "new_semantic_test_on_before_source": "미실행: 새 관계 검사를 이전 소스에서 직접 실행하지 않음. 이전 실제 트리에서는 앞 캡션 뒤 배치 관계가 위반됨."
+    "new_semantic_test_on_before_source": "완료: 같은 기존 관계 검사와 실물 fixture를 보정 전 소스에서 실행, 앞 캡션 뒤 배치 위반으로1 FAIL(exit100). 동일 보정 소스를 SHA 대조 복원한 뒤1 PASS(exit0)."
   },
   "native_p3_before_crop_percent": 80.4307,
   "native_p3_after_crop_percent": 97.95844,
@@ -563,6 +563,42 @@
       ],
       "exit": 0,
       "seconds": 5.21
+    },
+    {
+      "gate": "skia-cli",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 87.96
+    },
+    {
+      "gate": "skia-p3",
+      "command": [
+        "target/pr-review/release-test/rhwp",
+        "export-png",
+        "samples/issue5731/cell_second_float_flow_anchor.hwpx",
+        "-p",
+        "2",
+        "--profile",
+        "print",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "-o",
+        "output/pr-review/planet6897-green-20261002/current5731-skia-p3"
+      ],
+      "exit": 0,
+      "seconds": 1.96
     }
   ],
   "final_whole_validation": "pending",
@@ -573,5 +609,48 @@
     "skipped": 13,
     "result": "PASS"
   },
-  "skia_remaining": "공식 개별2종과 직접3쪽 PNG 출력 진행 중"
+  "skia_remaining": "완료",
+  "skia_direct_p3": [
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "98.07425",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.07425",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "stage_source_commit": "14d205d83",
+  "before_after_same_test": {
+    "rows": [
+      {
+        "phase": "before",
+        "source": "ef64dd0d0 Rust source for correction paths; restored real fixture and same existing semantic test",
+        "exit": 100,
+        "seconds": 89.81
+      },
+      {
+        "phase": "after",
+        "source": "14d205d83 restored exact source",
+        "exit": 0,
+        "seconds": 102.5
+      }
+    ],
+    "production_source_restored": true,
+    "restored_sha256": {
+      "src/model/image.rs": "955e6a573314cbb6ae7c1f20cf9e5bcd340792357a0bc3f2e1f5c5d5aea9eece",
+      "src/renderer/canvas.rs": "644c57e4773e37ffe21249fe6946703a8776ac1e97d7e10cfb8de14e27ffa8c1",
+      "src/renderer/height_measurer.rs": "e73be0a485e5bcac3fa320ee99c7c66421b25b9b93d3360613b8e774ab82f81e",
+      "src/renderer/html.rs": "0ddf0e02af1922d35363c2c379edacf212bcc243729b9a974a758d0baebfdecb",
+      "src/renderer/layout.rs": "ac4f6cfc4b33d3c34f49decd67a6a21cf5c10b8b04b5dd0eb62660aa95c3ed21",
+      "src/renderer/layout/paragraph_layout.rs": "7f91ae341fab0121d9c69e0ffe4c19ea9bd06b60b1f62e2ce085a5eab8fdde06",
+      "src/renderer/layout/picture_footnote.rs": "01fbb4381eb088dc1d8dd0ec066163632792c3b59ed4713eb7b3fc07085bbaa5",
+      "src/renderer/layout/shape_layout.rs": "fcb3e326846cf2f7cf879c64f1ecc96a5be3be5efcbf2a337646e91f2d9978b9",
+      "src/renderer/layout/table_cell_content.rs": "b010e95b82db8b5666c20a394ec1153477de274fb3529d1ba88e765399444e42",
+      "src/renderer/layout/table_layout.rs": "c8c725e81e49d9a586add5c5be783226bf7b41a4da549e6accf8bf5d99ad355c",
+      "src/renderer/skia/image_conv.rs": "53213c785bd07008ed410ede92d7499e251264a99cd08e34c315cd318730ede4",
+      "src/renderer/svg.rs": "b6ab85e0332788304435b4d452919ae05b13490387fe05c2c2a1ed220b5b36a5",
+      "src/renderer/typeset/table.rs": "761bf077629d9b02fc9d40ce7d83a3d816b6c96f3f95f59e7a4bf466c3e51bf8"
+    }
+  },
+  "stage_status": "완료: Native/fresh WASM 전7쪽, 공식 Skia3종, 같은 기존 회귀의 보정 전 FAIL/보정 후 PASS. 최종 전체 통합 검증은 별도 진행."
 }
