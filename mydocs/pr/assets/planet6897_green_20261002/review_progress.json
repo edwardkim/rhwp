@@ -140,7 +140,7 @@
       }
     ]
   },
-  "merge_decision": "보류: #2470 두검사PASS, #5941/#7147 해당205쪽 실패2개 #7445 분리. #6797/#1921 사용자 지시로 현브랜치 보정 및 최종전체검증 필요",
+  "merge_decision": "보류: #6797 보정 완료, 최신 사용자 지시로 #1921 37쪽 보정을 #7445 이관. 나머지 시각 보류와 최종 전체 검증 필요",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -965,7 +965,7 @@
   },
   "integration_pr_ready": false,
   "current_base": "6b3faf77d8085441f9f26d88d65a49791e910352",
-  "latest_stage_evidence": "social6797_correction_validation.json",
+  "latest_stage_evidence": "../issue7445/regulatory1921_deferral_validation.json",
   "current_focused_failures": {
     "run": 19,
     "passed": 14,
@@ -990,9 +990,7 @@
     "#7062"
   ],
   "latest_rebase_evidence": "rebase_latest_validation.json",
-  "remaining_latest_whole_blockers_after_focused": [
-    "#1921"
-  ],
+  "remaining_latest_whole_blockers_after_focused": [],
   "social6797_correction": {
     "evidence": "social6797_correction_validation.json",
     "pages": 11,
@@ -1001,5 +999,15 @@
     "existing_test_functions": 5,
     "focused_passed": 19,
     "focused_failed": 0
+  },
+  "regulatory1921_deferral": {
+    "pages": 37,
+    "below90": 19,
+    "minimum_percent": 33.38675,
+    "removed_failed_tests": 1,
+    "preserved_passed_tests": 4,
+    "issue": 7445,
+    "validation_pending": false,
+    "after_focused_passed": 9
   }
 }

@@ -633,3 +633,13 @@ last_verified: 2026-10-03
 - 기존5검사는 유지하고 절대 y 핀2개를 원본 offset 차이·앞 표/두 그래프/후속 제목의 같은 쪽 소속·순서·프레임 포함 관계로 갱신했습니다. 신규 검사·fixture·삭제/ignore는0건입니다. 최종 기존19검사19PASS, Native·WASM·workspace Clippy/build·fmt·최신base고정 manifest 모두exit0입니다. Clippy의 상태 기록 방식 지적은 map→inspect로 수정해 재검증했습니다.
 - 최종 Native/WASM 재빌드 전11쪽 SVG·렌더 트리가 실제 전쪽 시각 검증본과 각각 바이트 동일함을 확인하여 TSV/review를 재사용합니다. Native/WASM 전11쪽 raster도 바이트 동일합니다. #2470 8/2쪽과 정상#5755 3쪽 Native 전쪽 렌더 트리는 이전 정상 검증본과 같고 #1921 전37쪽도 변화가 없습니다. Mac no-opt WASM 대체 검증이며 Docker 최적화 빌드나 최종 전체 회귀·Skia3 완료로 표현하지 않습니다.
 - [검증 원장](../assets/planet6897_green_20261002/social6797_correction_validation.json), [Native 전11쪽 TSV](../assets/planet6897_green_20261002/social6797_corrected_native.tsv), [WASM 전11쪽 TSV](../assets/planet6897_green_20261002/social6797_corrected_wasm.tsv), [1쪽 review](../assets/planet6897_green_20261002/social6797_corrected_native_p1_review.png), [7쪽 review](../assets/planet6897_green_20261002/social6797_corrected_native_p7_review.png). 다음 단계는 사용자 지시대로 #1921의37쪽을 현 브랜치에서 보정하며 회귀를 유지합니다. 통합 PR 준비는 계속 보류입니다.
+
+## 사용자 변경 지시: #1921 37쪽 보정을 #7445로 이관
+
+- 앞선 현 브랜치 보정 계획은 최신 사용자 지시로 변경합니다. 원본 `samples/issue1921/59043_regulatory_analysis.hwp`와 독립 한컴 2022 PDF `pdf/issue1921/59043_regulatory_analysis-2022.pdf`는 보존합니다. 렌더러 추가 보정은 하지 않습니다.
+- 현재 `d296e37d5`의 full-font print SVG 전37쪽이 기존 비교 출력과 바이트 동일함을 확인한 뒤 같은 PNG에서 TSV를 재산출했습니다. Native/PDF 37/37쪽, 19쪽 미달, 최저37쪽33.38675%입니다. 기존 PNG 재사용이며 fresh WASM 전37쪽은 미실행입니다.
+- 36쪽 후속 ‘편익’ 제목이 앞 표 위에 겹치고, 37쪽 표·본문 시작이 PDF보다 아래로 밀리는 실제 결함을 이관합니다. 실패한 후속 제목 검사1건만 제외하고 통과한4건은 유지합니다. 다른 fixture·baseline·신규 검사 변경은 없습니다. 현재 통합 PR 준비 및 최종 전체 검증은 미완료입니다.
+
+- [전37쪽 TSV](../assets/issue7445/regulatory1921_native_all37.tsv), [이관 원장](../assets/issue7445/regulatory1921_deferral_validation.json), [36쪽 review](../assets/issue7445/regulatory1921_p36_review.png), [37쪽 review](../assets/issue7445/regulatory1921_p37_review.png).
+
+- 이관 변경 후 유지4건·정상#6797 5건, 총9건9PASS/exit0입니다. workspace all-target Clippy·fmt·최신base manifest·변경 문서 링크 exit0입니다. 전체 회귀는 별도 최종 검증이 필요하며 #7445에 전쪽 TSV와 실패 근거를 게시합니다.
