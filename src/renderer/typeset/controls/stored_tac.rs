@@ -255,17 +255,18 @@ pub(super) fn prepare_computed(
     } else {
         flow_origin
     };
-    // 다음 가시 문단의 저장 시작이 이 줄의 끝과 정확히 이어지면
-    // 후행 간격 전량이 그 문단 앞에 있다. 빈 문단 경계에서는 일반 TAC
-    // 조판처럼 양쪽이 간격을 나누어 갖는다.
+    // 다음 줄의 시작이 이 줄의 끝과 정확히 이어지면 빈 글줄도
+    // 후행 간격 전량 뒤에 놓인다. 글자 유무로 간격을 반감하면
+    // 확정 계획 끝에서 역산한 기준축과 이후 본문 원점이 어긋난다.
     let full_trailing_spacing = next_para.is_some_and(|next| {
-        super::super::para_has_non_whitespace_text(next)
-            && next.line_segs.first().is_some_and(|next_seg| {
-                seg.vertical_pos
+        next.line_segs.first().is_some_and(|next_seg| {
+            next_seg.vertical_pos > seg.vertical_pos
+                && seg
+                    .vertical_pos
                     .saturating_add(seg.line_height)
                     .saturating_add(seg.line_spacing)
                     == next_seg.vertical_pos
-            })
+        })
     });
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
     // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.

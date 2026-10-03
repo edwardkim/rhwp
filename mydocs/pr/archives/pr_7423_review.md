@@ -560,3 +560,14 @@ last_verified: 2026-10-03
 - 음수 대각 변환을 다각형·곡선·연결선의 점 좌표에 보존하여 아래 화살표가 PDF와 같은 왼쪽을 향합니다. Native/fresh WASM 전8쪽 동일,6쪽86.74937%로 본문 간격 차이는 남습니다. 기존 관련19검사19PASS·9종 필수 단계 exit0, 정상#5755 fresh WASM 전3쪽은 이전과 같은 최저99.13619%입니다. 신규 검사·회귀 삭제는 없습니다.
 - 6쪽의 다음 빈 문단은 typeset의 확정 `advance_end`를 소비하여 일반 layout 간격 보정을 우회합니다. `stored_tac::prepare_computed`가 연속된 다음 줄도 빈 문단이면800HU 간격을 반감합니다. 실제 줄의 원점 연속성을 근거로 확정 계획도 같은 전량 간격을 소유하도록 다음 단계에서 보정합니다. 추가2쪽 자료의2쪽54.42807%는 여전히 보류합니다.
 - [검증 원장](../assets/planet6897_green_20261002/masked2470_arrow_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_arrow_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_arrow_wasm.tsv), [6쪽 review](../assets/planet6897_green_20261002/masked2470_arrow_native_p6_review.png).
+
+### #2470 6쪽 확정 조판 계획의 후행 간격 보정 계획
+
+- 현재 표 소유 줄의 높이15380HU·뒤 간격800HU는 다음 빈 줄까지 연속하지만 `prepare_computed`의 가시 글자 조건이 이를 거절합니다. 반감한 계획 끝이 `advance_end`와 lazy 원점 재설정으로 전달되어 뒤 본문이5.333px 올라갑니다. 빈 줄도 실제 저장 시작을 가지므로 글자 유무 대신 유효한 다음 줄 원점의 정확한 연결을 판단합니다.
+- HWPX 무편집·단일 TAC·측정 프레임 일치·가용 공간 검사는 유지합니다. 연속되지 않은 경계의 기존 반감도 유지하고 쪽수/영역·기존 저장 TAC 대조를 확인합니다. 전8쪽 Native/fresh WASM 및 기존 관련 검사를 실행하고 결과를 별도 커밋합니다.
+
+### #2470 6쪽 확정 조판 간격 보정 결과
+
+- 실제 다음 빈 줄까지 이어지는800HU 간격을 확정 계획 끝에 전량 보존하여6쪽86.74937→99.91741%입니다. Native/fresh WASM 전8쪽 동일, 최저97.99040%, 쪽수8/8·미달0쪽입니다. 도해 뒤 제목·본문 위치를 review PNG로 직접 확인했습니다. 기존 관련19검사19PASS입니다.
+- Native/fresh Mac no-opt WASM 빌드·3종 Clippy·workspace 빌드·suite 준비를 통과했습니다. fmt의 줄바꿈1건을 정리한 뒤 fmt 재검사·고정 base manifest exit0입니다. 동일 의미의 서식 보정만이며 검증 실패를 숨기지 않습니다. 정상#5755 Native/fresh WASM 전3쪽 최저99.13619% 유지, 신규 검사·회귀 삭제0건입니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_plan_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_plan_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_plan_wasm.tsv), [6쪽 review](../assets/planet6897_green_20261002/masked2470_plan_native_p6_review.png). 추가2쪽 자료의2쪽54.42807%는 별도 보정이 필요하고 통합 PR 준비·최종 전체 검증은 보류입니다.
