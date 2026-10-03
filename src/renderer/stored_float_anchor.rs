@@ -104,6 +104,38 @@ pub(crate) fn stored_topbottom_flow_advance_hu(
     stored_outer_box.then_some(outer_box_height)
 }
 
+/// 원본 저장 사다리가 빈 호스트 표의 전체 바깥 상자를 증명하는가.
+/// 셀 수 대신 실제 점유 높이와 다음 문단 원점을 대조한다. 내용이 선언보다
+/// 커졌거나 편집된 문단은 저장 상자로 강제하지 않고 재조판 경로에 남긴다.
+pub(crate) fn stored_empty_topbottom_outer_box_is_valid(
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    table: &Table,
+    measured_height: Option<f64>,
+    dpi: f64,
+) -> bool {
+    use crate::model::control::Control;
+    !para
+        .text
+        .chars()
+        .any(|c| !c.is_whitespace() && c > '\u{001F}' && c != '\u{FFFC}')
+        && !para.stored_text_partition_is_dirty()
+        && next_para.is_some_and(|next| !next.stored_text_partition_is_dirty())
+        && crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+        && table.common.vertical_offset == 0
+        && table.common.height > 0
+        && table.common.height <= i32::MAX as u32
+        && para
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Table(_)))
+            .count()
+            == 1
+        && stored_topbottom_flow_advance_hu(para, next_para, table).is_some()
+        && measured_height
+            .is_some_and(|height| height <= hwpunit_to_px(table.common.height as i32, dpi) + 0.5)
+}
+
 /// 다음 저장 `vpos` 사다리가 이 개체가 점유할 높이를 실제로 비우는가 [#3925].
 ///
 /// 비우지 않는 host 의 raw `vpos` 를 물리 anchor 로 읽으면 개체가 사다리보다 훨씬 아래에

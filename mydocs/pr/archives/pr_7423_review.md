@@ -386,3 +386,11 @@ last_verified: 2026-10-03
 - 정상 대조 sample2 전29쪽 Native/fresh WASM 최저92.22927%,미달0쪽으로 이전 결과를 유지했습니다. 현재 차단27건+기존#5723/#5755/#5700 각1건의 nextest30건26PASS/4FAIL(exit100,실행63.237초). 기존3건PASS이고 실패4건 이름은 같습니다. 신규검사·assertion·baseline 변경0건입니다.
 - Native/fresh WASM 빌드,3종Clippy,workspace빌드,fmt/diff,최신base 고정 suite manifest exit0입니다. Mac no-opt 대체 WASM이며 Docker최적화 검증이 아닙니다. 최종 전체 nextest와 다른 미달 문서 검증은 미완료이며 통합 PR은 계속 보류입니다.
 - [검증 원장](../assets/planet6897_green_20261002/stored_blank5755_validation.json),[Native 전쪽 TSV](../assets/planet6897_green_20261002/stored_blank5755_native.tsv),[fresh WASM 전쪽 TSV](../assets/planet6897_green_20261002/stored_blank5755_wasm.tsv),[Native 3쪽 review](../assets/planet6897_green_20261002/stored_blank5755_p3_review.png),[fresh WASM 3쪽 review](../assets/planet6897_green_20261002/stored_blank5755_p3_wasm_review.png).
+
+### 1쪽 통일부 보도자료 #2137 보정 분석
+
+- 입력 `samples/task2137/156637323_unification_lecture.hwpx`,정상 engine2020 PDF1쪽,Native68.67580%입니다. 본문과 마지막 그림이약4.27px 함께 아래로 밀립니다. 본문 하단 Rect넘침4.12px도 같은 방향입니다.
+- 첫 비-TAC1×3 표의 저장 host0→다음문단3614HU는 선언높이3048+위283+아래283과 정확히 같습니다. 한컴 PDF는 바깥 상자 원점에서 위여백을 소비합니다. 기존 빈-host 경로는 그림/1×1 특례 밖 다열 표를 배제해,paint 위여백을 놓치고 후행줄간격600HU를 흐름에 더합니다. 후속TAC/본문의lazy원점도그차이를고정합니다.
+- 생산 empty_float::prepare의원점·예약→paragraph_float_placements→layout_table_control의원점·최종occupied_bottom을공유합니다. 원본저장사다리가전체여백상자높이와정확히일치하고내용실측이선언높이안에드는경우만같은계약으로수용합니다. 편집·합성줄·내용팽창·다른사다리는기존경로를유지합니다. Native1쪽방향검증을먼저하고기존차단검사·대조군·freshWASM을확인합니다. 신규회귀검사는추가하지않습니다.
+
+- #2137의 새 바깥 상자는 raw 절대vpos 대신 현재 문단 흐름 원점에서 배치하도록 보정했습니다. Native/fresh WASM1쪽68.67580→96.60250%,문단/표/그림의순서및누락없음을Native review와WASM raster에서확인했습니다. 기존#2137 2함수PASS·확장63건56PASS/7FAIL,Mac대체WASM빌드와3종Clippy/workspace빌드exit0. 후속이관후corpus70건67PASS/3FAIL이며전체회귀와일반성완료로쓰지않습니다. 낮은피델리티문서의제외는renderer무회귀입증이아닙니다. 보정코드를중간커밋으로남기고#5755공통원점·남은문서·최종전체검증을이어확인합니다. [보정원장](../assets/planet6897_green_20261002/task2137_outer_box_validation.json).
