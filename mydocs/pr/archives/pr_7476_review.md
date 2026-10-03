@@ -306,3 +306,10 @@ last_verified: 2026-10-02
 ### 2024 호환 경로 반례 복원
 
 - 메인터너 h01 보정의 단일 TAC 선행 줄 계획이 기존 2024 회수량 적립과 후속 쪽 경계 재적합을 건너뛰어 세대 검사2건이 실패했습니다. 2024의 해당 입력은 기존 일반 경로가 담당하도록 복원했고 기존4검사4PASS입니다. 기본2022·해제 후 pi13=2쪽,2024 pi13=1쪽이며 실제 줄이 단 내부에 포함됩니다. h01 Native/fresh WASM 전9쪽 출력은 이전 시각 증적과 동일합니다. [검증](../assets/planet6897_green_20261002/compat5524_correction_validation.json). Native2024 독립 PDF의 전체 시각 일치율은 미검증이므로 그 범위의 완료나 통합 승인으로 표현하지 않습니다.
+
+### 각주 대조군의 유지보수 보정과 기존 검사 보완(#598)
+
+- 확정 TAC 줄 pen에 저장 원점을 다시 더하던 paint 경로, 문단 앞 간격을 뺀 reset owner 비교, HWP5 쪽 첫 간격을 원점으로 빼던 두 소비자, 감추기 메타데이터 때문에 표 앞 빈 줄을 잃던 경로를 단계별로 보정했습니다. 기여자 원 PR의 잘못으로 일괄 분류하지 않고 통합 브랜치와 메인터너 보정의 공통 경로 반례로 기록합니다.
+- 새 한컴2020 PDF로 Native/fresh WASM 전6쪽 TSV가 동일하며 최저1쪽98.10308%·90미달0입니다. 원문2010 저장본의 engine2020 재출력 PDF를 커밋했고 쪽수6/6·쪽별 텍스트 동일을 확인했습니다.5쪽 원문 나눔고딕과 한컴 바탕 대체 글꼴 차이는 남습니다. 색 있는 표 배경의 실루엣100%를 글꼴 일치로 해석하지 않습니다.
+- 기존 각주 검사5함수는 유지하고, 낡은 절대 클릭 좌표를 실제 페이지0 마커의 구역·문단·제어·번호 소속으로 대체했습니다. 커서 offset과 삭제 후 마커 부재를 유지하며,3쪽 첫 줄의 문단 소속·2쪽 중복 부재를 기존 첫 함수에 보완했습니다. 최초 실패2건을 포함해5건5PASS입니다. 신규 `#[test]` 함수/fixture/golden 추가0·검사 삭제0입니다.
+- [검증 원장](../assets/planet6897_green_20261002/footnote598_final_validation.json), [Native 전6쪽](../assets/planet6897_green_20261002/footnote598_final_native_all6.tsv), [WASM 전6쪽](../assets/planet6897_green_20261002/footnote598_final_wasm_all6.tsv), [3쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p3_review.png), [5쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p5_review.png). 다른 전체 회귀 실패와12/215쪽 시각 보류는 남아 있어 통합 PR 승인/준비 완료로 표현하지 않습니다.
