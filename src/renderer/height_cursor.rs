@@ -529,7 +529,7 @@ impl HeightCursor {
                     let curr_source = *curr_para.source_line_seg_vertical_pos.as_ref()?.first()?;
                     let curr_model = curr_para.line_segs.first()?;
                     let base = curr_model.vertical_pos.checked_sub(curr_source)?;
-                    (base > 0
+                    let source_is_continuous = base > 0
                         && prev_source
                             .saturating_add(seg.line_height)
                             .saturating_add(seg.line_spacing)
@@ -537,11 +537,24 @@ impl HeightCursor {
                         && seg.vertical_pos.checked_sub(prev_source) == Some(base)
                         && curr_model.tag
                             & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                            == 0
-                        && (y_offset - self.col_area_y - hwpunit_to_px(curr_source, self.dpi))
-                            .abs()
+                            == 0;
+                    if !source_is_continuous {
+                        return None;
+                    }
+                    // 개체 없는 유효한 빈 글줄은 높이와 후행 간격을 이미 소비했다.
+                    // 분할 표 뒤의 상대 원점도 실제 수용한 끝에 연결하며, 원본의
+                    // 절대 쪽 위치로 강제 이동하거나 간격을 다시 더하지 않는다.
+                    let plain_line_consumed = prev_para.controls.is_empty()
+                        && prev_para.line_segs.len() == 1
+                        && seg.line_height > 0
+                        && paragraphs.get(item_para)?.controls.is_empty();
+                    if plain_line_consumed {
+                        Some(prev_vpos_end - y_delta_hu)
+                    } else {
+                        ((y_offset - self.col_area_y - hwpunit_to_px(curr_source, self.dpi)).abs()
                             < 0.1)
-                        .then_some(base)
+                            .then_some(base)
+                    }
                 })
                 .flatten();
             let lazy_base = source_continuous_base.unwrap_or_else(|| {

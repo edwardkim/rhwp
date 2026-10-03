@@ -536,3 +536,15 @@ last_verified: 2026-10-03
 ![7쪽 Native 표 원점 보정](../assets/planet6897_green_20261002/masked2470_gap_native_p7_review.png)
 
 ![7쪽 fresh WASM 표 원점 보정](../assets/planet6897_green_20261002/masked2470_gap_wasm_p7_review.png)
+
+### #2470 4쪽 분할 표 뒤 빈 글줄 간격 재가산 분석과 보정 계획
+
+- 이어받은 표 다음 pi15 빈 글줄은 실제 줄 높이12px와 후행9.6px를 소비합니다. pi16 진입 시 lazy 기준이 같은 후행720HU를 다시 빼서 본문이9.6px 아래로 밀립니다. 원본 pi15 시작28872HU+900HU+720HU=pi16 시작30492HU이며 재구성된 두 좌표도 같은 차이로 연속입니다.
+- 유효한 원본 저장 두 줄이 연속되고 앞 빈 문단이 개체 없는 실제 한 글줄이면, 절대 쪽 원점 미확정 상태에서도 이미 수용한 순차 끝을 상대 원점으로 연결합니다. 표 렌더 끝과 원본 사다리 사이의 작은 차이를 강제 절대좌표로 덮지 않으며 후행 간격을 중복 소비하지 않습니다. 합성·편집·비연속·개체 앵커는 기존 bridge를 유지합니다.
+- 원본 source_line_seg_vertical_pos 및 현재 LineSeg → HeightCursor lazy 기준 → typeset/section/vpos의 current_height와 layout의 y_offset → 다음 본문 원점 경로를 같은 계산으로 보정합니다. 기존 HeightCursor 대조 검사와 전8쪽 Native/fresh WASM에서 표 뒤 흐름·쪽수·내용을 확인하며 기존 회귀 핀은 전쪽90%까지 유지합니다.
+
+### #2470 4쪽 분할 표 뒤 빈 줄 보정 결과
+
+- 빈 줄이 소비한 간격을 lazy 원점에서 다시 더하던 경계를 보정하여4쪽75.21083→99.84525%입니다. Native/fresh WASM 전8쪽 수치는 동일하고 다른7쪽은 유지됩니다. 실제 수용한 표 뒤 흐름에 상대 원점을 연결하며 문서 ID·절대좌표 보정은 없습니다.
+- 기존 HeightCursor와 관련 회귀63건63PASS, Native 빌드·fresh Mac no-opt WASM 및3종 Clippy/workspace 빌드/fmt/suite 준비·고정 base manifest exit0입니다. 정상#5755 Native/fresh WASM 전3쪽 최저99.13619%로 기존과 같습니다. 신규 검사·회귀 삭제0건이며 기존#2470 핀은 아직 유지합니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_blank_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_blank_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_blank_wasm.tsv), [4쪽 review](../assets/planet6897_green_20261002/masked2470_blank_native_p4_review.png). 현재8쪽 중6쪽86.75430%만 미달입니다. 6쪽 및 추가2쪽 원문의 기존 결함과 다른 PR 차단·최종 전체 검증은 남아 있습니다.
