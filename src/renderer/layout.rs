@@ -7629,17 +7629,18 @@ impl LayoutEngine {
                 && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
                     .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
                         && seg.vertical_pos < 30_000));
-        // 저장 HWPX 쪽은 첫 vpos가 문단 앞 간격과 정확히 같은 문단으로 시작할 수 있다.
+        // 저장 HWP/HWPX 쪽은 첫 vpos가 문단 앞 간격과 정확히 같은 문단으로 시작할 수 있다.
         // 이 vpos는 쪽 원점 자체가 아니라 원점부터의 여백이다.
         // 이후 항목에 쪽 상대 vpos를 적용하기 전에 다음 저장 문단도 같은
         // 단계별 위치 관계에서 자기 앞 간격을 반영하는지 확인한다(#7406, 90쪽).
         // 명시적으로 쪽을 나누는 문단은 새 흐름을 시작하므로
         // 그 문단의 첫 vpos를 쪽 기준점으로 유지한다
         // (issue1853, 10쪽).
-        let hwpx_first_margin_is_page_relative = matches!(
+        let stored_first_margin_is_page_relative_in_column = matches!(
             col_content.items.first(),
             Some(PageItem::FullParagraph { para_index })
-                if self.profile.get().hwpx_stored_layout()
+                if (self.profile.get().hwpx_stored_layout()
+                    || self.profile.get().hwp5_stored_pagination_layout())
                     && !self.profile.get().session_edited()
                     && paragraphs.get(*para_index).is_some_and(|first| {
                         stored_first_margin_is_page_relative(
@@ -7677,7 +7678,7 @@ impl LayoutEngine {
                 // vpos(예: 1000HU)는 쪽 원점이 아니다. 도형은 자체 좌표로 그려지고
                 // 뒤따르는 본문은 쪽-상대 vpos를 그대로 따른다. 제목 vpos를
                 // page_base로 빼면 뒤의 문단·표가 그만큼 위로 밀린다.
-                if saved_inline_heading_page || hwpx_first_margin_is_page_relative {
+                if saved_inline_heading_page || stored_first_margin_is_page_relative_in_column {
                     0
                 } else {
                     base

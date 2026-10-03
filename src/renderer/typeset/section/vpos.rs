@@ -31,7 +31,8 @@ impl TypesetEngine {
                     .and_then(|p| p.line_segs.first())
                     .map(|seg| {
                         // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
-                        let margin_is_page_relative = st.profile.hwpx_stored_layout()
+                        let margin_is_page_relative = (st.profile.hwpx_stored_layout()
+                            || st.profile.hwp5_stored_pagination_layout())
                             && !st.profile.session_edited()
                             && paragraphs.get(para_idx).is_some_and(|first| {
                                 crate::renderer::layout::stored_first_margin_is_page_relative(
