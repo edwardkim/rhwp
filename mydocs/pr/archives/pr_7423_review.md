@@ -583,3 +583,16 @@ last_verified: 2026-10-03
 - 측정된 TAC 행 결과에 개체 선언 최소 높이를 다시 적용하던 paint를 보정했습니다. 사진 표는 글줄·안 여백이 만드는17.1px 높이를 유지하고 뒤 본문 원점도 독립 PDF와 맞습니다. 추가2쪽 Native/fresh WASM 동일,98.68570/96.09636%로 전쪽90% 이상입니다. 예산과목 줄의 가로 정렬 차이는 잔존하며96%를 완전 일치로 표현하지 않습니다.
 - 8쪽 문서는 양 backend 최저97.99040%, 정상#5755 전3쪽은 양 backend 최저99.13619%로 유지됩니다. 기존19검사19PASS·9종 필수 단계 exit0입니다. Mac no-opt WASM 대체 빌드이며 신규 검사·fixture 추가/삭제0건입니다.
 - [검증 원장](../assets/planet6897_green_20261002/masked2470_paint_validation.json), [2쪽 Native TSV](../assets/planet6897_green_20261002/masked2470_paint_counter_native.tsv), [2쪽 WASM TSV](../assets/planet6897_green_20261002/masked2470_paint_counter_wasm.tsv), [2쪽 review](../assets/planet6897_green_20261002/masked2470_paint_counter_native_p2_review.png). 사용자 요청의205쪽 #7445 분리를 다음 단계로 진행하며 기존#2470 회귀 갱신과 다른 차단·최종 전체 검증은 별도 미완료입니다.
+
+### 사용자 요청:205쪽 자생생물 문서의 실패 검사만 #7445 분리
+
+- 같은 원본61,810,688byte와 독립 PDF205쪽은 #7445의 기존 자산 해시와 일치합니다. 이번 Native 전205쪽 TSV에서102쪽이90% 미달이며 최저40쪽5.85215%, 관련54쪽62.73075%입니다. review40/54쪽에서 표·본문 쪽 소속과 경계 차이를 확인했습니다. 쪽수205/205 일치만으로 전체 피델리티 승인하지 않습니다.
+- 현재6f5877861에서 해당2함수를 단독 재실행해2FAIL(exit100)을 확인했습니다. #5941은 과거204쪽 핀과 현재205쪽이 충돌하고 #7147은 고정한 쪽의 표를 찾지 못합니다. 표 paint 보정 전후의 전205쪽 렌더 트리가 바이트 동일함도 확인하여 저장된 TSV를 재사용합니다. fresh WASM 전205쪽은 미실행이며 Native 피델리티 이관 근거로만 사용합니다.
+- 사용자 명시 요청에 따라2실패만 삭제하며 작은#5921 기존 함수와 다른 검사·원장·원본/PDF를 유지합니다. #7147 case는 이전396662b15에서 시장구조조사의 두 함수를 이미 이관하여 현재 이 문서의 실패1개만 남아 있습니다. 해당 case와 사용되지 않는 helper를 제거하되 다른 정상 검사를 이번에 삭제하지 않습니다. #5941 case는 작은 대조 함수만 유지합니다. 기대값204→205/쪽 위치 완화나 신규 검사 추가는 없습니다.
+- suite 재준비→남은 작은 대조 nextest→workspace all-target Clippy→fmt·고정 base manifest·문서 링크를 검증하고 결과를 커밋한 뒤 #7445에 이번 근거를 게시합니다. 전체 렌더링 정상화나 통합 PR 준비 완료로 표현하지 않습니다.
+
+### 205쪽 #7445 분리 결과와 게시 계획
+
+- 해당2검사만 제거했습니다. 작은#5921 기존 검사1PASS/exit0, workspace all-target Clippy·fmt·최신base고정 manifest·문서 링크 모두exit0입니다. 기존 문서·PDF·다른 정상 검사와 baseline은 유지하고 신규 검사·skip/ignore·잠정 기대값 변경은 없습니다. 전체 회귀는 아직 재실행하지 않았습니다.
+- [제외 범위·검증 원장](../assets/issue7445/neartop5941_green_batch_deferral_validation.json), [Native 전205쪽 TSV](../assets/issue7445/neartop5941_green_batch_native_all205.tsv), [40쪽 review](../assets/issue7445/neartop5941_green_batch_native_p40_review.png), [54쪽 review](../assets/issue7445/neartop5941_green_batch_native_p54_review.png).
+- 커밋 뒤 #7445에 동일 원문/PDF 해시,102미달/205쪽, 실제2실패와 좁은 제외 범위·대조1PASS를 한국어 존댓말로 게시합니다. 전쪽 TSV는 펼침 영역에 포함하고 로컬 증적의 원격 공개는 준비 중인 통합 PR 이후임을 구분합니다. 다른 PR 차단·#2470 회귀 갱신·최종 전체 검증은 계속 미완료입니다.
