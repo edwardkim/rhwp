@@ -2109,16 +2109,29 @@ impl DocumentCore {
             SelectionPagePlan::FullFallback(pages) => (pages, false),
         };
 
+        let selection_tree = |pn| {
+            if used_hints {
+                return self.build_page_tree_cached(pn);
+            }
+            // 본문은 렌더·캐럿 질의가 이미 만든 유효한 트리만 재사용한다.
+            if cell_target.is_none() {
+                if let Some(tree) = self
+                    .page_tree_cache
+                    .borrow()
+                    .get(pn as usize)
+                    .and_then(Option::as_ref)
+                {
+                    return Ok(tree.clone());
+                }
+            }
+            // 캐시가 없는 쪽은 기존 함수 로컬 수명을 유지한다. 긴 선택 범위 때문에
+            // 보이지 않는 쪽까지 shared cache에 남겨 메모리 체류를 늘리지 않는다.
+            self.build_page_tree(pn)
+        };
+
         // 주요 페이지 트리 미리 빌드
         for &pn in &page_nums {
-            let tree = if used_hints {
-                self.build_page_tree_cached(pn)?
-            } else {
-                // positional/missing/invalid hint는 기존 함수 로컬 수명을 유지한다.
-                // 115쪽 fallback을 shared cache에 영구 보관해 메모리 체류를 늘리지 않는다.
-                self.build_page_tree(pn)?
-            };
-            tree_cache.push((pn, tree));
+            tree_cache.push((pn, selection_tree(pn)?));
         }
 
         // 한 line segment의 양 cursor는 반드시 같은 page tree에서 찾는다. split paragraph의
@@ -2229,12 +2242,7 @@ impl DocumentCore {
                 if let Ok(pp) = self.find_pages_for_paragraph(section_idx, para_idx) {
                     for &pn in &pp {
                         if !tree_cache.iter().any(|(p, _)| *p == pn) {
-                            let tree = if used_hints {
-                                self.build_page_tree_cached(pn)?
-                            } else {
-                                self.build_page_tree(pn)?
-                            };
-                            tree_cache.push((pn, tree));
+                            tree_cache.push((pn, selection_tree(pn)?));
                         }
                     }
                 }
