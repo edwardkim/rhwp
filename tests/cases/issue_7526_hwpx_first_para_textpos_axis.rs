@@ -93,6 +93,11 @@ fn long_hangul_paragraph_keeps_its_line_starts_after_hwpx_round_trip() {
         edited,
         "다시 연 HWPX 를 HWP 로 저장하면 줄이 바뀌었다 — HWP5 축으로 올리는 폭이 모자라다"
     );
+    assert_eq!(
+        page_lines(&reopen_hwpx(&as_hwp)),
+        edited,
+        "HWPX→HWP→HWPX 변환 계보에서도 줄 나눔을 보존한다"
+    );
 }
 
 /// 마커가 있는 HWPX 를 열어 구역 첫 문단을 고치면 그 문단은 다시 조판한 HWP5 축이다.
