@@ -371,3 +371,18 @@ last_verified: 2026-10-03
 - [검증 원장](../assets/planet6897_green_20261002/blank_origin5723_validation.json), [Native TSV](../assets/planet6897_green_20261002/blank_origin5723_native.tsv), [fresh WASM TSV](../assets/planet6897_green_20261002/blank_origin5723_wasm.tsv), [review PNG](../assets/planet6897_green_20261002/blank_origin5723_review.png), [overlay PNG](../assets/planet6897_green_20261002/blank_origin5723_overlay.png), [독립 기준 PDF](../../../pdf/issue5723/coanchored_square_pair_center_slack-2020.pdf). 로그는 ignored output에만 보존합니다.
 
 - 이 후보 Native/WASM32/workspace all-target Clippy, workspace 빌드, fmt/diff 및 base 고정 suite manifest 모두exit0입니다. generated harness는 재준비 후 검사했으며 커밋하지 않습니다. Mac fresh WASM은no-opt 대체 빌드이며 Docker 최적화 검증은 아닙니다.
+
+
+### 작은 시각 미달 문서 #5755 보정 분석
+
+- 기존3쪽 fixture와 대응 한컴 PDF의 쪽수는 같습니다. 현재 전쪽 Native95.63360/94.36369/73.92980%입니다. 3쪽 제목 표는 정상이나 ‘개요’부터 ‘진행순서’까지 본문이 약34.13px 위에 있고 표 이후 주석은 정상입니다. 글꼴 차이로 분류하지 않습니다.
+- 생산→소비: pi17의 TAC 소유 첫 줄 끝4557HU 뒤 별도 빈 줄1600+960HU가 있습니다. typeset은 이를 PartialParagraph(lines1..2)로 소비하지만 `layout_page_item`은 공백뿐이라는 이유로 높이0을 반환합니다. 이후 본문만 위로 올라갔다가 다음 저장 표 앵커에서 재동기화됩니다. 원본 저장 줄의 독립된 소유와 줄높이를 확인해 표 밴드의 공백 캐리어와 구분합니다.
+- 모든 TAC 소유 줄 뒤에서 시작하고 정상 저장 태그·양수 줄높이를 가진 빈 꼬리는 기존 문단 배치가 소비하도록 합니다. 같은 객체 줄·합성 캐리어는 기존 중복 소비 방지를 유지합니다. 독립3쪽 PDF·Native/fresh WASM 전쪽·현재 차단 및 기존#5755 검사를 확인합니다. 신규 검사와 baseline 완화는 하지 않습니다.
+
+### 빈 저장 꼬리 #5755 단계 결과
+
+- 독립3쪽 PDF와 Native/fresh WASM 모두95.63360/94.36369/99.70540%입니다. 3쪽73.92980→99.70540%로 본문34.13px 상승 차이를 해소했습니다. 표 뒤 별도 저장 빈 줄의 높이·간격 소비를 유지했고 같은 개체 줄의 공백 캐리어는 중복 소비하지 않습니다.
+- 직접 Native/WASM review·overlay에서 제목→개요→진행순서→표→끝 문단 순서와 원점 개선을 확인했습니다. 일정표 세로 괘선 차이,2쪽 본문·표 텍스트 겹침1건,본문 오른쪽 넘침2건은 남아 있으며 점수 통과로 승인하지 않습니다. 다음 단계에서 원본/PDF와 대조합니다.
+- 정상 대조 sample2 전29쪽 Native/fresh WASM 최저92.22927%,미달0쪽으로 이전 결과를 유지했습니다. 현재 차단27건+기존#5723/#5755/#5700 각1건의 nextest30건26PASS/4FAIL(exit100,실행63.237초). 기존3건PASS이고 실패4건 이름은 같습니다. 신규검사·assertion·baseline 변경0건입니다.
+- Native/fresh WASM 빌드,3종Clippy,workspace빌드,fmt/diff,최신base 고정 suite manifest exit0입니다. Mac no-opt 대체 WASM이며 Docker최적화 검증이 아닙니다. 최종 전체 nextest와 다른 미달 문서 검증은 미완료이며 통합 PR은 계속 보류입니다.
+- [검증 원장](../assets/planet6897_green_20261002/stored_blank5755_validation.json),[Native 전쪽 TSV](../assets/planet6897_green_20261002/stored_blank5755_native.tsv),[fresh WASM 전쪽 TSV](../assets/planet6897_green_20261002/stored_blank5755_wasm.tsv),[Native 3쪽 review](../assets/planet6897_green_20261002/stored_blank5755_p3_review.png),[fresh WASM 3쪽 review](../assets/planet6897_green_20261002/stored_blank5755_p3_wasm_review.png).

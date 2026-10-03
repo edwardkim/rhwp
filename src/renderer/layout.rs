@@ -10863,9 +10863,33 @@ impl LayoutEngine {
                             } else {
                                 false
                             };
-                            if pp_text_only_ws {
-                                // Table PageItem에서 이미 표 높이가 반영됨
-                                // 공백만인 PartialParagraph는 높이 추가 없이 건너뜀
+                            // 가시 글자가 없어도 표와 다른 저장 줄은 자기 높이·간격을 소유한다.
+                            // 실제 TAC 소유 줄의 끝 뒤에서 시작하는 원본 꼬리는 표 밴드의 사본이 아니다.
+                            let independent_stored_tail = para
+                                .line_segs
+                                .get(*start_line..*end_line)
+                                .filter(|segs| !segs.is_empty())
+                                .is_some_and(|segs| {
+                                    segs.iter().all(|seg| {
+                                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                            && seg.line_height > 0
+                                    }) && para.controls.iter().enumerate().all(|(ci, control)| {
+                                        if !matches!(control, Control::Table(table) if table.common.treat_as_char) {
+                                            return true;
+                                        }
+                                        control_line_seg_index(para, ci)
+                                            .filter(|line| *line < *start_line)
+                                            .and_then(|line| para.line_segs.get(line))
+                                            .is_some_and(|host| {
+                                                i64::from(segs[0].vertical_pos)
+                                                    >= i64::from(host.vertical_pos)
+                                                        + i64::from(host.line_height)
+                                                        + i64::from(host.line_spacing)
+                                            })
+                                    })
+                                });
+                            if pp_text_only_ws && !independent_stored_tail {
+                                // 같은 개체 줄의 공백 캐리어는 이미 소비한 표 높이를 더하지 않는다.
                                 return (y_offset, true);
                             }
                         }

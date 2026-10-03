@@ -168,6 +168,19 @@
       "minimum_percent": 90.04699,
       "below90_pages": [],
       "exit_code": 0
+    },
+    "issue5755_percentage": {
+      "pages": 3,
+      "minimum_percent": 94.36369,
+      "page3_before": 73.9298,
+      "page3_after": 99.7054,
+      "below90_pages": [],
+      "structural_residuals": [
+        "2쪽 본문·표 텍스트 겹침1건",
+        "3쪽 일정표 세로 괘선 차이",
+        "본문 오른쪽 넘침2건은 원본/PDF 대조 필요"
+      ],
+      "approved": false
     }
   },
   "corrected_full_run": {
@@ -984,14 +997,14 @@
   },
   "integration_pr_ready": false,
   "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
-  "latest_stage_evidence": "blank_origin5723_validation.json",
+  "latest_stage_evidence": "stored_blank5755_validation.json",
   "current_focused_failures": {
-    "run": 28,
-    "passed": 24,
+    "run": 30,
+    "passed": 26,
     "failed": 4,
     "exit_code": 100,
-    "seconds": 77.404,
-    "scope": "직전 실패27건 + 기존 #5723 검사1건; 전체 회귀 아님",
+    "test_seconds": 63.237,
+    "scope": "직전 실패27건 + 기존 #5723/#5755/#5700 각1건; 전체 회귀 아님",
     "failed_cases": [
       "text_overlaps_do_not_grow_partition_14",
       "text_overlaps_do_not_grow_partition_2",

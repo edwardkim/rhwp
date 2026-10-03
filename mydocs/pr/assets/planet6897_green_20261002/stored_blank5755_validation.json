@@ -1,0 +1,313 @@
+{
+  "branch": "review/planet6897-green-20261002",
+  "parent_head": "1aaeb65a9",
+  "date": "2026-10-03",
+  "input": "samples/issue5755/rewind_overflow_page_break.hwpx",
+  "pdf": "pdf/issue5755/rewind_overflow_page_break-2020.pdf",
+  "before_percent": [
+    95.6336,
+    94.36369,
+    73.9298
+  ],
+  "native_percent": [
+    95.6336,
+    94.36369,
+    99.7054
+  ],
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "baseline_changes": 0,
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "status": "빈 저장 꼬리 단계 검증 완료; #5755 잔존 겹침·괘선 및 다른 미달 문서·최종 전체 회귀로 통합 보류",
+  "residuals": [
+    "2쪽 본문·표 텍스트 겹침1건",
+    "3쪽 일정표 세로 괘선 차이",
+    "본문 오른쪽 넘침2건은 원본/PDF 대조 필요"
+  ],
+  "anomaly_after": {
+    "emptyPageCount": 0,
+    "hasSignal": true,
+    "mode": "single",
+    "offCanvasCount": 0,
+    "overflowCount": 2,
+    "overflowTolerancePx": 1.0,
+    "overlapCount": 1,
+    "overlapTolerancePx": 2.0,
+    "pageCount": 3,
+    "pageFilter": null,
+    "pages": [
+      {
+        "emptyPage": false,
+        "offCanvas": [],
+        "overflow": [
+          {
+            "bbox": {
+              "h": 55.39999999999998,
+              "w": 650.6133333333333,
+              "x": 75.58666666666667,
+              "y": 945.1466666666666
+            },
+            "boundary": {
+              "h": 933.5733333333334,
+              "w": 642.5333333333334,
+              "x": 75.58666666666667,
+              "y": 94.46666666666667
+            },
+            "maxOver": 8.079999999999927,
+            "nodeType": "Rect",
+            "overBottom": 0.0,
+            "overLeft": 0.0,
+            "overRight": 8.079999999999927,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/Rect25"
+          }
+        ],
+        "overlap": [
+          {
+            "bboxA": {
+              "h": 16.0,
+              "w": 401.31999999999994,
+              "x": 75.58666666666667,
+              "y": 853.1333333333333
+            },
+            "bboxB": {
+              "h": 62.6,
+              "w": 635.9599999999999,
+              "x": 79.36000000000001,
+              "y": 862.5066666666667
+            },
+            "overlapArea": 2634.4092444444436,
+            "overlapH": 6.626666666666665,
+            "overlapW": 397.5466666666666,
+            "pathA": "Page/Body/Column0/TextLine22",
+            "pathB": "Page/Body/Column0/Table23",
+            "typeA": "TextLine",
+            "typeB": "Table"
+          }
+        ],
+        "page": 1,
+        "storedLineEscape": [],
+        "textOverlap": [
+          {
+            "bboxA": {
+              "h": 16.0,
+              "w": 224.0,
+              "x": 252.90666666666667,
+              "y": 853.1333333333333
+            },
+            "bboxB": {
+              "h": 13.333333333333334,
+              "w": 40.0,
+              "x": 385.2733333333333,
+              "y": 866.2733333333333
+            },
+            "overlapArea": 114.40000000000055,
+            "overlapH": 2.8600000000000136,
+            "overlapW": 40.0,
+            "pathA": "Page/Body/Column0/TextLine22/TextRun5",
+            "pathB": "Page/Body/Column0/Table23/Cell2/TextLine0/TextRun0",
+            "typeA": "TextRun",
+            "typeB": "TextRun"
+          }
+        ]
+      },
+      {
+        "emptyPage": false,
+        "offCanvas": [],
+        "overflow": [
+          {
+            "bbox": {
+              "h": 327.92,
+              "w": 669.7866666666666,
+              "x": 77.45333333333333,
+              "y": 667.76
+            },
+            "boundary": {
+              "h": 933.5733333333334,
+              "w": 642.5333333333334,
+              "x": 75.58666666666667,
+              "y": 94.46666666666667
+            },
+            "maxOver": 29.11999999999989,
+            "nodeType": "Table",
+            "overBottom": 0.0,
+            "overLeft": 0.0,
+            "overRight": 29.11999999999989,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/Table23"
+          }
+        ],
+        "overlap": [],
+        "page": 2,
+        "storedLineEscape": [],
+        "textOverlap": []
+      }
+    ],
+    "schemaVersion": "1.0",
+    "source": "samples/issue5755/rewind_overflow_page_break.hwpx",
+    "storedLineEscapeCount": 0,
+    "storedLineTolerancePx": 0.5,
+    "strict": false,
+    "textOverlapCount": 1,
+    "types": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "focused": {
+    "run": 30,
+    "passed": 26,
+    "failed": 4,
+    "exit_code": 100,
+    "test_seconds": 63.237,
+    "scope": "직전 실패27건 + 기존 #5723/#5755/#5700 각1건; 전체 회귀 아님"
+  },
+  "sha256": {
+    "samples/issue5755/rewind_overflow_page_break.hwpx": "a2596ee49587ece1887a1cfe819d87853f41607ff1a3cc762438e552e26573b2",
+    "pdf/issue5755/rewind_overflow_page_break-2020.pdf": "532442cb83af6756ff2ab3a558a542763d1100d5d6144d55167cbfb0f564e456",
+    "src/renderer/layout.rs": "01d85cacfb4cde06ba52c546d2ab3e75513fd5baefb28efdf656ad335225c987",
+    "pkg/rhwp_bg.wasm": "7101038b0c92993a415c60994c84cab32b83a6cf476576e8f53fd47d6910ee64"
+  },
+  "wasm_percent": [
+    95.6336,
+    94.36369,
+    99.7054
+  ],
+  "wasm_build_kind": "Mac 로컬 no-opt 대체 빌드; Docker 최적화 검증 아님",
+  "rust_gates": [
+    {
+      "key": "nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "overflow_cell_baseline",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(=overflow_cell_lines_do_not_grow_partition_11) or test(=overflow_cell_lines_do_not_grow_partition_10) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_3) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_6) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_9) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_12) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_13) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_14) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_6) or test(=overflow_cell_lines_do_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_2) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_7) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8) or test(=issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3) or test(=issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom) or test(issue_5723_coanchored_square_pair_center_slack) or test(issue_5755_rewind_overflow_page_break) or test(issue_5700_tac_reset_tail_above_flow)"
+      ],
+      "exit_code": 100,
+      "seconds": 202.697
+    },
+    {
+      "key": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 199.4
+    },
+    {
+      "key": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 22.022
+    },
+    {
+      "key": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 14.567
+    },
+    {
+      "key": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 49.076
+    },
+    {
+      "key": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 79.214
+    }
+  ],
+  "fmt_exit_code": 0,
+  "diff_exit_code": 0,
+  "manifest": {
+    "base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+    "exit_code": 0
+  },
+  "sample2_native": {
+    "pages": 29,
+    "min_percent": 92.22927,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "sample2_wasm": {
+    "pages": 29,
+    "min_percent": 92.22927,
+    "below90_pages": [],
+    "exit_code": 0
+  }
+}
