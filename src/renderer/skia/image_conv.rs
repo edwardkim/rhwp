@@ -1,7 +1,7 @@
 use resvg::{tiny_skia, usvg};
 use skia_safe::{
-    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, Data, FilterMode,
-    IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
+    canvas::SrcRectConstraint, color_filters, image::RequiredProperties, Color, ColorSpace, Data,
+    FilterMode, IRect, Image, Matrix, MipmapMode, Paint, Rect, SamplingOptions, TileMode,
 };
 use std::sync::{Arc, OnceLock};
 
@@ -115,9 +115,9 @@ pub fn draw_image_bytes(
     let brightness_contrast_filter = |brightness: i8, contrast: i8| {
         let brightness = brightness.clamp(-100, 100) as f32 / 100.0;
         let slope = (100.0 + contrast.clamp(-100, 100) as f32) / 100.0;
-        // Skia color-matrix의 translation 열은 0..255 색상 범위를 쓴다.
-        // SVG filter의 정규화된 intercept와 동일한 색조가 되도록 변환한다.
-        let intercept = ((0.5 - 0.5 * slope) + brightness) * 255.0;
+        // Skia's matrix filter operates on normalized channels, like SVG.
+        // Scaling the offset by 255 saturates adjusted images to white/black.
+        let intercept = (0.5 - 0.5 * slope) + brightness;
         color_filters::matrix_row_major(
             &[
                 slope, 0.0, 0.0, 0.0, intercept, 0.0, slope, 0.0, 0.0, intercept, 0.0, 0.0, slope,
@@ -198,8 +198,9 @@ pub fn draw_image_bytes(
     let mut paint = Paint::default();
     paint.set_anti_alias(true);
     let effect_filter = image_effect_filter(effect);
-    let adjustment_filter = (brightness != 0 || contrast != 0)
-        .then(|| brightness_contrast_filter(brightness, contrast));
+    let has_adjustments = brightness != 0 || contrast != 0;
+    let adjustment_filter =
+        has_adjustments.then(|| brightness_contrast_filter(brightness, contrast));
     let color_filter = match (effect_filter, adjustment_filter) {
         (Some(effect), Some(adjustment)) => color_filters::compose(adjustment, effect),
         (Some(effect), None) => Some(effect),
@@ -207,6 +208,18 @@ pub fn draw_image_bytes(
         (None, None) => None,
     };
     if let Some(color_filter) = color_filter {
+        // SVG filter primitives default to linearRGB. Keep the entire effect/
+        // adjustment chain in that space so enabling direct PDF does not change
+        // the image colors relative to the existing SVG backend.
+        let color_filter = if has_adjustments {
+            let Some(filter) = color_filter.with_working_color_space(ColorSpace::new_srgb_linear())
+            else {
+                return false;
+            };
+            filter
+        } else {
+            color_filter
+        };
         paint.set_color_filter(color_filter);
     }
 
