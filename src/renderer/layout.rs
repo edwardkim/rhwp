@@ -11540,9 +11540,11 @@ impl LayoutEngine {
             // [#2019 v3] 빈 앵커에 매달린 Paper/Page 기준 Square 표는 본문 flow 표가
             // 아니라 페이지 절대좌표 부동 표다. 표 자체는 선언 y 에 그리되, 뒤따르는
             // 문단을 표 아래로 밀지 않는다.
+            // [#7548] 쪽·종이 기준 어울림 표는 host 문단에 본문이 있어도 절대 위치다.
+            // 한/글 36295751: 표 상단 = 본문 상단 + vertOffset(PAGE = 본문 영역),
+            // host·뒤 문단은 표 위로 흐르고 표는 흐름을 밀지 않는다.
             let paper_page_square_empty_top = if !is_tac
                 && tbl_is_square
-                && !para_has_visible_text(para)
                 && matches!(
                     t.common.vert_rel_to,
                     crate::model::shape::VertRelTo::Paper | crate::model::shape::VertRelTo::Page
