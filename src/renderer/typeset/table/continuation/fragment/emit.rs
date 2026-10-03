@@ -332,15 +332,29 @@ impl TypesetEngine {
                             & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                         && b.vertical_pos >= 0 && b.vertical_pos < a.vertical_pos)
                 });
+        // 본문을 닫는 원본 상자는 폭0 앵커의 구역 설정과 무관하게
+        // 첫 물리 프레임과 이어받는 행의 선언 잔여를 함께 소유한다.
+        let body_filling_source_frame =
+            crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                input.source.paragraph,
+                table,
+                st.layout.body_area.height,
+                self.dpi,
+                st.profile.hwpx_stored_layout(),
+                st.profile.session_edited(),
+            );
         let first_fragment_blank_band = !is_continuation
-            && (opening_frame_has_source_boundary || saved_block_opening_frame.is_some())
+            && (opening_frame_has_source_boundary
+                || saved_block_opening_frame.is_some()
+                || body_filling_source_frame)
             && (split_block_start.is_none() || saved_block_opening_frame.is_some())
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
             && (crate::renderer::float_placement::object_only_saved_table_anchor(
                 input.source.paragraph,
                 table,
-            ) || saved_closing_frame.is_some()
+            ) || body_filling_source_frame
+                || saved_closing_frame.is_some()
                 || saved_block_opening_frame.is_some()
                 || (input.source.paragraph.text.is_empty()
                     && matches!(
@@ -354,7 +368,9 @@ impl TypesetEngine {
                         styles,
                     )))
             && saved_opening_frame.is_some_and(|frame_height| {
-                (frame_height > partial_height + 0.5 || saved_block_opening_frame.is_some())
+                (frame_height > partial_height + 0.5
+                    || (body_filling_source_frame && frame_height >= partial_height)
+                    || saved_block_opening_frame.is_some())
                     && frame_height <= avail_for_rows + header_overhead
             });
         if first_fragment_blank_band {
@@ -945,12 +961,18 @@ impl TypesetEngine {
             .or(saved_closing_frame.filter(|_| first_fragment_blank_band))
             .or_else(|| {
                 // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
-                // 기존 문단 간 내용 조각은 선언 최소높이를 다시 예약하지 않는다.
+                // 본문을 닫는 noAdjust 원본은 문단 간 저장 쪽 경계도 같은
+                // 첫 프레임에서 뺀 물리 잔여를 소유한다. 일반 내용 컷은 제외한다.
                 if !first_fragment_blank_band
                     || !layout_engine.row_cut_remaining_is_single_stored_frame(
                         table, end_row - 1, &next_cut, split_block_start, styles,
                     )
                     || !(saved_block_opening_frame.is_some()
+                        || (body_filling_source_frame
+                            && table.raw_table_record_attr & 0x08 != 0
+                            && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                                table, end_row - 1, start_cut, &next_cut, styles,
+                            ))
                         || layout_engine.row_cut_starts_intra_paragraph_stored_frame(
                             table, end_row - 1, &next_cut, styles,
                         ))
