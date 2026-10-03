@@ -2024,6 +2024,10 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
+        if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+            return;
+        }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
         // 한컴 한글 2024 viewer 정합 — 외부 file 못 찾는 경우 점선 사각형 + 깨진 image 아이콘.
         let data = match img.data {

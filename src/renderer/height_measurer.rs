@@ -823,6 +823,81 @@ pub fn fit_stored_hwpx_no_adjust_rowspans(
     Some(fitted)
 }
 
+/// 마지막 그림의 저장 앵커·높이·안 여백이 정확히 닫는 인라인 프레임을 보존한다.
+pub(crate) fn fit_stored_inline_picture_frame(
+    measured: &MeasuredTable,
+    table: &Table,
+    dpi: f64,
+) -> Option<MeasuredTable> {
+    let [cell] = table.cells.as_slice() else {
+        return None;
+    };
+    if !table.common.treat_as_char
+        || table.row_count != 1
+        || table.col_count != 1
+        || cell.row_span != 1
+        || cell.col_span != 1
+        || table.common.height <= cell.height
+        || table.common.height >= 0x8000_0000
+        || measured.row_heights.len() != 1
+        || !super::cell_vpos_ladder_is_intact(&cell.paragraphs)
+        || cell.paragraphs.iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.line_segs.is_empty()
+                || para
+                    .line_segs
+                    .iter()
+                    .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+                || para
+                    .controls
+                    .iter()
+                    .any(|control| !matches!(control, Control::Picture(_)))
+        })
+    {
+        return None;
+    }
+    let last = cell.paragraphs.last()?;
+    let [Control::Picture(picture)] = last.controls.as_slice() else {
+        return None;
+    };
+    if !last.text.trim().is_empty()
+        || picture.common.treat_as_char
+        || !picture.common.flow_with_text
+        || picture.common.text_wrap != TextWrap::TopAndBottom
+        || picture.common.vert_rel_to != VertRelTo::Para
+        || picture.common.height == 0
+        || !cell.paragraphs[..cell.paragraphs.len() - 1]
+            .iter()
+            .any(|para| {
+                para.controls
+                    .iter()
+                    .any(|control| matches!(control, Control::Picture(_)))
+            })
+    {
+        return None;
+    }
+    let pad = cell.effective_padding(&table.padding);
+    let end = i64::from(last.line_segs.first()?.vertical_pos)
+        + i64::from(signed_hwpunit(picture.common.vertical_offset))
+        + i64::from(picture.common.height)
+        + i64::from(pad.top)
+        + i64::from(pad.bottom);
+    // 작은 초기 셀 높이 대신 실제 마지막 그림 끝이 닫는 프레임만 보존한다.
+    // 일반 TAC 표의 낡은 개체 선언을 다시 최소 높이로 적용하지 않는다.
+    if end != i64::from(table.common.height) {
+        return None;
+    }
+    let height = hwpunit_to_px(table.common.height as i32, dpi);
+    if height <= measured.row_heights[0] {
+        return None;
+    }
+    let mut fitted = measured.clone();
+    fitted.total_height += height - fitted.row_heights[0];
+    fitted.row_heights[0] = height;
+    fitted.cumulative_heights = vec![0.0, height];
+    Some(fitted)
+}
+
 /// 저장 HWPX 인라인 표에서 마지막 LINE_SEG 줄간격을 측정기가
 /// 행 높이에 한 번 더 실은 경우, 저장 cellSz 경계로 되돌린다.
 ///

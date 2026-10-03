@@ -339,3 +339,16 @@ last_verified: 2026-10-04
 - 현재 Native 전체11쪽90% 미달0건, 최저95.80181%,7쪽98.05666%입니다. 관련 기존 #6797·#598·#6972·#6812 총32검사32PASS(exit0). #598 전6쪽 현재 Full SVG/렌더 트리는 기존 검증본과 바이트 동일하며 새 raster 실행으로 주장하지 않습니다. 실루엣 점수를 글꼴 획의 완전 일치로 보고하지 않습니다. fresh WASM·필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/social6797_origin_validation.json)에 남깁니다. [Native 전쪽 TSV](../assets/planet6897_green_20261002/social6797_origin_native_all11.tsv), [7쪽 review PNG](../assets/planet6897_green_20261002/social6797_origin_p7_review.png). 통합 전체 검증·PR 판정은 보류 상태입니다.
 
 - #6797 최종 단계 결과: 새 WASM 실제 전11쪽 raster·TSV도 Native와 동일하며 미달0건/최저95.80181%,7쪽98.05666%입니다. Native/WASM Clippy·workspace build/all-target Clippy·fmt·고정 base manifest·문서 링크/metadata 검사 모두 exit0. [WASM TSV](../assets/planet6897_green_20261002/social6797_origin_wasm_all11.tsv). 기존 전체 실패 중 남은4함수의 현재 집중 재실행은4FAIL(exit100)로 확인하여 전체 PR 승인으로 보고하지 않습니다.
+
+
+### 메인터너 후속 보정: #5731의 셀 그림 프레임과 빈 자르기 선택
+
+이 단계는 기여자의 해결 범위를 다시 주장하는 것이 아니라 통합 브랜치의 기존 실패를 독립 원문과 한컴 출력으로 재검증한 메인터너 보정입니다. 이전 TAC 선언 높이 재확장 제거 뒤 작은 초기 셀 높이에 둘째 그림이 제한되어 캡션과 겹쳤습니다. 마지막 저장 앵커+그림 높이+유효 안 여백이 개체 프레임을 정확히 닫는 경우에만 그 프레임을 조판과 실제 배치가 함께 소비합니다. 일반 TAC 표의 낡은 선언을 다시 최소 높이로 적용하지 않습니다.
+
+기존35KB 픽스처는 그림을1×1로 치환한 자료였습니다. 본문·서식·메타데이터를 바꾸지 않고 같은 fixture 경로에 원본 BinData6개를 복원했습니다. 동일 원문으로 생성한 MCP2020 직접 PDF와 한컴 HWP 재저장 뒤 PDF는7쪽 모두 동일한96dpi 픽셀 해시입니다. 정본에는 총6그림이 나옵니다. 기존 회귀 주석의 “한컴도7개”와 3쪽의 그림2개 표시 전제는 잘못됐습니다.
+
+첫 그림의 자르기 선택은 폭이 있지만 높이가 역전되어 비어 있습니다. rhwp가 이 선택을 None으로 바꾸면서 원본 전체를 표시한 것이 남은3쪽80.43%의 원인이었습니다. 빈 선택을 보존하고 그 선택 안의 픽셀만 그리는 계약을 SVG/Native Skia/Canvas/HTML/Studio DOM/CanvasKit에 적용했습니다. 원본 그림 개체·저장 글줄 공간·셀 소유와 캡션은 유지합니다. 측정 결과는 `fit_measured_for_host`와 `resolve_row_heights_with_common_fit`에서 같은 그림 프레임을 소비하며, 실제3쪽에서 최종 셀 경계와 두 캡션·그림 자리·뒤 본문까지 확인했습니다.
+
+Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서 재산출한 SVG7개·렌더 트리7개가 비교 산출물과 동일하여 래스터/TSV를 재사용합니다. 기존 테스트1개는 절대 픽셀 고정 대신 쪽수·원문 그림 보존·캡션 내용/순서·셀 내부 포함·빈 선택의 실제 출력으로 변경했습니다. 관련 기존21검사 모두 통과했으며 새 테스트 함수는 추가하지 않았습니다. Studio1,814 PASS/실패0/skip2와 기존 CanvasKit 실제 자르기4모드도 통과했습니다. fresh WASM 전쪽·Native Skia 공식 회귀·최종 전체 검증은 아직 완료하지 않았으므로 이 중간 결과만으로 통합 PR 준비 완료나 승인 완료를 선언하지 않습니다.
+
+- #5731 추가 완료: 새 Mac 로컬 no-opt WASM 전7쪽 TSV는 Native와 동일합니다(최저95.59735%, 미달0쪽). Native Skia 전체 단위4,109 PASS/실패0/skip13. [보정 검증 JSON](../assets/planet6897_green_20261002/cell5731_frame_crop_validation.json)에 정본 PDF 두 경로 비교·그림 복원·전체 TSV·진행 중 검사 상태를 보존합니다. 공식 Skia 개별2종과 보정 전 새 관계 검사 재현은 후속 검증으로 남깁니다.

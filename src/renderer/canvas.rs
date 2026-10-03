@@ -152,6 +152,9 @@ impl CanvasRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
                 let eff_bbox = img
                     .transform

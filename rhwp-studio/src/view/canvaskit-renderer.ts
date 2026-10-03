@@ -58,6 +58,7 @@ import {
   type CanvasKitSurfacePreference,
   type CanvasKitSurfaceRequest,
 } from './render-backend';
+import { imageCropSelectionIsEmpty } from './image-crop-scale.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -1917,6 +1918,7 @@ export class CanvasKitLayerRenderer {
   }
 
   private drawImageOp(canvas: SkCanvas, image: SkImage, op: LayerImageOp): void {
+    if (imageCropSelectionIsEmpty(op.crop)) return;
     const imageWithDimensions = image as SkImage & { width?: unknown; height?: unknown };
     const widthMember = imageWithDimensions.width;
     const heightMember = imageWithDimensions.height;

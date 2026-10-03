@@ -518,17 +518,7 @@ impl LayoutEngine {
         }
 
         // 그림 자르기: crop 좌표를 그대로 저장 (렌더러에서 이미지 px 크기와 비교)
-        let crop = {
-            let c = &picture.crop;
-            if c.right > c.left
-                && c.bottom > c.top
-                && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
-            {
-                Some((c.left, c.top, c.right, c.bottom))
-            } else {
-                None
-            }
-        };
+        let crop = picture.render_crop_rect();
 
         // crop 좌표 기준 범위(imgDim). orgSz는 개체 크기이므로 사용하지 않는다.
         let original_size_hu = picture.crop_reference_size();
@@ -861,14 +851,7 @@ impl LayoutEngine {
             && picture.image_attr.external_path.is_none();
 
         // 그림 자르기
-        let crop = {
-            let c = &picture.crop;
-            if c.right > c.left && c.bottom > c.top {
-                Some((c.left, c.top, c.right, c.bottom))
-            } else {
-                None
-            }
-        };
+        let crop = picture.render_crop_rect();
 
         let original_size_hu = picture.crop_reference_size();
 

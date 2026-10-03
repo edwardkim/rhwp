@@ -24,7 +24,7 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
-import { imageCropScale, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
+import { imageCropScale, imageCropSelectionIsEmpty, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
 import {
   CANVASKIT_REPLAY_PLANES,
   layerPaintOpReplayPlane,
@@ -815,6 +815,10 @@ test('CanvasKit image replay cache key includes payload fingerprint with repeate
 // right/bottom 을 원본 전체 범위로 읽는 적응식**을 사이에 넣었는데, studio 만 그대로
 // 남아 있었다.
 test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG replay', () => {
+  // #5731 한컴2020 정본은 역전된 높이 선택에서 원본 전체를 복원하지 않는다.
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 72900, right: 2096, bottom: 21632 }), true);
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 0, right: 100, bottom: 100 }), false);
+  assert.equal(imageCropSelectionIsEmpty(null), false);
   // 자르기 없는 그림 — right/bottom 이 원본 전체 범위라 잘라 올 창이 없다.
   assert.equal(
     canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 }),

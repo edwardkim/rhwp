@@ -216,6 +216,9 @@ impl HtmlRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 if let Some(ref data) = img.data {
                     let paint = img.paint_bbox(&node.bbox);
                     self.draw_image(data, paint.x, paint.y, paint.width, paint.height);

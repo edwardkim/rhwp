@@ -83,6 +83,10 @@ pub fn draw_image_bytes(
     contrast: i8,
     sampling: ImageSampling,
 ) -> bool {
+    // 빈 자르기 선택은 정상적인 빈 출력이며 누락 그림 대체 표시 대상이 아니다.
+    if crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+        return true;
+    }
     let is_valid_destination_rect = |x: f32, y: f32, width: f32, height: f32| {
         x.is_finite()
             && y.is_finite()
