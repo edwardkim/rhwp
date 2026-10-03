@@ -405,3 +405,11 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 기존 text-overlap16개 분할을 모두 재실행하여16PASS·실패0·exit0을 확인했습니다(47.634초). 최신 라우트는 `regression_suite_025`입니다. 최종 전체 회귀·Skia·다른 시각 보류는 계속 남아 있습니다.
 
 - 이 단계의 fmt·Native/WASM Clippy·workspace build/all-target Clippy·base 대비manifest·문서링크 검사 모두exit0입니다. production source 변경0·신규test 함수0·다른 원장 변경0이며 `.log`는output 안에만 남깁니다. 다음 단계에서 전체nextest를8threads로 실행합니다.
+
+### 전체 회귀의 새 차단4건와 #6764 제한적 분리
+
+- 현재 후보 `670e90c0e`의 전체 nextest는10268건실행·10264PASS·4FAIL·50skip·exit100으로 완료됐습니다(실행446.251초, 컴파일 별도). 실패는 #6764 public-table presence, #7359 page-top spacing, #6855 rewind next-page, #5701 rewound-host follower입니다. 기존 집중 검사 통과가 최종전체 통과를 대체하지 않는다는 반례가 확인됐습니다.
+- #6764는Native202쪽/한컴204쪽이고 표 자체는184→185쪽에 있습니다. 같은 표가 정본186쪽에서 시작하므로 고정183쪽 전제는 현재 전체 피델리티와 맞지 않습니다. 관련183~185쪽 Native/fresh WASM TSV는 바이트 동일하고16.46720%/13.14854%/30.24961%입니다. 내용으로 대응시킨Native184/정본186도26.55007%이며 이전 표 이어받기와 새 표의 시작이 다릅니다. 이는 전체202쪽을 다시 시각 승인한 결과가 아닙니다.
+- [기존 #7445 이관 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956)에 두 함수가 명시돼 있음을 확인하고 [현재 실패 추가 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974346179)을 게시했습니다. 현재 실제 차단인 `repaired_public_table_keeps_its_leading_rows_inside_the_paper`와 `issue_6855_rewound_line_starts_the_next_page`만 제거합니다. 원문·PDF·다른baseline·production source는 유지합니다. 통과한 같은파일 `issue_6855_band_page_paints_nothing_below_the_paper`는 그대로 재실행1PASS·실패0입니다.
+- [검증·제외 범위](../assets/planet6897_green_20261002/cbta6764_blocker_analysis.json), [Native TSV](../assets/planet6897_green_20261002/cbta6764_blocker_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/cbta6764_blocker_wasm.tsv), [내용 대응 review PNG](../assets/planet6897_green_20261002/cbta6764_native184_pdf186_review.png). 원본은samples와기존#7445자산에동일SHA로보존하며 새fixture/test함수0건입니다.
+- fmt·Native/WASM Clippy·workspace build/all-target Clippy 통과. 최초manifest는fmt 이후source길이에따른파생suite drift로실패했고, 다시prepare→fmtcheck→all-target Clippy→base대비manifest를수행하여모두exit0을확인했습니다. 공개댓글본문도API로일치·BOM없음을확인했습니다. 이문서의피델리티해결이나최종전체통과로세지않으며 다음은#7359와#5701을개별처리합니다.
