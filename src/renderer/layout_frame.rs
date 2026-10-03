@@ -1424,7 +1424,7 @@ mod tests {
 
         let projected = frame.project_line_segs();
         assert_eq!(projected.len(), 8);
-        for (row, pair) in projected.chunks_exact(2).enumerate() {
+        for (row, pair) in projected.as_chunks::<2>().0.iter().enumerate() {
             assert_eq!(pair[0].vertical_pos, (row * 100) as i32);
             assert_eq!(pair[1].vertical_pos, pair[0].vertical_pos);
             assert_eq!(

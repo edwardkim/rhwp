@@ -1251,7 +1251,9 @@ fn format_char_shape_entries(payload: Option<&[u8]>) -> String {
         return "없음".to_string();
     };
     let entries: Vec<String> = payload
-        .chunks_exact(8)
+        .as_chunks::<8>()
+        .0
+        .iter()
         .map(|chunk| {
             let pos = u32::from_le_bytes(chunk[0..4].try_into().unwrap());
             let shape = u32::from_le_bytes(chunk[4..8].try_into().unwrap());

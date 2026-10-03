@@ -249,7 +249,9 @@ mod tests {
             let name_len = u16::from_le_bytes([cfb[at + 64], cfb[at + 65]]) as usize;
             if name_len >= 2 && name_len <= 64 {
                 let units: Vec<u16> = cfb[at..at + name_len - 2]
-                    .chunks_exact(2)
+                    .as_chunks::<2>()
+                    .0
+                    .iter()
                     .map(|c| u16::from_le_bytes([c[0], c[1]]))
                     .collect();
                 if String::from_utf16_lossy(&units) == target {

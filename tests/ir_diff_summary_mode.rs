@@ -25,7 +25,7 @@ fn summary_mode_categorizes_diffs() {
     assert!(
         stdout.contains("=== 카테고리별 차이 요약 ==="),
         "요약 모드 헤더 누락. 출력 (앞 500자):\n{}",
-        &stdout.chars().take(500).collect::<String>()
+        stdout.chars().take(500).collect::<String>()
     );
 
     // 최종 합계 라인 보존

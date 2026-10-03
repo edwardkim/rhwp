@@ -167,7 +167,7 @@ fn hwp5_transform(input: &[u8], password: &[u8], encrypt: bool) -> Vec<u8> {
     let mut register = [0_u8; 16];
     let mut output = Vec::with_capacity(input.len());
 
-    for block in padded.chunks_exact(16) {
+    for block in padded.as_chunks::<16>().0 {
         let mut transformed = [0_u8; 16];
         for bit_index in 0..128 {
             let byte_index = bit_index / 8;
@@ -274,8 +274,7 @@ pub fn derive_hwp3_legacy_des_key(password: &str) -> [u8; 8] {
 
 fn hwp3_des_ecb(payload: &mut [u8], key: &[u8; 8], encrypt: bool) {
     let cipher = Des::new_from_slice(key).expect("DES key size");
-    for block in payload.chunks_exact_mut(8) {
-        let block: &mut [u8; 8] = block.try_into().expect("HWP3 DES block size");
+    for block in payload.as_chunks_mut::<8>().0 {
         let block: &mut Block<Des> = block.into();
         if encrypt {
             cipher.encrypt_block(block);

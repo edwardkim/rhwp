@@ -44,7 +44,9 @@ fn main() {
             if rec.tag_id == 67 {
                 let txt: String = rec
                     .data
-                    .chunks_exact(2)
+                    .as_chunks::<2>()
+                    .0
+                    .iter()
                     .map(|c| u16::from_le_bytes([c[0], c[1]]))
                     .map(|u| {
                         if (32..0xd800).contains(&u) {

@@ -164,11 +164,21 @@ impl SingleLineOverflowMemo {
             return;
         }
         let memo = ((width_key as u64) << 1) | (overflowed as u64);
-        let _ = self.0.fetch_update(
-            std::sync::atomic::Ordering::Relaxed,
-            std::sync::atomic::Ordering::Relaxed,
-            |current| Some((current & Self::STORED_PARTITION_DIRTY) | memo),
-        );
+        // Keep the compare-and-update behavior on the repository's Rust 1.93
+        // toolchain as well as Rust 1.99, which deprecates fetch_update.
+        let mut current = self.0.load(std::sync::atomic::Ordering::Relaxed);
+        loop {
+            let updated = (current & Self::STORED_PARTITION_DIRTY) | memo;
+            match self.0.compare_exchange_weak(
+                current,
+                updated,
+                std::sync::atomic::Ordering::Relaxed,
+                std::sync::atomic::Ordering::Relaxed,
+            ) {
+                Ok(_) => break,
+                Err(observed) => current = observed,
+            }
+        }
     }
 
     /// Clear the width memo and record that stored row text boundaries no

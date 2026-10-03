@@ -2,6 +2,46 @@ use std::path::Path;
 
 use rhwp::wasm_api::HwpDocument;
 
+#[test]
+fn tac_tables_keep_stored_top_spacing_at_section_start_and_forced_page_break() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn first_table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Table(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(first_table)
+    }
+
+    // The source's first LINE_SEG vertpos is 1500 HWPUNIT, or 20 px at 96 DPI.
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/footnote-01.hwp");
+    let original = std::fs::read(path).expect("read sample");
+    let mut forced = rhwp::parser::parse_document(&original).expect("parse source");
+    forced.sections[0].paragraphs[0].column_type = rhwp::model::paragraph::ColumnBreakType::Page;
+    forced.sections[0]
+        .paragraphs
+        .insert(0, rhwp::model::paragraph::Paragraph::default());
+    let forced_bytes = rhwp::serializer::hwpx::serialize_hwpx(&forced).expect("serialize probe");
+    for (bytes, page) in [(&original, 0), (&forced_bytes, 1)] {
+        let core = DocumentCore::from_bytes(bytes).expect("parse sample");
+        let tree = core.build_page_render_tree(page).expect("render page");
+        let body = tree
+            .root
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .expect("body");
+        let table = first_table(body).expect("first TAC table");
+        assert!(
+            table.bbox.y - body.bbox.y >= 19.9,
+            "page {page}: table={} body={}, expected at least 20 px of source spacing",
+            table.bbox.y,
+            body.bbox.y
+        );
+    }
+}
+
 fn json_number(json: &str, key: &str) -> f64 {
     let pattern = format!("\"{}\":", key);
     let start = json.find(&pattern).expect("json key not found") + pattern.len();
@@ -21,7 +61,7 @@ fn issue_598_body_footnote_marker_has_hit_and_cursor_unit() {
     assert_eq!(doc.get_control_text_positions(0, 3), "[7]");
 
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 392.0)
+        .hit_test_body_footnote_marker_native(0, 264.0, 412.0)
         .expect("hit body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"sectionIndex\":0"), "hit json: {hit}");
@@ -57,7 +97,7 @@ fn issue_598_second_body_footnote_marker_has_same_cursor_unit() {
     assert_eq!(doc.get_control_text_positions(0, 7), "[6]");
 
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 214.0, 684.0)
+        .hit_test_body_footnote_marker_native(0, 214.0, 704.0)
         .expect("hit second body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"paragraphIndex\":7"), "hit json: {hit}");
@@ -165,7 +205,7 @@ fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
     assert_eq!(missed, "{\"hit\":false}");
 
     let old_marker_hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 380.0)
+        .hit_test_body_footnote_marker_native(0, 264.0, 400.0)
         .expect("hit old marker position after delete");
     assert_eq!(old_marker_hit, "{\"hit\":false}");
 

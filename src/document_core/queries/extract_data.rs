@@ -280,12 +280,10 @@ fn canonical_unit(unit: &str) -> String {
 
 /// `chars[at..]` 가 `needle` 로 시작하는가.
 fn starts_with(chars: &[char], at: usize, needle: &str) -> bool {
-    let mut i = at;
-    for expected in needle.chars() {
+    for (i, expected) in (at..).zip(needle.chars()) {
         if chars.get(i) != Some(&expected) {
             return false;
         }
-        i += 1;
     }
     true
 }

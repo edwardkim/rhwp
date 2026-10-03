@@ -3483,12 +3483,7 @@ fn test_real_hwp_table_insert_row_roundtrip() {
     eprintln!("\n=== 원본 LIST_HEADER 바이트 ===");
     for (i, r) in orig_table_recs.iter().enumerate() {
         if r.tag_id == crate::parser::tags::HWPTAG_LIST_HEADER {
-            eprintln!(
-                "  [{}] {}B: {:02X?}",
-                table_start + i,
-                r.data.len(),
-                &r.data
-            );
+            eprintln!("  [{}] {}B: {:02X?}", table_start + i, r.data.len(), r.data);
         }
     }
     eprintln!("\n=== 수정 후 LIST_HEADER 바이트 ===");
@@ -3498,7 +3493,7 @@ fn test_real_hwp_table_insert_row_roundtrip() {
                 "  [{}] {}B: {:02X?}",
                 new_table_start + i,
                 r.data.len(),
-                &r.data
+                r.data
             );
         }
     }
@@ -3507,12 +3502,7 @@ fn test_real_hwp_table_insert_row_roundtrip() {
     eprintln!("\n=== 원본 PARA_HEADER (표 내부) ===");
     for (i, r) in orig_table_recs.iter().enumerate() {
         if r.tag_id == crate::parser::tags::HWPTAG_PARA_HEADER {
-            eprintln!(
-                "  [{}] {}B: {:02X?}",
-                table_start + i,
-                r.data.len(),
-                &r.data
-            );
+            eprintln!("  [{}] {}B: {:02X?}", table_start + i, r.data.len(), r.data);
         }
     }
     eprintln!("\n=== 수정 후 PARA_HEADER (표 내부) ===");
@@ -3522,7 +3512,7 @@ fn test_real_hwp_table_insert_row_roundtrip() {
                 "  [{}] {}B: {:02X?}",
                 new_table_start + i,
                 r.data.len(),
-                &r.data
+                r.data
             );
         }
     }
@@ -3531,12 +3521,12 @@ fn test_real_hwp_table_insert_row_roundtrip() {
     eprintln!("\n=== TABLE 레코드 비교 ===");
     for r in orig_table_recs.iter() {
         if r.tag_id == crate::parser::tags::HWPTAG_TABLE {
-            eprintln!("  원본: {}B: {:02X?}", r.data.len(), &r.data);
+            eprintln!("  원본: {}B: {:02X?}", r.data.len(), r.data);
         }
     }
     for r in new_table_recs.iter() {
         if r.tag_id == crate::parser::tags::HWPTAG_TABLE {
-            eprintln!("  수정: {}B: {:02X?}", r.data.len(), &r.data);
+            eprintln!("  수정: {}B: {:02X?}", r.data.len(), r.data);
         }
     }
 }
@@ -3998,12 +3988,12 @@ fn test_analyze_hancom_merged_file() {
     eprintln!("\n=== TABLE 레코드 비교 ===");
     for r in orig_recs[ot_start..ot_end].iter() {
         if r.tag_id == crate::parser::tags::HWPTAG_TABLE {
-            eprintln!("  원본: {:02X?}", &r.data);
+            eprintln!("  원본: {:02X?}", r.data);
         }
     }
     for r in hancom_recs[ht_start..ht_end].iter() {
         if r.tag_id == crate::parser::tags::HWPTAG_TABLE {
-            eprintln!("  한컴: {:02X?}", &r.data);
+            eprintln!("  한컴: {:02X?}", r.data);
         }
     }
 
@@ -4017,7 +4007,7 @@ fn test_analyze_hancom_merged_file() {
             if row == 2 {
                 eprintln!(
                     "  cell[{}] col={} row={}: {:02X?}",
-                    cell_idx, col, row, &r.data
+                    cell_idx, col, row, r.data
                 );
             }
             cell_idx += 1;
@@ -4036,7 +4026,7 @@ fn test_analyze_hancom_merged_file() {
             let height = u32::from_le_bytes(r.data[20..24].try_into().unwrap());
             eprintln!(
                 "  cell[{}] col={} row={} span={}x{} w={} h={}: {:02X?}",
-                cell_idx, col, row, col_span, row_span, width, height, &r.data
+                cell_idx, col, row, col_span, row_span, width, height, r.data
             );
             cell_idx += 1;
         }
@@ -5986,7 +5976,7 @@ fn test_roundtrip_saved_file() {
                 .collect();
             if !para.controls.is_empty() || para.text.is_empty() {
                 eprintln!("  para[{}]: text={:?} chars={} ctrl_mask=0x{:08X} controls={:?} char_count={} msb={}",
-                        pi, &para.text.chars().take(40).collect::<String>(),
+                        pi, para.text.chars().take(40).collect::<String>(),
                         para.text.len(), para.control_mask, ctrl_types,
                         para.char_count, para.char_count_msb);
             }
@@ -8968,7 +8958,7 @@ fn test_roundtrip_empty_cell_corruption() {
                             ci, pi, para.text, para.has_para_text, para.char_count, para.char_count_msb,
                             para.controls.len(), para.raw_header_extra.len());
                     if para.raw_header_extra.len() >= 10 {
-                        eprintln!("    raw_header_extra: {:02x?}", &para.raw_header_extra);
+                        eprintln!("    raw_header_extra: {:02x?}", para.raw_header_extra);
                     }
                 }
             }
@@ -9336,9 +9326,9 @@ fn test_saved_file_table_flags_and_origin() {
                 let op = &oc.paragraphs[pi];
                 let sp = &sc.paragraphs[pi];
                 eprintln!("    orig para[{}]: text={:?} char_count={} msb={} has_pt={} char_offsets={:?} char_shapes_len={}",
-                        pi, &op.text, op.char_count, op.char_count_msb, op.has_para_text, &op.char_offsets, op.char_shapes.len());
+                        pi, op.text, op.char_count, op.char_count_msb, op.has_para_text, op.char_offsets, op.char_shapes.len());
                 eprintln!("    saved para[{}]: text={:?} char_count={} msb={} has_pt={} char_offsets={:?} char_shapes_len={}",
-                        pi, &sp.text, sp.char_count, sp.char_count_msb, sp.has_para_text, &sp.char_offsets, sp.char_shapes.len());
+                        pi, sp.text, sp.char_count, sp.char_count_msb, sp.has_para_text, sp.char_offsets, sp.char_shapes.len());
             }
         }
     }
@@ -9392,7 +9382,7 @@ fn test_saved_file_table_flags_and_origin() {
                 "  ORIG para[{}]: text_len={} text={:?} ctrls={} ctrl_types={:?}",
                 pi,
                 p.text.len(),
-                &p.text.chars().take(30).collect::<String>(),
+                p.text.chars().take(30).collect::<String>(),
                 p.controls.len(),
                 p.controls
                     .iter()
@@ -9417,7 +9407,7 @@ fn test_saved_file_table_flags_and_origin() {
                 "  SAVED para[{}]: text_len={} text={:?} ctrls={} ctrl_types={:?}",
                 pi,
                 p.text.len(),
-                &p.text.chars().take(30).collect::<String>(),
+                p.text.chars().take(30).collect::<String>(),
                 p.controls.len(),
                 p.controls
                     .iter()
@@ -14005,11 +13995,7 @@ fn test_empty_save_analysis() {
         } else {
             36
         };
-        let seg_count = if seg_size > 0 {
-            data.len() / seg_size
-        } else {
-            0
-        };
+        let seg_count = data.len().checked_div(seg_size).unwrap_or(0);
         let mut result = format!("{} segments ({}B each): ", seg_count, seg_size);
         for s in 0..std::cmp::min(seg_count, 4) {
             let off = s * seg_size;
@@ -14967,7 +14953,7 @@ fn test_save_text_only() {
             "  삽입 후: text='{}' char_count={}",
             para.text, para.char_count
         );
-        eprintln!("  char_offsets: {:?}", &para.char_offsets);
+        eprintln!("  char_offsets: {:?}", para.char_offsets);
         eprintln!(
             "  char_shapes: {:?}",
             para.char_shapes
@@ -17084,11 +17070,9 @@ fn test_analyze_pic_in_table() {
                         "  일치: {}/{} ({}%)",
                         max.saturating_sub(diff_count),
                         max,
-                        if max > 0 {
-                            (max.saturating_sub(diff_count)) * 100 / max
-                        } else {
-                            100
-                        }
+                        (max.saturating_sub(diff_count) * 100)
+                            .checked_div(max)
+                            .unwrap_or(100)
                     );
 
                     // 표 안 이미지 보존 확인
@@ -17403,11 +17387,9 @@ fn test_roundtrip_all_controls() {
             "  일치: {}/{} 레코드 ({}%)",
             max_recs - diff_count,
             max_recs,
-            if max_recs > 0 {
-                (max_recs - diff_count) * 100 / max_recs
-            } else {
-                100
-            }
+            ((max_recs - diff_count) * 100)
+                .checked_div(max_recs)
+                .unwrap_or(100)
         );
 
         if all_match {
@@ -18195,7 +18177,7 @@ fn test_diag_clone_vs_parsed_table() {
         clone_para.control_mask,
         clone_para.para_shape_id,
         clone_para.style_id,
-        &clone_para.raw_header_extra
+        clone_para.raw_header_extra
     );
     eprintln!(
         "  생성: cc={} msb={} cm=0x{:08X} ps={} sid={} rhe={:02x?}",
@@ -18204,7 +18186,7 @@ fn test_diag_clone_vs_parsed_table() {
         parsed_para.control_mask,
         parsed_para.para_shape_id,
         parsed_para.style_id,
-        &parsed_para.raw_header_extra
+        parsed_para.raw_header_extra
     );
 
     // raw_ctrl_data 비교
@@ -18218,12 +18200,12 @@ fn test_diag_clone_vs_parsed_table() {
             eprintln!(
                 "  복제 ({} bytes): {:02x?}",
                 t_a.raw_ctrl_data.len(),
-                &t_a.raw_ctrl_data
+                t_a.raw_ctrl_data
             );
             eprintln!(
                 "  생성 ({} bytes): {:02x?}",
                 t_b.raw_ctrl_data.len(),
-                &t_b.raw_ctrl_data
+                t_b.raw_ctrl_data
             );
 
             // 필드별 해석
@@ -20577,10 +20559,10 @@ fn test_diag_tb_err_003() {
                     })
                     .collect();
                 eprintln!("  문단[{}]: text={:?} char_count={} msb={} ctrl_mask=0x{:08X} controls=[{}] line_segs={} has_para_text={} raw_header_extra({})={:02x?}",
-                    pi, &para.text.chars().take(30).collect::<String>(),
+                    pi, para.text.chars().take(30).collect::<String>(),
                     para.char_count, para.char_count_msb, para.control_mask,
                     ctrl_types.join(", "), para.line_segs.len(), para.has_para_text,
-                    para.raw_header_extra.len(), &para.raw_header_extra);
+                    para.raw_header_extra.len(), para.raw_header_extra);
                 for (ci, ctrl) in para.controls.iter().enumerate() {
                     if let Control::Table(t) = ctrl {
                         eprintln!(
@@ -20596,7 +20578,7 @@ fn test_diag_tb_err_003() {
                         eprintln!(
                             "  raw_table_record_extra ({} bytes): {:02x?}",
                             t.raw_table_record_extra.len(),
-                            &t.raw_table_record_extra
+                            t.raw_table_record_extra
                         );
 
                         // 각 셀 상세
@@ -20616,17 +20598,17 @@ fn test_diag_tb_err_003() {
                             eprintln!(
                                 "    raw_list_extra ({} bytes): {:02x?}",
                                 cell.raw_list_extra.len(),
-                                &cell.raw_list_extra
+                                cell.raw_list_extra
                             );
                             for (pp, para) in cell.paragraphs.iter().enumerate() {
                                 eprintln!("    para[{}]: text={:?} char_count={} msb={} line_segs={} char_shapes={} has_para_text={}",
-                                    pp, &para.text.chars().take(20).collect::<String>(),
+                                    pp, para.text.chars().take(20).collect::<String>(),
                                     para.char_count, para.char_count_msb,
                                     para.line_segs.len(), para.char_shapes.len(), para.has_para_text);
                                 eprintln!(
                                     "      raw_header_extra ({} bytes): {:02x?}",
                                     para.raw_header_extra.len(),
-                                    &para.raw_header_extra
+                                    para.raw_header_extra
                                 );
                             }
                         }
@@ -21378,7 +21360,7 @@ fn test_blank2020_enter_corruption_diagnosis() {
             para.text,
             para.char_count,
             para.raw_header_extra.len(),
-            &para.raw_header_extra
+            para.raw_header_extra
         );
         eprintln!(
             "  원본 para[0] line_segs[0].tag = 0x{:08X}",
@@ -21392,7 +21374,7 @@ fn test_blank2020_enter_corruption_diagnosis() {
         // 분할 후 문단 정보
         for (i, p) in doc.document.sections[0].paragraphs.iter().enumerate() {
             eprintln!("  split 후 para[{}]: text='{}' cc={} has_para_text={} raw_header_extra({} bytes): {:02x?}",
-                    i, p.text, p.char_count, p.has_para_text, p.raw_header_extra.len(), &p.raw_header_extra);
+                    i, p.text, p.char_count, p.has_para_text, p.raw_header_extra.len(), p.raw_header_extra);
             if let Some(ls) = p.line_segs.first() {
                 eprintln!(
                     "    line_seg: lh={} th={} bd={} sw={} tag=0x{:08X}",
@@ -22660,7 +22642,9 @@ fn diag_para_text_field_markers() {
 
         // 직렬화된 바이트에서 컨트롤 문자 위치 추출
         let code_units: Vec<u16> = serialized
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|c| u16::from_le_bytes([c[0], c[1]]))
             .collect();
 
@@ -22841,7 +22825,9 @@ fn diag_field06_vs_reference() {
                                 eprintln!("    CTRL_DATA name_len: {}", name_len);
                                 if name_len > 0 && cd.len() >= 12 + name_len * 2 {
                                     let wchars: Vec<u16> = cd[12..12 + name_len * 2]
-                                        .chunks_exact(2)
+                                        .as_chunks::<2>()
+                                        .0
+                                        .iter()
                                         .map(|c| u16::from_le_bytes([c[0], c[1]]))
                                         .collect();
                                     let name = String::from_utf16_lossy(&wchars);
@@ -23139,7 +23125,7 @@ fn diag_field07_vs_field03h() {
                     }
                     // Also show as u16 code units
                     eprint!(" | ");
-                    for pair in chunk.chunks_exact(2) {
+                    for pair in chunk.as_chunks::<2>().0.iter() {
                         let cu = u16::from_le_bytes([pair[0], pair[1]]);
                         if cu >= 0x20 && cu < 0x7F {
                             eprint!("{} ", cu as u8 as char);
@@ -23231,7 +23217,9 @@ fn diag_field07_vs_field03h() {
                     let cmd_len = u16::from_le_bytes([rec.data[9], rec.data[10]]) as usize;
                     if cmd_len > 0 && rec.data.len() >= 11 + cmd_len * 2 {
                         let wchars: Vec<u16> = rec.data[11..11 + cmd_len * 2]
-                            .chunks_exact(2)
+                            .as_chunks::<2>()
+                            .0
+                            .iter()
                             .map(|c| u16::from_le_bytes([c[0], c[1]]))
                             .collect();
                         let cmd = String::from_utf16_lossy(&wchars);
@@ -23334,7 +23322,7 @@ fn diag_field07_vs_field03h() {
                                 eprint!("{:02x} ", b);
                             }
                             eprint!(" | ");
-                            for pair in chunk.chunks_exact(2) {
+                            for pair in chunk.as_chunks::<2>().0.iter() {
                                 let cu = u16::from_le_bytes([pair[0], pair[1]]);
                                 if cu >= 0x20 && cu < 0x7F {
                                     eprint!("{} ", cu as u8 as char);
@@ -23459,7 +23447,9 @@ fn diag_field07_vs_field03h() {
                                     eprintln!("      properties=0x{:08x} extra_properties=0x{:02x} command_len={}", props, extra, cmd_len);
                                     if cmd_len > 0 && rec.data.len() >= 11 + cmd_len * 2 {
                                         let wchars: Vec<u16> = rec.data[11..11 + cmd_len * 2]
-                                            .chunks_exact(2)
+                                            .as_chunks::<2>()
+                                            .0
+                                            .iter()
                                             .map(|c| u16::from_le_bytes([c[0], c[1]]))
                                             .collect();
                                         let cmd = String::from_utf16_lossy(&wchars);
@@ -23504,7 +23494,9 @@ fn diag_field07_vs_field03h() {
                             eprintln!("      name_len={}", name_len);
                             if name_len > 0 && rec.data.len() >= 12 + name_len * 2 {
                                 let wchars: Vec<u16> = rec.data[12..12 + name_len * 2]
-                                    .chunks_exact(2)
+                                    .as_chunks::<2>()
+                                    .0
+                                    .iter()
                                     .map(|c| u16::from_le_bytes([c[0], c[1]]))
                                     .collect();
                                 let name = String::from_utf16_lossy(&wchars);
@@ -23574,7 +23566,9 @@ fn diag_field07_vs_field03h() {
             // Scan for TAB characters (0x0009)
             let code_units: Vec<u16> = rec
                 .data
-                .chunks_exact(2)
+                .as_chunks::<2>()
+                .0
+                .iter()
                 .map(|c| u16::from_le_bytes([c[0], c[1]]))
                 .collect();
             for (i, &cu) in code_units.iter().enumerate() {
@@ -23719,7 +23713,9 @@ fn diag_field07_vs_field03h() {
                             let cl = u16::from_le_bytes([r.data[9], r.data[10]]) as usize;
                             if cl > 0 && r.data.len() >= 11 + cl * 2 {
                                 let w: Vec<u16> = r.data[11..11 + cl * 2]
-                                    .chunks_exact(2)
+                                    .as_chunks::<2>()
+                                    .0
+                                    .iter()
                                     .map(|c| u16::from_le_bytes([c[0], c[1]]))
                                     .collect();
                                 let cmd = String::from_utf16_lossy(&w);
@@ -23921,7 +23917,9 @@ fn diag_field10_comparison() {
                         let cmd_byte_end = cmd_byte_start + cmd_len * 2;
                         if rec.data.len() >= cmd_byte_end {
                             let wchars: Vec<u16> = rec.data[cmd_byte_start..cmd_byte_end]
-                                .chunks_exact(2)
+                                .as_chunks::<2>()
+                                .0
+                                .iter()
                                 .map(|c| u16::from_le_bytes([c[0], c[1]]))
                                 .collect();
                             let cmd = String::from_utf16_lossy(&wchars);
@@ -24047,7 +24045,9 @@ fn diag_field10_print_clickhere_in_para(location: &str, para: &crate::model::par
                     eprintln!("    CTRL_DATA name_len: {}", name_len);
                     if name_len > 0 && cd.len() >= 12 + name_len * 2 {
                         let wchars: Vec<u16> = cd[12..12 + name_len * 2]
-                            .chunks_exact(2)
+                            .as_chunks::<2>()
+                            .0
+                            .iter()
                             .map(|c| u16::from_le_bytes([c[0], c[1]]))
                             .collect();
                         let name = String::from_utf16_lossy(&wchars);

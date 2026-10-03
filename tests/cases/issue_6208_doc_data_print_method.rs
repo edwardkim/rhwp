@@ -92,7 +92,9 @@ fn issue_6208_print_method_is_derived_not_authoritative() {
     assert!(
         doc_data
             .data
-            .chunks_exact(8)
+            .as_chunks::<8>()
+            .0
+            .iter()
             .any(|kv| u32::from_le_bytes([kv[0], kv[1], kv[2], kv[3]])
                 == rhwp::model::document::HWP5_DOC_DATA_KEY_PRINT_METHOD),
         "원본 바이트에 인쇄 방식 키가 그대로 남아 있어야 한다(저장 무손실)"

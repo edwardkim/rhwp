@@ -45,7 +45,9 @@ struct Measured {
 /// 디코딩 실패가 아니라 그 경로가 볼 수 있는 것의 한계다.
 fn decode_utf16le(data: &[u8]) -> String {
     let units: Vec<u16> = data
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
         .collect();
     String::from_utf16_lossy(&units)

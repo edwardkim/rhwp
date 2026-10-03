@@ -76,7 +76,9 @@ fn head_subtree(records: &[Record], apply_type: u32) -> Option<(usize, usize)> {
 fn para_text_autonum_marker_index(pt: &Record) -> Option<usize> {
     let u16s: Vec<u16> = pt
         .data
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|c| u16::from_le_bytes([c[0], c[1]]))
         .collect();
     u16s.iter()

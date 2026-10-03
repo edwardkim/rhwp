@@ -149,7 +149,9 @@ fn u32_at(data: &[u8], offset: usize) -> Option<u32> {
 
 fn decode_utf16le(data: &[u8]) -> Option<String> {
     let units = data
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]]))
         .take_while(|unit| *unit != 0)
         .collect::<Vec<_>>();

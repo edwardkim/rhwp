@@ -2780,7 +2780,9 @@ mod tests {
             .expect("CTRL_DATA 레코드가 만들어져야 한다");
         let name_len = u16::from_le_bytes([record[10], record[11]]) as usize;
         let chars: Vec<u16> = record[12..12 + name_len * 2]
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|c| u16::from_le_bytes([c[0], c[1]]))
             .collect();
         assert_eq!(String::from_utf16_lossy(&chars), "새이름");

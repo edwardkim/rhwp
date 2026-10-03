@@ -4152,9 +4152,7 @@ impl DocumentCore {
 
     /// 모든 구역을 dirty로 표시한다.
     pub(crate) fn mark_all_sections_dirty(&mut self) {
-        for d in &mut self.dirty_sections {
-            *d = true;
-        }
+        self.dirty_sections.fill(true);
         self.render_normalization
             .section_revisions
             .resize(self.document.sections.len(), 0);
@@ -4472,9 +4470,7 @@ impl DocumentCore {
         self.para_column_map
             .resize_with(self.document.sections.len(), Vec::new);
         self.para_column_map[section_index] = vec![0; paragraph_count];
-        for offset in &mut self.para_offset {
-            *offset = 0;
-        }
+        self.para_offset.fill(0);
         for paragraph in &mut self.document.sections[section_index].paragraphs {
             for control in &mut paragraph.controls {
                 if let Control::Table(table) = control {
@@ -5318,9 +5314,7 @@ impl DocumentCore {
 
         let issue2424_cleanup_started = issue2424_profile_enabled.then(std::time::Instant::now);
         // para_offset 리셋 (수렴 감지 완료)
-        for off in &mut self.para_offset {
-            *off = 0;
-        }
+        self.para_offset.fill(0);
 
         // 표 dirty 플래그 초기화. [#4325] 이번 패스에서 재측정하지 않고 건너뛴 구역은
         // 제외한다 — 그 구역의 표는 measure_section_incremental이 아직 소비하지 않았으므로
