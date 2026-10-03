@@ -1,0 +1,169 @@
+{
+  "date": "2026-10-03",
+  "parent_head": "151ed767f",
+  "branch": "review/planet6897-green-20261002",
+  "status": "단계 검증 완료; 남은 시각 미달과 전체 검증으로 통합 보류",
+  "cause": "닫힌 단일 TAC 줄의 다음 저장 원점 연결만으로 전역 좌표축을 입증하지 못한다. 기준이 모두None인 시험지에0을 가정해 원본 누적vpos를 적용하면서 표가 새쪽으로 이월됨.",
+  "correction": "닫힌 저장줄은 확립된page/column/lazy 기준이 있을 때만 통배치한다. 단일셀의 실제저장쪽재시작 컷이0을원점으로할때 분할생산자가page기준0과출처를 전달하고후처리에서보존한다.",
+  "rejected_candidates": [
+    "known-axis only: sample2p20 99.92951→91.99742",
+    "optional-axis flow origin: repeated baseline failures and sample2p20 mismatch",
+    "declaration closing-frame inference: helper did not apply to original source; no restoration"
+  ],
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "baseline_changes": 0,
+  "source_sha256": {
+    "src/renderer/layout/table_layout.rs": "36ade561386ed13301fb1d19b8c72ec96946c58153dcbc413c78d0c6afafa012",
+    "src/renderer/typeset/controls/stored_tac.rs": "105460b65302a9e6e8deaab149591988909a448acfc9e692dd55daedfdc654f7",
+    "src/renderer/typeset/section/post_flow.rs": "340ab7be6720808f4757c010d15930dc98c077656bf3b541b41d995ef32f317a",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "44bdc72ee1ff6358aef71d5d55689e260edbb39a18bffb5ff4530dc7728f60fa"
+  },
+  "native_binary_sha256": "b8ef3dd5d808b64988a91239759cae6fe3c791699b5bf56281cedcf1bc3af88e",
+  "wasm_binary_sha256": "ec3696c8f7e6f030e82a495ccf59cf8114f9203c7bc10b313c96cfcd3bf212e0",
+  "focused27": {
+    "passed": 22,
+    "failed": 5,
+    "run": 27,
+    "exit_code": 100,
+    "seconds": 86.8,
+    "failed_cases": [
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_7"
+    ],
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "overflow_cell_baseline",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_016",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_018",
+      "-E",
+      "test(=overflow_cell_lines_do_not_grow_partition_11) or test(=overflow_cell_lines_do_not_grow_partition_10) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_3) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_6) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_9) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_12) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_13) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_14) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_6) or test(=overflow_cell_lines_do_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_2) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_7) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8) or test(=issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3) or test(=issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom)"
+    ]
+  },
+  "sample2_native": {
+    "pages": 29,
+    "min_percent": 92.22927,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "exam-social_native": {
+    "pages": 4,
+    "min_percent": 95.13497,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "wasm_build": {
+    "exit_code": 0,
+    "type": "Mac local no-opt substitute; not Docker optimization"
+  },
+  "integration_pr_ready": false,
+  "final_full_nextest": "pending",
+  "rust_gates": [
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "existing_pixel_contracts": {
+    "passed": 5,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "visual_assets": [
+    "mydocs/pr/assets/planet6897_green_20261002/closed_tac_axis_sample2_native.tsv",
+    "mydocs/pr/assets/planet6897_green_20261002/closed_tac_axis_sample2_wasm.tsv",
+    "mydocs/pr/assets/planet6897_green_20261002/closed_tac_axis_exam_social_native.tsv",
+    "mydocs/pr/assets/planet6897_green_20261002/closed_tac_axis_exam_social_wasm.tsv"
+  ],
+  "sample2_wasm": {
+    "pages": 29,
+    "min_percent": 92.22927,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "exam-social_wasm": {
+    "pages": 4,
+    "min_percent": 95.13497,
+    "below90_pages": [],
+    "exit_code": 0
+  }
+}

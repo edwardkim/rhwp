@@ -10850,6 +10850,26 @@ impl LayoutEngine {
             .is_some_and(|u| u.page_frame_reset_before)
     }
 
+    /// 저장 쪽 재시작 유닛의 원본 원점. 판정과 좌표 전달은 같은 컷 유닛을 읽는다.
+    pub(crate) fn cell_unit_stored_page_frame_origin(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        unit: usize,
+    ) -> Option<i32> {
+        let units = self.cell_units(cell, table, styles);
+        let unit = units.get(unit)?;
+        if !unit.page_frame_reset_before {
+            return None;
+        }
+        cell.paragraphs
+            .get(unit.para_idx)?
+            .line_segs
+            .get(unit.vis_start)
+            .map(|seg| seg.vertical_pos.max(0))
+    }
+
     pub(super) fn stored_frame_origin_for_cut(
         &self,
         cell: &crate::model::table::Cell,

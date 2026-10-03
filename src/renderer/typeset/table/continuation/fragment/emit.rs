@@ -70,6 +70,32 @@ impl TypesetEngine {
         // 행 컷이 소비한 내용과 header의 요구 높이. 저장 상자의 빈 밴드는
         // 아래에서 별도로 물리 점유에 포함하며 컷 유닛을 더 소비하지 않는다.
         let mut partial_height: f64 = consumed + header_overhead;
+        // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
+        // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
+        let resumed_stored_page_frame = is_continuation
+            && st.current_items.is_empty()
+            && st.current_height == 0.0
+            && !start_cut_is_block
+            && !row_cursor_is_nested
+            && start_cut.len() == 1
+            && start_cut[0] > 0
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && !st.profile.session_edited()
+            && st.profile.hwpx_stored_layout()
+            && !self.render_normalization.table_text_reflowed(table)
+            && table_footnotes.is_empty()
+            && layout_engine.cell_unit_stored_page_frame_origin(
+                &table.cells[0],
+                table,
+                styles,
+                start_cut[0],
+            ) == Some(0);
+        if resumed_stored_page_frame {
+            st.record_vpos_page_origin(Some(0));
+            st.record_vpos_origin_provenance(true);
+        }
         // 종료 조각의 빈 저장 밴드도 같은 물리 행 높이로 예약·배치한다.
         // 실제 컷이 새 원본 쪽 프레임에서 시작한 경우에만 선언 차이를 쓴다.
         let single_cell_closing_frame = (is_continuation

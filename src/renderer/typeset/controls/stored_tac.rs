@@ -163,6 +163,12 @@ pub(super) fn prepare_computed(
     // 편집되지 않은 원본 한 줄과 후속 원점이 상자를 정확히 닫으면
     // 바깥 여백을 버리는 일반 단일 TAC 경로로 되돌아가지 않는다.
     let closed_stored_line = !computed
+        // 후속 원점과의 연결만으로 쪽·단의 좌표축이 확립되지는 않는다.
+        && page
+            .vpos_page_base
+            .or(page.stored_table_column_base)
+            .or(page.vpos_lazy_base)
+            .is_some()
         && !para.stored_text_partition_is_dirty()
         && source_vpos == seg.vertical_pos
         && fmt.spacing_before == 0.0

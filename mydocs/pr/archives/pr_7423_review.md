@@ -2,14 +2,14 @@
 kind: snapshot
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-02
+last_verified: 2026-10-03
 ---
 
 # PR #7423 검토 — 수정(조판): 쪽을 끝내는 조각의 마지막 행 상자를 배치 뒤에 접는다 (#6976, #7063)
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 최신 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f` 위에 순차 체리픽해 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 순차 체리픽 후 최신 devel `ab4dcfaca5d6c151a814536570b9c7e2832daa8c` 위로 리베이스해 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -344,3 +344,13 @@ last_verified: 2026-10-02
 - #5875/#5782 각각12쪽·용지밖0·표겹침0 복원. 직전실패27건 선택nextest는13PASS/14FAIL(exit100,85.485초), 기존px교정5건5PASS(exit0). threads8·locked·release-test·no-fail-fast이며 전체회귀완료가 아닙니다. Native/freshWASM빌드·필수Clippy3단계·workspace빌드·fmt·diff·base고정suite manifest exit0. Mac WASM은no-opt 로컬대체이며Docker검증이 아닙니다.
 - 중첩HWP 전12쪽 Native 비교는7쪽미달·최저2쪽31.95012%(exit1). 새2쪽PNG를 직접확인했고 표높이·가운데정렬 차이가 남았습니다. 쪽수와기존회귀복원을 시각완료로 간주하지 않습니다. 잔존14건·다른문서전쪽비교·최종전체검증으로 통합PR은 보류합니다.
 - [검증원장](../assets/planet6897_green_20261002/single_frame_tail_validation.json), [Native29쪽](../assets/planet6897_green_20261002/single_frame_tail_sample2_native.tsv), [freshWASM29쪽](../assets/planet6897_green_20261002/single_frame_tail_sample2_wasm.tsv), [중첩12쪽미달](../assets/planet6897_green_20261002/single_frame_tail_5875_native.tsv), [2쪽보류PNG](../assets/planet6897_green_20261002/single_frame_tail_5875_p2_hold.png).
+
+
+### 닫힌 TAC 저장 줄의 좌표축 출처 보정
+
+- 분석: 후속 저장 원점이 한 줄 상자를 닫는다는 사실만으로 쪽·단 좌표축이 확립되지는 않습니다. 사회 시험지의 기준 None에 0을 가정해 누적 원점을 적용하면서 4쪽 문서가 5쪽으로 이월됐습니다. 닫힌 줄의 통배치는 확립된 기준이 있을 때만 허용합니다.
+- 생산→소비: `table_layout.rs`가 컷 유닛의 실제 저장 쪽 재시작 원점을 읽고, `continuation/fragment/emit.rs`가 새 단의 단일 셀 원점0과 저장 출처를 전달합니다. `section/post_flow.rs`는 이 검증된 기준을 보존하고 `controls/stored_tac.rs`의 측정·배치가 같은 기준을 소비합니다. 편집/재조판/다중 셀/각주/블록 및 중첩 컷은 이 출처 전달의 검증 범위에 포함하지 않습니다.
+- 반례: 기준 존재 조건만 추가하거나 기준 미확립 시 흐름 원점을 대입한 후보는 sample2 20쪽을99.92951→91.99742%로 낮춰 기각했습니다. 선언 높이에서 기준을 추정하는 후보도 원본에 적용되지 않아 기각했습니다. 수용 후보는 실제 저장 쪽 재시작 유닛의 원점이0인 경우만 전달합니다.
+- 결과: 직전 실패27건 선택 nextest22PASS/5FAIL(exit100,86.8초), 기존 px 교정5건 모두PASS(exit0). 검사 기대값·baseline 변경 및 신규 검사0건입니다. Native/fresh WASM 전29쪽 sample2 최저92.22927%, 전4쪽 사회 시험지 최저95.13497%, 미달0쪽이며 페이지별 점수가 모두 같습니다. 사회 시험지 1쪽 PNG를 직접 확인했습니다. Native/WASM32/workspace all-target Clippy와workspace 빌드, fmt/diff 및 base 고정 manifest exit0입니다. Mac no-opt WASM 대체 빌드이며 Docker 검증이 아닙니다.
+- 다음 실제 차단의 독립 PDF를 생성해 진단했습니다: #5755 3쪽 최저73.9298%, #5723 1쪽77.28046%, task2137 1쪽68.6758%. 작은 문서는 현 브랜치에서 개선하며 실패를 기준값 갱신으로 숨기지 않습니다. 중첩 HWP 시각 미달·다른 문서 전쪽 검증·최종 전체 nextest가 남아 통합 PR은 보류합니다.
+- [단계 검증 원장](../assets/planet6897_green_20261002/closed_tac_axis_validation.json), [sample2 Native](../assets/planet6897_green_20261002/closed_tac_axis_sample2_native.tsv), [sample2 fresh WASM](../assets/planet6897_green_20261002/closed_tac_axis_sample2_wasm.tsv), [사회 Native](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_native.tsv), [사회 fresh WASM](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_wasm.tsv), [사회 1쪽 review](../assets/planet6897_green_20261002/closed_tac_axis_exam_social_p1_review.png).
