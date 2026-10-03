@@ -1540,12 +1540,29 @@ impl TypesetEngine {
                         whole_placement_height,
                         self.dpi,
                     )
+                    .or_else(|| {
+                        crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_head_host(
+                            para,
+                            table,
+                            ctrl_idx,
+                            placement_para_start_height,
+                            whole_placement_height,
+                            self.dpi,
+                        )
+                    })
                 }
             })
             .flatten()
             .map(|placement| {
-                let placement =
-                    placement.with_tail_line_space(fmt.tail_line_remaining_width, table, self.dpi);
+                // 글 앞 제어문자는 마지막 글줄의 남은 폭을 소유하지 않는다.
+                // 글 끝 제어문자만 그 폭으로 표를 후행 흐름 상자로 바꿀 수 있다.
+                let placement = if para.control_text_positions().get(ctrl_idx).copied()
+                    == Some(para.text.chars().count())
+                {
+                    placement.with_tail_line_space(fmt.tail_line_remaining_width, table, self.dpi)
+                } else {
+                    placement
+                };
                 // A stored ladder must have a known origin in THIS column, not
                 // a default zero or a base recovered from already painted nodes.
                 let frame = (para.line_segs.len() == 1

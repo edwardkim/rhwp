@@ -2143,6 +2143,32 @@ impl ParagraphFloatPlacement {
         dpi: f64,
     ) -> Option<Self> {
         Self::text_tail_control_position(para, control_index)?;
+        Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    /// 글 앞 개체도 저장 호스트 줄이 양수 오프셋 안에서 모두 끝나면
+    /// 같은 앵커 상자를 예약한다. 계산 줄과 저장 줄의 제어문자 소유를 구분한다.
+    /// 원점은 글줄 앞 간격을 더하기 전의 문단 시작이다.
+    pub fn from_stored_head_host(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        Self::text_head_control_position(para, control_index)?;
+        Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    fn from_stored_host_at(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        text_origin: f64,
+        table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
         if !dpi.is_finite()
             || dpi <= 0.0
             || !table_height.is_finite()

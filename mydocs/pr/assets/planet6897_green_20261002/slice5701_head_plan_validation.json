@@ -1,0 +1,263 @@
+{
+  "head_before_correction": "c1ea5c331070f44d1b666cfb4b6967ccf9d5513a",
+  "status": "첫 저장 글 앞 앵커 계획 보정; #5701 문서 피델리티 및 최종 PR 준비는 미완료",
+  "source": "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+  "source_sha256": "345efb17a50396bdbeb102d09042ceeb409e8a5244d0fbb36a6b4d75ed966ac9",
+  "original_fixture_unchanged": true,
+  "diagnostic_source": "mydocs/pr/assets/planet6897_green_20261002/slice5701_hancom_resaved_diagnostic.hwp",
+  "diagnostic_source_sha256": "86dcf229e8593fdf58cfc15edd39fdbf9ccaf46c0eb1861ae6a6e44682dd7b58",
+  "diagnostic_source_is_not_a_regression_fixture": true,
+  "resave_job": "f9ad4a88-aad5-40b9-a8f4-abce476e5b63",
+  "resave_engine": "2020",
+  "source_metadata_change": {
+    "original_host_vpos": [
+      63298,
+      21050,
+      23210,
+      25370
+    ],
+    "hancom_saved_host_vpos": [
+      35440,
+      37600,
+      39760,
+      41920
+    ],
+    "original_table_declared_height_hu": 20480,
+    "saved_first_frame_height_hu": 17920,
+    "rows": 16,
+    "row_height_hu": 1280
+  },
+  "reference": "pdf/issue5701/1270000-202200012-slice-p76-hancom-resaved-2020.pdf",
+  "reference_sha256": "92f8caa754f3a3e619931dcc3375d49f09130b7cb46174b31fe6ec3b3cfe0c82",
+  "reference_job": "136284c5-7ce0-4daa-8684-cd491332748f",
+  "reference_engine": "2020",
+  "reference_pages": 3,
+  "pdf_pngs_identical_to_exact_original_input_pdf": [
+    1,
+    2,
+    3
+  ],
+  "contract": {
+    "producer": "ParagraphFloatPlacement::from_stored_head_host → from_stored_host_at: 실제 글 앞 제어문자 위치와 저장 줄의 단조성/오프셋 안 포함을 검증, 문단 앞 간격 전 원점으로 점유 상자 생성",
+    "measure": "typeset/table/block/entry.rs: same resolved_host_placement.occupied_bottom으로 whole-fit, 동일 unconstrained_host_placement를 prepare로 전달",
+    "placement": "prepare.rs의 for_first_fragment/행 스캐너 → 확정 PartialTable/paragraph_float_placements를 renderer가 소비",
+    "remaining_final_override": "첫 조각 변환은 위 바깥여백을 제외한다. 후속 문단 첫 줄도 표 앞 빈 밴드에 아직 배분되지 않는다. 두 차이 미해결"
+  },
+  "native_observation": {
+    "before_rows": "전체 16행을 첫쪽에 수용",
+    "after_rows": "첫쪽0..14, 다음쪽14..16",
+    "reference_rows": "한컴 동일 14행/2행",
+    "match_percent": [
+      76.9839,
+      27.4538,
+      100.0
+    ],
+    "below_90": [
+      1,
+      2
+    ]
+  },
+  "own_error_and_correction": {
+    "v1_social6797_p7_percent": 65.34522,
+    "cause": "글 앞 제어문자에 앞 간격을 더한 text_origin과 글 끝 남은 폭을 적용",
+    "correction": "저장 글 앞 원점은 placement_para_start_height, 폭이 부족한 후행 흐름 전환은 실제 글 끝 제어문자에만 적용",
+    "v2_social6797_p7_percent": 98.05666,
+    "native_all11_trees_byte_identical_to_prior_verified_origin_output": true
+  },
+  "original_all3_render_trees_unchanged_after_v1": true,
+  "new_test_functions": 0,
+  "changed_test_functions": 0,
+  "test_removals": 0,
+  "source_files_sha256": {
+    "src/renderer/float_placement.rs": "376391344f35a460a7cee028a7f834e73ce4df18d37f4bee696e1d88f28cffa6",
+    "src/renderer/typeset/table/block/entry.rs": "3906c3947832a1eeb20f0ebafea6578745a5818a4d66b83c4f825c9c1799c327"
+  },
+  "logs_stay_under_output": true,
+  "scope_limits": [
+    "원본 슬라이스의 저장 좌표가 stale임을 입증했으나 원본을 수정/대체하지 않았다",
+    "현재 회귀의 2쪽 전제나 픽셀/허용치를 변경하지 않았다",
+    "재저장 진단 사본의 통과를 원본 피델리티로 보고하지 않는다",
+    "최종 전체 nextest 및 Skia는 최종 코드 후 다시 실행해야 한다"
+  ],
+  "mandatory_gates": {
+    "head_before_changes": "c1ea5c331070f44d1b666cfb4b6967ccf9d5513a",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "focused39",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 97.556,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-focused39.log"
+      },
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.707,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-prepare.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.981,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 21.325,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 13.494,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 24.77,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 44.14,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.528,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-manifest.log"
+      },
+      {
+        "gate": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 145.582,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-head-plan-v2-fresh-wasm.log"
+      }
+    ]
+  },
+  "wasm_sha256": "e3958626e7b8b87a66de70557ac03bf763455091ea200f752924fa4c84d425f8",
+  "studio_wasm_sha256": "e3958626e7b8b87a66de70557ac03bf763455091ea200f752924fa4c84d425f8",
+  "native_wasm_all3_png_byte_identical": true,
+  "fresh_wasm_observation": {
+    "exit_code": 1,
+    "match_percent": [
+      76.9839,
+      27.4538,
+      100.0
+    ],
+    "below_90": [
+      1,
+      2
+    ],
+    "social6797_p7_exit_code": 0,
+    "social6797_p7_percent": 98.05666,
+    "mac_local_no_opt": true,
+    "docker_optimized_build": false
+  },
+  "direct_review_read": [
+    "slice5701_head_plan_native_p1_review.png",
+    "slice5701_head_plan_native_p2_review.png",
+    "slice5701_head_plan_social6797_native_p7_review.png"
+  ]
+}
