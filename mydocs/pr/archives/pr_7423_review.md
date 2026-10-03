@@ -490,3 +490,16 @@ last_verified: 2026-10-03
 ![#6192 fresh WASM 보정 결과](../assets/planet6897_green_20261002/cell6192_layout_wasm_p1_review.png)
 
 - 최종 Native/WASM 빌드, Native Skia feature 타입 검사, 3종 Clippy·workspace 빌드·fmt 및 최신 base 고정 suite 정책 검사를 통과했습니다. 마지막 정책 검사는 변경된 기존 검사에 맞춰 generated 메타데이터를 재준비하여 해결했습니다. 파생 harness는 커밋하지 않습니다. [단계 검증 원장](../assets/planet6897_green_20261002/cell6192_layout_validation.json).
+
+### #7062 통제군 절대좌표 실패 분석과 보정 계획
+
+- 현재0dc41b899의 기존3검사 중2PASS·1FAIL을 재현했습니다. 실패 검사는 과거 devel 바이너리의 제목 y137.9px를 고정하지만 현재141.7px입니다. 같은 입력·독립 한컴 PDF를 현재 Native/fresh WASM 전10쪽으로 다시 비교한 최저값은95.09873%이며 쪽수·누락 쪽 차이는 없습니다. 기존 기준 바이너리 좌표와 현재 독립 기준의 적합성을 구분합니다.
+- 같은 문서의1쪽 제목·책임자는 동일한 머리 표의 별도 셀에 포함되고,2쪽 도해 뒤 안내 표는 그림 아래에 놓입니다. 생산 코드를 바꿀 근거는 없으며, 이 세 기존 검사의 절대 높이·좌표 선택을 의미 관계로 갱신합니다. 큰 도해 선택→같은 셀의 점유 줄→그림 높이 포함→뒤 안내 표의 겹침 없음,1쪽 제목/책임자 셀 포함·순서 및 독립 PDF의10쪽을 검사합니다. 새 검사나 픽스쳐는 추가하지 않습니다.
+- 실제 위치·잉크는 전쪽 TSV와 영향1·2쪽 review PNG로 확인하며, PDF나 구현에 새 위치 보정·예외를 추가하지 않습니다. 이 단계 결과를 보고·커밋한 후 다음 차단을 검토합니다.
+
+### #7062 기존 검사의 의미 관계 갱신 결과
+
+- Native/fresh WASM 전10쪽은 동일하며 최저95.09873%, 미달·누락·쪽수 차이0건입니다. 1·2쪽 review PNG에서 머리 표의 제목→책임자 순서와 도해→안내 표의 겹침 없는 배치를 직접 확인했습니다. 생산 코드·입력·독립 PDF는 바꾸지 않았습니다.
+- 기존3검사는 도해가 같은 셀의 점유 줄에 포함되는지, 뒤 안내 표가 그림을 침범하지 않는지, 제목·책임자가 머리 표의 해당 셀에 포함되고 순서가 보존되는지 검사합니다. 독립 PDF의10쪽은 유지하며 과거 절대좌표·고정 높이 선택을 제거했습니다. 신규 검사·회귀 삭제0건입니다. 수정 전2PASS/1FAIL에서 수정 후3PASS/0FAIL이며 exit0입니다.
+- Native/WASM Clippy, workspace 빌드·all-target Clippy, fmt, 고정 base suite 정책 모두 exit0입니다. 검사·문서만 변경하여 동일 생산 소스의 Native/fresh WASM 산출물을 재사용했으며 새 WASM 빌드로 표현하지 않습니다. 최종 전체 재실행과 다른 시각 보류는 남아 있어 PR 준비는 보류합니다.
+- [검증 원장](../assets/planet6897_green_20261002/tac7062_validation.json), [Native 전10쪽 TSV](../assets/planet6897_green_20261002/tac7062_native.tsv), [WASM 전10쪽 TSV](../assets/planet6897_green_20261002/tac7062_wasm.tsv), [Native 1쪽 review](../assets/planet6897_green_20261002/tac7062_native_p1_review.png), [Native 2쪽 review](../assets/planet6897_green_20261002/tac7062_native_p2_review.png), [WASM 1쪽 review](../assets/planet6897_green_20261002/tac7062_wasm_p1_review.png), [WASM 2쪽 review](../assets/planet6897_green_20261002/tac7062_wasm_p2_review.png).

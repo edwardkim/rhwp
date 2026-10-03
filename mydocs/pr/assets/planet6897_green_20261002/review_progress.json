@@ -965,14 +965,18 @@
   },
   "integration_pr_ready": false,
   "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
-  "latest_stage_evidence": "cell6192_layout_validation.json",
+  "latest_stage_evidence": "tac7062_validation.json",
   "current_focused_failures": {
-    "run": 55,
-    "passed": 55,
+    "run": 3,
+    "passed": 3,
     "failed": 0,
     "exit_code": 0,
-    "scope": "#6192 시작점·불릿 및 관련 정렬·폰트 대조; 전체 회귀 아님"
+    "scope": "#7062 기존 3검사; 전체 회귀 아님"
   },
   "renderer_candidate": "#6192 제목 여백·인용문 시작점·HFT 불릿 보정; 전2쪽 Native/fresh WASM 최저99.99263%, 기존 검사 유지",
-  "current_candidate_whole_nextest_validated": false
+  "current_candidate_whole_nextest_validated": false,
+  "focused_resolved_since_latest_whole": [
+    "#6192",
+    "#7062"
+  ]
 }
