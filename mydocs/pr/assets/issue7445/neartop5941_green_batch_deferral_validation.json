@@ -189,5 +189,12 @@
     }
   ],
   "current_binary_sha256": "05d011bef4ce9d4bdddf67845096883495605d95ed520904b0a669c0c9909f5e",
-  "scope_note": "기존396662b15에서 #7147 시장구조조사2함수는 이미 별도 이관됨. 이번 case에는 이 문서의 실패1개만 존재하여 해당 case와 미사용helper 제거. 다른 정상함수 삭제 없음"
+  "scope_note": "기존396662b15에서 #7147 시장구조조사2함수는 이미 별도 이관됨. 이번 case에는 이 문서의 실패1개만 존재하여 해당 case와 미사용helper 제거. 다른 정상함수 삭제 없음",
+  "issue_comment": {
+    "id": 5969476561,
+    "url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5969476561",
+    "body_sha256": "f07df01066b47e1adfbfd8510a8187edcf1704615bd2f3771db580dd51f913a5",
+    "verified_exact_body": true,
+    "code_commit": "770fb9f3c"
+  }
 }

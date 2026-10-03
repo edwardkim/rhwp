@@ -596,3 +596,5 @@ last_verified: 2026-10-03
 - 해당2검사만 제거했습니다. 작은#5921 기존 검사1PASS/exit0, workspace all-target Clippy·fmt·최신base고정 manifest·문서 링크 모두exit0입니다. 기존 문서·PDF·다른 정상 검사와 baseline은 유지하고 신규 검사·skip/ignore·잠정 기대값 변경은 없습니다. 전체 회귀는 아직 재실행하지 않았습니다.
 - [제외 범위·검증 원장](../assets/issue7445/neartop5941_green_batch_deferral_validation.json), [Native 전205쪽 TSV](../assets/issue7445/neartop5941_green_batch_native_all205.tsv), [40쪽 review](../assets/issue7445/neartop5941_green_batch_native_p40_review.png), [54쪽 review](../assets/issue7445/neartop5941_green_batch_native_p54_review.png).
 - 커밋 뒤 #7445에 동일 원문/PDF 해시,102미달/205쪽, 실제2실패와 좁은 제외 범위·대조1PASS를 한국어 존댓말로 게시합니다. 전쪽 TSV는 펼침 영역에 포함하고 로컬 증적의 원격 공개는 준비 중인 통합 PR 이후임을 구분합니다. 다른 PR 차단·#2470 회귀 갱신·최종 전체 검증은 계속 미완료입니다.
+
+- 게시 완료: [#7445 전205쪽·2검사 이관 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5969476561). 서버에서 본문을 다시 읽어 UTF-8 원문·전쪽 TSV와 정확히 동일함을 확인했습니다. 검사 제외 커밋은 `770fb9f3c`이며 원본/PDF는 그대로 보존했습니다.
