@@ -140,7 +140,7 @@
       }
     ]
   },
-  "merge_decision": "보류. #5723 Native/fresh WASM 전1쪽90.04699%, 겹침0 복원. 선택28건24PASS/4FAIL. 다른 미달 문서와 최종 전체 회귀 미완료.",
+  "merge_decision": "보류: #2470 두검사PASS, #5941/#7147 해당205쪽 실패2개 #7445 분리. #6797/#1921 사용자 지시로 현브랜치 보정 및 최종전체검증 필요",
   "resolved_visual_holds": {
     "issue2004": {
       "native_pages": 8,
@@ -965,7 +965,7 @@
   },
   "integration_pr_ready": false,
   "current_base": "6b3faf77d8085441f9f26d88d65a49791e910352",
-  "latest_stage_evidence": "tac7062_validation.json",
+  "latest_stage_evidence": "masked2470_regression_validation.json",
   "current_focused_failures": {
     "run": 19,
     "passed": 14,
@@ -991,9 +991,6 @@
   ],
   "latest_rebase_evidence": "rebase_latest_validation.json",
   "remaining_latest_whole_blockers_after_focused": [
-    "#2470",
-    "#5941",
-    "#7147",
     "#6797",
     "#1921"
   ]
