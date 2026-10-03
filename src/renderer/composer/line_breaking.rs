@@ -6,11 +6,11 @@
 use super::supplemental_clusters::ParagraphMetricScope;
 use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
-use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
+use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
 use crate::model::style::{Alignment, LineSpacingType};
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
-    is_cjk_char, kopub_justified_space_width, resolved_letter_spacing,
+    is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -39,6 +39,7 @@ struct PreparedParagraphProjection {
 pub(crate) struct PictureBandLayout {
     pub(crate) paragraph_range: Range<usize>,
     pub(crate) line_segs: Vec<Vec<LineSeg>>,
+    pub(crate) space_metrics: Vec<Vec<(u32, SpaceMetric)>>,
 }
 
 /// How the frame resolved a paragraph's stored rows.
@@ -281,37 +282,31 @@ pub(crate) fn tokenize_paragraph(
     )
 }
 
-/// 공백 토큰의 advance 를 어느 규칙으로 재는가.
-///
-/// 종전에는 `bool` 이었고, 그래서 세 번째 규칙이 필요해졌을 때 표현할 자리가 없었다.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub(crate) enum SpaceMetric {
-    /// 글꼴 고유 U+0020 advance. 저장 `LINE_SEG` 와의 호환이 걸려 있는 기본값이다.
-    Stored,
-    /// 한컴이 폭 변경 뒤 다시 저장할 때 쓰는 공백 폭 (legacy bullet 계열).
-    HancomRegenerated,
-    /// [#3128] 들여쓴 셀 문단의 반각 칸.
-    ///
-    /// 한컴은 이 계급에서 글꼴 고유 U+0020 폭이 반각보다 넓어도 선행 들여쓰기와
-    /// 재조판된 내부 공백을 **0.5em 칸**으로 잰다. 그 규칙이 없으면 프레임이 셀
-    /// 안에서 한컴보다 넓게 재고, 줄이 밀려 셀이 쪽 밖으로 자란다.
-    HalfCell,
-    /// 양쪽 정렬에서 KoPub 공백이 줄 채움 중 실제 글꼴 폭까지 압축되는 경계.
-    /// 다른 face는 저장 metric을 그대로 쓴다.
-    KoPubJustified,
-}
-
 impl SpaceMetric {
-    /// 이 규칙에서 공백 하나의 advance.
-    fn space_advance(self, style: &crate::renderer::TextStyle) -> f64 {
+    /// 줄 채움과 실제 run 배치가 소비하는 동일한 공백 규칙.
+    pub(crate) fn apply_to_style(self, style: &mut crate::renderer::TextStyle) {
         match self {
-            Self::Stored => estimate_text_width_unrounded(" ", style),
-            Self::HancomRegenerated => hancom_regenerated_space_width(style)
-                .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
-            Self::HalfCell => super::regenerated_half_space_width(style),
-            Self::KoPubJustified => kopub_justified_space_width(style)
-                .unwrap_or_else(|| estimate_text_width_unrounded(" ", style)),
+            Self::Stored => {}
+            Self::HancomRegenerated => {
+                if hancom_regenerated_space_width(style).is_some() {
+                    style.layout_half_space = true;
+                }
+            }
+            Self::HalfCell => {
+                style.layout_half_space = true;
+            }
+            Self::KoPubJustified => {
+                if let Some(em) = kopub_space_advance_em(style) {
+                    style.font_space_em = Some(em);
+                }
+            }
         }
+    }
+
+    fn space_advance(self, style: &crate::renderer::TextStyle) -> f64 {
+        let mut selected = style.clone();
+        self.apply_to_style(&mut selected);
+        estimate_text_width_unrounded(" ", &selected)
     }
 }
 
@@ -349,7 +344,8 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles);
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut current_lang: usize = 0;
 
     while i < text_len {
@@ -853,7 +849,8 @@ fn prepare_paragraph_projection(
     }
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let metric_scope = ParagraphMetricScope::new(text_chars, styles);
+    let metric_scope =
+        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
     let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
@@ -2629,6 +2626,7 @@ fn inline_control_requires_own_line(
     indent_px: f64,
     reflow_is_first_line: bool,
     styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
 ) -> Option<(usize, i32)> {
     let text_len = para.text.chars().count();
     let positions = para.control_text_positions();
@@ -2670,7 +2668,7 @@ fn inline_control_requires_own_line(
     };
     let prefix: String = text_chars[line.start_idx..position].iter().collect();
     let prefix_width = to_hwp(measure_token_width(
-        &ParagraphMetricScope::new(text_chars, styles),
+        &ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric),
         &prefix,
         line.start_idx,
         &para.char_offsets,
@@ -3011,6 +3009,11 @@ fn layout_paragraph_in_frame_impl(
                         (filled.termination == FillTermination::ParagraphEnd)
                             .then_some((filled, replay))
                     });
+                    let selected_space_metric = if terminal.is_some() {
+                        SpaceMetric::Stored
+                    } else {
+                        space_metric
+                    };
                     let filled = if let Some((filled, replay)) = terminal {
                         cursor = replay;
                         filled
@@ -3060,7 +3063,9 @@ fn layout_paragraph_in_frame_impl(
                             char_index_to_utf16_offset(para, line.start_idx)
                         };
                     let text_end = char_index_to_utf16_offset(para, line.end_idx).max(text_start);
-                    segments.push(RowSegment::new(text_start..text_end, interval, source_tag));
+                    let mut segment = RowSegment::new(text_start..text_end, interval, source_tag);
+                    segment.space_metric = selected_space_metric;
+                    segments.push(segment);
 
                     if filled.termination != FillTermination::IntervalFull {
                         row_terminated = true;
@@ -3660,6 +3665,7 @@ pub(crate) fn layout_picture_band(
     let exclusion_end = exclusion.vertical.end;
     let mut frame = host_box.frame_with(0, vec![exclusion]);
     let mut line_segs = Vec::new();
+    let mut space_metrics = Vec::new();
 
     for (paragraph_index, paragraph) in paragraphs.iter().enumerate().skip(host_index) {
         if frame.top >= exclusion_end {
@@ -3688,13 +3694,16 @@ pub(crate) fn layout_picture_band(
         // the cache prevents row-local flags from leaking and keeps vpos ladder
         // repair from treating the fresh zero-origin row as a saved reset.
         input.line_segs.clear();
+        let first_row = frame.row_count();
         let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
+        space_metrics.push(frame.project_space_metrics_since(first_row));
         line_segs.push(paragraph_lines);
     }
 
     (!line_segs.is_empty() && frame.top >= exclusion_end).then_some(PictureBandLayout {
         paragraph_range: host_index..host_index + line_segs.len(),
         line_segs,
+        space_metrics,
     })
 }
 
@@ -4089,7 +4098,7 @@ fn reflow_line_segs_impl(
         let mut frame =
             paragraph_box.frame(orig.as_ref().map(|line| line.vertical_pos).unwrap_or(0));
         if let Some(projected) = layout_paragraph_in_frame(para, &mut frame, styles, dpi) {
-            para.replace_line_segs(projected);
+            para.replace_line_segs_with_space_metrics(projected, frame.project_space_metrics());
             return false;
         }
     }
@@ -4151,6 +4160,7 @@ fn reflow_line_segs_impl(
                 indent_px,
                 reflow_is_first_line,
                 styles,
+                reflow_space_metric,
             )
         })
         .flatten();
@@ -4241,7 +4251,19 @@ fn reflow_line_segs_impl(
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
 
-    para.replace_line_segs(new_line_segs);
+    let space_metrics = new_line_segs
+        .iter()
+        .enumerate()
+        .map(|(index, line)| {
+            let rule = if index < preserved_prefix_len {
+                para.line_space_metric(index)
+            } else {
+                reflow_space_metric
+            };
+            (line.text_start, rule)
+        })
+        .collect();
+    para.replace_line_segs_with_space_metrics(new_line_segs, space_metrics);
     preserved_prefix_len > 0
 }
 

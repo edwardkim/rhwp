@@ -1615,11 +1615,13 @@ impl DocumentCore {
                         let paragraph_range = band.paragraph_range;
                         let band_len = paragraph_range.len();
                         debug_assert_eq!(band.line_segs.len(), band_len);
-                        for (paragraph, line_segs) in section.paragraphs[paragraph_range.clone()]
-                            .iter_mut()
-                            .zip(band.line_segs)
+                        for (paragraph, (line_segs, space_metrics)) in section.paragraphs
+                            [paragraph_range.clone()]
+                        .iter_mut()
+                        .zip(band.line_segs.into_iter().zip(band.space_metrics))
                         {
-                            paragraph.replace_line_segs(line_segs);
+                            paragraph
+                                .replace_line_segs_with_space_metrics(line_segs, space_metrics);
                         }
                         reflowed += band_len;
                         min_reflowed_idx =

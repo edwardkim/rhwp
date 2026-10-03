@@ -458,10 +458,123 @@ impl TypesetEngine {
                 .flatten()
         });
         let fragment_placement = fragment_placement.or_else(|| {
-            (prepared.stored_rewinding_rowbreak_uses_painted_row_footprint
+            let spacing_before = input
+                .source
+                .styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .map_or(0.0, |style| style.spacing_before.max(0.0));
+            // A multi-row source frame can start after the preceding visible
+            // line's trailing gap, while sequential flow has already discarded
+            // that gap. The original host ladder and an internal cell reset
+            // prove the first physical frame; pass its origin to fit and paint.
+            let source_chain_origin = (st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !is_continuation
+                && cursor_row == 0
                 && start_cut.is_empty()
-                && ((!is_continuation && cursor_row == 0)
-                    || (is_continuation && st.current_height <= 0.5)))
+                && table_footnotes.is_empty()
+                && st.current_footnote_height <= 0.0
+                && !para_has_visible_text(para)
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && matches!(
+                    para.controls.as_slice(),
+                    [crate::model::control::Control::Table(_)]
+                )
+                && para.line_segs.len() == 1
+                && !is_synthetic_line_seg(&para.line_segs[0])
+                && table.row_count > 1
+                && table.cells.iter().all(|cell| {
+                    cell.row_span == 1
+                        && !cell.dirty_flag
+                        && cell.paragraphs.iter().all(|paragraph| {
+                            !paragraph.stored_text_partition_is_dirty()
+                                && !paragraph.cell_format_vpos_dirty
+                        })
+                })
+                && table.common.height <= i32::MAX as u32
+                && !table.common.treat_as_char
+                && crate::renderer::typeset::is_para_topbottom_float(&table.common)
+                && table.common.vertical_offset == 0
+                && table.caption.is_none()
+                && !self.render_normalization.table_text_reflowed(table)
+                && crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(table)
+                && st.current_zone_y_offset.abs() < f64::EPSILON)
+                .then(|| {
+                    let previous = input.source.paragraphs_all.get(para_idx.checked_sub(1)?)?;
+                    let next = input.source.paragraphs_all.get(para_idx + 1)?;
+                    let last = previous.line_segs.last()?;
+                    let line = &para.line_segs[0];
+                    if !previous.controls.is_empty()
+                        || !para_has_visible_text(previous)
+                        || previous.stored_text_partition_is_dirty()
+                        || previous.cell_format_vpos_dirty
+                        || is_synthetic_line_seg(last)
+                        || next.stored_text_partition_is_dirty()
+                        || next.cell_format_vpos_dirty
+                        || !next.line_segs.first().is_some_and(|next| {
+                            !is_synthetic_line_seg(next) && next.vertical_pos < line.vertical_pos
+                        })
+                    {
+                        return None;
+                    }
+                    let before_hu = (spacing_before * 7200.0 / self.dpi).round() as i64;
+                    let expected = i64::from(last.vertical_pos)
+                        + i64::from(last.line_height)
+                        + i64::from(last.line_spacing)
+                        + before_hu;
+                    let origin = hwpunit_to_px(
+                        line.vertical_pos
+                            .saturating_sub(st.vpos_page_base.unwrap_or(0)),
+                        self.dpi,
+                    ) - spacing_before;
+                    (expected == i64::from(line.vertical_pos)
+                        && origin >= st.current_height
+                        && origin
+                            + host_before_overhead
+                            + hwpunit_to_px(table.common.height as i32, self.dpi)
+                            <= st.available_height())
+                    .then_some(origin)
+                })
+                .flatten();
+            if let Some(origin) = source_chain_origin {
+                let top = origin + host_before_overhead;
+                return Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                    anchor_y: origin,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: top,
+                });
+            }
+            let saved_flow_anchor_matches = st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && !para_has_visible_text(para)
+                && !para.stored_text_partition_is_dirty()
+                && para.line_segs.len() == 1
+                && !is_synthetic_line_seg(&para.line_segs[0])
+                && para.controls.len() == 1
+                && !self.render_normalization.table_text_reflowed(table)
+                && !table.common.treat_as_char
+                && crate::renderer::typeset::is_para_topbottom_float(&table.common)
+                && table.caption.is_none()
+                && st.current_zone_y_offset.abs() < f64::EPSILON
+                && (hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
+                    - spacing_before
+                    - st.current_height)
+                    .abs()
+                    <= self.dpi / 7200.0;
+            (saved_flow_anchor_matches
+                || (prepared.stored_rewinding_rowbreak_uses_painted_row_footprint
+                    && start_cut.is_empty()
+                    && ((!is_continuation && cursor_row == 0)
+                        || (is_continuation && st.current_height <= 0.5))))
                 .then(|| {
                     // 첫 조각은 이미 예약한 문단 앞 여백과 오프셋을 배치에도 전달한다.
                     // 새 쪽의 이어받기 조각은 바깥 위 여백을 다시 연다.
@@ -519,7 +632,7 @@ impl TypesetEngine {
         // inset from that mid-page advance rejects valid source units
         // (80168 157->158 pages, rowbreak-problem-pages 18->19).
         let single_cell_box_height = fragment_placement
-            .filter(|_| single_cell_fragment_shape)
+            .filter(|_| single_cell_page_fragment)
             .map(|p| {
                 let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
                     table,
@@ -549,6 +662,8 @@ impl TypesetEngine {
             && start_cut.is_empty()
             && first_fragment_painted_row_footer_guard <= 0.0
             && !table.common.treat_as_char
+            && crate::renderer::typeset::is_para_topbottom_float(&table.common)
+            && table.common.height <= i32::MAX as u32
             && matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -757,6 +872,95 @@ impl TypesetEngine {
                 base
             }
         };
+        // A stored empty host includes its leading paragraph band, whereas
+        // the object frame starts before it. Authenticate that origin against
+        // the previous original line; then reserve the declared physical frame
+        // before scanning, rather than scanning taller rows and trimming paint.
+        let source_complete_frame_last_row = (st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && table_footnotes.is_empty()
+            && st.current_footnote_height <= 0.0
+            && first_fragment_painted_row_footer_guard <= 0.0
+            && !para_has_visible_text(para)
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && matches!(
+                para.controls.as_slice(),
+                [crate::model::control::Control::Table(_)]
+            )
+            && para.line_segs.len() == 1
+            && !is_synthetic_line_seg(&para.line_segs[0])
+            && !table.common.treat_as_char
+            && table.common.vertical_offset == 0
+            && table.caption.is_none()
+            && !self.render_normalization.table_text_reflowed(table)
+            && std::ptr::eq(table, row_geometry_table)
+            && table.cells.iter().all(|cell| {
+                !cell.dirty_flag
+                    && cell.paragraphs.iter().all(|paragraph| {
+                        !paragraph.stored_text_partition_is_dirty()
+                            && !paragraph.cell_format_vpos_dirty
+                    })
+            }))
+        .then(|| {
+            let previous = input.source.paragraphs_all.get(para_idx.checked_sub(1)?)?;
+            let last_line = previous.line_segs.last()?;
+            let line = &para.line_segs[0];
+            let before = input
+                .source
+                .styles
+                .para_styles
+                .get(para.para_shape_id as usize)?
+                .spacing_before;
+            if !previous.controls.is_empty()
+                || !para_has_visible_text(previous)
+                || previous.stored_text_partition_is_dirty()
+                || previous.cell_format_vpos_dirty
+                || is_synthetic_line_seg(last_line)
+                || i64::from(last_line.vertical_pos)
+                    + i64::from(last_line.line_height)
+                    + i64::from(last_line.line_spacing)
+                    + (before * 7200.0 / self.dpi).round() as i64
+                    != i64::from(line.vertical_pos)
+                || (hwpunit_to_px(line.vertical_pos - st.vpos_page_base.unwrap_or(0), self.dpi)
+                    - before
+                    - st.current_height)
+                    .abs()
+                    > self.dpi / 7200.0
+            {
+                return None;
+            }
+            let height = hwpunit_to_px(table.common.height as i32, self.dpi);
+            if height <= 0.0 || height > avail_for_rows {
+                return None;
+            }
+            let end =
+                nearest_saved_rowbreak_frame_row_end(height, cut_row_h, &stored_row_heights, cs)?;
+            if end <= 1
+                || end >= row_count
+                || table.cells.iter().any(|cell| {
+                    usize::from(cell.row) < end
+                        && usize::from(cell.row) + usize::from(cell.row_span) > end
+                })
+            {
+                return None;
+            }
+            let row = end - 1;
+            let remainder = height - cut_row_h[..row].iter().sum::<f64>() - cs * row as f64;
+            (remainder < cut_row_h[row]
+                && remainder
+                    >= input
+                        .prepared
+                        .layout_engine
+                        .row_complete_cut_content_height(table, row, input.source.styles))
+            .then_some((row, remainder))
+        })
+        .flatten();
+        let scan_row_count = source_complete_frame_last_row
+            .map_or(scan_row_count, |(row, _)| scan_row_count.min(row + 1));
         // 후속 host의 양수 vpos rewind는 표 continuation이 새 source page에서
         // 이어짐을 뜻한다. object가 전체 row geometry를 덮지 않을 때만 common
         // height를 첫 fragment frame으로 보고, 그 frame에 가장 가까운 행 끝에만
@@ -797,6 +1001,7 @@ impl TypesetEngine {
             scan_row_count,
             saved_first_fragment_source_frame,
             source_first_fragment_row_end,
+            source_complete_frame_last_row,
             source_first_fragment_overflow_allowance,
             header_overhead,
             avail_for_rows,

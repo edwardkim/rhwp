@@ -437,12 +437,22 @@ pub(super) fn try_place_stored_tac_paragraph(
         st.mark_vpos_ladder_dirty();
         return true;
     }
+    // A closed preceding object frame already owns its successor's leading
+    // spacing. The stored TAC plan must use that same origin for fit and paint.
+    let shared_spacing_before =
+        crate::renderer::float_placement::stored_frame_successor_shared_spacing_px(
+            &st.paragraph_float_placements,
+            para_idx,
+            fmt.spacing_before,
+            st.current_height,
+        );
     let Some(plan) = stored_tac::prepare(
         para_idx,
         para,
         fmt,
         measured_tables,
         st.stored_tac_page(paragraphs),
+        shared_spacing_before,
         || st.available_height(),
         dpi,
     ) else {

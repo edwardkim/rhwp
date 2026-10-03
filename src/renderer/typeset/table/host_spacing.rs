@@ -188,7 +188,33 @@ pub(super) fn resolve(
         )
         && para.text.is_empty();
     let next_is_empty_table_anchor = next_para
-        .map(|p| para_is_empty_topbottom_table_anchor(p) || para_is_empty_tac_table_anchor(p))
+        .map(|p| {
+            let is_table_anchor =
+                para_is_empty_topbottom_table_anchor(p) || para_is_empty_tac_table_anchor(p);
+            // A source page reset is not a same-frame table stack. Its next
+            // empty anchor belongs after this table's continuation, so it
+            // cannot authenticate leading/trailing host spacing on this page.
+            // Preserve the stack rule for edited/reflowed or synthetic input.
+            let source_frame_reset = profile().hwp5_stored_pagination_layout()
+                && !profile().session_edited()
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && !p.stored_text_partition_is_dirty()
+                && !p.cell_format_vpos_dirty
+                && para.line_segs.len() == 1
+                && p.line_segs.len() == 1
+                && [&para.line_segs[0], &p.line_segs[0]].iter().all(|line| {
+                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && line.vertical_pos >= 0
+                        && line.line_height > 0
+                })
+                && p.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos;
+            is_table_anchor && !source_frame_reset
+        })
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 

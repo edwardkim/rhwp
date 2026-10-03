@@ -41,6 +41,10 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// 재조판이 선택한 줄별 공백 규칙. 파일 속성이 아닌 현재 줄 구성의 출처다.
+    /// 각 항목은 해당 LineSeg의 text_start와 결합하며, 줄 교체 시 함께 교체한다.
+    #[serde(skip_serializing)]
+    pub layout_space_metrics: Vec<(u32, SpaceMetric)>,
     /// [#5961] `line_segs[*].text_start` 를 HWP5 문단 축으로 올리는 데 필요한 보정폭.
     ///
     /// `LineSeg::text_start` 는 파서가 **파일 값을 그대로** 담으므로 출처마다 축이 다르다.
@@ -143,6 +147,20 @@ pub struct Paragraph {
     /// splitting starts a continuation, and width reflow discards the old frames.
     #[serde(skip_serializing)]
     pub cell_vpos_reset: Option<bool>,
+}
+
+/// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum SpaceMetric {
+    /// 기존 저장 줄의 공백 측정.
+    #[default]
+    Stored,
+    /// stale 셀 재조판이 사용하는 공백 측정.
+    HancomRegenerated,
+    /// 반각 들여쓰기 셀의 공백 측정.
+    HalfCell,
+    /// KoPub 양쪽 정렬의 공백 압축 측정.
+    KoPubJustified,
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
@@ -757,6 +775,7 @@ impl Paragraph {
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        self.layout_space_metrics.clear();
         // A fresh vector has no renderer-appended suffix and cannot reuse a
         // source-position snapshot owned by the replaced rows.
         self.layout_only_fill_lines = 0;
@@ -765,6 +784,42 @@ impl Paragraph {
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
         self.stored_text_partition_dirty = false;
+    }
+
+    /// 같은 줄 구성 결과에서 생성한 경계와 공백 규칙을 함께 발행한다.
+    pub(crate) fn replace_line_segs_with_space_metrics(
+        &mut self,
+        line_segs: Vec<LineSeg>,
+        metrics: Vec<(u32, SpaceMetric)>,
+    ) {
+        self.replace_line_segs(line_segs);
+        self.layout_space_metrics = metrics;
+    }
+
+    pub(crate) fn line_space_metric(&self, line_index: usize) -> SpaceMetric {
+        self.layout_space_metrics
+            .get(line_index)
+            .zip(self.line_segs.get(line_index))
+            .filter(|((start, _), line)| *start == line.text_start)
+            .map(|((_, rule), _)| *rule)
+            .unwrap_or_else(|| {
+                // An original saved row retains its text partition. Its
+                // ordinary spaces follow the half-cell rule; compatibility
+                // widths for fresh line decisions must not shift that row's
+                // literal indentation. Explicit useFontSpace is still kept
+                // by HalfCell when the selected style is resolved.
+                if self.layout_space_metrics.is_empty()
+                    && !self.stored_text_partition_is_dirty()
+                    && self
+                        .line_segs
+                        .get(line_index)
+                        .is_some_and(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                {
+                    SpaceMetric::HalfCell
+                } else {
+                    SpaceMetric::Stored
+                }
+            })
     }
 
     /// 문자의 UTF-16 코드 유닛 수를 반환한다.
@@ -1604,6 +1659,7 @@ impl Paragraph {
             char_offsets: new_char_offsets,
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
+            layout_space_metrics: Vec::new(),
             // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).

@@ -223,7 +223,32 @@ impl TypesetEngine {
                 }
             }
         }
+        // A paragraph-local zero origin alone is not a page boundary. When
+        // the selected row has no ordinary saved reset, corroborate its closed
+        // two-line source frame with the host's next original page rewind.
+        let opening_frame_has_source_boundary =
+            layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                table,
+                end_row.saturating_sub(1),
+                start_cut,
+                &split_end_cut,
+                styles,
+            ) || input
+                .source
+                .paragraphs_all
+                .get(para_idx + 1)
+                .is_some_and(|next| {
+                    let host = input.source.paragraph;
+                    matches!((host.line_segs.as_slice(), next.line_segs.as_slice()), ([a], [b])
+                    if !host.stored_text_partition_is_dirty()
+                        && !next.stored_text_partition_is_dirty()
+                        && !host.cell_format_vpos_dirty && !next.cell_format_vpos_dirty
+                        && (a.tag | b.tag)
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && b.vertical_pos >= 0 && b.vertical_pos < a.vertical_pos)
+                });
         let first_fragment_blank_band = !is_continuation
+            && opening_frame_has_source_boundary
             && split_block_start.is_none()
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
@@ -286,6 +311,111 @@ impl TypesetEngine {
                     });
             }
         }
+        // The opening source box may end inside its last line's trailing
+        // spacing. Preserve all cut units, but reserve and paint the same
+        // declared physical frame rather than extending it to the page floor.
+        let two_frame_successor_origin =
+            input
+                .source
+                .paragraphs_all
+                .get(para_idx + 1)
+                .and_then(|next| {
+                    crate::renderer::float_placement::stored_two_frame_successor_origin_hu(
+                        table, next,
+                    )
+                });
+        let declared_opening_frame = single_cell_fragment_shape
+            && two_frame_successor_origin.is_some()
+            && !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && end_row == row_count
+            && split_end_cut.len() == 1
+            && split_end_limit > 0.0
+            && end_row_height_override.is_none()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table)
+            && table_footnotes.is_empty()
+            && layout_engine.stored_cut_closes_declared_opening_frame(
+                &table.cells[0],
+                table,
+                styles,
+                split_end_cut[0],
+            );
+        if declared_opening_frame {
+            partial_height = hwpunit_to_px(table.common.height as i32, self.dpi);
+            end_row_height_override = Some(partial_height);
+        }
+        // A terminal physical box may retain blank space after its last unit.
+        // Accept that space only when the accumulated painted boxes plus this
+        // remainder equal cellSz, and the successor's original line closes the
+        // complete outer box. The same plan owns the successor spacing.
+        let mut terminal_saved_successor_closure = false;
+        if single_cell_fragment_shape
+            && two_frame_successor_origin.is_some()
+            && is_continuation
+            && end_row >= row_count
+            && split_end_limit == 0.0
+            && end_row_height_override.is_none()
+            && continuation.single_cell_box_sum_px > 0.0
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && st.col_count == 1
+            && !self.render_normalization.table_text_reflowed(table)
+            && table.caption.is_none()
+            && fragment_placement.is_none()
+        {
+            let cell = &table.cells[0];
+            let successor = input.source.paragraphs_all.get(para_idx + 1);
+            let closure = successor.and_then(|next| {
+                let [line] = next.line_segs.as_slice() else {
+                    return None;
+                };
+                if next.stored_text_partition_is_dirty()
+                    || is_synthetic_line_seg(line)
+                    || !next.controls.is_empty()
+                    || !next.text.trim().is_empty()
+                    || line.vertical_pos <= 0
+                    || cell.height > i32::MAX as u32
+                    || !start_cut.first().is_some_and(|&start| {
+                        layout_engine.stored_cut_closes_declared_opening_frame(
+                            cell,
+                            table,
+                            input.source.styles,
+                            start,
+                        )
+                    })
+                {
+                    return None;
+                }
+                let top = st.current_height + host_before_overhead + vert_offset_overhead;
+                let bottom_margin = hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+                let next_origin = hwpunit_to_px(line.vertical_pos, self.dpi);
+                let physical_height = next_origin - top - bottom_margin;
+                let remaining = hwpunit_to_px(cell.height as i32, self.dpi)
+                    - continuation.single_cell_box_sum_px;
+                (physical_height >= partial_height
+                    && next_origin <= st.available_height()
+                    && (physical_height - remaining).abs() <= 2.0 * self.dpi / 7200.0)
+                    .then_some((top, physical_height, bottom_margin, next_origin))
+            });
+            if let Some((top, height, margin, next_origin)) = closure {
+                partial_height = height;
+                end_row_height_override = Some(height);
+                terminal_outer_bottom_overhead = margin;
+                terminal_saved_successor_closure = true;
+                fragment_placement =
+                    Some(crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                        anchor_y: st.current_height,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: Some(next_origin),
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: next_origin,
+                    });
+            }
+        }
         let captioned_object_frame = self
             .query_captioned_column_rowbreak_placement(
                 st,
@@ -298,7 +428,9 @@ impl TypesetEngine {
         let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
             if let Some(mut placement) = fragment_placement {
                 // 실제 조각의 컷/쪽 소유로 바뀌었으므로 전체 프레임의 후속 원점은 재사용하지 않는다.
-                placement.stored_successor_line_origin = None;
+                if !terminal || !terminal_saved_successor_closure {
+                    placement.stored_successor_line_origin = None;
+                }
                 placement.occupied_bottom = placement.table_top
                     + owner_height
                     + if captioned_object_frame {
@@ -588,9 +720,16 @@ impl TypesetEngine {
         // 첫 조각의 위는 흐름 커서가 아니라 host 저장 vpos 다 — 렌더러가 그 자리에 칠하고,
         // 흐름은 저장 사다리보다 늦을 수 있다(7062: 흐름 484.3 ↔ 저장 488.8, 156645214:
         // 116.3 ↔ 121.0). 흐름으로 재면 첫 상자가 그만큼 커져 끝 상자가 모자란다.
-        let single_cell_box_height = single_cell_box_height.or_else(|| {
+        let single_cell_box_height = if declared_opening_frame {
+            Some(partial_height)
+        } else {
+            single_cell_box_height
+        }
+        .or_else(|| {
             single_cell_fragment_shape.then(|| {
-                let flow_top = if is_continuation {
+                let flow_top = if let Some(placement) = fragment_placement {
+                    placement.table_top - host_before_overhead - vert_offset_overhead
+                } else if is_continuation {
                     st.current_height
                 } else {
                     input

@@ -702,6 +702,46 @@ impl TypesetEngine {
                 && res.consumed_height > 0.5
                 && res.end_cut.iter().any(|units| *units > 0)
                 && row_has_stored_same_vpos_split_signal(table, r);
+            // Paragraph-local zero positions alone do not prove a page reset.
+            // Require independently stored row boxes to exceed the original
+            // object frame as well: that frame then describes a fragment, not
+            // the entire table. Keep the complete unit at its saved boundary
+            // without weakening the actual fragment-height budget below.
+            let stored_row_boxes_exceed_object_frame = (0..table.row_count)
+                .try_fold(0_i64, |height, row| {
+                    table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            cell.row == row
+                                && cell.row_span == 1
+                                && cell.height > 0
+                                && cell.height < 0x8000_0000
+                        })
+                        .map(|cell| i64::from(cell.height))
+                        .max()
+                        .map(|row_height| height + row_height)
+                })
+                .is_some_and(|height| {
+                    table.common.height > 0
+                        && height
+                            + i64::from(table.cell_spacing)
+                                * i64::from(table.row_count.saturating_sub(1))
+                            > i64::from(table.common.height)
+                });
+            let stored_plain_reset_boundary_keep = st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table)
+                && stored_row_boxes_exceed_object_frame
+                && mt.allows_row_break_split()
+                && res.consumed_height > 0.5
+                && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
             // reset, 그리고 선언 높이보다 큰 1×1 child가 실제 multi-unit으로 검증된
@@ -800,6 +840,7 @@ impl TypesetEngine {
                 }
                 && row_total <= (st.layout.body_area.height - header_overhead).max(0.0)
                 && !cellbreak_complete_unit_keep
+                && !stored_plain_reset_boundary_keep
                 && !landscape_boundary_band_keep
                 && !stored_zero_origin_rewind_keep
                 && !stored_terminal_zero_origin_keep
@@ -809,6 +850,7 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
+                        && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
                         && !stored_zero_origin_rewind_keep
                         && !stored_terminal_zero_origin_keep

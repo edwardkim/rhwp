@@ -12,6 +12,7 @@ use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
+pub use crate::model::paragraph::SpaceMetric;
 use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::Caption;
 use crate::renderer::layout_frame::LayoutFrame;
@@ -47,6 +48,8 @@ pub struct ComposedTextRun {
     pub supplemental_metrics_blocked: bool,
     /// Text inserted from a control payload, not a scalar span of Paragraph.text.
     pub inserted_control_text: bool,
+    /// 공백 폭의 출처는 run 분할 뒤에도 줄 채움 결과를 따른다.
+    pub space_metric: SpaceMetric,
 }
 
 impl ComposedTextRun {
@@ -55,6 +58,7 @@ impl ComposedTextRun {
         if self.supplemental_metrics_blocked {
             style.supplemental_metrics = None;
         }
+        self.space_metric.apply_to_style(&mut style);
         style
     }
 }
@@ -998,6 +1002,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
+                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 };
 
                 let mut new_runs = Vec::new();
@@ -1014,6 +1019,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 display_text: None,
                                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                                 inserted_control_text: run.inserted_control_text,
+                                space_metric: run.space_metric,
                             });
                         }
                         new_runs.push(marker_run.clone());
@@ -1027,6 +1033,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 display_text: None,
                                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                                 inserted_control_text: run.inserted_control_text,
+                                space_metric: run.space_metric,
                             });
                         }
                     } else {
@@ -1122,6 +1129,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
+                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 }])
             };
             lines.push(ComposedLine {
@@ -1147,6 +1155,14 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
 
     for line_idx in 0..line_seg_count {
         let line_seg = &para.line_segs[line_idx];
+        let space_metric = para.line_space_metric(line_idx);
+        let split_row_runs = |text: &str, start, end, offsets: &[u32], shapes: &[CharShapeRef]| {
+            let mut runs = split_by_char_shapes(text, start, end, offsets, shapes);
+            for run in &mut runs {
+                run.space_metric = space_metric;
+            }
+            runs
+        };
 
         // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산.
         // [#5961] 아래에서 `char_offsets`·`char_count` 로 투영하므로 HWP5 축으로 올려
@@ -1213,7 +1229,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             if !pre_text.is_empty() && !lines.is_empty() && !keep_stored_boundary {
                 // \n 앞 텍스트를 이전 ComposedLine에 합침 (한컴 방식: \n 전 전체가 한 줄)
                 let prev: &mut ComposedLine = lines.last_mut().unwrap();
-                let mut extra_runs = split_by_char_shapes(
+                let mut extra_runs = split_row_runs(
                     &pre_text,
                     text_start,
                     pre_end,
@@ -1224,7 +1240,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 prev.has_line_break = true;
             } else if !pre_text.is_empty() {
                 // 이전 줄이 없거나 [#6300] 저장 줄 경계를 유지할 때 새 ComposedLine
-                let pre_runs = split_by_char_shapes(
+                let pre_runs = split_row_runs(
                     &pre_text,
                     text_start,
                     pre_end,
@@ -1253,7 +1269,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             // \n 이후: 표 줄 (빈 runs, 표는 layout에서 별도 처리)
             // [#6300] 다음 저장 줄이 인라인 개체면 빈 후속 줄을 여기서 만들지 않는다.
             if !(keep_stored_boundary && post_text_clean.is_empty()) {
-                let post_runs = split_by_char_shapes(
+                let post_runs = split_row_runs(
                     &post_text_clean,
                     post_start,
                     text_end,
@@ -1294,7 +1310,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 let segment_text: String = line_chars[segment_start..segment_end].iter().collect();
                 let segment_abs_start = text_start + segment_start;
                 let segment_abs_end = text_start + segment_end;
-                let runs = split_by_char_shapes(
+                let runs = split_row_runs(
                     &segment_text,
                     segment_abs_start,
                     segment_abs_end,
@@ -1429,6 +1445,7 @@ fn split_by_char_shapes(
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
         }]);
     }
 
@@ -1490,6 +1507,7 @@ fn split_by_char_shapes(
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
         }]);
     }
 
@@ -1518,6 +1536,7 @@ fn split_by_char_shapes(
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
+                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 });
             }
         }
@@ -1540,6 +1559,7 @@ fn split_by_char_shapes(
                     display_text: None,
                     supplemental_metrics_blocked: false,
                     inserted_control_text: false,
+                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 },
             );
         }
@@ -1556,6 +1576,7 @@ fn split_by_char_shapes(
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
         });
     }
 
@@ -1644,6 +1665,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                         display_text: None,
                         supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                         inserted_control_text: run.inserted_control_text,
+                        space_metric: run.space_metric,
                     });
                 }
                 current_lang = char_lang;
@@ -1663,6 +1685,7 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
                 display_text: None,
                 supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                 inserted_control_text: run.inserted_control_text,
+                space_metric: run.space_metric,
             });
         }
     }
@@ -1863,6 +1886,7 @@ fn inject_char_overlap_text(composed: &mut ComposedParagraph, para: &Paragraph) 
                 display_text: None,
                 supplemental_metrics_blocked: false,
                 inserted_control_text: true,
+                space_metric: crate::renderer::composer::SpaceMetric::Stored,
             },
         ));
     }
@@ -1957,6 +1981,7 @@ fn insert_overlap_run(
                         supplemental_metrics_blocked: line.runs[run_idx]
                             .supplemental_metrics_blocked,
                         inserted_control_text: line.runs[run_idx].inserted_control_text,
+                        space_metric: line.runs[run_idx].space_metric,
                     };
 
                     // overlap_run과 after_run을 삽입
@@ -2781,7 +2806,10 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             // The frame holds the rows; `project_line_segs` is the one place
             // they become `LineSeg` again.
             let mut reflowed_para = para.clone();
-            reflowed_para.line_segs = frame.project_line_segs();
+            reflowed_para.replace_line_segs_with_space_metrics(
+                frame.project_line_segs(),
+                frame.project_space_metrics(),
+            );
             // [#6102] 프레임이 새로 새긴 행 경계는 이미 HWP5 문단 축이다 —
             // 원본의 [#5961] 보정폭을 물려받으면 fresh 경계가 이중 보정되어
             // 줄이 보정폭만큼 늦게 끊긴다(36360328: fill 이 char 51(=raw 83)에
@@ -3464,6 +3492,7 @@ fn split_composed_line_by_width(
                         display_text: None,
                         supplemental_metrics_blocked: t.supplemental_metrics_blocked,
                         inserted_control_text: t.inserted_control_text,
+                        space_metric: t.space_metric,
                     });
                 } else {
                     text.clear();
@@ -4108,6 +4137,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                             display_text: None,
                             supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                             inserted_control_text: run.inserted_control_text,
+                            space_metric: run.space_metric,
                         });
                         buf.clear();
                     }
@@ -4124,6 +4154,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                         display_text: None,
                         supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                         inserted_control_text: run.inserted_control_text,
+                        space_metric: run.space_metric,
                     });
                 } else {
                     buf.push(ch);
@@ -4141,6 +4172,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                     display_text: None,
                     supplemental_metrics_blocked: run.supplemental_metrics_blocked,
                     inserted_control_text: run.inserted_control_text,
+                    space_metric: run.space_metric,
                 });
             }
         }

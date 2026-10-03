@@ -2041,13 +2041,8 @@ impl LayoutEngine {
                     && (table.common.vertical_offset as i32).unsigned_abs() <= 141)
                     || resumed_stored_frame_origin.is_some());
             let vpos_origin = if preserve_linear_single_cell_vpos {
-                resumed_stored_frame_origin.unwrap_or_else(|| {
-                    cell.paragraphs
-                        .first()
-                        .and_then(|p| p.line_segs.first().map(|seg| seg.vertical_pos))
-                        .unwrap_or(0)
-                        .max(0)
-                })
+                resumed_stored_frame_origin
+                    .unwrap_or_else(|| self.stored_cell_initial_frame_origin_hu(cell, styles))
             } else {
                 0
             };
@@ -2237,16 +2232,28 @@ impl LayoutEngine {
                         // 표 호스트 문단은 layout_composed_paragraph 의 spacing_before
                         // 재가산 경로를 타지 않으므로 빼면 표가 그만큼 떠오른다 —
                         // 텍스트 문단에만 적용한다.
-                        let snap_spacing_before =
-                            if start_line == 0 && cp_idx > 0 && !has_table_ctrl {
-                                styles
-                                    .para_styles
-                                    .get(para.para_shape_id as usize)
-                                    .map(|s| s.spacing_before)
-                                    .unwrap_or(0.0)
+                        let snap_spacing_before = if start_line == 0 && !has_table_ctrl {
+                            let spacing = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map(|s| s.spacing_before)
+                                .unwrap_or(0.0);
+                            // A center/bottom cell's initial source band belongs
+                            // to its aligned content even when a partial cut
+                            // temporarily paints that content from the top.
+                            if cp_idx > 0
+                                || (matches!(cell.vertical_align, VerticalAlign::Top)
+                                    && spacing > 0.0
+                                    && hwpunit_to_px(seg.vertical_pos - vpos_origin, self.dpi)
+                                        >= spacing)
+                            {
+                                spacing
                             } else {
                                 0.0
-                            };
+                            }
+                        } else {
+                            0.0
+                        };
                         let target_top =
                             hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi)
                                 - snap_spacing_before;
@@ -4816,7 +4823,24 @@ impl LayoutEngine {
             && is_continuation
             && end_cut.is_empty()
             && end_row_height_override.is_some();
-        if single_cell_page_fragment && row_count == 1 && end_cut.iter().any(|&unit| unit > 0) {
+        let owns_declared_opening_frame = end_row_height_override
+            == Some(hwpunit_to_px(table.common.height as i32, self.dpi))
+            && row_count == 1
+            && !is_continuation
+            && start_cut.is_empty()
+            && end_cut.len() == 1
+            && paragraphs.get(para_index + 1).is_some_and(|next| {
+                crate::renderer::float_placement::stored_two_frame_successor_origin_hu(table, next)
+                    .is_some()
+            })
+            && table.cells.first().is_some_and(|cell| {
+                self.stored_cut_closes_declared_opening_frame(cell, table, styles, end_cut[0])
+            });
+        if single_cell_page_fragment
+            && row_count == 1
+            && !owns_declared_opening_frame
+            && end_cut.iter().any(|&unit| unit > 0)
+        {
             let box_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
                 table,
                 col_area.y + col_area.height,

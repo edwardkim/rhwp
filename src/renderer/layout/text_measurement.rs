@@ -832,6 +832,7 @@ pub(crate) fn resolved_to_text_style(
             metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
             font_space_em: cs.font_space_em,
+            layout_half_space: false,
             hft_hangul_face: styles.hwp3_variant && cs.hft_hangul_face_for_lang(lang_index),
             font_size: cs.font_size_for_lang(lang_index),
             color: cs.text_color,
@@ -1067,7 +1068,7 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
 
 /// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
 /// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
-pub(crate) fn kopub_justified_space_width(style: &TextStyle) -> Option<f64> {
+pub(crate) fn kopub_space_advance_em(style: &TextStyle) -> Option<f64> {
     let primary = style.font_family.split(',').next()?.trim();
     let lower = primary.to_lowercase();
     let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
@@ -1077,16 +1078,7 @@ pub(crate) fn kopub_justified_space_width(style: &TextStyle) -> Option<f64> {
     } else {
         return None;
     };
-    let (font_size, ratio, _) = style_params(style);
-    let base = quantize_hwp_px(font_size * units / 1000.0);
-    let mut width = base * ratio
-        + glyph_letter_spacing(style.letter_spacing, base * ratio, font_size)
-        + style.extra_char_spacing
-        + style.extra_word_spacing;
-    if style.letter_spacing + style.extra_char_spacing < 0.0 {
-        width = width.max(base * ratio * 0.5);
-    }
-    Some(width)
+    Some(units / 1000.0)
 }
 
 /// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
@@ -1475,7 +1467,7 @@ pub(crate) fn char_width_decision<'a>(
             .metric_font_family
             .as_deref()
             .unwrap_or(&style.font_family);
-        let embedded = measure_char_width_embedded_decision_for_font(
+        let mut embedded = measure_char_width_embedded_decision_for_font(
             metric_family,
             style.bold,
             style.italic,
@@ -1484,6 +1476,26 @@ pub(crate) fn char_width_decision<'a>(
             style.font_metric_trusted,
             style.hft_hangul_face,
         );
+        // The row's shared rule selects the advance, without pretending that
+        // the document enabled useFontSpace. Both ordinary/NBSP characters
+        // retain the metric lookup provenance; explicit font space above
+        // continues to take precedence.
+        if style.layout_half_space
+            && matches!(c, ' ' | '\u{00A0}')
+            && embedded.width_source != "metricHalfSpace"
+        {
+            embedded.width_px = Some(font_size * 0.5);
+            embedded.width_source = if embedded.metric.is_some() {
+                "metricHalfSpace"
+            } else {
+                "heuristicHalfwidth"
+            };
+            embedded.character_match = if embedded.metric.is_some() {
+                "hit"
+            } else {
+                "notApplicable"
+            };
+        }
         if let Some(w) = embedded.width_px {
             (
                 w,

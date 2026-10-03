@@ -31,6 +31,94 @@ pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
     pub end: f64,
 }
 
+/// A TAC line remains an independent flow owner when a coanchored float starts
+/// outside its saved band. Commit just this control, so the float still takes
+/// the ordinary split path. Fit and paint consume the same saved pen and end.
+pub(super) fn prepare_coanchored_first_line(
+    control_index: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    measured_body_height: f64,
+    page: StoredTacPage,
+    available_height: f64,
+    dpi: f64,
+) -> Option<StoredTacControlPlacement> {
+    if !page.profile.hwp5_stored_pagination_layout()
+        || page.profile.session_edited()
+        || !page.side_wrap_empty
+        || para.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char
+        || table.caption.is_some()
+        || table_has_notes(table)
+        || table.cells.iter().any(|cell| {
+            cell.dirty_flag
+                || cell.paragraphs.iter().any(|para| {
+                    para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
+                })
+        })
+        || crate::renderer::layout::control_line_seg_index(para, control_index) != Some(0)
+        || (measured_body_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
+            > dpi / 7200.0
+        || line.line_spacing < 0
+    {
+        return None;
+    }
+    let mut has_float = false;
+    for (index, control) in para.controls.iter().enumerate() {
+        if index == control_index {
+            continue;
+        }
+        match control {
+            Control::Table(sibling)
+                if crate::renderer::float_placement::is_para_topbottom_float(&sibling.common)
+                    && crate::renderer::float_placement::signed_hwpunit(
+                        sibling.common.vertical_offset,
+                    ) >= line.line_height =>
+            {
+                has_float = true;
+            }
+            Control::SectionDef(_)
+            | Control::ColumnDef(_)
+            | Control::Header(_)
+            | Control::Footer(_) => {}
+            _ => return None,
+        }
+    }
+    if !has_float {
+        return None;
+    }
+    let origin = page.vpos_col_anchor
+        + hwpunit_to_px(
+            line.vertical_pos
+                .saturating_sub(page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0)),
+            dpi,
+        );
+    let end = origin
+        + hwpunit_to_px(line.line_height, dpi)
+        + hwpunit_to_px(line.line_spacing, dpi) * 0.5
+        + fmt.spacing_after;
+    if origin < page.current_height || end > available_height {
+        return None;
+    }
+    Some(StoredTacControlPlacement {
+        control_index,
+        inline: InlineBoxPlacement {
+            x: 0.0,
+            y: origin,
+            clearance: 0.0,
+            advance_end: Some(end),
+        },
+        end,
+    })
+}
+
 /// 저장 좌표가 없는 단일 개체 줄은 현재 흐름에서 물리 점유를 확정한다.
 /// 원점과 후행 간격을 같은 결과로 넘겨 저장 사다리의 차감·상한을 재적용하지 않는다.
 pub(super) fn prepare_computed(
@@ -173,12 +261,14 @@ fn table_has_notes(table: &crate::model::table::Table) -> bool {
 }
 
 /// 가용 높이는 원래 all 검사 위치에서 조회한다. 진단 조회를 미리 호출하지 않는다.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn prepare(
     para_idx: usize,
     para: &Paragraph,
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     page: StoredTacPage,
+    shared_spacing_before: f64,
     available_height: impl Fn() -> f64,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
@@ -187,13 +277,85 @@ pub(super) fn prepare(
         && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
         && page.side_wrap_empty
     {
-        if let Some(lines) = stored_tac_lines(para) {
-            let flow_origin = page.current_height
-                + if page.current_height < 1.0 {
-                    0.0
-                } else {
-                    fmt.spacing_before
-                };
+        // A saved single object line owns its caption and outer margins.
+        // Whitespace on that same line does not create another text line;
+        // the original owner and complete height below must prove this.
+        let single_saved_object_line = || {
+            if !para.text.chars().all(char::is_whitespace)
+                || para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+            {
+                return None;
+            }
+            let [seg] = para.line_segs.as_slice() else {
+                return None;
+            };
+            let [Control::Table(table)] = para.controls.as_slice() else {
+                return None;
+            };
+            let control_index = 0;
+            let caption_extent = if let Some(caption) = &table.caption {
+                if !matches!(
+                    caption.direction,
+                    crate::model::shape::CaptionDirection::Top
+                        | crate::model::shape::CaptionDirection::Bottom
+                ) {
+                    return None;
+                }
+                (crate::renderer::composer::caption_height_px(&table.caption, dpi) * 7200.0 / dpi)
+                    .round() as i64
+                    + i64::from(caption.spacing)
+            } else {
+                0
+            };
+            if !table.common.treat_as_char
+                || table_has_notes(table)
+                || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || seg.line_spacing < 0
+                || i64::from(seg.line_height)
+                    != i64::from(table.common.height)
+                        + caption_extent
+                        + i64::from(table.outer_margin_top)
+                        + i64::from(table.outer_margin_bottom)
+            {
+                return None;
+            }
+            Some(vec![StoredTacLine {
+                control: control_index,
+                top: 0,
+                occupied_end: seg.line_height,
+                end: seg.line_height.checked_add(seg.line_spacing)?,
+            }])
+        };
+        let owned_lines = stored_tac_lines(para)
+            .map(|lines| (lines, false))
+            .or_else(|| single_saved_object_line().map(|lines| (lines, true)));
+        if let Some((lines, single_saved_line)) = owned_lines {
+            let source_top = hwpunit_to_px(
+                para.source_line_seg_vertical_pos
+                    .as_ref()
+                    .and_then(|positions| positions.first())
+                    .copied()
+                    .unwrap_or(para.line_segs[0].vertical_pos),
+                dpi,
+            );
+            let flow_origin = if single_saved_line {
+                // The saved line origin already owns spacing_before. The
+                // current physical flow is its lower bound, not another copy
+                // of that leading band.
+                page.current_height
+            } else {
+                page.current_height
+                    + if page.current_height < 1.0 {
+                        if source_top > 0.0 && source_top <= fmt.spacing_before + 0.5 {
+                            source_top
+                        } else {
+                            0.0
+                        }
+                    } else {
+                        fmt.spacing_before - shared_spacing_before
+                    }
+            };
             // 앞 문단의 저장 사다리가 누적 높이보다 앞서 있으면 그 앵커를
             // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
             let saved_origin = page.vpos_col_anchor
@@ -216,12 +378,21 @@ pub(super) fn prepare(
                     .iter()
                     .find(|m| m.para_index == para_idx && m.control_index == line.control)
                     .is_some_and(|m| {
-                        (m.total_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
+                        let caption_extent = table.caption.as_ref().map_or(0.0, |caption| {
+                            crate::renderer::composer::caption_height_px(&table.caption, dpi)
+                                + hwpunit_to_px(i32::from(caption.spacing), dpi)
+                        });
+                        (m.total_height
+                            - hwpunit_to_px(table.common.height as i32, dpi)
+                            - caption_extent)
+                            .abs()
                             <= 0.5
                     })
             });
             let fits = lines.iter().all(|line| {
-                origin + hwpunit_to_px(line.occupied_end.max(line.end), dpi) + fmt.spacing_after
+                let captioned = matches!(para.controls.get(line.control), Some(Control::Table(table)) if table.caption.is_some());
+                let fit_end = if captioned { line.occupied_end } else { line.occupied_end.max(line.end) };
+                origin + hwpunit_to_px(fit_end, dpi) + fmt.spacing_after
                     <= available_height()
             });
             if measured_fits && fits {

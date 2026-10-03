@@ -2,7 +2,7 @@
 
 use std::ops::Range;
 
-use crate::model::paragraph::LineSeg;
+use crate::model::paragraph::{LineSeg, SpaceMetric};
 
 const SEGMENT_BOUNDARY_TAGS: u32 = LineSeg::TAG_FIRST_SEGMENT | LineSeg::TAG_LAST_SEGMENT;
 const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
@@ -309,6 +309,8 @@ pub(crate) struct RowSegment {
     /// The source tag retains provenance and line properties. Projection owns
     /// the FIRST/LAST boundary bits because they describe this row's group.
     pub(crate) source_tag: u32,
+    /// Metric selected when this interval was filled; not a serialized tag.
+    pub(crate) space_metric: SpaceMetric,
 }
 
 impl RowSegment {
@@ -317,6 +319,7 @@ impl RowSegment {
             text_range,
             horizontal,
             source_tag: source_tag & !SEGMENT_BOUNDARY_TAGS,
+            space_metric: SpaceMetric::Stored,
         }
     }
 }
@@ -866,6 +869,23 @@ impl LayoutFrame {
         }
 
         projected
+    }
+
+    /// Metric provenance follows exactly the same row/segment order as LineSeg.
+    pub(crate) fn project_space_metrics(&self) -> Vec<(u32, SpaceMetric)> {
+        self.project_space_metrics_since(0)
+    }
+
+    pub(crate) fn project_space_metrics_since(&self, first_row: usize) -> Vec<(u32, SpaceMetric)> {
+        self.rows
+            .iter()
+            .skip(first_row)
+            .flat_map(|row| {
+                row.segments
+                    .iter()
+                    .map(|segment| (segment.text_range.start, segment.space_metric))
+            })
+            .collect()
     }
 
     /// Flatten only rows appended after a paragraph-local checkpoint.

@@ -45,6 +45,18 @@ impl TypesetEngine {
             avail_for_rows,
             ..
         } = *budget;
+        let source_cut_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
+            let mut heights = cut_row_h.clone();
+            heights[row] = height;
+            heights
+        });
+        let source_fit_heights = budget.source_complete_frame_last_row.map(|(row, height)| {
+            let mut heights = whole_row_fit_h.clone();
+            heights[row] = height;
+            heights
+        });
+        let cut_row_h = source_cut_heights.as_ref().unwrap_or(cut_row_h);
+        let whole_row_fit_h = source_fit_heights.as_ref().unwrap_or(whole_row_fit_h);
         // 실제 기존 각주 경계 안에 들어오는 것으로 준비 단계에서 확인한 빈
         // 시작 조각은 유닛을 소비하지 않는다. 양수 물리 전진과 0 컷을 함께
         // 반환해 다음 조각이 같은 그림·캡션을 처음부터 소유하게 한다.
@@ -146,10 +158,18 @@ impl TypesetEngine {
         if end_row <= cursor_row {
             end_row = cursor_row + 1;
         }
+        if split_end_cut.is_empty() {
+            if let Some((row, height)) = budget.source_complete_frame_last_row {
+                if end_row == row + 1 {
+                    end_row_height_override = Some(height);
+                }
+            }
+        }
         // 첫 source fragment가 선택한 마지막 행은 scanner에서는 measured
         // boundary까지 소비하지만, paint는 common object frame의 남은 물리 높이로
         // 끝나야 한다. 이 값은 source frame과 그 직전 행들의 합으로 계산한다.
         if source_next_positive_rewind
+            && budget.source_complete_frame_last_row.is_none()
             && !table_declared_object_covers_cell_row_frames(table, self.dpi)
             && split_end_limit <= 0.0
             && source_first_fragment_row_end == Some(end_row)

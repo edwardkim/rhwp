@@ -1276,6 +1276,7 @@ impl TypesetEngine {
             ctrl_idx,
             table,
             ft.effective_height,
+            fmt.spacing_before,
         );
         // 독립 저장 프레임은 이미 흐름을 차지한 다른 호스트의 표 안으로
         // 되돌아갈 수 없다. 다음 쪽에서 같은 프레임을 다시 조회해 예약과
@@ -1417,6 +1418,7 @@ impl TypesetEngine {
                 ctrl_idx,
                 table,
                 ft.effective_height,
+                fmt.spacing_before,
             );
         }
         // 유효 전체 저장 프레임은 실제 각주 경계로 수용 여부를 확인한다.

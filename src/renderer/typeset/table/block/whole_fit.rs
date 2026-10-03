@@ -230,6 +230,7 @@ impl TypesetEngine {
 
     /// 원본 호스트와 뒤 저장 줄이 닫는 전체 개체 프레임을 조회한다.
     /// 수용 예산 때문에 유효 원점을 버리지 않는다. 호출자가 같은 하단으로 fit을 판정한다.
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn query_original_control_table_frame(
         &self,
         st: &TypesetState,
@@ -238,6 +239,7 @@ impl TypesetEngine {
         ctrl_idx: usize,
         table: &crate::model::table::Table,
         effective_height: f64,
+        host_spacing_before: f64,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         if st.col_count != 1
             || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
@@ -248,21 +250,31 @@ impl TypesetEngine {
         }
         let para = paragraphs.get(para_idx)?;
         let next = paragraphs.get(para_idx + 1)?;
-        let mut placement = crate::renderer::float_placement::stored_interior_control_table_frame(
+        let mut placement = crate::renderer::float_placement::stored_float_frame_before_tac_line(
             para,
-            next,
             ctrl_idx,
             table,
             effective_height,
-            st.vpos_page_base.unwrap_or(0),
             self.dpi,
         )
+        .or_else(|| {
+            crate::renderer::float_placement::stored_interior_control_table_frame(
+                para,
+                next,
+                ctrl_idx,
+                table,
+                effective_height,
+                st.vpos_page_base.unwrap_or(0),
+                self.dpi,
+            )
+        })
         .or_else(|| {
             crate::renderer::float_placement::stored_empty_control_table_frame(
                 para,
                 next,
                 table,
                 effective_height,
+                host_spacing_before,
                 // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
                 // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
                 0,
@@ -729,6 +741,7 @@ impl TypesetEngine {
                     ctrl_idx,
                     table,
                     ft.effective_height,
+                    fmt.spacing_before,
                 )
             });
         WholeFit {

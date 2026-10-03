@@ -1,9 +1,9 @@
 //! Project logical paragraph graphemes across style/language and stored-line splits.
-use super::{ComposedParagraph, ComposedTextRun};
+use super::{ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::renderer::supplemental_metrics::scalar_eligibility;
 
 /// Logical scalar eligibility prepared once, before token/style subdivision.
-pub(crate) struct ParagraphMetricScope(Option<Vec<bool>>);
+pub(crate) struct ParagraphMetricScope(Option<Vec<bool>>, SpaceMetric);
 
 impl ParagraphMetricScope {
     pub(crate) fn allows(&self, index: usize) -> bool {
@@ -12,10 +12,18 @@ impl ParagraphMetricScope {
             .is_none_or(|mask| mask.get(index).copied().unwrap_or(false))
     }
     pub(crate) fn new(chars: &[char], styles: &super::ResolvedStyleSet) -> Self {
-        Self(styles.supplemental_metrics.as_ref().map(|_| {
-            let text: String = chars.iter().collect();
-            scalar_eligibility(&text)
-        }))
+        Self(
+            styles.supplemental_metrics.as_ref().map(|_| {
+                let text: String = chars.iter().collect();
+                scalar_eligibility(&text)
+            }),
+            SpaceMetric::Stored,
+        )
+    }
+
+    pub(crate) fn with_space_metric(mut self, metric: SpaceMetric) -> Self {
+        self.1 = metric;
+        self
     }
 
     pub(crate) fn style(
@@ -29,6 +37,7 @@ impl ParagraphMetricScope {
         if !self.allows(index) {
             style.supplemental_metrics = None;
         }
+        self.1.apply_to_style(&mut style);
         style
     }
 }

@@ -310,12 +310,63 @@ impl Cell {
             && table.cells.len() == 1
             && table.common.height < 0x8000_0000
             && table.common.height > self.height
-            && i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
+            && (i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
+                || self.saved_reset_closes_initial_table_frame(table))
         {
             table.common.height
         } else {
             self.height
         }
+    }
+
+    /// A short first viewport can leave only the padding in cellSz. The
+    /// original monotone source prefix, followed by a reset, identifies the
+    /// actual initial frame; its padding must not be scaled against that stub.
+    pub(crate) fn saved_reset_closes_initial_table_frame(&self, table: &Table) -> bool {
+        // A later edited/reset line cannot authenticate the earlier source frame.
+        if self.paragraphs.iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || !para.controls.is_empty()
+                || para.line_segs.is_empty()
+                || para.line_segs.iter().any(|seg| {
+                    seg.tag & super::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || seg.vertical_pos < 0
+                        || seg.line_height <= 0
+                })
+        }) {
+            return false;
+        }
+        let padding = self.effective_padding(&table.padding);
+        let mut previous: Option<&super::paragraph::LineSeg> = None;
+        for para in &self.paragraphs {
+            if para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || !para.controls.is_empty()
+                || para.line_segs.is_empty()
+            {
+                return false;
+            }
+            for seg in &para.line_segs {
+                if seg.tag & super::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || seg.vertical_pos < 0
+                    || seg.line_height <= 0
+                {
+                    return false;
+                }
+                if let Some(prev) = previous {
+                    if seg.vertical_pos < prev.vertical_pos {
+                        let end = i64::from(prev.vertical_pos)
+                            + i64::from(prev.line_height)
+                            + i64::from(padding.top)
+                            + i64::from(padding.bottom);
+                        return end == i64::from(table.common.height);
+                    }
+                }
+                previous = Some(seg);
+            }
+        }
+        false
     }
 
     /// 표 기본 안 여백이 네 축 모두 0인지 확인한다.

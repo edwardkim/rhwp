@@ -3519,9 +3519,9 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_exact,
     estimate_text_width_unrounded, extract_tab_leaders_with_extended, find_next_tab_stop,
-    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote,
-    kopub_justified_space_width, resolved_letter_spacing, resolved_to_text_style,
-    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
+    hancom_regenerated_space_width, is_cjk_char, is_halfwidth_cjk_quote, kopub_space_advance_em,
+    resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
+    trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -9059,8 +9059,10 @@ impl LayoutEngine {
                         y_offset - col_area.y,
                     );
                 y_offset -= stored_frame_shared_spacing;
-                let shared_spacing = crate::renderer::float_placement::hwpx_empty_after_partial_table_shared_spacing_px(
-                    self.profile.get().hwpx_stored_layout(),
+                let shared_spacing = crate::renderer::float_placement::stored_empty_after_partial_table_shared_spacing_px(
+                    (self.profile.get().hwpx_stored_layout()
+                        || self.profile.get().hwp5_stored_pagination_layout())
+                        && !self.profile.get().session_edited(),
                     previous_is_partial_table,
                     &paragraphs[item_para],
                     spacing_before,
@@ -11990,6 +11992,7 @@ impl LayoutEngine {
                     // column-top vpos 계약을 못 받고 0 으로 뭉개졌다.
                     let table_y_start = if is_tac
                         && inline_pos.is_none()
+                        && flow_placement.is_none()
                         && self.profile.get().hwp5_stored_pagination_layout()
                         && (para_y_for_table - col_area.y).abs() < 1.0
                     {

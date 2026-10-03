@@ -281,6 +281,7 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
             display_text: Some("report.hwp".to_string()),
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
             ..stale.clone()
         },
         ComposedTextRun {
@@ -1200,6 +1201,7 @@ fn test_split_runs_by_lang_korean_english() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1223,6 +1225,7 @@ fn test_split_runs_by_lang_no_split() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1242,6 +1245,7 @@ fn test_split_runs_by_lang_space_follows_prev() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1265,6 +1269,7 @@ fn test_split_runs_by_lang_empty() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1283,6 +1288,7 @@ fn test_split_runs_by_lang_english_only() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1385,6 +1391,7 @@ fn test_estimate_composed_line_width() {
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -1869,6 +1876,7 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
         display_text: Some("《".to_string()), // 변환된 자모 (1 char in this case)
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1893,6 +1901,7 @@ fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
         display_text: Some("ᄃᆞᄫᆡ".to_string()), // 4 jamo chars
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1918,6 +1927,7 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         display_text: None,
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1944,6 +1954,7 @@ fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
         display_text: Some("□□".to_string()),
         supplemental_metrics_blocked: false,
         inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -2068,6 +2079,7 @@ fn test_kbu1_line_start_forbidden_retraction() {
             display_text: None,
             supplemental_metrics_blocked: false,
             inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
         }],
         line_height: 400,
         baseline_distance: 320,
