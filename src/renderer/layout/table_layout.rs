@@ -4278,7 +4278,10 @@ impl LayoutEngine {
             // 행경계 == cellSz [22.4,41.9,69.4], rhwp 측정 재분배 [19.8,44.8,
             // 69.1] 은 폰트 메트릭 차로 행 경계만 드리프트 — 총높이 동일.
             self.trust_declared_row_heights(table, row_count, &mut rh);
-            if fit_common_height {
+            // 측정된 TAC 행은 셀 내용과 저장 프레임을 이미 반영한다.
+            // 여기서 개체 선언을 최소 높이로 다시 적용하면 회수한 낡은
+            // 프레임이 paint에서 부활하여 조판과 실제 표 높이가 달라진다.
+            if fit_common_height && !table.common.treat_as_char {
                 self.fit_row_heights_to_common_height(table, &mut rh);
             }
             return rh;

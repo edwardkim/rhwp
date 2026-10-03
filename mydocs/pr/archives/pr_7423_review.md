@@ -571,3 +571,15 @@ last_verified: 2026-10-03
 - 실제 다음 빈 줄까지 이어지는800HU 간격을 확정 계획 끝에 전량 보존하여6쪽86.74937→99.91741%입니다. Native/fresh WASM 전8쪽 동일, 최저97.99040%, 쪽수8/8·미달0쪽입니다. 도해 뒤 제목·본문 위치를 review PNG로 직접 확인했습니다. 기존 관련19검사19PASS입니다.
 - Native/fresh Mac no-opt WASM 빌드·3종 Clippy·workspace 빌드·suite 준비를 통과했습니다. fmt의 줄바꿈1건을 정리한 뒤 fmt 재검사·고정 base manifest exit0입니다. 동일 의미의 서식 보정만이며 검증 실패를 숨기지 않습니다. 정상#5755 Native/fresh WASM 전3쪽 최저99.13619% 유지, 신규 검사·회귀 삭제0건입니다.
 - [검증 원장](../assets/planet6897_green_20261002/masked2470_plan_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_plan_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_plan_wasm.tsv), [6쪽 review](../assets/planet6897_green_20261002/masked2470_plan_native_p6_review.png). 추가2쪽 자료의2쪽54.42807%는 별도 보정이 필요하고 통합 PR 준비·최종 전체 검증은 보류입니다.
+
+### #2470 추가2쪽 자료의 낡은 선언 높이 재확장 분석과 보정 계획
+
+- 사진 표 pi10은 셀 높이282HU·실제 글줄1000HU·안 여백282HU를 갖지만 개체 높이11565HU는 마스킹 전 사진 크기입니다. 독립 PDF의 실제 괘선424.336..441.437px(17.101px)과 현재424.7..578.9px(154.2px)가 다릅니다. 쪽수2개만 확인한 기존 회귀가 이 차이를 검증하지 못합니다.
+- HeightMeasurer의 셀 측정→typeset의 stale-host 높이 회수까지는 작은 실제 표를 사용하지만 layout의 `resolve_row_heights_with_common_fit`가 측정값 뒤에 `fit_row_heights_to_common_height`를 적용해 다시154.2px로 늘립니다. TAC 표에 이미 측정된 행 결과가 있으면 그 결과를 paint도 소비하고 선언 최소 높이를 별도로 재적용하지 않습니다. 비TAC·측정 없는 fallback의 기존 선언 프레임 처리는 유지합니다. 특정 수치 배율이나 문서 예외는 추가하지 않습니다.
+- Native/fresh WASM 전2쪽과8쪽, 정상#5755 전3쪽을 비교합니다. 미달 잔존은 추가 원인으로 나누어 보정하며 전쪽90% 확인 후에만 기존 회귀를 페이지 소속·내용 관계로 갱신합니다.
+
+### #2470 추가2쪽 표 높이보정 결과
+
+- 측정된 TAC 행 결과에 개체 선언 최소 높이를 다시 적용하던 paint를 보정했습니다. 사진 표는 글줄·안 여백이 만드는17.1px 높이를 유지하고 뒤 본문 원점도 독립 PDF와 맞습니다. 추가2쪽 Native/fresh WASM 동일,98.68570/96.09636%로 전쪽90% 이상입니다. 예산과목 줄의 가로 정렬 차이는 잔존하며96%를 완전 일치로 표현하지 않습니다.
+- 8쪽 문서는 양 backend 최저97.99040%, 정상#5755 전3쪽은 양 backend 최저99.13619%로 유지됩니다. 기존19검사19PASS·9종 필수 단계 exit0입니다. Mac no-opt WASM 대체 빌드이며 신규 검사·fixture 추가/삭제0건입니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_paint_validation.json), [2쪽 Native TSV](../assets/planet6897_green_20261002/masked2470_paint_counter_native.tsv), [2쪽 WASM TSV](../assets/planet6897_green_20261002/masked2470_paint_counter_wasm.tsv), [2쪽 review](../assets/planet6897_green_20261002/masked2470_paint_counter_native_p2_review.png). 사용자 요청의205쪽 #7445 분리를 다음 단계로 진행하며 기존#2470 회귀 갱신과 다른 차단·최종 전체 검증은 별도 미완료입니다.
