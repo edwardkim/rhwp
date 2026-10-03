@@ -1017,5 +1017,29 @@
     "focused_passed": 62,
     "focused_failed": 0,
     "final_validation_pending": false
+  },
+  "whole_b4293ab6b": {
+    "head": "b4293ab6b6910606d6cf2ceaf7f12ed9144f70ae",
+    "run": 10268,
+    "passed": 10254,
+    "failed": 14,
+    "skipped": 50,
+    "exit_code": 100,
+    "failed_cases": [
+      "regression_suite_001 issue_7103_tac_table_rewind::consecutive_tac_tables_do_not_rewind_to_the_previous_line_segment",
+      "regression_suite_001 issue_7103_tac_table_rewind::hancom_privacy_and_tutor_boundaries_match",
+      "regression_suite_001 issue_7103_tac_table_rewind::negative_saved_gap_is_not_clamped",
+      "regression_suite_001 issue_7103_tac_table_rewind::positive_saved_gap_is_preserved",
+      "regression_suite_004 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "regression_suite_012 compat_generation_render_commands::compat_2024_changes_pagination_and_2022_is_the_default",
+      "regression_suite_017 issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "regression_suite_018 issue_5524_hangul2024_compat::hangul2024_compat_reclaims_tac_anchor_line_and_default_stays_2022",
+      "regression_suite_021 issue_598_footnote_marker_nav::issue_598_body_footnote_marker_has_hit_and_cursor_unit",
+      "regression_suite_021 issue_598_footnote_marker_nav::issue_598_second_body_footnote_marker_has_same_cursor_unit",
+      "regression_suite_024 issue_5731_cell_second_float_flow_anchor::issue_5731_second_cell_float_uses_stored_flow_anchor",
+      "regression_suite_028 issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+      "regression_suite_028 svg_snapshot::form_002_page_0",
+      "regression_suite_028 svg_snapshot::table_text_page_0"
+    ]
   }
 }
