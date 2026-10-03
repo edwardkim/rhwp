@@ -18,11 +18,19 @@ fn top(core: &DocumentCore) -> f64 {
     table_top(&core.build_page_render_tree(0).unwrap().root).expect("표 테두리")
 }
 
-fn generated_table() -> (DocumentCore, usize, usize) {
+fn generated_table(with_body: bool) -> (DocumentCore, usize, usize) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
-    let created: Value =
-        serde_json::from_str(&core.create_table_native(0, 0, 0, 2, 2).unwrap()).unwrap();
+    if with_body {
+        core.insert_text_native(0, 0, 0, "앞").unwrap();
+        core.split_paragraph_native(0, 0, 1, None).unwrap();
+    }
+    let created: Value = serde_json::from_str(
+        &core
+            .create_table_native(0, usize::from(with_body), 0, 2, 2)
+            .unwrap(),
+    )
+    .unwrap();
     let para = created["paraIdx"].as_u64().unwrap() as usize;
     let control = created["controlIdx"].as_u64().unwrap() as usize;
     (core, para, control)
@@ -44,7 +52,7 @@ fn assert_save_origin(core: &DocumentCore) {
 
 #[test]
 fn generated_table_padding_origin_survives_hwpx_save() {
-    let (mut core, para, control) = generated_table();
+    let (mut core, para, control) = generated_table(false);
     core.set_cell_properties_native(
         0,
         para,
@@ -58,7 +66,7 @@ fn generated_table_padding_origin_survives_hwpx_save() {
 
 #[test]
 fn generated_table_offset_origin_survives_hwpx_save() {
-    let (mut core, para, control) = generated_table();
+    let (mut core, para, control) = generated_table(true);
     core.set_table_properties_native(
         0,
         para,
