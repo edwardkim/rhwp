@@ -9059,16 +9059,17 @@ impl LayoutEngine {
                         y_offset - col_area.y,
                     );
                 y_offset -= stored_frame_shared_spacing;
-                let shared_spacing = crate::renderer::float_placement::stored_empty_after_partial_table_shared_spacing_px(
-                    (self.profile.get().hwpx_stored_layout()
-                        || self.profile.get().hwp5_stored_pagination_layout())
-                        && !self.profile.get().session_edited(),
-                    previous_is_partial_table,
-                    &paragraphs[item_para],
-                    spacing_before,
-                    y_offset - col_area.y,
-                    self.dpi,
-                );
+                let shared_spacing =
+                    crate::renderer::float_placement::stored_after_partial_table_shared_spacing_px(
+                        (self.profile.get().hwpx_stored_layout()
+                            || self.profile.get().hwp5_stored_pagination_layout())
+                            && !self.profile.get().session_edited(),
+                        previous_is_partial_table,
+                        &paragraphs[item_para],
+                        spacing_before,
+                        y_offset - col_area.y,
+                        self.dpi,
+                    );
                 y_offset -= shared_spacing;
                 let caption_shared_spacing =
                     crate::renderer::float_placement::hwpx_after_picture_caption_shared_spacing_px(

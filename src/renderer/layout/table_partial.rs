@@ -3691,7 +3691,14 @@ impl LayoutEngine {
                                         .as_ref()
                                         .map(|split| split.flow_height)
                                         .unwrap_or(table_h_rendered);
-                                    para_y = nested_y + visible_table_h;
+                                    // An uncut stored float already resolved its physical
+                                    // body and margins. The renderer's returned total band
+                                    // must not add those margins again at table_top.
+                                    para_y = stored_float_frame
+                                        .filter(|_| split_info.is_none())
+                                        .map_or(nested_y + visible_table_h, |frame| {
+                                            frame.occupied_bottom
+                                        });
                                     has_preceding_text = true;
                                 }
                             }

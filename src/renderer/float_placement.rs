@@ -313,11 +313,11 @@ pub(crate) fn column_rowbreak_caption_outer_spacing_px(
     }
 }
 
-/// 종료 표 조각 바로 뒤의 저장 빈 문단은 조각의 물리 하단에서 시작할 수 있다.
+/// 종료 표 조각 바로 뒤의 저장 문단은 조각의 물리 하단에서 시작할 수 있다.
 /// 그 문단의 spacing_before는 이미 공유 경계에 반영되어 있으므로
 /// 쪽 나눔과 실제 배치가 같은 값을 재사용해 중복 예약하지 않는다
-/// (#7406, 39–40쪽).
-pub(crate) fn stored_empty_after_partial_table_shared_spacing_px(
+/// (#7406, 39–40쪽; RowBreak 대조군 5쪽의 가시 본문도 같은 경계를 공유한다).
+pub(crate) fn stored_after_partial_table_shared_spacing_px(
     stored_layout: bool,
     previous_is_partial_table: bool,
     para: &Paragraph,
@@ -328,7 +328,6 @@ pub(crate) fn stored_empty_after_partial_table_shared_spacing_px(
     if !stored_layout
         || !previous_is_partial_table
         || spacing_before <= 0.0
-        || !para.text.trim().is_empty()
         || !para.controls.is_empty()
         || para.stored_text_partition_is_dirty()
         || para.cell_format_vpos_dirty

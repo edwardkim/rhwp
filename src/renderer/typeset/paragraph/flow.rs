@@ -43,7 +43,7 @@ pub(in crate::renderer::typeset) fn place(
         |item| matches!(item, PageItem::PartialTable { para_index, .. } if *para_index < para_idx),
     );
     let shared_spacing =
-        crate::renderer::float_placement::stored_empty_after_partial_table_shared_spacing_px(
+        crate::renderer::float_placement::stored_after_partial_table_shared_spacing_px(
             (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
                 && !st.profile.session_edited(),
             previous_is_partial_table,
