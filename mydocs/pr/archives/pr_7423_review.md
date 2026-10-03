@@ -548,3 +548,15 @@ last_verified: 2026-10-03
 - 빈 줄이 소비한 간격을 lazy 원점에서 다시 더하던 경계를 보정하여4쪽75.21083→99.84525%입니다. Native/fresh WASM 전8쪽 수치는 동일하고 다른7쪽은 유지됩니다. 실제 수용한 표 뒤 흐름에 상대 원점을 연결하며 문서 ID·절대좌표 보정은 없습니다.
 - 기존 HeightCursor와 관련 회귀63건63PASS, Native 빌드·fresh Mac no-opt WASM 및3종 Clippy/workspace 빌드/fmt/suite 준비·고정 base manifest exit0입니다. 정상#5755 Native/fresh WASM 전3쪽 최저99.13619%로 기존과 같습니다. 신규 검사·회귀 삭제0건이며 기존#2470 핀은 아직 유지합니다.
 - [검증 원장](../assets/planet6897_green_20261002/masked2470_blank_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_blank_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_blank_wasm.tsv), [4쪽 review](../assets/planet6897_green_20261002/masked2470_blank_native_p4_review.png). 현재8쪽 중6쪽86.75430%만 미달입니다. 6쪽 및 추가2쪽 원문의 기존 결함과 다른 PR 차단·최종 전체 검증은 남아 있습니다.
+
+### #2470 6쪽 도해 간격·화살표 방향 분석과 보정 계획
+
+- pi52 도해 표는 현재 개체 소유 줄 높이15380HU와 간격800HU를 갖고 pi53 시작118966HU까지 정확히 이어집니다. 다음 줄이 원본 저장 태그라는 이유로 간격 전량 적용을 거절하여 이후 본문이5.333px 올라갑니다. 현재 소유 프레임에서 다음 저장/현재 줄까지 원점이 이어지면 동일하게 전량 간격을 적용합니다.
+- 아래 두 화살표의 원본 rotMatrix는 대각−1/−1인180도 회전입니다. parser/hwpx/section::parse_rendering_info는 부호를 합성·보존하지만 shape_layout의 묶음 자식 AABB 생성 후 Polygon 좌표가 양수 폭/높이 배율만 소비하여 화살표 방향이 되돌아갑니다. 비대각 회전은 기존 affine 경로이고 이번 결함은 대각 음수 축입니다.
+- AABB 원점은 유지하며 다각형·곡선·직선/연결선의 점 좌표만 같은 부호 있는 축 원점/배율로 변환합니다. 기존 도형 텍스트·이미지 채우기·문단/셀 소속 및 묶음 top-level 원점 전달 경로를 유지합니다. 새문구/도형ID 예외나 출력 숨김은 없습니다. 전8쪽 및 기존 묶음·연결선 대조를 검증한 뒤 기존#2470 회귀 갱신 여부를 판단합니다.
+
+### #2470 묶음 화살표 방향 보정 결과
+
+- 음수 대각 변환을 다각형·곡선·연결선의 점 좌표에 보존하여 아래 화살표가 PDF와 같은 왼쪽을 향합니다. Native/fresh WASM 전8쪽 동일,6쪽86.74937%로 본문 간격 차이는 남습니다. 기존 관련19검사19PASS·9종 필수 단계 exit0, 정상#5755 fresh WASM 전3쪽은 이전과 같은 최저99.13619%입니다. 신규 검사·회귀 삭제는 없습니다.
+- 6쪽의 다음 빈 문단은 typeset의 확정 `advance_end`를 소비하여 일반 layout 간격 보정을 우회합니다. `stored_tac::prepare_computed`가 연속된 다음 줄도 빈 문단이면800HU 간격을 반감합니다. 실제 줄의 원점 연속성을 근거로 확정 계획도 같은 전량 간격을 소유하도록 다음 단계에서 보정합니다. 추가2쪽 자료의2쪽54.42807%는 여전히 보류합니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_arrow_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_arrow_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_arrow_wasm.tsv), [6쪽 review](../assets/planet6897_green_20261002/masked2470_arrow_native_p6_review.png).

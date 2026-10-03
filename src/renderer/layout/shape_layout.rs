@@ -26,6 +26,26 @@ use crate::model::shape::{Caption, CommonObjAttr, DrawingObjAttr, ShapeObject, T
 use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
 use crate::model::style::{Alignment, FillType};
 
+/// 묶음 자식의 AABB에서 부호 있는 점 좌표 원점과 배율을 복원한다.
+/// 음수 축의 원점은 오른쪽/아래쪽 변이다. 상자·텍스트 소속은 이동하지 않고
+/// 실제 경로 점에만 대칭을 적용하며 비대각 회전은 기존 affine 경로가 담당한다.
+fn group_point_frame(
+    sa: &crate::model::shape::ShapeComponentAttr,
+    matrix_positioned: bool,
+    origin: (f64, f64),
+    size: (f64, f64),
+    scale: (f64, f64),
+) -> (f64, f64, f64, f64) {
+    let flip_x = matrix_positioned && sa.render_sx < 0.0;
+    let flip_y = matrix_positioned && sa.render_sy < 0.0;
+    (
+        origin.0 + if flip_x { size.0 } else { 0.0 },
+        origin.1 + if flip_y { size.1 } else { 0.0 },
+        if flip_x { -scale.0 } else { scale.0 },
+        if flip_y { -scale.1 } else { scale.1 },
+    )
+}
+
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
 fn textbox_has_visible_text(text_box: &TextBox) -> bool {
     text_box
@@ -1325,9 +1345,19 @@ impl LayoutEngine {
             );
         }
 
+        let (point_x, point_y, sx, sy) = group_point_frame(
+            sa,
+            matrix_positioned,
+            (render_x, render_y),
+            (
+                hwpunit_to_px(sa.original_width as i32, self.dpi) * sx,
+                hwpunit_to_px(sa.original_height as i32, self.dpi) * sy,
+            ),
+            (sx, sy),
+        );
         (
-            render_x + hwpunit_to_px(x, self.dpi) * sx,
-            render_y + hwpunit_to_px(y, self.dpi) * sy,
+            point_x + hwpunit_to_px(x, self.dpi) * sx,
+            point_y + hwpunit_to_px(y, self.dpi) * sy,
         )
     }
 
@@ -1582,12 +1612,7 @@ impl LayoutEngine {
                             let ctrl_pts: Vec<(f64, f64)> = cps
                                 .iter()
                                 .filter(|cp| cp.point_type == 2)
-                                .map(|cp| {
-                                    (
-                                        render_x + hwpunit_to_px(cp.x, self.dpi) * sx,
-                                        render_y + hwpunit_to_px(cp.y, self.dpi) * sy,
-                                    )
-                                })
+                                .map(connector_point_xy)
                                 .collect();
                             match ctrl_pts.len() {
                                 0 => {
@@ -1923,10 +1948,17 @@ impl LayoutEngine {
                 } else {
                     1.0
                 };
+                let (point_x, point_y, sx, sy) = group_point_frame(
+                    sa,
+                    matrix_positioned,
+                    (render_x, render_y),
+                    (render_w, render_h),
+                    (sx, sy),
+                );
                 let mut commands = Vec::new();
                 for (i, pt) in poly.points.iter().enumerate() {
-                    let px = render_x + hwpunit_to_px(pt.x, self.dpi) * sx;
-                    let py = render_y + hwpunit_to_px(pt.y, self.dpi) * sy;
+                    let px = point_x + hwpunit_to_px(pt.x, self.dpi) * sx;
+                    let py = point_y + hwpunit_to_px(pt.y, self.dpi) * sy;
                     if i == 0 {
                         commands.push(PathCommand::MoveTo(px, py));
                     } else {
@@ -2000,8 +2032,14 @@ impl LayoutEngine {
                 } else {
                     1.0
                 };
-                let commands =
-                    self.curve_to_path_commands_scaled(curve, render_x, render_y, sx, sy);
+                let (point_x, point_y, sx, sy) = group_point_frame(
+                    sa,
+                    matrix_positioned,
+                    (render_x, render_y),
+                    (render_w, render_h),
+                    (sx, sy),
+                );
+                let commands = self.curve_to_path_commands_scaled(curve, point_x, point_y, sx, sy);
                 let node_id = tree.next_id();
                 let mut path_node = PathNode::new(commands, style, gradient);
                 path_node.section_index = Some(section_index);

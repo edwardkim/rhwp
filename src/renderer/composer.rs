@@ -640,17 +640,14 @@ pub(crate) fn tac_next_line_full_spacing(
         && next_para.is_some_and(|next| {
             (current_owned_row || !next.stored_text_partition_is_dirty())
                 && next.line_segs.first().is_some_and(|first| {
-                    (if current_owned_row {
-                        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                    } else {
-                        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                    }) && seg
-                        .vertical_pos
-                        .saturating_add(seg.line_height)
-                        .saturating_add(seg.line_spacing)
-                        .saturating_add(current_spacing_after_hu)
-                        .saturating_add(next_spacing_before_hu)
-                        == first.vertical_pos
+                    (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                        && seg
+                            .vertical_pos
+                            .saturating_add(seg.line_height)
+                            .saturating_add(seg.line_spacing)
+                            .saturating_add(current_spacing_after_hu)
+                            .saturating_add(next_spacing_before_hu)
+                            == first.vertical_pos
                 })
         })
 }
