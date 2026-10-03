@@ -38,5 +38,127 @@
   "preview_matches_chrome_checked_cli_svg": true,
   "raw_comparison_path": "output/svg-snapshot/form-002/page-0.actual.svg",
   "preview_path": "tests/golden_svg/form-002/page-0.actual.svg",
-  "preview_sha256": "2abbb2ed602e09a1012035da552e6bd457f7a2fd296c429e32448e525e94bec1"
+  "preview_sha256": "2abbb2ed602e09a1012035da552e6bd457f7a2fd296c429e32448e525e94bec1",
+  "default_macos_user_font_correction": {
+    "parent_head": "c4e7ca190",
+    "cause": "macOS 기본 직접 탐색 경로에서 표준 ~/Library/Fonts 누락. Full API의 휴먼명조 굵은 face가 local()로 남아 Chrome 비트맵 폴백 두부문자 발생",
+    "correction": "공통 OS 기본 탐색에 HOME/Library/Fonts 포함; caller/RHWP_FONT_PATH 우선순위 유지",
+    "before_default_preview_sha256": "921542f2542ddfc678e8c2ae66d0e71b42968d29e25b924142d04055a97daa5e",
+    "current_default_preview_sha256": "2abbb2ed602e09a1012035da552e6bd457f7a2fd296c429e32448e525e94bec1",
+    "matches_previous_explicit_path_verified_preview": true,
+    "current_chrome_png_sha256": "4e9aae49f0ad7476c4f8889cb75544fcf03ee3369e8c16487d83c1c0377897c0",
+    "current_chrome_pixels_match_previous_good": true,
+    "actual_file_exists": true,
+    "actual_file_bytes": 183175069,
+    "raw_paint_unchanged_after_css_removal": true,
+    "font_path_existing_unit_tests": {
+      "run": 5,
+      "passed": 5,
+      "exit": 0
+    },
+    "unit_tier_check_exit": 0,
+    "new_test_functions": 0,
+    "snapshot_regeneration_exit": 100,
+    "snapshot_failure": "표 기하가 기존 golden과 달라 계속 보류; glyph 보정과 구분",
+    "ignore_rule": "/tests/golden_svg/**/*.actual.svg",
+    "generated_svg_committed": false,
+    "wasm_scope": "HOME 사용자 경로 추가는 cfg(target_os=macos) 내부; WASM 표준 경로의 동작 변경 없음. 최종 통합 fresh WASM 재검증은 별도 유지",
+    "font_paths_source_sha256": "e3aa2668ef273ee71c68cc49831789deac18af0aa884e52a0f81e233b6da2c5f",
+    "gates": [
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0,
+        "seconds": 6.23
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0,
+        "seconds": 21.6
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0,
+        "seconds": 0.22
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit": 0,
+        "seconds": 28.26
+      },
+      {
+        "gate": "workspace-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0,
+        "seconds": 53.15
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit": 0,
+        "seconds": 0.44
+      }
+    ],
+    "document_metadata": {
+      "mydocs/orders/20261004.md": [],
+      "mydocs/pr/archives/pr_7476_review.md": []
+    },
+    "doc_links_exit": 0
+  }
 }

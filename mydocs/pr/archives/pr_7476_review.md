@@ -320,3 +320,8 @@ last_verified: 2026-10-04
 - 메인터너 분석에서 첫 TAC 표 소유 줄을 Square 그림의 빈 안내 줄로 제외해 측정은 후행 간격0, paint는12px를 소비하는 불일치를 확인했습니다. 사진·도형 소유 helper에는 표가 포함되지 않으므로 실제 표 제어의 소속 줄과 원본 줄 높이 증거를 보완했습니다. 문서 번호·고정 위치에 따른 예외를 추가하지 않았습니다.
 - 기존20건20PASS와 관련12건12PASS(exit0), 새 검사·픽스쳐·golden 갱신0입니다. [검증 원장](../assets/planet6897_green_20261002/6812_table_owned_line_validation.json), [Native 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_native_all11.tsv), [WASM 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_wasm_all11.tsv), [7쪽 review](../assets/planet6897_green_20261002/6812_social6797_current_p7_review.png).
 - #6797은11/11쪽·최저92.15032%·미달0, #598 각주6쪽은 이전 출력과 동일합니다. fresh WASM 전17쪽 SVG는 Native와 동일합니다. 7쪽 첫 표의6.667px 상향은 이번 보정 이전 실행 파일에서도 확인되었으며 이전 원점 보정의 잔차로 재검토합니다. 전체 회귀 및 다른 문서 시각 보류가 남아 있어 승인/PR 준비 완료가 아닙니다.
+
+### 생성 SVG의 두부문자 재확인과 macOS 표준 폰트 경로 보완
+
+- `form-002/page-0.actual.svg`를 재생성하니 API의 기본 Full 임베딩에서 휴먼명조 굵은 face가 local()로 남아 파란 핵심 목표 줄이 두부문자로 표시됐습니다. 명시 경로를 쓴 기존 확인본만으로 기본 API 경로를 확인했다고 보지 않았습니다. 공통 기본 탐색에 macOS 표준 `~/Library/Fonts`를 포함하여 설치된 윤곽선 글꼴을 공급했습니다.
+- 기존 폰트 경로5건5PASS와 unit 정책 검사exit0, 새 test 함수0입니다. 현재 파일은 이전 정상 확인 SVG와 해시 동일이며 새 Chrome 캡처도 픽셀 동일합니다. [현재 PNG](../assets/planet6897_green_20261002/form002_font_after_chrome.png), [검증](../assets/planet6897_green_20261002/form002_font_preview_validation.json). CSS를 제외한 비교 원문과 golden 기대값은 변경하지 않았고, 표 기하에 따른 스냅샷 실패는 계속 보류입니다.175MB 진단 SVG는 요청 경로에 남기고 `.gitignore`로 커밋에서 제외합니다.
