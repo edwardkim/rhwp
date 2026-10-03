@@ -3225,6 +3225,59 @@ fn tac_in_front_decoration_fixed_line_spacing_deduction_hu(
         .then_some(-seg.line_spacing)
 }
 
+/// 쪽 첫 저장 줄의 vpos가 문단 앞 간격을 포함하면 쪽 원점은 0이다.
+/// 다음 문단의 저장 사다리도 앞 간격을 계상하는지 확인하여 측정과 배치가
+/// 같은 원점을 소비한다. 명시적 쪽 나눔과 합성 줄은 이 증거로 사용하지 않는다.
+pub(crate) fn stored_first_margin_is_page_relative(
+    first: &Paragraph,
+    next: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
+        return false;
+    }
+    let Some(first_seg) = first.line_segs.first() else {
+        return false;
+    };
+    let Some(last_seg) = first.line_segs.last() else {
+        return false;
+    };
+    let Some(next) = next else {
+        return false;
+    };
+    let Some(next_seg) = next.line_segs.first() else {
+        return false;
+    };
+    let first_before = styles
+        .para_styles
+        .get(first.para_shape_id as usize)
+        .map(|style| style.spacing_before)
+        .unwrap_or(0.0);
+    let next_before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)
+        .map(|style| style.spacing_before)
+        .unwrap_or(0.0);
+    !para_has_overlay_shape(first)
+        && !para_has_overlay_shape(next)
+        && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && first_before > 0.5
+        && next_before > 0.5
+        && (hwpunit_to_px(first_seg.vertical_pos, dpi) - first_before).abs() <= 0.5
+        && (hwpunit_to_px(
+            next_seg.vertical_pos
+                - last_seg.vertical_pos
+                - last_seg.line_height
+                - last_seg.line_spacing,
+            dpi,
+        ) - next_before)
+            .abs()
+            <= 0.5
+}
+
 pub(crate) fn para_has_overlay_shape(para: &Paragraph) -> bool {
     use crate::model::shape::{TextWrap, VertRelTo};
     para.controls.iter().any(|c| match c {
@@ -7589,34 +7642,9 @@ impl LayoutEngine {
                 if self.profile.get().hwpx_stored_layout()
                     && !self.profile.get().session_edited()
                     && paragraphs.get(*para_index).is_some_and(|first| {
-                        if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
-                            return false;
-                        }
-                        let Some(first_seg) = first.line_segs.first() else { return false; };
-                        let Some(last_seg) = first.line_segs.last() else { return false; };
-                        let Some(next) = paragraphs.get(*para_index + 1) else { return false; };
-                        let Some(next_seg) = next.line_segs.first() else { return false; };
-                        let first_before = styles.para_styles
-                            .get(first.para_shape_id as usize)
-                            .map(|style| style.spacing_before)
-                            .unwrap_or(0.0);
-                        let next_before = styles.para_styles
-                            .get(next.para_shape_id as usize)
-                            .map(|style| style.spacing_before)
-                            .unwrap_or(0.0);
-                        !para_has_overlay_shape(first)
-                            && !para_has_overlay_shape(next)
-                            && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                            && first_before > 0.5
-                            && next_before > 0.5
-                            && (hwpunit_to_px(first_seg.vertical_pos, self.dpi) - first_before).abs() <= 0.5
-                            && (hwpunit_to_px(
-                                next_seg.vertical_pos - last_seg.vertical_pos
-                                    - last_seg.line_height - last_seg.line_spacing,
-                                self.dpi,
-                            ) - next_before).abs() <= 0.5
+                        stored_first_margin_is_page_relative(
+                            first, paragraphs.get(*para_index + 1), styles, self.dpi,
+                        )
                     })
         );
         let vpos_page_base_init: Option<i32> = col_content

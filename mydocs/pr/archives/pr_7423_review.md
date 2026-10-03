@@ -394,3 +394,17 @@ last_verified: 2026-10-03
 - 생산 empty_float::prepare의원점·예약→paragraph_float_placements→layout_table_control의원점·최종occupied_bottom을공유합니다. 원본저장사다리가전체여백상자높이와정확히일치하고내용실측이선언높이안에드는경우만같은계약으로수용합니다. 편집·합성줄·내용팽창·다른사다리는기존경로를유지합니다. Native1쪽방향검증을먼저하고기존차단검사·대조군·freshWASM을확인합니다. 신규회귀검사는추가하지않습니다.
 
 - #2137의 새 바깥 상자는 raw 절대vpos 대신 현재 문단 흐름 원점에서 배치하도록 보정했습니다. Native/fresh WASM1쪽68.67580→96.60250%,문단/표/그림의순서및누락없음을Native review와WASM raster에서확인했습니다. 기존#2137 2함수PASS·확장63건56PASS/7FAIL,Mac대체WASM빌드와3종Clippy/workspace빌드exit0. 후속이관후corpus70건67PASS/3FAIL이며전체회귀와일반성완료로쓰지않습니다. 낮은피델리티문서의제외는renderer무회귀입증이아닙니다. 보정코드를중간커밋으로남기고#5755공통원점·남은문서·최종전체검증을이어확인합니다. [보정원장](../assets/planet6897_green_20261002/task2137_outer_box_validation.json).
+
+### #5755 2쪽 겹침의 원점 불일치 분석
+
+- 직전 전3쪽 Native/fresh WASM 최저94.36369%인 유지 문서입니다.2쪽 붙임제목/담당표의 텍스트겹침1건이 남았습니다. 독립PDF에서는 표가 제목 아래에 놓입니다.
+- 첫 문단pi9의vpos1500HU는앞간격1500HU이며다음pi10저장사다리도앞간격1500HU를계상합니다. 측정vpos_snap_current_height는base1500,paint build_single_column은같은증거로base0을사용했습니다. 측정에서발행한TAC배치원점이정상paint원점을20px위로덮었습니다.
+- 기존paint의저장앞간격판정을공통helper로이동하고측정의첫원점에도같이적용합니다. 명시적쪽나눔·합성줄·다음사다리불일치에는기존기준을유지합니다. 새테스트는추가하지않으며기존#5755/관련원점회귀와전3쪽시각·정상대조를확인합니다.
+
+
+### #5755 앞 간격 원점 보정 결과
+
+- 공통 원점으로 Native/fresh WASM 전3쪽95.63360/99.13619/99.70540%입니다.2쪽94.36369→99.13619%,텍스트겹침1→0·표겹침1→0건입니다. 직접review에서 붙임제목 뒤 담당표가 겹치지 않음을 확인했습니다. 본문 오른쪽 넘침2건은 유지되어 완전 일치로 표현하지 않습니다.
+- 기존#5755 검사의 고정 본문바닥1028.6px를 실제 렌더트리 본문 경계와 글자기준선 관계로 수정했습니다. 새 테스트0건이며 기존1건PASS,관련56건53PASS/3FAIL입니다. 남은 실패는52쪽#1853,49쪽PDF/47쪽Native#5699,1쪽PC셧다운 결재문서의 corpus 검사입니다. 전체검증 통과로 쓰지 않습니다.
+- 정상대조sample2 Native전29쪽최저92.22927%,미달0쪽입니다. fresh WASM도전29쪽최저92.22927%,미달0쪽으로동일하며exit0입니다. Native/fresh WASM 빌드,수정검사후3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. WASM은Mac no-opt대체빌드입니다.
+- [검증 원장](../assets/planet6897_green_20261002/stored_margin5755_validation.json),[Native 전3쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_native.tsv),[fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_wasm.tsv),[2쪽 review](../assets/planet6897_green_20261002/stored_margin5755_p2_review.png),[정상 대조 Native 전29쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_sample2_native.tsv),[fresh WASM 전29쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_sample2_wasm.tsv).

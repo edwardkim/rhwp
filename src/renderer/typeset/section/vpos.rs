@@ -29,7 +29,24 @@ impl TypesetEngine {
                 paragraphs
                     .get(para_idx)
                     .and_then(|p| p.line_segs.first())
-                    .map(|s| s.vertical_pos),
+                    .map(|seg| {
+                        // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
+                        let margin_is_page_relative = st.profile.hwpx_stored_layout()
+                            && !st.profile.session_edited()
+                            && paragraphs.get(para_idx).is_some_and(|first| {
+                                crate::renderer::layout::stored_first_margin_is_page_relative(
+                                    first,
+                                    paragraphs.get(para_idx + 1),
+                                    styles,
+                                    self.dpi,
+                                )
+                            });
+                        if margin_is_page_relative {
+                            0
+                        } else {
+                            seg.vertical_pos
+                        }
+                    }),
             );
             st.record_vpos_lazy_origin(None);
             // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
