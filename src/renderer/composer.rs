@@ -721,7 +721,9 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             | Control::ColumnDef(_)
             | Control::Header(_)
             | Control::Footer(_)
-            | Control::PageNumberPos(_) => continue,
+            | Control::PageNumberPos(_)
+            // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
+            | Control::PageHide(_) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
