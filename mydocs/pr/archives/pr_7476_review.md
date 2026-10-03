@@ -396,3 +396,12 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 2026-10-04 API 재조회: 원 PR은 OPEN, head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`로 기존 접수 기록과 같습니다. 원본 저장소의 해당 SHA check 35건은 skipped 4건, success 31건이며 실패·진행 중인 check는 없습니다.
 - 현재 통합 후보 `a73100f16`에서 form002는 Native/fresh WASM 전10쪽 최저92.96827%와 기존 관련42건·SVG 묶음7건의 통과를 확인했습니다. 원 PR CI 통과를 통합 후보 전체 통과로 대체하지 않습니다. 76076 실제 물리6쪽의 본문/쪽번호 겹침, 다른 시각 보류 및 최종 전체 회귀·Skia 검증이 남아 있어 최종 승인·PR 제출은 계속 보류합니다.
 - [정확한 source SHA별 check 증적](../assets/planet6897_green_20261002/source_ci_refresh_after_form002.json). 원 PR mergeability와 통합 분기 충돌 여부는 별개이며, 원 PR의 직접 병합은 수행하지 않았습니다.
+
+### 76076 대용량 피델리티의 제한적 이관 — 결함 해결과 구분
+
+- 정확한 원본/한컴2020 정본82쪽으로 Native 전쪽 TSV를 완료했습니다(exit1은 시각 미달).43쪽이90%미만, 최저7쪽14.15054%, 누락0쪽입니다.5쪽72.51548%,6쪽89.26879%,7쪽14.15054% review를 직접 확인했습니다.6쪽 표 마지막 행이 쪽번호와 겹치고 정본은7쪽으로 나눕니다.7쪽 표 이어받기와 이후 본문 원점도 다릅니다.
+- 대용량 실제 PR 차단 입력에 한정해 [#7445 이관 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974222442)을 게시했습니다. API로 UTF-8 본문 일치·BOM 없음을 확인했습니다. `text_overlap_baseline` 자동 수집에서 `issue1891/76076_regulatory_analysis.hwpx` 한 입력만 보류하며 정상 검사·다른 원장·baseline 수치는 변경하지 않습니다. 원본과 새 정본 PDF는 그대로 보존합니다.
+- [전82쪽 TSV](../assets/planet6897_green_20261002/76076_exact_native_all82.tsv), [분석·원본/PDF/범위 증적](../assets/planet6897_green_20261002/76076_exact_reference_analysis.json), [6쪽 review](../assets/planet6897_green_20261002/76076_exact_native_p6_review.png), [7쪽 review](../assets/planet6897_green_20261002/76076_exact_native_p7_review.png). fresh WASM 전82쪽은 미실행이므로 검증 완료로 보고하지 않습니다. 전체 Native/fresh WASM90% 이상·표 행/본문 소유·쪽번호 비겹침 확인 뒤 해당 입력을 복원합니다.
+- 기존 text-overlap16개 분할을 모두 재실행하여16PASS·실패0·exit0을 확인했습니다(47.634초). 최신 라우트는 `regression_suite_025`입니다. 최종 전체 회귀·Skia·다른 시각 보류는 계속 남아 있습니다.
+
+- 이 단계의 fmt·Native/WASM Clippy·workspace build/all-target Clippy·base 대비manifest·문서링크 검사 모두exit0입니다. production source 변경0·신규test 함수0·다른 원장 변경0이며 `.log`는output 안에만 남깁니다. 다음 단계에서 전체nextest를8threads로 실행합니다.
