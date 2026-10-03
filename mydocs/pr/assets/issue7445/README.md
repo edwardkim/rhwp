@@ -571,3 +571,7 @@ HWPX oracle는 격차가 개선되어 실제차단이 아니므로 원장행을 
 ![법률 이유서14쪽 뒤 본문 차이](caption1853_native_review_014.png)
 ![법률 이유서44쪽 표/본문 경계](caption1853_native_review_044.png)
 ![법률 이유서14쪽 fresh WASM overlay](caption1853_wasm_overlay_014.png)
+
+## 2026-10-03 사용자 지시: 86712 두 형식의 렌더링 회귀 이관
+
+`samples/86712_regulatory_analysis.hwp` 및 `samples/issue1891/86712_regulatory_analysis.hwpx`를 함께 전체 피델리티 개선 범위로 이관합니다. 이번 명시 지시로 #5804/#5830/#7243/#2279 렌더링14함수와 쪽수·기하 corpus 항목을 제거합니다. 원문·PDF와 원시 파싱/저장 줄 검사는 유지합니다. 앞선 정상 검사 복원 기록보다 이번 해당 문서의 사용자 지시를 우선합니다. 전64쪽 TSV는 중단했으며 새 전쪽 검증 완료로 쓰지 않습니다. [범위와 검증](../planet6897_green_20261002/deferred_86712_body_scope.json).

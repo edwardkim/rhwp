@@ -63,6 +63,9 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
 /// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
+    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
+    "86712_regulatory_analysis.hwp",
+    "issue1891/86712_regulatory_analysis.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
     "hwp3-sample16-hwp5-2022.hwp",
     "hwp3-sample16-hwp5.hwp",

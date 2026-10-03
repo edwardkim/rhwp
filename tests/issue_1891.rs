@@ -20,16 +20,13 @@ use rhwp::parser::hwpx::parse_hwpx;
 use rhwp::serializer::hwpx::serialize_hwpx;
 
 const SAMPLE: &str = "samples/issue1891_external_bindata_link.hwpx";
-// 각 원본과 대응 PDF의 쪽수. 86712는 정상 한컴 2024 저장본으로 교체하고
-// 그 원본의 rhwp export-hwpx 산출물을 다시 생성했다. 두 입력의 직접 한컴 PDF는 64쪽.
+// 시각 기준을 유지하는 원본과 대응 PDF의 쪽수.
+// 86712 HWP/HWPX의 전체 피델리티와 쪽수 회귀는 #7445로 이관했다.
 const HWP5_ORIGIN_SAMPLES: &[(&str, u32)] = &[
     ("samples/76076_regulatory_analysis.hwp", 82),
     ("samples/80168_regulatory_analysis.hwp", 157),
-    ("samples/86712_regulatory_analysis.hwp", 64),
     ("samples/issue1891/76076_regulatory_analysis.hwpx", 82),
     ("samples/issue1891/80168_regulatory_analysis.hwpx", 157),
-    // 정상 HWP에서 재생성한 HWP5-origin HWPX. 쪽수 보존은 전체 시각 일치를 뜻하지 않는다.
-    ("samples/issue1891/86712_regulatory_analysis.hwpx", 64),
 ];
 
 /// 정상 원본의 저장 줄을 테스트 입력 교체 과정에서 다시 잃지 않게 한다.
