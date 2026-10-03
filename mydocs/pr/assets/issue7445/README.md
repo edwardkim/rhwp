@@ -583,3 +583,7 @@ HWPX oracle는 격차가 개선되어 실제차단이 아니므로 원장행을 
 ## 2026-10-03 양돈 소득 HWPX 전체 피델리티 이관
 
 `samples/hwpx/156160455-social-pig-farm-income.hwpx` 동일 HWPX 직접 변환 PDF와 전11쪽 새 Native TSV 최저36.69736%,1·7쪽 미달입니다. 기존PDF 결과는 직접변환 출처 미확증으로 판정에서 제외했습니다. 현재 실패한 corpus 경로와 #6852 px 고정 회귀1함수를 제거합니다. 파싱 손상 감지 및 다른 HWP 입력 검사는 유지합니다. [전쪽 TSV](../planet6897_green_20261002/deferred_social156160455_native.tsv),[범위](../planet6897_green_20261002/deferred_social156160455_validation.json).
+
+## 2026-10-03 pr-1674 HWP 전체 피델리티 이관
+
+`samples/pr-1674.hwp` 전35쪽 Native TSV 최저54.09067%,9쪽미달입니다. 해당HWP 렌더링·페이지 회귀5함수·혼합1항목·원장3행을제거합니다. 미검증HWPX와다른원문검사는유지하며원문/PDF를보존합니다. [전쪽 TSV](../planet6897_green_20261002/deferred_pr1674_native.tsv),[범위](../planet6897_green_20261002/deferred_pr1674_validation.json).

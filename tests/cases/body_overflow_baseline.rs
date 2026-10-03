@@ -70,7 +70,9 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
-    // #7445: 전11쪽 최저37.26%, 전체 피델리티 개선 전 렌더링 회귀 보류.
+    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
+    "pr-1674.hwp",
+    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
     "hwpx/156160455-social-pig-farm-income.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",

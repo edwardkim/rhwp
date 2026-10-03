@@ -997,19 +997,14 @@
   },
   "integration_pr_ready": false,
   "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
-  "latest_stage_evidence": "stored_blank5755_validation.json",
+  "latest_stage_evidence": "deferred_pr1674_validation.json",
   "current_focused_failures": {
-    "run": 30,
-    "passed": 26,
+    "run": 89,
+    "passed": 85,
     "failed": 4,
     "exit_code": 100,
-    "test_seconds": 63.237,
-    "scope": "직전 실패27건 + 기존 #5723/#5755/#5700 각1건; 전체 회귀 아님",
-    "failed_cases": [
-      "text_overlaps_do_not_grow_partition_14",
-      "text_overlaps_do_not_grow_partition_2",
-      "body_overflow_does_not_grow_partition_13",
-      "text_overlaps_do_not_grow_partition_7"
-    ]
-  }
+    "test_seconds": 150.809,
+    "scope": "이관 변경 후 관련 corpus와 유지한 기존 검사; 전체 회귀 아님"
+  },
+  "renderer_candidate": "미커밋 #2137 후보; 일반성 및 남은 실패 검토 중"
 }
