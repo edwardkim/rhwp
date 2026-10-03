@@ -964,19 +964,37 @@
     "log_sha256": "5ab6cb191e149e90b24e70b2923f3a280c748240c764b6651b1c09069259848d"
   },
   "integration_pr_ready": false,
-  "current_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "current_base": "6b3faf77d8085441f9f26d88d65a49791e910352",
   "latest_stage_evidence": "tac7062_validation.json",
   "current_focused_failures": {
-    "run": 3,
-    "passed": 3,
-    "failed": 0,
-    "exit_code": 0,
-    "scope": "#7062 기존 3검사; 전체 회귀 아님"
+    "run": 19,
+    "passed": 14,
+    "failed": 5,
+    "skipped": 1506,
+    "exit": 100,
+    "summary": "Summary [0.600s] 19 tests run: 14 passed, 5 failed, 1506 skipped",
+    "log": "output/pr-review/planet6897-green-20261002/rebase-current-suites-nextest.log",
+    "log_sha256": "fcb6222774b1b546c15db6f78e9ecf1008192648d9f7004965cdc1da09bac4d7",
+    "remaining": [
+      "#2470",
+      "#5941",
+      "#7147",
+      "#6797",
+      "#1921"
+    ]
   },
   "renderer_candidate": "#6192 제목 여백·인용문 시작점·HFT 불릿 보정; 전2쪽 Native/fresh WASM 최저99.99263%, 기존 검사 유지",
   "current_candidate_whole_nextest_validated": false,
   "focused_resolved_since_latest_whole": [
     "#6192",
     "#7062"
+  ],
+  "latest_rebase_evidence": "rebase_latest_validation.json",
+  "remaining_latest_whole_blockers_after_focused": [
+    "#2470",
+    "#5941",
+    "#7147",
+    "#6797",
+    "#1921"
   ]
 }
