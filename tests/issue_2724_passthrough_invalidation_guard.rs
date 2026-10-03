@@ -267,6 +267,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/clipboard.rs",
+        "copy_selection_logical_native",
+        Exempt::SessionState,
+        "[#7444] 논리 오프셋 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
         "copy_selection_in_cell_native",
         Exempt::SessionState,
         "복사 — 읽기 후 `self.clipboard` 에만 기록.",
@@ -539,6 +545,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#5959] doc_info.border_fills 의 고아 꼬리 절단 + dirty 플래그 원복만 한다 — \
          섹션 본문 IR 무변경이며 passthrough 무효화·복원은 호출자(TS undo 의 \
          applyIds → restoreSectionRaw 3단)가 담당한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "insert_text_native",
+        Exempt::DelegatesTo("insert_text_at_caret_native"),
+        "[#7444] 얇은 래퍼 — 개체 뒤 여부만 false 로 넘기고 삽입·무효화는 위임 대상이 한다.",
     ),
     (
         "commands/text_editing.rs",

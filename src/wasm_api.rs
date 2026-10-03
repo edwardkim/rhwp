@@ -1348,11 +1348,11 @@ impl HwpDocument {
         {
             return Err(JsValue::from_str("인덱스 범위 초과"));
         }
-        let (text_offset, _) = crate::document_core::helpers::logical_to_text_offset(
+        let (text_offset, after_control) = crate::document_core::helpers::logical_to_text_offset(
             &self.document.sections[sec].paragraphs[pi],
             logical_offset as usize,
         );
-        let result = self.insert_text_native(sec, pi, text_offset, text)?;
+        self.insert_text_at_caret_native(sec, pi, text_offset, after_control, text)?;
         // 삽입 후 논리적 오프셋 반환
         let new_text_offset = text_offset + text.chars().count();
         let new_logical = crate::document_core::helpers::text_to_logical_offset(
@@ -8362,6 +8362,29 @@ impl HwpDocument {
             start_char_offset as usize,
             end_para_idx as usize,
             end_char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 선택 영역을 논리적 오프셋(`insertTextLogical` 과 같은 축)으로 받아 내부 클립보드에 복사한다.
+    ///
+    /// 각주·글자처럼 취급 개체 바로 뒤에서 시작한 선택은 그 개체를 담지 않는다 (#7444).
+    /// 반환값: JSON `{"ok":true,"text":"<plain_text>"}`
+    #[wasm_bindgen(js_name = copySelectionLogical)]
+    pub fn copy_selection_logical(
+        &mut self,
+        section_idx: u32,
+        start_para_idx: u32,
+        start_logical_offset: u32,
+        end_para_idx: u32,
+        end_logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.copy_selection_logical_native(
+            section_idx as usize,
+            start_para_idx as usize,
+            start_logical_offset as usize,
+            end_para_idx as usize,
+            end_logical_offset as usize,
         )
         .map_err(|e| e.into())
     }

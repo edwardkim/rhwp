@@ -947,6 +947,18 @@ impl Paragraph {
     /// 다를 수 있으므로, 삽입 뒤 위치를 알려야 하는 호출부는 요청 값이 아니라 이 값을
     /// 기준으로 삼는다 (Task #3216).
     pub fn insert_text_at(&mut self, char_offset: usize, new_text: &str) -> usize {
+        self.insert_text_at_caret(char_offset, new_text, false)
+    }
+
+    /// [`insert_text_at`](Self::insert_text_at) 과 같되, `after_inline_control` 이면
+    /// `char_offset` 자리에 놓인 개체 **뒤**(다음 글자 앞)에 넣는다 (#7444).
+    /// 글자 위치만으로는 개체 앞뒤를 가릴 수 없어 논리 오프셋 입력이 이 값을 넘긴다.
+    pub(crate) fn insert_text_at_caret(
+        &mut self,
+        char_offset: usize,
+        new_text: &str,
+        after_inline_control: bool,
+    ) -> usize {
         if new_text.is_empty() {
             return char_offset.min(self.text.chars().count());
         }
@@ -959,7 +971,8 @@ impl Paragraph {
         // 마지막 문자 + 후행 컨트롤 갭을 포함한 값으로 계산
         let effective_char_offset = char_offset.min(text_len);
         let control_positions = self.control_text_positions();
-        let inserts_before_inline_control = char_offset <= text_len
+        let inserts_before_inline_control = !after_inline_control
+            && char_offset <= text_len
             && self
                 .controls
                 .iter()
@@ -1006,7 +1019,18 @@ impl Paragraph {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
             let last_idx = self.char_offsets.len() - 1;
-            self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx])
+            // 개체 뒤 입력이면 문단 끝에 붙은 개체 자리(개체당 8)도 건너뛴다.
+            let trailing_ctrl_count = if after_inline_control {
+                control_positions
+                    .iter()
+                    .filter(|&&pos| pos >= text_len)
+                    .count() as u32
+            } else {
+                0
+            };
+            self.char_offsets[last_idx]
+                + Self::char_stream_len(text_chars[last_idx])
+                + trailing_ctrl_count * 8
         } else {
             // 텍스트가 비어있을 때: 기존 컨트롤 뒤에 삽입 (각 컨트롤 = 8 code units)
             (self.controls.len() as u32) * 8

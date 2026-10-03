@@ -1409,6 +1409,19 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        self.insert_text_at_caret_native(section_idx, para_idx, char_offset, false, text)
+    }
+
+    /// [#7444] `after_inline_control` 이면 `char_offset` 자리에 놓인 개체 뒤에 넣는다
+    /// ([`Paragraph::insert_text_at_caret`]).
+    pub(crate) fn insert_text_at_caret_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        after_inline_control: bool,
+        text: &str,
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1446,7 +1459,7 @@ impl DocumentCore {
             char_offset,
         );
         let apply_insert = |para: &mut Paragraph| {
-            para.insert_text_at(char_offset, text);
+            para.insert_text_at_caret(char_offset, text, after_inline_control);
             keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
             keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
             if has_clickhere_field_range(para) {
