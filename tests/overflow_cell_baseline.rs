@@ -31,7 +31,11 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7382의 실제 차단 입력 중 독립 한컴 비교가 90% 미만인 셀 넘침 판정만 보류한다.
 /// #7445 및 cgmp6035_cell_blocking_scope_validation.json에 근거를 보존한다.
 /// 원문과 수집/분할은 유지하여 다른 입력의 소속과 원장 관측값을 바꾸지 않는다.
-const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &["issue6035/cgmp_evaluation_table.hwpx"];
+const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
+    "issue6035/cgmp_evaluation_table.hwpx",
+    // #7445: 전74쪽 시각 기준 미달 문서는 렌더링 원장에서 제외한다.
+    "hwpctl_ParameterSetID_Item_v1.2.hwp",
+];
 
 /// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.
 fn collect_samples() -> Vec<(PathBuf, String)> {

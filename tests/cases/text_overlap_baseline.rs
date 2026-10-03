@@ -56,6 +56,8 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 개별 정상 회귀와 다른 원장에서는 계속 검사하며 원문은 samples에 유지한다.
 const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
+    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
+    "hwpctl_ParameterSetID_Item_v1.2.hwp",
     // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
     "pr-1674.hwp",
     // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.

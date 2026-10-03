@@ -587,3 +587,7 @@ HWPX oracle는 격차가 개선되어 실제차단이 아니므로 원장행을 
 ## 2026-10-03 pr-1674 HWP 전체 피델리티 이관
 
 `samples/pr-1674.hwp` 전35쪽 Native TSV 최저54.09067%,9쪽미달입니다. 해당HWP 렌더링·페이지 회귀5함수·혼합1항목·원장3행을제거합니다. 미검증HWPX와다른원문검사는유지하며원문/PDF를보존합니다. [전쪽 TSV](../planet6897_green_20261002/deferred_pr1674_native.tsv),[범위](../planet6897_green_20261002/deferred_pr1674_validation.json).
+
+## 2026-10-03 ParameterSet 74쪽 문서 전체 피델리티 이관
+
+`samples/hwpctl_ParameterSetID_Item_v1.2.hwp` 전74쪽 Native TSV 최저44쪽22.70986%,9쪽미달입니다. 해당입력 #6656 2함수/#6307 1함수·쪽수/기하원장4행을제거하고corpus4종에서제외합니다. 원문/PDF 및 파싱자산은유지합니다. [전쪽TSV](../planet6897_green_20261002/deferred_parameterset_native.tsv),[범위](../planet6897_green_20261002/deferred_parameterset_validation.json).
