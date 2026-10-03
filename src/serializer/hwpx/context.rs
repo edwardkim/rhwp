@@ -152,10 +152,12 @@ pub struct SerializeContext {
     /// `hp:secPr`·`hp:colPr` 을 세지 않는 HWPX 축이다. 이 값이 참이면 재기준화하지
     /// 않는다(이중으로 빼면 aift.hwpx 왕복이 `textpos 24 → 8` 로 깨진다).
     /// 판정은 "이 lineseg 가 HWPX 컨테이너에서 나왔는가" — 출처 포맷이 HWPX 이거나
-    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다. `hwpx_stored_layout()` 은 쓸 수 없다.
-    /// 그쪽은 rhwp 가 HWP5 에서 낸 HWPX(`META-INF/rhwp-hwp5-origin`)를 제외하는데, 그
-    /// 파일의 `textpos` 는 이 수정 이후 **HWPX 축**이라 다시 내리면 재수출 고정점이
-    /// 깨진다(02502 재수출: 32 → 16 실측).
+    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다.
+    ///
+    /// [#7526] rhwp 원본 마커(`META-INF/rhwp-hwp5-origin`·`rhwp-hwp3-origin`)를 싣는 문서는
+    /// 제외한다. 산출물이 rhwp 축 계약으로 다시 읽히므로, 그 파일에서 읽은 문단만 날값을
+    /// 두고(`hwpx_axis_shift` 0 아님 — 다시 내리면 02502 재수출이 32 → 16 으로 깨진다)
+    /// 편집으로 다시 조판한 문단은 HWP5 출처처럼 내린다.
     pub line_segs_on_hwpx_axis: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
@@ -201,9 +203,19 @@ impl SerializeContext {
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
         let mut ctx = Self::default();
-        ctx.line_segs_on_hwpx_axis = doc.provenance.format
+        // [#7526] rhwp 원본 마커를 싣는 산출물은 rhwp 축 계약을 따른다. 그 파일에서 읽은
+        // 문단은 이미 그 축이고(`hwpx_axis_shift` 0 아님), 편집으로 다시 조판한 문단만
+        // HWP5 축이라 문단마다 가른다(`render_paragraph_parts`).
+        let rhwp_origin_marker = [
+            crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+            crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+        ]
+        .iter()
+        .any(|path| doc.hwpx_aux_entry(path).is_some());
+        ctx.line_segs_on_hwpx_axis = (doc.provenance.format
             == crate::model::provenance::SourceFormat::Hwpx
-            || doc.provenance.hwpx_lineage;
+            || doc.provenance.hwpx_lineage)
+            && !rhwp_origin_marker;
 
         // CharShape, ParaShape, BorderFill, TabDef, Numbering, Style, Font
         // 목록은 배열 인덱스가 곧 HWPX `id` 속성이 된다.
