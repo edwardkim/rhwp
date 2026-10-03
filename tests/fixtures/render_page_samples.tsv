@@ -92,7 +92,6 @@ samples/issue-505-equations.hwp	4	4	0
 samples/issue1663_coanchored_float_orphan.hwpx	2	2	0
 samples/issue1770_rowsplit_tolerance.hwpx	4	4	0
 samples/issue1835_tac_stale_height.hwp	3	3	0
-samples/issue1853_caption_precedes_body_split.hwpx	52	52	0
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1	0
 samples/issue1921/59043_regulatory_analysis.hwp	37	37	0
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115	0

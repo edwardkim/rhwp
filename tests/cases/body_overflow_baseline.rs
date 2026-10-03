@@ -78,8 +78,8 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "hwpx/156160455-social-pig-farm-income.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
-    // 보정169: 한컴52쪽의 CellBreak 내용 이월·본문 넘침은 #7445에서 함께 복원한다.
-    // 정상 #1853 캡션/쪽수 검사는 유지한다. caption1853_blocking_scope_validation.json 참조.
+    // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
+    // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
     "issue1853_caption_precedes_body_split.hwpx",
     "exam_eng.hwp",
     "hwpctl_API_v2.4.hwp",

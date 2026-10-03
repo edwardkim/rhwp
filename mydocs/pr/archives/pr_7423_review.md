@@ -408,3 +408,11 @@ last_verified: 2026-10-03
 - 기존#5755 검사의 고정 본문바닥1028.6px를 실제 렌더트리 본문 경계와 글자기준선 관계로 수정했습니다. 새 테스트0건이며 기존1건PASS,관련56건53PASS/3FAIL입니다. 남은 실패는52쪽#1853,49쪽PDF/47쪽Native#5699,1쪽PC셧다운 결재문서의 corpus 검사입니다. 전체검증 통과로 쓰지 않습니다.
 - 정상대조sample2 Native전29쪽최저92.22927%,미달0쪽입니다. fresh WASM도전29쪽최저92.22927%,미달0쪽으로동일하며exit0입니다. Native/fresh WASM 빌드,수정검사후3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. WASM은Mac no-opt대체빌드입니다.
 - [검증 원장](../assets/planet6897_green_20261002/stored_margin5755_validation.json),[Native 전3쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_native.tsv),[fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_wasm.tsv),[2쪽 review](../assets/planet6897_green_20261002/stored_margin5755_p2_review.png),[정상 대조 Native 전29쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_sample2_native.tsv),[fresh WASM 전29쪽 TSV](../assets/planet6897_green_20261002/stored_margin5755_sample2_wasm.tsv).
+
+
+### #1853 전체 피델리티 미달 회귀의 이관 분석
+
+- 현재보정Native와같은원본의독립한컴PDF전52쪽을TSV로비교했습니다. 최저39.96802%(27쪽),90%미만31쪽입니다. 27쪽review에서표뒤본문의세로이동을직접확인했습니다. 페이지수52가같아도문서전체가정상조판이라는근거가되지않습니다.
+- 현재차단text-overlap corpus5건을포함한이문서의렌더링/쪽수회귀를사용자지시에따라#7445로이관합니다. 기존body-overflow보류를유지하고해당text/off-canvas수집과전용2함수,쪽수원장2행만제거합니다. 원문·독립PDF·parser검사와다른#1853표분할구현은보존하며새검사는추가하지않습니다. 전체피델리티90%이상확인후의미관계검사로복원해야합니다.
+
+- 이관후관련39건39PASS/0FAIL(52.626초),3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. [전체TSV](../assets/planet6897_green_20261002/deferred_caption1853_native.tsv),[27쪽review](../assets/planet6897_green_20261002/deferred_caption1853_p27_review.png),[검증원장](../assets/planet6897_green_20261002/deferred_caption1853_validation.json),[#7445추가근거](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5967189734)를보존했습니다. 전체회귀는아직미실행입니다.

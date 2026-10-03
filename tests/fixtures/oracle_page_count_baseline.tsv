@@ -246,7 +246,6 @@ samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
-samples/issue1853_caption_precedes_body_split.hwpx	52	52
 samples/issue1891/80168_regulatory_analysis.hwpx	157	157
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115

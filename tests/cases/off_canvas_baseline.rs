@@ -63,6 +63,8 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
 /// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
+    // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
+    "issue1853_caption_precedes_body_split.hwpx",
     // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
     "hwpctl_ParameterSetID_Item_v1.2.hwp",
     // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
