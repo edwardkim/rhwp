@@ -123,17 +123,27 @@ impl TypesetEngine {
                     start_cut,
                     input.source.styles,
                 );
-        let fragment_opens_outer_top = std::ptr::eq(row_geometry_table, table)
-            && crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
-                st.profile.hwpx_stored_layout(),
-                (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
-                    .then_some(para),
+        let source_body_frame_opens_outer_top = st.current_height <= 0.5
+            && crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                para,
                 table,
-                is_continuation,
-                cursor_row,
-                &start_cut,
-                st.current_height <= 0.5,
+                st.layout.body_area.height,
+                self.dpi,
+                st.profile.hwpx_stored_layout(),
+                st.profile.session_edited(),
             );
+        let fragment_opens_outer_top = std::ptr::eq(row_geometry_table, table)
+            && (source_body_frame_opens_outer_top
+                || crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
+                    st.profile.hwpx_stored_layout(),
+                    (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                        .then_some(para),
+                    table,
+                    is_continuation,
+                    cursor_row,
+                    &start_cut,
+                    st.current_height <= 0.5,
+                ));
         // 첫 조각은 이미 host_spacing.before에서 위여백을 받는다.
         // 이어받기는 paint가 여는 같은 프레임 여백을 한 번만 예약한다.
         // 단일 셀/후속 본문 엄격 예산은 partial_rowbreak_fragment_spacing_px에서

@@ -4554,6 +4554,17 @@ impl LayoutEngine {
                 start_cut,
                 col_node.children.is_empty() && (y_start - col_area.y).abs() <= 0.5,
             );
+        let stored_body_frame_opens_outer_top = enclosing_cell_ctx.is_none()
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5
+            && crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                &paragraphs[para_index],
+                table,
+                col_area.height,
+                self.dpi,
+                self.profile.get().hwpx_stored_layout(),
+                self.profile.get().session_edited(),
+            );
         // 저장 HWP5의 반복 제목행을 가진 다행 RowBreak 표도 첫 저장 앵커와
         // 다음 쪽에서 반복 제목행을 여는 조각마다 바깥 위 여백을 다시 둔다.
         // 제목행 없는 이어지는 표(76076 34쪽)는 본문 상단에 붙는 별도 계약이다.
@@ -4588,6 +4599,7 @@ impl LayoutEngine {
         let y_start = if (single_cell_page_fragment
             || terminal_multirow_reopens_outer_top
             || rowbreak_reopens_outer_top
+            || stored_body_frame_opens_outer_top
             || source_cut_reopens_outer_top
             || native_repeated_header_reopens_outer_top
             || empty_opening_continuation

@@ -363,3 +363,10 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 재조판 마지막 줄 뒤 간격을 현재 조각 끝의 점유로 잘못 더하여10개 별표 줄이5쪽으로 밀렸습니다. 같은 trailing trim을 컷 선택·조각 예약·table_partial 행 배치가 소비하도록 보정했습니다. 저장 줄·개체·중첩 표는 기존 계약을 유지합니다.
 - 기존3검사3 PASS, 관련26검사26 PASS(exit0), Native 전5쪽 최저91.10644%/미달0쪽입니다.5쪽은83.28153→92.61078%. 표 내부 앞 간격과 괘선 표현 차이는 남아 있으며 fresh WASM 전5쪽도 Native와 동일하며 필수 Rust lint/빌드/정책 gate가 모두 통과했습니다. 새 회귀 함수·허용치 변경은 없습니다.
 - [정본 PDF](../../../pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf), [검증 JSON](../assets/planet6897_green_20261002/savedbounds1749_reflow_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/savedbounds1749_reflow_native_all5.tsv), [4쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p4_review.png), [5쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p5_review.png). 다른 보류·최종 전체 검증이 남아 통합 승인 보류를 유지합니다.
+
+### form002 바깥 위여백 단계 — 전체 승인 보류
+
+- 원본 `form-002.hwpx`의 선언 첫 조각 높이69446HU와 바깥 위·아래283HU가 본문70012HU를 닫습니다. A4 정규화 본문70014HU와의2HU 차이는 원본 정수 단위로 비교합니다. 폭0 저장 앵커와 구역·단·쪽번호 설정은 별도 가시 글줄을 만들지 않습니다.
+- 첫 조각 배치 원점, 이어받기 예산, 표 paint가 동일한 위여백 소유를 소비하도록 보정했습니다. Native 전10쪽 상단94.48→98.3px, 독립 한컴 PDF98.292px와 대응합니다.
+- 기존 관련 회귀42건42PASS·실패0. Native 전10쪽은9쪽 미달→4쪽 미달(1쪽89.18899%,4쪽83.46681%,8쪽66.25781%,10쪽84.21871%). 첫 여백 보정만으로 전체 승인을 선언하지 않으며 golden과 기존 테스트는 유지합니다.
+- [Native 전쪽 TSV](../assets/planet6897_green_20261002/form002_outer_margin_native_all10.tsv), [1쪽 review](../assets/planet6897_green_20261002/form002_outer_margin_native_p1_review.png), [8쪽 review](../assets/planet6897_green_20261002/form002_outer_margin_native_p8_review.png), [단계 검증](../assets/planet6897_green_20261002/form002_outer_margin_validation.json). fresh WASM 전10쪽 TSV는 Native와 바이트 동일합니다. Mac no-opt WASM·Studio SHA `b47ceadea2e369126397a5abf512eedf257d566a8a81d46f31fb67da71463e2c`, Docker 최적화 대체가 아닙니다. fmt·Native/WASM Clippy·workspace build/all-target Clippy·manifest·문서 링크 검사 모두exit0입니다. 다음은 안내 표 앞뒤 간격·남은 분할 높이를 보정합니다.

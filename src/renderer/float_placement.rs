@@ -228,6 +228,68 @@ pub(crate) fn block_table_caption_host_spacing_px(
     }
 }
 
+/// 선언 개체 높이와 바깥 위·아래 여백이 본문을 닫는 원본 표 프레임.
+/// 폭0 앵커 줄은 표를 가리킬 뿐 위여백을 대신 점유하는 본문 글줄이 아니다.
+/// 구역·단·쪽번호 설정은 이 앵커의 가시 내용을 늘리지 않는다.
+pub(crate) fn stored_body_filling_rowbreak_frame(
+    para: &Paragraph,
+    table: &Table,
+    body_height: f64,
+    dpi: f64,
+    hwpx_stored: bool,
+    session_edited: bool,
+) -> bool {
+    if !hwpx_stored
+        || session_edited
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || table.page_break != TablePageBreak::RowBreak
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.common.vert_align != VertAlign::Top
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || table.common.height == 0
+        || table.common.height >= 0x8000_0000
+        || table.outer_margin_top == 0
+        || body_height <= 0.0
+        || !para.text.is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return false;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    if line.vertical_pos != 0
+        || line.segment_width != 0
+        || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || para
+            .controls
+            .iter()
+            .filter(|ctrl| matches!(ctrl, Control::Table(_)))
+            .count()
+            != 1
+        || para.controls.iter().any(|ctrl| {
+            !matches!(
+                ctrl,
+                Control::Table(_)
+                    | Control::SectionDef(_)
+                    | Control::ColumnDef(_)
+                    | Control::PageNumberPos(_)
+            )
+        })
+    {
+        return false;
+    }
+    let frame_hu = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    // 용지 정규화와 단위 변환의 끝자리 차이는 원본 정수 단위에서 비교한다.
+    // px 변환 뒤 2HU를 다시 비교하면 경계의 부동소수 오차로 동일성이 깨진다.
+    let body_hu = (body_height * 7200.0 / dpi).round() as i64;
+    (frame_hu - body_hu).abs() <= 2
+}
+
 /// 바깥 여백은 셀 열 수와 무관하게 개체 프레임에 속한다.
 /// 이미 결정된 배치 원점과 중첩 프레임은 호출자가 처리한다.
 pub(crate) fn column_rowbreak_fragment_opens_outer_top(
