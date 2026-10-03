@@ -1923,9 +1923,22 @@ fn fill_one_interval(
 
                 let w_hwp = to_hwp(*base_width);
                 let effective_width = eff_w(cursor.is_first_line);
-                // The pen keeps the full width; only the comparison drops the
-                // candidate's trailing letter space.
-                let w_hwp_fit = FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx);
+                // 전진폭은 유지하며 일반 자동 줄 경계 비교에서만 후보의 끝 자간을 뺀다.
+                // 작성된 줄바꿈 또는 문단 끝의 압축 자간은 전진폭으로 판정한다.
+                // 음수 자간을 되돌리면 이미 상자 안에 담긴 마지막 글자만 다음 줄로
+                // 밀리고 작성된 줄바꿈 앞에 빈약한 추가 줄이 생긴다. 실제 전진폭
+                // 초과와 일반 자동 줄바꿈의 마지막 자간 판정은 그대로 검사한다.
+                let at_written_line_end = matches!(
+                    tokens.get(ti + 1),
+                    None | Some(BreakToken::LineBreak { .. })
+                );
+                let w_hwp_fit = if at_written_line_end
+                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
+                {
+                    FitWidthHwp(w_hwp)
+                } else {
+                    FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx)
+                };
                 let pair_adjustment_hwp = if let Some(session) = kerning.as_deref_mut() {
                     to_hwp(session.boundary_pair_adjustment(cursor.line_start_idx, *end_idx)?)
                 } else {

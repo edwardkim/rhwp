@@ -503,3 +503,19 @@ last_verified: 2026-10-03
 - 기존3검사는 도해가 같은 셀의 점유 줄에 포함되는지, 뒤 안내 표가 그림을 침범하지 않는지, 제목·책임자가 머리 표의 해당 셀에 포함되고 순서가 보존되는지 검사합니다. 독립 PDF의10쪽은 유지하며 과거 절대좌표·고정 높이 선택을 제거했습니다. 신규 검사·회귀 삭제0건입니다. 수정 전2PASS/1FAIL에서 수정 후3PASS/0FAIL이며 exit0입니다.
 - Native/WASM Clippy, workspace 빌드·all-target Clippy, fmt, 고정 base suite 정책 모두 exit0입니다. 검사·문서만 변경하여 동일 생산 소스의 Native/fresh WASM 산출물을 재사용했으며 새 WASM 빌드로 표현하지 않습니다. 최종 전체 재실행과 다른 시각 보류는 남아 있어 PR 준비는 보류합니다.
 - [검증 원장](../assets/planet6897_green_20261002/tac7062_validation.json), [Native 전10쪽 TSV](../assets/planet6897_green_20261002/tac7062_native.tsv), [WASM 전10쪽 TSV](../assets/planet6897_green_20261002/tac7062_wasm.tsv), [Native 1쪽 review](../assets/planet6897_green_20261002/tac7062_native_p1_review.png), [Native 2쪽 review](../assets/planet6897_green_20261002/tac7062_native_p2_review.png), [WASM 1쪽 review](../assets/planet6897_green_20261002/tac7062_wasm_p1_review.png), [WASM 2쪽 review](../assets/planet6897_green_20261002/tac7062_wasm_p2_review.png).
+
+### #2470 8쪽 문서의 잔존 시각 차이 분석
+
+- 최신 base 리베이스 후 Native 전8쪽은 PDF와 쪽수가 같지만4/6/7/8쪽75.21083/86.75430/54.36525/62.46080%입니다. 기존9쪽 핀을8쪽으로 바꾸는 것만으로 차단을 해결할 수 없습니다.
+- 7쪽 두 입찰 자격 문단(pi62/pi71)은 원문에 뒤 run 자간−11%와 명시적 줄바꿈이 있습니다. Native는‘소재지)를’의 마지막‘를’을 추가 줄로 보내며, 뒤 제목·표가 각각 한 줄씩 내려갑니다. 독립 PDF는 이 어절을 앞 줄에 보존합니다. 4쪽은 표 다음 문단부터 세로 원점 차이,6쪽은 도형/화살표 방향과 위치 차이도 있어 자간 한 축으로 전체 해결을 주장하지 않습니다.
+- 먼저 글자별 style 선택·측정 폭→composer 줄 경계·LineSeg 발행→문단 높이→뒤 내용 원점을 추적합니다. 반각 공백의 기존 계약은 PDF와 대조하고 입력 문구별 보정은 추가하지 않습니다. 전8쪽 Native/fresh WASM 최저90% 이상 확인 전 기존 회귀 핀 수정·삭제를 보류하며 작은 문서는 이 브랜치에서 보정합니다.
+
+- 추적 결과 run47의−11%는 토큰 측정에 정상 적용됩니다. 명시적 줄바꿈 전 문장 전체 전진폭598.98602px는 가용599.62667px에 담기지만 `FitWidthHwp::trimmed`가 마지막 음수 자간−1.90667px를 되돌려 글자를 거절합니다. 조판 경계의 일반 자동 줄바꿈은 유지하고, 작성된 명시적 줄바꿈 직전 압축 자간만 전진폭으로 검사하는 보정을 준비합니다. 실제 전진폭 초과는 계속 거절하며 보정 범위에 새 문구/글꼴 예외·허용폭 완화는 없습니다. 전쪽 비교와 기존 압축·공백·자동 줄바꿈 대조로 이 구분을 검증합니다.
+
+- 명시적 줄바꿈 보정으로7쪽54.36525→89.96954%,8쪽62.46080→99.96707%입니다. 직접 PNG에서 두 문단·후속 내용은 복구했으나7쪽 표의‘비 고’가 두 줄로 갈라집니다. 원문14pt·장평88%·자간−32%의 전진폭은26.40px로 셀 가용31.81px에 담기지만, 문단 끝에도 원 자간을 되돌려 거절하는 같은 경계가 있습니다. 작성된 줄바꿈과 문단 끝을 같은 종료 계약으로 처리하고 일반 내부 자동 줄 경계를 유지하여 재검증합니다. 첫 보정의 기존 집중33건은33PASS이며 이후 변경에는 새 결과를 확인합니다.
+
+### #2470 작성된 줄 끝 자간 보정 결과
+
+- 마지막 음수 자간을 되돌려 가용폭 안의 글자를 거절하던 경계를 작성된 줄바꿈·문단 끝에서 보정했습니다. Native/fresh WASM 전8쪽은 동일하며 7쪽89.96954%, 8쪽99.03672%입니다. 4/6/7쪽 미달이 남아 기존 회귀 핀은 수정하지 않았습니다. 명시적 줄바꿈만 보정한 중간 8쪽99.96707%와 문단 끝까지 적용한 최종 결과를 구분합니다.
+- 기존 집중33건33PASS, fresh WASM 및 Native/WASM/workspace Clippy, workspace 빌드, fmt, suite 준비·고정 base manifest 모두 exit0입니다. Mac no-opt WASM 대체 빌드이며 Docker 최적화 검증으로 표현하지 않습니다. 신규 검사·fixture 추가 및 회귀 삭제0건입니다.
+- [검증 원장](../assets/planet6897_green_20261002/masked2470_terminal_validation.json), [Native TSV](../assets/planet6897_green_20261002/masked2470_terminal_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/masked2470_terminal_wasm.tsv), [7쪽 review](../assets/planet6897_green_20261002/masked2470_terminal_native_p7_review.png). 표 앞 간격과 행/셀 위치 차이는 다음 보정 단계로 남기며 통합 PR 준비는 보류합니다.
