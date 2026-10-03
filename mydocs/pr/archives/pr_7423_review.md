@@ -444,3 +444,9 @@ last_verified: 2026-10-03
 - 정상 관악소방서1쪽 Native/fresh WASM99.54280%,#5755전3쪽95.63360/99.13619/99.70540%,sample2전29쪽 Native/fresh WASM최저92.22927%·미달0쪽입니다. 양수 오프셋#2439 반례의텍스트겹침0·용지밖0·표겹침0건도 확인했습니다.
 - 관련31건31PASS/0FAIL(70.343초),최종 문구 assertion 수정후 기존#1658 3건3PASS(0.023초),Native/fresh WASM빌드와3종Clippy/workspace빌드/fmt/base고정suite정책exit0입니다. 새 테스트0건이며 WASM은Mac no-opt대체빌드입니다. 현재 후보의 전체 nextest는 다음 단계에서 실행하며 통합PR은 아직 보류입니다.
 - [검증 원장](../assets/planet6897_green_20261002/overtime_flow_validation.json),[Native TSV](../assets/planet6897_green_20261002/overtime_flow_native.tsv),[fresh WASM TSV](../assets/planet6897_green_20261002/overtime_flow_wasm.tsv),[Native review](../assets/planet6897_green_20261002/overtime_flow_native_review.png),[fresh WASM review](../assets/planet6897_green_20261002/overtime_flow_wasm_review.png),[정상 대조 Native 전29쪽 TSV](../assets/planet6897_green_20261002/overtime_flow_sample2_native.tsv),[fresh WASM 전29쪽 TSV](../assets/planet6897_green_20261002/overtime_flow_sample2_wasm.tsv).
+
+
+### 하단 고정 표 보정 후 전체 회귀 결과
+
+- 커밋`4df3f6e63`의 전체 nextest를8threads·no-fail-fast로 완료했습니다. Summary [ 576.984s] 10271 tests run: 10264 passed (9 slow), 7 failed, 50 skipped; exit100입니다. 총 소요903.567초에는 컴파일이 포함됩니다. 관련 집중 검사의 통과와 전체 통과를 구분하며 PR 준비는 보류합니다.
+- 남은 실패는#7062,#6192,#2470,#5941,#7147,#6797,#1921의7건입니다. 작은 문서는 이 브랜치에서 실제 출력을 개선한 후 기존 검사를 의미관계로 수정합니다. 이 단계에서 일괄 삭제·기준값 완화는 하지 않았습니다. [전체 실행 증거](../assets/planet6897_green_20261002/overtime_flow_full_nextest.json).
