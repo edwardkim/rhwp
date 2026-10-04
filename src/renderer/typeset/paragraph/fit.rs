@@ -33,10 +33,11 @@ pub(in crate::renderer::typeset) fn exclusion_probe_height(
     hwpx_stored_layout: bool,
 ) -> f64 {
     if hwpx_stored_layout {
+        // 배제 영역은 첫 글줄의 실제 높이로 짚는다. 뒤 줄간격은 다음 흐름이
+        // 소비할 공간이며, 표 위에 들어가는 잉크를 표 아래로 밀 근거가 아니다.
         fmt.line_heights
             .first()
-            .zip(fmt.line_spacings.first())
-            .map(|(lh, ls)| lh + ls)
+            .copied()
             .unwrap_or(fmt.height_for_fit)
     } else {
         0.0

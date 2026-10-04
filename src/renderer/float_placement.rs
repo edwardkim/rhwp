@@ -1106,7 +1106,7 @@ pub struct ParagraphFloatPlacement {
     /// 후속 텍스트가 들어갈 공간이 남을 수 있다.
     pub flow: ParagraphFloatFlow,
     pub anchor_y: f64,
-    /// 텍스트 생성과 공유하는 유효 단일 저장 줄 호스트 원점.
+    /// 텍스트 생성과 공유하는 유효 저장 줄 또는 현재 재조판 호스트 원점.
     /// None이면 이어받기를 포함한 기존 흐름 호스트 계약을 유지한다.
     pub stored_host_origin: Option<f64>,
     /// 전체 저장 프레임이 닫는 후속 첫 글줄 원점. 후속 문단의 앞 간격도 이 경계에 포함된다.
@@ -2150,7 +2150,9 @@ impl ParagraphFloatPlacement {
             .then_some(Self {
                 flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
-                stored_host_origin: None,
+                // 재조판 글줄도 표 예약에 쓴 원점에서 생성한다. 출력 단계가
+                // 저장 vpos로 다시 원점을 추측하면 호스트와 표가 서로 갈라진다.
+                stored_host_origin: Some(text_origin),
                 stored_successor_line_origin: None,
                 table_left: None,
                 table_top,

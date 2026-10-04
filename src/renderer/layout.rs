@@ -7672,11 +7672,9 @@ impl LayoutEngine {
                         .get(*para_index)
                         .and_then(|p| p.line_segs.get(*start_line))
                         .map(|seg| seg.vertical_pos),
-                    PageItem::Table { para_index, .. } => paragraphs
-                        .get(*para_index)
-                        .and_then(|p| p.line_segs.first())
-                        .map(|seg| seg.vertical_pos),
-                    // PartialTable/Shape: 지연 보정 사용
+                    // 표의 LINE_SEG는 호스트 글줄의 위치이며 표가 여는 단 원점이 아니다.
+                    // 표 뒤 실제 본문 흐름에서 기준을 역산해 앞선 표의 공간을 보존한다.
+                    // Table/PartialTable/Shape: 지연 보정 사용
                     _ => None,
                 }
             })
