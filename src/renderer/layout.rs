@@ -7932,7 +7932,7 @@ impl LayoutEngine {
         let mut prev_item_first_child = col_node.children.len();
         // [#6574] 직전 미주 문단(인덱스, 배치 시작 y) — 같은 미주의 저장 사다리 후속 배치용.
         let mut last_endnote_para_top: Option<(usize, f64)> = None;
-        // [#6574] 직전 항목이 그린 노드(글줄·수식·개체) 범위 하단.
+        // [#6574] 직전 항목이 그린 글줄(글줄 안 수식 포함) 범위 하단.
         let mut prev_item_ink_bottom_y: Option<f64> = None;
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
             self.page_top_float_caption_spacing_para.set(
@@ -8217,7 +8217,12 @@ impl LayoutEngine {
                 prev_item_ink_bottom_y = col_node
                     .children
                     .get(prev_item_first_child..)
-                    .and_then(|nodes| nodes.iter().map(render_subtree_bottom).reduce(f64::max))
+                    .and_then(|nodes| {
+                        nodes
+                            .iter()
+                            .filter_map(max_text_line_subtree_bottom)
+                            .reduce(f64::max)
+                    })
                     .or(prev_item_ink_bottom_y);
                 if prev_float_shape {
                     last_endnote_content_bottom_y = Some(y_offset);
@@ -17027,4 +17032,16 @@ fn render_subtree_bottom(node: &RenderNode) -> f64 {
         .iter()
         .map(render_subtree_bottom)
         .fold(node.bbox.y + node.bbox.height, f64::max)
+}
+
+/// [#6574] 글줄(`TextLine`) 하위(수식 등 글줄 안 개체 포함)가 그린 범위 하단의 최댓값.
+/// 글줄 밖 개체(어울림 그림 등)는 뒤 문단이 옆으로 흐를 수 있으므로 넣지 않는다.
+fn max_text_line_subtree_bottom(node: &RenderNode) -> Option<f64> {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        return Some(render_subtree_bottom(node));
+    }
+    node.children
+        .iter()
+        .filter_map(max_text_line_subtree_bottom)
+        .reduce(f64::max)
 }
