@@ -10,7 +10,7 @@ use crate::renderer::typeset::{
 };
 
 /// [#6574] 렌더 줄 하단이 단 하단을 넘어도 같은 단으로 보는 허용치(px). 좌표 반올림만 흡수한다.
-const ENDNOTE_RENDER_INK_FIT_TOLERANCE_PX: f64 = 1.0;
+const ENDNOTE_RENDER_INK_FIT_TOLERANCE_PX: f64 = 0.25;
 
 /// [#6574] 렌더 판정 생략용 여유(px). 단 커서 상한 + 문단 높이 + 미주 사이 간격에 이만큼을
 /// 더해도 단 안이면 scratch 렌더 없이 들어간다고 본다(저장 사다리 전진 점프 몫).
