@@ -493,6 +493,7 @@ impl TypesetEngine {
                                 && !paragraph.cell_format_vpos_dirty
                         })
                 })
+                && table.common.height > 0
                 && table.common.height <= i32::MAX as u32
                 && !table.common.treat_as_char
                 && crate::renderer::typeset::is_para_topbottom_float(&table.common)
@@ -516,7 +517,11 @@ impl TypesetEngine {
                         || next.cell_format_vpos_dirty
                         || !next.line_segs.first().is_some_and(|next_line| {
                             !is_synthetic_line_seg(next_line)
-                                && (next_line.vertical_pos < line.vertical_pos
+                                // A single-row local reset is not enough to own
+                                // two complete physical frames. Authenticate
+                                // their total height with the successor too.
+                                && ((table.row_count > 1
+                                    && next_line.vertical_pos < line.vertical_pos)
                                     || crate::renderer::float_placement::stored_two_frame_successor_origin_hu(
                                         table, next,
                                     ).is_some())
