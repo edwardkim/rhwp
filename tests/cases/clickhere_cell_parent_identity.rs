@@ -11,11 +11,11 @@ fn blank() -> DocumentCore {
     core
 }
 
-fn table(core: &mut DocumentCore) -> usize {
+fn table(core: &mut DocumentCore, columns: u16) -> usize {
     let last = core.document().sections[0].paragraphs.len() - 1;
     core.insert_text_native(0, last, 0, "표 앞").unwrap();
     let result: Value =
-        serde_json::from_str(&core.create_table_native(0, last, 3, 1, 1).unwrap()).unwrap();
+        serde_json::from_str(&core.create_table_native(0, last, 3, 1, columns).unwrap()).unwrap();
     result["paraIdx"].as_u64().unwrap() as usize
 }
 
@@ -51,8 +51,8 @@ fn guides(core: &DocumentCore) -> Vec<String> {
 
 fn separate_tables() -> (DocumentCore, usize, usize) {
     let mut core = blank();
-    let first = table(&mut core);
-    let second = table(&mut core);
+    let first = table(&mut core, 1);
+    let second = table(&mut core, 1);
     field(&mut core, first, &[(0, 0, 0)], "FIRSTGUIDE");
     field(&mut core, second, &[(0, 0, 0)], "SECONDGUIDE");
     (core, first, second)
@@ -97,9 +97,14 @@ fn inactive_other_table_keeps_start_and_end_insertions_outside() {
 
 fn nested_tables(same_host: bool) -> (DocumentCore, usize, CellPath, usize, CellPath) {
     let mut core = blank();
-    let source = table(&mut core);
-    let first = table(&mut core);
-    let second = if same_host { first } else { table(&mut core) };
+    let source = table(&mut core, 1);
+    // 두 번째 셀이 투명 1×1 wrapper 축약을 막아 중첩 주소 자체를 검사한다.
+    let first = table(&mut core, if same_host { 1 } else { 2 });
+    let second = if same_host {
+        first
+    } else {
+        table(&mut core, 2)
+    };
     if same_host {
         core.split_paragraph_in_cell_native(0, first, 0, 0, 0, 0, None)
             .unwrap();
