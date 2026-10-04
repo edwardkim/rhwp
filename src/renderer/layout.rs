@@ -11540,9 +11540,11 @@ impl LayoutEngine {
             // [#2019 v3] 빈 앵커에 매달린 Paper/Page 기준 Square 표는 본문 flow 표가
             // 아니라 페이지 절대좌표 부동 표다. 표 자체는 선언 y 에 그리되, 뒤따르는
             // 문단을 표 아래로 밀지 않는다.
+            // [#7548] 쪽·종이 기준 어울림 표는 host 문단에 본문이 있어도 절대 위치다.
+            // 한/글 36295751: 표 상단 = 본문 상단 + vertOffset(PAGE = 본문 영역),
+            // host·뒤 문단은 표 위로 흐르고 표는 흐름을 밀지 않는다.
             let paper_page_square_empty_top = if !is_tac
                 && tbl_is_square
-                && !para_has_visible_text(para)
                 && matches!(
                     t.common.vert_rel_to,
                     crate::model::shape::VertRelTo::Paper | crate::model::shape::VertRelTo::Page
@@ -12338,6 +12340,17 @@ impl LayoutEngine {
                 } else if square_reserved_above_gap.is_some() {
                     // [#4533 ⑥] 표는 예약 공간(앵커 위)에 이미 놓였다 — 흐름은
                     // 전진하지 않는다(앵커·후속 문단이 사다리 위치 유지).
+                    table_y_before
+                } else if crate::renderer::float_placement::square_successor_starts_beside_table(
+                    para,
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
+                    t,
+                ) {
+                    // [#7548] 어울림 표는 흐름을 표 하단까지 밀지 않는다. 다음 문단의
+                    // 저장 첫 줄이 표 옆 차선에 놓여 있으면 한/글은 그 줄을 표 띠 옆에
+                    // 그린다. 커서는 host 본문 끝(아래 #1218 보정)에서 이어진다.
                     table_y_before
                 } else {
                     empty_rowbreak_flow_end.unwrap_or(table_flow_end)

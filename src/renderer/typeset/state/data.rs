@@ -244,6 +244,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_first_stored_vpos: Option<i32>,
+    /// [#7548] 다음 문단 저장 첫 줄의 차선 증거(어울림 표 옆 시작 판정).
+    pub(in crate::renderer::typeset) next_para_lane_probe:
+        Option<crate::renderer::float_placement::StoredLineLaneProbe>,
     /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
     /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_is_empty_float_table_anchor: bool,
