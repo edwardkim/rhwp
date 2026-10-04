@@ -78,11 +78,14 @@ impl TypesetEngine {
             {
                 return None;
             }
+            // Frame ownership uses the same unreserved source body height as
+            // paint. Footnotes and zones constrain acceptance below, not the
+            // existence of the source-owned minimum.
             let declared = layout_engine.stored_full_width_row_declared_height(
                 table,
                 row,
                 styles,
-                st.base_available_height(),
+                st.layout.body_area.height,
             )?;
             let used = continuation
                 .stored_row_box_sum
