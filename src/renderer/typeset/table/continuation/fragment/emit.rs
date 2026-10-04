@@ -262,7 +262,7 @@ impl TypesetEngine {
         // the selected row has no ordinary saved reset, corroborate its closed
         // two-line source frame with the host's next original page rewind.
         let opening_frame_has_source_boundary =
-            layout_engine.row_cut_ends_at_plain_text_saved_reset(
+            layout_engine.row_cut_ends_at_original_plain_text_reset(
                 table,
                 end_row.saturating_sub(1),
                 start_cut,
@@ -287,7 +287,7 @@ impl TypesetEngine {
             && split_block_start.is_none()
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
-            && (crate::renderer::float_placement::object_only_saved_table_anchor(
+            && (crate::renderer::float_placement::saved_opening_frame_table_anchor(
                 input.source.paragraph,
                 table,
             ) || saved_closing_frame.is_some())
