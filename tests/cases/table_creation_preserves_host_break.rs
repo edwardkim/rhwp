@@ -43,7 +43,7 @@ fn check_rendered_location(core: &DocumentCore, host: usize, before: &Value) {
         cell["pageIndex"], before["pageIndex"],
         "표는 나누기 뒤의 쪽에 남아야 한다"
     );
-    let page = cell["pageIndex"].as_u64().unwrap() as usize;
+    let page = cell["pageIndex"].as_u64().unwrap() as u32;
     let controls: Value =
         serde_json::from_str(&core.get_page_control_layout_native(page).unwrap()).unwrap();
     let table = controls["controls"]
