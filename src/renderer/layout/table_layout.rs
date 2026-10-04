@@ -12532,8 +12532,12 @@ impl LayoutEngine {
                         units.push(CellUnit {
                             height: uh,
                             hard_break_before,
-                            stored_frame_break_before: false,
-                            page_frame_reset_before: false,
+                            // The host's frame boundary belongs to its first
+                            // nested row. Project it once, just like the host's
+                            // hard break, so capacity selection keeps the header
+                            // with the following stored frame.
+                            stored_frame_break_before: stored_frame_break_before_para && ri == 0,
+                            page_frame_reset_before: hard_break_before,
                             vpos_gap_before,
                             para_idx: pi,
                             vis_start: 0,
@@ -14374,6 +14378,31 @@ impl LayoutEngine {
             return 0.0;
         }
 
+        let declared_box = hwpunit_to_px(signed_hwpunit(table.common.height), self.dpi);
+        if declared_box <= 0.0 {
+            return 0.0;
+        }
+        // An opening physical box can include several source rows. Preserve
+        // its blank-space contract even when the cut is in a later row.
+        // Only rows whose stored minimum prefix already passes that opening
+        // box belong to later frames; the opening height cannot bound them.
+        if cell.row > 0 && next_unit.stored_frame_break_before {
+            let raw_heights = table.get_raw_row_heights();
+            let starts_after_opening_box = raw_heights
+                .get(..usize::from(cell.row))
+                .filter(|heights| heights.iter().all(|&height| height < 0x8000_0000))
+                .is_some_and(|heights| {
+                    heights
+                        .iter()
+                        .map(|&height| hwpunit_to_px(height as i32, self.dpi))
+                        .sum::<f64>()
+                        >= declared_box
+                });
+            if starts_after_opening_box {
+                return trim;
+            }
+        }
+
         // 문단 안 되감김은 **물리 쪽 프레임**일 수도, 공간이 남은 **로컬 재시작**일
         // 수도 있다(기계 문서의 촘촘한 리셋 — `#1658` 낭비 쪽 회귀의 근거). 둘을
         // 가르는 것은 문서 자신이다: 저장 `common.height` 는 이 형상에서 **첫 물리
@@ -14386,10 +14415,6 @@ impl LayoutEngine {
         // 이 동일성은 컷이 **첫 조각**일 때만 성립한다(`consumed_before_px` 가 셀
         // 시작부터 누적된 값이어야 상자가 선언 높이와 맞는다) — 이어받는 조각에는
         // 저절로 적용되지 않는다.
-        let declared_box = hwpunit_to_px(signed_hwpunit(table.common.height), self.dpi);
-        if declared_box <= 0.0 {
-            return 0.0;
-        }
         let padding = hwpunit_to_px(i32::from(cell.padding.top), self.dpi)
             + hwpunit_to_px(i32::from(cell.padding.bottom), self.dpi);
         let untrimmed_box = consumed_before_px + last_unit_height_px + padding;
@@ -15042,6 +15067,7 @@ impl LayoutEngine {
             // 종료 컷보다 앞에서 완결된 제목 병합은 이어받는 행의 소유를 바꾸지 않는다.
             || (!two_line_source_cut && table.cells.iter().any(|cell| {
                 cell.row_span > 1
+                    && (cell.row as usize) < end_row
                     && cell.row as usize + cell.row_span as usize > end_row.saturating_sub(1)
             }))
             || table.cells.iter().any(|cell| cell.dirty_flag || cell.paragraphs.iter().any(|p|
@@ -15121,6 +15147,70 @@ impl LayoutEngine {
         let full_prefix = prefix.iter().map(|unit| unit.height).sum::<f64>() + top + bottom;
         let declared = hwpunit_to_px(table.common.height as i32, self.dpi);
         ((declared - full_prefix).abs() <= 0.5).then_some(declared)
+    }
+
+    /// A full-width source cell in a multi-row table owns its declared minimum
+    /// physical height across continuation fragments, just as a standalone cell.
+    /// Return no frame for edited/projected content or rows with competing owners.
+    pub(crate) fn stored_full_width_row_declared_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+        body_height: f64,
+    ) -> Option<f64> {
+        if !body_height.is_finite() || body_height <= 0.0 {
+            return None;
+        }
+        let height = self.stored_full_width_row_source_height(table, row, styles)?;
+        (height > body_height).then_some(height)
+    }
+
+    /// Source-owned minimum space, independent of a consumer's page budget.
+    /// A reset in content alone does not give an auto-height row a stored box.
+    fn stored_full_width_row_source_height(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+            || table.common.treat_as_char
+            || table.row_count <= 1
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+        {
+            return None;
+        }
+        let mut owners = table.cells.iter().filter(|cell| {
+            cell.row as usize <= row && row < cell.row as usize + cell.row_span as usize
+        });
+        let cell = owners.next()?;
+        if owners.next().is_some()
+            || cell.row as usize != row
+            || cell.row_span != 1
+            || cell.col != 0
+            || cell.col_span != table.col_count
+            || cell.height >= 0x8000_0000
+            || matches!(cell.vertical_align, crate::model::table::VerticalAlign::Top)
+        {
+            return None;
+        }
+        let height = hwpunit_to_px(cell.height as i32, self.dpi);
+        let units = self.cell_units(cell, table, styles);
+        if !units.iter().any(|unit| unit.page_frame_reset_before)
+            || self.cell_cut_has_projected_lines(cell, table, styles, 0, units.len())
+        {
+            return None;
+        }
+        Some(height)
     }
 
     /// 정확한 저장 컷에서 첫 프레임의 물리 높이를 반환한다.
@@ -15994,6 +16084,7 @@ impl LayoutEngine {
                 && !table.common.treat_as_char;
         for (i, cell) in row_cells.iter().enumerate() {
             let units = self.cell_units(cell, table, styles);
+            let source_row_height = self.stored_full_width_row_source_height(table, row, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let mut j = start;
             let mut h = 0.0f64;
@@ -16142,6 +16233,10 @@ impl LayoutEngine {
                 // 판별자는 HWPX 쪽과 같다: **되감김까지 쌓인 높이**. 진짜 쪽 프레임은 예산의
                 // 큰 몫(≥70%)을 채우고(이 문서 740.7/924.6 = 80%), 촘촘한 로컬 리셋은 h 가
                 // 작아 걸리지 않는다. 빈 문단이라도 저장 프레임 되감김이면 경계다.
+                // A physical frame belongs to the current source cell, not to
+                // the topology of the enclosing table. A full-width cell in a
+                // multi-row table has the same page-scale rewind contract as
+                // the sole cell of a 1x1 table.
                 let hwp5_page_scale_cross_para_reset = self
                     .profile
                     .get()
@@ -16151,8 +16246,10 @@ impl LayoutEngine {
                         table.page_break,
                         crate::model::table::TablePageBreak::RowBreak
                     )
-                    && table.row_count == 1
-                    && table.col_count == 1
+                    // The source row must own the occupied frame. Auto-height
+                    // stub rows can contain local resets without owning a page.
+                    && ((table.row_count == 1 && table.col_count == 1)
+                        || source_row_height.is_some_and(|height| height >= h))
                     && row_cells.len() == 1
                     // 저장 프레임 신호는 `stored_frame_break_before` 가 아니라 **되감김
                     // 기하**(`page_frame_reset_before`)로 읽는다. 전자는 겹치는 줄 상자
@@ -17321,10 +17418,31 @@ impl LayoutEngine {
 
             let previous = &units[end - 1];
             let next = &units[end];
-            if !next.hard_break_before
-                || previous.vis_start >= previous.vis_end
-                || next.vis_start >= next.vis_end
-                || next.para_idx <= previous.para_idx
+            if previous.vis_start >= previous.vis_end || next.vis_start >= next.vis_end {
+                return false;
+            }
+
+            // A saved physical frame can end inside a paragraph as well as
+            // between paragraphs. Check the original line coordinates; a
+            // projected/local reset alone is not evidence of that boundary.
+            let same_paragraph_original_reset = next.para_idx == previous.para_idx
+                && cell.paragraphs.get(next.para_idx).is_some_and(|para| {
+                    para.line_segs
+                        .get(previous.vis_end - 1)
+                        .zip(para.line_segs.get(next.vis_start))
+                        .is_some_and(|(before, after)| {
+                            before.vertical_pos > 0
+                                && after.vertical_pos == 0
+                                && before.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                                && after.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                        })
+                });
+            if !((next.hard_break_before && next.para_idx > previous.para_idx)
+                || same_paragraph_original_reset)
             {
                 return false;
             }

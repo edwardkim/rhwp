@@ -1301,20 +1301,33 @@ impl LayoutEngine {
             // rowspan·세로쓰기·실제로 잘리지 않는 셀은 기존 전량 경로를 유지한다.
             // 유한한 저장 프레임은 가운데·아래 정렬도 보존할 수 있다.
             // 위 정렬 전용 탐색 최적화로 선택한 앞 조각의 높이를 생략하지 않는다.
-            let stored_cut_frame_owns_alignment = is_continuation
-                && start_row_height_override.is_some()
-                && cell_row == start_row
-                && cell.row_span == 1
-                && end_cut.is_empty()
-                && !start_cut_is_block
-                && start_cut
-                    .get(single_row_cut_index(table, cell))
-                    .is_some_and(|&start| {
-                        let units = self.cell_units(cell, table, styles);
-                        self.stored_paragraph_allows_orphan_split(
-                            table, cell, &units, start, styles,
-                        )
-                    });
+            let full_width_frame_owns_alignment = end_row_height_override.is_some()
+                && cell_row + 1 == end_row
+                && !end_cut.is_empty()
+                && !is_block_split
+                && self
+                    .stored_full_width_row_declared_height(
+                        table,
+                        cell_row,
+                        styles,
+                        self.current_body_area.get().3,
+                    )
+                    .is_some();
+            let stored_cut_frame_owns_alignment = full_width_frame_owns_alignment
+                || (is_continuation
+                    && start_row_height_override.is_some()
+                    && cell_row == start_row
+                    && cell.row_span == 1
+                    && end_cut.is_empty()
+                    && !start_cut_is_block
+                    && start_cut
+                        .get(single_row_cut_index(table, cell))
+                        .is_some_and(|&start| {
+                            let units = self.cell_units(cell, table, styles);
+                            self.stored_paragraph_allows_orphan_split(
+                                table, cell, &units, start, styles,
+                            )
+                        }));
             let saved_frame_needs_alignment = (align_saved_opening_frame
                 && cell_row + 1 == end_row
                 || stored_cut_frame_owns_alignment)
@@ -1761,7 +1774,12 @@ impl LayoutEngine {
                 && end_row.checked_sub(1).is_some_and(|last_row| {
                     cell_row <= last_row && last_row < cell_row + cell.row_span as usize
                 });
-            let centered_content_height = if center_saved_spanning_cell == Some(cell_idx) {
+            let centered_content_height = if full_width_frame_owns_alignment {
+                // Align the painted cut, excluding its final line advance.
+                // Capacity accounting owns that advance as physical space;
+                // it is not ink at the bottom of this fragment.
+                total_content_height
+            } else if center_saved_spanning_cell == Some(cell_idx) {
                 let units = self.cell_units(cell, table, styles);
                 cut_units
                     .map(|(start, end)| {

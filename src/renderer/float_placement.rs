@@ -207,10 +207,17 @@ pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
 /// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
 /// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
 pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {
+    // Section/column definitions configure the containing frame; they do not
+    // paint another inline object or give an empty anchor visible text.
+    let mut objects = para
+        .controls
+        .iter()
+        .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)));
+    let only_table = matches!(objects.next(), Some(Control::Table(_))) && objects.next().is_none();
     !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && para.text.is_empty()
-        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && only_table
         && matches!(para.line_segs.as_slice(), [line] if line.segment_width == 0 && line.tag & 0x8000_0000 == 0)
 }
 
