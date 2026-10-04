@@ -19,7 +19,7 @@
   "fresh_captures": true,
   "font_mismatch_exception": false,
   "comparison_layout": "Native before / Native after / Hancom PDF, no scaling or origin translation; bottom white padding for 1px page-size difference",
-  "validation_status": "local validation passed; human visual decision, remote publication and GitHub CI pending",
+  "validation_status": "local validation and human visual acceptance completed; remote publication and GitHub CI pending",
   "input_sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
   "reference_pdf_sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
   "native_binary_sha256": "f550ecc643f70e6725df46c3cbe62dfbd1625fff94b43d380e7936d2200ad5b2",
@@ -73,7 +73,7 @@
   },
   "validation_base_sha": "8497729b4fb0e071c484fc5740f9bb2400bed437",
   "wasm_validation_environment": "macOS locked wrapper and fresh browser; Docker daemon unavailable",
-  "human_visual_decision": "pending",
+  "human_visual_decision": "accepted by user on 2026-10-04 Asia/Seoul; push and PR creation authorized",
   "skia": {
     "library_passed": 3927,
     "library_ignored": 13,
