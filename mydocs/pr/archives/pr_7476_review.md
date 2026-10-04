@@ -542,3 +542,14 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 미확정 stored-head 계획이 전체 표의 기존 배치를 덮어쓰지 않게 하는 시험 보정은 기존135건131PASS(2slow)/4FAIL·3721skip·실행74.242초·exit100입니다. KTX/#2439의 겹침 분할과 #6761이PASS로 바뀌었지만 #5701의 쪽 소속 실패와 새 글줄 겹침20건이 생겼습니다. #7359와 synam001의 기존 실패도 남습니다. 실패 총수 감소를 개선 완료로 판정하지 않습니다.
 - 이 후보는 기각하고 생산 코드를 검증된 `a077a9383`으로 복원했습니다. #6267 보정은 유지합니다. 원점 추정의 제거만으로 #5701의 이미 확정된 전체 표/분할 소유를 잃어서는 안 됩니다. 다음 수정은 해당 소유 계약과 글줄/문단 앞 간격의 소비 지점을 함께 추적한 뒤 수행합니다.
 - [시험 결과와 복원 근거](../assets/planet6897_green_20261002/stored_head_origin_rejected_candidate.json). 현재 남은 차단은 직전5건이며 최종 전체/Skia와 통합 PR/CI/후속처리는 계속 보류합니다. 임시 진단 코드·기각 코드·로그는 커밋에 포함하지 않았습니다.
+
+
+### #7359 절대 좌표 검사 교정 — 시각 검증 선행
+
+- 사용자의 좌표 고정 금지 지시에 따라 현재 브랜치를 막는 기존 검사부터 독립 PDF로 재검토했습니다. 화학제품 문서의 Native 전103쪽 TSV는25쪽 미달입니다. 검사 대상14쪽은 Native/fresh WASM 모두97.87810%이고 두 PNG가 바이트 동일합니다. 생산 소스 해시도 직전 fresh WASM 빌드와 같습니다. 문서 전체를 승인한 근거는 아닙니다.
+- #7359의140.28/172.55/193px 위치와1.5px 허용치를 제거했습니다. 기존 함수 한 건에서14쪽 제목·캡션·표 소속, 원문 내용 각1회 보존, 제목→캡션→소유 표의 비겹침 순서와3행3열을 검사합니다. 전체103쪽 고정 검사도 이 함수의 계약에서 제외했습니다. 새 함수/fixture·production·PDF 변경은 없습니다.
+- Native/fresh WASM 선행 검증 후 교정 검사1건1PASS·235skip·실행0.193초입니다. 캡션이 PDF보다 조금 위에 있는 실제 차이는 남아 있으며 의미 검사 통과를 정확한 위치 일치나 보정 완료로 보고하지 않습니다. 남은 시각 보류는 사용자 지시에 따라 #7445로 이관할 범위를 검증 중입니다.
+- #6761의83쪽은64.92223%이며 표가 앞 문장을 침범하고 뒤 내용도 이동합니다. 정상 출력으로 기대값을 덮어쓰지 않았고 통과 반례와 같은 문서를 사용하는 다른 정상 검사는 유지합니다. synam-001의30쪽89.57062%도 기대값 수정 없이 전35쪽을 재검토합니다.
+- [입력·production 해시와 검증 원장](../assets/planet6897_green_20261002/chemical_regression_recheck_validation.json), [Native 전103쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_native_all103.tsv), [fresh WASM14쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_wasm_p14.tsv), [14쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p14_review.png), [83쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p83_review.png). 최종 게이트 결과는 검증 원장에 연결합니다. 전체/Skia·통합 PR/CI/merge/후속처리는 미완료입니다.
+
+- 이 단계의 fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest는 모두exit0입니다. 기존1검사 교정만 완료했으며 원문/PDF·production 변경0건입니다.
