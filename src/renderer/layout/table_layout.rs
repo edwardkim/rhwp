@@ -14239,6 +14239,17 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
+        // A paragraph-local zero origin is not itself a physical page cut.
+        // The row must straddle the first declared object frame; later rows
+        // in a long table can have the same two-line cell geometry while
+        // remaining ordinary content within a continuation page.
+        let raw_rows = table.get_raw_row_heights();
+        let preceding_height: i64 = raw_rows.iter().take(row).map(|&h| i64::from(h)).sum();
+        let declared_frame = i64::from(table.common.height);
+        let row_straddles_declared_frame = raw_rows.get(row).is_some_and(|&height| {
+            preceding_height < declared_frame
+                && declared_frame < preceding_height + i64::from(height)
+        });
         self.profile.get().hwp5_stored_pagination_layout()
             && !self.profile.get().session_edited()
             && !self
@@ -14253,12 +14264,7 @@ impl LayoutEngine {
                 .filter(|cell| usize::from(cell.row) == row)
                 .all(|cell| cell.row_span == 1)
             && table.common.height > 0
-            && table
-                .get_raw_row_heights()
-                .iter()
-                .map(|&h| i64::from(h))
-                .sum::<i64>()
-                > i64::from(table.common.height)
+            && row_straddles_declared_frame
             && table
                 .cells
                 .iter()
