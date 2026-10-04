@@ -1,8 +1,8 @@
 # Task #7470 Stage 1 — RowBreak 조각의 소유와 물리 배치 복원
 
 - 관련 이슈: [#7470](https://github.com/edwardkim/rhwp/issues/7470). 이 변경으로 이슈 전체를 종료하지 않는다.
-- 기준 devel: `6b3faf77d8085441f9f26d88d65a49791e910352`.
-- 최소 공통 메트릭과 RowBreak 보정을 포함한 후보다. 정식 회귀·최종 검증·제출은 진행 중이다.
+- 최종 검증 base: `8497729b4fb0e071c484fc5740f9bb2400bed437`. 최초 비교 기준은 `6b3faf77d8085441f9f26d88d65a49791e910352`다.
+- 최소 공통 메트릭과 RowBreak 보정을 포함한다. 최종 code head의 로컬 검증은 완료했고 작업지시자 시각 판정·원격 제출은 대기 중이다.
 - 원래 공백·지도 후보 `bac75f50ee4e57839f4c0ac7a259165acf0e3509`는 별도 branch에 clean 상태로 보존한다.
 
 ## 범위와 독립 근거
@@ -33,7 +33,7 @@ RowBreak 단독 후보는 Native/fresh WASM 7쪽 89.69439%였다. 공백 후보�
 | 가시 문단 뒤 첫 행 원점 | 앞 문단 마지막 원본 vpos+줄 높이+줄간격+host 앞 간격 → `fragment::budget`의 공통 배치 계획 → 조각 높이 예산·실제 원점 | 앞 문단의 후행 줄간격을 지운 흐름을 복원한다. 단일 행도 셀 총높이·다음 문단이 두 프레임으로 정확히 닫히면 적용한다. 병합 행이 있는 표는 일반 행의 두 줄 프레임 증거를 추가로 요구한다. 편집·재조판·저장 사다리 불일치는 제외한다. |
 | 같은 host의 TAC와 부동 표 | `stored_first_tac_line` → `stored_tac::prepare_coanchored_first_line`의 pen/end → `commit_stored_tac_control` → inline metadata를 소비하는 table paint | 원본 TAC 줄의 전체 외곽 높이가 저장 줄 높이와 같고 부동 형제가 그 줄 밖에서 시작할 때, TAC만 확정한다. 뒤 부동 표의 분할 경로를 생략하지 않는다. |
 | 완전한 첫 물리 프레임 | 앞 문단의 원본 끝+host 앞 간격 → `fragment::budget`의 마지막 행 잔여 → `fragment::scan`의 행 높이와 `end_row_height_override` → partial paint | 3쪽 원문 개체 높이 49,069HU가 실제 첫 표 조각의 테두리를 닫는다. 마지막 행의 내용 하한을 수용할 때만 빈 잔여를 조정하고 컷 유닛은 보존한다. |
-| 두 줄 셀의 저장 분할 경계 | 두 원본 줄 높이·사이 간격·실효 안 여백이 `cellSz`와 정확히 일치 → `native_saved_reset_cut_trailing_trim` → 일반 행 컷의 소비 높이와 `cell_cut_visible_height` | 11→12쪽 4.2/4.3의 분할. 두 0 원점만으로는 수용하지 않고, 원본 셀 높이 및 전체 저장 행 높이가 첫 개체 프레임보다 큰 근거를 확인한다. 완료된 한 줄 형제 셀도 같은 물리 조각의 끝 간격을 공유한다. |
+| 두 줄 셀의 저장 분할 경계 | 두 원본 줄 높이·사이 간격·실효 안 여백이 `cellSz`와 정확히 일치 → `native_saved_reset_cut_trailing_trim` → 일반 행 컷의 소비 높이와 `cell_cut_visible_height` | 11→12쪽 4.2/4.3의 분할. 두 0 원점만으로는 수용하지 않고, 원본 셀 높이의 닫힘과 해당 행 누적 높이 구간 안에 첫 선언 개체 프레임 끝이 있는지 확인한다. 완료된 한 줄 형제 셀도 같은 물리 조각의 끝 간격을 공유한다. |
 
 | 중첩 float의 본체·여백 | `nested_table_body_height` → `stored_nested_float_placement` → 컷 높이 및 `table_partial`의 `occupied_bottom` | 바깥 여백을 두 번 더하지 않는다. 잘린 자식은 실제 visible flow 높이를 유지한다. |
 | 표 뒤 가시 문단의 공유 경계 | `stored_after_partial_table_shared_spacing_px` → 문단 fit 회수량·실제 원점 | 저장 첫 줄 원점과 표 조각 종료 흐름이 같고 dirty가 아닐 때만 앞 간격을 공유한다. 빈 글자 여부를 공간 소유의 대용으로 쓰지 않는다. |
@@ -179,3 +179,47 @@ Native 개체 원점에서 확립한 page 축을 HWPX 저장 사다리에 그대
 원래 공백·지도 후보는 clean 상태로 보존 중이다. 최신 `devel`은
 `8497729b4fb0e071c484fc5740f9bb2400bed437`로 전진했고 공유 TAC 줄 변경이
 포함되므로 해당 코드와의 통합·재검증도 제출 전에 필요하다.
+
+
+## 최신 devel 통합 후 최종 로컬 검증
+
+최종 code head는 `7380b29a2ce94be692e44e70cc65868cf87bc835`, 통합·정책 비교 base는
+`8497729b4fb0e071c484fc5740f9bb2400bed437`다. 최신 공유 TAC 줄 변경을 충돌 없이
+통합한 뒤 다음 검증을 다시 실행했다. 중간 실패를 최종 통과로 바꾸어 보고하지 않는다.
+
+`native_saved_two_line_row_frame`은 원본 행 높이의 누적 구간이 첫 선언 프레임 끝을
+실제로 포함할 때만 두 줄 reset을 물리 분할로 수용한다. RowBreak의
+`14535 < 16840 < 17457HU`는 충족하지만 교육과정 후반 43행은 첫 프레임을 소유하지
+않아 기존 일반 컷을 유지한다. 전체 교육과정은 413쪽으로 복원됐고 앞 단계의 네 실패가 통과했다.
+이 생산 결과를 측정·strict cut·통행/통표 수용과 실제 조각 배치가 함께 소비한다.
+
+| 검증 | 최종 결과 |
+| --- | --- |
+| `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast` | 10,270 PASS, 0 FAIL, 50 skip. 실행 262.866초. |
+| 원본 기반 정식 소유 검사 6개 | 6 PASS. 최초 비교 코드에서는 5 FAIL/1 PASS였고 빌드 실패를 결함 재현으로 세지 않았다. |
+| fmt·Native/WASM32/workspace all-target Clippy·workspace build | 모두 통과. Clippy 세 단계를 순차 실행했다. |
+| manifest/unit-tier 정책 검사 | 고정 base `8497729b4fb0e071c484fc5740f9bb2400bed437` 대비 통과. 파생 suite·manifest는 커밋하지 않는다. |
+| Native Skia library·그림 placeholder·direct PDF | 라이브러리 3,927 PASS/13 ignored, placeholder 2 PASS, direct PDF 4 PASS. |
+| fresh WASM | 저장소 루트에서 locked wrapper를 실행하고 브라우저로 새 패키지를 검증했다. JS/WASM의 pkg와 Studio public SHA-256이 일치한다. Docker daemon은 사용할 수 없어 표준 Docker 경로는 미실행이며 macOS 대체 경로 결과다. |
+| 전체 18쪽 Native·fresh WASM 실루엣 TSV | 두 경로 모두 최저 90.53132%, 90% 미달·누락 0쪽, 전체 18쪽 유지. 경계 정합 전 최저 90.52231%. |
+| 직접 PNG 판독 | 영향 페이지 2–8·11–16쪽 Native review와 대표 fresh WASM review/standalone overlay를 확인했다. 해당 13쪽 두 출력 PNG는 동일하다. |
+| 정상 OVR 대조군 6종 | 쪽수·개체 위치·크기 변화 0건(2px 기준). RowBreak의 4개 의도한 개체 변화는 별도로 기록했다. |
+
+검증 명령·종료 코드·source/input/PDF 식별은
+[공개 증거 설명](../pr/assets/issue7470_rowbreak_stage1/README.md),
+[provenance](../pr/assets/issue7470_rowbreak_stage1/provenance.json),
+[순차 검증 결과](../pr/assets/issue7470_rowbreak_stage1/local-validation.json)에 연결한다.
+5·7·8·11·12·14·16쪽의 전후 비교와 Native/fresh WASM review·standalone overlay는
+[이미지 모음](../pr/assets/issue7470_rowbreak_stage1/gallery.html)에 있다.
+로컬 전체 로그는 `latest-base-full-nextest.log`, `latest-base-final-validation.json` 및
+단계별 `latest-base-*.log`에 보존했다. 공개 원본 파일·기준 PDF·기존 기대값·baseline·공차는 변경하지 않았다.
+
+7→8쪽의 중첩 표 마지막 줄·다음 조각, 11→12쪽의 4.2/4.3 소유와 마지막 행 테두리·빈 밴드,
+5쪽 뒤 문단과 16쪽 TAC/float 배치를 확인했다. 글자 굵기·일부 배경색·열 폭·작은 괘선 차이는
+남으며 완전한 출력 일치나 글꼴 예외로 표시하지 않는다. 두 경로 모두 경계 정합 7,117픽셀을
+포함한 2px 이웃 관용 내용 실루엣 수치다.
+
+작업지시자 최종 시각 판정·원격 push·Open PR 생성·최신 GitHub CI는 대기 중이다.
+PR 번호 확정 후 archive review와 필요한 오늘할일을 같은 branch의 문서 commit으로 추가한다.
+이번 부분 수정은 #7470 전체 종료나 merge 승인을 뜻하지 않는다. 원래 공백·지도 후보
+`bac75f50ee4e57839f4c0ac7a259165acf0e3509`는 clean 상태로 보존했고 후속 재검증·별도 제출을 유지한다.
