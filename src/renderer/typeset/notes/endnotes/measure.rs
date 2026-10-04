@@ -71,17 +71,7 @@ impl TypesetEngine {
         para_height: f64,
         starts_new_note: bool,
     ) -> EndnoteRenderInkFit {
-        // 본문 항목이나 구분선이 함께 있는 단(미주가 시작되는 단)에서 미주 영역의 시작점이
-        // 기록된 경우(`current_start_height > 0`)는 scratch 렌더가 본문을 빼고 그 높이부터
-        // 미주만 그린다. 그 시작점은 구분선 여백을 누계로 잡은 값이라 렌더와 같다는 보장이
-        // 없으므로 판정하지 않는다. 시작점이 없으면 렌더처럼 본문 항목부터 그려 판정한다.
-        let column_has_body_or_separator = st.current_items.iter().any(|item| {
-            matches!(item, PageItem::EndnoteSeparator { .. })
-                || page_item_para_index(item).is_some_and(|pi| pi < paragraphs.len())
-        });
-        if st.current_items.is_empty()
-            || (column_has_body_or_separator && st.current_start_height > 0.0)
-        {
+        if st.current_items.is_empty() {
             return EndnoteRenderInkFit::Unjudged;
         }
         let column_key: EndnoteColumnKey = (
@@ -211,10 +201,14 @@ impl TypesetEngine {
             return None;
         }
         let ssot_debug = en_ssot_debug();
-        // 미주 영역의 시작점이 기록된 단(`current_start_height > 0`, 본문·구분선 아래)은 그
-        // 높이에 같은 단의 본문 항목이 이미 들어 있으므로 본문 항목을 다시 그리지 않는다.
-        // 시작점이 기록되지 않은 단(0)은 렌더처럼 본문 항목부터 차례로 그린다.
-        let origin_recorded = st.current_start_height > 0.0;
+        // 본문 항목이 함께 있는 단은 렌더처럼 본문·구분선부터 단 위에서 차례로 그린다 — 누계가
+        // 기록한 미주 시작점(`current_start_height`)은 본문 마지막 줄 간격 등을 렌더와 다르게
+        // 실어 미주 영역이 몇 px 어긋난다. 본문 항목이 없는 단만 기록된 시작점에서 그린다.
+        let column_has_body_items = st
+            .current_items
+            .iter()
+            .any(|item| page_item_para_index(item).is_some_and(|pi| pi < paragraphs.len()));
+        let origin_recorded = st.current_start_height > 0.0 && !column_has_body_items;
         let is_endnote_item = |item: &&PageItem| {
             !origin_recorded || page_item_para_index(item).is_none_or(|pi| pi >= paragraphs.len())
         };
@@ -327,7 +321,11 @@ impl TypesetEngine {
         // build_single_column 은 양수 start_height 를 무시(음수 shift 만 적용)하므로,
         // 단이 본문 아래에서 시작(start>0)하면 col_area.y 에 그 오프셋을 실어 동일 프레임에서
         // 렌더한다. 음수(vpos 되감김)는 col_area.y=0 + start_height 음수 shift 로 처리.
-        let col_y = st.current_start_height.max(0.0);
+        let col_y = if origin_recorded {
+            st.current_start_height
+        } else {
+            0.0
+        };
         let col_area = crate::renderer::page_layout::LayoutRect {
             x: 0.0,
             y: col_y,
