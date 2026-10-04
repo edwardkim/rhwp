@@ -218,7 +218,6 @@ impl NumberingMarker {
             _ => None,
         }
     }
-
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.

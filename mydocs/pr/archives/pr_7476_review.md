@@ -9,7 +9,7 @@ last_verified: 2026-10-04
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 초기 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f`에서 체리픽을 시작했고, 현재는 `upstream/devel 8497729b4fb0e071c484fc5740f9bb2400bed437` 위로 리베이스한 후보를 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 초기 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f`에서 체리픽을 시작했고, 현재는 `upstream/devel 1d6bc70767fad365b07afe4ef57972d23b140f2b`(#7567) 위로 리베이스한 후보를 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -565,3 +565,12 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - [이관 범위·입력·명령·검증 원장](../assets/planet6897_green_20261002/blocking_transfer7445_validation.json), [화학제품 전103쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_chemical_native_all_pages.tsv), [synam 전35쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_all_pages.tsv), [KTX 전1쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_all_pages.tsv), [#2439 전10쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_all_pages.tsv), [synam30쪽 review](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_review.png), [KTX review](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_review.png), [#2439 review](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_review.png).
 
 - 이관 후 기존 집중133건133PASS(2slow)·2911skip·실행65.798초·exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest 모두exit0입니다. 생산 소스·원본·PDF는 바뀌지 않았습니다. 최종 전체/Skia 검증을 이어갑니다.
+
+
+### #7567 병합 반영 — 최신 devel 리베이스와 계약 호출 동기화
+
+- #7445 분리 단계 뒤 새base `1d6bc7076`의 #7567 RowBreak 변경을 확인했습니다. 이전base 전체 검증은 SIGINT로 중단해 성공으로 사용하지 않았고 로그를 보존했습니다. `backup/planet6897-green-before-7567-20261004`를 남긴 뒤 기존183커밋을 최신devel 위로 리베이스했습니다.
+- 충돌에서는 새 공백 메트릭/번호 파생값, 영문 슬롯 조회, 저장 두 줄/열림·종료 프레임 근거, 일반 재조판 뒤 간격과 TAC 앞 앵커 회수 계약을 함께 유지했습니다. 저장 블록/본문 종료 상자는 각각 입증된 원본 프레임으로 경계를 소유하며 문단 원점0만으로 쪽 경계를 판정하지 않습니다.
+- 빌드에서 남아 있던 `native_tac_next_line_full_spacing` 호출을 새 `tac_next_line_full_spacing`과 전체 compatibility profile 인자로 동기화했습니다. 최초 compile 실패 증거를 남겼고 수정 후 기존133+upstream #7470의6검사139건139PASS(1slow)·3491skip·실행64.277초·exit0입니다. 신규 테스트/fixture는 추가하지 않았습니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy 전부exit0이고 최신base `1d6bc7076`의 manifest도 별도로exit0을 확인했습니다. Native 정상4문서 전40쪽은 모두90% 이상입니다. fresh WASM no-opt 빌드exit0·루트/Studio WASM 해시 동일이며 새 WASM 시각40쪽과 최종 전체/Skia 검증은 진행합니다.
+- [리베이스·집중·빌드·Native40쪽 증적](../assets/planet6897_green_20261002/rebase7567_validation.json). #7445 분리2함수/2원장 입력·원본/PDF·정상 검사 보존 범위는 그대로 유지합니다. 통합PR/CI/merge/후속처리는 아직 미완료입니다.

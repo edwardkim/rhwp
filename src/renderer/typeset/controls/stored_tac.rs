@@ -370,13 +370,13 @@ pub(super) fn prepare(
             {
                 return None;
             }
-            let trailing = if crate::renderer::composer::native_tac_next_line_full_spacing(
+            let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
                 para,
                 next_para,
                 fmt.spacing_after,
                 next_spacing_before,
                 seg,
-                page.profile.hwp5_stored_pagination_layout(),
+                page.profile,
                 dpi,
             ) {
                 hwpunit_to_px(seg.line_spacing, dpi)
