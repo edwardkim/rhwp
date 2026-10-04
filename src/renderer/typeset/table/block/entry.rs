@@ -1754,7 +1754,10 @@ impl TypesetEngine {
         // 유효한 저장 단의 완전한 개체는 기존 whole-fit과 같은 종이 경계를 쓴다.
         // 본문 하단 여백을 허용하던 경로도 확정 원점 이후의 실제 하단을 검사한다.
         // 각주 예약과 재조판 높이는 저장 개체 프레임으로 대체하지 않는다.
-        let whole_frame_budget = if source_text_origin.is_some()
+        // 확정된 닫힌 저장 프레임은 본문 예산으로 검사한다. 일반 저장 줄의
+        // 종이 아래 여백 허용을 여기까지 전달하면 분할할 두 행을 통째 수용한다.
+        let whole_frame_budget = if closed_source_frame_placement.is_none()
+            && source_text_origin.is_some()
             && legacy_whole_fits
             && ft.table_footnotes.is_empty()
             && st.current_footnote_height <= 0.0

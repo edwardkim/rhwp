@@ -205,7 +205,7 @@
     "local_no_opt_alternative": true,
     "wasm_sha256": "8990f466823447fc74a22961fd400ee2acad584296b37facdf3f51b66e2ea077",
     "public_same": true,
-    "visual40": "running"
+    "visual41": "running"
   },
   "previous_whole": "3fc013260 old-base run deliberately interrupted when #7567 merge discovered; not PASS",
   "first_compile": "failed outdated native_tac_next_line_full_spacing reference; corrected to tac_next_line_full_spacing with full profile; preserved log",
@@ -220,5 +220,6 @@
     "src/renderer/typeset/table/continuation/fragment/emit.rs": "6f2f35930900c48266904cf7d3292e4d3462a1db68b7157058da450db3fccafb",
     "src/renderer/typeset/controls/stored_tac.rs": "0d709e98bf74de9316886e999db35ce2e37f05cc4b3f49f242b9863d4bd00a50",
     "src/renderer/layout/text_measurement.rs": "b7124d8cddfecf0c3d021293ed42caad0f09dd16f9aee6351bdac56e07493c74"
-  }
+  },
+  "native_total_pages": 41
 }

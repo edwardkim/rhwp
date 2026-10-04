@@ -572,5 +572,22 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - #7445 분리 단계 뒤 새base `1d6bc7076`의 #7567 RowBreak 변경을 확인했습니다. 이전base 전체 검증은 SIGINT로 중단해 성공으로 사용하지 않았고 로그를 보존했습니다. `backup/planet6897-green-before-7567-20261004`를 남긴 뒤 기존183커밋을 최신devel 위로 리베이스했습니다.
 - 충돌에서는 새 공백 메트릭/번호 파생값, 영문 슬롯 조회, 저장 두 줄/열림·종료 프레임 근거, 일반 재조판 뒤 간격과 TAC 앞 앵커 회수 계약을 함께 유지했습니다. 저장 블록/본문 종료 상자는 각각 입증된 원본 프레임으로 경계를 소유하며 문단 원점0만으로 쪽 경계를 판정하지 않습니다.
 - 빌드에서 남아 있던 `native_tac_next_line_full_spacing` 호출을 새 `tac_next_line_full_spacing`과 전체 compatibility profile 인자로 동기화했습니다. 최초 compile 실패 증거를 남겼고 수정 후 기존133+upstream #7470의6검사139건139PASS(1slow)·3491skip·실행64.277초·exit0입니다. 신규 테스트/fixture는 추가하지 않았습니다.
-- fmt·Native/WASM Clippy·workspace build·all-target Clippy 전부exit0이고 최신base `1d6bc7076`의 manifest도 별도로exit0을 확인했습니다. Native 정상4문서 전40쪽은 모두90% 이상입니다. fresh WASM no-opt 빌드exit0·루트/Studio WASM 해시 동일이며 새 WASM 시각40쪽과 최종 전체/Skia 검증은 진행합니다.
-- [리베이스·집중·빌드·Native40쪽 증적](../assets/planet6897_green_20261002/rebase7567_validation.json). #7445 분리2함수/2원장 입력·원본/PDF·정상 검사 보존 범위는 그대로 유지합니다. 통합PR/CI/merge/후속처리는 아직 미완료입니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy 전부exit0이고 최신base `1d6bc7076`의 manifest도 별도로exit0을 확인했습니다. Native 정상4문서 전41쪽은 모두90% 이상입니다. fresh WASM no-opt 빌드exit0·루트/Studio WASM 해시 동일이며 새 WASM 시각41쪽과 최종 전체/Skia 검증은 진행합니다.
+- [리베이스·집중·빌드·Native41쪽 증적](../assets/planet6897_green_20261002/rebase7567_validation.json). #7445 분리2함수/2원장 입력·원본/PDF·정상 검사 보존 범위는 그대로 유지합니다. 통합PR/CI/merge/후속처리는 아직 미완료입니다.
+
+
+### 최신 #7505 증거를 반영한 2실패 보정
+
+- 새base1d6bc7076/head b45dde605 전체nextest는10,288건 중10,286PASS(9slow)/2FAIL/50skip·exit100입니다. 실패 로그를 보존하며 통과로 보고하지 않습니다.
+- 오래된 #7445 선택 쪽 증거에 근거한 추가2함수 이관은 철회하고 두 함수를 복원했습니다. #7505는 전체10,229PASS·정책연구Native/fresh WASM215쪽 최저90.01587%·미달0을 확인했습니다. 최신 시각 증거를 이전 미달 수치로 대신하지 않습니다. [이관 철회 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977600701).
+- 현재 통합 브랜치에서 채움 없는 문단 외곽선의 후행 간격을 복원하고, 닫힌 저장 표 프레임의 본문 예산 검사에 종이 아래 여백 허용이 전달되지 않도록 보정합니다. 원본/PDF·기존 함수는 유지하고 시각 확인 후 고정 좌표를 의미 관계로 교정합니다. 최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.
+- 사용자 요청으로 실행 중인 rebase7567 경로와PNG/TSV/렌더트리/기준자료를 보존하고 이전 대형중간SVG2,354개·223,903,712,365bytes를 정리했습니다. output은227GB→19GB이며 삭제목록은ignored output에 남겼습니다.
+
+
+### #7505의 정상 계약 복원과 의미 검사 교정 완료
+
+- 원인: 채움 없는 외곽선까지 후행 줄간격을 제외하고 닫힌 저장 프레임까지 종이 여백 예산을 허용한 현재 브랜치의 두 후속 보정 회귀입니다. `line_flow/spacing→border_bottom→para_border_ranges`와 `closed_source_frame→whole_frame_budget→occupied_bottom fit→통째/분할 소유`의 실제 소비 경로를 보정했습니다. 좌표clamp·문서ID 예외·출력 숨김은 없습니다.
+- 기존 두 실패 함수를 복원했고 삭제0·새 함수0입니다. 1쪽 `native-8-0.hwpx` Native/fresh WASM은 모두96.86991%(이전Native89.37172%)·PNG byte동일입니다. 기존 테두리 함수1개만 고정 좌표48/384/104.619/22.556을 빈 글줄 포함·테두리 단일 소유·뒤 문단과 경계 맞닿음 관계로 교정했습니다. [전후TSV](../assets/planet6897_green_20261002/stored-border-before-after.tsv), [보정review](../assets/planet6897_green_20261002/stored_border_fixed_native_review.png).
+- 기존17건17PASS/0FAIL·625skip·1.089초이며 그림11의 세 본문 예산·HWP/HWPX 내용 단일 소유와 #6267/#1835 기존 검사도 유지했습니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest exit0입니다. 파생 harness metadata drift는 --prepare 후 같은base check로 확인했고 생성 파일은 커밋하지 않습니다. [보정 원장](../assets/planet6897_green_20261002/restored_two_failures_validation.json).
+- 정상4문서41쪽 Native 렌더트리와 fresh WASM rawSVG는 직전 전쪽 검증과 byte동일이며 모두90% 이상입니다. #6267 Native tree 동일, WASM은 극소 부동소수 표현차가 있어 실제1쪽 새 raster97.26749%로 확인했습니다. 현재 원본 그림11의14쪽 tree도 직전99.80678% 입력과 동일하고 쪽수215입니다. 이 비교를 현재215쪽 전체 시각 승인으로 보고하지 않습니다.
+- 사용자 지목 정책연구 TSV의 기존 미달7쪽은 #7505 동일 글꼴환경으로 재비교했습니다.162/169/173/208/214쪽은 각각100/99.93183/99.68112/96.82326/100%입니다.91쪽85.67511%·95쪽84.98034%의 실제 표 뒤 본문 상향 잔차는 다음 단계에서 현재 브랜치 보정합니다. 이7쪽은 #7445에 이관하지 않습니다. 최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.

@@ -7030,13 +7030,23 @@ impl LayoutEngine {
             // [#5711] 줄간격이 음수인 문단은 전진값 `y` 가 마지막 줄 상자 아래보다 위에
             // 있다. 그 값을 테두리 아래 변으로 쓰면 테두리가 글자를 가로지른다. 다음 문단
             // 시작 y 는 종전대로 두어 문단 간 간격 계약은 바꾸지 않는다.
-            // 본문의 마지막 줄간격은 다음 흐름을 위한 공간이며 문단 배경에 칠하지 않는다.
-            // 셀 문단은 기존 테두리 점유 계약을 유지하고, 음수 줄간격도 줄 상자를 감싼다.
+            // 채움 배경의 마지막 줄간격은 다음 흐름을 위한 공간이므로 칠하지 않는다.
+            // 채움 없는 문단 외곽선은 빈 줄과 뒤 문장의 후행 간격까지 둘러싼다.
+            // 셀 문단은 기존 점유 계약을 유지하고, 음수 간격도 줄 상자를 감싼다.
+            let outline_includes_line_spacing = styles
+                .border_styles
+                .get((para_border_fill_id as usize).saturating_sub(1))
+                .is_some_and(|style| {
+                    style.fill_color.is_none()
+                        && style.borders.iter().any(|border| {
+                            !matches!(border.line_type, crate::model::style::BorderLineType::None)
+                        })
+                });
             let border_bottom =
                 last_line_border_bottom
                     .or(last_line_box_bottom)
                     .map_or(y, |bottom| {
-                        if cell_ctx.is_none() {
+                        if cell_ctx.is_none() && !outline_includes_line_spacing {
                             bottom
                         } else {
                             y.max(bottom)
