@@ -9,7 +9,7 @@ last_verified: 2026-10-04
 
 ## 최종 판정
 
-**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 초기 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f`에서 체리픽을 시작했고, 현재는 `upstream/devel 6b3faf77d8085441f9f26d88d65a49791e910352`를 포함한 후보를 검토합니다.
+**머지 보류.** 원 PR 최신 head의 CI는 green이지만 체리픽은 완료했고 통합 검증 중입니다. `review/planet6897-green-20261002`에서 초기 devel `e5098bc91be44a49367a7f2895a14fcd4f4c2c7f`에서 체리픽을 시작했고, 현재는 `upstream/devel 8497729b4fb0e071c484fc5740f9bb2400bed437` 위로 리베이스한 후보를 검토합니다.
 
 ## 접수·기여자·출처
 
@@ -524,3 +524,13 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 테스트 함수 두 개의 이름과 개수는 동일하며 새 회귀/픽스처·원본/PDF·production 변경0건입니다. 최신 검사 소스와 다시 준비한 suite에서 두 교정 검사와 기존 SVG snapshot을 포함한9건9PASS·441skip·exit0, 실제0.143초입니다. 픽셀 이동이 달라져도 내용 포함·순서·쪽 소속 계약을 검사합니다.
 - fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest 모두exit0입니다. production 네 파일 해시를 직전 전쪽 Native/fresh WASM 검증과 다시 대조하여 모두 같음을 확인했습니다. 같은 출력의 시각 근거를 재사용하며 test-only 변경 때문에 WASM을 다시 생성하지 않았습니다.
 - [정확한 검사 해시·함수 수·검증 원장](../assets/planet6897_green_20261002/stale1835_semantic_validation.json). 기존6실패·다른 시각 보류·최종 전체/Skia는 남고 PR/CI/merge/후속처리는 아직 미완료입니다. 다음은 독립 원본/PDF가 모두1쪽인 #6267의 서로 다른 호스트/표 원점 보정입니다. 수치90.034%여도 실제 글줄/표 겹침이 있어 승인하지 않습니다.
+
+
+### #6267 저장 단의 호스트·전체 표 원점 보정과 검토 범위 확정
+
+- 사용자 지시대로 `review/planet6897-green-20261002`가 도입한 회귀만 보정합니다. 정확한 최신base `8497729b4fb0e071c484fc5740f9bb2400bed437`의 동일 원본·동일 검사로 #6267/#6761/#7359/synam001 기존6검사가 모두PASS입니다. base의 KTX·#2439·#6267 글줄 겹침은 모두0건이고 통합 후보는 각각2·1·3건이므로 해당 신규 겹침은 실제 회귀입니다. KTX PDF 교체·글꼴 설치와 기존 문서 전체 피델리티 개선은 이번 보정에 포함하지 않았습니다.
+- #6267의 단은 전체 TAC 표로 시작합니다. 저장 첫 줄0과 같은 단의 유효한 단조 증가 LINE_SEG를 확인한 뒤 저장 호스트 첫 글줄 원점을 공통 배치 결과에 전달했습니다. 글 앞 표는 문단 앞 간격 이전 앵커를 쓰고, 최종 글줄과 표가 같은 원점·점유 끝을 소비합니다. 각주/재조판을 제외한 기존 whole-fit 경로의 물리 종이 예산도 확정한 실제 하단으로 확인합니다. 문서ID·픽셀 예외·좌표clamp·출력 숨김은 없습니다.
+- `entry.rs`의 `source_text_origin → ParagraphFloatPlacement → whole_frame_budget/record_paragraph_float_placement → layout.rs의 paragraph_float_placements`로 측정과 실제 글줄/전체Table의 원점 연결을 확인했습니다. `prepare.rs` 변경은 제외했고 원본 HWPX·독립 한컴 PDF·기존 테스트 함수와 기대값·visual_sweep.py·임계값은 유지했습니다.
+- base 대조 빌드 뒤 첫 집중 실행은59PASS/3FAIL이었습니다. 현재 브랜치 library 재빌드 후 소스·검사 변경 없이 같은62건62PASS·exit0입니다. 초기 실패 로그를 보존하며 그 결과를 통과 증거로 사용하지 않습니다. 확대된 기존135건은130PASS(1slow)/5FAIL·3721skip·실행70.224초·exit100이며 #6267 기존2검사는PASS입니다. 남은 실패는 KTX/#2439의 text-overlap2분할, #6761/#7359/synam001 간격3건입니다.
+- Native/fresh WASM 전1쪽 모두97.26749%이며 전체5행 표와 마지막 본문 비겹침을 review PNG로 직접 확인했습니다. h01 전9쪽은 양쪽 최저94.28413%·미달0이고 정상form00210쪽/#6797 11쪽/#5701 3쪽/#1835 3쪽/#1789 2쪽의 양쪽 렌더 트리는 이전 검증 출력과 바이트 동일합니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 대체 빌드입니다.
+- [정확한 소스·입력 해시와 검증 원장](../assets/planet6897_green_20261002/para6267_scope_validation.json), [동일base 대조](../assets/planet6897_green_20261002/green_review_base_scope_control.json), [Native 전1쪽 TSV](../assets/planet6897_green_20261002/para6267_scope_para6267_native_all_pages.tsv), [fresh WASM 전1쪽 TSV](../assets/planet6897_green_20261002/para6267_scope_para6267_wasm_all_pages.tsv), [review PNG](../assets/planet6897_green_20261002/para6267_scope_native_p1_review.png). #6267 보정만 완료했으며 통합 승인은 계속 보류합니다. 남은5차단·최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.

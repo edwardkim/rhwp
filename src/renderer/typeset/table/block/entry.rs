@@ -1519,14 +1519,67 @@ impl TypesetEngine {
         } else {
             table_total
         };
+        // 같은 저장 단의 첫 줄 원점은 글줄과 표가 함께 소비한다.
+        // 단을 여는 완전한 TAC 표도 저장 프레임이며, 재조판/분할 원점과 섞지 않는다.
+        let source_text_origin = (st.col_count == 1
+            && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+            && !st.vpos_ladder_dirty
+            && !st.profile.session_edited()
+            && fmt.computed_host_lines.is_none()
+            && fmt.line_heights.len() == para.line_segs.len())
+        .then(|| {
+            let first = match st.current_items.first()? {
+                PageItem::FullParagraph { para_index } => *para_index,
+                PageItem::Table {
+                    para_index,
+                    control_index,
+                } => {
+                    let first_para = paragraphs_all.get(*para_index)?;
+                    let Control::Table(first_table) = first_para.controls.get(*control_index)?
+                    else {
+                        return None;
+                    };
+                    if !first_table.common.treat_as_char || first_para.line_segs.len() != 1 {
+                        return None;
+                    }
+                    *para_index
+                }
+                _ => return None,
+            };
+            let chain = paragraphs_all.get(first..=para_idx)?;
+            // 원점0은 추정 기본값이 아니라 실제 단 시작 줄의 저장 위치다.
+            if chain.first()?.line_segs.first()?.vertical_pos != 0
+                || st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::PartialTable { .. } | PageItem::Shape { .. })
+                })
+            {
+                return None;
+            }
+            let mut previous = None;
+            for host in chain {
+                if host.stored_text_partition_is_dirty() || host.line_segs.is_empty() {
+                    return None;
+                }
+                for line in &host.line_segs {
+                    if is_synthetic_line_seg(line)
+                        || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+                    {
+                        return None;
+                    }
+                    previous = Some(line.vertical_pos);
+                }
+            }
+            Some(st.vpos_col_anchor + hwpunit_to_px(para.line_segs.first()?.vertical_pos, self.dpi))
+        })
+        .flatten();
         let unconstrained_host_placement = para_has_non_whitespace_text(para)
             .then(|| {
-                let text_origin = placement_para_start_height
+                let text_origin = source_text_origin.unwrap_or(placement_para_start_height
                     + if placement_para_start_height > 0.0 {
                         fmt.spacing_before
                     } else {
                         0.0
-                    };
+                    });
                 if let Some(lines) = &fmt.computed_host_lines {
                     crate::renderer::float_placement::ParagraphFloatPlacement::from_computed_host(
                         para,
@@ -1562,10 +1615,16 @@ impl TypesetEngine {
                             para,
                             table,
                             ctrl_idx,
-                            placement_para_start_height,
+                            source_text_origin.map_or(placement_para_start_height, |origin| {
+                                origin - if placement_para_start_height > 0.0 { fmt.spacing_before } else { 0.0 }
+                            }),
                             whole_placement_height,
                             self.dpi,
                         )
+                    })
+                    .map(|mut placement| {
+                        placement.stored_host_origin = source_text_origin;
+                        placement
                     })
                 }
             })
@@ -1580,8 +1639,11 @@ impl TypesetEngine {
                 } else {
                     placement
                 };
-                // A stored ladder must have a known origin in THIS column, not
-                // a default zero or a base recovered from already painted nodes.
+                if placement.stored_host_origin.is_some() {
+                    return placement;
+                }
+                // 저장 사다리는 현재 단에서 입증된 원점만 사용한다.
+                // 추정0이나 이미 그린 노드로 복원한 기준은 사용하지 않는다.
                 let frame = (para.line_segs.len() == 1
                     && para.controls.len() == 1
                     && st.col_count == 1
@@ -1608,7 +1670,7 @@ impl TypesetEngine {
                             previous = Some(line.vertical_pos);
                         }
                     }
-                    // A continuation has no full paragraph origin in this frame.
+                    // 이어받은 조각에는 이 프레임의 완전한 문단 원점이 없다.
                     if st.current_items.iter().any(|item| {
                         matches!(item, PageItem::PartialTable { .. } | PageItem::Shape { .. })
                     }) {
@@ -1689,8 +1751,23 @@ impl TypesetEngine {
                 || saved_table_source_frame.is_some());
         // 예약 구간의 하단으로 fit을 판정한다. current_height는 앵커 줄이
         // 아니므로 여기에 표 높이만 더하면 뒤 줄의 앵커 거리가 예산에서 빠진다.
+        // 유효한 저장 단의 완전한 개체는 기존 whole-fit과 같은 종이 경계를 쓴다.
+        // 본문 하단 여백을 허용하던 경로도 확정 원점 이후의 실제 하단을 검사한다.
+        // 각주 예약과 재조판 높이는 저장 개체 프레임으로 대체하지 않는다.
+        let whole_frame_budget = if source_text_origin.is_some()
+            && legacy_whole_fits
+            && ft.table_footnotes.is_empty()
+            && st.current_footnote_height <= 0.0
+            && !self.render_normalization.table_text_reflowed(table)
+        {
+            available + below_body_slack
+        } else {
+            available
+        };
         if !painted_rowbreak_exceeds_paper
-            && resolved_host_placement.map_or(legacy_whole_fits, |p| p.occupied_bottom <= available)
+            && resolved_host_placement.map_or(legacy_whole_fits, |p| {
+                p.occupied_bottom <= whole_frame_budget
+            })
         {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
