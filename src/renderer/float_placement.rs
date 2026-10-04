@@ -308,6 +308,19 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
         if object_only_saved_table_anchor(para, table) {
             return true;
         }
+        // 여러 저장 글줄도 개체 앞에서 모두 끝나면 같은 바깥 프레임을 소유한다.
+        // 앵커 계획과 같은 유효성 판정을 소비하므로 되감긴 원본 줄은 받아들이지 않는다.
+        if matches!(para.controls.as_slice(), [Control::Table(_)])
+            && ParagraphFloatPlacement::text_head_control_position(para, 0).is_some()
+            && ParagraphFloatPlacement::stored_host_lines_are_valid(para, table, 0)
+            && para
+                .line_segs
+                .first()
+                .is_some_and(|line| line.vertical_pos >= 0)
+            && !para.cell_format_vpos_dirty
+        {
+            return true;
+        }
         let [line] = para.line_segs.as_slice() else {
             return false;
         };
@@ -2175,16 +2188,7 @@ impl ParagraphFloatPlacement {
             || table_height < 0.0
             || !is_para_topbottom_float(&table.common)
             || !matches!(table.common.vert_align, VertAlign::Top)
-            || !super::layout::stored_host_lines_precede_float(para, table, control_index)
-            || para.stored_text_partition_is_dirty()
-            || para.line_segs.is_empty()
-            || para.line_segs.iter().any(|line| {
-                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-            })
-            || para.line_segs.windows(2).any(|pair| {
-                pair[1].vertical_pos < pair[0].vertical_pos
-                    || pair[1].text_start < pair[0].text_start
-            })
+            || !Self::stored_host_lines_are_valid(para, table, control_index)
         {
             return None;
         }
@@ -2206,6 +2210,22 @@ impl ParagraphFloatPlacement {
                 table_left: None,
                 table_top,
                 occupied_bottom,
+            })
+    }
+
+    /// 저장 앵커의 줄 소유를 판정하는 공통 근거. 개체 바깥여백도 이 판정을 소비한다.
+    fn stored_host_lines_are_valid(para: &Paragraph, table: &Table, control_index: usize) -> bool {
+        is_para_topbottom_float(&table.common)
+            && table.common.vert_align == VertAlign::Top
+            && super::layout::stored_host_lines_precede_float(para, table, control_index)
+            && !para.stored_text_partition_is_dirty()
+            && !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            && para.line_segs.windows(2).all(|pair| {
+                pair[1].vertical_pos >= pair[0].vertical_pos
+                    && pair[1].text_start >= pair[0].text_start
             })
     }
 }
