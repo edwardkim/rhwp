@@ -1,5 +1,5 @@
 {
-  "state": "visual_build_and_focused_pass_whole_pending",
+  "state": "visual_build_focused_whole_and_skia_pass",
   "source_parent": "5a5f64f25",
   "source_sha256": {
     "src/renderer/float_placement.rs": "edb6cfa00101e6fff6708ab730cb77e7464e095cb81b95098dffeada4460f480",
@@ -373,7 +373,15 @@
       95
     ]
   },
-  "whole_nextest": "보정 전 f0c5fbf93: 10288PASS; current source pending",
+  "whole_nextest": {
+    "passed": 10288,
+    "failed": 0,
+    "skipped": 50,
+    "slow": 9,
+    "runtime_seconds": 497.515,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/liver-p90-retry-whole-nextest.log"
+  },
   "studio_public_pkg_byte_identical": {
     "rhwp.js": true,
     "rhwp_bg.wasm": true
@@ -386,5 +394,86 @@
     "runtime_seconds": 3.023,
     "exit_code": 0,
     "log": "output/pr-review/planet6897-green-20261002/liver-p90-focused.log"
-  }
+  },
+  "whole_and_skia_gates": [
+    {
+      "gate": "whole-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 498.93
+    },
+    {
+      "gate": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads=8"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 227.524
+    },
+    {
+      "gate": "skia-missing-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 157.107
+    },
+    {
+      "gate": "skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.719
+    }
+  ],
+  "tested_head": "859d1ddefc2f70180fd8009d7124804bdd9d76d8"
 }
