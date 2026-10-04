@@ -7144,17 +7144,18 @@ impl LayoutEngine {
         start_height: f64,
         section_index: usize,
         (separator_above_hu, between_notes_hu, separator_below_hu): (i32, i32, i32),
-        sources: &[EndnoteParaSource],
+        (source_base, sources): (usize, &[EndnoteParaSource]),
         placements: EndnoteColumnPlacements,
     ) -> (f64, Option<f64>) {
         // 실제 렌더 셋업(`set_endnote_shape_margins_hu`)과 같은 미주 모양 여백을 싣는다.
         // 사이 간격만 실으면 위·아래 여백이 0 으로 남아 영 여백 프로필로 오인된다.
         self.set_endnote_shape_margins_hu(separator_above_hu, between_notes_hu, separator_below_hu);
-        // 로컬 paras 는 전부 미주 para(0-기반 재색인). `endnote_para_base=0` 으로 미주 vpos
-        // 정규화 경로(`endnote_line_vpos_base`: para_index >= base)를 활성화한다 — 미설정 시
-        // usize::MAX 라 정규화가 꺼져 para 의 절대 파일-vpos 가 그대로 새어 단독 측정이
-        // 폭발한다(수식 para 35px→13721px).
-        self.set_endnote_para_sources(0, sources);
+        // 로컬 paras 는 `source_base` 부터 미주 para 다(그 앞은 같은 단의 본문 para).
+        // base 를 설정해 미주 vpos 정규화 경로(`endnote_line_vpos_base`: para_index >= base)를
+        // 활성화한다 — 미설정 시 usize::MAX 라 정규화가 꺼져 para 의 절대 파일-vpos 가 그대로
+        // 새어 단독 측정이 폭발한다(수식 para 35px→13721px). 본문 para 는 base 앞에 두어
+        // 실렌더처럼 미주 출처가 없게 한다(HWP3 본문 흐름 규칙이 미주 판정에 걸린다).
+        self.set_endnote_para_sources(source_base, sources);
         let layout_info = PageLayoutInfo {
             page_width: col_area.width,
             page_height: col_area.y + col_area.height,

@@ -351,15 +351,31 @@ impl TypesetEngine {
         let successor_source = local_indices
             .last()
             .and_then(|(global, _)| endnote_source(global + 1));
-        let local_sources: Vec<crate::renderer::pagination::EndnoteParaSource> =
-            std::iter::once(dummy_source.clone())
-                .chain(
-                    local_indices
-                        .iter()
-                        .map(|(global, _)| endnote_source(*global).unwrap_or(dummy_source.clone())),
-                )
-                .chain(successor_source)
-                .collect();
+        // 같은 단의 본문 para 는 단 앞쪽에 모인다. 그 뒤(+1 오프셋)부터 미주 출처를 매겨
+        // 본문 para 가 실렌더처럼 미주 출처 없이 그려지게 한다.
+        let body_prefix = local_indices
+            .iter()
+            .take_while(|(global, _)| *global < paragraphs.len())
+            .count();
+        let body_is_prefix = local_indices[body_prefix..]
+            .iter()
+            .all(|(global, _)| *global >= paragraphs.len());
+        let source_base = if body_is_prefix { 1 + body_prefix } else { 0 };
+        let sourced_locals = if body_is_prefix {
+            &local_indices[body_prefix..]
+        } else {
+            &local_indices[..]
+        };
+        let local_sources: Vec<crate::renderer::pagination::EndnoteParaSource> = (!body_is_prefix)
+            .then(|| dummy_source.clone())
+            .into_iter()
+            .chain(
+                sourced_locals
+                    .iter()
+                    .map(|(global, _)| endnote_source(*global).unwrap_or(dummy_source.clone())),
+            )
+            .chain(successor_source)
+            .collect();
         // 현재 단의 어울림 anchor 를 로컬 인덱스(+1)로 옮긴다. anchor 문단이 이 단에 없으면
         // 어떤 로컬 문단과도 같지 않은 값으로 둔다(레이아웃은 동일성 비교만 한다).
         let to_local = |global: usize| lookup_local(global).map(|l| l + 1);
@@ -409,7 +425,7 @@ impl TypesetEngine {
                 st.endnote_between_notes_hu,
                 st.endnote_separator_below_hu,
             ),
-            &local_sources,
+            (source_base, &local_sources),
             placements,
         );
         if ssot_debug {
