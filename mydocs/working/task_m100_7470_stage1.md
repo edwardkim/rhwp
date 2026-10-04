@@ -226,3 +226,7 @@ PR 번호 확정 후 archive review와 필요한 오늘할일을 같은 branch�
 
 2026-10-04 작업지시자가 대표 이미지와 잔여 차이를 수용하고 push·선행 PR 생성을 승인했다.
 GitHub Actions와 merge는 별도 단계로 유지한다.
+
+선행 보정은 [PR #7567](https://github.com/edwardkim/rhwp/pull/7567)로 제출했다.
+채번된 [self-review](../pr/archives/pr_7567_review.md)와 [후속 순서](../pr/archives/pr_7567_review_impl.md)에
+판정·경계·남은 GitHub CI와 merge 조건을 연결한다.
