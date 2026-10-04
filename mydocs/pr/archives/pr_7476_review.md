@@ -485,3 +485,9 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - 같은 관련70검사70PASS·exit0입니다. 새 회귀/픽스처·검사 수정/삭제·정본 PDF 변경0건입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 검증이고 pkg/Studio SHA가 같습니다.
 - Native/fresh WASM의 #1789 전2쪽은96.54137%·94.44785%, 미달0이며 PNG도 같습니다. 정상 form002 전10쪽·#6797 전11쪽·#5701 전3쪽의 양쪽 렌더 트리는 직전 검증 출력과 모두 바이트 동일합니다. 요청한 form002 첫 쪽 full SVG와 Chrome PNG를 최신 CLI로 재산출하여 두부 없는 확인본과 바이트 동일함을 확인했습니다. 실제 빈 체크박스는 보존합니다.
 - [원점 소비 경로·검증 원장](../assets/planet6897_green_20261002/owned_column_origin_validation.json), [Native 전2쪽 TSV](../assets/planet6897_green_20261002/owned_column_origin_native_all2.tsv), [fresh WASM 전2쪽 TSV](../assets/planet6897_green_20261002/owned_column_origin_wasm_all2.tsv), [1쪽 review](../assets/planet6897_green_20261002/owned_column_origin_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/owned_column_origin_native_p2_review.png), [두부 없는 form002 Chrome 확인본](../assets/planet6897_green_20261002/form002_stored_frame_current_chrome.png). 기존12실패·다른 시각 보류와 최신 전체검증은 다음 단계이며 PR 준비 완료로 판정하지 않습니다.
+
+### 단 원점 보정 후 전체검증과 최신 devel 동기화 준비
+
+- 깨끗한 head `bbcc8006c41c5e6d040ac8ccd0040c708cde5465`에서 locked release-test 전체 nextest threads8을 완료했습니다. 10,266실행·10,254PASS(7slow)·12FAIL·50skip·exit100, 실제 검사424.139초·컴파일4분9초입니다. 새5실패는 전체에서도 통과했고 기존 #6761·synam001·#7359·text-overlap8분할·#6267은 남았습니다. 마지막 대형 표 검사165.047초는 완료/PASS를 확인했으며 출력 공백 때문에 종료하지 않았습니다.
+- 원 PR11개를 다시 조회하여 모두OPEN·head변경 없음·CI실패/진행0을 확인했습니다. 이것을 통합 head의 실패를 대신하는 근거로 쓰지 않습니다. 원격 devel은 `8497729b4`로24개 커밋이 추가되었고 #7563의 공유 TAC 글줄/표 보정이 포함됩니다. 중복 보정을 피하도록 이 결과를 커밋한 뒤 최신 devel로 리베이스하고 재검증합니다.
+- [전체12실패·정확한 head·명령·원 PR 상태](../assets/planet6897_green_20261002/whole_after_owned_column_validation.json). 최신 devel 통합·전체/Skia·시각 보류·PR/CI/후속처리는 미완료이며 승인 보류를 유지합니다.
