@@ -13064,13 +13064,29 @@ impl LayoutEngine {
                                         .get(np.para_shape_id as usize)
                                         .map(|ps| ps.spacing_before.max(0.0))
                                         .unwrap_or(0.0);
-                                    let target = tac_table_y_before
+                                    // 사다리 델타는 호스트 줄 top 에서 잰다. 조판 배치가
+                                    // 준 기준점은 om_top 을 선가산했고, om_bottom 은 #521
+                                    // 이 ls 와 함께 후가산하므로 둘 다 빼 둔다(위
+                                    // `ladder_target` 과 같은 구성). 빼지 않으면 표당
+                                    // om 상하합만큼 사다리 아래로 밀린다(3-11월 실전 HWP
+                                    // 10쪽 140+140HU = 3.7px 실측).
+                                    let om_top_in_base_px = if flow_placement.is_some() {
+                                        hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
+                                            .max(0.0)
+                                    } else {
+                                        0.0
+                                    };
+                                    let om_bottom_px =
+                                        hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi)
+                                            .max(0.0);
+                                    let target = tac_table_y_before - om_top_in_base_px
                                         + hwpunit_to_px(
                                             ns.vertical_pos - seg.vertical_pos,
                                             self.dpi,
                                         )
                                         - ls_px
-                                        - next_sb;
+                                        - next_sb
+                                        - om_bottom_px;
                                     if (y_offset - target).abs() > 2.0 {
                                         y_offset = target;
                                     }
