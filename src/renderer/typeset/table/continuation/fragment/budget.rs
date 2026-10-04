@@ -509,7 +509,7 @@ impl TypesetEngine {
                 })
                 .flatten()
         });
-        let fragment_placement = fragment_placement.or_else(|| {
+        let mut fragment_placement = fragment_placement.or_else(|| {
             let spacing_before = input
                 .source
                 .styles
@@ -643,27 +643,57 @@ impl TypesetEngine {
             && std::ptr::eq(row_geometry_table, table)
             && terminal_outer_bottom_overhead == 0.0
         {
-            if let (Some(placement), Some(&start_line), Some(next)) = (
-                fragment_placement,
-                st.prefilled_line_prefixes.get(&(para_idx + 1)),
-                input.source.paragraphs_all.get(para_idx + 1),
-            ) {
+            if let Some(next) = input.source.paragraphs_all.get(para_idx + 1) {
                 let remaining_height = cut_row_h.iter().skip(cursor_row).sum::<f64>()
                     + cs * row_count.saturating_sub(cursor_row + 1) as f64;
-                if let Some(margin) =
-                    crate::renderer::float_placement::stored_terminal_rowbreak_outer_margin_after_prefix_px(
-                        para,
-                        next,
-                        table,
-                        start_line,
-                        placement.table_top + remaining_height,
-                        self.dpi,
-                    )
-                {
+                let top = fragment_placement.map_or(
+                    st.current_height + host_before_overhead + vert_offset_overhead,
+                    |placement| placement.table_top,
+                );
+                let consumed_host = prepared.host_frame
+                    != (
+                        st.pages.len(),
+                        st.current_column,
+                        st.current_zone_y_offset.to_bits(),
+                    );
+                let stored_continuation = (st.profile.hwpx_stored_layout()
+                    || st.profile.hwp5_stored_pagination_layout())
+                    && !st.profile.session_edited()
+                    && st.col_count == 1
+                    && !self.render_normalization.table_text_reflowed(table);
+                let margin = match st.prefilled_line_prefixes.get(&(para_idx + 1)) {
+                    Some(&start_line) if start_line > 0 && fragment_placement.is_some() =>
+                        crate::renderer::float_placement::stored_terminal_rowbreak_outer_margin_after_prefix_px(
+                            para, next, table, start_line, top + remaining_height, self.dpi,
+                        ),
+                    _ if stored_continuation =>
+                        crate::renderer::float_placement::stored_terminal_rowbreak_outer_margin_with_consumed_host_px(
+                            para, next, table, top + remaining_height, consumed_host, self.dpi,
+                        ),
+                    _ => None,
+                };
+                if let Some(margin) = margin {
+                    // 마지막 행을 수용하기 전에 뒤 원본 줄이 증명한 여백을 예약한다.
+                    // 같은 배치 계획을 확정 단계로 넘겨 흐름 끝도 함께 닫는다.
                     terminal_outer_bottom_overhead = margin;
+                    let placement = fragment_placement.get_or_insert(
+                        crate::renderer::float_placement::ParagraphFloatPlacement {
+                            flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                            anchor_y: st.current_height,
+                            stored_host_origin: None,
+                            stored_successor_line_origin: None,
+                            table_left: None,
+                            table_top: top,
+                            occupied_bottom: top,
+                        },
+                    );
+                    // 뒤 줄이 종료 상자를 닫는 원본은 배제 영역 안으로 흐르지 않는다.
+                    // 실제 배치에서도 예약한 끝점을 다음 줄의 흐름 원점으로 사용한다.
+                    placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
                 }
             }
         }
+
         let page_avail = fragment_placement.map_or(page_avail, |p| {
             let boundary = if is_continuation
                 || prepared.host_frame

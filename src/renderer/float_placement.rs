@@ -1042,10 +1042,46 @@ pub(crate) fn stored_terminal_rowbreak_outer_margin_px(
     fragment_bottom: f64,
     dpi: f64,
 ) -> Option<f64> {
+    stored_terminal_rowbreak_outer_margin_with_consumed_host_px(
+        host,
+        successor,
+        table,
+        fragment_bottom,
+        false,
+        dpi,
+    )
+}
+
+/// 앞 프레임에서 이미 소비한 제목·주석은 이어받기 프레임의 공간을 다시 차지하지 않는다.
+/// 다른 개체가 없고 뒤 저장 줄이 종료 여백을 정확히 닫는 경우에만 이 계약을 확장한다.
+pub(crate) fn stored_terminal_rowbreak_outer_margin_with_consumed_host_px(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    fragment_bottom: f64,
+    host_consumed_in_previous_frame: bool,
+    dpi: f64,
+) -> Option<f64> {
     use crate::model::paragraph::LineSeg;
     let line = successor.line_segs.first()?;
-    if para_has_non_whitespace_text(host)
-        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+    let consumed_host = host_consumed_in_previous_frame
+        && host
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Table(_)))
+            .count()
+            == 1
+        && host.controls.iter().all(|c| {
+            matches!(
+                c,
+                Control::Table(_) | Control::Footnote(_) | Control::Endnote(_)
+            )
+        })
+        && successor.text.is_empty()
+        && successor.controls.is_empty();
+    if (!consumed_host
+        && (para_has_non_whitespace_text(host)
+            || !matches!(host.controls.as_slice(), [Control::Table(_)])))
         || host.stored_text_partition_is_dirty()
         || successor.stored_text_partition_is_dirty()
         || host
