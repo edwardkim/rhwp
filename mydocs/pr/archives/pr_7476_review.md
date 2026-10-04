@@ -594,9 +594,16 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 
 ### 정책연구 미달7쪽 — #7505 기준 재비교와 종료 표 조각 흐름 보정
 
-- 사용자께서 지정하신 이전 TSV의 미달7쪽(91/95/162/169/173/208/214)을 현재 브랜치에서 확인했습니다. #7505가 사용한 같은 원본·독립 PDF·검증된 HumanMyeongJo TrueType 환경을 적용했으며 원본/PDF/visual_sweep.py/임계값은 변경하지 않았습니다. 글꼴 환경 재현으로5쪽은90% 이상이고91/95쪽에는 표 뒤 본문의 실제 상향 잔차가 남았습니다. 이7쪽은 #7445로 이관하지 않습니다.
+- 사용자께서 지정하신 이전 TSV의 미달7쪽(91/95/162/169/173/208/214)을 현재 브랜치에서 확인했습니다. #7505가 사용한 같은 원본·독립 PDF·검증된 HumanMyeongJo TrueType 환경을 적용했으며 원본/PDF/visual_sweep.py/임계값은 변경하지 않았습니다. 같은 환경의 현재 출력에서5쪽은90% 이상이고91/95쪽에는 표 뒤 본문의 실제 상향 잔차가 남았습니다. 이7쪽은 #7445로 이관하지 않습니다.
 - 호스트 제목·각주는 앞 프레임에서 이미 소비됐으나 단일 표/빈 호스트 전용 종료 여백 조회에서 제외됐습니다. 단일 표와 주석만 있는 소비 완료 호스트를 판별하고 뒤 저장 줄이 실제 마지막 행 높이+아래 바깥여백의 끝점을 증명할 때 종료 여백을 예약했습니다. 예약만 적용한 후보는 기존54검사PASS였지만 실제 Exclusion 흐름 때문에 시각 미개선이므로 완료로 판정하지 않았습니다.
 - `stored_terminal_rowbreak_outer_margin_with_consumed_host_px → budget.terminal_outer_bottom_overhead → scan.closing_overhead → NextLine 배치 → emit.commit_fragment.occupied_bottom → layout 뒤 문단`을 함께 확인했습니다. 이어받기 여부·이전 호스트 프레임·유효 저장 줄·단일 표/주석·미편집/미재조판·독립 종료식으로 적용합니다. 문서ID/절대픽셀 고정·좌표clamp·임의 여백 가산은 없습니다. 기존 prefix 소유 경로를 유지하며 마지막 유닛이 닫히지 않으면 종료 여백을 소비하지 않습니다.
 - 보정Native7쪽은91쪽98.91458%,95쪽99.15957%,162쪽100%,169쪽99.93183%,173쪽99.68112%,208쪽96.82326%,214쪽100%입니다. [전후 TSV](../assets/planet6897_green_20261002/liver_low7_comparison.tsv), [Native7쪽 TSV](../assets/planet6897_green_20261002/liver_low7_fixed_native.tsv), [91쪽 review](../assets/planet6897_green_20261002/liver_low7_fixed_native_p91_review.png), [95쪽 review](../assets/planet6897_green_20261002/liver_low7_fixed_native_p95_review.png). 두 PNG에서 표 뒤 본문·각주 영역을 직접 대조했고91쪽 참조143/144/145와 각주142~145를 유지했습니다.
 - 기존 집중66검사66PASS/0FAIL·1470skip·4.592초입니다. 새 검사/삭제0입니다. 정상5문서42쪽 Native tree는 기존 전쪽 검증과 byte동일이며 정책연구215쪽 중91/95쪽만 변경·나머지213쪽은 같은 환경 출력과 byte동일합니다. [원인·소스 해시·검증 원장](../assets/planet6897_green_20261002/liver_low7_validation.json), [정상 대조군](../assets/planet6897_green_20261002/liver_low7_native_counter_trees.json), [215쪽 영향 범위](../assets/planet6897_green_20261002/liver_low7_native_tree_impact.json).
 - Native 전215쪽 TSV, fresh WASM, lint/build/manifest를 실행 중입니다. 이 단계는 Native 보정과 집중 회귀 확인이며 최종 전체/Skia·통합 PR·CI/merge/후속처리는 미완료입니다.
+
+### 종료 표 보정 후 전체 자동 검증 완료 — 90쪽 시각 잔차 보류
+
+- 소스 head `f0c5fbf93` 전체 nextest는10,288건 전부PASS·0FAIL·50skip(10slow), 실행626.110초·exit0입니다. `release-test`, `target/pr-review`, threads8로 수행했습니다. 전체 로그는 ignored `output/pr-review/planet6897-green-20261002/liver-final-whole-nextest.log`에 보존합니다.
+- native-skia 라이브러리4,109PASS·0FAIL·13ignored와 누락 그림2PASS·직접 PDF4PASS를 확인했으며 모든 명령 exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest도 exit0입니다. fresh WASM은 Mac 로컬 no-opt 대체 빌드입니다.
+- Native/fresh WASM 전215쪽 TSV를 생성했습니다. 지정7쪽은 모두90% 이상이고 두 백엔드 수치가 같습니다. 전체에는90쪽89.91028%가 남아 있으므로 PR 준비 완료로 판정하지 않습니다. [Native 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_native_before_p90_fix.tsv), [WASM 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_wasm_before_p90_fix.tsv), [검증 원장](../assets/planet6897_green_20261002/liver_low7_validation.json).
+- 90쪽은 글꼴환경 유무에 관계없이 같은 수치입니다. #7505 출력과 대조하면 본문·표제 위치는 같고 첫 표 조각이 위 바깥여백283HU만큼 위로 이동했습니다. 첫 조각 배치의 원본 여백 소비 경로를 다음 단계에서 보정합니다. 테스트 추가·삭제와 임계값 변경 없이 기존 검사를 유지했습니다.
