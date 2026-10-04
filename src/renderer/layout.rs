@@ -13071,8 +13071,7 @@ impl LayoutEngine {
                                     // om 상하합만큼 사다리 아래로 밀린다(3-11월 실전 HWP
                                     // 10쪽 140+140HU = 3.7px 실측).
                                     let om_top_in_base_px = if flow_placement.is_some() {
-                                        hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                                            .max(0.0)
+                                        hwpunit_to_px(t.outer_margin_top as i32, self.dpi).max(0.0)
                                     } else {
                                         0.0
                                     };
