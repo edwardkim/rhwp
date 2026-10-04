@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/dev_environment_guide.md
-last_verified: 2026-08-11
+last_verified: 2026-09-30
 ---
 
 # 개발 환경 가이드
@@ -184,6 +184,22 @@ macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는�
 ```bash
 CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
+
+WASM release의 산출물 선택을 비교하는 선택 경로는 다음과 같습니다. 기본 동작은 바뀌지 않습니다.
+
+```bash
+RHWP_WASM_CDYLIB_ONLY=1 CARGO_TARGET_DIR=target/pr-review \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg --release
+```
+
+이 POSIX wrapper 옵션은 `rhwp`의 WASM `cdylib`만 생성합니다. Rust/Cargo 1.93.1에서 기존
+`rlib+cdylib` 빌드는 `lto=true`여도 cross-crate LTO를 실행하지 않으므로, 이 경로는 명령 범위의
+`profile.release.lto=false`로 그 실효 조건을 유지합니다. manifest의 release 설정 문구를 그대로
+적용하는 경로와는 구분합니다. wasm-pack의 wasm-bindgen·wasm-opt·패키징·Studio 동기화는 유지하며,
+Native/Rust 소비자를 위한 rlib 설정은 바꾸지 않습니다. 별도 profile/config/package 인자를 함께
+넘기지 않습니다. CI에서 채택할 때는 기존 release 캐시와 산출물 선택·프로필 키를 구분해야 합니다.
+PowerShell wrapper의 옵션은 아닙니다. 근거와 검증 범위는
+[빌드 비용 조사](https://github.com/edwardkim/rhwp/blob/7aa36953478812711e671d55c16b5daa11cd7a7a/mydocs/report/task_m100_7473_rust_phases.md)를 참고합니다.
 
 반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
 사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
