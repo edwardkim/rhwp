@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/tech/typesetting_architecture.md
-last_verified: 2026-10-04
+last_verified: 2026-10-05
 ---
 
 # #7207 — RowBreak 선행 병합 뒤 저장 프레임 잔여 보정
@@ -100,10 +100,8 @@ locked wrapper의 호스트 `--no-opt` 빌드와 실제 headless Chrome WASM exp
 `pkg`와 Studio public의 JS/WASM SHA-256은 각각 같다. Docker daemon을 사용할 수 없어
 표준 Docker 배포 빌드는 미실행이다. Studio UI 기능·일반 브라우저 성능은 이번 검증 주장이 아니다.
 
-[검증 명령·입력/산출 해시·페이지별 수치](../pr/assets/issue7207_stored_frame_stage5/validation.json),
-[Native 전쪽 TSV](../pr/assets/issue7207_stored_frame_stage5/native-eogu-silhouette.tsv),
-[fresh WASM 전쪽 TSV](../pr/assets/issue7207_stored_frame_stage5/wasm-eogu-silhouette.tsv)에 연결했다.
-대표 review/overlay는 같은 asset 디렉터리에 Native/fresh WASM으로 나누어 보존했다.
+명령·입력/산출 해시·페이지별 수치는 아래 「검증 재현 정보와 전쪽 수치」에 기록했다.
+최종 댓글에 직접 사용할 대표 review/overlay와 잔여 차이 증거만 asset 디렉터리에 보존했다.
 
 최저 점수 페이지 추가 판독에서 어구 9쪽 우상단 문구의 기존 수직 차이를 확인했다.
 다열 분할 셀(row 62, col 4)의 해당 문구 잉크 상단은 같은 96dpi 영역에서 기준 PDF 107px,
@@ -113,4 +111,151 @@ locked wrapper의 호스트 `--no-opt` 빌드와 실제 headless Chrome WASM exp
 
 이번 후보의 시작 frame 공간·10쪽 주석·17–21쪽 지도/캡션 소속 검사는 충족,
 기존의 세부 셀 정렬·선 차이는 미충족(잔여), 별도 합성/성능 경계는 미검증이다.
-현재 상태: source `4fc0862d`의 최신 base 통합 뒤 전체 로컬 회귀·lint·Skia·fresh WASM·시각 검증을 모두 완료했다. 원격 push·Open PR 생성·GitHub CI 실행은 승인받았다. [PR #7574](https://github.com/edwardkim/rhwp/pull/7574)를 Open으로 생성했다. [self-review](../pr/archives/pr_7574_review.md)와 오늘할일을 같은 PR의 문서-only 후행 commit에 포함한다. 최종 head의 GitHub CI와 별도 병합 승인은 남아 있다.
+현재 상태: source `4fc0862d`의 최신 base 통합 뒤 전체 로컬 회귀·lint·Skia·fresh WASM·시각 검증을 모두 완료했다. 원격 push·Open PR 생성·GitHub CI 실행은 승인받았다. [PR #7574](https://github.com/edwardkim/rhwp/pull/7574)를 Open으로 생성했다. [self-review](../pr/archives/pr_7574_review.md)와 오늘할일을 같은 PR의 문서-only 후행 commit에 포함한다. 검토 head `a6f5fa05163a03f552b5fa499b2420418692e62a`의 GitHub check는 13 success / 20 skipped, 실패·대기 없음이며 mergeable 상태는 clean이다. 증적 구성과 필수 리뷰 기록을 보완했고 작업지시자가 후행 push와 새 head CI 확인을 승인했다. 이 변경은 source/test를 바꾸지 않는다. 후행 head의 CI 확인 및 별도 병합 승인은 실행 단계에서 확인한다.
+
+
+## 검증 재현 정보와 전쪽 수치
+
+중간 JSON·TSV·중복 캡처는 커밋에서 제외하고 아래 명령·해시·판정을 Markdown에 보존한다.
+전체 로컬 산출물은 `output/pr-review/issue7207-followup-20261004/new-base-validation/`와
+검증용 임시 디렉터리에 남아 있다. 이 로컬 경로는 공개 증적 링크를 대신하지 않는다.
+개인 글꼴 파일과 식별 정보는 기록하지 않는다.
+
+### 입력과 바이너리 식별
+
+| 저장소 경로 | SHA-256 |
+| --- | --- |
+| `samples/task2097/18095317_eogu_geumji.hwp` | `956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9` |
+| `pdf/18095317_eogu_geumji-2020.pdf` | `98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab` |
+| `samples/rowbreak-problem-pages.hwp` | `10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed` |
+| `pdf/rowbreak-problem-pages-hwp-2024.pdf` | `2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c` |
+| `tests/cases/issue_7207_stored_frame_map_ownership.rs` | `abf237273e9b78aa6326664e1aa4ac1fe31f93163892a0a74cf8ade08b0168ef` |
+
+위 5개 파일의 내용·해시는 source `4fc0862df1b1cb6155c3745052dfb3c76e432e49`와 검토 head `a6f5fa05163a03f552b5fa499b2420418692e62a`에서 같음을 재확인했다.
+
+| 검증 산출물 | SHA-256 |
+| --- | --- |
+| 최종 Native | `00f1093f7f09ca44ba238d2f0e54d62db45903de11c69bed9e229b624231e163` |
+| 기준 Native | `c9c970c3191aa1c99b3b917a85d08476f46a90a50db3fbfd78f8f3bb8cd7c979` |
+| rhwp.js | `2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133` |
+| rhwp_bg.wasm | `6d04c51b3b3e8cf6c50f2c6eeacf79062d79e807d222303a49f6a92ea38a639f` |
+
+### 실제 실행 명령
+
+작업 디렉터리는 PR review worktree, Cargo 공유 산출물은 저장소 루트의 `target/pr-review`다.
+파생 suite 준비(`node scripts/rust-test-suite-manifest.mjs --prepare`) 후 다음을 순차 실행했다.
+각 행의 종료 코드는 모두 0이며 전체 회귀는 10,291 PASS / 50 skipped였다.
+
+| 검사 | 실행 명령 | exit |
+| --- | --- | --- |
+| full-nextest | `cargo nextest run --locked --cargo-profile release-test --tests --test-threads 6 --no-fail-fast` | 0 |
+| skia-lib | `cargo test --locked --profile release-test --features native-skia --lib` | 0 |
+| skia-placeholder | `node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --features native-skia` | 0 |
+| skia-p37 | `node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --features native-skia` | 0 |
+| fmt | `cargo fmt --all -- --check` | 0 |
+| clippy-native | `cargo clippy --locked -- -D warnings` | 0 |
+| clippy-wasm | `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 0 |
+| workspace-build | `cargo build --locked --workspace` | 0 |
+| clippy-all-targets | `cargo clippy --locked --workspace --all-targets -- -D warnings` | 0 |
+| manifest-policy | `node scripts/rust-test-suite-manifest.mjs --check --base-ref 731de9e1b4bb946d76f35108ed7e186ebe4ebecb` | 0 |
+| unit-policy | `node scripts/rust-unit-test-tiers.mjs --check --base-ref 731de9e1b4bb946d76f35108ed7e186ebe4ebecb` | 0 |
+
+```sh
+CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt
+RHWP_FONT_PATH=<LOCAL_VALIDATION_FONTS> python scripts/visual_sweep.py \
+  --hwp <저장소 원문> --pdf <동일 원문 기준 PDF> \
+  --rhwp-bin <위 해시의 Native 바이너리> --dpi 96 --embed-fonts full \
+  --out <검증용 임시 경로> --silhouette-only
+# 대표 판독: --silhouette-only 대신 --pages <위에 기록한 대표 쪽>
+# fresh WASM: 같은 명령에 --wasm-pkg pkg 추가
+```
+
+어구·RowBreak의 Native/fresh WASM 전쪽 TSV와 대표 review 실행 8건은 모두 exit 0이었다.
+위 시각 명령의 입력 조합·쪽 대응은 첫 절과 아래 표에 고정했다. fresh WASM은 위에 고정한
+새 JS/WASM package를 사용했고 Studio public과 바이트·해시가 동일했다.
+
+정식 회귀 3개는 `target/pr-review/release-test/deps/regression_suite_012-6e4250db282265f5`에
+`issue_7207_stored_frame_map_ownership --nocapture` 필터를 전달하고 `CARGO_BIN_EXE_rhwp`에
+위 기준/최종 Native 바이너리를 각각 지정했다. 2026-10-05 검토에서 다시 실행하여 기준은
+동일 원인의 3 FAIL(exit 101), 최종은 3 PASS(exit 0)를 확인했다.
+새 코드나 기대값 변경 없이 제출 source의 증거를 재확인한 실행이다.
+
+### 전쪽 실루엣 보조값
+
+수치는 96dpi의 2px 이웃 관용 내용 실루엣 일치율(%)이다.
+Native와 fresh WASM의 전쪽 값은 각각 실제 실행한 TSV를 대조하여 동일함을 확인했다.
+최종 두 문서 39쪽은 누락과 90% 미만이 없으며 대표 review gate도 양 backend 모두 `passed`다.
+기준 어구의 90% 미만 16쪽은 수정 전 실패 증거이며 최종 판정에 혼합하지 않는다.
+
+| 어구 쪽 | 기준 Native | 최종 Native | 최종 fresh WASM |
+| --- | --- | --- | --- |
+| 1 | 98.39304 | 97.96967 | 97.96967 |
+| 2 | 49.63649 | 97.15779 | 97.15779 |
+| 3 | 50.86061 | 98.86077 | 98.86077 |
+| 4 | 51.89220 | 97.47144 | 97.47144 |
+| 5 | 94.13858 | 95.75434 | 95.75434 |
+| 6 | 96.24727 | 95.63852 | 95.63852 |
+| 7 | 75.50801 | 93.22327 | 93.22327 |
+| 8 | 94.40755 | 95.52112 | 95.52112 |
+| 9 | 93.40191 | 94.22307 | 94.22307 |
+| 10 | 19.71876 | 97.74233 | 97.74233 |
+| 11 | 41.36333 | 98.43249 | 98.43249 |
+| 12 | 50.15914 | 98.24875 | 98.24875 |
+| 13 | 48.25322 | 98.29738 | 98.29738 |
+| 14 | 42.70385 | 98.33620 | 98.33620 |
+| 15 | 38.06220 | 98.14148 | 98.14148 |
+| 16 | 76.01194 | 99.71379 | 99.71379 |
+| 17 | 35.48815 | 97.32653 | 97.32653 |
+| 18 | 20.57752 | 94.51240 | 94.51240 |
+| 19 | 14.61476 | 96.38709 | 96.38709 |
+| 20 | 18.42684 | 96.49275 | 96.49275 |
+| 21 | 19.93858 | 99.95268 | 99.95268 |
+
+| RowBreak 쪽 | 최종 Native | 최종 fresh WASM |
+| --- | --- | --- |
+| 1 | 98.89029 | 98.89029 |
+| 2 | 99.40190 | 99.40190 |
+| 3 | 99.60018 | 99.60018 |
+| 4 | 96.47873 | 96.47873 |
+| 5 | 99.75626 | 99.75626 |
+| 6 | 97.53197 | 97.53197 |
+| 7 | 93.12389 | 93.12389 |
+| 8 | 98.18442 | 98.18442 |
+| 9 | 98.60027 | 98.60027 |
+| 10 | 97.78980 | 97.78980 |
+| 11 | 95.66645 | 95.66645 |
+| 12 | 92.47763 | 92.47763 |
+| 13 | 98.36296 | 98.36296 |
+| 14 | 94.42860 | 94.42860 |
+| 15 | 97.63617 | 97.63617 |
+| 16 | 98.15179 | 98.15179 |
+| 17 | 99.82301 | 99.82301 |
+| 18 | 97.60707 | 97.60707 |
+
+원본 TSV는 로컬에 보존했다. 각 파일 내용의 SHA-256은 다음과 같다.
+
+| 로컬 수치 원본 | SHA-256 |
+| --- | --- |
+| `base-native-eogu-silhouette.tsv` | `aba92a08f4d31567f6585aeb16b28926cd4116932e8c2a0d8334ca0da7ca1851` |
+| `native-eogu-silhouette.tsv` | `3e35774576040b428a4b18d2de59944880177d31223583b73b0bb8954baf4b30` |
+| `wasm-eogu-silhouette.tsv` | `3e35774576040b428a4b18d2de59944880177d31223583b73b0bb8954baf4b30` |
+| `native-rowbreak-silhouette.tsv` | `a8a5e743f485365b7ff45c1c67fed9246cc46438050c3f428869dd41ae88599c` |
+| `wasm-rowbreak-silhouette.tsv` | `a8a5e743f485365b7ff45c1c67fed9246cc46438050c3f428869dd41ae88599c` |
+
+### 정상 대조군 전체 결과
+
+기준/최종 바이너리를 같은 원문에 적용한 전쪽 render-tree의 내용·배치가 모두 바이트 동일했다.
+쪽수만 비교하지 않았다. 전체 10문서·891쪽, 변경 쪽 0이다.
+
+| 원문 | 기준/최종 쪽수 | 변경 쪽 |
+| --- | --- | --- |
+| `samples/rowbreak-problem-pages.hwp` | 18 / 18 | 0 |
+| `samples/rowbreak-problem-pages.hwpx` | 18 / 18 | 0 |
+| `samples/byeolpyo1.hwp` | 4 / 4 | 0 |
+| `samples/byeolpyo4.hwp` | 25 / 25 | 0 |
+| `samples/86712_regulatory_analysis.hwp` | 64 / 64 | 0 |
+| `samples/issue1921/59043_regulatory_analysis.hwp` | 37 / 37 | 0 |
+| `samples/76076_regulatory_analysis.hwp` | 82 / 82 | 0 |
+| `samples/issue1949_giant_cell_nested_tables_perf.hwp` | 115 / 115 | 0 |
+| `samples/issue1949_giant_cell_nested_tables_perf.hwpx` | 115 / 115 | 0 |
+| `samples/task2287/1342000_edu_curriculum_map.hwp` | 413 / 413 | 0 |
