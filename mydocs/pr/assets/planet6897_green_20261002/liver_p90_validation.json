@@ -1,0 +1,390 @@
+{
+  "state": "visual_build_and_focused_pass_whole_pending",
+  "source_parent": "5a5f64f25",
+  "source_sha256": {
+    "src/renderer/float_placement.rs": "edb6cfa00101e6fff6708ab730cb77e7464e095cb81b95098dffeada4460f480",
+    "src/renderer/typeset/table/block/prepare.rs": "8f5c02accef1e745743bedee7f8521c78affc5a3fa30bc422073e0f201d4fff7"
+  },
+  "cause": "첫 조각 준비에서 HWPX 저장 호스트를 전달하지 않고 각주·미주가 붙은 단일 표를 독립 프레임에서 제외하여 원본 바깥 위 여백283HU가 빠짐",
+  "correction": "유효 저장 글줄과 개체 앞 줄 종료 계약을 공유하고 단일 표/주석 호스트를 인정; 첫 조각의 예약과 배치 원점에 바깥 위 여백을 한 번 소비",
+  "document_exceptions": false,
+  "new_tests": 0,
+  "removed_tests": 0,
+  "threshold_changes": false,
+  "native_pages": 215,
+  "wasm_pages": 215,
+  "changed_pages": [
+    90,
+    94
+  ],
+  "reraster_pages": [
+    90,
+    91,
+    94,
+    95
+  ],
+  "unchanged_svg_pages_reusing_previous_raster": 213,
+  "minimum_percent": 90.30307,
+  "below90": [],
+  "page90_before_percent": 89.91028,
+  "page90_after_percent": 99.15148,
+  "page94_after_percent": 99.88068,
+  "four_png_backend_byte_identical": true,
+  "required_gates": [
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 169.926
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.81
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 31.739
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 21.39
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 40.639
+    },
+    {
+      "gate": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 74.979
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1d6bc70767fad365b07afe4ef57972d23b140f2b"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.622
+    }
+  ],
+  "normal_counters": [
+    {
+      "key": "rowbreak",
+      "pages": 18,
+      "native_changed": [],
+      "wasm_changed": [],
+      "source": {
+        "path": "samples/rowbreak-problem-pages.hwp",
+        "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+      }
+    },
+    {
+      "key": "h01",
+      "pages": 9,
+      "native_changed": [],
+      "wasm_changed": [],
+      "source": {
+        "path": "samples/hwpx/hwpx-h-01.hwpx",
+        "sha256": "87b386ade71aa4c5a3e78f17c25e9efb91cf180f264fde17b2b9b6305a3c90b5"
+      }
+    },
+    {
+      "key": "social6797",
+      "pages": 11,
+      "native_changed": [],
+      "wasm_changed": [],
+      "source": {
+        "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+        "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8"
+      }
+    },
+    {
+      "key": "stale1835",
+      "pages": 3,
+      "native_changed": [],
+      "wasm_changed": [],
+      "source": {
+        "path": "samples/issue1835_tac_stale_height.hwp",
+        "sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7"
+      }
+    },
+    {
+      "key": "para6267",
+      "pages": 1,
+      "native_changed": [],
+      "wasm_changed": [],
+      "source": {
+        "path": "samples/issue6267/kdt_result_para_float_table.hwpx",
+        "sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33"
+      }
+    }
+  ],
+  "native_provenance": {
+    "source": "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "source_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "pdf": "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+    "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+    "font_environment_sha256": "838c842ca08a29b196b283ce209a47b7c9c7befea35266c38c8b411cf6c24e06",
+    "native_binary_sha256": "af0d82a6fc93ddc85471bf90c0f90cff618954b173b016b467172e028264a2eb",
+    "selected_pages": [
+      90,
+      91,
+      94,
+      95
+    ],
+    "commands": [
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "89",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/90",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "90",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/91",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "93",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/94",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "94",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/95",
+        "--json"
+      ]
+    ],
+    "profile": "print",
+    "dpi": 96,
+    "font_embedding": "full",
+    "renderer_budget_sha256": "032bd90439b0d5e43fd597d7d8dca8dc1c45b8e0ce2f7ddef0e7d42b3907a8bb"
+  },
+  "wasm_provenance": {
+    "source": "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "source_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "pdf": "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+    "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+    "font_environment_sha256": "838c842ca08a29b196b283ce209a47b7c9c7befea35266c38c8b411cf6c24e06",
+    "native_binary_sha256": "af0d82a6fc93ddc85471bf90c0f90cff618954b173b016b467172e028264a2eb",
+    "selected_pages": [
+      90,
+      91,
+      94,
+      95
+    ],
+    "commands": [
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "89",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/90",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "90",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/91",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "93",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/94",
+        "--json"
+      ],
+      [
+        "target/pr-review/release-test/rhwp",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-p",
+        "94",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+        "--profile",
+        "print",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/liver-p90-fixed-native/svg/95",
+        "--json"
+      ]
+    ],
+    "profile": "print",
+    "dpi": 96,
+    "font_embedding": "full",
+    "renderer_budget_sha256": "032bd90439b0d5e43fd597d7d8dca8dc1c45b8e0ce2f7ddef0e7d42b3907a8bb",
+    "backend": "fresh WASM",
+    "wasm_sha256": "070b4094b806dde2bf357590ae2678c549fc9468aec9ab9d1d919289ee0a795a",
+    "font_policy": "canonical apply_svg_font_policy; same-input Native CSS only",
+    "actual_raster_pages": [
+      90,
+      91,
+      94,
+      95
+    ]
+  },
+  "whole_nextest": "보정 전 f0c5fbf93: 10288PASS; current source pending",
+  "studio_public_pkg_byte_identical": {
+    "rhwp.js": true,
+    "rhwp_bg.wasm": true
+  },
+  "focused": {
+    "tests": 31,
+    "passed": 31,
+    "failed": 0,
+    "skipped": 805,
+    "runtime_seconds": 3.023,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/liver-p90-focused.log"
+  }
+}

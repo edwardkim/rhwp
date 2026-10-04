@@ -607,3 +607,12 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - native-skia 라이브러리4,109PASS·0FAIL·13ignored와 누락 그림2PASS·직접 PDF4PASS를 확인했으며 모든 명령 exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest도 exit0입니다. fresh WASM은 Mac 로컬 no-opt 대체 빌드입니다.
 - Native/fresh WASM 전215쪽 TSV를 생성했습니다. 지정7쪽은 모두90% 이상이고 두 백엔드 수치가 같습니다. 전체에는90쪽89.91028%가 남아 있으므로 PR 준비 완료로 판정하지 않습니다. [Native 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_native_before_p90_fix.tsv), [WASM 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_wasm_before_p90_fix.tsv), [검증 원장](../assets/planet6897_green_20261002/liver_low7_validation.json).
 - 90쪽은 글꼴환경 유무에 관계없이 같은 수치입니다. #7505 출력과 대조하면 본문·표제 위치는 같고 첫 표 조각이 위 바깥여백283HU만큼 위로 이동했습니다. 첫 조각 배치의 원본 여백 소비 경로를 다음 단계에서 보정합니다. 테스트 추가·삭제와 임계값 변경 없이 기존 검사를 유지했습니다.
+
+### 90쪽 첫 표 조각 위 여백 보정
+
+- 분석: 원본 저장 글줄 뒤에 독립적으로 열리는 단일 표/각주 호스트에서 HWPX 저장 호스트 전달과 주석 허용 판정이 빠졌습니다. 전체 표를 첫 조각 배치로 바꾸며 위 바깥여백283HU가 누락됐습니다. 글꼴환경 유무는 이 잔차를 바꾸지 않았습니다.
+- 코드: 첫 조각 준비가 HWP5/HWPX 저장 호스트를 공통 판정에 전달합니다. 단일 표와 각주·미주만 있는 호스트도 유효 저장 글줄의 개체 앞 종료 계약을 따릅니다. 다른 개체가 함께 있거나 저장 줄이 무효하면 허용하지 않습니다. 예약과 실제 배치가 같은 원점을 소비하며 문서ID/좌표clamp/임계값 변경은 없습니다.
+- 결과: Native/fresh WASM90쪽89.91028→99.15148%,94쪽99.88068%,91쪽98.91458%,95쪽99.15957%이며 네 PNG는 두 백엔드에서 byte동일합니다. 90쪽 표 시작·내용·각주141·쪽 번호를 직접 대조했습니다. [90쪽 review](../assets/planet6897_green_20261002/liver_p90_native_review.png), [94쪽 review](../assets/planet6897_green_20261002/liver_p94_native_review.png).
+- 전215쪽 SVG를 다시 내보내 Native/fresh WASM 모두90/94쪽만 변경됨을 해시로 확인했습니다. 나머지213쪽은 동일 SVG의 기존 raster/비교를 재사용하고 변경2쪽은 새 raster로 교체했습니다. 전쪽 TSV 최저90.30307%·미달0입니다. 전215쪽을 다시 raster했다고 보고하지 않습니다. [Native TSV](../assets/planet6897_green_20261002/liver_p90_native_whole215.tsv), [WASM TSV](../assets/planet6897_green_20261002/liver_p90_wasm_whole215.tsv), [검증 원장](../assets/planet6897_green_20261002/liver_p90_validation.json).
+- 정상5문서42쪽 Native tree/fresh WASM SVG는 기존 검증 출력과 byte동일입니다. 기존 집중31검사31PASS/0FAIL·805skip·3.023초·exit0입니다. 새 검사/삭제0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest 및 fresh WASM 로컬 no-opt 빌드도 exit0입니다. 루트pkg/Studio 공개 JS·WASM 동일성을 확인했습니다.
+- 보정 전 전체10,288PASS는 보존하며 이번 소스의 최종 전체/Skia 검증은 다음 단계입니다. 통합PR·CI/merge/후속처리는 아직 미완료입니다.

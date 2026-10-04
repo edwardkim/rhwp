@@ -308,11 +308,33 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
         if object_only_saved_table_anchor(para, table) {
             return true;
         }
+        // 각주·미주는 호스트 글줄에 속하며 표의 독립 바깥 프레임을 없애지 않는다.
+        // 다른 개체가 함께 있으면 단일 표 프레임으로 판정하지 않는다.
+        let table_control_index = para
+            .controls
+            .iter()
+            .position(|control| matches!(control, Control::Table(_)));
+        let single_table_with_notes = para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count()
+            == 1
+            && para.controls.iter().all(|control| {
+                matches!(
+                    control,
+                    Control::Table(_) | Control::Footnote(_) | Control::Endnote(_)
+                )
+            });
         // 여러 저장 글줄도 개체 앞에서 모두 끝나면 같은 바깥 프레임을 소유한다.
         // 앵커 계획과 같은 유효성 판정을 소비하므로 되감긴 원본 줄은 받아들이지 않는다.
-        if matches!(para.controls.as_slice(), [Control::Table(_)])
-            && ParagraphFloatPlacement::text_head_control_position(para, 0).is_some()
-            && ParagraphFloatPlacement::stored_host_lines_are_valid(para, table, 0)
+        if single_table_with_notes
+            && table_control_index.is_some_and(|index| {
+                ParagraphFloatPlacement::text_head_control_position(para, index).is_some()
+            })
+            && table_control_index.is_some_and(|index| {
+                ParagraphFloatPlacement::stored_host_lines_are_valid(para, table, index)
+            })
             && para
                 .line_segs
                 .first()
@@ -325,7 +347,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
             return false;
         };
         para_has_non_whitespace_text(para)
-            && matches!(para.controls.as_slice(), [Control::Table(_)])
+            && single_table_with_notes
             && !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
             && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0

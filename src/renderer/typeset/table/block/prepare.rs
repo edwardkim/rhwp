@@ -444,7 +444,8 @@ impl TypesetEngine {
                         st.profile.session_edited(),
                     ) || crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
                         false,
-                        self.profile.get().hwp5_stored_pagination_layout().then_some(para),
+                        (st.profile.hwpx_stored_layout()
+                            || self.profile.get().hwp5_stored_pagination_layout()).then_some(para),
                         table,
                         false,
                         0,
