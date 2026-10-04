@@ -1377,6 +1377,12 @@ impl DocumentCore {
         if control_idx < para.ctrl_data_records.len() {
             para.ctrl_data_records.remove(control_idx);
         }
+        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
+        for range in &mut para.field_ranges {
+            if range.control_idx > control_idx {
+                range.control_idx -= 1;
+            }
+        }
 
         // char_count 갱신
         if para.char_count >= 8 {
