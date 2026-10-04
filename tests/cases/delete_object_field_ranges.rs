@@ -14,7 +14,7 @@ fn fields(core: &DocumentCore) -> Value {
     fields
 }
 
-fn fixture(picture: bool, object_before_field: bool) -> (DocumentCore, usize) {
+fn fixture(picture: bool, object_before_field: bool, value: &str) -> (DocumentCore, usize) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "앞 🦦 가운데 뒤").unwrap();
@@ -68,9 +68,13 @@ fn fixture(picture: bool, object_before_field: bool) -> (DocumentCore, usize) {
     }
     core.insert_click_here_field_at(0, 0, 4, "안내문", "메모", "남을 필드", true)
         .unwrap();
+    if !value.is_empty() {
+        core.set_field_value_by_name("남을 필드", value).unwrap();
+    }
     // 편집 중 임시 상태가 아니라 공개 HWP 저장·재열기 경로로 만든 유효한 입력이다.
     let core = DocumentCore::from_bytes(&core.export_hwp_native().unwrap()).unwrap();
     assert_eq!(fields(&core).as_array().unwrap().len(), 1);
+    assert_eq!(fields(&core)[0]["value"], value);
     let para = &core.document().sections[0].paragraphs[0];
     let ci = para
         .controls
@@ -88,8 +92,8 @@ fn fixture(picture: bool, object_before_field: bool) -> (DocumentCore, usize) {
     (core, ci)
 }
 
-fn check_delete(picture: bool, object_before_field: bool) {
-    let (mut core, ci) = fixture(picture, object_before_field);
+fn check_delete(picture: bool, object_before_field: bool, value: &str) {
+    let (mut core, ci) = fixture(picture, object_before_field, value);
     let before = fields(&core);
     let text = core.document().sections[0].paragraphs[0].text.clone();
     let controls = core.document().sections[0].paragraphs[0].controls.len();
@@ -131,20 +135,30 @@ fn check_delete(picture: bool, object_before_field: bool) {
 
 #[test]
 fn deleting_shape_before_field_preserves_field() {
-    check_delete(false, true);
+    check_delete(false, true, "");
 }
 
 #[test]
 fn deleting_picture_before_field_preserves_field() {
-    check_delete(true, true);
+    check_delete(true, true, "");
+}
+
+#[test]
+fn deleting_shape_before_filled_field_preserves_field() {
+    check_delete(false, true, "입력한 🦦 값");
+}
+
+#[test]
+fn deleting_picture_before_filled_field_preserves_field() {
+    check_delete(true, true, "입력한 🦦 값");
 }
 
 #[test]
 fn deleting_shape_after_field_preserves_field() {
-    check_delete(false, false);
+    check_delete(false, false, "입력한 🦦 값");
 }
 
 #[test]
 fn deleting_picture_after_field_preserves_field() {
-    check_delete(true, false);
+    check_delete(true, false, "입력한 🦦 값");
 }
