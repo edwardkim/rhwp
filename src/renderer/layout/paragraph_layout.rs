@@ -8955,7 +8955,10 @@ impl LayoutEngine {
                 }
 
                 let is_active = if let Some((af_sec, af_para, af_ctrl, ref af_cell)) = *active {
-                    if af_sec != section_index || af_para != para_index || af_ctrl != fr.control_idx
+                    let host_para = cell_ctx
+                        .as_ref()
+                        .map_or(para_index, |ctx| ctx.parent_para_index);
+                    if af_sec != section_index || af_para != host_para || af_ctrl != fr.control_idx
                     {
                         false
                     } else {
@@ -8963,11 +8966,13 @@ impl LayoutEngine {
                         match (af_cell, cell_ctx) {
                             (None, None) => true,
                             (Some(af_path), Some(ctx)) => {
-                                // af_path와 ctx.path의 (control_index, cell_index) 쌍이 모두 일치해야 함
+                                // 중간 셀 문단까지 같아야 같은 위치의 중첩 표를 구분한다.
                                 af_path.len() == ctx.path.len()
                                     && af_path.iter().zip(ctx.path.iter()).all(
-                                        |(&(ac, ax, _ap), entry)| {
-                                            ac == entry.control_index && ax == entry.cell_index
+                                        |(&(ac, ax, ap), entry)| {
+                                            ac == entry.control_index
+                                                && ax == entry.cell_index
+                                                && ap == entry.cell_para_index
                                         },
                                     )
                             }

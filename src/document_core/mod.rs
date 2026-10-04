@@ -354,14 +354,13 @@ const _: () = {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ActiveFieldInfo {
     pub section_idx: usize,
+    /// 본문 문단 번호. 셀 내부이면 최상위 표/글상자를 담은 본문 부모 문단이다.
     pub para_idx: usize,
     /// field_ranges의 control_idx (controls[] 내 Field 컨트롤 인덱스)
     pub control_idx: usize,
-    /// 셀 내부 필드인 경우의 전체 경로
-    /// 단일 표: vec![(parent_para_idx, ctrl, cell)]
-    /// 중첩 표: vec![(outer_ctrl, outer_cell, ..), (inner_ctrl, inner_cell, ..)]
-    /// parent_para_idx는 별도 필드에 포함하지 않고 첫 번째 요소의 context로 사용
-    pub cell_path: Option<Vec<(usize, usize, usize)>>, // Vec<(parent_para_idx_or_ctrl, ctrl_or_cell, cell_or_para)>
+    /// 셀 내부 필드이면 (컨트롤, 셀, 셀 문단) 번호로 이루어진 전체 경로.
+    /// 본문 부모 문단은 para_idx, 마지막 셀 문단은 경로의 마지막 요소가 구분한다.
+    pub cell_path: Option<Vec<(usize, usize, usize)>>,
 }
 
 impl DocumentCore {
