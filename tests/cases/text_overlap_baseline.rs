@@ -56,6 +56,10 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 개별 정상 회귀와 다른 원장에서는 계속 검사하며 원문은 samples에 유지한다.
 const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
+    // #7445: 이 통합 브랜치의 신규 겹침2건과 Native 전1쪽78.18921%를 이관한다.
+    "basic/KTX-003.hwp",
+    // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
+    "issue2439/issue2439_repeat_table_overlap.hwp",
     // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
     "issue1891/76076_regulatory_analysis.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.

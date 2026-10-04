@@ -553,3 +553,15 @@ Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서
 - [입력·production 해시와 검증 원장](../assets/planet6897_green_20261002/chemical_regression_recheck_validation.json), [Native 전103쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_native_all103.tsv), [fresh WASM14쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_wasm_p14.tsv), [14쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p14_review.png), [83쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p83_review.png). 최종 게이트 결과는 검증 원장에 연결합니다. 전체/Skia·통합 PR/CI/merge/후속처리는 미완료입니다.
 
 - 이 단계의 fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest는 모두exit0입니다. 기존1검사 교정만 완료했으며 원문/PDF·production 변경0건입니다.
+
+
+### 사용자 지시 — 현재 통합 차단 중 시각 미달만 #7445 이관
+
+- [#7445 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977265491): 원본/독립PDF의 정확한 해시·전쪽 TSV·대표 PNG로 재검토한 뒤 현재 통합을 막는 범위만 분리했습니다. 이는 실제 렌더링 결함의 이관이며 정상 출력 승인이나 겹침 검출기 오류 판정이 아닙니다.
+- 화학제품 문서103쪽 중25쪽 미달·최저17.93029%, #6761의83쪽64.92223%입니다. 해당 픽셀 간격 실패 함수1개만 제거했고 정상 반례1개·#7359 의미 검사·다른 정상 검사와 원본/PDF는 유지했습니다.
+- synam-001은 Native 전35쪽 중9쪽 미달·최저53.70706%, 검사30쪽89.57062%입니다. 고정X/8~19px 조건이 있던 실패1함수를 제거했으며 원본/PDF와 다른 검사는 보존했습니다.
+- KTX 전1쪽78.18921%·base0→통합2건, #2439 전10쪽 중8쪽 미달·최저0%·base0→통합1건입니다. 두 입력만 text-overlap 보류 목록에 추가했습니다. 검사 함수를 끄거나 래칫 수치를 늘리지 않았고 다른 원장/정상 회귀는 유지했습니다. 대표 PNG에서 그림·표 내용/정렬 차이도 직접 확인했습니다.
+- Native가90% 선행 조건을 실패하므로 이4문서의 fresh WASM 승인은 주장하지 않습니다. #7445에서 실제 출력을 개선하고 관련 범위의 Native/fresh WASM 최저90% 이상·직접 판독을 확보한 뒤 내용·쪽 소유·순서·비겹침 검사로 복원합니다. 절대 화면 좌표를 복원 조건으로 사용하지 않습니다.
+- [이관 범위·입력·명령·검증 원장](../assets/planet6897_green_20261002/blocking_transfer7445_validation.json), [화학제품 전103쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_chemical_native_all_pages.tsv), [synam 전35쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_all_pages.tsv), [KTX 전1쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_all_pages.tsv), [#2439 전10쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_all_pages.tsv), [synam30쪽 review](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_review.png), [KTX review](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_review.png), [#2439 review](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_review.png).
+
+- 이관 후 기존 집중133건133PASS(2slow)·2911skip·실행65.798초·exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest 모두exit0입니다. 생산 소스·원본·PDF는 바뀌지 않았습니다. 최종 전체/Skia 검증을 이어갑니다.
