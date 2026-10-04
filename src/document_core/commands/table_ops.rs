@@ -1326,7 +1326,9 @@ impl DocumentCore {
         let (needs_reflow, reflow_para_count) = {
             let mut needs_reflow = false;
             let mut size_changed = false;
+            let mut width_changed = false;
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let original_width = table.common.width;
             let direct_border_fill_id = if has_border_fill_change {
                 None
             } else {
@@ -1347,7 +1349,8 @@ impl DocumentCore {
 
             if let Some(v) = top_u32("width") {
                 needs_reflow |= cell.width != v;
-                size_changed |= cell.width != v;
+                width_changed = cell.width != v;
+                size_changed |= width_changed;
                 cell.width = v;
             }
             if let Some(v) = top_u32("height") {
@@ -1402,6 +1405,16 @@ impl DocumentCore {
             }
             if size_changed {
                 table.update_ctrl_dimensions();
+                if !width_changed {
+                    // 행마다 칸 경계가 다르면 열별 최댓값 합은 실제 표 너비보다 크다.
+                    // 높이만 바꿀 때 선언 너비와 HWP 원본 헤더는 그대로 둔다.
+                    table.common.width = original_width;
+                    patch_raw_ctrl_field(
+                        &mut table.raw_ctrl_data,
+                        common_obj_offsets::WIDTH,
+                        &original_width.to_le_bytes(),
+                    );
+                }
             }
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };
