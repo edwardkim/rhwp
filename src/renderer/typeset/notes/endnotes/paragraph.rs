@@ -2,7 +2,9 @@
 
 use crate::renderer::typeset::notes::endnotes::content::prepend_endnote_marker_text;
 use crate::renderer::typeset::notes::endnotes::debug::debug_print_endnote_line_segments;
-use crate::renderer::typeset::notes::endnotes::measure::EndnoteRenderInkFit;
+use crate::renderer::typeset::notes::endnotes::measure::{
+    endnote_column_starts_at_stored_break, EndnoteRenderInkFit,
+};
 use crate::renderer::typeset::notes::endnotes::profile::{
     en_ssot_debug, en_ssot_level, endnote_between_notes_margin,
     endnote_has_absorbed_between_notes_gap, endnote_has_visible_separator,
@@ -425,6 +427,27 @@ impl TypesetEngine {
                     (prev_en_bottom_vpos, this_first_offset),
                     (Some(prev), Some(first)) if first < prev
                 )
+                // [#6574] 저장 되감김은 저장 당시 배치의 단 경계다. 현재 단이 그 배치의 단
+                // 경계에서 시작하지 않았으면(앞에서 이미 배치가 갈렸으면) 되감김은 낡은 신호라,
+                // 문단이 렌더로 현재 단에 통째로 들어가면 넘기지 않는다 — 한/글 2024 도 같은
+                // 단에 둔다(3-09월_교육_통합_2024-미주사이20 20쪽 pi=1022). 배치가 맞는 단의
+                // 되감김은 그대로 따른다(3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20
+                // 18쪽 pi=821).
+                && (endnote_column_starts_at_stored_break(st, paragraphs)
+                    || !matches!(
+                        self.judge_endnote_render_ink_fit(
+                            st,
+                            paragraphs,
+                            styles,
+                            available,
+                            en_col_w,
+                            en_para_idx,
+                            fmt.line_heights.len(),
+                            fmt.total_height,
+                            ep_idx == 0,
+                        ),
+                        EndnoteRenderInkFit::Fits
+                    ))
             {
                 st.advance_column_or_new_page();
                 prev_en_bottom_vpos = None;
@@ -1313,7 +1336,9 @@ impl TypesetEngine {
                 // [#6574] 렌더 경로로 그려 이 문단이 현재 단에 통째로 들어가면 누계 기반 일반
                 // fit 판정으로 단을 넘기지 않는다. 누계는 렌더와 다른 항(제목의 저장 사다리
                 // 점프)을 실어 들어가는 문단을 넘긴다. 저장 사다리 되감김 등 다른 단 넘김
-                // 신호는 그대로 둔다.
+                // 신호는 그대로 둔다. 앞 몇 줄만 들어가면(`SplitAt`) 여기서 통째로 넘기지 않고
+                // 아래 렌더 판정의 분할에 맡긴다 — 한/글은 들어가는 줄을 현재 단 하단에 남긴다
+                // (3-09월_교육_통합_2024-구분선아래20구분선위20 17쪽 pi=894 앞 두 줄).
                 let render_fits_current_column = matches!(
                     self.judge_endnote_render_ink_fit(
                         st,
@@ -1326,7 +1351,7 @@ impl TypesetEngine {
                         fmt.total_height,
                         ep_idx == 0,
                     ),
-                    EndnoteRenderInkFit::Fits
+                    EndnoteRenderInkFit::Fits | EndnoteRenderInkFit::SplitAt(_)
                 );
                 if !render_fits_current_column {
                     st.advance_column_or_new_page();
@@ -1813,7 +1838,17 @@ impl TypesetEngine {
                 prev_en_bottom_vpos = None;
                 prev_en_content_bottom_vpos = None;
             } else if let Some(tb) = this_bottom_offset {
-                prev_en_bottom_vpos = Some(tb);
+                // 다음 문단의 되감김 판정 기준은 이 문단 흐름이 끝난 사다리 위치 — 마지막 줄의
+                // 끝이다. 내부 되감김이 있는 문단을 통째로 이 단에 둔 경우 최댓값(되감김 앞 줄)을
+                // 쓰면, 되감김 뒤 사다리를 그대로 잇는 다음 문단까지 되감김으로 오인해 단을
+                // 넘긴다(3-09월_교육_통합_2024-미주사이20 20쪽 pi=992→993, 한/글 2024 는 같은 단).
+                let last_line_bottom = en_para.line_segs.last().map(|s| {
+                    s.vertical_pos
+                        .saturating_add(s.line_height)
+                        .saturating_add(s.line_spacing)
+                        + endnote_start
+                });
+                prev_en_bottom_vpos = Some(last_line_bottom.unwrap_or(tb));
                 prev_en_content_bottom_vpos = this_content_bottom_offset.or(this_bottom_offset);
             }
             if local_vpos_rewind {

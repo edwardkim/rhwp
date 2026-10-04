@@ -60,6 +60,60 @@ pub(in crate::renderer::typeset) enum EndnoteRenderInkFit {
     NextColumn,
 }
 
+/// [#6574] 현재 단이 저장 사다리의 단 경계에서 시작했는지. 저장 되감김은 저장 당시 배치의 단
+/// 경계라, 현재 단 시작이 그 배치와 같을 때만 다음 되감김도 같은 배치의 경계로 믿을 수 있다.
+/// 첫 미주 항목이 (a) 되감기는 줄에서 나뉜 문단의 이어진 조각이거나 (b) 직전 문단 마지막 줄
+/// 끝보다 앞 vpos 에서 시작하는 문단이면 경계에서 시작한 것이다. 본문이 함께 있는 단과 첫
+/// 미주로 시작하는 단도 경계로 본다.
+pub(in crate::renderer::typeset) fn endnote_column_starts_at_stored_break(
+    st: &TypesetState,
+    paragraphs: &[Paragraph],
+) -> bool {
+    let mut endnote_items = st
+        .current_items
+        .iter()
+        .filter(|item| page_item_para_index(item).is_some());
+    let Some(first) = endnote_items.next() else {
+        return true;
+    };
+    let Some(pi) = page_item_para_index(first) else {
+        return true;
+    };
+    if pi < paragraphs.len() {
+        return true;
+    }
+    let Some(para) = paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi) else {
+        return true;
+    };
+    if let PageItem::PartialParagraph { start_line, .. } = first {
+        if *start_line > 0 {
+            return match (
+                para.line_segs.get(*start_line - 1),
+                para.line_segs.get(*start_line),
+            ) {
+                (Some(prev), Some(cur)) => cur.vertical_pos < prev.vertical_pos,
+                _ => true,
+            };
+        }
+    }
+    if pi == paragraphs.len() {
+        return true;
+    }
+    let Some(prev) = paragraph_by_global_index(paragraphs, &st.endnote_paragraphs, pi - 1) else {
+        return true;
+    };
+    match (prev.line_segs.last(), para.line_segs.first()) {
+        (Some(last), Some(cur)) => {
+            cur.vertical_pos
+                < last
+                    .vertical_pos
+                    .saturating_add(last.line_height)
+                    .saturating_add(last.line_spacing)
+        }
+        _ => true,
+    }
+}
+
 impl TypesetEngine {
     /// [#6574] 현재 단 항목 뒤에 `en_para_idx` 를 붙여 렌더 경로로 그렸을 때 글줄 잉크
     /// 하단이 단 하단(`available`)을 넘는지 판정한다. 넘으면 앞 줄부터 다시 그려 단 안에
