@@ -442,7 +442,9 @@ pub(super) fn prepare(
                     <= available_height()
             });
             if measured_fits && fits {
-                let source_origin = single_saved_line.then(|| {
+                let source_origin = (single_saved_line
+                    && page.profile.hwp5_stored_pagination_layout())
+                .then(|| {
                     let seg = &para.line_segs[0];
                     // Authenticate the shared coordinate axis at the original
                     // object origin. A flow-only trailing gap is not a source

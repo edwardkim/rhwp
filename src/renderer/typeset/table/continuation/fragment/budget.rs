@@ -464,7 +464,7 @@ impl TypesetEngine {
                 .para_styles
                 .get(para.para_shape_id as usize)
                 .map_or(0.0, |style| style.spacing_before.max(0.0));
-            // A multi-row source frame can start after the preceding visible
+            // An original source frame can start after the preceding visible
             // line's trailing gap, while sequential flow has already discarded
             // that gap. The original host ladder and an internal cell reset
             // prove the first physical frame; pass its origin to fit and paint.
@@ -484,10 +484,10 @@ impl TypesetEngine {
                 )
                 && para.line_segs.len() == 1
                 && !is_synthetic_line_seg(&para.line_segs[0])
-                && table.row_count > 1
+                && (table.cells.iter().all(|cell| cell.row_span == 1)
+                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
                 && table.cells.iter().all(|cell| {
-                    cell.row_span == 1
-                        && !cell.dirty_flag
+                    !cell.dirty_flag
                         && cell.paragraphs.iter().all(|paragraph| {
                             !paragraph.stored_text_partition_is_dirty()
                                 && !paragraph.cell_format_vpos_dirty
@@ -499,7 +499,8 @@ impl TypesetEngine {
                 && table.common.vertical_offset == 0
                 && table.caption.is_none()
                 && !self.render_normalization.table_text_reflowed(table)
-                && crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(table)
+                && (crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(table)
+                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
                 && st.current_zone_y_offset.abs() < f64::EPSILON)
                 .then(|| {
                     let previous = input.source.paragraphs_all.get(para_idx.checked_sub(1)?)?;
@@ -513,8 +514,12 @@ impl TypesetEngine {
                         || is_synthetic_line_seg(last)
                         || next.stored_text_partition_is_dirty()
                         || next.cell_format_vpos_dirty
-                        || !next.line_segs.first().is_some_and(|next| {
-                            !is_synthetic_line_seg(next) && next.vertical_pos < line.vertical_pos
+                        || !next.line_segs.first().is_some_and(|next_line| {
+                            !is_synthetic_line_seg(next_line)
+                                && (next_line.vertical_pos < line.vertical_pos
+                                    || crate::renderer::float_placement::stored_two_frame_successor_origin_hu(
+                                        table, next,
+                                    ).is_some())
                         })
                     {
                         return None;
@@ -550,31 +555,10 @@ impl TypesetEngine {
                     occupied_bottom: top,
                 });
             }
-            let saved_flow_anchor_matches = st.profile.hwp5_stored_pagination_layout()
-                && !st.profile.session_edited()
-                && !is_continuation
-                && cursor_row == 0
+            (prepared.stored_rewinding_rowbreak_uses_painted_row_footprint
                 && start_cut.is_empty()
-                && !para_has_visible_text(para)
-                && !para.stored_text_partition_is_dirty()
-                && para.line_segs.len() == 1
-                && !is_synthetic_line_seg(&para.line_segs[0])
-                && para.controls.len() == 1
-                && !self.render_normalization.table_text_reflowed(table)
-                && !table.common.treat_as_char
-                && crate::renderer::typeset::is_para_topbottom_float(&table.common)
-                && table.caption.is_none()
-                && st.current_zone_y_offset.abs() < f64::EPSILON
-                && (hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
-                    - spacing_before
-                    - st.current_height)
-                    .abs()
-                    <= self.dpi / 7200.0;
-            (saved_flow_anchor_matches
-                || (prepared.stored_rewinding_rowbreak_uses_painted_row_footprint
-                    && start_cut.is_empty()
-                    && ((!is_continuation && cursor_row == 0)
-                        || (is_continuation && st.current_height <= 0.5))))
+                && ((!is_continuation && cursor_row == 0)
+                    || (is_continuation && st.current_height <= 0.5)))
                 .then(|| {
                     // 첫 조각은 이미 예약한 문단 앞 여백과 오프셋을 배치에도 전달한다.
                     // 새 쪽의 이어받기 조각은 바깥 위 여백을 다시 연다.
