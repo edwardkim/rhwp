@@ -113,4 +113,4 @@ locked wrapper의 호스트 `--no-opt` 빌드와 실제 headless Chrome WASM exp
 
 이번 후보의 시작 frame 공간·10쪽 주석·17–21쪽 지도/캡션 소속 검사는 충족,
 기존의 세부 셀 정렬·선 차이는 미충족(잔여), 별도 합성/성능 경계는 미검증이다.
-현재 상태: source `4fc0862d`의 최신 base 통합 뒤 전체 로컬 회귀·lint·Skia·fresh WASM·시각 검증을 모두 완료했다. 원격 push·Open PR 생성·GitHub CI 실행은 승인받았다. 채번 뒤 self-review와 오늘할일을 같은 PR에 추가하며 최종 head의 CI와 별도 병합 승인은 남아 있다.
+현재 상태: source `4fc0862d`의 최신 base 통합 뒤 전체 로컬 회귀·lint·Skia·fresh WASM·시각 검증을 모두 완료했다. 원격 push·Open PR 생성·GitHub CI 실행은 승인받았다. [PR #7574](https://github.com/edwardkim/rhwp/pull/7574)를 Open으로 생성했다. [self-review](../pr/archives/pr_7574_review.md)와 오늘할일을 같은 PR의 문서-only 후행 commit에 포함한다. 최종 head의 GitHub CI와 별도 병합 승인은 남아 있다.
