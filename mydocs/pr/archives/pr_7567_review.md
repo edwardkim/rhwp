@@ -18,7 +18,7 @@ merge 전에는 문서 후행 head의 최신 required checks·mergeability와 �
 | 최초 수정 전 비교 코드 | `6b3faf77d8085441f9f26d88d65a49791e910352`; 최종 base와 구분 |
 | 관련 이슈 | [#7470](https://github.com/edwardkim/rhwp/issues/7470) 참조. 부분 보정이므로 전체 종료하지 않음 |
 | metadata | labels `layout`, `rendering`, `table`; assignee `postmelee`; milestone 없음; self-review이므로 review request 없음 |
-| 작성 시점 상태 | Open·non-draft·MERGEABLE. CI 실행 중이며 merge 상태는 BLOCKED. 변동 가능한 참고값 |
+| 접수 시점 상태 | Open·non-draft·MERGEABLE. 최초 CI 실행 중에는 BLOCKED였다. 최신 상태는 merge 직전에 다시 조회 |
 | 규모 | 제출 시 75파일, +2,655/-184줄, 10 commit. 이미지·기록 포함. 1,000줄 초과 보조 경로 적용 |
 
 ## 변경과 검토 범위
@@ -75,7 +75,7 @@ local merge simulation·직접 시각 판독·작업지시자 판단을 별도�
 | Native Skia | library 3,927 PASS/13 ignored; placeholder 2 PASS; direct PDF 4 PASS |
 | fresh WASM | 저장소 루트 locked wrapper 빌드 및 새 브라우저 출력 확인. pkg/Studio public JS·WASM SHA 동일. Docker daemon이 없어 표준 Docker 경로는 미실행이며 macOS 대체 검증 |
 | OVR | 추적 개체가 있는 정상 대조군 5종의 쪽·x/y/w/h 변화 0건(2px 기준). `biz_plan`은 개체 0→0이므로 개체 무회귀 근거로 쓰지 않고 6쪽 유지 확인만 사용. RowBreak 개체 4건의 의도한 변화는 직접 PNG로 별도 확인 |
-| GitHub CI | 제출 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/37179456333), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/37179456364), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/37179456208), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/37179456327), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/37179456343) 실행 중. 아직 완료로 기록하지 않음 |
+| GitHub CI | 제출 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/37179456333), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/37179456364), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/37179456208), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/37179456327), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/37179456343) 모두 success. 제출 head check 29 success/5 skipped, 실패·대기 0. [exact head 결과](../assets/issue7470_rowbreak_stage1/ci-code-candidate.json) |
 
 명령·종료 코드: [순차 로컬 검증](../assets/issue7470_rowbreak_stage1/local-validation.json).
 현재 검증 코드와 source/test가 같은 문서 후행 commit에는 Cargo 중복 실행을 생략한다.
@@ -135,7 +135,7 @@ PR 본문에는 실행한 두 출력의 대표 review·overlay를 head SHA 고�
 
 ## 후속 순서와 Merge 후 comment 계획
 
-1. 제출 code 후보 CI 완료 확인 → 이 self-review·오늘할일의 single-parent 문서 commit push → 최신 head CI 확인.
+1. 완료: 제출 code 후보의 CI·CodeQL·Render Diff·Adapter·Proptest 통과. 다음: 이 self-review·오늘할일의 single-parent 문서 commit push → 최신 head CI 확인.
 2. 작업지시자의 별도 merge 승인과 latest head match 확인 뒤 merge 가능 여부를 판단한다. self Approve나 admin 우회는 하지 않는다.
 3. merge 후 같은 asset을 merge SHA 고정 URL로 한국어 존댓말 comment에 연결하고 API 재조회로 검증한다.
    이는 현재 comment/merge/issue close 승인이나 완료 보고가 아니다.
@@ -147,3 +147,7 @@ Native/fresh WASM 전체 18쪽을 비교했고 최저 90.53%였습니다. 남은
 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment),
 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-sha>/mydocs/pr/assets/issue7470_rowbreak_stage1/native_review_p007.png`
 등 merge SHA 고정 대표 review/overlay 이미지를 실제로 포함하고 `--body-file` 뒤 재조회한다.
+
+문서 후행 push 전 simulation은 최신 base `8497729b4fb0e071c484fc5740f9bb2400bed437`에서
+충돌 없이 종료했고 실제 merge tree의 공백·4개 Markdown 링크·기존 오늘할일 230개 보존을 확인했다.
+원격 base와 제출 head가 같은지도 재조회했다. 후행 head의 CI는 push 뒤 별도로 확인한다.

@@ -18,7 +18,7 @@
 | `24956cfac6`, `5b24c9ad8b` | 공개 PNG·검증 기록·작업지시자 시각 수용; source/test 변경 없음 |
 
 1. 완료: local regression/lint/fresh WASM/Visual Sweep → 작업지시자 시각 판정 → upstream 새 branch push → Open #7567.
-2. 진행: 제출 후보 GitHub CI → 번호 기반 archive review/오늘할일 작성 → merge-tree 공백·링크·기록 보존 → 문서 후행 push.
+2. 완료: 제출 후보 CI 29 success/5 skipped, archive review/오늘할일 작성, merge-tree 공백·링크·기록 보존. 다음: 문서 후행 push.
 3. 남음: 후행 head required checks와 mergeability → 별도 merge 승인 → merge/후속 comment/이번 PR 전용 자산 정리.
 4. 이후: 원래 보정 후보를 병합된 최신 devel에 정렬 → 영향 페이지 Native/fresh WASM·한컴 PDF 재검증 → 별도 PR.
 
