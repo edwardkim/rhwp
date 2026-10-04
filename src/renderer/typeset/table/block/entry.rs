@@ -32,6 +32,7 @@ impl TypesetEngine {
             is_first_placed,
             is_last_placed,
             paragraphs_all,
+            composed_all,
             ..
         } = input;
         // 원본 개체의 다음 쪽 상자와 본문 재시작은 같은 계획을 소비한다.
@@ -41,12 +42,14 @@ impl TypesetEngine {
             && !st.profile.session_edited()
             && ft.table_footnotes.is_empty()
             && !self.render_normalization.table_text_reflowed(table)
+            && !(para_has_visible_text(para) && rowbreak_table_has_internal_saved_vpos_reset(table))
         {
             if let Some(placement) =
                 crate::renderer::float_placement::stored_table_next_page_placement(
                     para,
                     &paragraphs_all[para_idx + 1..],
                     table,
+                    styles,
                     ft.effective_height,
                     st.vpos_page_base.unwrap_or(0),
                     para_start_height,
@@ -54,13 +57,25 @@ impl TypesetEngine {
                     self.dpi,
                 )
             {
-                st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
-                    kind: crate::renderer::typeset::DeferredStoredFrameKind::Table,
-                    para_index: para_idx,
-                    control_index: ctrl_idx,
-                    placement,
-                });
-                return None;
+                // 가시 호스트는 현재 쪽에서 한 번 소비하고 표만 다음 쪽으로 넘긴다.
+                // 기존 소비 표시를 사용해 출력 단계의 호스트 중복을 막는다.
+                if !para_has_visible_text(para)
+                    || self.pre_emit_visible_rowbreak_host_text(
+                        st,
+                        para_idx,
+                        para,
+                        composed_all,
+                        styles,
+                    )
+                {
+                    st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                        kind: crate::renderer::typeset::DeferredStoredFrameKind::Table,
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                        placement,
+                    });
+                    return None;
+                }
             }
         }
         // 떠 있는 표의 호스트가 검증된 이월 상자 뒤에서 재개하면, 표의

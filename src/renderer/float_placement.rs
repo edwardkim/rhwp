@@ -1759,6 +1759,7 @@ pub(crate) fn stored_table_next_page_placement(
     para: &Paragraph,
     following: &[Paragraph],
     table: &Table,
+    styles: &super::style_resolver::ResolvedStyleSet,
     measured_height: f64,
     frame_vpos: i32,
     actual_host_flow_y: f64,
@@ -1769,8 +1770,8 @@ pub(crate) fn stored_table_next_page_placement(
     let [host] = para.line_segs.as_slice() else {
         return None;
     };
+    let visible_host = para_has_non_whitespace_text(para);
     if !matches!(para.controls.as_slice(), [Control::Table(_)])
-        || para_has_non_whitespace_text(para)
         || para.stored_text_partition_is_dirty()
         || host.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || host.line_height <= 0
@@ -1779,7 +1780,10 @@ pub(crate) fn stored_table_next_page_placement(
         || !is_para_topbottom_float(&table.common)
         || !table.common.flow_with_text
         || table.common.vert_align != VertAlign::Top
-        || table.common.horz_rel_to != HorzRelTo::Column
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Column | HorzRelTo::Para
+        )
         || table.caption.is_some()
         || !measured_height.is_finite()
         || !dpi.is_finite()
@@ -1800,23 +1804,36 @@ pub(crate) fn stored_table_next_page_placement(
     if host_y <= 0.0
         || offset < 0.0
         || bottom > available_height
-        || (actual_host_flow_y - host_y).abs() > dpi / 7200.0
+        || (!visible_host && (actual_host_flow_y - host_y).abs() > dpi / 7200.0)
+        || (visible_host && actual_host_flow_y + offset + bottom <= available_height)
         || host_y + offset + bottom <= available_height
     {
         return None;
     }
     let mut previous = host;
-    for next in following {
+    let mut previous_para = para;
+    for (next_index, next) in following.iter().enumerate() {
         if next.stored_text_partition_is_dirty() || next.line_segs.is_empty() {
             return None;
         }
-        for line in &next.line_segs {
+        for (line_index, line) in next.line_segs.iter().enumerate() {
             if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || line.line_height <= 0 {
                 return None;
             }
             if line.vertical_pos < previous.vertical_pos {
+                // 문서 끝의 빈 줄도 표 아래에서 재시작하는 저장 프레임이다.
+                // 뒤에 다른 개체나 본문이 있으면 그 본문의 직접 재시작만 수용한다.
+                let terminal_blank_tail = following[next_index..].iter().all(|p| {
+                    !para_has_non_whitespace_text(p)
+                        && p.controls.is_empty()
+                        && !p.stored_text_partition_is_dirty()
+                        && !p.line_segs.is_empty()
+                        && p.line_segs.iter().all(|s| {
+                            s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && s.line_height > 0
+                        })
+                });
                 if i64::from(line.vertical_pos) != frame_height_hu
-                    || !para_has_non_whitespace_text(next)
+                    || !(para_has_non_whitespace_text(next) || terminal_blank_tail)
                 {
                     return None;
                 }
@@ -1830,15 +1847,32 @@ pub(crate) fn stored_table_next_page_placement(
                     occupied_bottom: bottom,
                 });
             }
+            // 문단 경계의 저장 사다리는 줄간격 외에 앞뒤 문단 간격도 소비한다.
+            // 조판과 같은 해석된 스타일을 사용하며 문단 안쪽 줄에는 더하지 않는다.
+            let paragraph_gap_hu = if line_index == 0 {
+                let after = styles
+                    .para_styles
+                    .get(previous_para.para_shape_id as usize)?
+                    .spacing_after;
+                let before = styles
+                    .para_styles
+                    .get(next.para_shape_id as usize)?
+                    .spacing_before;
+                i64::from(super::px_to_hwpunit(after + before, dpi))
+            } else {
+                0
+            };
             if i64::from(line.vertical_pos)
                 != i64::from(previous.vertical_pos)
                     + i64::from(previous.line_height)
                     + i64::from(previous.line_spacing)
+                    + paragraph_gap_hu
             {
                 return None;
             }
             previous = line;
         }
+        previous_para = next;
     }
     None
 }
