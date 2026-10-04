@@ -2290,13 +2290,16 @@ fn issue_1284_2024_between20_page18_late_question_titles_match_pdf() {
         (398.0..=414.0).contains(&question29_y),
         "page18 왼쪽 단 문29 제목은 PDF bbox(약 404.2px) 근처여야 함: y={question29_y}"
     );
+    // [#6574] 기준 PDF(`pdf/3-09월_교육_통합_2024-미주사이20-2024.pdf` Hwp 2024 13.0.0.3622,
+    // `-hwp-2024.pdf` 0.0.0.0) 18쪽 오른쪽 단: 문30 375.1px, 다음 회차 문23 890.8px. 종전 범위
+    // (330..=352, 852..=878)는 당시 sweep 출력 기준이라 두 PDF 값을 배제했다.
     assert!(
-        (330.0..=352.0).contains(&question30_y),
-        "page18 오른쪽 단 문30 제목은 현재 sweep 기준 위치 근처여야 함: y={question30_y}"
+        (367.0..=383.0).contains(&question30_y),
+        "page18 오른쪽 단 문30 제목은 PDF bbox(약 375.1px) 근처여야 함: y={question30_y}"
     );
     assert!(
-        (852.0..=878.0).contains(&question23_y),
-        "page18 오른쪽 단 다음 회차 문23 제목은 q30 tail 뒤 현재 sweep 기준 위치여야 함: y={question23_y}"
+        (883.0..=899.0).contains(&question23_y),
+        "page18 오른쪽 단 다음 회차 문23 제목은 PDF bbox(약 890.8px) 근처여야 함: y={question23_y}"
     );
 }
 
@@ -2348,9 +2351,11 @@ fn issue_1284_2024_between20_page19_question24_continues_from_pdf_top() {
         (980.0..=1004.0).contains(&question27_y),
         "문27 제목은 PDF bbox(약 990.5px) 근처에서 시작해야 함: y={question27_y}"
     );
+    // [#6574] 기준 PDF 두 개(13.0.0.3622·0.0.0.0) 모두 19쪽 오른쪽 단 문28 제목은 803.0px 다.
+    // 종전 범위 814..=836 은 당시 sweep 출력 기준이라 PDF 값을 배제했다.
     assert!(
-        (814.0..=836.0).contains(&question28_y),
-        "문28 제목은 현재 sweep 기준 위치 근처에서 시작해야 함: y={question28_y}"
+        (795.0..=811.0).contains(&question28_y),
+        "문28 제목은 PDF bbox(약 803.0px) 근처에서 시작해야 함: y={question28_y}"
     );
 }
 
@@ -2752,9 +2757,12 @@ fn issue_1293_2024_no_separator_20mm_page11_question12_tail_stays_in_frame() {
         "문12 제목은 PDF page11 오른쪽 단 중단(약 462px)에서 시작해야 함: {:?}",
         q12_title_bbox
     );
+    // [#6574] 기준 PDF(`pdf/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.pdf`,
+    // Hwp 2024 13.0.0.3622) 11쪽 오른쪽 단 '따라서 …'(pi=538) 줄의 글자 상단은 1038.9px 다.
+    // 종전 범위 1045..=1065 는 그 줄 상단을 배제했다.
     assert!(
         q12_tail_bbox.x > 390.0
-            && (1045.0..=1065.0).contains(&q12_tail_bbox.y)
+            && (1028.0..=1044.0).contains(&q12_tail_bbox.y)
             && q12_tail_bbox.y + q12_tail_bbox.height <= 1095.0,
         "문12 마지막 수식은 page11 frame 안쪽에 보여야 함: {:?}",
         q12_tail_bbox
@@ -2869,14 +2877,16 @@ fn issue_1293_2024_no_separator_20mm_page12_question15_tail_keeps_page13_aligned
     let q26_title = find_text_line_bbox(&page17_tree.root, 785, 0).expect("page17 문26 제목");
     let q26_first_formula =
         find_text_line_bbox(&page17_tree.root, 786, 0).expect("page17 문26 첫 수식 줄");
+    // [#6574] 기준 PDF(Hwp 2024 13.0.0.3622) 17쪽 오른쪽 단: 문26 제목 1022.5px, 첫 수식 글자
+    // 1041.0..1077.0px. 종전 범위(제목 1030..=1050, 수식 1045..=1065)는 두 값을 배제했다.
     assert!(
-        q26_title.x > 390.0 && (1030.0..=1050.0).contains(&q26_title.y),
+        q26_title.x > 390.0 && (1014.0..=1030.0).contains(&q26_title.y),
         "문26 제목은 PDF처럼 page17 오른쪽 단 하단에 남아야 함: {:?}",
         q26_title
     );
     assert!(
         q26_first_formula.x > 390.0
-            && (1045.0..=1065.0).contains(&q26_first_formula.y)
+            && (1033.0..=1049.0).contains(&q26_first_formula.y)
             && q26_first_formula.y + q26_first_formula.height <= 1096.0,
         "문26 첫 수식은 page17 하단 frame 안에 보여야 함: {:?}",
         q26_first_formula
@@ -3011,9 +3021,12 @@ fn issue_1284_2024_between20_page21_question23_title_stays_in_left_tail() {
         "문23 본문은 PDF page 21 오른쪽 단 상단에서 이어져야 함: {:?}",
         q23_body_bbox
     );
+    // [#6574] 기준 PDF(`-2024.pdf`, Hwp 2024 13.0.0.3622) 21쪽 왼쪽 단 문30 제목은 214.8px 다
+    // (`-hwp-2024.pdf` 0.0.0.0 은 193.9px). 종전 범위 242..=264 는 당시 sweep 출력 기준이라
+    // 두 PDF 값을 모두 배제했다.
     assert!(
-        (242.0..=264.0).contains(&question30_y),
-        "page21 왼쪽 단 문30 제목은 현재 sweep 기준 위치 근처에서 시작해야 함: y={question30_y}"
+        (207.0..=223.0).contains(&question30_y),
+        "page21 왼쪽 단 문30 제목은 PDF bbox(약 214.8px) 근처에서 시작해야 함: y={question30_y}"
     );
     assert!(
         (256.0..=276.0).contains(&question24_y),
@@ -3045,6 +3058,13 @@ fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
 
     let page22 = doc.dump_page_items(Some(21));
     let page22_col1 = page22.find("  단 1").expect("page 22 second column");
+    // [#6574] 기준 PDF 두 개(`pdf/3-09월_교육_통합_2024-미주사이20-2024.pdf` 13.0.0.3622 ·
+    // `-hwp-2024.pdf` 0.0.0.0) 22쪽은 왼쪽 단을 '포물선의 성질에 의해'(pi=1113, 1080.1px)로
+    // 끝내고 오른쪽 단을 ㉡ 식(pi=1114)으로 시작한다. 종전 기대(㉡ 식이 왼쪽 단 끝)는 당시
+    // sweep 출력 기준이었다.
+    let q28_last_left = page22
+        .find("FullParagraph[미주]  pi=1113")
+        .expect("page 22 q28 left column tail");
     let q28_formula_tail = page22
         .find("FullParagraph[미주]  pi=1114")
         .expect("page 22 q28 formula tail");
@@ -3052,8 +3072,10 @@ fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
         .find("FullParagraph[미주]  pi=1115")
         .expect("page 22 q28 graph paragraph");
     assert!(
-        q28_formula_tail < page22_col1 && page22_col1 < q28_graph,
-        "현재 sweep 기준 page 22는 왼쪽 단 마지막 ㉡ 식(pi=1114) 뒤 오른쪽 단 그래프(pi=1115)로 이어져야 함\n{page22}"
+        q28_last_left < page22_col1
+            && page22_col1 < q28_formula_tail
+            && q28_formula_tail < q28_graph,
+        "PDF 기준 page 22는 왼쪽 단 pi=1113 뒤 오른쪽 단 식(pi=1114)·그래프(pi=1115)로 이어져야 함\n{page22}"
     );
 
     let page23 = doc.dump_page_items(Some(22));
@@ -3078,27 +3100,30 @@ fn issue_1284_2024_between20_page22_23_question_tail_matches_pdf() {
     let q28_y = min_para_text_y(&page22_tree.root, 1106).expect("문28 제목");
     let q28_formula_tail_bbox =
         find_text_line_bbox(&page22_tree.root, 1114, 0).expect("문28 ㉡ tail");
+    // 기준 PDF(13.0.0.3622) 22쪽 문28 제목 856.4px, ㉡ 식은 오른쪽 단 맨 위.
     assert!(
-        (812.0..=836.0).contains(&q28_y),
-        "문28 제목은 현재 sweep 기준 위치 근처에서 시작해야 함: y={q28_y}"
+        (848.0..=864.0).contains(&q28_y),
+        "문28 제목은 PDF bbox(약 856.4px) 근처에서 시작해야 함: y={q28_y}"
     );
     assert!(
-        q28_formula_tail_bbox.x < 80.0 && (1052.0..=1084.0).contains(&q28_formula_tail_bbox.y),
-        "문28 마지막 ㉡ 식은 현재 sweep처럼 page 22 왼쪽 단 하단에 남아야 함: {:?}",
+        q28_formula_tail_bbox.x > 390.0 && (84.0..=100.0).contains(&q28_formula_tail_bbox.y),
+        "문28 마지막 ㉡ 식은 PDF처럼 page 22 오른쪽 단 맨 위에서 시작해야 함: {:?}",
         q28_formula_tail_bbox
     );
 
     let page23_tree = doc.build_page_render_tree(22).expect("page 23 render tree");
     let q29_tail_bbox = find_text_line_bbox(&page23_tree.root, 1159, 0).expect("문29 tail");
     let q30_y = min_para_text_y(&page23_tree.root, 1163).expect("문30 제목");
+    // 기준 PDF 두 개 모두 23쪽 오른쪽 단을 문29 정사영 tail(pi=1159, 90.8px)로 시작하고 문30
+    // 제목을 247.9px 에 둔다. 종전 범위 116..=140 은 PDF 값을 배제했다.
     assert!(
-        q29_tail_bbox.x > 390.0 && (116.0..=140.0).contains(&q29_tail_bbox.y),
-        "문29 마지막 정사영 tail은 현재 sweep 기준 page 23 오른쪽 단 상단 흐름에서 이어져야 함: {:?}",
+        q29_tail_bbox.x > 390.0 && (84.0..=100.0).contains(&q29_tail_bbox.y),
+        "문29 마지막 정사영 tail은 PDF처럼 page 23 오른쪽 단 맨 위에서 시작해야 함: {:?}",
         q29_tail_bbox
     );
     assert!(
-        (226.0..=252.0).contains(&q30_y),
-        "문30 제목은 문29 tail 뒤 현재 sweep 기준 위치 근처에서 시작해야 함: y={q30_y}"
+        (240.0..=256.0).contains(&q30_y),
+        "문30 제목은 PDF bbox(약 247.9px) 근처에서 시작해야 함: y={q30_y}"
     );
 }
 
