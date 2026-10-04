@@ -606,20 +606,7 @@ pub(super) fn empty_no_lineseg_paragraph_metrics(
     // 동일 완화 — 비자리차지(글앞/글뒤/어울림) 앵커 도형·그림만 가진 빈 문단도 한글은
     // 완전한 em 줄박스를 부여한다. 두 장부(판정·그리기)가 같은 규칙을 가져야 렌더 y 와
     // 단 경계가 일치한다.
-    let controls_flow_neutral = para.controls.iter().all(|c| {
-        let common = match c {
-            crate::model::control::Control::Picture(p) => &p.common,
-            crate::model::control::Control::Shape(s) => s.common(),
-            _ => return false,
-        };
-        !common.treat_as_char
-            && matches!(
-                common.text_wrap,
-                crate::model::shape::TextWrap::InFrontOfText
-                    | crate::model::shape::TextWrap::BehindText
-                    | crate::model::shape::TextWrap::Square
-            )
-    });
+    let controls_flow_neutral = crate::renderer::empty_host_controls_are_flow_neutral(para);
     if !para.text.trim().is_empty()
         || !(para.controls.is_empty() || controls_flow_neutral)
         || !para.line_segs.is_empty()
@@ -2429,46 +2416,174 @@ impl LayoutEngine {
                 Some(bin_data_content),
                 None,
                 true,
-                None,
+                plan.text_spacing_before
+                    .map(|before| ParagraphVerticalSpacing {
+                        before,
+                        after: styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |s| s.spacing_after),
+                    }),
             );
             return;
         }
         let chars: Vec<_> = para.text.chars().collect();
+        // Physical rows and per-character positions are the measurement
+        // result. Preserve them in the render tree and coalesce compatible
+        // adjacent characters without measuring their advances again.
+        for (line_index, row) in plan.rows.iter().enumerate() {
+            let mut line = RenderNode::new(
+                tree.next_id(),
+                RenderNodeType::TextLine(TextLineNode::with_para_vpos(
+                    row.height,
+                    row.baseline,
+                    section_index,
+                    para_index,
+                    line_index as u32,
+                    super::super::px_to_hwpunit(row.y, self.dpi),
+                )),
+                BoundingBox::new(
+                    col_area.x + row.x,
+                    col_area.y + row.y,
+                    row.width,
+                    row.height,
+                ),
+            );
+            for item in &plan.boxes[row.boxes.clone()] {
+                let InlineFlowContent::Text { range, style, lang } = &item.content else {
+                    continue;
+                };
+                let text: String = chars[range.clone()].iter().collect();
+                let text_style = resolved_to_text_style(styles, *style, *lang);
+                let x = col_area.x + item.x;
+                let y = col_area.y + item.y;
+                if let Some(previous) = line.children.last_mut() {
+                    if let RenderNodeType::TextRun(run) = &mut previous.node_type {
+                        if run.style == text_style
+                            && run.char_shape_id == Some(*style)
+                            && run.char_start.is_some_and(|start| {
+                                start + run.text.chars().count() == range.start
+                            })
+                            && (previous.bbox.x + previous.bbox.width - x).abs() < 0.01
+                            && (previous.bbox.y - y).abs() < 0.01
+                        {
+                            let positions = run.layout_positions.as_mut().unwrap();
+                            let start = previous.bbox.width;
+                            run.text.push_str(&text);
+                            previous.bbox.width += item.width;
+                            positions.push(start + item.width);
+                            run.is_para_end = range.end == chars.len();
+                            continue;
+                        }
+                    }
+                }
+                line.children.push(RenderNode::new(
+                    tree.next_id(),
+                    RenderNodeType::TextRun(TextRunNode {
+                        text,
+                        style: text_style,
+                        char_shape_id: Some(*style),
+                        para_shape_id: Some(para.para_shape_id),
+                        section_index: Some(section_index),
+                        para_index: Some(para_index),
+                        char_start: Some(range.start),
+                        cell_context: None,
+                        is_para_end: range.end == chars.len(),
+                        is_line_break_end: false,
+                        rotation: 0.0,
+                        is_vertical: false,
+                        char_overlap: None,
+                        border_fill_id: styles
+                            .char_styles
+                            .get(*style as usize)
+                            .map_or(0, |s| s.border_fill_id),
+                        baseline: item.baseline,
+                        field_marker: FieldMarkerType::None,
+                        layout_positions: Some(if range.is_empty() {
+                            vec![0.0]
+                        } else {
+                            vec![0.0, item.width]
+                        }),
+                        display_text: None,
+                    }),
+                    BoundingBox::new(x, y, item.width, item.height),
+                ));
+            }
+            if !line.children.is_empty() {
+                col_node.children.push(line);
+            }
+        }
         for item in &plan.boxes {
             let x = col_area.x + item.x;
             let y = col_area.y + item.y;
             match &item.content {
-                InlineFlowContent::Text { range, style, lang } => {
-                    let text: String = chars[range.clone()].iter().collect();
-                    let text_style = resolved_to_text_style(styles, *style, *lang);
-                    let node = RenderNode::new(
-                        tree.next_id(),
-                        RenderNodeType::TextRun(TextRunNode {
-                            text,
-                            style: text_style,
-                            char_shape_id: Some(*style),
-                            para_shape_id: Some(para.para_shape_id),
-                            section_index: Some(section_index),
-                            para_index: Some(para_index),
-                            char_start: Some(range.start),
-                            cell_context: None,
-                            is_para_end: range.end == chars.len(),
-                            is_line_break_end: false,
-                            rotation: 0.0,
-                            is_vertical: false,
-                            char_overlap: None,
-                            border_fill_id: styles
-                                .char_styles
-                                .get(*style as usize)
-                                .map_or(0, |s| s.border_fill_id),
-                            baseline: item.baseline,
-                            field_marker: FieldMarkerType::None,
-                            layout_positions: None,
-                            display_text: None,
-                        }),
-                        BoundingBox::new(x, y, item.width, item.height),
+                InlineFlowContent::Text { .. } => {}
+                InlineFlowContent::FloatingTable { control } => {
+                    let Control::Table(table) = &para.controls[*control] else {
+                        continue;
+                    };
+                    let common = &table.common;
+                    let style = styles.para_styles.get(para.para_shape_id as usize);
+                    let ml = hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi);
+                    let mr = hwpunit_to_px(i32::from(table.outer_margin_right), self.dpi);
+                    let width = hwpunit_to_px(common.width as i32, self.dpi) + ml + mr;
+                    let (ref_x, ref_w) =
+                        if common.horz_rel_to == crate::model::shape::HorzRelTo::Para {
+                            let left = style.map_or(0.0, |s| s.margin_left);
+                            (
+                                col_area.x + left,
+                                col_area.width - left - style.map_or(0.0, |s| s.margin_right),
+                            )
+                        } else {
+                            (col_area.x, col_area.width)
+                        };
+                    let offset = hwpunit_to_px(
+                        super::super::float_placement::signed_hwpunit(common.horizontal_offset),
+                        self.dpi,
                     );
-                    col_node.children.push(node);
+                    let left = match common.horz_align {
+                        crate::model::shape::HorzAlign::Left
+                        | crate::model::shape::HorzAlign::Inside => ref_x + offset,
+                        crate::model::shape::HorzAlign::Center => {
+                            ref_x + (ref_w - width) / 2.0 + offset
+                        }
+                        _ => ref_x + ref_w - width - offset,
+                    } + ml;
+                    let top =
+                        y + hwpunit_to_px(
+                            super::super::float_placement::signed_hwpunit(common.vertical_offset),
+                            self.dpi,
+                        ) + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+                    let measured = measured_tables
+                        .iter()
+                        .find(|m| m.para_index == para_index && m.control_index == *control);
+                    self.layout_table(
+                        tree,
+                        col_node,
+                        table,
+                        section_index,
+                        styles,
+                        0,
+                        col_area,
+                        top,
+                        bin_data_content,
+                        measured,
+                        0,
+                        Some((para_index, *control)),
+                        Alignment::Left,
+                        None,
+                        0.0,
+                        0.0,
+                        None,
+                        None,
+                        Some(y),
+                        None,
+                        false,
+                        false,
+                        false,
+                        Some((Some(left), top)),
+                        Self::standalone_table_char_border_fill(Some(para), table, styles),
+                    );
                 }
                 InlineFlowContent::Table {
                     control,
@@ -4803,7 +4918,9 @@ impl LayoutEngine {
 
             if physical_frame_rows {
                 if let Some(row) = para.and_then(|p| p.line_segs.get(line_idx)) {
-                    y = y_start + spacing_before + hwpunit_to_px(row.vertical_pos, self.dpi);
+                    y = y_start
+                        + vertical_spacing.map_or(spacing_before, |s| s.before)
+                        + hwpunit_to_px(row.vertical_pos, self.dpi);
                 }
             }
             // 다단 필터링: segment_width가 현재 단 너비와 불일치하면 건너뜀
@@ -5765,7 +5882,8 @@ impl LayoutEngine {
             let needs_distribute = alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
-            let renders_synthetic_wrap_trailing_space = !is_last_line_of_para
+            let renders_synthetic_wrap_trailing_space = !physical_frame_rows
+                && !is_last_line_of_para
                 && para
                     .and_then(|p| p.line_segs.get(line_idx))
                     .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
@@ -6442,7 +6560,23 @@ impl LayoutEngine {
                 }
             }
 
-            col_node.children.push(line_node);
+            // An unused lane is structural exclusion metadata for another
+            // segment of this same physical row. It owns no text node; retain
+            // the row's metrics/advance below. A wholly empty row still owns
+            // its intentional line box.
+            let unused_frame_lane = physical_frame_rows
+                && para.is_some_and(|p| {
+                    p.line_segs.get(line_idx).is_some_and(|seg| {
+                        seg.tag & LineSeg::TAG_EMPTY_SEGMENT != 0
+                            && p.line_segs.iter().any(|other| {
+                                other.vertical_pos == seg.vertical_pos
+                                    && other.tag & LineSeg::TAG_EMPTY_SEGMENT == 0
+                            })
+                    })
+                });
+            if !unused_frame_lane {
+                col_node.children.push(line_node);
+            }
             // 줄간격 적용:
             //   - 셀 내 마지막 문단의 마지막 줄: trailing line_spacing 제외
             //     (셀 높이 모델은 trailing 미포함, 셀 내부와 정합)

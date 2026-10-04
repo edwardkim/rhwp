@@ -199,6 +199,7 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     FormattedParagraph {
         tail_line_remaining_width,
         computed_host_lines,
+        square_host_plan: None,
         total_height,
         line_heights,
         line_spacings,

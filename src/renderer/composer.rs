@@ -4184,7 +4184,9 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
 }
 
 mod line_breaking;
-pub(crate) use line_breaking::frame_metrics_for_line;
+pub(crate) use line_breaking::{
+    control_is_width_neutral_marker, frame_metrics_for_line, text_word_ranges,
+};
 pub mod lineseg_compare;
 
 pub(crate) use line_breaking::{

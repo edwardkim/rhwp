@@ -831,6 +831,7 @@ impl TypesetState {
             page_height: self.data.layout.page_height,
             start,
             exclusions: preceding.then_some(&self.data.side_wrap_exclusions),
+            visible_float_exclusions: preceding.then_some(&self.data.visible_float_exclusions),
         }
     }
 
@@ -841,6 +842,33 @@ impl TypesetState {
             .push(PageItem::FullParagraph { para_index });
         self.data.current_height = plan.end;
         self.data.inline_box_flow_bottom = self.data.inline_box_flow_bottom.max(plan.end);
+        self.data.inline_flow_plans.insert(para_index, plan);
+        self.data.vpos_ladder_dirty = true;
+    }
+
+    /// Preserve host-only rows; the table item owns the object and flow advance.
+    pub(super) fn record_square_host_flow(&mut self, para_index: usize, plan: InlineFlowPlan) {
+        if let (Some(control), Some(mut exclusion)) =
+            (plan.square_host_control, plan.square_host_exclusion.clone())
+        {
+            let column = self.inline_flow_column();
+            let dx = crate::renderer::px_to_hwpunit(column.x, self.data.layout.dpi);
+            let dy = crate::renderer::px_to_hwpunit(column.y + plan.start, self.data.layout.dpi);
+            exclusion.horizontal.start += dx;
+            exclusion.horizontal.end += dx;
+            exclusion.vertical.start += dy;
+            exclusion.vertical.end += dy;
+            self.data
+                .side_wrap_exclusions
+                .insert((para_index, control), exclusion);
+        }
+        if let Some(placement) = plan.square_host_placement {
+            if let Some(control) = plan.square_host_control {
+                self.data
+                    .paragraph_float_placements
+                    .insert((para_index, control), placement);
+            }
+        }
         self.data.inline_flow_plans.insert(para_index, plan);
         self.data.vpos_ladder_dirty = true;
     }

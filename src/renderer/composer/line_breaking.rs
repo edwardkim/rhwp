@@ -327,6 +327,31 @@ fn token_line_font_size(
     base.max(style.font_size).max(0.0)
 }
 
+/// Lexical text units shared with physical TAC row placement. Inline control
+/// boundaries remain owned by the caller, rather than joined into a word.
+pub(crate) fn text_word_ranges(para: &Paragraph, styles: &ResolvedStyleSet) -> Vec<Range<usize>> {
+    let chars: Vec<_> = para.text.chars().collect();
+    let style = styles.para_styles.get(para.para_shape_id as usize);
+    tokenize_paragraph_with_regenerated_space_metric(
+        &chars,
+        &para.char_offsets,
+        &para.char_shapes,
+        styles,
+        style.map_or(0, |s| s.english_break_unit),
+        style.map_or(0, |s| s.korean_break_unit),
+        SpaceMetric::Stored,
+        &[],
+    )
+    .into_iter()
+    .filter_map(|token| match token {
+        BreakToken::Text {
+            start_idx, end_idx, ..
+        } => Some(start_idx..end_idx),
+        _ => None,
+    })
+    .collect()
+}
+
 fn tokenize_paragraph_with_regenerated_space_metric(
     text_chars: &[char],
     char_offsets: &[u32],
@@ -1681,9 +1706,18 @@ fn fill_one_interval(
                     cursor.last_break_token_idx = None;
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
+                    // The terminal separator was consumed by this row. The
+                    // cursor is at paragraph end, not at a new empty line.
+                    // An authored final LineBreak follows its separate path.
+                    let at_end = absorbed && cursor.token_index == tokens.len();
+                    cursor.finished = at_end;
                     return Some(FilledInterval {
                         line,
-                        termination: FillTermination::IntervalFull,
+                        termination: if at_end {
+                            FillTermination::ParagraphEnd
+                        } else {
+                            FillTermination::IntervalFull
+                        },
                     });
                 }
                 cursor.last_break_token_idx = Some(ti);
@@ -2483,7 +2517,7 @@ fn flow_inline_controls(para: &Paragraph) -> Vec<FlowInlineControl> {
 /// classified is laid out as ordinary text by the frame, which is at worst the
 /// same treatment its text would get anyway — where the previous shape left the
 /// whole paragraph unowned.
-fn control_is_width_neutral_marker(control: &Control) -> bool {
+pub(crate) fn control_is_width_neutral_marker(control: &Control) -> bool {
     inline_control_size_hwp(control).is_none() && !control_owns_a_layout_box(control)
 }
 
@@ -2977,6 +3011,7 @@ fn layout_paragraph_in_frame_impl(
                     .then_some(terminal_inline_metrics)
                     .flatten();
                 let mut row_terminated = false;
+                let widest_interval = intervals.iter().map(|i| i.end - i.start).max().unwrap_or(0);
                 for interval in intervals {
                     // 부분 재조판도 배치가 예약하는 글머리표 본문 내어쓰기를 제외한다.
                     let marker_width = if start_char > 0 {
@@ -2988,6 +3023,43 @@ fn layout_paragraph_in_frame_impl(
                         interval.end.saturating_sub(interval.start),
                         dpi,
                     ) - marker_width;
+                    // Preserve an unbroken word when another interval on this
+                    // physical row can contain it. A narrow side segment must
+                    // not force the empty-line character fallback after the
+                    // wider segment has already been filled.
+                    if cursor.fallback_char_idx.is_none() {
+                        if let Some(BreakToken::Text {
+                            base_width,
+                            end_idx,
+                            max_font_size,
+                            ..
+                        }) = tokens.get(cursor.token_index)
+                        {
+                            let word = FitWidthHwp::trimmed(
+                                to_hwp(*base_width),
+                                &letter_spacing_px,
+                                *end_idx,
+                            );
+                            let fits =
+                                |width| text_token_fits_line_hwp(0, word, 0, width, *max_font_size);
+                            let widest_available = to_hwp(
+                                crate::renderer::hwpunit_to_px(widest_interval, dpi) - marker_width,
+                            );
+                            if interval.end - interval.start < widest_interval
+                                && !fits(to_hwp(available_width_px))
+                                && fits(widest_available)
+                            {
+                                let boundary =
+                                    char_index_to_utf16_offset(para, cursor.line_start_idx);
+                                segments.push(RowSegment::new(
+                                    boundary..boundary,
+                                    interval,
+                                    source_tag | LineSeg::TAG_EMPTY_SEGMENT,
+                                ));
+                                continue;
+                            }
+                        }
+                    }
                     let terminal = terminal_tokens.as_ref().and_then(|terminal_tokens| {
                         let mut replay = FillCursor::replay_from_boundary(
                             terminal_tokens,

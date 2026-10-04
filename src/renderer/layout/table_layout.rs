@@ -3711,8 +3711,9 @@ impl LayoutEngine {
                 table_text_wrap,
                 crate::model::shape::TextWrap::BehindText
                     | crate::model::shape::TextWrap::InFrontOfText
-            ) {
-                // 글뒤로/글앞으로: y_offset 변경 없음
+            ) && !table.common.treat_as_char
+            {
+                // 부동 글앞/글뒤 개체만 흐름을 소비하지 않는다. TAC는 줄 점유를 반환한다.
                 y_start
             } else if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                 && !table.common.treat_as_char

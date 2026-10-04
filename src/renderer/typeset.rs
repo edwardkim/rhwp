@@ -116,20 +116,7 @@ fn empty_paragraph_fallback_line_metrics(
     // 부여한다 (사용안내 실측: Square 그림 앵커 빈 문단 pi1/pi6 이 0~5.3px 로 붕괴
     // → 한글은 27.7px(base 1300 × 160%) 부여 — PrvImage 줄 좌표 대조). 자리차지
     // (TopAndBottom)는 흐름 소비 계약이 별도라 제외를 유지한다.
-    let controls_flow_neutral = para.controls.iter().all(|c| {
-        let common = match c {
-            Control::Picture(p) => &p.common,
-            Control::Shape(s) => s.common(),
-            _ => return false,
-        };
-        !common.treat_as_char
-            && matches!(
-                common.text_wrap,
-                crate::model::shape::TextWrap::InFrontOfText
-                    | crate::model::shape::TextWrap::BehindText
-                    | crate::model::shape::TextWrap::Square
-            )
-    });
+    let controls_flow_neutral = crate::renderer::empty_host_controls_are_flow_neutral(para);
     // char_count == 0 배제는 순수 빈 문단(컨트롤 없음)에만 유지한다 — 글앞/글뒤
     // 도형·그림 앵커 문단은 char_count 0 으로 저장되는 경우가 있고(사용안내 pi1/pi6
     // 실측 0px 붕괴), 한글은 이들에도 완전한 em 줄박스를 부여한다.
@@ -4613,6 +4600,31 @@ impl TypesetEngine {
                             + i64::from(table.outer_margin_bottom)
                             - 10
                 });
+        // 저장 줄이 없는 host 의 Square 표: 글자 띠는 표 기하로 도출한다(layout 과 같은
+        // helper). 띠가 없으면(표가 단 폭을 채움) 글자는 옆으로 흐를 수 없어 표 **아래**로
+        // 간다 — 양수 세로 오프셋이어도 표 앞 글자로 방출하지 않는다.
+        let no_lineseg_square_host = !table.common.treat_as_char
+            && matches!(
+                table.common.text_wrap,
+                crate::model::shape::TextWrap::Square
+            )
+            && crate::renderer::is_no_lineseg_visible_text_host(para);
+        let no_lineseg_square_band = no_lineseg_square_host
+            .then(|| {
+                let col_w_px = st
+                    .layout
+                    .column_areas
+                    .get(st.current_column as usize)
+                    .map_or(st.layout.body_area.width, |area| area.width);
+                crate::renderer::no_lineseg_square_table_host_band(
+                    para,
+                    crate::renderer::px_to_hwpunit(col_w_px, self.dpi),
+                )
+            })
+            .flatten();
+        let no_lineseg_host_flows_below = no_lineseg_square_host
+            && no_lineseg_square_band.is_none()
+            && fmt.square_host_plan.is_none();
         let pre_table_end_line = if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
@@ -4624,7 +4636,10 @@ impl TypesetEngine {
                 && !st.profile.session_edited()
                 && crate::renderer::float_placement::para_offset_consumed_by_page_break(
                     para, &table.common, st.base_available_height(), self.dpi,
-                )) {
+                ))
+            && !no_lineseg_host_flows_below
+            && fmt.square_host_plan.is_none()
+        {
             total_lines
         } else if table.common.treat_as_char
             && total_lines > 1
@@ -4771,7 +4786,33 @@ impl TypesetEngine {
                 == 2
             && para.line_segs.iter().any(|seg| !is_synthetic_line_seg(seg));
 
-        if is_wrap_around_table && pre_height > 0.0 {
+        // 저장 줄이 없는 host 의 Square 표는 host 글자가 표 옆 띠로 흐른다 — 띠는 표
+        // 기하로 도출한다(layout 이 같은 helper 로 글자를 그린다). 표 앞 글자로 분류되지
+        // 않는 음수·0 세로 오프셋에서도 흐름은 [Task #439] 와 같이 max(글자, 표) 한 번만
+        // 전진하고, 같은 글자를 표 아래 post-text 로 다시 쌓지 않는다.
+        let no_lineseg_band_host = is_wrap_around_table
+            && is_first_table
+            && pre_height <= 0.0
+            && (fmt.square_host_plan.is_some() || no_lineseg_square_band.is_some());
+        if no_lineseg_band_host {
+            let v_off_px = crate::renderer::hwpunit_to_px(signed_vertical_offset, self.dpi);
+            let host_h = if fmt.square_host_plan.is_some() {
+                fmt.total_height
+            } else {
+                fmt.line_advances_sum(0..total_lines)
+            };
+            let host_origin = st.current_height;
+            let advance = if fmt.square_host_plan.is_some() {
+                host_h
+            } else {
+                host_h.max(v_off_px + table_total_height)
+            };
+            st.advance_flow_by(advance);
+            if let Some(mut plan) = fmt.square_host_plan.clone() {
+                plan.relative_to(0.0, -host_origin);
+                st.record_square_host_flow(para_idx, plan);
+            }
+        } else if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
             st.advance_flow_by(pre_height.max(table_bottom));
@@ -5109,8 +5150,11 @@ impl TypesetEngine {
             && total_lines > post_table_start
             && !whitespace_only_single_tac_host_line
             && !whitespace_only_host_line_already_placed;
-        let should_add_post_text =
-            is_last_table && tac_table_count <= 1 && has_post_text && !pre_text_exists;
+        let should_add_post_text = is_last_table
+            && tac_table_count <= 1
+            && has_post_text
+            && !pre_text_exists
+            && !no_lineseg_band_host;
         if should_add_post_text {
             let post_height: f64 = fmt.line_advances_sum(post_table_start..total_lines);
             if let Some(origin) = st
@@ -5639,6 +5683,7 @@ mod issue_3780_line_advance_oob {
         FormattedParagraph {
             tail_line_remaining_width: None,
             computed_host_lines: None,
+            square_host_plan: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
             line_spacings: vec![2.0; lines],

@@ -218,7 +218,13 @@ impl TypesetEngine {
             // 필러가 자기 줄 높이만큼 정상 흐름으로 전진하게 둔다. 한 문단에
             // shortcut 표와 fragment 표가 공존하는 극단 케이스도 생략 쪽을
             // 택한다(공간 이중 계상보다 유실이 드묾).
-            if has_behind_float_table && st.overlay_shape_shortcut_para != Some(para_idx) {
+            // A committed inline plan owns each physical row and its flow end.
+            // Its overlay table has no fragmented body flow to compensate, so
+            // following empty paragraphs must keep their own line advances.
+            if has_behind_float_table
+                && st.overlay_shape_shortcut_para != Some(para_idx)
+                && !st.inline_flow_plans.contains_key(&para_idx)
+            {
                 st.arm_behind_float_absorption(Some(para_idx));
             }
         }

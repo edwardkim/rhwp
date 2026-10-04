@@ -578,3 +578,16 @@ samples/통합재정통계(2014.8월).hwp	1	1
 samples/표-텍스트.hwpx	1	1
 samples/한셀OLE.hwp	1	1
 samples/한셀OLE.hwpx	1	1
+
+# PR #7482: exact input/PDF SHA-256 and Hancom 2020 jobs in samples/issue7482/provenance.json.
+samples/issue7482/long-boundary-8.hwpx	1	1
+samples/issue7482/margin1034.hwpx	1	1
+samples/issue7482/margin284.hwpx	1	1
+samples/issue7482/original-no-ls-overlay-tac.hwp	1	1
+samples/issue7482/tac-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-one-row.hwpx	1	1
+samples/issue7482/tac-one-row.hwpx	1	1
+samples/issue7482/tac-two-rows.hwpx	1	1
+samples/issue7482/tac-word-after-pair.hwpx	1	1
+samples/issue7482/tac-after-plain-paragraphs.hwpx	2	2

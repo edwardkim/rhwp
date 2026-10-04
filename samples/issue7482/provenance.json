@@ -1,0 +1,103 @@
+[
+  {
+    "input": "samples/issue7482/tac-one-row.hwpx",
+    "input_sha256": "f6a1c7e407305d68afcd8c6869903eb4b5028f951560cde3c479e85b8db041a8",
+    "pdf": "pdf/issue7482/tac-one-row-hwpx-2020.pdf",
+    "pdf_sha256": "a0772af03f9b25a111305499ce5c842737339cd08482c47dc7c510fc033ef990",
+    "engine": "2020",
+    "job_id": "e491d833-a53e-4551-8517-bcea004e2fbf",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-two-rows.hwpx",
+    "input_sha256": "3e665fa5689a270472afe83c7b99ecf40de15539556088c84c02508cf36086ac",
+    "pdf": "pdf/issue7482/tac-two-rows-hwpx-2020.pdf",
+    "pdf_sha256": "48229af886e3739feb9e5616f66c9853d7c5b91ed772b37cc90f0bcfb3b498c3",
+    "engine": "2020",
+    "job_id": "2a3f1d2b-ebdf-436b-9e88-3b73c4b3de3c",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-explicit-break.hwpx",
+    "input_sha256": "f16f8cf99778d3ba00e006bb0a1d55b0594673274db62b8688f63d6c6d8fd489",
+    "pdf": "pdf/issue7482/tac-explicit-break-hwpx-2020.pdf",
+    "pdf_sha256": "c5ee2d0d14aa45b32253767c24fb4b467031296642c0f42906c17d46f6eec2da",
+    "engine": "2020",
+    "job_id": "4ccca6d1-a44d-47ed-9422-c2c6fd210bfc",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/original-no-ls-overlay-tac.hwp",
+    "input_sha256": "33b04f11a69106430ece0dbc57c3b806281eff7d4f75bb66a1dcdda33c6cbec2",
+    "pdf": "pdf/issue7482/original-no-ls-overlay-tac-hwp-2020.pdf",
+    "pdf_sha256": "e92fd1bebaa6c27928ebaa7135dbb7ce7e7eeb1bc724ad6b3b472be35d0386d7",
+    "engine": "2020",
+    "job_id": "844cd0e8-c28c-46b3-820b-be3dab57a59d",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/margin284.hwpx",
+    "input_sha256": "85ab0b55bc7037def0365ef4279b26dc923f5210ea6365446c144e2d8e0df940",
+    "pdf": "pdf/issue7482/margin284-hwpx-2020.pdf",
+    "pdf_sha256": "6f32362f3de354d2c09be144c5c9fcaebbaee00fe7f7869d09bae92852f3c0c8",
+    "engine": "2020",
+    "job_id": "71f7169b-136e-423f-95ec-2ffa142758fb",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/margin1034.hwpx",
+    "input_sha256": "9fe87ba48bc6566332d7a54e8b7caf3a2b8bc404f268d45df2620ab638083406",
+    "pdf": "pdf/issue7482/margin1034-hwpx-2020.pdf",
+    "pdf_sha256": "fcef0889a8b0f2ecfedd158aedee2943e78e4a421d214b0f0d7d5314279830d0",
+    "engine": "2020",
+    "job_id": "526a8ded-6bdc-44e6-9bf7-25c73c109261",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/long-boundary-8.hwpx",
+    "input_sha256": "8fdb0e17c9630bda02102d15399be099beddba65e7bed9c9c12bf9fc3410df37",
+    "pdf": "pdf/issue7482/long-boundary-8-hwpx-2020.pdf",
+    "pdf_sha256": "bd91901b264c6798fa194f53aea40dcab06f12ef02a59197645742780b582174",
+    "engine": "2020",
+    "job_id": "f40187dd-f751-4f00-b79b-6e6fb626be87",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-mixed-one-row.hwpx",
+    "input_sha256": "b45a2e3d5e240da8ed7737e79edd688b564b872aecb5941d3f406ae71e20b14f",
+    "pdf": "pdf/issue7482/tac-mixed-one-row-hwpx-2020.pdf",
+    "pdf_sha256": "5403274d6f4023dd5de5dacd25265b49d2e18fe423d064e2a700fac12a29367e",
+    "engine": "2020",
+    "job_id": "6cf0004d-0b69-4e90-96cc-12aefdad5bbd",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-mixed-explicit-break.hwpx",
+    "input_sha256": "47fcdde8b2eb29365560333802608e9abbd33f95442cfa2a1c958b4cf3af544d",
+    "pdf": "pdf/issue7482/tac-mixed-explicit-break-hwpx-2020.pdf",
+    "pdf_sha256": "9a588d1445e26491656dcff30799af2e6ce7516479b1b1f9cb34d3f004e90652",
+    "engine": "2020",
+    "job_id": "1520b9b1-a90e-48bd-8225-2dfe42147b3f",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-word-after-pair.hwpx",
+    "input_sha256": "01f5d485151917b144ef025aa8e39d692dd491425c42962bb7f72479a5325835",
+    "pdf": "pdf/issue7482/tac-word-after-pair-hwpx-2020.pdf",
+    "pdf_sha256": "ccc26082ea1b5eafd51c528e2edfe714801a824ee751eb26f530fb7db7bac53f",
+    "engine": "2020",
+    "job_id": "0bcd8800-8ca7-41e9-b9b6-98a38c814085",
+    "pages": 1
+  },
+  {
+    "input": "samples/issue7482/tac-after-plain-paragraphs.hwpx",
+    "input_sha256": "fed074d8cfcbc67948050b26d5b0397cb2d6144e650201a434684f25d90accd8",
+    "pdf": "pdf/issue7482/tac-after-plain-paragraphs-hwpx-2020.pdf",
+    "pdf_sha256": "be2819b19bb30ad9f3c1b6ea55256754ae4ae7ff9f00d4b514def8774996f668",
+    "engine": "2020",
+    "job_id": "23e7d90d-4499-4ade-8a9b-36549e583a15",
+    "pages": 2,
+    "generation": "수동 진단: 공개 #7481 제목/Square 입력을 HWPX로 내보내고 저장 LineSeg를 제거한 상태에서 원래 용지 크기를 유지한다. 호스트 뒤에 paraPrIDRef=0 일반 문단 공간 확인 22개를 넣고 큰 TAC를 유지하며 pageBreak=NONE으로 지정한다. 저장 LineSeg 유효성 근거가 아니다.",
+    "independent_expectation": "앞의 일반 문단들은 첫 Square 옆의 가용 영역부터 흐르고 순서를 보존한다. 큰 TAC는 2쪽 상단에 통째로 배치된다. 50% 새 정책의 기대값으로 쓰지 않는다."
+  }
+]

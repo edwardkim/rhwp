@@ -122,6 +122,7 @@ struct ColumnItemCtx<'a> {
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
     inline_placements:
         &'a std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
+    inline_flow_plans: &'a std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     paragraph_float_placements: &'a std::collections::HashMap<
         (usize, usize),
         super::float_placement::ParagraphFloatPlacement,
@@ -2638,6 +2639,11 @@ fn textless_infront_para_host_requires_line_advance(para: &Paragraph) -> bool {
     }
 
     para.controls.iter().any(|ctrl| match ctrl {
+        Control::Table(table) => {
+            !table.common.treat_as_char
+                && table.common.text_wrap == TextWrap::InFrontOfText
+                && crate::renderer::empty_host_controls_are_flow_neutral(para)
+        }
         Control::Picture(pic) => {
             let cm = &pic.common;
             // vert_rel_to 는 그림이 어디에 붙어 그려지는지를 정할 뿐, host 문단이
@@ -9799,6 +9805,7 @@ impl LayoutEngine {
                 wrap_around_paras: column_wrap_around_paras,
                 wrap_anchors: &col_content.wrap_anchors,
                 inline_placements: &col_content.inline_placements,
+                inline_flow_plans: &col_content.inline_flow_plans,
                 paragraph_float_placements: &col_content.paragraph_float_placements,
             };
             // 이 단에 이미 그려진 표들의 최상단 y — 잔여 행이 그 아래로 내려가면
@@ -10147,6 +10154,7 @@ impl LayoutEngine {
             wrap_around_paras,
             wrap_anchors,
             inline_placements,
+            inline_flow_plans,
             paragraph_float_placements,
         };
         let mut applied_tac_segment = false;
@@ -10351,7 +10359,7 @@ impl LayoutEngine {
                                     composed.get(*para_index),
                                     self.dpi,
                                 );
-                                if no_stored_ladder_square_host {
+                                if crate::renderer::para_has_no_stored_line_segs(para) {
                                     // [#5929] 사다리가 없으면 조판이 기준이다 — typeset 은
                                     // 이 문단을 `sb + lines + sa` 로 계상한다(형제 빈 문단과
                                     // 같은 54.1px). 줄 부분만 주면 문단 앞뒤 간격(20px)이
@@ -10784,7 +10792,17 @@ impl LayoutEngine {
                     });
                     let explicit_stored_fragment =
                         explicitly_split_stored_square_host(para, *start_line, *end_line);
-                    if is_wrap_host && !explicit_stored_fragment {
+                    // 저장 줄이 없고 표 옆에 글자 띠가 없는 host(표가 단 폭을 채움)는
+                    // 글자가 표 아래로 흐른다 — typeset 이 post-text 로 소유시킨 이 줄을
+                    // 일반 경로로 그린다. 띠가 있으면 표 경로가 띠에 그린다.
+                    let host_text_follows_table = is_wrap_host
+                        && crate::renderer::is_no_lineseg_visible_text_host(para)
+                        && crate::renderer::no_lineseg_square_table_host_band(
+                            para,
+                            px_to_hwpunit(col_area.width, self.dpi),
+                        )
+                        .is_none();
+                    if is_wrap_host && !explicit_stored_fragment && !host_text_follows_table {
                         return (y_offset, false);
                     }
 
@@ -12630,8 +12648,22 @@ impl LayoutEngine {
             let table_is_square =
                 matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
             if !is_tac && table_is_square {
-                let wrap_cs = para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
-                let wrap_sw = para.line_segs.first().map(|s| s.segment_width).unwrap_or(0);
+                // 저장 줄이 없는 host 는 첫 줄 cs/sw 가 없어 띠 폭이 0 이 된다 —
+                // 표 기하로 띠를 도출한다(typeset 흐름 전진과 같은 helper).
+                let no_lineseg_band = crate::renderer::no_lineseg_square_table_host_band(
+                    para,
+                    px_to_hwpunit(col_area.width, self.dpi),
+                );
+                let (wrap_cs, wrap_sw) = no_lineseg_band.unwrap_or_else(|| {
+                    para.line_segs
+                        .first()
+                        .map_or((0, 0), |s| (s.column_start, s.segment_width))
+                });
+                // 저장 줄도 띠도 없으면 host 글자는 표 아래 post-text 로 그린다(위 PartialParagraph).
+                let paint_host_text_in_band = no_lineseg_band.is_some()
+                    || para.line_segs.iter().any(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    });
                 let wrap_text_x = col_area.x + hwpunit_to_px(wrap_cs, self.dpi);
                 let wrap_text_width = hwpunit_to_px(wrap_sw, self.dpi);
                 // [Task #1745] 텍스트 혼합 anchor: 후속 어울림 문단 띠는 표 geometry 로.
@@ -12641,12 +12673,14 @@ impl LayoutEngine {
                 // 해당 문단을 WrapAroundPara로 흡수하므로, layout도 동일한 strip을 써야
                 // 한다. 여기서 host의 전폭을 fallback으로 쓰면 prefix가 표 옆이 아닌
                 // 전폭 compose 경로에 남아 paint되지 않는다(issue4090 p5/p7/p15/p17).
-                let strip = crate::renderer::text_anchor_square_table_strip(para).or_else(|| {
-                    crate::renderer::empty_host_square_table_left_strip(
-                        para,
-                        px_to_hwpunit(col_area.width, self.dpi),
-                    )
-                });
+                let strip = crate::renderer::text_anchor_square_table_strip(para)
+                    .or_else(|| {
+                        crate::renderer::empty_host_square_table_left_strip(
+                            para,
+                            px_to_hwpunit(col_area.width, self.dpi),
+                        )
+                    })
+                    .or(no_lineseg_band);
                 let (strip_x, strip_width) = strip
                     .map(|(cs, sw)| {
                         (
@@ -12658,6 +12692,28 @@ impl LayoutEngine {
                 // Task #463: 인라인 floating 표 우측 x 계산 (paragraph border box 확장용).
                 // table_layout::compute_table_x_position 와 동일 공식.
                 let tbl_x_right = compute_square_wrap_tbl_x_right(t, col_area, self.dpi);
+                let host_plan = ctx
+                    .inline_flow_plans
+                    .get(&para_index)
+                    .filter(|plan| plan.square_host_control == Some(control_index));
+                if let Some(plan) = host_plan {
+                    self.layout_inline_flow_plan(
+                        tree,
+                        col_node,
+                        para,
+                        styles,
+                        col_area,
+                        page_content.section_index,
+                        para_index,
+                        bin_data_content,
+                        measured_tables,
+                        plan,
+                    );
+                    // A Square object owns an exclusion, while this cursor
+                    // follows the shared host text rows, including successors
+                    // that can continue beside the object.
+                    y_offset = col_area.y + plan.end;
+                }
                 self.layout_wrap_around_paras(
                     tree,
                     col_node,
@@ -12674,7 +12730,9 @@ impl LayoutEngine {
                     wrap_text_width,
                     strip_x,
                     strip_width,
-                    !split_host_text_owned_by_fragments,
+                    host_plan.is_none()
+                        && !split_host_text_owned_by_fragments
+                        && paint_host_text_in_band,
                     0.0,
                     bin_data_content,
                     Some(tbl_x_right),
@@ -12685,7 +12743,7 @@ impl LayoutEngine {
                 // 본문 ≤ 표 인 기존 다수 케이스는 host_text_bottom ≤ y_offset 이라 불변.
                 if let Some(comp) = composed
                     .get(para_index)
-                    .filter(|_| !split_host_text_owned_by_fragments)
+                    .filter(|_| host_plan.is_none() && !split_host_text_owned_by_fragments)
                 {
                     let mut text_h = 0.0;
                     let mut last_ls = 0.0;
@@ -15469,16 +15527,13 @@ impl LayoutEngine {
             .filter(|wp| wp.table_para_index == table_para_index)
             .collect();
 
-        // 표 문단의 LINE_SEG에서 기준 vertical_pos
         let table_para = match paragraphs.get(table_para_index) {
             Some(p) => p,
             None => return,
         };
-        let table_seg = match table_para.line_segs.first() {
-            Some(s) => s,
-            None => return,
-        };
-        let table_base_vpos = table_seg.vertical_pos;
+        // 표 문단의 LINE_SEG에서 기준 vertical_pos — 후속 어울림 문단 배치에만 쓴다.
+        // 저장 줄이 없는 host 도 자기 글자는 아래에서 그려야 하므로 여기서 끝내지 않는다.
+        let table_base_vpos = table_para.line_segs.first().map(|s| s.vertical_pos);
 
         // 어울림 텍스트 영역
         // Task #463: wrap_text_x 는 LINE_SEG.column_start 기반으로 paragraph
@@ -15620,6 +15675,9 @@ impl LayoutEngine {
         if related.is_empty() {
             return;
         }
+        let Some(table_base_vpos) = table_base_vpos else {
+            return;
+        };
 
         // 어울림 텍스트 영역: col_area를 cs/sw 기반으로 조정
         let wrap_area = LayoutRect {

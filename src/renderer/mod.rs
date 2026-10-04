@@ -1509,6 +1509,33 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// These controls do not replace the empty host paragraph's own text line.
+/// Square tables have a separate exclusion/flow owner and are not included.
+pub(crate) fn empty_host_controls_are_flow_neutral(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::{control::Control, shape::TextWrap};
+    para.controls.iter().all(|control| {
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            Control::Table(table) => {
+                return !table.common.treat_as_char
+                    && matches!(
+                        table.common.text_wrap,
+                        TextWrap::InFrontOfText | TextWrap::BehindText
+                    );
+            }
+            marker => return composer::control_is_width_neutral_marker(marker),
+        };
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::Square
+            )
+    })
+}
+
 /// 합성 Square 구간은 시작 위치까지의 왼쪽 여백을 이미 차지한다.
 /// 이를 본문 상자의 폭으로 환산해 측정과 배치가 같은 프레임을 사용하게 하며,
 /// 글꼴별 임의 허용 폭은 더하지 않는다.
@@ -2122,6 +2149,100 @@ pub(crate) fn empty_host_square_table_left_strip(
     })?;
 
     (left_width > 0 && left_width < column_width_hu).then_some((0, left_width))
+}
+
+/// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
+/// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
+pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
+    !para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        && para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
+/// 저장 LINE_SEG 가 없는 host 문단의 Square 표 옆 글자 띠 (cs, sw) HU 도출.
+///
+/// 저장 줄이 있으면 첫 줄의 `column_start`/`segment_width` 가 한글이 흘린 띠를 그대로
+/// 인코딩하지만, 저장 줄이 없는 문서(기계 생성 서식)는 그 증거가 없다. 이때 띠는 표
+/// 자신의 기하(가로 기준·정렬·오프셋·폭·바깥여백)와 글자 흐름 방향으로 정해진다.
+/// typeset(흐름 전진)과 layout(host 글자 페인트)이 같은 띠를 써야 두 장부가 갈리지
+/// 않는다.
+///
+/// 표 하나만 앵커하고 가시 글자가 있는 host 에 한정한다. 가운데 놓여 양쪽 띠가 모두
+/// 넓은 형상이나 쪽/용지 기준 표는 기존 경로에 남긴다(None).
+pub(crate) fn no_lineseg_square_table_host_band(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> Option<(i32, i32)> {
+    use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, TextWrap};
+    const MIN_BAND_HU: i32 = 2000;
+
+    if !is_no_lineseg_visible_text_host(para) || column_width_hu <= 0 {
+        return None;
+    }
+
+    let is_square_float = |common: &crate::model::shape::CommonObjAttr| {
+        !common.treat_as_char && matches!(common.text_wrap, TextWrap::Square)
+    };
+    let square_float_count = para
+        .controls
+        .iter()
+        .filter(|control| match control {
+            crate::model::control::Control::Table(t) => is_square_float(&t.common),
+            crate::model::control::Control::Picture(p) => is_square_float(&p.common),
+            crate::model::control::Control::Shape(s) => is_square_float(s.common()),
+            _ => false,
+        })
+        .count();
+    let common = para.controls.iter().find_map(|control| match control {
+        crate::model::control::Control::Table(t) if is_square_float(&t.common) => Some(&t.common),
+        _ => None,
+    })?;
+    if square_float_count != 1 || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+    {
+        return None;
+    }
+
+    let width = common.width as i32;
+    let offset = common.horizontal_offset as i32;
+    let left = match common.horz_align {
+        HorzAlign::Left => offset,
+        HorzAlign::Right => column_width_hu - width - offset,
+        _ => return None,
+    };
+    let obj_left = left - common.margin.left as i32;
+    let obj_right = left + width + common.margin.right as i32;
+    let left_gap = obj_left.clamp(0, column_width_hu);
+    let right_gap = (column_width_hu - obj_right).clamp(0, column_width_hu);
+    let left_band = (0, left_gap);
+    let right_band = (obj_right.clamp(0, column_width_hu), right_gap);
+
+    let band = match common.text_flow {
+        TextFlow::LeftOnly => left_band,
+        TextFlow::RightOnly => right_band,
+        TextFlow::LargestOnly => {
+            if left_gap >= right_gap {
+                left_band
+            } else {
+                right_band
+            }
+        }
+        // 양쪽 흐름은 한쪽 띠가 글자 하나도 못 들어갈 만큼 좁을 때만 한 띠로 본다.
+        TextFlow::BothSides => {
+            if right_gap < MIN_BAND_HU {
+                left_band
+            } else if left_gap < MIN_BAND_HU {
+                right_band
+            } else {
+                return None;
+            }
+        }
+    };
+    (band.1 >= MIN_BAND_HU).then_some(band)
 }
 
 /// [#3314] 요청 face 의 굵기/폭 접미사를 벗긴 base family.

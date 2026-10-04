@@ -20,12 +20,14 @@ impl TypesetEngine {
         tables: &[MeasuredTable],
     ) -> bool {
         let column = st.inline_flow_column();
+        let table_text_rows = inline_flow::supports_table_text_rows(para);
         if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi))
             && !inline_flow::supports_plain_text(para)
         {
             return false;
         }
-        if st.side_wrap_exclusions.is_empty()
+        if !table_text_rows
+            && st.side_wrap_exclusions.is_empty()
             && !para.controls.iter().any(|c| {
                 matches!(c, Control::Picture(p) if !p.common.treat_as_char
                 && p.common.text_wrap == crate::model::shape::TextWrap::Square)
@@ -47,7 +49,16 @@ impl TypesetEngine {
         let Some(mut plan) = build(st, st.current_height, true) else {
             return false;
         };
-        if !plan.carved {
+        // An unchanged plain row can continue a shared cursor, but an old
+        // exclusion alone does not transfer ownership from a legacy paragraph.
+        // In that case its paint cursor may differ from current_height, so
+        // publishing an unrelated absolute plan would rewind the next row.
+        let follows_shared_rows = st
+            .current_items
+            .last()
+            .and_then(|item| st.inline_flow_plans.get(&item.para_index()))
+            .is_some_and(|previous| (previous.end - st.current_height).abs() < 0.01);
+        if !table_text_rows && !plan.carved && (plan.text_rows.is_none() || !follows_shared_rows) {
             return false;
         }
         if plan.end > st.available_height() + 0.01 {
