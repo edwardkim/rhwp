@@ -1537,6 +1537,7 @@ impl TypesetEngine {
             // 사이 간격 등을 렌더와 다르게 실어 글줄을 단 아래로 흘린다. 같은 단 항목을
             // scratch 렌더로 다시 그려 잉크 하단을 확인하고, 앞 줄만 들어가면 거기서 나누고
             // 한 줄도 안 들어가면 다음 단에서 시작한다.
+            let mut render_fits_whole = false;
             let render_fit_split = match self.judge_endnote_render_ink_fit(
                 st,
                 paragraphs,
@@ -1548,7 +1549,11 @@ impl TypesetEngine {
                 fmt.total_height,
                 ep_idx == 0,
             ) {
-                EndnoteRenderInkFit::Unjudged | EndnoteRenderInkFit::Fits => None,
+                EndnoteRenderInkFit::Unjudged => None,
+                EndnoteRenderInkFit::Fits => {
+                    render_fits_whole = true;
+                    None
+                }
                 EndnoteRenderInkFit::SplitAt(split) => Some(split),
                 EndnoteRenderInkFit::NextColumn => {
                     st.advance_column_or_new_page();
@@ -1751,8 +1756,13 @@ impl TypesetEngine {
                 split_candidate
             };
             // 렌더로 잰 분할 줄 수가 있으면 그 값을 쓴다 — 단 하단까지 실제로 들어가는 줄 수다.
-            // 저장 사다리 되감김 등 다른 분할 후보는 렌더 판정이 없을 때만 쓴다.
-            let split_candidate = render_fit_split.or(split_candidate);
+            // 렌더가 통째로 들어간다고 판정하면 누계 기반 분할 후보를 버린다. 저장 사다리
+            // 되감김 등 다른 분할 후보는 렌더 판정이 없을 때만 쓴다.
+            let split_candidate = if render_fits_whole {
+                None
+            } else {
+                render_fit_split.or(split_candidate)
+            };
             if self.emit_endnote_split(
                 st,
                 &fmt,

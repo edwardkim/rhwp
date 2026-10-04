@@ -74,6 +74,9 @@ impl TypesetEngine {
         if st.current_items.is_empty() {
             return EndnoteRenderInkFit::Unjudged;
         }
+        // 렌더는 단을 물리 본문 하단에서 끝낸다. 누계 판정용 쪽 나눔 허용치는
+        // 잉크 판정에 싣지 않는다(표 판정과 같은 물리 경계).
+        let available = (available - st.layout.pagination_tolerance_px).max(0.0);
         let column_key: EndnoteColumnKey = (
             st.section_index,
             st.pages.len(),
