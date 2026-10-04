@@ -1,0 +1,577 @@
+{
+  "source_sha": "bf0b1c69ee225146250a60a2d4f5f8686f301c55",
+  "base_sha": "1d6bc70767fad365b07afe4ef57972d23b140f2b",
+  "inputs": [
+    {
+      "path": "samples/task2097/18095317_eogu_geumji.hwp",
+      "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+    },
+    {
+      "path": "pdf/18095317_eogu_geumji-2020.pdf",
+      "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+    },
+    {
+      "path": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    },
+    {
+      "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+      "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c"
+    },
+    {
+      "path": "tests/cases/issue_7207_stored_frame_map_ownership.rs",
+      "sha256": "abf237273e9b78aa6326664e1aa4ac1fe31f93163892a0a74cf8ade08b0168ef"
+    }
+  ],
+  "visual_metrics": [
+    {
+      "backend": "native",
+      "key": "eogu",
+      "pages": 21,
+      "minimum_percent": 94.22307,
+      "minimum_page": 9,
+      "below_90": [],
+      "missing_pages": [],
+      "review_pages": [
+        2,
+        4,
+        7,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    {
+      "backend": "native",
+      "key": "rowbreak",
+      "pages": 18,
+      "minimum_percent": 90.57114,
+      "minimum_page": 2,
+      "below_90": [],
+      "missing_pages": [],
+      "review_pages": [
+        7,
+        8,
+        11,
+        12
+      ],
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "eogu",
+      "pages": 21,
+      "minimum_percent": 94.22307,
+      "minimum_page": 9,
+      "below_90": [],
+      "missing_pages": [],
+      "review_pages": [
+        2,
+        4,
+        7,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "rowbreak",
+      "pages": 18,
+      "minimum_percent": 90.57114,
+      "minimum_page": 2,
+      "below_90": [],
+      "missing_pages": [],
+      "review_pages": [
+        7,
+        8,
+        11,
+        12
+      ],
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    }
+  ],
+  "full_nextest": {
+    "passed": 10273,
+    "skipped": 50,
+    "observations": {
+      "slow": 1,
+      "leaky": 1,
+      "exit_code": 0
+    }
+  },
+  "local_gates": [
+    {
+      "name": "final-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 164.4,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1068.07,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "seconds": 150.54,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 115.88,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "skia-p37",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 6.8,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.87,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 28.94,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 26.79,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "seconds": 41.86,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 39.95,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "manifest-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1d6bc70767fad365b07afe4ef57972d23b140f2b"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4,
+      "target_dir": "target/pr-review"
+    },
+    {
+      "name": "unit-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1d6bc70767fad365b07afe4ef57972d23b140f2b"
+      ],
+      "exit_code": 0,
+      "seconds": 7.57,
+      "target_dir": "target/pr-review"
+    }
+  ],
+  "wasm_build": {
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "exit_code": 0,
+    "docker_standard_build": "not_run: local Docker daemon unavailable",
+    "studio_sync_sha256_equal": true,
+    "package_sha256": {
+      "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp_bg.wasm": "6d6af8a80611b83e6b8c774616ade6ac47594597ecca1ca4b201cfd3dab948b7"
+    }
+  },
+  "native_binary_sha256": "f5740fca283e1b2c9aeab171a8d582c6d761e222134451bcf9a326f984bcecfc",
+  "baseline_native_binary_sha256": "f550ecc643f70e6725df46c3cbe62dfbd1625fff94b43d380e7936d2200ad5b2",
+  "regression_before_after": [
+    {
+      "case": "before",
+      "exit_code": 101,
+      "cli_sha256": "f550ecc643f70e6725df46c3cbe62dfbd1625fff94b43d380e7936d2200ad5b2",
+      "suite_sha256": "a4b354b21a60cdaf60a0dcb379ec7285c1822b4569891bb80f5dc5eef306b219"
+    },
+    {
+      "case": "after",
+      "exit_code": 0,
+      "cli_sha256": "f5740fca283e1b2c9aeab171a8d582c6d761e222134451bcf9a326f984bcecfc",
+      "suite_sha256": "a4b354b21a60cdaf60a0dcb379ec7285c1822b4569891bb80f5dc5eef306b219"
+    }
+  ],
+  "controls": [
+    {
+      "input": "samples/rowbreak-problem-pages.hwp",
+      "base_pages": 18,
+      "candidate_pages": 18,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "base_pages": 18,
+      "candidate_pages": 18,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/byeolpyo1.hwp",
+      "base_pages": 4,
+      "candidate_pages": 4,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/byeolpyo4.hwp",
+      "base_pages": 25,
+      "candidate_pages": 25,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/86712_regulatory_analysis.hwp",
+      "base_pages": 64,
+      "candidate_pages": 64,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "base_pages": 37,
+      "candidate_pages": 37,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/76076_regulatory_analysis.hwp",
+      "base_pages": 82,
+      "candidate_pages": 82,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "base_pages": 115,
+      "candidate_pages": 115,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "base_pages": 115,
+      "candidate_pages": 115,
+      "changed_pages": []
+    },
+    {
+      "input": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "base_pages": 413,
+      "candidate_pages": 413,
+      "changed_pages": []
+    }
+  ],
+  "control_summary": {
+    "documents": 10,
+    "pages": 891,
+    "all_render_tree_pages_equal": true
+  },
+  "direct_review": {
+    "native": {
+      "eogu": [
+        2,
+        4,
+        7,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "rowbreak": [
+        7,
+        8,
+        11,
+        12
+      ]
+    },
+    "wasm": {
+      "eogu": [
+        2,
+        4,
+        7,
+        10,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "rowbreak": [
+        7,
+        8,
+        11,
+        12
+      ]
+    },
+    "standalone_overlay_pages": {
+      "eogu": [
+        2,
+        18
+      ],
+      "rowbreak": [
+        7
+      ]
+    },
+    "remaining_differences": [
+      "stroke and thin border rendering",
+      "eogu pages 1 and 4 partial-table bottom boundaries",
+      "eogu page 19 legend lines: small vertical difference",
+      "eogu page 9 multi-column continuation cell text ink top: reference PDF 107px, base 80px, final 82px at 96dpi; existing difference"
+    ],
+    "additional_minimum_pages": {
+      "eogu": [
+        9
+      ],
+      "rowbreak": [
+        2
+      ]
+    },
+    "additional_opening_page": {
+      "eogu": [
+        1
+      ]
+    }
+  },
+  "unverified": [
+    "synthetic multi-rowspan simultaneous ending combined with footnote budgets",
+    "general browser performance benchmark"
+  ],
+  "scope": {
+    "issue_7207": "partial: original fishing document",
+    "curriculum": "existing 413 vs independent PDF 415 pages unchanged",
+    "issue_7544": "not modified"
+  },
+  "font_supply": "local validation only; private files and identifying metadata excluded",
+  "visual_command": "RHWP_FONT_PATH=<LOCAL_VALIDATION_FONTS> python scripts/visual_sweep.py --hwp <input> --pdf <same-source-PDF> --rhwp-bin <verified-native-binary> --dpi 96 --embed-fonts full --out <private-output> [--silhouette-only | --pages <review-pages>] [--wasm-pkg pkg]",
+  "raster_sha256": {
+    "base-native-eogu-p010.png": "a2407a486b8259de1db7b65541766aa606495fe363bff09177a8bbfeb075b76d",
+    "base-native-eogu-p017.png": "a89c517531a347227d2d2f871ec992f85051de488bd2acbd2bd79e3639dfba7c",
+    "native-eogu-p001-full.png": "b52cf4b6caf95b7fb9bc7e93acabfd277b754151f95964ba89df899fa14ea6e5",
+    "native-eogu-p002-overlay.png": "cd01a080031513725c7296208503a39149d09b1dee36bf6d6953e7996be94537",
+    "native-eogu-p002-review.png": "3efeb041ae958e30f8052ad9262245110327157ab2cd954d963cf5f9972112a0",
+    "native-eogu-p004-overlay.png": "c54524a8eddb5ca2cecdebbef0cdce6d5bc2d650d05282cc6202702f927499a1",
+    "native-eogu-p004-review.png": "857e6d3532cc26b42a866e9cd89aaf0fc19698301214f1e453ec98296fd74663",
+    "native-eogu-p007-overlay.png": "34086fa42c89113d0ee976e84cba79fa63b2fda49d4fc8a39c4b45359bef54a9",
+    "native-eogu-p007-review.png": "478820f8cacb4d10ddcfd6ca1cd6e44c002bb22ae98f22f4b4019ceea3bdee4c",
+    "native-eogu-p009-full.png": "3335671056a7b95c774b36a741c35f4f299ab481d490916e90b7fbde401baeba",
+    "native-eogu-p010-overlay.png": "73903f19000832267b0278f7444c258c0dcaf9fae2be9f2c7d00cfca2baec8c9",
+    "native-eogu-p010-review.png": "4b67fdb5c60190e6ffe69c22f9505aaee22e2b378232f2151747b685d778c65c",
+    "native-eogu-p014-overlay.png": "44fdaac99d5715112e008c31cf648f7c9a45391e5457fcfecbc72d3f4f934714",
+    "native-eogu-p014-review.png": "a8a34cbf2a5f8ba303968cfbe8daf663940616cca55c40fc021c86a2e06fdadf",
+    "native-eogu-p017-overlay.png": "22d232a147ee60c6500a0b550128a78bca62e531fb5f662b5c9a428b2dd27615",
+    "native-eogu-p017-review.png": "26d740425cb144458d084c5242423a12bedee9dbcb023f2e0473a8d58aec4983",
+    "native-eogu-p018-overlay.png": "dd659bdc757850e53e2889a7423b5b817b4408d986971a224bbcf0c1742cfb78",
+    "native-eogu-p018-review.png": "63cd4c7c08551d116da31fdd5693a9133234ae3647fcb7f9812e2a46f5dec7c7",
+    "native-eogu-p019-overlay.png": "aca8b60ede76641430624f1878dbdf03d7a979a87f1b5117466ff33fe1e5180d",
+    "native-eogu-p019-review.png": "02f0b6636e1f72caee9769ed8cdc6c9af05d8f762c30aead2f3373385fc5dfc7",
+    "native-eogu-p020-overlay.png": "4674120bedbb0c479862c080b0cf3e6719da961de805ede88d528f89600b1773",
+    "native-eogu-p020-review.png": "1ad7849106ce717c47724edb093eaf38a60a0a1a18c4819314de4947879203d0",
+    "native-eogu-p021-overlay.png": "33ccea30f0d75299b31d4a4dabc0e29fb1bf506a6e930ed8a38a199c464fe881",
+    "native-eogu-p021-review.png": "0ee2cca149aea3c723ebe2259f96edc39206f3f62c4f6e1ed9a32012a12b5ecb",
+    "native-rowbreak-p002-full.png": "543511e7d156d8bd0048beba96a644529a2c0de772bba0b74f14f2fea9f7df88",
+    "native-rowbreak-p007-overlay.png": "f19842e981b9b0141b0d39b2df5f59a9e376276f264c70589040aea4d88c2798",
+    "native-rowbreak-p007-review.png": "2b4c60e85d239a2cadd55eec2fc6b1339ccfdb5be58131eaa9d293cbaf9b2579",
+    "native-rowbreak-p008-overlay.png": "df55902a68991976577aa3e06ba8d21610d93605f2bf7ab5627eba3fd3319796",
+    "native-rowbreak-p008-review.png": "b3855125d2c39b7fe8fcc9c23853455ed52349fc04092e420332ca0b52939f2a",
+    "native-rowbreak-p011-overlay.png": "0bce3be01e41d67c0d991d5436e1ea6cdc6479efa8a855e071edb74e9d235aec",
+    "native-rowbreak-p011-review.png": "2a4f3fda9c102f18a1f6deffe971db8ff247bcadfae1d2ab4815d387207a2e46",
+    "native-rowbreak-p012-overlay.png": "c15a2ff1da675a01904ca50a46cb642849d6cbd8e385b850c8bfb1666864ddd2",
+    "native-rowbreak-p012-review.png": "17a2044cae899a755728b381e34d73c869bd935f03778d35276655f982f88a90",
+    "pdf-eogu-p001-full.png": "2bb257a2a4d4a8704b62c9c232d6c62f858508e0e59ec607344bc492070c3821",
+    "pdf-eogu-p009-full.png": "305e4f81bda00c6f6218c23c5ce78c34bf3625b67cd90e4b08f4d9a3102d1623",
+    "pdf-rowbreak-p002-full.png": "e2813bc44aa822f642abb37243f7c1950ada8e3ba658b633fa95538f48eebc31",
+    "wasm-eogu-p001-full.png": "b52cf4b6caf95b7fb9bc7e93acabfd277b754151f95964ba89df899fa14ea6e5",
+    "wasm-eogu-p002-overlay.png": "fd1307c7bd9bfe667db69885a97a8c197f430dab2c73f332f096e8d065c15828",
+    "wasm-eogu-p002-review.png": "268af49da39a8641a7a95db2604294ecf51cdd8de3ce268fc5a8dcd527ce7bdc",
+    "wasm-eogu-p004-overlay.png": "7728a96f4cbead49ab57b0a8b390011ea5a2304bcf1891c2bb06fdd3ec7b7fd0",
+    "wasm-eogu-p004-review.png": "627ac24eda7d58fdb59465cf8a0aae6b135585b0825c748aff32423b7071db04",
+    "wasm-eogu-p007-overlay.png": "c0d7dab65556138cde160602626ec1697c7a22a2cccf3b04224d381fa37eea1c",
+    "wasm-eogu-p007-review.png": "53c84d79758646814774a5462f8f609283b929e03a457c1add119cb7264d9f49",
+    "wasm-eogu-p009-full.png": "3335671056a7b95c774b36a741c35f4f299ab481d490916e90b7fbde401baeba",
+    "wasm-eogu-p010-overlay.png": "f58b63d98420af5eaa63dfd30da3dbef0da7d4fca09a4e19d988673a2bdcfb8a",
+    "wasm-eogu-p010-review.png": "e1f1fa8f568fd8ac708c00f03d7d58e420c0c46406d49cf1a4b5495fbb5f0055",
+    "wasm-eogu-p014-overlay.png": "c29aa75320afb293957c39923f8ee906c762c8823468e6d90f37380d21b096ba",
+    "wasm-eogu-p014-review.png": "c9846810d9e327b459f260fc707a25cec511a9c8035f6070880b8ce3de54e7d0",
+    "wasm-eogu-p017-overlay.png": "ddf08d666ff4afd5b743aa0b06c0b6acb5d03e60249adbfdb38a97b83471c1a4",
+    "wasm-eogu-p017-review.png": "38bc2501479bbf4ecfe5fa2ca3f9c06474e15cfd96a4707ebcd0e30243d9f6e4",
+    "wasm-eogu-p018-overlay.png": "1e3485a2b8d55235cec1edd09674a32efc24cd22e4c267e8ae010b2e9e50f64e",
+    "wasm-eogu-p018-review.png": "a06607a224e1009631c64346004f933cd1327af7df02862409adb2037f96f749",
+    "wasm-eogu-p019-overlay.png": "8f971af4621082c605e6da4eb5b9a2101f5cb137f2873e1894039a9b6a1e3c8c",
+    "wasm-eogu-p019-review.png": "c65904ef4626d32d73c8fd3c610e741919d07f947523f584f5c4f14e500c2989",
+    "wasm-eogu-p020-overlay.png": "15a89863c62cd6d714830a1bd303132ea6270f1338430644bf5debff37e5f57a",
+    "wasm-eogu-p020-review.png": "07175cd9051f9867a2c9f0f15c42be4018ea772e58638e20b02a65b14f29b5ce",
+    "wasm-eogu-p021-overlay.png": "c9c9e2a538f54f27e419af347081e82c9cd14f1bc6017226c3c33a633d244a3d",
+    "wasm-eogu-p021-review.png": "eb4ab3a204e506d9777efa0c8384af82e0a00ab2f23e6b6b0befe7bf627f5c62",
+    "wasm-rowbreak-p002-full.png": "543511e7d156d8bd0048beba96a644529a2c0de772bba0b74f14f2fea9f7df88",
+    "wasm-rowbreak-p007-overlay.png": "cb6b4fcb10a38edf6d983f69b1322531ffb6d28f8cc8f068323591bd5ac9fbd2",
+    "wasm-rowbreak-p007-review.png": "d1c502a9d1d53a69e26d7855932ec40fe4f23aa8011de8c220a0d5e5be29a155",
+    "wasm-rowbreak-p008-overlay.png": "975bb30d44a14edacf8930f118b7f92a8c76d74824dc072d6501606ecc0454e7",
+    "wasm-rowbreak-p008-review.png": "901dbb838c8aefa9f16a54482047858d33e22a3192ec21d5d5739e8762e8bfbf",
+    "wasm-rowbreak-p011-overlay.png": "1aed2eb9f5100ec62e3de3956da3a76d309f647b5047510d2dfb48e20152e83c",
+    "wasm-rowbreak-p011-review.png": "28ffe82a2e3fcb41cceee37e16133d77dc2a64736bd2b9b1d87f406df4a8b724",
+    "wasm-rowbreak-p012-overlay.png": "ac0d786fc0c4a67b6b45ee526c8ede6216913d6e35e12821b9f0cabc91fe9b01",
+    "wasm-rowbreak-p012-review.png": "bad22fbac59cd192d1aa22972ab579ec0bfcd30c61ef88ae5fa0c9889a54c4cf"
+  },
+  "baseline_visual": {
+    "source_sha": "1d6bc70767fad365b07afe4ef57972d23b140f2b",
+    "native_pages": 21,
+    "minimum_percent": 14.61476,
+    "below_90_pages": 16,
+    "capture_workspace_sha": "4789cc5538696a20ccd69169d4e0c21b48ceac44",
+    "binary_sha256": "f550ecc643f70e6725df46c3cbe62dfbd1625fff94b43d380e7936d2200ad5b2"
+  },
+  "manifest_contract_tests": {
+    "command": "node --test scripts/tests/rust-test-suite-manifest.test.mjs",
+    "passed": 23,
+    "failed": 0,
+    "exit_code": 0
+  }
+}
