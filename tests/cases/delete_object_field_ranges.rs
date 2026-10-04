@@ -162,3 +162,29 @@ fn deleting_shape_after_field_preserves_field() {
 fn deleting_picture_after_field_preserves_field() {
     check_delete(true, false, "입력한 🦦 값");
 }
+
+fn check_active_field(picture: bool) {
+    for object_before_field in [true, false] {
+        let (mut core, ci) = fixture(picture, object_before_field, "기존");
+        let end = fields(&core)[0]["endCharIdx"].as_u64().unwrap() as usize;
+        assert!(core.set_active_field(0, 0, end));
+        if picture {
+            core.delete_picture_control_native(0, 0, ci).unwrap();
+        } else {
+            core.delete_shape_control_native(0, 0, ci).unwrap();
+        }
+        // 필드를 다시 선택하지 않아도 활성 필드 끝의 입력은 같은 필드에 붙어야 한다.
+        core.insert_text_native(0, 0, end, "이어 입력").unwrap();
+        assert_eq!(fields(&core)[0]["value"], "기존이어 입력");
+    }
+}
+
+#[test]
+fn active_body_field_survives_shape_removal() {
+    check_active_field(false);
+}
+
+#[test]
+fn active_body_field_survives_picture_removal() {
+    check_active_field(true);
+}
