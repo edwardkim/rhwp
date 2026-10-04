@@ -1876,7 +1876,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -1884,7 +1884,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -5794,12 +5794,11 @@ impl DocumentCore {
         let new_chars_count = text.chars().count();
         let active_field = self.active_field.clone();
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        let cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         let outside_insertions = inactive_field_end_insertions(
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );
@@ -5807,7 +5806,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );

@@ -1385,7 +1385,7 @@ impl DocumentCore {
         if let Some(ci) = ctrl_idx {
             let new_info = ActiveFieldInfo {
                 section_idx,
-                para_idx: cell_para_idx,
+                para_idx: parent_para_idx,
                 control_idx: ci,
                 cell_path,
             };
@@ -1495,13 +1495,11 @@ impl DocumentCore {
         };
         let ctrl_idx = find_field_ctrl_idx_in_para(para, char_offset);
         if let Some(ci) = ctrl_idx {
-            let last = path.last().unwrap();
-            let cell_para_idx = last.2;
             // cell_path: 전체 path를 저장 (중첩 표 구분용)
             let cell_path = Some(path.to_vec());
             let new_info = ActiveFieldInfo {
                 section_idx,
-                para_idx: cell_para_idx,
+                para_idx: parent_para_idx,
                 control_idx: ci,
                 cell_path,
             };
