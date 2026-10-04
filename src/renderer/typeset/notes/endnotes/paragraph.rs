@@ -1357,6 +1357,23 @@ impl TypesetEngine {
                     internal_rewind_split = None;
                 }
             }
+            // [#6574] 새 미주 첫 문단이 렌더로 현재 단에 통째로 들어가는지. 누계 임계·저장
+            // 사다리 예측 대신 이 판정으로 "단이 찼다"를 정한다.
+            let render_head_fits = ep_idx == 0
+                && matches!(
+                    self.judge_endnote_render_ink_fit(
+                        st,
+                        paragraphs,
+                        styles,
+                        available,
+                        en_col_w,
+                        en_para_idx,
+                        fmt.line_heights.len(),
+                        fmt.total_height,
+                        true,
+                    ),
+                    EndnoteRenderInkFit::Fits
+                );
             let new_note_fit::NewNoteFitResult {
                 advance_for_new_endnote,
                 advance_for_internal_rewind,
@@ -1382,6 +1399,7 @@ impl TypesetEngine {
                 total_advance_fit,
                 en_fit,
                 new_endnote_advance_threshold,
+                render_head_fits,
                 endnote_has_vpos_rewind,
                 compact_endnote_separator_profile,
                 prev_endnote_had_inline_object_vpos_overestimate,

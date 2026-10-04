@@ -16,6 +16,11 @@ const ENDNOTE_RENDER_INK_FIT_TOLERANCE_PX: f64 = 0.25;
 /// 더해도 단 안이면 scratch 렌더 없이 들어간다고 본다(저장 사다리 전진 점프 몫).
 const ENDNOTE_RENDER_FIT_SKIP_MARGIN_PX: f64 = 120.0;
 
+/// [#6574] 렌더로 재지 않고 누계 높이로 이어 붙인 거리에 비례해 판정 생략 여유를 늘리는
+/// 비율. 누계 문단 높이는 렌더 전진보다 작을 수 있어(음수 줄간격·문단 아래 간격 등 문단당
+/// 1~2px) 생략이 길게 이어지면 오차가 고정 여유를 넘는다(SO-SUEOP.hwpx 43쪽 +7.8px).
+const ENDNOTE_RENDER_FIT_SKIP_DRIFT_RATIO: f64 = 0.25;
+
 /// 단 상태 키: (구역, 쪽 수, 단 번호, 단 항목 수).
 type EndnoteColumnKey = (usize, usize, u16, usize);
 
@@ -24,21 +29,22 @@ type EndnoteColumnKey = (usize, usize, u16, usize);
 /// 더해 가며, 저장 사다리의 전진 점프는 판정 생략 여유가 흡수한다.
 #[derive(Default)]
 pub(in crate::renderer::typeset) struct EndnoteRenderFitCache {
-    /// 단 상태 → 렌더 커서 하단의 상한(px). 같은 단의 상태만 남긴다.
-    cursor_bounds: Vec<(EndnoteColumnKey, f64)>,
+    /// 단 상태 → (렌더 커서 하단의 상한(px), 마지막 렌더 측정 뒤 누계로 이어 붙인 거리(px)).
+    /// 같은 단의 상태만 남긴다.
+    cursor_bounds: Vec<(EndnoteColumnKey, f64, f64)>,
 }
 
 impl EndnoteRenderFitCache {
-    fn bound(&self, key: EndnoteColumnKey) -> Option<f64> {
+    fn bound(&self, key: EndnoteColumnKey) -> Option<(f64, f64)> {
         self.cursor_bounds
             .iter()
-            .find_map(|(k, cursor)| (*k == key).then_some(*cursor))
+            .find_map(|(k, cursor, estimated)| (*k == key).then_some((*cursor, *estimated)))
     }
 
-    fn record(&mut self, key: EndnoteColumnKey, cursor: f64) {
+    fn record(&mut self, key: EndnoteColumnKey, cursor: f64, estimated: f64) {
         self.cursor_bounds
-            .retain(|(k, _)| (k.0, k.1, k.2) == (key.0, key.1, key.2) && k.3 != key.3);
-        self.cursor_bounds.push((key, cursor));
+            .retain(|(k, _, _)| (k.0, k.1, k.2) == (key.0, key.1, key.2) && k.3 != key.3);
+        self.cursor_bounds.push((key, cursor, estimated));
     }
 }
 
@@ -94,12 +100,21 @@ impl TypesetEngine {
             .endnote_render_fit_cache
             .borrow()
             .bound(column_key)
-            .map(|cursor| cursor + para_height + gap);
-        if let Some(bound) = bounded_cursor {
-            if bound + ENDNOTE_RENDER_FIT_SKIP_MARGIN_PX <= available {
-                self.endnote_render_fit_cache
-                    .borrow_mut()
-                    .record(next_column_key, bound);
+            .map(|(cursor, estimated)| {
+                let step = para_height + gap;
+                (cursor + step, estimated + step)
+            });
+        if let Some((bound, estimated)) = bounded_cursor {
+            if bound
+                + ENDNOTE_RENDER_FIT_SKIP_MARGIN_PX
+                + estimated * ENDNOTE_RENDER_FIT_SKIP_DRIFT_RATIO
+                <= available
+            {
+                self.endnote_render_fit_cache.borrow_mut().record(
+                    next_column_key,
+                    bound,
+                    estimated,
+                );
                 return EndnoteRenderInkFit::Fits;
             }
         }
@@ -164,7 +179,7 @@ impl TypesetEngine {
             if let Some((cursor, _)) = full_extent {
                 self.endnote_render_fit_cache
                     .borrow_mut()
-                    .record(next_column_key, cursor);
+                    .record(next_column_key, cursor, 0.0);
             }
             return EndnoteRenderInkFit::Fits;
         }
