@@ -207,21 +207,14 @@ pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
 /// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
 /// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
 pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {
-    object_only_saved_table_anchor_with_controls(para, table, false)
-}
-
-/// Frame settings may accompany the table when an independently verified
-/// saved opening frame owns the cut. Ordinary paragraph spacing retains its
-/// stricter single-control contract.
-pub(crate) fn saved_opening_frame_table_anchor(para: &Paragraph, table: &Table) -> bool {
-    object_only_saved_table_anchor_with_controls(para, table, true)
-}
-
-fn object_only_saved_table_anchor_with_controls(
-    para: &Paragraph,
-    table: &Table,
-    allow_frame_settings: bool,
-) -> bool {
+    // A zero-origin source line is an object anchor even when frame settings
+    // accompany it. A positive host origin reserves paragraph space of its own;
+    // keep that spacing on the existing single-control contract.
+    let allow_frame_settings = !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && matches!(para.line_segs.as_slice(), [line]
+            if line.vertical_pos == 0
+                && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
     let mut objects = para.controls.iter().filter(|control| {
         !allow_frame_settings || !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_))
     });

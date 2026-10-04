@@ -287,7 +287,7 @@ impl TypesetEngine {
             && split_block_start.is_none()
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
-            && (crate::renderer::float_placement::saved_opening_frame_table_anchor(
+            && (crate::renderer::float_placement::object_only_saved_table_anchor(
                 input.source.paragraph,
                 table,
             ) || saved_closing_frame.is_some())
