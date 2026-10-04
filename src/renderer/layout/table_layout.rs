@@ -15461,7 +15461,7 @@ impl LayoutEngine {
                 p.stored_text_partition_is_dirty() || p.cell_format_vpos_dirty))
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
-            || (!two_line_source_cut && !(self.row_cut_ends_at_original_plain_text_reset(
+            || (!two_line_source_cut && !(self.row_cut_ends_at_plain_text_saved_reset(
                 table,
                 end_row - 1,
                 start_cut,
@@ -18081,7 +18081,15 @@ impl LayoutEngine {
             // A saved physical frame can end inside a paragraph as well as
             // between paragraphs. Check the original line coordinates; a
             // projected/local reset alone is not evidence of that boundary.
+            // A reset inside one paragraph does not determine the remaining
+            // physical bands of a competing rowspan owner. Those fragments
+            // retain the base's merged-cell frame contract instead.
             let same_paragraph_original_reset = allow_within_paragraph
+                && !table.cells.iter().any(|owner| {
+                    owner.row_span > 1
+                        && owner.row as usize <= row
+                        && row < owner.row as usize + owner.row_span as usize
+                })
                 && next.para_idx == previous.para_idx
                 && cell.paragraphs.get(next.para_idx).is_some_and(|para| {
                     para.line_segs
