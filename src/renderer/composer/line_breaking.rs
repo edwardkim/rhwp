@@ -3200,15 +3200,12 @@ fn layout_paragraph_in_frame_impl(
                     .fold(0.0, f64::max);
                 for (interval_index, interval) in intervals.into_iter().enumerate() {
                     let available_width_px = interval_width(interval_index, &interval);
-                    // Preserve an unbroken word when another interval on this
-                    // physical row can contain it. A narrow side segment must
-                    // not force the empty-line character fallback after the
-                    // wider segment has already been filled.
+                    // 같은 물리 줄의 다른 구간에 온전한 낱말이 들어가면 그대로 보존한다.
+                    // 넓은 구간을 채운 뒤 좁은 옆 구간 때문에 글자 단위로 쪼개지 않는다.
                     if cursor.fallback_char_idx.is_none() {
                         if let Some(BreakToken::Text {
                             base_width,
                             end_idx,
-                            max_font_size,
                             ..
                         }) = tokens.get(cursor.token_index)
                         {
@@ -3217,8 +3214,7 @@ fn layout_paragraph_in_frame_impl(
                                 &letter_spacing_px,
                                 *end_idx,
                             );
-                            let fits =
-                                |width| text_token_fits_line_hwp(0, word, 0, width, *max_font_size);
+                            let fits = |width| text_token_fits_line_hwp(0, word, 0, width, None);
                             let widest_available = to_hwp(widest_available_px);
                             if available_width_px < widest_available_px
                                 && !fits(to_hwp(available_width_px))
