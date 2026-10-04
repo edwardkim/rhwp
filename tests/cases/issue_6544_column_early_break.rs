@@ -35,6 +35,13 @@
 //!
 //! 같은 수정이 같은 계열 문서의 다른 쪽들을 한글과 맞춘다 — `3-09월_교육_통합_2023` 20쪽,
 //! `3-10월_교육_통합_2022` 11·13·16쪽(16쪽 최대 편차 741.7 → 26.5pt).
+//!
+//! [#6574] 미주 단 수용을 렌더 잉크로 판정하면서 위의 누계 과대(21.8px)가 판정에서 빠졌다.
+//! 이제 `pi=659` 도 왼쪽 단에 남아 단 경계가 저장 되감김 지점(660)과 같다. 기준 PDF 셋이 모두
+//! 같은 경계를 보인다 — `pdf/3-09월_교육_통합_2023.pdf`(Hwp 2024 13.0.0.3457)·
+//! `-hwpx-2024.pdf`·`-hwp-2020.pdf`(Hwp 2022) 13쪽 왼쪽 단 끝 줄 'f(5)≠0이므로'
+//! (y=1061.1px), 오른쪽 단 첫 줄은 `pi=660` 의 수식이다. rhwp 는 pi=657·658·659 를
+//! 1025.1·1043.1·1061.1px 에 둔다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::fs;
@@ -46,10 +53,10 @@ use rhwp::wasm_api::HwpDocument;
 const SAMPLE: &str = "samples/3-09월_교육_통합_2023.hwp";
 const PAGE_INDEX: u32 = 12; // 0-based — 13쪽
 
-/// 완화 뒤 왼쪽 단 마지막 문단. 회귀 시에는 657 에서 끊겼다.
-const EXPECTED_LAST_IN_COLUMN0: usize = 658;
-/// 완화 뒤 오른쪽 단 첫 문단. 저장 사다리의 참 경계는 660 이다(잔여 축).
-const EXPECTED_FIRST_IN_COLUMN1: usize = 659;
+/// 왼쪽 단 마지막 문단 — 기준 PDF 와 저장 사다리가 같은 경계다. 회귀 시에는 657 에서 끊겼다.
+const EXPECTED_LAST_IN_COLUMN0: usize = 659;
+/// 오른쪽 단 첫 문단 — 저장 사다리가 되감기는 문단.
+const EXPECTED_FIRST_IN_COLUMN1: usize = 660;
 
 fn walk<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
     out.push(node);

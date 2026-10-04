@@ -1701,9 +1701,14 @@ fn issue_1189_2023_page19_question29_tail_matches_pdf() {
     let doc = HwpDocument::from_bytes(&bytes).expect("parse");
 
     let page19 = doc.dump_page_items(Some(18));
+    // [#6574] 기준 PDF 19쪽(`pdf/3-09월_교육_통합_2023.pdf`, Hwp 2024 13.0.0.3457 ·
+    // `-hwpx-2024.pdf`)은 pi=935 의 첫 줄('이때 삼각형 BPQ는…', y=1072.2px)만 왼쪽 단 끝에
+    // 두고 둘째·셋째 줄('하면, 삼각형 BPQ의…' 90.6px, '최대가 된다.' 108.6px)을 오른쪽 단
+    // 위에서 잇는다. 저장 사다리도 둘째 줄에서 되감긴다(vpos 1139496 → 1089971).
+    // 종전 기대(0..2 / 2..3)는 두 PDF 와 다르다.
     assert!(
-        page19.contains("PartialParagraph[미주]  pi=935  lines=0..2")
-            && page19.contains("PartialParagraph[미주]  pi=935  lines=2..3")
+        page19.contains("PartialParagraph[미주]  pi=935  lines=0..1")
+            && page19.contains("PartialParagraph[미주]  pi=935  lines=1..3")
             && page19.contains("FullParagraph[미주]  pi=946")
             && page19.contains("FullParagraph[미주]  pi=952")
             && page19.contains("PartialParagraph[미주]  pi=953  lines=0..1"),
@@ -2514,8 +2519,11 @@ fn issue_1293_2024_visible_separator_above20_between7_question6_body_starts_righ
     let q6_body_bbox = find_text_line_bbox(&tree.root, 472, 0).expect("문6 첫 본문/수식");
     let q7_title_bbox = find_text_line_bbox(&tree.root, 480, 0).expect("문7 제목");
 
+    // [#6574] 기준 PDF 의 문6 제목 상단: `pdf/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.pdf`
+    // (Hwp 2024 13.0.0.3622) 1074.2px, `-hwp-2024.pdf`(Hwp 2024 0.0.0.0) 1069.7px. 종전 범위
+    // 1038..=1068 은 두 PDF 를 모두 배제했다(당시 rhwp 1047.8px).
     assert!(
-        q6_title_bbox.x < 80.0 && (1038.0..=1068.0).contains(&q6_title_bbox.y),
+        q6_title_bbox.x < 80.0 && (1066.0..=1078.0).contains(&q6_title_bbox.y),
         "문6 제목은 PDF처럼 page10 왼쪽 단 하단에 남아야 함: {:?}",
         q6_title_bbox
     );
@@ -3123,8 +3131,11 @@ fn issue_1189_2022_oct_page11_endnote_question_gaps_match_pdf() {
     let gap18_to_19 = question19_y - question18_y;
     let gap19_to_20 = question20_y - question19_y;
 
+    // [#6574] 기준 PDF 11쪽 문18→문19 제목 간격은 192.5px 다 — `pdf/3-10월_교육_통합_2022.pdf`
+    // (Hwp 2024 13.0.0.3457)·`-hwpx-2024.pdf` 538.8→731.3px, `-hwp-2020.pdf`(Hwp 2022)
+    // 529.7→722.3px. 종전 범위 198..235 는 이 값을 배제했다(당시 rhwp 200.6px).
     assert!(
-        (198.0..235.0).contains(&gap18_to_19),
+        (186.0..200.0).contains(&gap18_to_19),
         "11쪽 문18→문19 미주 간격은 tail frame을 유지하면서 한컴/PDF 흐름을 따라야 함: q18={question18_y}, q19={question19_y}, gap={gap18_to_19}"
     );
     assert!(
@@ -3354,8 +3365,13 @@ fn issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf() {
         "PDF 기준 10쪽 하단/우측 시작 미주 흐름을 유지해야 함\n{page10}"
     );
     let page10_tree = doc.build_page_render_tree(9).expect("page 10 render tree");
+    // [#6574] 수식의 시각 하단(수식 조판 상자)으로 잰다. 수식 노드의 bbox 는 글줄 높이
+    // 15px 를 그대로 받아 시각 잉크보다 아래로 뻗는다. 기준 PDF
+    // (`pdf/3-11월_실전_통합_2022.pdf`, Hwp 2024 13.0.0.3457) 10쪽 왼쪽 단 문6 꼬리 수식은
+    // 기준선 1088.0px, 글자 하단 1090.4px 로 본문 안에서 끝난다.
     let question6_tail_bottom =
-        max_para_content_bottom(&page10_tree.root, 475).expect("문6 꼬리 수식");
+        max_equation_visual_bottom_in_region(&page10_tree.root, 0.0, 395.0, 1000.0, 1100.0)
+            .expect("문6 꼬리 수식");
     assert!(
         question6_tail_bottom <= 1092.8,
         "10쪽 문6 꼬리 수식은 본문 하단을 넘겨 문단끼리 겹치면 안 됨: bottom={question6_tail_bottom}"
