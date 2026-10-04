@@ -243,8 +243,10 @@
   ],
   "deferred_issue": 7445,
   "claim": "Accepted source-PR scope and recorded semantic regressions; not full fidelity approval for deferred documents",
-  "integration_pr": null,
-  "github_ci": "pending PR creation",
+  "integration_pr": "https://github.com/edwardkim/rhwp/pull/7568",
+  "github_ci": "code candidate Full CI passed; trailing head verification pending",
   "merge_status": "not merged",
-  "interrupted_run": "Prior final run stopped after 10286 PASS without terminal summary; retained separately, not used as whole success"
+  "interrupted_run": "Prior final run stopped after 10286 PASS without terminal summary; retained separately, not used as whole success",
+  "code_candidate_ci_head": "65b2163618e5367c29423c199a6f6810985bcdab",
+  "code_candidate_ci_evidence": "code_candidate_ci.json"
 }

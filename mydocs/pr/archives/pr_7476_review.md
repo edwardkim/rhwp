@@ -43,6 +43,12 @@ condense·목록 마커·구두점 폭과 표 host 글·칸 조각 기하를 한
 
 이하 접수·단계 실행 기록은 과거 head별 이력입니다. 과거의 “보류/진행 중”은 위 최종 검증을 대체하지 않습니다.
 
+## 통합 PR #7568 code candidate CI 완료
+
+- 통합 PR: [#7568](https://github.com/edwardkim/rhwp/pull/7568). 정확한 code candidate `65b2163618e5367c29423c199a6f6810985bcdab`의 Full CI가 완료됐습니다. Build & Test와 Archive A/B/C/D·Native Skia·lint·frontend package, CodeQL 언어 분석, Render Diff, Adapter, Proptest 및 CI Impact Policy가 성공했습니다. 미해당 job의 skipped와 CodeQL의 허용 상태를 개별 원장에 구분했습니다.
+- [CI run 37192651788](https://github.com/edwardkim/rhwp/actions/runs/37192651788) · [CI run 37192651818](https://github.com/edwardkim/rhwp/actions/runs/37192651818) · [CI run 37192651981](https://github.com/edwardkim/rhwp/actions/runs/37192651981) · [CI run 37192651982](https://github.com/edwardkim/rhwp/actions/runs/37192651982) · [CI run 37192652005](https://github.com/edwardkim/rhwp/actions/runs/37192652005) · [CI run 37192652006](https://github.com/edwardkim/rhwp/actions/runs/37192652006) · [CI run 37193719048](https://github.com/edwardkim/rhwp/actions/runs/37193719048)
+- [정확한 candidate check 원장](../assets/planet6897_green_20261002/code_candidate_ci.json). PR은 현재 MERGEABLE/CLEAN입니다. 본 기록은 review-only trailing commit이며 생산 소스·테스트는 candidate 이후 동일합니다. 최신 trailing head의 check·재사용 출처·mergeability를 다시 확인한 뒤 병합합니다.
+
 ## 접수·기여자·출처
 
 - 원 PR: https://github.com/edwardkim/rhwp/pull/7476, 작성자 planet6897, base `devel`, 정확한 head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`.
