@@ -7672,9 +7672,30 @@ impl LayoutEngine {
                         .get(*para_index)
                         .and_then(|p| p.line_segs.get(*start_line))
                         .map(|seg| seg.vertical_pos),
-                    // 표의 LINE_SEG는 호스트 글줄의 위치이며 표가 여는 단 원점이 아니다.
-                    // 표 뒤 실제 본문 흐름에서 기준을 역산해 앞선 표의 공간을 보존한다.
-                    // Table/PartialTable/Shape: 지연 보정 사용
+                    PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => {
+                        let source = paragraphs.get(*para_index)?.line_segs.first()?.vertical_pos;
+                        let has_host_line = col_content.items.iter().any(|item| {
+                            matches!(item,
+                                PageItem::FullParagraph { para_index: owner }
+                                    | PageItem::PartialParagraph { para_index: owner, start_line: 0, .. }
+                                if owner == para_index)
+                        });
+                        if has_host_line {
+                            // 표 뒤에도 호스트 글줄이 있으면 저장 vpos는 그 글줄의 좌표다.
+                            // 측정이 확정한 원점이 있으면 공유하고, 없으면 실제 흐름에서 역산한다.
+                            col_content.paragraph_float_placements
+                                .get(&(*para_index, *control_index))
+                                .and_then(|placement| placement.stored_host_origin)
+                                .map(|origin| source.saturating_sub(px_to_hwpunit(origin, self.dpi)))
+                        } else {
+                            // 호스트 글줄 없이 표만 새 단을 열면 저장 프레임의 기준을 유지한다.
+                            Some(source)
+                        }
+                    }
+                    // PartialTable/Shape: 지연 보정 사용
                     _ => None,
                 }
             })

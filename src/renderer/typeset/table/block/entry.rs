@@ -132,9 +132,11 @@ impl TypesetEngine {
         }
         // [#6764] 다른 문단이 남긴 자리차지 밴드를 표 높이로 먼저 짚는다 — 예산은
         // 밴드 아래에서 시작한다. HWPX 는 문단 프로브가 이미 같은 일을 하므로 제외.
+        let flow_before_float_band = st.current_height;
         if !st.profile.hwpx_stored_layout() {
             st.apply_float_band_before_block_table(para_idx, ft.effective_height);
         }
+        let float_band_clearance = st.current_height - flow_before_float_band;
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let mut total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
@@ -1621,6 +1623,23 @@ impl TypesetEngine {
             .or(consumed_whole_anchor)
             .or_else(|| {
                 unconstrained_host_placement.map(|p| constrain_host_placement.constrain(p, st))
+            })
+            .or_else(|| {
+                // 저장 표 속성과 공통 글자취급 속성이 달라 블록 경로로 온 표도
+                // 앞 표의 밴드를 피한 원점을 paint와 공유해야 한다. 소비한 여백을
+                // 저장 문단 앵커로 되돌리면 측정은 아래, 출력은 위에 놓인다.
+                (table.common.treat_as_char && float_band_clearance > 0.0).then_some(
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                        anchor_y: st.current_height,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top: st.current_height
+                            + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
+                        occupied_bottom: st.current_height + whole_fit_table_total,
+                    },
+                )
             });
         // [#7390] 저장 RowBreak 개체의 선언 높이는 첫 물리 조각만 나타낼 수 있다.
         // 현재 흐름 위치에서 측정 행을 그렸을 때 종이 경계를 넘는다면
