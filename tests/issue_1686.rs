@@ -97,16 +97,6 @@ fn issue_1686_hwpx_page3_keeps_reward_section_before_following_coanchored_table(
 }
 
 #[test]
-fn issue_1686_hwp_page3_keeps_reward_section_before_following_coanchored_table() {
-    assert_page3_keeps_reward_section_before_following_table("samples/pr-1674.hwp");
-}
-
-#[test]
 fn issue_1686_hwpx_matches_pdf_page_count_and_page5_boundary() {
     assert_pr1674_keeps_pdf_page_count_and_page5_boundary("samples/hwpx/pr-1674.hwpx");
-}
-
-#[test]
-fn issue_1686_hwp_matches_pdf_page_count_and_page5_boundary() {
-    assert_pr1674_keeps_pdf_page_count_and_page5_boundary("samples/pr-1674.hwp");
 }

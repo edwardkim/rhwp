@@ -4,7 +4,7 @@
 //! 한글 어절/글자, 영어 단어/하이픈, CJK 개별 분할을 지원한다.
 
 use super::supplemental_clusters::ParagraphMetricScope;
-use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
+use super::{char_lang_slot, find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
 use crate::model::style::{Alignment, LineSpacingType};
@@ -103,6 +103,10 @@ pub(crate) enum BreakToken {
     Space {
         idx: usize,
         width: f64,
+        /// [#7418] 자간을 적용하기 **전**의 공백 폭(px). 공백 최소값(condense)은 이 폭의
+        /// c% 만큼 줄인다 — 한/글 2024 합성 실험(자간 −20·−12·−6·+10% × condense 0~75,
+        /// 777줄)에서 자간 적용 후 폭을 기준으로 하면 음수 자간 문단이 한 줄에 덜 담았다.
+        condense_base: f64,
         max_font_size: f64,
         /// A visible object sharing this offset cannot hang beyond the row.
         has_inline_control: bool,
@@ -209,6 +213,31 @@ pub(crate) fn is_line_start_forbidden(ch: char) -> bool {
 }
 
 /// 줄 꼬리 금칙: 줄 끝에 올 수 없는 문자
+/// [#7418] 글자 단위 한글 문단에서 `start_idx` 의 한글 글자 **앞**이 줄 끝 자리인가.
+///
+/// 글자 단위 모드는 한글 글자마다 그 **뒤**를 줄 끝 후보로 등록한다. 그래서 한글 앞에
+/// 라틴·숫자 토큰이 공백 없이 붙으면(`3,588만원`) 그 경계를 끊을 수 없었고, `만` 이 넘치면
+/// 줄이 앞 공백으로 되감겨 `3,588` 까지 다음 줄로 내려갔다. 한/글은 그 경계에서 끊는다 —
+/// 말뭉치 `pdf/` 에서 같은 문단의 이어진 줄이 라틴·숫자로 끝나고 한글로 시작하는 경계가
+/// 809곳이다(`제37조제1|항` · `CBTA|훈련체계` · `Annex 1|의` · `연간 10|시간`).
+///
+/// 직전 글자가 공백이면 이미 공백 토큰이 줄 끝 후보이고, 줄 끝 금칙 문자(`(`·`「` 등)면
+/// 줄 끝에 둘 수 없다. 직전이 한글이면 그 글자 뒤로 이미 등록된 같은 자리다.
+fn break_before_hangul_char(
+    text_chars: &[char],
+    start_idx: usize,
+    line_start_idx: usize,
+    korean_break_unit: u8,
+) -> bool {
+    // [#2185] bit7=1 = 글자 단위
+    korean_break_unit == 1
+        && start_idx > line_start_idx
+        && text_chars.get(start_idx).is_some_and(|c| is_hangul(*c))
+        && text_chars
+            .get(start_idx - 1)
+            .is_some_and(|prev| !prev.is_whitespace() && !is_line_end_forbidden(*prev))
+}
+
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
     matches!(
         ch,
@@ -412,9 +441,14 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             let ts = metric_scope.style(styles, style_id, current_lang, i);
             let font_size = token_line_font_size(styles, style_id, &ts);
             let inline_width = inline_width_px_at(inline_controls, i);
+            let unspaced = crate::renderer::TextStyle {
+                letter_spacing: 0.0,
+                ..ts.clone()
+            };
             tokens.push(BreakToken::Space {
                 idx: i,
                 width: space_metric.space_advance(&ts) + inline_width,
+                condense_base: space_metric.space_advance(&unspaced),
                 max_font_size: font_size,
                 has_inline_control: inline_width > 0.0,
             });
@@ -502,7 +536,17 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 }
 
                 if !token_text.is_empty() {
-                    let width = measure_token_width(
+                    // 토큰 폭과 **그 합을 이루는 글자별 폭**을 한 번에 받는다.
+                    //
+                    // 종전에는 글자별 폭을 inline control 이 있는 토큰에만 채웠다.
+                    // 그러면 한 줄에 안 들어가는 보통의 한글 토큰이 글자 단위 폴백으로
+                    // 내려갔을 때 `base_char_widths` 가 비어, 폴백이 측정과 무관한 상수
+                    // (`line_max_fs.max(12.0)`) 로 글자를 잘랐다 — 같은 토큰을 재는 자가
+                    // 둘이 된다. `#7407` 대상 셀(연속 줄 38208 HWPUNIT, 9pt 장평 95%)에서
+                    // 실제 전진폭은 11.400px 인데 폴백은 12.000px 로 세어 줄마다 42자만
+                    // 담았다 — 43번째 글자는 19px 을 남기고 들어가는데도 거부됐다.
+                    // 한/글 출력은 같은 줄에 44자를 담는다.
+                    let (width, char_widths) = measure_token_char_widths(
                         &metric_scope,
                         &token_text,
                         start,
@@ -512,24 +556,6 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                         current_lang,
                         inline_controls,
                     );
-                    let char_widths = if has_inline_control_in_range(inline_controls, start, i) {
-                        (start..i)
-                            .map(|ci| {
-                                measure_char_width(
-                                    &metric_scope,
-                                    text_chars[ci],
-                                    ci,
-                                    char_offsets,
-                                    char_shapes,
-                                    styles,
-                                    current_lang,
-                                    inline_controls,
-                                )
-                            })
-                            .collect()
-                    } else {
-                        Vec::new()
-                    };
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
@@ -793,7 +819,36 @@ fn measure_token_width(
     default_lang: usize,
     inline_controls: &[FlowInlineControl],
 ) -> f64 {
+    measure_token_char_widths(
+        metric_scope,
+        text,
+        start_char_idx,
+        char_offsets,
+        char_shapes,
+        styles,
+        default_lang,
+        inline_controls,
+    )
+    .0
+}
+
+/// 토큰 전체 폭과, **그 합을 이루는 글자별 폭**을 함께 낸다.
+///
+/// 줄 나눔은 토큰이 통째로 들어갈 때는 합만 쓰고, 안 들어갈 때는 글자 단위 폴백에서
+/// 개별 폭을 쓴다. 두 값이 같은 순회에서 나와야 한 토큰을 두 잣대로 재지 않는다.
+/// 합은 종전 `measure_token_width` 와 같은 순서로 누적하므로 값이 바뀌지 않는다.
+fn measure_token_char_widths(
+    metric_scope: &ParagraphMetricScope,
+    text: &str,
+    start_char_idx: usize,
+    char_offsets: &[u32],
+    char_shapes: &[CharShapeRef],
+    styles: &ResolvedStyleSet,
+    default_lang: usize,
+    inline_controls: &[FlowInlineControl],
+) -> (f64, Vec<f64>) {
     let mut total = 0.0;
+    let mut char_widths = Vec::with_capacity(text.len());
     let mut current_lang = default_lang;
     for (offset, ch) in text.chars().enumerate() {
         let idx = start_char_idx + offset;
@@ -811,35 +866,12 @@ fn measure_token_width(
             detected
         };
         let ts = metric_scope.style(styles, style_id, lang, idx);
-        total += estimate_text_width_unrounded(&ch.to_string(), &ts)
+        let width = estimate_text_width_unrounded(&ch.to_string(), &ts)
             + inline_width_px_at(inline_controls, idx);
+        total += width;
+        char_widths.push(width);
     }
-    total
-}
-
-fn measure_char_width(
-    metric_scope: &ParagraphMetricScope,
-    ch: char,
-    char_idx: usize,
-    char_offsets: &[u32],
-    char_shapes: &[CharShapeRef],
-    styles: &ResolvedStyleSet,
-    default_lang: usize,
-    inline_controls: &[FlowInlineControl],
-) -> f64 {
-    let utf16_pos = char_offsets
-        .get(char_idx)
-        .copied()
-        .unwrap_or(char_idx as u32);
-    let style_id = find_active_char_shape(char_shapes, utf16_pos);
-    let lang = if is_lang_neutral(ch) {
-        default_lang
-    } else {
-        detect_lang_category(ch)
-    };
-    let style = metric_scope.style(styles, style_id, lang, char_idx);
-    estimate_text_width_unrounded(&ch.to_string(), &style)
-        + inline_width_px_at(inline_controls, char_idx)
+    (total, char_widths)
 }
 
 fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) -> f64 {
@@ -848,16 +880,6 @@ fn inline_width_px_at(inline_controls: &[FlowInlineControl], char_idx: usize) ->
         .filter(|control| control.char_position == char_idx)
         .map(|control| control.width_hwp as f64 / 75.0)
         .sum()
-}
-
-fn has_inline_control_in_range(
-    inline_controls: &[FlowInlineControl],
-    start: usize,
-    end: usize,
-) -> bool {
-    inline_controls
-        .iter()
-        .any(|control| (start..end).contains(&control.char_position))
 }
 
 /// 기존 scalar tokenization과 같은 문자별 base pen을 만든 뒤, 그 입력 전체를
@@ -1213,6 +1235,19 @@ fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
 }
 
+/// [#7418] 이 공백 앞에 같은 줄의 글자가 하나도 없는가 — 줄 맨 앞 공백.
+///
+/// 한/글은 줄 맨 앞 공백을 condense 로 줄이지 않는다. 문단 첫 줄의 들여 쓴 공백
+/// 0·2·4·6 개를 condense 50·75 로 바꾼 합성 문단 8개의 줄 끊음을 한/글 2024 가
+/// 저장한 줄과 맞대면, 맨 앞 공백을 줄이지 않는 모형만 8/8 로 맞는다(줄이는 모형 2/8).
+fn space_is_line_leading(text_chars: &[char], line_start: usize, space_idx: usize) -> bool {
+    text_chars
+        .get(line_start..space_idx)
+        .is_none_or(|before| before.iter().all(|c| *c == ' '))
+}
+
+/// 공백 하나를 condense 로 줄일 수 있는 폭. `space_width_hwp` 는 자간 **적용 전** 폭이다
+/// (`BreakToken::Space::condense_base`).
 fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
     if condense_min_space == 0 || space_width_hwp <= 0 {
         return 0;
@@ -1277,20 +1312,27 @@ fn line_break_tolerance_hwp(box_width_hwp: i32) -> i32 {
         .clamp(LINE_BREAK_TOLERANCE_MIN_HWP, LINE_BREAK_TOLERANCE_MAX_HWP)
 }
 
-fn condense_fit_can_pull_next_token(
-    current_width_hwp: i32,
-    current_space_savings_hwp: i32,
-    effective_width_hwp: i32,
-    max_font_size: f64,
-) -> bool {
-    let current_condensed_width =
-        condensed_line_width_hwp(current_width_hwp, current_space_savings_hwp);
-    let remaining_hwp = effective_width_hwp - current_condensed_width;
-    // Hancom uses condense to rescue a line that still has a meaningful
-    // natural gap, but it does not pull the next word into an already tight
-    // line. The p03 PDF preface is sensitive to that distinction.
-    let min_remaining_hwp = to_hwp((max_font_size * 2.5).max(20.0));
-    remaining_hwp >= min_remaining_hwp
+/// 이 토큰이 줄 안에서 **새 낱말을 시작**하면, 그 앞 공백들 직전까지의 자연폭.
+///
+/// 바로 앞 토큰이 이 줄의 공백이 아니면 이어지는 글자이므로 `None` 이다.
+/// 이월(#3822) 재확인처럼 채움 상태가 없는 자리에서 토큰으로 다시 계산한다.
+fn new_word_natural_before_hwp(
+    tokens: &[BreakToken],
+    token_idx: usize,
+    line_start: usize,
+) -> Option<i32> {
+    let mut k = token_idx;
+    while k > 0 {
+        match &tokens[k - 1] {
+            BreakToken::Space { idx, .. } if *idx >= line_start => k -= 1,
+            _ => break,
+        }
+    }
+    if k == token_idx {
+        return None;
+    }
+    let width = recalc_width_hwp(tokens, k, line_start);
+    (width > 0).then_some(width)
 }
 
 /// Letter spacing is excluded from the fit test and included in the pen.
@@ -1312,6 +1354,17 @@ fn condense_fit_can_pull_next_token(
 /// `-0.16…-1.76` px).
 /// Forced to 0 under an active character grid, which is inert here: every
 /// corpus section has `char_grid == 0`.
+/// [#7418] 이 글자 모양의 ASCII 구두점을 영문 슬롯으로 재는가
+/// ([`ResolvedCharStyle::ascii_punct_latin_slot`]).
+///
+/// [`ResolvedCharStyle::ascii_punct_latin_slot`]: crate::renderer::style_resolver::ResolvedCharStyle::ascii_punct_latin_slot
+fn punct_latin_slot(styles: &ResolvedStyleSet, style_id: u32) -> bool {
+    styles
+        .char_styles
+        .get(style_id as usize)
+        .is_some_and(|style| style.ascii_punct_latin_slot)
+}
+
 fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: usize) -> i32 {
     if token_end_idx == 0 {
         return 0;
@@ -1338,13 +1391,12 @@ fn resolved_letter_spacing_px(
         .iter()
         .enumerate()
         .map(|(idx, ch)| {
-            if !is_lang_neutral(*ch) {
-                lang = detect_lang_category(*ch);
-            }
             let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
+            // [#7418] 영문 슬롯으로 재는 구두점은 자간도 영문 슬롯 값이다(`char_width_decision`).
+            let char_lang = char_lang_slot(*ch, &mut lang, punct_latin_slot(styles, style_id));
             // [#5678] `TextStyle` 을 통째로 만들지 않고 자간만 읽는다.
-            resolved_letter_spacing(styles, style_id, lang)
+            resolved_letter_spacing(styles, style_id, char_lang)
         })
         .collect()
 }
@@ -1375,27 +1427,50 @@ impl FitWidthHwp {
     }
 }
 
+/// [#7418] 목록 마커를 얹은 줄 나눔 상자: `(가용폭에서 뺄 양, 들여쓰기)`.
+/// 마커가 없으면 문단 들여쓰기 그대로다.
+fn list_marker_breaker_box(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    indent_px: f64,
+) -> (f64, f64) {
+    crate::renderer::layout::list_marker_geometry(para, styles)
+        .map_or((0.0, indent_px), |geometry| geometry.breaker_box(indent_px))
+}
+
+/// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
+///
+/// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
+/// 그러나 **새 낱말은 앞 줄이 자연폭으로 상자보다 좁을 때만** 시작한다 — 이미 공백을
+/// 줄여야 하거나 자연폭으로 꽉 찬 줄에는 새 낱말을 들이지 않는다.
+/// `new_word_natural_before_hwp` 는 이 토큰이 새 낱말을 시작할 때 그 앞 공백 직전까지의
+/// 자연폭이다(이어지는 글자면 `None`).
+///
+/// 독립 근거는 한/글 2024 출력이다. condense 0·15·30·50·75, 낱말 길이, 글자/낱말 단위,
+/// 글꼴(맑은 고딕·함초롬바탕·한양신명조), 본문/표 칸을 바꾼 합성 문단의 줄 끊음을 이 규칙이
+/// 전부 재현한다(본문 208/208, 칸 211/211). 앞 줄이 상자를 **꼭 채운** 경우를 허용하면(≤)
+/// 칸 문단이 148/211 로 떨어진다. 종전의 "남은 틈 2.5em 이상일 때만 condense" 문턱은
+/// 68/208 줄만 맞았다.
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
     space_savings_hwp: i32,
     effective_width_hwp: i32,
-    max_font_size: f64,
+    new_word_natural_before_hwp: Option<i32>,
 ) -> bool {
     let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
-    let tolerance_hwp = line_break_tolerance_hwp(effective_width_hwp);
-    let needs_condense_to_fit = natural_candidate > effective_width_hwp + tolerance_hwp
-        && condensed_candidate <= effective_width_hwp + tolerance_hwp;
-    let condense_pull_allowed = !needs_condense_to_fit
-        || condense_fit_can_pull_next_token(
-            current_width_hwp,
-            space_savings_hwp,
-            effective_width_hwp,
-            max_font_size,
-        );
-
-    condensed_candidate <= effective_width_hwp + tolerance_hwp && condense_pull_allowed
+    let limit_hwp = effective_width_hwp + line_break_tolerance_hwp(effective_width_hwp);
+    if natural_candidate <= limit_hwp {
+        return true;
+    }
+    // 공백을 줄여야 들어가는 경우 — 줄바꿈 여유(자연폭 추정 오차 흡수용)를 얹지 않는다.
+    // 한/글은 줄인 폭이 상자를 넘으면 받지 않는다: 합성 문단에서 상자를 5·30 HWPUNIT
+    // 넘는 줄(여유 50 안)과 80168 49쪽 `…투자ㆍ운` + `용`(여유 31 안)을 모두 거절한다.
+    if condensed_candidate > effective_width_hwp {
+        return false;
+    }
+    !new_word_natural_before_hwp.is_some_and(|w| w >= effective_width_hwp)
 }
 
 /// Greedy line-fill continuation.
@@ -1418,6 +1493,9 @@ struct FillCursor {
     width_at_last_break: i32,
     space_savings_at_last_break: i32,
     fs_at_last_break: f64,
+    /// [#7418] 마지막으로 소비한 토큰이 이 줄의 공백이면, 그 공백 묶음 직전까지의 자연폭.
+    /// 다음 글자 토큰이 새 낱말을 시작하는지와 그때 줄이 자연폭 안인지를 판정한다.
+    word_gap_natural_hwp: Option<i32>,
     finished: bool,
     emitted_any: bool,
 }
@@ -1438,6 +1516,7 @@ impl FillCursor {
             width_at_last_break: 0,
             space_savings_at_last_break: 0,
             fs_at_last_break: 0.0,
+            word_gap_natural_hwp: None,
             finished: false,
             emitted_any: false,
         }
@@ -1613,6 +1692,7 @@ fn fill_one_interval(
                 });
             }
             BreakToken::Tab { idx, max_font_size } => {
+                cursor.word_gap_natural_hwp = None;
                 // 탭 계산은 px로 수행 후 HWPUNIT 변환 (정밀도 유지)
                 let lw_px = cursor.lw as f64 / 75.0;
                 let next_tab_px = ((lw_px / tab_w_px).floor() + 1.0) * tab_w_px;
@@ -1670,6 +1750,7 @@ fn fill_one_interval(
             BreakToken::Space {
                 idx,
                 width,
+                condense_base,
                 max_font_size,
                 has_inline_control,
             } => {
@@ -1678,7 +1759,13 @@ fn fill_one_interval(
                     cursor.line_max_fs = *max_font_size;
                 }
                 let space_hwp = to_hwp(*width);
-                let space_savings = condense_space_savings_hwp(space_hwp, condense_min_space);
+                // [#7418] 줄 맨 앞 공백은 condense 로 줄지 않는다.
+                let leading = space_is_line_leading(text_chars, cursor.line_start_idx, *idx);
+                let space_savings = if leading {
+                    0
+                } else {
+                    condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space)
+                };
                 if let Some(cut) = overflowing_space_cut(
                     cursor.line_start_idx,
                     *idx,
@@ -1688,6 +1775,24 @@ fn fill_one_interval(
                     *has_inline_control,
                 ) {
                     let absorbed = cut > *idx;
+                    // [#7418] 줄 끝에 건 공백이 문단의 마지막 글자면 문단이 여기서 끝난다 —
+                    // 종전에는 글자 없는 빈 행을 하나 더 게시했다. 한/글은 넘친 공백 **하나**만
+                    // 줄 끝에 걸고 그 뒤 공백은 새 줄로 넘긴다(42자+공백 2 → 1줄, 공백 3 → 2줄;
+                    // `trailing_space_synthetic`). 그래서 뒤에 공백이 더 남은 경우는 종전대로 끊는다.
+                    if absorbed && ti + 1 == tokens.len() {
+                        cursor.finished = true;
+                        cursor.emitted_any = true;
+                        cursor.token_index = tokens.len();
+                        return Some(FilledInterval {
+                            line: LineBreakResult {
+                                start_idx: cursor.line_start_idx,
+                                end_idx: cut,
+                                max_font_size: cursor.line_max_fs,
+                                has_line_break: false,
+                            },
+                            termination: FillTermination::ParagraphEnd,
+                        });
+                    }
                     let line = LineBreakResult {
                         start_idx: cursor.line_start_idx,
                         end_idx: cut,
@@ -1700,10 +1805,12 @@ fn fill_one_interval(
                     };
                     cursor.line_start_idx = cut;
                     cursor.lw = if absorbed { 0 } else { space_hwp };
-                    cursor.line_space_savings = if absorbed { 0 } else { space_savings };
+                    // 넘어간 공백은 새 줄의 맨 앞 공백이다.
+                    cursor.line_space_savings = 0;
                     cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
+                    cursor.word_gap_natural_hwp = None;
                     cursor.token_index += 1;
                     cursor.emitted_any = true;
                     // The terminal separator was consumed by this row. The
@@ -1725,9 +1832,11 @@ fn fill_one_interval(
                 cursor.width_at_last_break = cursor.lw;
                 cursor.space_savings_at_last_break = cursor.line_space_savings;
                 cursor.fs_at_last_break = cursor.line_max_fs;
+                if cursor.word_gap_natural_hwp.is_none() && !leading {
+                    cursor.word_gap_natural_hwp = Some(cursor.lw);
+                }
                 cursor.lw += space_hwp;
-                cursor.line_space_savings +=
-                    condense_space_savings_hwp(space_hwp, condense_min_space);
+                cursor.line_space_savings += space_savings;
                 cursor.token_index += 1;
             }
             BreakToken::Text {
@@ -1738,6 +1847,11 @@ fn fill_one_interval(
                 base_char_widths,
                 ..
             } => {
+                // [#7418] 바로 앞이 이 줄의 공백이었으면 이 토큰이 새 낱말을 시작한다.
+                let new_word_natural = cursor
+                    .word_gap_natural_hwp
+                    .take()
+                    .filter(|_| *start_idx > cursor.line_start_idx);
                 if let Some(next_char_idx) = cursor.fallback_char_idx {
                     debug_assert!(*start_idx <= next_char_idx && next_char_idx <= *end_idx);
                     let mut ci = next_char_idx;
@@ -1791,15 +1905,40 @@ fn fill_one_interval(
                     continue;
                 }
 
+                if break_before_hangul_char(
+                    text_chars,
+                    *start_idx,
+                    cursor.line_start_idx,
+                    korean_break_unit,
+                ) {
+                    cursor.last_break_token_idx = Some(ti - 1);
+                    cursor.last_break_char_idx = *start_idx;
+                    cursor.width_at_last_break = cursor.lw;
+                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.fs_at_last_break = cursor.line_max_fs;
+                }
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
                 }
 
                 let w_hwp = to_hwp(*base_width);
                 let effective_width = eff_w(cursor.is_first_line);
-                // The pen keeps the full width; only the comparison drops the
-                // candidate's trailing letter space.
-                let w_hwp_fit = FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx);
+                // 전진폭은 유지하며 일반 자동 줄 경계 비교에서만 후보의 끝 자간을 뺀다.
+                // 작성된 줄바꿈 또는 문단 끝의 압축 자간은 전진폭으로 판정한다.
+                // 음수 자간을 되돌리면 이미 상자 안에 담긴 마지막 글자만 다음 줄로
+                // 밀리고 작성된 줄바꿈 앞에 빈약한 추가 줄이 생긴다. 실제 전진폭
+                // 초과와 일반 자동 줄바꿈의 마지막 자간 판정은 그대로 검사한다.
+                let at_written_line_end = matches!(
+                    tokens.get(ti + 1),
+                    None | Some(BreakToken::LineBreak { .. })
+                );
+                let w_hwp_fit = if at_written_line_end
+                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
+                {
+                    FitWidthHwp(w_hwp)
+                } else {
+                    FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx)
+                };
                 let pair_adjustment_hwp = if let Some(session) = kerning.as_deref_mut() {
                     to_hwp(session.boundary_pair_adjustment(cursor.line_start_idx, *end_idx)?)
                 } else {
@@ -1810,7 +1949,7 @@ fn fill_one_interval(
                     w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
                     cursor.line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 );
 
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
@@ -1915,7 +2054,7 @@ fn fill_one_interval(
                                 ),
                                 cursor.line_space_savings,
                                 eff_w(false),
-                                *max_font_size,
+                                new_word_natural_before_hwp(tokens, ti, cursor.line_start_idx),
                             ) {
                                 cursor.lw += w_hwp;
                                 cursor.token_index += 1;
@@ -2079,6 +2218,7 @@ fn fill_lines_before_cursor(
             BreakToken::Space {
                 idx,
                 width,
+                condense_base,
                 max_font_size,
                 ..
             } => {
@@ -2092,7 +2232,10 @@ fn fill_lines_before_cursor(
                 fs_at_last_break = line_max_fs;
                 let space_hwp = to_hwp(*width);
                 lw += space_hwp;
-                line_space_savings += condense_space_savings_hwp(space_hwp, condense_min_space);
+                if !space_is_line_leading(text_chars, line_start_idx, *idx) {
+                    line_space_savings +=
+                        condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+                }
             }
             BreakToken::Text {
                 start_idx,
@@ -2102,6 +2245,18 @@ fn fill_lines_before_cursor(
                 ref char_widths,
                 ..
             } => {
+                if break_before_hangul_char(
+                    text_chars,
+                    *start_idx,
+                    line_start_idx,
+                    korean_break_unit,
+                ) {
+                    last_break_token_idx = Some(ti - 1);
+                    last_break_char_idx = *start_idx;
+                    width_at_last_break = lw;
+                    space_savings_at_last_break = line_space_savings;
+                    fs_at_last_break = line_max_fs;
+                }
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
                 }
@@ -2112,12 +2267,13 @@ fn fill_lines_before_cursor(
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
                 // → 초과 시 이 글자까지 L0에 포함하고 다음 토큰부터 다음 줄
                 let effective_width = eff_w(is_first_line);
+                let new_word_natural = new_word_natural_before_hwp(tokens, ti, line_start_idx);
                 let token_fits = text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 );
                 // Same single predicate as the live fill — see the note there.
                 let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
@@ -2145,7 +2301,7 @@ fn fill_lines_before_cursor(
                     FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
-                    *max_font_size,
+                    new_word_natural,
                 ) {
                     if *start_idx > line_start_idx {
                         if let Some(break_token_idx) = last_break_token_idx {
@@ -2187,7 +2343,7 @@ fn fill_lines_before_cursor(
                                 FitWidthHwp(w_hwp),
                                 line_space_savings,
                                 eff_w(false),
-                                *max_font_size,
+                                new_word_natural_before_hwp(tokens, ti, line_start_idx),
                             ) {
                                 lw += w_hwp;
                                 continue;
@@ -2284,11 +2440,17 @@ fn recalc_space_savings_hwp(
     condense_min_space: u8,
 ) -> i32 {
     let mut w = 0i32;
+    // [#7418] 줄 맨 앞 공백(첫 글자 토큰 앞)은 줄지 않는다.
+    let mut line_has_text = false;
     for t in &tokens[..current_token_idx] {
         match t {
-            BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
-                let space_hwp = to_hwp(*width);
-                w += condense_space_savings_hwp(space_hwp, condense_min_space);
+            BreakToken::Space {
+                idx, condense_base, ..
+            } if *idx >= new_line_start && line_has_text => {
+                w += condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+            }
+            BreakToken::Text { start_idx, .. } if *start_idx >= new_line_start => {
+                line_has_text = true;
             }
             _ => {}
         }
@@ -2832,7 +2994,15 @@ fn layout_paragraph_in_frame_impl(
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = para_style.map(|style| style.indent).unwrap_or(0.0);
+    // [#7418·#7436] 목록 마커(글머리표·번호)는 줄 앞을 차지한다. 배치가 마커 기하만큼
+    // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
+    // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
+    // 한/글 저장 행도 마커 자리부터 시작한다.
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(
+        para,
+        styles,
+        para_style.map(|style| style.indent).unwrap_or(0.0),
+    );
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3011,27 +3181,31 @@ fn layout_paragraph_in_frame_impl(
                     .then_some(terminal_inline_metrics)
                     .flatten();
                 let mut row_terminated = false;
-                let widest_interval = intervals.iter().map(|i| i.end - i.start).max().unwrap_or(0);
-                for interval in intervals {
-                    // 부분 재조판도 배치가 예약하는 글머리표 본문 내어쓰기를 제외한다.
-                    let marker_width = if start_char > 0 {
-                        super::bullet_marker_width(para, styles)
-                    } else {
-                        0.0
-                    };
-                    let available_width_px = crate::renderer::hwpunit_to_px(
+                let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
+                    let width = crate::renderer::hwpunit_to_px(
                         interval.end.saturating_sub(interval.start),
                         dpi,
-                    ) - marker_width;
-                    // Preserve an unbroken word when another interval on this
-                    // physical row can contain it. A narrow side segment must
-                    // not force the empty-line character fallback after the
-                    // wider segment has already been filled.
+                    );
+                    if index == 0 {
+                        (width - marker_hang_px).max(1.0)
+                    } else {
+                        width
+                    }
+                };
+                // 마커는 첫 구간만 소유한다. 낱말 회피도 같은 실제 가용 폭을 비교한다.
+                let widest_available_px = intervals
+                    .iter()
+                    .enumerate()
+                    .map(|(index, interval)| interval_width(index, interval))
+                    .fold(0.0, f64::max);
+                for (interval_index, interval) in intervals.into_iter().enumerate() {
+                    let available_width_px = interval_width(interval_index, &interval);
+                    // 같은 물리 줄의 다른 구간에 온전한 낱말이 들어가면 그대로 보존한다.
+                    // 넓은 구간을 채운 뒤 좁은 옆 구간 때문에 글자 단위로 쪼개지 않는다.
                     if cursor.fallback_char_idx.is_none() {
                         if let Some(BreakToken::Text {
                             base_width,
                             end_idx,
-                            max_font_size,
                             ..
                         }) = tokens.get(cursor.token_index)
                         {
@@ -3040,12 +3214,9 @@ fn layout_paragraph_in_frame_impl(
                                 &letter_spacing_px,
                                 *end_idx,
                             );
-                            let fits =
-                                |width| text_token_fits_line_hwp(0, word, 0, width, *max_font_size);
-                            let widest_available = to_hwp(
-                                crate::renderer::hwpunit_to_px(widest_interval, dpi) - marker_width,
-                            );
-                            if interval.end - interval.start < widest_interval
+                            let fits = |width| text_token_fits_line_hwp(0, word, 0, width, None);
+                            let widest_available = to_hwp(widest_available_px);
+                            if available_width_px < widest_available_px
                                 && !fits(to_hwp(available_width_px))
                                 && fits(widest_available)
                             {
@@ -3887,7 +4058,18 @@ fn reflow_line_segs_impl(
     // 폭에서, 프레임 상자를 또 폭에서 따로 만들어 둘이 어긋날 수 있었다.
     let published_horizontal = paragraph_box.effective();
     let seg_width_hwp = paragraph_box.width_hwp();
-    let available_width_px = paragraph_box.width_px(dpi);
+    // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
+    // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(
+        para,
+        styles,
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|s| s.indent)
+            .unwrap_or(0.0),
+    );
+    let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -4046,9 +4228,8 @@ fn reflow_line_segs_impl(
     let text_len = text_chars.len();
     let inline_controls = flow_inline_controls(para);
 
-    // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회
+    // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회 (들여쓰기는 목록 마커를 얹은 값)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-    let indent_px = para_style.map(|s| s.indent).unwrap_or(0.0);
     let english_break_unit = para_style.map(|s| s.english_break_unit).unwrap_or(0);
     let korean_break_unit = para_style.map(|s| s.korean_break_unit).unwrap_or(0);
     let condense_min_space = para_style.map(|s| s.condense_min_space).unwrap_or(0);
@@ -4715,6 +4896,7 @@ mod fill_cursor_tests {
             BreakToken::Space {
                 idx: 1,
                 width: 20.0,
+                condense_base: 20.0,
                 max_font_size: 12.0,
                 has_inline_control: true,
             },
@@ -4789,6 +4971,7 @@ mod fill_cursor_tests {
             BreakToken::Space {
                 idx: 2,
                 width: 5.0,
+                condense_base: 5.0,
                 max_font_size: 12.0,
                 has_inline_control: false,
             },

@@ -452,16 +452,33 @@ fn saved_fixture_nodes() -> Vec<RenderNode> {
 #[test]
 fn empty_saved_paragraph_keeps_its_physical_border() {
     let nodes = saved_fixture_nodes();
-    // The empty section paragraph still owns a full physical line and border.
+    let empty = nodes
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)))
+        .expect("빈 선행 문단의 물리 글줄");
+    let following = nodes
+        .iter()
+        .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(1)))
+        .min_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y))
+        .expect("표를 소유한 뒤 문단의 첫 글줄");
+    assert!(empty.bbox.height > 0.0, "빈 문단도 물리 줄을 소유한다");
+    let borders: Vec<_> = nodes
+        .iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::Rectangle(_))
+                && node.bbox.y <= empty.bbox.y
+                && node.bbox.y + node.bbox.height >= empty.bbox.y + empty.bbox.height
+                && node.bbox.x <= empty.bbox.x
+                && node.bbox.x + node.bbox.width >= empty.bbox.x + empty.bbox.width
+        })
+        .collect();
+    assert_eq!(borders.len(), 1, "빈 선행 문단 테두리의 단일 소유");
+    // 독립 PDF에서 앞 빈 문단의 아래 선은 뒤 문단 첫 줄의 위 선과 맞닿는다.
+    // 용지 좌표·폭·줄 높이를 고정하지 않고 두 문단 사이의 물리 줄 소유를 검사한다.
+    let bottom = borders[0].bbox.y + borders[0].bbox.height;
     assert!(
-        nodes
-            .iter()
-            .any(|n| matches!(n.node_type, RenderNodeType::Rectangle(_))
-                && (n.bbox.x - 48.0).abs() < 0.5
-                && (n.bbox.width - 384.0).abs() < 0.5
-                && (n.bbox.y - 104.619).abs() < 0.5
-                && (n.bbox.height - 22.556).abs() < 0.5),
-        "empty leading paragraph border must follow its fallback line height"
+        (bottom - following.bbox.y).abs() < 1e-9,
+        "빈 줄의 후행 간격까지 테두리가 감싸고 뒤 문단은 그 아래에서 시작해야 한다"
     );
 }
 

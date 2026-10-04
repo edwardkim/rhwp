@@ -4804,6 +4804,7 @@ impl DocumentCore {
                     hidden_empty_paras: std::collections::HashSet::new(),
                     pre_emitted_host_paras: std::collections::HashSet::new(),
                     pre_emitted_host_heights: std::collections::HashMap::new(),
+                    pre_emitted_host_content_heights: std::collections::HashMap::new(),
                     endnotes: Vec::new(),
                     endnote_paragraphs: Vec::new(),
                     endnote_para_sources: Vec::new(),
@@ -4919,6 +4920,12 @@ impl DocumentCore {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.ensure_exact_font_measurement_contexts();
+        // [#7436] 편집으로 문단이 늘거나 줄면 뒤 번호가 바뀐다. 측정·배치 전에 문서 순서로
+        // 번호 문자열을 다시 정해 두 경로가 같은 값을 쓰게 한다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_profile_enabled =
             std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");
@@ -4998,6 +5005,7 @@ impl DocumentCore {
                 hidden_empty_paras: std::collections::HashSet::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
                 pre_emitted_host_heights: std::collections::HashMap::new(),
+                pre_emitted_host_content_heights: std::collections::HashMap::new(),
                 endnotes: Vec::new(),
                 endnote_paragraphs: Vec::new(),
                 endnote_para_sources: Vec::new(),
@@ -7664,8 +7672,10 @@ impl DocumentCore {
             self.layout_engine
                 .set_pre_emitted_host_paras(&pr.pre_emitted_host_paras);
             // [#2015] pre-emit host 높이 → layout vert_offset 이중계상 보정.
-            self.layout_engine
-                .set_pre_emitted_host_heights(&pr.pre_emitted_host_heights);
+            self.layout_engine.set_pre_emitted_host_heights(
+                &pr.pre_emitted_host_heights,
+                &pr.pre_emitted_host_content_heights,
+            );
             self.layout_engine
                 .set_endnote_para_sources(paragraphs.len(), &pr.endnote_para_sources);
             // 섹션 미주 모양의 정규화 여백 전달 → HeightCursor min-gap 및 renderer overflow 판정.

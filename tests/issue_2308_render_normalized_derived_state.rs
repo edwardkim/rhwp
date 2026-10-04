@@ -270,7 +270,12 @@ fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
     // and `mixed_nested_flow_extra_from_cut` carries an `extra += 4.0` row
     // reservation. Two constants of equal size are not evidence that they are the
     // same constant; nothing here rests on that.
-    let expected = [(32, 400.4, 636.8), (33, 77.1, 388.3)];
+    // [#7418] p34 is the terminal-row continuation of a 2-column RowBreak table, and Hancom
+    // reopens its outer top margin there: the outer rule sits at 77.3px (HWP 2020 PDF) /
+    // 77.5px (2024 PDF) = body top 75.6 + 141 HU, not at the body top. The nested fragment
+    // moves with it, 77.1 -> 79.0 (its first text line moves toward the PDF, 79.0 -> 80.9
+    // against a glyph top of 85.5/86.6). The height pin is unchanged.
+    let expected = [(32, 400.4, 636.8), (33, 79.0, 388.3)];
     for (page, expected_y, expected_height) in expected {
         let tree = core
             .build_page_render_tree(page)

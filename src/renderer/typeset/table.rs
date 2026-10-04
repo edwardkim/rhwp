@@ -12,8 +12,8 @@ use crate::renderer::float_placement::is_para_topbottom_float;
 use crate::renderer::height_measurer::{
     fit_measured_table_declared_tail_to_declared_height,
     fit_measured_table_nested_tail_to_declared_height, fit_measured_table_to_declared_height,
-    fit_stored_hwpx_no_adjust_rowspans, trim_stored_hwpx_inline_row_trailing_spacing,
-    MeasuredTable,
+    fit_stored_hwpx_no_adjust_rowspans, fit_stored_inline_picture_frame,
+    trim_stored_hwpx_inline_row_trailing_spacing, MeasuredTable,
 };
 use crate::renderer::pagination::estimate_footnote_note_height;
 use crate::renderer::style_resolver::ResolvedStyleSet;
@@ -182,6 +182,11 @@ pub(super) fn fit_measured_for_host(
     profile: impl Fn() -> LayoutCompatibilityProfile,
 ) -> Option<MeasuredTable> {
     if profile().hwpx_stored_layout() && !profile().session_edited() {
+        if let Some(fitted) =
+            mt.and_then(|measured| fit_stored_inline_picture_frame(measured, table, dpi))
+        {
+            return Some(fitted);
+        }
         if let Some(fitted) =
             mt.and_then(|measured| fit_stored_hwpx_no_adjust_rowspans(measured, table, dpi))
         {

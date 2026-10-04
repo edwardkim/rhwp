@@ -34,6 +34,11 @@ export interface ImageCrop {
   bottom: number;
 }
 
+/** 저장된 자르기 선택의 빈 영역은 자르기 없음과 다르다. */
+export function imageCropSelectionIsEmpty(crop?: ImageCrop | null): boolean {
+  return !!crop && (crop.right <= crop.left || crop.bottom <= crop.top);
+}
+
 /** 원본 픽셀 좌표로 환산한, 실제로 잘라 올 창. */
 export interface ImageCropSourceRect {
   x: number;

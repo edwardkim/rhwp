@@ -2327,6 +2327,24 @@ impl Renderer for WebCanvasRenderer {
                     if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
                         continue;
                     }
+                    if let Some((cx, cy, rx, ry)) =
+                        super::legacy_hft_bullet_geometry(cluster_str, style)
+                    {
+                        self.ctx.begin_path();
+                        self.ctx
+                            .ellipse(
+                                x + char_positions[*char_idx] + cx,
+                                y + cy,
+                                rx,
+                                ry,
+                                0.0,
+                                0.0,
+                                std::f64::consts::TAU,
+                            )
+                            .ok();
+                        self.ctx.fill();
+                        continue;
+                    }
                     if super::contains_old_hangul_jamo(cluster_str) {
                         self.ctx.set_font(old_hangul_font);
                     } else {

@@ -119,7 +119,8 @@ pub struct ComposedParagraph {
     pub inline_controls: Vec<InlineControl>,
     /// 개요 번호/글머리표 등 문단 머리 텍스트 (렌더링 전용)
     /// 문서 좌표 char_offset에 포함되지 않으며 별도 TextRunNode로 렌더링된다.
-    pub numbering_text: Option<String>,
+    /// 문단 머리 속성은 마커 영역(본문과의 거리·너비 보정·자동 내어쓰기)을 정한다.
+    pub numbering_text: Option<(String, crate::model::paragraph::MarkerHead)>,
     /// treat_as_char 컨트롤의 텍스트 위치와 HWPUNIT 너비 목록
     /// (para.text 내 절대 char 인덱스, 폭 HWPUNIT, para.controls 내 인덱스)
     pub tac_controls: Vec<(usize, i32, usize)>,
@@ -605,29 +606,41 @@ pub(crate) fn tac_host_trailing_spacing(
 /// 실제 표 소유 줄의 저장 끝에 앞 문단 뒤 간격과 다음 문단 앞 간격을 더한 값이
 /// 다음 저장 줄의 시작과 맞닿으면
 /// 배치 원점에는 후행 간격 전량을 적용한다. 분할 예산의 표 점유는 별도로 센다.
-pub(crate) fn native_tac_next_line_full_spacing(
+pub(crate) fn tac_next_line_full_spacing(
     para: &Paragraph,
     next_para: Option<&Paragraph>,
     current_spacing_after_px: f64,
     next_spacing_before_px: f64,
     seg: &LineSeg,
-    native_stored_layout: bool,
+    profile: crate::model::provenance::LayoutCompatibilityProfile,
     dpi: f64,
 ) -> bool {
     let next_spacing_before_hu = (next_spacing_before_px / hwpunit_to_px(1, dpi)).round() as i32;
     let current_spacing_after_hu =
         (current_spacing_after_px / hwpunit_to_px(1, dpi)).round() as i32;
-    native_stored_layout
+    // 원본 저장 줄과 현재 개체 프레임을 소유한 재조판 줄을 구분한다.
+    // 후자는 합성 태그를 가진 현재 사다리를 사용하므로 저장 원본으로 취급하지 않는다.
+    let current_owned_row = profile.hwpx_stored_layout()
+        && para.line_segs.len() == 1
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        && para
+            .controls
+            .iter()
+            .enumerate()
+            .any(|(ci, _)| owned_rowbreak_tac_height(para, ci).is_some());
+    let stored_host = profile.hwp5_stored_pagination_layout()
+        && !profile.session_edited()
         && !para.stored_text_partition_is_dirty()
+        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    (stored_host || current_owned_row)
         && para
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_para.is_some_and(|next| {
-            !next.stored_text_partition_is_dirty()
+            (current_owned_row || !next.stored_text_partition_is_dirty())
                 && next.line_segs.first().is_some_and(|first| {
-                    first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    (current_owned_row || first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
                         && seg
                             .vertical_pos
                             .saturating_add(seg.line_height)
@@ -707,7 +720,10 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
             Control::SectionDef(_)
             | Control::ColumnDef(_)
             | Control::Header(_)
-            | Control::Footer(_) => continue,
+            | Control::Footer(_)
+            | Control::PageNumberPos(_)
+            // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
+            | Control::PageHide(_) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
@@ -723,12 +739,17 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
         {
             return None;
         }
-        if whitespace_carrier
+        // 빈 컨트롤 캐리어도 표 앞에 짧은 저장 줄을 가질 수 있다.
+        // 표 높이가 반복된 line_height 대신 실제 text_height와 다음 원점을
+        // 대조하여 빈 줄의 물리 점유를 보존한다.
+        if (whitespace_carrier || (lines.is_empty() && owner > 0))
             && (table.caption.is_some()
                 || owner == 0
-                || para.line_segs[..owner]
-                    .iter()
-                    .any(|blank| blank.text_height <= 0 || blank.line_spacing < 0)
+                || para.line_segs[..owner].iter().any(|blank| {
+                    // 음수 줄간격도 실제 줄 전진량이 유효하면 저장 줄의 일부다.
+                    blank.text_height <= 0
+                        || i64::from(blank.text_height) + i64::from(blank.line_spacing) < 0
+                })
                 || i64::from(seg.text_height) != outer_height
                 || para.line_segs[..owner].windows(2).any(|pair| {
                     i64::from(pair[0].vertical_pos)
@@ -763,7 +784,9 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
         });
         previous_owner = Some(owner);
     }
-    if lines.len() < 2 && !whitespace_carrier {
+    let single_prefix_carrier = lines.len() == 1
+        && previous_owner.is_some_and(|owner| owner > 0 && owner == para.line_segs.len() - 1);
+    if lines.len() < 2 && !whitespace_carrier && !single_prefix_carrier {
         return None;
     }
     // 글자가 있는 일반 문단이나 같은 줄의 여러 개체는 재조판 경로가 처리한다.
@@ -1693,6 +1716,26 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
     result
 }
 
+/// [#7418] ASCII 구두점(공백 제외)인가 — [`crate::renderer::TextStyle::ascii_punct_latin`] 가
+/// 있는 run 에서 한/글은 이 글자를 **영문 슬롯** 글꼴 메트릭으로 잰다.
+pub(crate) fn is_latin_slot_punct(ch: char) -> bool {
+    ch.is_ascii_punctuation()
+}
+
+/// 글자의 언어 슬롯. 중립 문자는 앞 글자 언어(`carry`)를 따른다. `punct_latin` 인 글자
+/// 모양의 ASCII 구두점은 영문(1)으로 재되 `carry` 는 바꾸지 않는다 — 뒤 공백이 앞 언어를 잇도록.
+pub(crate) fn char_lang_slot(ch: char, carry: &mut usize, punct_latin: bool) -> usize {
+    if punct_latin && is_latin_slot_punct(ch) {
+        1
+    } else if is_lang_neutral(ch) {
+        *carry
+    } else {
+        let lang = detect_lang_category(ch);
+        *carry = lang;
+        lang
+    }
+}
+
 /// 언어 중립 문자인지 판별한다 (공백, ASCII 구두점, 일반 기호 등).
 /// 이 문자들은 Run 분할을 유발하지 않고 이전 문자의 언어를 따른다.
 pub(crate) fn is_lang_neutral(ch: char) -> bool {
@@ -2147,7 +2190,15 @@ pub(crate) fn no_ls_short_label_cell(
         recompose_cell_lines_in_frame(
             &mut comp,
             p,
-            ParagraphBox::content_width_px(cell_inner_width, dpi),
+            // [#7422] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. `#7410` 이
+            // 편집 경로에서 통일한 계약이 이 재조합 경로에는 닿지 않아, 같은 문단이 어느
+            // 경로로 왔느냐로 다른 상자를 받았다 — 칸 31 에서 프레임 폭이 한/글의 39208
+            // 대신 40808 이 되어 줄마다 두 글자를 더 먹었다.
+            ParagraphBox::content_for_style(
+                cell_inner_width,
+                styles.para_styles.get(p.para_shape_id as usize),
+                dpi,
+            ),
             styles,
             dpi,
             false,
@@ -2456,7 +2507,12 @@ fn reflow_cell_line_ignoring_stored_segs(
     recompose_cell_lines_in_frame(
         composed,
         &para_no_ls,
-        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        // [#7422] 위와 같은 계약. 저장 seg 를 무시하는 경로도 문단 여백을 뺀다.
+        ParagraphBox::content_for_style(
+            cell_inner_width_px,
+            styles.para_styles.get(para.para_shape_id as usize),
+            dpi,
+        ),
         styles,
         dpi,
         false,
@@ -2481,7 +2537,12 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
     recompose_cell_lines_in_frame(
         composed,
         para,
-        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        // [#7422] 위와 같은 계약. 렌더/측정 공통 경로도 문단 여백을 뺀다.
+        ParagraphBox::content_for_style(
+            cell_inner_width_px,
+            styles.para_styles.get(para.para_shape_id as usize),
+            dpi,
+        ),
         styles,
         dpi,
         legacy_hwp3_stored_geometry,
@@ -3310,6 +3371,8 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     pad_left: f64,
     pad_right: f64,
     cell_w: f64,
+    // 칸의 글자 상자 높이(px). 줄바꿈 결과가 여기에 들어가면 여백을 깎지 않는다.
+    inner_height_px: f64,
     composed_paras: &[ComposedParagraph],
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
@@ -3379,9 +3442,89 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     // Task #347: estimate_text_width는 영어 본문(Times New Roman 등) 자연 폭을
     // 5~15%까지 과대 추정할 수 있어, HWP가 이미 줄바꿈한 본문에서도
     // padding 축소가 잘못 트리거됨. 15% 이내 초과는 정상으로 보고 미축소.
+    //
+    // [#7413] 이 사전 필터는 **그대로 둔다.** 아래 높이 판정이 "깎지 않아도 되는 칸"을
+    // 걸러내는 일을 하고, 이 필터를 함께 없애면 종전에 깎지 않던 칸까지 새로 깎게 되어
+    // 측정 범위 밖의 동작 확장이 된다(samples 전수 A/B: 변화 174 → 234).
     let overflow_threshold = available * 1.15;
     if max_line_w <= overflow_threshold || cell_w <= 2.0 {
         return (pad_left, pad_right);
+    }
+
+    // [#7413] **줄바꿈으로 해결되는 문단은 깎지 않는다.**
+    //
+    // 종전 조건은 "자연 폭 > 가용 너비 × 1.15" 였다. 그건 "이 문단은 줄바꿈이 필요하다"는
+    // 뜻일 뿐이라, 줄바꿈해도 칸 높이에 들어가는 문단까지 전부 걸렸다. 1.15 는 Task #347 이
+    // 영문 자연 폭 과대 추정을 흡수하려고 둔 값이고 한/글 출력에서 나온 값이 아니다.
+    //
+    // 축소가 실제로 지탱하는 계약은 "칸 안 글자가 칸 밖으로 새지 않는다" 하나다(실측:
+    // 축소를 끄면 samples 전수에서 겹침이 4건 늘고, 그 넷이 전부 줄바꿈 결과가 행 높이를
+    // 넘는 자리다 — 20099369_yeongwol_forms 3쪽 칸 w=41.9/h=43.6 가 2줄 45px 를 요구,
+    // issue5169 12쪽 Cell5 h=59.2 가 4줄 80.3px, Cell51 h=29.4 가 2줄 46.7px).
+    //
+    // 그러므로 묻는 것을 바꾼다 — "줄바꿈한 결과가 칸 높이를 넘는가". 넘지 않으면 줄바꿈이
+    // 답이고 여백은 그대로 둔다. 정본 대조 가능한 10쪽(80168 3쪽·2022 국립국어원 3쪽·
+    // 156160455 1쪽)에서 종전 축소는 전부 한/글에서 멀어지게 하고 있었다.
+    if inner_height_px > 0.0 && available > 0.0 {
+        // 줄 수를 **추정하지 않고 실제로 센다.** `ceil(자연 폭 / 가용 폭)` 은 어절
+        // 줄바꿈이 줄 끝에 남기는 낭비를 반영하지 못해 낙관적이다(issue5169 `Cell5`:
+        // 추정 52.3px vs 실제 4줄 83.2px). 폭 판정을 통과한 칸에서만 도는 경로라
+        // 조합 비용은 그 칸들로 한정된다.
+        let mut wrapped_height = 0.0f64;
+        let mut last_line_spacing = 0.0f64;
+        let mut stored_fits_fewer_lines = false;
+        for (idx, para) in paragraphs.iter().enumerate() {
+            let mut comp = match composed_paras.get(idx) {
+                Some(c) => c.clone(),
+                None => compose_paragraph_in_context(para, styles),
+            };
+            recompose_cell_lines_in_frame(
+                &mut comp,
+                para,
+                ParagraphBox::content_for_style(
+                    available,
+                    styles.para_styles.get(para.para_shape_id as usize),
+                    dpi,
+                ),
+                styles,
+                dpi,
+                false,
+            );
+            // [#7418] 한/글 자신의 저장 줄(비합성 LINE_SEG)이 줄바꿈 결과보다 적으면, 한/글은
+            // 이 글을 그 줄 수에 담았다는 증거다 — 높이와 무관하게 깎아 그 줄 수를 따른다.
+            // 20099369 3쪽 `월별누계` 칸: 저장 1줄, rhwp 줄바꿈 2줄(말미 제외 39.8 ≤ 43.6).
+            let stored_lines = para
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .count();
+            if stored_lines > 0 && comp.lines.len() > stored_lines {
+                stored_fits_fewer_lines = true;
+            }
+            for line in &comp.lines {
+                // 실제 줄 피치는 `line_height + line_spacing` 이다. `line_height` 만
+                // 쓰면 줄간격이 빠져 높이를 과소평가한다(20099369 3쪽 칸: 1300 + 390
+                // = 1690 HWPUNIT = 22.53px, 렌더 실측 22.5px).
+                wrapped_height +=
+                    crate::renderer::hwpunit_to_px(line.line_height + line.line_spacing, dpi);
+                last_line_spacing = crate::renderer::hwpunit_to_px(line.line_spacing, dpi);
+            }
+        }
+        // [#7418] 칸의 **마지막** 줄 뒤에는 이을 줄이 없어 그 줄간격은 칸을 채우지 않는다 —
+        // 행 높이 측정(`height_measurer`, 칸 마지막 줄의 말미 줄간격 제외)과 같은 규칙.
+        // 70833 pi=83 4행: 3줄 56.0(말미 5.33 포함) > 안높이 55.4 로 여백을 깎아 한/글보다
+        // 5.7px 왼쪽에서 시작하고 줄 끝이 달라졌다. 말미를 빼면 50.7 ≤ 55.4 다.
+        wrapped_height -= last_line_spacing.max(0.0);
+        if std::env::var_os("RHWP_DIAG_SHRINK").is_some() {
+            println!(
+                "D_SHRINK cell_w={cell_w:.1} avail={available:.1} inner_h={inner_height_px:.1} wrapped_h={wrapped_height:.1} max_line_w={max_line_w:.1}"
+            );
+        }
+        if wrapped_height <= inner_height_px && !stored_fits_fewer_lines {
+            return (pad_left, pad_right);
+        }
     }
     let min_pad = 1.0;
     let total_pad = pad_left + pad_right;
@@ -4202,38 +4345,6 @@ mod lineseg_compare_tests;
 mod re_sample_gen;
 #[cfg(test)]
 mod tests;
-
-/// 글머리표 문자열과 본문 내어쓰기 폭을 조판·배치에서 함께 사용한다.
-pub(crate) fn bullet_marker_text(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<String> {
-    let style = styles.para_styles.get(para.para_shape_id as usize)?;
-    if style.head_type != crate::model::style::HeadType::Bullet {
-        return None;
-    }
-    let bullet = styles
-        .bullets
-        .get(style.numbering_id.checked_sub(1)? as usize)?;
-    if bullet.bullet_char == '\u{FFFF}' {
-        return None;
-    }
-    let ch = map_pua_bullet_char(bullet.bullet_char);
-    Some(if bullet.text_distance > 0 {
-        format!("{} ", ch)
-    } else {
-        ch.to_string()
-    })
-}
-
-pub(crate) fn bullet_marker_width(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
-    let Some(text) = bullet_marker_text(para, styles) else {
-        return 0.0;
-    };
-    let style_id = para
-        .char_shapes
-        .first()
-        .map_or(0, |shape| shape.char_shape_id);
-    let lang = para.text.chars().next().map_or(0, detect_lang_category);
-    estimate_text_width(&text, &resolved_to_text_style(styles, style_id, lang))
-}
 
 /// 공유 프레임이 저장 수식 메트릭을 실제 부분 재조판하는 경로인지 판별한다.
 pub(crate) fn uses_remeasured_equation_frame(para: &Paragraph) -> bool {

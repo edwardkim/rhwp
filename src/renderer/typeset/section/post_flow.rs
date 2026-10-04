@@ -126,9 +126,18 @@ impl TypesetEngine {
                                     - placement.anchor_y).abs() <= self.dpi / 7200.0
                             })
                     });
+                    // 분할 생산자가 원본 셀의 저장 쪽 재시작으로 확정한 축이다.
+                    // 이전 host의 누적 원점과 달리 새 쪽의 0 기준은 후속 줄도 공유한다.
+                    let resolved_stored_page_frame = st.profile.hwpx_stored_layout()
+                        && st.vpos_page_base_stored
+                        && st.vpos_page_base == Some(0)
+                        && matches!(last, Some(PageItem::PartialTable {
+                            is_continuation: true, start_cut, ..
+                        }) if start_cut.len() == 1 && start_cut[0] > 0);
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
+                        && !resolved_stored_page_frame
                     {
                         // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);

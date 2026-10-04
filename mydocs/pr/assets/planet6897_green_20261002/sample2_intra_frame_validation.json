@@ -1,0 +1,79 @@
+{
+  "parent_head": "0aca00783",
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "cause": "HWPX 문단 내부 저장 쪽 경계의 고아 줄 되감기와 병합 프레임의 선언 공간 누락",
+  "cut_before": [
+    2,
+    3
+  ],
+  "cut_after": [
+    2,
+    4
+  ],
+  "native_target_percent": {
+    "2": 99.75557,
+    "6": 99.84829,
+    "7": 93.08766
+  },
+  "fresh_wasm_selected_percent": {
+    "2": 99.75557,
+    "6": 99.84829,
+    "7": 93.08766,
+    "21": 88.03303
+  },
+  "native_all_pages": 29,
+  "native_below90_pages": [
+    14,
+    20,
+    21,
+    28
+  ],
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm": 29
+  },
+  "off_canvas_count": 0,
+  "table_overlap_count": 0,
+  "focused_integration": {
+    "run": 112,
+    "passed": 112,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 12.5
+  },
+  "rejected_candidates": [
+    {
+      "reason": "일반 비병합 셀의 선언 최소높이까지 물리 프레임으로 강제",
+      "native_pages": 30
+    },
+    {
+      "reason": "기존 문단 간 이어받기에 원시 행 잔여를 다시 전달",
+      "sample2_table_overlap": 2,
+      "issue6551_off_canvas": 2,
+      "focused_pass": 111,
+      "focused_fail": 1
+    }
+  ],
+  "accepted_counterexample": {
+    "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+    "page_count": 46,
+    "off_canvas": 1,
+    "original_off_canvas": 1
+  },
+  "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+  "wasm_visual_exit_code": 1,
+  "wasm_visual_exit_reason": "Known p21 88.03303 percent hold; target p2/p6/p7 all above90. Selected4 raster, all29 export.",
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "source_code_sha256": {
+    "src/renderer/layout/table_layout.rs": "14f985e5d150a408414262a2bf2999eb1b72a8e9e9e290341c2fb664177694f1",
+    "src/renderer/layout/table_partial.rs": "5d4723fecff097c1510664f4fcb9e8b4e17491b16b70bc541fe8533efbe2af51",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "19c1a0f981b139ae6887f7deb603e80c8d6682aced4cdcaf9cd7dba9906bd630",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "729b7d0ce171f026833080011dde7693a8e291cb26779aa831ebc629a4a2196f"
+  },
+  "native_binary_sha256": "8970b8cc789b606ff75a395f101421014f8b2346873f1b2ff219be656f49af0f",
+  "wasm_binary_sha256": "2c21394aa04524ca11c2b99e372994964157a782b70b7d6250490332fed440a1",
+  "decision": "7쪽 보정 검증; 14/20/21/28쪽과 나머지 문서 및 최종 전체 검증은 미완료."
+}

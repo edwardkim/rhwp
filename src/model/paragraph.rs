@@ -147,6 +147,47 @@ pub struct Paragraph {
     /// splitting starts a continuation, and width reflow discards the old frames.
     #[serde(skip_serializing)]
     pub cell_vpos_reset: Option<bool>,
+    /// [#7436] 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함).
+    ///
+    /// 번호는 문서 순서의 계수기에서 정해지는데, 줄 나눔은 문단 하나만 보고 줄을 채운다.
+    /// 그래서 쪽 나누기 전에 문서 순서로 **한 번** 계산해 문단에 둔다
+    /// (`renderer::layout::assign_numbering_markers`). 줄 나눔은 이 문자열의 폭만큼 모든
+    /// 줄의 상자를 줄이고(행잉), 배치는 같은 문자열을 그린다 — 두 경로가 같은 값을 쓴다.
+    /// 파일에 실리는 값이 아니라 IR 안에서만 의미가 있다.
+    #[serde(skip_serializing)]
+    pub numbering_marker: NumberingMarker,
+}
+
+/// [`Paragraph::numbering_marker`] 의 상태.
+///
+/// `Debug` 는 값을 드러내지 않는다 — 문서의 `Debug` 문자열을 동일성 증거로 쓰는 검사
+/// (거부된 편집이 문서를 바꾸지 않았는가 등)에 편집·쪽 나누기마다 다시 계산되는 파생값이
+/// 끼면 없는 차이를 만든다. 값은 [`NumberingMarker::text`] 로 읽는다.
+#[derive(Default, Clone, PartialEq)]
+pub enum NumberingMarker {
+    /// 아직 계산하지 않았다 — 배치는 종전처럼 자기 계수기로 번호를 만든다.
+    #[default]
+    Unresolved,
+    /// 번호·개요 문단이 아니거나, 그려질 번호가 없다.
+    Absent,
+    /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
+    Text(String, MarkerHead),
+}
+
+/// 목록 마커(글머리표·번호)의 문단 머리 속성 — HWP5 표 41·44 의 속성·너비 보정·본문과의 거리.
+///
+/// 줄 나눔과 배치가 마커가 차지하는 영역을 같은 값으로 정하도록 번호 문자열과 함께 둔다.
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct MarkerHead {
+    /// 속성: bit0-1 정렬(0 왼쪽 · 1 가운데 · 2 오른쪽), bit2 인스턴스 폭,
+    /// bit3 자동 내어쓰기, bit4 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
+    pub attr: u32,
+    /// 너비 보정값 (HWPUNIT)
+    pub width_adjust: i16,
+    /// 본문과의 거리 (bit4 에 따라 % 또는 HWPUNIT)
+    pub text_distance: i16,
+    /// 마커 글자 모양 (`u32::MAX` 는 참조 없음 — 문단 첫 글자 모양을 따른다)
+    pub char_shape_id: u32,
 }
 
 /// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
@@ -161,6 +202,22 @@ pub enum SpaceMetric {
     HalfCell,
     /// KoPub 양쪽 정렬의 공백 압축 측정.
     KoPubJustified,
+}
+
+impl std::fmt::Debug for NumberingMarker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NumberingMarker(..)")
+    }
+}
+
+impl NumberingMarker {
+    /// 그려질 번호 문자열 — 계산 전이거나 번호가 없으면 `None`.
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            NumberingMarker::Text(text, _) => Some(text),
+            _ => None,
+        }
+    }
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
@@ -1689,6 +1746,8 @@ impl Paragraph {
             stored_text_partition_dirty: false,
             cell_format_vpos_dirty: self.cell_format_vpos_dirty,
             cell_vpos_reset: Some(false),
+            // 번호는 문서 순서로 다시 계산해야 하는 파생값이다 (#7436).
+            numbering_marker: NumberingMarker::Unresolved,
         }
     }
 
@@ -1886,8 +1945,10 @@ impl Paragraph {
         // 다른 부수 마커나 생략된 제어가 있는 스트림에는 이 완전 대응을 추정하지 않는다.
         if !self.text.is_empty()
             || !self.char_offsets.is_empty()
-            // HWPX 구역 머리의 재기준화된 축은 control 개수만으로 역산하지 않는다.
-            || self.hwpx_axis_shift != 0
+            // HWPX 구역 머리는 control 개수만으로 축을 역산하지 않는다.
+            // 저장 시작값 자체가 HWP5 축임을 증명하는 경우에만 동일한
+            // 완전 스트림의 control 위치를 재사용한다.
+            || (self.hwpx_axis_shift != 0 && !self.stored_text_starts_on_hwp5_axis())
             || !self.title_marks.is_empty()
             || !self.field_ranges.is_empty()
             || !self.orphan_field_ends.is_empty()
@@ -2202,6 +2263,18 @@ impl Paragraph {
             let lifted = raw + self.hwpx_axis_shift;
             lifted > self.char_count
                 || (!self.is_hwp5_slot_boundary(lifted) && self.is_hwp5_slot_boundary(raw))
+                // 완전한 제어 전용 스트림의 개체 줄을 보정하면 마지막
+                // 문단부호로 이동하는 경우다. 개체 시작 슬롯은 줄을 소유하지만
+                // 문단부호는 그 개체 줄의 시작이 될 수 없다.
+                || (self.text.is_empty()
+                    && self.char_offsets.is_empty()
+                    && self.char_count == self.controls.len() as u32 * 8 + 1
+                    && raw.is_multiple_of(8)
+                    && lifted >= self.char_count - 1
+                    && self
+                        .controls
+                        .get((raw / 8) as usize)
+                        .is_some_and(Control::is_logical_inline))
         })
     }
 

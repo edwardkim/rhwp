@@ -215,7 +215,7 @@ impl TypesetEngine {
 
     /// 실제 조각 예산으로 저장된 닫힌 개체 프레임의 유효성을 확인한다.
     /// 통째 배치와 이월 후 스캐너 진입이 이 결과를 함께 소비한다.
-    pub(super) fn query_closed_source_frame_placement(
+    pub(in crate::renderer::typeset) fn query_closed_source_frame_placement(
         &self,
         st: &TypesetState,
         paragraphs: &[crate::model::paragraph::Paragraph],

@@ -245,7 +245,7 @@ pub(super) fn effective_cap(
     cap: f64,
     ladder_total: f64,
     ladder_omits_spacing: bool,
-    session_grown_tac_total: Option<f64>,
+    measured_tac_floor: Option<f64>,
 ) -> f64 {
     let cap = if ladder_omits_spacing {
         ladder_total
@@ -255,7 +255,7 @@ pub(super) fn effective_cap(
     // [편집 세션] 셀 편집으로 자란 TAC 표는 실측 소비가 저장 줄 기반
     // cap 을 정당하게 넘는다 — cap 으로 되감으면 후행 문단이 성장분만큼
     // 안 밀려 쪽 하단을 넘긴다(셀 Enter 재현: 후행 안내 문단 잘림).
-    session_grown_tac_total.map_or(cap, |grown| cap.max(grown))
+    measured_tac_floor.map_or(cap, |grown| cap.max(grown))
 }
 
 pub(super) fn capped_bottom(

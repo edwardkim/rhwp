@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-03",
+  "branch": "review/planet6897-green-20261002",
+  "backup_branch": "backup/planet6897-green-pre-rebase-20261003",
+  "pre_rebase_head": "2f5c04e3f",
+  "new_base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "rebased_head": "d877e753ef59e3d625182b6b3cb771d457a450c6",
+  "replayed_commits": 105,
+  "same_order_and_subject": true,
+  "unchanged_patch_ids": 104,
+  "changed_patch_ids": [
+    {
+      "subject": "문서: planet6897 CI green 11개 PR 체리픽 사전 분석과 검토 계획",
+      "reason": "오늘할일 충돌에서 upstream #7487 기록과 검토 계획을 함께 보존"
+    }
+  ],
+  "local_devel_equals_upstream": true,
+  "native_build_exit": 0,
+  "suite_manifest_check_exit": 0,
+  "three_source_anomalies": {
+    "samples/issue5875/nested_table_text_caption.hwp": {
+      "pageCount": 11,
+      "offCanvasCount": 1,
+      "overlapCount": 0
+    },
+    "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+      "pageCount": 11,
+      "offCanvasCount": 1,
+      "overlapCount": 0
+    },
+    "samples/hwpx/exam_social.hwpx": {
+      "pageCount": 5,
+      "offCanvasCount": 0,
+      "overlapCount": 1
+    }
+  },
+  "prior_visual_status": "리베이스 전 증적 보존; 최신 head Native/WASM 전수는 아직 미실행",
+  "integration_pr_ready": false,
+  "first_reproduced_divergence": {
+    "source": "samples/issue5875/nested_table_text_caption.hwp",
+    "page": 2,
+    "row": 4,
+    "old_renderer": "d2ef8693a renderer with current parser diagnostic",
+    "old_end_cut": [
+      1,
+      4,
+      19
+    ],
+    "current_end_cut": [],
+    "old_used_px": 693.9,
+    "current_used_px": 1061.2,
+    "body_height_px": 1009.1,
+    "cause_status": "현재 전체 행 수용 경로가 실제 쪽 프레임을 넘음; 원인 분기 확정 및 구현은 미완료"
+  },
+  "focused_prior_failures": {
+    "exit_code": 100,
+    "run": 27,
+    "passed": 0,
+    "failed": 27,
+    "summary": "Summary [  72.091s] 27 tests run: 0 passed, 27 failed, 10321 skipped",
+    "same_test_names_as_before_rebase": true,
+    "failed_cases": [
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "rhwp::regression_suite_009 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_0"
+    ],
+    "log_sha256": "a3ce1b64edae3b161246f2a51bed86d40c28771e32b11dae6ecdbce8db87be5a"
+  },
+  "upstream_boundary_tests": {
+    "exit_code": 0,
+    "summary": "Summary [   0.182s] 4 tests run: 4 passed, 10344 skipped"
+  }
+}

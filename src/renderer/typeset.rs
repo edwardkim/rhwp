@@ -3164,6 +3164,7 @@ fn stored_body_reset_fragment_matches_current_flow(
     start_line: usize,
     break_line: usize,
     current_page_vpos_base: i32,
+    spacing_before: f64,
     dpi: f64,
 ) -> bool {
     paragraph::scan::stored_body_reset_fragment_matches_current_flow(
@@ -3172,6 +3173,7 @@ fn stored_body_reset_fragment_matches_current_flow(
         start_line,
         break_line,
         current_page_vpos_base,
+        spacing_before,
         dpi,
     )
 }
@@ -4323,7 +4325,12 @@ impl TypesetEngine {
                 hwpunit_to_px(table.common.height as i32, self.dpi),
                 ft.total_height,
             );
-        let owns_tac_band = ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line;
+        let unstored_cell_band = self
+            .tac_flow_query()
+            .single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            && ft.total_height > table_height + 0.5;
+        let owns_tac_band =
+            ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line || unstored_cell_band;
         let table_height = if owns_tac_band {
             if std::env::var("RHWP_5699_DBG").is_ok() {
                 eprintln!(
@@ -4497,7 +4504,9 @@ impl TypesetEngine {
             // 이 형상은 host LINE_SEG가 표의 물리 하단을 전혀 나타내지 않는다.
             // 표 뒤 일반 문단도 실제 표 하단을 기준으로 trailing spacing까지 포함해
             // 한 번 엄격하게 적합성을 판정해야 다음 쪽으로 올바르게 이월된다.
-            ft.strict_following_plain_text_fit || hwpx_rowbreak_tac_missing_owned_line,
+            ft.strict_following_plain_text_fit
+                || hwpx_rowbreak_tac_missing_owned_line
+                || unstored_cell_band,
             styles,
         );
         // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —
@@ -4874,6 +4883,10 @@ impl TypesetEngine {
                 placement.table_top = table_top;
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 placement.occupied_bottom
+            } else if signed_vertical_offset <= 0 {
+                // 흐름을 바로 전진시키는 표는 paint와 같이 아래 바깥여백까지
+                // 소비한다. 양수 오프셋의 배제 밴드는 후속 재개 경로가 소비한다.
+                table_bottom + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
             } else {
                 table_bottom
             };
@@ -5335,7 +5348,13 @@ impl TypesetEngine {
         st.advance_flow_by(host_h);
         st.mark_pre_emitted_host(para_idx);
         // [#2015] vert_offset 이중계상 보정용 host 높이 기록.
-        st.record_pre_emitted_host_height(para_idx, host_h);
+        let host_trailing_spacing = host_fmt
+            .line_spacings
+            .last()
+            .copied()
+            .unwrap_or(0.0)
+            .max(0.0);
+        st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
         true
     }
 

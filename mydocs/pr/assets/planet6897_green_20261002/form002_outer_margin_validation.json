@@ -1,0 +1,284 @@
+{
+  "status": "held: Native and fresh WASM each 10/10 pages, same four pages below 90; outer top margin stage verified",
+  "parent_commit": "1804718faa4fd538b2ac15d157dc79635ff2a7e7",
+  "source": "samples/hwpx/form-002.hwpx",
+  "reference": "output/pr-review/planet6897-green-20261002/form002-tofu/pdf-reexport/form-002-hwpx-2020.pdf",
+  "reference_sha256": "b60acefa200945d74a4f6c0d08037125941e128bb5dfe2f63351b9fd30cb69a6",
+  "independent_source_evidence": {
+    "outer_top_hu": 283,
+    "declared_first_fragment_height_hu": 69446,
+    "outer_bottom_hu": 283,
+    "source_frame_sum_hu": 70012,
+    "normalized_body_height_hu": 70014,
+    "pdf_table_top_px_all10": 98.292,
+    "before_native_top_px": 94.48,
+    "after_native_top_px_all10": 98.3
+  },
+  "native_pages": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "89.18899",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "89.18899",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "99.80518",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.80518",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "97.48501",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.48501",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "83.46681",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "83.46681",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "96.88500",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88500",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "99.99443",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.99443",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "96.20168",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.20168",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "66.25781",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "66.25781",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "96.88839",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88839",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "84.21871",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "84.21871",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "counterchecks": {
+    "tests_run": 42,
+    "passed": 42,
+    "failed": 0,
+    "log": "output/pr-review/planet6897-green-20261002/form002-frame-counterchecks.log"
+  },
+  "source_sha256": {
+    "src/renderer/float_placement.rs": "08596e68b0bab8dc5ab2abe368826e99783c341dafe4751b23c892968beaf7ed",
+    "src/renderer/layout/table_partial.rs": "8d85ecb07c43e7bab4c60e1531d48747dd930450a4a62fc96619de82e8a367ce",
+    "src/renderer/typeset/table/block/prepare.rs": "fccb2b06a61770d6aae28d8a39c54ecdc0f74b4c146699a41b7e144f5d75f9ad",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "26fa4a5c348e472aad94240015738060b9ac43c3d606ce3d222b3db06720ee33"
+  },
+  "no_new_tests": true,
+  "golden_updated": false,
+  "residual": "Nested instruction table height and subsequent paragraph/row spacing; low pages 1,4,8,10.",
+  "gates": [
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-prepare.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-workspace-build.log"
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-workspace-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-manifest.log"
+    }
+  ],
+  "fresh_wasm_build": {
+    "exit_code": 0,
+    "sha256": "b47ceadea2e369126397a5abf512eedf257d566a8a81d46f31fb67da71463e2c",
+    "studio_sha256_equal": true,
+    "type": "Mac local no-opt alternative; not Docker optimized"
+  },
+  "wasm_pages": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "89.18899",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "89.18899",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "99.80518",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.80518",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "97.48501",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.48501",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "83.46681",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "83.46681",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "96.88500",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88500",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "99.99443",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.99443",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "96.20168",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.20168",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "66.25781",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "66.25781",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "96.88839",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88839",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "84.21871",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "84.21871",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "native_wasm_tsv_equal": true,
+  "docs_links_exit_code": 0
+}

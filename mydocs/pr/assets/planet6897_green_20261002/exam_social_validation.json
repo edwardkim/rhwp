@@ -1,0 +1,28 @@
+{
+  "code_head": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
+  "source_pr": 7476,
+  "files": [
+    {
+      "path": "samples/hwpx/exam_social.hwpx",
+      "sha256": "c11b117dfc55606bb3ea703f9ea5b0a14481f7e70e918bc09ce4e202a04c9fd0"
+    },
+    {
+      "path": "pdf/exam_social-hwpx-revalidated-2020.pdf",
+      "sha256": "68a1c41533ebd0e3408799e642e70a2cd04ebf20bb599763e2c3a7331df00b95"
+    },
+    {
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "8336256570f54ee62860ebef333eb3475ac0c5d3551adb8dfd633695e0b016e1"
+    }
+  ],
+  "native_pages": 4,
+  "pdf_pages": 4,
+  "minimum_percent": 95.13497,
+  "below90": 0,
+  "focused_tests": {
+    "exit": 0,
+    "passed": 3,
+    "failed": 0
+  },
+  "contract": "shown jamo markers twice per page; trailing whitespace is geometry, not marker identity"
+}

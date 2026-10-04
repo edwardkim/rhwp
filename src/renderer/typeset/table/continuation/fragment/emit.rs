@@ -108,6 +108,68 @@ impl TypesetEngine {
                 partial_height += height - split_end_limit;
             }
         }
+        // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
+        // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
+        let resumed_stored_page_frame = is_continuation
+            && st.current_items.is_empty()
+            && st.current_height == 0.0
+            && !start_cut_is_block
+            && !row_cursor_is_nested
+            && start_cut.len() == 1
+            && start_cut[0] > 0
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && !st.profile.session_edited()
+            && st.profile.hwpx_stored_layout()
+            && !self.render_normalization.table_text_reflowed(table)
+            && table_footnotes.is_empty()
+            && layout_engine.cell_unit_stored_page_frame_origin(
+                &table.cells[0],
+                table,
+                styles,
+                start_cut[0],
+            ) == Some(0);
+        if resumed_stored_page_frame {
+            st.record_vpos_page_origin(Some(0));
+            st.record_vpos_origin_provenance(true);
+        }
+        // 종료 조각의 빈 저장 밴드도 같은 물리 행 높이로 예약·배치한다.
+        // 실제 컷이 새 원본 쪽 프레임에서 시작한 경우에만 선언 차이를 쓴다.
+        let single_cell_closing_frame = (is_continuation
+            && cursor_row == 0
+            && end_row == 1
+            && split_end_cut.is_empty()
+            && start_cut.len() == 1
+            && start_cut[0] > 0
+            && !st.profile.session_edited()
+            && st.profile.hwpx_stored_layout()
+            && !self.render_normalization.table_text_reflowed(table)
+            && table_footnotes.is_empty()
+            && table.cells.first().is_some_and(|cell| {
+                layout_engine.cell_unit_opens_stored_page_frame(cell, table, styles, start_cut[0])
+            }))
+        .then(|| {
+            input
+                .source
+                .paragraphs_all
+                .get(para_idx + 1)
+                .and_then(|next| {
+                    crate::renderer::float_placement::stored_single_cell_closing_frame_height(
+                        input.source.paragraph,
+                        next,
+                        table,
+                        self.dpi,
+                    )
+                })
+        })
+        .flatten();
+        if let Some(height) = single_cell_closing_frame
+            .filter(|height| *height >= partial_height && *height <= avail_for_rows)
+        {
+            end_row_height_override = Some(height);
+            partial_height = height;
+        }
         // #7095의 동일한 쪽 하단 상자를 저장 rowspan 경계에도 적용한다.
         // 내용 컷과 물리 빈 밴드를 분리하며 다음 조각은 실제 남은 행에서 재개한다.
         let stored_rowspan_frame = (is_continuation
@@ -146,14 +208,24 @@ impl TypesetEngine {
 
         // 저장 첫 조각의 상자는 내용 컷만으로 표현되지 않는 빈 하단 밴드도 소유한다.
         // 뒤 조각의 유닛은 그대로 남기며, 이 밴드를 내용 tail에서 차감하지 않는다.
-        let saved_opening_frame = layout_engine.saved_multirow_opening_frame_height(
-            table,
-            cursor_row,
-            end_row,
-            start_cut,
-            &split_end_cut,
-            styles,
-        );
+        let saved_block_opening_frame = (!is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty())
+        .then(|| split_block_start.filter(|row| *row + 1 == end_row))
+        .flatten()
+        .and_then(|row| {
+            layout_engine.saved_block_reset_opening_frame_height(table, row, &split_end_cut, styles)
+        });
+        let saved_opening_frame = layout_engine
+            .saved_multirow_opening_frame_height(
+                table,
+                cursor_row,
+                end_row,
+                start_cut,
+                &split_end_cut,
+                styles,
+            )
+            .or(saved_block_opening_frame);
         // 마지막 행의 빈 물리 밴드는 다음 문단 원점과 전체 저장 행합으로 입증한다.
         // 첫 프레임과 종료 프레임은 같은 선언 공간을 나누며 내용 컷은 그대로 보존한다.
         let saved_closing_frame = (!st.profile.session_edited()
@@ -176,6 +248,20 @@ impl TypesetEngine {
                 })
         })
         .flatten();
+        // 종료 행의 원본 프레임은 현재 컷의 내용 높이와 독립적으로 닫힌다.
+        // 마지막 한 행의 이어받기일 때 동일 높이를 예약과 paint에 전달한다.
+        if is_continuation
+            && cursor_row + 1 == end_row
+            && split_end_cut.is_empty()
+            && start_cut.iter().any(|&cut| cut > 0)
+        {
+            if let Some(height) = saved_closing_frame
+                .filter(|height| *height >= partial_height && *height <= avail_for_rows)
+            {
+                end_row_height_override = Some(height);
+                partial_height = height;
+            }
+        }
         // 원본 누적 좌표가 닫는 첫 물리 프레임은 내용 컷과 별도로 소유한다.
         // 첫 조각과 이어받기 조각에 같은 행 높이 경계를 전달한다.
         let cumulative_opening_frame = (!is_continuation
@@ -261,9 +347,8 @@ impl TypesetEngine {
                 }
             }
         }
-        // A paragraph-local zero origin alone is not a page boundary. When
-        // the selected row has no ordinary saved reset, corroborate its closed
-        // two-line source frame with the host's next original page rewind.
+        // 문단 내부 원점0만으로는 쪽 경계를 입증하지 못한다. 일반 저장 리셋이 없으면
+        // 호스트 뒤 원문의 쪽 원점 되감김으로 닫힌 두 줄 프레임을 확인한다.
         let opening_frame_has_source_boundary =
             layout_engine.row_cut_ends_at_original_plain_text_reset(
                 table,
@@ -285,17 +370,45 @@ impl TypesetEngine {
                             & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                         && b.vertical_pos >= 0 && b.vertical_pos < a.vertical_pos)
                 });
+        // 본문을 닫는 원본 상자는 폭0 앵커의 구역 설정과 무관하게
+        // 첫 물리 프레임과 이어받는 행의 선언 잔여를 함께 소유한다.
+        let body_filling_source_frame =
+            crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                input.source.paragraph,
+                table,
+                st.layout.body_area.height,
+                self.dpi,
+                st.profile.hwpx_stored_layout(),
+                st.profile.session_edited(),
+            );
         let first_fragment_blank_band = !is_continuation
-            && opening_frame_has_source_boundary
-            && split_block_start.is_none()
+            && (opening_frame_has_source_boundary
+                || saved_block_opening_frame.is_some()
+                || body_filling_source_frame)
+            && (split_block_start.is_none() || saved_block_opening_frame.is_some())
             && end_row_height_override.is_none()
             && std::ptr::eq(table, row_geometry_table)
             && (crate::renderer::float_placement::object_only_saved_table_anchor(
                 input.source.paragraph,
                 table,
-            ) || saved_closing_frame.is_some())
+            ) || body_filling_source_frame
+                || saved_closing_frame.is_some()
+                || saved_block_opening_frame.is_some()
+                || (input.source.paragraph.text.is_empty()
+                    && matches!(
+                        input.source.paragraph.controls.as_slice(),
+                        [crate::renderer::typeset::Control::Table(_)]
+                    )
+                    && layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                        table,
+                        end_row - 1,
+                        &split_end_cut,
+                        styles,
+                    )))
             && saved_opening_frame.is_some_and(|frame_height| {
-                frame_height > partial_height + 0.5
+                (frame_height > partial_height + 0.5
+                    || (body_filling_source_frame && frame_height >= partial_height)
+                    || saved_block_opening_frame.is_some())
                     && frame_height <= avail_for_rows + header_overhead
             });
         if first_fragment_blank_band {
@@ -349,9 +462,8 @@ impl TypesetEngine {
                     });
             }
         }
-        // The opening source box may end inside its last line's trailing
-        // spacing. Preserve all cut units, but reserve and paint the same
-        // declared physical frame rather than extending it to the page floor.
+        // 원본 첫 상자가 마지막 줄의 뒤 간격 안에서 끝나면 모든 컷 유닛을 보존하고
+        // 예약과 paint가 같은 선언 물리 프레임을 소비한다.
         let two_frame_successor_origin =
             input
                 .source
@@ -384,10 +496,8 @@ impl TypesetEngine {
             partial_height = hwpunit_to_px(table.common.height as i32, self.dpi);
             end_row_height_override = Some(partial_height);
         }
-        // A terminal physical box may retain blank space after its last unit.
-        // Accept that space only when the accumulated painted boxes plus this
-        // remainder equal cellSz, and the successor's original line closes the
-        // complete outer box. The same plan owns the successor spacing.
+        // 종료 상자의 마지막 유닛 뒤 빈 공간은 누적 상자와 잔여의 합이 cellSz를 닫고
+        // 다음 원본 줄이 전체 바깥 상자를 닫을 때만 수용한다. 같은 계획이 후속 간격을 소유한다.
         let mut terminal_saved_successor_closure = false;
         if single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
@@ -454,15 +564,6 @@ impl TypesetEngine {
                     });
             }
         }
-        let captioned_object_frame = self
-            .query_captioned_column_rowbreak_placement(
-                st,
-                input.source.paragraph,
-                table,
-                host_before_overhead,
-                0.0,
-            )
-            .is_some();
         let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
             if let Some(mut placement) = fragment_placement {
                 // 실제 조각의 컷/쪽 소유로 바뀌었으므로 전체 프레임의 후속 원점은 재사용하지 않는다.
@@ -471,15 +572,19 @@ impl TypesetEngine {
                 }
                 placement.occupied_bottom = placement.table_top
                     + owner_height
-                    + if captioned_object_frame {
-                        if terminal {
-                            terminal_outer_bottom_overhead
-                        } else {
-                            fragment_outer_bottom_overhead
-                        }
+                    + if terminal {
+                        terminal_outer_bottom_overhead
                     } else {
-                        hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
+                        // 실제로 예약한 조각 뒤 여백만 후속 흐름에 전달한다.
+                        // 바깥 위 여백의 재개가 아래 여백 재개까지 뜻하지는 않는다.
+                        fragment_outer_bottom_overhead
                     };
+                if terminal
+                    && terminal_outer_bottom_overhead > 0.0
+                    && st.prefilled_line_prefixes.contains_key(&(para_idx + 1))
+                {
+                    placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
+                }
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(
                     placement.occupied_bottom
@@ -777,11 +882,19 @@ impl TypesetEngine {
                         .iter()
                         .find(|seg| !is_synthetic_line_seg(seg))
                         .map(|seg| {
+                            // [#7418] 저장 앵커는 문단 상단이다. host 글을 선방출했으면
+                            // `vert_offset_overhead` 는 host 뒤 흐름 기준이라, 같은 기준으로
+                            // 맞추려면 앵커에도 host 높이를 더한다(156403546 3쪽: 섞이면 첫
+                            // 상자가 host 만큼 커져 끝 조각의 1×1 칸 연장 16.8px 가 사라졌다).
                             hwpunit_to_px(
                                 seg.vertical_pos
                                     .saturating_sub(st.vpos_page_base.unwrap_or(0)),
                                 self.dpi,
-                            )
+                            ) + st
+                                .pre_emitted_host_heights
+                                .get(&input.source.para_index)
+                                .copied()
+                                .unwrap_or(0.0)
                         })
                         .filter(|&anchor| anchor >= st.current_height)
                         .unwrap_or(st.current_height)
@@ -878,6 +991,30 @@ impl TypesetEngine {
             .or(complete_block_next_height)
             .or(saved_closing_frame.filter(|_| first_fragment_blank_band))
             .or_else(|| {
+                // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
+                // 본문을 닫는 noAdjust 원본은 문단 간 저장 쪽 경계도 같은
+                // 첫 프레임에서 뺀 물리 잔여를 소유한다. 일반 내용 컷은 제외한다.
+                let base_remaining = (|| {
+                if !first_fragment_blank_band
+                    || !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table, end_row - 1, &next_cut, split_block_start, styles,
+                    )
+                    || !(saved_block_opening_frame.is_some()
+                        || (body_filling_source_frame
+                            && table.raw_table_record_attr & 0x08 != 0
+                            && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                                table, end_row - 1, start_cut, &next_cut, styles,
+                            ))
+                        || layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                            table, end_row - 1, &next_cut, styles,
+                        ))
+                { return None; }
+                let first = end_row_height_override?;
+                let raw = *table.get_raw_row_heights().get(end_row.checked_sub(1)?)?;
+                let remaining = hwpunit_to_px(raw as i32, self.dpi) - first;
+                (remaining > 0.0).then_some(remaining)
+                })();
+                base_remaining.or_else(|| {
                 // A stored opening frame owns blank space without consuming
                 // the next frame's units. Its source row minimum is shared
                 // with scan and paint through the continuation cursor.
@@ -910,6 +1047,7 @@ impl TypesetEngine {
                 let content =
                     layout_engine.row_cut_content_height(table, row, &next_cut, &[], styles);
                 (remaining > content + 0.5).then_some(remaining)
+                })
             })
             .or_else(|| end_row_height_override
             .filter(|_| !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none())

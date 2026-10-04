@@ -2024,6 +2024,10 @@ impl SvgRenderer {
     }
 
     fn render_image_node(&mut self, img: &ImageNode, bbox: &super::render_tree::BoundingBox) {
+        // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
+        if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+            return;
+        }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
         // 한컴 한글 2024 viewer 정합 — 외부 file 못 찾는 경우 점선 사각형 + 깨진 image 아이콘.
         let data = match img.data {
@@ -3594,6 +3598,20 @@ impl Renderer for SvgRenderer {
                         continue;
                     }
                 }
+                if let Some((cx, cy, rx, ry)) =
+                    super::legacy_hft_bullet_geometry(cluster_str, style)
+                {
+                    let char_x = x + char_positions[*char_idx];
+                    self.output.push_str(&format!(
+                        "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
+                        char_x + cx, y + cy, rx, ry, color,
+                    ));
+                    self.output.push_str(&format!(
+                        "<text x=\"{:.4}\" y=\"{:.4}\" fill-opacity=\"0\">∙</text>\n",
+                        char_x, y,
+                    ));
+                    continue;
+                }
                 if is_middle_dot(cluster_str) {
                     let adv = cluster_advance(*char_idx, cluster_str);
                     let cx = x + char_positions[*char_idx] + adv / 2.0;
@@ -4333,6 +4351,13 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "함초롱돋움" => vec!["함초롱돋움", "HCR Dotum"],
         "한컴바탕" => vec!["한컴바탕", "함초롬바탕", "HCR Batang"],
         "한컴돋움" => vec!["Haansoft Dotum", "한컴돋움", "함초롬돋움", "HCR Dotum"],
+        // 설치본의 한글 family와 영문 full name을 함께 연결한다.
+        "한컴 고딕" | "Hancom Gothic" => {
+            vec!["한컴 고딕", "Hancom Gothic", "Hancom Gothic Regular"]
+        }
+        "한컴 윤고딕 240" | "Haan YGodic 240" => {
+            vec!["한컴 윤고딕 240", "Haan YGodic 240"]
+        }
         "맑은 고딕" => vec!["맑은 고딕", "Malgun Gothic"],
         "바탕" => vec!["바탕", "Batang"],
         "돋움" => vec!["돋움", "Dotum"],
@@ -4412,6 +4437,7 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
         {
             vec!["HCR Dotum Bold", "함초롬돋움 Bold"]
         }
+        "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold", "한컴 고딕 Bold"],
         "맑은 고딕" | "Malgun Gothic" => vec!["Malgun Gothic Bold", "맑은 고딕 Bold"],
         _ => vec![],
     }
@@ -4420,6 +4446,8 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
 /// 폰트명 → 알려진 파일명 매핑 (HWP/한컴/MS 폰트)
 fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        // 실제 설치 face가 있어도 파일명 누락으로 Noto를 원 family에 내장하지 않는다.
+        "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Regular.ttf"],
         // 한컴 PDF의 함초롬바탕은 HCR Batang이다. HBATANG.TTF는 다른
         // Haansoft Batang이므로 HCR 설치 파일을 먼저 찾는다 (#7265 시각 대조).
         "함초롬바탕" | "함초롱바탕" => {
@@ -4440,6 +4468,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         // 한컴 Windows 설치본의 이름 테이블은 한글 face와 아래 파일명을
         // 연결한다. 실제 face를 공급해도 영문 파일명 때문에 대체 글꼴을 고르면 안 된다.
         "한컴 윤고딕 230" | "Haan YGodic 230" => vec!["HANYGO230.ttf"],
+        "한컴 윤고딕 240" | "Haan YGodic 240" => vec!["HANYGO240.ttf"],
         // 한컴 2020 PDF는 legacy 한양중고딕을 HCR Dotum으로 출력한다. portable
         // SVG의 full embed도 같은 대체 face를 넣어야 local() 미설치/Snap sandbox
         // 환경에서 기준 PDF와 다른 HYGothic·Noto 폭으로 재조판하지 않는다.
@@ -4489,6 +4518,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
 /// 별도 선언해야 글리프 폭과 획 두께가 유지된다.
 fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
     match font_name {
+        "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold.ttf"],
         "함초롬바탕" | "함초롱바탕" | "한컴바탕" | "휴먼명조" => {
             vec!["HANBatangB.ttf", "HBATANGB.TTF"]
         }

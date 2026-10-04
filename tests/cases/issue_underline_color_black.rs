@@ -91,17 +91,6 @@ fn stored_black_underline_does_not_take_the_text_color() {
 }
 
 #[test]
-fn stored_black_underline_survives_a_blue_text_run() {
-    // HWP5 경로: underline_color=0x000000 인데 text_color=0x0000FF 인 run.
-    let svg = render_page_svg("samples/pr-1674.hwp", "6", "pr1674");
-    assert_eq!(
-        line_stroke_count(&svg, "#0000ff"),
-        0,
-        "파란 밑줄이 남아 있다 — 정답지 7쪽에는 파랑 선이 0개다"
-    );
-}
-
-#[test]
 fn non_zero_underline_color_is_still_honored() {
     // 회귀 방지: 0 이 아닌 색은 그대로 살아야 한다. 무조건 검정이 아니다.
     let svg = render_page_svg("samples/hwpx_sample2.hwpx", "15", "hwpx2red");

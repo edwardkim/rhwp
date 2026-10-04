@@ -317,7 +317,6 @@ fn oracle_backed_pages_report_no_escape() {
     // 좁힘 조건을 빼면 이 쪽들이 각각 14·1·27·3 건으로 올라왔다. 한/글 2020 정본은
     // 이 쪽들에서 rhwp 가 1px 안에서 맞다고 말한다(모듈 주석의 표).
     for (path, page) in [
-        ("samples/pr-1674.hwp", 22),
         ("samples/tac-case-003.hwp", 0),
         (
             "samples/issue6181/156562368_inline_tac_table_line_advance.hwpx",

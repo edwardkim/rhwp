@@ -168,6 +168,11 @@ pub(in crate::renderer::typeset) fn scan_lines(
                         cursor_line,
                         break_line,
                         current_page_vpos_base.unwrap_or(0),
+                        if cursor_line == 0 {
+                            fmt.spacing_before
+                        } else {
+                            0.0
+                        },
                         dpi,
                     )
             });
@@ -269,6 +274,7 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     start_line: usize,
     break_line: usize,
     current_page_vpos_base: i32,
+    spacing_before: f64,
     dpi: f64,
 ) -> bool {
     let only_bodyless_notes = !para.controls.is_empty() && para.controls.iter().all(|control| {
@@ -313,7 +319,9 @@ pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_f
     else {
         return false;
     };
-    if !saved_line_is_anchored_to_current_flow(start_bounds, page.current_height) {
+    // 저장 줄의 top은 문단 앞 간격 뒤의 글줄 원점이다. 실제 분할 배치와
+    // 같은 원점을 비교하며, 이어지는 조각은 앞 간격을 다시 소비하지 않는다.
+    if !saved_line_is_anchored_to_current_flow(start_bounds, page.current_height + spacing_before) {
         return false;
     }
 

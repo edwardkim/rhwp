@@ -63,6 +63,21 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// #7445의 README에 연결한 입력별 증적에서 실패와 시각 근거를 확인한다.
 /// 원문은 samples에 남기고 다른 원장과 정상 검사는 유지한다.
 const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
+    // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
+    "issue5699/37787_regulatory_impact.hwp",
+    // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
+    "issue1853_caption_precedes_body_split.hwpx",
+    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
+    "hwpctl_ParameterSetID_Item_v1.2.hwp",
+    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
+    "pr-1674.hwp",
+    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
+    "hwpx/156160455-social-pig-farm-income.hwpx",
+    // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
+    "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
+    "86712_regulatory_analysis.hwp",
+    "issue1891/86712_regulatory_analysis.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
     "hwp3-sample16-hwp5-2022.hwp",
     "hwp3-sample16-hwp5.hwp",

@@ -428,6 +428,15 @@ fn numbering_head_align_str(attr: u32) -> &'static str {
     }
 }
 
+/// [#7418] 문단 머리 정보 속성 bit4 — 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
+fn para_head_text_offset_type_str(attr: u32) -> &'static str {
+    if (attr >> 4) & 0x01 != 0 {
+        "HWPUNIT"
+    } else {
+        "PERCENT"
+    }
+}
+
 // [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
@@ -842,7 +851,7 @@ fn write_numbering<W: Write>(
             ("useInstWidth", use_inst_width),
             ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
-            ("textOffsetType", "PERCENT"),
+            ("textOffsetType", para_head_text_offset_type_str(h.attr)),
             ("textOffset", text_offset_s.as_str()),
             ("numFormat", num_format),
             ("charPrIDRef", char_pr_id_ref_s.as_str()),
@@ -919,11 +928,17 @@ fn write_bullet<W: Write>(
             "hh:paraHead",
             &[
                 ("level", "0"),
-                ("align", "LEFT"),
-                ("useInstWidth", "0"),
-                ("autoIndent", "1"),
+                ("align", numbering_head_align_str(b.attr)),
+                (
+                    "useInstWidth",
+                    if (b.attr >> 2) & 0x01 != 0 { "1" } else { "0" },
+                ),
+                (
+                    "autoIndent",
+                    if (b.attr >> 3) & 0x01 != 0 { "1" } else { "0" },
+                ),
                 ("widthAdjust", &b.width_adjust.to_string()),
-                ("textOffsetType", "PERCENT"),
+                ("textOffsetType", para_head_text_offset_type_str(b.attr)),
                 ("textOffset", &b.text_distance.to_string()),
                 ("numFormat", "DIGIT"),
                 ("charPrIDRef", &b.char_shape_id.to_string()),
@@ -1061,10 +1076,10 @@ fn write_para_pr<W: Write>(
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
     //
     // [#4898] 단, 원본 HWPX 가 switch 없이 평문으로 적었으면 그 표기를 지킨다. 한글은
-    // case(HwpUnitChar) 를 우선 읽는데, 평문 저장값을 case 에 넣으며 절반으로 줄이면
-    // 한글이 보는 여백·고정 줄간격이 절반이 돼 조판이 밀리고 쪽수가 늘어난다.
+    // 패키지 xmlVersion 1.4 이상의 물리 여백만 공통 IR의 절반으로 되쓴다.
+    // 고정 줄간격은 여백과 별도 계약이므로 기존 평문 저장값을 유지한다.
     if ps.hwpx_plain_para_margin {
-        write_para_margin(w, ps, false)?;
+        write_para_margin(w, ps, ps.hwpx_plain_para_margin_physical)?;
         write_para_line_spacing(w, ps, false)?;
     } else {
         write_para_margin_switch(w, ps)?;

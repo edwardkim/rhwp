@@ -392,6 +392,24 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub hft_hangul_face: bool,
+    /// [#7418] 이 run 이 한글 슬롯이고 글자 모양이 `ascii_punct_latin_slot` 이면, ASCII
+    /// 구두점을 잴 때 쓸 **영문 슬롯**의 기본 메트릭. run 을 쪼개지 않고 글자 단위로 폭만
+    /// 영문 슬롯으로 잰다(#7051 HFT 반각 ASCII 와 같은 자리). 양쪽 정렬 여분 등 배치가 얹는
+    /// 값은 run 의 것을 그대로 쓴다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
+}
+
+/// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LatinSlotMetrics {
+    pub font_family: String,
+    pub metric_font_family: Option<String>,
+    pub font_metric_trusted: bool,
+    pub letter_spacing: f64,
+    pub ratio: f64,
 }
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -574,6 +592,7 @@ impl Default for TextStyle {
             font_space_em: None,
             layout_half_space: false,
             hft_hangul_face: false,
+            ascii_punct_latin: None,
         }
     }
 }
@@ -994,6 +1013,35 @@ pub fn svg_arc_to_beziers(
     }
 
     result
+}
+
+/// 한양 HFT 불릿의 원 윤곽을 대체 TTF의 작은 수학 점과 구분한다.
+/// 한컴 PDF Type3 /HFT8: 중심 (500,352), 가로 반지름123.75, 세로123 /1000em.
+/// 명시적으로 검증된 TrueType face와 다른 기호·글꼴은 원 글리프를 유지한다.
+pub(crate) fn legacy_hft_bullet_geometry(
+    text: &str,
+    style: &TextStyle,
+) -> Option<(f64, f64, f64, f64)> {
+    let face = style.font_family.split(',').next().unwrap_or("").trim();
+    if text != "∙"
+        || style.font_metric_trusted
+        || !matches!(face, "한양신명조" | "HanyangSinMyeongJo")
+    {
+        return None;
+    }
+    let size = style.font_size
+        * if style.superscript || style.subscript {
+            SCRIPT_FONT_SCALE
+        } else {
+            1.0
+        };
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    Some((
+        size * ratio * 0.5,
+        -size * 0.352,
+        size * ratio * 0.12375,
+        size * 0.123,
+    ))
 }
 
 /// 렌더러 트레이트 (모든 백엔드가 구현)
@@ -1827,6 +1875,43 @@ pub(crate) fn tac_object_stack_line_metrics(
         lines.push((line_h, leading));
     }
     (!lines.is_empty()).then_some(lines)
+}
+
+/// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
+///
+/// 조성기는 글자 없이 표 하나만 든 문단에 줄을 만들지 않는다. 표 높이는 표 배치
+/// (`place_table_with_text` 의 `table_total_height`, 바깥 여백 포함)가 따로 계상하지만, 그 줄의
+/// **줄간격**은 문단 형식 높이에만 실리므로 줄이 없으면 통째로 빠졌다. 한/글 2024 합성 문서
+/// (`samples/issue7418/tac_host_line_synthetic`, 글자 10·17pt × 줄간격 100·160·200% × 표 높이
+/// 1716·3014)의 저장 줄은 12조합 모두 `vertsize = 표 높이 + 바깥 여백`,
+/// `spacing = 글자 크기 × (줄간격 − 100%)` 이다 — 그림·도형 줄(`#7079`)과 같은 leading 이다.
+/// 높이는 바깥 여백을 뺀 표 높이다(여백은 `tac_outer_margin_v_px` 가 예산에 더한다).
+pub(crate) fn tac_table_host_line_metrics(
+    para: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+) -> Option<(f64, f64)> {
+    use crate::model::control::Control;
+    if !para_has_no_stored_line_segs(para) || !para.text.is_empty() {
+        return None;
+    }
+    let height = para
+        .controls
+        .iter()
+        .filter_map(|c| match c {
+            Control::Table(t) if t.common.treat_as_char => {
+                Some(hwpunit_to_px(t.common.height as i32, dpi))
+            }
+            _ => None,
+        })
+        .fold(None, |acc: Option<f64>, h| {
+            Some(acc.map_or(h, |a| a.max(h)))
+        })?;
+    Some((
+        height,
+        tac_object_stack_line_leading_px(para, styles, para_style),
+    ))
 }
 
 /// [#7079] 합성 TAC 줄의 leading — 호스트 문단의 글자 크기와 문단 줄간격에서 나온다.
@@ -2959,6 +3044,45 @@ fn format_hanja_number(n: u16) -> String {
         large_unit += 1;
     }
     result
+}
+
+/// [#7470] 빈 host 줄이 문단 기준 자리차지 개체의 **띠 안에 흡수**되는가.
+///
+/// 한/글은 비TAC · `vert=Para` · TopAndBottom 개체에 줄 폭 전체가 막힌 host 줄을
+/// `segment_width = 0` 으로 저장하고, 그 줄의 높이·줄간격을 개체 띠와 별도로 전진하지 않는다
+/// (다음 문단 저장 vpos − 현 vpos = 개체 높이). `sw > 0`(개체 옆에 줄 폭이 남음)인 빈 host 는
+/// 종전처럼 개체 뒤에 host 한 줄을 더 전진한다(pr-149, Task #683).
+///
+/// ```text
+///   156636617 pi74  그림 h=20409  host lh=1100 ls=772 sw=0      다음 vpos − 현 vpos = 20409
+///   memo_field pi331 그림 h=20218 host lh=1200 ls=480 sw=0      다음 vpos − 현 vpos = 20218
+///   pr-149          그림 h=15696  host lh=1000 ls=600 sw=42520  host 한 줄 추가 전진
+/// ```
+///
+/// 조판과 배치가 같은 판별을 쓰도록 한 곳에 둔다. 미주 흐름은 별도 조판 경로라 배치도 본문 단에서만
+/// 이 판별을 쓴다.
+pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    // 띠가 앵커에서 시작할 때만 host 줄이 띠 안에 든다. 양수 세로 오프셋이면 host 줄은 개체 위에
+    // 따로 놓인다(PrEP 3.214: `sw=0` 이지만 오프셋 504HU, 한/글 캡션 위치는 종전 전진과 일치).
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) != 0
+    {
+        return false;
+    }
+    let has_visible_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+    if has_visible_text || para.line_segs.len() != 1 {
+        return false;
+    }
+    let seg = &para.line_segs[0];
+    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && seg.segment_width == 0
 }
 
 /// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.

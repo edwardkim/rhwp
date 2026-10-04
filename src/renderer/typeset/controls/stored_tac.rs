@@ -30,11 +30,11 @@ pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
     pub control_index: usize,
     pub inline: InlineBoxPlacement,
     pub end: f64,
+    pub rebase_line_origin: bool,
 }
 
-/// A TAC line remains an independent flow owner when a coanchored float starts
-/// outside its saved band. Commit just this control, so the float still takes
-/// the ordinary split path. Fit and paint consume the same saved pen and end.
+/// 같은 문단의 float가 저장 밴드 밖에서 시작해도 TAC 줄은 독립된 흐름을 소유한다.
+/// 이 개체만 확정하여 float의 일반 분할 경로를 보존하고 fit과 paint는 같은 원점·끝을 쓴다.
 pub(super) fn prepare_coanchored_first_line(
     control_index: usize,
     para: &Paragraph,
@@ -117,11 +117,12 @@ pub(super) fn prepare_coanchored_first_line(
             advance_end: Some(end),
         },
         end,
+        rebase_line_origin: false,
     })
 }
 
-/// 저장 좌표가 없는 단일 개체 줄은 현재 흐름에서 물리 점유를 확정한다.
-/// 원점과 후행 간격을 같은 결과로 넘겨 저장 사다리의 차감·상한을 재적용하지 않는다.
+/// 단일 개체 줄의 물리 점유를 같은 배치 결과로 전달한다.
+/// 실제 저장 줄은 다음 원점이 닫는 상자만 수용하며, 원점·여백·뒤 간격을 한번씩 소비한다.
 pub(super) fn prepare_computed(
     para_idx: usize,
     para: &Paragraph,
@@ -159,7 +160,32 @@ pub(super) fn prepare_computed(
         && page.current_height < 1.0
         && saved_top > 0.0
         && saved_top <= fmt.spacing_before + 0.5;
-    if !computed && !saved_column_top {
+    // 편집되지 않은 원본 한 줄과 후속 원점이 상자를 정확히 닫으면
+    // 바깥 여백을 버리는 일반 단일 TAC 경로로 되돌아가지 않는다.
+    let closed_stored_line = !computed
+        // 후속 원점과의 연결만으로 쪽·단의 좌표축이 확립되지는 않는다.
+        && page
+            .vpos_page_base
+            .or(page.stored_table_column_base)
+            .or(page.vpos_lazy_base)
+            .is_some()
+        && !para.stored_text_partition_is_dirty()
+        && source_vpos == seg.vertical_pos
+        && fmt.spacing_before == 0.0
+        && fmt.spacing_after == 0.0
+        && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next_para.is_some_and(|next| {
+            !next.stored_text_partition_is_dirty()
+                && next.line_segs.first().is_some_and(|after| {
+                    after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && after.vertical_pos > seg.vertical_pos
+                        && i64::from(after.vertical_pos)
+                            == i64::from(seg.vertical_pos)
+                                + i64::from(seg.line_height)
+                                + i64::from(seg.line_spacing)
+                })
+        });
+    if !computed && !saved_column_top && !closed_stored_line {
         return None;
     }
     if !table.common.treat_as_char
@@ -213,22 +239,43 @@ pub(super) fn prepare_computed(
                 )
             })
             .unwrap_or(flow_origin)
+    } else if closed_stored_line {
+        flow_origin.max(
+            page.vpos_col_anchor
+                + hwpunit_to_px(
+                    seg.vertical_pos.saturating_sub(
+                        page.vpos_page_base
+                            .or(page.stored_table_column_base)
+                            .or(page.vpos_lazy_base)
+                            .unwrap_or(0),
+                    ),
+                    dpi,
+                ),
+        )
     } else {
         flow_origin
     };
-    // 다음 가시 문단의 저장 시작이 이 줄의 끝과 정확히 이어지면
-    // 후행 간격 전량이 그 문단 앞에 있다. 빈 문단 경계에서는 일반 TAC
-    // 조판처럼 양쪽이 간격을 나누어 갖는다.
+    // 다음 줄의 시작이 이 줄의 끝과 정확히 이어지면 빈 글줄도
+    // 후행 간격 전량 뒤에 놓인다. 글자 유무로 간격을 반감하면
+    // 확정 계획 끝에서 역산한 기준축과 이후 본문 원점이 어긋난다.
     let full_trailing_spacing = next_para.is_some_and(|next| {
-        super::super::para_has_non_whitespace_text(next)
-            && next.line_segs.first().is_some_and(|next_seg| {
-                seg.vertical_pos
+        next.line_segs.first().is_some_and(|next_seg| {
+            next_seg.vertical_pos > seg.vertical_pos
+                && seg
+                    .vertical_pos
                     .saturating_add(seg.line_height)
                     .saturating_add(seg.line_spacing)
                     == next_seg.vertical_pos
-            })
+        })
     });
-    let trailing_fraction = if full_trailing_spacing { 1.0 } else { 0.5 };
+    // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
+    // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.
+    // 저장 좌표가 없는 합성 줄에서만 기존 빈 문단 간격 분배를 적용한다.
+    let trailing_fraction = if saved_column_top || closed_stored_line || full_trailing_spacing {
+        1.0
+    } else {
+        0.5
+    };
     let end = origin
         + height
         + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
@@ -245,6 +292,7 @@ pub(super) fn prepare_computed(
             advance_end: Some(end),
         },
         end,
+        rebase_line_origin: !closed_stored_line,
     })
 }
 
@@ -280,9 +328,8 @@ pub(super) fn prepare(
         && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
         && page.side_wrap_empty
     {
-        // A saved single object line owns its caption and outer margins.
-        // Whitespace on that same line does not create another text line;
-        // the original owner and complete height below must prove this.
+        // 저장 단일 개체 줄은 캡션과 바깥 여백도 소유한다. 같은 줄의 공백은
+        // 별도 글줄이 아니며 원본 소속과 전체 높이를 아래에서 확인한다.
         let single_saved_object_line = || {
             if !para.text.chars().all(char::is_whitespace)
                 || para.stored_text_partition_is_dirty()
@@ -323,13 +370,13 @@ pub(super) fn prepare(
             {
                 return None;
             }
-            let trailing = if crate::renderer::composer::native_tac_next_line_full_spacing(
+            let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
                 para,
                 next_para,
                 fmt.spacing_after,
                 next_spacing_before,
                 seg,
-                page.profile.hwp5_stored_pagination_layout(),
+                page.profile,
                 dpi,
             ) {
                 hwpunit_to_px(seg.line_spacing, dpi)
@@ -356,6 +403,10 @@ pub(super) fn prepare(
             .map(|lines| (lines, false))
             .or_else(|| single_saved_object_line().map(|lines| (lines, true)));
         if let Some((lines, single_saved_line)) = owned_lines {
+            // 2024 단일 TAC의 앞 앵커 회수량은 일반 경로에서 후속 쪽 경계와 함께 소비한다.
+            if page.profile.hangul2024_layout() && lines.len() == 1 && lines[0].top > 0 {
+                return None;
+            }
             let source_top = hwpunit_to_px(
                 para.source_line_seg_vertical_pos
                     .as_ref()
@@ -365,9 +416,8 @@ pub(super) fn prepare(
                 dpi,
             );
             let flow_origin = if single_saved_line {
-                // The saved line origin already owns spacing_before. The
-                // current physical flow is its lower bound, not another copy
-                // of that leading band.
+                // 저장 줄 원점은 앞 간격을 이미 소유한다. 현재 물리 흐름은 그 하한이며
+                // 앞 간격을 다시 더하지 않는다.
                 page.current_height
             } else {
                 page.current_height
@@ -415,8 +465,9 @@ pub(super) fn prepare(
                 let Some(Control::Table(table)) = para.controls.get(line.control) else {
                     return false;
                 };
-                // 새로 수용한 공백 줄 캐리어도 각주 예약은 일반 경로가 담당한다.
-                if !para.text.is_empty() && table_has_notes(table) {
+                // 새로 수용한 단일 빈 줄/공백 캐리어의 각주 예약은
+                // 일반 경로가 담당한다. 기존 복수 제어 줄의 처리는 유지한다.
+                if (lines.len() == 1 || !para.text.is_empty()) && table_has_notes(table) {
                     return false;
                 }
                 measured_tables
@@ -487,6 +538,7 @@ impl StoredTacPlan {
                 advance_end: Some(end),
             },
             end,
+            rebase_line_origin: false,
         }
     }
 }

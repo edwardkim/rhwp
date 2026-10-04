@@ -73,11 +73,31 @@ impl TypesetState {
         &mut self,
         index: usize,
         height: f64,
+        content_height: f64,
     ) {
         self.data.pre_emitted_host_heights.insert(index, height);
+        self.data
+            .pre_emitted_host_content_heights
+            .insert(index, content_height);
     }
     pub(in crate::renderer::typeset) fn mark_prefilled_paragraph(&mut self, index: usize) {
         self.data.prefilled_paras.insert(index);
+    }
+    pub(in crate::renderer::typeset) fn record_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+        end_line: usize,
+    ) {
+        self.data.prefilled_line_prefixes.insert(index, end_line);
+    }
+    pub(in crate::renderer::typeset) fn take_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+    ) -> usize {
+        self.data
+            .prefilled_line_prefixes
+            .remove(&index)
+            .unwrap_or(0)
     }
     pub(in crate::renderer::typeset) fn add_visible_float_exclusion(
         &mut self,
@@ -404,6 +424,7 @@ impl TypesetState {
             hidden_empty_paras: self.data.hidden_empty_paras,
             pre_emitted_host_paras: self.data.pre_emitted_host_paras,
             pre_emitted_host_heights: self.data.pre_emitted_host_heights,
+            pre_emitted_host_content_heights: self.data.pre_emitted_host_content_heights,
             endnotes: self.data.endnotes,
             endnote_paragraphs: self.data.endnote_paragraphs,
             endnote_para_sources: self.data.endnote_para_sources,

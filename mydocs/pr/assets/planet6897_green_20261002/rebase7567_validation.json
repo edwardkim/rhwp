@@ -1,0 +1,225 @@
+{
+  "state": "rebase_and_compile_alignment_stage_complete_final_validation_running",
+  "base": "1d6bc70767fad365b07afe4ef57972d23b140f2b",
+  "head_before_alignment_commit": "5f8dcea8511a40068f21d1a6edffdcd231c9588a",
+  "commits_preserved": 183,
+  "focused": {
+    "run": 139,
+    "pass": 139,
+    "fail": 0,
+    "skipped": 3491,
+    "seconds": 64.277,
+    "exit_code": 0
+  },
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_028",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(/issue_7470_rowbreak_source_frame_ownership::/) | test(/issue_5711_para_border_negative_spacing::/) | test(/issue_6104_tac_title_over_table::/) | test(/issue_7288_stale_frame_empty_paragraph::/) | test(/body_overflow_baseline::body_overflow_does_not_grow_partition_(10|13)$/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/text_overlap_baseline::/) | test(/issue_6267_para_float_table_overlap::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/) | test(/issue_2319_no_lineseg_tac_table_height::/) | test(/issue_7418_condense_new_word_needs_natural_fit::/) | test(/issue_7418_ascii_punct_uses_latin_slot::/) | test(/issue_7418_host_text_and_split_row_geometry::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 250.553,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-focused.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.48,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 31.985,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 27.866,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 79.518,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-workspace-build.log"
+    },
+    {
+      "gate": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 113.432,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-all-target-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "8497729b4fb0e071c484fc5740f9bb2400bed437"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.847,
+      "log": "output/pr-review/planet6897-green-20261002/rebase7567-rerun-gates-manifest.log"
+    }
+  ],
+  "current_base_manifest": {
+    "base": "1d6bc70767fad365b07afe4ef57972d23b140f2b",
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/rebase7567-manifest-current-base.log"
+  },
+  "native_visual": {
+    "rowbreak": {
+      "pages": 18,
+      "minimum": 92.55782,
+      "below90": 0
+    },
+    "h01": {
+      "pages": 9,
+      "minimum": 94.28413,
+      "below90": 0
+    },
+    "social6797": {
+      "pages": 11,
+      "minimum": 95.87399,
+      "below90": 0
+    },
+    "stale1835": {
+      "pages": 3,
+      "minimum": 97.59989,
+      "below90": 0
+    }
+  },
+  "fresh_wasm": {
+    "exit_code": 0,
+    "command": [
+      "env",
+      "CARGO_TARGET_DIR=target/pr-review",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "local_no_opt_alternative": true,
+    "wasm_sha256": "8990f466823447fc74a22961fd400ee2acad584296b37facdf3f51b66e2ea077",
+    "public_same": true,
+    "visual41": "running"
+  },
+  "previous_whole": "3fc013260 old-base run deliberately interrupted when #7567 merge discovered; not PASS",
+  "first_compile": "failed outdated native_tac_next_line_full_spacing reference; corrected to tac_next_line_full_spacing with full profile; preserved log",
+  "removed_new_tests": 0,
+  "scope_transfer": "unchanged two failed functions and two overlap inputs; all originals/PDF/passing cases retained",
+  "production_hashes": {
+    "src/renderer/layout.rs": "1d89f588f440b8e50facda59bd4fb6703053968105b5d7d8dd5c5ee82c18f945",
+    "src/renderer/float_placement.rs": "6ac16ce4bf36a787ea1e07794620aeaaabea50bc5e0a43cba704a366008e2f1f",
+    "src/renderer/typeset/table/block/entry.rs": "1c23be3c6ba36914eafb02517351b019d25ccbe25b2bbcf981ff954570eb012d",
+    "src/renderer/layout/table_layout.rs": "136ffdb3a9fd445687605ce26974379f1df84731e130726afbf752c39d94fd47",
+    "src/renderer/layout/table_partial.rs": "e2717e586c96cd14cd550f05f6495b9882964ac9eb9f416f7d7fb3f18c10af47",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "6f2f35930900c48266904cf7d3292e4d3462a1db68b7157058da450db3fccafb",
+    "src/renderer/typeset/controls/stored_tac.rs": "0d709e98bf74de9316886e999db35ce2e37f05cc4b3f49f242b9863d4bd00a50",
+    "src/renderer/layout/text_measurement.rs": "b7124d8cddfecf0c3d021293ed42caad0f09dd16f9aee6351bdac56e07493c74"
+  },
+  "native_total_pages": 41
+}

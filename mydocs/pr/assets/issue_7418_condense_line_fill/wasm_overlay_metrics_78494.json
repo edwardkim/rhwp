@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 93.12434,
+    "worst_pixel_match_percent": 90.94264,
+    "average_ink_match_percent": 13.84724,
+    "worst_ink_match_percent": 6.73357,
+    "average_visual_accuracy_proxy_percent": 13.84724,
+    "worst_visual_accuracy_proxy_percent": 6.73357,
+    "average_tolerant_content_match_percent": 97.38093,
+    "worst_tolerant_content_match_percent": 96.14232,
+    "worst_pages": [
+      9,
+      8,
+      20
+    ]
+  },
+  "pages": [
+    {
+      "page": 8,
+      "rhwp_png": "rhwp_008.png",
+      "pdf_png": "pdf-08.png",
+      "overlay_png": "overlay_008.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 80761,
+      "diff_ratio": 0.09057356,
+      "pixel_match_percent": 90.94264,
+      "ink_union_pixels": 90378,
+      "ink_diff_pixels": 80761,
+      "ink_diff_ratio": 0.89359136,
+      "ink_match_percent": 10.64086,
+      "visual_accuracy_proxy_percent": 10.64086,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 98.9898,
+      "mean_abs_channel_delta": 11.408,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        76,
+        718,
+        1089
+      ]
+    },
+    {
+      "page": 9,
+      "rhwp_png": "rhwp_009.png",
+      "pdf_png": "pdf-09.png",
+      "overlay_png": "overlay_009.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 30763,
+      "diff_ratio": 0.03450074,
+      "pixel_match_percent": 96.54993,
+      "ink_union_pixels": 32984,
+      "ink_diff_pixels": 30763,
+      "ink_diff_ratio": 0.93266432,
+      "ink_match_percent": 6.73357,
+      "visual_accuracy_proxy_percent": 6.73357,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 97.01067,
+      "mean_abs_channel_delta": 5.278,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        85,
+        76,
+        714,
+        1089
+      ]
+    },
+    {
+      "page": 20,
+      "rhwp_png": "rhwp_020.png",
+      "pdf_png": "pdf-20.png",
+      "overlay_png": "overlay_020.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 72399,
+      "diff_ratio": 0.08119557,
+      "pixel_match_percent": 91.88044,
+      "ink_union_pixels": 95472,
+      "ink_diff_pixels": 72399,
+      "ink_diff_ratio": 0.75832705,
+      "ink_match_percent": 24.1673,
+      "visual_accuracy_proxy_percent": 24.1673,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 96.14232,
+      "mean_abs_channel_delta": 11.673,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        77,
+        77,
+        712,
+        1089
+      ]
+    }
+  ]
+}

@@ -276,6 +276,43 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
             .expect("fixture parse");
         assert_eq!(core.page_count(), 8, "{relative}: #2004 page count");
 
+        if relative.ends_with(".hwpx") {
+            // 저장 줄이 유효한 두 표의 상대 원점은 같은 저장 좌표축을 쓴다.
+            // 절대 픽셀을 고정하지 않고 첫 표의 실제 높이로 물리 단위를 환산한다.
+            let page = core.build_page_render_tree(2).expect("명단 3쪽");
+            let mut pending = vec![&page.root];
+            let mut frames = Vec::new();
+            while let Some(node) = pending.pop() {
+                if let RenderNodeType::Table(table) = &node.node_type {
+                    if matches!(table.para_index, Some(36 | 39)) {
+                        frames.push((table.para_index.unwrap(), node.bbox));
+                    }
+                }
+                pending.extend(&node.children);
+            }
+            frames.sort_by_key(|(index, _)| *index);
+            assert_eq!(frames.len(), 2, "3쪽 머리표와 명단표의 소속 보존");
+            let paragraphs = &core.document().sections[0].paragraphs;
+            let source = |index: usize| {
+                let para = &paragraphs[index];
+                let Control::Table(table) = &para.controls[0] else {
+                    panic!("저장 줄의 표 소유자 누락");
+                };
+                (para.line_segs[0].vertical_pos, table)
+            };
+            let (header_vpos, header) = source(36);
+            let (roster_vpos, roster) = source(39);
+            let expected_units = f64::from(roster_vpos - header_vpos)
+                + f64::from(roster.outer_margin_top)
+                - f64::from(header.outer_margin_top);
+            let actual_units = (frames[1].1.y - frames[0].1.y) * f64::from(header.common.height)
+                / frames[0].1.height;
+            assert!(
+                (actual_units - expected_units).abs() < 75.0,
+                "표 사이 저장 원점 보존: 실제 {actual_units}HU, 원본 {expected_units}HU"
+            );
+        }
+
         let first_picture_id = if relative.ends_with(".hwpx") { 6 } else { 3 };
         for page_index in 3..8 {
             let page = core

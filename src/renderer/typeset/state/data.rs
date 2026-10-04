@@ -162,6 +162,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #1753] 지연 이월되는 visible-host 자리차지 표 직전에 현재 쪽 잔여 공간으로
     /// 선행 배치(prefill)된 후속 문단들 — 메인 루프에서 스킵.
     pub(in crate::renderer::typeset) prefilled_paras: std::collections::HashSet<usize>,
+    /// 떠 있는 표 앞에서 이미 소비한 후속 문단의 줄 끝. 다음 조각은 여기서 재개한다.
+    pub(in crate::renderer::typeset) prefilled_line_prefixes:
+        std::collections::HashMap<usize, usize>,
     /// [Task #1755] 이월 전 쪽에 host 텍스트 줄을 PartialParagraph 로 pre-emit 한 문단 —
     /// layout 의 마지막 fragment 뒤 host 렌더 억제 신호(PaginationResult 로 전달).
     pub(in crate::renderer::typeset) pre_emitted_host_paras: std::collections::HashSet<usize>,
@@ -169,6 +172,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// current_height(=para_start+host_h) 기준으로 환산할 때 감액분으로 쓴다. typeset 예산과
     /// layout(table_partial.rs) 배치가 동일 감액을 적용해 정합한다.
     pub(in crate::renderer::typeset) pre_emitted_host_heights:
+        std::collections::HashMap<usize, f64>,
+    /// [#7418] 같은 host 글의 **내용** 높이(px) — 마지막 줄의 줄간격을 뺀 값. 표는 그
+    /// 줄간격 띠 안까지 올라올 수 있다(문단 상단 + max(오프셋, 이 값)).
+    pub(in crate::renderer::typeset) pre_emitted_host_content_heights:
         std::collections::HashMap<usize, f64>,
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
