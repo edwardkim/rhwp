@@ -7,6 +7,16 @@ fn document(kind: ColumnBreakType) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.set_column_def_native(0, 2, 0, true, 2268).unwrap();
+    // 새 빈 문서의 단 설정 저장과 분리해, 양쪽 형식에 저장 가능한 단 정의로 시작한다.
+    let mut core = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let page: Value = serde_json::from_str(&reopened.get_page_info_native(0).unwrap()).unwrap();
+        assert_eq!(page["columns"].as_array().unwrap().len(), 2);
+    }
     core.insert_text_native(0, 0, 0, "LEFT").unwrap();
     match kind {
         ColumnBreakType::Column => core.insert_column_break_native(0, 0, 4).unwrap(),
