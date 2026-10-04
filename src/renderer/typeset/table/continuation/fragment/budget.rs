@@ -198,7 +198,7 @@ impl TypesetEngine {
                 self.dpi,
             )
         };
-        let terminal_outer_bottom_overhead = if single_cell_page_fragment {
+        let mut terminal_outer_bottom_overhead = if single_cell_page_fragment {
             partial_rowbreak_fragment_spacing_px(
                 table,
                 host_spacing_before,
@@ -636,6 +636,34 @@ impl TypesetEngine {
                     }
                 })
         });
+        // 이미 소비한 후속 첫 조각 뒤의 줄이 종료 표의 아래 바깥여백을 소유한다.
+        // 현재 실제 행 높이로 닫히는 경우만 마지막 행 수용 예산에 포함한다.
+        if is_continuation
+            && start_cut.is_empty()
+            && std::ptr::eq(row_geometry_table, table)
+            && terminal_outer_bottom_overhead == 0.0
+        {
+            if let (Some(placement), Some(&start_line), Some(next)) = (
+                fragment_placement,
+                st.prefilled_line_prefixes.get(&(para_idx + 1)),
+                input.source.paragraphs_all.get(para_idx + 1),
+            ) {
+                let remaining_height = cut_row_h.iter().skip(cursor_row).sum::<f64>()
+                    + cs * row_count.saturating_sub(cursor_row + 1) as f64;
+                if let Some(margin) =
+                    crate::renderer::float_placement::stored_terminal_rowbreak_outer_margin_after_prefix_px(
+                        para,
+                        next,
+                        table,
+                        start_line,
+                        placement.table_top + remaining_height,
+                        self.dpi,
+                    )
+                {
+                    terminal_outer_bottom_overhead = margin;
+                }
+            }
+        }
         let page_avail = fragment_placement.map_or(page_avail, |p| {
             let boundary = if is_continuation
                 || prepared.host_frame

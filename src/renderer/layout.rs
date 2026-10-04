@@ -14430,10 +14430,15 @@ impl LayoutEngine {
                 if crate::renderer::float_placement::column_rowbreak_caption_outer_spacing_px(
                     opens, para, table, self.dpi,
                 ) > 0.0
-                    || (!para_has_visible_text(para)
-                        && is_continuation
+                    || (is_continuation
                         && end_cut.is_empty()
-                        && end_row >= table.row_count as usize)
+                        && end_row >= table.row_count as usize
+                        && (!para_has_visible_text(para)
+                            || ctx.paragraph_float_placements
+                                .get(&(para_index, control_index))
+                                .is_some_and(|placement| {
+                                    placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                                })))
                 {
                     if let Some(placement) = ctx
                         .paragraph_float_placements

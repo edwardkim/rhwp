@@ -1016,6 +1016,52 @@ impl TypesetEngine {
         } else {
             (fragment_host_placement, host_frame)
         };
+        // 유효 저장 글 앞 앵커의 빈 띠에 실제로 들어가는 후속 첫 조각을 확정한다.
+        // 표 조각의 원점/예산은 이미 같은 배치 계획으로 결정돼 있으므로 다시 이동시키지 않는다.
+        if st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && crate::renderer::float_placement::ParagraphFloatPlacement::stored_head_host_lines_are_valid(
+                para, table, ctrl_idx,
+            )
+        {
+            if let (Some(placement), Some(next)) =
+                (fragment_host_placement, paragraphs_all.get(para_idx + 1))
+            {
+                let next_idx = para_idx + 1;
+                let next_style_id = composed_all
+                    .get(next_idx)
+                    .map_or(next.para_shape_id as usize, |p| p.para_style_id as usize);
+                if !st.prefilled_line_prefixes.contains_key(&next_idx)
+                    && !st.prefilled_paras.contains(&next_idx)
+                    && !styles
+                        .para_styles
+                        .get(next_style_id)
+                        .is_some_and(|style| style.page_break_before)
+                {
+                    let fmt_next = self.format_paragraph(
+                        next,
+                        composed_all.get(next_idx),
+                        styles,
+                        Some(st.inline_flow_column().width),
+                    );
+                    if let Some(prefix) = super::super::super::paragraph::plan_stored_float_text_prefix(
+                        para,
+                        next,
+                        &fmt_next,
+                        next_idx,
+                        placement,
+                        st.current_height,
+                        self.dpi,
+                    ) {
+                        if let PageItem::PartialParagraph { end_line, .. } = prefix.item {
+                            st.record_prefilled_line_prefix(next_idx, end_line);
+                            st.commit_split_paragraph_fragment(prefix);
+                        }
+                    }
+                }
+            }
+        }
         let prepared = BlockTableContinuationPreparedState {
             first_anchor_offset_consumed,
             host_placement: fragment_host_placement,

@@ -424,9 +424,8 @@ impl TypesetEngine {
                     });
             }
         }
-        // The opening source box may end inside its last line's trailing
-        // spacing. Preserve all cut units, but reserve and paint the same
-        // declared physical frame rather than extending it to the page floor.
+        // 원본 첫 상자가 마지막 줄의 뒤 간격 안에서 끝나면 모든 컷 유닛을 보존하고
+        // 예약과 paint가 같은 선언 물리 프레임을 소비한다.
         let two_frame_successor_origin =
             input
                 .source
@@ -459,10 +458,8 @@ impl TypesetEngine {
             partial_height = hwpunit_to_px(table.common.height as i32, self.dpi);
             end_row_height_override = Some(partial_height);
         }
-        // A terminal physical box may retain blank space after its last unit.
-        // Accept that space only when the accumulated painted boxes plus this
-        // remainder equal cellSz, and the successor's original line closes the
-        // complete outer box. The same plan owns the successor spacing.
+        // 종료 상자의 마지막 유닛 뒤 빈 공간은 누적 상자와 잔여의 합이 cellSz를 닫고
+        // 다음 원본 줄이 전체 바깥 상자를 닫을 때만 수용한다. 같은 계획이 후속 간격을 소유한다.
         let mut terminal_saved_successor_closure = false;
         if single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
@@ -529,15 +526,6 @@ impl TypesetEngine {
                     });
             }
         }
-        let captioned_object_frame = self
-            .query_captioned_column_rowbreak_placement(
-                st,
-                input.source.paragraph,
-                table,
-                host_before_overhead,
-                0.0,
-            )
-            .is_some();
         let commit_fragment = |st: &mut TypesetState, owner_height: f64, terminal: bool| {
             if let Some(mut placement) = fragment_placement {
                 // 실제 조각의 컷/쪽 소유로 바뀌었으므로 전체 프레임의 후속 원점은 재사용하지 않는다.
@@ -546,17 +534,19 @@ impl TypesetEngine {
                 }
                 placement.occupied_bottom = placement.table_top
                     + owner_height
-                    + if captioned_object_frame {
-                        if terminal {
-                            terminal_outer_bottom_overhead
-                        } else {
-                            fragment_outer_bottom_overhead
-                        }
+                    + if terminal {
+                        terminal_outer_bottom_overhead
                     } else {
                         // 실제로 예약한 조각 뒤 여백만 후속 흐름에 전달한다.
                         // 바깥 위 여백의 재개가 아래 여백 재개까지 뜻하지는 않는다.
                         fragment_outer_bottom_overhead
                     };
+                if terminal
+                    && terminal_outer_bottom_overhead > 0.0
+                    && st.prefilled_line_prefixes.contains_key(&(para_idx + 1))
+                {
+                    placement.flow = crate::renderer::float_placement::ParagraphFloatFlow::NextLine;
+                }
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(
                     placement.occupied_bottom

@@ -83,6 +83,22 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn mark_prefilled_paragraph(&mut self, index: usize) {
         self.data.prefilled_paras.insert(index);
     }
+    pub(in crate::renderer::typeset) fn record_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+        end_line: usize,
+    ) {
+        self.data.prefilled_line_prefixes.insert(index, end_line);
+    }
+    pub(in crate::renderer::typeset) fn take_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+    ) -> usize {
+        self.data
+            .prefilled_line_prefixes
+            .remove(&index)
+            .unwrap_or(0)
+    }
     pub(in crate::renderer::typeset) fn add_visible_float_exclusion(
         &mut self,
         exclusion: VisibleFloatExclusion,

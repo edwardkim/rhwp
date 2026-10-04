@@ -68,6 +68,7 @@ impl TypesetState {
                 fragment_queued_table_footnotes: std::collections::HashSet::new(),
                 reset_vpos_after_queued_table_footnote_page: false,
                 prefilled_paras: std::collections::HashSet::new(),
+                prefilled_line_prefixes: std::collections::HashMap::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
                 pre_emitted_host_heights: std::collections::HashMap::new(),
                 pre_emitted_host_content_heights: std::collections::HashMap::new(),

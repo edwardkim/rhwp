@@ -1066,6 +1066,38 @@ pub(crate) fn stored_terminal_rowbreak_outer_margin_px(
         .then_some(margin)
 }
 
+/// 표 앞에서 선행 소비한 줄 다음의 저장 원점이 종료 조각의 바깥 상자를 닫는다.
+/// 다음 쪽 첫 줄은 문단 첫 줄과 다르므로 실제 소유 컷을 받아 판정한다.
+pub(crate) fn stored_terminal_rowbreak_outer_margin_after_prefix_px(
+    host: &Paragraph,
+    successor: &Paragraph,
+    table: &Table,
+    successor_start_line: usize,
+    fragment_bottom: f64,
+    dpi: f64,
+) -> Option<f64> {
+    let previous = successor
+        .line_segs
+        .get(successor_start_line.checked_sub(1)?)?;
+    let line = successor.line_segs.get(successor_start_line)?;
+    if !ParagraphFloatPlacement::stored_head_host_lines_are_valid(host, table, 0)
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || !successor.controls.is_empty()
+        || successor.stored_text_partition_is_dirty()
+        || successor.cell_format_vpos_dirty
+        || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos <= 0
+        || line.vertical_pos >= previous.vertical_pos
+        || table.page_break != TablePageBreak::RowBreak
+        || table.outer_margin_bottom == 0
+    {
+        return None;
+    }
+    let margin = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+    ((fragment_bottom + margin - hwpunit_to_px(line.vertical_pos, dpi)).abs() <= dpi / 7200.0)
+        .then_some(margin)
+}
+
 /// 문단 상대 떠 있는 개체의 확정된 배치. 모든 값은 단 상대 px다.
 /// 예약과 출력이 같은 결과를 사용하므로 renderer에서 원점을 다시 더하지 않는다.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -2172,6 +2204,16 @@ impl ParagraphFloatPlacement {
     ) -> Option<Self> {
         Self::text_head_control_position(para, control_index)?;
         Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    /// 저장 글 앞 제어문자와 선행 호스트 줄이 동일한 앵커 계약에 속하는지 확인한다.
+    pub(crate) fn stored_head_host_lines_are_valid(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+    ) -> bool {
+        Self::text_head_control_position(para, control_index).is_some()
+            && Self::stored_host_lines_are_valid(para, table, control_index)
     }
 
     fn from_stored_host_at(

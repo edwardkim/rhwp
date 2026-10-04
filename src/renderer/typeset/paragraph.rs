@@ -28,7 +28,8 @@ pub(super) mod stored_lines;
 pub(super) mod whole_fit;
 
 use super::{
-    missing_lineseg_trailing_line_break, native_hwp5_existing_footnote_reset_overlap_break_line,
+    is_synthetic_line_seg, missing_lineseg_trailing_line_break,
+    native_hwp5_existing_footnote_reset_overlap_break_line,
     native_hwp5_first_footnote_overlap_break_line,
     native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line, page_item_vpos_base,
     para_has_non_whitespace_text, para_has_visible_text, para_is_treat_as_char_picture_only,
@@ -61,9 +62,10 @@ pub(super) fn place_split_paragraph(
     dpi: f64,
 ) {
     // 줄 단위 분할 루프
-    let mut cursor_line: usize = 0;
+    let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
+    let mut on_entry_page = true;
     while cursor_line < line_count {
-        let page_avail = if cursor_line == 0 {
+        let page_avail = if cursor_line == 0 || on_entry_page {
             // 저장 HWPX의 실제 FootnoteArea 경계를 진입 fit과 공유한다.
             // 여기서 별도 각주 높이와 40px 여백을 다시 빼면 물리적으로
             // 들어가는 본문 줄이 다음 쪽으로 밀린다. 다른 profile은 기존
@@ -152,6 +154,7 @@ pub(super) fn place_split_paragraph(
             &st.current_items,
         ) else {
             st.advance_column_or_new_page();
+            on_entry_page = false;
             continue;
         };
         st.commit_split_paragraph_fragment(fragment);
@@ -163,7 +166,68 @@ pub(super) fn place_split_paragraph(
         // move: 나머지 줄 → 다음 단/페이지
         st.advance_column_or_new_page();
         cursor_line = end_line;
+        on_entry_page = false;
     }
+}
+
+/// 저장된 다음 문단의 쪽 되감김 앞 줄만 떠 있는 표 위 공간에 선행 배치한다.
+/// 줄 끝 컷과 실제 문단 조각을 함께 생산해 다음 쪽에서 이미 소비한 줄을 다시 그리지 않는다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn plan_stored_float_text_prefix(
+    host: &Paragraph,
+    next: &Paragraph,
+    fmt: &FormattedParagraph,
+    next_idx: usize,
+    float: crate::renderer::float_placement::ParagraphFloatPlacement,
+    current_height: f64,
+    dpi: f64,
+) -> Option<placement::ParagraphFragment> {
+    if !next.controls.is_empty()
+        || next.column_type != crate::model::paragraph::ColumnBreakType::None
+        || next.stored_text_partition_is_dirty()
+        || next.cell_format_vpos_dirty
+        || next.line_segs.len() != fmt.line_count()
+        || next.line_segs.iter().any(|line| {
+            is_synthetic_line_seg(line) || line.line_height <= 0 || line.vertical_pos < 0
+        })
+    {
+        return None;
+    }
+    let base = host.line_segs.first()?.vertical_pos;
+    let end_line = next
+        .line_segs
+        .windows(2)
+        .position(|pair| pair[1].vertical_pos < pair[0].vertical_pos)?
+        + 1;
+    let first_top = float.anchor_y
+        + hwpunit_to_px(next.line_segs.first()?.vertical_pos.checked_sub(base)?, dpi);
+    // 현재 줄 구성의 원점과 저장 프레임이 같은 원본 정수 단위에 있어야 한다.
+    // 실제 글줄 높이까지만 fit하며 마지막 줄 뒤 간격은 개체 위 빈 띠와 겹칠 수 있다.
+    if (first_top - current_height - fmt.spacing_before).abs() > dpi / 7200.0 {
+        return None;
+    }
+    let mut top = current_height + fmt.spacing_before;
+    for (idx, line) in next.line_segs[..end_line].iter().enumerate() {
+        let saved_top = float.anchor_y + hwpunit_to_px(line.vertical_pos.checked_sub(base)?, dpi);
+        if (saved_top - top).abs() > dpi / 7200.0 || top + fmt.line_heights[idx] > float.table_top {
+            return None;
+        }
+        top += fmt.line_advance(idx);
+    }
+    placement::plan_fragment(
+        fmt,
+        next_idx,
+        0,
+        fmt.line_count(),
+        fmt.spacing_before,
+        (float.table_top - current_height - fmt.spacing_before).max(0.0),
+        split::SplitBoundary {
+            end_line,
+            cumulative: fmt.line_advances_sum(0..end_line),
+        },
+        false,
+        &[],
+    )
 }
 
 /// 진입 fit을 통과한 전체 문단을 배치한다. 항목 순서 확정 뒤 흐름 메트릭을 계산한다.

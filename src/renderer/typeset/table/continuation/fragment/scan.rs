@@ -292,7 +292,11 @@ impl TypesetEngine {
         // 시작 캡션은 이미 첫 조각 예산에서 계상됐다.
         // 현재 쪽에서 마지막 유닛을 닫을 수 없으면 수용한 앞 조각을 다시 스캔한다.
         // 높이·컷을 확정한 뒤 end_row만 바꾸지 않는다.
-        if end_row >= row_count && split_end_limit == 0.0 && input.prepared.caption_overhead > 0.0 {
+        if end_row >= row_count
+            && split_end_limit == 0.0
+            && (input.prepared.caption_overhead > 0.0
+                || budget.terminal_outer_bottom_overhead > budget.fragment_outer_bottom_overhead)
+        {
             let closing_overhead = if input.prepared.caption_is_top {
                 // 시작 캡션은 이미 page_avail에서 뺐다.
                 0.0
