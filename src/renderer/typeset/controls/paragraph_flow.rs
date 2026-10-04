@@ -49,6 +49,7 @@ pub(in crate::renderer::typeset) fn place(
         measured_tables,
         engine.dpi,
         paragraphs_all,
+        styles,
     ) {
         return;
     }
@@ -78,6 +79,7 @@ pub(in crate::renderer::typeset) fn place(
         measured_tables,
         engine.dpi,
         paragraphs_all,
+        styles,
     ) {
         return;
     }

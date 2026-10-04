@@ -404,6 +404,7 @@ pub(super) fn prepare_tac_paragraph(
 }
 
 /// 기존 저장 줄 경로가 문단 전체를 수용한 경우에만 일반 컨트롤 경로를 생략한다.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn try_place_stored_tac_paragraph(
     st: &mut TypesetState,
     para_idx: usize,
@@ -412,6 +413,7 @@ pub(super) fn try_place_stored_tac_paragraph(
     measured_tables: &[MeasuredTable],
     dpi: f64,
     paragraphs: &[Paragraph],
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
 ) -> bool {
     if let Some(placement) = stored_tac::prepare_computed(
         para_idx,
@@ -453,6 +455,11 @@ pub(super) fn try_place_stored_tac_paragraph(
         measured_tables,
         st.stored_tac_page(paragraphs),
         shared_spacing_before,
+        paragraphs.get(para_idx + 1),
+        paragraphs
+            .get(para_idx + 1)
+            .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+            .map_or(0.0, |shape| shape.spacing_before),
         || st.available_height(),
         dpi,
     ) else {
@@ -461,6 +468,12 @@ pub(super) fn try_place_stored_tac_paragraph(
     for line in &plan.lines {
         let placement = plan.placement(line, fmt.spacing_after, dpi);
         st.commit_stored_tac_control(para_idx, placement);
+    }
+    if plan.source_origin.is_some() {
+        st.commit_deferred_table_anchor(para_idx);
+        st.record_vpos_page_origin(plan.source_origin);
+        st.record_vpos_origin_provenance(true);
+        st.record_vpos_lazy_origin(None);
     }
     true
 }

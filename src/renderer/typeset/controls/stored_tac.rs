@@ -23,6 +23,7 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
 pub(super) struct StoredTacPlan {
     pub lines: Vec<StoredTacLine>,
     origin: f64,
+    pub(super) source_origin: Option<i32>,
 }
 
 pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
@@ -269,6 +270,8 @@ pub(super) fn prepare(
     measured_tables: &[MeasuredTable],
     page: StoredTacPage,
     shared_spacing_before: f64,
+    next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
     available_height: impl Fn() -> f64,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
@@ -320,11 +323,33 @@ pub(super) fn prepare(
             {
                 return None;
             }
+            let trailing = if crate::renderer::composer::native_tac_next_line_full_spacing(
+                para,
+                next_para,
+                fmt.spacing_after,
+                next_spacing_before,
+                seg,
+                page.profile.hwp5_stored_pagination_layout(),
+                dpi,
+            ) {
+                hwpunit_to_px(seg.line_spacing, dpi)
+            } else {
+                crate::renderer::composer::tac_host_trailing_spacing(
+                    para,
+                    control_index,
+                    seg,
+                    page.profile.hwpx_stored_layout(),
+                    page.profile.hwp5_stored_pagination_layout(),
+                    dpi,
+                )
+            };
             Some(vec![StoredTacLine {
                 control: control_index,
                 top: 0,
                 occupied_end: seg.line_height,
-                end: seg.line_height.checked_add(seg.line_spacing)?,
+                end: seg
+                    .line_height
+                    .checked_add(crate::renderer::px_to_hwpunit(trailing, dpi))?,
             }])
         };
         let owned_lines = stored_tac_lines(para)
@@ -360,11 +385,31 @@ pub(super) fn prepare(
             // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
             let saved_origin = page.vpos_col_anchor
                 + hwpunit_to_px(
-                    para.line_segs[0]
-                        .vertical_pos
-                        .saturating_sub(page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0)),
+                    if single_saved_line {
+                        // An original object box is page-relative. A paragraph
+                        // ladder's text base does not authenticate its object origin.
+                        para.line_segs[0].vertical_pos
+                    } else {
+                        para.line_segs[0].vertical_pos.saturating_sub(
+                            page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
+                        )
+                    },
                     dpi,
                 );
+            // A complete object height authenticates the local line, not the
+            // page-relative origin. A single-line shortcut may only reuse a
+            // source origin which agrees with the current physical flow: its
+            // leading band is either already reserved or still belongs to
+            // this paragraph. Other stored ladders use ordinary TAC flow.
+            if single_saved_line {
+                let unreserved_origin =
+                    page.current_height + fmt.spacing_before - shared_spacing_before;
+                let same_frame = (saved_origin - page.current_height).abs() <= dpi / 7200.0
+                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0;
+                if !same_frame {
+                    return None;
+                }
+            }
             let origin = flow_origin.max(saved_origin);
             let measured_fits = lines.iter().all(|line| {
                 let Some(Control::Table(table)) = para.controls.get(line.control) else {
@@ -389,14 +434,27 @@ pub(super) fn prepare(
                             <= 0.5
                     })
             });
+            // Fit the occupied line box. Its trailing gap advances the next
+            // line but can lie beyond this page's final object, as for a text
+            // line. Internal gaps already belong to the later occupied ends.
             let fits = lines.iter().all(|line| {
-                let captioned = matches!(para.controls.get(line.control), Some(Control::Table(table)) if table.caption.is_some());
-                let fit_end = if captioned { line.occupied_end } else { line.occupied_end.max(line.end) };
-                origin + hwpunit_to_px(fit_end, dpi) + fmt.spacing_after
+                origin + hwpunit_to_px(line.occupied_end, dpi) + fmt.spacing_after
                     <= available_height()
             });
             if measured_fits && fits {
-                return Some(StoredTacPlan { lines, origin });
+                let source_origin = single_saved_line.then(|| {
+                    let seg = &para.line_segs[0];
+                    // Authenticate the shared coordinate axis at the original
+                    // object origin. A flow-only trailing gap is not a source
+                    // translation and must not shift the following paragraphs.
+                    seg.vertical_pos
+                        .saturating_sub(crate::renderer::px_to_hwpunit(origin, dpi))
+                });
+                return Some(StoredTacPlan {
+                    lines,
+                    origin,
+                    source_origin,
+                });
             }
         }
     }

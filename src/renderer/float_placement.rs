@@ -273,7 +273,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
         && !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && (table.common.horz_rel_to == HorzRelTo::Column
-            || ((hwpx_stored || native_object_frame)
+            || (hwpx_stored
                 && table.common.horz_rel_to == HorzRelTo::Para
                 && table.common.vert_rel_to == VertRelTo::Para
                 && para_anchor_below_first_line))
@@ -283,7 +283,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
             || (is_continuation
                 && starts_at_column_top
                 && (table.common.horz_rel_to == HorzRelTo::Column
-                    || ((hwpx_stored || native_object_frame)
+                    || (hwpx_stored
                         && native_host.is_some_and(|host| {
                             !host.stored_text_partition_is_dirty()
                                 && !host.cell_format_vpos_dirty
@@ -665,6 +665,7 @@ pub(crate) fn stored_empty_control_table_frame(
         || successor.column_type != ColumnBreakType::None
         || anchor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || next.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || (anchor.segment_width != 0 && table.caption.is_none())
         || anchor.line_height <= 0
         || next.line_height <= 0
         || anchor_vpos < frame_vpos
@@ -732,7 +733,8 @@ pub(crate) fn stored_empty_control_table_frame(
     let anchor_origin =
         if host.column_type == ColumnBreakType::Page && object_extent == i64::from(next_vpos) {
             0
-        } else if leading_band > 0
+        } else if table.caption.is_some()
+            && leading_band > 0
             && leading_band <= i64::from(anchor_vpos)
             && i64::from(anchor_vpos) - leading_band + object_extent == i64::from(next_vpos)
         {

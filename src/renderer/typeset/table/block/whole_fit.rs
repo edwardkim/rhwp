@@ -36,6 +36,28 @@ pub(super) struct WholeFit {
 }
 
 impl TypesetEngine {
+    /// A complete source cell can own two physical row frames even when
+    /// sequential measurement would fit both. Whole placement must retain
+    /// the same source boundary consumed by the row scanner and paint.
+    pub(in crate::renderer::typeset) fn stored_two_line_row_frames_require_split(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> bool {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || table.common.treat_as_char
+            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+        {
+            return false;
+        }
+        let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        engine.set_layout_profile(self.profile.get());
+        engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
+        (0..usize::from(table.row_count))
+            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+    }
+
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.
     /// 예약 하단과 출력 원점을 한 계획으로 반환하며, 편집·분할·절대 배치는 제외한다.
     #[allow(clippy::too_many_arguments)]

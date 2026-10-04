@@ -11836,19 +11836,28 @@ impl LayoutEngine {
                 0.0
             };
             // vpos 리셋 검출: 직전 문단 끝보다 현재 문단 시작 vpos 가 작으면 리셋.
-            let reset_before = if pi > 0 && cell_has_local_vpos_origin {
-                // [#7095] 저장 LINE_SEG 가 없는 표 host 문단(p18: 3×3 표)은 비교할 줄이 없다.
-                // 그 앞에서 줄을 가진 가장 가까운 문단의 끝과 비교해야 표 뒤의 되감김을 본다.
-                let prev_seg = cell.paragraphs[..pi]
-                    .iter()
-                    .rev()
-                    .find_map(|para| para.line_segs.last());
-                match (prev_seg, p.line_segs.first()) {
-                    (Some(prev_seg), Some(cur_seg))
-                        if !line_seg_is_synthetic(prev_seg) && !line_seg_is_synthetic(cur_seg) =>
-                    {
-                        let prev_end = prev_seg.vertical_pos.saturating_add(prev_seg.line_height);
-                        cur_seg.vertical_pos >= 0
+            // Equal local zero origins are a physical frame boundary only
+            // when the original two-line cell boxes close cellSz and the full
+            // row ladder extends beyond the first declared object frame.
+            let declared_two_line_frame = pi == 1
+                && cell.paragraphs.len() == 2
+                && self.native_saved_two_line_row_frame(table, usize::from(cell.row), styles);
+            let reset_before = declared_two_line_frame
+                || if pi > 0 && cell_has_local_vpos_origin {
+                    // [#7095] 저장 LINE_SEG 가 없는 표 host 문단(p18: 3×3 표)은 비교할 줄이 없다.
+                    // 그 앞에서 줄을 가진 가장 가까운 문단의 끝과 비교해야 표 뒤의 되감김을 본다.
+                    let prev_seg = cell.paragraphs[..pi]
+                        .iter()
+                        .rev()
+                        .find_map(|para| para.line_segs.last());
+                    match (prev_seg, p.line_segs.first()) {
+                        (Some(prev_seg), Some(cur_seg))
+                            if !line_seg_is_synthetic(prev_seg)
+                                && !line_seg_is_synthetic(cur_seg) =>
+                        {
+                            let prev_end =
+                                prev_seg.vertical_pos.saturating_add(prev_seg.line_height);
+                            cur_seg.vertical_pos >= 0
                             && prev_end > 0
                             && cur_seg.vertical_pos < prev_end
                             // [#5585] 앞 줄 **바닥**보다 앞서는 것만으로는 리셋이 아니다.
@@ -11858,12 +11867,12 @@ impl LayoutEngine {
                             // 진짜 되감김은 앞 줄의 **시작**보다 뒤로 간다(p5 45290 → p6 0).
                             && (!cell_uses_overlapping_line_boxes
                                 || cur_seg.vertical_pos < prev_seg.vertical_pos)
+                        }
+                        _ => false,
                     }
-                    _ => false,
-                }
-            } else {
-                false
-            };
+                } else {
+                    false
+                };
             // #2430 p14의 비선형 부모 셀에는 한컴이 무시하는 빈 Enter가 있고,
             // 그 단일 lineseg도 다음 저장 좌표 0으로 rewind한다. 이를 프레임
             // 경계로 올리면 39쪽 정본이 38쪽으로 줄어든다. 실제 빈 문단은
@@ -11891,15 +11900,16 @@ impl LayoutEngine {
             } else {
                 false
             };
-            let stored_frame_break_before_para = if pi > 0 && cell_has_local_vpos_origin {
-                let prev_para = &cell.paragraphs[pi - 1];
-                match (prev_para.line_segs.last(), p.line_segs.first()) {
-                    (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur),
-                    _ => false,
-                }
-            } else {
-                false
-            };
+            let stored_frame_break_before_para = declared_two_line_frame
+                || if pi > 0 && cell_has_local_vpos_origin {
+                    let prev_para = &cell.paragraphs[pi - 1];
+                    match (prev_para.line_segs.last(), p.line_segs.first()) {
+                        (Some(prev), Some(cur)) => is_stored_frame_rewind(prev, cur),
+                        _ => false,
+                    }
+                } else {
+                    false
+                };
             let prev_para_has_mixed_nested_table = if pi > 0 {
                 let prev = &cell.paragraphs[pi - 1];
                 !prev.text.trim().is_empty()
@@ -14223,7 +14233,7 @@ impl LayoutEngine {
     /// Two paragraph-local zero lines own separate source frames only when
     /// their line boxes, intervening spacing and padding exactly close cellSz.
     /// The cut walker and physical opening-frame reservation share this proof.
-    fn native_saved_two_line_row_frame(
+    pub(crate) fn native_saved_two_line_row_frame(
         &self,
         table: &crate::model::table::Table,
         row: usize,
@@ -15980,6 +15990,7 @@ impl LayoutEngine {
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let mut j = start;
             let mut h = 0.0f64;
+            let mut applied_trailing_trim = 0.0f64;
             while j < units.len() {
                 let u = &units[j];
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
@@ -16082,6 +16093,9 @@ impl LayoutEngine {
                         });
                 let strict_saved_frame_break = u.stored_frame_break_before
                     && (declared_saved_frame_break
+                        || (j == 1
+                            && start == 0
+                            && self.native_saved_two_line_row_frame(table, row, styles))
                         || u.mixed_nested_recursive
                         || follows_single_cell_nested_host
                         || (self.profile.get().hwpx_stored_layout()
@@ -16244,7 +16258,8 @@ impl LayoutEngine {
                         styles,
                     );
                     if trailing_trim > 0.0 && h + u.height - trailing_trim <= avail_height + 0.5 {
-                        h += (u.height - trailing_trim).max(0.0);
+                        applied_trailing_trim = trailing_trim.min(u.height);
+                        h += u.height - applied_trailing_trim;
                         j += 1;
                         hit_hard_break = true;
                         break;
@@ -16343,7 +16358,10 @@ impl LayoutEngine {
             }
             let trailing_trim =
                 self.native_saved_reset_cut_trailing_trim(table, cell, &units, start, j, styles);
-            h = (h - trailing_trim).max(0.0);
+            // The capacity branch has already removed the selected tail.
+            // Restore that amount before applying the final cut's shared trim:
+            // a later orphan rewind may have changed its closing unit.
+            h = (h + applied_trailing_trim - trailing_trim).max(0.0);
             if j < units.len() {
                 fully_consumed = false;
             }

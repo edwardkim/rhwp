@@ -1617,6 +1617,7 @@ impl TypesetEngine {
             && st.current_height + (table_total - host_spacing_total).max(0.0)
                 > available + below_body_slack + 0.5;
         let legacy_whole_fits = !painted_rowbreak_exceeds_paper
+            && !self.stored_two_line_row_frames_require_split(table, styles)
             && (st.current_height + whole_fit_table_total <= available
                 || fits_after_overlay_shapes
                 || single_row_object_height_advance.is_some()

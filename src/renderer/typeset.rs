@@ -4045,6 +4045,9 @@ impl TypesetEngine {
         para_start_height: f64,
         lanes: &mut FloatLaneSet,
     ) -> bool {
+        if self.stored_two_line_row_frames_require_split(table, styles) {
+            return false;
+        }
         controls::try_place_empty_para_float_table(
             st,
             para_idx,
@@ -4398,6 +4401,36 @@ impl TypesetEngine {
         } else {
             table_height
         };
+        // An original TAC owner distinguishes its occupied box from the
+        // trailing gap which advances the following line. The gap may end
+        // past the body bottom when the following owner starts a new page;
+        // fit the closed object box, and still consume the unchanged end.
+        let occupied_height_for_fit = if tac_count > 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && !self.render_normalization.table_text_reflowed(table)
+            && table.caption.is_none()
+        {
+            para.line_segs
+                .get(tac_seg_idx)
+                .filter(|seg| {
+                    !is_synthetic_line_seg(seg)
+                        && seg.line_spacing >= 0
+                        && i64::from(seg.line_height)
+                            == i64::from(table.common.height)
+                                + i64::from(table.outer_margin_top)
+                                + i64::from(table.outer_margin_bottom)
+                        && (ft.effective_height
+                            - hwpunit_to_px(table.common.height as i32, self.dpi))
+                        .abs()
+                            <= self.dpi / 7200.0
+                })
+                .map_or(table_height, |seg| hwpunit_to_px(seg.line_height, self.dpi))
+        } else {
+            table_height
+        };
         let available = st.available_height();
         let fits_after_overlay_shapes =
             st.current_column_has_only_overlay_shapes() && table_height <= available + 12.0;
@@ -4438,7 +4471,8 @@ impl TypesetEngine {
             && !same_para_already_placed
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(prev_stored_vpos, para);
-        if (st.current_height + clearance + table_height + tac_trailing_spacing_for_fit > available
+        if (st.current_height + clearance + occupied_height_for_fit + tac_trailing_spacing_for_fit
+            > available
             && (!fits_after_overlay_shapes || side_wrap_placement.is_some())
             && (!saved_tac_table_bottom_fits || side_wrap_placement.is_some())
             && !st.current_items.is_empty())

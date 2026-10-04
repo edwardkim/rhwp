@@ -153,10 +153,13 @@ impl SourceFrameQuery<'_> {
         // A direct HWPX row with one visible owner and a structural empty
         // partner has an explicit source fragment boundary.  Let the
         // row-cut walk retain it; ordinary and multi-owner rows keep the
-        // measured whole-row fast path.
+        // measured whole-row fast path. The same rule applies to original
+        // Native cells whose two local-zero line boxes close the stored row.
+        // Spare capacity cannot merge their independently owned source frames.
         let declared_source_frame = row_start_cut.is_empty()
             && !table_text_reflowed()
-            && layout_engine.row_has_declared_stored_frame(table, r);
+            && (layout_engine.row_has_declared_stored_frame(table, r)
+                || layout_engine.native_saved_two_line_row_frame(table, r, styles));
         let whole_row_fits = !declared_source_frame
             && ((!single_visible_source_frame
                 && consumed + cs_before + row_total <= avail_for_rows)
