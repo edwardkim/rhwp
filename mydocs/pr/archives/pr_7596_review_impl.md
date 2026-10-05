@@ -21,4 +21,4 @@ last_verified: 2026-10-05
 
 ## 실행 결과
 
-정식 회귀 두 개는 source b3c933a88에서 각각 필드 값 `AAA` / 기대 `AAA값`으로 FAIL했다. 본문 부모 조건 보정 뒤 #7565 관련6 PASS, #7596 슬롯 보존14 PASS다. 최초 진단에서 활성화 설정에 실패한 중간 본문 반례도 결함 증거에서 제외하고, 적법한 공개 API 생성 후 두 값 불일치로 실패한 최종 결과만 보존했다. [수정 전 증거](../assets/semanticist21-20261005/pr7596-before.json), [실패 요약](../assets/semanticist21-20261005/pr7596-before-summary.txt). 최종 head의 lint·전체 nextest/fresh WASM은 이어서 검증한다.
+정식 회귀 두 개는 source b3c933a88에서 각각 필드 값 `AAA` / 기대 `AAA값`으로 FAIL했다. 본문 부모 조건 보정 뒤 #7565 관련6 PASS, #7596 슬롯 보존14 PASS다. 최초 진단에서 활성화 설정에 실패한 중간 본문 반례도 결함 증거에서 제외하고, 적법한 공개 API 생성 후 두 값 불일치로 실패한 최종 결과만 보존했다. 수정 전 증거 (`output/pr-review/semanticist21-20261005/run-records/pr7596-before.json`), 실패 요약 (`output/pr-review/semanticist21-20261005/run-records/pr7596-before-summary.txt`). 최종 head의 lint·전체 nextest/fresh WASM은 이어서 검증한다.

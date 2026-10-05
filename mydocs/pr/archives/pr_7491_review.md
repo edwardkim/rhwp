@@ -52,7 +52,7 @@ reflow_line_segs → 행별 bit 20 → paragraph layout 들여쓰기 소비. res
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
 - 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
-- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
+- focused: `output/pr-review/semanticist21-20261005/run-records/focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 
@@ -76,7 +76,7 @@ reflow_line_segs → 행별 bit 20 → paragraph layout 들여쓰기 소비. res
 
 ### 고정 base 대조 결과
 
-base `cdba77b609c399fdef26a6c9e637716aa32c2177`의 동일 입력/삽입 순서에서 table x `113.48`, width `597.12`, 우변 `710.60`을 직접 관측했다. 변경 전 table x `98.29333`, width `597.12`이다. 따라서 누적 후보에서 관측한 우변 초과는 최신 devel의 기존 결함이며 이번 들여쓰기 변경의 신규 회귀라고 판정하지 않는다. 새 회귀 검사가 현재 base 위에서 실패하는 사실은 유지하며 기대값을 완화하지 않았다. 증거: [base probe](../assets/semanticist21-20261005/base-probes.txt). 최초 잘못 고정한 suite target에서 0 tests가 실행된 결과는 검증에 세지 않았고, manifest에서 실제 `regression_suite_020`을 다시 resolve하여 2개 diagnostic을 실행했다.
+base `cdba77b609c399fdef26a6c9e637716aa32c2177`의 동일 입력/삽입 순서에서 table x `113.48`, width `597.12`, 우변 `710.60`을 직접 관측했다. 변경 전 table x `98.29333`, width `597.12`이다. 따라서 누적 후보에서 관측한 우변 초과는 최신 devel의 기존 결함이며 이번 들여쓰기 변경의 신규 회귀라고 판정하지 않는다. 새 회귀 검사가 현재 base 위에서 실패하는 사실은 유지하며 기대값을 완화하지 않았다. 증거: base probe (`output/pr-review/semanticist21-20261005/run-records/base-probes.txt`). 최초 잘못 고정한 suite target에서 0 tests가 실행된 결과는 검증에 세지 않았고, manifest에서 실제 `regression_suite_020`을 다시 resolve하여 2개 diagnostic을 실행했다.
 
 fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관측했다: 0은 모두 x 113.4, +3000은 첫 줄 x 133.4/나머지 113.4, -3000은 첫 줄 113.4/나머지 133.4. 이는 현재 좌표 계약의 관측이며 저장 문단 들여쓰기의 한컴 fidelity 완료를 의미하지 않는다. 사용자 PDF의 누름틀 안내문 제외 지시는 본 표 좌표 검사를 면제하지 않는다.
 
@@ -88,6 +88,6 @@ fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 
-Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 [검증 정본](../assets/semanticist21-20261005/appearance-final-validation.json), 요약과 원 로그 SHA는 [실행 요약](../assets/semanticist21-20261005/appearance-final-validation-summary.txt)에 보존했다.
+Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 검증 정본 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation.json`), 요약과 원 로그 SHA는 실행 요약 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation-summary.txt`)에 보존했다.
 
 #7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.

@@ -5,8 +5,8 @@
 - base: `cdba77b609c399fdef26a6c9e637716aa32c2177`
 - code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`
 - 원 PR/적용 SHA/충돌 보정: `application.json`
-- 집중 실행: `focused-command.json`을 cargo 인자로 실행. `focused-results.json`은 74건(73 PASS/1 FAIL)을 원 case별로 구분한다.
-- Native base 진단: `base-probes.txt`의 2개 테스트는 동일 원본의 표 좌표 및 긴 HTML 문단 길이를 관측한다. 테스트 기대값/golden 변경을 하지 않았다.
+- 집중 실행: `output/pr-review/semanticist21-20261005/run-records/focused-command.json`을 cargo 인자로 실행. `output/pr-review/semanticist21-20261005/run-records/focused-results.json`은 74건(73 PASS/1 FAIL)을 원 case별로 구분한다.
+- Native base 진단: `output/pr-review/semanticist21-20261005/run-records/base-probes.txt`의 2개 테스트는 동일 원본의 표 좌표 및 긴 HTML 문단 길이를 관측한다. 테스트 기대값/golden 변경을 하지 않았다.
 
 ## Chromium 진단 재현
 
@@ -35,3 +35,7 @@ Rust code `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`
 ## 서버 한컴 글꼴 시스템 등록
 
 사용자 요청으로 `/usr/local/share/fonts/hancom-office-2020`에서 기존 `/opt/hnc/hoffice11/Shared/TTF`를 연결하고 fc-cache를 갱신했다. Hwp/All/Install을 포함하며201개 face를 등록했다. 이전 `62-hwp-convert-mcp-hanbatang.conf`는 보존하고, 새 `99-rhwp-hancom-exact-family.conf`에서 `한컴바탕` 요청에 실제 Haansoft Batang을 prepend_first한다. 기존 강제 HCR alias를 그대로 두면 정확한 글꼴을 등록해도 선택이 HCR로 남는 것을 직접 확인했다. 최종 fc-match와 글꼴 SHA는 `hancom-system-font-registration.json`에 있다. 이 조치 이후 결과는 앞선 미등록 환경의 기본 경로 결과와 구분한다. 글꼴 바이너리를 저장소에 추가하거나 한컴 설치본을 수정하지 않았다.
+
+## 실행 출력 보존 정책
+
+`mydocs/manual/pr_review/local_validation.md`에 따라 nextest 및 로컬 검증의 원 출력·실행 JSON은 ignored `output/pr-review/semanticist21-20261005/logs/`와 `run-records/`에만 저장하며 Git에 포함하지 않는다. 확장자를 txt/json으로 바꾼 실행 출력도 동일하다. 개별 PR 문서에는 검토 source·명령·통과/실패 요약과 로컬 경로를 적는다. 입력 HWP/HWPX·독립 PDF와 Visual Sweep의 대표 이미지·입력/빌드 provenance는 시각 증거 정책에 따라 보존한다.
