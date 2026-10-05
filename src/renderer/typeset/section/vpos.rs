@@ -42,7 +42,11 @@ impl TypesetEngine {
                                     self.dpi,
                                 )
                             });
-                        if margin_is_page_relative {
+                        let heading_is_page_relative =
+                            crate::renderer::height_cursor::stored_origin::saved_inline_heading_page(
+                                paragraphs, para_idx, st.profile.hwp5_stored_pagination_layout(),
+                            );
+                        if margin_is_page_relative || heading_is_page_relative {
                             0
                         } else {
                             seg.vertical_pos

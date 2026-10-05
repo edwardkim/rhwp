@@ -3174,18 +3174,13 @@ pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
 
 /// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.
 /// 폭 0 저장 줄의 vpos는 이전 흐름 위치일 수 있으므로 새 단의 원점을 덮지 않는다.
-/// 이 전환은 명시적 쪽·단 나누기로 새 프레임을 여는 통째 표에 적용한다.
-/// 같은 프레임 안의 저장 표는 폭 0이어도 원본 줄 원점을 계속 소유한다.
+/// 통째 표는 동일 프레임에서 저장 줄 보정을 마친 흐름 원점을 사용한다.
+/// 명시적 쪽·단 나누기는 새 프레임 원점을 사용한다.
 /// 분할 표의 저장 앵커는 원본 조각의 컷·높이·단을 소유하므로 통째 표 상자로
 /// 치환하지 않는다. 일반 저장 글줄·음수 오프셋·절대 좌표도 기존 계약을 유지한다.
 pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Table) -> bool {
     reflow_empty_table_host(para, table)
         || (table.page_break == TablePageBreak::None
-            && matches!(
-                para.column_type,
-                crate::model::paragraph::ColumnBreakType::Page
-                    | crate::model::paragraph::ColumnBreakType::Column
-            )
             && object_only_saved_table_anchor(para, table)
             && !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty

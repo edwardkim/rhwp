@@ -157,3 +157,11 @@ production adapter를 우회한 초기 입력은 결함 증거에서 제외하�
 보정 후 같은8건은8 PASS/0 FAIL이다. 로그는 `output/pr-review/semanticist21-20261005/fragment-owner-corrected-tests.log`, 전후 분리 실행은 `failure-isolation-*-tests.log`에 보존했다. 전체 실패37건과 #7571 관계 회귀를 묶어 재실행하며 새 Native/fresh WASM 결과를 확인하기 전에는 통합 판정을 갱신하지 않는다. 기존 회귀 assertion·overflow/overlap baseline은 유지했다.
 
 분할 표를 구분한 첫 보정의 focused 실행은59건 중57 PASS/2 FAIL이다. 남은 `hwpspec.hwp`의 겹침9건은 분할되지 않는 표에서도 같은 프레임의 원본 앵커를 통째 포맷 상자로 바꾼 결과였다. 실제 frozen library 분리 실행에서 바깥 상자 확대 전0건/확대 뒤9건/분할 표만 제외한 뒤9건임을 확인했다(`hwpspec-overlap-*.log`). 새 쪽·단을 여는 명시적 flow break에서만 통째 표의 새 프레임 상자를 소비하도록 원점 소유를 바로잡는다. 같은 프레임의 저장 표는 기존 원본 앵커를 유지하며, 분할 표도 원본 조각 계약을 유지한다. 단순 폭0은 원본 프레임을 버리는 근거가 아니다. 이 보정의 재검증은 진행 중이다.
+
+## 2026-10-06 동일 프레임 표의 공통 원점 보정
+
+등록 Arial의 독립 Print 대조군에서 표 외곽이57.53754%로 퇴행했다. 명시적 Page/Column에만 상자 공유를 제한하면 일반 프레임의 바깥 위 여백이 빠졌다. `flow_with_text`는 본문 영역의 세로 제한 속성이므로 이를 문서별 예외 조건으로 사용하지 않는다. RowBreak/CellBreak의 조각 소유는 별도로 유지한다.
+
+원점 생산·소비 경로는 `section::flow`의 표 진입 → `section::vpos::vpos_snap_current_height`/`HeightCursor` → `table::block::entry`의 `from_empty_reflow_host` → 전체 fit·예약 → `prepare`의 첫 조각 계획 → `layout`의 공유 placement다. 기존 표 진입은 저장 좌표 보정을 생략하고 공유 상자를 원시 흐름에 고정했다. 또한 인라인 제목 도형으로 시작하는 저장 쪽의 paint는 page_base0인데 측정은 제목 vpos를 base로 빼고 있었다. `hwpspec.hwp`의15/16/20번0-based 쪽에서 제목 원점1200/1200/200HU가 이 경로로 갈린다.
+
+보정은 기존 paint의 저장 제목 원점 판정을 `height_cursor_stored_origin.rs`로 추출해 측정과 공유한다. 동일 프레임의 유효한 폭0·통째 표는 같은 HeightCursor 보정 후의 원점에서 before/body/after 상자를 만든다. 새 프레임·분할 표·합성/편집된 사다리는 각 기존 원점 계약을 유지한다. 절대 px 기준값·래칫 허용치를 변경하지 않는다. Native 직접 출력과 기존 저장/분할 대조군부터 확인한 뒤 fresh WASM·전체 게이트를 재실행한다.

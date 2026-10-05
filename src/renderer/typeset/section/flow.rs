@@ -300,6 +300,21 @@ impl TypesetEngine {
                 }
             }
         } else {
+            // 저장 폭0 앵커의 통째 표도 글줄과 같은 저장 좌표 보정을 거친다.
+            // 보정 전 흐름을 fit/paint 공통 상자로 고정하면 앞 글줄 위에 겹친다.
+            // 새 프레임과 분할 표는 각각의 원점/조각 소유를 유지한다.
+            if !st.current_items.is_empty()
+                && para.column_type == crate::model::paragraph::ColumnBreakType::None
+                && matches!(para.controls.as_slice(), [Control::Table(table)]
+                    if !para.line_segs.is_empty()
+                        && crate::renderer::float_placement::empty_table_host_uses_formatted_box(para, table))
+            {
+                let before = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                self.vpos_snap_current_height(st, para_idx, paragraphs, styles, before);
+            }
             // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
             self.typeset_table_paragraph(
                 st,

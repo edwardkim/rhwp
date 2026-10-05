@@ -7708,21 +7708,12 @@ impl LayoutEngine {
 
         // vpos 보정을 위한 페이지 기준 vpos 계산
         // 페이지 첫 항목의 vpos를 기준점으로 삼아 모든 페이지에서 vpos 보정 적용
-        let saved_inline_heading_page = matches!(col_content.items.first(), Some(PageItem::FullParagraph { para_index })
-            if self.profile.get().hwp5_stored_pagination_layout()
-                && *para_index > 0
-                && paragraphs.get(*para_index).is_some_and(|para| {
-                    para.line_segs.len() == 1
-                        && (1..=2500).contains(&para.line_segs[0].vertical_pos)
-                        && para.controls.len() == 1
-                        && matches!(&para.controls[0], Control::Shape(shape) if shape.common().treat_as_char)
-                        && !para_has_visible_text(para)
-                })
-                && paragraphs.get(*para_index - 1).and_then(|para| para.line_segs.last())
-                    .is_some_and(|seg| seg.vertical_pos.saturating_add(seg.line_height) > 60_000)
-                && paragraphs.get(*para_index + 1).and_then(|para| para.line_segs.first())
-                    .is_some_and(|seg| seg.vertical_pos > paragraphs[*para_index].line_segs[0].vertical_pos
-                        && seg.vertical_pos < 30_000));
+        let saved_inline_heading_page = matches!(
+            col_content.items.first(), Some(PageItem::FullParagraph { para_index })
+                if super::height_cursor::stored_origin::saved_inline_heading_page(
+                    paragraphs, *para_index, self.profile.get().hwp5_stored_pagination_layout(),
+                )
+        );
         // 저장 HWP/HWPX 쪽은 첫 vpos가 문단 앞 간격과 정확히 같은 문단으로 시작할 수 있다.
         // 이 vpos는 쪽 원점 자체가 아니라 원점부터의 여백이다.
         // 이후 항목에 쪽 상대 vpos를 적용하기 전에 다음 저장 문단도 같은
