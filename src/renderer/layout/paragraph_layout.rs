@@ -4231,6 +4231,7 @@ impl LayoutEngine {
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
+        styles: &ResolvedStyleSet,
         tac_offsets_px: &[(usize, f64, usize)],
         cell_ctx: Option<&CellContext>,
         mut x: f64,
@@ -4262,6 +4263,19 @@ impl LayoutEngine {
                                 caption: f.caption.clone(),
                                 text: f.text.clone(),
                                 display_text: FormObjectNode::form_display_text(f),
+                                appearance:
+                                    crate::renderer::form_appearance::FormAppearance::resolve(
+                                        f,
+                                        styles,
+                                        p.char_shape_id_at(
+                                            p.logical_control_positions()
+                                                .get(tac_ci)
+                                                .copied()
+                                                .unwrap_or(comp_line.char_start),
+                                        )
+                                        .unwrap_or(0),
+                                        self.dpi,
+                                    ),
                                 fore_color: form_color_to_css(f.fore_color),
                                 back_color: form_color_to_css(f.back_color),
                                 value: f.value,
@@ -6711,6 +6725,7 @@ impl LayoutEngine {
                 &mut line_node,
                 comp_line,
                 para,
+                styles,
                 tac_offsets_px,
                 cell_ctx.as_ref(),
                 x,
@@ -8741,6 +8756,13 @@ impl LayoutEngine {
                                     caption: f.caption.clone(),
                                     text: f.text.clone(),
                                     display_text: FormObjectNode::form_display_text(f),
+                                    appearance:
+                                        crate::renderer::form_appearance::FormAppearance::resolve(
+                                            f,
+                                            styles,
+                                            run.char_style_id,
+                                            self.dpi,
+                                        ),
                                     fore_color: form_color_to_css(f.fore_color),
                                     back_color: form_color_to_css(f.back_color),
                                     value: f.value,

@@ -129,3 +129,11 @@ WASM Visual Sweep도 동일 PDF/1쪽에서 `80.02964%`, gate `re_review_required
 사용자는 버튼·라디오·텍스트 박스의 3D 표현 누락과 ComboBox 표시 위치 차이를 추가로 지적했다. 한컴 PDF에는 밝은/어두운 테두리와 Marlett으로 그린 check/radio 표시가 있으며, 캡션은 Haansoft Batang 10pt이다. 저장 CharShape 0도 height=1000(10pt)이다. 기존 SVG/Canvas/Skia는 서로 다른 크기·여백과 임의의 sans-serif 크기를 사용하고, enabled 버튼도 회색 비활성처럼 그린다. 이 경로의 실제 차이는 font exception으로 면제하지 않는다.
 
 공통 폼 표시 geometry를 마련하여 솟은 버튼·들어간 입력 프레임·check/radio 표시 및 글자 원점/크기를 같은 결과로 공급한다. 원래 개체 bbox와 편집용 원문은 유지한다. 폼 CharShape/FollowContext·DrawFrame·enabled 속성을 읽어 폼 글자와 테두리를 결정하고, 명시한 속성이 다른 대조군을 검사한다. 실제 Native 및 fresh WASM 출력에서 한컴 PDF의 해당 영역을 재비교한다. 추가 source 변경이 필요하므로 진행 중이던 이전 WASM 빌드를 종료했고 그 결과를 최종 증거로 재사용하지 않는다. 사용자는 Studio public/rhwp.js도 최종 커밋에 포함하도록 요청했다.
+
+## 폼 공통 외형 구현과 집중 검사
+
+`src/renderer/form_appearance.rs`에서 폼 CharShape/FollowContext/DrawFrame과 dpi를 해소하고 글자 원점·기준선·크기, 2겹 명암 프레임과 check/radio geometry를 만든다. 세 layout 생성 위치 → FormObjectNode.appearance → SVG/WebCanvas/Native Skia 및 paint JSON drawing → CanvasKit의 실제 소비 경로가 같은 결과를 사용한다. 기존 개체 bbox/본문 흐름과 편집용 text는 유지한다. enabled 버튼도 원래 foreground를 사용하며 입력 상자는 document back_color를 그린다. SVG의 폼 글꼴도 embedding codepoint 수집에 포함한다.
+
+기존 renderer의 입체 프레임/10pt 검사 3건은 모두 수정 전 FAIL이었다. 최종 집중 검사는 외형6·초기 표시4·기존 암호4 총14 PASS다. ComboBox 좌표 기대값은 한컴 PDF에서 읽은 실제 origin `(87.36,193.68)pt`를 96dpi로 변환한 `(116.48,258.24)px`이고, 실제 SVG `(116.387,258.173)`가 0.4px 이내다. FollowContext 대조군은 DocInfo를 추가하는 합성 계약이며, 기존 직접 document_mut 경로의 style snapshot을 새 글자 속성으로 갱신하지 못해 최초 검사만 실패했다. 저장 후 parser로 다시 연 정상 style snapshot에서 10pt/16pt 기대값을 바꾸지 않고 PASS다. 이 대조군을 한컴 화면의 실제 편집 후 출력 증거로 승격하지 않는다.
+
+Studio TypeScript/production build PASS, npm tests1817건 중1815 PASS/2 SKIP/0 FAIL. 시각 비교에 실제 설치된 `/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF`를 공급한다. fc-scan의 face는 한컴 PDF와 같은 `Haansoft Batang`/`한컴바탕`, SHA-256 `35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05`이다. 이전 작은 sans-serif 캡처와 새 글꼴/geometry 캡처를 구분하고, 정확한 새 source에서 Native/fresh WASM 비교를 다시 만든다.

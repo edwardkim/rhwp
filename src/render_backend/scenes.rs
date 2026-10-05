@@ -361,6 +361,7 @@ fn sample_form_node() -> FormObjectNode {
         caption: "확인".into(),
         text: String::new(),
         display_text: None,
+        appearance: Default::default(),
         fore_color: "#000000".into(),
         back_color: "#ffffff".into(),
         value: 0,

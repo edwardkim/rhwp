@@ -759,6 +759,18 @@ impl LayoutEngine {
                     caption: form.caption.clone(),
                     text: form.text.clone(),
                     display_text: FormObjectNode::form_display_text(form),
+                    appearance: crate::renderer::form_appearance::FormAppearance::resolve(
+                        form,
+                        styles,
+                        para.char_shape_id_at(
+                            para.logical_control_positions()
+                                .get(control_index)
+                                .copied()
+                                .unwrap_or(0),
+                        )
+                        .unwrap_or(0),
+                        self.dpi,
+                    ),
                     fore_color: super::paragraph_layout::form_color_to_css(form.fore_color),
                     back_color: super::paragraph_layout::form_color_to_css(form.back_color),
                     value: form.value,

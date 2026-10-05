@@ -649,6 +649,8 @@ pub struct FormObjectNode {
     /// 편집용 원문과 분리한 폼 표시 문자열(콤보 초기 항목/암호 마스킹).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub display_text: Option<String>,
+    /// 문서 글자 속성과 출력 해상도에서 해소한 공통 폼 외형.
+    pub appearance: super::form_appearance::FormAppearance,
     /// 글자 색 (CSS #rrggbb)
     pub fore_color: String,
     /// 배경 색 (CSS #rrggbb)

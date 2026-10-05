@@ -1,0 +1,6 @@
+follow false refs [CharShapeRef { start_pos: 0, char_shape_id: 7 }] logical [0]
+direct: <text x="116.387" y="258.173" font-size="13.333" fill="#000000" font-family="한컴바탕" font-weight="normal" font-style="normal">계절 선택</text>
+reopen: <text x="116.387" y="258.173" font-size="13.333" fill="#000000" font-family="한컴바탕" font-weight="normal" font-style="normal">계절 선택</text>
+follow true refs [CharShapeRef { start_pos: 0, char_shape_id: 7 }] logical [0]
+direct: <text x="116.387" y="253.507" font-size="0.000" fill="#000000" font-family="" font-weight="normal" font-style="normal">계절 선택</text>
+reopen: <text x="116.387" y="260.973" font-size="21.333" fill="#000000" font-family="한컴바탕" font-weight="normal" font-style="normal">계절 선택</text>

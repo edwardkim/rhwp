@@ -1,0 +1,72 @@
+[RustTestSuite] form_classic_appearance -> regression_suite_028::form_classic_appearance
+[RustTestSuite] cargo nextest run --locked --test regression_suite_028 -E test(/(^|::)form_classic_appearance::/) --cargo-profile release-test --target-dir target/pr-review --no-fail-fast
+   Compiling rhwp v0.8.6 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 8.99s
+────────────
+ Nextest run ID 869960bc-7467-44c3-b3c5-c66d4bdf482c with nextest profile: default
+    Starting 3 tests across 1 binary (222 tests skipped)
+        FAIL [   0.017s] (1/3) rhwp::regression_suite_028 form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds
+  stdout ───
+
+    running 1 test
+    test form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds ... FAILED
+
+    failures:
+
+    failures:
+        form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds' (793687) panicked at tests/generated/../cases/form_classic_appearance.rs:33:5:
+    classic 솟은 프레임의 어두운 아래 변
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (2/3) rhwp::regression_suite_028 form_classic_appearance::edit_has_recessed_inner_edge_and_document_background
+  stdout ───
+
+    running 1 test
+    test form_classic_appearance::edit_has_recessed_inner_edge_and_document_background ... FAILED
+
+    failures:
+
+    failures:
+        form_classic_appearance::edit_has_recessed_inner_edge_and_document_background
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'form_classic_appearance::edit_has_recessed_inner_edge_and_document_background' (793686) panicked at tests/generated/../cases/form_classic_appearance.rs:39:5:
+    들어간 프레임의 내부 좌상 변
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.020s] (3/3) rhwp::regression_suite_028 form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground
+  stdout ───
+
+    running 1 test
+    test form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground ... FAILED
+
+    failures:
+
+    failures:
+        form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground' (793685) panicked at tests/generated/../cases/form_classic_appearance.rs:24:9:
+    assertion `left == right` failed: enabled 원래 글자색
+      left: Some("#808080")
+     right: Some("#000000")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.021s] 3 tests run: 0 passed, 3 failed, 222 skipped
+        FAIL [   0.017s] (1/3) rhwp::regression_suite_028 form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds
+        FAIL [   0.019s] (2/3) rhwp::regression_suite_028 form_classic_appearance::edit_has_recessed_inner_edge_and_document_background
+        FAIL [   0.020s] (3/3) rhwp::regression_suite_028 form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground
+error: test run failed

@@ -1,0 +1,21 @@
+   Compiling rhwp v0.8.6 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 44s
+────────────
+ Nextest run ID 59124309-0e78-408c-b452-f7f3de2d4ee0 with nextest profile: default
+    Starting 14 tests across 3 binaries (641 tests skipped)
+        PASS [   0.019s] ( 1/14) rhwp::regression_suite_004 form_classic_appearance::edit_has_recessed_inner_edge_and_document_background
+        PASS [   0.023s] ( 2/14) rhwp::regression_suite_004 form_classic_appearance::explicit_frame_disabled_keeps_background_without_recessed_edges
+        PASS [   0.023s] ( 3/14) rhwp::regression_suite_004 form_classic_appearance::combo_label_origin_matches_independent_hancom_pdf
+        PASS [   0.024s] ( 4/14) rhwp::regression_suite_004 form_classic_appearance::enabled_captions_use_stored_ten_point_style_and_foreground
+        PASS [   0.025s] ( 5/14) rhwp::regression_suite_004 form_classic_appearance::raised_button_has_dark_bottom_edge_inside_original_bounds
+        PASS [   0.033s] ( 6/14) rhwp::regression_suite_026 form_combobox_display::empty_or_absent_initial_item_stays_empty
+        PASS [   0.034s] ( 7/14) rhwp::regression_suite_026 form_combobox_display::explicit_selection_and_free_input_override_initial_item
+        PASS [   0.041s] ( 8/14) rhwp::regression_suite_026 form_combobox_display::hancom_original_displays_initial_item_without_changing_selection
+        PASS [   0.042s] ( 9/14) rhwp::regression_suite_024 form_password_rendering::plain_edit_text_remains_visible_and_queryable
+        PASS [   0.046s] (10/14) rhwp::regression_suite_004 form_classic_appearance::form_char_style_is_independent_of_context_until_follow_context
+        PASS [   0.047s] (11/14) rhwp::regression_suite_024 form_password_rendering::password_edit_masks_empty_line_inline_form
+        PASS [   0.049s] (12/14) rhwp::regression_suite_024 form_password_rendering::password_edit_masks_text_line_inline_form
+        PASS [   0.052s] (13/14) rhwp::regression_suite_026 form_combobox_display::initial_item_reaches_all_form_placements
+        PASS [   0.055s] (14/14) rhwp::regression_suite_024 form_password_rendering::password_edit_masks_floating_form
+────────────
+     Summary [   0.058s] 14 tests run: 14 passed, 641 skipped

@@ -732,6 +732,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
             .len()
             .saturating_add(form.text.len())
             .saturating_add(form.display_text.as_ref().map_or(0, String::len))
+            .saturating_add(form.appearance.font_family.len())
             .saturating_add(form.name.len()),
         PaintOp::RawSvg { raw, .. } => raw.svg.len(),
         PaintOp::FootnoteMarker { marker, .. } => {
@@ -3297,6 +3298,7 @@ mod tests {
             caption: "Agree".to_string(),
             text: String::new(),
             display_text: None,
+            appearance: Default::default(),
             fore_color: "#111111".to_string(),
             back_color: "#ffffff".to_string(),
             value: 1,

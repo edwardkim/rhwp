@@ -1079,6 +1079,13 @@ impl PaintOp {
                     form.value,
                     form.enabled,
                 );
+                // CanvasKit는 backend 자체에서 크기/여백을 다시 추측하지 않는다.
+                let drawing = crate::renderer::form_appearance::form_drawing(form, *bbox);
+                let _ = write!(
+                    buf,
+                    ",\"drawing\":{}",
+                    serde_json::to_string(&drawing).expect("finite form drawing")
+                );
                 buf.push('}');
             }
             PaintOp::Placeholder { bbox, placeholder } => {
