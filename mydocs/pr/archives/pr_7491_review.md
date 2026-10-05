@@ -312,3 +312,13 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `c4367ec03a28369cc6f26b17eca46553ac61514c` | `c2ba3a348a4b3e0ef3eb82f85faf62e76e0cce22` | `1d1c325ac04fabaf563ec4549011adce8c0d3073` | already_integrated_upstream |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 누적 후속: 선언보다 큰 실제 표 높이의 독립 검증
+
+공개 편집 API로 만든 작은 표 입력 `tests/fixtures/issue7491/smallfit-measured.hwp`와 Windows MCP engine2020의 Print(method0/one-up, 한컴11.0.0.9136, job `44a226c7-de02-440d-be07-9289a3c64e69`) 기준 `pdf/semanticist21-20261005/pr7491/mcp/issue6190-smallfit-measured-2020.pdf`를 보존했다. 같은 입력의 Native/fresh WASM 전체1쪽 TSV 모두100%이고 누락/90% 미만 쪽은0이다. 같은 소스의 두 raster는 SHA-256까지 동일하며 Native/WASM 대표 review PNG도 직접 열었다. 원문/표·접두 글자·다음 빈 문단의 소속과 기준선 순서를 확인했다.
+
+- 구현 source `85f3d021ab67328e4c8f5e77670125a2c3ab0fe8`과 현재 후보의 production byte는 같다. WASM package SHA-256 `51141da77d73e54dc6bfef4b16a1049f22905cd315441e9c743f53e57114f43b`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; Studio public 산출물과 각각 동일하다. 재캡처는 ignored `rebased-smallfit-wasm-{scores,review}`, `bridge-smallfit-native-{scores,review}`에 보존했다.
+- 정식 원본 검사 `tests/cases/issue_7491_measured_inline_table_band.rs`는 절대 px를 기대값으로 고정하지 않는다. 독립 Print와 원본 저장 줄에서 확인한 바깥여백/본문 높이 비율, 표·접두 소속, 글자 중복/누락, 셀 내부 포함, 기준선 순서, 뒤 문단 점유를 검사한다.
+- 보정 전 `c167dc6abbebf69546575e2d16d06223791bab82`를 별도 worktree에서 실제 빌드했다. 같은 정식 검사 compile0/test101: 외곽 위 여백 비율0.4461778471 ≠ 저장0.2207488300으로 실패한다. 같은 입력의 직접 Native Visual Sweep도53.47826%로 실패했다. 보정 후 재빌드의 정식 원본 rustc 실행1 PASS; 파생 integration suite와 전체 필수 게이트를 이어서 확인한다. 단순 존재/기준선 순서만 검사한 초기 진단은 before에서도 통과해 결함 검출 증거에서 제외하고 여백 관계를 추가했다.
+- 두 checkout이 공유하는 cdylib 파일명은 동일해 Cargo의 다른 fingerprint가 오래된 artifact를 재사용할 수 있다. 현재 source 파일 mtime을 갱신해 candidate Native lib/bin을 다시 빌드(3m21s)했고 before artifact를 후보 증거로 쓰지 않았다. 원 로그·명령 JSON·TSV는 ignored output에만 둔다.
+- 대표 증적: `../assets/semanticist21-20261005/pr7491-smallfit/`의 before-native/native/wasm review·overlay PNG. 원 #7491의 #7599 병합·후속 완료는 그대로 유지하며 이 후속 회귀는 누적 후보에만 추가했다.
