@@ -1700,7 +1700,29 @@ impl TypesetEngine {
                     _ => placement,
                 }
             });
-        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
+        let unconstrained_host_placement = unconstrained_host_placement
+            .or_else(|| {
+                // 저장 사다리가 빈 host 의 앞·뒤 간격과 줄 상자를 싣지 않았다고 증언하면
+                // 그 상자로 수용·전진하고, 렌더도 같은 원점을 소비한다.
+                ((st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                    && !st.profile.session_edited()
+                    && !st.vpos_ladder_dirty
+                    && st.col_count == 1
+                    && !self.render_normalization.table_text_reflowed(table))
+                .then(|| {
+                    crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_stored_ladder_host(
+                        para,
+                        paragraphs_all.get(para_idx + 1)?,
+                        table,
+                        placement_para_start_height,
+                        ft.host_spacing.before,
+                        (table_total - host_spacing_total).max(0.0),
+                        self.dpi,
+                    )
+                })
+                .flatten()
+            })
+            .or_else(|| {
             crate::renderer::float_placement::ParagraphFloatPlacement::from_empty_reflow_host(
                 para,
                 table,

@@ -2349,6 +2349,88 @@ impl ParagraphFloatPlacement {
         })
     }
 
+    /// 저장 사다리가 증언하는 빈 host 자리차지 표의 상자.
+    ///
+    /// 글자 없는 host 문단의 문단 기준 자리차지 표는 host 의 문단 앞 간격·줄 상자·
+    /// 문단 뒤 간격을 흐름에 싣지 않는다. 표는 문단 위끝(앞 간격 이전)에서 시작하고,
+    /// 다음 문단은 `표 + 위·아래 바깥여백` 바로 뒤에서 시작한다. 한/글 저장 사다리가
+    /// 이를 그대로 적는다 — `다음.vpos − host.vpos = 세로오프셋 + 위여백 + 선언높이 +
+    /// 아래여백 − 문단 앞 간격`(host vpos 는 앞 간격 뒤의 줄 위치다).
+    /// `2025 행정업무운영 편람(최종).hwp` 구역 10 pi=73(앞 간격 20px): 저장 델타 278.8 =
+    /// 291.3 + 7.5 − 20.0, 한/글 정본 299쪽 표 안 괘선 326.5(rhwp 종전 328.3, 앞 간격만큼
+    /// 아래 앉고 흐름은 앞·뒤 간격과 줄 상자 43.3px 를 더 예약해 다음 표 pi=74 를 다음
+    /// 쪽으로 넘겼다). pi=74(앞 간격 0): 327.3 = 319.8 + 7.5.
+    ///
+    /// 문단 단위 저장 증거로만 발동한다 — 등식이 ±2HU 안에서 맞지 않으면(쪽 경계 되감기,
+    /// 다른 개체·글자가 섞인 host, 합성 줄) `None`. 측정한 표 높이가 선언과 1px 넘게
+    /// 다르면 그 선언 상자가 그려지는 표가 아니므로 역시 `None`.
+    pub(crate) fn from_empty_stored_ladder_host(
+        para: &Paragraph,
+        next: &Paragraph,
+        table: &Table,
+        origin: f64,
+        spacing_before: f64,
+        measured_table_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let stored_line = |paragraph: &Paragraph| {
+            let [line, ..] = paragraph.line_segs.as_slice() else {
+                return None;
+            };
+            (line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && !paragraph.stored_text_partition_is_dirty())
+            .then_some(line.vertical_pos)
+        };
+        if !matches!(para.controls.as_slice(), [Control::Table(_)])
+            || para
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+            || !is_para_topbottom_float(&table.common)
+            || !matches!(table.common.vert_align, VertAlign::Top)
+            || signed_hwpunit(table.common.vertical_offset) < 0
+            || table.caption.is_some()
+            || !origin.is_finite()
+            || !spacing_before.is_finite()
+            || spacing_before < 0.0
+            || !measured_table_height.is_finite()
+        {
+            return None;
+        }
+        // 사다리는 선언 높이로 적힌다. 행이 선언보다 커진 표(측정이 선언을 넘는 RowBreak
+        // 규정 표 등)는 그 상자가 실제 그려지는 표를 담지 못하므로 이 계약 밖이다.
+        let declared = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
+        if (measured_table_height - declared).abs() > 1.0 {
+            return None;
+        }
+        let host_vpos = stored_line(para)?;
+        let next_vpos = stored_line(next)?;
+        let physical_hu = i64::from(signed_hwpunit(table.common.vertical_offset))
+            + i64::from(table.outer_margin_top)
+            + i64::from(table.common.height.min(i32::MAX as u32))
+            + i64::from(table.outer_margin_bottom);
+        let spacing_before_hu = crate::renderer::px_to_hwpunit(spacing_before, dpi) as i64;
+        let stored_delta = i64::from(next_vpos) - i64::from(host_vpos);
+        if stored_delta <= 0 || (stored_delta - (physical_hu - spacing_before_hu)).abs() > 2 {
+            return None;
+        }
+        let table_top = origin
+            + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        let occupied_bottom = table_top
+            + hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi)
+            + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
+        Some(Self {
+            flow: ParagraphFloatFlow::Exclusion,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top,
+            occupied_bottom,
+        })
+    }
+
     /// 저장 LineSeg 대신 현재 frame에서 계산된 줄로 앵커를 결정한다.
     /// 모든 호스트 줄이 표보다 앞서는 계약만 소유하며, 혼합 배치를 임의로
     /// 본문 뒤 배치로 바꾸지 않는다. source의 UTF-16 위치/높이는 읽지 않는다.
