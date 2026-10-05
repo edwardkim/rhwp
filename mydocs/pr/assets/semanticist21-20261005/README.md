@@ -31,3 +31,7 @@ Rust code `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`
 환경변수 없이 원본/암호 Native와 fresh WASM의 2px 관용 실루엣 일치율은 각각99.34142%/98.81531%로 네 gate 모두 PASS다. 이 경우 Native SVG에는 font data URI가 없고 local 한컴바탕/함초롬바탕/HCR Batang alias가 있어 설치 글꼴 fallback을 사용한다. 동일 PDF face를 지정한 비교는99.88501%/99.90053%로 PASS다. 폰트 미설치로 단정하지 않으며 점수만으로 동일 glyph face라고 주장하지 않는다. 두 조건의 review·overlay·manifest는 `pdf/semanticist21-20261005/form-appearance/`에 각각 보존했다.
 
 실제 WebCanvas 및 CanvasKit 진단은 `combobox-browser.mjs`, `appearance-browser-results.json`이다. 루트 HTTP18765와 Studio Vite18766을 사용한다. 먼저 위 동일 face Native full embedding Sweep을 `output/pr-review/semanticist21-20261005/appearance-final-native`에 실행한다. 원 HBATANG 파일은 Chromium FontFace가 Invalid font data로 거부하므로, 진단 harness는 RHWP의 기존 full SVG 임베더가 bitmap table/cmap/checksum을 정리한 실제 `한컴바탕` font data URI를 재사용한다. 다른 glyph face로 대체하지 않는다. CanvasKit actual renderer의 render complete/error·fallback 수와 원본/암호 실제 화면을 확인했다. screen 안내문은 print PDF와 비교하지 않는다.
+
+## 서버 한컴 글꼴 시스템 등록
+
+사용자 요청으로 `/usr/local/share/fonts/hancom-office-2020`에서 기존 `/opt/hnc/hoffice11/Shared/TTF`를 연결하고 fc-cache를 갱신했다. Hwp/All/Install을 포함하며201개 face를 등록했다. 이전 `62-hwp-convert-mcp-hanbatang.conf`는 보존하고, 새 `99-rhwp-hancom-exact-family.conf`에서 `한컴바탕` 요청에 실제 Haansoft Batang을 prepend_first한다. 기존 강제 HCR alias를 그대로 두면 정확한 글꼴을 등록해도 선택이 HCR로 남는 것을 직접 확인했다. 최종 fc-match와 글꼴 SHA는 `hancom-system-font-registration.json`에 있다. 이 조치 이후 결과는 앞선 미등록 환경의 기본 경로 결과와 구분한다. 글꼴 바이너리를 저장소에 추가하거나 한컴 설치본을 수정하지 않았다.
