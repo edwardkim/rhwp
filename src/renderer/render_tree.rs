@@ -646,7 +646,7 @@ pub struct FormObjectNode {
     pub caption: String,
     /// 텍스트 (ComboBox, Edit)
     pub text: String,
-    /// 편집용 원문과 분리한 암호 입력 상자 표시 문자열.
+    /// 편집용 원문과 분리한 폼 표시 문자열(콤보 초기 항목/암호 마스킹).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub display_text: Option<String>,
     /// 글자 색 (CSS #rrggbb)
@@ -671,9 +671,12 @@ pub struct FormObjectNode {
 }
 
 impl FormObjectNode {
-    pub(crate) fn password_display_text(
-        form: &crate::model::control::FormObject,
-    ) -> Option<String> {
+    pub(crate) fn form_display_text(form: &crate::model::control::FormObject) -> Option<String> {
+        // 한컴 ComboBox의 빈 selectedValue는 첫 목록 값을 표시한다.
+        // HWP serializer의 ComboBox Text 규칙과 동일하며, 모델의 선택값은 유지한다.
+        if form.form_type == crate::model::control::FormType::ComboBox && form.text.is_empty() {
+            return form.properties.get("listItem0").cloned();
+        }
         if form.form_type != crate::model::control::FormType::Edit {
             return None;
         }
