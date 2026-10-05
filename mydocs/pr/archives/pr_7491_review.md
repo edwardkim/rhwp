@@ -11,7 +11,7 @@ last_verified: 2026-10-05
 메인터너 보정 후 수용 가능 — #7490 해결 범위의 로컬 검증 완료. #7490 들여쓰기 문제와 그 편집 경로의 TAC prefix 처리에
 해결 범위를 한정한 별도 integration [PR #7599](https://github.com/edwardkim/rhwp/pull/7599)를
 사용자 승인 후 push·등록했다. 통합 PR은 최종 head CI 성공을 확인하고 사용자 승인으로 병합했다.
-실제 merge SHA는 `bdda980b7e266d821171ed08b7604e21e6f3b7fa`다. 원 PR 자체를 merge하지 않으며, 원 PR 종료는 영구 기록 반영 뒤 진행한다.
+실제 merge SHA는 `bdda980b7e266d821171ed08b7604e21e6f3b7fa`다. 원 PR 자체를 merge하지 않으며, 원 PR은 영구 기록 반영과 한국어 안내 후 대체 통합으로 CLOSED 처리했다.
 작업지시자의 #7491 인계 지시에 따라 semanticist21의 네 commit을 author와 원 SHA를
 보존해 cherry-pick했다. 기여자 보류를 일반 reviewer가 임의로 해제한 경로가 아니다.
 
@@ -189,3 +189,10 @@ Native/fresh WASM 시각 게이트는 미검증이다. 기여자가 이를 마�
 - #7490은 자동 종료를 실제 조회로 확인했습니다. 검토 기록은 maintainer 운영 문서로 archive·직접 반영하며, 최종 merge SHA 고정 PNG를 포함한 한국어 PR/이슈 후속 안내를 준비했습니다. 이미 공개한 셀 성장 잔여와 보조 영역 미검증 범위는 유지합니다.
 
 - 병합 후 [duration 갱신37311340327](https://github.com/edwardkim/rhwp/actions/runs/37311340327)은 completed/success입니다. `ready=true / successful-pr-worker-measurements`와 metrics branch 반영을 확인했고 로그 해시는 CI 증거 JSON에 보존하며 검증 CI를 재실행하지 않았습니다.
+
+## 후속 처리 완료 — 2026-10-05
+
+- 실제 merge `bdda980b7e266d821171ed08b7604e21e6f3b7fa`와 archive/CI 증적의 devel 반영을 확인했습니다.
+- [원 #7491 한국어 안내](https://github.com/edwardkim/rhwp/pull/7491#issuecomment-5994750934), [#7490 종료·후속 안내](https://github.com/edwardkim/rhwp/issues/7490#issuecomment-5994747591)를 UTF-8 본문 파일로 게시하고 API로 본문·한글·merge SHA 고정 이미지의 일치를 확인했습니다. #7491은 CLOSED/merged=false로 대체 통합 종료, #7490은 자동 CLOSED입니다.
+- 작업 전용 Vite7719를 종료했습니다. `/tmp/rhwp-pr7491-review-20261005`와 수정 전 대조군 `/tmp/rhwp-pr7491-before-20261005`, 전용 local/remote integration branch를 제거했습니다. contributor fork branch는 건드리지 않았습니다. 기본 작업공간은 devel로 동기화하고 다른 worktree와 shared `target/pr-review`의 동일 inode 보존을 확인했습니다.
+- [실제 상태·안내 permalink·정리 결과](../assets/pr7491/post_merge_completion.json). 필수 로그 요약·해시·시각/입력 증거는 추적 asset에 보존한 뒤 검토 전용 임시 output을 worktree와 함께 정리했습니다.
