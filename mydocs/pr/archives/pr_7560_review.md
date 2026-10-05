@@ -60,3 +60,7 @@ picture_footnote의 stored_prefix를 화면에서 생략한 run은 char_start에
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 소비 경로 추가 확인
+
+fresh WASM에서 한글·공백·비BMP 문자를 포함한 각주 원문 끝까지 모든 caret x가 엄격히 증가한다. 번호 prefix 뒤 원문 주소와 최종 캐럿이 이어지는 실제 query 경로를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.

@@ -1,0 +1,111 @@
+{
+  "widthBefore": {
+    "x": 117.2,
+    "y": 136,
+    "w": 559.4,
+    "h": 51.3
+  },
+  "widthAfter": {
+    "x": 117.2,
+    "y": 136,
+    "w": 559.4,
+    "h": 74.2
+  },
+  "widthReopened": {
+    "x": 117.2,
+    "y": 136,
+    "w": 559.4,
+    "h": 74.2
+  },
+  "caret": [
+    {
+      "pageIndex": 0,
+      "x": 131.7,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 144.6,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 157.5,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 164.2,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 177.1,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 190.1,
+      "y": 996.4,
+      "height": 13.3
+    },
+    {
+      "pageIndex": 0,
+      "x": 196.7,
+      "y": 996.4,
+      "height": 13.3
+    }
+  ],
+  "format": {
+    "runs": [
+      {
+        "text": "A",
+        "x": 113.4,
+        "y": 132.3,
+        "w": 18.8,
+        "h": 26.7,
+        "charX": [
+          0,
+          18.8
+        ],
+        "fontFamily": "함초롬바탕",
+        "fontSize": 26.7,
+        "bold": true,
+        "italic": false,
+        "ratio": 1,
+        "letterSpacing": 0,
+        "underline": false,
+        "strikethrough": false,
+        "textColor": "#000000",
+        "charShapeId": 7,
+        "paraShapeId": 0,
+        "secIdx": 0,
+        "paraIdx": 0,
+        "charStart": 0
+      }
+    ]
+  },
+  "selectionBefore": [
+    {
+      "pageIndex": 0,
+      "x": 121,
+      "y": 132.3,
+      "width": 23.3,
+      "height": 13.3
+    }
+  ],
+  "selectionAfter": [
+    {
+      "pageIndex": 0,
+      "x": 126.3,
+      "y": 132.3,
+      "width": 22.9,
+      "height": 13.3
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "before": {
+    "calls": [
+      {
+        "text": "A",
+        "x": 0,
+        "y": 0,
+        "a": 2.3532681465148926,
+        "e": 226.77333068847656,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "V",
+        "x": 0,
+        "y": 0,
+        "a": 2.3532681465148926,
+        "e": 275.7066650390625,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "T",
+        "x": 0,
+        "y": 0,
+        "a": 2.213482618331909,
+        "e": 324.6400146484375,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "o",
+        "x": 0,
+        "y": 0,
+        "a": 1.9595606327056885,
+        "e": 370.6666564941406,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      }
+    ],
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"793.7066666666667\" height=\"1122.48\" viewBox=\"0 0 793.7066666666667 1122.48\">\n<defs>\n<clipPath id=\"body-clip-3\"><rect x=\"113.38666666666667\" y=\"132.26666666666668\" width=\"566.9333333333334\" height=\"876.8266666666667\"/></clipPath>\n</defs>\n<rect x=\"0\" y=\"0\" width=\"793.7066666666667\" height=\"1122.48\" fill=\"#ffffff\"/>\n<g clip-path=\"url(#body-clip-3)\"><text x=\"113.38666666666667\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"24.4667\" lengthAdjust=\"spacingAndGlyphs\">A</text>\n<text x=\"137.85333333333332\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"24.4667\" lengthAdjust=\"spacingAndGlyphs\">V</text>\n<text x=\"162.32\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"23.0133\" lengthAdjust=\"spacingAndGlyphs\">T</text>\n<text x=\"185.33333333333331\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"20.3733\" lengthAdjust=\"spacingAndGlyphs\">o</text>\n</g>\n</svg>\n",
+    "layout": {
+      "runs": [
+        {
+          "text": "AVTo",
+          "x": 113.4,
+          "y": 132.3,
+          "w": 92.3,
+          "h": 34.7,
+          "charX": [
+            0,
+            24.5,
+            48.9,
+            71.9,
+            92.3
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 34.7,
+          "bold": false,
+          "italic": false,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "charShapeId": 7,
+          "paraShapeId": 0,
+          "secIdx": 0,
+          "paraIdx": 0,
+          "charStart": 0
+        }
+      ]
+    }
+  },
+  "after": {
+    "calls": [
+      {
+        "text": "A",
+        "x": 0,
+        "y": 0,
+        "a": 2.3532681465148926,
+        "e": 226.77333068847656,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "V",
+        "x": 0,
+        "y": 0,
+        "a": 2.3532681465148926,
+        "e": 270.1600036621094,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "T",
+        "x": 0,
+        "y": 0,
+        "a": 2.213482618331909,
+        "e": 319.09332275390625,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      },
+      {
+        "text": "o",
+        "x": 0,
+        "y": 0,
+        "a": 1.9595606327056885,
+        "e": 362.3466796875,
+        "f": 323.4666748046875,
+        "font": "34.667px 함초롬바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif",
+        "width": 20.793777465820312
+      }
+    ],
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"793.7066666666667\" height=\"1122.48\" viewBox=\"0 0 793.7066666666667 1122.48\">\n<defs>\n<clipPath id=\"body-clip-3\"><rect x=\"113.38666666666667\" y=\"132.26666666666668\" width=\"566.9333333333334\" height=\"876.8266666666667\"/></clipPath>\n</defs>\n<rect x=\"0\" y=\"0\" width=\"793.7066666666667\" height=\"1122.48\" fill=\"#ffffff\"/>\n<g clip-path=\"url(#body-clip-3)\"><text x=\"113.38666666666667\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"24.4667\" lengthAdjust=\"spacingAndGlyphs\">A</text>\n<text x=\"135.08\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"24.4667\" lengthAdjust=\"spacingAndGlyphs\">V</text>\n<text x=\"159.54666666666668\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"23.0133\" lengthAdjust=\"spacingAndGlyphs\">T</text>\n<text x=\"181.17333333333335\" y=\"161.73333333333335\" font-family=\"&apos;함초롬바탕&apos;,&apos;Batang&apos;,&apos;바탕&apos;,&apos;Nanum Myeongjo&apos;,&apos;AppleMyungjo&apos;,&apos;Noto Serif KR&apos;,&apos;Noto Serif CJK KR&apos;,&apos;HCR Batang&apos;,&apos;함초롬바탕&apos;,&apos;HCR Batang Ext&apos;,&apos;함초롬바탕 확장&apos;,&apos;HCR Batang ExtB&apos;,&apos;함초롬바탕 확장B&apos;,&apos;Source Han Serif K Old Hangul&apos;,serif\" font-size=\"34.666666666666664\" fill=\"#000000\" textLength=\"20.3733\" lengthAdjust=\"spacingAndGlyphs\">o</text>\n</g>\n</svg>\n",
+    "layout": {
+      "runs": [
+        {
+          "text": "AVTo",
+          "x": 113.4,
+          "y": 132.3,
+          "w": 88.2,
+          "h": 34.7,
+          "charX": [
+            0,
+            21.7,
+            46.2,
+            67.8,
+            88.2
+          ],
+          "fontFamily": "함초롬바탕",
+          "fontSize": 34.7,
+          "bold": false,
+          "italic": false,
+          "ratio": 1,
+          "letterSpacing": 0,
+          "underline": false,
+          "strikethrough": false,
+          "textColor": "#000000",
+          "charShapeId": 7,
+          "paraShapeId": 0,
+          "secIdx": 0,
+          "paraIdx": 0,
+          "charStart": 0
+        }
+      ]
+    }
+  }
+}

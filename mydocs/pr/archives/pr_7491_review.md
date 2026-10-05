@@ -73,3 +73,9 @@ reflow_line_segs → 행별 bit 20 → paragraph layout 들여쓰기 소비. res
 ## 검출된 실패
 
 `editing_keeps_hancom_record_of_unindented_line`가 `tests/cases/issue_7490_edited_paragraph_indent.rs:111`에서 실패했다. `samples/issue6190/center_align_first_line_indent.hwp` 문단 4 offset 7, 문단 7 offset 0에 각각 `가` 삽입 후 표 `x=113.5`, 우변 `710.6px`; 테스트의 본문 우단 `699.2px`을 초과한다. 기대값 완화 없이 고정 base 대조 실행과 fresh WASM 화면을 확인한다. 이 실패의 원인 범위를 확정하기 전에는 신규 회귀로 단정하지 않는다.
+
+### 고정 base 대조 결과
+
+base `cdba77b609c399fdef26a6c9e637716aa32c2177`의 동일 입력/삽입 순서에서 table x `113.48`, width `597.12`, 우변 `710.60`을 직접 관측했다. 변경 전 table x `98.29333`, width `597.12`이다. 따라서 누적 후보에서 관측한 우변 초과는 최신 devel의 기존 결함이며 이번 들여쓰기 변경의 신규 회귀라고 판정하지 않는다. 새 회귀 검사가 현재 base 위에서 실패하는 사실은 유지하며 기대값을 완화하지 않았다. 증거: [base probe](../assets/semanticist21-20261005/base-probes.log). 최초 잘못 고정한 suite target에서 0 tests가 실행된 결과는 검증에 세지 않았고, manifest에서 실제 `regression_suite_020`을 다시 resolve하여 2개 diagnostic을 실행했다.
+
+fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관측했다: 0은 모두 x 113.4, +3000은 첫 줄 x 133.4/나머지 113.4, -3000은 첫 줄 113.4/나머지 133.4. 이는 현재 좌표 계약의 관측이며 저장 문단 들여쓰기의 한컴 fidelity 완료를 의미하지 않는다. 사용자 PDF의 누름틀 안내문 제외 지시는 본 표 좌표 검사를 면제하지 않는다.

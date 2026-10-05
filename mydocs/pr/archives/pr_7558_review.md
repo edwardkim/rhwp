@@ -59,3 +59,7 @@ set_cell_size의 height-only 경로는 update_ctrl_dimensions 뒤 원래 common.
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 소비 경로 추가 확인
+
+fresh WASM 실제 렌더 트리에서 높이 편집 전후 table bbox의 x와 w가 동일하고 HWP 재열기의 w도 같다. 모델/원본 header 검사 외에 최종 renderer 소비까지 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.

@@ -66,3 +66,13 @@ ActiveFieldInfo.para_idx는 body host 문단이며 cell_path는 모든 단계의
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 화면 계약
+
+Chromium 실제 Canvas를 inactive → first → second → clear 순서로 직접 확인했다. guide run은 `[FIRSTGUIDE, SECONDGUIDE]` → `[SECONDGUIDE]` → `[FIRSTGUIDE]` → `[FIRSTGUIDE, SECONDGUIDE]`; clear SVG는 초기 SVG와 byte 동일하다. 본문·표 외곽과 다른 누름틀은 유지되고 선택한 안내문만 숨겨진다. [관측](../assets/semanticist21-20261005/browser-observations.json). 사용자 지시에 따라 이 안내문은 PDF에서 보이지 않는 것이 정상이며 PDF 비교 대상에서 제외했다.
+
+![inactive](../../../pdf/semanticist21-20261005/screen/guides-inactive.png)
+
+![first active](../../../pdf/semanticist21-20261005/screen/guides-first.png)
+
+![second active](../../../pdf/semanticist21-20261005/screen/guides-second.png)

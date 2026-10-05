@@ -9,7 +9,7 @@ last_verified: 2026-10-05
 
 ## 최종 판정
 
-**머지 보류 — 누적 후보 검증 진행 중.** 원 head의 CI와 이번 누적 head의 실행 결과를 구분한다. 필수 코드·회귀·시각 검증 결과를 확인한 뒤 판정을 갱신한다.
+**머지 보류 — Native/fresh WASM 시각 gate 미충족.** 원 head의 CI와 이번 누적 head의 실행 결과를 구분한다. 필수 코드·회귀·시각 검증 결과를 확인한 뒤 판정을 갱신한다.
 
 ## 접수 정보
 
@@ -79,3 +79,37 @@ FormObjectNode::password_display_text는 Edit의 명시된 PasswordChar 첫 문�
 - 수정 입력: `tests/fixtures/form-password/edit-password.hwpx`, SHA-256 `e8161c8dfac0aaef054da0a4d5e704e3a54b3c5cfbbbf47955c6650ab74dd0ae`. engine 2020, job `29056013-2487-4bd5-b3f4-ff601f90e6d2`: opening_document에서 worker exit 3221225477.
 - 정상 원본 대조 입력: `samples/hwpx/form-01.hwpx`, SHA-256 `3bbd207b88fe61e802706de3ccf98abdb8b450493164eec657c9ee88a5aba87e`. engine 2020, job `17a1df81-895b-41c1-86a3-f0675c17be1a`: creating_document_frame에서 같은 worker exit. 원본에서도 실패하므로 수정 fixture 손상이라고 단정하지 않는다.
 - 사용자가 수동 변환하기로 했다. HWP 보조 입력은 `pdf/semanticist21-20261005/manual-input/edit-password.hwp`, SHA-256 `4a2e02e4bd44cbf604789052f62131eb92779e2bb63e879eb8bcd07d243d2c24`. 누적 Native debug CLI `convert --verify --verify-pages`에서 IR 차이 없음/1쪽을 확인했다. 원 HWPX 직접 변환 PDF를 우선 기준으로 사용한다.
+
+## 사용자 수동 기준 PDF와 Native 직접 비교
+
+사용자가 추가한 `tests/fixtures/form-password/edit-password-2024.pdf`(SHA-256 `84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a`)와 `samples/hwpx/form-01-2024.pdf`(SHA-256 `d1117657d92c789295d73af1bebd11b241eb352254b328d95c07f0efb87b18ee`)를 사용한다. 두 파일 모두 Creator `Hwp 2024 13.0.0.3901`, A4 1쪽이다. 자동 engine 2020 작업의 실패와 별도로 실제 수동 PDF 증거를 확보했다.
+
+Native command: `python3 scripts/visual_sweep.py --key pr7578-password --hwp tests/fixtures/form-password/edit-password.hwpx --pdf tests/fixtures/form-password/edit-password-2024.pdf --page 1 --rhwp-bin target/pr-review/release-test/rhwp --out output/pr-review/semanticist21-20261005/visual-native`. Binary는 집중 회귀와 함께 만든 누적 code `1d809afe7b965c9ea6137012d59d139d63b038d0` 산출물이다. 이후 `04f6b3eef`까지 Rust/Cargo/test/script diff가 없음을 확인했다.
+
+대표 `visual-native/pr7578-password/review/review_001.png`를 직접 판독했다. 암호 표시 영역에서 양쪽 모두 13개 마스킹 문자를 표시하며 원문을 표시하지 않는다. 전체 페이지에는 콤보박스의 `계절 선택` 누락, button/check/radio 외형 및 글자 크기 차이가 남는다. 이를 새 암호 마스킹 회귀라고 단정하지 않고 정상 원본 대조 Sweep으로 분리한다. 2px 관용 내용 실루엣 `80.02964%`, gate `re_review_required`이므로 전체 시각 통과나 승인을 선언하지 않는다. font exception을 적용하지 않았다.
+
+사용자 지시에 따라 누름틀 안내문은 print PDF 비교에서 제외한다. #7565의 안내문은 screen profile에서만 확인한다. 이 페이지의 폼 개체 차이를 누름틀 안내문 차이로 취급하지 않는다.
+
+정상 원본 대조 `form01-control`도 `78.99718%`이며, 대표 review PNG를 직접 판독했을 때 같은 콤보박스 글자 누락과 폼 외형 차이가 있다. 원본을 수정하지 않고 사용자 PDF를 그대로 사용했다. 신규 마스킹 구현의 검증과 기존 폼 전체 일치의 미충족을 구분한다.
+
+![Native 한컴 기준 비교](../../../pdf/semanticist21-20261005/pr7578/native/pr7578-password/review/review_001.png)
+
+![Native standalone overlay](../../../pdf/semanticist21-20261005/pr7578/native/pr7578-password/overlay/overlay_001.png)
+
+## fresh WASM와 실제 Chromium Canvas
+
+fresh WASM SHA-256 `5c66e27f13dc1699a18aabcc1397c530e1bec05f2567b5a0414e9dabe714dd06`, Studio public과 동일. 실제 Canvas fillText에서 13개 마스킹 문자는 표시되고 `MASK_SENTINEL`은 표시되지 않으며 getFormValue는 원문을 유지한다. screen 안내문은 정상적으로 보이고 사용자 지시에 따라 PDF의 미표시와 비교하지 않았다.
+
+WASM Visual Sweep도 동일 PDF/1쪽에서 `80.02964%`, gate `re_review_required`이다. 대표 review/standalone overlay를 직접 판독하여 Native와 같은 마스킹 및 기존 폼 차이를 확인한다. formatter·CI·자동 점수로 시각 gate를 대체하지 않는다.
+
+![fresh WASM 기준 비교](../../../pdf/semanticist21-20261005/pr7578/wasm/review/review_001.png)
+
+![fresh WASM standalone overlay](../../../pdf/semanticist21-20261005/pr7578/wasm/overlay/overlay_001.png)
+
+## 추가 개선 계획: 콤보박스 초기 목록 표시
+
+사용자가 한컴 화면의 `계절 선택` 누락 개선을 요청했다. 정상 생성본 `samples/hwpx/form-01.hwpx`는 ComboBox의 `selectedValue`가 빈 문자열이며 첫 `listItem.value`가 `계절 선택`이다. 사용자가 제공한 한컴 PDF에서도 이 문자열이 보인다. 기존 HWP serializer `src/serializer/control.rs`의 ComboBox Text 작성도 선택값이 비어 있으면 `listItem0`을 사용한다.
+
+원인 경로는 parser의 `listItem0` 보존 → layout의 FormObjectNode 생성에서 `.text`만 사용 → SVG/Canvas/Skia의 공통 표시 문자열 소비다. 세 layout 생성 위치에 같은 표시 결과를 공급하고, 빈 ComboBox 선택값에서 첫 목록 값을 표시한다. 비어 있지 않은 선택값·자유 입력은 유지하고, 목록 없는 ComboBox와 Edit 암호 마스킹은 바꾸지 않는다. 표시 결과로 모델 선택값을 덮어쓰지 않는다. 서로 다른 value/displayText 대응의 새 동작은 이번 개선에 포함하지 않는다.
+
+정상 원본에서 수정 전 FAIL / 수정 후 PASS, 빈 목록·명시 선택·자유 입력, inline/텍스트 동반/floating 배치와 HWPX 재열기의 원문 보존을 검사한다. 새 source에서 lint·회귀·fresh WASM 및 두 사용자 PDF의 Native/WASM Sweep을 다시 수행한다. 이전 전체 회귀는 base 작업트리가 공유 library를 덮어쓴 뒤 링크하여 유효하지 않았다. 캐시를 삭제하지 않고 현재 source library를 재빌드하고 `display_text` 필드의 metadata compile 성공을 확인했다. 해당 실행의 41건 실패는 후보 head 회귀로 집계하지 않는다.

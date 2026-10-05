@@ -60,3 +60,7 @@ warm/cold 선택 결과 동일, 캐시 체류 증가 없음, 편집 후 무효�
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 소비 경로 추가 확인
+
+fresh WASM에서 render로 page tree를 warm한 뒤 selection rects를 얻고 앞에 글자를 삽입하면 실제 selection rects가 갱신된다. 저장된 트리의 무효화 후 소비를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.

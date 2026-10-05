@@ -1,0 +1,22 @@
+[
+  "body_selection_tree_reuse",
+  "cell_height_preserves_table_width",
+  "clickhere_cell_parent_identity",
+  "delete_object_field_ranges",
+  "footnote_source_offset_contract",
+  "form_password_rendering",
+  "issue_7490_edited_paragraph_indent",
+  "issue_7503_kerning_glyph_caret_cost",
+  "issue_7506_clipboard_section_first_paste",
+  "issue_7507_empty_paragraph_char_format",
+  "issue_7512_set_char_shape_id_batch",
+  "issue_7513_cell_outline_navigation",
+  "issue_7514_cell_list_marker_caret",
+  "issue_7515_merge_cells_keep_paragraphs",
+  "issue_7516_html_paste_loose_inline_format",
+  "issue_7523_column_def_hwp_save",
+  "issue_7526_hwpx_first_para_textpos_axis",
+  "issue_7528_hf_field_controls",
+  "set_column_def_contract",
+  "table_creation_preserves_host_break"
+]

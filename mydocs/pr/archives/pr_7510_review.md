@@ -59,3 +59,7 @@ Studio toolbar에서 빈 문단을 건너뛰는 별도 UI 경로는 이 모델 �
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 소비 경로 추가 확인
+
+fresh WASM에서 빈 문단에 bold/20pt를 적용한 뒤 A 입력의 actual TextRun이 bold이고 fontSize 26.7px이다. 빈 문단 메타의 다음 입력 소비를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.

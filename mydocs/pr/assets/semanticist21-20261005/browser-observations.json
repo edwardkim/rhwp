@@ -1,0 +1,93 @@
+{
+  "longHTML": {
+    "plain": {
+      "count": 3,
+      "max": 4000
+    },
+    "bold": {
+      "count": 1,
+      "max": 8001
+    }
+  },
+  "guideStates": [
+    {
+      "state": "inactive",
+      "guides": [
+        "FIRSTGUIDE",
+        "SECONDGUIDE"
+      ]
+    },
+    {
+      "state": "first",
+      "guides": [
+        "SECONDGUIDE"
+      ]
+    },
+    {
+      "state": "second",
+      "guides": [
+        "FIRSTGUIDE"
+      ]
+    },
+    {
+      "state": "clear",
+      "guides": [
+        "FIRSTGUIDE",
+        "SECONDGUIDE"
+      ]
+    }
+  ],
+  "indentFirstLines": [
+    {
+      "indent": 0,
+      "lineOrigins": [
+        [
+          132.3,
+          113.4
+        ],
+        [
+          153.6,
+          113.4
+        ],
+        [
+          174.9,
+          113.4
+        ]
+      ]
+    },
+    {
+      "indent": 3000,
+      "lineOrigins": [
+        [
+          132.3,
+          133.4
+        ],
+        [
+          153.6,
+          113.4
+        ],
+        [
+          174.9,
+          113.4
+        ]
+      ]
+    },
+    {
+      "indent": -3000,
+      "lineOrigins": [
+        [
+          132.3,
+          113.4
+        ],
+        [
+          153.6,
+          133.4
+        ],
+        [
+          174.9,
+          133.4
+        ]
+      ]
+    }
+  ]
+}

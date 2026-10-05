@@ -67,3 +67,7 @@ ExactFontSourceRegistry의 불변 Arc와 등록 hash → kerning source session 
 ## 남은 범위·후속 처리
 
 원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## fresh WASM 실제 등록 글꼴/Canvas 경로
+
+fresh web package `rhwp_bg.wasm` SHA-256 `5c66e27f13dc1699a18aabcc1397c530e1bec05f2567b5a0414e9dabe714dd06`를 Chromium에서 실행했다. 새 문서 26pt `AVTo`, 저장소 TTF를 실제 FontFace로 올리고 charShapeId의 영문 slot 1에 registerExactFontSource를 호출했다. 2x Canvas fillText의 A/V/T/o 가로 배율은 각각 등록 전후 동일하다. V 원점 차이는 `-5.546661px / 2 = -2.77333px`, o는 누적 `-8.319977px / 2 = -4.15999px`로 TTF의 AV -80·To -40 / 1000 em, 26pt 기대값과 일치한다. 글리프 폭을 압축하지 않고 원점만 커닝하는 계약을 실제 renderer 호출에서 확인했다. [실행](../assets/semanticist21-20261005/kerning-browser.log)·[좌표/transform 원문](../assets/semanticist21-20261005/kerning-results.json). 동일 글꼴 조건의 한컴 PDF는 확보하지 않았으며 한컴 fidelity 판정과 구분한다.
