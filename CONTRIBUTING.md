@@ -168,7 +168,9 @@ PR을 생성·갱신합니다. **90% 미만**이 보류 기준이며 **정확히
 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않습니다.
 사용자가 승인한 메인터너 보정도 같은 기준을 충족해야 합니다. 한컴 PDF와 rhwp의 실제 글꼴 차이는
 양쪽 font family와 확인 방법을 적은 UTF-8 증거를 `--font-mismatch-evidence`로 기록할 수 있지만
-90% 미만·측정 불가 gate를 면제하지 않습니다. 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
+확인한 해결 불가능한 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+UTF-8 JSON 증거로 `font_mismatch_exception`을 받아 **90% 미만이어도 제출할 수 있습니다**.
+측정 불가·쪽수 불일치·배치 차이는 면제하지 않습니다. 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
 다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
 원본성·소비 경로를 검증합니다.
 PDF와 비교하는 캡처에는 [인쇄 프로필](mydocs/manual/verification/visual_sweep_guide.md#pdf와-같은-인쇄-프로필)을

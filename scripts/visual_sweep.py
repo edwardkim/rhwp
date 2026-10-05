@@ -913,7 +913,7 @@ def run_manifest_for_target(
     provenance: dict[str, object],
     dpi: int,
     pixel_diff_threshold: int,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
     *,
     resume: bool,
 ) -> dict[str, object]:
@@ -1103,15 +1103,15 @@ def pr_review_gate(
     metrics: list[dict[str, object]],
     *,
     expected_pages: list[int] | None = None,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """Return the PR-review disposition for the rendered review PNGs.
 
     A 2px tolerant silhouette result below 90% is not an approval signal.  The
     caller still receives all raster artifacts so the maintainer can diagnose
     the mismatch, but the output manifest records that another review is
-    required and ``main`` returns failure. Hashed font evidence is retained for
-    diagnosis and cannot waive a low or unavailable page metric.
+    required and ``main`` returns failure. A documented, unresolvable font
+    mismatch may waive low scores on its reviewed pages, never missing metrics.
     """
     below_threshold: list[dict[str, object]] = []
     unavailable: list[object] = []
@@ -1136,8 +1136,19 @@ def pr_review_gate(
             page for page in sorted(set(expected_pages)) if page not in measured_pages
         )
 
-    if below_threshold or unavailable:
+    evidence = font_mismatch_evidence or {}
+    reviewed_pages = evidence.get("affected_pages", [])
+    font_exception = (
+        evidence.get("font_issue_unresolvable") is True
+        and evidence.get("layout_geometry_matched") is True
+        and evidence.get("page_count_matched") is True
+        and isinstance(reviewed_pages, list)
+        and all(item["page"] in reviewed_pages for item in below_threshold)
+    )
+    if unavailable:
         status = "re_review_required"
+    elif below_threshold:
+        status = "font_mismatch_exception" if font_exception else "re_review_required"
     else:
         status = "passed"
     return {
@@ -1149,18 +1160,45 @@ def pr_review_gate(
     }
 
 
-def font_mismatch_evidence_record(root: Path, evidence: Path | None) -> dict[str, str] | None:
-    """Record hashed font diagnostic evidence without waiving the page gate."""
+def font_mismatch_evidence_record(
+    root: Path, evidence: Path | None, *, hwp: Path | None = None, pdf: Path | None = None
+) -> dict[str, object] | None:
+    """Validate and hash a page-scoped explanation for an unresolvable font issue."""
     if evidence is None:
         return None
     resolved = resolve_input_path(root, evidence)
     if not resolved.is_file():
         raise SystemExit(f"--font-mismatch-evidence 파일이 없습니다: {resolved}")
-    if not resolved.read_text(encoding="utf-8").strip():
-        raise SystemExit("--font-mismatch-evidence는 양쪽 실제 글꼴을 설명하는 비어 있지 않은 UTF-8 파일이어야 합니다.")
+    try:
+        details = json.loads(resolved.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeError) as exc:
+        raise SystemExit("--font-mismatch-evidence는 글꼴 예외 계약의 UTF-8 JSON이어야 합니다.") from exc
+    if not isinstance(details, dict):
+        raise SystemExit("글꼴 예외 증거는 JSON object여야 합니다.")
+    for field in ("font_issue_unresolvable", "layout_geometry_matched", "page_count_matched"):
+        if details.get(field) is not True:
+            raise SystemExit(f"글꼴 예외 증거의 {field}: true가 필요합니다.")
+    for field in ("unresolvable_reason", "geometry_review_evidence"):
+        if not isinstance(details.get(field), str) or not details[field].strip():
+            raise SystemExit(f"글꼴 예외 증거의 {field} 근거가 필요합니다.")
+    for field in ("pdf_fonts", "rhwp_fonts", "font_supply_attempts"):
+        values = details.get(field)
+        if not isinstance(values, list) or not values or not all(isinstance(v, str) and v.strip() for v in values):
+            raise SystemExit(f"글꼴 예외 증거의 {field} 목록이 필요합니다.")
+    pages = details.get("affected_pages")
+    if not isinstance(pages, list) or not pages or not all(type(page) is int and page > 0 for page in pages):
+        raise SystemExit("글꼴 예외 증거에는 1-based affected_pages가 필요합니다.")
+    if details.get("source_sha") != git_head_identifier(root):
+        raise SystemExit("글꼴 예외 증거의 source_sha가 현재 head와 다릅니다.")
+    for field, path in (("hwp_sha256", hwp), ("pdf_sha256", pdf)):
+        if path is not None and details.get(field) != sha256_file(path):
+            raise SystemExit(f"글꼴 예외 증거의 {field}가 실제 비교 입력과 다릅니다.")
     return {
         "path": safe_rel_str(root, resolved),
         "sha256": sha256_file(resolved),
+        **{field: details[field] for field in (
+            "font_issue_unresolvable", "layout_geometry_matched", "page_count_matched", "affected_pages"
+        )},
     }
 
 
@@ -1341,7 +1379,7 @@ def write_target_status(
     compact_shapes: list[dict[str, object]],
     pdf_question_markers: list[dict[str, object]],
     pixel_diff_threshold: int,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
 ) -> dict[str, object]:
     completed = valid_page_manifests(base)
     completed_pages = sorted(completed)
@@ -1483,7 +1521,7 @@ def render_target(
         raise SystemExit(f"HWP 파일이 없습니다: {hwp}")
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
-    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence)
+    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence, hwp=hwp, pdf=pdf)
 
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
@@ -5453,8 +5491,8 @@ def main() -> None:
         "--font-mismatch-evidence",
         type=Path,
         help=(
-            "한컴 PDF와 rhwp 출력의 실제 글꼴이 완전히 다르다는 검토 증거 UTF-8 파일입니다. "
-            "90%% 실루엣 gate를 면제하지 않으며, 진단 경로와 SHA-256을 manifest에 남깁니다."
+            "글꼴 공급으로 해결 불가능하고 배치·쪽수가 일치한다는 검토 증거 UTF-8 JSON입니다. "
+            "확인한 페이지의 90%% 실루엣 gate만 예외 처리하며, 경로와 SHA-256을 manifest에 남깁니다."
         ),
     )
     parser.add_argument(
@@ -5515,6 +5553,8 @@ def main() -> None:
 
     if args.silhouette_only and args.resume:
         parser.error("실루엣 전용 모드는 일반 PNG checkpoint의 --resume을 사용하지 않습니다.")
+    if args.silhouette_only and args.font_mismatch_evidence:
+        parser.error("TSV는 원 점수를 유지합니다. 글꼴 예외 증거는 재검토 후 일반 PNG 모드에 지정하세요.")
     if args.png_pair:
         if not args.silhouette_only:
             parser.error("--png-pair는 --silhouette-only와 함께 사용합니다.")

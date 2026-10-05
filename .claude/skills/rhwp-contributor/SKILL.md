@@ -46,6 +46,8 @@ description: rhwp 저장소의 기여 구현과 PR 제출 절차를 안내합니
    Native/fresh WASM Visual Sweep·페이지별 TSV를 반드시 산출한다. 한 페이지라도 90% 미만·측정 불가이면
    자기 branch에서 원인을 수정하고 새 head로 재실행한다. 정확히 90%는 통과한다.
    명령과 저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](../../../mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)에 있다.
+   올바른 글꼴 공급으로 해결 불가능하면 [글꼴 예외 계약](../../../mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+   증거를 갖춰 `font_mismatch_exception`으로 90% 미만이어도 PR을 제출할 수 있다. 측정 누락·배치 차이는 면제하지 않는다.
 6. 제출 SHA와 검증 결과, 남은 실패와 비범위를 기록한다. 필요한 문서는 현재 역할의 절차에 따른다.
 7. 경로를 지정해 stage하고 승인받은 push/PR 작업만 수행한다. PR 제목과 본문은 가능한 한 한국어로 쓴다.
 

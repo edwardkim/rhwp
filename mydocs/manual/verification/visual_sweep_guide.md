@@ -13,6 +13,7 @@ last_verified: 2026-10-05
 반드시 산출한다. 편집 command·parser·model·serializer도 적용 대상이 될 수 있다.
 검증 범위의 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서 PDF/overlay
 원인을 재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다.
+해결 불가능한 실제 글꼴 차이는 아래 [PR 제출 예외](#해결-불가능한-글꼴의-pr-제출-예외)로 90% 미만이어도 제출할 수 있다.
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
@@ -158,13 +159,42 @@ Native의 `--page`/`--pages`는 SVG와 render tree도 선택 쪽만 내보낸다
 선택 비교 통과는 전체 페이지 일치나 fresh WASM 검증을 대신하지 않는다. WASM은 기존 전체
 내보내기 경로를 사용한다. 로그와 중간 산출물은 `--out output/...` 아래에 보관한다.
 
-한컴 PDF와 rhwp raster의 실제 글꼴이 다르면 원인 진단 자료로
-`--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
-representative PNG를 기록한 증거 파일의 경로·SHA-256을 manifest에 남긴다. 단순 anti-aliasing, 작은
-baseline 차이, 글꼴 이름의 추정, `flagged=0` 또는 CI 녹색으로 gate를 면제하지 않는다.
-이 증거도 90% 미만·측정 불가를 `font_mismatch_exception`으로 통과시키지 않는다.
-PDF와 rhwp의 표 괘선·문단 시작·그림 경계 좌표를 먼저 비교한다.
-이 위치가 어긋나면 낮은 점수를 글꼴 탓으로 분류하지 않고 배치를 고쳐 다시 캡처한다.
+### 해결 불가능한 글꼴의 PR 제출 예외
+
+실제 글꼴 차이가 낮은 점수의 원인이고 올바른 글꼴 공급을 시도해도 해결할 수 없다면
+**90% 미만이어도 PR을 제출할 수 있다**. 단순 글꼴 이름 추정·anti-aliasing·CI 녹색이나
+존재하지 않는 경로로 발생한 fallback은 해당하지 않는다. PDF와 rhwp의 표 괘선·문단 시작·그림
+경계를 먼저 대조한다. 배치 차이·전체 쪽수 불일치·페이지/지표 누락은 글꼴 예외로 면제하지 않는다.
+
+작성자는 아래 UTF-8 JSON 증거를 준비하고 일반 PNG 모드에 `--font-mismatch-evidence <파일>`을
+지정한다. 증거의 source SHA와 원본/PDF 해시가 실제 실행과 일치해야 하며, 예외는 `affected_pages`에
+직접 확인한 미달 쪽만 대상으로 한다. 도구는 경로·SHA-256·예외 쪽을 manifest에 남긴다.
+내용은 작성자의 근거 진술이며 reviewer가 font 공급 시도와 독립 PDF/overlay를 직접 확인해야 한다.
+`font_mismatch_exception`은 예외 제출 상태이며 일반 `passed`나 자동 승인을 뜻하지 않는다.
+
+```json
+{
+  "source_sha": "<실행할 HEAD의 전체 SHA>",
+  "hwp_sha256": "<실제 원본 SHA-256>",
+  "pdf_sha256": "<실제 Print PDF SHA-256>",
+  "affected_pages": [3],
+  "pdf_fonts": ["PDF에 실제 적용된 face와 확인 방법"],
+  "rhwp_fonts": ["rhwp에 실제 적용된 face와 확인 방법"],
+  "font_supply_attempts": ["설치·font 경로·임베딩 등 수행한 시도와 결과"],
+  "unresolvable_reason": "올바른 글꼴 공급으로 해결할 수 없는 구체적 이유",
+  "geometry_review_evidence": "표 괘선·문단 시작·그림 경계의 직접 비교 증적",
+  "font_issue_unresolvable": true,
+  "layout_geometry_matched": true,
+  "page_count_matched": true
+}
+```
+
+TSV는 예외에도 반드시 산출하며 점수·`below_90` 원값을 유지한다. TSV 전용 모드는 90% 미만에
+exit 1을 반환한다. 그 결과로 재검토한 뒤 위 증거를 적용한 **일반 PNG 모드**의 최종 gate가
+`font_mismatch_exception`이면 예외 근거·미달 쪽·남은 글꼴 차이를 PR 본문에 명시해 제출한다.
+예외는 TSV 전용 모드에 지정하지 않는다. TSV와 진단 JSON은 ignored output에 보존하고,
+공개 가능한 예외 근거·해시와 대표 PNG를 본문에 연결한다. 새 렌더링 회귀를 추가하는 선행 90% 조건은
+이 PR 제출 예외로 완화하지 않는다.
 #7359 14쪽은 표 행 높이가 같아도 표 전체가 약 15px 위에 있어 68.17%였고,
 페이지 첫 문단의 저장 간격을 복구한 뒤 97.48%가 됐다.
 

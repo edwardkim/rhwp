@@ -32,6 +32,10 @@ MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → 
 `--target pdf`는 결과 형식 지정이므로 이것만으로 Print 실행을 입증하지는 않는다.
 서비스 실행 증거에서 실제 한컴 제품/빌드와 Print 경로를 확인해 기록한다. 확인할 수 없으면
 출력 방법은 미검증이며, 성공 job·PDF Creator·파일명만으로 Print 출력으로 간주하지 않는다.
+현재 MCP의 `status.result`에 있는 `engine`, `hancom_version`, `pdf_print_method`,
+`pdf_output_mode`를 확인한다. 예를 들어 2020 출력의 `pdf_print_method: 0`과
+`pdf_output_mode: hancom2020_pdf_driver_one_up`은 한 쪽씩 PDF 인쇄 경로의 실행 증거다.
+결과 필드가 누락되거나 다른 모드이면 해당 engine의 실제 인쇄 경로를 별도로 확인한다.
 
 - 수동 출력도 해당 한컴에서 **파일 → 인쇄(Print) → PDF 출력**을 사용한다.
   PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를 기준으로 대신하지 않는다.

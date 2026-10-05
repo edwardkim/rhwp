@@ -21,6 +21,7 @@ closes #
 - [ ] Rust source·test/baseline helper·Rust 검증 입력 변경 시: [별도 worktree 준비](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#rust-검증-worktree-준비와-실행) 후 `cargo fmt --all -- --check`, native·WASM32·workspace all-target Clippy 통과
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
 - [ ] 조판 영향 여부를 실제 소비 경로로 판단했고, 영향이 있으면 Native/fresh WASM Visual Sweep·페이지별 TSV·직접 review/overlay 확인 완료 (한 페이지라도 **90% 미만** 또는 측정 불가이면 본인 branch에서 수정·재실행; 정확히 90%는 통과)
+- [ ] 90% 미만의 해결 불가능한 글꼴 문제로 제출한다면 [글꼴 예외 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 공급 시도·배치/쪽수 일치 근거와 `font_mismatch_exception` 기록 첨부 (TSV 원값 유지, 측정 누락·배치 결함은 면제하지 않음)
 - [ ] 기준 PDF는 원본 저장 버전에 맞는 한컴 **Print 인쇄 경로**로 출력했고, 제품/빌드·인쇄 설정·출처 확인 ([MCP 2020/2024 및 수동 출력 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약))
 - [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, 일반 PR의 Cargo generated test target을 포함하지 않음 (`--sync-cargo-targets` 메인터너 registry PR은 marker 블록만 예외)
 - [ ] `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]` 변경 시: `node scripts/rust-unit-test-tiers.mjs --check --base-ref <검증한-PR-base-SHA>` 통과 (무생성 검사)
@@ -77,7 +78,8 @@ closes #
 | fresh WASM | | | | |
 
 <!-- 한 페이지라도 90% 미만 또는 측정 불가이면 스스로 PDF/overlay 원인을 재검토·수정하고 새 head에서 재실행합니다.
-평균값·높은 페이지 선별·글꼴 차이·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다. -->
+평균값·높은 페이지 선별·단순 글꼴 차이 추정·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다.
+공급으로 해결 불가능한 실제 글꼴 차이만 위 계약의 예외로 제출하고 근거·미달 쪽·최종 font_mismatch_exception을 명시합니다. -->
 - 사람 판독 및 남은 차이: <!-- 자동 수치는 보조값이며, 표·그림·줄바꿈·테두리·앞뒤 내용의 직접 판독을 적는다. -->
 
 | 출력 경로 | review | overlay |

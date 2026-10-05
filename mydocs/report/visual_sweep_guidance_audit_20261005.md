@@ -66,7 +66,10 @@ review에 남긴다. 이 문서는 제출 지침의 누락과 모호한 표현�
 1. 실제 조판 영향이면 Native/fresh WASM Sweep·페이지별 TSV를 반드시 실행한다.
    명령과 저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](../manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)에 직접 연결한다.
 2. 검증 대상 중 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서 원인을
-   재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다. 평균·글꼴 증거·CI로 면제하지 않는다.
+   재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다. 평균·단순 글꼴 추정·CI로 면제하지 않는다.
+   사용자의 후속 지시에 따라 올바른 공급으로 해결 불가능한 실제 글꼴 문제는
+   [예외 계약](../manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 근거를 갖춰
+   `font_mismatch_exception`으로 PR 제출을 허용한다. 측정 누락·쪽수 불일치·배치 차이는 면제하지 않는다.
 3. 쪽수/분할 영향은 전체 문서를 비교한다. 높은 점수의 페이지 선별은 허용하지 않는다.
 4. 기준 PDF는 저장 버전에 맞는 한컴 **Print** 경로로 출력한다. MCP는 저장 제품 2024 → engine 2024,
    그 외/미상 → engine 2020을 명시한다. 직접 출력은 실제 제품 버전과 Print 설정을 기록한다.
@@ -84,8 +87,10 @@ MCP 안내와 contributor skill의 실행 순서/자식 안내를 함께 수정�
   기존 90.0 PASS/89.99 재검토 경계와 누락 페이지, 추가한 font 증거로 미달·누락을 면제하지 않는 경우,
   높은 페이지와 미달 페이지 혼재를 검사했다.
 - 원 출력은 `output/pr-review/semanticist21-20261005/logs/visual-guidance-tests.log`에 보존했다.
-- 수정 전 `112f069f6`의 동일 gate 함수에 새 경계 입력을 실행하면 font 증거가 있는 미달/누락 모두
-  `font_mismatch_exception`이었다. 수정 후 두 입력 모두 `re_review_required`로 판정해 우회 검출을 확인했다.
+- 수정 전 `112f069f6`의 동일 gate 함수에 새 경계 입력을 실행하면 단순 path/hash font 증거만 있는
+  미달/누락 모두 `font_mismatch_exception`이었다. 최초 감사 수정 후 두 입력 모두 `re_review_required`로
+  판정해 무조건 우회를 검출했다. 후속 사용자 지시의 제한적 예외는 공급 불가·배치/쪽수 일치·대상 쪽
+  근거를 추가로 요구하고 source/input/PDF 해시를 고정한다. 단순 증거와 누락 페이지는 계속 보류한다.
 - 수정한 안내·보고서 12개의 내부 링크 검사 PASS, front matter 대상 변경 문서 5개 메타데이터 PASS,
   contributor skill 형식 검사 PASS, `git diff --check` PASS. capability의 책임·권위·진입점은 바꾸지 않았다.
 - 기존 #7491 Native 캡처 3쌍으로 문서의 `--silhouette-only --png-pair` 명령을 실제 실행해
@@ -93,3 +98,11 @@ MCP 안내와 contributor skill의 실행 순서/자식 안내를 함께 수정�
   새로운 head의 캡처 또는 기존 PDF의 Print 출처 검증으로 승격하지 않는다.
 - 전체 장기 문서 메타데이터 검사는 기존 비변경 문서 4개의 필드 누락 16건으로 실패했다.
   이번 변경 문서의 검사는 위처럼 별도로 확인했다. 해당 기존 누락을 지침 수정 범위에서 임의 보정하지 않았다.
+
+### 해결 불가능한 글꼴의 제한적 예외 보완
+
+후속 지시를 반영한 `python3 -m unittest scripts.tests.test_visual_sweep scripts.tests.test_visual_sweep_font_exception -v`는
+**89 PASS**다. 해결 불가능한 글꼴의 낮은 점수는 예외 제출, 대상 밖 낮은 쪽·누락 쪽·배치 결함·쪽수 차이·
+해결 가능한 글꼴은 재검토로 검사했다. 증거 JSON의 source/입력/PDF 해시 일치와 파일 해시 고정도 확인했다.
+단순 비어 있지 않은 글꼴 설명 파일은 예외 증거가 되지 않는다. 원 출력은
+`output/pr-review/semanticist21-20261005/logs/visual-guidance-font-exception-tests.log`에만 보존한다.

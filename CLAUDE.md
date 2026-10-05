@@ -114,7 +114,9 @@
   상세 분류는 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따른다.
   검증 대상 TSV의 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서
   원인을 재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다.
-  글꼴 차이 증거는 `--font-mismatch-evidence`로 기록할 수 있지만 gate를 면제하지 않는다.
+  해결 불가능한 실제 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+  JSON 증거를 `--font-mismatch-evidence`로 기록해 `font_mismatch_exception`으로 90% 미만이어도 제출할 수 있다.
+  측정 불가·쪽수 불일치·배치 차이는 면제하지 않는다.
   PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 대조하고 위치 차이는 먼저 고친다(#7359 p14).
   `RHWP_FONT_PATH`의 모든 경로가 존재하고 입력 face를 공급하는지 확인한다. 존재하지 않는 과거 font
   경로의 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
