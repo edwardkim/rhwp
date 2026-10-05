@@ -299,3 +299,16 @@ fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관
 Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 검증 정본 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation.json`), 요약과 원 로그 SHA는 실행 요약 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation-summary.txt`)에 보존했다.
 
 #7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `9e073420e46ad77301fcdb66a54aeb016445fb46` | `9c71a0b86fff848ced50602101d46d53b9f21810` | `b2f46c739264d7e0aada4a607195e3224bf6688b` | already_integrated_upstream |
+| `d3e32c68357245639a94762e7c774d28cbd2cb96` | `05e3b935251fabd821e39638b9e7b2f04ffb3a07` | `a6a0661970858c1deca83683f7e91d9f7ed849df` | already_integrated_upstream |
+| `8ec046774129ea2350b66a2ec6cd3f88624440a7` | `f4f8075216b9d5d3eafb1967885a9a35bf5e61c8` | `c27dddc61209a93048cc078785fea575a61f9480` | already_integrated_upstream |
+| `c4367ec03a28369cc6f26b17eca46553ac61514c` | `c2ba3a348a4b3e0ef3eb82f85faf62e76e0cce22` | `1d1c325ac04fabaf563ec4549011adce8c0d3073` | already_integrated_upstream |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

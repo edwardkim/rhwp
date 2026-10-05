@@ -76,3 +76,14 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 ## 승인된 메인터너 보정 진행
 
 긴 loose inline을 기존4,000 Unicode scalar 문자 제한으로 분할하고 경계 그림의 선행 stream 공간을 보존했다. 동일 Native API 수정 전6 PASS/1 FAIL → 수정 후8 PASS. 인라인 파싱/CSS는 자식 module로 분리해 각 수정 파일을1000줄 이내로 유지했다. [개별 보정 기록](pr_7521_review_impl.md). 최종 lint/fresh WASM 및 누적 검증 전이므로 원격 승인/merge를 의미하지 않는다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `37f754d514fa944d428fac5a1754eb07ed49d0f5` | `381c4b1b5cda885f665b864db342570b028df27e` | `5bb3a1ae3eacc04a16e06e4fdfe9b3e554ae8812` | rebased |
+| `6f0df1ae38d6830128916c4e5f773da23a6be804` | `a0b0989ef5a026b8381acbe6e6921b73eceaf18b` | `cb2bd912d5afc28e01015d79caf839664c942e63` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

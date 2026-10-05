@@ -89,3 +89,16 @@ last_verified: 2026-10-05
 ## 남은 범위·후속 처리
 
 위 범위와 실제 통과 결과를 개별 판정에 연결한다. 통합 PR CI를 정확한 head에서 확인한 뒤 사용자 요청에 따라 merge·후속 처리를 수행한다. 메인터너 변경과 원 기여의 해결 범위는 contributor 안내에서 구분하고 미해결 전체 이슈는 Refs로 남긴다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `627c9060867bea690b45c31813d855cd4d8c0fe9` | `4135c1b1a52f1f5f3b97e014934aa31addaf4751` | `bfc9be54786257d2b9442799ddc9bd5700010a05` | rebased |
+| `89b46177b4d157a742ff38b2055d5f926fde3863` | `084f4a2c83915cbe01853862b7df5c892b92aec9` | `c3450e89558ce8743a400f6a74f062eab2cb8abd` | rebased |
+| `4bd33c66f5588abf56fbc3a1851e634891abd8dc` | `31f077276efa0c93c6256802d98ad01c32268c59` | `af0c9315e30b7c4f513f201ba7d1d6568ee5132d` | rebased |
+| `2e1082980708ec36022246f945fd5ff9626cbf87` | `10bb47410c34eb3e7c5970278bed1d8f28b98aff` | `0b76864a2bf1e2b27eca0678ee6870f8b278b7db` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

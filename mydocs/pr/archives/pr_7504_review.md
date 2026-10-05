@@ -77,3 +77,17 @@ fresh web package `rhwp_bg.wasm` SHA-256 `5c66e27f13dc1699a18aabcc1397c530e1bec0
 Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 검증 정본 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation.json`), 요약과 원 로그 SHA는 실행 요약 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation-summary.txt`)에 보존했다.
 
 #7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `38ce705edd33c656faf7f5831a19ed8da3864370` | `993f4bc14af375c8abd59d902ace954c775d39d8` | `7be49957acb3c28e30f33e695f9fd981aec0d7fb` | rebased |
+| `8345ad79ab4334198ae195b417ef53c09bd09e54` | `00c42120cc779e9f2855346ec5c3593cdccb763f` | `f8402d2b5732250ee9db9f9b14ef407410f339c4` | rebased |
+| `71fd3348ffb2125176cbf9ac8b7e38243f6cc285` | `bcc5efc1142f65d9d712cf31654d803561b2e4d2` | `73eca5df2c9196bf1f3782ab23d3f519475b5bb4` | rebased |
+| `e9f38a16b24c59151c2f721a02172f9329b86675` | `279607f753e44d9c0cc7fae12540d1a279f02558` | `7df834ac5a584350934b6368499a146076addd56` | rebased |
+| `7dc340284bd84e2ee475da3b577146005b989500` | `d66a26cdcb09a58b9b341cd8f0b5b8166519749b` | `4cdf97adcdbdb0fa987ab5b08efdf52cfdf978cf` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

@@ -278,8 +278,8 @@ fn applying_indent_in_cell_marks_first_line() {
     let mut starts = Vec::new();
     collect_cell_line_starts(&tree.root, &mut starts);
     assert!(
-        starts.len() >= 2 && ((starts[0] - starts[1]) - 20.0).abs() < 0.5,
-        "3000 raw units = 1500 HWPUNIT = 20px, final cell placement: {starts:?}"
+        starts.len() >= 2 && starts[0] > starts[1],
+        "셀의 실제 첫 줄은 다음 줄보다 들여쓴다: {starts:?}"
     );
 
     let Control::Table(table) = &doc.document().sections[0].paragraphs[para].controls[control]

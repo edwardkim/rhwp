@@ -89,3 +89,14 @@ control_text_positions 갭 수 → FIELD_END/orphan END/title mark 수 제외 �
 ## 남은 범위·후속 처리
 
 위 범위와 실제 통과 결과를 개별 판정에 연결한다. 통합 PR CI를 정확한 head에서 확인한 뒤 사용자 요청에 따라 merge·후속 처리를 수행한다. 메인터너 변경과 원 기여의 해결 범위는 contributor 안내에서 구분하고 미해결 전체 이슈는 Refs로 남긴다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `cbbfedaf821fb6c0a6022bd7fa31dd6fcca5a04a` | `459fe9de0963e13ff84118fc0ae9bc6b51773ca6` | `5962b4650b7423cf0ca0e3320b142507aed60936` | rebased |
+| `fe01de7653deb3de002e3207c88c20f2f49c42ea` | `ee2f5cf8de90db77050ea0e143c8d0d2e6e08110` | `2231cb02540563408dfc5cde83279eb4e43d0fc1` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

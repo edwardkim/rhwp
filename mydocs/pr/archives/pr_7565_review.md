@@ -82,3 +82,16 @@ Chromium 실제 Canvas를 inactive → first → second → clear 순서로 직�
 Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 검증 정본 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation.json`), 요약과 원 로그 SHA는 실행 요약 (`output/pr-review/semanticist21-20261005/run-records/appearance-final-validation-summary.txt`)에 보존했다.
 
 #7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `7ce5c927e353bed3b5585641ef74c477efee383c` | `cc26e29c87e7ca5dc12936ade2e2fae79c369056` | `9fa4680c77b5016b9d76454b59e70aa3ac22ffb6` | rebased |
+| `a65a7664a9d6bc92dc4a9a378c1fcb2af99368df` | `f691401c7e49558920cc4cbaf93414f788f91802` | `6ae85f8a8b4fcda6f7cea772b4b82635174da80e` | rebased |
+| `e36568fb931a4f24aefed82f4d417931c1bd140e` | `34d236cb5f4962d8c18e92b4be21b52af1baba90` | `c334793d6f773acee6f24c9a6a11a01cc4dc1040` | rebased |
+| `71c6dc8959f4d79acd449fb88b916ae27affc9c3` | `94c71d28c081511b0b7ee8958e9672e61970c458` | `d12d75c82841550777bcad12367c6e2a511f6d8d` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.

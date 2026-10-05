@@ -65,3 +65,14 @@ char_offsets·char_shapes·range tags·markpen·LineSeg start/char_count를 같�
 
 추가 commit은 `strip_section_scoped_controls`의 설명과 한컴 HWPX 클립보드 조각 회귀를 보강한다.
 원 저자와 cherry-pick 출처를 보존했다. 최종 후보의 lint·전체 회귀 확인 뒤 해당 범위의 판정을 갱신한다.
+
+## upstream/devel 위 rebase 적용 위치 — 2026-10-05
+
+기준 `c167dc6abbebf69546575e2d16d06223791bab82`. 아래는 현재 이력의 실제 적용 위치이며 위의 이전 검증 SHA는 당시 이력으로 보존한다.
+
+| 원 commit SHA | rebase 전 로컬 SHA | 현재 적용 SHA | 상태 |
+| --- | --- | --- | --- |
+| `b53d3621be516ed8f918b321a0e0b01f09f8ff19` | `기존 devel 포함` | `기존 devel 포함` | already-applied |
+| `97dd139fcd58361e5ae4834465bf5408b349d00c` | `65e78279a77f352682ee769d35d228a310c9c54a` | `7f88ea699b288b5ecd755fe620c3cdb0d3abc0f6` | rebased |
+
+원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
