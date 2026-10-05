@@ -1,4 +1,4 @@
-//! 책갈피 삭제는 보이지 않는 8유닛 슬롯만 지우고 본문·서식·이웃 필드를 보존한다.
+//! 책갈피 추가·삭제는 보이지 않는 8유닛 슬롯만 넣고 빼며 본문·서식·이웃 필드를 보존한다.
 
 use std::io::{Cursor, Read, Write};
 
@@ -283,4 +283,138 @@ fn bookmark_delete_counts_surrogate_and_tab_width_before_the_slot() {
             .map(|&p| if p >= 37 { p - 8 } else { p })
             .collect::<Vec<_>>()
     );
+}
+
+/// 책갈피를 넣을 4번 글자 앞에 surrogate·탭, 뒤에 누름틀·도형·굵은 글자가 있는 문단.
+const ADD_AT: usize = 4;
+
+fn add_fixture() -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "🦦\t왼쪽 가운데 오른쪽")
+        .unwrap();
+    // 누름틀 삽입이 앞 도형의 갭을 지우고 도형 삽입은 뒤 누름틀 번호를 밀지 않는 별도
+    // 결함에 기대지 않도록, 누름틀을 먼저 넣고 도형은 그 끝 뒤에 둔다.
+    core.insert_click_here_field_at(0, 0, 9, "안내문", "메모", "남을 필드", true)
+        .unwrap();
+    core.set_field_value_by_name("남을 필드", "기존").unwrap();
+    core.create_shape_control_native(
+        0,
+        0,
+        12,
+        4000,
+        3000,
+        7500,
+        9000,
+        false,
+        "InFrontOfText",
+        "rectangle",
+        false,
+        false,
+        &[],
+    )
+    .unwrap();
+    let len = core.document().sections[0].paragraphs[0]
+        .text
+        .chars()
+        .count();
+    core.apply_char_format_native(0, 0, len - 3, len, r#"{"bold":true}"#)
+        .unwrap();
+    // secd·cold 16유닛, 누름틀 시작(기 앞)·끝(오 앞)과 도형(른 앞)의 8유닛 갭
+    assert_eq!(
+        core.document().sections[0].paragraphs[0].char_offsets,
+        [16, 18, 26, 27, 28, 29, 30, 31, 32, 41, 42, 51, 60, 61]
+    );
+    assert_eq!(fields(&core)[0]["value"], "기존");
+    core
+}
+
+fn add_bookmark(core: &mut DocumentCore) -> usize {
+    let r = core.add_bookmark_native(0, 0, ADD_AT, "새 책갈피").unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    bookmark(core)
+}
+
+#[test]
+fn bookmark_add_records_raw_slot_for_live_hwp_and_hwpx() {
+    let mut core = add_fixture();
+    let before = core.document().sections[0].paragraphs[0].clone();
+    let before_fields = fields(&core);
+    let before_formats = formats(&core);
+    // HWP 파서는 raw_data·attr 비트를 채우므로 같은 형식으로 저장·재열기한 원본과 비교한다.
+    let saved_formats = [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ]
+    .map(|bytes| formats(&DocumentCore::from_bytes(&bytes).unwrap()));
+    let ci = add_bookmark(&mut core);
+    let after = core.document().sections[0].paragraphs[0].clone();
+    // 넣은 자리 뒤 글자의 원시 좌표만 8유닛 밀린다.
+    let slot = before.char_offsets[ADD_AT];
+    assert_eq!(after.text, before.text);
+    assert_eq!(after.char_count, before.char_count + 8);
+    assert_eq!(
+        after.char_offsets,
+        before
+            .char_offsets
+            .iter()
+            .map(|&p| if p >= slot { p + 8 } else { p })
+            .collect::<Vec<_>>()
+    );
+    let mut positions = before.control_text_positions();
+    positions.insert(ci, ADD_AT);
+    assert_eq!(after.control_text_positions(), positions);
+    assert_eq!(fields(&core), before_fields);
+    assert_eq!(formats(&core), before_formats);
+    for (bytes, saved_formats) in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ]
+    .into_iter()
+    .zip(saved_formats)
+    {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let p = &reopened.document().sections[0].paragraphs[0];
+        assert_eq!(p.text, after.text);
+        assert_eq!(p.char_offsets, after.char_offsets);
+        assert_eq!(p.control_text_positions(), positions);
+        assert_eq!(bookmark(&reopened), ci);
+        let listed: Value =
+            serde_json::from_str(&reopened.get_bookmarks_native().unwrap()).unwrap();
+        assert_eq!(listed[0]["name"], "새 책갈피");
+        assert_eq!(listed[0]["charPos"], ADD_AT);
+        assert_eq!(fields(&reopened), before_fields);
+        assert_eq!(formats(&reopened), saved_formats);
+    }
+}
+
+#[test]
+fn bookmark_add_then_delete_in_one_session_restores_raw_positions() {
+    let mut core = add_fixture();
+    let before = core.document().sections[0].paragraphs[0].clone();
+    let before_fields = fields(&core);
+    let before_formats = formats(&core);
+    let ci = add_bookmark(&mut core);
+    let r = core.delete_bookmark_native(0, 0, ci).unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    let after = &core.document().sections[0].paragraphs[0];
+    assert_eq!(after.text, before.text);
+    assert_eq!(after.char_count, before.char_count);
+    assert_eq!(after.char_offsets, before.char_offsets);
+    assert_eq!(
+        after.control_text_positions(),
+        before.control_text_positions()
+    );
+    assert_eq!(fields(&core), before_fields);
+    assert_eq!(formats(&core), before_formats);
+}
+
+#[test]
+fn bookmark_add_keeps_following_body_field_active() {
+    let mut core = add_fixture();
+    let end = fields(&core)[0]["endCharIdx"].as_u64().unwrap() as usize;
+    assert!(core.set_active_field(0, 0, end));
+    add_bookmark(&mut core);
+    core.insert_text_native(0, 0, end, "이어 입력").unwrap();
+    assert_eq!(fields(&core)[0]["value"], "기존이어 입력");
 }

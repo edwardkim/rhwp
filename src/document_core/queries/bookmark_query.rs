@@ -431,7 +431,11 @@ mod tests {
     }
 
     fn para_with_bookmark(name: &str) -> Paragraph {
-        let mut p = Paragraph::default();
+        let mut p = Paragraph {
+            // 책갈피 8유닛 + 문단 끝 1유닛
+            char_count: 9,
+            ..Default::default()
+        };
         p.controls.push(Control::Bookmark(Bookmark {
             name: name.to_string(),
         }));
