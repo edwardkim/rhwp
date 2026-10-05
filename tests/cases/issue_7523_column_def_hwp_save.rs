@@ -132,3 +132,100 @@ fn mixed_width_count_change_survives_hwp_save() {
         "다시 연 문서의 단 영역이 편집한 문서와 같아야 한다"
     );
 }
+
+fn collect_column_text<'a>(
+    node: &'a serde_json::Value,
+    column: Option<u64>,
+    runs: &mut Vec<(u64, &'a serde_json::Value)>,
+) {
+    let column = if node["type"] == "Column" {
+        node["col"].as_u64()
+    } else {
+        column
+    };
+    if node["type"] == "TextRun" {
+        if let Some(column) = column {
+            runs.push((column, node));
+        }
+    }
+    if let Some(children) = node["children"].as_array() {
+        for child in children {
+            collect_column_text(child, column, runs);
+        }
+    }
+}
+
+/// 실제 단 폭 편집·HWP 저장본의 문단 내부 재조판 좌표를 저장 단나누기로 해석하면
+/// 회사 정보가 오른쪽 단으로 넘어간다. 독립 한컴 Print의 3쪽을 Native/fresh WASM으로
+/// 확인한 입력이며, 절대 위치 대신 제목 뒤 순서·첫 단 소속·내용 보존을 검사한다.
+#[test]
+fn reflowed_paragraph_local_positions_do_not_advance_column() {
+    let core = load("mydocs/pr/assets/semanticist21-20261005/pr7527/pr7527-two-columns.hwp");
+    assert_eq!(core.page_count(), 3, "독립 Print와 전체 쪽수 일치");
+    let trees: Vec<serde_json::Value> = (0..core.page_count())
+        .map(|page| {
+            serde_json::from_str(&core.build_page_render_tree(page).unwrap().root.to_json())
+                .unwrap()
+        })
+        .collect();
+    let mut first_runs = Vec::new();
+    collect_column_text(&trees[0], None, &mut first_runs);
+    let body = trees[0]["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["type"] == "Body")
+        .unwrap();
+    let column = body["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["type"] == "Column" && node["col"] == 0)
+        .unwrap();
+    let left = column["bbox"]["x"].as_f64().unwrap();
+    let right = left + column["bbox"]["w"].as_f64().unwrap();
+    let title_end = first_runs
+        .iter()
+        .filter(|(_, run)| {
+            ["마케팅", "전략", "기획서"]
+                .iter()
+                .any(|word| run["text"].as_str().unwrap_or("").starts_with(word))
+        })
+        .map(|(_, run)| run["bbox"]["y"].as_f64().unwrap() + run["bbox"]["h"].as_f64().unwrap())
+        .reduce(f64::max)
+        .expect("제목 보존");
+    let mut previous_end = title_end;
+    for label in ["회사명", "작성자", "부서명", "Tel", "E-Mail"] {
+        let matches: Vec<_> = first_runs
+            .iter()
+            .filter(|(_, run)| run["text"].as_str().unwrap_or("").starts_with(label))
+            .collect();
+        assert_eq!(matches.len(), 1, "첫 쪽의 {label} 누락·중복 금지");
+        let (owner, run) = matches[0];
+        assert_eq!(
+            *owner, 0,
+            "문단 내부 VPOS 되감김은 단 경계가 아니다: {label}"
+        );
+        let box_ = &run["bbox"];
+        let x = box_["x"].as_f64().unwrap();
+        let y = box_["y"].as_f64().unwrap();
+        assert!(x >= left && x + box_["w"].as_f64().unwrap() <= right);
+        assert!(
+            y >= previous_end,
+            "제목·회사 정보의 내용 순서 보존: {label}"
+        );
+        previous_end = y + box_["h"].as_f64().unwrap();
+        let mut all_runs = Vec::new();
+        for tree in &trees {
+            collect_column_text(tree, None, &mut all_runs);
+        }
+        assert_eq!(
+            all_runs
+                .iter()
+                .filter(|(_, run)| run["text"].as_str().unwrap_or("").starts_with(label))
+                .count(),
+            1,
+            "뒤 쪽에 {label}을 중복 배치하지 않는다"
+        );
+    }
+}
