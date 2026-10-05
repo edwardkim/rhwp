@@ -2,8 +2,8 @@
 use crate::renderer::typeset::{
     column_def_design_spacing_px, columndef_separator_between_floating_overlays,
     empty_table_carrier_column_break_before_page_table,
-    hwp5_origin_redundant_pagehide_break_marker, native_hwp5_figure_table_overlay_guide_empty,
-    para_has_visible_text, para_is_columndef_only_separator, para_is_non_tac_overlay_table_anchor,
+    native_hwp5_figure_table_overlay_guide_empty, para_has_visible_text,
+    para_is_columndef_only_separator, para_is_non_tac_overlay_table_anchor,
     para_is_post_paper_page_square_table_scaffold, para_is_pre_paper_page_square_table_scaffold,
     ColumnBreakType, ColumnDef, ColumnType, Control, PageDef, PageItem, PageLayoutInfo, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
@@ -259,21 +259,6 @@ impl TypesetEngine {
                     st.initialize_zone_spacing(new_ds);
                 }
             }
-        }
-
-        // HWP5-origin 문서는 section PageHide를 연 빈 marker와, 같은 쪽 장식 host의
-        // Page break를 함께 기록할 수 있다. marker의 break는 적용하되 marker
-        // 자체를 배치하지 않아 host가 그 새 쪽을 바로 소유하도록 한다.
-        if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            && hwp5_origin_redundant_pagehide_break_marker(
-                para_idx,
-                para,
-                paragraphs,
-                profile.hwpx_stored_layout(),
-            )
-        {
-            st.hide_empty_paragraph(para_idx);
-            return None;
         }
 
         // [Task #1046] 사후 reflow 이월: layout 에서 본문 하단 overflow 로 판정된 항목은
