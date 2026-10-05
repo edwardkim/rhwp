@@ -3294,6 +3294,7 @@ mod tests {
             form_type: FormType::CheckBox,
             caption: "Agree".to_string(),
             text: String::new(),
+            display_text: None,
             fore_color: "#111111".to_string(),
             back_color: "#ffffff".to_string(),
             value: 1,

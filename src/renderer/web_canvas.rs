@@ -2031,6 +2031,7 @@ impl WebCanvasRenderer {
     }
 
     fn render_form_object(&self, form: &FormObjectNode, bbox: &super::render_tree::BoundingBox) {
+        let text = form.display_or_text();
         let x = bbox.x;
         let y = bbox.y;
         let w = bbox.width;
@@ -2133,12 +2134,12 @@ impl WebCanvasRenderer {
                 self.ctx.set_line_width(1.0);
                 self.ctx.stroke_rect(x, y, w - btn_w, h);
                 // 텍스트
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font_size = (h * 0.6).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
+                    let _ = self.ctx.fill_text(text, x + 2.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
                 // 드롭다운 버튼
@@ -2167,12 +2168,12 @@ impl WebCanvasRenderer {
                 self.ctx.set_line_width(1.0);
                 self.ctx.stroke_rect(x, y, w, h);
                 // 텍스트
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font_size = (h * 0.6).min(12.0).max(8.0);
                     self.ctx.set_font(&format!("{}px sans-serif", font_size));
                     self.ctx.set_fill_style_str(&form.fore_color);
                     self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
+                    let _ = self.ctx.fill_text(text, x + 2.0, y + h / 2.0);
                     self.ctx.set_text_baseline("alphabetic");
                 }
             }

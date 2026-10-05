@@ -758,6 +758,7 @@ impl LayoutEngine {
                     form_type: form.form_type,
                     caption: form.caption.clone(),
                     text: form.text.clone(),
+                    display_text: FormObjectNode::password_display_text(form),
                     fore_color: super::paragraph_layout::form_color_to_css(form.fore_color),
                     back_color: super::paragraph_layout::form_color_to_css(form.back_color),
                     value: form.value,

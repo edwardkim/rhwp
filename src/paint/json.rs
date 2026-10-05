@@ -1073,7 +1073,7 @@ impl PaintOp {
                     ",\"formType\":{},\"caption\":{},\"text\":{},\"foreColor\":{},\"backColor\":{},\"value\":{},\"enabled\":{}",
                     json_escape(form_type_str(form.form_type)),
                     json_escape(&form.caption),
-                    json_escape(&form.text),
+                    json_escape(form.display_or_text()),
                     json_escape(&form.fore_color),
                     json_escape(&form.back_color),
                     form.value,
