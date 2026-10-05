@@ -159,6 +159,8 @@ pub struct SerializeContext {
     /// 두고(`hwpx_axis_shift` 0 아님 — 다시 내리면 02502 재수출이 32 → 16 으로 깨진다)
     /// 편집으로 다시 조판한 문단은 HWP5 출처처럼 내린다.
     pub line_segs_on_hwpx_axis: bool,
+    /// 새 HWP5 계보 산출물은 실제 방출된 문단의 제어 슬롯을 함께 센다.
+    pub line_segs_on_paragraph_axis: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
@@ -171,6 +173,7 @@ impl Default for SerializeContext {
         Self {
             char_shape_ids: IdPool::default(),
             line_segs_on_hwpx_axis: false,
+            line_segs_on_paragraph_axis: false,
             para_shape_ids: IdPool::default(),
             border_fill_ids: IdPool::default(),
             tab_pr_ids: IdPool::default(),
@@ -203,6 +206,9 @@ impl SerializeContext {
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
         let mut ctx = Self::default();
+        ctx.line_segs_on_paragraph_axis = doc
+            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            == Some(crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS);
         // [#7526] rhwp 원본 마커를 싣는 산출물은 rhwp 축 계약을 따른다. 그 파일에서 읽은
         // 문단은 이미 그 축이고(`hwpx_axis_shift` 0 아님), 편집으로 다시 조판한 문단만
         // HWP5 축이라 문단마다 가른다(`render_paragraph_parts`).

@@ -89,3 +89,15 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 
 - 입력·PDF·TSV·PNG는 ignored `output/pr-review/semanticist21-20261005/{integration-visual-inputs,integration-mcp-pdf,diagnostics-native-scores,diagnostics-native-review}`에 실패 진단으로 보존한다. 수용용 fixture/golden으로 추가하지 않았다.
 - CLI 편집 출력은 확장자를 `.hwpx`로 지정해도 원 형식 HWP5를 유지한다. 그 잘못된 진단 파일은 기준 자료에서 제외했고 공개 API `export_hwpx_native`의 실제 ZIP 입력으로 재실행했다.
+
+## 메인터너 보정 계획: 독립 Print의 문단 축 계약
+
+한컴2020이 동일 HWP를 HWPX로 저장한 독립 대조본은 첫 run의 `secPr`·`ctrl/colPr`를 포함한 문단 축에서 줄 시작 `0,59,102`를 쓴다. rhwp 산출은 같은 XML 슬롯을 갖고 `0,43,86`을 썼고, 자체 읽기에서 16을 보상해 내부 검사만 통과했다. 같은 잘못된 HWPX의2024 진단 Print도 첫 줄27자로 갈려 제품 버전 차이가 원인이 아님을 확인했다.
+
+보정 범위는 HWP5 계보 산출물의 실제 슬롯 축이다. 첫 run 또는 별도 secPr run으로 옮겨 쓴 정의를 삭제 슬롯으로 세지 않는다. 템플릿이 원본에 없는 정의를 추가할 때는 뒤 줄 시작도 그 슬롯만큼 이동한다. HWPX를 읽으며 올린 source 축은 `Paragraph.line_seg_text_start_of`로 같은 문단 축에 정규화해 저장한다. 새 생산자 계약은 기존 HWP5 origin 엔트리에 `2:paragraph-utf16`으로 명시하고, 읽기에서 이전 `1`의 보상은 호환 경로로 남긴다. 순수 외부 HWPX와 직접 HWP3의 기존 생산자 계약을 이 값으로 추정하지 않는다. 이 메타데이터는 rhwp의 읽기 계약이며 한컴 Print는 실제 XML/textpos로 독립 검증한다.
+
+소비 경로: `hwpx_document_for_export`의 사본 마커 → `SerializeContext.line_segs_on_paragraph_axis` → `render_control_slot_tracked`의 실제 슬롯 보존/`render_paragraph_parts`의 줄 시작 매핑 → section XML → parser의 생산자 계약과 `hwpx_axis_shift` → `line_seg_text_start_of` → 줄 구성·측정·배치. 독립 Print와 Native/fresh WASM을 먼저 확인한 뒤 새 회귀를 추가한다. 기존4개 검사, 이전 origin 산출물 재저장, template의 정의 추가, 직접 HWP3 대조 경계를 검증하며 미실행 경로는 별도로 남긴다.
+
+## 보정 1차 검증 — 2026-10-06
+
+기존4개 nextest PASS. fmt·Native/WASM/workspace-all-targets Clippy·workspace build·base 고정 manifest·source unit tier의 전체 lint 묶음 PASS(`logs/axis-fix-lint-*`). 새 public API 저장본5개는 모두 한컴2020 Print(method0/one-up) 성공이며 Native 전쪽 최저는 긴 문단·어절 나누기·재편집·이전 `1` 산출 재저장100%, 직접 HWP3 대조93.40356%다. 긴 문단 대표 review/overlay를 직접 판독해 줄 분배·위치가 맞음을 확인했다. fresh WASM 재빌드·대조와 최종 전체 회귀는 진행 중이다. 원 로그/TSV/실행 JSON은 ignored output에 보존하고 새 fixture/golden이나 시각 회귀는 이 단계에서 추가하지 않았다.

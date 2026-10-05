@@ -85,3 +85,9 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 ## rebase 후 MCP 직접 출력 검토 — 2026-10-05
 
 원 회귀와 같은 공개 API 경로(빈 문서2단→HWPX 재개방→LEFT 입력→단 나누기→빈 host 표 삽입)를 HWP로 저장한 입력은 MCP job `e7d73495-9ed6-48ce-926a-0691f1be3b2c`에서 300초 시간 초과다. Print PDF가 없으므로 시각 미검증이다. 표 삽입 전의 단 나누기 HWP 및 삽입 후 HWPX/한 단 쪽나누기 대조군을 별도 MCP 진단으로 원인 분리 중이다. 시간 초과를 회귀 PASS나 font 예외로 대체하지 않는다.
+
+## 실제 저장 경로의 재검증 — 2026-10-06
+
+앞의 시간 초과 입력은 진단 생성기가 `DocumentCore.export_hwp_native()`로 production adapter를 우회했다. 시간 초과·줄 캐시 제거·instance ID 변경·노트 레코드 대조 결과는 그 저수준 입력의 진단으로 유지하고 실제 저장 경로의 실패 증거에서 제외한다. `export_hwp_with_adapter_snapshot()`으로 다시 만든 단 나누기/표 입력 HWP·HWPX는 모두 한컴2020 Print 성공이다. Native 전쪽은 표 전 HWP100%, 표 후 HWP60.90026%/HWPX100%. 표 후 HWP의 대표 PNG를 직접 판독해 단 소속·내용은 보존되지만 위 바깥여백만큼 표 상단이 어긋남을 확인했다. 미달이므로 보정을 계속하며 승인으로 판정하지 않는다.
+
+원인 생산 경로는 표 생성의 폭0 개체 앵커 LineSeg → `reflow_paragraph` → `reflow_line_segs_impl`의 빈 문단 분기에서 본문 단 폭으로 덮어쓰기 → 실제 HWP snapshot 저장 → `object_only_saved_table_anchor`/바깥 프레임 예약 → table paint다. 독립 한컴 저장본은 폭0 앵커를 사용한다. 이미 폭0인 단일 floating table의 빈 호스트를 재조판할 때 같은 개체 앵커 의미를 보존하는 보정으로 확인한다. TAC·본문 텍스트·일반 빈 문단을 이 개체 앵커로 바꾸지 않는다. 새 저장본의 독립 Print와 Native/fresh WASM90%를 확인한 뒤 관계 회귀를 추가한다.

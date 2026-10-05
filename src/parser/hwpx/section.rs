@@ -794,7 +794,9 @@ fn parse_paragraph_body(
                         // 모든 chars 를 line 0 에 packing. \u{0002} 추가로 8 utf16 정합.
                         para.controls.push(Control::SectionDef(Box::new(sd)));
                         text_parts.push("\u{0002}".to_string());
-                        hwp5_only_leading_slots += 1;
+                        if !HWPX_PARAGRAPH_AXIS.with(|c| c.get()) {
+                            hwp5_only_leading_slots += 1;
+                        }
                         // colPr이 있으면 ColumnDef 컨트롤 추가 (초기 단 정의) + 8 utf16.
                         if let Some(cd) = col_def_opt {
                             para.controls.push(Control::ColumnDef(cd));
@@ -1088,6 +1090,7 @@ fn parse_paragraph_body(
     // 세면 왕복한 구역 첫 문단의 줄이 8유닛 일찍 끊긴다. 한컴이 쓴 HWPX 는 같은 모양이어도
     // 마커가 없으므로 종전 보정폭 그대로다.
     if sec_pr_run_has_col_pr
+        && !HWPX_PARAGRAPH_AXIS.with(|c| c.get())
         && (HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.get()) || hwpx_hwp3_origin_source())
     {
         hwp5_only_leading_slots += 1;
@@ -5778,6 +5781,8 @@ thread_local! {
     /// [#4916/#4660/#3531/#4882 계열] 지금 파싱 중인 HWPX 가 rhwp 자기 산출
     /// (HWP5-origin 마커 보유)인가 — `parse_hwpx` 가 구역 파싱 동안 세운다.
     static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// 명시된 생산자의 문단 축만 사용하며 이전 마커나 외부 생산자는 추정하지 않는다.
+    static HWPX_PARAGRAPH_AXIS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
     static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
@@ -5883,8 +5888,9 @@ fn push_object_slot_placeholder(text_parts: &mut Vec<String>) {
 pub(crate) struct Hwp5OriginSourceGuard;
 
 impl Hwp5OriginSourceGuard {
-    pub(crate) fn set(active: bool) -> Self {
+    pub(crate) fn set(active: bool, paragraph_axis: bool) -> Self {
         HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(active));
+        HWPX_PARAGRAPH_AXIS.with(|c| c.set(paragraph_axis));
         Hwp5OriginSourceGuard
     }
 }
@@ -5892,6 +5898,7 @@ impl Hwp5OriginSourceGuard {
 impl Drop for Hwp5OriginSourceGuard {
     fn drop(&mut self) {
         HWPX_HWP5_ORIGIN_SOURCE.with(|c| c.set(false));
+        HWPX_PARAGRAPH_AXIS.with(|c| c.set(false));
     }
 }
 

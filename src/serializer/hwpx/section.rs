@@ -766,6 +766,24 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
+    // 첫 run의 secPr/colPr는 각각 실제 8유닛 슬롯이다. 원본에 없는 정의만
+    // 템플릿이 추가하면 뒤 줄의 시작도 같은 폭만큼 전진해야 한다.
+    let injected_prefix_units = if ctx.line_segs_on_paragraph_axis
+        && ctx.sub_list_depth == 0
+        && ctx.body_coldef_template_pending
+    {
+        let has_section = para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::SectionDef(_)));
+        let has_column = para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::ColumnDef(_)));
+        8 * (u32::from(!has_section) + u32::from(!has_column))
+    } else {
+        0
+    };
     let (
         runs_xml,
         position_axis_intact,
@@ -829,22 +847,35 @@ pub(crate) fn render_paragraph_parts(
     hwp5_only_slot_positions.dedup();
     let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
     let serializable_line_segs = para.serializable_line_segs();
-    let rebased_line_segs: Option<Vec<LineSeg>> =
-        (!hwp5_only_slot_positions.is_empty() && !serializable_line_segs.is_empty()).then(|| {
-            serializable_line_segs
-                .iter()
-                .map(|seg| {
-                    let shift = 8 * hwp5_only_slot_positions
-                        .iter()
-                        .filter(|&&pos| pos < seg.text_start)
-                        .count() as u32;
-                    LineSeg {
-                        text_start: seg.text_start.saturating_sub(shift),
-                        ..seg.clone()
-                    }
-                })
-                .collect()
-        });
+    let rebased_line_segs: Option<Vec<LineSeg>> = ((!hwp5_only_slot_positions.is_empty()
+        || ctx.line_segs_on_paragraph_axis)
+        && !serializable_line_segs.is_empty())
+    .then(|| {
+        serializable_line_segs
+            .iter()
+            .map(|seg| {
+                let text_start = if ctx.line_segs_on_paragraph_axis {
+                    para.line_seg_text_start_of(seg.text_start)
+                } else {
+                    seg.text_start
+                };
+                let shift = 8 * hwp5_only_slot_positions
+                    .iter()
+                    .filter(|&&pos| pos < text_start)
+                    .count() as u32;
+                LineSeg {
+                    text_start: text_start.saturating_sub(shift).saturating_add(
+                        if text_start == 0 {
+                            0
+                        } else {
+                            injected_prefix_units
+                        },
+                    ),
+                    ..seg.clone()
+                }
+            })
+            .collect()
+    });
     let source_line_segs = rebased_line_segs
         .as_deref()
         .unwrap_or(serializable_line_segs);
@@ -852,6 +883,7 @@ pub(crate) fn render_paragraph_parts(
     let line_seg_axis_end = para
         .char_count
         .max(serialized_axis_end)
+        .saturating_add(injected_prefix_units)
         .saturating_sub(hwp5_only_units);
     let axis_line_segs = if para.stored_text_partition_is_dirty() {
         // The retained rows are an edit-reflow template, not a partition of
@@ -1408,11 +1440,18 @@ fn render_control_slot_tracked(
     collapsed_slot_positions: &mut Vec<u32>,
 ) {
     let before = out.len();
+    // XML이 인라인에서 비어도 구역 머리 run이나 별도 secPr run으로 옮겨진
+    // 정의는 실제 출력에 남는다. 새 문단 축 계약에서 이를 삭제 슬롯으로 세지 않는다.
+    let relocated_definition = ctx.line_segs_on_paragraph_axis
+        && (matches!(control, Control::SectionDef(_))
+            || (matches!(control, Control::ColumnDef(_))
+                && ctx.sub_list_depth == 0
+                && ctx.body_coldef_template_pending));
     // [#6871] 이 슬롯이 **우리가 접은 것**인지 미리 안다 — 두 번째 이후 쪽번호 위치.
     let collapses_here =
         matches!(control, Control::PageNumberPos(_)) && ctx.para_page_num_pos_emitted;
     render_control_slot(out, control, ctx);
-    if out.len() == before {
+    if out.len() == before && !relocated_definition {
         if collapses_here {
             // [#6871] **출처와 무관하게** 축에서 빼야 한다 — 아래 호출부 주석.
             collapsed_slot_positions.push(hwp5_pos);
