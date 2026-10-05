@@ -65,4 +65,10 @@ loose inline을 flush_inline_run에 모아 parse_inline_content의 style stack�
 
 public API `pasteHtml(0,0,0,...)`로 ASCII `x` 8,001자를 실행했다. 최신 base의 Native 결과는 plain과 `<b>...</b>` 모두 문단 길이 `[4000,4000,1]`; 누적 fresh WASM은 plain `[4000,4000,1]`, bold `[8001]`이다. 새 `flush_inline_run`의 태그 포함 분기가 `FLUSH_LINE_CHAR_CAP=4000`을 적용하지 않고 parse_inline_content 한 문단을 발행한다. 기존 source 주석이 길이 제한을 명시하고 있으며 이 PR의 6개 회귀에는 해당 경계가 없다. 문단 수·길이의 신규 계약 회귀를 검출한 것이며 실제 overlap/전체 브라우저 정지까지 실행했다고 주장하지 않는다.
 
-[base 실행](../assets/semanticist21-20261005/base-probes.log), [fresh WASM 실행](../assets/semanticist21-20261005/browser-review.log), [관측값](../assets/semanticist21-20261005/browser-observations.json). Native base와 WASM 누적의 runtime 차이는 이후 같은 Native 경로에서도 확인하여 구분한다. source 회귀 추가와 스타일·그림·명시적 줄바꿈을 보존하는 제한 처리가 필요하다.
+[base 실행](../assets/semanticist21-20261005/base-probes.txt), [fresh WASM 관측](../assets/semanticist21-20261005/browser-observations.json), [관측값](../assets/semanticist21-20261005/browser-observations.json). Native base와 WASM 누적의 runtime 차이는 이후 같은 Native 경로에서도 확인하여 구분한다. source 회귀 추가와 스타일·그림·명시적 줄바꿈을 보존하는 제한 처리가 필요하다.
+
+## 최종 공통 회귀 결과 (폼 source cf2336295)
+
+Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 [검증 정본](../assets/semanticist21-20261005/appearance-final-validation.json), 요약과 원 로그 SHA는 [실행 요약](../assets/semanticist21-20261005/appearance-final-validation-summary.txt)에 보존했다.
+
+#7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.

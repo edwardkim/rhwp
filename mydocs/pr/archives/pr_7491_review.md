@@ -76,7 +76,7 @@ reflow_line_segs → 행별 bit 20 → paragraph layout 들여쓰기 소비. res
 
 ### 고정 base 대조 결과
 
-base `cdba77b609c399fdef26a6c9e637716aa32c2177`의 동일 입력/삽입 순서에서 table x `113.48`, width `597.12`, 우변 `710.60`을 직접 관측했다. 변경 전 table x `98.29333`, width `597.12`이다. 따라서 누적 후보에서 관측한 우변 초과는 최신 devel의 기존 결함이며 이번 들여쓰기 변경의 신규 회귀라고 판정하지 않는다. 새 회귀 검사가 현재 base 위에서 실패하는 사실은 유지하며 기대값을 완화하지 않았다. 증거: [base probe](../assets/semanticist21-20261005/base-probes.log). 최초 잘못 고정한 suite target에서 0 tests가 실행된 결과는 검증에 세지 않았고, manifest에서 실제 `regression_suite_020`을 다시 resolve하여 2개 diagnostic을 실행했다.
+base `cdba77b609c399fdef26a6c9e637716aa32c2177`의 동일 입력/삽입 순서에서 table x `113.48`, width `597.12`, 우변 `710.60`을 직접 관측했다. 변경 전 table x `98.29333`, width `597.12`이다. 따라서 누적 후보에서 관측한 우변 초과는 최신 devel의 기존 결함이며 이번 들여쓰기 변경의 신규 회귀라고 판정하지 않는다. 새 회귀 검사가 현재 base 위에서 실패하는 사실은 유지하며 기대값을 완화하지 않았다. 증거: [base probe](../assets/semanticist21-20261005/base-probes.txt). 최초 잘못 고정한 suite target에서 0 tests가 실행된 결과는 검증에 세지 않았고, manifest에서 실제 `regression_suite_020`을 다시 resolve하여 2개 diagnostic을 실행했다.
 
 fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관측했다: 0은 모두 x 113.4, +3000은 첫 줄 x 133.4/나머지 113.4, -3000은 첫 줄 113.4/나머지 133.4. 이는 현재 좌표 계약의 관측이며 저장 문단 들여쓰기의 한컴 fidelity 완료를 의미하지 않는다. 사용자 PDF의 누름틀 안내문 제외 지시는 본 표 좌표 검사를 면제하지 않는다.
 
@@ -85,3 +85,9 @@ fresh WASM Canvas에서 새 문단 indent 0/3000/-3000의 첫 3줄 원점을 관
 사용자가 #7491의 실패 입력 `center_align_first_line_indent.hwp`를 우선 개선하고 나머지는 대조군으로 유지하도록 지정했다. 한컴 MCP로 원본·입력/삭제 뒤 저장본·기존 실패 검사와 동일한 삽입 뒤 저장본의 PDF를 각각 재산출한다. 기존 #6275 PDF는 전체 출력 크기가 달라 현재 1-up 비교의 기준으로 그대로 사용할 수 없었다. 새 MCP 원본 기준 Native73.57805%로 gate가 실제 종료코드1/re_review_required를 반환했다. 한컴 글꼴은 시스템 경로에 등록했으며 과거 한컴바탕→HCR 강제 alias와 RHWP SVG의 글꼴 파일 탐색을 구분해 확인한다. 정확한 font 공급만으로도 남는 표/본문 좌표 차이의 생산→측정→배치 소비 경로와 원인을 추적한다.
 
 절대 px 기대값을 완화하여 실패를 숨기지 않는다. 독립 PDF의 같은 페이지/영역에서 Native/fresh WASM 시각 일치율90% 이상과 직접 review/overlay를 확인한 뒤, 사용자 지시에 따라 고정 px 위치 대신 독립 시각 비율과 정규화된 배치 계약으로 회귀 검사를 연결한다. 원본 파일·기존 PDF는 보존한다. 정상 대조군은 실제 영향 페이지 biz_plan3쪽, tac-img-02 7쪽과 붙여넣기1쪽/나머지 문서이며 전체 문서 개선으로 확대하지 않는다.
+
+## 최종 공통 회귀 결과 (폼 source cf2336295)
+
+Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c399fdef26a6c9e637716aa32c2177`에서 fmt·Clippy Native/WASM/workspace-all-targets·workspace build·manifest/unit tier 정책 PASS. 전체 nextest10,437건 중10,436 PASS/1 FAIL/50 SKIP이며 실패는 #7491의 편집 뒤 표 우변 assertion1건이다. 이 실패는 고정 base에서도 관측했다. Native Skia lib·missing picture2개·direct PDF4개·ComboBox4개·암호4개는 모두 PASS다. 명령/exit/시간은 [검증 정본](../assets/semanticist21-20261005/appearance-final-validation.json), 요약과 원 로그 SHA는 [실행 요약](../assets/semanticist21-20261005/appearance-final-validation-summary.txt)에 보존했다.
+
+#7491은 사용자가 지정한 실패 입력에서 MCP 재산출 PDF·90% 시각 gate와 독립 기대값을 추가 검증 중이며, #7521의 loose inline 길이 제한 우회도 보류 사유로 남는다. 전체 회귀 통과 또는 통합 merge를 선언하지 않는다. 이후 Rust source/test 변경에는 이 결과를 그대로 승계하지 않고 해당 검증을 다시 수행한다.
