@@ -33,14 +33,17 @@ last_verified: 2026-10-05
 
 - `src/document_core/commands/html_import.rs`
 
-구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+loose inline을 flush_inline_run에 모아 parse_inline_content의 style stack으로 읽는다. 안쪽 weight가 우선하며 br 뒤에는 열린 서식을 다시 연다. span 내부의 그림도 실제 parse 경로로 소비한다.
+
+새 loose b/i 경로가 기존 4000자 강제 절단을 우회하는지 경계 검증이 필요하다. 기존 source 테스트 6개에는 긴 입력 경계가 없다. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
 
 ## 검증 입력·결과
 
-- `tests/cases/issue_7516_html_paste_loose_inline_format.rs` (6개 테스트): 실행 대기
+- `tests/cases/issue_7516_html_paste_loose_inline_format.rs` (6개 테스트): 누적 head 실행 6 PASS / 0 FAIL
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
-- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
+- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 

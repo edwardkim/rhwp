@@ -39,14 +39,17 @@ last_verified: 2026-10-05
 - `src/renderer/layout.rs`
 - `src/renderer/layout/paragraph_layout.rs`
 
-구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+ActiveFieldInfo.para_idx는 body host 문단이며 cell_path는 모든 단계의 control/cell/paragraph를 포함한다. field query·편집 소비자·paragraph_layout의 active guide 비교가 같은 주소를 사용한다.
+
+두 host와 중간 셀 문단이 다른 nested table을 검사한다. guide는 screen profile 대상이므로 print PDF의 안내문 제외를 기대 화면으로 사용하지 않는다. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
 
 ## 검증 입력·결과
 
-- `tests/cases/clickhere_cell_parent_identity.rs` (4개 테스트): 실행 대기
+- `tests/cases/clickhere_cell_parent_identity.rs` (4개 테스트): 누적 head 실행 4 PASS / 0 FAIL
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
-- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
+- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 

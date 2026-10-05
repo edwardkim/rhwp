@@ -33,14 +33,17 @@ last_verified: 2026-10-05
 
 - `src/document_core/queries/cursor_nav.rs`
 
-구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+get_selection_rects의 body fallback은 이미 유효한 page_tree_cache만 재사용한다. warm tree가 없으면 기존 함수 로컬 build 수명을 유지한다. hint 경로는 기존 cached build를 따른다.
+
+warm/cold 선택 결과 동일, 캐시 체류 증가 없음, 편집 후 무효화된 결과 소비를 검사한다. 성능 수치를 이 누적 후보에서 다시 측정하지 않았으므로 성능 개선량은 주장하지 않는다. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
 
 ## 검증 입력·결과
 
-- `tests/cases/body_selection_tree_reuse.rs` (3개 테스트): 실행 대기
+- `tests/cases/body_selection_tree_reuse.rs` (3개 테스트): 누적 head 실행 3 PASS / 0 FAIL
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
-- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
+- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 

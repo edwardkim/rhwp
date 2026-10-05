@@ -33,14 +33,17 @@ last_verified: 2026-10-05
 - `src/document_core/queries/cursor_nav.rs`
 - `src/document_core/queries/cursor_rect.rs`
 
-구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+cursor_rect와 selection cursor_nav에서 char_start=None인 번호/글머리표 run을 제외한다. 텍스트 주소는 실제 TextRun char_start에서 계산한다.
+
+본문·셀 번호/글머리표의 첫 글자와 선택 양 끝을 검사한다. 빈 목록 셀의 marker 앞 caret 문제는 별도 범위다. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
 
 ## 검증 입력·결과
 
-- `tests/cases/issue_7514_cell_list_marker_caret.rs` (2개 테스트): 실행 대기
+- `tests/cases/issue_7514_cell_list_marker_caret.rs` (2개 테스트): 누적 head 실행 2 PASS / 0 FAIL
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
-- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
+- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 

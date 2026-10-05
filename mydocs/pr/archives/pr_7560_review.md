@@ -33,14 +33,17 @@ last_verified: 2026-10-05
 
 - `src/renderer/layout/picture_footnote.rs`
 
-구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+picture_footnote의 stored_prefix를 화면에서 생략한 run은 char_start에 skipped를 더한다. 다음 run 누적 char_offset은 원문 글자 수대로 전진한다.
+
+번호 prefix가 숨겨진 각주 마지막 caret offset을 원문 주소로 검사한다. 좌표 보정이나 pagination 조건은 추가하지 않았다. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
 
 ## 검증 입력·결과
 
-- `tests/cases/footnote_source_offset_contract.rs` (1개 테스트): 실행 대기
+- `tests/cases/footnote_source_offset_contract.rs` (1개 테스트): 누적 head 실행 1 PASS / 0 FAIL
 
 - 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
-- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 필수 fmt·Native/WASM/workspace-all-targets Clippy·workspace build·manifest/base 정책·source unit tier 검사: PASS. 전체 Rust·Native Skia·fresh WASM 및 직접 시각 검증은 진행 중.
+- focused: `focused-command.json`의 20 case 필터, 전체 74건 중 73 PASS / 1 FAIL. PR별 결과는 위 case 항목에서 구분한다. 실행 증거: `output/pr-review/semanticist21-20261005/logs/focused.log`.
 - 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
 - source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
 
