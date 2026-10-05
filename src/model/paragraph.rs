@@ -913,7 +913,20 @@ impl Paragraph {
     /// **이 문단의 UTF-16 좌표를 들고 있는 것은 전부 여기서 함께 민다.** 하나라도 빠지면
     /// 그것만 8 만큼 어긋난 채 남아, 다음에 그 문단을 다시 조판할 때 값이 튀어 원인이
     /// 삽입이 아닌 곳에서 찾아진다(#4347 에서 line_segs 가 그랬다).
-    pub(crate) fn shift_for_inline_control_insert(&mut self, char_offset: usize) {
+    ///
+    /// 컨트롤 번호도 같은 이유로 민다. 새 컨트롤이 `controls[control_idx]` 에 들어가면 그
+    /// 자리부터 뒤 컨트롤의 번호가 1씩 커진다. 누름틀 범위가 옛 번호에 남으면 앞에 넣은
+    /// 개체를 가리켜, 누름틀이 조회와 저장에서 사라진다.
+    pub(crate) fn shift_for_inline_control_insert(
+        &mut self,
+        control_idx: usize,
+        char_offset: usize,
+    ) {
+        for range in &mut self.field_ranges {
+            if range.control_idx >= control_idx {
+                range.control_idx += 1;
+            }
+        }
         if self.char_offsets.is_empty() {
             return;
         }

@@ -1507,44 +1507,9 @@ impl DocumentCore {
                 .insert(insert_idx, Control::Shape(Box::new(shape_obj)));
             paragraph.ctrl_data_records.insert(insert_idx, None);
 
-            // char_offsets: 컨트롤은 텍스트축 배열에 원소로 들어가지 않고 "8 code unit 갭"으로
-            // 표현된다. insert_idx 는 controls 축 인덱스이므로, 이를 char_offsets(텍스트축,
-            // 길이 = text.chars().count())에 원소로 끼워넣으면 배열이 1 늘어나 불변이 깨진다
-            // (control_text_positions 등이 char_offsets[i]↔text char i 대응을 가정). 각주/수식
-            // 삽입 경로처럼 텍스트 인덱스 기준으로 삽입 지점 이후만 +8 시프트한다.
-            if !paragraph.char_offsets.is_empty() {
-                let text_len = paragraph.text.chars().count();
-                let safe_offset = char_offset.min(text_len);
-                let insert_pos: u32 = if safe_offset < paragraph.char_offsets.len() {
-                    paragraph.char_offsets[safe_offset]
-                } else {
-                    let last_idx = paragraph.char_offsets.len() - 1;
-                    let last_w = paragraph
-                        .text
-                        .chars()
-                        .nth(last_idx)
-                        .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
-                        .unwrap_or(1);
-                    paragraph.char_offsets[last_idx] + last_w
-                };
-                for co in paragraph.char_offsets[safe_offset..].iter_mut() {
-                    *co += 8;
-                }
-                for cs in &mut paragraph.char_shapes {
-                    if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0)
-                    {
-                        cs.start_pos += 8;
-                    }
-                }
-                for rt in &mut paragraph.range_tags {
-                    if rt.start >= insert_pos {
-                        rt.start += 8;
-                    }
-                    if rt.end >= insert_pos {
-                        rt.end += 8;
-                    }
-                }
-            }
+            // 컨트롤은 char_offsets 에 원소로 들어가지 않고 8 code unit 갭으로 표현된다.
+            // 각주·수식·그림 경로와 같은 공용 시프트로 갭을 내고 뒤 누름틀 번호도 민다.
+            paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
 
             // char_count 갱신 (확장 컨트롤 = 8 code units)
             paragraph.char_count += 8;
@@ -1555,6 +1520,7 @@ impl DocumentCore {
             paragraph.has_para_text = true;
             insert_ctrl_idx = insert_idx;
         }
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_ctrl_idx);
 
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
