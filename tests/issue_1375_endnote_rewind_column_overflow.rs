@@ -62,13 +62,38 @@ fn issue_1375_sep2020_page17_rewind_paragraph_splits_at_stored_rewind() {
         "pi=894 should keep its first two lines in the left column and continue in the right column\n{page17}"
     );
 
+    // 문단이 두 단에 걸치면 쪽에서 가장 위 줄은 오른쪽 단 맨 위 줄이다. 왼쪽 단의 첫 줄을 따로 잰다.
     let tree = doc.build_page_render_tree(16).expect("page 17 render tree");
-    let first_line = min_para_text_line_bbox(&tree.root, 894).expect("pi=894 first text line");
+    let first_line = min_para_text_line_bbox_in_x_range(&tree.root, 894, 0.0, 395.0)
+        .expect("pi=894 first text line in the left column");
     assert!(
-        first_line.x < 80.0 && (1043.0..=1059.0).contains(&first_line.y),
+        (1043.0..=1059.0).contains(&first_line.y),
         "pi=894 first line should sit at the left-column bottom like the PDF (1050.8px), got {:?}",
         first_line
     );
+}
+
+fn min_para_text_line_bbox_in_x_range(
+    node: &RenderNode,
+    para_index: usize,
+    x_min: f64,
+    x_max: f64,
+) -> Option<BoundingBox> {
+    let own = match &node.node_type {
+        RenderNodeType::TextLine(line)
+            if line.para_index == Some(para_index)
+                && node.bbox.x >= x_min
+                && node.bbox.x < x_max =>
+        {
+            Some(node.bbox.clone())
+        }
+        _ => None,
+    };
+    own.into_iter()
+        .chain(node.children.iter().filter_map(|child| {
+            min_para_text_line_bbox_in_x_range(child, para_index, x_min, x_max)
+        }))
+        .min_by(|a, b| a.y.partial_cmp(&b.y).unwrap())
 }
 
 #[test]
