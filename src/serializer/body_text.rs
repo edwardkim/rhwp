@@ -701,11 +701,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     let mut trailing_end_after_ctrl: HashMap<usize, Vec<FieldEndMarker>> = HashMap::new();
     // trailing FIELD_END 중 FIELD_BEGIN이 이미 본문에 배치된 경우 (orphan)
     let trailing_orphan_ends: Vec<u32> = Vec::new();
-    // [#4402] empty_field_ends/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
+    // [#4402] empty_fields/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
     // 자기 FIELD_END 직전에 되살린다. mismatch(orphan) 경로는 #3545 와 동일하게 제외한다
     // (슬롯 위치 추정이 이미 무너진 퇴화 경로라 주입이 개선이라 단정할 수 없다).
-    let mut empty_field_residues: BTreeMap<usize, Vec<&crate::model::control::GuideResidue>> =
-        BTreeMap::new();
     let mut trailing_residues: HashMap<usize, Vec<&crate::model::control::GuideResidue>> =
         HashMap::new();
 
@@ -716,9 +714,11 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // 필드(시작==끝)는 자기 BEGIN 뒤에 END 가 붙어야 한다. 두 경우를 한 통에 담으면 순서를
     // 가릴 수 없다.
     //
-    // - `field_ends`       : 시작 < 끝 — 그 자리의 **모든 것보다 먼저** 나간다.
-    // - `empty_field_ends` : 시작 == 끝 — 자기 BEGIN **직후에** 나간다.
-    let mut empty_field_ends: BTreeMap<usize, Vec<FieldEndMarker>> = BTreeMap::new();
+    // - `field_ends`   : 시작 < 끝 — 그 자리의 **모든 것보다 먼저** 나간다.
+    // - `empty_fields` : 시작 == 끝 — 자기 BEGIN(감싼 안쪽 슬롯이 있으면 그 뒤) **직후에**
+    //   나간다. 같은 자리의 빈 필드 둘을 BEGIN·BEGIN·END·END 로 쓰면 파서가 바깥·안쪽으로
+    //   짝지어 순서가 뒤바뀐다.
+    let mut empty_fields: BTreeMap<usize, Vec<EmptyFieldEnd>> = BTreeMap::new();
     // 컨트롤 → 그 컨트롤이 여는 필드의 시작 문자 위치. FIELD_BEGIN 은 이 위치보다 앞에
     // 나올 수 없다 — 갭 크기만 보고 밀어 넣으면 뒤 필드의 BEGIN 이 앞 갭으로 빨려 들어가
     // 위치 0 에 두 개가 겹쳐 방출된다.
@@ -738,16 +738,11 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         };
         let residue = guide_residue_for(para, fr);
         if fr.end_char_idx < text_len && fr.start_char_idx == fr.end_char_idx {
-            empty_field_ends
-                .entry(fr.end_char_idx)
-                .or_default()
-                .push(marker);
-            if let Some(residue) = residue {
-                empty_field_residues
-                    .entry(fr.end_char_idx)
-                    .or_default()
-                    .push(residue);
-            }
+            empty_fields.entry(fr.end_char_idx).or_default().push((
+                fr.control_idx + fr.inner_slot_count,
+                marker,
+                residue,
+            ));
         } else if fr.end_char_idx < text_len {
             field_ends.entry(fr.end_char_idx).or_default().push(marker);
         } else {
@@ -894,12 +889,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             }
         }
 
-        // ② 갭 채우기 — 빈 필드의 END 자리는 예약해 둔다.
-        let pending_field_end_cus = empty_field_ends
-            .get(&i)
-            .map(|markers| markers.len() as u32 * 8)
-            .unwrap_or(0);
-        while prev_end + 8 + pending_field_end_cus <= offset
+        // ② 갭 채우기 — 아직 닫지 않은 빈 필드의 END 자리는 예약해 둔다.
+        let mut empty_here = empty_fields.remove(&i).unwrap_or_default();
+        while prev_end + 8 + empty_here.len() as u32 * 8 <= offset
             && ctrl_idx < para.controls.len()
             // 필드를 여는 컨트롤은 자기 시작 위치 전에 방출하지 않는다.
             && field_begin_pos
@@ -911,6 +903,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
             }
+            close_empty_fields(
+                &mut empty_here,
+                ctrl_idx,
+                &mut code_units,
+                &mut residue_shifts,
+                &mut prev_end,
+            );
             ctrl_idx += 1;
         }
 
@@ -927,6 +926,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
             }
+            close_empty_fields(
+                &mut empty_here,
+                ctrl_idx,
+                &mut code_units,
+                &mut residue_shifts,
+                &mut prev_end,
+            );
             ctrl_idx += 1;
         }
 
@@ -941,20 +947,14 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             continue;
         }
 
-        // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
-        // [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
-        // `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
-        if let Some(residues) = empty_field_residues.get(&i) {
-            for &residue in residues {
-                push_guide_residue(&mut code_units, &mut residue_shifts, residue, prev_end);
-            }
-        }
-        if let Some(markers) = empty_field_ends.get(&i) {
-            for &marker in markers {
-                push_field_end_ctrl(&mut code_units, marker);
-                prev_end += 8;
-            }
-        }
+        // ④ 닫는 슬롯을 이 자리에서 만나지 못한 빈 필드의 FIELD_END.
+        close_empty_fields(
+            &mut empty_here,
+            usize::MAX,
+            &mut code_units,
+            &mut residue_shifts,
+            &mut prev_end,
+        );
 
         // 텍스트 문자 쓰기
         match *ch {
@@ -1182,6 +1182,36 @@ fn serialize_para_char_shape(char_shapes: &[CharShapeRef]) -> Vec<u8> {
         w.write_u32(cs.char_shape_id).unwrap();
     }
     w.into_bytes()
+}
+
+/// 본문 중간 빈 필드의 `(닫기 직전 컨트롤 번호, 종료 표지, 되살릴 안내문 잔재)`.
+type EmptyFieldEnd<'a> = (
+    usize,
+    FieldEndMarker,
+    Option<&'a crate::model::control::GuideResidue>,
+);
+
+/// `closed` 번 컨트롤 바로 뒤에서 닫히는 빈 필드의 FIELD_END 를 쓴다. `usize::MAX` 면 남은
+/// 것을 모두 쓴다. [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
+/// `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
+fn close_empty_fields(
+    pending: &mut Vec<EmptyFieldEnd<'_>>,
+    closed: usize,
+    code_units: &mut Vec<u16>,
+    residue_shifts: &mut Vec<GuideResidueShift>,
+    prev_end: &mut u32,
+) {
+    pending.retain(|&(close_after, marker, residue)| {
+        if closed != usize::MAX && close_after != closed {
+            return true;
+        }
+        if let Some(residue) = residue {
+            push_guide_residue(code_units, residue_shifts, residue, *prev_end);
+        }
+        push_field_end_ctrl(code_units, marker);
+        *prev_end += 8;
+        false
+    });
 }
 
 #[derive(Debug, Clone, Copy, Default)]
