@@ -56,3 +56,5 @@ source `b3c933a88cdb4f7ceed3fbbf1a6bc46375d18aee`의 Native/fresh WASM을 순차
 source357ff494e의 바깥 여백 공유만으로 작은 표의 점수는 바뀌지 않았다(85.73551%). 공개 API가 발행한 표 선언 높이는282HU이나 실제 셀 글자와 패딩을 소비한 `HeightMeasurer::measure_section`의 표 높이는1282HU다. 선언282+바깥 여백566은 기존 글자 줄1000보다 작아 줄 높이 갱신이 발생하지 않았다. 따라서 선언 높이만 재사용한 설명은 불충분하다.
 
 다음 보정은 별도의 추정식을 만들지 않고 표 배치가 소비하는 `measure_table`의 셀/행 측정 결과를 편집 재조판의 점유 높이에도 사용한다. 단순 선언/여백 보정과 실제 콘텐츠 높이 측정을 구분하며, 저장 줄 재사용 경로는 기존 입력으로 재검증한다. 작은 표의 Native/fresh WASM 및 독립 MCP PDF가90%를 충족한 뒤에만 새 정식 회귀/fixture를 추가한다. 실행 로그와 진단 출력은 ignored `output/pr-review/semanticist21-20261005/`에만 보존한다.
+
+source4331d7290에서 줄1848HU/기준선1571HU를 발행했으나 작은 표 Sweep은52.53863%로 악화했다. 같은 입력을 Windows MCP로 다시 출력했으며 원본 PDF와 표/글자 위치는 같다. 실제 paint의 `layout_inline_table_paragraph`는 `tac_table_stored_outer_band_top`에서 선언282HU만 대조해 외곽 줄 소유를 거부한 뒤 `baseline + outer_bottom - measured_height`를 선택했다. 이로 인해 표 상단은161.22667px, 독립 MCP 대응 상단은157.45px로 어긋났다. `measure_table → LineSeg1848 → layout의 measured_tables → 외곽 줄 소유 판정 → 표 상단`까지 같은 측정 높이를 소비하도록 보정한다. 기존 선언 높이 기반 저장 줄 수용은 보존하고 실제 측정 외곽 높이와 일치하는 줄도 동일한 상단/여백 배치를 사용한다. 이 관측 좌표를 회귀 기대값으로 고정하지 않는다.
