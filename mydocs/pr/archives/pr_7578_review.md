@@ -181,3 +181,12 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `e3268b9bc5aba217e51b3104a87b7a5f19f6491d` | `1d809afe7b965c9ea6137012d59d139d63b038d0` | `1f3127ae1265543b700e48ef81109efebe51f6f4` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 수동 기준 PDF의 Print 출처 확인 — 2026-10-05
+
+사용자가 아래 두 PDF 모두 한컴 파일 → 인쇄(Print) → PDF 출력본이라고 확인했다. MCP는 원본의 매크로/스크립트 때문에 무인 변환을 거절했으며 거절을 우회하지 않았다. 이미 제공된 수동 인쇄본을 같은 원문 기준으로 사용한다.
+
+- `samples/hwpx/form-01-2024.pdf` SHA-256 `d1117657d92c789295d73af1bebd11b241eb352254b328d95c07f0efb87b18ee`.
+- `tests/fixtures/form-password/edit-password-2024.pdf` SHA-256 `84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a`.
+
+최신 동일 production의 Native TSV는 양식99.34142%/암호98.81531%이며, fresh WASM 및 대표 PNG 직접 판독은 이어서 기록한다. 원 TSV/실행 로그는 ignored output에만 보존한다.
