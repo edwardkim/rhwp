@@ -70,7 +70,7 @@ ExactFontSourceRegistry의 불변 Arc와 등록 hash → kerning source session 
 
 ## fresh WASM 실제 등록 글꼴/Canvas 경로
 
-fresh web package `rhwp_bg.wasm` SHA-256 `5c66e27f13dc1699a18aabcc1397c530e1bec05f2567b5a0414e9dabe714dd06`를 Chromium에서 실행했다. 새 문서 26pt `AVTo`, 저장소 TTF를 실제 FontFace로 올리고 charShapeId의 영문 slot 1에 registerExactFontSource를 호출했다. 2x Canvas fillText의 A/V/T/o 가로 배율은 각각 등록 전후 동일하다. V 원점 차이는 `-5.546661px / 2 = -2.77333px`, o는 누적 `-8.319977px / 2 = -4.15999px`로 TTF의 AV -80·To -40 / 1000 em, 26pt 기대값과 일치한다. 글리프 폭을 압축하지 않고 원점만 커닝하는 계약을 실제 renderer 호출에서 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/kerning-browser.log`·[좌표/transform 원문](../assets/semanticist21-20261005/kerning-results.json). 동일 글꼴 조건의 한컴 PDF는 확보하지 않았으며 한컴 fidelity 판정과 구분한다.
+fresh web package `rhwp_bg.wasm` SHA-256 `5c66e27f13dc1699a18aabcc1397c530e1bec05f2567b5a0414e9dabe714dd06`를 Chromium에서 실행했다. 새 문서 26pt `AVTo`, 저장소 TTF를 실제 FontFace로 올리고 charShapeId의 영문 slot 1에 registerExactFontSource를 호출했다. 2x Canvas fillText의 A/V/T/o 가로 배율은 각각 등록 전후 동일하다. V 원점 차이는 `-5.546661px / 2 = -2.77333px`, o는 누적 `-8.319977px / 2 = -4.15999px`로 TTF의 AV -80·To -40 / 1000 em, 26pt 기대값과 일치한다. 글리프 폭을 압축하지 않고 원점만 커닝하는 계약을 실제 renderer 호출에서 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/kerning-browser.log`·`output/pr-review/semanticist21-20261005/historical-browser-raw/kerning-results.json`. 동일 글꼴 조건의 한컴 PDF는 확보하지 않았으며 한컴 fidelity 판정과 구분한다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 
@@ -119,3 +119,44 @@ source `693b63b26`에서 실제 시스템 글꼴 bytes를 charShape의 영문 sl
 위 Native/fresh WASM 선행 검증 후 `unverified_dedicated_font_preserves_rendered_positions_and_widths`를 추가했다. GPOS·glyph·advance는 보존하고 합성 SFNT의 선택 name 디렉터리만 전용 table 항목으로 바꿔, DocCore의 본문·셀·머리말·각주 최종 SVG 원점/자연 폭이 기본 배치를 유지하는지 검사한다. source693 라이브러리에서 실제 assertion FAIL(exit101), 보정 라이브러리에서 PASS. 이 합성 지원 계약을 실제 한컴 font 내부 규칙의 해독으로 보고하지 않는다. 첫 직접 rustc 시도는 sha2 extern 누락으로 빌드 실패했고 결함 검출에 세지 않았다. 필요한 extern을 지정한 재실행의 실제 실패만 before 증거다.
 
 [원본·Native/WASM review·overlay·공개 API 재현기](../assets/semanticist21-20261005/pr7504/)와 [2020 Print PDF](../../../pdf/semanticist21-20261005/pr7504/mcp/)를 보존한다. 글꼴 source SHA·Canvas 원문·TSV·직접 테스트 로그는 ignored `output/pr-review/semanticist21-20261005/font-contract-*`에 유지한다. 후속 #7527 저장 경계 보정이 포함된 최종 pkg에서 재캡처하고 최종 lint·전체 회귀·CI를 확인한 뒤 누적 판정을 확정한다.
+
+## 2026-10-06 최종 후보의 Print·Native/fresh WASM 재검증
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`, 회귀 source `9af7586586587fa0aa617a9e57fd6acd0d4e3ba6`. 두 head 사이에는 #7527의 Native 전용 회귀와 리뷰/PNG만 추가됐고 production source는 동일하다. 최종 fresh WASM SHA-256 `24565cae976b3c6929c858f13c52785a4651a26dc61c0fd566f5a8f801d631f7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root pkg/Studio public 해시를 대조했다.
+
+| 검증 입력 | 출력 경로 | 전체 쪽별 실루엣(%) | Gate |
+| --- | --- | --- | --- |
+| `pr7504-registered-hcr` | native | p1 97.96159 | passed / 누락0 |
+| `pr7504-registered-arial` | native | p1 98.11853 | passed / 누락0 |
+| `pr7504-registered-hcr-fontspace` | native | p1 97.96159 | passed / 누락0 |
+| `pr7504-registered-hcr` | wasm | p1 97.96159 | passed / 누락0 |
+| `pr7504-registered-arial` | wasm | p1 98.11853 | passed / 누락0 |
+| `pr7504-registered-hcr-fontspace` | wasm | p1 97.96159 | passed / 누락0 |
+
+
+실제 동일 TTF 바이트를 Native 등록·SVG font source·WASM exact-font API·Canvas FontFace에 공급한 3개 입력의 재캡처다. Arial의 시스템 alias가 다른 파일을 선택할 수 있으므로 가족 이름만으로 source 동일성을 판정하지 않았다. Font mismatch exception은 사용하지 않았다.
+
+각 명령·TSV·manifest·runtime 원시는 ignored `output/pr-review/semanticist21-20261005`에 보존했다. 렌더는 같은 입력/Print 전체 페이지와 `--embed-fonts=full`을 사용했고 WASM은 `--wasm-pkg pkg`를 추가했다(#7504는 실제 등록 API replay adapter). 최종 전체 Rust 회귀와 GitHub CI는 별도 진행 중이다.
+
+![fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7504/registered-hcr-wasm-review-p1.png)
+![같은 쪽 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7504/registered-hcr-wasm-overlay-p1.png)
+
+최종 페이지별 TSV: `output/pr-review/semanticist21-20261005/final-tsv/native/<key>/silhouette.tsv` 및 `wasm/<key>/silhouette.tsv`. 최신 full Sweep PNG 쌍에서 canonical `--silhouette-only --png-pair`로 산출하고 PNG SHA를 manifest에 고정했다. 해당 입력 전체 쪽수도 독립 PDF·원문 exporter에서 별도로 대조했으며 90% 미만/누락0이다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여에 감사한 뒤 실제 통합 PR 링크·merge SHA·정확한 최종 head CI와 이 PR의 회귀 실행 결과를 한국어 존댓말로 게시한다. 원 head는 merge 직전에 다시 확인하고 동일할 때만 통합으로 대체된 원 PR을 닫는다. 원 contributor fork branch는 삭제하지 않는다.
+
+실제 HCR 동일 glyph/기본 위치 계약과 Arial 커닝 대조군을 구분하고 HJCT pair 계약 미검증 제한을 설명한다.
+
+- 실제 비교 `pr7504-registered-hcr`의 p1 97.96159%를 페이지별 실루엣 보조값으로 적는다. 같은 입력 Native/fresh WASM 전체 쪽 TSV·누락0·직접 구조 판정을 함께 설명한다.
+- merge SHA에서 존재를 확인한 `mydocs/pr/assets/semanticist21-20261005/pr7504/registered-hcr-wasm-review-p1.png` / `mydocs/pr/assets/semanticist21-20261005/pr7504/registered-hcr-wasm-overlay-p1.png`를 `raw.githubusercontent.com/edwardkim/rhwp/<merge-SHA>/...`의 실제 Markdown 이미지로 표시한다. 임시 output 링크로 대신하지 않는다.
+- 이슈는 확인된 해결 범위만 다루고, 남은 조판·입력 축은 `Refs`와 원 이슈 링크로 유지한다. 게시 뒤 API로 실제 줄바꿈·한글·이미지 URL을 다시 확인한다.
+
+### 입증된 원점 보정 후 Native 전체 검증
+
+Production `0a305d51a898cedbe2af75e65726aee463b2b197`의 Native30항목·37쪽 대응 모두90% 이상(최저91.96451%), 미달/누락0이다. canonical TSV `output/pr-review/semanticist21-20261005/proven-origin-tsv/native/<key>/silhouette.tsv`와 full gate를 대조했다. 등록 Arial98.11853%, 함초롬97.96159%, use_font_space97.96159%; 원본 입력·Print PDF·실제 등록 TTF 바이트는 유지했다. 표 외곽/셀 내용·머리말·각주 위치를 같은 쪽 review PNG에서 직접 확인했다.
+
+기존 저장/분할 및 #7491/#7571 관계 검사16 PASS, 글자 겹침partition13 PASS(신규 겹침0). `hwpspec.hwp` 16·17·21쪽 render tree는 기존 정상 `5d4e47845`와 바이트 동일함을 확인했고 중간 trial의6건을 승인하지 않았다. 정상 대조군을 낮춘 baseline 변경은 없다. 별도의 같은 프레임 저장 앵커 비율 검사는 수정 전1.6 ≠ 독립 저장/Print 관계1.708846153846154로 FAIL(exit101), 수정 후1 PASS다. 아직 ignored 진단이며 fresh WASM 같은 원문/Print의90% 선행 조건 뒤에 정식으로 추가한다.
+
+fresh WASM과 최종 전체 lint·회귀·GitHub CI는 진행 중이므로 이 Native 결과만으로 누적 후보를 승인/merge하지 않는다.

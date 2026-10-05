@@ -171,3 +171,21 @@ production adapter를 우회한 초기 입력은 결함 증거에서 제외하�
 `2a2e3d8dc`의 직접 Native 진단은 기존/관련 관계 검사16 PASS지만 겹침partition13 FAIL(6건)이다. `RHWP_VPOS_DEBUG`에서 일반 제목 쪽의 측정/paint 모두 base1200임을 확인하여 앞선 base0 추정을 정정한다. 첫 문단 앞 간격과 후행 줄 간격의 트림 뒤 측정 흐름과 paint 흐름이 달랐고 같은 helper의 스냅만 추가해도 이 차이는 복원되지 않았다. 중간 후보를 승인/완료로 보고하지 않는다.
 
 임의로 모든 저장 폭0 호스트를 현재 흐름에 고정한 가정을 제거한다. 기존 `source_text_origin`이 실제 단 시작 원점0·편집되지 않은 연속 저장 줄·단일 단·온전한 소유를 확인한 경우에만 그 저장 원점을 빈 통째 표의 before/body/after 상자에 공유한다. 새 프레임은 현재 원점을, 입증되지 않은 동일 프레임과 분할 표는 기존 저장/조각 계약을 유지한다. 예약에서 선택한 원점을 placement에 보존하고 첫 조각도 그 증거를 소비하므로, paint에서 다른 원점을 추측하거나 덮어쓰지 않는다. 등록 글꼴의 입력/Print 바이트는 유지한다.
+
+### 입증된 원점 보정 후 Native 전체 검증
+
+Production `0a305d51a898cedbe2af75e65726aee463b2b197`의 Native30항목·37쪽 대응 모두90% 이상(최저91.96451%), 미달/누락0이다. canonical TSV `output/pr-review/semanticist21-20261005/proven-origin-tsv/native/<key>/silhouette.tsv`와 full gate를 대조했다. 등록 Arial98.11853%, 함초롬97.96159%, use_font_space97.96159%; 원본 입력·Print PDF·실제 등록 TTF 바이트는 유지했다. 표 외곽/셀 내용·머리말·각주 위치를 같은 쪽 review PNG에서 직접 확인했다.
+
+기존 저장/분할 및 #7491/#7571 관계 검사16 PASS, 글자 겹침partition13 PASS(신규 겹침0). `hwpspec.hwp` 16·17·21쪽 render tree는 기존 정상 `5d4e47845`와 바이트 동일함을 확인했고 중간 trial의6건을 승인하지 않았다. 정상 대조군을 낮춘 baseline 변경은 없다. 별도의 같은 프레임 저장 앵커 비율 검사는 수정 전1.6 ≠ 독립 저장/Print 관계1.708846153846154로 FAIL(exit101), 수정 후1 PASS다. 아직 ignored 진단이며 fresh WASM 같은 원문/Print의90% 선행 조건 뒤에 정식으로 추가한다.
+
+fresh WASM과 최종 전체 lint·회귀·GitHub CI는 진행 중이므로 이 Native 결과만으로 누적 후보를 승인/merge하지 않는다.
+
+### Native/fresh WASM 선행 검증 뒤 동일 프레임 정식 회귀 추가
+
+실제 등록 Arial의 동일 입력/Print 전체1쪽은 Native/fresh WASM98.11853%, HCR 기본/use_font_space도 각각97.96159%로 모두 gate `passed`다. fresh WASM `7b91e79d0b160429d723b8c24669bc6fdbe5b0940fbbcc32885751122d8a50c7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; pkg/Studio public의 해시가 같다. WASM review와 standalone overlay를 직접 판독해 표 외곽·셀 내용·머리말/각주의 정상 소속을 확인했다.
+
+`tests/cases/issue_7571_saved_empty_anchor_same_frame.rs`를 정식 추가한다. 실제 저장 입력의 원점0→개체 앵커→바깥 위 여백을 첫 줄 높이에 대한 비율로 검사하고, 표의 문단 소유·셀 내용 내부 포함·뒤 문단 순서를 함께 확인한다. 공식 설치 글꼴 경로나 절대 px를 기대값으로 사용하지 않는다. 동일 검사 수정 전5d4 source는 비율1.6으로 FAIL(exit101), 수정 후0a305d51a는 독립 저장/Print 관계1.708846153846154로1 PASS다. Raw 실행은 ignored `logs/font-gap-contract-{before,after}.log`에 보존했다. 파생 integration·전체 lint/회귀는 이 Native 전용 검사까지 포함해 실행한다.
+
+![보정 전 동일 프레임 외곽 회귀](../assets/semanticist21-20261005/pr7571/same-frame-before-native-review-p1.png)
+![fresh WASM 독립 Print 직접 비교](../assets/semanticist21-20261005/pr7571/same-frame-wasm-review-p1.png)
+![같은 쪽 standalone overlay](../assets/semanticist21-20261005/pr7571/same-frame-wasm-overlay-p1.png)
