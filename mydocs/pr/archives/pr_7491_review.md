@@ -373,3 +373,11 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 기존 cell indent 단위 테스트의 `Document::default()`는 문단 모양0·글자 모양0을 참조하면서 실제 정의가 없다. 새 문단 모양도 ID0을 받아 이전/새 indent 조회가 같은 값으로 alias됐다. 실제 빈 문서의 기본 서식표와 `set_document`로 합성 입력의 가정을 보정하고 기존의 전체 줄 수 증가 가정은 첫 줄 내용 경계 감소와 전체 내용 보존 관계로 바로잡는다. 유효한 서식표의 같은200자는 첫 줄28→14자로 줄면서도 전체8줄을 유지했다. 테스트의 들여쓰기19000·셀 폭20000을 녹색에 맞춰 조절하지 않는다. 신규 fixture/golden을 추가하거나 무효 메타데이터에 맞춰 production 수용 조건을 풀지 않는다.
 
 별도 진단의 공개 API 셀 들여쓰기 HWP 3개는 MCP2020 Print로 출력했으나, 들여쓰기19000 출력의 첫 줄·줄 수가 rhwp와 다르다. 실루엣100%만으로 통과시키지 않으며 이 자료를 새 fixture나 시각 개선의 정답지로 채택하지 않는다. 생성 입력·Print·PNG는 ignored `output/pr-review/semanticist21-20261005/indent-unit-*`에 보존한다. 기존 #7491 목표 입력 및 대조군의 독립 Print 검증과 이 추가 진단의 저장 출력 미일치 범위는 구분한다.
+
+## 2026-10-06 목록 대조군의 임시 사다리 오용 보정
+
+기존 합성 입력 `samples/issue7418/list_marker_head_synthetic.hwpx`(SHA-256 `d96b5f57d88e1241229c2862c077034381de6b91595b82fe2a3bec240a968a65`)을 MCP2024 한컴13.0.0.3901의 Print(method0/one-up, job `7f7a5e93-dbc1-4dab-906a-d7dea09687aa`)로 출력했다. 독립 PDF SHA-256 `3a5a873ecd7c251449cf8ce06cf486e2a4387bed8dd6936efe6966a4ff0eaa4a`, 전체4쪽. source `d0b8fb5a5` Native의3쪽80.83486%,4쪽65.92557%와 B26/B40 문단의 쪽 소속 불일치를 직접 확인했으므로 통과하지 않는다. 원문에는 첫 빈 문단만 저장 LineSeg가 있고 목록43문단에는 없다. 독립 Print가 원문을 직접 조판한 결과이며 생성 HWPX를 기준으로 대체하지 않았다.
+
+`DocumentCore::from_bytes`의 재조판 생성(TAG31) 줄 → `section::heading::keep_heading_with_following_block`의 원점/끝 좌표 판정 → `advance_column_or_new_page` → 실제 문단 배치 경로에서, 생성 좌표를 저장된 쪽의 근거로 읽었다. 2쪽 첫 항목은 B13의 후반 조각인데 원점은 그 문단의 앞 쪽 첫 줄에서 추측했다. B26은 현재 흐름+전체 높이로 들어가도 이 잘못된 원점의 넘침 조건 때문에 통째로3쪽에 밀렸다. 저장 사다리의 제목/다음 블록 보호는 실제 저장 좌표가 있는 경우만 사용하고, 임시/혼합 사다리는 공통 흐름의 fit·줄 분할에 맡긴다. 픽셀 여유 상수나 줄 경계 기대값을 조절하지 않는다.
+
+새 전체 Print 대조의 시각 실패가 발견되어 `d0b8fb5a5` 전체 nextest를 의도적으로 중단했다. 출력 공백 때문이 아니다. 마지막 완료 결과는 잔여 집중 검사 PASS이며, 중단한 전체 실행을 통과로 보고하지 않는다. source 보정 뒤 Native/fresh WASM 전체4쪽을 다시 확인하기 전 새 회귀 fixture/검사를 추가하지 않는다.
