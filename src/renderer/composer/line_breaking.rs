@@ -3197,6 +3197,11 @@ fn layout_paragraph_in_frame_impl(
         styles,
         para_style.map(|style| style.indent).unwrap_or(0.0),
     );
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+        0.0
+    } else {
+        indent_px
+    };
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -4273,6 +4278,15 @@ fn reflow_line_segs_impl(
             .map(|s| s.indent)
             .unwrap_or(0.0),
     );
+    let indent_px = if reflow_indentation_pattern(
+        styles.para_styles.get(para.para_shape_id as usize),
+        &para.line_segs,
+    ) == (false, false)
+    {
+        0.0
+    } else {
+        indent_px
+    };
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
