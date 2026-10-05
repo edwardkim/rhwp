@@ -138,3 +138,38 @@ fn hwp3_origin_first_paragraph_keeps_its_line_starts_after_hwpx_round_trip() {
         "HWP3 원본을 HWPX 로 저장해 다시 연 구역 첫 문단의 줄 시작이 바뀌었다"
     );
 }
+
+/// 독립 한컴2020 저장본과 같은 문단 슬롯 축: 첫 run secPr/colPr 뒤 43·86자.
+/// 자체 왕복 성공이 잘못된 XML textpos를 감추지 않도록 실제 ZIP을 검사한다.
+#[test]
+fn published_long_paragraph_uses_the_independent_hancom_textpos_axis() {
+    use std::io::Read;
+    let core = blank_with_first_paragraph(&"가나다라마바사아자차카타파하".repeat(8));
+    let bytes = core.export_hwpx_native().unwrap();
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+    let mut xml = String::new();
+    zip.by_name("Contents/section0.xml")
+        .unwrap()
+        .read_to_string(&mut xml)
+        .unwrap();
+    let starts: Vec<u32> = xml
+        .split("<hp:lineseg ")
+        .skip(1)
+        .map(|tag| {
+            let value = tag
+                .split("textpos=\"")
+                .nth(1)
+                .unwrap()
+                .split('"')
+                .next()
+                .unwrap();
+            value.parse().unwrap()
+        })
+        .collect();
+    // MCP의 한컴 저장 결과 0,59,102와 Print의 첫 줄 43자에서 독립적으로 확인했다.
+    assert_eq!(
+        starts,
+        vec![0, 59, 102],
+        "XML 문단의 실제 제어 슬롯을 보존해야 한다"
+    );
+}

@@ -172,3 +172,59 @@ fn replacing_a_synthesized_break_host_keeps_its_export_provenance() {
         "자연 경계를 명시적인 파일 나눔으로 바꾸면 안 된다"
     );
 }
+
+/// 한컴2020 Print: 폭 0 개체 앵커의 표는 새 단 본문 원점에 바깥 위여백을 더한다.
+/// 절대 픽셀값 대신 원본 HWPUNIT과 본문 폭의 무차원 비율을 비교한다.
+#[test]
+fn saved_empty_table_anchor_preserves_its_outer_box_in_the_new_column() {
+    use rhwp::model::control::Control;
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn find(node: &RenderNode, table: bool) -> Option<&RenderNode> {
+        let selected = match &node.node_type {
+            RenderNodeType::Table(_) => table,
+            RenderNodeType::Body { .. } => !table,
+            _ => false,
+        };
+        if selected {
+            Some(node)
+        } else {
+            node.children.iter().find_map(|n| find(n, table))
+        }
+    }
+    let core = DocumentCore::from_bytes(include_bytes!(
+        "../fixtures/issue7571/column-table-outer-box.hwp"
+    ))
+    .unwrap();
+    assert_eq!(core.page_count(), 1);
+    let section = &core.document().sections[0];
+    let Control::Table(source) = &section.paragraphs[1].controls[0] else {
+        panic!("표")
+    };
+    let page = &section.section_def.page_def;
+    let source_width = (page.width - page.margin_left - page.margin_right) as f64;
+    let tree = core.build_page_render_tree(0).unwrap();
+    let body = &find(&tree.root, false).unwrap().bbox;
+    let table = &find(&tree.root, true).unwrap().bbox;
+    let actual = (table.y - body.y) / body.width;
+    let expected = f64::from(source.outer_margin_top) / source_width;
+    assert!(
+        (actual - expected).abs() < 0.00001,
+        "바깥 위여백 비율: {actual} / {expected}"
+    );
+    assert!(table.x > body.x + body.width / 2.0, "표는 오른쪽 단 소유");
+    let before = cursor(&document(ColumnBreakType::Column));
+    check_rendered_location(&core, 1, &before);
+}
+
+#[test]
+fn production_hwp_save_preserves_the_empty_floating_table_object_anchor() {
+    let mut core = document(ColumnBreakType::Column);
+    let host = insert_table(&mut core, 0);
+    let reopened =
+        DocumentCore::from_bytes(&core.export_hwp_with_adapter_snapshot().unwrap()).unwrap();
+    assert_eq!(
+        reopened.document().sections[0].paragraphs[host].line_segs[0].segment_width,
+        0,
+        "빈 단일 floating table의 폭 0 앵커는 글줄 폭으로 재작성하지 않는다"
+    );
+}

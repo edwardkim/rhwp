@@ -101,3 +101,15 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 - 현재 회귀 후보는 ignored output에만 두었다. 수정 전 실제 저장 후 앵커 폭 검사는 FAIL, 폭 보존 후 PASS지만, 이것만으로 시각 결함 해결을 판정하지 않는다. Native/fresh WASM의 관련 모든 페이지가 90% 이상이고 직접 판독한 뒤에만 정식 회귀 검사를 추가한다.
 
 - 바깥 상자 공유 보정 후 Native 재출력: 표 삽입 전 HWP / 삽입 후 HWP / 삽입 후 HWPX **각 100%**, 각 1쪽, 누락 쪽 없음. 입력과 Print 기준은 보정 전의 같은 바이트를 유지했고 `column-outer-box-native-scores/`에 새 TSV를 산출했다. fresh WASM과 직접 PNG 판독 및 최종 회귀는 아직 완료하지 않았다.
+
+## 전쪽 선행 시각 검증과 정식 회귀 — 2026-10-06
+
+production source `693b63b26`의 Native/fresh WASM 24개 입력·28쪽을 같은 Print PDF로 재출력했다. 누락 쪽 없이 두 경로 모두 최저93.40356%다. 해당 PR의 상세 입력은 아래에 고정한다. raw TSV·실행 JSON은 ignored `output/pr-review/semanticist21-20261005/final-693-{native,wasm}-scores/`에 보존했다. 이 수치는 2px 이웃 관용 내용 실루엣이며 엄격 픽셀 동일률과 구분한다. 최종 전체 회귀·lint·CI 및 개별 직접 판독은 완료하지 않았다.
+
+| 입력 | 입력 SHA-256 | Print PDF | PDF SHA-256 | MCP job |
+| --- | --- | --- | --- | --- |
+| `mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table.hwp` | `985a147122d1bc2ef15efe89b74e0ad5fd3bee724f42d465f46ef2ea8ec0e378` | `pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-before-table-hwp-2020.pdf` | `0c4668dd5652be95103eed30e41c232d5611e9b23e9dcb0d97526f1138db3f56` | `dd087a86-c1a0-4132-aa7d-95f1147551b1` |
+| `tests/fixtures/issue7571/column-table-outer-box.hwp` | `528175185005c0ec6096ae3a96b782b2e90883a95a4849b614f9e1f8446c18b7` | `pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-column-table-hwp-2020.pdf` | `d3db38c9094a8327fb2d9804fc69ca088a613a2d7d0be81d2a1b4b5de872a68a` | `ba5778c6-8da6-49da-9547-16b1df0d5943` |
+| `mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-column-table.hwpx` | `b6ec31d4d6f4db2480fa2e2212ee7de69ed29102525de701b4b9ddb771c7c979` | `pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-column-table-hwpx-2020.pdf` | `8a834248e4535c790ec78404488b14fc1345cd31c934959268d291ffffe9ff1d` | `d2764c0d-1f61-474b-b121-9afe689d192e` |
+
+- 모든3개 입력은 Native/fresh WASM 전쪽100%다. 단 나누기 기존4개 + 실제 저장의 폭 0 보존/새 단 바깥 상자 소유2개, **nextest6 PASS**. 새2개는 source `c20ffb351` 라이브러리에 연결하면 의도한 원인으로 FAIL(폭20124≠0, 여백비율0≠0.00665569), 보정 라이브러리에서는 모두 PASS다. 실제 배치는 본문 폭·원본 HWPUNIT의 무차원 비율과 단/셀 소속으로 검사하며 절대 픽셀이나 SVG 해시로 고정하지 않았다.

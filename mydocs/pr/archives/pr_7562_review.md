@@ -101,3 +101,17 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 ## 보정 1차 검증 — 2026-10-06
 
 기존4개 nextest PASS. fmt·Native/WASM/workspace-all-targets Clippy·workspace build·base 고정 manifest·source unit tier의 전체 lint 묶음 PASS(`logs/axis-fix-lint-*`). 새 public API 저장본5개는 모두 한컴2020 Print(method0/one-up) 성공이며 Native 전쪽 최저는 긴 문단·어절 나누기·재편집·이전 `1` 산출 재저장100%, 직접 HWP3 대조93.40356%다. 긴 문단 대표 review/overlay를 직접 판독해 줄 분배·위치가 맞음을 확인했다. fresh WASM 재빌드·대조와 최종 전체 회귀는 진행 중이다. 원 로그/TSV/실행 JSON은 ignored output에 보존하고 새 fixture/golden이나 시각 회귀는 이 단계에서 추가하지 않았다.
+
+## 전쪽 선행 시각 검증과 정식 회귀 — 2026-10-06
+
+production source `693b63b26`의 Native/fresh WASM 24개 입력·28쪽을 같은 Print PDF로 재출력했다. 누락 쪽 없이 두 경로 모두 최저93.40356%다. 해당 PR의 상세 입력은 아래에 고정한다. raw TSV·실행 JSON은 ignored `output/pr-review/semanticist21-20261005/final-693-{native,wasm}-scores/`에 보존했다. 이 수치는 2px 이웃 관용 내용 실루엣이며 엄격 픽셀 동일률과 구분한다. 최종 전체 회귀·lint·CI 및 개별 직접 판독은 완료하지 않았다.
+
+| 입력 | 입력 SHA-256 | Print PDF | PDF SHA-256 | MCP job |
+| --- | --- | --- | --- | --- |
+| `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-fixed-long.hwpx` | `1dd7b2ad77fefa5a6e9bc4dce6b363aad851f13aa20db0857279dc792390b1bc` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-fixed-long-hwpx-2020.pdf` | `ccf2502a65d975ec6b21e7fcb6cc1e6b73144ec8ce3c0a67fcf17f3fae58e19f` | `b1e4fa01-2394-48e5-8e59-46029e9c7c39` |
+| `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-fixed-word.hwpx` | `50df6ed04de992ae00fa8278119cc4f6bc5eba48629c7f8e629eaaf891621115` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-fixed-word-hwpx-2020.pdf` | `20ee6d6f8b5f376c3568201d46cbdc9837ae776e98ae606fad04b5e24b24cf0e` | `b4b28fab-87b2-46fe-9a5a-6e59159c98d1` |
+| `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-fixed-edited.hwpx` | `1dd7b2ad77fefa5a6e9bc4dce6b363aad851f13aa20db0857279dc792390b1bc` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-fixed-edited-hwpx-2020.pdf` | `bc03790bc442a0f8f4d6ca02829c981cb80dc35e9090ada42f792ddceb8085bc` | `4d46285d-596d-4e05-80b7-8e964b1db1d3` |
+| `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-fixed-legacy-reexport.hwpx` | `1dd7b2ad77fefa5a6e9bc4dce6b363aad851f13aa20db0857279dc792390b1bc` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-fixed-legacy-reexport-hwpx-2020.pdf` | `898847aee527f3c81eccf4621994e6cc59f1c109d8715436476c818edaa6705b` | `af4857c7-25b0-4ee3-8684-cc7a9115d024` |
+| `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-control-hwp3.hwpx` | `3c00427b9028f57e4d8e6b13e6cf5e80cc7294d42888060ffb8d7d39ae53751d` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-control-hwp3-hwpx-2020.pdf` | `7946bcefdef13d191b35c049350a0c4bf9a0b5f28288b5088559c5d3e9625b95` | `e6463863-be91-4227-af32-c269c5a6fd1c` |
+
+- 긴 문단·어절 나누기·재편집·이전 계보 재저장100%, 직접 HWP3 대조93.40356%. 자체 왕복 기존4개와 실제 공개 ZIP textpos의 독립 축 검사1개, **nextest5 PASS**. 신규 검사 기대값 `0,59,102`는 동일 원문의 독립 한컴 저장·Print에서 정했다. 수정 전 생산자를 실제 실행한 FAIL 확인은 이어서 수행한다.
