@@ -82,3 +82,10 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `00fa31e4cc9438a2eaa583c0cded731723e468e3` | `2093e2529545675d1535b3e09cbe0b6d9c6de929` | `90730a209638301ac3c061772a4371db1cf88de7` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## rebase 후 MCP 직접 출력 검토 — 2026-10-05
+
+공개 API의 원 회귀 입력을 각각 저장해 Windows MCP engine2020의 Print(method0, one-up, 한컴11.0.0.9136)로 대조했다. 첫 문단 긴 한글112자 HWPX는 MCP job `60a3190e-9586-4812-9761-30e1d4d88cdc`에서 정상 출력됐으나 Native 최저81.98786%로 `re_review_required`다. 대표 review PNG를 직접 열어 첫 줄의 글자 분배와 줄 소속 차이를 확인했다. 같은 단어 나누기 HWP 대조군은 job `0e81e5dd-c5cd-4331-afd6-270a3179a6da`, Native100%다. HWPX 단어 나누기 입력은 job `88205a33-fcb9-4617-b29b-fe1b54b4f2c9`에서 손상/변경 경고로 무인 열기가 거절됐다. 기존4개 왕복 검사가 통과해도 독립 한컴 출력과의 일치를 입증하지 못한다. 메인터너 보정과 재실행 전 보류를 유지한다.
+
+- 입력·PDF·TSV·PNG는 ignored `output/pr-review/semanticist21-20261005/{integration-visual-inputs,integration-mcp-pdf,diagnostics-native-scores,diagnostics-native-review}`에 실패 진단으로 보존한다. 수용용 fixture/golden으로 추가하지 않았다.
+- CLI 편집 출력은 확장자를 `.hwpx`로 지정해도 원 형식 HWP5를 유지한다. 그 잘못된 진단 파일은 기준 자료에서 제외했고 공개 API `export_hwpx_native`의 실제 ZIP 입력으로 재실행했다.
