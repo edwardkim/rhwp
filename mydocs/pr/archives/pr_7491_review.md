@@ -381,3 +381,14 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 `DocumentCore::from_bytes`의 재조판 생성(TAG31) 줄 → `section::heading::keep_heading_with_following_block`의 원점/끝 좌표 판정 → `advance_column_or_new_page` → 실제 문단 배치 경로에서, 생성 좌표를 저장된 쪽의 근거로 읽었다. 2쪽 첫 항목은 B13의 후반 조각인데 원점은 그 문단의 앞 쪽 첫 줄에서 추측했다. B26은 현재 흐름+전체 높이로 들어가도 이 잘못된 원점의 넘침 조건 때문에 통째로3쪽에 밀렸다. 저장 사다리의 제목/다음 블록 보호는 실제 저장 좌표가 있는 경우만 사용하고, 임시/혼합 사다리는 공통 흐름의 fit·줄 분할에 맡긴다. 픽셀 여유 상수나 줄 경계 기대값을 조절하지 않는다.
 
 새 전체 Print 대조의 시각 실패가 발견되어 `d0b8fb5a5` 전체 nextest를 의도적으로 중단했다. 출력 공백 때문이 아니다. 마지막 완료 결과는 잔여 집중 검사 PASS이며, 중단한 전체 실행을 통과로 보고하지 않는다. source 보정 뒤 Native/fresh WASM 전체4쪽을 다시 확인하기 전 새 회귀 fixture/검사를 추가하지 않는다.
+
+### 임시 사다리 보정의 독립 Print 전쪽 검증 완료
+
+Production source `5d4e478456ffc7142d5ab553f38bdede06719491`에서 Native와 fresh WASM 전체4쪽 모두 p1 93.46115%, p2 94.66618%, p3 91.96451%, p4 96.36554%다. 최저91.96451%, 누락0, gate `passed`; 원시 실루엣과 보조 일치율이 같고 경계 재조정 픽셀0이다. canonical TSV는 ignored `head-guard-tsv/{native,wasm}/pr7491-list-marker-head-control/silhouette.tsv`에 보존했다. Fresh WASM SHA-256 `e2ed6a692825240c7b034e10981a7625d0ca52d32473990a730d9badc9edc94d`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; pkg/Studio public이 동일하다.
+
+[독립 Print PDF](../../../pdf/semanticist21-20261005/pr7491/mcp/list-marker-head-2024.pdf)를 포함했다. 직접 판독에서 B26 전체가2쪽에 있고 B40은3/4쪽, B41·B42는4쪽에 보존됨을 확인했다. 새 정식 `tests/cases/issue_7491_reflowed_list_page_ownership.rs`는 원문43문단·129줄의 최종 페이지 소속과 전체 순서를 독립 Print에서 정한다. 절대 px나 구현 계산값을 기대값으로 쓰지 않는다. 동일 검사 d0b8 source FAIL(exit101), 수정 source PASS(1/0), 기존 저장 제목/분할 대조군8 PASS다. 파생 suite와 전체 lint/회귀는 다음 후보에서 다시 실행한다.
+
+![Native 전체 쪽 직접 비교](../assets/semanticist21-20261005/pr7491/list-marker-head-native-review-all-pages.png)
+![fresh WASM 전체 쪽 직접 비교](../assets/semanticist21-20261005/pr7491/list-marker-head-wasm-review-all-pages.png)
+
+이 완료는 목록 보정 범위의 판정이다. 전체 대조군 재캡처에서 #7504 등록 Arial 표 외곽의 동일 프레임 원점 회귀(57.53754%)가 추가 검출되어 누적 후보의 통합은 계속 보류하며 공통 흐름/paint 원점을 보정한다.
