@@ -65,7 +65,7 @@ loose inline을 flush_inline_run에 모아 parse_inline_content의 style stack�
 
 public API `pasteHtml(0,0,0,...)`로 ASCII `x` 8,001자를 실행했다. 최신 base의 Native 결과는 plain과 `<b>...</b>` 모두 문단 길이 `[4000,4000,1]`; 누적 fresh WASM은 plain `[4000,4000,1]`, bold `[8001]`이다. 새 `flush_inline_run`의 태그 포함 분기가 `FLUSH_LINE_CHAR_CAP=4000`을 적용하지 않고 parse_inline_content 한 문단을 발행한다. 기존 source 주석이 길이 제한을 명시하고 있으며 이 PR의 6개 회귀에는 해당 경계가 없다. 문단 수·길이의 신규 계약 회귀를 검출한 것이며 실제 overlap/전체 브라우저 정지까지 실행했다고 주장하지 않는다.
 
-base 실행 (`output/pr-review/semanticist21-20261005/run-records/base-probes.txt`), [fresh WASM 관측](../assets/semanticist21-20261005/browser-observations.json), [관측값](../assets/semanticist21-20261005/browser-observations.json). Native base와 WASM 누적의 runtime 차이는 이후 같은 Native 경로에서도 확인하여 구분한다. source 회귀 추가와 스타일·그림·명시적 줄바꿈을 보존하는 제한 처리가 필요하다.
+base 실행 (`output/pr-review/semanticist21-20261005/run-records/base-probes.txt`), `output/pr-review/semanticist21-20261005/historical-browser-raw/browser-observations.json`, `output/pr-review/semanticist21-20261005/historical-browser-raw/browser-observations.json`. Native base와 WASM 누적의 runtime 차이는 이후 같은 Native 경로에서도 확인하여 구분한다. source 회귀 추가와 스타일·그림·명시적 줄바꿈을 보존하는 제한 처리가 필요하다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 
@@ -87,3 +87,35 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `6f0df1ae38d6830128916c4e5f773da23a6be804` | `a0b0989ef5a026b8381acbe6e6921b73eceaf18b` | `cb2bd912d5afc28e01015d79caf839664c942e63` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 2026-10-06 최종 후보의 Print·Native/fresh WASM 재검증
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`, 회귀 source `9af7586586587fa0aa617a9e57fd6acd0d4e3ba6`. 두 head 사이에는 #7527의 Native 전용 회귀와 리뷰/PNG만 추가됐고 production source는 동일하다. 최종 fresh WASM SHA-256 `24565cae976b3c6929c858f13c52785a4651a26dc61c0fd566f5a8f801d631f7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root pkg/Studio public 해시를 대조했다.
+
+| 검증 입력 | 출력 경로 | 전체 쪽별 실루엣(%) | Gate |
+| --- | --- | --- | --- |
+| `pr7521-loose-html-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `pr7521-loose-html-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+
+- [pr7521-loose-html.hwp](../../../mydocs/pr/assets/semanticist21-20261005/pr7521/pr7521-loose-html.hwp), SHA-256 `f10647b363c5431f68c2422be08d761b36b7b00b7581e58b837b9c3abf05b1fd` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7521/mcp/pr7521-loose-html-2020.pdf), SHA-256 `e57e06422ea4ee6c1bf2abb6c8437a02bf9f7a96d165956bada80df141845c78`.
+
+각 명령·TSV·manifest·runtime 원시는 ignored `output/pr-review/semanticist21-20261005`에 보존했다. 렌더는 같은 입력/Print 전체 페이지와 `--embed-fonts=full`을 사용했고 WASM은 `--wasm-pkg pkg`를 추가했다(#7504는 실제 등록 API replay adapter). 최종 전체 Rust 회귀와 GitHub CI는 별도 진행 중이다.
+
+![fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7521/pr7521-loose-html-hwp-wasm-review-all-pages.png)
+![같은 쪽 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7521/pr7521-loose-html-hwp-wasm-overlay-all-pages.png)
+
+최종 페이지별 TSV: `output/pr-review/semanticist21-20261005/final-tsv/native/<key>/silhouette.tsv` 및 `wasm/<key>/silhouette.tsv`. 최신 full Sweep PNG 쌍에서 canonical `--silhouette-only --png-pair`로 산출하고 PNG SHA를 manifest에 고정했다. 해당 입력 전체 쪽수도 독립 PDF·원문 exporter에서 별도로 대조했으며 90% 미만/누락0이다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여에 감사한 뒤 실제 통합 PR 링크·merge SHA·정확한 최종 head CI와 이 PR의 회귀 실행 결과를 한국어 존댓말로 게시한다. 원 head는 merge 직전에 다시 확인하고 동일할 때만 통합으로 대체된 원 PR을 닫는다. 원 contributor fork branch는 삭제하지 않는다.
+
+loose inline 서식 보존의 기여와 메인터너의4,000 Unicode scalar 분할 보정을 구분한다.
+
+- 실제 비교 `pr7521-loose-html-hwp`의 p1 100.00000%를 페이지별 실루엣 보조값으로 적는다. 같은 입력 Native/fresh WASM 전체 쪽 TSV·누락0·직접 구조 판정을 함께 설명한다.
+- merge SHA에서 존재를 확인한 `mydocs/pr/assets/semanticist21-20261005/pr7521/pr7521-loose-html-hwp-wasm-review-all-pages.png` / `mydocs/pr/assets/semanticist21-20261005/pr7521/pr7521-loose-html-hwp-wasm-overlay-all-pages.png`를 `raw.githubusercontent.com/edwardkim/rhwp/<merge-SHA>/...`의 실제 Markdown 이미지로 표시한다. 임시 output 링크로 대신하지 않는다.
+- 이슈는 확인된 해결 범위만 다루고, 남은 조판·입력 축은 `Refs`와 원 이슈 링크로 유지한다. 게시 뒤 API로 실제 줄바꿈·한글·이미지 URL을 다시 확인한다.
+
+## 2026-10-06 무효화 원장의 모듈 이동 추적
+
+전체 회귀의 #2724 density 실패는 `html_import.rs`의5개 무효화 사이트 중2개가 `html_import/inline_content.rs`로 옮겨졌는데 파일별 원장에 반영되지 않은 결과다. 원 `css_to_char_shape_id`·`css_to_para_shape_id`의 새 서식표 추가 뒤 `doc_info.raw_stream_dirty = true`를 자식 모듈에서 확인했다. 원장의 parent3+child2로 합계5곳의 의무를 유지한다. 무효화 사이트 삭제나 기준 허용치 완화가 아니며 함수 분류·위임 검사와 density를 다시 실행한다.

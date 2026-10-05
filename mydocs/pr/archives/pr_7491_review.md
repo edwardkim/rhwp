@@ -328,3 +328,48 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 ## rebase 후 lint 경고 보정
 
 세 Clippy 중 workspace/all-targets에서 `body_node`의 불필요한 `find_map`이 검출되었다. Page의 직접 자식 Body를 `.find()`로 선택하도록 바꾸고 호출5곳이 Page root임을 확인했다. 변경 파일1000줄. 재실행 workspace/all-targets Clippy PASS, 고정 base `c167dc6abbebf69546575e2d16d06223791bab82` 대비 manifest·source unit tier PASS, #7490/#7491 집중21개 nextest PASS/0 FAIL. 나머지 Native·WASM Clippy와 workspace build는 같은 source의 선행 단계에서 PASS다. 원 로그 `logs/rebased-lint-*`, 보정 후 `logs/rebased-lint-retry-*`, `logs/rebased-7491-clippy-correction-nextest.log`는 ignored output에 둔다.
+
+## 2026-10-06 최종 후보의 Print·Native/fresh WASM 재검증
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`, 회귀 source `9af7586586587fa0aa617a9e57fd6acd0d4e3ba6`. 두 head 사이에는 #7527의 Native 전용 회귀와 리뷰/PNG만 추가됐고 production source는 동일하다. 최종 fresh WASM SHA-256 `24565cae976b3c6929c858f13c52785a4651a26dc61c0fd566f5a8f801d631f7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root pkg/Studio public 해시를 대조했다.
+
+| 검증 입력 | 출력 경로 | 전체 쪽별 실루엣(%) | Gate |
+| --- | --- | --- | --- |
+| `pr7491-smallfit-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `original` | native | p1 99.87872 | passed / 누락0 |
+| `edited` | native | p1 99.89242 | passed / 누락0 |
+| `smallfit` | native | p1 100.00000 | passed / 누락0 |
+| `pr7491-smallfit-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+| `original` | wasm | p1 99.87872 | passed / 누락0 |
+| `edited` | wasm | p1 99.89242 | passed / 누락0 |
+| `smallfit` | wasm | p1 100.00000 | passed / 누락0 |
+
+- [pr7491-smallfit.hwp](../../../mydocs/pr/assets/semanticist21-20261005/pr7491/pr7491-smallfit.hwp), SHA-256 `fcea9cf34b58719bc21c3ab7b637852f7386d81e950d42a91cc8c5483ab52bdd` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7491/mcp/pr7491-smallfit-2020.pdf), SHA-256 `522d93ff7775b94d87bbc06a422da121386f70db20d8eaf746248116c3097191`.
+- [center_align_first_line_indent.hwp](../../../samples/issue6190/center_align_first_line_indent.hwp), SHA-256 `d40b42d1e22237d931a1970ead577ec9c8119611dd73176ac335de5a848f90a7` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-probe-2020.pdf), SHA-256 `f4ad4ec484e5ffac82eea2daadcfe4631cad4eba840290706082749a29593676`.
+- [center_align_first_line_indent_edited.hwp](../../../tests/fixtures/issue7491/center_align_first_line_indent_edited.hwp), SHA-256 `358a8f6bfa4aaf5728f4be1050e363fa195c0ab6966ac10a5deee68f3fbe38c0` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-insert-outer-2020.pdf), SHA-256 `6c7688b984ee73ad08978c23a6c7224cae4ffdd949427dca658e0197221dd011`.
+- [smallfit-measured.hwp](../../../tests/fixtures/issue7491/smallfit-measured.hwp), SHA-256 `fcea9cf34b58719bc21c3ab7b637852f7386d81e950d42a91cc8c5483ab52bdd` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7491/mcp/issue6190-smallfit-measured-2020.pdf), SHA-256 `522d93ff7775b94d87bbc06a422da121386f70db20d8eaf746248116c3097191`.
+
+각 명령·TSV·manifest·runtime 원시는 ignored `output/pr-review/semanticist21-20261005`에 보존했다. 렌더는 같은 입력/Print 전체 페이지와 `--embed-fonts=full`을 사용했고 WASM은 `--wasm-pkg pkg`를 추가했다(#7504는 실제 등록 API replay adapter). 최종 전체 Rust 회귀와 GitHub CI는 별도 진행 중이다.
+
+![fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7491/pr7491-smallfit-hwp-wasm-review-all-pages.png)
+![같은 쪽 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7491/pr7491-smallfit-hwp-wasm-overlay-all-pages.png)
+
+최종 페이지별 TSV: `output/pr-review/semanticist21-20261005/final-tsv/native/<key>/silhouette.tsv` 및 `wasm/<key>/silhouette.tsv`. 최신 full Sweep PNG 쌍에서 canonical `--silhouette-only --png-pair`로 산출하고 PNG SHA를 manifest에 고정했다. 해당 입력 전체 쪽수도 독립 PDF·원문 exporter에서 별도로 대조했으며 90% 미만/누락0이다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여에 감사한 뒤 실제 통합 PR 링크·merge SHA·정확한 최종 head CI와 이 PR의 회귀 실행 결과를 한국어 존댓말로 게시한다. 원 head는 merge 직전에 다시 확인하고 동일할 때만 통합으로 대체된 원 PR을 닫는다. 원 contributor fork branch는 삭제하지 않는다.
+
+#7599로 먼저 병합된 원4개와 이번 실제 표 높이 관계 검사를 구분한다. 이미 닫힌 원 PR/이슈를 다시 닫지 않는다.
+
+- 실제 비교 `smallfit`의 p1 100.00000%를 페이지별 실루엣 보조값으로 적는다. 같은 입력 Native/fresh WASM 전체 쪽 TSV·누락0·직접 구조 판정을 함께 설명한다.
+- merge SHA에서 존재를 확인한 `mydocs/pr/assets/semanticist21-20261005/pr7491-smallfit/wasm-review-all-pages.png` / `mydocs/pr/assets/semanticist21-20261005/pr7491-smallfit/wasm-overlay-all-pages.png`를 `raw.githubusercontent.com/edwardkim/rhwp/<merge-SHA>/...`의 실제 Markdown 이미지로 표시한다. 임시 output 링크로 대신하지 않는다.
+- 이슈는 확인된 해결 범위만 다루고, 남은 조판·입력 축은 `Refs`와 원 이슈 링크로 유지한다. 게시 뒤 API로 실제 줄바꿈·한글·이미지 URL을 다시 확인한다.
+
+## 2026-10-06 누적 후보의 추가 회귀 보정 — 기존 #7599 병합 판정과 구분
+
+누적 후보 `9af758658`의 전체 회귀는10,452 PASS/37 FAIL/50 SKIP이며 승인 후보가 아니다. 목록 마커가 만든 첫 줄/후속 줄의 폭 차이까지 저장 bit20의 들여쓰기 없음으로 지운 경우를 #7418의 기존 정식 회귀에서 확인했다. 문단 들여쓰기의 저장 기록을 먼저 해석한 뒤 `ListMarkerGeometry::breaker_box`가 마커의 줄별 차감량을 계산하도록 생산 순서를 바로잡는다. frame 채움과 cell 재조판 두 소비 경로를 함께 적용한다. 기존 한컴 줄 경계 기대값은 유지한다.
+
+기존 cell indent 단위 테스트의 `Document::default()`는 문단 모양0·글자 모양0을 참조하면서 실제 정의가 없다. 새 문단 모양도 ID0을 받아 이전/새 indent 조회가 같은 값으로 alias됐다. 실제 빈 문서의 기본 서식표와 `set_document`로 합성 입력의 가정을 보정하고 기존의 전체 줄 수 증가 가정은 첫 줄 내용 경계 감소와 전체 내용 보존 관계로 바로잡는다. 유효한 서식표의 같은200자는 첫 줄28→14자로 줄면서도 전체8줄을 유지했다. 테스트의 들여쓰기19000·셀 폭20000을 녹색에 맞춰 조절하지 않는다. 신규 fixture/golden을 추가하거나 무효 메타데이터에 맞춰 production 수용 조건을 풀지 않는다.
+
+별도 진단의 공개 API 셀 들여쓰기 HWP 3개는 MCP2020 Print로 출력했으나, 들여쓰기19000 출력의 첫 줄·줄 수가 rhwp와 다르다. 실루엣100%만으로 통과시키지 않으며 이 자료를 새 fixture나 시각 개선의 정답지로 채택하지 않는다. 생성 입력·Print·PNG는 ignored `output/pr-review/semanticist21-20261005/indent-unit-*`에 보존한다. 기존 #7491 목표 입력 및 대조군의 독립 Print 검증과 이 추가 진단의 저장 출력 미일치 범위는 구분한다.

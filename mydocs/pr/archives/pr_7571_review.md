@@ -113,3 +113,47 @@ production source `693b63b26`의 Native/fresh WASM 24개 입력·28쪽을 같은
 | `mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-column-table.hwpx` | `b6ec31d4d6f4db2480fa2e2212ee7de69ed29102525de701b4b9ddb771c7c979` | `pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-column-table-hwpx-2020.pdf` | `8a834248e4535c790ec78404488b14fc1345cd31c934959268d291ffffe9ff1d` | `d2764c0d-1f61-474b-b121-9afe689d192e` |
 
 - 모든3개 입력은 Native/fresh WASM 전쪽100%다. 단 나누기 기존4개 + 실제 저장의 폭 0 보존/새 단 바깥 상자 소유2개, **nextest6 PASS**. 새2개는 source `c20ffb351` 라이브러리에 연결하면 의도한 원인으로 FAIL(폭20124≠0, 여백비율0≠0.00665569), 보정 라이브러리에서는 모두 PASS다. 실제 배치는 본문 폭·원본 HWPUNIT의 무차원 비율과 단/셀 소속으로 검사하며 절대 픽셀이나 SVG 해시로 고정하지 않았다.
+
+## 2026-10-06 최종 후보의 Print·Native/fresh WASM 재검증
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`, 회귀 source `9af7586586587fa0aa617a9e57fd6acd0d4e3ba6`. 두 head 사이에는 #7527의 Native 전용 회귀와 리뷰/PNG만 추가됐고 production source는 동일하다. 최종 fresh WASM SHA-256 `24565cae976b3c6929c858f13c52785a4651a26dc61c0fd566f5a8f801d631f7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root pkg/Studio public 해시를 대조했다.
+
+| 검증 입력 | 출력 경로 | 전체 쪽별 실루엣(%) | Gate |
+| --- | --- | --- | --- |
+| `pr7571-anchor-fixed-before-table-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwpx` | native | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-before-table-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwpx` | wasm | p1 100.00000 | passed / 누락0 |
+
+- [pr7571-anchor-fixed-before-table.hwp](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table.hwp), SHA-256 `985a147122d1bc2ef15efe89b74e0ad5fd3bee724f42d465f46ef2ea8ec0e378` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-before-table-hwp-2020.pdf), SHA-256 `0c4668dd5652be95103eed30e41c232d5611e9b23e9dcb0d97526f1138db3f56`.
+- [column-table-outer-box.hwp](../../../tests/fixtures/issue7571/column-table-outer-box.hwp), SHA-256 `528175185005c0ec6096ae3a96b782b2e90883a95a4849b614f9e1f8446c18b7` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-column-table-hwp-2020.pdf), SHA-256 `d3db38c9094a8327fb2d9804fc69ca088a613a2d7d0be81d2a1b4b5de872a68a`.
+- [pr7571-anchor-fixed-column-table.hwpx](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-column-table.hwpx), SHA-256 `b6ec31d4d6f4db2480fa2e2212ee7de69ed29102525de701b4b9ddb771c7c979` → [독립 Print PDF](../../../pdf/semanticist21-20261005/pr7571/mcp/pr7571-anchor-fixed-column-table-hwpx-2020.pdf), SHA-256 `8a834248e4535c790ec78404488b14fc1345cd31c934959268d291ffffe9ff1d`.
+
+각 명령·TSV·manifest·runtime 원시는 ignored `output/pr-review/semanticist21-20261005`에 보존했다. 렌더는 같은 입력/Print 전체 페이지와 `--embed-fonts=full`을 사용했고 WASM은 `--wasm-pkg pkg`를 추가했다(#7504는 실제 등록 API replay adapter). 최종 전체 Rust 회귀와 GitHub CI는 별도 진행 중이다.
+
+![fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-review-all-pages.png)
+![같은 쪽 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-overlay-all-pages.png)
+
+최종 페이지별 TSV: `output/pr-review/semanticist21-20261005/final-tsv/native/<key>/silhouette.tsv` 및 `wasm/<key>/silhouette.tsv`. 최신 full Sweep PNG 쌍에서 canonical `--silhouette-only --png-pair`로 산출하고 PNG SHA를 manifest에 고정했다. 해당 입력 전체 쪽수도 독립 PDF·원문 exporter에서 별도로 대조했으며 90% 미만/누락0이다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여에 감사한 뒤 실제 통합 PR 링크·merge SHA·정확한 최종 head CI와 이 PR의 회귀 실행 결과를 한국어 존댓말로 게시한다. 원 head는 merge 직전에 다시 확인하고 동일할 때만 통합으로 대체된 원 PR을 닫는다. 원 contributor fork branch는 삭제하지 않는다.
+
+production adapter를 우회한 초기 입력은 결함 증거에서 제외하고 실제 저장 Print60.90→100%, 폭0 앵커/바깥 상자 보정을 설명한다.
+
+- 실제 비교 `pr7571-anchor-fixed-before-table-hwp`의 p1 100.00000%를 페이지별 실루엣 보조값으로 적는다. 같은 입력 Native/fresh WASM 전체 쪽 TSV·누락0·직접 구조 판정을 함께 설명한다.
+- merge SHA에서 존재를 확인한 `mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-review-all-pages.png` / `mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-overlay-all-pages.png`를 `raw.githubusercontent.com/edwardkim/rhwp/<merge-SHA>/...`의 실제 Markdown 이미지로 표시한다. 임시 output 링크로 대신하지 않는다.
+- 이슈는 확인된 해결 범위만 다루고, 남은 조판·입력 축은 `Refs`와 원 이슈 링크로 유지한다. 게시 뒤 API로 실제 줄바꿈·한글·이미지 URL을 다시 확인한다.
+
+## 2026-10-06 전체 회귀 실패와 저장 조각 소유 보정
+
+`9af758658`의 전체 nextest는 10,489 실행 / 10,452 PASS / 37 FAIL / 50 SKIP, exit100이다. 앞의 대상 문서 시각 통과를 전체 회귀 통과로 확대하지 않는다. 단계별로 보존한 실제 라이브러리에서 #7062 3개+#6761 5개를 같은 입력으로 실행했다: `c20ffb351` 이전 보정은8 PASS, `693b63b26` 이후에는4 PASS/4 FAIL이다. 무효화나 글꼴 보정이 아닌 이 PR의 바깥 상자 확대가 원인이다.
+
+잘못된 가정은 폭0 저장 표 앵커를 모두 통째 표의 포맷 상자로 취급한 것이다. #7571 입력은 `TablePageBreak::None`, 기존 #7062 입력은 `RowBreak`이고 원본 조각의 줄 원점·높이·단 소유를 갖는다. 새 저장 앵커 경로는 분할되지 않는 표만 통째 상자로 다루고, 분할 표는 기존 source-control-frame/첫 조각 변환을 유지한다. 저장 줄 없는 재조판 경로는 기존 계약을 따른다. 공통 판정의 소비 위치는 `ParagraphFloatPlacement::from_empty_reflow_host` → block entry의 fit/예약 → prepare의 첫 조각 변환·host 줄 점유 → 실제 표 배치다.
+
+보정 후 같은8건은8 PASS/0 FAIL이다. 로그는 `output/pr-review/semanticist21-20261005/fragment-owner-corrected-tests.log`, 전후 분리 실행은 `failure-isolation-*-tests.log`에 보존했다. 전체 실패37건과 #7571 관계 회귀를 묶어 재실행하며 새 Native/fresh WASM 결과를 확인하기 전에는 통합 판정을 갱신하지 않는다. 기존 회귀 assertion·overflow/overlap baseline은 유지했다.
+
+분할 표를 구분한 첫 보정의 focused 실행은59건 중57 PASS/2 FAIL이다. 남은 `hwpspec.hwp`의 겹침9건은 분할되지 않는 표에서도 같은 프레임의 원본 앵커를 통째 포맷 상자로 바꾼 결과였다. 실제 frozen library 분리 실행에서 바깥 상자 확대 전0건/확대 뒤9건/분할 표만 제외한 뒤9건임을 확인했다(`hwpspec-overlap-*.log`). 새 쪽·단을 여는 명시적 flow break에서만 통째 표의 새 프레임 상자를 소비하도록 원점 소유를 바로잡는다. 같은 프레임의 저장 표는 기존 원본 앵커를 유지하며, 분할 표도 원본 조각 계약을 유지한다. 단순 폭0은 원본 프레임을 버리는 근거가 아니다. 이 보정의 재검증은 진행 중이다.
