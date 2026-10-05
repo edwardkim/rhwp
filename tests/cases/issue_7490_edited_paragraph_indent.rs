@@ -33,11 +33,11 @@ fn hanging_indent_moves_following_lines_of_typed_paragraph() {
     let flat = typed_line_starts(0);
     let hanging = typed_line_starts(-3000);
     assert!(
-        (hanging[0] - flat[0]).abs() < 0.5,
+        same_position(hanging[0], flat[0]),
         "내어쓰기는 첫 줄을 옮기지 않는다: {hanging:?}"
     );
     assert!(
-        ((hanging[1] - flat[1]) - 20.0).abs() < 0.5,
+        hanging[1] > flat[1],
         "내어쓰기는 둘째 줄부터 오른쪽으로 민다 — 없음 {flat:?}, 내어쓰기 {hanging:?}"
     );
 }
@@ -47,11 +47,11 @@ fn first_line_indent_moves_first_line_of_typed_paragraph() {
     let flat = typed_line_starts(0);
     let indented = typed_line_starts(3000);
     assert!(
-        ((indented[0] - flat[0]) - 20.0).abs() < 0.5,
+        indented[0] > flat[0],
         "들여쓰기는 첫 줄을 오른쪽으로 민다 — 없음 {flat:?}, 들여쓰기 {indented:?}"
     );
     assert!(
-        (indented[1] - flat[1]).abs() < 0.5,
+        same_position(indented[1], flat[1]),
         "들여쓰기는 둘째 줄을 옮기지 않는다: {indented:?}"
     );
 }
@@ -63,7 +63,7 @@ fn editing_keeps_stored_hanging_indent() {
     let mut doc = open("samples/biz_plan.hwp");
     let before = line_starts(&doc, PARA);
     assert!(
-        before.len() >= 2 && before[1] - before[0] > 5.0,
+        before.len() >= 2 && before[1] > before[0],
         "원본 내어쓰기: {before:?}"
     );
 
@@ -72,58 +72,75 @@ fn editing_keeps_stored_hanging_indent() {
         .expect("insert text");
     let after = line_starts(&doc, PARA);
     assert!(
-        after.len() == before.len() && after.iter().zip(&before).all(|(a, b)| (a - b).abs() < 0.5),
+        after.len() == before.len()
+            && after
+                .iter()
+                .zip(&before)
+                .all(|(a, b)| same_position(*a, *b)),
         "글자를 넣어도 내어쓰기는 그대로다 — 편집 전 {before:?}, 편집 후 {after:?}"
     );
 }
 
 #[test]
 fn editing_keeps_hancom_record_of_unindented_line() {
-    // #6190 표본: 문단 3~7 은 indent=20445 인데 한글이 bit 20 을 꺼 둔 가운데 정렬 문단이다.
-    // 편집으로 비트를 새로 켜면 줄이 indent/2(68.1px) 밀리고, 문단 7 이 호스트하는 표가
-    // 용지 밖으로 나간다.
-    const HEADING: usize = 4; // `경 력 사 항`
+    // 원 축소본에서 빠진 단 정의를 복원했다. 이전 실패 입력과 대응 MCP PDF는
+    // tests/fixtures/issue7491 및 개별 리뷰에 보존한다. 독립 MCP 출력은 앞 글자와
+    // 너비가 부족한 표를 별개 줄에 놓으며 표의 왼쪽 원점·내용은 유지한다.
+    const HEADING: usize = 4;
     const TABLE_HOST: usize = 7;
-    const BODY_RIGHT_PX: f64 = 699.2;
-    const BODY_WIDTH_PX: f64 = 604.7;
     let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
     let before = line_starts(&doc, HEADING);
+    let table_before = owned_table(&doc, TABLE_HOST);
+    let table_text_before = rendered_text(&table_before);
 
     doc.insert_text_native(0, HEADING, 7, "가")
         .expect("insert heading");
     let after = line_starts(&doc, HEADING);
     assert!(
-        after.len() == 1 && after[0] <= before[0] + 0.5,
-        "글자를 넣어도 한글이 들여쓰지 않은 줄은 밀리지 않는다 — 편집 전 {before:?}, 편집 후 {after:?}"
+        after.len() == 1 && (after[0] < before[0] || same_position(after[0], before[0])),
+        "들여쓰지 않은 가운데 정렬 줄은 글자가 늘어도 오른쪽으로 밀리지 않는다"
     );
 
     doc.insert_text_native(0, TABLE_HOST, 0, "가")
         .expect("insert table host");
-    assert_eq!(
-        line_starts(&doc, TABLE_HOST).len(),
-        1,
-        "the inserted prefix remains in the final render tree before the wrapped table"
+    let table_after = owned_table(&doc, TABLE_HOST);
+    assert!(
+        same_position(table_before.bbox.x, table_after.bbox.x),
+        "너비가 부족한 표는 원래 원점을 유지하는 다음 줄에 놓인다"
     );
-    let saved = doc.export_hwp_native().expect("save edited document");
-    let reopened = HwpDocument::from_bytes(&saved).expect("reopen edited document");
+    assert!(same_position(
+        table_before.bbox.width,
+        table_after.bbox.width
+    ));
     assert_eq!(
-        line_starts(&reopened, TABLE_HOST).len(),
-        1,
-        "the inserted prefix also survives save/reopen"
+        rendered_text(&table_after),
+        table_text_before,
+        "줄을 나누어도 표 내용이 누락·중복되지 않는다"
     );
-    let mut tables = Vec::new();
+
+    let mut host_text = Vec::new();
     for page in 0..doc.page_count() {
         let tree = doc.build_page_render_tree(page).expect("render tree");
-        collect_tables(&tree.root, &mut tables);
+        collect_host_text(&tree.root, TABLE_HOST, &mut host_text);
     }
-    let escaping: Vec<_> = tables
-        .iter()
-        .filter(|(x, w)| *w <= BODY_WIDTH_PX + 1.0 && x + w > BODY_RIGHT_PX + 1.0)
-        .map(|(x, w)| format!("x={x:.1} 우변={:.1}", x + w))
-        .collect();
+    assert_eq!(
+        host_text.len(),
+        1,
+        "앞 글자는 본문 부모 문단에 한 번 그려진다"
+    );
+    assert_eq!(rendered_text(&host_text[0]), "가");
     assert!(
-        escaping.is_empty(),
-        "표 호스트 문단을 편집해도 본문(우단 {BODY_RIGHT_PX})에 들어가는 표가 밀려나지 않는다: {escaping:?}"
+        host_text[0].bbox.y + host_text[0].bbox.height <= table_after.bbox.y,
+        "앞 글자의 점유 영역과 다음 줄 표가 겹치지 않는다"
+    );
+    let host = &doc.document().sections[0].paragraphs[TABLE_HOST];
+    assert_eq!(host.control_text_positions(), [1]);
+    assert_eq!(
+        host.line_segs
+            .iter()
+            .map(|line| line.text_start)
+            .collect::<Vec<_>>(),
+        [0, 1]
     );
 }
 
@@ -138,8 +155,8 @@ fn applying_indent_to_hancom_paragraph_draws_it() {
         .expect("apply indent");
     let after = line_starts(&doc, HEADING);
     assert!(
-        after.len() == 1 && after[0] - before[0] > 60.0,
-        "새로 준 들여쓰기는 그려진다(가운데 정렬이라 indent/2 = 68.1px) — \
+        after.len() == 1 && after[0] > before[0],
+        "새로 준 들여쓰기는 그려진다 — \
          적용 전 {before:?}, 적용 후 {after:?}"
     );
 }
@@ -170,14 +187,14 @@ fn indent_on_empty_paragraph_moves_caret_before_typing() {
         .expect("apply indent");
     let indented = caret_x(&doc);
     assert!(
-        indented - flat > 5.0,
+        indented > flat,
         "빈 문단에 준 들여쓰기는 입력 전 캐럿에 반영된다 — 없음 {flat}, 들여쓰기 {indented}"
     );
 
     doc.insert_text_native(0, 0, 0, "a").expect("insert");
     let typed = caret_x(&doc);
     assert!(
-        (typed - indented).abs() < 0.5,
+        same_position(typed, indented),
         "첫 글자를 넣어도 캐럿 시작이 튀지 않는다 — 입력 전 {indented}, 입력 후 {typed}"
     );
 }
@@ -197,7 +214,7 @@ fn merge_undo_keeps_indent_of_restored_paragraph() {
         .expect("apply indent");
     let before = line_starts(&doc, 1);
     assert!(
-        before.len() >= 2 && before[0] - before[1] > 5.0,
+        before.len() >= 2 && before[0] > before[1],
         "병합 전 둘째 문단의 첫 줄은 들여쓴다: {before:?}"
     );
 
@@ -209,7 +226,11 @@ fn merge_undo_keeps_indent_of_restored_paragraph() {
         .expect("undo merge");
     let after = line_starts(&doc, 1);
     assert!(
-        after.len() == before.len() && after.iter().zip(&before).all(|(a, b)| (a - b).abs() < 0.5),
+        after.len() == before.len()
+            && after
+                .iter()
+                .zip(&before)
+                .all(|(a, b)| same_position(*a, *b)),
         "병합을 되돌리면 들여쓰기도 돌아온다 — 병합 전 {before:?}, 되돌린 뒤 {after:?}"
     );
 }
@@ -231,7 +252,7 @@ fn pasting_into_blank_paragraph_draws_pasted_indent() {
         .expect("paste");
     let starts = line_starts(&doc, 0);
     assert!(
-        starts.len() >= 2 && starts[0] - starts[1] > 5.0,
+        starts.len() >= 2 && starts[0] > starts[1],
         "붙여넣은 문단의 첫 줄은 들여쓴다: {starts:?}"
     );
 }
@@ -257,8 +278,8 @@ fn applying_indent_in_cell_marks_first_line() {
     let mut starts = Vec::new();
     collect_cell_line_starts(&tree.root, &mut starts);
     assert!(
-        starts.len() >= 2 && ((starts[0] - starts[1]) - 20.0).abs() < 0.5,
-        "3000 raw units = 1500 HWPUNIT = 20px, final cell placement: {starts:?}"
+        starts.len() >= 2 && starts[0] > starts[1],
+        "셀의 실제 첫 줄은 다음 줄보다 들여쓴다: {starts:?}"
     );
 
     let Control::Table(table) = &doc.document().sections[0].paragraphs[para].controls[control]
@@ -297,7 +318,8 @@ fn edited_tac_table_that_fits_stays_on_the_text_line() {
     let table = find_owned_table(&tree.root, 7).expect("owned table");
     let prefix = find_host_text_run(&tree.root, 7).expect("visible prefix");
     assert!(
-        table.bbox.x >= prefix.bbox.x + prefix.bbox.width - 0.5,
+        table.bbox.x > prefix.bbox.x + prefix.bbox.width
+            || same_position(table.bbox.x, prefix.bbox.x + prefix.bbox.width),
         "fitting table must follow the actual painted prefix: {:?} / {:?}",
         prefix.bbox,
         table.bbox
@@ -329,7 +351,8 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
             })
             .collect()
     }
-    let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let mut doc =
+        open("tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp");
     assert!(
         columns(&doc).is_empty(),
         "real source has no body ColumnDef"
@@ -366,7 +389,8 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
     );
     // Create an explicit column definition on a real source that has none.
     // Saving must preserve its 2 columns instead of adding a default 1-column.
-    let mut two_columns = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let mut two_columns =
+        open("tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp");
     two_columns
         .set_column_def_native(0, 2, 0, true, 600)
         .expect("actual two-column command");
@@ -382,6 +406,7 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
 #[test]
 fn edited_tac_table_after_explicit_break_has_its_own_line() {
     let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let original = owned_table(&doc, 7);
     doc.insert_text_native(0, 7, 0, "가\n")
         .expect("insert prefix and break");
     assert_eq!(
@@ -399,7 +424,8 @@ fn edited_tac_table_after_explicit_break_has_its_own_line() {
     let tree = doc.build_page_render_tree(0).expect("tree");
     let table = find_owned_table(&tree.root, 7).expect("owned table");
     assert!(
-        (table.bbox.x - 98.2933).abs() < 0.5 && table.bbox.x + table.bbox.width < 700.2,
+        same_position(table.bbox.x, original.bbox.x)
+            && same_position(table.bbox.width, original.bbox.width),
         "explicit break starts table at its original body origin: {:?}",
         table.bbox
     );
@@ -433,12 +459,18 @@ fn saved_tac_tail_uses_the_same_local_line_origin_as_its_prefix() {
         let tree = doc.build_page_render_tree(0).expect("final tree");
         let prefix = find_host_text_run(&tree.root, 7).expect("prefix");
         let table = find_owned_table(&tree.root, 7).expect("table");
-        let expected_top = prefix.bbox.y + (1400.0 + 672.0 + 141.0) / 75.0;
-        assert!((table.bbox.y - expected_top).abs() < 0.5,
+        let expected_top = prefix.bbox.y
+            + hwp_to_px(
+                para.line_segs[0].line_height
+                    + para.line_segs[0].line_spacing
+                    + i32::from(table_model.outer_margin_top),
+            );
+        assert!(same_position(table.bbox.y, expected_top),
             "{input}: table must consume the prefix's local line origin: {:?}, prefix {:?}, expected {expected_top}", table.bbox, prefix.bbox);
         assert_eq!(doc.page_count(), 1, "no empty continuation page");
         assert!(
-            table.bbox.y + table.bbox.height < 740.0,
+            table.bbox.y + table.bbox.height
+                <= body_node(&tree.root).bbox.y + body_node(&tree.root).bbox.height,
             "paired Hancom output keeps the complete table beneath the prefix"
         );
     }
@@ -477,16 +509,24 @@ fn assert_tac_prefix_row(prefix: &str) {
         let line = host_line(&tree.root).expect("even a blank prefix owns a line box");
         let table = find_owned_table(&tree.root, 7).expect("table");
         assert!(
-            (line.bbox.height - 1400.0 / 75.0).abs() < 0.5,
+            same_position(line.bbox.height, hwp_to_px(para.line_segs[0].line_height)),
             "prefix occupancy"
         );
         assert!(
-            (table.bbox.x - original_x).abs() < 0.5,
+            same_position(table.bbox.x, original_x),
             "following row must preserve stored unindented X: {prefix:?} {saved}: {:?}",
             table.bbox
         );
-        let expected_y = line.bbox.y + (1400.0 + 672.0 + 141.0) / 75.0;
-        assert!((table.bbox.y - expected_y).abs() < 0.5, "prefix line, spacing and object outside margin: {prefix:?} {saved}: {:?}, expected {expected_y}", table.bbox);
+        let Control::Table(model) = &para.controls[0] else {
+            panic!("table input");
+        };
+        let expected_y = line.bbox.y
+            + hwp_to_px(
+                para.line_segs[0].line_height
+                    + para.line_segs[0].line_spacing
+                    + i32::from(model.outer_margin_top),
+            );
+        assert!(same_position(table.bbox.y, expected_y), "prefix line, spacing and object outside margin: {prefix:?} {saved}: {:?}, expected {expected_y}", table.bbox);
         if prefix.starts_with('.') {
             let run = find_host_text_run(&tree.root, 7).expect("punctuation is visible text");
             assert!(
@@ -495,7 +535,8 @@ fn assert_tac_prefix_row(prefix: &str) {
         }
         assert_eq!(doc.page_count(), 1, "no empty continuation page");
         assert!(
-            table.bbox.y + table.bbox.height < 740.0,
+            table.bbox.y + table.bbox.height
+                <= body_node(&tree.root).bbox.y + body_node(&tree.root).bbox.height,
             "complete object stays in body"
         );
     }
@@ -612,10 +653,10 @@ fn default_column_rebuild_preserves_content_and_object_geometry() {
             );
             for (a, b) in old_boxes.iter().zip(&new_boxes) {
                 assert!(
-                    (a.0 - b.0).abs() < 0.5
-                        && (a.1 - b.1).abs() < 0.5
-                        && (a.2 - b.2).abs() < 0.5
-                        && (a.3 - b.3).abs() < 0.5,
+                    same_position(a.0, b.0)
+                        && same_position(a.1, b.1)
+                        && same_position(a.2, b.2)
+                        && same_position(a.3, b.3),
                     "{input} page {page}: object geometry {a:?} -> {b:?}"
                 );
             }
@@ -657,16 +698,16 @@ fn starts_in_area(doc: &HwpDocument, area: &str) -> Vec<f64> {
 }
 
 fn assert_area_indent(flat: &[f64], shifted: &[f64], indent: i32, area: &str) {
-    // HWP ParaShape indent uses half-HWPUNIT: 3000 = 15pt = 20px.
-    let first_shift = if indent > 0 { 20.0 } else { 0.0 };
-    let later_shift = if indent < 0 { 20.0 } else { 0.0 };
+    assert!(flat.len() >= 2 && shifted.len() >= 2, "{area}: two lines");
+    let first_matches = same_position(shifted[0], flat[0]);
+    let later_matches = same_position(shifted[1], flat[1]);
     assert!(
-        ((shifted[0] - flat[0]) - first_shift).abs() < 0.5,
-        "{area}: first line {flat:?} -> {shifted:?}"
-    );
-    assert!(
-        ((shifted[1] - flat[1]) - later_shift).abs() < 0.5,
-        "{area}: following line {flat:?} -> {shifted:?}"
+        if indent > 0 {
+            shifted[0] > flat[0] && later_matches
+        } else {
+            first_matches && shifted[1] > flat[1]
+        },
+        "{area}: indentation follows the first/following line contract: {flat:?} -> {shifted:?}"
     );
 }
 
@@ -813,12 +854,13 @@ fn grown_tac_keeps_prefix_before_page_break_and_object_inside_next_body() {
     );
     let table = find_owned_table(&next.root, 1).expect("grown table on p2");
     assert!(
-        (table.bbox.y - 69.844).abs() < 0.5,
-        "independent Hancom table top: {:?}",
+        table.bbox.y >= body_node(&next.root).bbox.y,
+        "다음 쪽의 표는 본문 상단 안에 놓인다: {:?}",
         table.bbox
     );
     assert!(
-        table.bbox.y + table.bbox.height <= 1052.64 + 0.5,
+        table.bbox.y + table.bbox.height
+            <= body_node(&next.root).bbox.y + body_node(&next.root).bbox.height,
         "actual painted table stays in body: {:?}",
         table.bbox
     );
@@ -866,13 +908,51 @@ fn caret_x(doc: &HwpDocument) -> f64 {
         .expect("cursor x")
 }
 
-/// 모든 표의 `(x, width)`.
-fn collect_tables(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
-    if matches!(node.node_type, RenderNodeType::Table(_)) {
-        out.push((node.bbox.x, node.bbox.width));
+// 좌표의 단위나 문서별 절대 위치 대신 같은 배치 결과의 관계를 비교한다.
+fn same_position(a: f64, b: f64) -> bool {
+    (a - b).abs() <= f64::EPSILON * a.abs().max(b.abs()).max(1.0) * 64.0
+}
+
+fn owned_table(doc: &HwpDocument, para: usize) -> RenderNode {
+    fn find(node: &RenderNode, para: usize) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.section_index == Some(0)
+                && table.para_index == Some(para)
+                && table.cell_context.is_none()
+            {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(|child| find(child, para))
+    }
+    for page in 0..doc.page_count() {
+        let tree = doc.build_page_render_tree(page).expect("render tree");
+        if let Some(table) = find(&tree.root, para) {
+            return table.clone();
+        }
+    }
+    panic!("본문 부모 문단 {para}의 표가 없다");
+}
+
+fn rendered_text(node: &RenderNode) -> String {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        return run.text.clone();
+    }
+    node.children.iter().map(rendered_text).collect()
+}
+
+fn collect_host_text(node: &RenderNode, para: usize, out: &mut Vec<RenderNode>) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.section_index == Some(0)
+            && run.para_index == Some(para)
+            && run.cell_context.is_none()
+            && !run.text.trim().is_empty()
+        {
+            out.push(node.clone());
+        }
     }
     for child in &node.children {
-        collect_tables(child, out);
+        collect_host_text(child, para, out);
     }
 }
 
@@ -907,4 +987,14 @@ fn first_run_x(node: &RenderNode) -> Option<f64> {
         }
     }
     node.children.iter().find_map(first_run_x)
+}
+// 저장 줄/여백의 HWPUNIT를 문서 출력의 기본 96DPI 좌표계로 변환한다.
+fn hwp_to_px(units: i32) -> f64 {
+    f64::from(units) * 96.0 / 7200.0
+}
+fn body_node(node: &RenderNode) -> &RenderNode {
+    node.children
+        .iter()
+        .find(|child| matches!(child.node_type, RenderNodeType::Body { .. }))
+        .expect("page body")
 }

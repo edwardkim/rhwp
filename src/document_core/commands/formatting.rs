@@ -1147,7 +1147,7 @@ impl DocumentCore {
         }
 
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_paragraph_deferred_in_batch(sec_idx, para_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec_idx,
             para: para_idx,
@@ -1157,14 +1157,15 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
-    /// 셀 서식 뮤테이터의 파생 재계산 꼬리 — 배치 여부에 따라 재구성·재페이지네이션을
+    /// 서식 뮤테이터의 파생 재계산 꼬리 — 배치 여부에 따라 재구성·재페이지네이션을
     /// 지연하거나 즉시 전체 rebuild 로 마친다.
     ///
     /// 배치 중(`begin_batch`~`end_batch`)에는 재구성·재페이지네이션을 `end_batch_native`
     /// 의 paginate() 1회로 미루고 구역만 dirty 로 표시한다 — 셀 텍스트 편집의 지연
-    /// 계약(#2424)과 같은 모양이다. 서식 변경은 composed 구조를 바꾸지 않으므로
-    /// 재구성 없이 flush 시점 재처리로 충분하다. 새 서식 id 가 doc_info 에 추가됐을
-    /// 수 있으므로 스타일 해석만 즉시 갱신한다(O(스타일 수) — 재조판 비용과 무관).
+    /// 계약(#2424)과 같은 모양이다. 셀 문단은 composed 에 없으므로 재구성 없이 flush
+    /// 시점 재처리로 충분하다(본문 문단은 `rebuild_paragraph_deferred_in_batch`).
+    /// 새 서식 id 가 doc_info 에 추가됐을 수 있으므로 스타일 해석만 즉시 갱신한다
+    /// (O(스타일 수) — 재조판 비용과 무관).
     /// 배치 밖에서는 종전대로 전체 rebuild 이다(#4118).
     ///
     /// 패스스루(raw_stream) 무효화는 #2724 가드가 뮤테이터 본문의 직접 토큰을 요구하므로
@@ -1179,6 +1180,19 @@ impl DocumentCore {
             self.mark_section_dirty(sec_idx);
         } else {
             self.rebuild_section(sec_idx);
+        }
+    }
+
+    /// 본문 문단 서식 뮤테이터의 꼬리 — `rebuild_section_deferred_in_batch` 와 같되,
+    /// 배치 중에는 그 문단을 바로 다시 조합한다.
+    ///
+    /// 본문 문단은 셀과 달리 composed 에 글자 모양 런을 들고 있다. 다시 조합하지 않으면
+    /// `end_batch` 의 paginate 가 옛 런으로 재고 그린다. 배치 밖에서는 전체 rebuild 가
+    /// 구역을 다시 조합하므로 따로 할 일이 없다.
+    pub(crate) fn rebuild_paragraph_deferred_in_batch(&mut self, sec_idx: usize, para_idx: usize) {
+        self.rebuild_section_deferred_in_batch(sec_idx);
+        if self.batch_mode {
+            self.recompose_paragraph(sec_idx, para_idx);
         }
     }
 
@@ -1486,7 +1500,7 @@ impl DocumentCore {
         self.pending_cell_format_vpos = true;
         self.mark_cell_control_dirty(sec_idx, parent_para_idx, control_idx);
         self.document.sections[sec_idx].raw_stream = None;
-        self.rebuild_section(sec_idx);
+        self.rebuild_section_deferred_in_batch(sec_idx);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec_idx,
             para: parent_para_idx,
@@ -2777,7 +2791,15 @@ mod cell_reflow_width_tests {
     /// 늘어나는 걸 관찰할 여지가 없다 — margin 변화 전후 비교 테스트는 더 넓은 폭이
     /// 필요해 파라미터화한다.
     fn core_with_cell(text: &str, cell_width: u32) -> DocumentCore {
-        let mut doc = Document::default();
+        // 참조하는 글자·문단 모양 0은 실제 정의를 가져야 한다. 빈 DocInfo에서는
+        // 새 모양도 ID 0을 받아 이전 들여쓰기와 새 들여쓰기가 같은 값으로 보인다.
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native()
+            .expect("기본 서식표를 가진 문서가 생성되어야 함");
+        let mut doc = Document {
+            doc_info: core.document.doc_info.clone(),
+            ..Default::default()
+        };
 
         let mut cell_para = Paragraph {
             text: text.to_string(),
@@ -2831,11 +2853,7 @@ mod cell_reflow_width_tests {
         section.paragraphs.push(para);
         doc.sections.push(section);
 
-        let mut core = DocumentCore::new_empty();
-        core.document = doc;
-        core.composed = vec![Vec::new()];
-        core.dirty_sections = vec![true];
-        core.dirty_paragraphs = vec![None];
+        core.set_document(doc);
         core
     }
 
@@ -2981,31 +2999,39 @@ mod cell_reflow_width_tests {
         let mut core = core_with_cell(&text, 20000);
 
         core.reflow_cell_paragraph(0, 0, 0, 0, 0);
-        let before_lines = {
+        let before_starts: Vec<u32> = {
             let table = match &core.document.sections[0].paragraphs[0].controls[0] {
                 Control::Table(t) => t,
                 _ => panic!("표 컨트롤이어야 함"),
             };
-            table.cells[0].paragraphs[0].line_segs.len()
+            table.cells[0].paragraphs[0]
+                .line_segs
+                .iter()
+                .map(|line| line.text_start)
+                .collect()
         };
 
-        // indent는 첫 줄 유효 폭만 줄이므로(line_breaking.rs eff_w), margin과 달리 값이
-        // 작으면 재배치가 뒤 줄로 흡수돼 총 줄 수가 그대로일 수 있다. 셀 폭(20000)에
-        // 근접한 큰 값을 써서 첫 줄이 거의 비워지도록 만들어 확실히 줄 수를 늘린다.
+        // 들여쓰기는 첫 줄의 수용량을 줄인다. 뒤 줄의 남은 공간에 흡수되면 전체
+        // 줄 수는 같을 수 있으므로 총 줄 수 대신 실제 첫 줄의 내용 경계를 검사한다.
         core.apply_para_format_in_cell_native(0, 0, 0, 0, 0, r#"{"indent":19000}"#)
             .expect("서식 적용이 성공해야 함");
-        let after_lines = {
+        let after_starts: Vec<u32> = {
             let table = match &core.document.sections[0].paragraphs[0].controls[0] {
                 Control::Table(t) => t,
                 _ => panic!("표 컨트롤이어야 함"),
             };
-            table.cells[0].paragraphs[0].line_segs.len()
+            assert_eq!(table.cells[0].paragraphs[0].text, text, "내용 보존");
+            table.cells[0].paragraphs[0]
+                .line_segs
+                .iter()
+                .map(|line| line.text_start)
+                .collect()
         };
 
         assert!(
-            after_lines > before_lines,
-            "indent 적용으로 첫 줄 유효 폭이 줄었으면 줄 수가 늘어야 함 \
-             (before={before_lines}줄, after={after_lines}줄)"
+            after_starts.len() > 1 && before_starts.len() > 1 && after_starts[1] < before_starts[1],
+            "들여쓰기 적용 뒤 첫 줄에 들어가는 내용이 줄어야 함 \
+             (before={before_starts:?}, after={after_starts:?})"
         );
     }
 

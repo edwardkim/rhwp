@@ -1375,16 +1375,11 @@ impl DocumentCore {
             _ => Alignment::Left,
         };
 
-        // 6) 텍스트 삽입
+        // 6) 텍스트 삽입 — 탭은 스트림 8칸이다. `insert_text_at` 이 그 폭으로 char_offsets 와
+        //    char_count 를 함께 맞춘다(바이트 위치를 쓰면 탭 뒤 글자가 7칸 당겨진다).
         {
             let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, 0)?;
-            hf_para.text = text;
-            // char_offsets 재계산
-            hf_para.char_offsets = hf_para
-                .text
-                .char_indices()
-                .map(|(byte_idx, _)| byte_idx as u32)
-                .collect();
+            hf_para.insert_text_at(0, &text);
         }
 
         // 7) 문단 정렬 적용
@@ -1458,6 +1453,198 @@ impl DocumentCore {
         self.rebuild_section(section_idx);
 
         Ok("{\"ok\":true}".to_string())
+    }
+}
+
+/// 머리말/꼬리말 필드 마커(쪽 번호 U+0015 · 전체 쪽수 U+0016 · 파일 이름 U+0017).
+fn is_hf_field_marker(ch: char) -> bool {
+    matches!(ch, '\u{0015}'..='\u{0017}')
+}
+
+/// 저장할 문서에 머리말/꼬리말 필드 마커가 있는지 — 없으면 저장 사본을 만들 필요가 없다.
+pub(crate) fn has_header_footer_field_markers(document: &crate::model::document::Document) -> bool {
+    document
+        .sections
+        .iter()
+        .flat_map(|section| section.paragraphs.iter())
+        .flat_map(|para| para.controls.iter())
+        .flat_map(|ctrl| match ctrl {
+            Control::Header(header) => header.paragraphs.as_slice(),
+            Control::Footer(footer) => footer.paragraphs.as_slice(),
+            _ => &[],
+        })
+        .any(|para| para.text.chars().any(is_hf_field_marker))
+}
+
+/// 저장 사본의 머리말/꼬리말 필드 마커를 한컴이 만든 머리말과 같은 컨트롤로 바꾼다.
+///
+/// 편집 중에는 필드가 마커 한 글자다 — 되돌리기(#3212)·캐럿(#3216)·파일 이름 갱신(#1144)이
+/// 모두 그 한 글자에 기대므로 편집 문서는 그대로 두고 저장 사본에서만 바꾼다. 마커를 그대로
+/// 내보내면 HWP 에는 짝 없는 제어 코드 유닛이 남아 문단이 깨지고, HWPX 에서는 사라진다.
+///
+/// - 쪽 번호·전체 쪽수 → 자동 번호(`atno`). 파서가 만드는 꼴대로 자리표 공백 한 글자에
+///   컨트롤 몫 8칸을 준다.
+/// - 파일 이름 → 파일 경로 필드(`%pat`, 명령 `$F`). 필드 글자는 지금 파일 이름이다 —
+///   한글도 저장할 때 그 값으로 갱신한다. HWPX 매개변수는 한글 2024 가 만든 머리말
+///   (`Prop=8`·`Command=$F`·`Format=$F`)을 따른다. HWP5 에는 그 자리가 없다(#4396).
+pub(crate) fn lower_header_footer_field_markers(
+    document: &mut crate::model::document::Document,
+    file_name: &str,
+    hwpx: bool,
+) {
+    if !has_header_footer_field_markers(document) {
+        return;
+    }
+    let mut max_field_id = 0;
+    for para in document
+        .sections
+        .iter()
+        .flat_map(|section| section.paragraphs.iter())
+    {
+        crate::document_core::queries::field_query::collect_max_field_id(para, &mut max_field_id);
+    }
+    let mut next_field_id = max_field_id.saturating_add(1);
+
+    let hf_paragraphs = document
+        .sections
+        .iter_mut()
+        .flat_map(|section| section.paragraphs.iter_mut())
+        .flat_map(|para| para.controls.iter_mut())
+        .flat_map(|ctrl| match ctrl {
+            Control::Header(header) => header.paragraphs.iter_mut(),
+            Control::Footer(footer) => footer.paragraphs.iter_mut(),
+            _ => Default::default(),
+        });
+    for para in hf_paragraphs {
+        let markers: Vec<(usize, char)> = para
+            .text
+            .chars()
+            .enumerate()
+            .filter(|(_, ch)| is_hf_field_marker(*ch))
+            .collect();
+        if markers.is_empty() {
+            continue;
+        }
+        // 새로 만든 머리말 문단(`Paragraph::default()`)은 문단 끝 1칸 없이 센다. HWPX 저장기는
+        // char_count 에서 컨트롤 슬롯 수를 추정하므로(문단 끝 포함 전제) 그 칸을 채운다.
+        // 텍스트 뒤에 남는 것은 8칸 슬롯뿐이라 나머지가 0 이면 문단 끝이 빠진 것이다.
+        let text_end = para
+            .char_offsets
+            .last()
+            .zip(para.text.chars().last())
+            .map_or(0, |(offset, ch)| offset + Paragraph::char_stream_len(ch));
+        if para.char_count.saturating_sub(text_end) % 8 == 0 {
+            para.char_count += 1;
+        }
+        // 뒤 마커부터 바꿔야 앞 마커의 글자 위치가 그대로다.
+        for (idx, marker) in markers.into_iter().rev() {
+            // 마커 앞(같은 자리 포함)에 놓인 컨트롤 수가 새 컨트롤의 차례다.
+            let ctrl_idx = para
+                .control_text_positions()
+                .into_iter()
+                .filter(|pos| *pos <= idx)
+                .count();
+            for range in &mut para.field_ranges {
+                if range.control_idx >= ctrl_idx {
+                    range.control_idx += 1;
+                }
+            }
+            let ctrl = if marker == '\u{0017}' {
+                let end = insert_field_text(para, idx, file_name);
+                para.field_ranges.push(crate::model::paragraph::FieldRange {
+                    start_char_idx: idx,
+                    end_char_idx: end,
+                    control_idx: ctrl_idx,
+                    ..Default::default()
+                });
+                let field = path_field(next_field_id, hwpx);
+                next_field_id = next_field_id.saturating_add(1);
+                Control::Field(field)
+            } else {
+                insert_auto_number_placeholder(para, idx);
+                Control::AutoNumber(crate::model::control::AutoNumber {
+                    number_type: if marker == '\u{0015}' {
+                        crate::model::control::AutoNumberType::Page
+                    } else {
+                        crate::model::control::AutoNumberType::TotalPage
+                    },
+                    number: 1,
+                    assigned_number: 1,
+                    ..Default::default()
+                })
+            };
+            para.align_ctrl_data_records();
+            para.controls.insert(ctrl_idx, ctrl);
+            para.ctrl_data_records.insert(ctrl_idx, None);
+        }
+    }
+}
+
+/// `idx` 의 마커를 자동 번호 자리표 공백으로 바꾸고 컨트롤 몫 8칸을 채운다 — 파서가
+/// `0x0012` 를 읽어 만드는 꼴(자리표 한 글자, 다음 글자는 8칸 뒤)과 같다.
+///
+/// 마커와 공백은 둘 다 1바이트·1유닛이라 제자리에서 바꾼다. 지우고 다시 넣으면 바로 뒤에
+/// 이미 바꾼 파일 이름 필드의 시작 슬롯이 그 자리에 붙고, `insert_text_at` 은 필드 시작
+/// 앞을 가리지 않아 공백이 필드 안으로 들어간다.
+fn insert_auto_number_placeholder(para: &mut Paragraph, idx: usize) {
+    const EXTRA: u32 = 7;
+    let Some((byte, _)) = para.text.char_indices().nth(idx) else {
+        return;
+    };
+    para.text.replace_range(byte..byte + 1, " ");
+    let slot = para.char_offsets[idx];
+    for offset in &mut para.char_offsets[idx + 1..] {
+        *offset += EXTRA;
+    }
+    para.shift_position_metadata_for_stream_insertion(slot + 1, EXTRA);
+    para.char_count += EXTRA;
+}
+
+/// `idx` 의 마커를 필드 글자로 바꾸고 앞뒤에 필드 시작·끝 슬롯(각 8칸)을 둔다. 필드 끝
+/// 글자 위치를 돌려준다.
+///
+/// 글자를 마커 앞에 넣고 나서 마커를 지운다 — 그래야 글자가 마커 자리에 붙는다. 먼저
+/// 지우면 바로 뒤 파일 이름 필드의 시작 슬롯이 그 자리에 붙어 글자가 그 필드 안으로
+/// 들어간다.
+fn insert_field_text(para: &mut Paragraph, idx: usize, text: &str) -> usize {
+    let at = para.insert_text_at(idx, text);
+    let end = at + text.chars().count();
+    para.shift_for_control_slot_insert(end);
+    para.shift_for_control_slot_insert(at);
+    para.char_count += 16;
+    para.delete_text_at(end, 1);
+    end
+}
+
+fn path_field(field_id: u32, hwpx: bool) -> crate::model::control::Field {
+    use crate::model::control::{Field, FieldType, Parameter, ParameterList};
+    const COMMAND: &str = "$F";
+    let string_param = |name: &str| Parameter::String {
+        name: Some(name.to_string()),
+        value: COMMAND.to_string(),
+        preserve_space: false,
+    };
+    Field {
+        field_type: FieldType::Path,
+        command: COMMAND.to_string(),
+        field_id,
+        ctrl_id: crate::parser::tags::FIELD_PATH,
+        parameters: if hwpx {
+            ParameterList {
+                name: Some(String::new()),
+                items: vec![
+                    Parameter::Integer {
+                        name: Some("Prop".to_string()),
+                        value: 8,
+                    },
+                    string_param("Command"),
+                    string_param("Format"),
+                ],
+            }
+        } else {
+            ParameterList::default()
+        },
+        ..Default::default()
     }
 }
 

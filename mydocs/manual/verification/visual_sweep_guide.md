@@ -2,12 +2,22 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-01
+last_verified: 2026-10-05
 ---
 
 # PDF/SVG visual sweep 가이드
 
 ## 목적
+
+조판·렌더링 영향 변경은 실제 소비 경로 기준으로 Native/fresh WASM Visual Sweep·페이지별 TSV를
+반드시 산출한다. 편집 command·parser·model·serializer도 적용 대상이 될 수 있다.
+검증 범위의 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서 PDF/overlay
+원인을 재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다.
+해결 불가능한 실제 글꼴 차이는 아래 [PR 제출 예외](#해결-불가능한-글꼴의-pr-제출-예외)로 90% 미만이어도 제출할 수 있다.
+쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
+기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
+MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
+TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
 
 `scripts/visual_sweep.py`는 rhwp가 만든 SVG/render tree와 한컴 기준 PDF를 비교해
 문항 흐름 drift, frame overflow, 줄 순서 겹침 같은 후보를 자동으로 찾는 보조 도구다.
@@ -123,7 +133,7 @@ PR 판정은 `not_evaluated`다. 전체 쪽수, 각주·문단 소속, 누락·�
 Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 회귀를 추가하지 않고 출력을 먼저
 개선한다. 쪽수 검사는 전체 페이지를 비교하며 평균값·글꼴 예외로 이 조건을 면제하지 않는다.
 
-renderer·layout·paint 변경의 PR review에 Visual Sweep을 사용하면, 각 대표 review PNG의
+조판·렌더링 영향 변경은 Visual Sweep을 반드시 사용하고 검증 범위 전체 TSV와 각 대표 review PNG의
 `tolerant_content_match_percent`(2px 이웃 관용 내용 실루엣 일치율 보조값)는 **90% 이상**이어야 한다.
 `scripts/visual_sweep.py`는 90% 미만 또는 측정 불가 페이지가 있으면 PNG와 manifest를 남긴 뒤 exit
 non-zero로 끝내며, manifest의 `pr_review_gate.status`를 `re_review_required`로 기록한다. 이 상태에서는
@@ -149,13 +159,42 @@ Native의 `--page`/`--pages`는 SVG와 render tree도 선택 쪽만 내보낸다
 선택 비교 통과는 전체 페이지 일치나 fresh WASM 검증을 대신하지 않는다. WASM은 기존 전체
 내보내기 경로를 사용한다. 로그와 중간 산출물은 `--out output/...` 아래에 보관한다.
 
-예외는 한컴 PDF와 rhwp raster에 실제로 적용된 글꼴이 완전히 다르다는 사실을 확인한 경우뿐이다. 이때도
-`--font-mismatch-evidence <UTF-8 파일>`을 지정해 각 쪽의 원래/대체 font family, 확인 방법과
-representative PNG를 기록한 증거 파일의 경로·SHA-256을 manifest에 남긴다. 단순 anti-aliasing, 작은
-baseline 차이, 글꼴 이름의 추정, `flagged=0` 또는 CI 녹색은 예외 근거가 아니다. 이 예외는
-`font_mismatch_exception`으로 남으며 사람의 overlay 판독과 다른 조판 차이의 보류 의무를 없애지 않는다.
-예외를 적용하기 전에 PDF와 rhwp의 표 괘선·문단 시작·그림 경계 좌표를 먼저 비교한다.
-이 위치가 어긋나면 낮은 점수를 글꼴 탓으로 분류하지 않고 배치를 고쳐 다시 캡처한다.
+### 해결 불가능한 글꼴의 PR 제출 예외
+
+실제 글꼴 차이가 낮은 점수의 원인이고 올바른 글꼴 공급을 시도해도 해결할 수 없다면
+**90% 미만이어도 PR을 제출할 수 있다**. 단순 글꼴 이름 추정·anti-aliasing·CI 녹색이나
+존재하지 않는 경로로 발생한 fallback은 해당하지 않는다. PDF와 rhwp의 표 괘선·문단 시작·그림
+경계를 먼저 대조한다. 배치 차이·전체 쪽수 불일치·페이지/지표 누락은 글꼴 예외로 면제하지 않는다.
+
+작성자는 아래 UTF-8 JSON 증거를 준비하고 일반 PNG 모드에 `--font-mismatch-evidence <파일>`을
+지정한다. 증거의 source SHA와 원본/PDF 해시가 실제 실행과 일치해야 하며, 예외는 `affected_pages`에
+직접 확인한 미달 쪽만 대상으로 한다. 도구는 경로·SHA-256·예외 쪽을 manifest에 남긴다.
+내용은 작성자의 근거 진술이며 reviewer가 font 공급 시도와 독립 PDF/overlay를 직접 확인해야 한다.
+`font_mismatch_exception`은 예외 제출 상태이며 일반 `passed`나 자동 승인을 뜻하지 않는다.
+
+```json
+{
+  "source_sha": "<실행할 HEAD의 전체 SHA>",
+  "hwp_sha256": "<실제 원본 SHA-256>",
+  "pdf_sha256": "<실제 Print PDF SHA-256>",
+  "affected_pages": [3],
+  "pdf_fonts": ["PDF에 실제 적용된 face와 확인 방법"],
+  "rhwp_fonts": ["rhwp에 실제 적용된 face와 확인 방법"],
+  "font_supply_attempts": ["설치·font 경로·임베딩 등 수행한 시도와 결과"],
+  "unresolvable_reason": "올바른 글꼴 공급으로 해결할 수 없는 구체적 이유",
+  "geometry_review_evidence": "표 괘선·문단 시작·그림 경계의 직접 비교 증적",
+  "font_issue_unresolvable": true,
+  "layout_geometry_matched": true,
+  "page_count_matched": true
+}
+```
+
+TSV는 예외에도 반드시 산출하며 점수·`below_90` 원값을 유지한다. TSV 전용 모드는 90% 미만에
+exit 1을 반환한다. 그 결과로 재검토한 뒤 위 증거를 적용한 **일반 PNG 모드**의 최종 gate가
+`font_mismatch_exception`이면 예외 근거·미달 쪽·남은 글꼴 차이를 PR 본문에 명시해 제출한다.
+예외는 TSV 전용 모드에 지정하지 않는다. TSV와 진단 JSON은 ignored output에 보존하고,
+공개 가능한 예외 근거·해시와 대표 PNG를 본문에 연결한다. 새 렌더링 회귀를 추가하는 선행 90% 조건은
+이 PR 제출 예외로 완화하지 않는다.
 #7359 14쪽은 표 행 높이가 같아도 표 전체가 약 15px 위에 있어 68.17%였고,
 페이지 첫 문단의 저장 간격을 복구한 뒤 97.48%가 됐다.
 
@@ -169,7 +208,7 @@ RHWP_FONT_PATH="/절대/경로/검증된-한컴-글꼴" python3 scripts/visual_s
 실행 전에 `RHWP_FONT_PATH`의 모든 디렉터리가 실제로 존재하고, 입력 문서가 요구한 face가 그 경로 또는
 운영체제에 설치됐는지 확인한다. 존재하지 않는 `ttfs/hwp`, `ttfs/windows` 같은 과거 경로를 설정하면
 환경변수 자체는 전달돼도 renderer가 fallback face로 조판해 낮은 지표를 만들어 낸다. 이 경우에는
-`--font-mismatch-evidence` 예외를 바로 적용하지 말고, 먼저 올바른 글꼴 공급으로 다시 실행한다.
+`--font-mismatch-evidence` 기록으로 통과 처리하지 말고, 먼저 올바른 글꼴 공급으로 다시 실행한다.
 
 이 도구의 절차상 지위는 [시각 검증 거버넌스의 라우팅 표](visual_verification_governance.md)를
 따른다. 독립 기준 PDF와 실제 사용자-visible 실패를 조사할 때는 bug-hunter가 상위이고, sweep은
@@ -758,7 +797,8 @@ summary: /path/to/rhwp/output/task1274/summary.json
 - `visual_accuracy_proxy_percent`는 자동 일치율 지표일 뿐 최종 시각 판정을 대체하지 않는다.
 - `flagged=0`이어도 낮은 `visual_accuracy_proxy_percent` 또는 옛자모·PUA·목록 marker가 있으면
   review/overlay를 반드시 확인한다. glyph·제품명 표시 차이는 이 경로에서 후보가 된다.
-- PR의 실제 변경 목적을 먼저 확인한다. 렌더링 개선 PR이 아니어도 Visual Sweep을 PR 수용 근거로
+- PR의 실제 조판 소비 경로를 먼저 확인한다. 조판 영향 변경은 Visual Sweep·TSV가 필수다.
+  조판 영향이 없어도 Visual Sweep을 PR 수용 근거로
   첨부했다면 90% gate를 적용한다. 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 PR은 review PNG를
   만들지 않고 fixture 원본성·소비 경로만 별도로 검토한다.
 - `frame`, `question`, `title`, `tail`, `eq` 후보는 우선 검토 대상이다.

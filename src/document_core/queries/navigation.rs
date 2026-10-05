@@ -41,8 +41,36 @@ pub struct OutlineNavigationItem {
     pub page: u32,
     /// 내부 이동용 구역 인덱스(0부터 시작).
     pub section: usize,
-    /// 내부 이동용 문단 인덱스(0부터 시작).
+    /// 내부 이동용 문단 인덱스(0부터 시작). 표 셀 개요면 표를 품은 본문 문단이다.
     pub paragraph: usize,
+    /// 표 셀 개요 문단의 셀 좌표. 본문 개요에는 없다.
+    #[serde(flatten)]
+    pub cell: Option<OutlineCellLocation>,
+}
+
+/// 표 셀 개요 문단의 좌표. 이름은 `hitTest`·`getCursorRectByPath` 와 같다.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutlineCellLocation {
+    /// 표를 품은 본문 문단 인덱스(`paragraph` 와 같다).
+    pub parent_para_index: usize,
+    /// 가장 바깥 표의 컨트롤 인덱스.
+    pub control_index: usize,
+    /// 가장 바깥 표의 셀 인덱스.
+    pub cell_index: usize,
+    /// 가장 바깥 셀 안의 문단 인덱스.
+    pub cell_para_index: usize,
+    /// 가장 바깥 표부터 개요 문단까지의 경로. 표 안 표면 둘 이상이다.
+    pub cell_path: Vec<OutlineCellPathEntry>,
+}
+
+/// 셀 경로의 한 단계(표 → 셀 → 문단).
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutlineCellPathEntry {
+    pub control_index: usize,
+    pub cell_index: usize,
+    pub cell_para_index: usize,
 }
 
 /// 문단 하나의 번호 카운터를 렌더러와 같은 규칙으로 전진시킨다.
@@ -109,43 +137,53 @@ fn advance_paragraph_number(
     Some((level_index, number))
 }
 
-/// 문단이 품은 표의 셀 문단으로 내려가 번호 카운터만 전진시킨다.
+/// 문단이 품은 표의 셀 문단으로 내려가 번호 카운터를 전진시킨다.
 ///
 /// 렌더러는 문단을 배치하면서 그 문단의 표를 같은 자리에서 조판하므로, 셀 안
-/// `Outline`/`Number` 문단도 문서 순서에 맞춰 카운터를 밀어낸다. 셀 문단 자체는
-/// 탐색 목록에 넣지 않지만(이동 좌표가 최상위 문단 인덱스 체계다) 카운터를
-/// 빼먹으면 표 뒤의 개요 번호가 화면과 어긋난다.
+/// `Outline`/`Number` 문단도 문서 순서에 맞춰 카운터를 밀어낸다. 카운터를
+/// 빼먹으면 표 뒤의 개요 번호가 화면과 어긋난다. 셀의 개요 문단은 한컴 개요
+/// 탐색처럼 목록에도 넣는다 — `on_outline` 이 셀 경로와 함께 받는다.
 fn advance_nested_table_numbers(
     document: &Document,
     numbering_state: &mut NumberingState,
     paragraph: &Paragraph,
     outline_numbering_id: u16,
-    depth: usize,
+    path: &mut Vec<OutlineCellPathEntry>,
+    on_outline: &mut dyn FnMut(&[OutlineCellPathEntry], usize, String, &Paragraph),
 ) {
-    if depth >= MAX_NEST_DEPTH {
+    if path.len() >= MAX_NEST_DEPTH {
         return;
     }
 
-    for control in &paragraph.controls {
+    for (control_index, control) in paragraph.controls.iter().enumerate() {
         let Control::Table(table) = control else {
             continue;
         };
         // `Table::cells`는 행 우선 순서 — 렌더러가 셀 본문을 배치하는 순서와 같다.
-        for cell in &table.cells {
-            for cell_paragraph in &cell.paragraphs {
-                advance_paragraph_number(
+        for (cell_index, cell) in table.cells.iter().enumerate() {
+            for (cell_para_index, cell_paragraph) in cell.paragraphs.iter().enumerate() {
+                path.push(OutlineCellPathEntry {
+                    control_index,
+                    cell_index,
+                    cell_para_index,
+                });
+                if let Some((level_index, number)) = advance_paragraph_number(
                     document,
                     numbering_state,
                     cell_paragraph,
                     outline_numbering_id,
-                );
+                ) {
+                    on_outline(path, level_index, number, cell_paragraph);
+                }
                 advance_nested_table_numbers(
                     document,
                     numbering_state,
                     cell_paragraph,
                     outline_numbering_id,
-                    depth + 1,
+                    path,
+                    on_outline,
                 );
+                path.pop();
             }
         }
     }
@@ -153,12 +191,16 @@ fn advance_nested_table_numbers(
 
 /// 문서 순서대로 개요 번호를 계산한다.
 ///
-/// 번호 카운터와 서식 확장은 렌더러와 같은 구현을 쓴다. `Number` 문단과 표 셀
-/// 문단도 카운터에는 반영하지만 결과에는 최상위 `Outline` 문단만 넣어, 번호
-/// 체계가 섞인 문서에서도 화면에 그려진 개요 번호와 일치시킨다.
+/// 번호 카운터와 서식 확장은 렌더러와 같은 구현을 쓴다. `Number` 문단도 카운터에는
+/// 반영하지만 결과에는 `Outline` 문단만 넣어, 번호 체계가 섞인 문서에서도 화면에
+/// 그려진 개요 번호와 일치시킨다. 표 셀의 `Outline` 문단은 셀 좌표(`cell`)를 붙인다.
+///
+/// `table_row_pages` 는 `build_table_row_page_index` 의 결과다 — 쪽을 넘는 표의 셀
+/// 개요는 그 행이 놓인 쪽을 쓴다(#3403 의 grep 과 같은 규칙).
 fn build_outline_navigation(
     document: &Document,
     paragraph_pages: &HashMap<(usize, usize), u32>,
+    table_row_pages: &HashMap<(usize, usize, usize), Vec<(usize, usize, u32)>>,
 ) -> OutlineNavigation {
     let mut numbering_state = NumberingState::default();
     let mut outline = Vec::new();
@@ -167,6 +209,9 @@ fn build_outline_navigation(
         let outline_numbering_id = section.section_def.outline_numbering_id;
 
         for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+            let host_page = paragraph_pages
+                .get(&(section_index, paragraph_index))
+                .copied();
             if let Some((level_index, number)) = advance_paragraph_number(
                 document,
                 &mut numbering_state,
@@ -177,12 +222,10 @@ fn build_outline_navigation(
                     level: level_index as u8 + 1,
                     number,
                     title: paragraph_text_with_equations(paragraph).trim().to_owned(),
-                    page: paragraph_pages
-                        .get(&(section_index, paragraph_index))
-                        .copied()
-                        .map_or(0, |page| page + 1),
+                    page: host_page.map_or(0, |page| page + 1),
                     section: section_index,
                     paragraph: paragraph_index,
+                    cell: None,
                 });
             }
 
@@ -191,7 +234,41 @@ fn build_outline_navigation(
                 &mut numbering_state,
                 paragraph,
                 outline_numbering_id,
-                0,
+                &mut Vec::new(),
+                &mut |path, level_index, number, cell_paragraph| {
+                    let outer = path[0];
+                    let row = match paragraph.controls.get(outer.control_index) {
+                        Some(Control::Table(table)) => table
+                            .cells
+                            .get(outer.cell_index)
+                            .map(|cell| cell.row as usize),
+                        _ => None,
+                    };
+                    let row_page = row.and_then(|row| {
+                        table_row_pages
+                            .get(&(section_index, paragraph_index, outer.control_index))?
+                            .iter()
+                            .find(|(start, end, _)| row >= *start && row < *end)
+                            .map(|(_, _, page)| *page)
+                    });
+                    outline.push(OutlineNavigationItem {
+                        level: level_index as u8 + 1,
+                        number,
+                        title: paragraph_text_with_equations(cell_paragraph)
+                            .trim()
+                            .to_owned(),
+                        page: row_page.or(host_page).map_or(0, |page| page + 1),
+                        section: section_index,
+                        paragraph: paragraph_index,
+                        cell: Some(OutlineCellLocation {
+                            parent_para_index: paragraph_index,
+                            control_index: outer.control_index,
+                            cell_index: outer.cell_index,
+                            cell_para_index: outer.cell_para_index,
+                            cell_path: path.to_vec(),
+                        }),
+                    });
+                },
             );
         }
     }
@@ -205,7 +282,9 @@ impl DocumentCore {
     /// 이 질의는 `HeadType::Outline`만 표시하며 일반 문단의 번호 문자열을 분석하지 않는다.
     pub fn get_outline_navigation_native(&self) -> Result<String, HwpError> {
         let paragraph_pages = self.build_paragraph_page_index();
-        let navigation = build_outline_navigation(&self.document, &paragraph_pages);
+        let table_row_pages = self.build_table_row_page_index();
+        let navigation =
+            build_outline_navigation(&self.document, &paragraph_pages, &table_row_pages);
         serde_json::to_string(&navigation).map_err(|error| {
             HwpError::RenderError(format!("개요 탐색 JSON 직렬화에 실패했습니다: {error}"))
         })
@@ -320,7 +399,7 @@ mod tests {
         });
         let paragraph_pages = HashMap::from([((0, 0), 0), ((0, 1), 1), ((0, 2), 2), ((0, 3), 3)]);
 
-        let navigation = build_outline_navigation(&document, &paragraph_pages);
+        let navigation = build_outline_navigation(&document, &paragraph_pages, &HashMap::new());
 
         assert_eq!(navigation.outline.len(), 3);
         assert_eq!(navigation.outline[0].number, "1.");
@@ -352,9 +431,9 @@ mod tests {
         ]));
         let paragraph_pages = HashMap::from([((0, 0), 0), ((0, 1), 0), ((0, 2), 0)]);
 
-        let navigation = build_outline_navigation(&document, &paragraph_pages);
+        let navigation = build_outline_navigation(&document, &paragraph_pages, &HashMap::new());
 
-        // 셀 문단은 이동 좌표 체계(최상위 문단 인덱스)에 없으므로 목록에서 제외된다.
+        // 셀의 `Number` 문단은 개요가 아니므로 목록에서 빠진다.
         assert_eq!(navigation.outline.len(), 2);
         assert_eq!(navigation.outline[0].number, "1.");
         assert_eq!(navigation.outline[0].paragraph, 0);
@@ -379,7 +458,7 @@ mod tests {
         ]));
         let paragraph_pages = HashMap::from([((0, 0), 0), ((0, 1), 0), ((0, 2), 0)]);
 
-        let navigation = build_outline_navigation(&document, &paragraph_pages);
+        let navigation = build_outline_navigation(&document, &paragraph_pages, &HashMap::new());
 
         assert_eq!(navigation.outline.len(), 2);
         assert_eq!(navigation.outline[0].number, "1.");
@@ -387,9 +466,9 @@ mod tests {
         assert_eq!(navigation.outline[1].number, "4.");
     }
 
-    /// 표 셀의 `Outline` 문단도 카운터에는 반영하되 목록에는 넣지 않는다.
+    /// 표 셀의 `Outline` 문단은 셀 좌표와 함께 목록에 들어간다(한컴 개요 탐색과 같다).
     #[test]
-    fn table_cell_outline_paragraph_is_counted_but_not_listed() {
+    fn table_cell_outline_paragraph_is_listed_with_cell_path() {
         let mut document = document_with_shapes(vec![
             outline_shape(0),
             ParaShape::default(),
@@ -401,11 +480,42 @@ mod tests {
             paragraph("뒤 개요", 0),
         ]));
         let paragraph_pages = HashMap::from([((0, 0), 0), ((0, 1), 0), ((0, 2), 0)]);
+        // 표가 쪽을 넘어 셀의 행이 셋째 쪽(0부터 2)에 놓였다고 둔다.
+        let table_row_pages = HashMap::from([((0, 1, 0), vec![(0, usize::MAX, 2)])]);
 
-        let navigation = build_outline_navigation(&document, &paragraph_pages);
+        let navigation = build_outline_navigation(&document, &paragraph_pages, &table_row_pages);
 
-        assert_eq!(navigation.outline.len(), 2);
-        assert_eq!(navigation.outline[0].number, "1.");
-        assert_eq!(navigation.outline[1].number, "3.");
+        let numbers: Vec<_> = navigation
+            .outline
+            .iter()
+            .map(|item| {
+                (
+                    item.number.as_str(),
+                    item.title.as_str(),
+                    item.paragraph,
+                    item.page,
+                )
+            })
+            .collect();
+        assert_eq!(
+            numbers,
+            vec![
+                ("1.", "앞 개요", 0, 1),
+                ("2.", "셀 개요", 1, 3),
+                ("3.", "뒤 개요", 2, 1)
+            ]
+        );
+        assert!(navigation.outline[0].cell.is_none());
+        let cell = navigation.outline[1].cell.as_ref().expect("셀 좌표");
+        assert_eq!(
+            (
+                cell.parent_para_index,
+                cell.control_index,
+                cell.cell_index,
+                cell.cell_para_index,
+                cell.cell_path.len()
+            ),
+            (1, 0, 0, 0, 1)
+        );
     }
 }
