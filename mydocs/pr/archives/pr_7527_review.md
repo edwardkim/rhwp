@@ -77,3 +77,11 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `34310be3b84cc39ad9d06ad3eebb27f595eca7ca` | `e51b8d26eddf644e5af8329e8d159a8cfa445585` | `a2102878c29290ddf59816463e95ac63a9d7df5f` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 2026-10-06 직접 판독에서 발견한 저장 경계 오인
+
+최신 Native 재출력의 3쪽 실루엣은93.57765%/98.78769%/99.98564%지만, p1의 회사명·작성자 블록은 한컴 Print의 왼쪽 제목 아래와 달리 오른쪽 단 상단에 있다. 누름틀 안내문은 사용자 지시에 따라 비교 대상에서 제외하되 이 실제 본문 위치 차이는 제외하지 않는다. 90% 점수만으로 이 입력을 승인하지 않는다.
+
+실제 API로 단 폭을 바꾼 입력의 재조판 LineSeg는 문단 내부 원점0과 `TAG_IMPLEMENTATION_PROPERTY`를 갖는다. 여러 줄인 제목 끝6500→다음 문단 첫0을 `apply_stored_paragraph_boundary`가 저장 쪽/단 되감김으로 해석해 p4부터 오른쪽 단으로 넘긴다. 이는 균등 배분이 아니라 문단 내부 좌표와 저장 쪽 좌표의 혼동이다. **재조판 줄 생산 → stored_reset의 앞/뒤 LineSeg 수용 → advance_column_or_new_page → PageItem의 단 소속 → 실제 column 원점**을 추적했다. legacy pagination/engine은 이미 synthetic 줄을 제외한다. 같은 원칙으로 Typeset도 양쪽 경계의 유효한 저장 줄만 수용하고 명시적 단나누기는 entry의 별도 계약을 유지해야 한다. 아직 보정/새 source 검증 전이다.
+
+Typeset의 curr.first/prev.last 수용에 `!is_synthetic_line_seg`를 적용했다. 같은 입력·Print의 Native 3쪽은98.88948%/98.78769%/99.98564%이고, p1 회사 정보가 왼쪽 제목 아래로 돌아온 것을 직접 review/overlay에서 확인했다. 원본·보정 전93.57765% 출력은 보존한다. 글꼴 굵기 등 잔여 raster 차이와 누름틀 안내문은 위치 수정의 증거와 구분한다. fresh WASM 전쪽 검증과 관계 회귀 추가는 아직 진행 중이다.

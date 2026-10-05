@@ -2,8 +2,8 @@
 
 24개 원 PR의 리뷰 기록은 `mydocs/pr/archives/pr_<번호>_review.md`에 각각 있다. #7508의 이번 후속 head는 `pr_7508_review_20261005.md`이다. 이 디렉터리는 시각·입력 출처 증거와 진단 재현 스크립트를 보존한다. nextest 등 검증 실행의 원문 출력은 ignored `output/pr-review/semanticist21-20261005/`에 저장한다.
 
-- base: `cdba77b609c399fdef26a6c9e637716aa32c2177`
-- code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`
+- 최초 접수 base: `cdba77b609c399fdef26a6c9e637716aa32c2177`
+- 최초 접수 code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`
 - 원 PR/적용 SHA/충돌 보정: `application.json`
 - 집중 실행: `output/pr-review/semanticist21-20261005/run-records/focused-command.json`을 cargo 인자로 실행. `output/pr-review/semanticist21-20261005/run-records/focused-results.json`은 74건(73 PASS/1 FAIL)을 원 case별로 구분한다.
 - Native base 진단: `output/pr-review/semanticist21-20261005/run-records/base-probes.txt`의 2개 테스트는 동일 원본의 표 좌표 및 긴 HTML 문단 길이를 관측한다. 테스트 기대값/golden 변경을 하지 않았다.
@@ -39,3 +39,9 @@ Rust code `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`
 ## 실행 출력 보존 정책
 
 `mydocs/manual/pr_review/local_validation.md`에 따라 nextest 및 로컬 검증의 원 출력·실행 JSON은 ignored `output/pr-review/semanticist21-20261005/logs/`와 `run-records/`에만 저장하며 Git에 포함하지 않는다. 확장자를 txt/json으로 바꾼 실행 출력도 동일하다. 개별 PR 문서에는 검토 source·명령·통과/실패 요약과 로컬 경로를 적는다. 입력 HWP/HWPX·독립 PDF와 Visual Sweep의 대표 이미지·입력/빌드 provenance는 시각 증거 정책에 따라 보존한다.
+
+## 2026-10-06 검토 위치
+
+현재 branch `review/semanticist21-20261005`는 최신 base `c167dc6abbebf69546575e2d16d06223791bab82` 위에 rebase했다. 원59개 적용 기록은 `application.json`에 유지하고 실제 rebase 위치를 개별 review에 기록했다. 위 접수/폼 결과는 당시 source의 이력이며 최신 code candidate 검증과 구분한다.
+
+#7504 실제 등록 source, #7562 실제 XML 축, #7571 production adapter/바깥 상자, #7530 production 2쪽 저장의 입력과 Print PDF를 개별 디렉터리에 보존한다. 그 외 실제 API 입력도 PR 번호별 디렉터리에 두며 해당 PDF는 `pdf/semanticist21-20261005/pr<번호>/mcp`에 있다. 새 조판 회귀의 실제 FAIL/PASS·TSV·nextest 원 출력은 ignored output에서만 보존한다.

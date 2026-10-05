@@ -91,3 +91,31 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `7dc340284bd84e2ee475da3b577146005b989500` | `d66a26cdcb09a58b9b341cd8f0b5b8166519749b` | `4cdf97adcdbdb0fa987ab5b08efdf52cfdf978cf` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 메인터너 재검토: 실제 등록 글꼴의 한컴 커닝 계약 — 2026-10-06
+
+source `693b63b26`에서 실제 시스템 글꼴 bytes를 charShape의 영문 slot 1에 등록했다. 동일 입력을 한컴2020 MCP Print(method0/one-up,11.0.0.9136)로 출력한 결과는 아래와 같다. 원본 글꼴 bytes·TSV·진단 JSON은 ignored output에 보존하고 글꼴 파일은 Git에 넣지 않는다.
+
+- 함초롬바탕: job `e619a8ce-c03d-46f1-9815-31a67df679c4`, 입력 SHA `193c88808e14c0f2dd0125a59f0820f2a535ebb63fb07d46c25ce3a5a00464c8`, PDF SHA `6132393ee4bee6c2805f172b82e6af2cafdb4beac5932aec13698894694caa0a`, Native **82.34445%**. 같은 이름이라는 추정 대신 PDF subset의 A/V/T/o/1/) 외곽 좌표와 hmtx advance를 source TTF와 대조해 모두 같은 글리프임을 확인했다(`registered-hcr-pdf-glyph-identity.json`). 실제 글꼴이 다르다는 예외를 사용하지 않는다.
+- 한컴 PDF는 AV/To를 기본 advance로 출력하지만, 등록 source의 GPOS/kern을 적용한 rhwp는 각 쌍을 -90/1000 em 줄인다. 함초롬바탕의 `use_font_space`를 켠 별도 Print도 같은 차이·82.34445%다(job `940099c5-f354-45b2-bac7-687b53e7b538`). 보이는 글·표 외곽·본문 소속이 같은 직접 review/overlay에서 간격 차이를 판독했다.
+- Arial 정상 대조군: job `9a399f41-83ca-49f9-8328-d2cb5cb5c6e0`, 입력 SHA `cb41e057d776d0f264f187de29fe72579389c15473c6b3bcbb5920e368520c34`, PDF SHA `cbc901b068ece0cea0d9492f4c1f401f1a21f422d4f2f6dca1f39e7cca5aea2b`, Native **98.11853%**. 한컴이 실제 적용한 커닝과 등록 source가 일치한다. [한컴 공식 도움말](https://help.hancom.com/hoffice/multi/ko_kr/show/format/font_properties.htm)은 지원 영문 글꼴의 커닝과 Arial 예시를 설명한다.
+
+이 관측은 `HJCT`의 내부 의미나 모든 한컴 전용 글꼴의 커닝 규칙을 해독했다는 증거가 아니다. **exact bytes와 GPOS/kern 존재만으로 한컴에서도 같은 pair 계약이라고 판단한 가정**을 제거한다. 한컴 전용 `HJCT`가 있는 source는 일반 SFNT pair 계약이 아직 검증되지 않은 capability로 분류하고 기존 기본 위치로 닫는다. 명시적 `hancom-font-pair-contract-unverified` trace를 남기며 요청 속성·source hash를 바꾸지 않는다. 검증된 일반 SFNT/Arial 경로는 계속 커닝한다. 이 보수적 지원 경계의 한컴 일치는 같은 원본 HCR Print와 Arial 대조군의 Native/fresh WASM으로 확인한다. 지원되지 않은 전용 규칙은 완전 구현으로 보고하지 않는다.
+
+실제 소비 경로는 `inspect_verified_exact_font_kerning` → source session의 capability → `decide_kerning_run_gate` → 기존 positions 유지 → SVG/Canvas의 glyph_fit_positions다. 등록 자체는 유지하고, capability를 측정·paint에서 따로 추측하지 않는다. 새 회귀는 보정 후 Native/fresh WASM이90% 이상일 때 추가한다.
+
+### 보정 후 실제 등록 source 검증
+
+동일 font bytes를 Native SVG와 실제 WASM Canvas 및 별도 SVG 래스터 브라우저에 공급했다. 위치·폭은 실제 renderer 출력을 유지하고 `@font-face`의 공급원만 등록 source로 고정했다. Arial의 시스템 선택 경로(`Install/arial.ttf`)와 등록 source(`525979822591...`)가 달라, local family fallback만으로 exact source 일치를 주장하지 않았다.
+
+| 원본·2020 Print | Native | fresh WASM | 직접 판독 |
+| --- | ---: | ---: | --- |
+| 함초롬바탕 본문·셀·머리말·각주 |97.96159%|97.96159%|4개 영역의 AV/To 간격·표 외곽·각주 소속 일치|
+| Arial 정상 대조군 |98.11853%|98.11853%|일반 SFNT pair 커닝 유지|
+| 함초롬바탕 use_font_space 대조군 |97.96159%|97.96159%|같은 기본 위치 보존|
+
+세 입력 모두 한쪽, 누락 없음/gate passed, font exception 미사용. 실제 Canvas의 19회 fillText에서 함초롬바탕 등록 전후 원점/scale 동일, Arial은 V/o 원점 이동과 모든 glyph scale 보존을 확인했다. `x/y`만 기록했던 이전 진단과 달리 transform의 e/f까지 대조했다.
+
+위 Native/fresh WASM 선행 검증 후 `unverified_dedicated_font_preserves_rendered_positions_and_widths`를 추가했다. GPOS·glyph·advance는 보존하고 합성 SFNT의 선택 name 디렉터리만 전용 table 항목으로 바꿔, DocCore의 본문·셀·머리말·각주 최종 SVG 원점/자연 폭이 기본 배치를 유지하는지 검사한다. source693 라이브러리에서 실제 assertion FAIL(exit101), 보정 라이브러리에서 PASS. 이 합성 지원 계약을 실제 한컴 font 내부 규칙의 해독으로 보고하지 않는다. 첫 직접 rustc 시도는 sha2 extern 누락으로 빌드 실패했고 결함 검출에 세지 않았다. 필요한 extern을 지정한 재실행의 실제 실패만 before 증거다.
+
+[원본·Native/WASM review·overlay·공개 API 재현기](../assets/semanticist21-20261005/pr7504/)와 [2020 Print PDF](../../../pdf/semanticist21-20261005/pr7504/mcp/)를 보존한다. 글꼴 source SHA·Canvas 원문·TSV·직접 테스트 로그는 ignored `output/pr-review/semanticist21-20261005/font-contract-*`에 유지한다. 후속 #7527 저장 경계 보정이 포함된 최종 pkg에서 재캡처하고 최종 lint·전체 회귀·CI를 확인한 뒤 누적 판정을 확정한다.

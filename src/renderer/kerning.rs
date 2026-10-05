@@ -482,6 +482,7 @@ pub(crate) enum KerningCapabilityFallbackReason {
     FontByteLimitExceeded,
     MalformedSfnt,
     PairTableUnsupported,
+    HancomFontPairContractUnverified,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -517,6 +518,7 @@ pub(crate) enum KerningRunFallbackReason {
     FontByteLimitExceeded,
     MalformedSfnt,
     PairTableUnsupported,
+    HancomFontPairContractUnverified,
     RunCodePointLimitExceeded,
     RunGlyphLimitExceeded,
 }
@@ -987,6 +989,9 @@ impl From<KerningCapabilityFallbackReason> for KerningRunFallbackReason {
             KerningCapabilityFallbackReason::FontByteLimitExceeded => Self::FontByteLimitExceeded,
             KerningCapabilityFallbackReason::MalformedSfnt => Self::MalformedSfnt,
             KerningCapabilityFallbackReason::PairTableUnsupported => Self::PairTableUnsupported,
+            KerningCapabilityFallbackReason::HancomFontPairContractUnverified => {
+                Self::HancomFontPairContractUnverified
+            }
         }
     }
 }
@@ -1117,6 +1122,22 @@ fn inspect_verified_exact_font_kerning(
             Some(digest),
         );
     };
+
+    // 한컴 전용 테이블을 가진 글꼴은 일반 SFNT pair 계약이 검증되지 않았다.
+    // 함초롬바탕 Print는 동일 글리프에서도 GPOS/kern 조정을 쓰지 않는다.
+    // 전용 규칙을 일반 커닝으로 추정하지 않고 기존 기본 위치를 보존한다.
+    if face.raw_face().table(Tag::from_bytes(b"HJCT")).is_some() {
+        return KerningCapabilityDecision {
+            capability: KerningCapability::Unsupported,
+            fallback_reason: Some(
+                KerningCapabilityFallbackReason::HancomFontPairContractUnverified,
+            ),
+            font_source_sha256: Some(digest),
+            font_bytes: source.bytes.len(),
+            face_index: source.face_index,
+            units_per_em: Some(face.units_per_em()),
+        };
+    }
 
     let capability = if has_gpos_kern_pair_lookup(&face) {
         KerningCapability::GposKern

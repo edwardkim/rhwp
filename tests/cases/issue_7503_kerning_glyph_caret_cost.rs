@@ -162,6 +162,37 @@ fn issue_7503_kerned_glyphs_keep_their_natural_width() {
 }
 
 #[test]
+fn unverified_dedicated_font_preserves_rendered_positions_and_widths() {
+    // 동일 glyph·advance·GPOS를 두고 전용 테이블이 추가된 source의 지원 경계를 검사한다.
+    // name은 선택 테이블이다. 그 디렉터리 항목만 바꿔 실제 글꼴 bytes를 Git에 넣지 않는다.
+    let mut font = KERNING_FONT.to_vec();
+    let count = u16::from_be_bytes([font[4], font[5]]) as usize;
+    let mut records: Vec<_> = font[12..12 + count * 16]
+        .chunks_exact(16)
+        .map(|record| record.to_vec())
+        .collect();
+    let name = records
+        .iter_mut()
+        .find(|record| &record[..4] == b"name")
+        .expect("합성 source의 name 테이블");
+    name[..4].copy_from_slice(b"HJCT");
+    records.sort_by(|left, right| left[..4].cmp(&right[..4]));
+    for (target, record) in font[12..12 + count * 16].chunks_exact_mut(16).zip(&records) {
+        target.copy_from_slice(record);
+    }
+
+    let (mut core, _) = fixture(false);
+    let before = svg_lines(&core.render_page_svg_native(0).expect("기본 위치 SVG"));
+    assert_eq!(before.len(), 4, "본문·셀·머리말·각주");
+    register_all(&mut core, &font);
+    let after = svg_lines(&core.render_page_svg_native(0).expect("전용 source SVG"));
+    assert_eq!(
+        after, before,
+        "지원 계약을 확인하지 못한 source로 기본 위치·자연 폭을 바꾸면 안 된다"
+    );
+}
+
+#[test]
 fn issue_7503_middle_dot_stays_centred_in_its_drawn_advance() {
     use rhwp::renderer::svg::SvgRenderer;
     use rhwp::renderer::{Renderer, TextStyle};

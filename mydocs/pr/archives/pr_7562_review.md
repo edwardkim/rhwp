@@ -115,3 +115,5 @@ production source `693b63b26`의 Native/fresh WASM 24개 입력·28쪽을 같은
 | `mydocs/pr/assets/semanticist21-20261005/pr7562/pr7562-axis-control-hwp3.hwpx` | `3c00427b9028f57e4d8e6b13e6cf5e80cc7294d42888060ffb8d7d39ae53751d` | `pdf/semanticist21-20261005/pr7562/mcp/pr7562-axis-control-hwp3-hwpx-2020.pdf` | `7946bcefdef13d191b35c049350a0c4bf9a0b5f28288b5088559c5d3e9625b95` | `e6463863-be91-4227-af32-c269c5a6fd1c` |
 
 - 긴 문단·어절 나누기·재편집·이전 계보 재저장100%, 직접 HWP3 대조93.40356%. 자체 왕복 기존4개와 실제 공개 ZIP textpos의 독립 축 검사1개, **nextest5 PASS**. 신규 검사 기대값 `0,59,102`는 동일 원문의 독립 한컴 저장·Print에서 정했다. 수정 전 생산자를 실제 실행한 FAIL 확인은 이어서 수행한다.
+
+- 수정 전 실제 producer `d38c86d15`의 라이브러리를 별도 clean worktree에서 빌드해 같은 정식5개 검사를 연결했다. 자체 왕복4개는 PASS하고 신규 실제 XML 축 검사만 FAIL(`0,43,86` ≠ 독립 기준 `0,59,102`)했다. 보정 후5개 모두 PASS다. 빌드 실패가 아닌 의도한 직렬화 결함을 검출했고 baseline·기대값을 완화하지 않았다. 원 로그는 `logs/axis-before-producer-build.log`, `logs/axis-formal-before-result.log`, `logs/axis-new-publish-test-focused.log`.
