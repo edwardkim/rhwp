@@ -2320,7 +2320,7 @@ impl ParagraphFloatPlacement {
         after: f64,
         dpi: f64,
     ) -> Option<Self> {
-        if !reflow_empty_table_host(para, table)
+        if !empty_table_host_uses_formatted_box(para, table)
             || ![origin, table_height, before, after]
                 .iter()
                 .all(|value| value.is_finite())
@@ -3170,6 +3170,21 @@ pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
         && is_para_topbottom_float(&table.common)
         && matches!(table.common.vert_align, VertAlign::Top)
         && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+/// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.
+/// 폭 0 저장 줄의 vpos는 이전 흐름 위치일 수 있으므로 새 단의 원점을 덮지 않는다.
+/// 일반 저장 글줄·음수 오프셋·절대 좌표는 각자의 기존 앵커 계약을 유지한다.
+pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Table) -> bool {
+    reflow_empty_table_host(para, table)
+        || (object_only_saved_table_anchor(para, table)
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para.line_segs.iter().all(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            && table.common.vert_align == VertAlign::Top
+            && signed_hwpunit(table.common.vertical_offset) >= 0)
 }
 
 /// 쪽·종이 기준 표의 외곽 여백을 포함한 가시 원점과 흐름 하단.

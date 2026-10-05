@@ -4441,6 +4441,15 @@ fn reflow_line_segs_impl(
             let mut seg = make_line_seg(0, font_size);
             if let Some(template) = orig.as_ref() {
                 seg.vertical_pos = template.vertical_pos;
+                // 폭0인 빈 floating table 호스트는 개체 앵커다. 본문 글줄의
+                // 가용 폭으로 바꾸면 저장 후 바깥 여백의 소유가 사라진다.
+                // TAC와 글자가 있는 호스트는 위의 실제 글줄 경로를 따른다.
+                if template.segment_width == 0
+                    && matches!(para.controls.as_slice(), [Control::Table(table)]
+                        if !table.common.treat_as_char)
+                {
+                    seg.segment_width = 0;
+                }
             }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);

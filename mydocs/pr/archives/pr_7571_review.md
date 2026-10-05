@@ -91,3 +91,13 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 앞의 시간 초과 입력은 진단 생성기가 `DocumentCore.export_hwp_native()`로 production adapter를 우회했다. 시간 초과·줄 캐시 제거·instance ID 변경·노트 레코드 대조 결과는 그 저수준 입력의 진단으로 유지하고 실제 저장 경로의 실패 증거에서 제외한다. `export_hwp_with_adapter_snapshot()`으로 다시 만든 단 나누기/표 입력 HWP·HWPX는 모두 한컴2020 Print 성공이다. Native 전쪽은 표 전 HWP100%, 표 후 HWP60.90026%/HWPX100%. 표 후 HWP의 대표 PNG를 직접 판독해 단 소속·내용은 보존되지만 위 바깥여백만큼 표 상단이 어긋남을 확인했다. 미달이므로 보정을 계속하며 승인으로 판정하지 않는다.
 
 원인 생산 경로는 표 생성의 폭0 개체 앵커 LineSeg → `reflow_paragraph` → `reflow_line_segs_impl`의 빈 문단 분기에서 본문 단 폭으로 덮어쓰기 → 실제 HWP snapshot 저장 → `object_only_saved_table_anchor`/바깥 프레임 예약 → table paint다. 독립 한컴 저장본은 폭0 앵커를 사용한다. 이미 폭0인 단일 floating table의 빈 호스트를 재조판할 때 같은 개체 앵커 의미를 보존하는 보정으로 확인한다. TAC·본문 텍스트·일반 빈 문단을 이 개체 앵커로 바꾸지 않는다. 새 저장본의 독립 Print와 Native/fresh WASM90%를 확인한 뒤 관계 회귀를 추가한다.
+
+### 2026-10-06 메인터너 보정의 독립 근거와 실제 소비 경로
+
+- 실제 사용자 저장 API와 같은 `export_hwp_with_adapter_snapshot`으로 저장한 2단 입력을 한컴 2020 MCP Print로 출력했다. 빈 호스트의 표는 새 단의 원점에서 바깥 위여백을 가진다. 저수준 `export_hwp_native`만 호출한 이전 변환 실패는 제품 저장 경로의 증거에서 제외했다.
+- 편집 reflow가 단일 floating table의 폭 0 개체 앵커를 본문 폭으로 바꾼다. 폭 0 보존 후에도 Native 일치율은 **60.90026%**다. `column-anchor-fixed-inputs/`와 `column-anchor-fixed-native-scores/`에 입력·실패 출력·MCP Print PDF를 보존했다.
+- 실제 원점 소비 연결: `composer/line_breaking.rs`의 빈 문단 줄 생산 → `typeset/table/host_spacing.rs::resolve`의 이미 계상된 바깥 앞/뒤 간격 → `block/entry.rs`의 공통 `ParagraphFloatPlacement` 및 `occupied_bottom` fit → `layout/table_layout.rs`의 확정 `table_top` 소비. 기존 빈 reflow 경로는 저장 줄이 없어야 하고, 저장 글 경로는 보이는 글이 있어야 해서 폭 0 개체 앵커가 둘 모두에서 빠졌다. 출력 폴백은 새 단에서 바깥 위여백을 다시 더하지 않는다.
+- 보정 범위: 글줄이 없는 빈 호스트와 유효한 폭 0 개체 앵커의 문단 기준·상단·비음수 오프셋 표에 포맷된 바깥 상자를 공유한다. 보이는 글·공백 글줄, 절대 좌표, 음수 오프셋, 다른 개체와 혼재한 호스트는 기존 계약을 유지한다. 기존 닫힌 저장 프레임·캡션 경로가 우선한다. 표의 실제 높이와 호스트 간격을 중복 계상하지 않는다.
+- 현재 회귀 후보는 ignored output에만 두었다. 수정 전 실제 저장 후 앵커 폭 검사는 FAIL, 폭 보존 후 PASS지만, 이것만으로 시각 결함 해결을 판정하지 않는다. Native/fresh WASM의 관련 모든 페이지가 90% 이상이고 직접 판독한 뒤에만 정식 회귀 검사를 추가한다.
+
+- 바깥 상자 공유 보정 후 Native 재출력: 표 삽입 전 HWP / 삽입 후 HWP / 삽입 후 HWPX **각 100%**, 각 1쪽, 누락 쪽 없음. 입력과 Print 기준은 보정 전의 같은 바이트를 유지했고 `column-outer-box-native-scores/`에 새 TSV를 산출했다. fresh WASM과 직접 PNG 판독 및 최종 회귀는 아직 완료하지 않았다.
