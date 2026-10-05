@@ -116,10 +116,16 @@ WASM Visual Sweep도 동일 PDF/1쪽에서 `80.02964%`, gate `re_review_required
 
 ## 콤보박스 추가 개선: Native 선행 검증
 
-`tests/cases/form_combobox_display.rs`의 정상 원본/배치 2건은 수정 전 빈 표시 때문에 FAIL, 명시 선택값·빈 목록 2건은 PASS였다. 수정 후 원본의 HWPX/HWP 재열기, 세 layout 배치, SVG 및 paint JSON 대조군까지 총 4건 PASS다. fmt 뒤 suite 배정이 바뀌어 최초 수정 후 실행은 0 tests(검증 제외)였고, manifest를 다시 prepare한 `combobox-after-prepared.log`에서 4건을 실제 실행했다. 모델의 선택값과 query text는 원래 빈 값 그대로다. 기존 HWP 저장 경로는 Text를 첫 항목으로 저장하며 재열기 후에도 같은 문자열을 표시한다.
+`tests/cases/form_combobox_display.rs`의 정상 원본/배치 2건은 수정 전 빈 표시 때문에 FAIL, 명시 선택값·빈 목록 2건은 PASS였다. 수정 후 원본의 HWPX/HWP 재열기, 세 layout 배치, SVG 및 paint JSON 대조군까지 총 4건 PASS다. fmt 뒤 suite 배정이 바뀌어 최초 수정 후 실행은 0 tests(검증 제외)였고, manifest를 다시 prepare한 `combobox-after-prepared.txt`에서 4건을 실제 실행했다. 모델의 선택값과 query text는 원래 빈 값 그대로다. 기존 HWP 저장 경로는 Text를 첫 항목으로 저장하며 재열기 후에도 같은 문자열을 표시한다.
 
 새 Native CLI로 사용자 PDF 두 개를 재비교하고 review/standalone overlay를 직접 판독했다. `계절 선택`이 이제 표시되고 기존 암호 마스킹이 유지된다. 정상 원본 78.99718% → 82.89242%, 암호 fixture 80.02964% → 83.59530%. 폼 글자 크기·check/radio/frame 차이가 남아 gate는 여전히 `re_review_required`이며 승인·통합하지 않는다. 새 source의 fresh WASM 및 전체 회귀/lint/Skia는 다음 검증 단계다. 두 사용자 기준 PDF도 변경 commit에 포함한다.
 
 ![콤보박스 수정 후 Native 비교](../../../pdf/semanticist21-20261005/combobox/native/combo-original/review/review_001.png)
 
 ![암호 fixture Native overlay](../../../pdf/semanticist21-20261005/combobox/native/combo-password/overlay/overlay_001.png)
+
+## 추가 개선 범위: 폼 입체 외형과 글자 위치
+
+사용자는 버튼·라디오·텍스트 박스의 3D 표현 누락과 ComboBox 표시 위치 차이를 추가로 지적했다. 한컴 PDF에는 밝은/어두운 테두리와 Marlett으로 그린 check/radio 표시가 있으며, 캡션은 Haansoft Batang 10pt이다. 저장 CharShape 0도 height=1000(10pt)이다. 기존 SVG/Canvas/Skia는 서로 다른 크기·여백과 임의의 sans-serif 크기를 사용하고, enabled 버튼도 회색 비활성처럼 그린다. 이 경로의 실제 차이는 font exception으로 면제하지 않는다.
+
+공통 폼 표시 geometry를 마련하여 솟은 버튼·들어간 입력 프레임·check/radio 표시 및 글자 원점/크기를 같은 결과로 공급한다. 원래 개체 bbox와 편집용 원문은 유지한다. 폼 CharShape/FollowContext·DrawFrame·enabled 속성을 읽어 폼 글자와 테두리를 결정하고, 명시한 속성이 다른 대조군을 검사한다. 실제 Native 및 fresh WASM 출력에서 한컴 PDF의 해당 영역을 재비교한다. 추가 source 변경이 필요하므로 진행 중이던 이전 WASM 빌드를 종료했고 그 결과를 최종 증거로 재사용하지 않는다. 사용자는 Studio public/rhwp.js도 최종 커밋에 포함하도록 요청했다.

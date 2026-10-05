@@ -1,0 +1,12 @@
+[RustTestSuite] form_combobox_display -> regression_suite_008::form_combobox_display
+[RustTestSuite] cargo nextest run --locked --test regression_suite_008 -E test(/(^|::)form_combobox_display::/) --cargo-profile release-test --target-dir target/pr-review --no-fail-fast
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 42s
+────────────
+ Nextest run ID f72bf5d0-8fbb-4d7a-8bf1-b329d91d253a with nextest profile: default
+    Starting 0 tests across 1 binary (239 tests skipped)
+────────────
+     Summary [   0.001s] 0 tests run: 0 passed, 239 skipped
+error: no tests to run
+(hint: use `--no-tests` to customize)

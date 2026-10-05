@@ -1,0 +1,14 @@
+[RustTestSuite] form_combobox_display -> regression_suite_008::form_combobox_display
+[RustTestSuite] cargo nextest run --locked --test regression_suite_008 -E test(/(^|::)form_combobox_display::/) --cargo-profile release-test --target-dir target/pr-review --no-fail-fast
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.58s
+────────────
+ Nextest run ID 18756a90-aa84-410a-b510-e380530a0bd7 with nextest profile: default
+    Starting 4 tests across 1 binary (234 tests skipped)
+        PASS [   0.024s] (1/4) rhwp::regression_suite_008 form_combobox_display::empty_or_absent_initial_item_stays_empty
+        PASS [   0.028s] (2/4) rhwp::regression_suite_008 form_combobox_display::explicit_selection_and_free_input_override_initial_item
+        PASS [   0.037s] (3/4) rhwp::regression_suite_008 form_combobox_display::hancom_original_displays_initial_item_without_changing_selection
+        PASS [   0.047s] (4/4) rhwp::regression_suite_008 form_combobox_display::initial_item_reaches_all_form_placements
+────────────
+     Summary [   0.048s] 4 tests run: 4 passed, 234 skipped

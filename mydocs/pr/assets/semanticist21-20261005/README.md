@@ -6,7 +6,7 @@
 - code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`
 - 원 PR/적용 SHA/충돌 보정: `application.json`
 - 집중 실행: `focused-command.json`을 cargo 인자로 실행. `focused-results.json`은 74건(73 PASS/1 FAIL)을 원 case별로 구분한다.
-- Native base 진단: `base-probes.log`의 2개 테스트는 동일 원본의 표 좌표 및 긴 HTML 문단 길이를 관측한다. 테스트 기대값/golden 변경을 하지 않았다.
+- Native base 진단: `base-probes.txt`의 2개 테스트는 동일 원본의 표 좌표 및 긴 HTML 문단 길이를 관측한다. 테스트 기대값/golden 변경을 하지 않았다.
 
 ## Chromium 진단 재현
 
