@@ -1,0 +1,28 @@
+{
+  "checkout": "daf86c595204d217c9e2e627bd861264708bddef",
+  "production_override": {
+    "file": "src/renderer/composer/line_breaking.rs",
+    "source": "b0ce2d183",
+    "sha256": "2d5a1d305cc1769359bb43e7f5e79161a4ba967f005c3aaccfd54fa006e3e117"
+  },
+  "test_source": "tests/cases/issue_7490_edited_paragraph_indent.rs",
+  "test_sha256": "cb10fec04db4cfe3da944f2e9d98a28045b07a646318362561dc347e2de85f27",
+  "command": [
+    "node",
+    "scripts/run-rust-test.mjs",
+    "issue_7490_edited_paragraph_indent",
+    "--",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--no-fail-fast"
+  ],
+  "result": {
+    "tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "failure": "editing_keeps_hancom_record_of_unindented_line: original table origin not retained"
+  },
+  "scope": "same final relational tests; revert only own-line production file, preserve other PR integration"
+}

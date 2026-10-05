@@ -44,3 +44,9 @@ source `b3c933a88cdb4f7ceed3fbbf1a6bc46375d18aee`의 Native/fresh WASM을 순차
 선행 증거 뒤 기존10개 회귀의 절대 px 기대값을 없앴다. 같은 부모 문단의 표/본문 글자 소속, 원점·폭 보존, 글자→표 순서·비겹침, 표 내용 누락·중복, LineSeg0/1 경계와 공개 API의 들여쓰기 방향·undo 복원을 검사한다. 다른 문서 좌표로 허용치를 바꾸지 않고 동일 배치의 부동소수점 오차만 상대적으로 허용한다. 교정 후10 PASS. 수정 전 검출 재확인과 최종 전체 게이트는 다음 단계다.
 
 대조군은 #7491 보정 전/후 Native SVG와 render tree 바이트가 동일하다. biz-plan p3 96.13616%, tac-img p7 98.74020%, paste-indent p1 88.42273%, SO-SUEOP 표지43.52474%다. 사용자 범위대로 마지막 두 문서는 비교 대조군이며 이 기존 차이를 이번 수정으로 해결했다고 쓰지 않는다. [중간 증거](../assets/semanticist21-20261005/pr7491-interim-evidence.json)와 개별 대표 이미지를 보존했다.
+
+### 같은 줄에 들어가는 작은 표의 반례
+
+공개 API로 새 문서에 짧은 본문·글자취급 작은 표·셀 텍스트를 생성하고 독립 MCP PDF를 산출했다. 같은 줄인 표의 외곽과 셀 내용은 겹쳐 있으나 표 앞 글자의 기준선이 어긋나 Native/fresh WASM85.73551%였다. 이를 회귀 fixture로 추가하지 않고 출력 원인부터 보정한다. 별도 object 줄에는 바깥 여백을 계상했지만 같은 줄 fallback의 높이 발행은 본체만 쓰는 소비 경로가 남아 있었다. 표의 전체 점유 메트릭을 helper로 공유하여 own-line 판정과 fallback LineSeg 발행이 함께 사용하게 하고 같은 MCP 입력에서 재캡처한다. 작은 표가 너비를 만족하면 강제 다음 줄은 발행하지 않아야 한다.
+
+관계 검사의 수정 전 검출: 검증 전용 worktree에 같은 최종 검사/입력을 유지하고 own-line 추가 전 production 파일만 복원했다. 10건 중9 PASS/1 FAIL이며 원점 유지의 의미를 직접 검출했다. 실행·변경 파일 hash는 `pr7491-relative-before.json`와 실패 요약은 `pr7491-relative-before-summary.txt`에 있다. 공유 target을 삭제하지 않고 root source를 재빌드한 뒤 최종 결과를 채택한다.

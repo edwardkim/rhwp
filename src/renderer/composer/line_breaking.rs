@@ -2679,6 +2679,21 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+/// 줄의 점유 상자는 표 본체와 바깥 여백을 함께 포함한다.
+/// 별도 줄의 너비 판정과 같은 줄의 높이 발행이 동일한 메트릭을 소비한다.
+fn inline_control_occupied_size_hwp(control: &Control) -> Option<(i32, i32)> {
+    let (mut width, mut height) = inline_control_size_hwp(control)?;
+    if let Control::Table(table) = control {
+        width = width
+            .saturating_add(i32::from(table.outer_margin_left))
+            .saturating_add(i32::from(table.outer_margin_right));
+        height = height
+            .saturating_add(i32::from(table.outer_margin_top))
+            .saturating_add(i32::from(table.outer_margin_bottom));
+    }
+    Some((width, height))
+}
+
 /// [#7160] 프레임 채움 전용 — **글자처럼 취급 표**도 인라인 토큰으로 싣는다.
 ///
 /// 일반 경로는 표를 `control 배치 경로`에 두려고 제외하지만(#3211), 저장 줄이 없는 host 는
