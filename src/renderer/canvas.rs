@@ -759,6 +759,7 @@ mod tests {
                 form_type: FormType::PushButton,
                 caption: "OK".to_string(),
                 text: String::new(),
+                display_text: None,
                 fore_color: "#000000".to_string(),
                 back_color: "#ffffff".to_string(),
                 value: 0,

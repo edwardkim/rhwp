@@ -2879,6 +2879,7 @@ impl SvgRenderer {
 
     /// 양식 개체 SVG 렌더링
     fn render_form_object(&mut self, form: &FormObjectNode, bbox: &BoundingBox) {
+        let text = form.display_or_text();
         let x = bbox.x;
         let y = bbox.y;
         let w = bbox.width;
@@ -2979,11 +2980,11 @@ impl SvgRenderer {
                     arrow_cy + arrow_size * 0.5
                 ));
                 // 텍스트
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font_size = (h * 0.55).min(12.0).max(7.0);
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.text)));
+                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(text)));
                 }
             }
             FormType::Edit => {
@@ -2991,11 +2992,11 @@ impl SvgRenderer {
                 self.output.push_str(&format!(
                     "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"#a0a0a0\" stroke-width=\"0.8\"/>\n",
                     x, y, w, h));
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font_size = (h * 0.55).min(12.0).max(7.0);
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.text)));
+                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(text)));
                 }
             }
         }

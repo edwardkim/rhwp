@@ -1573,6 +1573,7 @@ impl SkiaLayerRenderer {
         bbox: crate::renderer::render_tree::BoundingBox,
         form: &crate::renderer::render_tree::FormObjectNode,
     ) {
+        let text = form.display_or_text();
         use crate::model::control::FormType;
 
         if bbox.width <= 0.0 || bbox.height <= 0.0 {
@@ -1750,14 +1751,14 @@ impl SkiaLayerRenderer {
                 let path = builder.detach();
                 canvas.draw_path(&path, &arrow);
 
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font = self.make_form_font((h * 0.55).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = x + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.text, (tx, ty), &font, &tp);
+                    canvas.draw_str(text, (tx, ty), &font, &tp);
                 }
             }
             FormType::Edit => {
@@ -1774,14 +1775,14 @@ impl SkiaLayerRenderer {
                 stroke.set_color(border_color);
                 canvas.draw_rect(rect, &stroke);
 
-                if !form.text.is_empty() {
+                if !text.is_empty() {
                     let font = self.make_form_font((h * 0.55).clamp(8.0, 13.0));
                     let mut tp = Paint::default();
                     tp.set_anti_alias(true);
                     tp.set_color(fg_color);
                     let tx = x + 4.0;
                     let ty = y + h / 2.0 + font.size() * 0.35;
-                    canvas.draw_str(&form.text, (tx, ty), &font, &tp);
+                    canvas.draw_str(text, (tx, ty), &font, &tp);
                 }
             }
         }
@@ -3492,6 +3493,7 @@ mod tests {
             form_type: FormType::PushButton,
             caption: "OK".to_string(),
             text: String::new(),
+            display_text: None,
             fore_color: "#000000".to_string(),
             back_color: "#ffffff".to_string(),
             value: 0,

@@ -360,6 +360,7 @@ fn sample_form_node() -> FormObjectNode {
         form_type: FormType::PushButton,
         caption: "확인".into(),
         text: String::new(),
+        display_text: None,
         fore_color: "#000000".into(),
         back_color: "#ffffff".into(),
         value: 0,
