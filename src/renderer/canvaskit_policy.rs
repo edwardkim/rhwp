@@ -527,6 +527,7 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
             form.caption
                 .len()
                 .checked_add(form.text.len())?
+                .checked_add(form.display_text.as_ref().map_or(0, String::len))?
                 .checked_add(form.name.len())?,
             true,
         ),
@@ -730,6 +731,7 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
             .caption
             .len()
             .saturating_add(form.text.len())
+            .saturating_add(form.display_text.as_ref().map_or(0, String::len))
             .saturating_add(form.name.len()),
         PaintOp::RawSvg { raw, .. } => raw.svg.len(),
         PaintOp::FootnoteMarker { marker, .. } => {
