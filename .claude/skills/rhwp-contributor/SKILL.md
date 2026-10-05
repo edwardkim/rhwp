@@ -42,6 +42,10 @@ description: rhwp 저장소의 기여 구현과 PR 제출 절차를 안내합니
    렌더링 회귀 신규 추가는 [회귀 추가 선행 조건](../../../mydocs/manual/pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)의 Native/fresh WASM 최저 90% 이상을 먼저 확인한다.
    미달·측정 불가이면 테스트를 추가하지 않고 실제 출력을 개선하며 기존 검사를 자동 삭제하지 않는다.
 5. CONTRIBUTING의 범위표와 검증 절차로 검증한다. 필수 게이트를 이 스킬의 짧은 예제로 대체하지 않는다.
+   조판 영향은 파일 경로가 아니라 실제 소비 경로로 판단한다. 해당하면 버전에 맞는 한컴 Print PDF와
+   Native/fresh WASM Visual Sweep·페이지별 TSV를 반드시 산출한다. 한 페이지라도 90% 미만·측정 불가이면
+   자기 branch에서 원인을 수정하고 새 head로 재실행한다. 정확히 90%는 통과한다.
+   명령과 저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](../../../mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)에 있다.
 6. 제출 SHA와 검증 결과, 남은 실패와 비범위를 기록한다. 필요한 문서는 현재 역할의 절차에 따른다.
 7. 경로를 지정해 stage하고 승인받은 push/PR 작업만 수행한다. PR 제목과 본문은 가능한 한 한국어로 쓴다.
 

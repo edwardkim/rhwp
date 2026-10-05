@@ -1110,9 +1110,8 @@ def pr_review_gate(
     A 2px tolerant silhouette result below 90% is not an approval signal.  The
     caller still receives all raster artifacts so the maintainer can diagnose
     the mismatch, but the output manifest records that another review is
-    required and ``main`` returns failure.  Font mismatch is deliberately an
-    explicit, hashed evidence exception: automatic raster heuristics cannot
-    tell a substituted face from a layout regression.
+    required and ``main`` returns failure. Hashed font evidence is retained for
+    diagnosis and cannot waive a low or unavailable page metric.
     """
     below_threshold: list[dict[str, object]] = []
     unavailable: list[object] = []
@@ -1137,9 +1136,7 @@ def pr_review_gate(
             page for page in sorted(set(expected_pages)) if page not in measured_pages
         )
 
-    if font_mismatch_evidence is not None:
-        status = "font_mismatch_exception"
-    elif below_threshold or unavailable:
+    if below_threshold or unavailable:
         status = "re_review_required"
     else:
         status = "passed"
@@ -1153,7 +1150,7 @@ def pr_review_gate(
 
 
 def font_mismatch_evidence_record(root: Path, evidence: Path | None) -> dict[str, str] | None:
-    """Record the only permitted automatic-score exception without trusting a label."""
+    """Record hashed font diagnostic evidence without waiving the page gate."""
     if evidence is None:
         return None
     resolved = resolve_input_path(root, evidence)
@@ -5457,7 +5454,7 @@ def main() -> None:
         type=Path,
         help=(
             "한컴 PDF와 rhwp 출력의 실제 글꼴이 완전히 다르다는 검토 증거 UTF-8 파일입니다. "
-            "지정하면 90%% 실루엣 gate를 예외 처리하되, 경로와 SHA-256을 manifest에 남깁니다."
+            "90%% 실루엣 gate를 면제하지 않으며, 진단 경로와 SHA-256을 manifest에 남깁니다."
         ),
     )
     parser.add_argument(
@@ -5581,7 +5578,7 @@ def main() -> None:
     if re_review_targets:
         raise SystemExit(
             "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. "
-            "메인터너 보정 후 새 review PNG로 재검토하세요: " + "; ".join(re_review_targets)
+            "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
 
 
