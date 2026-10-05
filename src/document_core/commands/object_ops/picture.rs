@@ -1383,6 +1383,15 @@ impl DocumentCore {
                 range.control_idx -= 1;
             }
         }
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
+                && active.cell_path.is_none()
+                && active.control_idx > control_idx
+            {
+                active.control_idx -= 1;
+            }
+        }
 
         // char_count 갱신
         if para.char_count >= 8 {
