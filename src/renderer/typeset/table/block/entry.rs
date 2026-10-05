@@ -1554,17 +1554,24 @@ impl TypesetEngine {
                 return None;
             }
             let mut previous = None;
-            for host in chain {
+            for (host_index, host) in chain.iter().enumerate() {
                 if host.stored_text_partition_is_dirty() || host.line_segs.is_empty() {
                     return None;
                 }
                 for line in &host.line_segs {
                     if is_synthetic_line_seg(line)
-                        || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+                        || previous.is_some_and(|(vpos, column_start, previous_host)| {
+                            line.vertical_pos < vpos
+                                || (line.vertical_pos == vpos
+                                    && (previous_host != host_index
+                                        || line.column_start == column_start))
+                        })
                     {
                         return None;
                     }
-                    previous = Some(line.vertical_pos);
+                    // 같은 원점은 같은 문단의 수평 분할 줄에서만 연속이다.
+                    // 문단마다 0으로 리셋한 생성본은 단 전체의 저장 사다리가 아니다.
+                    previous = Some((line.vertical_pos, line.column_start, host_index));
                 }
             }
             Some(st.vpos_col_anchor + hwpunit_to_px(para.line_segs.first()?.vertical_pos, self.dpi))

@@ -2,7 +2,7 @@
 kind: report
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-05
+last_verified: 2026-10-06
 ---
 
 # PR #7571 리뷰 — fix: preserve paragraph breaks when creating tables in empty hosts
@@ -189,3 +189,33 @@ fresh WASM과 최종 전체 lint·회귀·GitHub CI는 진행 중이므로 이 N
 ![보정 전 동일 프레임 외곽 회귀](../assets/semanticist21-20261005/pr7571/same-frame-before-native-review-p1.png)
 ![fresh WASM 독립 Print 직접 비교](../assets/semanticist21-20261005/pr7571/same-frame-wasm-review-p1.png)
 ![같은 쪽 standalone overlay](../assets/semanticist21-20261005/pr7571/same-frame-wasm-overlay-p1.png)
+
+
+## 최종 production 전쪽 재검증 — 2026-10-06
+
+Production source `0a305d51a898cedbe2af75e65726aee463b2b197`, Native 전용 관계 회귀 source `173b74fd7993c662e396551ae4f6957274749f66`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. 두 source 사이 production 파일(`src`/`crates`) 차이는 없다. fresh WASM SHA-256 `7b91e79d0b160429d723b8c24669bc6fdbe5b0940fbbcc32885751122d8a50c7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다.
+
+Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, 최저91.96451%, 90% 미만/누락/측정 불가/글꼴 예외0이다. canonical TSV: ignored `output/pr-review/semanticist21-20261005/proven-origin-tsv/<native|wasm>/<key>/silhouette.tsv`. 입력·Print 출처와 직접 판독은 위 개별 증거를 따르며, [공통 렌더/TSV 명령·재출력 검증](../assets/semanticist21-20261005/README.md#입증된-저장-원점-보정의-최종-nativefresh-wasm-검증)에 연결한다. 전체 Rust 및 원격 CI 완료 여부는 다음 최종 판정에서 별도로 기록한다.
+
+| 이 PR의 검증 입력 | 경로 | 독립 Print 전체 쪽 실루엣(%) | 판정 |
+| --- | --- | --- | --- |
+| `pr7571-anchor-fixed-before-table-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwpx` | native | p1 100.00000 | passed / 누락0 |
+| `pr7504-registered-arial` | native | p1 98.11853 | passed / 누락0 |
+| `pr7504-registered-hcr` | native | p1 97.96159 | passed / 누락0 |
+| `pr7571-anchor-fixed-before-table-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7571-anchor-fixed-column-table-hwpx` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7504-registered-arial` | wasm | p1 98.11853 | passed / 누락0 |
+| `pr7504-registered-hcr` | wasm | p1 97.96159 | passed / 누락0 |
+
+![최신 fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-review-all-pages.png)
+![같은 출력 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7571/pr7571-anchor-fixed-before-table-hwp-wasm-overlay-all-pages.png)
+
+
+### 전체 회귀에서 확인한 생성본의 문단별 원점 리셋
+
+`173b74fd7` 전체 회귀 중 기존 text-overlap partition6/11이 실패했다. 입력 `samples/issue7216/{short,tall}_table_before.hwpx`는 scaffold 생성본이며, 글자 있는 앞 문단 둘과 폭0 표 앵커가 각각 `vertical_pos=0`, 높이1000인 별도 저장 줄을 가진다. 이 값들은 같은 단의 전역 좌표 사다리가 아니다. 기존 Print/생성 출처는 [#7233 기록](pr_7233_review.md)에 있다. 단조 비감소만으로 저장 원점을 입증한 가정을 제거하고, 동일 원점은 같은 문단 안의 수평 분할(다른 `column_start`)에서만 연속 줄로 인정한다. 문단 원점 리셋은 기존 재조판을 유지하며, 기존 래칫·fixture를 완화하지 않는다. 정상 실제 저장 Arial/함초롬과 새 단 표, `hwpspec.hwp` 저장·분할 대조군을 다시 확인한다. 실행 중인 전체 검사는 최종 summary까지 보존하며 수정본 결과로 바꾸어 보고하지 않는다.
+
+- 위 수정 전 전체 실행 최종 결과:10,491 실행,10,489 PASS/2 FAIL/50 SKIP, exit100,709.942초. 실패는 기존 text-overlap partition6/11의 scaffold 원점 리셋 입력뿐이다. 로그는 ignored `output/pr-review/semanticist21-20261005/logs/oct06-proven-origin-full-nextest.log`이며 수정본 검증과 구분한다.
