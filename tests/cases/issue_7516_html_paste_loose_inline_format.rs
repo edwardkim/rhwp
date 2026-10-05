@@ -150,3 +150,75 @@ fn line_break_inside_a_format_keeps_lines_and_format() {
         lines(&[("가", "B"), ("나", "B")])
     );
 }
+
+// 기존 plain paste의 문자 수 제한을 서식·UTF-16·인라인 그림 경로에도 적용한다.
+// 조판 좌표가 아닌 HTML import의 내용/서식/개체 보존 계약이다.
+#[test]
+fn long_loose_inline_preserves_content_and_styles_at_the_existing_limit() {
+    let text = "😀".repeat(8001);
+    let actual = pasted(&format!("<b>{text}</b>"));
+    assert_eq!(
+        actual
+            .iter()
+            .map(|(s, _)| s.chars().count())
+            .collect::<Vec<_>>(),
+        [4000, 4000, 1]
+    );
+    assert_eq!(
+        actual.iter().map(|(s, _)| s.as_str()).collect::<String>(),
+        text
+    );
+    assert!(actual
+        .iter()
+        .all(|(_, marks)| marks.chars().all(|m| m == 'B')));
+
+    let actual = pasted(&format!(
+        "<b>{}</b><i>{}</i>",
+        "x".repeat(3999),
+        "y".repeat(4002)
+    ));
+    assert_eq!(
+        actual.iter().map(|(s, _)| s.len()).collect::<Vec<_>>(),
+        [4000, 4000, 1]
+    );
+    assert_eq!(actual[0].1, format!("{}I", "B".repeat(3999)));
+    assert_eq!(actual[1].1, "I".repeat(4000));
+    assert_eq!(actual[2].1, "I");
+}
+
+#[test]
+fn long_loose_inline_keeps_images_on_the_correct_side_of_the_cut() {
+    let png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==";
+    for position in [3999, 4000, 4001] {
+        let core = paste(&format!(
+            "<b><span>{}<img src=\"data:image/png;base64,{png}\">{}</span></b>",
+            "x".repeat(position),
+            "y".repeat(8001 - position)
+        ));
+        let paragraphs = &core.document().sections[0].paragraphs;
+        assert_eq!(
+            paragraphs
+                .iter()
+                .map(|p| p.text.chars().count())
+                .collect::<Vec<_>>(),
+            [4000, 4000, 1]
+        );
+        let images = paragraphs
+            .iter()
+            .enumerate()
+            .flat_map(|(i, p)| {
+                p.controls
+                    .iter()
+                    .zip(p.control_text_positions())
+                    .filter_map(move |(c, pos)| {
+                        matches!(c, Control::Picture(_)).then_some((i, pos))
+                    })
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            images,
+            [(position / 4000, position % 4000)],
+            "image at {position}"
+        );
+    }
+}
