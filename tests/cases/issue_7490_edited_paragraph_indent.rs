@@ -988,23 +988,13 @@ fn first_run_x(node: &RenderNode) -> Option<f64> {
     }
     node.children.iter().find_map(first_run_x)
 }
-
 // 저장 줄/여백의 HWPUNIT를 문서 출력의 기본 96DPI 좌표계로 변환한다.
 fn hwp_to_px(units: i32) -> f64 {
     f64::from(units) * 96.0 / 7200.0
 }
 fn body_node(node: &RenderNode) -> &RenderNode {
-    if matches!(node.node_type, RenderNodeType::Body { .. }) {
-        return node;
-    }
     node.children
         .iter()
-        .find_map(|child| {
-            if matches!(child.node_type, RenderNodeType::Body { .. }) {
-                Some(child)
-            } else {
-                None
-            }
-        })
+        .find(|child| matches!(child.node_type, RenderNodeType::Body { .. }))
         .expect("page body")
 }

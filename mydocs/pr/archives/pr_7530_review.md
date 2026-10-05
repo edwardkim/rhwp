@@ -82,3 +82,16 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 | `c3c0c070fa905c6aecbe7cffdc0c0dee18ab132f` | `cfd3c77f37fd5fe038179900c13714b97873916a` | `b7fca20aa48be36c8c3f5ef83e37262d99a3afec` | rebased |
 
 원 저자와 cherry-pick 출처를 유지했다. #7491의 원4개는 #7599를 통해 이미 base에 포함되어 중복 적용하지 않았다. 메인터너 보정과 개별 리뷰 기록은 재배치했다. 최종 후보의 시각·전체 회귀 및 CI는 별도 확인한다.
+
+## 실제 저장 API의 2쪽 필드와 독립 Print — 2026-10-05
+
+`HwpDocument.export_hwp()`의 adapter snapshot → `lower_header_footer_field_markers` → HWP serializer, `HwpDocument.export_hwpx()`의 저장 사본 lowering → HWPX serializer를 각각 실행했다. 본문은 「첫 페이지」/「두 번째 페이지」, 가운데 머리말은 페이지 번호 필드다. Native/fresh WASM 모두 HWP와 HWPX의 전체2쪽에서 100%이며 빠진 쪽이 없다. 대표 전쪽 review/overlay를 직접 판독하고 PDF의 실제 1·2 페이지 번호와 본문 소속을 확인했다.
+
+초기 진단 생성기의 `DocumentCore.export_hwp_native()`는 production adapter 경로를 우회해 필드가 빠졌다. 그 입력의 100% 결과는 필드 보존 증거에서 제외하고 위 실제 저장 경로로 재생성했다. 서로 다른 형식의 같은 파일명 PDF는 별도 경로에 받아 덮어쓰기를 피했다.
+
+| 형식 | 입력 SHA-256 | MCP Print job | PDF SHA-256 | Native / fresh WASM 최저 |
+| --- | --- | --- | --- | --- |
+| HWP | `7177e63d01faa889980e6e0765871f9c608e1eced6ccc1b9f650255a2e540d61` | `cf91703b-9a93-4a66-b8a2-6dd63b8488b8` | `e6697af84ccd877f795153311c1ebe96a415183cebc99632d4c728caf76c4664` | 100% / 100% |
+| HWPX | `90291528ed86cbd58c4a0c7d7d97a515959db0f9724bf39c237eb9c0a65f3592` | `ae441e21-48e9-4678-a64f-c4cf75ee1956` | `3f1ac3de35ec6a03821b9cd7ec01cd2723b8ea3e0c30532527512b8c3f4004c0` | 100% / 100% |
+
+두 입력 모두 버전 bucket2020, 한컴11.0.0.9136, PrintMethod0/one-up 출력이다. 입력과 대표 PNG는 `mydocs/pr/assets/semanticist21-20261005/pr7530/`, 독립 PDF는 `pdf/semanticist21-20261005/pr7530/mcp/`에 고정했다. 생산 코드 source `85f3d021ab67328e4c8f5e77670125a2c3ab0fe8`; fresh WASM SHA-256 `51141da77d73e54dc6bfef4b16a1049f22905cd315441e9c743f53e57114f43b`. TSV와 실행 로그는 ignored `output/pr-review/semanticist21-20261005/hf-production-{native,wasm}-{scores,review}` 및 `logs/hf-*`에 보존한다. 합성 입력의 파일 경로 필드 갱신 등 원 PR의 나머지 경계는 기존5개 검사와 별도로 구분하고 최종 후보 전체 검증은 진행 중이다.

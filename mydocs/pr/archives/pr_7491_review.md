@@ -324,3 +324,7 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 - 대표 증적: `../assets/semanticist21-20261005/pr7491-smallfit/`의 before-native/native/wasm review·overlay PNG. 원 #7491의 #7599 병합·후속 완료는 그대로 유지하며 이 후속 회귀는 누적 후보에만 추가했다.
 
 정식 파생 integration 실행도 `node scripts/run-rust-test.mjs issue_7491_measured_inline_table_band -- --cargo-profile release-test --target-dir target/pr-review --no-fail-fast`에서1 PASS/0 FAIL(같은 suite의215개 필터 제외)로 확인했다. 로그 `output/pr-review/semanticist21-20261005/logs/rebased-smallfit-nextest.log`를 보존했다.
+
+## rebase 후 lint 경고 보정
+
+세 Clippy 중 workspace/all-targets에서 `body_node`의 불필요한 `find_map`이 검출되었다. Page의 직접 자식 Body를 `.find()`로 선택하도록 바꾸고 호출5곳이 Page root임을 확인했다. 변경 파일1000줄. 재실행 workspace/all-targets Clippy PASS, 고정 base `c167dc6abbebf69546575e2d16d06223791bab82` 대비 manifest·source unit tier PASS, #7490/#7491 집중21개 nextest PASS/0 FAIL. 나머지 Native·WASM Clippy와 workspace build는 같은 source의 선행 단계에서 PASS다. 원 로그 `logs/rebased-lint-*`, 보정 후 `logs/rebased-lint-retry-*`, `logs/rebased-7491-clippy-correction-nextest.log`는 ignored output에 둔다.
