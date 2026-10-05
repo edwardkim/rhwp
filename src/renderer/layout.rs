@@ -7227,7 +7227,10 @@ impl LayoutEngine {
         );
         // y_offset 은 col_area 절대 프레임의 단 콘텐츠 bottom. 호출부가 `current_height`
         // (=col_area.y 가 단 시작) 프레임과 정합하도록 그대로 반환한다.
-        (y_offset, max_text_line_box_bottom(&node))
+        (
+            y_offset,
+            max_text_line_fit_bottom(&node, paragraphs, self.dpi),
+        )
     }
 
     /// [Task #2120] 문단 테두리/배경 연속 그룹 병합 렌더링 (Task #321 v6) —
@@ -9454,8 +9457,12 @@ impl LayoutEngine {
                 } => Some(*para_index),
                 _ => None,
             };
+            // 이 문단의 저장 사다리 자리(앞 문단 기준). 겹침 하한에 막혀 그 아래에 놓이면 다음 문단은
+            // 실제 y 가 아니라 이 자리를 기준으로 이어 간다 — 실제 y 를 기준으로 하면 하한이 민 차가
+            // 뒤 문단마다 실린다(3-09월_교육_통합_2024-미주사이20 15쪽 pi=787→788, 한/글은 사다리 자리).
+            let mut stored_ladder_anchor_y: Option<f64> = None;
             if col_content.endnote_flow {
-                let stored_successor_y = item_para_start
+                let raw_stored_successor_y = item_para_start
                     .zip(last_endnote_para_top)
                     .filter(|(pi, (prev_pi, _))| {
                         *pi == prev_pi + 1
@@ -9470,13 +9477,13 @@ impl LayoutEngine {
                             prev_last.vertical_pos + prev_last.line_height + prev_last.line_spacing;
                         ((cur_first - contiguous).abs() <= 2 && cur_first > prev_first)
                             .then(|| prev_top + hwpunit_to_px(cur_first - prev_first, self.dpi))
-                    })
-                    // 앞 항목이 그린 글줄·개체 바닥 위로는 당기지 않는다(앞 문단을 사다리보다
-                    // 높게 그린 경우 겹친다).
-                    .filter(|target_y| {
-                        last_endnote_content_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
-                            && prev_item_ink_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
                     });
+                // 앞 항목이 그린 글줄·개체 바닥 위로는 당기지 않는다(앞 문단을 사다리보다
+                // 높게 그린 경우 겹친다).
+                let stored_successor_y = raw_stored_successor_y.filter(|target_y| {
+                    last_endnote_content_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
+                        && prev_item_ink_bottom_y.is_none_or(|bottom| *target_y + 0.5 >= bottom)
+                });
                 if let Some(target_y) = stored_successor_y {
                     let delta = target_y - y_offset;
                     if delta > 0.05 {
@@ -9485,11 +9492,14 @@ impl LayoutEngine {
                         hcursor.shift_vpos_base_for_rendered_backtrack(-delta);
                     }
                     y_offset = target_y;
+                } else {
+                    stored_ladder_anchor_y =
+                        raw_stored_successor_y.filter(|target_y| *target_y < y_offset);
                 }
             }
             if let Some(pi) = item_para_start {
                 if last_endnote_para_top.is_none_or(|(prev_pi, _)| prev_pi != pi) {
-                    last_endnote_para_top = Some((pi, y_offset));
+                    last_endnote_para_top = Some((pi, stored_ladder_anchor_y.unwrap_or(y_offset)));
                 }
             }
             // [#7063] 저장-vpos 스냅 이전의 흐름 커서와 직전 아이템 내용 바닥을
@@ -17022,6 +17032,47 @@ pub(crate) struct EndnoteColumnPlacements {
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
+}
+
+/// [#6574] 단 하단 수용 판정용 글줄 하단의 최댓값. 줄 상자(줄 위 + 줄 높이)를 쓰되, 저장
+/// 줄의 글자 높이(`text_height`)가 줄 높이보다 작으면 글자 높이로 잰다 — 한/글은 그 줄의
+/// 글자가 단 안이면 같은 단에 둔다. 같은 문단 뒤 줄의 큰 수식 높이가 앞 줄 줄 높이에 실려
+/// 저장된 경우가 있다(3-09월_교육_통합_2023 16쪽 pi=845 첫 줄: 줄 높이 2696, 글자 높이 900,
+/// 한/글은 글자 하단 1084.6px 로 단 하단에 둔다). 표 칸 안 글줄은 칸 문단 번호를 써 이 목록과
+/// 맞지 않으므로 줄 상자로 잰다.
+fn max_text_line_fit_bottom(node: &RenderNode, paragraphs: &[Paragraph], dpi: f64) -> Option<f64> {
+    fn walk(node: &RenderNode, paragraphs: &[Paragraph], dpi: f64, in_table: bool) -> Option<f64> {
+        let in_table = in_table || matches!(node.node_type, RenderNodeType::Table(_));
+        let own = match &node.node_type {
+            RenderNodeType::TextLine(line) => {
+                let box_height = line.line_height.min(node.bbox.height);
+                let text_height = (!in_table)
+                    .then(|| {
+                        let seg = paragraphs
+                            .get(line.para_index?)?
+                            .line_segs
+                            .get(line.line_index? as usize)?;
+                        // 글자가 줄 아래쪽에 놓인 줄도 있으므로 기준선 + 내림(글자 높이의 1/4)
+                        // 과 글자 높이 중 큰 값을 쓴다.
+                        (seg.text_height > 0 && seg.text_height < seg.line_height).then(|| {
+                            let text_bottom = (seg.baseline_distance as f64
+                                + seg.text_height as f64 / 4.0)
+                                .max(seg.text_height as f64);
+                            hwpunit_to_px(text_bottom.round() as i32, dpi)
+                        })
+                    })
+                    .flatten();
+                Some(node.bbox.y + text_height.map_or(box_height, |th| th.min(box_height)))
+            }
+            _ => None,
+        };
+        node.children
+            .iter()
+            .filter_map(|child| walk(child, paragraphs, dpi, in_table))
+            .chain(own)
+            .reduce(f64::max)
+    }
+    walk(node, paragraphs, dpi, false)
 }
 
 /// [#6574] 렌더 트리에서 글줄(`TextLine`) 줄 상자(줄 위 + 줄 높이) 하단의 최댓값. 수식·그림
