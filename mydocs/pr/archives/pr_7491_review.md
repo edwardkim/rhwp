@@ -322,3 +322,5 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 - 보정 전 `c167dc6abbebf69546575e2d16d06223791bab82`를 별도 worktree에서 실제 빌드했다. 같은 정식 검사 compile0/test101: 외곽 위 여백 비율0.4461778471 ≠ 저장0.2207488300으로 실패한다. 같은 입력의 직접 Native Visual Sweep도53.47826%로 실패했다. 보정 후 재빌드의 정식 원본 rustc 실행1 PASS; 파생 integration suite와 전체 필수 게이트를 이어서 확인한다. 단순 존재/기준선 순서만 검사한 초기 진단은 before에서도 통과해 결함 검출 증거에서 제외하고 여백 관계를 추가했다.
 - 두 checkout이 공유하는 cdylib 파일명은 동일해 Cargo의 다른 fingerprint가 오래된 artifact를 재사용할 수 있다. 현재 source 파일 mtime을 갱신해 candidate Native lib/bin을 다시 빌드(3m21s)했고 before artifact를 후보 증거로 쓰지 않았다. 원 로그·명령 JSON·TSV는 ignored output에만 둔다.
 - 대표 증적: `../assets/semanticist21-20261005/pr7491-smallfit/`의 before-native/native/wasm review·overlay PNG. 원 #7491의 #7599 병합·후속 완료는 그대로 유지하며 이 후속 회귀는 누적 후보에만 추가했다.
+
+정식 파생 integration 실행도 `node scripts/run-rust-test.mjs issue_7491_measured_inline_table_band -- --cargo-profile release-test --target-dir target/pr-review --no-fail-fast`에서1 PASS/0 FAIL(같은 suite의215개 필터 제외)로 확인했다. 로그 `output/pr-review/semanticist21-20261005/logs/rebased-smallfit-nextest.log`를 보존했다.

@@ -190,3 +190,12 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 - `tests/fixtures/form-password/edit-password-2024.pdf` SHA-256 `84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a`.
 
 최신 동일 production의 Native TSV는 양식99.34142%/암호98.81531%이며, fresh WASM 및 대표 PNG 직접 판독은 이어서 기록한다. 원 TSV/실행 로그는 ignored output에만 보존한다.
+
+## fresh WASM의 수동 Print PDF 대조
+
+동일 production의 Native와 fresh WASM 전체1쪽 TSV는 양식99.34142%/암호98.81531%로 각각 같고 90% 미만·누락 쪽은0이다. Native/WASM 대표 review PNG를 직접 열어 버튼과 콤보박스의 입체 테두리·선택 문구의 시작 위치, 라디오 외곽·텍스트 박스의 입체 테두리, 암호 마스크를 대조했다. 누름틀 guide는 사용자 지시에 따라 Print에 나타나지 않는 화면 안내로 구분한다.
+
+- 입력/기준 PDF는 기존 commit 파일과 동일하고 사용자 확인한 Print 인쇄본이다.
+- 출력: ignored `output/pr-review/semanticist21-20261005/rebased-{forms,password}-wasm-{scores,review}` 및 `bridge-{forms,password}-native-{scores,review}`. 원 TSV·로그는 커밋하지 않는다.
+- WASM SHA-256 `51141da77d73e54dc6bfef4b16a1049f22905cd315441e9c743f53e57114f43b`, Studio public과 동일; JS도 root pkg/public 간 동일이다. 빌드 production source `85f3d021ab67328e4c8f5e77670125a2c3ab0fe8`이며 rebase 이후 문서/회귀 입력 추가는 production byte를 바꾸지 않았다.
+- 정확한 최종 후보의 전체 Rust·lint·CI 및 통합은 별도 게이트다. 이 시각 확인을 전체 후보 승인으로 바꾸지 않는다.
