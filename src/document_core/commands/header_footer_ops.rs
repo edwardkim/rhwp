@@ -1609,8 +1609,8 @@ fn insert_auto_number_placeholder(para: &mut Paragraph, idx: usize) {
 fn insert_field_text(para: &mut Paragraph, idx: usize, text: &str) -> usize {
     let at = para.insert_text_at(idx, text);
     let end = at + text.chars().count();
-    para.shift_for_inline_control_insert(end);
-    para.shift_for_inline_control_insert(at);
+    para.shift_for_control_slot_insert(end);
+    para.shift_for_control_slot_insert(at);
     para.char_count += 16;
     para.delete_text_at(end, 1);
     end

@@ -91,14 +91,9 @@ impl DocumentCore {
 
         // 책갈피도 스트림에서 8유닛을 차지한다. 글자별 배열에 항목을 끼우지 않고 뒤 글자와
         // 같은 축의 참조를 함께 민다. 삭제와 같은 이유로 저장 줄 경계는 새 조판 결과를 쓴다.
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.stored_text_partition_dirty = true;
-        for range in &mut paragraph.field_ranges {
-            if range.control_idx >= insert_idx {
-                range.control_idx += 1;
-            }
-        }
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == sec
                 && active.para_idx == para

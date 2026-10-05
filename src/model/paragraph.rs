@@ -928,6 +928,11 @@ impl Paragraph {
                 range.control_idx += 1;
             }
         }
+        self.shift_for_control_slot_insert(char_offset);
+    }
+
+    /// BEGIN/END 슬롯처럼 컨트롤 번호가 늘지 않는 8유닛 삽입에도 사용한다.
+    pub(crate) fn shift_for_control_slot_insert(&mut self, char_offset: usize) {
         if self.char_offsets.is_empty() {
             return;
         }

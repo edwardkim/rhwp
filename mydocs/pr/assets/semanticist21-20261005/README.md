@@ -1,6 +1,6 @@
 # semanticist21 누적 검토 증거
 
-19개 원 PR의 리뷰 기록은 `mydocs/pr/archives/pr_<번호>_review.md`에 각각 있다. #7508의 이번 후속 head는 `pr_7508_review_20261005.md`이다. 이 디렉터리는 실행 증거와 진단 재현 스크립트이며 통합 리뷰 문서가 아니다.
+24개 원 PR의 리뷰 기록은 `mydocs/pr/archives/pr_<번호>_review.md`에 각각 있다. #7508의 이번 후속 head는 `pr_7508_review_20261005.md`이다. 이 디렉터리는 실행 증거와 진단 재현 스크립트이며 통합 리뷰 문서가 아니다.
 
 - base: `cdba77b609c399fdef26a6c9e637716aa32c2177`
 - code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`
@@ -26,7 +26,7 @@ node mydocs/pr/assets/semanticist21-20261005/outline-runtime.cjs
 
 Rust code `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`에서 fresh WASM을 빌드했다. `appearance-wasm-hashes.json`에 pkg/Studio public JS·WASM 해시 일치를 기록한다. 사용자 요청의 `rhwp-studio/public/rhwp.js`와 기준 PDF 두 개는 이미 커밋했다.
 
-`font-path-verification.json`은 환경변수를 제거한 Native/WASM과 동일 PDF font face를 명시한 두 결과를 구분한다. 한컴 설치 자체는 이미 존재한다. 명시 경로는 재설치 요구나 실행 필수 설정이 아니라 독립 기준 PDF의 `Haansoft Batang / 한컴바탕`을 정확히 공급하기 위한 비교 조건이다. 현재 `fc-match '한컴바탕'`은 `/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf`의 `HCR Batang / 함초롬바탕`을 반환한다. 이 face와 한컴 설치본 `All/HBATANG.TTF`의 face는 서로 다르다. RHWP의 파일 탐색 기본값도 `/usr/share/fonts`·`/usr/local/share/fonts`이고 한컴 app 내부 경로는 자동 추가하지 않는다.
+`font-path-verification.json`은 환경변수를 제거한 Native/WASM과 동일 PDF font face를 명시한 두 결과를 구분한다. 한컴 설치 자체는 이미 존재한다. 명시 경로는 재설치 요구나 실행 필수 설정이 아니라 독립 기준 PDF의 `Haansoft Batang / 한컴바탕`을 정확히 공급하기 위한 비교 조건이다. 등록 전 조사 당시 `fc-match '한컴바탕'`은 `/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf`의 `HCR Batang / 함초롬바탕`을 반환한다. 이 face와 한컴 설치본 `All/HBATANG.TTF`의 face는 서로 다르다. RHWP의 파일 탐색 기본값도 `/usr/share/fonts`·`/usr/local/share/fonts`이고 한컴 app 내부 경로는 자동 추가하지 않는다.
 
 환경변수 없이 원본/암호 Native와 fresh WASM의 2px 관용 실루엣 일치율은 각각99.34142%/98.81531%로 네 gate 모두 PASS다. 이 경우 Native SVG에는 font data URI가 없고 local 한컴바탕/함초롬바탕/HCR Batang alias가 있어 설치 글꼴 fallback을 사용한다. 동일 PDF face를 지정한 비교는99.88501%/99.90053%로 PASS다. 폰트 미설치로 단정하지 않으며 점수만으로 동일 glyph face라고 주장하지 않는다. 두 조건의 review·overlay·manifest는 `pdf/semanticist21-20261005/form-appearance/`에 각각 보존했다.
 

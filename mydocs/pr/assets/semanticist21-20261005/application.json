@@ -333,5 +333,78 @@
     "before": "eb49764d6292967a659ecb474b000368b160933c",
     "state": "applied",
     "applied": "1d809afe7b965c9ea6137012d59d139d63b038d0"
+  },
+  {
+    "pr": 7590,
+    "source": "694d65555982afe6e22af2faa7948235fccb3995",
+    "state": "applied",
+    "applied": "e0166dc743f12bc22c881402fa5a10598817afb7"
+  },
+  {
+    "pr": 7590,
+    "source": "6529a6aaa6e2be432b42ea101983eba2ce7ec914",
+    "state": "applied",
+    "applied": "089286608d715ae39a00aade41032980974950ab"
+  },
+  {
+    "pr": 7592,
+    "source": "627c9060867bea690b45c31813d855cd4d8c0fe9",
+    "state": "applied",
+    "applied": "4135c1b1a52f1f5f3b97e014934aa31addaf4751"
+  },
+  {
+    "pr": 7592,
+    "source": "89b46177b4d157a742ff38b2055d5f926fde3863",
+    "state": "applied",
+    "applied": "084f4a2c83915cbe01853862b7df5c892b92aec9"
+  },
+  {
+    "pr": 7592,
+    "source": "4bd33c66f5588abf56fbc3a1851e634891abd8dc",
+    "state": "applied",
+    "applied": "31f077276efa0c93c6256802d98ad01c32268c59"
+  },
+  {
+    "pr": 7592,
+    "source": "2e1082980708ec36022246f945fd5ff9626cbf87",
+    "state": "applied",
+    "applied": "10bb47410c34eb3e7c5970278bed1d8f28b98aff"
+  },
+  {
+    "pr": 7595,
+    "source": "e2b4a4306da4f4910e5bcc3d498fd3a1a50a7586",
+    "state": "applied",
+    "applied": "75c7cbc9837f84fafc0d4e0fbccd2f5f29b120e8"
+  },
+  {
+    "pr": 7595,
+    "source": "520a8ee399f255d7a6b91477dd744745a47240dd",
+    "state": "maintainer-conflict-resolved",
+    "applied": "576ee0ff35f0fd17d99528f54a5b1a0ad2969e48",
+    "correction": "HTML parse module 분리와 #7521 보정을 보존하고 새 helper 호출을 inline_content에 적용"
+  },
+  {
+    "pr": 7596,
+    "source": "5b98c883446fd0cc0a733ac21484d8a276cfe6d8",
+    "state": "applied",
+    "applied": "e79480f113abdbf5520f4e71c6ac384e06c323df"
+  },
+  {
+    "pr": 7596,
+    "source": "1e882aae27ed5474f1794a7d453a552f514b6078",
+    "state": "applied",
+    "applied": "b349b4144e4f4fe7db01ae3ea9d34417e52b0ecd"
+  },
+  {
+    "pr": 7597,
+    "source": "cbbfedaf821fb6c0a6022bd7fa31dd6fcca5a04a",
+    "state": "applied",
+    "applied": "459fe9de0963e13ff84118fc0ae9bc6b51773ca6"
+  },
+  {
+    "pr": 7597,
+    "source": "fe01de7653deb3de002e3207c88c20f2f49c42ea",
+    "state": "applied",
+    "applied": "ee2f5cf8de90db77050ea0e143c8d0d2e6e08110"
   }
 ]
