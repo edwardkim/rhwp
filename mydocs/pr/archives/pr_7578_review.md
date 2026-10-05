@@ -150,9 +150,9 @@ Native 재현 명령은 `RHWP_FONT_PATH=/opt/hnc/hoffice11/Shared/TTF/All python
 
 ## fresh WASM·실제 화면·기본 글꼴 대조 완료
 
-source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`의 fresh WASM은 pkg/Studio public의 해시가 일치한다. Native/fresh WASM 모두 같은 사용자 PDF1쪽에서 동일 font face 지정 시 원본99.88501%, 암호99.90053%로 gate PASS다. fresh WASM review/standalone overlay를 직접 판독했고 프레임·글자 시작/기준선·마스킹의 적용을 확인했다. 이전80%대 gate는 추가 보정 전 기록이며 현재 시각 판정을 대신하지 않는다. 실제 WebCanvas 및 Studio CanvasKit에서도 ComboBox title·원문 저장 보존·13개 암호 표시·공통 drawing 소비를 확인했다. CanvasKit 완료/error null/미등록 font fallback0의 관측은 [실제 브라우저 결과](../assets/semanticist21-20261005/appearance-browser-results.json)에 있다.
+source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`의 fresh WASM은 pkg/Studio public의 해시가 일치한다. Native/fresh WASM 모두 같은 사용자 PDF1쪽에서 동일 font face 지정 시 원본99.88501%, 암호99.90053%로 gate PASS다. fresh WASM review/standalone overlay를 직접 판독했고 프레임·글자 시작/기준선·마스킹의 적용을 확인했다. 이전80%대 gate는 추가 보정 전 기록이며 현재 시각 판정을 대신하지 않는다. 실제 WebCanvas 및 Studio CanvasKit에서도 ComboBox title·원문 저장 보존·13개 암호 표시·공통 drawing 소비를 확인했다. CanvasKit 완료/error null/미등록 font fallback0의 관측은 `output/pr-review/semanticist21-20261005/historical-browser-raw/appearance-browser-results.json`에 있다.
 
-사용자 지적에 따라 `RHWP_FONT_PATH`를 제거하고 두 입력을 Native/fresh WASM에서 다시 비교했다. 원본99.34142%, 암호98.81531%로 네 gate 모두 PASS다. 한컴 설치본은 이미 있으며, 지정 이유는 PDF와 같은 `Haansoft Batang / 한컴바탕` face 공급이다. 현재 Linux fontconfig의 한컴바탕 선택은 다른 `HCR Batang / 함초롬바탕` face이고 RHWP 기본 디렉터리는 한컴 app 내부 All 경로를 포함하지 않는다. 기본 SVG는 local alias를 사용한다. 설치가 없다고 주장하거나 환경변수를 실행 필수 조건으로 삼지 않는다. [글꼴 대조 증거](../assets/semanticist21-20261005/font-path-verification.json)에 실제 family/path 및 두 조건의 결과를 구분했다.
+사용자 지적에 따라 `RHWP_FONT_PATH`를 제거하고 두 입력을 Native/fresh WASM에서 다시 비교했다. 원본99.34142%, 암호98.81531%로 네 gate 모두 PASS다. 한컴 설치본은 이미 있으며, 지정 이유는 PDF와 같은 `Haansoft Batang / 한컴바탕` face 공급이다. 현재 Linux fontconfig의 한컴바탕 선택은 다른 `HCR Batang / 함초롬바탕` face이고 RHWP 기본 디렉터리는 한컴 app 내부 All 경로를 포함하지 않는다. 기본 SVG는 local alias를 사용한다. 설치가 없다고 주장하거나 환경변수를 실행 필수 조건으로 삼지 않는다. [글꼴 대조 증거](../assets/semanticist21-20261005/font-path-verification.json)에 실제 family/path를 기록했고 두 조건의 원시 실행 결과는 ignored `output/pr-review/semanticist21-20261005/historical-visual-raw/font-path-verification.json`에 보존했다.
 
 ![fresh WASM 입체 폼 비교](../../../pdf/semanticist21-20261005/form-appearance/wasm/form-original/review/review_001.png)
 
@@ -199,3 +199,36 @@ Rust source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, 정책 base `cdba77b609c
 - 출력: ignored `output/pr-review/semanticist21-20261005/rebased-{forms,password}-wasm-{scores,review}` 및 `bridge-{forms,password}-native-{scores,review}`. 원 TSV·로그는 커밋하지 않는다.
 - WASM SHA-256 `51141da77d73e54dc6bfef4b16a1049f22905cd315441e9c743f53e57114f43b`, Studio public과 동일; JS도 root pkg/public 간 동일이다. 빌드 production source `85f3d021ab67328e4c8f5e77670125a2c3ab0fe8`이며 rebase 이후 문서/회귀 입력 추가는 production byte를 바꾸지 않았다.
 - 정확한 최종 후보의 전체 Rust·lint·CI 및 통합은 별도 게이트다. 이 시각 확인을 전체 후보 승인으로 바꾸지 않는다.
+
+## 2026-10-06 최종 후보의 Print·Native/fresh WASM 재검증
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`, 회귀 source `9af7586586587fa0aa617a9e57fd6acd0d4e3ba6`. 두 head 사이에는 #7527의 Native 전용 회귀와 리뷰/PNG만 추가됐고 production source는 동일하다. 최종 fresh WASM SHA-256 `24565cae976b3c6929c858f13c52785a4651a26dc61c0fd566f5a8f801d631f7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root pkg/Studio public 해시를 대조했다.
+
+| 검증 입력 | 출력 경로 | 전체 쪽별 실루엣(%) | Gate |
+| --- | --- | --- | --- |
+| `forms` | native | p1 99.34142 | passed / 누락0 |
+| `password` | native | p1 98.81531 | passed / 누락0 |
+| `forms` | wasm | p1 99.34142 | passed / 누락0 |
+| `password` | wasm | p1 98.81531 | passed / 누락0 |
+
+- [form-01.hwpx](../../../samples/hwpx/form-01.hwpx), SHA-256 `3bbd207b88fe61e802706de3ccf98abdb8b450493164eec657c9ee88a5aba87e` → [독립 Print PDF](../../../samples/hwpx/form-01-2024.pdf), SHA-256 `d1117657d92c789295d73af1bebd11b241eb352254b328d95c07f0efb87b18ee`.
+- [edit-password.hwpx](../../../tests/fixtures/form-password/edit-password.hwpx), SHA-256 `e8161c8dfac0aaef054da0a4d5e704e3a54b3c5cfbbbf47955c6650ab74dd0ae` → [독립 Print PDF](../../../tests/fixtures/form-password/edit-password-2024.pdf), SHA-256 `84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a`.
+
+두 기준 PDF는 사용자가 해당 한컴의 Print 출력임을 확인했다. WebCanvas/Studio CanvasKit의 ComboBox title·HWPX 재열기·원문 값 보존·암호13자 마스킹을 실제 실행했다. CanvasKit 완료=true/error=null/미등록 글꼴 fallback0. 프레임/라벨 위치를 직접 PDF와 대조했고 누름틀 안내는 screen에서만 검사했다.
+
+각 명령·TSV·manifest·runtime 원시는 ignored `output/pr-review/semanticist21-20261005`에 보존했다. 렌더는 같은 입력/Print 전체 페이지와 `--embed-fonts=full`을 사용했고 WASM은 `--wasm-pkg pkg`를 추가했다(#7504는 실제 등록 API replay adapter). 최종 전체 Rust 회귀와 GitHub CI는 별도 진행 중이다.
+
+![fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7578/forms-wasm-review-all-pages.png)
+![같은 쪽 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7578/forms-wasm-overlay-all-pages.png)
+
+최종 페이지별 TSV: `output/pr-review/semanticist21-20261005/final-tsv/native/<key>/silhouette.tsv` 및 `wasm/<key>/silhouette.tsv`. 최신 full Sweep PNG 쌍에서 canonical `--silhouette-only --png-pair`로 산출하고 PNG SHA를 manifest에 고정했다. 해당 입력 전체 쪽수도 독립 PDF·원문 exporter에서 별도로 대조했으며 90% 미만/누락0이다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여에 감사한 뒤 실제 통합 PR 링크·merge SHA·정확한 최종 head CI와 이 PR의 회귀 실행 결과를 한국어 존댓말로 게시한다. 원 head는 merge 직전에 다시 확인하고 동일할 때만 통합으로 대체된 원 PR을 닫는다. 원 contributor fork branch는 삭제하지 않는다.
+
+사용자가 두 PDF의 Print 출력을 확인했음을 밝히고 ComboBox title 위치·3D 프레임·암호 마스킹의 추가 보정을 설명한다.
+
+- 실제 비교 `password`의 p1 98.81531%를 페이지별 실루엣 보조값으로 적는다. 같은 입력 Native/fresh WASM 전체 쪽 TSV·누락0·직접 구조 판정을 함께 설명한다.
+- merge SHA에서 존재를 확인한 `mydocs/pr/assets/semanticist21-20261005/pr7578/password-wasm-review-all-pages.png` / `mydocs/pr/assets/semanticist21-20261005/pr7578/password-wasm-overlay-all-pages.png`를 `raw.githubusercontent.com/edwardkim/rhwp/<merge-SHA>/...`의 실제 Markdown 이미지로 표시한다. 임시 output 링크로 대신하지 않는다.
+- 이슈는 확인된 해결 범위만 다루고, 남은 조판·입력 축은 `Refs`와 원 이슈 링크로 유지한다. 게시 뒤 API로 실제 줄바꿈·한글·이미지 URL을 다시 확인한다.
