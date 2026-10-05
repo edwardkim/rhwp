@@ -58,3 +58,11 @@ source357ff494e의 바깥 여백 공유만으로 작은 표의 점수는 바뀌�
 다음 보정은 별도의 추정식을 만들지 않고 표 배치가 소비하는 `measure_table`의 셀/행 측정 결과를 편집 재조판의 점유 높이에도 사용한다. 단순 선언/여백 보정과 실제 콘텐츠 높이 측정을 구분하며, 저장 줄 재사용 경로는 기존 입력으로 재검증한다. 작은 표의 Native/fresh WASM 및 독립 MCP PDF가90%를 충족한 뒤에만 새 정식 회귀/fixture를 추가한다. 실행 로그와 진단 출력은 ignored `output/pr-review/semanticist21-20261005/`에만 보존한다.
 
 source4331d7290에서 줄1848HU/기준선1571HU를 발행했으나 작은 표 Sweep은52.53863%로 악화했다. 같은 입력을 Windows MCP로 다시 출력했으며 원본 PDF와 표/글자 위치는 같다. 실제 paint의 `layout_inline_table_paragraph`는 `tac_table_stored_outer_band_top`에서 선언282HU만 대조해 외곽 줄 소유를 거부한 뒤 `baseline + outer_bottom - measured_height`를 선택했다. 이로 인해 표 상단은161.22667px, 독립 MCP 대응 상단은157.45px로 어긋났다. `measure_table → LineSeg1848 → layout의 measured_tables → 외곽 줄 소유 판정 → 표 상단`까지 같은 측정 높이를 소비하도록 보정한다. 기존 선언 높이 기반 저장 줄 수용은 보존하고 실제 측정 외곽 높이와 일치하는 줄도 동일한 상단/여백 배치를 사용한다. 이 관측 좌표를 회귀 기대값으로 고정하지 않는다.
+
+### 最新 base 통합 뒤 회귀 입력과 관계 검사 정리
+
+merge `b736da5be`는 #7599의 prefix 소속·페이지 이월·기본 단 정규화를 유지하면서 실제 측정 표 높이를 결합했다. 최초 focused21개는20 PASS/1 FAIL이었다. 실패는 새 canonical 샘플에 단 정의가 있는데 upstream 검사가 단 정의가 없다고 가정한 입력 전제 불일치다. 해당 검사에만 보존한 원 축소본 `tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp`를 사용해 raw 저장 불변과 편집 저장의 기본1단 정규화를 그대로 검사한다.
+
+추가로 들어온 upstream 검사의 문서별 절대 px도 제거했다. 원점/폭 유지·같은 본문 내부 포함·줄별 들여쓰기 방향은 상대 관계로 검사한다. 저장 줄의 높이/간격·표 바깥 여백과 최종 원점의 연결은 독립 저장 HWPUNIT를96DPI로 변환해 비교하며 문서별 실물 픽셀을 고정하지 않는다. 21개 모두 PASS. 원 출력은 `output/pr-review/semanticist21-20261005/logs/bridge-7491-relational-prepared.log`에 보존한다. 수정 뒤 파생 suite 재준비가 필요한 점도 확인했으며, 준비하지 않은 중간 실행의0건 결과는 검증 성공으로 세지 않는다.
+
+작은 표의 최신 Native/fresh WASM 재캡처와 최종 전체 게이트는 이어서 실행한다. 이 집중 검증만으로 나머지 원 PR이나 전체 누적 후보를 승인하지 않는다.

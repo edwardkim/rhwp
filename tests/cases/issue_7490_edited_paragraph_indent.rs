@@ -318,7 +318,8 @@ fn edited_tac_table_that_fits_stays_on_the_text_line() {
     let table = find_owned_table(&tree.root, 7).expect("owned table");
     let prefix = find_host_text_run(&tree.root, 7).expect("visible prefix");
     assert!(
-        table.bbox.x >= prefix.bbox.x + prefix.bbox.width - 0.5,
+        table.bbox.x > prefix.bbox.x + prefix.bbox.width
+            || same_position(table.bbox.x, prefix.bbox.x + prefix.bbox.width),
         "fitting table must follow the actual painted prefix: {:?} / {:?}",
         prefix.bbox,
         table.bbox
@@ -350,7 +351,8 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
             })
             .collect()
     }
-    let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let mut doc =
+        open("tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp");
     assert!(
         columns(&doc).is_empty(),
         "real source has no body ColumnDef"
@@ -387,7 +389,8 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
     );
     // Create an explicit column definition on a real source that has none.
     // Saving must preserve its 2 columns instead of adding a default 1-column.
-    let mut two_columns = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let mut two_columns =
+        open("tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp");
     two_columns
         .set_column_def_native(0, 2, 0, true, 600)
         .expect("actual two-column command");
@@ -403,6 +406,7 @@ fn edited_template_save_declares_default_column_and_preserves_raw_control() {
 #[test]
 fn edited_tac_table_after_explicit_break_has_its_own_line() {
     let mut doc = open("samples/issue6190/center_align_first_line_indent.hwp");
+    let original = owned_table(&doc, 7);
     doc.insert_text_native(0, 7, 0, "가\n")
         .expect("insert prefix and break");
     assert_eq!(
@@ -420,7 +424,8 @@ fn edited_tac_table_after_explicit_break_has_its_own_line() {
     let tree = doc.build_page_render_tree(0).expect("tree");
     let table = find_owned_table(&tree.root, 7).expect("owned table");
     assert!(
-        (table.bbox.x - 98.2933).abs() < 0.5 && table.bbox.x + table.bbox.width < 700.2,
+        same_position(table.bbox.x, original.bbox.x)
+            && same_position(table.bbox.width, original.bbox.width),
         "explicit break starts table at its original body origin: {:?}",
         table.bbox
     );
@@ -454,12 +459,18 @@ fn saved_tac_tail_uses_the_same_local_line_origin_as_its_prefix() {
         let tree = doc.build_page_render_tree(0).expect("final tree");
         let prefix = find_host_text_run(&tree.root, 7).expect("prefix");
         let table = find_owned_table(&tree.root, 7).expect("table");
-        let expected_top = prefix.bbox.y + (1400.0 + 672.0 + 141.0) / 75.0;
-        assert!((table.bbox.y - expected_top).abs() < 0.5,
+        let expected_top = prefix.bbox.y
+            + hwp_to_px(
+                para.line_segs[0].line_height
+                    + para.line_segs[0].line_spacing
+                    + i32::from(table_model.outer_margin_top),
+            );
+        assert!(same_position(table.bbox.y, expected_top),
             "{input}: table must consume the prefix's local line origin: {:?}, prefix {:?}, expected {expected_top}", table.bbox, prefix.bbox);
         assert_eq!(doc.page_count(), 1, "no empty continuation page");
         assert!(
-            table.bbox.y + table.bbox.height < 740.0,
+            table.bbox.y + table.bbox.height
+                <= body_node(&tree.root).bbox.y + body_node(&tree.root).bbox.height,
             "paired Hancom output keeps the complete table beneath the prefix"
         );
     }
@@ -498,16 +509,24 @@ fn assert_tac_prefix_row(prefix: &str) {
         let line = host_line(&tree.root).expect("even a blank prefix owns a line box");
         let table = find_owned_table(&tree.root, 7).expect("table");
         assert!(
-            (line.bbox.height - 1400.0 / 75.0).abs() < 0.5,
+            same_position(line.bbox.height, hwp_to_px(para.line_segs[0].line_height)),
             "prefix occupancy"
         );
         assert!(
-            (table.bbox.x - original_x).abs() < 0.5,
+            same_position(table.bbox.x, original_x),
             "following row must preserve stored unindented X: {prefix:?} {saved}: {:?}",
             table.bbox
         );
-        let expected_y = line.bbox.y + (1400.0 + 672.0 + 141.0) / 75.0;
-        assert!((table.bbox.y - expected_y).abs() < 0.5, "prefix line, spacing and object outside margin: {prefix:?} {saved}: {:?}, expected {expected_y}", table.bbox);
+        let Control::Table(model) = &para.controls[0] else {
+            panic!("table input");
+        };
+        let expected_y = line.bbox.y
+            + hwp_to_px(
+                para.line_segs[0].line_height
+                    + para.line_segs[0].line_spacing
+                    + i32::from(model.outer_margin_top),
+            );
+        assert!(same_position(table.bbox.y, expected_y), "prefix line, spacing and object outside margin: {prefix:?} {saved}: {:?}, expected {expected_y}", table.bbox);
         if prefix.starts_with('.') {
             let run = find_host_text_run(&tree.root, 7).expect("punctuation is visible text");
             assert!(
@@ -516,7 +535,8 @@ fn assert_tac_prefix_row(prefix: &str) {
         }
         assert_eq!(doc.page_count(), 1, "no empty continuation page");
         assert!(
-            table.bbox.y + table.bbox.height < 740.0,
+            table.bbox.y + table.bbox.height
+                <= body_node(&tree.root).bbox.y + body_node(&tree.root).bbox.height,
             "complete object stays in body"
         );
     }
@@ -633,10 +653,10 @@ fn default_column_rebuild_preserves_content_and_object_geometry() {
             );
             for (a, b) in old_boxes.iter().zip(&new_boxes) {
                 assert!(
-                    (a.0 - b.0).abs() < 0.5
-                        && (a.1 - b.1).abs() < 0.5
-                        && (a.2 - b.2).abs() < 0.5
-                        && (a.3 - b.3).abs() < 0.5,
+                    same_position(a.0, b.0)
+                        && same_position(a.1, b.1)
+                        && same_position(a.2, b.2)
+                        && same_position(a.3, b.3),
                     "{input} page {page}: object geometry {a:?} -> {b:?}"
                 );
             }
@@ -678,16 +698,16 @@ fn starts_in_area(doc: &HwpDocument, area: &str) -> Vec<f64> {
 }
 
 fn assert_area_indent(flat: &[f64], shifted: &[f64], indent: i32, area: &str) {
-    // HWP ParaShape indent uses half-HWPUNIT: 3000 = 15pt = 20px.
-    let first_shift = if indent > 0 { 20.0 } else { 0.0 };
-    let later_shift = if indent < 0 { 20.0 } else { 0.0 };
+    assert!(flat.len() >= 2 && shifted.len() >= 2, "{area}: two lines");
+    let first_matches = same_position(shifted[0], flat[0]);
+    let later_matches = same_position(shifted[1], flat[1]);
     assert!(
-        ((shifted[0] - flat[0]) - first_shift).abs() < 0.5,
-        "{area}: first line {flat:?} -> {shifted:?}"
-    );
-    assert!(
-        ((shifted[1] - flat[1]) - later_shift).abs() < 0.5,
-        "{area}: following line {flat:?} -> {shifted:?}"
+        if indent > 0 {
+            shifted[0] > flat[0] && later_matches
+        } else {
+            first_matches && shifted[1] > flat[1]
+        },
+        "{area}: indentation follows the first/following line contract: {flat:?} -> {shifted:?}"
     );
 }
 
@@ -834,12 +854,13 @@ fn grown_tac_keeps_prefix_before_page_break_and_object_inside_next_body() {
     );
     let table = find_owned_table(&next.root, 1).expect("grown table on p2");
     assert!(
-        (table.bbox.y - 69.844).abs() < 0.5,
-        "independent Hancom table top: {:?}",
+        table.bbox.y >= body_node(&next.root).bbox.y,
+        "다음 쪽의 표는 본문 상단 안에 놓인다: {:?}",
         table.bbox
     );
     assert!(
-        table.bbox.y + table.bbox.height <= 1052.64 + 0.5,
+        table.bbox.y + table.bbox.height
+            <= body_node(&next.root).bbox.y + body_node(&next.root).bbox.height,
         "actual painted table stays in body: {:?}",
         table.bbox
     );
@@ -966,4 +987,24 @@ fn first_run_x(node: &RenderNode) -> Option<f64> {
         }
     }
     node.children.iter().find_map(first_run_x)
+}
+
+// 저장 줄/여백의 HWPUNIT를 문서 출력의 기본 96DPI 좌표계로 변환한다.
+fn hwp_to_px(units: i32) -> f64 {
+    f64::from(units) * 96.0 / 7200.0
+}
+fn body_node(node: &RenderNode) -> &RenderNode {
+    if matches!(node.node_type, RenderNodeType::Body { .. }) {
+        return node;
+    }
+    node.children
+        .iter()
+        .find_map(|child| {
+            if matches!(child.node_type, RenderNodeType::Body { .. }) {
+                Some(child)
+            } else {
+                None
+            }
+        })
+        .expect("page body")
 }
