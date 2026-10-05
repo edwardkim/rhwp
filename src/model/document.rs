@@ -703,7 +703,41 @@ impl Document {
 
         for (id, (basename, ext)) in to_load {
             let full_path = base_dir.join(&basename);
-            if let Ok(data) = std::fs::read(&full_path) {
+            let data = (|| {
+                use std::io::Read;
+                let limit = super::bin_data::MAX_BIN_DATA_BYTES;
+                // Reject an existing FIFO/device before opening it; validate the
+                // opened descriptor as well before the bounded read.
+                let metadata = std::fs::metadata(&full_path).ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let file = std::fs::File::open(&full_path).ok()?;
+                let metadata = file.metadata().ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let mut data = Vec::new();
+                file.take(limit as u64 + 1).read_to_end(&mut data).ok()?;
+                if data.len() > limit {
+                    return None;
+                }
+                let mime = crate::renderer::image_resolver::detect_image_mime_type(&data);
+                if mime == "application/octet-stream" {
+                    return None;
+                }
+                // Prefix detection is sufficient for paint routing, but a local
+                // sidecar must actually be an SVG document, not arbitrary XML.
+                if mime == "image/svg+xml" {
+                    let xml = std::str::from_utf8(&data).ok()?;
+                    let svg = roxmltree::Document::parse(xml).ok()?;
+                    if !svg.root_element().has_tag_name("svg") {
+                        return None;
+                    }
+                }
+                Some(data)
+            })();
+            if let Some(data) = data {
                 if !self.inject_external_image_data(id, data, ext) {
                     continue;
                 }
