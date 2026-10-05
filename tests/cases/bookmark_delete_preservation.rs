@@ -4,6 +4,7 @@ use std::io::{Cursor, Read, Write};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
+use rhwp::model::paragraph::RangeTag;
 use serde_json::Value;
 
 fn fields(core: &DocumentCore) -> Value {
@@ -220,4 +221,66 @@ fn ambiguous_marker_slots_reject_bookmark_delete_without_mutating_document() {
         assert!(core.delete_bookmark_native(0, 0, bookmark(&core)).is_err());
         assert_eq!(format!("{:?}", core.document()), before);
     }
+}
+
+#[test]
+fn bookmark_delete_shifts_highlight_range_and_markpen_raw_positions() {
+    let mut document = fixture(None, "", false, false).document().clone();
+    let p = &mut document.sections[0].paragraphs[0];
+    let start = p.char_offsets[3];
+    p.range_tags.push(RangeTag {
+        start,
+        end: start + 2,
+        tag: 0x0256_3412,
+    });
+    document.sections[0].raw_stream = None;
+    // HWP5 영역 태그를 저장·파싱하면 대응하는 형광펜 표지 주소도 생긴다.
+    let mut core =
+        DocumentCore::from_bytes(&rhwp::serializer::serialize_document(&document).unwrap())
+            .unwrap();
+    let original = core.document().sections[0].paragraphs[0].clone();
+    assert_eq!(original.range_tags.len(), 1);
+    assert_eq!(original.markpen_marks.len(), 2);
+    core.delete_bookmark_native(0, 0, bookmark(&core)).unwrap();
+    let after = &core.document().sections[0].paragraphs[0];
+    assert_eq!(after.range_tags[0].start, original.range_tags[0].start - 8);
+    assert_eq!(after.range_tags[0].end, original.range_tags[0].end - 8);
+    assert_eq!(after.range_tags[0].tag, original.range_tags[0].tag);
+    for (before, after) in original.markpen_marks.iter().zip(&after.markpen_marks) {
+        assert_eq!(after.utf16_pos, before.utf16_pos.map(|p| p - 8));
+        assert_eq!(after.char_idx, before.char_idx);
+        assert_eq!(after.color, before.color);
+    }
+    let expected = after.markpen_marks.clone();
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(
+            reopened.document().sections[0].paragraphs[0].markpen_marks,
+            expected
+        );
+    }
+}
+
+#[test]
+fn bookmark_delete_counts_surrogate_and_tab_width_before_the_slot() {
+    let mut core = fixture(None, "", false, false);
+    core.insert_text_native(0, 0, 0, "🦦\t").unwrap();
+    let original = core.document().sections[0].paragraphs[0].clone();
+    // emoji 2유닛 + tab 8유닛이 기존 19유닛 앞부분에 더해졌다.
+    assert_eq!(original.char_offsets[5], 37);
+    core.delete_bookmark_native(0, 0, bookmark(&core)).unwrap();
+    let after = &core.document().sections[0].paragraphs[0];
+    assert_eq!(after.text, original.text);
+    assert_eq!(after.char_count, original.char_count - 8);
+    assert_eq!(
+        after.char_offsets,
+        original
+            .char_offsets
+            .iter()
+            .map(|&p| if p >= 37 { p - 8 } else { p })
+            .collect::<Vec<_>>()
+    );
 }
