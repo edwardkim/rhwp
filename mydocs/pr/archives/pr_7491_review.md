@@ -1,12 +1,76 @@
 ---
 kind: report
 status: active
+canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-10-05
 ---
 
-# PR #7491 리뷰 — 메인터너 인계 보정
+# PR #7491 리뷰 — 수정: #7490 편집한 문단에도 들여쓰기·내어쓰기를 그린다
 
-## 현재 판정
+## 최종 판정
+
+**머지 보류 — 누적 후보 검증 진행 중.** 원 head의 CI와 이번 누적 head의 실행 결과를 구분한다. 필수 코드·회귀·시각 검증 결과를 확인한 뒤 판정을 갱신한다.
+
+## 접수 정보
+
+- 원 PR: [#7491](https://github.com/edwardkim/rhwp/pull/7491), semanticist21, devel 대상, non-draft.
+- 원 head: `c4367ec03a28369cc6f26b17eca46553ac61514c`; 접수 시점 `CONFLICTING` / `DIRTY`. 원 head의 상태이며 누적 후보 판정이 아니다.
+- 누적 branch: `review/semanticist21-20261005`; 고정 base `cdba77b609c399fdef26a6c9e637716aa32c2177`; 누적 code candidate `1d809afe7b965c9ea6137012d59d139d63b038d0`.
+- Reviewer: jangster77 지정. 기본 maintainer_general; intake_and_review, local_validation, multi_pr_update_branch, 렌더 영향 시 visual_fixture_evidence를 적용.
+- 관련 이슈: #7490.
+- 사용자 지시: non-draft 19건을 번호 순으로 누적 체리픽; 충돌은 메인터너 보정; 원 PR별 리뷰 기록을 개별 작성.
+
+## 적용 이력
+
+| 원 commit SHA | 상태 | 로컬 적용 SHA | 메인터너 보정 |
+| --- | --- | --- | --- |
+| `9e073420e46ad77301fcdb66a54aeb016445fb46` | applied | `9c71a0b86fff848ced50602101d46d53b9f21810` | — |
+| `d3e32c68357245639a94762e7c774d28cbd2cb96` | maintainer-conflict-resolved | `05e3b935251fabd821e39638b9e7b2f04ffb3a07` | SpaceMetric와 HeadType import를 함께 유지; 최신 space metric 재조판 경로 보존 |
+| `8ec046774129ea2350b66a2ec6cd3f88624440a7` | applied | `f4f8075216b9d5d3eafb1967885a9a35bf5e61c8` | — |
+| `c4367ec03a28369cc6f26b17eca46553ac61514c` | applied | `c2ba3a348a4b3e0ef3eb82f85faf62e76e0cce22` | — |
+
+원 저자와 `cherry-pick -x` 출처를 보존했다. 이미 patch-id가 같은 원 commit은 중복 적용하지 않았다. 원 contributor branch는 수정하지 않았다.
+
+## 변경·소비 경로 검토
+
+- `src/document_core/commands/footnote_ops.rs`
+- `src/document_core/commands/foreign_paste.rs`
+- `src/document_core/commands/formatting.rs`
+- `src/document_core/commands/header_footer_ops.rs`
+- `src/document_core/commands/text_editing.rs`
+- `src/renderer/composer.rs`
+- `src/renderer/composer/line_breaking.rs`
+- `src/wasm_api.rs`
+
+구현 주장과 실제 호출 경로·반례 대조: 진행 중. 합성 입력의 계약 결과를 한컴 출력과의 일치 증거로 바꾸지 않는다.
+
+## 검증 입력·결과
+
+- `tests/cases/issue_7490_edited_paragraph_indent.rs` (10개 테스트): 실행 대기
+
+- 로컬 Cargo는 공유 `target/pr-review`에서 순차 실행한다. 같은 원 head의 CI를 19건 누적 후보의 전체 검증으로 재사용하지 않는다.
+- 필수 fmt·Clippy 3종·workspace build·manifest/base 정책, focused·전체 Rust, 해당 Native/fresh WASM 검증: 진행 중.
+- 실제 HWP/HWPX/PDF 입력과 commit의 해시, 독립 기준, source/build provenance: 입력 사용 시 기록한다.
+- source 교정 또는 검사 실패가 생기면 이 PR의 보정과 재실행을 별도로 기록한다. Golden/baseline/래칫을 완화하지 않는다.
+
+## 원 head CI 참고값
+
+- Lint (fmt, clippy, WASM check): SUCCESS
+- Build & Test: SUCCESS
+- CI Impact Policy: SUCCESS
+
+## 조판·시각 판정
+
+적용 여부와 필요한 직접 증거를 확인 중이다. 원 PR 제공 before/after·수치를 누적 head의 Visual Sweep 통과로 간주하지 않는다. 자료 부족과 실제 회귀를 구분하여 미검증/미충족으로 판정한다.
+
+## 남은 범위·후속 처리
+
+원 PR 전체 해결 여부와 이슈 종료 표현은 직접 검증한 범위로 제한한다. 이 기록은 로컬 누적 검토이며 원격 approve/comment/merge를 의미하지 않는다. 통합 결과는 같은 누적 branch에 두고 원 PR별 판정이 확정된 뒤 게시 범위를 결정한다.
+
+## upstream의 #7599 통합 완료 기록 (rebase 중 보존)
+
+
+### 현재 판정
 
 메인터너 보정 후 수용 가능 — #7490 해결 범위의 로컬 검증 완료. #7490 들여쓰기 문제와 그 편집 경로의 TAC prefix 처리에
 해결 범위를 한정한 별도 integration [PR #7599](https://github.com/edwardkim/rhwp/pull/7599)를
@@ -25,7 +89,7 @@ last_verified: 2026-10-05
 - Rust 21개 계약: `183db042f8a2e81735d6a03b8566f76763dfd052`; E2E 등록·명명은 이후 `dbe8431cb`.
 - 전체 회귀: 10,379 PASS / 0 FAIL / 50 SKIP. Native Skia 3단계 PASS. 원 PR CI와 로컬 integration 검증은 별개다.
 
-## 해결 범위와 독립 근거
+### 해결 범위와 독립 근거
 
 편집 재조판의 첫 줄/후속 줄에 들여쓰기 bit20을 유지하며, 명시적 문단 모양 변경은 기록을
 새로 단다. 한컴 원본의 bit20이 모두 꺼진 줄과 번호 문단의 후속 줄 기록은 보존한다.
@@ -51,7 +115,7 @@ InlineBoxPlacement를 paint에 전달한다. 컷/rowspan 내부 알고리즘 변
 [fixture 설명](../../../tests/fixtures/pr7491_edited_indent/README.md)에 실제 명령과 한컴 2020 기준을
 연결한다. 수동 LineSeg로 수용 조건을 완화하지 않았다.
 
-## 값의 생산과 최종 소비
+### 값의 생산과 최종 소비
 
 | 값/경로 | 생산 → 측정 → 실제 배치·최종 소비 |
 | --- | --- |
@@ -65,7 +129,7 @@ InlineBoxPlacement를 paint에 전달한다. 컷/rowspan 내부 알고리즘 변
 source-owner만 바꾸었던 중간 보정은 32건 회귀를 만들어 제거했다. 최종 구현은 기존 소유
 조회에 점유 메트릭을 공급한다. 문서 ID 분기, 좌표 clamp, 출력 은폐, 렌더 golden 완화는 없다.
 
-## 회귀·기준값과 실행 증거
+### 회귀·기준값과 실행 증거
 
 원 devel은 기존 focused 10건 모두 FAIL, 원 PR 네 commit만 적용하면 9 PASS / 1 FAIL이었다.
 최종 계약 21건 모두 PASS다. 앞의 세 prefix 반례는 `41e1be0cf`에서 0 PASS / 3 FAIL, 보정 뒤 3 PASS다.
@@ -100,7 +164,7 @@ IR sweep의 51행 추가는 기본 ColumnDef의 정확한 8-unit 구조 이동�
 - 생성기 재실행: 현재 12개 HWP 모두 commit fixture와 바이트 동일.
 - 전체 nextest: **10,379 PASS / 0 FAIL / 50 SKIP**(425.186초). focused 21건과 이전 4개 실패 모두 PASS. Native Skia: lib/workspace 4,109 PASS / 13 IGNORE, placeholder 2 PASS, direct PDF 4 PASS. 최종 source가 다른 이전 통과를 대체 증거로 쓰지 않는다.
 
-## 미해결 범위
+### 미해결 범위
 
 추가 성장 표본의 전체 출력 일치를 주장하지 않는다. Enter 20의 표 높이 997.48px는
 이전 `41e1be0cf`에서도 동일했고, 최종 원점 개선 뒤에도 본문을 약 14.8px 넘는다.
@@ -109,7 +173,7 @@ Enter 8의 첫 표 원점·본문 안 배치는 개선됐으나 뒤 각주/rowbr
 이 범위는 **미충족(실행으로 확인한 기존 결함)**이며 full-page visual PASS로 보고하지 않는다.
 #6882 전체 해결이나 저장 셀 높이 보존으로 이슈를 닫는 표현을 쓰지 않는다.
 
-## 조판 원칙 판정
+### 조판 원칙 판정
 
 | 항목 | 판정 | 근거/제한 |
 | --- | --- | --- |
@@ -125,7 +189,7 @@ Enter 8의 첫 표 원점·본문 안 배치는 개선됐으나 뒤 각주/rowbr
 1000줄 초과 PR이므로 즉시 admin merge 경로를 사용하지 않는다. 별도 code review·simulation·
 시각 증거·작업지시자 판단 cycle을 거치며, integration merge 뒤에만 원 #7491 종료를 제안한다.
 
-## 2026-10-02 최초 보류 기록
+### 2026-10-02 최초 보류 기록
 
 머지 보류 — 실패 assertion의 독립 기대값 및 편집 후 시각 증거를 확인해야 한다. 새 코드 회귀로 단정하지 않는다.
 
@@ -142,14 +206,14 @@ Enter 8의 첫 표 원점·본문 안 배치는 개선됐으나 뒤 각주/rowbr
 CI 집계 실패·진행 중 없음(확인 당시). 원 PR head는 최초 접수 이후 바뀌지 않았다.
 Reviewer edwardkim 지정. 원격 GitHub 승인 이벤트는 아직 게시하지 않았다.
 
-## 범위와 호출 경로
+### 범위와 호출 경로
 
 #7490 종료를 제안하는 PR이다. 기능 commit 4개를 적용했다.
 `mark_indented_lines`는 문단 속성과 저장 LineSeg 기록으로 재조판 bit20을 정한다.
 `restamp_indentation`은 명시적인 들여쓰기 변경을 본문·셀·머리말/꼬리말·각주·복원/외부 붙여넣기에 반영한다.
 저장 기록상 들여쓰기 없는 #6190 표 호스트 예외는 원 저장본의 플래그를 근거로 보존한다.
 
-## 실행 관측과 실패 분류
+### 실행 관측과 실패 분류
 
 focused 10개 중 9 PASS, 1 FAIL. 별도 #6190 원 저장본 대조군 1/1 PASS.
 실패는 `editing_keeps_hancom_record_of_unindented_line`의 편집 후 표 우변 검사다.
@@ -167,19 +231,19 @@ LineSeg flag는 393216(0x60000)으로 들여쓰기 bit20이 꺼져 있다. 따�
 글자를 새로 넣는 편집이다. 독립적인 한컴 편집 후 출력 없이는 해당 우변 assertion이
 편집 의도를 정확히 나타내는지 확정할 수 없다. 테스트·baseline·허용치를 변경하지 않았다.
 
-## 시각·해제 조건
+### 시각·해제 조건
 
 원본 SVG 불변/코퍼스 해시는 편집 후 출력의 정답지가 아니다. 편집 사례의 독립 PDF와
 Native/fresh WASM 시각 게이트는 미검증이다. 기여자가 이를 마련하고 실패 계약의 근거를
 확인해야 한다. 판정 수정과 코드 수정 필요 여부는 그 증거로 결정한다. merge 미실행.
 
-## 승인 후 게시 기록
+### 승인 후 게시 기록
 
 2026-10-02 작업지시자의 댓글 게시 승인 후 [보류 사유 comment](https://github.com/edwardkim/rhwp/pull/7491#issuecomment-5944041501)를 게시했다.
 게시 직전 원 head가 그대로 OPEN임을 확인하고 API 재조회로 한글 본문·BOM/치환 없음 및
 작성 문안과의 일치를 확인했다(파일 끝 개행만 정규화). 코드 변경·push·GitHub 승인·merge 없음.
 
-## 최신 원격 CI와 병합 확인 — 2026-10-05
+### 최신 원격 CI와 병합 확인 — 2026-10-05
 
 - 검증한 원격 head `6f7cfcc50c94baf196095e9e3d968d055374c84c`, base `cdba77b609c399fdef26a6c9e637716aa32c2177`입니다.
 - [Full CI37307314810](https://github.com/edwardkim/rhwp/actions/runs/37307314810), [CodeQL37307314712](https://github.com/edwardkim/rhwp/actions/runs/37307314712), [Render Diff37307314551](https://github.com/edwardkim/rhwp/actions/runs/37307314551), [Proptest37307314777](https://github.com/edwardkim/rhwp/actions/runs/37307314777), Adapter 및 CI Impact Policy workflow가 success입니다. required Build & Test success이며35개 check가 모두 완료했습니다.
@@ -190,7 +254,7 @@ Native/fresh WASM 시각 게이트는 미검증이다. 기여자가 이를 마�
 
 - 병합 후 [duration 갱신37311340327](https://github.com/edwardkim/rhwp/actions/runs/37311340327)은 completed/success입니다. `ready=true / successful-pr-worker-measurements`와 metrics branch 반영을 확인했고 로그 해시는 CI 증거 JSON에 보존하며 검증 CI를 재실행하지 않았습니다.
 
-## 후속 처리 완료 — 2026-10-05
+### 후속 처리 완료 — 2026-10-05
 
 - 실제 merge `bdda980b7e266d821171ed08b7604e21e6f3b7fa`와 archive/CI 증적의 devel 반영을 확인했습니다.
 - [원 #7491 한국어 안내](https://github.com/edwardkim/rhwp/pull/7491#issuecomment-5994750934), [#7490 종료·후속 안내](https://github.com/edwardkim/rhwp/issues/7490#issuecomment-5994747591)를 UTF-8 본문 파일로 게시하고 API로 본문·한글·merge SHA 고정 이미지의 일치를 확인했습니다. #7491은 CLOSED/merged=false로 대체 통합 종료, #7490은 자동 CLOSED입니다.
