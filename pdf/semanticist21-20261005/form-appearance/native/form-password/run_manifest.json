@@ -10,7 +10,7 @@
       "path": "tests/fixtures/form-password/edit-password-2024.pdf",
       "sha256": "84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a"
     },
-    "git_head": "cf2336295540ea8ce3e94eb6517cb406fca8d28f",
+    "git_head": "7ca40721fd09f0fcfeb4573167dde193d9d74235",
     "sweep_script": {
       "path": "scripts/visual_sweep.py",
       "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"

@@ -7,7 +7,10 @@ await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/snap/bin/chromium',headless:true,args:['--no-sandbox']});
 try {
  const page=await browser.newPage({viewport:{width:900,height:1200}});
- const fontBytes=await fs.readFile('/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF');
+ const fontSvg=await fs.readFile('output/pr-review/semanticist21-20261005/appearance-final-native/form-original/svg/form-01.svg','utf8');
+ const fontMatch=fontSvg.match(/@font-face \{ font-family: \"한컴바탕\"; src: url\(\"data:font\/opentype;base64,([A-Za-z0-9+/=]+)/);
+ assert.ok(fontMatch,'Native full font embedding must precede browser check');
+ const fontBytes=Buffer.from(fontMatch[1],'base64');
  await page.route('**/__review/hancom-form-font.ttf',route=>route.fulfill({body:fontBytes,contentType:'font/ttf'}));
  await page.goto('http://127.0.0.1:18765/');
  const results=[];

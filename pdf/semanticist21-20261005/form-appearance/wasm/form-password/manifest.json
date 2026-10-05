@@ -10,7 +10,7 @@
   ],
   "missing_pages": [],
   "run_state": "complete",
-  "run_manifest": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/run_manifest.json",
+  "run_manifest": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/run_manifest.json",
   "exported_svg_pages": 1,
   "exported_render_tree_pages": 1,
   "exported_pdf_pages": 1,
@@ -23,12 +23,12 @@
   "overlay_pages": 1,
   "review_pages": 1,
   "pdf_question_markers": 0,
-  "contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/contact_sheet.png",
-  "overlay_contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/overlay_contact_sheet.png",
-  "review_contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/review_contact_sheet.png",
-  "analysis_dir": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/analysis",
-  "overlay_dir": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/overlay",
-  "review_dir": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/review",
+  "contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/contact_sheet.png",
+  "overlay_contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/overlay_contact_sheet.png",
+  "review_contact_sheet": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/review_contact_sheet.png",
+  "analysis_dir": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/analysis",
+  "overlay_dir": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/overlay",
+  "review_dir": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/review",
   "note_shape": [
     {
       "section": 0,
@@ -56,7 +56,7 @@
       }
     }
   ],
-  "note_shape_json": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/analysis/note_shape.json",
+  "note_shape_json": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/analysis/note_shape.json",
   "overlay_metrics": {
     "compared_pages": 1,
     "pixel_diff_threshold": 32,
@@ -72,7 +72,7 @@
       1
     ]
   },
-  "overlay_metrics_json": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/overlay/overlay_metrics.json",
+  "overlay_metrics_json": "output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/overlay/overlay_metrics.json",
   "pr_review_gate": {
     "status": "passed",
     "minimum_tolerant_content_match_percent": 90.0,
@@ -105,10 +105,8 @@
     "render_tree_frame_tail_overflow_pages": [],
     "question_marker_drift_pages": [],
     "legacy_glyph_visual_pages": [],
-    "metrics_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/appearance-final-native/form-password/analysis/metrics.json",
-    "question_flow_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/appearance-final-native/form-password/analysis/question_flow.json"
+    "metrics_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/analysis/metrics.json",
+    "question_flow_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/appearance-final-wasm/form-password/analysis/question_flow.json"
   },
-  "flagged_pages": [],
-  "native_document_pages": 1,
-  "native_export_metadata": "output/pr-review/semanticist21-20261005/appearance-final-native/form-password/native-export.json"
+  "flagged_pages": []
 }

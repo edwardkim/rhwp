@@ -1,0 +1,2323 @@
+{
+  "webCanvas": [
+    {
+      "file": "samples/hwpx/form-01.hwpx",
+      "calls": [
+        {
+          "text": "명령 단추",
+          "args": [
+            130.63333333333333,
+            150.16
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "선택 상자",
+          "args": [
+            130.72,
+            205.94666666666666
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "계절 선택",
+          "args": [
+            116.38666666666667,
+            258.17333333333335
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "라디오 단추",
+          "args": [
+            130.72,
+            310.40000000000003
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "여",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "기",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "에",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "입",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "력",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        }
+      ],
+      "raw": {
+        "ok": true,
+        "formType": "ComboBox",
+        "name": "ComboBox",
+        "value": 0,
+        "text": "",
+        "caption": "",
+        "enabled": true
+      },
+      "reopenedRaw": {
+        "ok": true,
+        "formType": "ComboBox",
+        "name": "ComboBox",
+        "value": 0,
+        "text": "",
+        "caption": "",
+        "enabled": true
+      },
+      "svgContainsComboTitle": true,
+      "reopenedSvgContainsComboTitle": true
+    },
+    {
+      "file": "tests/fixtures/form-password/edit-password.hwpx",
+      "calls": [
+        {
+          "text": "명령 단추",
+          "args": [
+            130.63333333333333,
+            150.16
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "선택 상자",
+          "args": [
+            130.72,
+            205.94666666666666
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "계절 선택",
+          "args": [
+            116.38666666666667,
+            258.17333333333335
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "라디오 단추",
+          "args": [
+            130.72,
+            310.40000000000003
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "*************",
+          "args": [
+            116.38666666666667,
+            366.1866666666667
+          ],
+          "font": "13.3333px 한컴바탕"
+        },
+        {
+          "text": "여",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "기",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "에",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "입",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        },
+        {
+          "text": "력",
+          "args": [
+            0,
+            0
+          ],
+          "font": "italic 13.333px 한컴바탕, Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", serif"
+        }
+      ],
+      "raw": {
+        "ok": true,
+        "formType": "ComboBox",
+        "name": "ComboBox",
+        "value": 0,
+        "text": "",
+        "caption": "",
+        "enabled": true
+      },
+      "reopenedRaw": {
+        "ok": true,
+        "formType": "ComboBox",
+        "name": "ComboBox",
+        "value": 0,
+        "text": "",
+        "caption": "",
+        "enabled": true
+      },
+      "svgContainsComboTitle": true,
+      "reopenedSvgContainsComboTitle": true
+    }
+  ],
+  "canvasKit": [
+    {
+      "diagnostic": {
+        "mode": "default",
+        "surfacePreference": "software",
+        "surfaceBackend": "software",
+        "surfaceFallbackReason": null,
+        "lastRenderCompleted": true,
+        "lastUnsupportedOps": [],
+        "lastExpectedUnsupportedOps": [],
+        "lastUnexpectedUnsupportedOps": [],
+        "lastRenderError": null,
+        "passesRuntimeReadinessGate": true,
+        "readinessBlockers": [],
+        "hiddenCanvas2dOverlayUsed": false,
+        "lastRenderDurationMs": 42.5,
+        "renderCount": 1,
+        "imageCacheEntries": 0,
+        "imageCacheLimit": 128,
+        "imageCachePixels": 0,
+        "imageCachePixelLimit": 67108864,
+        "imageCacheHits": 0,
+        "imageCacheMisses": 0,
+        "imageCacheEvictions": 0,
+        "imageFailureCacheHits": 0,
+        "imageFailures": [],
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "bundledTypefaceCount": 0,
+        "bundledTypefaceLoadFailureCount": 0,
+        "glyphRunFontBlobCount": 0,
+        "glyphRunFontBlobBytes": 0,
+        "glyphRunTypefaceCount": 0,
+        "glyphRunFontCount": 0,
+        "fontSubstitutionLimit": 4096,
+        "unregisteredFontFallbacks": 0,
+        "fontSubstitutions": [],
+        "replayFeatureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        }
+      },
+      "forms": [
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 94.493,
+            "height": 26.453
+          },
+          "formType": "pushButton",
+          "caption": "명령 단추",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 94.49333333333334,
+                  "height": 26.453333333333333
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 93.49333333333334,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 1,
+                  "height": 25.453333333333333
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 206.88,
+                  "y": 132.26666666666668,
+                  "width": 1,
+                  "height": 26.453333333333333
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 157.72000000000003,
+                  "width": 94.49333333333334,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 133.26666666666668,
+                  "width": 91.49333333333334,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 133.26666666666668,
+                  "width": 1,
+                  "height": 23.453333333333333
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 205.88,
+                  "y": 133.26666666666668,
+                  "width": 1,
+                  "height": 24.453333333333333
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 156.72000000000003,
+                  "width": 92.49333333333334,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              }
+            ],
+            "label": {
+              "text": "명령 단추",
+              "x": 130.63333333333333,
+              "baseline": 150.16,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 188.053,
+            "width": 132.28,
+            "height": 26.453
+          },
+          "formType": "checkBox",
+          "caption": "선택 상자",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#ffffff",
+          "value": 1,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 13,
+                  "height": 13
+                },
+                "color": "#ffffff"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 12,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 1,
+                  "height": 12
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 125.38666666666667,
+                  "y": 194.78,
+                  "width": 1,
+                  "height": 13
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 206.78,
+                  "width": 13,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 195.78,
+                  "width": 10,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 195.78,
+                  "width": 1,
+                  "height": 10
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 124.38666666666667,
+                  "y": 195.78,
+                  "width": 1,
+                  "height": 11
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 205.78,
+                  "width": 11,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    116.38666666666667,
+                    201.28
+                  ],
+                  [
+                    118.38666666666667,
+                    203.28
+                  ],
+                  [
+                    123.38666666666667,
+                    198.28
+                  ]
+                ],
+                "color": "#000000",
+                "width": 2,
+                "closed": false
+              }
+            ],
+            "label": {
+              "text": "선택 상자",
+              "x": 130.72,
+              "baseline": 205.94666666666666,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 243.84,
+            "width": 80.773,
+            "height": 19.333
+          },
+          "formType": "comboBox",
+          "caption": "",
+          "text": "계절 선택",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 80.77333333333333,
+                  "height": 19.333333333333332
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 79.77333333333333,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 1,
+                  "height": 18.333333333333332
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 193.16,
+                  "y": 243.84000000000003,
+                  "width": 1,
+                  "height": 19.333333333333332
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 262.17333333333335,
+                  "width": 80.77333333333333,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 244.84000000000003,
+                  "width": 77.77333333333333,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 244.84000000000003,
+                  "width": 1,
+                  "height": 16.333333333333332
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 192.16,
+                  "y": 244.84000000000003,
+                  "width": 1,
+                  "height": 17.333333333333332
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 261.17333333333335,
+                  "width": 78.77333333333333,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 17,
+                  "height": 15.333333333333332
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 16,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 1,
+                  "height": 14.333333333333332
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 191.16,
+                  "y": 245.84000000000003,
+                  "width": 1,
+                  "height": 15.333333333333332
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 260.17333333333335,
+                  "width": 17,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 246.84000000000003,
+                  "width": 14,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 246.84000000000003,
+                  "width": 1,
+                  "height": 12.333333333333332
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 190.16,
+                  "y": 246.84000000000003,
+                  "width": 1,
+                  "height": 13.333333333333332
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 259.17333333333335,
+                  "width": 15,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    181.66,
+                    252.5066666666667
+                  ],
+                  [
+                    185.66,
+                    252.5066666666667
+                  ],
+                  [
+                    183.66,
+                    254.5066666666667
+                  ]
+                ],
+                "color": "#000000",
+                "width": 0,
+                "closed": true
+              }
+            ],
+            "label": {
+              "text": "계절 선택",
+              "x": 116.38666666666667,
+              "baseline": 258.17333333333335,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 292.507,
+            "width": 113.387,
+            "height": 26.453
+          },
+          "formType": "radioButton",
+          "caption": "라디오 단추",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#ffffff",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "circle",
+                "x": 118.38666666666667,
+                "y": 305.73333333333335,
+                "radius": 5,
+                "color": "#ffffff"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    121.56864718200613,
+                    302.55135281799386
+                  ],
+                  [
+                    122.02724314135394,
+                    303.08829969801724
+                  ],
+                  [
+                    122.39619602551433,
+                    303.6903760845054
+                  ],
+                  [
+                    122.66642098999486,
+                    304.3427568586461
+                  ],
+                  [
+                    122.83126419934479,
+                    305.0293782406523
+                  ],
+                  [
+                    122.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    122.83126419934479,
+                    306.4372884260144
+                  ],
+                  [
+                    122.66642098999486,
+                    307.1239098080206
+                  ],
+                  [
+                    122.39619602551433,
+                    307.7762905821613
+                  ],
+                  [
+                    122.02724314135394,
+                    308.37836696864946
+                  ],
+                  [
+                    121.56864718200613,
+                    308.91531384867284
+                  ],
+                  [
+                    121.0317003019828,
+                    309.3739098080206
+                  ],
+                  [
+                    120.42962391549463,
+                    309.742862692181
+                  ],
+                  [
+                    119.77724314135394,
+                    310.0130876566615
+                  ],
+                  [
+                    119.09062175934771,
+                    310.1779308660115
+                  ],
+                  [
+                    118.38666666666667,
+                    310.23333333333335
+                  ],
+                  [
+                    117.68271157398563,
+                    310.1779308660115
+                  ],
+                  [
+                    116.9960901919794,
+                    310.0130876566615
+                  ],
+                  [
+                    116.34370941783871,
+                    309.742862692181
+                  ],
+                  [
+                    115.74163303135055,
+                    309.3739098080206
+                  ],
+                  [
+                    115.20468615132721,
+                    308.91531384867284
+                  ]
+                ],
+                "color": "#fafafa",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    115.20468615132721,
+                    308.91531384867284
+                  ],
+                  [
+                    114.7460901919794,
+                    308.37836696864946
+                  ],
+                  [
+                    114.37713730781901,
+                    307.7762905821613
+                  ],
+                  [
+                    114.10691234333848,
+                    307.1239098080206
+                  ],
+                  [
+                    113.94206913398855,
+                    306.4372884260144
+                  ],
+                  [
+                    113.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    113.94206913398855,
+                    305.0293782406523
+                  ],
+                  [
+                    114.10691234333848,
+                    304.3427568586461
+                  ],
+                  [
+                    114.37713730781901,
+                    303.6903760845054
+                  ],
+                  [
+                    114.7460901919794,
+                    303.08829969801724
+                  ],
+                  [
+                    115.20468615132721,
+                    302.55135281799386
+                  ],
+                  [
+                    115.74163303135055,
+                    302.0927568586461
+                  ],
+                  [
+                    116.34370941783871,
+                    301.7238039744857
+                  ],
+                  [
+                    116.9960901919794,
+                    301.45357901000517
+                  ],
+                  [
+                    117.68271157398563,
+                    301.2887358006552
+                  ],
+                  [
+                    118.38666666666667,
+                    301.23333333333335
+                  ],
+                  [
+                    119.09062175934771,
+                    301.2887358006552
+                  ],
+                  [
+                    119.77724314135394,
+                    301.45357901000517
+                  ],
+                  [
+                    120.42962391549463,
+                    301.7238039744857
+                  ],
+                  [
+                    121.0317003019828,
+                    302.0927568586461
+                  ],
+                  [
+                    121.56864718200613,
+                    302.55135281799386
+                  ]
+                ],
+                "color": "#a0a0a0",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    120.86154040081959,
+                    303.2584595991804
+                  ],
+                  [
+                    121.21822614697899,
+                    303.6760849503097
+                  ],
+                  [
+                    121.50518950132596,
+                    304.14436658424495
+                  ],
+                  [
+                    121.71536447369971,
+                    304.65177385302104
+                  ],
+                  [
+                    121.84357585874966,
+                    305.1858127056925
+                  ],
+                  [
+                    121.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    121.84357585874966,
+                    306.2808539609742
+                  ],
+                  [
+                    121.71536447369971,
+                    306.81489281364566
+                  ],
+                  [
+                    121.50518950132596,
+                    307.32230008242175
+                  ],
+                  [
+                    121.21822614697899,
+                    307.790581716357
+                  ],
+                  [
+                    120.86154040081959,
+                    308.2082070674863
+                  ],
+                  [
+                    120.44391504969033,
+                    308.56489281364566
+                  ],
+                  [
+                    119.97563341575508,
+                    308.85185616799265
+                  ],
+                  [
+                    119.46822614697899,
+                    309.0620311403664
+                  ],
+                  [
+                    118.93418729430748,
+                    309.19024252541635
+                  ],
+                  [
+                    118.38666666666667,
+                    309.23333333333335
+                  ],
+                  [
+                    117.83914603902586,
+                    309.19024252541635
+                  ],
+                  [
+                    117.30510718635435,
+                    309.0620311403664
+                  ],
+                  [
+                    116.79769991757826,
+                    308.85185616799265
+                  ],
+                  [
+                    116.32941828364301,
+                    308.56489281364566
+                  ],
+                  [
+                    115.91179293251375,
+                    308.2082070674863
+                  ]
+                ],
+                "color": "#f6f6f6",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    115.91179293251375,
+                    308.2082070674863
+                  ],
+                  [
+                    115.55510718635435,
+                    307.790581716357
+                  ],
+                  [
+                    115.26814383200738,
+                    307.32230008242175
+                  ],
+                  [
+                    115.05796885963363,
+                    306.81489281364566
+                  ],
+                  [
+                    114.92975747458368,
+                    306.2808539609742
+                  ],
+                  [
+                    114.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    114.92975747458368,
+                    305.1858127056925
+                  ],
+                  [
+                    115.05796885963363,
+                    304.65177385302104
+                  ],
+                  [
+                    115.26814383200738,
+                    304.14436658424495
+                  ],
+                  [
+                    115.55510718635435,
+                    303.6760849503097
+                  ],
+                  [
+                    115.91179293251375,
+                    303.2584595991804
+                  ],
+                  [
+                    116.32941828364301,
+                    302.90177385302104
+                  ],
+                  [
+                    116.79769991757826,
+                    302.61481049867405
+                  ],
+                  [
+                    117.30510718635435,
+                    302.4046355263003
+                  ],
+                  [
+                    117.83914603902586,
+                    302.27642414125035
+                  ],
+                  [
+                    118.38666666666667,
+                    302.23333333333335
+                  ],
+                  [
+                    118.93418729430748,
+                    302.27642414125035
+                  ],
+                  [
+                    119.46822614697899,
+                    302.4046355263003
+                  ],
+                  [
+                    119.97563341575508,
+                    302.61481049867405
+                  ],
+                  [
+                    120.44391504969033,
+                    302.90177385302104
+                  ],
+                  [
+                    120.86154040081959,
+                    303.2584595991804
+                  ]
+                ],
+                "color": "#404040",
+                "width": 1,
+                "closed": false
+              }
+            ],
+            "label": {
+              "text": "라디오 단추",
+              "x": 130.72,
+              "baseline": 310.40000000000003,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 348.293,
+            "width": 94.493,
+            "height": 26.453
+          },
+          "formType": "edit",
+          "caption": "",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 94.49333333333334,
+                  "height": 26.453333333333333
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 93.49333333333334,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 1,
+                  "height": 25.453333333333333
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 206.88,
+                  "y": 348.29333333333335,
+                  "width": 1,
+                  "height": 26.453333333333333
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 373.74666666666667,
+                  "width": 94.49333333333334,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 349.29333333333335,
+                  "width": 91.49333333333334,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 349.29333333333335,
+                  "width": 1,
+                  "height": 23.453333333333333
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 205.88,
+                  "y": 349.29333333333335,
+                  "width": 1,
+                  "height": 24.453333333333333
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 372.74666666666667,
+                  "width": 92.49333333333334,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              }
+            ],
+            "label": null
+          }
+        }
+      ]
+    },
+    {
+      "diagnostic": {
+        "mode": "default",
+        "surfacePreference": "software",
+        "surfaceBackend": "software",
+        "surfaceFallbackReason": null,
+        "lastRenderCompleted": true,
+        "lastUnsupportedOps": [],
+        "lastExpectedUnsupportedOps": [],
+        "lastUnexpectedUnsupportedOps": [],
+        "lastRenderError": null,
+        "passesRuntimeReadinessGate": true,
+        "readinessBlockers": [],
+        "hiddenCanvas2dOverlayUsed": false,
+        "lastRenderDurationMs": 18.200000286102295,
+        "renderCount": 1,
+        "imageCacheEntries": 0,
+        "imageCacheLimit": 128,
+        "imageCachePixels": 0,
+        "imageCachePixelLimit": 67108864,
+        "imageCacheHits": 0,
+        "imageCacheMisses": 0,
+        "imageCacheEvictions": 0,
+        "imageFailureCacheHits": 0,
+        "imageFailures": [],
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "bundledTypefaceCount": 0,
+        "bundledTypefaceLoadFailureCount": 0,
+        "glyphRunFontBlobCount": 0,
+        "glyphRunFontBlobBytes": 0,
+        "glyphRunTypefaceCount": 0,
+        "glyphRunFontCount": 0,
+        "fontSubstitutionLimit": 4096,
+        "unregisteredFontFallbacks": 0,
+        "fontSubstitutions": [],
+        "replayFeatureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        }
+      },
+      "forms": [
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 94.493,
+            "height": 26.453
+          },
+          "formType": "pushButton",
+          "caption": "명령 단추",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 94.49333333333334,
+                  "height": 26.453333333333333
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 93.49333333333334,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 132.26666666666668,
+                  "width": 1,
+                  "height": 25.453333333333333
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 206.88,
+                  "y": 132.26666666666668,
+                  "width": 1,
+                  "height": 26.453333333333333
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 157.72000000000003,
+                  "width": 94.49333333333334,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 133.26666666666668,
+                  "width": 91.49333333333334,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 133.26666666666668,
+                  "width": 1,
+                  "height": 23.453333333333333
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 205.88,
+                  "y": 133.26666666666668,
+                  "width": 1,
+                  "height": 24.453333333333333
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 156.72000000000003,
+                  "width": 92.49333333333334,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              }
+            ],
+            "label": {
+              "text": "명령 단추",
+              "x": 130.63333333333333,
+              "baseline": 150.16,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 188.053,
+            "width": 132.28,
+            "height": 26.453
+          },
+          "formType": "checkBox",
+          "caption": "선택 상자",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#ffffff",
+          "value": 1,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 13,
+                  "height": 13
+                },
+                "color": "#ffffff"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 12,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 194.78,
+                  "width": 1,
+                  "height": 12
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 125.38666666666667,
+                  "y": 194.78,
+                  "width": 1,
+                  "height": 13
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 206.78,
+                  "width": 13,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 195.78,
+                  "width": 10,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 195.78,
+                  "width": 1,
+                  "height": 10
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 124.38666666666667,
+                  "y": 195.78,
+                  "width": 1,
+                  "height": 11
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 205.78,
+                  "width": 11,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    116.38666666666667,
+                    201.28
+                  ],
+                  [
+                    118.38666666666667,
+                    203.28
+                  ],
+                  [
+                    123.38666666666667,
+                    198.28
+                  ]
+                ],
+                "color": "#000000",
+                "width": 2,
+                "closed": false
+              }
+            ],
+            "label": {
+              "text": "선택 상자",
+              "x": 130.72,
+              "baseline": 205.94666666666666,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 243.84,
+            "width": 80.773,
+            "height": 19.333
+          },
+          "formType": "comboBox",
+          "caption": "",
+          "text": "계절 선택",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 80.77333333333333,
+                  "height": 19.333333333333332
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 79.77333333333333,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 243.84000000000003,
+                  "width": 1,
+                  "height": 18.333333333333332
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 193.16,
+                  "y": 243.84000000000003,
+                  "width": 1,
+                  "height": 19.333333333333332
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 262.17333333333335,
+                  "width": 80.77333333333333,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 244.84000000000003,
+                  "width": 77.77333333333333,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 244.84000000000003,
+                  "width": 1,
+                  "height": 16.333333333333332
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 192.16,
+                  "y": 244.84000000000003,
+                  "width": 1,
+                  "height": 17.333333333333332
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 261.17333333333335,
+                  "width": 78.77333333333333,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 17,
+                  "height": 15.333333333333332
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 16,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 245.84000000000003,
+                  "width": 1,
+                  "height": 14.333333333333332
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 191.16,
+                  "y": 245.84000000000003,
+                  "width": 1,
+                  "height": 15.333333333333332
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 175.16,
+                  "y": 260.17333333333335,
+                  "width": 17,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 246.84000000000003,
+                  "width": 14,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 246.84000000000003,
+                  "width": 1,
+                  "height": 12.333333333333332
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 190.16,
+                  "y": 246.84000000000003,
+                  "width": 1,
+                  "height": 13.333333333333332
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 176.16,
+                  "y": 259.17333333333335,
+                  "width": 15,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    181.66,
+                    252.5066666666667
+                  ],
+                  [
+                    185.66,
+                    252.5066666666667
+                  ],
+                  [
+                    183.66,
+                    254.5066666666667
+                  ]
+                ],
+                "color": "#000000",
+                "width": 0,
+                "closed": true
+              }
+            ],
+            "label": {
+              "text": "계절 선택",
+              "x": 116.38666666666667,
+              "baseline": 258.17333333333335,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 292.507,
+            "width": 113.387,
+            "height": 26.453
+          },
+          "formType": "radioButton",
+          "caption": "라디오 단추",
+          "text": "",
+          "foreColor": "#000000",
+          "backColor": "#ffffff",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "circle",
+                "x": 118.38666666666667,
+                "y": 305.73333333333335,
+                "radius": 5,
+                "color": "#ffffff"
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    121.56864718200613,
+                    302.55135281799386
+                  ],
+                  [
+                    122.02724314135394,
+                    303.08829969801724
+                  ],
+                  [
+                    122.39619602551433,
+                    303.6903760845054
+                  ],
+                  [
+                    122.66642098999486,
+                    304.3427568586461
+                  ],
+                  [
+                    122.83126419934479,
+                    305.0293782406523
+                  ],
+                  [
+                    122.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    122.83126419934479,
+                    306.4372884260144
+                  ],
+                  [
+                    122.66642098999486,
+                    307.1239098080206
+                  ],
+                  [
+                    122.39619602551433,
+                    307.7762905821613
+                  ],
+                  [
+                    122.02724314135394,
+                    308.37836696864946
+                  ],
+                  [
+                    121.56864718200613,
+                    308.91531384867284
+                  ],
+                  [
+                    121.0317003019828,
+                    309.3739098080206
+                  ],
+                  [
+                    120.42962391549463,
+                    309.742862692181
+                  ],
+                  [
+                    119.77724314135394,
+                    310.0130876566615
+                  ],
+                  [
+                    119.09062175934771,
+                    310.1779308660115
+                  ],
+                  [
+                    118.38666666666667,
+                    310.23333333333335
+                  ],
+                  [
+                    117.68271157398563,
+                    310.1779308660115
+                  ],
+                  [
+                    116.9960901919794,
+                    310.0130876566615
+                  ],
+                  [
+                    116.34370941783871,
+                    309.742862692181
+                  ],
+                  [
+                    115.74163303135055,
+                    309.3739098080206
+                  ],
+                  [
+                    115.20468615132721,
+                    308.91531384867284
+                  ]
+                ],
+                "color": "#fafafa",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    115.20468615132721,
+                    308.91531384867284
+                  ],
+                  [
+                    114.7460901919794,
+                    308.37836696864946
+                  ],
+                  [
+                    114.37713730781901,
+                    307.7762905821613
+                  ],
+                  [
+                    114.10691234333848,
+                    307.1239098080206
+                  ],
+                  [
+                    113.94206913398855,
+                    306.4372884260144
+                  ],
+                  [
+                    113.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    113.94206913398855,
+                    305.0293782406523
+                  ],
+                  [
+                    114.10691234333848,
+                    304.3427568586461
+                  ],
+                  [
+                    114.37713730781901,
+                    303.6903760845054
+                  ],
+                  [
+                    114.7460901919794,
+                    303.08829969801724
+                  ],
+                  [
+                    115.20468615132721,
+                    302.55135281799386
+                  ],
+                  [
+                    115.74163303135055,
+                    302.0927568586461
+                  ],
+                  [
+                    116.34370941783871,
+                    301.7238039744857
+                  ],
+                  [
+                    116.9960901919794,
+                    301.45357901000517
+                  ],
+                  [
+                    117.68271157398563,
+                    301.2887358006552
+                  ],
+                  [
+                    118.38666666666667,
+                    301.23333333333335
+                  ],
+                  [
+                    119.09062175934771,
+                    301.2887358006552
+                  ],
+                  [
+                    119.77724314135394,
+                    301.45357901000517
+                  ],
+                  [
+                    120.42962391549463,
+                    301.7238039744857
+                  ],
+                  [
+                    121.0317003019828,
+                    302.0927568586461
+                  ],
+                  [
+                    121.56864718200613,
+                    302.55135281799386
+                  ]
+                ],
+                "color": "#a0a0a0",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    120.86154040081959,
+                    303.2584595991804
+                  ],
+                  [
+                    121.21822614697899,
+                    303.6760849503097
+                  ],
+                  [
+                    121.50518950132596,
+                    304.14436658424495
+                  ],
+                  [
+                    121.71536447369971,
+                    304.65177385302104
+                  ],
+                  [
+                    121.84357585874966,
+                    305.1858127056925
+                  ],
+                  [
+                    121.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    121.84357585874966,
+                    306.2808539609742
+                  ],
+                  [
+                    121.71536447369971,
+                    306.81489281364566
+                  ],
+                  [
+                    121.50518950132596,
+                    307.32230008242175
+                  ],
+                  [
+                    121.21822614697899,
+                    307.790581716357
+                  ],
+                  [
+                    120.86154040081959,
+                    308.2082070674863
+                  ],
+                  [
+                    120.44391504969033,
+                    308.56489281364566
+                  ],
+                  [
+                    119.97563341575508,
+                    308.85185616799265
+                  ],
+                  [
+                    119.46822614697899,
+                    309.0620311403664
+                  ],
+                  [
+                    118.93418729430748,
+                    309.19024252541635
+                  ],
+                  [
+                    118.38666666666667,
+                    309.23333333333335
+                  ],
+                  [
+                    117.83914603902586,
+                    309.19024252541635
+                  ],
+                  [
+                    117.30510718635435,
+                    309.0620311403664
+                  ],
+                  [
+                    116.79769991757826,
+                    308.85185616799265
+                  ],
+                  [
+                    116.32941828364301,
+                    308.56489281364566
+                  ],
+                  [
+                    115.91179293251375,
+                    308.2082070674863
+                  ]
+                ],
+                "color": "#f6f6f6",
+                "width": 1,
+                "closed": false
+              },
+              {
+                "kind": "polyline",
+                "points": [
+                  [
+                    115.91179293251375,
+                    308.2082070674863
+                  ],
+                  [
+                    115.55510718635435,
+                    307.790581716357
+                  ],
+                  [
+                    115.26814383200738,
+                    307.32230008242175
+                  ],
+                  [
+                    115.05796885963363,
+                    306.81489281364566
+                  ],
+                  [
+                    114.92975747458368,
+                    306.2808539609742
+                  ],
+                  [
+                    114.88666666666667,
+                    305.73333333333335
+                  ],
+                  [
+                    114.92975747458368,
+                    305.1858127056925
+                  ],
+                  [
+                    115.05796885963363,
+                    304.65177385302104
+                  ],
+                  [
+                    115.26814383200738,
+                    304.14436658424495
+                  ],
+                  [
+                    115.55510718635435,
+                    303.6760849503097
+                  ],
+                  [
+                    115.91179293251375,
+                    303.2584595991804
+                  ],
+                  [
+                    116.32941828364301,
+                    302.90177385302104
+                  ],
+                  [
+                    116.79769991757826,
+                    302.61481049867405
+                  ],
+                  [
+                    117.30510718635435,
+                    302.4046355263003
+                  ],
+                  [
+                    117.83914603902586,
+                    302.27642414125035
+                  ],
+                  [
+                    118.38666666666667,
+                    302.23333333333335
+                  ],
+                  [
+                    118.93418729430748,
+                    302.27642414125035
+                  ],
+                  [
+                    119.46822614697899,
+                    302.4046355263003
+                  ],
+                  [
+                    119.97563341575508,
+                    302.61481049867405
+                  ],
+                  [
+                    120.44391504969033,
+                    302.90177385302104
+                  ],
+                  [
+                    120.86154040081959,
+                    303.2584595991804
+                  ]
+                ],
+                "color": "#404040",
+                "width": 1,
+                "closed": false
+              }
+            ],
+            "label": {
+              "text": "라디오 단추",
+              "x": 130.72,
+              "baseline": 310.40000000000003,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        },
+        {
+          "type": "formObject",
+          "bbox": {
+            "x": 113.387,
+            "y": 348.293,
+            "width": 94.493,
+            "height": 26.453
+          },
+          "formType": "edit",
+          "caption": "",
+          "text": "*************",
+          "foreColor": "#000000",
+          "backColor": "#f0f0f0",
+          "value": 0,
+          "enabled": true,
+          "drawing": {
+            "primitives": [
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 94.49333333333334,
+                  "height": 26.453333333333333
+                },
+                "color": "#f0f0f0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 93.49333333333334,
+                  "height": 1
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 348.29333333333335,
+                  "width": 1,
+                  "height": 25.453333333333333
+                },
+                "color": "#a0a0a0"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 206.88,
+                  "y": 348.29333333333335,
+                  "width": 1,
+                  "height": 26.453333333333333
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 113.38666666666667,
+                  "y": 373.74666666666667,
+                  "width": 94.49333333333334,
+                  "height": 1
+                },
+                "color": "#fafafa"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 349.29333333333335,
+                  "width": 91.49333333333334,
+                  "height": 1
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 349.29333333333335,
+                  "width": 1,
+                  "height": 23.453333333333333
+                },
+                "color": "#404040"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 205.88,
+                  "y": 349.29333333333335,
+                  "width": 1,
+                  "height": 24.453333333333333
+                },
+                "color": "#f6f6f6"
+              },
+              {
+                "kind": "rect",
+                "bbox": {
+                  "x": 114.38666666666667,
+                  "y": 372.74666666666667,
+                  "width": 92.49333333333334,
+                  "height": 1
+                },
+                "color": "#f6f6f6"
+              }
+            ],
+            "label": {
+              "text": "*************",
+              "x": 116.38666666666667,
+              "baseline": 366.1866666666667,
+              "fontFamily": "한컴바탕",
+              "fontSize": 13.333333333333334,
+              "bold": false,
+              "italic": false,
+              "color": "#000000"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

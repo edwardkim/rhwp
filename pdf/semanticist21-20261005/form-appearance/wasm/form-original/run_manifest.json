@@ -22,6 +22,22 @@
       "path": "target/pr-review/release-test/rhwp",
       "sha256": "c831e06eebcea364ca8be267a7bb93d93a52f2c1ba4fa2673329320eb8a49aa4"
     },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "3c8f9a54221120cbb2c4519dbbc026a01a41aa514085ecac3b50287058c217e3"
+        }
+      ],
+      "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+      "comparison_profile": "print",
+      "font_policy": "same-input native --embed-fonts=full --font-path /opt/hnc/hoffice11/Shared/TTF/All; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
     "font_supply": {
       "mode": "full",
       "source": "RHWP_FONT_PATH",

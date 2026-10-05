@@ -147,3 +147,17 @@ Native 재현 명령은 `RHWP_FONT_PATH=/opt/hnc/hoffice11/Shared/TTF/All python
 ![입체 폼 Native 한컴 비교](../../../pdf/semanticist21-20261005/form-appearance/native/form-original/review/review_001.png)
 
 ![암호 폼 Native standalone overlay](../../../pdf/semanticist21-20261005/form-appearance/native/form-password/overlay/overlay_001.png)
+
+## fresh WASM·실제 화면·기본 글꼴 대조 완료
+
+source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, JS 반영 head `7ca40721f`의 fresh WASM은 pkg/Studio public의 해시가 일치한다. Native/fresh WASM 모두 같은 사용자 PDF1쪽에서 동일 font face 지정 시 원본99.88501%, 암호99.90053%로 gate PASS다. fresh WASM review/standalone overlay를 직접 판독했고 프레임·글자 시작/기준선·마스킹의 적용을 확인했다. 이전80%대 gate는 추가 보정 전 기록이며 현재 시각 판정을 대신하지 않는다. 실제 WebCanvas 및 Studio CanvasKit에서도 ComboBox title·원문 저장 보존·13개 암호 표시·공통 drawing 소비를 확인했다. CanvasKit 완료/error null/미등록 font fallback0의 관측은 [실제 브라우저 결과](../assets/semanticist21-20261005/appearance-browser-results.json)에 있다.
+
+사용자 지적에 따라 `RHWP_FONT_PATH`를 제거하고 두 입력을 Native/fresh WASM에서 다시 비교했다. 원본99.34142%, 암호98.81531%로 네 gate 모두 PASS다. 한컴 설치본은 이미 있으며, 지정 이유는 PDF와 같은 `Haansoft Batang / 한컴바탕` face 공급이다. 현재 Linux fontconfig의 한컴바탕 선택은 다른 `HCR Batang / 함초롬바탕` face이고 RHWP 기본 디렉터리는 한컴 app 내부 All 경로를 포함하지 않는다. 기본 SVG는 local alias를 사용한다. 설치가 없다고 주장하거나 환경변수를 실행 필수 조건으로 삼지 않는다. [글꼴 대조 증거](../assets/semanticist21-20261005/font-path-verification.json)에 실제 family/path 및 두 조건의 결과를 구분했다.
+
+![fresh WASM 입체 폼 비교](../../../pdf/semanticist21-20261005/form-appearance/wasm/form-original/review/review_001.png)
+
+![fresh WASM 암호 standalone overlay](../../../pdf/semanticist21-20261005/form-appearance/wasm/form-password/overlay/overlay_001.png)
+
+![기본 글꼴 경로 Native 비교](../../../pdf/semanticist21-20261005/form-appearance/default-font-native/form-original/review/review_001.png)
+
+최종 fmt·Native/WASM/workspace Clippy·workspace build·base 고정 manifest/unit tier는 PASS다. 전체 nextest와 optional Native Skia는 실행 중이며 최종 판정을 아직 대신하지 않는다.
