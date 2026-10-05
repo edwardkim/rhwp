@@ -137,3 +137,13 @@ WASM Visual Sweep도 동일 PDF/1쪽에서 `80.02964%`, gate `re_review_required
 기존 renderer의 입체 프레임/10pt 검사 3건은 모두 수정 전 FAIL이었다. 최종 집중 검사는 외형6·초기 표시4·기존 암호4 총14 PASS다. ComboBox 좌표 기대값은 한컴 PDF에서 읽은 실제 origin `(87.36,193.68)pt`를 96dpi로 변환한 `(116.48,258.24)px`이고, 실제 SVG `(116.387,258.173)`가 0.4px 이내다. FollowContext 대조군은 DocInfo를 추가하는 합성 계약이며, 기존 직접 document_mut 경로의 style snapshot을 새 글자 속성으로 갱신하지 못해 최초 검사만 실패했다. 저장 후 parser로 다시 연 정상 style snapshot에서 10pt/16pt 기대값을 바꾸지 않고 PASS다. 이 대조군을 한컴 화면의 실제 편집 후 출력 증거로 승격하지 않는다.
 
 Studio TypeScript/production build PASS, npm tests1817건 중1815 PASS/2 SKIP/0 FAIL. 시각 비교에 실제 설치된 `/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF`를 공급한다. fc-scan의 face는 한컴 PDF와 같은 `Haansoft Batang`/`한컴바탕`, SHA-256 `35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05`이다. 이전 작은 sans-serif 캡처와 새 글꼴/geometry 캡처를 구분하고, 정확한 새 source에서 Native/fresh WASM 비교를 다시 만든다.
+
+## 새 source Native 시각 결과
+
+source `cf2336295540ea8ce3e94eb6517cb406fca8d28f`, `RHWP_FONT_PATH=/opt/hnc/hoffice11/Shared/TTF/All`, `--embed-fonts full`. 정상 원본과 암호 fixture의 사용자 PDF/1쪽을 각각 재비교했다. 실제 font 공급 디렉터리/face/hash를 확인한 뒤 full cmap을 보존하는 embedding을 사용했으며 font exception은 쓰지 않았다. 2px 관용 내용 실루엣은 원본99.88501%, 암호99.90053%, 두 gate PASS다. review와 standalone overlay에서 솟은 버튼, 들어간 ComboBox/Edit 프레임, check/radio, 10pt 글자와 ComboBox 시작/기준선, 암호 마스킹을 직접 판독했다. 좁은 glyph/테두리의 subpixel 차이와 Marlett 원형 표시를 vector로 재현한 미세 차이는 남으며 pixel-perfect를 주장하지 않는다. 엄격 ink match는37.25565%/35.14589%이고 승인 지표와 혼동하지 않는다.
+
+Native 재현 명령은 `RHWP_FONT_PATH=/opt/hnc/hoffice11/Shared/TTF/All python3 scripts/visual_sweep.py --key form-original --hwp samples/hwpx/form-01.hwpx --pdf samples/hwpx/form-01-2024.pdf --page 1 --rhwp-bin target/pr-review/release-test/rhwp --embed-fonts full --out output/pr-review/semanticist21-20261005/appearance-visual-native`; 암호 fixture는 key=form-password, hwp=`tests/fixtures/form-password/edit-password.hwpx`, pdf=`tests/fixtures/form-password/edit-password-2024.pdf`다. run_manifest.json에 source SHA·binary SHA·입력/PDF/공급 font 해시를 보존한다.
+
+![입체 폼 Native 한컴 비교](../../../pdf/semanticist21-20261005/form-appearance/native/form-original/review/review_001.png)
+
+![암호 폼 Native standalone overlay](../../../pdf/semanticist21-20261005/form-appearance/native/form-password/overlay/overlay_001.png)

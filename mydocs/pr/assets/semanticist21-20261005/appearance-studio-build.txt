@@ -20,7 +20,7 @@ dist/assets/canvaskit-renderer-CS6d-exZ.js     247.48 kB │ gzip:    74.60 kB
 dist/assets/index-__X2vTJO.js                2,116.28 kB │ gzip:   438.05 kB
 
 ✓ built in 3.06s
-[plugin builtin:vite-reporter] 
+[plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
@@ -38,4 +38,3 @@ The slowest callbacks, timed inside each callback (the wait before a callback st
   - plugin vite:prepare-out-dir renderStart (38%, 1.2s, 1 call)
 Additional callback time came from callbacks under 1s.
 See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
-
