@@ -52,3 +52,16 @@ char_offsets·char_shapes·range tags·markpen·LineSeg start/char_count를 같�
 [게시 head의 Full CI](https://github.com/edwardkim/rhwp/actions/runs/36955832835)와 CodeQL·Render Diff·Adapter·Proptest는 모두 성공했다.
 관련 #7506은 devel 병합 후 자동 종료됐다. 원 PR은 통합 반영을 안내하고 중복 병합하지 않고 닫는다.
 기여자의 fork branch는 보존한다. 후속 댓글에서 이 기록의 확정 commit과 merge SHA를 연결한다.
+
+## 2026-10-05 누적 체리픽 적용 이력
+
+기존 #7511 병합 완료 기록은 위에 보존한다. 이번 누적 검토에서 원 PR 후행 검사를 추가로 적용했으며,
+이 추가 commit의 최종 누적 검증은 기존 #7511의 성공과 구분한다.
+
+| 원 commit SHA | 상태 | 로컬 적용 SHA |
+| --- | --- | --- |
+| `b53d3621be516ed8f918b321a0e0b01f09f8ff19` | already-applied | `기존 devel에 포함` |
+| `97dd139fcd58361e5ae4834465bf5408b349d00c` | applied | `65e78279a77f352682ee769d35d228a310c9c54a` |
+
+추가 commit은 `strip_section_scoped_controls`의 설명과 한컴 HWPX 클립보드 조각 회귀를 보강한다.
+원 저자와 cherry-pick 출처를 보존했다. 최종 후보의 lint·전체 회귀 확인 뒤 해당 범위의 판정을 갱신한다.
