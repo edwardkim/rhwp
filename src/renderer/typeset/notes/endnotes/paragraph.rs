@@ -1098,11 +1098,12 @@ impl TypesetEngine {
                 visible_large_between_notes_gap,
                 visible_compact_sequential_tail_fits_current_column,
             });
-            // [#6574] 아래 글·수식 꼬리 넘김 판정들은 렌더 넘침을 누계·저장 사다리로 예측한
-            // 대리값이다. 렌더가 문단이 현재 단에 통째로 들어간다고 재면 그 예측으로 단을 넘기지
-            // 않는다(3-09월_교육_통합_2024-미주사이20 23쪽 pi=1158 — 한/글은 왼쪽 단 하단에 둔다).
-            // 표·그림 꼬리 판정은 그대로 둔다 — 렌더 판정의 scratch 렌더는 표만 든 미주 문단을
-            // 문단 항목으로만 그려 표 높이를 재지 못한다(구분선없음… 13쪽 문19 도표).
+            // [#6574] 아래 꼬리 넘김 판정들은 렌더 넘침을 누계·저장 사다리로 예측한 대리값이다.
+            // 렌더가 문단이 현재 단에 통째로 들어간다고 재면 그 예측으로 단을 넘기지 않는다
+            // (3-09월_교육_통합_2024-미주사이20 23쪽 pi=1158, 3-11월_실전_통합_2024-구분선위0
+            // 미주사이20구분선아래2 14쪽 pi=628 — 한/글은 둘 다 왼쪽 단 하단에 둔다).
+            // 표만 든 문단의 판정은 그대로 둔다 — scratch 렌더는 그 문단을 문단 항목으로만 그려
+            // 표 높이를 재지 못한다(구분선없음… 13쪽 문19 도표).
             let render_whole_fits = |st: &TypesetState| {
                 matches!(
                     self.judge_endnote_render_ink_fit(
@@ -1127,10 +1128,10 @@ impl TypesetEngine {
                 prev_en_bottom_vpos = None;
             }
             if ((large_between_tail_render_overflows
+                || large_between_tail_before_rewind_picture
                 || large_between_equation_tail_starts_next_column
                 || no_separator_last_column_tail_before_rewind_starts_next_page)
                 && !render_whole_fits(st))
-                || large_between_tail_before_rewind_picture
                 || no_separator_tail_table_starts_next_column
             {
                 st.advance_column_or_new_page();
