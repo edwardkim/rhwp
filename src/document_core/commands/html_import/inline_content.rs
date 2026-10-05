@@ -138,7 +138,7 @@ impl DocumentCore {
         // 그림은 확장 제어문자 8칸을 차지한다. 그 자리를 char_offsets 의 갭으로 남겨야
         // control_text_positions 가 그림을 글 사이에 되짚는다.
         for (char_idx, pic) in pictures {
-            para.shift_for_inline_control_insert(char_idx);
+            para.shift_for_inline_control_insert(para.controls.len(), char_idx);
             para.char_count += 8;
             para.controls.push(Control::Picture(Box::new(pic)));
             para.ctrl_data_records.push(None);
