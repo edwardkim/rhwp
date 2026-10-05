@@ -1521,12 +1521,10 @@ impl TypesetEngine {
         };
         // 같은 저장 단의 첫 줄 원점은 글줄과 표가 함께 소비한다.
         // 단을 여는 완전한 TAC 표도 저장 프레임이며, 재조판/분할 원점과 섞지 않는다.
-        let source_text_origin = (st.col_count == 1
+        let source_host_origin = (st.col_count == 1
             && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
             && !st.vpos_ladder_dirty
-            && !st.profile.session_edited()
-            && fmt.computed_host_lines.is_none()
-            && fmt.line_heights.len() == para.line_segs.len())
+            && !st.profile.session_edited())
         .then(|| {
             let first = match st.current_items.first()? {
                 PageItem::FullParagraph { para_index } => *para_index,
@@ -1572,6 +1570,11 @@ impl TypesetEngine {
             Some(st.vpos_col_anchor + hwpunit_to_px(para.line_segs.first()?.vertical_pos, self.dpi))
         })
         .flatten();
+        // 글줄은 구성 결과와 저장 줄이 같을 때만 이 원점을 소비한다.
+        // 글줄이 없는 개체 앵커는 아래에서 같은 저장 프레임 원점을 직접 쓴다.
+        let source_text_origin = source_host_origin.filter(|_| {
+            fmt.computed_host_lines.is_none() && fmt.line_heights.len() == para.line_segs.len()
+        });
         let unconstrained_host_placement = para_has_non_whitespace_text(para)
             .then(|| {
                 let text_origin = source_text_origin.unwrap_or(placement_para_start_height
@@ -1695,6 +1698,7 @@ impl TypesetEngine {
                 para,
                 table,
                 st.current_height,
+                source_host_origin,
                 ft.effective_height,
                 ft.host_spacing.before,
                 ft.host_spacing.after,

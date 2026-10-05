@@ -161,8 +161,6 @@ pub(crate) struct HeightCursor {
 
 #[path = "height_cursor_lazy_base.rs"]
 mod lazy_base_rounding;
-#[path = "height_cursor_stored_origin.rs"]
-pub(crate) mod stored_origin;
 
 impl HeightCursor {
     /// 컬럼 진입 시 생성. `vpos_page_base` 초기값은 호출자가 첫 PageItem 에서 산출.
