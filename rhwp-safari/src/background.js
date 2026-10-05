@@ -438,7 +438,7 @@ async function extractPrvImageFromZip(data, maxBytes) {
       }
       if (comp === 8) {
         try {
-          const dec = new DecompressionStream('raw');
+          const dec = new DecompressionStream('deflate-raw');
           const w = dec.writable.getWriter();
           const write = w.write(data.slice(ds, ds + compSz)).then(() => w.close());
           const buf = await readExactStreamLimited(dec.readable, uncSz, maxBytes);
