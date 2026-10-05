@@ -437,3 +437,18 @@ Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, �
 실제 명령·exit·시간은 ignored `output/pr-review/semanticist21-20261005/oct06-ladder-reset-validation-progress.json`, 원 출력은 `logs/oct06-ladder-reset-*.log`에만 보존한다. 각 단계의 마지막 summary는 아래 공통 증거 README에 기록한다. source가 바뀌면 이 실행 결과를 그대로 승계하지 않는다. 원 PR의 별도 CI와 누적 후보의 최신 원격 CI를 구분하며 통합 PR의 최종 head CI를 확인한 뒤 merge한다.
 
 이 판정은 이미 merge된 #7599/#7491의 후속 누적 보정 범위다. 기존 머지 판정을 소급 변경하지 않으며 원 PR의 재머지로 보고하지 않는다.
+
+
+## 통합 PR #7601 code candidate CI와 후행 기록
+
+[통합 PR #7601](https://github.com/edwardkim/rhwp/pull/7601), code candidate `774fe407160598bd029cbb13a3545ee30ca057df`의 [최신 head CI](https://github.com/edwardkim/rhwp/pull/7601/checks)가 모두 종료되어 성공/정상 생략을 확인했다. 정확한 run URL·결론은 [공통 CI 증거](../assets/semanticist21-20261005/README.md#통합-pr-7601-code-candidate-ci)에 기록했다. 원 PR의 별도 CI를 이 결과로 바꾸지 않는다.
+
+Production source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`의 최종 전체 nextest 로그에서 이 PR의 실제 검사 결과를 확인했다. 아래 PASS는 같은 source의 전체 실행이며 이전 원 PR의 보고를 승계한 값이 아니다.
+
+| 원본 검사 | 실제 PASS | FAIL |
+| --- | --- | --- |
+| `tests/cases/issue_7490_edited_paragraph_indent.rs` | 21 | 0 |
+| `tests/cases/issue_7491_measured_inline_table_band.rs` | 1 | 0 |
+| `tests/cases/issue_7491_reflowed_list_page_ownership.rs` | 1 | 0 |
+
+이 commit은 개별 archive 기록·오늘할일·CI 증거만 보완한다. Rust source/tests와 fresh WASM은 위 검증 source와 같으며, 같은 PR의 후행 head 최신 aggregate를 확인한 뒤 일반 merge commit으로 통합한다. merge 뒤 확정되는 SHA·이슈 상태·원 PR별 코멘트는 GitHub 후속 기록으로 남긴다. 위 접수·중간 실패·진행 중 문구는 당시 source의 역사 기록이며 이 절의 최신 판정과 구분한다.

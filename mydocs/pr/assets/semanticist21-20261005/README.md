@@ -116,3 +116,22 @@ scaffold의 문단별 원점0 리셋은 단 전체의 저장 사다리로 해석
 | `oct06-ladder-reset-skia-direct-pdf` | 0 | 10.83s | Summary [   0.357s] 4 tests run: 4 passed, 219 skipped |
 | `oct06-ladder-reset-skia-combobox` | 0 | 15.43s | Summary [   0.543s] 4 tests run: 4 passed, 193 skipped |
 | `oct06-ladder-reset-skia-password` | 0 | 14.31s | Summary [   0.481s] 4 tests run: 4 passed, 204 skipped |
+
+
+## 통합 PR #7601 code candidate CI
+
+[PR #7601](https://github.com/edwardkim/rhwp/pull/7601)의 code candidate `774fe407160598bd029cbb13a3545ee30ca057df`, 확인 UTC `2026-10-05T21:47:19.452360+00:00`. 전체 check가 terminal SUCCESS/SKIPPED/NEUTRAL이고 아래 workflow run도 종료됐다. 후행 문서 commit의 최종 head aggregate는 merge 직전에 다시 확인한다.
+
+| workflow | 실제 결론 | run |
+| --- | --- | --- |
+| Skill router gate | success | [run 37375356354](https://github.com/edwardkim/rhwp/actions/runs/37375356354) |
+| CodeQL | success | [run 37375356615](https://github.com/edwardkim/rhwp/actions/runs/37375356615) |
+| Render Diff | success | [run 37375356415](https://github.com/edwardkim/rhwp/actions/runs/37375356415) |
+| Adapter inter-diff | success | [run 37375356547](https://github.com/edwardkim/rhwp/actions/runs/37375356547) |
+| Proptest roundtrip | success | [run 37375356590](https://github.com/edwardkim/rhwp/actions/runs/37375356590) |
+| CI | success | [run 37375356616](https://github.com/edwardkim/rhwp/actions/runs/37375356616) |
+| CI Impact Policy Controller | success | [run 37375352960](https://github.com/edwardkim/rhwp/actions/runs/37375352960) |
+
+개별 검사 결과는 각 원 PR의 archive 기록에 있다. `application.json`의 `pre_rebase_applied`는 이전 이력을, `applied`·`rebase_state`는 현재 ancestor SHA/재배치 상태를 기록한다.55개 재배치 commit의 원 저자·author date·cherry-pick 원 SHA와 HEAD 포함을 재검증했고, #7491의4개는 이미 upstream에 포함되어 있다. 이 문서와 같은 PR 후행 commit은 source/test/시각 asset을 변경하지 않는다. 원시 CI API 응답은 ignored output에 보존하며 Git에 커밋하지 않는다.
+
+최종 `CI Impact Policy` status `SUCCESS`도 [completion audit](https://github.com/edwardkim/rhwp/actions/runs/37378086668)에서 확인했다. code candidate의 전체35개 check/status는 성공 또는 정상 생략으로 종료됐다.
