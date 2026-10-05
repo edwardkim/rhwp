@@ -262,7 +262,10 @@ pub(super) fn fit_measured_for_host(
                 // 선언(cellSz)으로만 잡혀 여유가 남아 있으면 그 행에서만 초과분을
                 // 회수한다. 페인트 경로가 이미 반대 방향(부족분 → 마지막 행)으로
                 // 하는 일과 같다 (float-stack-defer 2쪽 표 3쪽 분열).
-                let native_empty_rowbreak = profile().hwp5_stored_pagination_layout()
+                // 저장 표 선언 높이와 셀 저장 줄 사다리라는 같은 증거는 원본 HWPX 에도
+                // 있다 — 한/글은 형식으로 조판을 가르지 않는다(편람 hwp·hwpx 정본 동일).
+                let native_empty_rowbreak = (profile().hwp5_stored_pagination_layout()
+                    || profile().hwpx_stored_layout())
                     && !table.common.treat_as_char
                     && matches!(
                         table.page_break,

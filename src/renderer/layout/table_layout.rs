@@ -4231,12 +4231,14 @@ impl LayoutEngine {
             // [#5906] 마지막 행이 저장 선언으로만 잡힌 표의 초과분 회수도 같은
             // 이유로 조판/페인트가 함께 봐야 한다 — typeset 은 줄어든 tail 로
             // 쪽을 잡는데 페인트가 원래 높이를 그리면 표가 본문 밖으로 넘친다.
-            let native_rowbreak_declared_tail = self.profile.get().hwp5_stored_pagination_layout()
-                && !table.common.treat_as_char
-                && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
-                && matches!(table.common.vert_rel_to, VertRelTo::Para)
-                && matches!(table.page_break, TablePageBreak::RowBreak)
-                && table.row_count > 1;
+            let native_rowbreak_declared_tail =
+                (self.profile.get().hwp5_stored_pagination_layout()
+                    || self.profile.get().hwpx_stored_layout())
+                    && !table.common.treat_as_char
+                    && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+                    && matches!(table.common.vert_rel_to, VertRelTo::Para)
+                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                    && table.row_count > 1;
             let tail_fitted = native_rowbreak_nested_tail
                 .then(|| fit_measured_table_nested_tail_to_declared_height(mt, table, self.dpi))
                 .flatten()
