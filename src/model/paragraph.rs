@@ -2035,10 +2035,29 @@ impl Paragraph {
 
         let chars: Vec<char> = self.text.chars().collect();
         let mut positions = Vec::with_capacity(total_controls);
+        // 누름틀 끝·다단락 누름틀 끝·제목 차례 표시는 컨트롤 없이 8유닛 슬롯을 차지하고,
+        // 모두 자기 글자 바로 앞 갭에 있다. 그 갭에서 이 수만큼은 컨트롤에 나눠 주지 않는다.
+        // 나눠 주면 뒤 컨트롤이 한 갭씩 앞 글자로 당겨진다.
+        let hidden_slots_before = |char_idx: usize| {
+            self.field_ranges
+                .iter()
+                .filter(|r| r.end_char_idx == char_idx)
+                .count()
+                + self
+                    .orphan_field_ends
+                    .iter()
+                    .filter(|o| o.char_idx == char_idx)
+                    .count()
+                + self
+                    .title_marks
+                    .iter()
+                    .filter(|m| m.char_idx == char_idx)
+                    .count()
+        };
 
         // 첫 문자 이전의 갭: 확장 컨트롤이 텍스트 시작 전에 있는 경우
         let gap_before = offsets[0] as usize;
-        let n_ctrls_before = gap_before / 8;
+        let n_ctrls_before = (gap_before / 8).saturating_sub(hidden_slots_before(0));
         for _ in 0..n_ctrls_before {
             if positions.len() >= total_controls {
                 break;
@@ -2085,7 +2104,7 @@ impl Paragraph {
             }
             if next_off > current_off + char_width {
                 let gap = next_off - current_off - char_width;
-                let n_ctrls = gap / 8;
+                let n_ctrls = (gap / 8).saturating_sub(hidden_slots_before(i + 1));
                 for _ in 0..n_ctrls {
                     if positions.len() >= total_controls {
                         break;
