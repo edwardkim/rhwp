@@ -1240,11 +1240,11 @@ impl DocumentCore {
             .and_then(|s| s.paragraphs.get_mut(para_idx))
             .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?;
         let removed = remove_field_in_para(para, char_offset)?;
-        // 활성 주소도 컨트롤 번호를 쓴다. 셀 주소에는 본문 문단 번호가 없어 지운 누름틀 뒤의
-        // 표인지 가릴 수 없으므로 그때는 활성 상태를 푼다.
+        // 활성 주소의 para_idx는 셀에서도 본문 부모다. 같은 부모의 컨트롤 번호만
+        // 비교해야 다른 표나 문단의 활성 누름틀을 해제하지 않는다.
         let mut clear_active = false;
         if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx {
+            if active.section_idx == section_idx && active.para_idx == para_idx {
                 match &active.cell_path {
                     None if active.para_idx == para_idx => {
                         clear_active = active.control_idx == removed;
@@ -1337,9 +1337,10 @@ impl DocumentCore {
         };
         let removed = remove_field_in_para(para, char_offset)?;
         // 이 셀 문단의 활성 누름틀(또는 안쪽 표)이 지운 누름틀 자리나 그 뒤면 주소가 맞지 않는다.
-        // 셀 주소에는 본문 문단 번호가 없어 고쳐 쓰지 않고 활성 상태를 푼다.
+        // 본문 부모까지 일치할 때만 로컬 셀 경로의 영향을 판단한다.
         if self.active_field.as_ref().is_some_and(|active| {
             active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
                 && active.cell_path.as_deref().is_some_and(|path| {
                     path.first() == Some(&(control_idx, cell_idx, cell_para_idx))
                         && path

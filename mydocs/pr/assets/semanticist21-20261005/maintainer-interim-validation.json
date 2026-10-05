@@ -1,0 +1,136 @@
+{
+  "base": "cdba77b609c399fdef26a6c9e637716aa32c2177",
+  "head": "b3c933a88cdb4f7ceed3fbbf1a6bc46375d18aee",
+  "running": null,
+  "results": [
+    {
+      "name": "maint-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 200.95
+    },
+    {
+      "name": "maint-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 15.37
+    },
+    {
+      "name": "maint-clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 59.27
+    },
+    {
+      "name": "maint-clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 55.82
+    },
+    {
+      "name": "maint-workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 135.15
+    },
+    {
+      "name": "maint-clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 100.28
+    },
+    {
+      "name": "maint-manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "cdba77b609c399fdef26a6c9e637716aa32c2177"
+      ],
+      "exit": 0,
+      "seconds": 4.33
+    },
+    {
+      "name": "maint-unit-tier",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "cdba77b609c399fdef26a6c9e637716aa32c2177"
+      ],
+      "exit": 0,
+      "seconds": 20.26
+    },
+    {
+      "name": "maint-fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg"
+      ],
+      "exit": 0,
+      "seconds": 836.21
+    }
+  ]
+}

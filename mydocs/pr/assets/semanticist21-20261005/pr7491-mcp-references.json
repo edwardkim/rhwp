@@ -1,7 +1,7 @@
 [
   {
     "key": "issue6190",
-    "input": "samples/issue6190/center_align_first_line_indent.hwp",
+    "input": "tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp",
     "input_sha256": "ba8a7c83c345b1e2a6eca33e7af8be93197291648c635044083387183656c454",
     "engine": "2020",
     "job_id": "0766d9b6-fc6b-40d2-91f4-ca7bac9e3ecc",
@@ -16,7 +16,8 @@
       "backend": "hwp-managed-direct-dll-host",
       "elapsed_ms": 15080,
       "worker_elapsed_ms": 14122
-    }
+    },
+    "role": "preserved_missing_column_diagnostic"
   },
   {
     "key": "biz-plan",
@@ -168,6 +169,57 @@
       "backend": "hwp-managed-direct-dll-host",
       "elapsed_ms": 18141,
       "worker_elapsed_ms": 16132
+    }
+  },
+  {
+    "key": "column-restored",
+    "input": "samples/issue6190/center_align_first_line_indent.hwp",
+    "input_sha256": "d40b42d1e22237d931a1970ead577ec9c8119611dd73176ac335de5a848f90a7",
+    "engine": "2020",
+    "job_id": "76a474f2-5d43-4ba7-82b5-de6775a087a6",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-probe-2020.pdf",
+    "pdf_sha256": "f4ad4ec484e5ffac82eea2daadcfe4631cad4eba840290706082749a29593676",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "76a474f2-5d43-4ba7-82b5-de6775a087a6",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
+    }
+  },
+  {
+    "key": "column-restored-edited",
+    "input": "tests/fixtures/issue7491/center_align_first_line_indent_edited.hwp",
+    "input_sha256": "358a8f6bfa4aaf5728f4be1050e363fa195c0ab6966ac10a5deee68f3fbe38c0",
+    "engine": "2020",
+    "job_id": "f2c055c2-4857-4aaa-a20d-26abfb60284b",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-insert-outer-2020.pdf",
+    "pdf_sha256": "6c7688b984ee73ad08978c23a6c7224cae4ffdd949427dca658e0197221dd011",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "f2c055c2-4857-4aaa-a20d-26abfb60284b",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
+    }
+  },
+  {
+    "key": "full-original",
+    "input": "tests/fixtures/issue7491/imo-award-full-original.hwp",
+    "input_sha256": "365fbb671701e72a389a717ea334a6b3b5857d3ead2c934d6733563a27206e1b",
+    "engine": "2020",
+    "job_id": "7f9a011e-2446-48ec-934a-aab554c09835",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-full-original-2020.pdf",
+    "pdf_sha256": "480a29b7647a59ca666f1ced796140ec5f348366dd621a6a2f831a807d161527",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "7f9a011e-2446-48ec-934a-aab554c09835",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
     }
   }
 ]

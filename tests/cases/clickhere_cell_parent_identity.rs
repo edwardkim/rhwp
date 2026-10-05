@@ -162,3 +162,33 @@ fn nested_guide_identity_includes_intermediate_cell_paragraph() {
     assert!(core.set_active_field_by_path(0, second, &second_path, 2));
     assert_eq!(guides(&core), ["FIRSTGUIDE"]);
 }
+
+#[test]
+fn removing_another_tables_field_preserves_active_input_at_the_end() {
+    let (mut core, first, second) = separate_tables();
+    core.set_field_value_by_name("FIRSTGUIDE", "AAA").unwrap();
+    assert!(core.set_active_field_in_cell(0, first, 0, 0, 0, 5, false));
+    core.remove_field_at_in_cell(0, second, 0, 0, 0, 2, false)
+        .unwrap();
+    core.insert_text_in_cell_native(0, first, 0, 0, 0, 5, "값")
+        .unwrap();
+    assert_eq!(value(&core, "FIRSTGUIDE"), "AAA값");
+}
+
+#[test]
+fn removing_another_body_paragraphs_field_preserves_active_cell_input() {
+    let (mut core, first, _) = separate_tables();
+    let body = core.document().sections[0].paragraphs.len() - 1;
+    core.insert_click_here_field_at(0, body, 0, "BODYGUIDE", "", "BODYGUIDE", true)
+        .unwrap();
+    // 이 표 앞의 책갈피 때문에 표 번호가 1이다. 다른 본문 문단의 번호 0 삭제와
+    // 비교하더라도 같은 부모 문단이 아니라면 활성 셀 주소를 바꾸면 안 된다.
+    core.insert_text_native(0, first, 0, "표").unwrap();
+    core.add_bookmark_native(0, first, 0, "TABLEMARK").unwrap();
+    core.set_field_value_by_name("FIRSTGUIDE", "AAA").unwrap();
+    assert!(core.set_active_field_in_cell(0, first, 1, 0, 0, 5, false));
+    core.remove_field_at(0, body, 0).unwrap();
+    core.insert_text_in_cell_native(0, first, 1, 0, 0, 5, "값")
+        .unwrap();
+    assert_eq!(value(&core, "FIRSTGUIDE"), "AAA값");
+}
