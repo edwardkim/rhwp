@@ -59,3 +59,60 @@ production source `2b1f21ef1ab35a13ebcae11f562a3ebf3a998e4d`와 Native 전용 �
 페이지별 TSV는 현재 head에서 재출력한 각 `rhwp_png`/`pdf_png` 쌍에 canonical `--silhouette-only --png-pair`를 실행해 `output/pr-review/semanticist21-20261005/final-tsv/<native|wasm>/<key>/silhouette.tsv`에 산출했다. 58개 capture(backend별29항목)·66쪽 대응, 90% 미만0/누락0. 이는 기존 오래된 캡처의 재사용이 아니라 위 production source의 최종 재출력에서 PNG 해시를 고정한 TSV이며 전체 원문/독립 PDF의 쪽수도 별도로 대조했다. `not_evaluated` TSV를 승인으로 사용하지 않고 같은 capture의 full review gate와 직접 판독을 함께 적용했다.
 
 실행 출력 정책을 중간 시각 검증에도 적용했다. #7491 manifest/metrics/run_manifest와 중간 gate JSON, 폼 PDF의 문자 추출 JSON, 글꼴 조건별 raw 실행은 ignored `historical-visual-raw`로 이동했다. 입력·기준 PDF·Print job·글꼴/source/산출물 SHA provenance와 대표 PNG는 보존한다. `font-path-verification.json`에는 source/실제 글꼴 경로만 남기고 원시 실행 경로를 연결했다.
+
+## 입증된 저장 원점 보정의 Native 검증
+
+Production `0a305d51a`에서 새 Native30항목·37쪽 대응을 다시 출력했다. canonical `proven-origin-tsv/native/<key>/silhouette.tsv` 최저91.96451%, 미달/누락0이고 대표 Native PNG를 이 재출력으로 갱신했다. 같은 프레임 Arial 표의 앞서 실패한57.53754%와 새98.11853% 이미지는 `pr7571/same-frame-{before-native,native}-{review,overlay}-p1.png`로 구분한다. fresh WASM은 빌드 중이며 이 단계에서 이전 WASM PNG를 최신 head 검증으로 재사용하지 않는다.
+
+
+## 입증된 저장 원점 보정의 최종 Native/fresh WASM 검증
+
+Production source `0a305d51a898cedbe2af75e65726aee463b2b197`, Native 전용 관계 회귀 source `173b74fd7993c662e396551ae4f6957274749f66`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. 두 source 사이 production 파일(`src`/`crates`) 차이는 없다. fresh WASM SHA-256 `7b91e79d0b160429d723b8c24669bc6fdbe5b0940fbbcc32885751122d8a50c7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다.
+
+Native/fresh WASM 각각30항목·37쪽 대응(합계60항목·74쪽)을 최신 production에서 재출력했다. 최저91.96451%, 90% 미만/누락/측정 불가0, font exception0이다. canonical 페이지별 TSV는 ignored `output/pr-review/semanticist21-20261005/proven-origin-tsv/<native|wasm>/<key>/silhouette.tsv`에 있다. 각 새 `rhwp_png`/`pdf_png` 쌍에서 `python3 scripts/visual_sweep.py --silhouette-only --png-pair <rhwp_png> <pdf_png> --out <출력>`으로 산출했다. 같은 capture의 full review gate 및 직접 쪽/외곽/내용 소속 판독을 함께 적용했으며 `not_evaluated`를 승인으로 쓰지 않았다.
+
+일반 렌더 명령은 `python3 scripts/visual_sweep.py --hwp <입력> --pdf <독립 Print PDF> --key <key> --rhwp-bin output/pr-review/semanticist21-20261005/rhwp-proven-origin-native --embed-fonts=full --out output/pr-review/semanticist21-20261005/oct06-proven-origin-all-native-review-all`이다. WASM은 `--wasm-pkg pkg`와 별도 `oct06-proven-origin-all-wasm-review-all`을 사용한다. #7504 실제 font 등록 입력은 등록 API replay adapter를 사용하며 실제 face/바이트와 Print 출처는 해당 개별 기록에 있다. 2020/2024 MCP는 원본에 맞는 실제 한컴 Print이며 수동 폼/암호 PDF도 사용자가 Print 출력임을 확인했다.
+
+앞서 직접 판독한29항목의 최신 review/overlay58쌍은 기존 정상 캡처와 바이트가 동일하다. 이전 PNG를 최신 head 출력으로 재사용한 것이 아니다. 목록4쪽과 동일 프레임 표의 최신 PNG도 직접 확인했다. 공개 asset은 이 최종 capture에서 복사했고, 원시 manifest·TSV·실행 로그/JSON은 ignored output에 보존했다. 이 기록은 시각·실제 화면 범위의 완료이며 최종 전체 Rust 및 GitHub CI 결과는 아래 후속 판정에서 구분한다.
+
+
+## 문단 원점 리셋 보정의 최종 Native/fresh WASM 검증
+
+Production·검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. fresh WASM SHA-256 `410f8f3540f2856fcd7200a115f191a87aed4b2e726267bc54d960b35948735a`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다. Native binary SHA-256 `d4ff621918e81070809efe96555f9e484905f12c20d77f9a78f81ce4095fbe46`. 아래 결과는 원점 리셋 보정까지 포함한 최신 source의 재출력이다.
+
+Native/fresh WASM 각각30항목·37쪽 대응의 full Sweep 및 canonical `ladder-reset-tsv/<native|wasm>/<key>/silhouette.tsv` 완료, 최저91.96451%, 미달/누락/측정 불가/글꼴 예외0이다. 렌더 명령은 위 공통 명령의 binary를 `rhwp-ladder-reset-native`, 출력 경로를 `oct06-ladder-reset-all-<native|wasm>-review-all`로 바꾼 실제 재실행이며 Native/WASM 각 input·Print PDF SHA는 기존 개별 기록과 같다. 최신 contact-sheet120개는 앞서 직접 판독한0a 캡처와 바이트가 동일하다. 원본 재출력과 PNG 해시 대조를 수행했고 최신 Native/fresh WASM의 목록3쪽 review 및 Arial 표 review/standalone overlay도 직접 확인했다.
+
+scaffold의 문단별 원점0 리셋은 단 전체의 저장 사다리로 해석하지 않는다. 같은 원점은 동일 문단의 수평 분할에서만 연속으로 인정한다. 기존 text-overlap16 partition·저장/분할/새 단·목록 쪽 소속 등 Native 선행33건 모두PASS, Cargo 집중32건도모두PASS이다. `samples/issue7216/{short,tall}_table_before.hwpx`3쪽과 `hwpspec.hwp`16·17·21쪽 render tree는 정상5d4 source와 바이트 동일이며, 기존 입력의 전체 피델리티 개선으로 보고하지 않는다. 기존 fixture/baseline/래칫은 완화하지 않았다.
+
+최신410f8f35 fresh WASM의 실제 화면/질의/폼3종도PASS이다. `pr7578/screen-{original,password,canvaskit-original,canvaskit-password}.png`4개는 이 새 runtime의 실제 화면이다. 원시 실행은 `logs/ladder-reset-browser-*.log`와 ignored screen 폴더에 유지한다. 전체 Rust/Native Skia·최신 원격CI는 별도로 마친다.
+
+
+## 최종 로컬 게이트 실행 결과
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, 검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`. fmt·Native/WASM32/workspace-all-targets Clippy `-D warnings`·workspace build·manifest 및 source unit tier `--check --base-ref <base>` 모두PASS다. 파생 suite를 준비한 동일 review checkout의 `target/pr-review`에서 Cargo를 순차 실행했다.
+
+- 전체 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`:10,491 PASS/0 FAIL/50 SKIP,706.118초, exit0.
+- Native 선행33/ Cargo 집중32 모두PASS; 겹침16 partition 전체를 포함한다. 기존 fixture/baseline/래칫을 완화하지 않았다.
+- Native Skia lib·missing picture·direct PDF·ComboBox·password 모두PASS. optional backend 검사를 원 head CI 또는 SVG 점수로 대신하지 않았다.
+- fresh WASM/Studio 동기화·실제 화면/질의/폼3종·최신 Native/fresh WASM74쪽 대응/TSV 모두PASS(최저91.96451%, 미달/누락/측정 불가0, font exception0).
+
+실제 명령·exit·시간은 ignored `output/pr-review/semanticist21-20261005/oct06-ladder-reset-validation-progress.json`, 원 출력은 `logs/oct06-ladder-reset-*.log`에만 보존한다. 각 단계의 마지막 summary는 아래 공통 증거 README에 기록한다. source가 바뀌면 이 실행 결과를 그대로 승계하지 않는다. 원 PR의 별도 CI와 누적 후보의 최신 원격 CI를 구분하며 통합 PR의 최종 head CI를 확인한 뒤 merge한다.
+
+| 단계 | exit | 시간 | 실제 마지막 요약 |
+| --- | --- | --- | --- |
+| `oct06-ladder-reset-prepare` | 0 | 1.36s | exit0 |
+| `oct06-ladder-reset-fmt-apply` | 0 | 16.41s | exit0 |
+| `oct06-ladder-reset-fmt` | 0 | 16.69s | exit0 |
+| `oct06-ladder-reset-clippy-native` | 0 | 54.93s | exit0 |
+| `oct06-ladder-reset-clippy-wasm` | 0 | 52.37s | exit0 |
+| `oct06-ladder-reset-build-workspace` | 0 | 122.36s | exit0 |
+| `oct06-ladder-reset-clippy-workspace` | 0 | 89.88s | exit0 |
+| `oct06-ladder-reset-manifest` | 0 | 4.22s | exit0 |
+| `oct06-ladder-reset-unit-tiers` | 0 | 19.56s | exit0 |
+| `oct06-ladder-reset-remaining-focus` | 0 | 643.89s | Summary [ 147.005s] 32 tests run: 32 passed (1 slow), 10509 skipped |
+| `oct06-ladder-reset-full-nextest` | 0 | 717.45s | Summary [ 706.118s] 10491 tests run: 10491 passed (10 slow), 50 skipped |
+| `oct06-ladder-reset-skia-lib` | 0 | 298.59s | test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s |
+| `oct06-ladder-reset-skia-picture` | 0 | 229.72s | Summary [   0.836s] 2 tests run: 2 passed, 242 skipped |
+| `oct06-ladder-reset-skia-direct-pdf` | 0 | 10.83s | Summary [   0.357s] 4 tests run: 4 passed, 219 skipped |
+| `oct06-ladder-reset-skia-combobox` | 0 | 15.43s | Summary [   0.543s] 4 tests run: 4 passed, 193 skipped |
+| `oct06-ladder-reset-skia-password` | 0 | 14.31s | Summary [   0.481s] 4 tests run: 4 passed, 204 skipped |

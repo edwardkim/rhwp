@@ -9,7 +9,7 @@ last_verified: 2026-10-06
 
 ## 최종 판정
 
-**머지 보류 — 누적 후보 검증 진행 중.** 원 head의 CI와 이번 누적 head의 실행 결과를 구분한다. 필수 코드·회귀·시각 검증 결과를 확인한 뒤 판정을 갱신한다.
+**통합 후보 범위의 로컬 검토 충족 — 최신 원격 CI 대기.** 실제 변경·회귀·독립 Print/직접 시각 확인 및 비조판 계약을 이 PR의 기록 범위에서 충족했다. 원 head 자체의 approve/merge와 구분하며, 누적 source8569f49ce의 최신 원격 CI가 끝난 뒤 통합한다.
 
 ## 접수 정보
 
@@ -193,9 +193,9 @@ fresh WASM과 최종 전체 lint·회귀·GitHub CI는 진행 중이므로 이 N
 
 ## 최종 production 전쪽 재검증 — 2026-10-06
 
-Production source `0a305d51a898cedbe2af75e65726aee463b2b197`, Native 전용 관계 회귀 source `173b74fd7993c662e396551ae4f6957274749f66`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. 두 source 사이 production 파일(`src`/`crates`) 차이는 없다. fresh WASM SHA-256 `7b91e79d0b160429d723b8c24669bc6fdbe5b0940fbbcc32885751122d8a50c7`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다.
+Production·검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. fresh WASM SHA-256 `410f8f3540f2856fcd7200a115f191a87aed4b2e726267bc54d960b35948735a`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다. Native binary SHA-256 `d4ff621918e81070809efe96555f9e484905f12c20d77f9a78f81ce4095fbe46`. 아래 결과는 원점 리셋 보정까지 포함한 최신 source의 재출력이다.
 
-Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, 최저91.96451%, 90% 미만/누락/측정 불가/글꼴 예외0이다. canonical TSV: ignored `output/pr-review/semanticist21-20261005/proven-origin-tsv/<native|wasm>/<key>/silhouette.tsv`. 입력·Print 출처와 직접 판독은 위 개별 증거를 따르며, [공통 렌더/TSV 명령·재출력 검증](../assets/semanticist21-20261005/README.md#입증된-저장-원점-보정의-최종-nativefresh-wasm-검증)에 연결한다. 전체 Rust 및 원격 CI 완료 여부는 다음 최종 판정에서 별도로 기록한다.
+Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, 최저91.96451%, 90% 미만/누락/측정 불가/글꼴 예외0이다. canonical TSV: ignored `output/pr-review/semanticist21-20261005/ladder-reset-tsv/<native|wasm>/<key>/silhouette.tsv`. 입력·Print 출처와 직접 판독은 위 개별 증거를 따르며, [공통 렌더/TSV 명령·재출력 검증](../assets/semanticist21-20261005/README.md#문단-원점-리셋-보정의-최종-nativefresh-wasm-검증)에 연결한다. 전체 Rust 및 원격 CI 완료 여부는 다음 최종 판정에서 별도로 기록한다.
 
 | 이 PR의 검증 입력 | 경로 | 독립 Print 전체 쪽 실루엣(%) | 판정 |
 | --- | --- | --- | --- |
@@ -219,3 +219,19 @@ Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, �
 `173b74fd7` 전체 회귀 중 기존 text-overlap partition6/11이 실패했다. 입력 `samples/issue7216/{short,tall}_table_before.hwpx`는 scaffold 생성본이며, 글자 있는 앞 문단 둘과 폭0 표 앵커가 각각 `vertical_pos=0`, 높이1000인 별도 저장 줄을 가진다. 이 값들은 같은 단의 전역 좌표 사다리가 아니다. 기존 Print/생성 출처는 [#7233 기록](pr_7233_review.md)에 있다. 단조 비감소만으로 저장 원점을 입증한 가정을 제거하고, 동일 원점은 같은 문단 안의 수평 분할(다른 `column_start`)에서만 연속 줄로 인정한다. 문단 원점 리셋은 기존 재조판을 유지하며, 기존 래칫·fixture를 완화하지 않는다. 정상 실제 저장 Arial/함초롬과 새 단 표, `hwpspec.hwp` 저장·분할 대조군을 다시 확인한다. 실행 중인 전체 검사는 최종 summary까지 보존하며 수정본 결과로 바꾸어 보고하지 않는다.
 
 - 위 수정 전 전체 실행 최종 결과:10,491 실행,10,489 PASS/2 FAIL/50 SKIP, exit100,709.942초. 실패는 기존 text-overlap partition6/11의 scaffold 원점 리셋 입력뿐이다. 로그는 ignored `output/pr-review/semanticist21-20261005/logs/oct06-proven-origin-full-nextest.log`이며 수정본 검증과 구분한다.
+
+- 수정본 production `8569f49ce051ee343d58866a4f1e20a642d9e7fa`의 겹침16 partition 포함 선행33건은33 PASS/0 FAIL이다. 동일 프레임·새 단·목록 쪽 소속·기존 저장/분할 관계를 함께 실행했다. `hwpspec.hwp`16·17·21쪽과 원점 리셋 입력 short1쪽/tall2쪽의 전체 render tree는 정상 `5d4e47845`와 바이트 동일하다. 이전 입력의 전체 피델리티를90% 이상으로 개선했다고 주장하지 않고 기존 재조판의 무회귀로 구분한다. 최신 Native30항목·37쪽 capture/TSV 최저91.96451%, 미달/누락0이며 contact-sheet60개가 이전 정상 캡처와 같음을 새 재출력에서 확인했다. Native binary SHA-256 `d4ff621918e81070809efe96555f9e484905f12c20d77f9a78f81ce4095fbe46`. fresh WASM과 최종 전체 게이트는 별도 진행 중이다.
+
+- 최신 source의 실제 브라우저3종 PASS(화면/질의/폼), source registry·fmt·Native/WASM/workspace-all-targets Clippy·workspace build·base manifest/unit-tier 정책 PASS. Native 선행33건 및 Cargo 집중32건은 각각 모두 PASS이며 최종 전체 nextest/Native Skia 결과는 다음 판정에 기록한다. 원시 로그·중간 JSON·TSV는 ignored `output/pr-review/semanticist21-20261005`에 보존한다.
+
+
+## 최종 로컬 게이트 — production8569f49ce
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, 검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`. fmt·Native/WASM32/workspace-all-targets Clippy `-D warnings`·workspace build·manifest 및 source unit tier `--check --base-ref <base>` 모두PASS다. 파생 suite를 준비한 동일 review checkout의 `target/pr-review`에서 Cargo를 순차 실행했다.
+
+- 전체 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`:10,491 PASS/0 FAIL/50 SKIP,706.118초, exit0.
+- Native 선행33/ Cargo 집중32 모두PASS; 겹침16 partition 전체를 포함한다. 기존 fixture/baseline/래칫을 완화하지 않았다.
+- Native Skia lib·missing picture·direct PDF·ComboBox·password 모두PASS. optional backend 검사를 원 head CI 또는 SVG 점수로 대신하지 않았다.
+- fresh WASM/Studio 동기화·실제 화면/질의/폼3종·최신 Native/fresh WASM74쪽 대응/TSV 모두PASS(최저91.96451%, 미달/누락/측정 불가0, font exception0).
+
+실제 명령·exit·시간은 ignored `output/pr-review/semanticist21-20261005/oct06-ladder-reset-validation-progress.json`, 원 출력은 `logs/oct06-ladder-reset-*.log`에만 보존한다. 각 단계의 마지막 summary는 아래 공통 증거 README에 기록한다. source가 바뀌면 이 실행 결과를 그대로 승계하지 않는다. 원 PR의 별도 CI와 누적 후보의 최신 원격 CI를 구분하며 통합 PR의 최종 head CI를 확인한 뒤 merge한다.

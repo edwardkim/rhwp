@@ -37,6 +37,6 @@ try {
  assert.ok(result.caret.slice(1).every((r,i)=>r.x>result.caret[i].x));
  assert.ok(result.format.runs.some(r=>r.text==='A'&&r.bold&&Math.abs(r.fontSize-26.7)<0.2));
  assert.notDeepEqual(result.selectionBefore,result.selectionAfter);
- await fs.writeFile('mydocs/pr/assets/semanticist21-20261005/query-geometry-results.json',JSON.stringify(result,null,2));
+ await fs.writeFile('output/pr-review/semanticist21-20261005/query-geometry-final-results.json',JSON.stringify(result,null,2));
  console.log('PASS: table rendered width/origin + HWP reopen, final note caret, empty formatting, warm selection edit invalidation');
 } finally {await browser.close();}

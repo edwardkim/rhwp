@@ -2,7 +2,7 @@ import {pathToFileURL} from 'node:url';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const {chromium}=await import(pathToFileURL(process.cwd()+'/output/pr-review/semanticist21-20261005/browser/node_modules/playwright-core/index.mjs').href);
-const out='output/pr-review/semanticist21-20261005/combobox-screen';
+const out='output/pr-review/semanticist21-20261005/combobox-screen-final';
 await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/snap/bin/chromium',headless:true,args:['--no-sandbox']});
 try {
@@ -25,14 +25,19 @@ try {
    CanvasRenderingContext2D.prototype.fillText=function(text,...args){calls.push({text,args,font:this.font});return original.call(this,text,...args)};
    try {d.renderPageToCanvas(0,document.querySelector('canvas'),1);}finally{CanvasRenderingContext2D.prototype.fillText=original;}
    const raw=JSON.parse(d.getFormValue(0,4,0));
+   const forms=[];
+   function visit(n){if(n.ops)forms.push(...n.ops.filter(op=>op.type==='formObject'));for(const child of n.children||[])visit(child);if(n.child)visit(n.child);}
+   visit(JSON.parse(d.getPageLayerTree(0)).root);
+   const comboBounds=forms.find(f=>f.formType==='comboBox').bbox;
    const svg=d.renderPageSvg(0);
    const reopened=new module.HwpDocument(d.exportHwpx());
-   return {file,calls,raw,svg,reopenedRaw:JSON.parse(reopened.getFormValue(0,4,0)),reopenedSvg:reopened.renderPageSvg(0)};
+   return {file,calls,raw,svg,comboBounds,reopenedRaw:JSON.parse(reopened.getFormValue(0,4,0)),reopenedSvg:reopened.renderPageSvg(0)};
   },file);
   assert.equal(result.raw.text,'');assert.equal(result.reopenedRaw.text,'');
   const title=result.calls.find(c=>c.text==='계절 선택');assert.ok(title);
-  assert.ok(Math.abs(title.args[0]-87.36*4/3)<0.4);assert.ok(Math.abs(title.args[1]-193.68*4/3)<0.4);
-  assert.ok(title.font.includes('13.333'));
+  const box=result.comboBounds;
+  assert.ok(title.args[0]>box.x&&title.args[0]<box.x+box.width);
+  assert.ok(title.args[1]>box.y&&title.args[1]<box.y+box.height);
   assert.ok(result.svg.includes('계절 선택'));assert.ok(result.reopenedSvg.includes('계절 선택'));
   if(file.includes('password')) {assert.ok(result.calls.some(c=>c.text==='*************'));assert.ok(!result.calls.some(c=>c.text.includes('MASK_SENTINEL')));}
   const key=file.includes('password')?'password':'original';

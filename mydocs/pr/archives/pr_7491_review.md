@@ -1,7 +1,7 @@
 ---
 kind: report
 status: active
-last_verified: 2026-10-05
+last_verified: 2026-10-06
 ---
 
 # PR #7491 리뷰 — 메인터너 인계 보정
@@ -392,3 +392,48 @@ Production source `5d4e478456ffc7142d5ab553f38bdede06719491`에서 Native와 fre
 ![fresh WASM 전체 쪽 직접 비교](../assets/semanticist21-20261005/pr7491/list-marker-head-wasm-review-all-pages.png)
 
 이 완료는 목록 보정 범위의 판정이다. 전체 대조군 재캡처에서 #7504 등록 Arial 표 외곽의 동일 프레임 원점 회귀(57.53754%)가 추가 검출되어 누적 후보의 통합은 계속 보류하며 공통 흐름/paint 원점을 보정한다.
+
+
+## 최종 production 전쪽 재검증 — 2026-10-06
+
+Production·검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`, 정책 base `c167dc6abbebf69546575e2d16d06223791bab82`를 검증했다. fresh WASM SHA-256 `410f8f3540f2856fcd7200a115f191a87aed4b2e726267bc54d960b35948735a`, JS `70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e`; root `pkg`와 Studio public의 실제 바이트가 같다. Native binary SHA-256 `d4ff621918e81070809efe96555f9e484905f12c20d77f9a78f81ce4095fbe46`. 아래 결과는 원점 리셋 보정까지 포함한 최신 source의 재출력이다.
+
+Native/fresh WASM 각각30항목·37쪽(합계74쪽 대응) 최신 재출력, 최저91.96451%, 90% 미만/누락/측정 불가/글꼴 예외0이다. canonical TSV: ignored `output/pr-review/semanticist21-20261005/ladder-reset-tsv/<native|wasm>/<key>/silhouette.tsv`. 입력·Print 출처와 직접 판독은 위 개별 증거를 따르며, [공통 렌더/TSV 명령·재출력 검증](../assets/semanticist21-20261005/README.md#문단-원점-리셋-보정의-최종-nativefresh-wasm-검증)에 연결한다. 전체 Rust 및 원격 CI 완료 여부는 다음 최종 판정에서 별도로 기록한다.
+
+| 이 PR의 검증 입력 | 경로 | 독립 Print 전체 쪽 실루엣(%) | 판정 |
+| --- | --- | --- | --- |
+| `edited` | native | p1 99.89242 | passed / 누락0 |
+| `original` | native | p1 99.87872 | passed / 누락0 |
+| `pr7491-list-marker-head-control` | native | p1 93.46115 / p2 94.66618 / p3 91.96451 / p4 96.36554 | passed / 누락0 |
+| `smallfit` | native | p1 100.00000 | passed / 누락0 |
+| `pr7491-smallfit-hwp` | native | p1 100.00000 | passed / 누락0 |
+| `edited` | wasm | p1 99.89242 | passed / 누락0 |
+| `original` | wasm | p1 99.87872 | passed / 누락0 |
+| `pr7491-list-marker-head-control` | wasm | p1 93.46115 / p2 94.66618 / p3 91.96451 / p4 96.36554 | passed / 누락0 |
+| `smallfit` | wasm | p1 100.00000 | passed / 누락0 |
+| `pr7491-smallfit-hwp` | wasm | p1 100.00000 | passed / 누락0 |
+
+![최신 fresh WASM 직접 비교](../../../mydocs/pr/assets/semanticist21-20261005/pr7491-wasm-edited-review-all-pages.png)
+![같은 출력 standalone overlay](../../../mydocs/pr/assets/semanticist21-20261005/pr7491-wasm-edited-overlay-all-pages.png)
+
+- 최신 source의 실제 브라우저3종 PASS(화면/질의/폼), source registry·fmt·Native/WASM/workspace-all-targets Clippy·workspace build·base manifest/unit-tier 정책 PASS. Native 선행33건 및 Cargo 집중32건은 각각 모두 PASS이며 최종 전체 nextest/Native Skia 결과는 다음 판정에 기록한다. 원시 로그·중간 JSON·TSV는 ignored `output/pr-review/semanticist21-20261005`에 보존한다.
+
+
+최저3쪽의 최신 fresh WASM 직접 증거를 아래에 보존한다. B27–B39 전체와 B40의 앞2줄은3쪽, B40의 마지막 줄은4쪽으로 Print와 같은 소속이다.
+
+![최저 페이지 fresh WASM review](../assets/semanticist21-20261005/pr7491/list-marker-head-wasm-review-p3.png)
+![같은3쪽 standalone overlay](../assets/semanticist21-20261005/pr7491/list-marker-head-wasm-overlay-p3.png)
+
+
+## 최종 로컬 게이트 — production8569f49ce
+
+정책 base `c167dc6abbebf69546575e2d16d06223791bab82`, 검증 source `8569f49ce051ee343d58866a4f1e20a642d9e7fa`. fmt·Native/WASM32/workspace-all-targets Clippy `-D warnings`·workspace build·manifest 및 source unit tier `--check --base-ref <base>` 모두PASS다. 파생 suite를 준비한 동일 review checkout의 `target/pr-review`에서 Cargo를 순차 실행했다.
+
+- 전체 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`:10,491 PASS/0 FAIL/50 SKIP,706.118초, exit0.
+- Native 선행33/ Cargo 집중32 모두PASS; 겹침16 partition 전체를 포함한다. 기존 fixture/baseline/래칫을 완화하지 않았다.
+- Native Skia lib·missing picture·direct PDF·ComboBox·password 모두PASS. optional backend 검사를 원 head CI 또는 SVG 점수로 대신하지 않았다.
+- fresh WASM/Studio 동기화·실제 화면/질의/폼3종·최신 Native/fresh WASM74쪽 대응/TSV 모두PASS(최저91.96451%, 미달/누락/측정 불가0, font exception0).
+
+실제 명령·exit·시간은 ignored `output/pr-review/semanticist21-20261005/oct06-ladder-reset-validation-progress.json`, 원 출력은 `logs/oct06-ladder-reset-*.log`에만 보존한다. 각 단계의 마지막 summary는 아래 공통 증거 README에 기록한다. source가 바뀌면 이 실행 결과를 그대로 승계하지 않는다. 원 PR의 별도 CI와 누적 후보의 최신 원격 CI를 구분하며 통합 PR의 최종 head CI를 확인한 뒤 merge한다.
+
+이 판정은 이미 merge된 #7599/#7491의 후속 누적 보정 범위다. 기존 머지 판정을 소급 변경하지 않으며 원 PR의 재머지로 보고하지 않는다.
