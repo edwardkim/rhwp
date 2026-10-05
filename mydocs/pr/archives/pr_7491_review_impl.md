@@ -50,3 +50,9 @@ source `b3c933a88cdb4f7ceed3fbbf1a6bc46375d18aee`의 Native/fresh WASM을 순차
 공개 API로 새 문서에 짧은 본문·글자취급 작은 표·셀 텍스트를 생성하고 독립 MCP PDF를 산출했다. 같은 줄인 표의 외곽과 셀 내용은 겹쳐 있으나 표 앞 글자의 기준선이 어긋나 Native/fresh WASM85.73551%였다. 이를 회귀 fixture로 추가하지 않고 출력 원인부터 보정한다. 별도 object 줄에는 바깥 여백을 계상했지만 같은 줄 fallback의 높이 발행은 본체만 쓰는 소비 경로가 남아 있었다. 표의 전체 점유 메트릭을 helper로 공유하여 own-line 판정과 fallback LineSeg 발행이 함께 사용하게 하고 같은 MCP 입력에서 재캡처한다. 작은 표가 너비를 만족하면 강제 다음 줄은 발행하지 않아야 한다.
 
 관계 검사의 수정 전 검출: 검증 전용 worktree에 같은 최종 검사/입력을 유지하고 own-line 추가 전 production 파일만 복원했다. 10건 중9 PASS/1 FAIL이며 원점 유지의 의미를 직접 검출했다. 실행·변경 파일 hash는 `output/pr-review/semanticist21-20261005/run-records/pr7491-relative-before.json`와 실패 요약은 `output/pr-review/semanticist21-20261005/run-records/pr7491-relative-before-summary.txt`에 있다. 공유 target을 삭제하지 않고 root source를 재빌드한 뒤 최종 결과를 채택한다.
+
+### 작은 표의 실제 본체 높이 확인
+
+source357ff494e의 바깥 여백 공유만으로 작은 표의 점수는 바뀌지 않았다(85.73551%). 공개 API가 발행한 표 선언 높이는282HU이나 실제 셀 글자와 패딩을 소비한 `HeightMeasurer::measure_section`의 표 높이는1282HU다. 선언282+바깥 여백566은 기존 글자 줄1000보다 작아 줄 높이 갱신이 발생하지 않았다. 따라서 선언 높이만 재사용한 설명은 불충분하다.
+
+다음 보정은 별도의 추정식을 만들지 않고 표 배치가 소비하는 `measure_table`의 셀/행 측정 결과를 편집 재조판의 점유 높이에도 사용한다. 단순 선언/여백 보정과 실제 콘텐츠 높이 측정을 구분하며, 저장 줄 재사용 경로는 기존 입력으로 재검증한다. 작은 표의 Native/fresh WASM 및 독립 MCP PDF가90%를 충족한 뒤에만 새 정식 회귀/fixture를 추가한다. 실행 로그와 진단 출력은 ignored `output/pr-review/semanticist21-20261005/`에만 보존한다.

@@ -62,7 +62,7 @@ set_cell_size의 height-only 경로는 update_ctrl_dimensions 뒤 원래 common.
 
 ## fresh WASM 소비 경로 추가 확인
 
-fresh WASM 실제 렌더 트리에서 높이 편집 전후 table bbox의 x와 w가 동일하고 HWP 재열기의 w도 같다. 모델/원본 header 검사 외에 최종 renderer 소비까지 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
+fresh WASM 실제 렌더 트리에서 높이 편집 전후 table bbox의 x와 w가 동일하고 HWP 재열기의 w도 같다. 모델/원본 header 검사 외에 최종 renderer 소비까지 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/query-geometry.log`·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 

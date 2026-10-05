@@ -62,7 +62,7 @@ Studio toolbar에서 빈 문단을 건너뛰는 별도 UI 경로는 이 모델 �
 
 ## fresh WASM 소비 경로 추가 확인
 
-fresh WASM에서 빈 문단에 bold/20pt를 적용한 뒤 A 입력의 actual TextRun이 bold이고 fontSize 26.7px이다. 빈 문단 메타의 다음 입력 소비를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
+fresh WASM에서 빈 문단에 bold/20pt를 적용한 뒤 A 입력의 actual TextRun이 bold이고 fontSize 26.7px이다. 빈 문단 메타의 다음 입력 소비를 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/query-geometry.log`·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 

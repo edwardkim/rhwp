@@ -2681,9 +2681,22 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
 
 /// 줄의 점유 상자는 표 본체와 바깥 여백을 함께 포함한다.
 /// 별도 줄의 너비 판정과 같은 줄의 높이 발행이 동일한 메트릭을 소비한다.
-fn inline_control_occupied_size_hwp(control: &Control) -> Option<(i32, i32)> {
+fn inline_control_occupied_size_hwp(
+    control: &Control,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(i32, i32)> {
     let (mut width, mut height) = inline_control_size_hwp(control)?;
     if let Control::Table(table) = control {
+        // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
+        // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
+        let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
+            .with_session_edited(true)
+            .measure_table(table, 0, 0, styles);
+        height = height.max(px_to_hwpunit(
+            measured.total_height - measured.caption_height,
+            dpi,
+        ));
         width = width
             .saturating_add(i32::from(table.outer_margin_left))
             .saturating_add(i32::from(table.outer_margin_right));
@@ -2935,6 +2948,7 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
 /// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
 fn inline_control_requires_own_line(
     para: &Paragraph,
+    occupied_controls: &[(usize, i32, i32)],
     text_chars: &[char],
     line_breaks: &[LineBreakResult],
     available_width_px: f64,
@@ -2944,15 +2958,10 @@ fn inline_control_requires_own_line(
     space_metric: SpaceMetric,
 ) -> Option<(usize, i32)> {
     let text_len = para.text.chars().count();
-    let positions = para.control_text_positions();
-    let mut candidates = para
-        .controls
+    let mut candidates = occupied_controls
         .iter()
-        .zip(positions)
-        .filter_map(|(control, position)| {
-            let (width, height) = inline_control_occupied_size_hwp(control)?;
-            (position > 0 && position <= text_len).then_some((position, width, height))
-        });
+        .copied()
+        .filter(|(position, _, _)| *position > 0 && *position <= text_len);
     let (position, control_width, height) = candidates.next()?;
     // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
     // single-control 계약 밖이다.
@@ -2999,22 +3008,6 @@ fn inline_control_requires_own_line(
     (control_width > available_hwp + tolerance_hwp
         || prefix_width + control_width > available_hwp + tolerance_hwp)
         .then_some((position, height))
-}
-
-/// Physical box published by legacy edit reflow for an inline object row.
-/// TAC ownership in typesetting uses the table body plus outside margins, both
-/// for a width-driven break and for an explicit break. Keep those producers
-/// together so the preceding text is preserved without changing saved owners.
-fn inline_control_occupied_size_hwp(control: &Control) -> Option<(i32, i32)> {
-    let (width, height) = inline_control_size_hwp(control)?;
-    if let Control::Table(table) = control {
-        Some((
-            width + i32::from(table.outer_margin_left) + i32::from(table.outer_margin_right),
-            height + i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
-        ))
-    } else {
-        Some((width, height))
-    }
 }
 
 fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
@@ -4655,10 +4648,25 @@ fn reflow_line_segs_impl(
     } else {
         indent_px
     };
+    // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
+    let occupied_controls: Vec<_> =
+        if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
+            para.controls
+                .iter()
+                .zip(para.control_text_positions())
+                .filter_map(|(control, position)| {
+                    let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+                    Some((position, width, height))
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
     let forced_inline_line = (split_stale_cell_reflow || edited_tac_table)
         .then(|| {
             inline_control_requires_own_line(
                 para,
+                &occupied_controls,
                 &text_chars,
                 &line_breaks,
                 available_width_px,
@@ -4732,10 +4740,7 @@ fn reflow_line_segs_impl(
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
-        for (control, position) in para.controls.iter().zip(para.control_text_positions()) {
-            let Some((_, height_hwp)) = inline_control_occupied_size_hwp(control) else {
-                continue;
-            };
+        for &(position, _, height_hwp) in &occupied_controls {
             // 명시적 개행으로 정해진 개체 줄에 높이를 싣는다. 최초 줄에 일괄
             // 적용하면 표 앞 제목이 표 줄로 오인되어 표 뒤로 재배치된다.
             let line_index = line_breaks

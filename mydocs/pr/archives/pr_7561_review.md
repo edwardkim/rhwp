@@ -63,7 +63,7 @@ warm/cold 선택 결과 동일, 캐시 체류 증가 없음, 편집 후 무효�
 
 ## fresh WASM 소비 경로 추가 확인
 
-fresh WASM에서 render로 page tree를 warm한 뒤 selection rects를 얻고 앞에 글자를 삽입하면 실제 selection rects가 갱신된다. 저장된 트리의 무효화 후 소비를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
+fresh WASM에서 render로 page tree를 warm한 뒤 selection rects를 얻고 앞에 글자를 삽입하면 실제 selection rects가 갱신된다. 저장된 트리의 무효화 후 소비를 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/query-geometry.log`·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 

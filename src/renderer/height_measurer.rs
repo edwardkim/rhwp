@@ -2484,7 +2484,7 @@ impl HeightMeasurer {
 
     /// 표의 높이를 측정한다.
     /// layout_table과 동일한 방식으로 셀 내용 높이를 고려한다.
-    fn measure_table(
+    pub(crate) fn measure_table(
         &self,
         table: &Table,
         para_index: usize,

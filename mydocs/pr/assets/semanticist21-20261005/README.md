@@ -1,6 +1,6 @@
 # semanticist21 누적 검토 증거
 
-24개 원 PR의 리뷰 기록은 `mydocs/pr/archives/pr_<번호>_review.md`에 각각 있다. #7508의 이번 후속 head는 `pr_7508_review_20261005.md`이다. 이 디렉터리는 실행 증거와 진단 재현 스크립트이며 통합 리뷰 문서가 아니다.
+24개 원 PR의 리뷰 기록은 `mydocs/pr/archives/pr_<번호>_review.md`에 각각 있다. #7508의 이번 후속 head는 `pr_7508_review_20261005.md`이다. 이 디렉터리는 시각·입력 출처 증거와 진단 재현 스크립트를 보존한다. nextest 등 검증 실행의 원문 출력은 ignored `output/pr-review/semanticist21-20261005/`에 저장한다.
 
 - base: `cdba77b609c399fdef26a6c9e637716aa32c2177`
 - code candidate: `1d809afe7b965c9ea6137012d59d139d63b038d0`

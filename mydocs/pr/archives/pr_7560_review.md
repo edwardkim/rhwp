@@ -63,7 +63,7 @@ picture_footnote의 stored_prefix를 화면에서 생략한 run은 char_start에
 
 ## fresh WASM 소비 경로 추가 확인
 
-fresh WASM에서 한글·공백·비BMP 문자를 포함한 각주 원문 끝까지 모든 caret x가 엄격히 증가한다. 번호 prefix 뒤 원문 주소와 최종 캐럿이 이어지는 실제 query 경로를 확인했다. [실행](../assets/semanticist21-20261005/query-geometry.log)·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
+fresh WASM에서 한글·공백·비BMP 문자를 포함한 각주 원문 끝까지 모든 caret x가 엄격히 증가한다. 번호 prefix 뒤 원문 주소와 최종 캐럿이 이어지는 실제 query 경로를 확인했다. 실행 로그 `output/pr-review/semanticist21-20261005/logs/query-geometry.log`·[실제 좌표/노드](../assets/semanticist21-20261005/query-geometry-results.json). 한컴 PDF 일치를 주장하는 검사와 구분한다.
 
 ## 최종 공통 회귀 결과 (폼 source cf2336295)
 
