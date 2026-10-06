@@ -180,7 +180,9 @@ impl TypesetEngine {
             && (crate::renderer::layout::para_is_floating_overlay_anchor(para)
                 || empty_columndef_only_break
                 || overlay_columndef_separator_break
-                || (profile.hwpx_stored_layout()
+                // 같은 저장 구조를 원본 HWP5 도 갖는다 — 한/글은 형식으로 쪽 구성을 가르지
+                // 않는다(편람 hwp·hwpx 정본 모두 구역 12 pi=17 단나누기에 빈 쪽이 없다).
+                || ((profile.hwpx_stored_layout() || profile.hwp5_stored_pagination_layout())
                     && empty_table_carrier_column_break_before_page_table(
                         para_idx, para, paragraphs,
                     )));

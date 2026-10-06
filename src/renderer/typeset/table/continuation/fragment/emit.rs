@@ -303,6 +303,56 @@ impl TypesetEngine {
             }
         }
         let mut source_frame_trailing_trim_applied = false;
+        if !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && !split_end_cut.is_empty()
+            && end_row_height_override.is_none()
+            && table_footnotes.is_empty()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table)
+            && std::ptr::eq(table, row_geometry_table)
+        {
+            // 저장 되감김으로 끝나는 첫 조각은 한/글이 저장한 첫 프레임(`common.height`)이 그
+            // 조각의 물리 상자다. 컷 예산은 되감김 앞 줄간격을 빼고 잡지만, 상자는 그 프레임을
+            // 그대로 차지한다 — 렌더도 같은 프레임을 그린다(hwpctl 문단 176: 프레임 105.05,
+            // 간격을 뺀 내용 102.4; 편람 부록 행 5: 프레임 550.5, 정본 표 아래 괘선 644.7).
+            if split_block_start.is_none() {
+                // 1×1 표는 저장 표 높이가 곧 첫 조각 프레임이다(#7095 첫 조각 상자 계약).
+                let first_frame = saved_first_fragment_source_frame
+                    .map(|(height, _)| height)
+                    .or_else(|| {
+                        (table.row_count == 1 && table.col_count == 1 && table.cells.len() == 1)
+                            .then(|| hwpunit_to_px(table.common.height as i32, self.dpi))
+                    });
+                if let Some(frame_height) = first_frame {
+                    let last_row = end_row.saturating_sub(1);
+                    if frame_height > partial_height + 0.5
+                        && frame_height <= avail_for_rows + 0.5
+                        && layout_engine.row_cut_ends_at_stored_page_reset(
+                            table,
+                            last_row,
+                            if last_row == cursor_row {
+                                start_cut.as_slice()
+                            } else {
+                                &[]
+                            },
+                            &split_end_cut,
+                            styles,
+                        )
+                    {
+                        let before_last = cut_row_h.iter().take(last_row).sum::<f64>()
+                            + mt.cell_spacing * last_row.saturating_sub(1) as f64;
+                        let last_height = frame_height - before_last;
+                        if last_height > 0.0 {
+                            end_row_height_override = Some(last_height);
+                            partial_height = frame_height;
+                            source_frame_trailing_trim_applied = true;
+                        }
+                    }
+                }
+            }
+        }
         // 저장 첫 프레임의 마지막 글줄 뒤 간격은 다음 물리 쪽에 속한다.
         // 컷 유닛은 그대로 두고, 모든 셀의 가시 내용이 저장 상자에 들어갈 때만
         // 마지막 행의 그리기 높이를 원본 프레임에 맞춘다.
@@ -1068,6 +1118,22 @@ impl TypesetEngine {
                     return None;
                 }
                 let row = end_row.checked_sub(1)?;
+                // 남은 내용에 저장 쪽 경계(셀 사다리 되감김)가 더 있으면 그 행의 선언
+                // 최소는 한 프레임의 빈 공간이 아니다 — 한/글은 다음 되감김에서 다시
+                // 가른다. 이어 받는 조각이 넘겨받은 높이를 한 덩어리로 소비하면 그 경계를
+                // 잃는다(편람 부록 103×2 행 5: 선언 1210.5 − 첫 프레임 223.9 = 986.6 을
+                // 한 쪽에 실어 본문을 495px 넘겼다; 저장 되감김은 줄 10·33).
+                if split_block_start.is_none()
+                    && !layout_engine.row_cut_remaining_is_single_stored_frame(
+                        table,
+                        row,
+                        &next_cut,
+                        split_block_start,
+                        styles,
+                    )
+                {
+                    return None;
+                }
                 let cells: Vec<_> = table
                     .cells
                     .iter()
