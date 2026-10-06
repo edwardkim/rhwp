@@ -79,7 +79,10 @@ issue1549_multipositive_float_tables.hwpx	6
 issue1858_paper_anchor_float_stack.hwpx	6
 issue1891/80168_regulatory_analysis.hwpx	2
 issue1891_external_bindata_link.hwpx	3
-issue1921/59043_regulatory_analysis.hwp	2
+# [#7092] 굽은 따옴표(‘ ’ “ ”)를 영문 슬롯으로 분류해 그 경계에서 TextRun 이 나뉜다.
+#   layout-anomaly 로 수정 전후를 재면 겹침 교차 사각형은 모두 수정 전 교차 영역 안에 있고
+#   (6쪽 y≈383), 교차 합집합 면적은 544.6 = 544.6px²다. run 쌍의 수만 늘었다(새 겹침 0).
+issue1921/59043_regulatory_analysis.hwp	4
 issue1949_giant_cell_nested_tables_perf.hwp	8
 issue1949_giant_cell_nested_tables_perf.hwpx	8
 issue2006/1790387_prep_final_report.hwpx	1
@@ -108,7 +111,10 @@ issue6284/child_policy_top_caption_charts.hwpx	26
 issue6310/press_release_cell_logo.hwpx	4
 issue6551/113424_evaluation_guideline.hwpx	3
 issue6601/36331407_side_by_side_tac_tables.hwpx	11
-issue6697/80550-agricultural-machinery-act-amendment.hwpx	14
+# [#7092] 굽은 따옴표 영문 슬롯 분류로 TextRun 이 나뉜다. 수정 전후 교차 사각형은 모두
+#   수정 전 교차 영역 안(13·14·26·29쪽, 같은 y)이고 합집합 면적은 13·14·29쪽 같음,
+#   26쪽 1159.5 -> 1133.4px² 로 줄었다. run 쌍의 수만 늘었다(새 겹침 0).
+issue6697/80550-agricultural-machinery-act-amendment.hwpx	18
 issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	5
 issue6879/156767332-broadcast-revenue-attachment.hwp	1
 # #7418: 글머리표 머리 모양 합성 문서의 **의도된** 마커 겹침. 너비 보정 −1000·본문과의 거리 50%
