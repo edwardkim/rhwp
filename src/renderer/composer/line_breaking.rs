@@ -2946,9 +2946,11 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
 /// (#4138: 1×2 split 뒤 nested table/picture host). control 자체가 셀 폭을 넘거나,
 /// control 앞의 실제 text 폭과 합쳐 현재 줄의 폭을 넘는 경우만 대상으로 한다.
 /// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
+///
+/// 돌려주는 값은 (개체 글자 위치, 개체 원시 위치, 개체 줄 높이, 뒤 글자를 다음 줄로 넘기는지)다.
 fn inline_control_requires_own_line(
     para: &Paragraph,
-    occupied_controls: &[(usize, i32, i32)],
+    occupied_controls: &[(usize, u32, i32, i32)],
     text_chars: &[char],
     line_breaks: &[LineBreakResult],
     available_width_px: f64,
@@ -2956,13 +2958,13 @@ fn inline_control_requires_own_line(
     reflow_is_first_line: bool,
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
-) -> Option<(usize, i32)> {
+) -> Option<(usize, u32, i32, bool)> {
     let text_len = para.text.chars().count();
     let mut candidates = occupied_controls
         .iter()
         .copied()
-        .filter(|(position, _, _)| *position > 0 && *position <= text_len);
-    let (position, control_width, height) = candidates.next()?;
+        .filter(|(position, _, _, _)| *position > 0 && *position <= text_len);
+    let (position, utf16_start, control_width, height) = candidates.next()?;
     // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
     // single-control 계약 밖이다.
     if candidates.next().is_some() {
@@ -2990,24 +2992,44 @@ fn inline_control_requires_own_line(
     } else {
         to_hwp(available_width_px)
     };
-    let prefix: String = text_chars[line.start_idx..position].iter().collect();
-    let prefix_width = to_hwp(measure_token_width(
-        &ParagraphMetricScope::new(text_chars, styles)
-            .with_reflow_slots(text_chars)
-            .with_space_metric(space_metric),
-        &prefix,
-        line.start_idx,
-        &para.char_offsets,
-        &para.char_shapes,
-        styles,
-        0,
-        &[],
-    ));
+    let scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_reflow_slots(text_chars)
+        .with_space_metric(space_metric);
+    let width_of = |range: Range<usize>| {
+        let text: String = text_chars[range.clone()].iter().collect();
+        to_hwp(measure_token_width(
+            &scope,
+            &text,
+            range.start,
+            &para.char_offsets,
+            &para.char_shapes,
+            styles,
+            0,
+            &[],
+        ))
+    };
+    let prefix_width = width_of(line.start_idx..position);
 
     let tolerance_hwp = line_break_tolerance_hwp(available_hwp);
-    (control_width > available_hwp + tolerance_hwp
-        || prefix_width + control_width > available_hwp + tolerance_hwp)
-        .then_some((position, height))
+    if control_width <= available_hwp + tolerance_hwp
+        && prefix_width + control_width <= available_hwp + tolerance_hwp
+    {
+        return None;
+    }
+    // 개체 줄은 첫 줄이 아니다. 개체 옆에 들어가지 않는 뒤 글자는 개체 줄 다음 줄에서
+    // 시작한다. 줄 끝 공백은 줄을 넘기지 않는다.
+    let row_hwp = if indent_px < 0.0 {
+        to_hwp((available_width_px + indent_px).max(1.0))
+    } else {
+        to_hwp(available_width_px)
+    };
+    let suffix_end = (position..line.end_idx)
+        .rfind(|&i| !text_chars[i].is_whitespace())
+        .map_or(position, |i| i + 1);
+    let suffix_row = suffix_end > position
+        && control_width + width_of(position..suffix_end)
+            > row_hwp + line_break_tolerance_hwp(row_hwp);
+    Some((position, utf16_start, height, suffix_row))
 }
 
 fn char_index_to_utf16_offset(para: &Paragraph, char_index: usize) -> u32 {
@@ -4644,14 +4666,17 @@ fn reflow_line_segs_impl(
         indent_px
     };
     // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
+    // 개체 줄은 개체 자신의 원시 위치에서 시작한다. 뒤 글자 위치(`char_offsets`)로
+    // 시작하면 저장 줄 경계가 개체 뒤에 놓여 개체가 앞 줄 끝에 남는다.
     let occupied_controls: Vec<_> =
         if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
             para.controls
                 .iter()
                 .zip(para.control_text_positions())
-                .filter_map(|(control, position)| {
+                .zip(para.control_utf16_positions())
+                .filter_map(|((control, position), utf16_start)| {
                     let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
-                    Some((position, width, height))
+                    Some((position, utf16_start, width, height))
                 })
                 .collect()
         } else {
@@ -4679,7 +4704,10 @@ fn reflow_line_segs_impl(
         let utf16_start = if new_line_segs.is_empty() {
             0 // 첫 번째 줄의 text_start는 항상 0 (문단 시작)
         } else {
-            char_index_to_utf16_offset(para, lb.start_idx)
+            match forced_inline_line {
+                Some((position, control_start, ..)) if position == lb.start_idx => control_start,
+                _ => char_index_to_utf16_offset(para, lb.start_idx),
+            }
         };
         let fs = if lb.max_font_size > 0.0 {
             lb.max_font_size
@@ -4694,8 +4722,8 @@ fn reflow_line_segs_impl(
             text_len,
         ));
         let mut text_seg = make_line_seg(utf16_start, fs);
-        if forced_inline_line.is_some_and(|(position, _)| position == lb.start_idx) {
-            let (_, height_hwp) = forced_inline_line.expect("checked inline control");
+        if forced_inline_line.is_some_and(|(position, ..)| position == lb.start_idx) {
+            let (_, _, height_hwp, _) = forced_inline_line.expect("checked inline control");
             apply_inline_control_line_height(&mut text_seg, height_hwp);
         }
         if let Some(height_hwp) = inline_controls
@@ -4714,16 +4742,25 @@ fn reflow_line_segs_impl(
         // control이 text line 한가운데/끝에 있으면 먼저 text prefix를 확정하고,
         // control offset에서 다음 LineSeg를 삽입한다. 단순히 vector 끝에 붙이면
         // 중간 nested table 뒤의 text가 control보다 앞에서 그려진다.
-        let control_after_text = forced_inline_line.is_some_and(|(position, _)| {
+        let control_after_text = forced_inline_line.is_some_and(|(position, ..)| {
             position > lb.start_idx
                 && (position < lb.end_idx
                     || (position == lb.end_idx && line_idx + 1 == line_breaks.len()))
         });
         if control_after_text {
-            let (position, height_hwp) = forced_inline_line.expect("checked inline control");
-            let mut control_seg = make_line_seg(char_index_to_utf16_offset(para, position), fs);
+            let (_, control_start, height_hwp, _) =
+                forced_inline_line.expect("checked inline control");
+            let mut control_seg = make_line_seg(control_start, fs);
             apply_inline_control_line_height(&mut control_seg, height_hwp);
             new_line_segs.push(control_seg);
+        }
+        if let Some((position, _, _, true)) = forced_inline_line
+            .filter(|(position, ..)| control_after_text || *position == lb.start_idx)
+        {
+            new_line_segs.push(make_line_seg(
+                char_index_to_utf16_offset(para, position),
+                fs,
+            ));
         }
     }
 
@@ -4735,7 +4772,7 @@ fn reflow_line_segs_impl(
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
-        for &(position, _, height_hwp) in &occupied_controls {
+        for &(position, _, _, height_hwp) in &occupied_controls {
             // 명시적 개행으로 정해진 개체 줄에 높이를 싣는다. 최초 줄에 일괄
             // 적용하면 표 앞 제목이 표 줄로 오인되어 표 뒤로 재배치된다.
             let line_index = line_breaks

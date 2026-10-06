@@ -513,6 +513,14 @@ pub(super) fn inline_table_stored_line_breaks(para: &Paragraph) -> Vec<(usize, u
             .unwrap_or(text_len);
         let is_owned_first_visible_break =
             line_index == 1 && char_idx == 0 && preserves_first_visible_break;
+        // 표만 담은 줄과 표 뒤 글자 줄은 같은 글자 위치로 투영된다. 그 글자는 뒤 줄 소유다.
+        if let Some(last) = indices
+            .last_mut()
+            .filter(|(previous, _)| *previous == char_idx)
+        {
+            last.1 = line_index;
+            continue;
+        }
         if (char_idx > 0 || is_owned_first_visible_break)
             && char_idx <= text_len
             && indices
@@ -3095,8 +3103,14 @@ impl LayoutEngine {
                 1
             };
             let gap = offsets[i] - offsets[i - 1];
-            if gap > prev_char_utf16_len + 4 {
-                // 갭에 컨트롤이 있음
+            // 8유닛 슬롯에 표가 없는 갭(책갈피·누름틀 등)에서는 나누지 않는다. 나누면
+            // 세그먼트와 표의 짝이 밀려 표가 앞쪽 갭 자리에 그려진다. 슬롯 없는 갭(HWP3
+            // 자리표시 글자 뒤 7유닛)은 종전대로 나눈다.
+            let slots_without_table = gap.saturating_sub(prev_char_utf16_len) >= 8
+                && !inline_tables
+                    .iter()
+                    .any(|(table, _)| control_positions_for_lead.get(*table) == Some(&i));
+            if gap > prev_char_utf16_len + 4 && !slots_without_table {
                 segments.push((seg_start, i));
                 seg_start = i;
             }
