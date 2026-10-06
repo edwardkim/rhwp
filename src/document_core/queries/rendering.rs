@@ -1520,7 +1520,7 @@ impl DocumentCore {
             crate::renderer::svg::generate_embedded_font_style(renderer.inner(), &embedded_fonts);
         if !style_css.is_empty() {
             if let Some(pos) = svg.find('>') {
-                let insert = format!("\n<style>\n{}</style>\n", style_css);
+                let insert = crate::renderer::svg::svg_font_style_element(&style_css);
                 svg.insert_str(pos + 1, &insert);
             }
         }
@@ -1787,7 +1787,7 @@ impl DocumentCore {
             if !style_css.is_empty() {
                 // <svg ...> 직후에 <style> 삽입
                 if let Some(pos) = svg.find('>') {
-                    let insert = format!("\n<style>\n{}</style>\n", style_css);
+                    let insert = crate::renderer::svg::svg_font_style_element(&style_css);
                     svg.insert_str(pos + 1, &insert);
                 }
             }
