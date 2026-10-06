@@ -150,7 +150,7 @@ PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 �
 보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
 메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
-**기여자 PR 본문의 증적 배치:** [PR #7591의 입력·페이지별 배치](https://github.com/edwardkim/rhwp/pull/7591)처럼
+**기여자 PR 본문의 증적 배치:** [PR #7551의 Native/fresh WASM 증적](https://github.com/edwardkim/rhwp/pull/7551)처럼
 먼저 검증 환경과 입력별 Native/fresh WASM 전체 TSV 요약을 적고, 대표 쪽마다
 `### 입력명 · 기준 PDF pN ↔ rhwp pN` 소제목을 만드세요. 각 소제목 아래 한 표에
 Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdown 이미지를 나란히 표시하세요.
@@ -165,15 +165,20 @@ Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdow
 SHA를 `git rev-parse HEAD`로 확인해 실제 head 저장소에 push한 뒤, 그 저장소와 SHA의 raw URL을
 PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 뒤 파일명을 바꾸거나 증적 경로를
 다시 만드는 단계는 필요하지 않습니다.
-예를 들어 외부 기여자 `planet6897/rhwp`의 이슈6574 증적은 PR 번호를 사용하지 않습니다.
+아래의 `OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN`을 자신의 실제 값으로 치환하세요.
+외부 기여자는 자신의 fork 저장소를 사용하며 `ISSUE_OR_TOPIC`에는 이슈 번호·주제 또는 주제 이름을 넣습니다.
 
 ```markdown
-![3-09 2024 구분선아래20 p17 fresh WASM review](https://raw.githubusercontent.com/planet6897/rhwp/914616fdc7965d92be0fc056dd52bd67c89a5dca/mydocs/pr/assets/issue_6574_endnote_column_bottom/2024-09-below20-p017-wasm-review.png)
+![문서명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png)
 ```
 
 대표 이미지의 통과와 전체 검증 범위의 통과를 구분하세요. 입력별·출력 경로별 최저값과
-90% 미만/누락/측정 불가 쪽을 요약에 드러내고, 미실행 경로는 행을 유지해 `미검증`과 사유를 적습니다.
-형식 참고 PR의 첨부 방식 자체는 그 PR의 검증 완료나 승인 판정을 뜻하지 않습니다.
+90% 미만/누락/측정 불가 쪽을 확인합니다. **검증 범위의 한 페이지라도 90% 미만이거나 누락·측정 불가,
+필수 Native/fresh WASM 경로 미실행이면 PR 생성·제출 갱신·검토 요청을 하지 않습니다.**
+시간 제약·기존 차이·부분 개선·추후 검증 등의 사유를 적어도 제출 조건을 충족하지 못합니다.
+그 사유와 실패 결과는 제출 전 로컬 작업 기록에 남기고, 자기 branch에서 수정·재실행해 통과한 뒤
+본문을 완성합니다. 이미 열린 PR도 해당 상태에서는 승인·통합하지 않습니다.
+해결 불가능한 실제 글꼴 문제는 아래의 정식 예외 계약으로만 판정하며 일반적인 사유 기재와 구분합니다.
 
 **페이지별 TSV 산출 명령과 저장 위치:** [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)의 Native/fresh WASM 예제를 각각 실행하세요.
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과

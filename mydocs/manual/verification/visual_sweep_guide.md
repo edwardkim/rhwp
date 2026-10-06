@@ -618,16 +618,18 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
    PR 번호를 받기 위한 선행 PR 생성이나 번호에 맞춘 증적 파일 rename은 필요하지 않다.
 3. 기여자 본문은 아래 **입력·페이지별 첨부 형식**을 따른다. 같은 입력·쪽의 Native/fresh WASM을 행으로,
    review와 standalone overlay를 열로 둔 표에서 실제 이미지를 나란히 표시한다. 자동 수치는 보조값이며
-   해당 쪽의 직접 판독·남은 차이도 표 바로 아래에 기록한다. 필수 경로를 미실행했으면 행을 유지해
-   `미검증`과 사유를 적고 제출 완료로 표시하지 않는다.
+   해당 쪽의 직접 판독·남은 차이도 표 바로 아래에 기록한다. 검증 범위에 90% 미만·누락·측정 불가
+   쪽이 있거나 필수 경로를 미실행했으면 PR 생성·제출 갱신·검토 요청을 하지 않는다.
+   사유는 제출 전 로컬 작업 기록에 남기고 자기 branch에서 수정·재실행해 통과한 뒤 본문을 완성한다.
 4. `gh pr create` 또는 `gh pr edit --body-file` 뒤 `gh pr view N --json body`로 URL·한글·실제 head SHA를
    재확인하고, `gh api repos/<head-owner>/<head-repo>/contents/<asset>?ref=<head-sha>`로 asset이 그 head에
    존재하는지 확인한다. GitHub PR 화면에서 이미지가 렌더링되는 것도 직접 확인한다.
 
 ### 입력·페이지별 첨부 형식
 
-[PR #7591](https://github.com/edwardkim/rhwp/pull/7591)의 입력·쪽별 소제목과 Native/fresh WASM
-review/overlay 표를 기여자 제출 형식의 참고로 사용한다. 다음 순서로 구성한다.
+[PR #7551](https://github.com/edwardkim/rhwp/pull/7551)의 Native/fresh WASM review/overlay 표와
+영향 페이지의 수치·판독 기록을 첨부 형식의 참고로 사용한다. 본문에는 기여자 자신의 입력·페이지·
+출력 경로와 실제 검증 결과를 넣는다. 다음 순서로 구성한다.
 
 1. 공통 환경: PR head repository/SHA, 검증한 code source와 Native binary/fresh WASM 해시,
    실제 빌드 명령·옵션·인쇄 프로필·글꼴 공급을 적는다. 입력/기준 Print PDF의 경로·해시·제품/빌드·출처도 연결한다.
@@ -639,14 +641,17 @@ review/overlay 표를 기여자 제출 형식의 참고로 사용한다. 다음 
    이미지 설명에는 입력명·쪽·출력 경로를 넣고, 해당 쪽 수치·실제로 확인한 경계·남은 차이를 바로 아래에 적는다.
 
 대표 이미지 수와 전체 TSV의 검증 페이지 수는 구분한다. 전쪽 overlay 합성을 기본 요구로 삼지 않으며,
-대표 정상 쪽만으로 미달·미검증 쪽을 승인하지 않는다. 참고 PR의 보기 좋은 첨부 형식과 그 PR의 검증
-판정은 별개다. Native/fresh WASM 전체 범위의 90% 기준·직접 판독·글꼴 예외 계약은 그대로 적용한다.
+대표 정상 쪽만으로 검증 범위의 미달·미검증 쪽을 승인하지 않는다. 시간 제약·기존 차이·부분 개선·추후
+검증 등의 사유 기재는 PR 제출 허가가 아니다. 미달·미검증 상태는 로컬에서 수정·재실행하고,
+통과한 뒤 PR을 생성·제출 갱신한다. 이미 열린 PR도 그 전에는 승인·통합하지 않는다.
+해결 불가능한 실제 글꼴 문제는 정식 글꼴 예외 계약으로만 판정하며 일반적인 사유 기재와 구분한다.
 
-실제 생성 전 첨부 예시는 아래와 같다. 저장소는 기여자 fork, SHA는 해당 PNG가 들어 있는 head,
-경로의 `issue_6574`는 **이슈 번호**를 나타낸다. 작성자는 자신의 입력·쪽·저장소·head SHA로 치환한다.
+생성 전 첨부 예시는 아래와 같다. `OWNER/REPOSITORY`는 기여자의 실제 head 저장소,
+`HEAD_SHA`는 해당 PNG가 들어 있는 제출 head의 SHA다. `ISSUE_OR_TOPIC`에는 이슈 번호·주제 또는
+주제 이름을 넣는다. 작성자는 자신의 입력·쪽·저장소·head SHA로 치환한다.
 
 ~~~markdown
-![3-09 2024 구분선아래20 p17 fresh WASM review](https://raw.githubusercontent.com/planet6897/rhwp/914616fdc7965d92be0fc056dd52bd67c89a5dca/mydocs/pr/assets/issue_6574_endnote_column_bottom/2024-09-below20-p017-wasm-review.png)
+![문서명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png)
 ~~~
 
 ~~~markdown

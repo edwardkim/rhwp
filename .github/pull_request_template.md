@@ -82,11 +82,13 @@ head repository를 사용하며 target repository로 바꾸지 않는다. 이후
 | | Native | | | | |
 | | fresh WASM | | | | |
 
-<!-- 한 페이지라도 90% 미만 또는 측정 불가이면 스스로 PDF/overlay 원인을 재검토·수정하고 새 head에서 재실행합니다.
+<!-- 검증 범위의 한 페이지라도 90% 미만·누락·측정 불가이거나 필수 Native/fresh WASM 경로 미실행이면
+PR 생성·제출 갱신·검토 요청을 하지 않습니다. 시간 제약·기존 차이·부분 개선·추후 검증 등의 사유로 허용하지 않습니다.
+실패/미실행 사유는 제출 전 로컬 작업 기록이며 PR 제출 허가가 아닙니다. 자기 branch에서 수정·재실행해 통과한 뒤 본문을 완성합니다.
 평균값·높은 페이지 선별·단순 글꼴 차이 추정·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다.
 공급으로 해결 불가능한 실제 글꼴 차이만 위 계약의 예외로 제출하고 근거·미달 쪽·최종 font_mismatch_exception을 명시합니다. -->
-<!-- PR #7591처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
-https://github.com/edwardkim/rhwp/pull/7591 는 첨부 형식 참고이며 검증 통과 사례라는 뜻은 아닙니다.
+<!-- PR #7551의 Native/fresh WASM 증적 표처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
+https://github.com/edwardkim/rhwp/pull/7551
 같은 입력·쪽의 Native/fresh WASM review/standalone overlay 네 이미지를 한 표에서 바로 대조하게 합니다.
 파일 경로·긴 이미지 나열·서로 다른 쪽을 섞은 표로 대신하지 않습니다. 전쪽 overlay 합성은 요구하지 않습니다. -->
 
@@ -102,13 +104,11 @@ https://github.com/edwardkim/rhwp/pull/7591 는 첨부 형식 참고이며 검�
 - 이 쪽의 실루엣 보조값·gate: Native / fresh WASM <!-- 실행한 값과 판정을 각각 적습니다. 개선을 주장하면 같은 입력·쪽의 수정 전후 값과 source SHA를 연결합니다. -->
 - 사람 판독 및 남은 차이: <!-- 이 쪽에서 직접 확인한 표·그림·줄바꿈·테두리·앞뒤 내용과 남은 차이를 적습니다. 자동 수치는 보조값입니다. -->
 
-<!-- 조판 영향 변경에서는 Native/fresh WASM 행을 생략하지 않습니다. 미실행이면 해당 행에 미검증/사유를 적고
-제출 완료로 표시하지 않습니다. 실제 asset 존재와 PR 본문 Markdown을
+<!-- 조판 영향 변경에서는 Native/fresh WASM 두 경로를 모두 검증한 뒤 각 경로의 이미지를 넣습니다.
+미실행 경로의 행을 지우거나 사유만 적어 제출하지 않습니다. 실제 asset 존재와 PR 본문 Markdown을
 PR 생성·수정 뒤 다시 확인한다. OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN을 실제 값으로 치환한다.
-ISSUE_OR_TOPIC 예: issue_6574_endnote_column_bottom (PR 번호 불필요).
-실제 PR 생성 시 본문 이미지 예:
-![3-09 2024 구분선아래20 p17 fresh WASM review](https://raw.githubusercontent.com/planet6897/rhwp/914616fdc7965d92be0fc056dd52bd67c89a5dca/mydocs/pr/assets/issue_6574_endnote_column_bottom/2024-09-below20-p017-wasm-review.png)
-이 예제의 타인 증적을 재사용하지 않고 위 네 이미지를 자신의 제출 head 증적으로 치환한다.
+ISSUE_OR_TOPIC에는 이슈 번호·주제 또는 주제 이름을 넣는다 (PR 번호 불필요).
+본문의 네 이미지는 자신의 입력·페이지·출력 경로에 대응하는 제출 head 증적을 사용한다.
 merge 뒤 comment에는 같은 asset의 merge SHA 고정 URL을 별도로 사용한다. -->
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)
