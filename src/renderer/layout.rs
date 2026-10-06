@@ -3617,6 +3617,10 @@ pub struct LayoutEngine {
     /// 앞 간격이 통째로 유실된다(00451 제목 −26px). 이 토글이 켜진 문단은
     /// column-top 트림을 우회해 전량 재가산하고, 읽는 즉시 clear 된다.
     reapply_snap_anchored_spacing_before: std::cell::Cell<bool>,
+    /// 같은 문단의 자리차지(문단 기준) 표가 글줄을 아래로 민 경우 그 문단의 흐름 상단.
+    /// 앞 간격은 문단 상단에서 재는 거리이므로 민 위치에 다시 더하지 않는다
+    /// (줄 위치 = max(문단 상단 + 앞 간격, 표 아래)). 첫 조각에서만 set, 읽는 즉시 clear.
+    topbottom_float_pushed_para_top: std::cell::Cell<Option<f64>>,
     /// The first stored HWP5 body line may retain its saved top spacing after
     /// frame recomposition when it introduces a visible paragraph-float table.
     /// Set for one column item only; other page-top paragraphs keep their
@@ -3772,6 +3776,7 @@ impl LayoutEngine {
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
+            topbottom_float_pushed_para_top: std::cell::Cell::new(None),
             page_top_float_caption_spacing_para: std::cell::Cell::new(None),
             para_float_host_has_text: std::cell::Cell::new(false),
             item_flow_snap_context: std::cell::Cell::new(None),
@@ -11133,6 +11138,20 @@ impl LayoutEngine {
                     // 문단 첫 부분을 먼저 그린 경우 뒤 개체의 문단 기준점은
                     // 그 글줄의 원점이다. 소비한 줄 끝으로 앵커를 새로 만들지 않는다.
                     if *start_line == 0 {
+                        // 같은 문단의 자리차지 표가 먼저 놓여 글줄을 민 경우: 문단 상단을
+                        // 넘겨 앞 간격을 그 상단 기준으로 재게 한다(36434203 1쪽: 앞 간격
+                        // 700HU 를 표 아래에 더해 9.3px 아래, 한/글 정본은 표 아래 여백 바로 밑).
+                        let pushed_para_top = para_start_y
+                            .get(para_index)
+                            .copied()
+                            .filter(|top| pp_y_in > *top + 0.5)
+                            .filter(|_| {
+                                para.controls.iter().any(|c| {
+                                    matches!(c, Control::Table(t)
+                                        if crate::renderer::float_placement::is_para_topbottom_float(&t.common))
+                                })
+                            });
+                        self.topbottom_float_pushed_para_top.set(pushed_para_top);
                         para_start_y.entry(*para_index).or_insert(pp_y_in);
                     }
                     let pp_y_out = self.layout_partial_paragraph(
@@ -11152,6 +11171,7 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         ctx.wrap_anchors.get(para_index),
                     );
+                    self.topbottom_float_pushed_para_top.set(None);
                     // The last text fragment need not end the paragraph: another
                     // object can follow it, or the table can extend below its text.
                     // Remove the text's after-spacing before merging occupied flow;

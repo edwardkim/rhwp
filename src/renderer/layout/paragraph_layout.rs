@@ -4826,9 +4826,16 @@ impl LayoutEngine {
         // [#5601] 셀 저장-앵커 스냅 문단 — 호출자가 para_y 에서 spacing_before 를
         // 미리 뺐으므로 column-top 트림과 무관하게 전량 재가산해야 vpos 와 맞는다.
         let reapply_snap_spacing_before = self.reapply_snap_anchored_spacing_before.replace(false);
+        let topbottom_float_pushed_para_top = self.topbottom_float_pushed_para_top.replace(None);
         if let Some(spacing) = vertical_spacing {
             // 같은 선택 문단에서 확정한 앞 간격을 한 번만 소비한다.
             y += spacing.before;
+        } else if let Some(para_top) =
+            topbottom_float_pushed_para_top.filter(|_| start_line == 0 && !is_column_top)
+        {
+            // 앞 간격은 문단 상단에서 잰다. 같은 문단의 자리차지 표가 이미 글줄을 그
+            // 아래로 밀었으면 두 거리 중 큰 쪽만 남는다.
+            y = y.max(para_top + spacing_before);
         } else if start_line == 0 && spacing_before > 0.0 {
             if !is_column_top || keep_continuation_spacing_before || reapply_snap_spacing_before {
                 y += spacing_before;
