@@ -2040,10 +2040,7 @@ impl SvgRenderer {
                 if let Some(ref path) = img.external_path {
                     let cx = bbox.x + bbox.width / 2.0;
                     let cy = bbox.y + bbox.height / 2.0;
-                    let escaped = path
-                        .replace('&', "&amp;")
-                        .replace('<', "&lt;")
-                        .replace('>', "&gt;");
+                    let escaped = escape_xml(crate::model::image::external_picture_basename(path));
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" text-anchor=\"middle\" fill=\"#666666\" font-size=\"10\">[외부: {}]</text>\n",
                         cx, cy, escaped,
@@ -4780,6 +4777,38 @@ fn svg_outline_font_data<'a>(
     std::borrow::Cow::Owned(result)
 }
 
+/// Encode a document face as the contents of a double-quoted CSS string.
+/// Keep the original name for lookup; only serialize at the output boundary.
+/// Hex escapes also keep SVG/HTML style delimiters and XML-invalid controls out
+/// of the source. The trailing space terminates the escape before hex digits.
+fn escape_css_font_name(name: &str) -> String {
+    use std::fmt::Write;
+
+    let mut escaped = String::with_capacity(name.len());
+    for character in name.chars() {
+        if matches!(
+            character,
+            '"' | '\\' | '<' | '>' | '&' | '\u{fffe}' | '\u{ffff}'
+        ) || character.is_control()
+        {
+            write!(escaped, "\\{:x} ", character as u32).expect("writing to String");
+        } else {
+            escaped.push(character);
+        }
+    }
+    escaped
+}
+
+/// CSS is text in an XML style element, not markup. Both public SVG export
+/// routes use this wrapper, including the WASM print/profile route.
+pub(crate) fn svg_font_style_element(css: &str) -> String {
+    let text = css
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;");
+    format!("\n<style>\n{text}</style>\n")
+}
+
 /// [#2524] 문서 임베디드(BinData) 폰트를 @font-face 로 직접 임베딩한다.
 ///
 /// 미설치 임베디드 폰트(bitmap 등)는 `find_font_file`(디스크) 조회에 실패해
@@ -4800,7 +4829,10 @@ fn embedded_font_face_css(
     let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
     Some(format!(
         "@font-face {{ font-family: \"{}\"; src: url(\"data:{};base64,{}\") format(\"{}\"); }}\n",
-        font_name, mime, b64, format,
+        escape_css_font_name(font_name),
+        mime,
+        b64,
+        format,
     ))
 }
 
@@ -4823,12 +4855,13 @@ fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
     }
     let src = aliases
         .iter()
-        .map(|alias| format!("local(\"{}\")", alias))
+        .map(|alias| format!("local(\"{}\")", escape_css_font_name(alias)))
         .collect::<Vec<_>>()
         .join(", ");
     css.push_str(&format!(
         "@font-face {{ font-family: \"{}\"; src: {}; font-weight: bold; }}\n",
-        font_name, src,
+        escape_css_font_name(font_name),
+        src,
     ));
 }
 
@@ -4848,7 +4881,7 @@ fn append_embedded_bold_font_face_css(
             let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
             css.push_str(&format!(
                 "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); font-weight: bold; }}\n",
-                font_name, b64,
+                escape_css_font_name(font_name), b64,
             ));
             eprintln!(
                 "  [font-embed] {} Bold → 전체 {:.1}KB",
@@ -4916,17 +4949,18 @@ pub fn generate_font_style(
                 }
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);
@@ -4953,7 +4987,7 @@ pub fn generate_font_style(
                                 base64::engine::general_purpose::STANDARD.encode(&outline_data);
                             css.push_str(&format!(
                                 "@font-face {{ font-family: \"{}\"; src: url(\"data:font/ttf;base64,{}\") format(\"truetype\"); }}\n",
-                                font_name, b64,
+                                escape_css_font_name(font_name), b64,
                             ));
                             if renderer.font_bold_families().contains(font_name) {
                                 let bold_lookup =
@@ -4986,7 +5020,7 @@ pub fn generate_font_style(
                                     base64::engine::general_purpose::STANDARD.encode(&subset_data);
                                 css.push_str(&format!(
                                     "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                                    font_name, b64,
+                                    escape_css_font_name(font_name), b64,
                                 ));
                                 if renderer.font_bold_families().contains(font_name) {
                                     let bold_lookup =
@@ -5018,17 +5052,18 @@ pub fn generate_font_style(
                 // 폰트 파일 없거나 서브셋 실패 → local() 폴백
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);
@@ -5052,7 +5087,7 @@ pub fn generate_font_style(
                         let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
                         css.push_str(&format!(
                             "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                            font_name, b64,
+                            escape_css_font_name(font_name), b64,
                         ));
                         if renderer.font_bold_families().contains(font_name) {
                             let bold_lookup =
@@ -5070,17 +5105,18 @@ pub fn generate_font_style(
                 // 폰트 파일 없음 → local() 폴백
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);
