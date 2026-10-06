@@ -336,8 +336,10 @@ fn so_sueop_convert_relative_sizes_are_all_100() {
     let hwp5 = convert_to_hwp5_bytes(&path).expect("SO-SUEOP HWP3 변환");
     let count = check_hwp5_relative_sizes(SO_SUEOP, &hwp5).unwrap_or_else(|m| panic!("{m}"));
     assert!(
-        count > 1000,
-        "{SO_SUEOP}: CHAR_SHAPE 가 {count}개다. Stage 1 실측은 2,512개였다 — 표본이나 변환 \
+        // [#4680] 스타일 풀 중복 제거 전에는 63개 고유 모양이 2,512벌로 쌓여 있었다.
+        // 이 가드는 계약이 아니라 "조용히 0건으로 통과하는 것" 을 막는 용도다.
+        count > 50,
+        "{SO_SUEOP}: CHAR_SHAPE 가 {count}개다. 고유 모양 실측은 63개다 — 표본이나 변환 \
          경로가 바뀌었는지 확인하라"
     );
 }

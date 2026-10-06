@@ -2,15 +2,11 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '6';
+const CLASSIFIER_VERSION = '7';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
-const REVIEW_REFERENCE_PDF_PREFIXES = [
-  'pdf/',
-  'pdf-2020/',
-  'pdf-large/',
-];
+const REVIEW_REFERENCE_PDF_PREFIXES = ['pdf/'];
 
 const RENDER_RUST_PREFIXES = [
   'src/paint/',
@@ -75,8 +71,8 @@ const RENDER_TOOL_PATHS = new Set([
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
-  'docs/canvaskit-parity-implementation.md',
-  'docs/text-ir-v2.md',
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
 ]);
 
 const FRONTEND_PACKAGE_PREFIXES = [
@@ -118,7 +114,6 @@ function normalizeFile(file) {
 function isReviewOnlyPath(filename) {
   return (
     filename.startsWith('mydocs/')
-    || filename.startsWith('docs/')
     || filename === 'LICENSE'
     || filename === 'SECURITY.md'
     || filename === 'CONTRIBUTING.md'
@@ -220,6 +215,13 @@ function isRustTestInputPath(filename) {
       RUST_TEST_FONT_PREFIXES.some((prefix) => filename.startsWith(prefix))
       && RUST_TEST_FONT_EXTENSIONS.some((extension) => filename.endsWith(extension))
     )
+  );
+}
+
+function isGymBenchmarkPath(filename) {
+  return (
+    filename.startsWith('gym/')
+    || /^scripts\/tests\/test_gym_.*\.py$/.test(filename)
   );
 }
 
@@ -332,6 +334,11 @@ function classifyChanges(input = {}) {
 
     if (isAllowedReviewReferenceFile(file)) {
       reviewOnlyCount += 1;
+      continue;
+    }
+
+    if (isGymBenchmarkPath(filename)) {
+      reasons.add('gym-benchmark');
       continue;
     }
 

@@ -1,0 +1,58 @@
+{
+  "partitions": 16,
+  "nonzeroDocuments": 12,
+  "baselineMatches": true,
+  "regression": {
+    "passed": 9043,
+    "skipped": 46,
+    "failed": 0,
+    "slow": 2,
+    "seconds": 241.513,
+    "exitCode": 0
+  },
+  "renderChecks": [
+    {
+      "sample": "samples/issue1891_external_bindata_link.hwpx",
+      "sha256": "ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924",
+      "pages": 71,
+      "renderedPages": 71,
+      "oldAllowance": 48,
+      "observed": 32,
+      "pageIndexBase": 0,
+      "nonzeroPages": [
+        {
+          "page": 5,
+          "lines": 1
+        },
+        {
+          "page": 26,
+          "lines": 4
+        },
+        {
+          "page": 37,
+          "lines": 19
+        },
+        {
+          "page": 38,
+          "lines": 2
+        },
+        {
+          "page": 45,
+          "lines": 6
+        }
+      ]
+    },
+    {
+      "sample": "samples/issue4889/18098267_nested_fragment_origin.hwp",
+      "sha256": "ed1c104ee32fc19bec82efdb6c31b1e2b65a634f80bfc9408fdd930b37cc7f3c",
+      "pages": 3,
+      "renderedPages": 3,
+      "oldAllowance": 87,
+      "observed": 0
+    }
+  ],
+  "candidate": "8204bdb29999fdbf96c3227fa25ee860211fd3b1 + pr6751-maintainer-correction.patch + overflow-cell baseline tightening",
+  "date": "2026-09-05",
+  "environment": "macOS arm64; release-test; target/pr-review-ci-green-20260905",
+  "scope": "Current-candidate observations, not attribution to a single source PR or a cross-host guarantee"
+}

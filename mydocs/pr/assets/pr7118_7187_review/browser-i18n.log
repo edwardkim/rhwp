@@ -1,0 +1,13 @@
+  ➜  Local:   http://127.0.0.1:7794/
+[
+  {
+    lang: 'en',
+    count: 191,
+    tabs: [ [Object], [Object], [Object], [Object] ]
+  },
+  {
+    lang: 'ko',
+    count: 191,
+    tabs: [ [Object], [Object], [Object], [Object] ]
+  }
+]

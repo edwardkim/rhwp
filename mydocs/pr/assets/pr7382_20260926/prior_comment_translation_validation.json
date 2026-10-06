@@ -1,0 +1,75 @@
+{
+  "head_before_translation": "5891b1d9b5499a1d17c97bf02c3d8cf7194f2c26",
+  "earliest_integration_base": "c80a8370ab294259557c850c2e54495ecd0e79c0",
+  "translated_english_comment_lines": 86,
+  "translated_blocks": 21,
+  "files": [
+    {
+      "path": "src/renderer/composer.rs",
+      "non_comment_sha256": "78f58e24f64717d8603d8696d52f27c99b3eba26fdd0b8e32a5088e53c9c1d2a",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/float_placement.rs",
+      "non_comment_sha256": "49dbc05bce22d4845f5ce1276964513081211d21d973e5bbcc930af75c627d17",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/height_cursor.rs",
+      "non_comment_sha256": "3e9ea0e4b195eaec0b238aa51689b39b0be179f40d0c8089c8176fc0e110c666",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/height_measurer.rs",
+      "non_comment_sha256": "a67980d5b22f954857591eed0eeadc600ec25760eccf338cb4327589274cb721",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/layout.rs",
+      "non_comment_sha256": "01fd4d87bd2506de339af5d2e94bcff553a4a9f1e2e8412ff90dc9a64fab4b8c",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/layout/table_layout.rs",
+      "non_comment_sha256": "e9c7f0effba36f33f0a5ce0ef6f2c1c1e7a50fae63267366787c0d82eae775f8",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/layout/table_partial.rs",
+      "non_comment_sha256": "1c48ed450b5bed29d19a2144483e679f4e3f30583dcb0bcfe8ab9e32d7ff192b",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/layout_frame.rs",
+      "non_comment_sha256": "0e78758d3fe194920d96ba2f885f306da861f5841c8250a77a27f10880f12988",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/typeset/paragraph.rs",
+      "non_comment_sha256": "e542afad07377d557654311ecf7182568e91bcf2a77e24356c3a17ff63695a6f",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/typeset/state/data.rs",
+      "non_comment_sha256": "6958c800a6fd5ebf120e464cca7e0f98a25390eb395d21f70d8f7fb37a6b6500",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/typeset/table/block/entry.rs",
+      "non_comment_sha256": "1a0578b12dd1056d7277260c20399f3cd66eded23d45eba5def878a3f5d7c9f3",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "src/renderer/typeset/table/scan/runner/row_step.rs",
+      "non_comment_sha256": "881a7feb04dce47f7c92f0b16fd2d17d1df4e01ec474a872877da5da90c72126",
+      "non_comment_bytes_identical": true
+    },
+    {
+      "path": "tests/cases/issue_7390_prep_table_rowbreak.rs",
+      "non_comment_sha256": "7f2df8f0cb48b4addc0a496e59f1a24bed776353675e73bda6014a14bf99d481",
+      "non_comment_bytes_identical": true
+    }
+  ],
+  "remaining_added_english_explanation_comments": 0,
+  "scope": "앞 통합 #7406/#7366 및 현재 #7382 변경의 추가 설명 주석. 식별자와 코드 울타리의 언어 이름은 설명 주석으로 세지 않음."
+}

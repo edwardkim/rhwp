@@ -106,3 +106,11 @@ export function classifyDownload(item, { metadataFinalized = false } = {}) {
 export function shouldInterceptDownload(item) {
   return classifyDownload(item, { metadataFinalized: true }).action === 'intercept';
 }
+
+/** Editor saves use Blob URLs under this runtime's exact origin (#6964). */
+export function isOwnExtensionBlobDownload(item, extensionRoot) {
+  return typeof item?.url === 'string'
+    && typeof extensionRoot === 'string'
+    && /^(?:moz|chrome)-extension:\/\/[^/]+\/$/.test(extensionRoot)
+    && item.url.startsWith(`blob:${extensionRoot}`);
+}

@@ -1,11 +1,13 @@
-# Git LFS — pdf-large/ 폴더 한정 추적
-#
-# 본질: 50 MB 초과 PDF 영역 영역 git history 영역 영역 직접 진입을 차단
-# 다른 PDF 폴더 (pdf/, pdf-2020/, pdf-2010/) 영역 영역 일반 git 영역 영역 보존
-pdf-large/**/*.pdf filter=lfs diff=lfs merge=lfs -text
-
 # SVG 골든 스냅샷 — 렌더러 생성물(LF)과 바이트 비교하므로 CRLF 변환 금지 (#1786)
 tests/golden_svg/**/*.svg text eol=lf
+
+# WMF/EMF 골든도 같은 계약이다. `wmf_emf_goldens` 는 엔진이 LF 로 만든 문자열과 파일을
+# 통째로 비교하는데, `core.autocrlf=true` 로 클론한 Windows 체크아웃에서는 파일만 CRLF 가
+# 되어 **내용이 같은데 9건 전부 불일치**로 뜬다(리눅스 CI 는 무증상이라 안 잡힌다).
+tests/fixtures/m09x_wmf_emf/*.golden text eol=lf
+
+# Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
+/Cargo.toml text eol=lf
 
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
@@ -43,3 +45,50 @@ gym/leaderboard/*.ndjson     -text
 samples/issue5447/*.hwp   -text -diff
 samples/issue5447/*.hwpx  -text -diff
 pdf/issue5447/*.pdf       -text -diff
+
+# #5057/#6202 회귀 입력은 한컴 원본 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 parser 재현성을 바꾸면 안 된다.
+samples/issue5057/*.hwp -text -diff
+samples/issue6202/*.hwp -text -diff
+
+# Issue #5941 canonical HWP fixture
+samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
+
+# #6697/#6718 회귀 입력은 원본 한컴 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 renderer 재현성을 바꾸면 안 된다.
+samples/issue6697/*.hwpx -text -diff
+samples/issue6718/*.hwp -text -diff
+
+# PR #7163 전체 사진 시각 증적: 원본 ZIP 바이트 보존
+tests/fixtures/issue_7158/*.hwpx -text -diff
+
+# Preserve the original bytes of the #6756/#6764 regression inputs.
+samples/issue6756/*.hwp -text -diff
+samples/issue6764/*.hwp -text -diff
+
+# PR #6796: original HWP bytes
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp -text -diff
+
+# #7078/#7091 검토의 새 반례·변환 산출물은 원본 바이트를 보존한다.
+# PDF의 xref CRLF/공백과 압축 stream은 source whitespace가 아니다.
+tests/fixtures/issue_7077/*.hwpx -text -diff
+tests/fixtures/issue_7091/*.hwp -text -diff
+tests/fixtures/issue_7091/*.hwpx -text -diff
+pdf/pr7078-*.pdf -text -diff
+pdf/pr7091-sample11-before-2020.pdf -text -diff
+tests/fixtures/issue_7130/*.wmf -text -diff
+samples/issue6929/*.hwp -text -diff
+
+# PR #7165/#7168 독립 한컴 비교 입력·출력의 바이트를 보존한다.
+tests/fixtures/stored_inline_table_suffix/*.hwpx -text -diff
+tests/fixtures/stored_column_width_quantization/*.hwpx -text -diff
+pdf/two_digits-2020.pdf -text -diff
+pdf/stored-column-header-2020.pdf -text -diff
+tests/fixtures/stored_inline_table_suffix/*.hwp -text -diff
+tests/fixtures/stored_column_width_quantization/*.hwp -text -diff
+pdf/two-digits-wrap-2020.pdf -text -diff
+pdf/two-digits-break-2020.pdf -text -diff
+pdf/two-digits-table-wrap-2020.pdf -text -diff
+# Issue #7333 stored input and visual references are binary evidence.
+samples/issue7333/*.hwp -text -diff
+pdf/issue7333/*.pdf -text -diff

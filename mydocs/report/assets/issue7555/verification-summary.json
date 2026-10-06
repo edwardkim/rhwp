@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "runId": 37079742187,
+  "runUrl": "https://github.com/edwardkim/rhwp/actions/runs/37079742187",
+  "headSha": "9a3552f60adf3fb20c1a5117403eb85411de526d",
+  "cliTargets": [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc"
+  ],
+  "requiredArtifacts": [
+    "release-publish-evidence",
+    "rhwp-test-linux-aarch64.tar.gz",
+    "rhwp-test-linux-x86_64.tar.gz",
+    "rhwp-test-macos-aarch64.tar.gz",
+    "rhwp-test-macos-x86_64.tar.gz",
+    "rhwp-test-windows-x86_64.zip",
+    "vscode-vsix",
+    "wasm-pkg"
+  ],
+  "skippedJobs": [
+    "Attach to GitHub Release",
+    "Publish packages after binary release / Publish @rhwp/core",
+    "Publish packages after binary release / Publish @rhwp/editor",
+    "Publish packages after binary release / Publish VS Code Marketplace extension",
+    "Publish packages after binary release / Publish Open VSX extension"
+  ],
+  "packageVerdict": "completed",
+  "packageMode": "verify",
+  "channels": {
+    "npm-core": {
+      "inputState": "",
+      "jobResult": "skipped",
+      "state": "verify-only"
+    },
+    "npm-editor": {
+      "inputState": "",
+      "jobResult": "skipped",
+      "state": "verify-only"
+    },
+    "open-vsx": {
+      "inputState": "",
+      "jobResult": "skipped",
+      "state": "verify-only"
+    },
+    "vscode-marketplace": {
+      "inputState": "",
+      "jobResult": "skipped",
+      "state": "verify-only"
+    }
+  },
+  "macosArchives": [
+    {
+      "archive": "rhwp-test-macos-x86_64.tar.gz",
+      "contents": [
+        "rhwp/LICENSE",
+        "rhwp/README.md",
+        "rhwp/README_EN.md",
+        "rhwp/rhwp"
+      ],
+      "cpu_type": "0x1000007",
+      "file": "rhwp-macos-x86_64: Mach-O 64-bit x86_64 executable, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|PIE|HAS_TLV_DESCRIPTORS>",
+      "executable": true,
+      "logVersion": "rhwp v0.8.6",
+      "runnerImage": "macos-15-arm64",
+      "osVersion": "15.7.9",
+      "archiveArtifactSha256": "a16ed93eec0fd4492ea524aaf37d3ae049435b3eb997b18eac5d9201c4d1d67c"
+    },
+    {
+      "archive": "rhwp-test-macos-aarch64.tar.gz",
+      "contents": [
+        "rhwp/LICENSE",
+        "rhwp/README.md",
+        "rhwp/README_EN.md",
+        "rhwp/rhwp"
+      ],
+      "cpu_type": "0x100000c",
+      "file": "rhwp-macos-aarch64: Mach-O 64-bit arm64 executable, flags:<NOUNDEFS|DYLDLINK|TWOLEVEL|PIE|HAS_TLV_DESCRIPTORS>",
+      "executable": true,
+      "logVersion": "rhwp v0.8.6",
+      "runnerImage": "macos-15-arm64",
+      "osVersion": "15.7.9",
+      "archiveArtifactSha256": "44ba06103f7013595518109ee01e70500cfedb8fa379d0df28654501d3ce9f68"
+    }
+  ],
+  "ci": {
+    "headSha": "9a3552f60adf3fb20c1a5117403eb85411de526d",
+    "ciRun": "https://github.com/edwardkim/rhwp/actions/runs/37079714910",
+    "codeqlRun": "https://github.com/edwardkim/rhwp/actions/runs/37079715008",
+    "adapterRun": "https://github.com/edwardkim/rhwp/actions/runs/37079715009",
+    "proptestRun": "https://github.com/edwardkim/rhwp/actions/runs/37079714962",
+    "conclusion": "success"
+  }
+}

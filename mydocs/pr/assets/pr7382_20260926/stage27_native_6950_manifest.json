@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "key": "para6950",
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwpx/20260909-para-table.hwpx",
+      "sha256": "cbf2ee7235861e93011d80834bfc49525349f6776c929b98ebd4f06003581d07"
+    },
+    "pdf": {
+      "path": "pdf/hwpx/20260909-para-table-2024.pdf",
+      "sha256": "c24244980c2c428b06575a1d948349a0971ba168898956a2bbfcccda816dc5ad"
+    },
+    "git_head": "6040c862f8fa240c66025a8718f12cde412a1d06",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/bin/stage27-after-rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/bin/stage27-after-rhwp",
+      "sha256": "807ffa8ca4bca9e66742a94a05c6de1b72950d69de8b670beed3124bea41b8a8"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2,
+      3
+    ]
+  ],
+  "run_state": "complete"
+}

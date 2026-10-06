@@ -22,7 +22,7 @@ HWP3 완성형 좌표 문자 복원, OWPML `FieldType` 열거 정규화, 숨은 
 maintainer 보정 `9f6a51a01`은 빈 문단의 슬롯 루프에도 일반 경로와 같은
 `control_idx + inner_slot_count == emitted_ctrl_idx` 조건을 적용했다. 따라서 각
 필드는 마지막 내부 슬롯 직후 닫히고, 맞지 않는 범위만 기존 말미 fallback으로 남는다.
-상세 계약은 [Stage 1](../../working/task_m100_4776_stage1_empty_paragraph_field_end_order.md)에
+상세 계약은 [Stage 1](../../working/archives/task_m100_4776_stage1_empty_paragraph_field_end_order.md)에
 기록했다.
 
 ## 검증

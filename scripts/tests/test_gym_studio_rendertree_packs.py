@@ -18,7 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GYM = REPO_ROOT / "gym"
 ST = GYM / "packs" / "studio-e2e"
 RT = GYM / "packs" / "render-tree"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_studio_rendertree.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_studio_rendertree.md"
 
 ST_IDS = [f"ST{i:02d}" for i in range(1, 41)]
 RT_IDS = [f"RT{i:02d}" for i in range(1, 41)]

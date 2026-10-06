@@ -1,6 +1,7 @@
 import { PDF_PRINT_GUIDANCE, printProgressText } from '@/command/print-pages';
 import { ModalDialog } from './dialog';
 
+import { t } from '../i18n/index.ts';
 type PdfPrintDialogState = 'confirm' | 'preparing' | 'complete' | 'error';
 
 export interface PdfPrintDecision {
@@ -28,7 +29,7 @@ export class PdfPrintDialog extends ModalDialog {
     private readonly pageCount: number,
     private readonly showGuidance = true,
   ) {
-    super('PDF로 저장', 460);
+    super(t('dialog.pdfPrint.title'), 460);
   }
 
   protected createBody(): HTMLElement {
@@ -39,24 +40,24 @@ export class PdfPrintDialog extends ModalDialog {
     const summary = document.createElement('p');
     summary.className = 'dialog-pdf-summary';
     summary.textContent =
-      'rhwp는 브라우저의 인쇄 기능을 사용해 검색 가능한 PDF를 만듭니다.';
+      t('dialog.pdfPrint.summary.text');
 
     const guidance = document.createElement('div');
     guidance.className = 'dialog-pdf-guidance';
 
     const guidanceTitle = document.createElement('strong');
-    guidanceTitle.textContent = '저장 방법';
+    guidanceTitle.textContent = t('dialog.pdfPrint.guidanceTitle.text');
 
     const guidanceText = document.createElement('span');
     guidanceText.textContent =
-      `${PDF_PRINT_GUIDANCE} 브라우저에 따라 이 항목은 ‘프린터’로 표시될 수 있습니다.`;
+      t('dialog.pdfPrint.guidanceText.text', { p1: PDF_PRINT_GUIDANCE });
 
     guidance.append(guidanceTitle, guidanceText);
 
     const stateNote = document.createElement('p');
     stateNote.className = 'dialog-pdf-note';
     stateNote.textContent =
-      '현재 문서의 파일명, 저장 위치와 편집 상태는 변경되지 않습니다.';
+      t('dialog.pdfPrint.stateNote.text');
 
     const preference = document.createElement('div');
     preference.className = 'dialog-pdf-preference';
@@ -68,7 +69,7 @@ export class PdfPrintDialog extends ModalDialog {
 
     const preferenceLabel = document.createElement('label');
     preferenceLabel.htmlFor = 'pdf-print-hide-guidance';
-    preferenceLabel.textContent = '다음부터 이 안내를 표시하지 않기';
+    preferenceLabel.textContent = t('dialog.pdfPrint.preferenceLabel.text');
 
     preference.append(this.hideFutureGuidanceCheck, preferenceLabel);
 
@@ -117,7 +118,7 @@ export class PdfPrintDialog extends ModalDialog {
     this.updateProgress(0);
 
     if (this.confirmButton) {
-      this.confirmButton.textContent = '준비 중…';
+      this.confirmButton.textContent = t('dialog.pdfPrint.confirmButton.text');
       this.confirmButton.disabled = true;
     }
     if (this.cancelButton) this.cancelButton.disabled = true;
@@ -147,7 +148,7 @@ export class PdfPrintDialog extends ModalDialog {
       super.show();
       this.dialog.setAttribute('role', 'dialog');
       this.dialog.setAttribute('aria-modal', 'true');
-      this.dialog.setAttribute('aria-label', 'PDF로 저장');
+      this.dialog.setAttribute('aria-label', t('dialog.pdfPrint.showAsync.label'));
 
       this.confirmButton = this.dialog.querySelector('.dialog-btn-primary');
       this.cancelButton = this.dialog.querySelector(
@@ -155,7 +156,7 @@ export class PdfPrintDialog extends ModalDialog {
       );
       this.closeButton = this.dialog.querySelector('.dialog-close');
 
-      if (this.confirmButton) this.confirmButton.textContent = '인쇄 창 열기';
+      if (this.confirmButton) this.confirmButton.textContent = t('dialog.pdfPrint.confirmButton.text.xbae1d2');
       if (!this.showGuidance) this.beginPreparing();
     });
   }
@@ -181,11 +182,11 @@ export class PdfPrintDialog extends ModalDialog {
     if (progress) progress.hidden = true;
 
     this.errorMessage.hidden = false;
-    this.errorMessage.textContent = `PDF 준비에 실패했습니다.\n${message}`;
+    this.errorMessage.textContent = t('dialog.pdfPrint.errorMessage.text', { p1: message });
 
     if (this.confirmButton) this.confirmButton.hidden = true;
     if (this.cancelButton) {
-      this.cancelButton.textContent = '닫기';
+      this.cancelButton.textContent = t('dialog.pdfPrint.cancelButton.text');
       this.cancelButton.disabled = false;
       this.cancelButton.focus();
     }

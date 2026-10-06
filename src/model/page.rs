@@ -163,6 +163,8 @@ pub enum ColumnDirection {
     #[default]
     LeftToRight,
     RightToLeft,
+    /// 홀수 쪽은 왼쪽부터, 짝수 쪽은 오른쪽부터 채우는 맞쪽 방향(HWP 사양 표 139).
+    Mirror,
 }
 
 /// 페이지 렌더링에 필요한 계산된 영역 정보

@@ -188,4 +188,4 @@ rhwp ir-diff A.hwpx B.hwp --json || 격리처리
 - [`recipes/06_visual_regression_before_after.md`](../../../mydocs/manual/recipes/06_visual_regression_before_after.md)
 - [`mydocs/manual/ir_diff_command.md`](../../../mydocs/manual/ir_diff_command.md)
 - [`mydocs/manual/export_png_command.md`](../../../mydocs/manual/export_png_command.md)
-- 처리 결과: [`mydocs/working/agent_visual_regression.md`](../../../mydocs/working/agent_visual_regression.md)
+- 처리 결과: [`mydocs/working/agent_visual_regression.md`](../../../mydocs/working/archives/agent_visual_regression.md)

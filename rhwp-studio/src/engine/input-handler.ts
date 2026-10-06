@@ -1,8 +1,11 @@
+import { isBodyControl } from './picture-hit-policy';
 import { WasmBridge } from '@/core/wasm-bridge';
+import { isCharFormatError, CharFormatRecoveryError } from '@/core/char-format-error';
 import type { DeferredFocusedPagePatch } from '@/core/wasm-bridge';
 import { EventBus } from '@/core/event-bus';
 import { CursorState } from './cursor';
 import { CaretRenderer } from './caret-renderer';
+import { resolveGlyphStartRect, isCompositionBoxRepresentable } from './line-start-affinity';
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
@@ -44,6 +47,7 @@ import { computeHangingIndentPx } from './hanging-indent';
 import { isPageLocalTextEditCommand, type PageLocalTextEditOptions } from './input-edit-invalidation';
 import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
+import { isSameNestedTablePath } from './table-bbox-cache';
 import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
@@ -401,11 +405,7 @@ export class InputHandler {
     borderOriginalPos: number;
     minResizePos: number;
     maxResizePos: number;
-    resizeTarget?: { cellIdx: number; side: 'start' | 'end' } | null;
-    singleCellTarget?: { cellIdx: number; side: 'start' | 'end' } | null;
-    shiftResize?: boolean;
   } | null = null;
-  private tableLocalResizeSegments = new Set<string>();
 
   // 표 이동 드래그 상태
   private isMoveDragging = false;
@@ -527,6 +527,12 @@ export class InputHandler {
   private isComposing = false;
   private compositionAnchor: DocumentPosition | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
+  /** [#7489] 수정 모드에서 이번 조합이 덮어쓴 글자. null 이면 첫 조합 글자에서 정한다. */
+  private _compositionCovered: string | null = '';
+  /** [#7489] 이번 조합이 덮기 직전 문단 조각. 조합 취소면 되살리고, 확정이면 기록에 넘긴다. */
+  private _compositionFragment: number | null = null;
+  /** [#7489] 덮은 조합의 앵커가 누름틀 밖(빠져나온 끝 포함)인가. 덮을 글자를 정할 때 함께 정한다. */
+  private _compositionOutsideField = false;
   private _lastCompositionText = '';
   private _lastComposedText = '';
   /** HF 선택 위 IME는 선택 삭제와 최종 조합 문자열을 하나의 snapshot으로 기록한다. */
@@ -660,41 +666,15 @@ export class InputHandler {
     this.textarea.addEventListener('cut', this.onCutBound);
     this.textarea.addEventListener('paste', this.onPasteBound);
 
-    // 줌 변경 시 캐럿/선택 마커 위치 갱신
-    eventBus.on('zoom-changed', () => {
-      if (this.active) {
-        const rect = this.cursor.getRect();
-        if (rect) {
-          this.caret.updatePosition(this.viewportManager.getZoom());
-        }
-        // 필드 마커도 줌에 맞게 갱신
-        if (this.fieldMarker.isVisible) {
-          this.updateFieldMarkers();
-        }
-      }
-      // 텍스트 블럭 선택 줌 동기화
-      if (this.cursor.hasSelection()) {
-        this.updateSelection();
-      }
-      // F5 셀 선택 줌 동기화
-      if (this.cursor.isInCellSelectionMode()) {
-        this.updateCellSelection();
-      }
-      // 도형/표 선택 핸들 줌 동기화
-      if (this.cursor.isInPictureObjectSelection()) {
-        this.renderPictureObjectSelection();
-      }
-      if (this.cursor.isInTableObjectSelection()) {
-        this.renderTableObjectSelection();
-      }
-    });
+    // 배율이나 자동 열 수가 바뀌면 페이지 기준 오버레이도 같은 확정 좌표로 옮긴다.
+    eventBus.on('zoom-changed', () => this.updateViewportOverlayPositions());
 
     eventBus.on('document-view-changed', () => {
       if (!this.active) return;
       requestAnimationFrame(() => this.updateCaret(true));
     });
 
-    // 전체 mutation render는 renderer 선택 때문에 비동기다. 쪽/단 나누기 직후의 첫
+    // 전체 mutation render는 renderer 선택 때문에 비동기다. 쪽/단 나누기·본문 Enter 직후의 첫
     // updateCaret은 아직 이전 VirtualScroll을 보므로, 새 쪽 배치가 준비된 이 시점에
     // page-local rect와 DOM 위치를 다시 계산하고 한컴처럼 대상 쪽을 화면에 드러낸다.
     eventBus.on('document-layout-refreshed', () => {
@@ -709,7 +689,8 @@ export class InputHandler {
       if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
     });
     eventBus.on('viewport-resize', () => {
-      if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
+      // CanvasView가 같은 이벤트에서 VirtualScroll을 먼저 확정한 다음 그 좌표를 읽는다.
+      window.setTimeout(() => this.updateViewportOverlayPositions(), 0);
     });
 
     // 표 객체 선택 변경 시 렌더링
@@ -738,7 +719,11 @@ export class InputHandler {
     eventBus.on('create-new-document', () => {
       this.clearTableResizeRuntimeCache();
     });
-    eventBus.on('open-document-bytes', () => {
+    // [#7194] 문서 교체는 `open-document-bytes` 가 아니라 **공통 깔때기**에서 듣는다.
+    // 그 이벤트를 거치는 열기 경로는 여섯 중 하나뿐이라, 드롭·파일 input·`?url=`·
+    // 자동저장 복구·호스트 API 로 연 문서에서는 이전 문서의 칸 좌표가 그대로 남았다.
+    // `main.ts loadBytes()` 가 문서를 갈아치운 직후 이 이벤트를 낸다.
+    eventBus.on('document-swapped', () => {
       this.clearTableResizeRuntimeCache();
     });
 
@@ -752,6 +737,18 @@ export class InputHandler {
       // 서식바 조작으로 빠진 포커스를 항상 복원
       this.focusTextarea();
     });
+  }
+
+  /** 줌·resize 뒤 VirtualScroll 확정 좌표에 캐럿과 선택 오버레이를 다시 투영한다. */
+  private updateViewportOverlayPositions(): void {
+    // updatePosition은 CaretRenderer가 현재 rect를 보유하지 않으면 no-op이고 display도 바꾸지
+    // 않는다. textarea focus가 순간 빠진 상태에서도 화면에 남은 캐럿은 새 쪽 슬롯을 따라야 한다.
+    this.caret.updatePosition(this.viewportManager.getZoom());
+    if (this.active && this.fieldMarker.isVisible) this.updateFieldMarkers();
+    if (this.cursor.hasSelection()) this.updateSelection();
+    if (this.cursor.isInCellSelectionMode()) this.updateCellSelection();
+    if (this.cursor.isInPictureObjectSelection()) this.renderPictureObjectSelection();
+    if (this.cursor.isInTableObjectSelection()) this.renderTableObjectSelection();
   }
 
   /** 클릭 이벤트 처리 — hitTest로 커서 배치 */
@@ -784,9 +781,8 @@ export class InputHandler {
     edge: BorderEdge,
     pageX: number, pageY: number,
     pageBboxes: CellBbox[],
-    shiftResize = false,
   ): void {
-    _table.startResizeDrag.call(this, edge, pageX, pageY, pageBboxes, shiftResize);
+    _table.startResizeDrag.call(this, edge, pageX, pageY, pageBboxes);
   }
 
   /** 리사이즈 드래그 중 마커 위치를 갱신한다 */
@@ -815,9 +811,10 @@ export class InputHandler {
 
   /** 문서 스냅샷 전환 뒤 표 resize 런타임 캐시를 비운다. */
   private clearTableResizeRuntimeCache(): void {
-    this.tableLocalResizeSegments.clear();
     this.cachedTableRef = null;
     this.cachedCellBboxes = null;
+    // 본문 표 앵커(선택 하이라이트용)도 문서 순서가 바뀌면 무효다.
+    this.bodyTableAnchorCache = null;
     // [#4117] hover 채움 실패 메모도 함께 비운다 — 문서가 바뀌면 실패했던
     // (표, 페이지) 조회가 성공할 수 있다.
     this.tableBboxFetchFailures.clear();
@@ -1431,14 +1428,6 @@ export class InputHandler {
     _table.resizeCellByKeyboard.call(this, key);
   }
 
-  private resizeCellLocalByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-    _table.resizeCellLocalByKeyboard.call(this, key);
-  }
-
-  private resizeCellBoundaryByKeyboard(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
-    _table.resizeCellBoundaryByKeyboard.call(this, key);
-  }
-
   private resizeTableProportional(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
     _table.resizeTableProportional.call(this, key);
   }
@@ -1709,6 +1698,35 @@ export class InputHandler {
     }
   }
 
+  /**
+   * [#7442] 클릭 좌표가 중첩 표 외곽 경계선 위인지 판별한다 (페이지 좌표 기준).
+   * `cellPath`(깊이 ≥2)가 가리키는 안쪽 표의 칸 bbox 합집합에 같은 테두리
+   * 임계값을 적용한다 — 평면 `getTableBBoxAtPage` 는 최외곽 표만 돌려줘
+   * 안쪽 표 외곽을 못 잡는다.
+   */
+  private isNestedTableBorderClick(
+    pageIdx: number,
+    pageX: number, pageY: number,
+    sec: number, ppi: number,
+    cellPath: { controlIndex: number; cellIndex: number; cellParaIndex: number }[],
+  ): boolean {
+    try {
+      const bboxes = this.wasm.getTableCellBboxesByPath(sec, ppi, JSON.stringify(cellPath));
+      const cells = bboxes.filter((b: { pageIndex: number }) => b.pageIndex === pageIdx);
+      if (cells.length === 0) return false;
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const c of cells) {
+        minX = Math.min(minX, c.x);
+        minY = Math.min(minY, c.y);
+        maxX = Math.max(maxX, c.x + c.w);
+        maxY = Math.max(maxY, c.y + c.h);
+      }
+      return isPointNearBoxBorder(pageX, pageY, { x: minX, y: minY, width: maxX - minX, height: maxY - minY });
+    } catch {
+      return false;
+    }
+  }
+
   /** [Task #919] 클릭 좌표가 (sec, ppi, ci) 글상자의 외곽 경계선 위인지 판정.
    *  isShapeBorderClick(picture 모듈) 의 sec/ppi/ci 변형 — getShapeBBox API 사용
    *  tolerance 5px 한컴 정합 (Native bbox + 5px 안). */
@@ -1765,7 +1783,7 @@ export class InputHandler {
     sec: number, paragraphIndex: number,
   ): { sec: number; ppi: number; ci: number } | null {
     try {
-      const layout = this.wasm.getPageControlLayout(pageIdx);
+      const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isBodyControl) };
       const isNearBorder = (x: number, y: number, w: number, h: number): boolean => {
         return isPointNearBoxBorder(pageX, pageY, { x, y, width: w, height: h });
       };
@@ -1846,10 +1864,15 @@ export class InputHandler {
       { type: 'command', commandId: 'edit:paste' },
       { type: 'separator' },
     ];
-    // 수식 객체: "수식 편집..." 항목 추가
-    if (ref?.type === 'equation') {
+    // native 수식과 레거시 hwpeq5 OLE 모두 편집기로 연다. 후자는 클릭 시 native
+    // equation으로 변환되며, 다른 OLE은 코어가 명시적 오류로 거부한다.
+    if (ref?.type === 'equation' || ref?.type === 'ole') {
       items.push(
-        { type: 'command', commandId: 'insert:equation-edit', label: '수식 편집...' },
+        {
+          type: 'command',
+          commandId: 'insert:equation-edit',
+          label: ref.type === 'ole' ? '수식으로 변환하여 편집...' : '수식 편집...',
+        },
         { type: 'separator' },
       );
     }
@@ -2422,6 +2445,62 @@ export class InputHandler {
     return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
   }
 
+  /**
+   * [Task #6741] 선택한 셀 블록의 내용을 한 번에 지운다.
+   *
+   * 한컴은 셀 블록에서 `Delete` 를 누르면 선택한 칸들의 글자를 모두 지우고 블록을 유지한다
+   * (#6741 실측). 종전 rhwp 에는 이 조작 자체가 없어 `Delete` 가 블록을 해제하고 캐럿에서
+   * 한 글자만 지웠다.
+   *
+   * 지우는 것이 글자만이 아니라 문단·서식·인라인 컨트롤까지라 역연산으로 되돌릴 수 없다 →
+   * 스냅샷으로 기록한다(#3230 로드맵의 "내용 보관이 필요한 조작" 분류).
+   * 지우기 전 셀 블록을 함께 실어 undo 뒤 복원되게 한다.
+   */
+  private clearSelectedCellBlock(): boolean {
+    const block = this.getSelectedCellBlock();
+    if (!block || block.cellIndices.length === 0) return false;
+    const selection = this.cursor.captureCellSelection();
+    const cursorBefore = this.cursor.getPosition();
+
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'clearCellBlock',
+      operation: (wasm) => {
+        let changed = false;
+        for (const cellIdx of block.cellIndices) {
+          if (block.cellPath) {
+            const headJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx));
+            const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, headJson);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastJson = JSON.stringify(withCellPathTarget(block.cellPath, cellIdx, lastPara));
+            const lastLen = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, lastJson);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCellByPath(block.sec, block.ppi, headJson, 0, 0, lastPara, lastLen);
+          } else {
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            const lastPara = Math.max(0, paraCount - 1);
+            const lastLen = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, lastPara);
+            if (paraCount <= 1 && lastLen === 0) continue;
+            wasm.deleteRangeInCell(block.sec, block.ppi, block.ci, cellIdx, 0, 0, lastPara, lastLen);
+          }
+          changed = true;
+        }
+        // [Task #2370] 이미 빈 칸만 골랐으면 문서가 그대로다 → 기록하지 않는다.
+        if (!changed) return null;
+        // 캐럿이 방금 비운 칸 안이면 그 칸의 시작으로 내린다. `moveTo` 는 클램프하지 않으므로
+        // 지우기 전 오프셋을 그대로 돌려주면 빈 칸에 범위 밖 위치가 남고, 이후 편집이
+        // 문단 길이 검사에 걸린다. 문단이 여럿이던 칸은 cellParaIndex 도 범위 밖이 된다.
+        const caretCleared = cursorBefore.cellIndex !== undefined
+          && block.cellIndices.includes(cursorBefore.cellIndex);
+        return caretCleared
+          ? { ...cursorBefore, cellParaIndex: 0, charOffset: 0 }
+          : cursorBefore;
+      },
+      selectionBefore: selection ? { mode: 'cellBlock', state: selection } : null,
+    });
+    return true;
+  }
+
   private getParaFormatTargetsAtCursor(): ParaFormatTarget[] {
     const block = this.getSelectedCellBlock();
     if (block) return this.getParaFormatTargetsForCellBlock(block);
@@ -2855,7 +2934,9 @@ export class InputHandler {
   /** Undo 처리 */
   private handleUndo(): void {
     this.flushDeferredPaginationIfNeeded('before-undo', false);
-    const newPos = this.history.undo(this.wasm);
+    let newPos: DocumentPosition | null;
+    try { newPos = this.history.undo(this.wasm); }
+    catch (error) { this.handleCharFormatError(error); return; }
     if (newPos) {
       this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
       this.clearTableResizeRuntimeCache();
@@ -2873,7 +2954,9 @@ export class InputHandler {
   /** Redo 처리 */
   private handleRedo(): void {
     this.flushDeferredPaginationIfNeeded('before-redo', false);
-    const newPos = this.history.redo(this.wasm);
+    let newPos: DocumentPosition | null;
+    try { newPos = this.history.redo(this.wasm); }
+    catch (error) { this.handleCharFormatError(error); return; }
     if (newPos) {
       const boundaryHandled = this.prepareTextMutationBeforeCursor(
         this.history.consumeLastExecutionEffects(),
@@ -3018,6 +3101,16 @@ export class InputHandler {
     if ('mode' in range) {
       if (range.mode === 'headerFooter') {
         this.cursor.selectHeaderFooterRange(range.start, range.end, range.previewPage);
+      } else if (range.mode === 'cellBlock') {
+        // [Task #6741] 한컴은 셀 블록에서 지운 뒤 되돌리면 지우기 전 블록을 되살린다(실측).
+        // `resetDerivedStateAfterHistoryJump` 가 방금 해제한 것을 여기서 다시 세운다 —
+        // F3 확장 단계를 본문 범위와 같은 호출로 되살리는 것과 같은 자리다.
+        // 표가 사라졌거나 범위가 밖으로 나가면 `restoreCellSelection` 이 거절한다(#2339 규약).
+        if (this.cursor.restoreCellSelection(range.state)) {
+          this.caret.hide();
+          this.selectionRenderer.clear();
+          this.updateCellSelection();
+        }
       }
       return;
     }
@@ -3045,6 +3138,18 @@ export class InputHandler {
    * 호출부는 OperationDescriptor로 "무엇을 하려는가"만 서술하고,
    * 라우터가 적절한 Undo 전략을 자동 선택한다.
    */
+  private handleCharFormatError(error: unknown): void {
+    if (!isCharFormatError(error)) throw error;
+    console.error(error);
+    if (error instanceof CharFormatRecoveryError) {
+      // 실패하더라도 부분 변경은 실제 상태다. 화면과 dirty/history UI를 갱신한다.
+      this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+      this.resetDerivedStateAfterHistoryJump();
+      this.afterEdit();
+    }
+    alert(error.message);
+  }
+
   executeOperation(desc: OperationDescriptor): void {
     if (!this.isOperationAllowedInEditMode(desc)) return;
     switch (desc.kind) {
@@ -3056,7 +3161,9 @@ export class InputHandler {
         if (keepFieldStartOutside) {
           this.wasm.clearActiveField();
         }
-        const newPos = this.history.execute(desc.command, this.wasm);
+        let newPos: DocumentPosition;
+        try { newPos = this.history.execute(desc.command, this.wasm); }
+        catch (error) { this.handleCharFormatError(error); return; }
         const boundaryHandled = this.prepareTextMutationBeforeCursor(
           this.history.consumeLastExecutionEffects(),
         );
@@ -3072,6 +3179,7 @@ export class InputHandler {
         if (keepFieldStartOutside) {
           this.markCurrentFieldStartOutside();
         }
+        this.caretLayoutReveal.requestFor(desc.command.type);
         this.refreshAfterOperation(desc.meta?.refresh, 'auto', desc.command.type, beforePos, newPos, {
           ...desc.command.getPageLocalTextEditOptions?.(),
           beforePageIndex,
@@ -3108,7 +3216,13 @@ export class InputHandler {
                 desc.operation,
                 desc.editContext,
               )
-          : new SnapshotCommand(desc.operationType, cursorBefore, cursorBefore, desc.operation);
+          : new SnapshotCommand(
+              desc.operationType,
+              cursorBefore,
+              cursorBefore,
+              desc.operation,
+              desc.selectionBefore ?? null,
+            );
         const newPos = this.history.execute(cmd, this.wasm);
         const markPastedFieldEndOutside = this.pastedFieldEndOutsidePending;
         // 무변경 경로에서도 pending 플래그는 소비한다 — 남겨 두면 다음 연산으로 샌다.
@@ -3524,6 +3638,49 @@ export class InputHandler {
   }
 
   /**
+   * IME 조합 오버레이의 원점 rect 를 돌려준다.
+   *
+   * [Issue #6553] 조합 중인 글자가 soft-wrap 으로 다음 줄로 넘어가면 `anchor.charOffset` 이
+   * 줄 경계 offset 이 되고, 줄 affinity 인자가 없는 exact 조회는 이전 줄 끝을 돌려준다.
+   * 오버레이는 글자가 실제로 그려지는 줄에 놓여야 하므로 시각 줄을 명시해 다시 조회한다.
+   * 머리말/꼬리말·각주와 2단 이상 중첩 셀은 `getCursorRectOnLine` 이 대상 문단을 지목할 수
+   * 없어 제외한다(exact 유지).
+   */
+  private compositionOverlayStartRect(anchor: DocumentPosition, exact: CursorRect): CursorRect {
+    if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return exact;
+    if ((anchor.cellPath?.length ?? 0) > 1) return exact;
+    const inCell = anchor.parentParaIndex !== undefined;
+    // 두 질의 모두 실패를 null 로 알린다 — 여기서 예외가 새면 updateCaret 의 바깥 catch 가
+    // 조합 오버레이를 통째로 접어버려, exact 로 물러나는 것보다 나쁜 결과가 된다.
+    return resolveGlyphStartRect(anchor.charOffset, exact, {
+      lineInfoAt: (charOffset) => {
+        try {
+          return inCell
+            ? this.wasm.getLineInfoInCell(
+                anchor.sectionIndex, anchor.parentParaIndex!, anchor.controlIndex!,
+                anchor.cellIndex!, anchor.cellParaIndex!, charOffset,
+              )
+            : this.wasm.getLineInfo(anchor.sectionIndex, anchor.paragraphIndex, charOffset);
+        } catch {
+          return null;
+        }
+      },
+      rectAtLineStart: (lineIndex) => {
+        try {
+          return this.wasm.getCursorRectOnLine(
+            anchor.sectionIndex, anchor.paragraphIndex, lineIndex, false,
+            anchor.parentParaIndex ?? 0xFFFFFFFF, anchor.controlIndex ?? 0xFFFFFFFF,
+            anchor.cellIndex ?? 0xFFFFFFFF, anchor.cellParaIndex ?? 0xFFFFFFFF,
+          );
+        } catch {
+          // getCursorRectOnLine 을 내보내지 않는 wasm 빌드 — 기존 exact 동작을 유지한다.
+          return null;
+        }
+      },
+    });
+  }
+
+  /**
    * 캐럿 위치를 갱신한다.
    *
    * @param skipScroll true 시 `scrollCaretIntoView` 호출 skip — cursor 변경 trigger 가 동반되지 않은
@@ -3568,15 +3725,24 @@ export class InputHandler {
               anchor.sectionIndex, anchor.paragraphIndex, anchor.charOffset,
             );
           }
-          const charWidth = rect.x - startRect.x;
-          const text = this.textarea.value || '';
-          // 현재 커서 위치의 글꼴 정보
-          let fontFamily = 'sans-serif';
-          try {
-            const props = this.getCharPropertiesAtCursor();
-            if (props.fontFamily) fontFamily = props.fontFamily;
-          } catch { /* fallback */ }
-          this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          startRect = this.compositionOverlayStartRect(anchor, startRect);
+          if (!isCompositionBoxRepresentable(startRect, rect)) {
+            // [Issue #6738] 머리말/꼬리말·각주·2단계 이상 중첩 셀에는 줄 affinity 를 물을
+            // API 가 없어, 조합 글자가 줄이나 쪽을 넘어가도 시작 좌표를 바로잡을 수 없다.
+            // 틀린 자리에 박스를 그리는 대신 조회 실패와 같은 경로로 일반 캐럿을 보여준다.
+            this.caret.hideComposition();
+            this.caret.update(rect, zoom);
+          } else {
+            const charWidth = rect.x - startRect.x;
+            const text = this.textarea.value || '';
+            // 현재 커서 위치의 글꼴 정보
+            let fontFamily = 'sans-serif';
+            try {
+              const props = this.getCharPropertiesAtCursor();
+              if (props.fontFamily) fontFamily = props.fontFamily;
+            } catch { /* fallback */ }
+            this.caret.showComposition(startRect, charWidth, zoom, text, fontFamily);
+          }
         } catch {
           // getCursorRect 실패 시 일반 캐럿
           this.caret.hideComposition();
@@ -3738,10 +3904,13 @@ export class InputHandler {
     try {
       const hit = this.wasm.hitTest(pageIdx, pageX, pageY);
       // 같은 표인지 확인
-      if (hit.parentParaIndex !== ctx.ppi || hit.controlIndex !== ctx.ci) return null;
+      if (hit.sectionIndex !== ctx.sec || hit.parentParaIndex !== ctx.ppi || hit.controlIndex !== ctx.ci) return null;
       if (hit.cellIndex === undefined) return null;
-      if (ctx.cellPath && ctx.cellPath.length > 1 && hit.cellPath) {
-        // 중첩 표: 경로 기반으로 셀 정보 조회
+      if (ctx.cellPath && ctx.cellPath.length > 1) {
+        // [#7442] 중첩 표 컨텍스트: hit 이 정확히 같은 안쪽 표를 가리킬 때만
+        // row/col 을 인정한다. 깊이 1(바깥 칸)이나 형제 표 경로를 그대로 넘기면
+        // 엉뚱한 표의 셀로 드래그/Shift 선택이 붙는다.
+        if (!isSameNestedTablePath(ctx.cellPath, hit.cellPath)) return null;
         const pathJson = JSON.stringify(hit.cellPath);
         const info = this.wasm.getCellInfoByPath(ctx.sec, ctx.ppi, pathJson);
         return { row: info.row, col: info.col };
@@ -3893,6 +4062,9 @@ export class InputHandler {
           start.paragraphIndex, start.charOffset,
           end.paragraphIndex, end.charOffset,
         );
+        // getSelectionRects 는 텍스트 run만 뒤집어 선택 범위 안의 표가 통째로 빠진다.
+        // 한컴은 범위에 든 표를 뒤집으므로 표 bbox의 페이지별 합집합을 얹는다.
+        rects = rects.concat(this.bodyTableRectsInRange(start, end));
       } else {
         // 셀↔본문 또는 셀↔다른 셀 혼합 선택: 렌더링 생략
         this.selectionRenderer.clear();
@@ -3902,6 +4074,82 @@ export class InputHandler {
     } catch (e) {
       console.warn('[InputHandler] getSelectionRects 실패:', e);
       this.selectionRenderer.clear();
+    }
+  }
+
+  /**
+   * 본문 최외곽 표의 {구역, 문단, 컨트롤, 앵커 문자 오프셋} 캐시.
+   * getControls() 는 문서 전체를 순회·직렬화하므로 매번 부르지 않고 문서 변경
+   * (afterEdit 계열 → clearTableResizeRuntimeCache) 때 비운다.
+   * getControls() 의 para 는 모든 document.sections[*].paragraphs 를 가로지르는
+   * 평탄 번호다 — 구역 변환은 SectionDef 표식이 아니라 getSectionCount()/
+   * getParagraphCount() 로 세운 시작 경계로 한다.
+   */
+  private bodyTableAnchorCache: { sec: number; para: number; ci: number; off: number }[] | null = null;
+
+  private bodyTableAnchors(): { sec: number; para: number; ci: number; off: number }[] {
+    if (this.bodyTableAnchorCache) return this.bodyTableAnchorCache;
+    const tables: { sec: number; para: number; ci: number; off: number }[] = [];
+    try {
+      const secCount = this.wasm.getSectionCount();
+      const starts = [0];
+      for (let s = 1; s < secCount; s++) {
+        starts.push(starts[s - 1] + this.wasm.getParagraphCount(s - 1));
+      }
+      for (const c of this.wasm.getControls()) {
+        if (c.ctrlId !== 'tbl' || c.list !== 0) continue;
+        let sec = 0;
+        for (let s = starts.length - 1; s >= 0; s--) {
+          if (c.para >= starts[s]) { sec = s; break; }
+        }
+        const para = c.para - starts[sec];
+        const off = this.wasm.getControlTextPositions(sec, para)[c.controlIndex];
+        if (off !== undefined) tables.push({ sec, para, ci: c.controlIndex, off });
+      }
+    } catch { /* 캐시 없이 빈 목록 */ }
+    this.bodyTableAnchorCache = tables;
+    return tables;
+  }
+
+  /**
+   * 본문 선택 범위 [start, end)에 앵커 문자가 든 최외곽 표의 페이지별 합집합 rect.
+   * 텍스트 선택 하이라이트(getSelectionRects)가 표를 건너뛰는 빈 곳을 메운다.
+   * 셀 안 표(list !== 0)는 겉 표 rect에 이미 포함되므로 제외한다.
+   */
+  private bodyTableRectsInRange(
+    start: DocumentPosition,
+    end: DocumentPosition,
+  ): { pageIndex: number; x: number; y: number; width: number; height: number }[] {
+    const tables = this.bodyTableAnchors();
+    if (!tables.length) return [];
+    try {
+      const inRange = (t: { sec: number; para: number; off: number }): boolean => (
+        (t.sec > start.sectionIndex
+          || (t.sec === start.sectionIndex && (t.para > start.paragraphIndex
+            || (t.para === start.paragraphIndex && t.off >= start.charOffset))))
+        && (t.sec < end.sectionIndex
+          || (t.sec === end.sectionIndex && (t.para < end.paragraphIndex
+            || (t.para === end.paragraphIndex && t.off < end.charOffset))))
+      );
+      const rects: { pageIndex: number; x: number; y: number; width: number; height: number }[] = [];
+      for (const t of tables) {
+        if (!inRange(t)) continue;
+        // 표마다 따로 합친다 — 한 쪽의 여러 표를 한 rect로 합치면 사이 여백까지 뒤집힌다.
+        const byPage = new Map<number, { x0: number; y0: number; x1: number; y1: number }>();
+        for (const b of this.wasm.getTableCellBboxes(t.sec, t.para, t.ci)) {
+          const u = byPage.get(b.pageIndex)
+            ?? { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+          u.x0 = Math.min(u.x0, b.x); u.y0 = Math.min(u.y0, b.y);
+          u.x1 = Math.max(u.x1, b.x + b.w); u.y1 = Math.max(u.y1, b.y + b.h);
+          byPage.set(b.pageIndex, u);
+        }
+        for (const [pageIndex, u] of byPage) {
+          rects.push({ pageIndex, x: u.x0, y: u.y0, width: u.x1 - u.x0, height: u.y1 - u.y0 });
+        }
+      }
+      return rects;
+    } catch {
+      return [];
     }
   }
 
@@ -4184,6 +4432,11 @@ export class InputHandler {
     this.isComposing = false;
     this.compositionAnchor = null;
     this.compositionLength = 0;
+    this._compositionCovered = '';
+    // [#7489] 기록되기 전 덮은 조합의 문단 조각은 해제만 한다. deactivate 는 문서를 바꾼 뒤 불리므로
+    // (같은 코어를 다시 쓰는 새 문서 포함) 되살리면 옛 문단이 새 문서에 끼어든다.
+    if (this._compositionFragment !== null) this.wasm.discardDeleteFragment(this._compositionFragment);
+    this._compositionFragment = null;
     // [#4162] 문서 전환·닫기에서 안 지우면, 이전 문서에서 예약한 서식이 새 문서의
     // 흔한 시작 캐럿 위치(예: {sec:0,para:0,offset:0})와 우연히 일치할 때 새 문서
     // 첫 글자로 새어 들어간다 — 실행 확인: deactivate() 호출 전후 필드가 안 바뀜.
@@ -4234,6 +4487,10 @@ export class InputHandler {
     this.isComposing = false;
     this.compositionAnchor = null;
     this.compositionLength = 0;
+    this._compositionCovered = '';
+    // [#7489] 기록되기 전 덮은 조합의 문단 조각을 해제한다(deactivate 와 같다).
+    if (this._compositionFragment !== null) this.wasm.discardDeleteFragment(this._compositionFragment);
+    this._compositionFragment = null;
     // [#4162] 문서 전환·닫기에서 안 지우면, 이전 문서에서 예약한 서식이 새 문서의
     // 흔한 시작 캐럿 위치(예: {sec:0,para:0,offset:0})와 우연히 일치할 때 새 문서
     // 첫 글자로 새어 들어간다 — 실행 확인: deactivate() 호출 전후 필드가 안 바뀜.
@@ -4601,6 +4858,13 @@ export class InputHandler {
 
   /** 현재 커서 위치를 반환한다 */
   getCursorPosition(): DocumentPosition { return this.cursor.getPosition(); }
+
+  /** 별도 좌표계·개체 선택을 본문 링크 편집으로 오인하지 않도록 명시적으로 차단한다. */
+  canEditHyperlink(): boolean {
+    return !this.cursor.isInHeaderFooter() && !this.cursor.isInFootnote()
+      && !this.cursor.isInCellSelectionMode() && !this.cursor.isInPictureObjectSelection()
+      && !this.cursor.isInTableObjectSelection();
+  }
 
   /** 본문 탐색 전에 각주 전용 편집 컨텍스트를 종료한다. */
   exitFootnoteModeForBodyNavigation(): void {

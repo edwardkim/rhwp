@@ -8,6 +8,19 @@ import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-ph
 
 type CellSelectionReason = 'manual' | 'protected';
 
+/** [Task #6741] undo 복원을 위해 캡처한 셀 블록 선택 상태. */
+export type CellBlockSelectionState = {
+  readonly sec: number;
+  readonly ppi: number;
+  readonly ci: number;
+  readonly cellPath?: CellPathEntry[];
+  readonly anchor: CellSelectionPoint;
+  readonly focus: CellSelectionPoint;
+  readonly phase: CellSelectionPhase;
+  readonly reason: CellSelectionReason;
+  readonly excluded: string[];
+};
+
 export type HeaderFooterTextPosition = {
   sectionIdx: number;
   isHeader: boolean;
@@ -29,6 +42,8 @@ type PictureSelectionRef = {
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
   /** [Task #2230] 그림 미지정 placeholder — 더블클릭 시 그림 지정 진입. */
   missing?: boolean;
+  /** 마우스 hit 당시의 실제 page layout. 동일 주소의 분할 항목 선택에 사용한다. */
+  pageIndex?: number;
 };
 
 /** 커서 상태를 관리한다 */
@@ -1270,6 +1285,49 @@ export class CursorState {
     }
   }
 
+  /**
+   * 현재 셀/글상자 내용 전체를 선택한다 (한컴 ⌘A 정합) — 셀 첫 문단 시작 ~
+   * 마지막 문단 끝. 중첩 표·글상자는 cellPath/flat 축 구분을 기존 셀 이동과 같이 따른다.
+   */
+  selectAllInCell(): boolean {
+    if (!this.isInCell()) return false;
+    const pos = this.position;
+    const { sectionIndex: sec, parentParaIndex: ppi, controlIndex: ci, cellIndex: cei, cellPath } = pos;
+    if (ppi === undefined) return false;
+    // 글상자(1-depth)는 flat 축, 표 셀·중첩은 경로 기반 — moveToCellByIndex 와 같은 규약.
+    const useCellPath = (cellPath?.length ?? 0) > 1 || ((cellPath?.length ?? 0) > 0 && !this.isInTextBox());
+    try {
+      const paraCount = useCellPath && cellPath
+        ? this.wasm.getCellParagraphCountByPath(sec, ppi, JSON.stringify(cellPath))
+        : this.wasm.getCellParagraphCount(sec, ppi, ci!, cei!);
+      const lastCpi = Math.max(0, paraCount - 1);
+      const pathAtCpi = (cpi: number): CellPathEntry[] | undefined => cellPath
+        ? cellPath.map((e, i) => i < cellPath.length - 1 ? e : { ...e, cellParaIndex: cpi })
+        : cellPath;
+      const lastPath = pathAtCpi(lastCpi);
+      const lastLen = lastPath && useCellPath
+        ? this.wasm.getCellParagraphLengthByPath(sec, ppi, JSON.stringify(lastPath))
+        : this.wasm.getCellParagraphLength(sec, ppi, ci!, cei!, lastCpi);
+      const atCpi = (cpi: number, charOffset: number): DocumentPosition => ({
+        ...pos,
+        paragraphIndex: cpi,
+        cellParaIndex: cpi,
+        charOffset,
+        cellPath: pathAtCpi(cpi),
+      });
+      // setAnchor()는 기존 anchor를 유지하므로, 부분 선택 상태에서 ⌘A를 눌러도
+      // 범위가 셀 시작부터 잡히도록 먼저 선택을 비운다.
+      this.clearSelection();
+      this.moveTo(atCpi(0, 0));
+      this.setAnchor();
+      this.moveTo(atCpi(lastCpi, lastLen));
+      return true;
+    } catch (e) {
+      console.warn('[CursorState] selectAllInCell 실패:', e);
+      return false;
+    }
+  }
+
   /** 표 밖으로 나가기 (delta: +1=다음 위치, -1=이전 위치) — Tab/Shift+Tab 전용 */
   private exitTable(delta: number): void {
     const { sectionIndex: sec, parentParaIndex: ppi } = this.position;
@@ -1430,6 +1488,63 @@ export class CursorState {
   getCellSelectionFocus(): CellSelectionPoint | null {
     if (!this._cellSelectionMode || !this.cellFocus) return null;
     return { ...this.cellFocus };
+  }
+
+  /**
+   * [Task #6741] 셀 블록 선택을 undo 복원용으로 캡처한다.
+   *
+   * 한컴은 셀 블록에서 내용을 지우고 되돌리면 지우기 전 블록을 되살린다(#6741 실측).
+   * rhwp 는 히스토리 점프 시 파생 상태를 해제하므로(#2339), 되살리려면 해제 전에
+   * 잡아 둔 값이 필요하다 — F3 확장 단계가 `blockPhase` 로 그렇게 하는 것과 같다(#5691).
+   *
+   * `rowCount`/`colCount` 는 담지 않는다. 복원 시점의 표에서 다시 읽어야 그 사이
+   * 행·열이 바뀐 경우에 유령 범위를 만들지 않는다.
+   */
+  captureCellSelection(): CellBlockSelectionState | null {
+    if (!this._cellSelectionMode || !this.cellAnchor || !this.cellFocus || !this.cellTableCtx) return null;
+    const { sec, ppi, ci, cellPath } = this.cellTableCtx;
+    return {
+      sec, ppi, ci,
+      cellPath: cellPath ? cellPath.map((e) => ({ ...e })) : undefined,
+      anchor: { ...this.cellAnchor },
+      focus: { ...this.cellFocus },
+      phase: this._cellSelectionPhase,
+      reason: this._cellSelectionReason,
+      excluded: [...this.excludedCells],
+    };
+  }
+
+  /**
+   * [Task #6741] 캡처한 셀 블록 선택을 되살린다.
+   *
+   * 표가 사라졌거나 행·열이 줄어 범위가 밖으로 나가면 되살리지 않고 `false` 를 준다 —
+   * 유령 범위를 만들지 않는 것이 #2339 가 세운 규약이다.
+   */
+  restoreCellSelection(state: CellBlockSelectionState): boolean {
+    let dims: { rowCount: number; colCount: number };
+    try {
+      dims = state.cellPath && state.cellPath.length > 0
+        ? this.wasm.getTableDimensionsByPath(state.sec, state.ppi, JSON.stringify(state.cellPath))
+        : this.wasm.getTableDimensions(state.sec, state.ppi, state.ci);
+    } catch {
+      return false;
+    }
+    const inside = (p: CellSelectionPoint) =>
+      p.row >= 0 && p.col >= 0 && p.row < dims.rowCount && p.col < dims.colCount;
+    if (!inside(state.anchor) || !inside(state.focus)) return false;
+
+    this.cellAnchor = { ...state.anchor };
+    this.cellFocus = { ...state.focus };
+    this.cellTableCtx = {
+      sec: state.sec, ppi: state.ppi, ci: state.ci,
+      rowCount: dims.rowCount, colCount: dims.colCount,
+      cellPath: state.cellPath,
+    };
+    this._cellSelectionMode = true;
+    this._cellSelectionPhase = state.phase;
+    this._cellSelectionReason = state.reason;
+    this.excludedCells = new Set(state.excluded);
+    return true;
   }
 
   /** F5 반복: 셀 선택 단계를 다음으로 진행한다. */
@@ -1700,10 +1815,18 @@ export class CursorState {
     return true;
   }
 
-  /** 지정한 표를 객체 선택한다 (커서 위치와 무관). */
-  enterTableObjectSelectionDirect(sec: number, ppi: number, ci: number): void {
+  /** 지정한 표를 객체 선택한다 (커서 위치와 무관).
+   *
+   *  [#7442] `cellPath`(깊이 ≥2)가 오면 중첩 표를 가리킨다 — 테두리 클릭으로
+   *  안쪽 표를 선택할 때 사용. 깊이 1 이하면 평면 참조와 동일하므로 버린다.
+   */
+  enterTableObjectSelectionDirect(
+    sec: number, ppi: number, ci: number,
+    cellPath?: CellPathEntry[],
+  ): void {
     this._tableObjectSelected = true;
-    this.selectedTableRef = { sec, ppi, ci };
+    this.selectedTableRef =
+      cellPath && cellPath.length > 1 ? { sec, ppi, ci, cellPath } : { sec, ppi, ci };
   }
 
   /** 표 객체 선택을 해제한다. */
@@ -1784,10 +1907,11 @@ export class CursorState {
     cellPath?: CellPathEntry[],
     noteRef?: any,
     missing?: boolean,
+    pageIndex?: number,
   ): void {
     this.exitTableObjectSelection();
     this._pictureObjectSelected = true;
-    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing };
+    this.selectedPictureRef = { sec, ppi, ci, type, cellIdx, cellParaIdx, outerTableControlIdx, cellPath, noteRef, headerFooter, missing, pageIndex };
     this.selectedPictureRefs = [{ ...this.selectedPictureRef }];
   }
 

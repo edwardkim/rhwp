@@ -672,12 +672,28 @@ pub fn parse_drawing_object_tree(
         });
     }
 
-    if root_nodes.len() == 1 {
-        Ok(root_nodes.remove(0))
+    let mut root = if root_nodes.len() == 1 {
+        root_nodes.remove(0)
     } else {
         let mut group = GroupShape::default();
         group.children = root_nodes;
-        Ok(ShapeObject::Group(group))
+        ShapeObject::Group(group)
+    };
+    assign_group_levels(&mut root, 0);
+    Ok(root)
+}
+
+/// [#4680] 묶음 자식의 그룹 깊이를 매긴다 — 최상위 0, 그 자식 1, 손자 2 …
+///
+/// HWP5 `SHAPE_COMPONENT` 는 이 깊이로 rendering 행렬 쌍 개수(`group_level + 1`)를
+/// 정한다. HWP3 파서가 깊이를 안 매기면 모든 자식이 0 이 되어 저장기가 쌍을 하나만
+/// 쓰고, 레코드가 한컴이 기대하는 길이보다 96바이트씩 짧아진다. 한컴 저장본과의 레코드 길이 계약을 잃는다. 같은 문서의 한/글 HWP5 저장본은 깊이 1·2·3 에 각각 쌍 2·3·4 를 쓴다.
+fn assign_group_levels(node: &mut ShapeObject, level: u16) {
+    node.shape_attr_mut().group_level = level;
+    if let ShapeObject::Group(group) = node {
+        for child in &mut group.children {
+            assign_group_levels(child, level + 1);
+        }
     }
 }
 
@@ -883,7 +899,7 @@ fn map_to_shape_object(
     if parsed_paragraphs.is_empty() {
         if let Some(data) = header.textbox_paragraph_list.as_deref() {
             let mut text_cursor = std::io::Cursor::new(data);
-            if let Ok(paras) = crate::parser::hwp3::parse_paragraph_list(
+            match crate::parser::hwp3::parse_paragraph_list(
                 &mut text_cursor,
                 doc_char_shapes,
                 doc_para_shapes,
@@ -895,7 +911,9 @@ fn map_to_shape_object(
                 0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
                 false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
             ) {
-                parsed_paragraphs = paras;
+                Ok(paras) => parsed_paragraphs = paras,
+                Err(error @ Hwp3Error::NestingLimitExceeded { .. }) => return Err(error),
+                Err(_) => {} // Preserve recovery for ordinary damaged textbox data.
             }
         }
     }

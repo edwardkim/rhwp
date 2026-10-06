@@ -1,0 +1,2 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+1	-	0	2	4	1	-	-	75.6,117.1,653.9,914.2	-	page_table_footer	0	-	91.2	-	candidate only; does not assert PDF table row owner or fragment correctness

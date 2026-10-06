@@ -10,6 +10,10 @@ metadata:
   type: project
 ---
 
+> **해결 상태 (Issue #6695)**: 아래 내용은 Git LFS를 사용하던 당시의 장애·복구 기록이다.
+> 현재 PDF LFS 추적은 제거되었고 모든 한컴 PDF 오라클은 `pdf/**`의 일반 Git blob이다.
+> 새 작업에는 [`pdf/README.md`](../../../pdf/README.md)의 현행 정책을 적용한다.
+
 rhwp의 Git LFS 사용량이 10GB 쿼터에 도달했다. 그 결과 `pdf-large/**/*.pdf`
 (`.gitattributes`로 LFS 추적) 일부 파일의 **실제 LFS 객체를 pull하지 못한다**.
 

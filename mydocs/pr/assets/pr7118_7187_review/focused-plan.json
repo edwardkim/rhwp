@@ -1,0 +1,15 @@
+{
+  "issue_7172_hwp3_hanging_indent_margin": "regression_suite_014",
+  "issue_4771_derived_layout_state": "regression_suite_024",
+  "issue_6946_block_seated_float_sibling_gets_its_own_page": "regression_suite_021",
+  "issue_7174_hwp3_footnote_number_suffix": "regression_suite_021",
+  "issue_1440_onsamiro_picture_wrap": "regression_suite_021",
+  "issue_1892": "regression_suite_021",
+  "issue_5908_giant_cell_last_fragment_overfill": "regression_suite_018",
+  "issue_7170_hwp3_inline_tab_width": "regression_suite_009",
+  "issue_7095_page_spanning_fragment_box": "regression_suite_019",
+  "issue_1692": "regression_suite_026",
+  "issue_7174_hwp3_footnote_separator_margins": "regression_suite_017",
+  "issue_7140_nested_row_unit_paint_height": "regression_suite_003",
+  "cell_square_picture_anchor": "regression_suite_027"
+}

@@ -1,0 +1,14 @@
+== nested3637 ==
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate dump-note-shape /Users/tsjang/rhwp/samples/issue3637/regulatory_impact_nested_table_escape.hwpx
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate export-svg /Users/tsjang/rhwp/samples/issue3637/regulatory_impact_nested_table_escape.hwpx --font-style -o /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/svg
++ /private/tmp/rhwp-review-open-20260916/rhwp-candidate export-render-tree /Users/tsjang/rhwp/samples/issue3637/regulatory_impact_nested_table_escape.hwpx -o /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/render_tree
+SVG export pages: 31
++ pdftoppm -f 26 -l 26 -r 96 -png /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_png/pdf
++ pdftoppm -f 27 -l 27 -r 96 -png /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_png/pdf
++ pdftoppm -f 28 -l 28 -r 96 -png /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_png/pdf
++ pdftoppm -f 29 -l 29 -r 96 -png /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_png/pdf
++ pdftoppm -f 30 -l 30 -r 96 -png /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_png/pdf
++ pdftotext -bbox-layout /Users/tsjang/rhwp/pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/nested3637/pdf_bbox.html
+Selected pages: [26, 27, 28, 29, 30]
+Raster PNG pages: rhwp=5, pdf=5
+summary: /private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637/summary.json

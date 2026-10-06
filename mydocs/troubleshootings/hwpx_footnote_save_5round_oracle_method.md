@@ -14,7 +14,7 @@ last_verified: 2026-07-16
 | 선행 | [#1050](https://github.com/edwardkim/rhwp/issues/1050), [#1052](https://github.com/edwardkim/rhwp/issues/1052) |
 | 정답지 | `samples/footnote-01.hwp` (한컴 저장 oracle) |
 | 산출물 | `output/poc/issue_1058/repro_round5.hwp` |
-| 분석 도구 | `examples/dump_footnote_inner.rs`, `examples/repro_1058_footnote_insert.rs` |
+| 분석 도구 | `mydocs/tech/investigations/issue-1058/probes/dump_footnote_inner.rs`, `mydocs/tech/investigations/issue-1058/probes/repro_1058_footnote_insert.rs` |
 | 관련 | [`hwpx2hwp-rule.md`](hwpx2hwp-rule.md), [`task178_hwpx_to_hwp_first_attempt_failure.md`](task178_hwpx_to_hwp_first_attempt_failure.md) |
 
 ## 증상
@@ -58,7 +58,7 @@ HWPX → IR 만 HWP → IR 과 동일한 IR 을 생성하면 자동으로 한컴
 | ParaShape attr / line_spacing | `rhwp dump -s N -p M` + DocInfo Tag 17/18 byte 비교 |
 | PARA_HEADER instance_id | `dump_para_header_raw` (raw_header_extra 추출) |
 | BULLET record 개수/내용 | DocInfo Tag 24 (BULLET) count + char 추출 |
-| Footnote inner_para contract | `examples/dump_footnote_inner.rs` (본 작업 신규) |
+| Footnote inner_para contract | `mydocs/tech/investigations/issue-1058/probes/dump_footnote_inner.rs` (본 작업 신규) |
 
 ## 5 라운드 정정 영역 누적
 

@@ -13,7 +13,7 @@ rhwp 를 **처음 보는** 에이전트(또는 그 사람)를 "설치 → 검증
 
 - 닥터: [`tools/agent_onboarding/rhwp_doctor.py`](../../../tools/agent_onboarding/rhwp_doctor.py) (순수 Python 3, 의존성 0)
 - 5분 경로 정본: [`mydocs/manual/agent_onboarding.md`](../../../mydocs/manual/agent_onboarding.md)
-- 작업 기록: [`mydocs/working/agent_onboarding.md`](../../../mydocs/working/agent_onboarding.md)
+- 작업 기록: [`mydocs/working/agent_onboarding.md`](../../../mydocs/working/archives/agent_onboarding.md)
 
 이미 MCP 로 붙어 있고 **세션/무상태 도구 선택**이 논점이면 이 스킬이 아니라
 `rhwp-mcp-session` 을 쓴다. 이 스킬은 그 앞단(0→1 부트스트랩) 전용이다.

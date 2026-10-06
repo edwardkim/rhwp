@@ -266,6 +266,6 @@ SD08 이 도구 수만 묻는다면, 여기서는 호스트가 등록 파일을 
 ## 관련
 
 - 이슈: [#5217](https://github.com/edwardkim/rhwp/issues/5217)
-- 작업 기록: [`mydocs/working/gym_self_description.md`](../../../mydocs/working/gym_self_description.md)
+- 작업 기록: [`mydocs/working/gym_self_description.md`](../../../mydocs/working/archives/gym_self_description.md)
 - 계약 테스트: `scripts/tests/test_gym_self_description_pack.py`
 - gym 공통 감사: `python gym/tools/audit.py`

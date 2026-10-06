@@ -1,0 +1,15 @@
+[RustTestSuite] issue_2724_passthrough_invalidation_guard -> regression_suite_006::issue_2724_passthrough_invalidation_guard
+[RustTestSuite] cargo nextest run --locked --test regression_suite_006 -E test(/(^|::)issue_2724_passthrough_invalidation_guard::/) --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/issue6389-20260916
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 4.70s
+────────────
+ Nextest run ID 13e89022-8ce0-4782-9ca1-329b0638fedb with nextest profile: default
+    Starting 5 tests across 1 binary (193 tests skipped)
+        PASS [   0.038s] (1/5) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::invalidation_density_ledger_is_ratcheted
+        PASS [   0.070s] (2/5) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::stale_exemptions_are_reclaimed
+        PASS [   0.074s] (3/5) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked
+        PASS [   0.079s] (4/5) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::delegation_targets_actually_invalidate
+        PASS [   0.096s] (5/5) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::guard_scanner_self_check
+────────────
+     Summary [   0.096s] 5 tests run: 5 passed, 193 skipped

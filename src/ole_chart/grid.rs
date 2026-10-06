@@ -1,44 +1,11 @@
-//! [#4098] 레거시 `Contents` 의 `VtDataGrid` 를 **구조로** 읽는다.
+//! 레거시 `Contents`의 `VtDataGrid`를 아카이브 슬롯 순서로 읽는다.
 //!
-//! ## 왜 별도 스캐너인가
-//!
-//! 같은 모듈의 [`parser`](super::parser) 는 그리드를 **값의 성질로 짐작**했다. "정수 ·
-//! 1 이상 · 100만 이하" 만 값으로 인정하는 필터가 값을 거르는 데 그치지 않고 연속 f64
-//! 런의 **프레임 기준**이어서, 실제 차트의 `4.3` 하나가 런을 끊어 파싱 전체를 무너뜨렸다.
-//! 개수도 라벨에서 역산했기 때문에 라벨 분류가 틀리면 값 탐색까지 같이 틀렸다.
-//!
-//! 이 스캐너는 값을 **보지 않는다.** 크기·부호·정수 여부 어느 것도 판단 재료가 아니다.
-//!
-//! ## 문법 (실측: 코퍼스 28종 + 레거시 단독 대조군)
-//!
-//! `VtDataGrid` 프롤로그가 치수를 **명시**한다. 행 pitch 추론도 stride 가정도 필요 없다.
-//!
-//! ```text
-//! <u16 11> "VtDataGrid\0"   <u16 ver> <u32>
-//! <u16  9> "VtMatrix\0"     <u16 ver> <u32>
-//! <u16 13> "VtCollection\0" <u16 ver> <u16> <u32>
-//! <u16  9> "VtObject\0"     <u16 ver> <u16 ROWS> <u16 COLS>
-//! ```
-//!
-//! 이어서 셀이 온다. 셀마다 **1-based 행우선 인덱스**를 싣고 코너 셀(index 1)은 없다 —
-//! `(row, col) = ((index - 1) / COLS, (index - 1) % COLS)`. 0 행은 열 이름, 0 열은 행 이름,
-//! 나머지가 수치다.
-//!
-//! ```text
-//! <u32 owner> <u32 index> <u32 typeId>   typeId 5 = 문자, 7 = 수치
-//! [<u16 9> "VtDouble\0"|"VtString\0" <u16 ver>]   최초 사용 시에만
-//! <payload>                              f64 8B  |  <u16 len> cp949 \0\0 utf16le \0\0
-//! <separator>                            수치 뒤에만 `FF FF 06 00 00 00`
-//! ```
-//!
-//! 그래서 수치는 구분자로, 문자는 형상으로 찾고 **양쪽 다 12바이트 헤더를 되읽어
-//! `typeId` 로 확인**한다. 형상만 맞는 우연은 헤더에서 걸린다.
-//!
-//! ## 구간 제한은 필수다
-//!
-//! `VtDataGrid` 창 밖에는 축 눈금 같은 무관한 `VtDouble` 이 있다. 대조군 실측으로
-//! 제한 12 · 무제한 14 다(#4055 Stage 1).
+//! 치수와 기반 클래스 사슬은 선언에서 읽고, 객체 id는 셀 좌표로 쓰지 않는다.
+//! 수치의 크기나 부호로 데이터 여부를 추측하지 않으며 역참조는 원래 값을 보존한다.
+//! 셀에는 스칼라 객체만 허용해 중첩 그리드와 재귀 기반 클래스 입력을 거부한다.
+//! 상세 직렬화 문법은 아래 `ArchiveReader` 설명을 따른다.
 
+use std::collections::BTreeMap;
 use std::ops::Range;
 
 use encoding_rs::EUC_KR;
@@ -49,17 +16,7 @@ const COLLECTION_MARKER: &[u8] = b"VtCollection\0";
 const OBJECT_MARKER: &[u8] = b"VtObject\0";
 const DOUBLE_MARKER: &[u8] = b"VtDouble\0";
 const STRING_MARKER: &[u8] = b"VtString\0";
-
-/// 수치 셀 f64 바로 뒤에 오는 구분자. 문자 셀에는 붙지 않는다.
-const VALUE_SEPARATOR: &[u8] = &[0xFF, 0xFF, 0x06, 0x00, 0x00, 0x00];
-
-const TYPE_STRING: u32 = 5;
-const TYPE_DOUBLE: u32 = 7;
-
-/// `<u16 nameLen> <name> <u16 version>` 인라인 클래스 선언의 길이.
-const fn declaration_len(marker: &[u8]) -> usize {
-    2 + marker.len() + 2
-}
+const VALUE_MARKER: &[u8] = b"VtValue\0";
 
 /// `VtDataGrid` 다음에 오는 형제 오브젝트 마커 — 그리드 구간의 끝을 정한다.
 ///
@@ -110,6 +67,9 @@ pub struct LegacyChartGrid {
     /// 머리행·머리열을 **포함한** 치수. `VtObject` 가 명시한 값이다.
     pub rows: u16,
     pub cols: u16,
+    /// 문서가 **선언한** 머리행·머리열 수. 1/1 로 못박지 않는다(#6922).
+    pub label_rows: u16,
+    pub label_cols: u16,
     /// `index` 오름차순. 코너 셀(index 1)은 없다.
     pub cells: Vec<GridCell>,
 }
@@ -117,15 +77,29 @@ pub struct LegacyChartGrid {
 impl LegacyChartGrid {
     /// 머리행을 뺀 데이터 행 수.
     ///
-    /// `scan_legacy_grid` 는 `rows >= 2` 만 내보내지만 필드가 공개라 직접 구성한
-    /// 값에서도 감산이 넘치지 않게 한다.
+    /// 문서가 선언한 `label_rows` 를 뺀다. `scan_legacy_grid` 는 `rows >= 2` 만
+    /// 내보내지만 필드가 공개라 직접 구성한 값에서도 감산이 넘치지 않게 한다.
     pub fn data_rows(&self) -> usize {
-        (self.rows as usize).saturating_sub(1)
+        (self.rows as usize).saturating_sub(self.label_rows as usize)
     }
 
     /// 머리열을 뺀 데이터 열 수.
     pub fn data_cols(&self) -> usize {
-        (self.cols as usize).saturating_sub(1)
+        (self.cols as usize).saturating_sub(self.label_cols as usize)
+    }
+
+    /// 데이터 행 `index`(1-based) 가 놓인 격자 행.
+    ///
+    /// 머리행이 하나인 문서에서는 `index` 그대로다. 코퍼스의 레거시 그리드 74개가 전부
+    /// 1/1 이지만, `data_rows()` 가 선언값을 쓰므로 서수도 같은 기준을 써야 어긋나지
+    /// 않는다(#6922).
+    pub fn data_row_at(&self, index: u16) -> u16 {
+        self.label_rows.saturating_add(index).saturating_sub(1)
+    }
+
+    /// 데이터 열 `index`(1-based) 가 놓인 격자 열.
+    pub fn data_col_at(&self, index: u16) -> u16 {
+        self.label_cols.saturating_add(index).saturating_sub(1)
     }
 
     pub fn cell(&self, row: u16, col: u16) -> Option<&GridCell> {
@@ -188,27 +162,11 @@ pub enum GridScanError {
     /// `VtDataGrid` 마커가 없다.
     MarkerNotFound,
     /// 프롤로그의 선언 순서가 실측 규약과 다르다 — 알려지지 않은 작성기다.
-    PrologueMismatch {
-        at: usize,
-    },
+    PrologueMismatch { at: usize },
     /// 데이터 셀이 없는 치수다.
-    EmptyGrid {
-        rows: u16,
-        cols: u16,
-    },
-    CellIndexOutOfRange {
-        index: u32,
-        rows: u16,
-        cols: u16,
-    },
-    DuplicateCellIndex {
-        index: u32,
-    },
+    EmptyGrid { rows: u16, cols: u16 },
     /// 수치 셀 개수가 `(rows - 1) * (cols - 1)` 과 다르다.
-    NumberCellCountMismatch {
-        found: usize,
-        expected: usize,
-    },
+    NumberCellCountMismatch { found: usize, expected: usize },
 }
 
 impl GridScanError {
@@ -218,9 +176,6 @@ impl GridScanError {
             Self::MarkerNotFound => "legacy HWP chart data grid marker not found",
             Self::PrologueMismatch { .. } => "legacy HWP chart data grid prologue not recognized",
             Self::EmptyGrid { .. } => "legacy HWP chart data grid is empty",
-            Self::CellIndexOutOfRange { .. } | Self::DuplicateCellIndex { .. } => {
-                "legacy HWP chart data grid cell index is inconsistent"
-            }
             Self::NumberCellCountMismatch { .. } => {
                 "legacy HWP chart data grid shape not recognized"
             }
@@ -264,56 +219,54 @@ fn grid_window_from(contents: &[u8], marker: usize) -> Option<Range<usize>> {
 pub fn scan_legacy_grid(contents: &[u8]) -> Result<LegacyChartGrid, GridScanError> {
     let marker = find_from(contents, GRID_MARKER, 0).ok_or(GridScanError::MarkerNotFound)?;
     let window = grid_window_from(contents, marker).ok_or(GridScanError::MarkerNotFound)?;
-    let (rows, cols) = read_prologue(contents, marker)?;
+    // `<i32 typeId><u16 nameLen>"VtDataGrid\0"` — 이름 앞 6바이트가 선언의 시작이다.
+    let at = marker
+        .checked_sub(6)
+        .ok_or(GridScanError::PrologueMismatch { at: marker })?;
 
+    let mut reader = ArchiveReader::new(contents, at);
+    let name = reader.read_type()?;
+    if name != GRID_MARKER {
+        return Err(GridScanError::PrologueMismatch { at });
+    }
+    reader.read_from(GRID_MARKER)?;
+
+    let rows = reader.rows;
+    let cols = reader.cols;
     if rows < 2 || cols < 2 {
         return Err(GridScanError::EmptyGrid { rows, cols });
     }
-    let expected = (rows as usize - 1) * (cols as usize - 1);
-    let cell_count = rows as usize * cols as usize;
+    let (label_rows, label_cols, data_cols, data_rows) = reader
+        .counts
+        .ok_or(GridScanError::PrologueMismatch { at })?;
 
-    // rows/cols 는 문서가 선언한 값이므로, 그 값만으로 대규모 메모리를 예약하지 않는다.
-    // 실제 셀 수는 아래에서 입력 바이트를 훑어 수집하고, 마지막에 선언 치수와 대조한다.
-    let mut cells = Vec::new();
-    collect_number_cells(contents, &window, &mut cells);
-    collect_text_cells(contents, &window, &mut cells);
-    cells.sort_by_key(|cell| cell.index);
-
-    for (position, cell) in cells.iter().enumerate() {
-        if cell.index < 2 || cell.index as usize > cell_count {
-            return Err(GridScanError::CellIndexOutOfRange {
-                index: cell.index,
-                rows,
-                cols,
-            });
-        }
-        if position > 0 && cells[position - 1].index == cell.index {
-            return Err(GridScanError::DuplicateCellIndex { index: cell.index });
-        }
+    // 선언 치수가 슬롯 치수와 맞아떨어져야 모양을 신뢰할 수 있다.
+    if usize::from(label_rows) + usize::from(data_rows) != usize::from(rows)
+        || usize::from(label_cols) + usize::from(data_cols) != usize::from(cols)
+    {
+        return Err(GridScanError::NumberCellCountMismatch {
+            found: usize::from(data_rows) * usize::from(data_cols),
+            expected: (usize::from(rows) - 1) * (usize::from(cols) - 1),
+        });
     }
 
-    // 좌표는 인덱스와 `cols` 에서 나온다.
-    for cell in &mut cells {
-        let zero_based = cell.index - 1;
-        cell.row = (zero_based / cols as u32) as u16;
-        cell.col = (zero_based % cols as u32) as u16;
-    }
-
-    // 수치는 머리행·머리열에 오지 않는다. 오면 모양을 잘못 읽은 것이다.
+    let cells = reader.cells;
+    // 수치는 머리행·머리열에 오지 않는다. 오면 모양을 잘못 읽은 것이다. 데이터 칸이
+    // **비어 있는 것**은 정상이므로(코퍼스 74개 중 5개) 개수 일치는 요구하지 않는다.
     let numbers = cells
         .iter()
         .filter(|cell| matches!(cell.value, GridValue::Number { .. }))
-        .filter(|cell| cell.row > 0 && cell.col > 0)
         .count();
     let misplaced = cells
         .iter()
         .filter(|cell| matches!(cell.value, GridValue::Number { .. }))
-        .count()
-        - numbers;
-    if misplaced > 0 || numbers != expected {
+        .filter(|cell| cell.row < label_rows || cell.col < label_cols)
+        .count();
+    let capacity = usize::from(data_rows) * usize::from(data_cols);
+    if misplaced > 0 || numbers > capacity {
         return Err(GridScanError::NumberCellCountMismatch {
             found: numbers,
-            expected,
+            expected: capacity,
         });
     }
 
@@ -321,111 +274,213 @@ pub fn scan_legacy_grid(contents: &[u8]) -> Result<LegacyChartGrid, GridScanErro
         window,
         rows,
         cols,
+        label_rows,
+        label_cols,
         cells,
     })
 }
 
-fn read_prologue(contents: &[u8], marker: usize) -> Result<(u16, u16), GridScanError> {
-    // `VtDataGrid` 이름 뒤 version(u16) + payload(u32).
-    let mut at = marker + GRID_MARKER.len() + 2 + 4;
-    for (name, extra) in [
-        (MATRIX_MARKER, 4usize),
-        (COLLECTION_MARKER, 6usize),
-        (OBJECT_MARKER, 0usize),
-    ] {
-        if !declares(contents, at, name) {
-            return Err(GridScanError::PrologueMismatch { at });
+/// 판독기가 아는 클래스. 목록에 없는 이름을 만나면 모양을 신뢰할 수 없다.
+const KNOWN_CLASSES: &[&[u8]] = &[
+    GRID_MARKER,
+    MATRIX_MARKER,
+    COLLECTION_MARKER,
+    OBJECT_MARKER,
+    DOUBLE_MARKER,
+    STRING_MARKER,
+    VALUE_MARKER,
+];
+
+/// `VtArchive` 순차 판독기 (#6922).
+///
+/// `Int` 는 2바이트, `Long` 은 4바이트다. 아래 문법은 코퍼스 10,000건의 레거시 그리드
+/// **74개 전수**에서 성립한다(실패 0).
+///
+/// ```text
+/// ReadObject : i32 objectId   (-1 = NULL 슬롯 · 이미 본 id = 역참조만)
+///              (처음) ReadType + ReadFrom
+/// ReadType   : i32 typeId     (처음 보는 타입이면 <u16 len><name><u16 ver>)
+///
+/// VtDataGrid : base VtMatrix ; i16 ×4 (columnLabel, rowLabel, dataColumn, dataRow)
+/// VtMatrix   : base VtCollection ; i16 rowCount ; i16 columnCount ; data[0..rows*cols]
+/// VtCollection: i16 m_count ; base VtObject
+/// VtDouble   : f64 value ; i16 precision ; base VtValue
+/// VtString   : i16 len ; (len>0) len+1 바이트(NUL 포함) ; base VtValue
+/// VtValue    : base VtObject
+/// VtObject   : 없음
+/// ```
+///
+/// 종전 스캐너는 셀 위치를 **아카이브 객체 id** 로 잡아, id 가 셀 밖 객체와 공유되는
+/// 문서에서 절반이 머리행·머리열로 밀렸다(148735526: id 최대 264 · 수치 204개 중 74개
+/// 오배치). 슬롯 순서로 걷는 것이 맞다.
+struct ArchiveReader<'a> {
+    bytes: &'a [u8],
+    at: usize,
+    types: Vec<(i32, &'static [u8])>,
+    objects: BTreeMap<i32, GridValue>,
+    rows: u16,
+    cols: u16,
+    cells: Vec<GridCell>,
+    counts: Option<(u16, u16, u16, u16)>,
+}
+
+impl<'a> ArchiveReader<'a> {
+    fn new(bytes: &'a [u8], at: usize) -> Self {
+        Self {
+            bytes,
+            at,
+            types: Vec::new(),
+            objects: BTreeMap::new(),
+            rows: 0,
+            cols: 0,
+            cells: Vec::new(),
+            counts: None,
         }
-        at += declaration_len(name) + extra;
     }
-    let rows = read_u16(contents, at).ok_or(GridScanError::PrologueMismatch { at })?;
-    let cols = read_u16(contents, at + 2).ok_or(GridScanError::PrologueMismatch { at })?;
-    Ok((rows, cols))
-}
 
-/// `at` 에 `<u16 nameLen> <name>` 인라인 선언이 있는가.
-fn declares(contents: &[u8], at: usize, name: &[u8]) -> bool {
-    read_u16(contents, at) == Some(name.len() as u16)
-        && contents.get(at + 2..at + 2 + name.len()) == Some(name)
-}
-
-fn collect_number_cells(contents: &[u8], window: &Range<usize>, out: &mut Vec<GridCell>) {
-    // 첫 값은 `VtDouble` 선언 뒤에 온다. 그 앞의 구분자 유사 바이트는 값이 아니다.
-    let Some(anchor) = find_from(&contents[..window.end], DOUBLE_MARKER, window.start) else {
-        return;
-    };
-
-    let mut cursor = anchor;
-    while let Some(hit) = find_from(&contents[..window.end], VALUE_SEPARATOR, cursor + 1) {
-        cursor = hit;
-        let Some(offset) = hit.checked_sub(8) else {
-            continue;
-        };
-        if offset < anchor {
-            continue;
-        }
-        let Some((index, type_id)) = cell_header(contents, offset) else {
-            continue;
-        };
-        if type_id != TYPE_DOUBLE {
-            continue;
-        }
-        let Some(raw) = contents.get(offset..hit) else {
-            continue;
-        };
-        let value = f64::from_le_bytes(raw.try_into().expect("8바이트"));
-        out.push(GridCell {
-            index,
-            row: 0,
-            col: 0,
-            value: GridValue::Number { value, offset },
-        });
+    fn fail(&self) -> GridScanError {
+        GridScanError::PrologueMismatch { at: self.at }
     }
-}
 
-fn collect_text_cells(contents: &[u8], window: &Range<usize>, out: &mut Vec<GridCell>) {
-    let mut at = window.start;
-    while at + 2 < window.end {
-        if let Some(len) = read_u16(contents, at).map(usize::from) {
-            let payload_end = at + 2 + len;
-            if (2..=256).contains(&len) && payload_end <= window.end {
-                if let Some(text) = decode_cell_text(&contents[at + 2..payload_end]) {
-                    if let Some((index, TYPE_STRING)) = cell_header(contents, at) {
-                        out.push(GridCell {
-                            index,
-                            row: 0,
-                            col: 0,
-                            value: GridValue::Text {
-                                text,
-                                record: at..payload_end,
-                            },
-                        });
-                        at = payload_end;
-                        continue;
-                    }
+    fn u16(&mut self) -> Result<u16, GridScanError> {
+        let value = read_u16(self.bytes, self.at).ok_or_else(|| self.fail())?;
+        self.at += 2;
+        Ok(value)
+    }
+
+    fn i16(&mut self) -> Result<i16, GridScanError> {
+        Ok(self.u16()? as i16)
+    }
+
+    fn i32(&mut self) -> Result<i32, GridScanError> {
+        let value = read_u32(self.bytes, self.at).ok_or_else(|| self.fail())?;
+        self.at += 4;
+        Ok(value as i32)
+    }
+
+    fn f64(&mut self) -> Result<(f64, usize), GridScanError> {
+        let raw = self
+            .bytes
+            .get(self.at..self.at + 8)
+            .ok_or_else(|| self.fail())?;
+        let offset = self.at;
+        self.at += 8;
+        Ok((f64::from_le_bytes(raw.try_into().expect("8바이트")), offset))
+    }
+
+    fn read_type(&mut self) -> Result<&'static [u8], GridScanError> {
+        let type_id = self.i32()?;
+        if let Some((_, name)) = self.types.iter().find(|(id, _)| *id == type_id) {
+            return Ok(name);
+        }
+        let len = usize::from(self.u16()?);
+        let raw = self
+            .bytes
+            .get(self.at..self.at + len)
+            .ok_or_else(|| self.fail())?;
+        let name = KNOWN_CLASSES
+            .iter()
+            .copied()
+            .find(|known| *known == raw)
+            .ok_or_else(|| self.fail())?;
+        self.at += len;
+        let _version = self.u16()?;
+        self.types.push((type_id, name));
+        Ok(name)
+    }
+
+    /// 알려진 기반 클래스만 허용하므로 입력이 재귀 사슬을 늘릴 수 없다.
+    fn read_base(&mut self, expected: &[u8]) -> Result<(), GridScanError> {
+        let name = self.read_type()?;
+        if name != expected {
+            return Err(self.fail());
+        }
+        self.read_from(name)?;
+        Ok(())
+    }
+
+    fn read_from(&mut self, name: &[u8]) -> Result<Option<GridValue>, GridScanError> {
+        if name == GRID_MARKER {
+            self.read_base(MATRIX_MARKER)?;
+            self.counts = Some((self.u16()?, self.u16()?, self.u16()?, self.u16()?));
+            return Ok(None);
+        }
+        if name == MATRIX_MARKER {
+            self.read_base(COLLECTION_MARKER)?;
+            self.rows = self.u16()?;
+            self.cols = self.u16()?;
+            let cols = usize::from(self.cols);
+            let slots = usize::from(self.rows).saturating_mul(cols);
+            for slot in 0..slots {
+                if let Some(value) = self.read_object()? {
+                    self.cells.push(GridCell {
+                        index: slot as u32 + 1,
+                        row: (slot / cols) as u16,
+                        col: (slot % cols) as u16,
+                        value,
+                    });
                 }
             }
+            return Ok(None);
         }
-        at += 1;
+        if name == COLLECTION_MARKER {
+            let _count = self.i16()?;
+            self.read_base(OBJECT_MARKER)?;
+            return Ok(None);
+        }
+        if name == DOUBLE_MARKER {
+            let (value, offset) = self.f64()?;
+            let _precision = self.i16()?;
+            self.read_base(VALUE_MARKER)?;
+            return Ok(Some(GridValue::Number { value, offset }));
+        }
+        if name == STRING_MARKER {
+            let len = self.i16()?;
+            let mut record = self.at - 2..self.at;
+            let mut text = String::new();
+            if len > 0 {
+                let len = usize::from(len as u16);
+                let payload = self
+                    .bytes
+                    .get(self.at..self.at + len)
+                    .ok_or_else(|| self.fail())?;
+                text = decode_cell_text(payload).unwrap_or_default();
+                // `record` 는 `<u16 len> + payload` 다. 저장은 그 뒤 NUL 까지 `length + 1`
+                // 바이트를 읽으므로 **커서만** 한 바이트 더 나아간다.
+                record = record.start..self.at + len;
+                self.at += len + 1;
+            }
+            self.read_base(VALUE_MARKER)?;
+            return Ok(Some(GridValue::Text { text, record }));
+        }
+        if name == VALUE_MARKER {
+            self.read_base(OBJECT_MARKER)?;
+            return Ok(None);
+        }
+        if name == OBJECT_MARKER {
+            return Ok(None);
+        }
+        Err(self.fail())
     }
-}
 
-/// 페이로드 앞의 `<u32 owner> <u32 index> <u32 typeId>` 를 되읽는다.
-///
-/// 최초 사용 셀에는 페이로드 바로 앞에 인라인 클래스 선언이 끼므로 그만큼 더 물러선다.
-fn cell_header(contents: &[u8], payload_start: usize) -> Option<(u32, u32)> {
-    let mut at = payload_start;
-    for marker in [DOUBLE_MARKER, STRING_MARKER] {
-        let len = declaration_len(marker);
-        if at >= len && declares(contents, at - len, marker) {
-            at -= len;
-            break;
+    fn read_object(&mut self) -> Result<Option<GridValue>, GridScanError> {
+        let object_id = self.i32()?;
+        if object_id == -1 {
+            return Ok(None);
         }
+        if let Some(value) = self.objects.get(&object_id) {
+            // 수치의 원본 offset과 문자열 record도 참조 대상 그대로 보존한다.
+            return Ok(Some(value.clone()));
+        }
+        let name = self.read_type()?;
+        if name != DOUBLE_MARKER && name != STRING_MARKER {
+            // 기반 클래스 검증만으로는 셀 안의 중첩 VtDataGrid를 막을 수 없다.
+            return Err(self.fail());
+        }
+        let value = self.read_from(name)?.ok_or_else(|| self.fail())?;
+        self.objects.insert(object_id, value.clone());
+        Ok(Some(value))
     }
-    let header = at.checked_sub(12)?;
-    let index = read_u32(contents, header + 4)?;
-    let type_id = read_u32(contents, header + 8)?;
-    Some((index, type_id))
 }
 
 /// 셀 문자열 페이로드 — `cp949 \0\0 utf16le \0\0`.
@@ -434,7 +489,18 @@ fn cell_header(contents: &[u8], payload_start: usize) -> Option<(u32, u32)> {
 /// 짝수 정렬을 가정하면 안 되고, 확장 문자에서 EUC-KR 왕복이 손실될 수 있다. UTF-16
 /// 절반이 없는 작성기를 위해 cp949 로 폴백한다.
 fn decode_cell_text(payload: &[u8]) -> Option<String> {
-    let split = payload.windows(2).position(|pair| pair == [0, 0])?;
+    let Some(split) = payload.windows(2).position(|pair| pair == [0, 0]) else {
+        // `\0\0` 경계가 없는 작성기 — 페이로드 전체가 cp949 한 벌이다(#6922).
+        let (decoded, _, had_errors) = EUC_KR.decode(payload);
+        if had_errors {
+            return None;
+        }
+        let text = decoded.replace('\u{3000}', " ").trim().to_string();
+        if text.is_empty() || text.chars().any(char::is_control) {
+            return None;
+        }
+        return Some(text);
+    };
     let tail = payload.get(split + 2..)?;
 
     let text = if tail.len() >= 2 && tail.ends_with(&[0, 0]) && (tail.len() - 2) % 2 == 0 {
@@ -482,57 +548,112 @@ fn read_u32(bytes: &[u8], at: usize) -> Option<u32> {
 pub(crate) mod tests {
     use super::*;
 
-    /// 셀 하나의 합성 명세.
+    /// 셀 하나의 합성 명세. `index` 는 **1-based 행우선 슬롯 서수**다.
     pub(crate) enum Cell {
         Num(u32, f64),
         Text(u32, &'static str),
     }
 
+    impl Cell {
+        fn index(&self) -> u32 {
+            match self {
+                Cell::Num(index, _) | Cell::Text(index, _) => *index,
+            }
+        }
+    }
+
+    /// 머리행·머리열 1/1 짜리 `VtDataGrid` 를 합성한다.
+    pub(crate) fn synth_grid(rows: u16, cols: u16, cells: &[Cell]) -> Vec<u8> {
+        synth_grid_labeled(rows, cols, 1, 1, cells)
+    }
+
     /// 실측 문법 그대로 `VtDataGrid` 를 합성한다.
     ///
-    /// 코퍼스가 훑지 못하는 경로(0·음수·거대값, 창 밖 값, 깨진 인덱스)를 픽스처 없이
-    /// 재현하기 위한 것이다.
-    pub(crate) fn synth_grid(rows: u16, cols: u16, cells: &[Cell]) -> Vec<u8> {
-        fn declare(out: &mut Vec<u8>, name: &[u8]) {
-            out.extend_from_slice(&(name.len() as u16).to_le_bytes());
-            out.extend_from_slice(name);
-            out.extend_from_slice(&1u16.to_le_bytes());
+    /// 코퍼스가 훑지 못하는 경로(0·음수·거대값, 창 밖 값, 어긋난 선언)를 픽스처 없이
+    /// 재현하기 위한 것이다. **슬롯 순서로** 적고, 명세에 없는 슬롯에는 `-1`(NULL)을
+    /// 넣는다.
+    pub(crate) fn synth_grid_labeled(
+        rows: u16,
+        cols: u16,
+        label_rows: u16,
+        label_cols: u16,
+        cells: &[Cell],
+    ) -> Vec<u8> {
+        /// 판독기가 되읽을 수 있는 바이트만 내는 기록기.
+        struct Writer {
+            out: Vec<u8>,
+            types: Vec<&'static [u8]>,
+            next_object: i32,
         }
 
-        let mut out = vec![0u8; 16];
-        declare(&mut out, GRID_MARKER);
-        out.extend_from_slice(&2u32.to_le_bytes());
-        declare(&mut out, MATRIX_MARKER);
-        out.extend_from_slice(&3u32.to_le_bytes());
-        declare(&mut out, COLLECTION_MARKER);
-        out.extend_from_slice(&0u16.to_le_bytes());
-        out.extend_from_slice(&4u32.to_le_bytes());
-        declare(&mut out, OBJECT_MARKER);
-        out.extend_from_slice(&rows.to_le_bytes());
-        out.extend_from_slice(&cols.to_le_bytes());
+        impl Writer {
+            fn i16(&mut self, value: i16) {
+                self.out.extend_from_slice(&value.to_le_bytes());
+            }
 
-        let (mut declared_double, mut declared_string) = (false, false);
-        for cell in cells {
-            match cell {
-                Cell::Num(index, value) => {
-                    out.extend_from_slice(&4u32.to_le_bytes());
-                    out.extend_from_slice(&index.to_le_bytes());
-                    out.extend_from_slice(&TYPE_DOUBLE.to_le_bytes());
-                    if !declared_double {
-                        declare(&mut out, DOUBLE_MARKER);
-                        declared_double = true;
-                    }
-                    out.extend_from_slice(&value.to_le_bytes());
-                    out.extend_from_slice(VALUE_SEPARATOR);
+            fn i32(&mut self, value: i32) {
+                self.out.extend_from_slice(&value.to_le_bytes());
+            }
+
+            /// `ReadType` — 처음 보는 타입에만 이름을 붙인다.
+            fn ty(&mut self, name: &'static [u8]) {
+                if let Some(at) = self.types.iter().position(|known| *known == name) {
+                    self.i32(at as i32 + 2);
+                    return;
                 }
-                Cell::Text(index, text) => {
-                    out.extend_from_slice(&4u32.to_le_bytes());
-                    out.extend_from_slice(&index.to_le_bytes());
-                    out.extend_from_slice(&TYPE_STRING.to_le_bytes());
-                    if !declared_string {
-                        declare(&mut out, STRING_MARKER);
-                        declared_string = true;
-                    }
+                self.types.push(name);
+                let type_id = self.types.len() as i32 + 1;
+                self.i32(type_id);
+                self.out
+                    .extend_from_slice(&(name.len() as u16).to_le_bytes());
+                self.out.extend_from_slice(name);
+                self.out.extend_from_slice(&1u16.to_le_bytes()); // version
+            }
+
+            /// 새 객체 하나를 연다 — 역참조가 되지 않게 매번 새 id 를 쓴다.
+            fn object(&mut self) {
+                let id = self.next_object;
+                self.next_object += 1;
+                self.i32(id);
+            }
+
+            /// `VtValue` → `VtObject` 기반 사슬.
+            fn value_base(&mut self) {
+                self.ty(VALUE_MARKER);
+                self.ty(OBJECT_MARKER);
+            }
+        }
+
+        let mut w = Writer {
+            out: vec![0u8; 16],
+            types: Vec::new(),
+            next_object: 1_000,
+        };
+
+        w.ty(GRID_MARKER); // 판독기는 이 선언의 6바이트 앞에서 시작한다
+        w.ty(MATRIX_MARKER); // VtDataGrid 의 기반
+        w.ty(COLLECTION_MARKER); // VtMatrix 의 기반
+        w.i16(cells.len() as i16); // VtCollection::m_count
+        w.ty(OBJECT_MARKER); // VtCollection 의 기반
+        w.i16(rows as i16);
+        w.i16(cols as i16);
+
+        // 손상 스트림이 거대 치수를 주장하는 경우를 위해 실제로 적는 슬롯을 제한한다.
+        // 그러면 스트림이 선언보다 짧아져, 판독기가 예약 없이 거부하는지 잴 수 있다.
+        let slots = (rows as u32 * cols as u32).min(4_096);
+        for slot in 0..slots {
+            match cells.iter().find(|cell| cell.index() == slot + 1) {
+                None => w.i32(-1),
+                Some(Cell::Num(_, value)) => {
+                    w.object();
+                    w.ty(DOUBLE_MARKER);
+                    w.out.extend_from_slice(&value.to_le_bytes());
+                    w.i16(-1); // precision
+                    w.value_base();
+                }
+                Some(Cell::Text(_, text)) => {
+                    w.object();
+                    w.ty(STRING_MARKER);
                     let (cp949, _, _) = EUC_KR.encode(text);
                     let mut payload = cp949.into_owned();
                     payload.extend_from_slice(&[0, 0]);
@@ -540,15 +661,22 @@ pub(crate) mod tests {
                         payload.extend_from_slice(&unit.to_le_bytes());
                     }
                     payload.extend_from_slice(&[0, 0]);
-                    out.extend_from_slice(&(payload.len() as u16).to_le_bytes());
-                    out.extend_from_slice(&payload);
-                    // 문자 셀 뒤에는 수치 구분자가 붙지 않는다(실측).
-                    out.extend_from_slice(&[0x00, 0x06, 0x00, 0x00, 0x00]);
+                    w.i16(payload.len() as i16);
+                    w.out.extend_from_slice(&payload);
+                    w.out.push(0); // 저장은 NUL 까지 length + 1 바이트를 읽는다
+                    w.value_base();
                 }
             }
         }
-        out.extend_from_slice(b"VtPlot\0");
-        out
+
+        // `VtDataGrid` 자신의 꼬리 — 셀 payload **뒤에** 선언된다.
+        w.i16(label_rows as i16);
+        w.i16(label_cols as i16);
+        w.i16(cols.saturating_sub(label_cols) as i16);
+        w.i16(rows.saturating_sub(label_rows) as i16);
+
+        w.out.extend_from_slice(b"VtPlot\0");
+        w.out
     }
 
     /// 대조군과 같은 3계열 × 4카테고리, 카테고리-major 배치.
@@ -590,6 +718,23 @@ pub(crate) mod tests {
         assert_eq!(grid.number(1, 1), Some(328.0));
         assert_eq!(grid.number(1, 2), Some(50.0));
         assert_eq!(grid.number(4, 3), Some(289.0));
+
+        // --- slot_order_places_cells_even_when_object_ids_are_far_apart ---
+        // **[#6922] 뒤집힘 자물쇠.** 종전 스캐너는 셀 위치를 아카이브 객체 id 로 잡아,
+        // id 가 셀 밖 개체와 번호를 나눠 쓰는 문서에서 셀이 통째로 밀렸다. 좌표는
+        // 슬롯 서수에서만 나와야 하므로, 객체 id 를 아무리 띄워도 결과가 같아야 한다.
+        let dense = control_like_grid();
+        let mut sparse = dense.clone();
+        // 첫 객체 id(1000)를 훨씬 큰 값으로 바꾼다 — 좌표에 영향이 없어야 한다.
+        let at = find_from(&sparse, &1_000i32.to_le_bytes(), 0).expect("첫 객체 id");
+        sparse[at..at + 4].copy_from_slice(&900_000i32.to_le_bytes());
+
+        let grid = scan_legacy_grid(&sparse).expect("scan");
+        assert_eq!(
+            grid.cells,
+            scan_legacy_grid(&dense).expect("scan").cells,
+            "객체 id 는 셀 좌표가 아니다"
+        );
     }
 
     #[test]
@@ -684,17 +829,23 @@ pub(crate) mod tests {
         assert_eq!(grid.column_label(1), Some("0.7"));
         assert_eq!(grid.column_label(3), Some("2.6"));
         assert_eq!(grid.row_label(1), Some("Y1 값"));
+
+        // --- cp949_only_labels_without_a_utf16_half_are_decoded ---
+        // **[#6922]** `\0\0` 경계 없이 cp949 한 벌만 싣는 작성기가 있다(148759031).
+        // 종전에는 이 라벨 15칸이 통째로 버려졌다.
+        assert_eq!(decode_cell_text(b"4\xbf\xf9"), Some("4월".to_string()));
+        assert_eq!(
+            decode_cell_text(b"'12\xb3\xe2 3\xbf\xf9"),
+            Some("'12년 3월".to_string())
+        );
     }
 
     #[test]
     fn values_outside_the_window_are_ignored() {
         let mut bytes = control_like_grid();
         // 창을 닫는 `VtPlot` 뒤에 축 눈금처럼 보이는 값을 심는다.
-        bytes.extend_from_slice(&4u32.to_le_bytes());
-        bytes.extend_from_slice(&21u32.to_le_bytes());
-        bytes.extend_from_slice(&TYPE_DOUBLE.to_le_bytes());
         bytes.extend_from_slice(&9999.0f64.to_le_bytes());
-        bytes.extend_from_slice(VALUE_SEPARATOR);
+        bytes.extend_from_slice(&[0xFF, 0xFF, 0x06, 0x00, 0x00, 0x00]);
 
         let grid = scan_legacy_grid(&bytes).expect("scan");
         assert_eq!(
@@ -705,7 +856,9 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn number_count_mismatch_is_rejected() {
+    fn empty_data_cells_are_accepted() {
+        // **[#6922]** 데이터 칸이 비어 있는 것은 정상이다. 코퍼스의 레거시 그리드 74개
+        // 중 5개가 그렇고, 종전 스캐너는 이것을 `NumberCellCountMismatch` 로 거부했다.
         let bytes = synth_grid(
             3,
             3,
@@ -716,53 +869,70 @@ pub(crate) mod tests {
                 Cell::Num(5, 1.0),
                 Cell::Num(6, 2.0),
                 Cell::Text(7, "계열 2"),
-                // (2,1) 과 (2,2) 중 하나가 빠졌다.
-                Cell::Num(8, 3.0),
+                // (2,1) 이 비었다.
+                Cell::Num(9, 3.0),
             ],
         );
-        assert_eq!(
-            scan_legacy_grid(&bytes),
-            Err(GridScanError::NumberCellCountMismatch {
-                found: 3,
-                expected: 4
-            })
-        );
+        let grid = scan_legacy_grid(&bytes).expect("빈 데이터 칸은 결함이 아니다");
+        assert_eq!(grid.number(2, 1), None);
+        assert_eq!(grid.number(2, 2), Some(3.0));
     }
 
     #[test]
-    fn out_of_range_cell_index_is_rejected() {
+    fn numbers_in_the_label_band_are_rejected() {
+        // **음성 대조** — 수치가 머리행·머리열에 오면 모양을 잘못 읽은 것이다.
         let bytes = synth_grid(
             2,
             2,
             &[
-                Cell::Text(2, "항목 1"),
+                Cell::Num(2, 1.0), // 머리행에 수치
                 Cell::Text(3, "계열 1"),
-                Cell::Num(99, 1.0),
+                Cell::Num(4, 2.0),
             ],
         );
         assert!(matches!(
             scan_legacy_grid(&bytes),
-            Err(GridScanError::CellIndexOutOfRange { index: 99, .. })
+            Err(GridScanError::NumberCellCountMismatch { .. })
         ));
     }
 
     #[test]
-    fn duplicate_cell_index_is_rejected() {
-        let bytes = synth_grid(
-            2,
+    fn declared_counts_that_disagree_with_the_dimensions_are_rejected() {
+        // **음성 대조** — 선언 치수(`label + data`)가 슬롯 치수와 어긋나면 거부한다.
+        let mut bytes = synth_grid(3, 3, &[Cell::Text(2, "항목 1"), Cell::Num(5, 1.0)]);
+        // 꼬리 네 값 중 `dataRow` 를 부풀린다.
+        let at = bytes.len() - b"VtPlot\0".len() - 2;
+        bytes[at..at + 2].copy_from_slice(&9i16.to_le_bytes());
+        assert!(matches!(
+            scan_legacy_grid(&bytes),
+            Err(GridScanError::NumberCellCountMismatch { .. })
+        ));
+
+        // --- declared_label_counts_are_honoured ---
+        // **[#6922]** 머리행·머리열은 1/1 로 못박힌 값이 아니라 문서가 선언한다.
+        let bytes = synth_grid_labeled(
+            4,
             3,
+            2,
+            1,
             &[
-                Cell::Text(2, "항목 1"),
-                Cell::Text(3, "항목 2"),
-                Cell::Text(4, "계열 1"),
-                Cell::Num(5, 1.0),
-                Cell::Num(5, 2.0),
+                Cell::Text(2, "머리 1"),
+                Cell::Text(3, "머리 2"),
+                Cell::Text(5, "머리 3"),
+                Cell::Text(6, "머리 4"),
+                Cell::Text(7, "계열 1"),
+                Cell::Num(8, 1.0),
+                Cell::Num(9, 2.0),
+                Cell::Text(10, "계열 2"),
+                Cell::Num(11, 3.0),
+                Cell::Num(12, 4.0),
             ],
         );
-        assert_eq!(
-            scan_legacy_grid(&bytes),
-            Err(GridScanError::DuplicateCellIndex { index: 5 })
-        );
+        let grid = scan_legacy_grid(&bytes).expect("scan");
+        assert_eq!((grid.label_rows, grid.label_cols), (2, 1));
+        assert_eq!((grid.data_rows(), grid.data_cols()), (2, 2));
+        assert_eq!(grid.number(2, 1), Some(1.0));
+        assert_eq!(grid.number(3, 2), Some(4.0));
     }
 
     #[test]
@@ -796,15 +966,12 @@ pub(crate) mod tests {
     #[test]
     fn oversized_declared_dimensions_do_not_preallocate_cells() {
         // 작은 손상 스트림이 최대 u16 치수를 주장해도, 입력에 없는 셀만큼 메모리를
-        // 예약하지 않고 최종 구조 검증으로 거부해야 한다.
+        // 예약하지 않고 바이트가 떨어지는 자리에서 거부해야 한다.
         let bytes = synth_grid(u16::MAX, u16::MAX, &[]);
-        assert_eq!(
+        assert!(matches!(
             scan_legacy_grid(&bytes),
-            Err(GridScanError::NumberCellCountMismatch {
-                found: 0,
-                expected: (u16::MAX as usize - 1) * (u16::MAX as usize - 1),
-            })
-        );
+            Err(GridScanError::PrologueMismatch { .. })
+        ));
     }
 
     #[test]

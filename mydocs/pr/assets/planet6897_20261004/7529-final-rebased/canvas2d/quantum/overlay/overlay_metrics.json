@@ -1,0 +1,52 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.52107,
+    "worst_pixel_match_percent": 90.52107,
+    "average_ink_match_percent": 16.79464,
+    "worst_ink_match_percent": 16.79464,
+    "average_visual_accuracy_proxy_percent": 16.79464,
+    "worst_visual_accuracy_proxy_percent": 16.79464,
+    "average_tolerant_content_match_percent": 98.90923,
+    "worst_tolerant_content_match_percent": 98.90923,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/quantum/rhwp_png/rhwp_001.png",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/quantum/pdf_001.png",
+      "overlay_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/quantum/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 84520,
+      "diff_ratio": 0.09478928,
+      "pixel_match_percent": 90.52107,
+      "ink_union_pixels": 101580,
+      "ink_diff_pixels": 84520,
+      "ink_diff_ratio": 0.83205355,
+      "ink_match_percent": 16.79464,
+      "visual_accuracy_proxy_percent": 16.79464,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.90727,
+      "silhouette_boundary_reconciled_pixels": 2,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101580,
+      "tolerant_content_match_percent": 98.90923,
+      "mean_abs_channel_delta": 11.812,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        54,
+        73,
+        739,
+        1061
+      ]
+    }
+  ]
+}

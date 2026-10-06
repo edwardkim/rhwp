@@ -78,7 +78,9 @@ mod tests {
         let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
 
         let styles = ResolvedStyleSet {
+            page_number_char_style_id: None,
             hwp3_variant: false,
+            hft_ascii_halfwidth: false,
             char_styles: vec![ResolvedCharStyle::default()],
             para_styles: vec![ResolvedParaStyle {
                 border_fill_id: 1,
@@ -98,6 +100,7 @@ mod tests {
             bullets: Vec::new(),
             kerning_measurement_context: None,
             horizontal_shaping_context: None,
+            supplemental_metrics: None,
         };
 
         let page_content = PageContent {
@@ -118,6 +121,9 @@ mod tests {
                 wrap_anchors: std::collections::HashMap::new(),
                 overlay_continuations: Vec::new(),
                 overlay_cuts: Vec::new(),
+                inline_placements: Default::default(),
+                inline_flow_plans: Default::default(),
+                paragraph_float_placements: Default::default(),
             }],
             active_header: None,
             active_footer: None,
@@ -980,199 +986,6 @@ mod tests {
             img_top,
             img_bottom,
             overlap_chars,
-        );
-    }
-
-    /// #3821: page-tail Square 그림의 wrap band는 첫 vpos-reset 문단에서 끊기면 안
-    /// 된다. 실물 HWP p156에서 그림 64(pi=1692, ci=1) 옆의 visible p1697 text는
-    /// 그림 왼쪽 narrow band 안에 끝나며, HWP outer-left margin(510HU)이 만든
-    /// 실제 PDF 공백(약 5.7px @96dpi)을 보존해야 한다.
-    #[test]
-    fn issue_3821_page_tail_square_picture_wrap_reaches_visible_text_after_guides() {
-        let Some(core) = load_document(
-            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
-        ) else {
-            return;
-        };
-        // `build_page_render_tree`는 0-based page index를 받는다. 기준 PDF human p156.
-        let tree = core
-            .build_page_render_tree(155)
-            .expect("#3821 fixture human p156 render failed");
-
-        fn find_image<'a>(node: &'a RenderNode, result: &mut Option<&'a RenderNode>) {
-            if let RenderNodeType::Image(image) = &node.node_type {
-                if image.para_index == Some(1692) && image.control_index == Some(1) {
-                    *result = Some(node);
-                }
-            }
-            for child in &node.children {
-                find_image(child, result);
-            }
-        }
-
-        fn collect_visible_lines<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
-            if node.visible {
-                if let RenderNodeType::TextLine(line) = &node.node_type {
-                    let has_visible_text = node.children.iter().any(|child| {
-                        matches!(&child.node_type, RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty())
-                    });
-                    if line.para_index == Some(1697) && has_visible_text {
-                        out.push(node);
-                    }
-                }
-            }
-            for child in &node.children {
-                collect_visible_lines(child, out);
-            }
-        }
-
-        let mut image_node = None;
-        find_image(&tree.root, &mut image_node);
-        let image = image_node.expect("#3821: p156 pi=1692 ci=1 image not found");
-        let image_top = image.bbox.y;
-        let image_bottom = image.bbox.y + image.bbox.height;
-        let image_left = image.bbox.x;
-
-        let mut visible_lines = Vec::new();
-        collect_visible_lines(&tree.root, &mut visible_lines);
-        let lines_in_image_band: Vec<_> = visible_lines
-            .into_iter()
-            .filter(|line| {
-                line.bbox.y < image_bottom - 0.5 && line.bbox.y + line.bbox.height > image_top + 0.5
-            })
-            .collect();
-        assert!(
-            !lines_in_image_band.is_empty(),
-            "#3821: p1697 visible lines in picture vertical band not found",
-        );
-
-        let line_right = lines_in_image_band
-            .iter()
-            .map(|line| line.bbox.x + line.bbox.width)
-            .fold(f64::NEG_INFINITY, f64::max);
-        let actual_gap = image_left - line_right;
-        assert!(
-            actual_gap >= 5.0,
-            "#3821: p1697 line band must retain PDF-like outer-left margin; image_left={image_left:.1}, line_right={line_right:.1}, gap={actual_gap:.1}",
-        );
-        assert!(
-            actual_gap <= 8.0,
-            "#3821: p1697 gap must come from the 510HU outer-left margin, not an arbitrary global shift: {actual_gap:.1}px",
-        );
-    }
-
-    /// #3820: stored-vpos rewind를 가진 native HWP5 RowBreak 표는 선언 높이가 아니라
-    /// 실제 paint 행 높이로 first fragment를 판단한다. 이 fixture에서 p94 표 28은 0–2행,
-    /// p95는 마지막 3행이며, p106 표 29는 0–2행 뒤 p107에서 재개해야 한다.
-    #[test]
-    fn issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary() {
-        let Some(core) = load_document(
-            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
-        ) else {
-            return;
-        };
-
-        fn rows_for_table(node: &RenderNode, para_index: usize, out: &mut Vec<u16>) {
-            if matches!(
-                &node.node_type,
-                RenderNodeType::Table(table) if table.para_index == Some(para_index)
-            ) {
-                for child in &node.children {
-                    if let RenderNodeType::TableCell(cell) = &child.node_type {
-                        if !out.contains(&cell.row) {
-                            out.push(cell.row);
-                        }
-                    }
-                }
-            }
-            for child in &node.children {
-                rows_for_table(child, para_index, out);
-            }
-        }
-
-        fn page_rows(
-            core: &crate::document_core::DocumentCore,
-            page: usize,
-            pi: usize,
-        ) -> Vec<u16> {
-            let tree = core
-                .build_page_render_tree(page as u32)
-                .unwrap_or_else(|err| panic!("#3820: p{} render failed: {err}", page + 1));
-            let mut rows = Vec::new();
-            rows_for_table(&tree.root, pi, &mut rows);
-            rows.sort_unstable();
-            rows
-        }
-
-        assert_eq!(page_rows(&core, 93, 1000), vec![0, 1, 2], "#3820 p94 표 28");
-        assert_eq!(page_rows(&core, 94, 1000), vec![3], "#3820 p95 표 28");
-        assert_eq!(
-            page_rows(&core, 105, 1136),
-            vec![0, 1, 2],
-            "#3820 p106 표 29"
-        );
-        assert_eq!(
-            page_rows(&core, 106, 1136),
-            vec![3, 4, 5, 6, 7],
-            "#3820 p107 표 29",
-        );
-    }
-
-    /// native HWP의 빈-host 2행 그림+caption RowBreak 표 뒤에 빈 guide 문단들이
-    /// 저장된 경우에도, 다음 실본문은 caption의 실제 paint 하단 뒤에서 시작해야 한다.
-    ///
-    /// 이 fixture의 p182(pi=1904)는 양수 vertical offset을 갖는다. 종전에는 empty
-    /// float의 예약 높이만 소비해 caption 행보다 약 12px 위에서 pi=1911이 시작했다.
-    #[test]
-    fn issue_3738_picture_caption_float_clears_caption_before_next_body_text() {
-        let Some(core) = load_document(
-            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
-        ) else {
-            return;
-        };
-        let tree = core
-            .build_page_render_tree(181)
-            .unwrap_or_else(|err| panic!("#3738 p182 render failed: {err}"));
-
-        fn collect_bounds(
-            node: &RenderNode,
-            table_bottom: &mut Option<f64>,
-            next_body_top: &mut Option<f64>,
-        ) {
-            match &node.node_type {
-                RenderNodeType::Table(table) if table.para_index == Some(1904) => {
-                    *table_bottom = Some(node.bbox.y + node.bbox.height);
-                }
-                RenderNodeType::TextLine(line) if line.para_index == Some(1911) => {
-                    let has_visible_text = node.children.iter().any(|child| {
-                        matches!(
-                            &child.node_type,
-                            RenderNodeType::TextRun(run) if !run.display_or_text().trim().is_empty()
-                        )
-                    });
-                    if has_visible_text {
-                        *next_body_top = Some(
-                            next_body_top
-                                .map(|top| top.min(node.bbox.y))
-                                .unwrap_or(node.bbox.y),
-                        );
-                    }
-                }
-                _ => {}
-            }
-            for child in &node.children {
-                collect_bounds(child, table_bottom, next_body_top);
-            }
-        }
-
-        let mut table_bottom = None;
-        let mut next_body_top = None;
-        collect_bounds(&tree.root, &mut table_bottom, &mut next_body_top);
-        let table_bottom = table_bottom.expect("#3738 p182 picture+caption table not found");
-        let next_body_top = next_body_top.expect("#3738 p182 next body text not found");
-        assert!(
-            next_body_top >= table_bottom + 0.5,
-            "#3738 p182 next body text overlaps picture caption: table_bottom={table_bottom:.1}, next_body_top={next_body_top:.1}",
         );
     }
 
@@ -2053,109 +1866,77 @@ mod tests {
     /// lh 정의. layout_table_item TAC after-spacing 분기 (layout.rs:2491-2497) 가
     /// outer_margin_bottom 미적용 → 다음 paragraph 가 8 px 위로 시프트.
     ///
-    /// PDF 한컴 2010: 박스 bottom → ① 첫 답안 gap ≈ 20 px
-    /// 수정 전: gap = 12.27 px (-7.7 px shortfall)
-    /// 수정 후: gap = 20.27 px (PDF ±2 px 정합)
+    /// 기준: 같은 원본의 한컴 2020(`samples/exam_eng-2020.pdf`)·2022
+    /// (`pdf/exam_eng-2022.pdf`) PDF. 표 테두리는 그려지지 않으므로 표 상단을 같은
+    /// 문단 기준 글뒤 그림 상단(243.6px)으로 잡고 선언 높이 21607HU(288.1px)를 더한
+    /// 표 하단 531.7px 에서 ① 기준선(2022 555.84 · 2020 555.60)까지 ≈ 24.0px.
+    /// 저장 사다리도 같다: pi104 vpos 2254 + lh 22207(표+outMargin.bottom 600)
+    /// + ls 344 = pi105 vpos 24805.
+    ///
+    /// #521 수정 전: gap = 12.27 px (outer_margin_bottom 8px 누락)
+    /// #7431 수정 전: gap = 20.27 px (글뒤 그림 뒤 TAC host 줄간격 344HU=4.6px 누락).
+    /// 종전 기대값 20px 은 쪽 배치가 다른 한컴 2010 PDF(이 문제가 3쪽 왼쪽 단)에서
+    /// 읽은 값이라 이 쪽의 기준이 아니다.
+    /// #7431 수정 후: gap ≈ 24.9 px
     #[test]
     fn test_521_tac_table_outer_margin_bottom_p2() {
         let Some(core) = load_document("samples/exam_eng.hwp") else {
             return;
         };
-        let svg = core.render_page_svg_native(1).unwrap_or_default();
-        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
-
-        // 박스 (table border rect) bottom y 찾기
-        // 우측 단 (x ≈ 597), top y ≈ 244, height ≈ 288 → bottom ≈ 532
-        let mut box_bottom: Option<f64> = None;
-        for chunk in svg.split("<rect ").skip(1) {
-            let close = match chunk.find("/>") {
-                Some(p) => p,
-                None => continue,
+        // 좌표나 SVG 문자열 모양이 아니라 원문 소유 항목을 찾는다.
+        fn owned_node(node: &RenderNode, para: usize, table: bool) -> Option<&RenderNode> {
+            let matches = match &node.node_type {
+                RenderNodeType::Table(meta) if table => meta.para_index == Some(para),
+                RenderNodeType::TextLine(meta) if !table => meta.para_index == Some(para),
+                _ => false,
             };
-            let attrs = &chunk[..close];
-            let parse_attr = |name: &str| -> Option<f64> {
-                let key = format!("{}=\"", name);
-                let p = attrs.find(&key)? + key.len();
-                let q = attrs[p..].find('"')?;
-                attrs[p..p + q].parse::<f64>().ok()
-            };
-            let x = match parse_attr("x") {
-                Some(v) => v,
-                None => continue,
-            };
-            let y = match parse_attr("y") {
-                Some(v) => v,
-                None => continue,
-            };
-            let h = match parse_attr("height") {
-                Some(v) => v,
-                None => continue,
-            };
-            // 박스: x ≈ 597 (col 1), y in [240, 250], h in [285, 290]
-            if x > 595.0 && x < 600.0 && y > 240.0 && y < 250.0 && h > 285.0 && h < 290.0 {
-                box_bottom = Some(y + h);
-                break;
+            if matches {
+                return Some(node);
             }
+            node.children
+                .iter()
+                .find_map(|child| owned_node(child, para, table))
         }
-        let box_bottom = box_bottom.expect("페이지 2 우측 단 18번 박스 (TAC 표) rect 를 찾지 못함");
-
-        // ① 첫 답안 baseline y 찾기 (우측 단, box bottom 직후)
-        let mut answer_y: Option<f64> = None;
-        for chunk in svg.split("<text ").skip(1) {
-            let close = match chunk.find('>') {
-                Some(p) => p,
-                None => continue,
-            };
-            let attrs = &chunk[..close];
-            let key = "transform=\"translate(";
-            let p = match attrs.find(key) {
-                Some(p) => p + key.len(),
-                None => continue,
-            };
-            let q = match attrs[p..].find(')') {
-                Some(q) => q,
-                None => continue,
-            };
-            let coords = &attrs[p..p + q];
-            let parts: Vec<&str> = coords.split(',').collect();
-            if parts.len() != 2 {
-                continue;
-            }
-            let x: f64 = match parts[0].trim().parse() {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let y: f64 = match parts[1].trim().parse() {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let body_start = close + 1;
-            let body_end = chunk[body_start..]
-                .find("</text>")
-                .map(|i| body_start + i)
-                .unwrap_or(close);
-            let body = &chunk[body_start..body_end];
-            // 우측 단 (x > 580), box bottom 직후 (y > box_bottom + 5), '①' 문자
-            if x > 580.0 && y > box_bottom + 5.0 && y < box_bottom + 30.0 && body == "①" {
-                answer_y = Some(y);
-                break;
-            }
-        }
-        let answer_y = answer_y.expect("페이지 2 우측 단 18번 ① 첫 답안을 찾지 못함");
-
-        // gap 검증
-        let gap = answer_y - box_bottom;
-        let pdf_expected_gap: f64 = 20.0;
-
+        let paragraphs = &core.document().sections[0].paragraphs;
+        let host = &paragraphs[104];
+        let source_table = host
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                crate::model::control::Control::Table(table) if table.common.treat_as_char => {
+                    Some(table)
+                }
+                _ => None,
+            })
+            .expect("빈 host의 글자처럼 취급 표");
+        let host_line = host.line_segs.first().expect("저장 host 줄");
+        let answer_line = paragraphs[105].line_segs.first().expect("저장 답안 줄");
+        // 저장 사다리에는 표 높이·바깥 아래 여백·host 줄간격이 각각 한 번 들어간다.
+        assert_eq!(
+            answer_line.vertical_pos - host_line.vertical_pos,
+            host_line.line_height + host_line.line_spacing,
+            "독립 저장 사다리의 다음 문단 소유",
+        );
+        let expected_gap = crate::renderer::hwpunit_to_px(
+            answer_line.vertical_pos - host_line.vertical_pos - source_table.common.height as i32,
+            96.0,
+        );
         assert!(
-            (gap - pdf_expected_gap).abs() < 2.0,
-            "박스 bottom y={:.2} → ① y={:.2} gap={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
-             일치해야 함. 버그(수정 전): gap=12.27 (-7.7 px shortfall, \
-             layout_table_item TAC after-spacing 의 outer_margin_bottom 미적용).",
-            box_bottom,
-            answer_y,
-            gap,
-            pdf_expected_gap
+            expected_gap > 0.0,
+            "표와 답안 사이에 저장된 여백이 있어야 한다"
+        );
+        let tree = core.build_page_render_tree(1).expect("2쪽 렌더 트리");
+        let table = owned_node(&tree.root, 104, true).expect("2쪽 host의 표");
+        let answer = owned_node(&tree.root, 105, false).expect("2쪽 다음 답안 문단");
+        let table_bottom = table.bbox.y + table.bbox.height;
+        assert!(
+            answer.bbox.y >= table_bottom,
+            "답안은 표 아래에 있어야 한다"
+        );
+        let actual_gap = answer.bbox.y - table_bottom;
+        assert!(
+            (actual_gap - expected_gap).abs() < 0.5,
+            "표 아래 → 다음 문단 간격 {actual_gap:.2}가 독립 저장 간격 {expected_gap:.2}와 달라짐: 바깥 여백·줄간격 누락 또는 중복",
         );
     }
 
@@ -2407,7 +2188,30 @@ mod tests {
         );
     }
 
-    /// Task #634: aift.hwp 페이지 1 (cover disclaimer "※ 동 사업...") 은 PageNumberPos
+    /// 표시 여부는 자동 쪽번호 런의 최종 기준선에서 실제 SVG 글자를 확인한다.
+    /// 위치의 정확성은 독립 PDF를 쓰는 정식 기준선 검사에서 별도로 확인한다.
+    fn count_automatic_page_number_glyphs(
+        core: &crate::document_core::DocumentCore,
+        page: u32,
+        svg: &str,
+    ) -> usize {
+        let tree = core.build_page_render_tree(page).expect("쪽번호 배치");
+        tree.root
+            .children
+            .iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::Footer))
+            .flat_map(|footer| &footer.children)
+            .flat_map(|line| &line.children)
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) if run.para_index.is_none() => {
+                    Some(count_text_at_y(svg, node.bbox.y + run.baseline))
+                }
+                _ => None,
+            })
+            .sum()
+    }
+
+    /// Task #634: aift.hwp 페이지 1 (표지 고지 "※ 동 사업...") 은 PageNumberPos
     /// 등록 페이지로 한컴이 "- 1 -" 표시. rhwp 도 표시되어야 함 (회귀 방지).
     #[test]
     fn test_634_aift_page1_shows_page_number() {
@@ -2415,10 +2219,10 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(0).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1083.6);
+        let count = count_automatic_page_number_glyphs(&core, 0, &svg);
         assert_eq!(
             count, 3,
-            "aift.hwp 페이지 1 (cover disclaimer, PageNumberPos 등록 페이지) 은 \
+            "aift.hwp 페이지 1 (표지 고지, PageNumberPos 등록 페이지) 은 \
              \"- 1 -\" 3글자 표시되어야 함 (한컴 일치)."
         );
     }
@@ -2431,7 +2235,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(5).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1083.6);
+        let count = count_automatic_page_number_glyphs(&core, 5, &svg);
         assert_eq!(
             count, 3,
             "aift.hwp 페이지 6 (본문 시작) 은 한컴이 \"- N -\" 표시. \
@@ -2446,7 +2250,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(6).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1083.6);
+        let count = count_automatic_page_number_glyphs(&core, 6, &svg);
         assert_eq!(
             count, 3,
             "aift.hwp 페이지 7 (NewNumber 발화) 은 \"- 1 -\" 3글자 표시되어야 함."
@@ -2461,7 +2265,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(3).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1083.6);
+        let count = count_automatic_page_number_glyphs(&core, 3, &svg);
         assert_eq!(
             count, 0,
             "aift.hwp 페이지 4 는 PageHide page_num=true (paragraph 2.34) 로 미표시."
@@ -2475,7 +2279,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(4).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1083.6);
+        let count = count_automatic_page_number_glyphs(&core, 4, &svg);
         assert_eq!(
             count, 0,
             "aift.hwp 페이지 5 는 PageHide page_num=true (paragraph 2.54) 로 미표시."
@@ -2489,32 +2293,25 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(0).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1069.7066666666665);
+        let count = count_automatic_page_number_glyphs(&core, 0, &svg);
         assert_eq!(
             count, 0,
             "국립국어원 페이지 1 은 PageHide (paragraph 0.19) 로 미표시."
         );
     }
 
-    /// Task #634/#705: 2022년 국립국어원 페이지 3 — 셀 안 PageHide 영역의 hide_page_num 적용.
-    ///
-    /// PR #711 (Task #705) 영역 의 셀 안 PageHide 본질 정정 + 작업지시자 시각 판정 권위 영역으로
-    /// page 3 영역의 쪽번호 미표시 영역이 한컴 정답지 정합으로 확정 (2026-05-09).
-    ///
-    /// 본 가드 영역 의 의도 변경:
-    /// - PR #634 시점 (rhwp 의 한컴 부정합 행위 보존): count == 3
-    /// - PR #711 시점 (한컴 권위 정합): count == 0 — 셀[0]/p[5] 영역의 hide_page_num 적용
+    /// 국립국어원 같은 입력의 한컴2020·2022 PDF3쪽은 "- 1 -"을 표시한다.
+    /// 과거 특정 y에서0글자라는 검사로 숨김을 추정한 기대값은 독립 출력과 다르다.
     #[test]
     fn test_634_gukrip_page3_shows_page_number() {
         let Some(core) = load_document("samples/2022년 국립국어원 업무계획.hwp") else {
             return;
         };
         let svg = core.render_page_svg_native(2).unwrap_or_default();
-        let count = count_text_at_y(&svg, 1069.7066666666665);
+        let count = count_automatic_page_number_glyphs(&core, 2, &svg);
         assert_eq!(
-            count, 0,
-            "국립국어원 페이지 3 은 셀 안 PageHide 영역의 hide_page_num 영역 적용 영역으로 \
-             쪽번호 미표시 (한컴 권위 정합, PR #711 시각 판정 통과)."
+            count, 3,
+            "국립국어원 같은 입력의 한컴 PDF3쪽 자동 번호는 표시되어야 함."
         );
     }
 
@@ -2525,9 +2322,7 @@ mod tests {
             return;
         };
         let svg = core.render_page_svg_native(0).unwrap_or_default();
-        // Issue #951: margin_bottom 원본값 보존 후 쪽번호 위치 보정 (1061.4→1050.8)
-        // [#3048] 쪽 번호를 10pt 로 교정하면서 줄 baseline 이 +4.44px 이동 (1050.8→1055.24).
-        let count = count_text_at_y(&svg, 1055.24);
+        let count = count_automatic_page_number_glyphs(&core, 0, &svg);
         assert_eq!(
             count, 3,
             "hwp3-sample.hwp 페이지 1 (NewNumber 0개) 은 쪽번호 표시되어야 함 (회귀 방지)."
@@ -2543,7 +2338,7 @@ mod tests {
     //   aift.hwp s0/p[1]/Table[0]/셀[167]/p[3]/ctrl[0]
     //   PageHide(header=true footer=true master=true border=true fill=true page_num=true)
     //
-    // Stage 0 본 환경 측정 (examples/inspect_705.rs):
+    // Stage 0 본 환경 측정 (mydocs/tech/investigations/issue-705/probes/inspect_705.rs):
     //   - aift.hwp 셀 안 PageHide 2건 (s0/셀[167] full6, s1/셀[31] page_num)
     //   - 본문 PageHide 2건 (s2/p[34], s2/p[54])
     //

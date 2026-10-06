@@ -127,15 +127,36 @@ test('trace audit joins Rust provenance and Studio backend rule IDs without muta
   );
 });
 
-test('all 830 current registry rules resolve as carried-forward active', () => {
+test('current registry retains migration, introduction and replacement provenance', () => {
   const registry = readJson(REGISTRY_PATH);
   const trace = traceWithReferences(registry.rules.map(rule => rule.ruleId));
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
-  assert.equal(audit.trace.ruleReferenceCount, 830);
-  assert.equal(audit.trace.uniqueRuleIdCount, 830);
-  assert.equal(audit.summary.carriedForwardActive, 830);
-  assert.equal(audit.references.every(reference => reference.status === 'active'), true);
+  // 봉인된 830개 중 #7023·#6936의 두 교체와 #7196의 한 이름 추가를 구별한다.
+  assert.equal(audit.trace.ruleReferenceCount, 833);
+  assert.equal(audit.trace.uniqueRuleIdCount, 833);
+  assert.deepEqual(audit.summary, {
+    carriedForwardActive: 828,
+    introducedActive: 3,
+    historicalReferenceOnly: 0,
+    traceSourceDrift: 0,
+    retired: 0,
+    replaced: 2,
+    dangling: 0,
+  });
+  assert.deepEqual(audit.references
+    .filter(reference => reference.resolution === 'introduced-active')
+    .map(reference => reference.ruleId).sort(), [
+    'rule.rust-metric.ygodic230-name',
+    'rule.rust-style-resolution.100b7126dfe0ddd2d55c',
+    'rule.studio-supply.batangche-serif.canvas2d',
+  ]);
+  assert.deepEqual(audit.references
+    .filter(reference => reference.status === 'retired')
+    .map(reference => reference.ruleId).sort(), [
+    'rule.rust-style-resolution.b6c97b846cf79ce168fa',
+    'rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d',
+  ]);
 });
 
 test('the complete W1 rule population closes as lifecycle or historical reference-only', () => {
@@ -152,7 +173,10 @@ test('the complete W1 rule population closes as lifecycle or historical referenc
   const audit = buildFontRuleLifecycleAudit(trace, registry, { root: ROOT });
 
   assert.equal(audit.trace.ruleReferenceCount, 1507);
-  assert.equal(audit.summary.carriedForwardActive, 830);
+  // 역사적 W1은 두 원 규칙의 교체를 보존하고, 나중에 추가한 규칙을 포함하지 않는다.
+  assert.equal(audit.summary.carriedForwardActive, 828);
+  assert.equal(audit.summary.replaced, 2);
+  assert.equal(audit.summary.introducedActive, 0);
   assert.equal(audit.summary.historicalReferenceOnly, 677);
   assert.equal(audit.summary.dangling, 0);
 });

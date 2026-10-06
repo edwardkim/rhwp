@@ -28,8 +28,21 @@
         "--json"
       ],
       "expect_exits": [
-        0,
-        3
+        0
+      ]
+    },
+    {
+      "name": "계보 무결성",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:receipts/reg.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0
       ]
     }
   ]

@@ -1,0 +1,7 @@
+{"version":"1","title":"열 폭 재현","blocks":[
+  {"type":"table","rows":[
+    ["No","항목","설명","비고"],
+    ["1","INSERT…VALUES APPEND","짧은 열에 긴 영문 토큰을 넣어 줄바꿈 위치가 달라지게 한다","A"],
+    ["2","SELECT_LONG_IDENTIFIER_NAME","두 번째 행 설명 텍스트입니다","B"]
+  ]}
+]}

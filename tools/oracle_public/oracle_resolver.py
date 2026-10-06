@@ -3,7 +3,6 @@
 
 `samples/` 를 재귀 순회해 `.hwp`/`.hwpx` 를 모은 뒤, 같은 상대 경로의
 `pdf/{stem}-{hancomVersion}.pdf` (및 `-hwp-2020` 같은 변형) 를 매칭한다.
-`pdf-2020/`, `pdf-large/` 가 있으면 같은 규칙으로 추가 탐색한다.
 
 한 샘플이 여러 한컴 버전 PDF 를 가지면 링크를 모두 남긴다. 목표 약 269쌍은
 참고값이며, 실제 개수를 맞추려고 자르거나 부풀리지 않는다.
@@ -27,7 +26,7 @@ SCHEMA_VERSION = "1.0"
 GENERATOR = "tools/oracle_public/oracle_resolver.py"
 TARGET_PAIR_COUNT = 269
 SAMPLE_EXTS = {".hwp", ".hwpx"}
-DEFAULT_ORACLE_ROOTS = ("pdf", "pdf-2020", "pdf-large")
+DEFAULT_ORACLE_ROOTS = ("pdf",)
 HANCOM_YEARS = ("2018", "2020", "2022", "2024")
 
 # `{stem}` 뒤에 붙는 오라클 접미사. 연도가 반드시 들어가고, 포맷 태그·kopub·
@@ -392,7 +391,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--roots",
         default=",".join(DEFAULT_ORACLE_ROOTS),
-        help="오라클 PDF 루트(쉼표 구분). 기본 pdf,pdf-2020,pdf-large",
+        help="오라클 PDF 루트(쉼표 구분). 기본 pdf",
     )
     parser.add_argument(
         "--output",

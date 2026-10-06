@@ -1,0 +1,15 @@
+CI run: https://github.com/edwardkim/rhwp/actions/runs/34946180534
+Code head: e917cffb9f70dfc73451a32fb4c1bf3ef9cffc8c
+Selected completed job log lines (ANSI color and trailing whitespace removed):
+
+Frontend package gates	Run Studio unit tests	2026-09-15T08:21:50.3722868Z # tests 1736
+Frontend package gates	Run Studio unit tests	2026-09-15T08:21:50.3723708Z # pass 1734
+Frontend package gates	Run Studio unit tests	2026-09-15T08:21:50.3724085Z # fail 0
+Frontend package gates	Run Studio unit tests	2026-09-15T08:21:50.3724901Z # skipped 2
+Frontend package gates	Run Studio responsive toolbar gate (#6118,	2026-09-15T08:26:00.9054762Z === 결과: 2666 passed, 0 failed ===
+Frontend package gates	Build Studio	2026-09-15T08:26:03.7549689Z ✓ built in 1.22s
+Frontend package gates	Build browser extensions	2026-09-15T08:26:08.0870759Z === 빌드 완료 ===
+Frontend package gates	Build browser extensions	2026-09-15T08:26:10.0741299Z === 빌드 완료 ===
+Frontend package gates	Verify extension distributions	2026-09-15T08:26:10.1987935Z # tests 3
+Frontend package gates	Verify extension distributions	2026-09-15T08:26:10.1989280Z # pass 3
+Frontend package gates	Verify extension distributions	2026-09-15T08:26:10.1989888Z # fail 0

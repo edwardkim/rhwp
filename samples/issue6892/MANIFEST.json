@@ -1,0 +1,27 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6892,
+  "title": "칸 안 Square 그림이 자기 호스트 줄을 두고 칸 첫 줄 자리로 올라간다",
+  "entries": [
+    {
+      "path": "samples/issue6892/156726122-recycling-press-release.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6892",
+      "originalFilename": "156726122_과일껍질  버섯 폐배지 등 동·식물성 잔재물 규제 특례(보도자료)(자원순환 9.8).hwpx",
+      "bytes": 3843003,
+      "sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.14515"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156726122-recycling-press-release-2020.pdf",
+      "referencePdfBytes": 836590,
+      "referencePdfSha256": "36ba72a6d4d4d70aed82868604aa3b3b14600df05a2279b47b8954b2a8b1941f",
+      "referencePdfStatus": "2026-09-09 MCP convert 로 engine 2020 산출, 8쪽. 8쪽 그림의 PDF 배치 bbox 는 132.6..532.9 × 286.6..435.5pt = 176.9..710.5 × 382.1..580.6px(96dpi)로 이슈 본문 실측과 일치한다. PDF 는 매 실행 SHA 가 달라지므로 이 해시는 이 사본의 것이다.",
+      "contract": "8쪽 표 칸의 여섯째 문단(`cp_idx=5`)에 매달린 `textWrap=SQUARE` · `treatAsChar=0` · `vertRelTo=PARA` · `vertOffset=0` 그림(40038×14908HU = 533.8×198.8px)이 자기 호스트 빈 줄(382.7)에 놓여야 한다. 종전에는 `#2226` 의 '빈 줄 vpos = 그림 자신의 변위' 갈래에 걸려 칸 콘텐츠 상단(192.3)으로 −189.8px 올라가 앞 문단 글자를 덮었다.",
+      "originalIdentityStatus": "2026-09-09 코퍼스 `korea_downloads/환경부` 원문과 SHA-256 이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    }
+  ]
+}

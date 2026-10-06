@@ -33,8 +33,8 @@ const messageHandlers = {
   /**
    * Content Script → Service Worker: HWP 파일 열기 요청
    */
-  'open-hwp': (message) => {
-    openViewer({ url: message.url, filename: message.filename });
+  'open-hwp': async (message) => {
+    await openViewer({ url: message.url, filename: message.filename });
     return { ok: true };
   },
 

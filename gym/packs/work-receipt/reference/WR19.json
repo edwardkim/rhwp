@@ -5,7 +5,7 @@
       "run": [
         "replay",
         "--plan-json",
-        "{\"planVersion\": \"1.0\", \"input\": \"samples/form-01.hwp\", \"output\": \"form1-day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"서식하루\"}]}",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"form1-day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"서식하루\"}]}",
         "--capsule",
         "{sub:receipts/form1.capsule.json}",
         "--json"

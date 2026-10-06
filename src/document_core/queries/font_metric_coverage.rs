@@ -24,7 +24,7 @@ use crate::renderer::font_metrics_data::layout_metric_face_name;
 use crate::renderer::layout::{
     resolved_to_text_style, trace_char_width_decisions, CharWidthDecision,
 };
-use crate::renderer::style_resolver::lookup_font_name_decision;
+use crate::renderer::style_resolver::lookup_font_name_in_environment;
 use crate::schema_registry::LEGACY_FONT_LAYOUT_HABITS_SCHEMA_VERSION;
 
 use super::font_decision::{metric_alias_relation, run_language_slots};
@@ -669,10 +669,11 @@ fn analyze_paragraph(
                 group_end += 1;
             }
 
-            let name_decision = lookup_font_name_decision(
+            let name_decision = lookup_font_name_in_environment(
                 &core.document.doc_info,
                 language,
                 char_shape.font_ids[language],
+                core.font_environment.as_ref(),
             );
             let Some(requested_face) = name_decision
                 .requested_face

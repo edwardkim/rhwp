@@ -1,0 +1,380 @@
+--- tests/fixtures/ir_field_sweep_baseline.tsv	2026-09-02 23:56:43
++++ /tmp/rhwp-without6637-ir-sweep.tsv	2026-09-05 17:04:50
+@@ -1,132 +1,21 @@
+ # rhwp-ir-field-sweep-baseline-v2 complete-normalized-path-counts
+ lane	sample	path	count
+-hwp5rb	143E433F503322BD33.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	24
+-hwp5rb	156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1330
+-hwp5rb	2010-01-06.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	120
+-hwp5rb	2022년 국립국어원 업무계획.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	244
+-hwp5rb	2025 행정업무운영 편람(최종).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3754
+-hwp5rb	2025 행정업무운영 편람(최종).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	754
+-hwp5rb	2025 행정업무운영 편람(최종).hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	18
+-hwp5rb	20250130-hongbo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+ hwp5rb	20250130-hongbo_saved.hwp	doc_info.bullet_count	1
+-hwp5rb	20250130-hongbo_saved.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+ hwp5rb	20250130-hongbo_saved.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].img_dim[]	8
+ hwp5rb	20250130-hongbo_saved.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	4
+-hwp5rb	2026_oss_rst.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	14
+-hwp5rb	21_언어_기출_편집가능본.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	53
+-hwp5rb	21_언어_기출_편집가능본.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2022.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2022.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2023.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	79
+-hwp5rb	3-09월_교육_통합_2023.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	3-09월_교육_통합_2024-격자기준종이.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2024-격자기준종이.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2024-격자기준쪽.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2024-격자기준쪽.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2024-구분선아래20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2024-구분선아래20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2024-구분선아래20구분선위20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2024-구분선아래20구분선위20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-09월_교육_통합_2024-미주사이20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	86
+-hwp5rb	3-09월_교육_통합_2024-미주사이20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	3-10월_교육_통합_2022.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	87
+-hwp5rb	3-10월_교육_통합_2022.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	3-11월_실전_통합_2022.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	78
+-hwp5rb	3-11월_실전_통합_2022.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	96
+-hwp5rb	3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	59
+-hwp5rb	3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	78
+-hwp5rb	3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	76076_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1307
+-hwp5rb	76076_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	80168_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1495
+-hwp5rb	80168_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	68
+-hwp5rb	80250_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+-hwp5rb	80250_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	840
+-hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	30
+-hwp5rb	86712_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	56
+-hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	12
+ hwp5rb	HWP5-nopassword-123456.hwp	sections[].paragraphs[].line_segs[].vertical_pos	295
+-hwp5rb	KTX.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	280
+-hwp5rb	KTX.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	[2027] 온새미로 1 본교재.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	115
+-hwp5rb	aift.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2299
+-hwp5rb	aift.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	164
+-hwp5rb	basic/BlogForm_BookReview.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	basic/BlogForm_MovieReview.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	basic/BlogForm_Recipe.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+ hwp5rb	basic/BookReview.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+-hwp5rb	basic/Textmail.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	13
+-hwp5rb	basic/calendar_year.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	117
+-hwp5rb	basic/issue1994_behindtext_table_20200830.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	128
+-hwp5rb	basic/issue1994_behindtext_table_20200830.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	basic/issue2007_nested_cell_pagination_42065.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	basic/issue2007_nested_cell_pagination_42065.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	basic/issue2007_nested_cell_pagination_42065.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	39
+-hwp5rb	basic/request.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	9
+-hwp5rb	basic/treatise sample.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	biz_plan.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	6
+-hwp5rb	byeolpyo1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	25
+-hwp5rb	byeolpyo4.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	142
+-hwp5rb	calc-cell.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	endnote-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+ hwp5rb	eq-002.hwp	sections[].paragraphs[].char_count	1
+ hwp5rb	eq-002.hwp	sections[].paragraphs[].char_offsets.len	1
+ hwp5rb	eq-002.hwp	sections[].paragraphs[].char_offsets[]	2
+ hwp5rb	eq-002.hwp	sections[].paragraphs[].text	1
+-hwp5rb	exam-kor-1p.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-1p.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-2p.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-2p.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-3p.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-3p.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-4p.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam-kor-4p.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam_eng.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	42
+-hwp5rb	exam_eng.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam_kor.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	49
+-hwp5rb	exam_kor.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	exam_math.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+ hwp5rb	exam_math.hwp	sections[].section_def.master_pages.len	2
+ hwp5rb	exam_math_8.hwp	sections[].section_def.master_pages.len	1
+-hwp5rb	exam_math_no.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	exam_science.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	98
+-hwp5rb	exam_science.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	17
+ hwp5rb	exam_science.hwp	sections[].section_def.master_pages.len	1
+-hwp5rb	exam_social-p1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	56
+-hwp5rb	exam_social-p1.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	13
+-hwp5rb	exam_social-p1.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	exam_social.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	92
+-hwp5rb	exam_social.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	35
+-hwp5rb	float-stack-defer.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	48
+-hwp5rb	footnote-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	hcar-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	89
+-hwp5rb	hcar-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+ hwp5rb	honbo-save.hwp	doc_info.bullet_count	1
+-hwp5rb	honbo-save.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+ hwp5rb	honbo-save.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].img_dim[]	8
+ hwp5rb	honbo-save.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].raw_picture_extra.len	4
+-hwp5rb	hwp-img-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	hwp-multi-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	289
+-hwp5rb	hwp-multi-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	16
+-hwp5rb	hwp3-sample-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	72
+-hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	91
+ hwp5rb	hwp3-sample10-hwp5.hwp	sections[].paragraphs[].line_segs[].vertical_pos	54
+-hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	163
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	192
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	128
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[].children[].children[].children[].children[].children[].children[][].drawing.fill.solid	72
+@@ -138,244 +27,37 @@
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[].children[][].drawing.fill.solid	39
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample11-hwp5.hwp	sections[].paragraphs[].line_segs[].vertical_pos	12
+-hwp5rb	hwp3-sample16-hwp5-2010.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2697
+ hwp5rb	hwp3-sample16-hwp5-2010.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample16-hwp5-2010.hwp	sections[].paragraphs[].line_segs[].vertical_pos	926
+-hwp5rb	hwp3-sample16-hwp5-2018.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2697
+ hwp5rb	hwp3-sample16-hwp5-2018.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample16-hwp5-2018.hwp	sections[].paragraphs[].line_segs[].vertical_pos	1106
+-hwp5rb	hwp3-sample16-hwp5-2022.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2697
+ hwp5rb	hwp3-sample16-hwp5-2022.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample16-hwp5-2022.hwp	sections[].paragraphs[].line_segs[].vertical_pos	927
+-hwp5rb	hwp3-sample16-hwp5-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2697
+ hwp5rb	hwp3-sample16-hwp5-2024.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample16-hwp5-2024.hwp	sections[].paragraphs[].line_segs[].vertical_pos	1106
+-hwp5rb	hwp3-sample16-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2697
+ hwp5rb	hwp3-sample16-hwp5.hwp	sections[].paragraphs[].controls[][].drawing.fill.solid	3
+ hwp5rb	hwp3-sample16-hwp5.hwp	sections[].paragraphs[].line_segs[].vertical_pos	926
+-hwp5rb	hwp3-sample19-hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	hwp_table_test-m.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	56
+-hwp5rb	hwp_table_test.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	hwp_table_test_saved.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1024
+ hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].field_ranges[].inner_slot_count	1
+-hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	939
+ hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].section_def.master_pages.len	1
+-hwp5rb	hwpctl_ParameterSetID_Item_v1.2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1786
+ hwp5rb	hwpctl_ParameterSetID_Item_v1.2.hwp	sections[].section_def.master_pages.len	1
+ hwp5rb	hwpers_test4_complex_table.hwp	sections[].paragraphs[].has_para_text	4
+-hwp5rb	hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1536
+-hwp5rb	hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1693
+-hwp5rb	hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1536
+-hwp5rb	hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	115
+-hwp5rb	hwpx/hancom-hwp/form-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	430
+-hwp5rb	hwpx/hancom-hwp/form-002.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
+-hwp5rb	hwpx/hancom-hwp/hang_job_01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	254
+-hwp5rb	hwpx/hancom-hwp/hwpx-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/hwpx-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1693
+-hwp5rb	hwpx/hancom-hwp/hwpx-h-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/hwpx-h-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1536
+-hwp5rb	hwpx/hancom-hwp/hwpx-h-03.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1453
+-hwp5rb	hwpx/hancom-hwp/hy-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	21
+-hwp5rb	hwpx/hancom-hwp/hy-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	57
+-hwp5rb	hwpx/hancom-hwp/issue_157.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	21
+-hwp5rb	hwpx/hancom-hwp/issue_241.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	28
+-hwp5rb	hwpx/hancom-hwp/mel-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	282
+-hwp5rb	hwpx/hancom-hwp/tb-org-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	54
+-hwp5rb	hwpx_sample2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	382
+-hwp5rb	hwpx_sample2.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	166
+-hwp5rb	img-start-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	84
+-hwp5rb	inner-table-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	8
+-hwp5rb	issue-986-receipt.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	240
+ hwp5rb	issue1510_coanchored_float_tables.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	9
+ hwp5rb	issue1510_coanchored_float_tables.hwp	sections[].paragraphs[].controls[].cells[].raw_list_extra.len	9
+-hwp5rb	issue1842_cell_tac_group_lineheight.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	37
+-hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	216
+-hwp5rb	issue1921/59043_regulatory_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	9
+-hwp5rb	issue1937_rowbreak_footnote_overpagination.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	701
+-hwp5rb	issue1949_giant_cell_nested_tables_perf.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	issue1949_giant_cell_nested_tables_perf.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	151
+-hwp5rb	issue2004_cell_image_stack.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	121
+-hwp5rb	issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	40
+-hwp5rb	issue2020/passport_application_lawgo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
+-hwp5rb	issue2063_huge_cellbreak_table.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	52678
+-hwp5rb	issue2164/의견제출서(양식).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	10
+-hwp5rb	issue2217/20200830.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	128
+-hwp5rb	issue2217/20200830.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	issue2439/issue2439_repeat_table_overlap.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	289
+-hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	985
+-hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	16
+ hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[].children[][].drawing.text_box.raw_list_header_extra.len	7
+ hwp5rb	issue2559/1341000_research_report_footnotes.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	3
+-hwp5rb	issue2808_report_physical_ladder.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
+-hwp5rb	issue3257/webhangul_product_spec_v1.1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	16
+-hwp5rb	issue3837/stored_vpos_rewind_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	issue4490/148720174_111014(인력기획과)민간경력자_5급_일괄채용_필기_합격자_발표.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	issue4491/30213_1.혼합단지등 제도개선 방안.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	252
+-hwp5rb	issue4690/30098_indent_over_stored_cs.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+-hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	issue4889/18098267_nested_fragment_origin.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	110
+-hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	191
+ hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].line_segs.len	5
+ hwp5rb	issue5169_viewtext_changetracking.hwp	sections[].paragraphs[].raw_header_extra[]	5
+-hwp5rb	issue5601/2537593_supply_agreement_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	issue5679/10857_delegation_rules.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3206
+-hwp5rb	issue5699/37787_regulatory_impact.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	854
+-hwp5rb	issue5699/37787_regulatory_impact.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	50
+-hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1511
+-hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	89
+ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].img_dim[]	64
+ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].raw_picture_extra.len	32
+ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	2
+ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].paragraphs[].controls[][].drawing.text_box.raw_list_header_extra.len	1
+ hwp5rb	issue5714/1490000-200800034_vietnam_labor_report.hwp	sections[].section_def.raw_ctrl_extra.len	2
+-hwp5rb	issue5721/2568129_textbox_float_tables.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	issue5724/2689441_wmf_contents_ole.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	issue5727/156732636_inline_logo_cell.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	44
+-hwp5rb	issue5782/2181727_press_guard_test_methods.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
+-hwp5rb	issue5782/2181727_press_guard_test_methods.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	issue5787/nested_square_table_horz_offset.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	67
+-hwp5rb	issue5787/nested_square_table_horz_offset.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	issue5788/tac_table_missing_anchor_line_spacing.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	113
+-hwp5rb	issue5788/tac_table_missing_anchor_line_spacing.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	issue5793/pua_f0827_double_rule.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	167
+-hwp5rb	issue5866/memo_field_hwp5.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1861
+-hwp5rb	issue5870/empty_host_float_flow_advance.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1667
+-hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
+-hwp5rb	issue5875/nested_table_text_caption.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1484
+-hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
+-hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
+-hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
+-hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+ hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+ hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].section_def.raw_ctrl_extra.len	1
+-hwp5rb	issue5941/1490000-201600081_roadmap_research.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1078
+-hwp5rb	issue5966/1130000-202100008_franchise_review_report.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	19
+-hwp5rb	issue5966/1130000-202100008_franchise_review_report.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	issue5966/1130000-202100008_franchise_review_report.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	issue6023/30269_reform_recommendation.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	177
+-hwp5rb	issue6023/30269_reform_recommendation.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	issue6028/2307287_construction_machinery_spec.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	33
+-hwp5rb	issue6030/2386771_agritech_review_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	66
+-hwp5rb	issue6032/2912695_civil_petition_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	41
+-hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+ hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+ hwp5rb	issue6057/29494.hwp	sections[].section_def.raw_ctrl_extra.len	1
+-hwp5rb	issue6060/30307_local_service_reform.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
+-hwp5rb	issue6086/30098_resident_registration_reform.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+-hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	374
+-hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+-hwp5rb	issue6117/52690_higher_education_decree.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
+-hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
+-hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
+-hwp5rb	issue6127/2599643_vessel_pass_application.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+-hwp5rb	issue6132/156482639_startup_ir_contest.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
+-hwp5rb	issue6140/156462405_smart_expo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	182
+-hwp5rb	issue6172/2599643_port_call_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+-hwp5rb	issue6264/1977964_env_satellite_report_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	50
+-hwp5rb	issue6280/156742029_prosecutor_transfer_list.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	issue6300/trade_report_forced_break_object.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2767
+-hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
+-hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	164
+-hwp5rb	issue6524/30098_float_host_split_lineseg.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+-hwp5rb	issue6542/156678235_mid_para_vpos_rewind.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	issue6542/156678235_mid_para_vpos_rewind.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	8
+-hwp5rb	issue6549/16418295_square_rowbreak_table.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	17
+-hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	36
+-hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	13
+-hwp5rb	issue6598/2744465_fingerprint_appraisal.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	33
+-hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
+-hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
+-hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
+-hwp5rb	k-water-rfp.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
+-hwp5rb	kps-ai.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1151
+-hwp5rb	kps-ai.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	135
+-hwp5rb	landscape-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	33
+-hwp5rb	loading-fail-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	32
+-hwp5rb	mel-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	137
+ hwp5rb	multi-table-001.hwp	sections[].paragraphs[].char_count	1
+ hwp5rb	multi-table-001.hwp	sections[].paragraphs[].control_mask	1
+-hwp5rb	multi-table-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	69
+-hwp5rb	multi-table-002.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	69
+-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
+-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+-hwp5rb	pic-in-head-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	25
+-hwp5rb	pic-in-head-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	pic-in-head-02.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
+-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+-hwp5rb	pic-in-table-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	25
+-hwp5rb	pr-1674.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	585
+-hwp5rb	pr-1674.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
+-hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	104
+-hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
+-hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	69
+-hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	441
+-hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	49
+-hwp5rb	ta-pic-001-r-쪽영역안제한.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	ta-pic-001-r-쪽영역안제한no.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	ta-pic-001-r.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
+-hwp5rb	table-004.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	66
+-hwp5rb	table-in-tbox.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
+-hwp5rb	table-in-tbox.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	197
+-hwp5rb	table-vpos-01.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	36
+-hwp5rb	table-vpos-01.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	11
+-hwp5rb	table_scattered_header_rowbreak.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3901
+-hwp5rb	tac-case-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	tac-img-02.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1871
+-hwp5rb	tac-img-02.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	28
+-hwp5rb	tac-verify/scenario-b-after.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	tac-verify/scenario-b-before.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	task-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	task1700/byeolpyo1_uujeong_wrap_singlepage.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	19
+-hwp5rb	task1700/myeonjeok_wrap_10page.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2025
+-hwp5rb	task1705/wrap_empty_para_anchor_page.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	26
+-hwp5rb	task1706/empty_para_between_tac_tables.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	32
+-hwp5rb	task1718/table_giant_cell_overfill.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	task1718/table_giant_cell_overfill.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
+-hwp5rb	task1725/text_footnote_tail_overpagination.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1083
+-hwp5rb	task1745/table_text_anchor_wrap.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	153
+-hwp5rb	task1749/saved_bounds_cumulative_page_break.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
+-hwp5rb	task1749/saved_bounds_cumulative_page_break.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	15
+-hwp5rb	task1749/saved_bounds_cumulative_vpos.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	32
+-hwp5rb	task1749/saved_bounds_cumulative_vpos.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
+-hwp5rb	task1753/deferred_takeplace_fill_ahead.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2161
+-hwp5rb	task1763/cell_trailing_ls_expand.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	111
+-hwp5rb	task1765/merged_cell_trailing_ls.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	37
+-hwp5rb	task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3212
+-hwp5rb	task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	27
+-hwp5rb	task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	sections[].paragraphs[].controls[].paragraphs[].controls[].cells[].list_header_width_ref	7
+-hwp5rb	task2097/1730000_selection_report.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	31
+-hwp5rb	task2097/18095317_eogu_geumji.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	140
+-hwp5rb	task2097/18095317_eogu_geumji.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
+-hwp5rb	task2097/21217935_simsa_jipyo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	101
+-hwp5rb	task2097/21217935_simsa_jipyo.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	57
+-hwp5rb	task2097/21217935_simsa_jipyo.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	66
+-hwp5rb	task2097/3080901_pii_ledger.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
+-hwp5rb	task2137/156618554_petfood_press.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
+-hwp5rb	task2146/21761835_jeonjik_exemption_table.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	286
+-hwp5rb	task2287/1342000_edu_curriculum_map.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	16626
+-hwp5rb	task2287/1342000_edu_curriculum_map.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	216
+-hwp5rb	task2319/20544835_jinan_apt_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	92
+-hwp5rb	task2322/20862337_cheongyang_voucher_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	22
+-hwp5rb	task2322/20862337_cheongyang_voucher_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	109
+-hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	220
+-hwp5rb	task2430/1382000_domestic_violence_survey.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
+-hwp5rb	tb-img-03.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+-hwp5rb	text-align-2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	text-align.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+-hwp5rb	대각선샘플.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	10
+-hwp5rb	복학원서.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
+-hwp5rb	셀보호2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
+-hwp5rb	정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	217
+-hwp5rb	통합재정통계(2010.11월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
+-hwp5rb	통합재정통계(2011.10월).hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	20
+ hwpx	143E433F503322BD33.hwpx	doc_info.border_fills[].fill.image.brightness	1
+ hwpx	143E433F503322BD33.hwpx	doc_info.border_fills[].fill.image.contrast	1
+ hwpx	143E433F503322BD33.hwpx	sections[].paragraphs[].controls[].caption.paragraphs[].raw_header_extra[]	1

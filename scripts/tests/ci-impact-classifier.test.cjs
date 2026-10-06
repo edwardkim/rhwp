@@ -80,7 +80,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '6',
+      classifier_version: '7',
       reason: 'classified:review-only',
     },
   );
@@ -102,7 +102,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '6',
+      classifier_version: '7',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -172,7 +172,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, reason, filename);
   }
 });
@@ -238,7 +238,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -259,7 +259,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -269,7 +269,7 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
     'assets/fonts/NotoSansKR-Regular.woff2',
     'scripts/generate_exact_face_collection_fixture.py',
     'scripts/generate_exact_kerning_fixture.py',
-    'docs/text-ir-v2.md',
+    'mydocs/tech/text-ir-v2.md',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -279,6 +279,15 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
     assert.equal(result.render_required, 'true', filename);
     assert.equal(result.native_skia_required, 'true', filename);
   }
+});
+
+test('a new repository-root docs path fails closed', () => {
+  const result = classifyChanges({
+    eventName: 'pull_request',
+    files: [{ filename: 'docs/README.md', status: 'added' }],
+  });
+  assert.equal(result.classification_status, 'full');
+  assert.equal(result.reason, 'fail-closed:unclassified-path');
 });
 
 test('Studio package configuration and broad runtime sources remain render-impacting', () => {
@@ -352,7 +361,7 @@ test('new sample documents run only the targeted security sweep lane', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:sample-security-sweep', filename);
   }
 });
@@ -362,8 +371,6 @@ test('new review reference assets require no product or CodeQL worker', () => {
     'samples/new-reference.pdf',
     'samples/new-reference.png',
     'pdf/new-reference.pdf',
-    'pdf-2020/new-reference.pdf',
-    'pdf-large/nested/new-reference.pdf',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -375,16 +382,16 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });
 
-test('existing PDF reference updates require no product or CodeQL worker', () => {
+test('Gym-only changes require no product or CodeQL worker', () => {
   for (const filename of [
-    'pdf/existing-reference.pdf',
-    'pdf-2020/existing-reference.pdf',
-    'pdf-large/nested/existing-reference.pdf',
+    'gym/packs/text-editing/tasks/TE01.json',
+    'gym/tools/discriminate.py',
+    'scripts/tests/test_gym_discriminate.py',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -396,7 +403,26 @@ test('existing PDF reference updates require no product or CodeQL worker', () =>
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.classifier_version, '7', filename);
+    assert.equal(result.reason, 'classified:gym-benchmark', filename);
+  }
+});
+
+test('existing PDF reference updates require no product or CodeQL worker', () => {
+  for (const filename of [
+    'pdf/existing-reference.pdf',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '7', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });
@@ -408,8 +434,6 @@ test('existing sample reference changes and removed PDFs remain fail-closed', ()
     { filename: 'samples/existing-reference.pdf', status: 'modified' },
     { filename: 'samples/existing-reference.png', status: 'modified' },
     { filename: 'pdf/existing-reference.pdf', status: 'removed' },
-    { filename: 'pdf-2020/existing-reference.pdf', status: 'removed' },
-    { filename: 'pdf-large/nested/existing-reference.pdf', status: 'removed' },
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
@@ -424,7 +448,7 @@ test('reference assets mixed with source preserve the source impact', () => {
   const result = classifyChanges({
     eventName: 'pull_request',
     files: [
-      { filename: 'pdf-2020/new-reference.pdf', status: 'added' },
+      { filename: 'pdf/new-reference.pdf', status: 'added' },
       { filename: 'src/parser/hwpx/mod.rs', status: 'modified' },
     ],
   });
@@ -432,6 +456,20 @@ test('reference assets mixed with source preserve the source impact', () => {
   assert.equal(result.codeql_languages, 'rust');
   assert.equal(result.classification_status, 'classified');
   assert.equal(result.reason, 'classified:rust');
+});
+
+test('retired PDF roots are not accepted as review-only references', () => {
+  for (const filename of [
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.classification_status, 'full', filename);
+    assert.equal(result.reason, 'fail-closed:unclassified-path', filename);
+  }
 });
 
 test('rename evaluates fail-closed before either path can be skipped', () => {

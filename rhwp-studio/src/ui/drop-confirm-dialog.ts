@@ -10,20 +10,21 @@
  */
 import { ModalDialog } from './dialog';
 
+import { t } from '../i18n/index.ts';
 class DropConfirmDialog extends ModalDialog {
   private resolve!: (value: boolean) => void;
 
   constructor(private readonly fileName: string) {
-    super('로컬 파일 열기 확인', 420);
+    super(t('dialog.dropConfirm.title'), 420);
   }
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
     body.style.cssText = 'padding:16px 20px;line-height:1.6;white-space:pre-line;';
-    const name = this.fileName || '선택한 파일';
+    const name = this.fileName || t('dialog.dropConfirm.createBody.text');
     body.textContent =
-      `드래그한 로컬 파일을 엽니다.\n\n"${name}"\n\n` +
-      `이 동작은 로컬 파일의 내용을 읽습니다. 계속하시겠습니까?`;
+      t('dialog.dropConfirm.body.text', { p1: name }) +
+      t('dialog.dropConfirm.createBody.text.xf156e0');
     return body;
   }
 
@@ -51,8 +52,8 @@ class DropConfirmDialog extends ModalDialog {
       const footer = this.dialog.querySelector('.dialog-footer');
       const okBtn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
       const cancelBtn = footer?.querySelector('.dialog-btn:not(.dialog-btn-primary)') as HTMLButtonElement | null;
-      if (okBtn) okBtn.textContent = '열기';
-      if (cancelBtn) cancelBtn.textContent = '취소';
+      if (okBtn) okBtn.textContent = t('dialog.dropConfirm.okBtn.text');
+      if (cancelBtn) cancelBtn.textContent = t('dialog.dropConfirm.cancelBtn.text');
     });
   }
 }

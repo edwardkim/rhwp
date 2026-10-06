@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { balancedFrom, functionBodyFrom } from './support/source-guard.ts';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 // ChartDataDialog 는 DOM 셸이라 node 로 인스턴스화할 수 없다 — 편집 판단 로직은
 // chart-data-target.test.ts / chart-grid-model.test.ts 가 순수 함수로 검증하고,
 // 여기서는 셸의 배선 계약(검증 순서·undo 라우팅·재열거)을 소스에서 못 박는다
@@ -110,6 +111,6 @@ test('계열명 대체 문구는 표시 전용이다 — 모델에 들어가면 
   // `계열 N` 은 c:tx 가 없는 계열의 표시용 텍스트다. 그 가지에는 입력이 없어야 한다.
   const from = body.indexOf('s.name === null');
   const locked = body.slice(from, body.indexOf('} else {', from));
-  assert.match(locked, /textContent = `계열 \$\{si \+ 1\}`/);
+  assertShowsText(locked, '계열 {p1}');
   assert.doesNotMatch(locked, /setSeriesName/, '이름 칸이 없는 계열은 입력을 열지 않는다');
 });

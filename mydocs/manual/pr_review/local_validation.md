@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-10-01
 ---
 
 # 로컬 사전 검증
@@ -10,6 +10,11 @@ last_verified: 2026-08-30
 이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. 선택한 검증과 생략 이유를
 PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은
 **반드시 하나가 끝난 뒤 다음 명령을 실행**한다.
+
+로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
+`/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
+실행 head·명령·결과와 필요한 증적의 위치를 요약한다. merge 뒤 해당 review의 `output` 정리는
+[merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
 모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. 전체 회귀는 host마다 고정한
 `target/pr-review`를 재사용해 이전 review의 debug/release 산출물과 분리한다. Cargo가 소스·feature·compiler
@@ -88,6 +93,26 @@ unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 revie
 `cargo test`는 이 문서가 정확한 test target 또는 Native Skia lib 범위를 지정한 focused 명령에만
 쓴다. 실수로 전체 `cargo test`를 시작했다면 중지하고, 그 실행을 검증 결과로 기록하지 않는다.
 
+### 정책 검사의 base 고정
+
+PR 제출·검토의 manifest 및 unit-tier 검사는 `--check`만 실행하지 않고 비교 base SHA를 함께
+전달한다. 단독 검사는 현재 정책 정합성을 확인하지만 PR base 대비 증가를 모두 검출하지 않는다.
+CI와 같은 비교 범위를 사용하도록 검증 전에 최신 대상 branch를 fetch하고 SHA를 고정한다.
+
+~~~bash
+git fetch upstream devel
+rhwp_review_base_sha="$(git rev-parse upstream/devel)"
+git rev-parse "$rhwp_review_base_sha" HEAD
+~~~
+
+아래 정책 명령은 같은 셸에서 이 준비 후 실행한다. 이미 열린 PR의 base가 다르면 실제 PR base
+SHA를 fetch해 사용하고, 검증 기록에 base/head SHA를 남긴다. CI의 PR base가 전진했으면 새 base로
+정책 비교를 다시 수행한다. 단순 base 확인을 위해 source branch를 merge/rebase하지 않는다.
+manifest `--check`는 아래처럼 파생 상태를 준비한 review worktree에서만 실행하고, unit-tier는
+무생성 검사다. 기여자는 [CONTRIBUTING의 worktree 준비](../../../CONTRIBUTING.md#rust-검증-worktree-준비와-실행)에서
+고정한 `rhwp_review_base_sha`를 그대로 사용한다. 정책 실패를 감추기 위해 비교 base를 HEAD로
+바꾸거나 기준선·테스트 assertion을 완화하지 않는다.
+
 ### integration test source 추가와 자동 sharding
 
 새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는
@@ -100,7 +125,7 @@ unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 revie
 
 ~~~bash
 node scripts/rust-test-suite-manifest.mjs --prepare
-node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 node scripts/run-rust-test.mjs issue_1234_short_description \
   -- --cargo-profile release-test --target-dir target/pr-review
 ~~~
@@ -110,7 +135,7 @@ block은 통합 불가 예외 target이 바뀐 메인터너 전용 PR에서만 `
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
-Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
+Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"`도
 실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
 worktree와 CI의 책임이다. 경로·crate-root·feature-gated 의존성이 탐지된 source는 기본적으로 singleton
 exception으로 보존한다. module harness 호환성을 실제 실행으로 확인한 경우에만 메인터너가
@@ -124,7 +149,7 @@ support 항목을 기준선으로 관리한다.
 
 ~~~bash
 node --test scripts/tests/rust-unit-test-tiers.test.mjs
-node scripts/rust-unit-test-tiers.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ~~~
 
 PR CI는 `github.event.pull_request.base.sha`의 integration manifest를 읽어 현재 source와
@@ -162,7 +187,7 @@ renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스
 cargo build --profile release-test --target-dir target/pr-review
 RHWP_BIN=target/pr-review/release-test/rhwp \
   venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작쪽> <끝쪽> \
-  --out-dir /tmp/rhwp-fidelity-<키>
+  --out-dir output/pr-review/<review-id>/fidelity-<키>
 ~~~
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
@@ -271,7 +296,7 @@ cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
   --target-dir target/pr-review -- -D warnings
 cargo build --locked --workspace --target-dir target/pr-review
 cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
-node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
 이 묶음은 CI `Lint (fmt, clippy, WASM check)`의 Format check, native root Clippy, WASM32
@@ -283,7 +308,7 @@ Clippy, workspace all-target Clippy와 대응한다. CI에만 있는 Node/Python
 추가한다. 이 검사는 파생 파일을 만들지 않는다.
 
 ```bash
-node scripts/rust-unit-test-tiers.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
 `--prepare`가 만든 `tests/generated/`와 `tests/suites/manifest.json`은 검증 증적일 뿐 source PR에
@@ -305,6 +330,15 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
 | 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
 
+렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
+[조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
+역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
+
+분할·이어받기 변경은 [공통 입증 절차](../../../AGENTS.md#분할이어받기-변경의-입증)의 작은 경계
+검사와 영향 페이지 Visual Sweep을 먼저 수행해 수정 방향을 확인한다. 그 뒤 위 범위별 필수 검증을
+완료한다. 이 순서는 필수 검사를 줄이거나 4.3.0의 exact head CI 재사용 조건을 바꾸지 않는다.
+Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드가 바뀌면 영향 경계·시각 증적도 갱신한다.
+
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
 무관한 Node 테스트까지 glob으로 섞지 않는다.
@@ -321,6 +355,26 @@ python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
 이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
 상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
 GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
+
+### 4.3.0.0 상수·정책·호출 경로 변경의 동작 기반 회귀 검증
+
+상수의 출처, 예산·축출 정책, fallback 또는 bridge·setter 같은 실제 호출 경로를 변경할 때는
+소스 문자열·정규식 검사만으로 기능 검증을 대체하지 않는다. 소스 가드는 선언·배선의 보조 계약이며,
+핵심 동작은 변경된 제품 진입점을 직접 호출해 확인한다. 테스트 안에 제품 구현을 복사한 대역만
+실행하거나 입력 상수 자체의 순서를 검사한 결과를 제품 경로 검증으로 기록하지 않는다.
+
+- 입력값이 바뀌면 결과가 계약대로 달라지는지 검사한다. 예산은 서로 다른 정상 상한에서
+  실제 execute/undo/redo와 축출·최근 참조 보존·복원 결과를 확인한다.
+- 조회 불가·구형 API fallback, 경계값, 실패 뒤 상태와 기존 정상 동작 보존을 함께 확인한다.
+  대역을 사용한 범위와 실제 WASM·브라우저를 실행한 범위를 구분한다.
+- 기존 결함 또는 최소 잘못된 구현으로 되돌리면 해당 검사가 실패하는 음성 대조를 남긴다.
+  격리된 임시 사본이나 메모리 내 변이를 사용하고 사용자의 작업 트리를 되돌리지 않는다.
+- 기존 source guard를 삭제·대체할 때는 새 동작 검사가 같은 실패 계급을 실제로 검출함을 확인한다.
+  CI가 녹색이라는 이유만으로 삭제 전 보호 범위가 유지됐다고 추정하지 않는다.
+- 예: 스냅샷 상한 100·50·조회 불가 fallback에서 제품 history 경로를 실행해 축출과 복원을 검사한다.
+  폰트 체인 수정은 파서만이 아니라 실제 치환 함수 또는 설치된 canvas font setter의 출력 순서를 검사한다.
+- 명령, 정상/음성 대조 결과, 미실행 범위는 테스트가 완료된 뒤 개별 PR review에 기록한다.
+  실행 전 문서는 계획 또는 잠정 검토로만 취급하며 완료·승인 결과를 미리 작성하지 않는다.
 
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용
 
@@ -364,7 +418,7 @@ merge 판단에서는 다음 경계를 적용한다.
 
 신규 CLI 통합 테스트는 `env!("CARGO_BIN_EXE_rhwp")`를 실행 경로로 직접 사용하지 않는다. nextest archive가
 런타임에 주입하는 `CARGO_BIN_EXE_rhwp`를 먼저 읽고 컴파일타임 값을 fallback으로 쓰는 기존 `rhwp_bin()`
-패턴을 따른다. 근거와 재현 조건은 [#3289 CI 보고서](../../report/task_m100_3289_report.md#멀티러너-거버넌스-운영-규칙)에
+패턴을 따른다. 근거와 재현 조건은 [#3289 CI 보고서](../../report/archives/task_m100_3289_report.md#멀티러너-거버넌스-운영-규칙)에
 기록되어 있다.
 
 일반 Rust 검증 예시는 다음과 같다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
@@ -400,10 +454,118 @@ libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤�
 필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
 사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
 
-## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
+## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 일곱
 
 samples 아래 HWP 또는 HWPX fixture를 새로 추가·교체·이동하면 renderer 변경 여부와 무관하게 PR 생성 또는
-draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(아래), ② overflow-cell 원장(이 절 말미).
+draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 일곱이고, 그중 **다섯은 `samples/` 를 스스로 훑기 때문에
+파일을 놓는 순간 "신규 발생(baseline 없음)" 으로 실패한다.**
+
+| 래칫 | fixture | 대상 선정 | 새 sample 이 즉시 걸리나 |
+| --- | --- | --- | --- |
+| `ir_field_sweep_baseline` | `tests/fixtures/ir_field_sweep_baseline.tsv` | `samples/` 전수 | **예** |
+| `overflow_cell_baseline` | `tests/fixtures/overflow_cell_baseline.tsv` | `samples/` 전수 | **예** |
+| `off_canvas_baseline` | `tests/fixtures/off_canvas_baseline.tsv` | `samples/` 전수 | **예** |
+| `text_overlap_baseline` | `tests/fixtures/text_overlap_baseline.tsv` | `samples/` 전수 | **예** |
+| `body_overflow_baseline` | `tests/fixtures/body_overflow_baseline.tsv` | `samples/` 전수 | **예** |
+| `oracle_page_count_baseline` | `tests/fixtures/oracle_page_count_baseline.tsv` | 그 TSV 의 행만 순회 | 아니오 (아래 참조) |
+| `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 (아래 참조) |
+
+다섯을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
+
+~~~bash
+cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast -E \
+ 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)'
+~~~
+
+> ⚠ **`clipping_gate.py` 는 클론만으로는 아무것도 검사하지 못한다.**
+> `render_page_controlset.tsv` 의 92개 행이 모두 저장소 밖 문서를 가리키므로 실행하면
+> `ERR/누락=92 baseline없음=92 회귀=0` 으로 **exit 0** 이 된다. 이 exit 0 은
+> "이상 없음" 이 아니라 **"검사 대상 0"** 이다 — 게이트 통과로 적지 말고, 검사하지
+> 못했다는 사실을 그대로 적는다. 그 문서들이 있는 환경에서만 의미가 있다.
+>
+> ~~~bash
+> python tools/clipping_gate.py --check tests/fixtures/clipping_baseline.tsv \
+>   --exe target/release/rhwp
+> # 출력 마지막 줄의 `ERR/누락` 과 `baseline없음` 을 반드시 읽는다.
+> ~~~
+
+> ⚠ **IR sweep 과 overflow-cell 둘만 돌리고 "게이트 통과" 로 판단하지 않는다.**
+> `off_canvas` 와 `text_overlap` 은 `samples/` 를 같은 방식으로 훑으므로 새 fixture 가
+> 0 이 아닌 값을 가지면 반드시 실패한다. 로컬에서 둘만 확인하고 올렸다가 CI 에서 그 둘에
+> 걸린 사례가 있다(PR #6804 · #6796).
+
+### 신규 행은 "내 수정 탓인가" 부터 가른다
+
+새 fixture 가 0 이 아닌 값을 갖는다고 곧바로 baseline 에 싣지 않는다. **그 수정이 없는
+빌드를 대조군으로 같은 fixture 를 다시 재서**, 값이 수정 때문에 생긴 것인지 문서 고유의
+것인지 먼저 가른다. 두 값이 같으면 fixture 가 코퍼스에 처음 들어와 래칫이 켜진 것이고,
+수정 후가 더 크면 회귀이므로 **원인을 고친다**.
+
+- `rhwp layout-anomaly <문서> --json` 의 `offCanvasCount` · `textOverlapCount` 가 곧
+  그 두 원장의 값이다. **0 이면 행을 만들지 않는다.**
+- 기존 문서의 수치 **증가**는 회귀다 — baseline 으로 숨기지 않는다.
+- 감소·해소는 통과다. 다만 브랜치 base 가 `devel` 보다 뒤처져 있으면 그 수치가 devel 에서도
+  같다는 보장이 없으므로, **리베이스 없이 감소분으로 래칫을 조이지 않는다.** 실측만 PR 에 적는다.
+- 행을 추가·갱신하면 문서 경로·SHA-256·수치·판정 근거를 review 문서에 적는다.
+
+### `samples/` 를 훑는 다섯의 dump 재생성
+
+`off_canvas`·`overflow_cell`·`text_overlap`·`body_overflow` 는 16개 partition test 가 병렬로 dump 를 쓰므로,
+지정한 경로가 아니라 `<경로>.part00-of16` 부터 `.part15-of16` 까지를 이어 붙여 비교한다.
+파일 안의 행 순서는 판정에 영향이 없다(래칫이 경로→건수 map 으로 읽는다).
+
+| 래칫 | dump 환경변수 |
+| --- | --- |
+| `ir_field_sweep_baseline` | `RHWP_IR_SWEEP_DUMP` (상세는 `RHWP_IR_SWEEP_DETAIL`) |
+| `overflow_cell_baseline` | `RHWP_OVERFLOW_CELL_DUMP` |
+| `off_canvas_baseline` | `RHWP_OFF_CANVAS_DUMP` |
+| `text_overlap_baseline` | `RHWP_TEXT_OVERLAP_DUMP` |
+| `body_overflow_baseline` | `RHWP_BODY_OVERFLOW_DUMP` |
+
+### 정답지 PDF 를 함께 넣었다면 — `oracle_page_count_baseline`
+
+이 래칫은 `samples/` 를 훑지 않고 **자기 TSV 에 이미 있는 행만** 순회한다. 따라서
+`pdf/` 에 한/글 정답지를 새로 넣어도 그 문서는 자동으로 쪽수 축의 보호를 받지 못한다.
+정답지를 추가했으면 픽스처를 재생성해 그 문서를 원장에 넣는다.
+
+~~~bash
+python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe
+~~~
+
+모아 찍기(`printMethod` 4·5) 문서는 한/글이 한 장에 여러 쪽을 실으므로 이 축의 대상이
+아니다 — 재생성 단계에서 제외된다. `rhwp info --json` 의 `printMethodImpliesNup` 으로 확인한다.
+
+### 새 sample 보안 검사 입력도 별도로 전달한다
+
+위 여섯 layout/시각 래칫을 통과했다고 새 문서의 보안 코퍼스 검사까지 완료한 것은 아니다.
+`security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors`는
+`RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 전달한 문서를 검사한다. 환경변수 없이 전체 회귀를
+실행한 결과만으로 새 문서의 hidden text·prompt injection·unicode deception 검사 통과를
+주장하지 않는다. 입력 없이 반환된 테스트의 성공과 실제 문서 검사를 구분한다.
+
+검토 base 대비 `samples/`의 추가·복사·수정·이동 문서를 확인하고, 해당 HWP/HWPX/HML의
+현재 경로를 JSON 배열로 전달한다. 검증 중에는 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+수용 판정 전에는 [공통 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)에 따라 해당 파일을
+검토 대상 commit에 포함하고 실제 검증한 내용과 동일함을 확인한다. 검증 중 입력 허용을 미커밋 상태의 수용으로 해석하지 않는다.
+아래 경로는 예시이므로 실제 검토 대상 전체로 교체한다. 공백·한글이 있는 경로도 JSON 문자열로
+보존하며 셸 공백 분할로 목록을 만들지 않는다.
+
+~~~bash
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx"]' \
+  cargo nextest run --locked --cargo-profile release-test \
+  --target-dir target/pr-review --tests --no-fail-fast \
+  -E 'test(/security_corpus_regression/)'
+~~~
+
+- 대상이 없으면 `신규/변경 sample 없음: 해당 검사 입력 대상 없음`으로 기록한다. 빈 목록이나
+  환경변수 누락을 새 문서 검사 통과 증적으로 쓰지 않는다.
+- 결과에는 입력 경로·문서 수와 실제 실행한 테스트 결과를 함께 기록한다. 기존 fixture로 입력
+  전달 경로만 점검했다면 신규 fixture 검사와 구분한다.
+- 탐지가 발생하면 정상 자료 여부와 탐지 신호를 조사한다. 통과시키기 위해 검사 목록에서 빼거나
+  탐지기를 비활성화하거나 일괄 allowlist/baseline에 넣지 않는다.
+- 새 sample 보안 검사는 위 여섯 래칫과 별도 게이트다. 둘 중 하나로 다른 검사를 대체하지 않는다.
+
+### IR field sweep
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
@@ -538,6 +700,17 @@ sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 �
 - `nextest list`: 6,541개, ignored 38개, runnable 6,503개
 - 전체 실행: 종료 코드 0, 실패 0건
 - warm `nextest list`: 0.19초
+
+페이지별 일치율 수집은 [TSV 전용 절차](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용한다.
+검증 대상 전체 페이지를 Native/fresh WASM으로 비교해 쪽수·최저값·90% 미만/누락 쪽을 기록한다.
+낮은 점수·구조 차이·대표 경계는 별도 output의 일반 모드 PNG로 직접 판독한다.
+TSV 측정 성공/`not_evaluated`는 PR 승인이나 fixture 적합성 통과가 아니며,
+각주 수량·문단 소속·내용 누락/중복·전체 쪽수를 별도로 검증한다. 기존 PNG 재사용의 원 실행과
+최신 head 재출력을 혼동하지 않는다. 상세 명령과 증적은 위 정본을 따른다.
+
+렌더링 변경의 신규 회귀는 [시각 검증 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 먼저 충족한다.
+관련 모든 페이지·fixture·Native/fresh WASM 출력의 최저 일치율이 90% 미만이거나 측정 불가이면
+추가하지 않는다. 쪽수 검사는 전체 페이지를 비교하며 실제 출력을 개선한 뒤 새 코드로 재검증한다.
 
 신규 회귀 test source는 `tests/cases/`에만 추가한다. PR review는
 `node scripts/rust-test-suite-manifest.mjs --prepare`로 기존 suite에 자동 배정한 뒤 검증하며,

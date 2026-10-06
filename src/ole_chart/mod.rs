@@ -6,8 +6,11 @@
 
 pub mod grid;
 pub mod ir;
+mod legacy_combo_renderer;
+mod legacy_presentation;
 pub mod orientation;
 pub mod parser;
+mod preview_palette;
 pub mod svg_renderer;
 
 pub use grid::{
@@ -22,6 +25,24 @@ pub use parser::{
     parse_ole_chart_contents, probe_ole_chart_contents, OleChart, OleChartContentsProbe,
     OleChartParseError, OleChartSeries, OleChartType,
 };
+pub use preview_palette::apply_preview_palette;
 pub use svg_renderer::{
     render_ole_chart_standalone_svg, render_ole_chart_svg_body, render_ole_chart_svg_fragment,
 };
+
+/// Use supported legacy combo presentation metadata without changing the data IR.
+/// Other archive versions retain the existing rendering path.
+pub fn render_ole_chart_svg_fragment_with_contents(
+    chart: &OleChart,
+    contents: &[u8],
+    bounds: [f64; 4],
+    bin_data_id: u32,
+) -> String {
+    if let Some(presentation) = legacy_presentation::parse(contents) {
+        if let Some(svg) = legacy_combo_renderer::render(chart, &presentation, bounds) {
+            return svg;
+        }
+    }
+    let [x, y, width, height] = bounds;
+    render_ole_chart_svg_fragment(chart, x, y, width, height, bin_data_id)
+}

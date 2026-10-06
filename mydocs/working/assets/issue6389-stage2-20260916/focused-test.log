@@ -1,0 +1,20 @@
+['cargo', 'test', '--locked', '--profile', 'release-test', '--target-dir', '/Users/tsjang/rhwp/target/issue6389-20260916', '--test', 'regression_suite_015', '--test', 'regression_suite_021', 'issue_6389', '--', '--nocapture']
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 8.10s
+     Running tests/generated/regression_suite_015.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/regression_suite_015-a0f0b60e7c99664d)
+
+running 5 tests
+test issue_6389_font_environment::issue_6389_environment_rejects_invalid_declarations_and_active_batches ... ok
+test issue_6389_font_environment::issue_6389_reflow_uses_selected_metrics_without_a_stored_line_cache ... ok
+test issue_6389_font_environment::issue_6389_environment_is_session_local_and_preserves_embedded_fonts ... ok
+test issue_6389_font_environment::issue_6389_environment_changes_measurement_and_paint_without_editing_document ... ok
+test issue_6389_font_environment::issue_6389_cli_uses_the_environment_for_svg_tree_and_pdf ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.82s
+
+     Running tests/generated/regression_suite_021.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/regression_suite_021-b2e079fb3f0946b2)
+
+running 1 test
+test issue_6389_cell_stored_ladder_compresses_to_fit::issue_6389_manual_p68_stored_ladder_cell_stays_inside_cell ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.34s

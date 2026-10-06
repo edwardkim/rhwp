@@ -28,12 +28,13 @@ fn nested_table_border_exam_social_p1_q4_outline_present() {
     let svg = doc.render_page_svg(0).expect("render_page_svg");
 
     // 4번 자료 박스 외곽 4개 라인이 SVG 에 존재해야 한다.
-    // 박스 width: nested 6x3 표 측정 결과 — 390.65 (nested.common.width).
-    // x 좌표: 549.88 (좌) ~ 940.53 (우) — body left margin + nested 표 위치.
+    // 박스 width: wrapper의 저장 폭 — 411.92px. #6621 이후 안쪽 6x3 표는
+    // host padding 안으로 이동하지만, 외곽선은 host의 선언 폭을 유지한다.
+    // x 좌표: 549.88 (좌) ~ 961.80 (우).
     // y 좌표: 다른 PR 영역의 페이지네이션 변경에 따라 시프트 가능 영역으로 영역
     // 좌표 hardcoded 영역 회피 영역 영역 — x 좌표 영역과 stroke 영역 본질 영역만 영역 검증 영역.
     let lx = "549.8800000000001";
-    let rx = "940.5333333333334";
+    let rx = "961.8000000000002";
 
     // 좌측선: x1==x2==lx (수직선)
     let has_left_line = svg.contains(&format!("<line x1=\"{lx}\" y1="))
@@ -95,12 +96,12 @@ fn parse_lines(svg: &str) -> Vec<(f64, f64, f64, f64, bool)> {
 /// 외곽 borderFill 을 한 칸 어긋나게 읽어(NONE) 실선 외곽선이 통째로 누락되고 내부 표
 /// 점선만 남았다. 정정 후에는 점선 외곽과 같은 y 에 실선 외곽선이 존재해야 한다.
 ///
-/// 가드: 전폭(>500px) 수평선 중 **점선과 y 가 일치하는 실선**이 ≥1 존재하는지 확인한다.
-/// 좌표를 hardcode 하지 않고 "외곽 박스 = 내부 표 외곽" 관계로 판정하므로, 무관한
-/// 다른 표의 실선(겹치는 점선 없음)이나 페이지네이션 시프트에 영향받지 않는다.
-/// (버그: 일치 0건 → 실패 / 정정: 상·하 2건 일치 → 통과)
+/// 가드: wrapper가 안 여백을 가지면 점선 내부 표보다 바깥에서 상·하 실선이 둘 다
+/// 보여야 한다. #6621 이전의 "같은 y" 조건은 padding을 잃는 잘못된 box model이었다.
+/// 좌표를 hardcode 하지 않고, 점선보다 5px 이상 넓은 실선이 첫 점선 위와 마지막
+/// 점선 아래에 각각 10px 이내로 있는지 짝지어 무관한 다른 표의 실선을 제외한다.
 #[test]
-fn nested_table_border_kwater_rfp_outer_outline_present() {
+fn nested_table_border_kwater_rfp_outer_outline_preserves_padding() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let path = Path::new(repo_root).join("samples/k-water-rfp.hwp");
     let bytes = fs::read(&path).expect("read k-water-rfp.hwp");
@@ -115,24 +116,44 @@ fn nested_table_border_kwater_rfp_outer_outline_present() {
         // 전폭(>500px) 수평선만 추려 점선/실선 y 집합으로 분리한다.
         let is_wide_horiz =
             |x1: f64, y1: f64, x2: f64, y2: f64| (y1 - y2).abs() < 0.01 && (x2 - x1).abs() > 500.0;
-        let dashed_ys: Vec<f64> = lines
+        let dashed: Vec<(f64, f64, f64, f64, bool)> = lines
             .iter()
             .filter(|(x1, y1, x2, y2, dashed)| *dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
-            .map(|(_, y1, ..)| *y1)
+            .copied()
             .collect();
-        // 점선(내부 표 외곽 격자)과 y 가 일치(±1px)하는 실선(wrapper 외곽 테두리) 개수.
-        let outer_solid_on_inner = lines
+        let Some((_, first_inner_y, _, _, _)) = dashed.iter().min_by(|a, b| a.1.total_cmp(&b.1))
+        else {
+            continue;
+        };
+        let Some((_, last_inner_y, _, _, _)) = dashed.iter().max_by(|a, b| a.1.total_cmp(&b.1))
+        else {
+            continue;
+        };
+        // 점선 내부 표보다 좌우로 넓은 wrapper 실선. 하단은 host의 선언 높이가
+        // inner+padding보다 큰 경우 더 멀어질 수 있으므로, 상·하를 독립 판정한다.
+        let outer_solids: Vec<(f64, f64, f64, f64, bool)> = lines
             .iter()
             .filter(|(x1, y1, x2, y2, dashed)| !*dashed && is_wide_horiz(*x1, *y1, *x2, *y2))
-            .filter(|(_, y1, ..)| dashed_ys.iter().any(|dy| (dy - *y1).abs() < 1.0))
-            .count();
-        if outer_solid_on_inner >= 1 {
-            matched_pages.push((page_idx + 1, outer_solid_on_inner));
+            .filter(|(x1, _, x2, ..)| {
+                dashed
+                    .iter()
+                    .any(|(ix1, _, ix2, _, _)| *x1 + 5.0 < *ix1 && *x2 > *ix2 + 5.0)
+            })
+            .copied()
+            .collect();
+        let top_outer = outer_solids
+            .iter()
+            .any(|(_, y, ..)| *y < *first_inner_y && *first_inner_y - *y <= 10.0);
+        let bottom_outer = outer_solids
+            .iter()
+            .any(|(_, y, ..)| *y > *last_inner_y && *y - *last_inner_y <= 10.0);
+        if top_outer && bottom_outer {
+            matched_pages.push(page_idx + 1);
         }
     }
 
     assert!(
         !matched_pages.is_empty(),
-        "wrapper 외곽 실선 테두리 누락 (내부 표 점선 외곽과 겹치는 전폭 실선 0건)"
+        "wrapper 외곽 실선 테두리 누락 (안 여백을 둔 내부 점선 표의 상하 외곽선 없음)"
     );
 }

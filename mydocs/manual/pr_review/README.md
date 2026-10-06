@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-09-12
 ---
 
 # PR review 조건별 가이드 선택표
@@ -17,9 +17,15 @@ last_verified: 2026-07-25
 3. 상태를 바꾸기 전에 선택 결과와 읽은 문서를 보고한다.
 4. 새 head가 생기거나 merge 단계로 넘어가면 선택표를 다시 확인한다.
 
+모든 기본 경로는 [조판 원칙 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)를 공통 항목으로
+기록한다. 실제 변경이 비해당이면 이유를 남기고, 적용 대상은 검토 head의 코드·증거로 판정한다.
+또한 [검증 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 공통으로 기록한다.
+HWP/HWPX/PDF를 검증에 사용하면 실제 실행 파일과 검토 대상 commit의 일치를 확인한다.
+
 | 문서 | 읽는 시점 |
 | --- | --- |
 | [intake_and_review.md](intake_and_review.md) | 모든 정식 PR review의 접수, reviewer assign, review 문서 작성 |
+| [review_template.md](review_template.md) | 새 PR review를 작성할 때 최종 판정을 제목 바로 아래에 두는 기본 골격 |
 | [maintainer_general.md](maintainer_general.md) | maintainer가 외부 PR을 일반 경로로 처리 |
 | [collaborator_self_merge.md](collaborator_self_merge.md) | collaborator 자신의 PR을 준비·merge |
 | [collaborator_external_pr.md](collaborator_external_pr.md) | collaborator가 contributor PR head를 보정하거나 기록을 더함 |

@@ -1,0 +1,12 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 5.81s
+     Running tests/generated/regression_suite_023.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_023-080dfad70f7431c0)
+
+running 5 tests
+test issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_keeps_the_char_when_the_document_turns_decoration_off ... ok
+test issue_7174_hwp3_footnote_number_suffix::synthetic_hwp3_note_has_the_auto_number_placeholder ... ok
+test issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_drops_the_duplicated_number_suffix ... ok
+test issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_keeps_a_different_leading_char ... ok
+test issue_7174_hwp3_footnote_number_suffix::hwp3_footnote_shape_carries_the_document_number_suffix ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 187 filtered out; finished in 0.01s

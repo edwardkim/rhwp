@@ -36,10 +36,16 @@ fn bulk_text_path_preserves_tab_and_utf16_surrogate_pair() {
     assert_eq!(paragraph_text(&units), "A\tB😀");
 }
 
+/// [#6873] 짝을 잃은 서로게이트는 **버리지 않고** `□`(U+25A1) 로 받는다.
+///
+/// #4860 은 이 자리를 "건너뛴다"로 잠갔는데, 그때는 오라클 없이 당시 동작을 적은
+/// 것이었다. 한글 자신의 h2x 산출(engine 2020)을 뜨니 반쪽 서로게이트 자리에 `□` 를
+/// 적는다 — XML 이 반쪽을 담지 못하는 것은 한글도 마찬가지다. 이웃 글자를 잃지
+/// 않는다는 #4860 의 본래 계약은 그대로 지킨다.
 #[test]
-fn bulk_text_path_skips_unpaired_surrogate_without_losing_neighbors() {
+fn bulk_text_path_keeps_unpaired_surrogate_without_losing_neighbors() {
     let units = [0x0041, 0xD83D, 0x0042, 0x000D];
-    assert_eq!(paragraph_text(&units), "AB");
+    assert_eq!(paragraph_text(&units), "A\u{25A1}B");
 }
 
 #[test]

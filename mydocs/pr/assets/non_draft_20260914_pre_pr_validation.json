@@ -1,0 +1,124 @@
+{
+  "head": "9ac32f05ba294e24a7f2a21840017b8d3bb95a1f",
+  "steps": [
+    {
+      "name": "prepare",
+      "cmd": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 0.69
+    },
+    {
+      "name": "fmt",
+      "cmd": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 5.74
+    },
+    {
+      "name": "fmt-check",
+      "cmd": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 5.86
+    },
+    {
+      "name": "clippy-native",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/nondraft-review-20260914",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 40.96,
+      "log": "non_draft_20260914_pre_pr_clippy-native.log.txt"
+    },
+    {
+      "name": "clippy-wasm",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/nondraft-review-20260914",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 46.28,
+      "log": "non_draft_20260914_pre_pr_clippy-wasm.log.txt"
+    },
+    {
+      "name": "workspace-build",
+      "cmd": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/nondraft-review-20260914"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 54.24,
+      "log": "non_draft_20260914_pre_pr_workspace-build.log.txt"
+    },
+    {
+      "name": "clippy-all-targets",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/nondraft-review-20260914",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 44.7,
+      "log": "non_draft_20260914_pre_pr_clippy-all-targets.log.txt"
+    },
+    {
+      "name": "manifest-check",
+      "cmd": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsedSeconds": 0.42,
+      "log": "non_draft_20260914_pre_pr_manifest-check.log.txt"
+    }
+  ],
+  "codeHead": "b40c2953cf526b86319f2841c5b5584d7a83d735",
+  "unitTierCheck": {
+    "command": "node scripts/rust-unit-test-tiers.mjs --check",
+    "exit": 0,
+    "summary": "4205 tests / 298 modules / ready 0 / support 87 / white-box 4114 / cfg support items 28"
+  },
+  "scope": "Local required lint/build only; source CI regression was not rerun locally. Integrated GitHub CI remains pending."
+}

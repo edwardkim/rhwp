@@ -1,0 +1,136 @@
+[
+  {
+    "step": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "started": 1789381738.106337,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 7.81
+  },
+  {
+    "step": "clippy-native",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "target/pr7107-conflict-20260914",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started": 1789381745.918972,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 61.85
+  },
+  {
+    "step": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "target/pr7107-conflict-20260914",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started": 1789381807.7649689,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 67.38
+  },
+  {
+    "step": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr7107-conflict-20260914"
+    ],
+    "started": 1789381875.145552,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 116.17
+  },
+  {
+    "step": "clippy-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr7107-conflict-20260914",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "started": 1789381991.315449,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 92.77
+  },
+  {
+    "step": "focused",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7107-conflict-20260914",
+      "--tests",
+      "--test-threads",
+      "6",
+      "--no-fail-fast",
+      "-E",
+      "test(inline_table_outer_margin_alignment) | test(issue_1285_tac_sequence_right_align) | test(issue_6970_no_ls_cross_column_picture_flow) | test(issue_7080_area_dot_fullwidth)"
+    ],
+    "started": 1789382084.0862799,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 507.36
+  },
+  {
+    "step": "manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check"
+    ],
+    "started": 1789382591.449373,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 0.74
+  },
+  {
+    "step": "unit-tiers",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check"
+    ],
+    "started": 1789382592.194486,
+    "status": "passed",
+    "exit": 0,
+    "seconds": 1.49
+  }
+]

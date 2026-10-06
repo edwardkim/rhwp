@@ -1,0 +1,260 @@
+[
+  {
+    "key": "pr7118-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "--reference-pdf",
+      "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "--label",
+      "pr7118",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/pr7118",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "3"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "pr7118",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "pr7118",
+      "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "1-3",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/pr7118"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "pr7184-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "samples/table_giant_cell_overfill.hwpx",
+      "--reference-pdf",
+      "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+      "--label",
+      "pr7184",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/pr7184",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "48"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "pr7184",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "pr7184",
+      "samples/table_giant_cell_overfill.hwpx",
+      "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "18-21,47-48",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/pr7184"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "nested3637-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "--reference-pdf",
+      "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+      "--label",
+      "nested3637",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/nested3637",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "31"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "nested3637",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "nested3637",
+      "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "26-30",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "pr7183-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp",
+      "--reference-pdf",
+      "pdf/rowbreak_cell_picture_only_paragraph-2020.pdf",
+      "--label",
+      "pr7183",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/pr7183",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "4"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "pr7183",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "pr7183",
+      "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp",
+      "pdf/rowbreak_cell_picture_only_paragraph-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "1-4",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/pr7183"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "frame2004-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "samples/issue2004_cell_image_stack.hwp",
+      "--reference-pdf",
+      "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "--label",
+      "frame2004",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/frame2004",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "8"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "frame2004",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "frame2004",
+      "samples/issue2004_cell_image_stack.hwp",
+      "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "5",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/frame2004"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "terminal42065-ledger",
+    "command": [
+      "venv/bin/python",
+      "tools/fidelity_compare/fidelity_compare.py",
+      "--source",
+      "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "--reference-pdf",
+      "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+      "--label",
+      "terminal42065",
+      "--reference-grade",
+      "\uae30\uc874 Git \ud55c\ucef4 PDF",
+      "--out-dir",
+      "/private/tmp/rhwp-review-open-20260916/fidelity-stage2/terminal42065",
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger",
+      "1",
+      "17"
+    ],
+    "exit_code": 2
+  },
+  {
+    "key": "terminal42065",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "terminal42065",
+      "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "--pages",
+      "15-17",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/terminal42065"
+    ],
+    "exit_code": 0
+  }
+]

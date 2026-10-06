@@ -8,7 +8,7 @@ HWP/HWPX 를 분석·디버깅하도록 문서·픽스처가 같은 단어를 �
 다른 에이전트 스킬 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-cli/
-작업 기록: mydocs/working/agent_cli.md
+작업 기록: mydocs/working/archives/agent_cli.md
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ SKILL_MD = SKILL / "SKILL.md"
 REFS = SKILL / "references"
 EXAMPLES = SKILL / "examples"
 FIXTURES = SKILL / "fixtures"
-WORKING = REPO / "mydocs" / "working" / "agent_cli.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_cli.md"
 
 DEBUG_ORDER = (
     "export-svg",

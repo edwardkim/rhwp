@@ -1,0 +1,19 @@
+✔ 비텍스트 포커스의 활성 편집기는 undo/redo를 dispatcher로 보완한다 (2.022875ms)
+✔ 개체 선택 C/X/Delete는 canonical edit command를 사용하고 native paste는 보존한다 (0.686459ms)
+✔ canonical 표 cut/delete가 keyboard의 중첩 표 안전 계약을 유지한다 (1.077333ms)
+✔ ⌘A 는 셀 블록을 풀고 캐럿 셀 내용만 선택한다 — 본문 전체 선택보다 먼저 (0.884042ms)
+✔ ⌘A 는 캐럿을 범위 끝으로 옮겨도 화면을 스크롤하지 않는다 (맨 아래로 튀는 결함) (0.220417ms)
+✔ selectAllInCell 은 셀 첫 문단~마지막 문단 끝을 선택한다 (0.237708ms)
+✔ 본문 선택 하이라이트가 범위 안 표의 rect 를 포함한다 (0.341375ms)
+✔ 붙어 있는 modal-overlay에서는 문서 ⌘A를 dispatch하지 않는다 (0.611875ms)
+✔ select, contentEditable 자손, role=textbox에서는 문서 ⌘A를 dispatch하지 않는다 (0.381084ms)
+✔ body 대상 ⌘A는 문서 명령을 한 번 dispatch하고 편집기로 포커스를 돌린다 (0.112458ms)
+✔ select는 ⌘A만 막고 전역 문서 이동 키 가드에서는 글자 편집 대상이 아니다 (0.191917ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.107333

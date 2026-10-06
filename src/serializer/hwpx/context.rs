@@ -111,6 +111,20 @@ pub struct SerializeContext {
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
     pub chart_entries: Vec<ChartPartEntry>,
+    /// [#6869] 이 문단에서 `hp:pageNum` 을 이미 냈는가.
+    ///
+    /// HWP5 는 같은 문단에 쪽번호 위치(`pngp`) 컨트롤을 여러 개 담을 수 있고 rhwp 파서는
+    /// 그것을 그대로 보존한다(156532689 문단 179 는 **9개**). 그런데 HWPX 로 그 9개를
+    /// 그대로 내면 **한글이 그 문서에서 멈춘다**(정답지 실측: 20분 타임아웃, 이슈는
+    /// 44쪽→12쪽으로 관측). 한컴 자신이 같은 문서를 HWPX 로 저장하면 문단당 하나로
+    /// 접는다(문서 전체 23 → 5).
+    ///
+    /// 접은 슬롯은 **축에서도 빠져야 한다** — 컨트롤만 지우고 `textpos` 를 그대로 두면
+    /// 오히려 축이 더 어긋나 여전히 멈춘다(실측). `render_control_slot_tracked` 가
+    /// "아무것도 방출하지 않은 슬롯" 으로 세어 `#5943` 의 축 보정이 그대로 걸리도록,
+    /// 접을 때는 **XML 을 한 글자도 내지 않는다**.
+    /// `render_runs`의 호출 스코프에서만 사용하며, 중첩 문단 종료 시 부모 상태를 복원한다.
+    pub(crate) para_page_num_pos_emitted: bool,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
     /// HWP3 전용 Hyperlink control을 HWPX `fieldBegin`으로 승격할 때 쓰는 ID.
@@ -138,11 +152,15 @@ pub struct SerializeContext {
     /// `hp:secPr`·`hp:colPr` 을 세지 않는 HWPX 축이다. 이 값이 참이면 재기준화하지
     /// 않는다(이중으로 빼면 aift.hwpx 왕복이 `textpos 24 → 8` 로 깨진다).
     /// 판정은 "이 lineseg 가 HWPX 컨테이너에서 나왔는가" — 출처 포맷이 HWPX 이거나
-    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다. `hwpx_stored_layout()` 은 쓸 수 없다.
-    /// 그쪽은 rhwp 가 HWP5 에서 낸 HWPX(`META-INF/rhwp-hwp5-origin`)를 제외하는데, 그
-    /// 파일의 `textpos` 는 이 수정 이후 **HWPX 축**이라 다시 내리면 재수출 고정점이
-    /// 깨진다(02502 재수출: 32 → 16 실측).
+    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다.
+    ///
+    /// [#7526] rhwp 원본 마커(`META-INF/rhwp-hwp5-origin`·`rhwp-hwp3-origin`)를 싣는 문서는
+    /// 제외한다. 산출물이 rhwp 축 계약으로 다시 읽히므로, 그 파일에서 읽은 문단만 날값을
+    /// 두고(`hwpx_axis_shift` 0 아님 — 다시 내리면 02502 재수출이 32 → 16 으로 깨진다)
+    /// 편집으로 다시 조판한 문단은 HWP5 출처처럼 내린다.
     pub line_segs_on_hwpx_axis: bool,
+    /// 새 HWP5 계보 산출물은 실제 방출된 문단의 제어 슬롯을 함께 센다.
+    pub line_segs_on_paragraph_axis: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
@@ -155,6 +173,7 @@ impl Default for SerializeContext {
         Self {
             char_shape_ids: IdPool::default(),
             line_segs_on_hwpx_axis: false,
+            line_segs_on_paragraph_axis: false,
             para_shape_ids: IdPool::default(),
             border_fill_ids: IdPool::default(),
             tab_pr_ids: IdPool::default(),
@@ -163,6 +182,7 @@ impl Default for SerializeContext {
             bin_data_map: HashMap::new(),
             bin_seq_to_storage: HashMap::new(),
             chart_entries: Vec::new(),
+            para_page_num_pos_emitted: false,
             para_id_counter: 0,
             generated_hyperlink_id: u32::MAX,
             sub_list_depth: 0,
@@ -186,9 +206,22 @@ impl SerializeContext {
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
         let mut ctx = Self::default();
-        ctx.line_segs_on_hwpx_axis = doc.provenance.format
+        ctx.line_segs_on_paragraph_axis = doc
+            .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            == Some(crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS);
+        // [#7526] rhwp 원본 마커를 싣는 산출물은 rhwp 축 계약을 따른다. 그 파일에서 읽은
+        // 문단은 이미 그 축이고(`hwpx_axis_shift` 0 아님), 편집으로 다시 조판한 문단만
+        // HWP5 축이라 문단마다 가른다(`render_paragraph_parts`).
+        let rhwp_origin_marker = [
+            crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
+            crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+        ]
+        .iter()
+        .any(|path| doc.hwpx_aux_entry(path).is_some());
+        ctx.line_segs_on_hwpx_axis = (doc.provenance.format
             == crate::model::provenance::SourceFormat::Hwpx
-            || doc.provenance.hwpx_lineage;
+            || doc.provenance.hwpx_lineage)
+            && !rhwp_origin_marker;
 
         // CharShape, ParaShape, BorderFill, TabDef, Numbering, Style, Font
         // 목록은 배열 인덱스가 곧 HWPX `id` 속성이 된다.

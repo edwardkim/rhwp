@@ -183,4 +183,4 @@ rhwp explore 문서.hwp --json | jq -r '.menu[0].command'
   (`explore` · `explain` · `capabilities` · 종료 코드)
 - 코어: `src/document_core/queries/explore.rs` 의 `build_menu` / `DocFacts`
   (이 스킬은 그 함수를 바꾸지 않는다)
-- 처리 결과: [`mydocs/working/agent_explore.md`](../../../mydocs/working/agent_explore.md)
+- 처리 결과: [`mydocs/working/agent_explore.md`](../../../mydocs/working/archives/agent_explore.md)

@@ -1,0 +1,6 @@
+page	next_page	pi	ci	rows	cols	next_rows	next_cols	bbox	next_bbox	signals	page_text_delta_chars	next_page_text_delta_chars	page_bottom_gap_px	next_page_bottom_gap_px	note
+3	-	39	0	16	6	-	-	79.4,221.6,657.6,748.8	-	page_bottom_near_material_text_delta	42	-	152.1	-	candidate only; does not assert PDF table row owner or fragment correctness
+4	5	42	0	1	1	1	1	75.6,127.7,635.0,870.2	75.6,86.9,635.0,842.9	same_pi_ci_adjacent_fragment	0	0	124.6	192.7	candidate only; does not assert PDF table row owner or fragment correctness
+5	6	42	0	1	1	1	1	75.6,86.9,635.0,842.9	75.6,86.9,635.0,869.6	same_pi_ci_adjacent_fragment	0	0	192.7	166.0	candidate only; does not assert PDF table row owner or fragment correctness
+6	7	42	0	1	1	1	1	75.6,86.9,635.0,869.6	75.6,86.9,635.0,870.1	same_pi_ci_adjacent_fragment	0	0	166.0	165.5	candidate only; does not assert PDF table row owner or fragment correctness
+7	8	42	0	1	1	1	1	75.6,86.9,635.0,870.1	75.6,86.9,635.0,864.7	same_pi_ci_adjacent_fragment	0	0	165.5	170.9	candidate only; does not assert PDF table row owner or fragment correctness

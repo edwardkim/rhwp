@@ -1,0 +1,30 @@
+{
+  "source_parent": "0ec1403ff",
+  "changed_sources": [
+    "src/renderer/typeset/paragraph.rs",
+    "src/renderer/typeset/state/commands.rs",
+    "src/renderer/typeset/state/data.rs",
+    "src/renderer/typeset/table/block/entry.rs"
+  ],
+  "text_overlap_partitions": {
+    "run": 16,
+    "pass": 16,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-7382-20260926/stage311-overlap-focus-retry.log"
+  },
+  "existing_issue7379": {
+    "run": 14,
+    "pass": 14,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-7382-20260926/stage311-original-focus.log"
+  },
+  "page_counts": {
+    "hwp": 215,
+    "hwpx": 215
+  },
+  "new_test_functions": 0,
+  "baseline_changed": false,
+  "first_compile_exit": 101,
+  "first_compile_correction": "누락한 helper import를 추가한 뒤 재컴파일 및 검증",
+  "full_after_correction": "미실행; 남은 개별 시각 보정 후 전체 검증 필요"
+}

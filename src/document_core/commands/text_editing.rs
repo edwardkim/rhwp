@@ -3,6 +3,7 @@
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::field_query::rebuild_char_offsets;
 use super::super::queries::rendering::FocusedPageTreePatch;
+use super::formatting::restore_para_meta;
 use crate::document_core::{
     ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
 };
@@ -19,9 +20,22 @@ use crate::renderer::composer::{
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
-use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
+use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
+fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> bool {
+    if let Some(reset) = current.cell_vpos_reset {
+        return reset;
+    }
+    match (previous.line_segs.first(), current.line_segs.first()) {
+        (Some(previous), Some(current)) => {
+            current.vertical_pos < previous.vertical_pos
+                && current.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }
+        _ => false,
+    }
+}
 
 fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
@@ -41,27 +55,25 @@ fn recalculate_cell_paragraph_vpos(
     // [Task #2299] 합성 seg(TAG_IMPLEMENTATION_PROPERTY, #1811)의 vpos=0 은 배치 전
     // placeholder 이지 분할 신호가 아니다 — 섹션 recalc 와 동일하게 정지 대상에서
     // 제외한다 (로드가 합성한 중간-셀 문단에서 가짜 정지 → 꼬리 미갱신 방지).
+    let fragment_start = (1..=start_para)
+        .rev()
+        .find(|&idx| paragraphs[idx].cell_vpos_reset == Some(true))
+        .unwrap_or(0);
     let stop_para = paragraphs
         .windows(2)
         .enumerate()
         .skip(start_para)
         .find_map(|(idx, pair)| {
-            let previous = pair[0].line_segs.first()?.vertical_pos;
-            let current_seg = pair[1].line_segs.first()?;
-            let current = current_seg.vertical_pos;
-            let is_synthetic = current_seg.tag
-                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                != 0;
             let reset_para = idx + 1;
             let is_inserted_paragraph = ignore_reset_at == Some(reset_para);
-            (current < previous && !is_inserted_paragraph && !is_synthetic).then_some(reset_para)
+            (cell_vpos_resets(&pair[0], &pair[1]) && !is_inserted_paragraph).then_some(reset_para)
         })
         .unwrap_or(paragraphs.len());
 
     apply_cell_vpos_ladder(
-        paragraphs,
-        start_para,
-        stop_para,
+        &mut paragraphs[fragment_start..stop_para],
+        start_para - fragment_start,
+        stop_para - fragment_start,
         styles,
         dpi,
         is_hwp3_variant,
@@ -253,7 +265,7 @@ fn focused_cursor_local_geometry(
     char_offset: usize,
     styles: &ResolvedStyleSet,
 ) -> Option<FocusedCursorLocalGeometry> {
-    use crate::renderer::layout::{compute_char_positions, resolved_to_text_style};
+    use crate::renderer::layout::compute_char_positions;
 
     // Studio cell cursor offset과 이 native edit 경로의 char 인덱스가 일치하는 BMP 문단만
     // 대상으로 한다. 복합 인라인 컨트롤/강제 줄바꿈/탭은 page-tree exact 경로가 담당한다.
@@ -272,7 +284,7 @@ fn focused_cursor_local_geometry(
         return None;
     }
 
-    let composed = compose_paragraph(paragraph);
+    let composed = crate::renderer::composer::compose_paragraph_in_context(paragraph, styles);
     let line_index = composed
         .lines
         .iter()
@@ -314,10 +326,26 @@ fn focused_cursor_local_geometry(
             return None;
         }
         let run_len = run.text.chars().count();
-        let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        let style = run.text_style(styles);
         // Justify underflow의 음수 자간 보정은 line origin/spacing을 별도로 움직인다.
         // cached page run과 같은 위치임을 증명할 수 없으므로 보수적으로 제외한다.
         if alignment == Alignment::Justify && style.letter_spacing < -0.01 {
+            return None;
+        }
+        // 등록 글꼴로 커닝하는 run은 커닝 전 폭과 그린 자리가 다르다. exact 경로에 맡긴다.
+        let kerning_slot =
+            crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index);
+        if style.kerning
+            && styles
+                .kerning_measurement_context
+                .as_ref()
+                .is_some_and(|context| {
+                    context
+                        .layout_session()
+                        .source_handle(kerning_slot)
+                        .is_some()
+                })
+        {
             return None;
         }
         let positions = compute_char_positions(&run.text, &style);
@@ -530,7 +558,7 @@ impl DocumentCore {
         &self,
         section_idx: usize,
         para_idx: usize,
-    ) -> Option<(usize, std::ops::Range<usize>, f64)> {
+    ) -> Option<(usize, std::ops::Range<usize>, f64, (f64, f64))> {
         let section = self.document.sections.get(section_idx)?;
         let host_index = (0..=para_idx).rev().find(|&index| {
             section.paragraphs[index].controls.iter().any(|control| {
@@ -558,6 +586,7 @@ impl DocumentCore {
             column_width,
             &self.styles,
             self.dpi,
+            (layout.body_area.x, layout.body_area.y),
         )?;
         // Carries px, not HWPUNIT: the conversion belongs to `ParagraphBox`, so
         // that one paragraph gets one box however it is reached.
@@ -565,6 +594,7 @@ impl DocumentCore {
             host_index,
             band.paragraph_range,
             column_width,
+            (layout.body_area.x, layout.body_area.y),
         ))
     }
 
@@ -645,12 +675,15 @@ impl DocumentCore {
         let mut staged = DocumentCore::new_empty();
         staged.document = self.document.clone();
         staged.styles = self.styles.clone();
+        staged.font_environment = self.font_environment.clone();
         staged.composed = self.composed.clone();
         staged.dpi = self.dpi;
         staged.respect_vpos_reset = self.respect_vpos_reset;
         staged.batch_mode = false;
         staged.para_column_map = self.para_column_map.clone();
         staged.dirty_sections = vec![true; staged.document.sections.len()];
+        let text_reflowed_paths = self.text_reflowed_table_paths_for_snapshot();
+        staged.restore_text_reflowed_tables_from_snapshot(&text_reflowed_paths);
         staged
     }
 
@@ -661,7 +694,9 @@ impl DocumentCore {
     /// together. Batch mode retains the existing deferred-pagination contract:
     /// only the edited section becomes dirty on the live core.
     fn commit_picture_band_edit(&mut self, section_idx: usize, mut staged: DocumentCore) {
+        let text_reflowed_paths = staged.text_reflowed_table_paths_for_snapshot();
         self.document.sections[section_idx] = staged.document.sections.remove(section_idx);
+        self.restore_text_reflowed_tables_from_snapshot(&text_reflowed_paths);
 
         if self.batch_mode {
             self.invalidate_page_tree_cache();
@@ -704,7 +739,7 @@ impl DocumentCore {
     where
         F: FnOnce(&mut Paragraph),
     {
-        let Some((host_index, old_range, column_width_px)) =
+        let Some((host_index, old_range, column_width_px, paper_origin_px)) =
             self.picture_band_owning_body_paragraph(section_idx, para_idx)
         else {
             return Ok(None);
@@ -728,6 +763,7 @@ impl DocumentCore {
             column_width_px,
             &self.styles,
             self.dpi,
+            paper_origin_px,
         ) else {
             return Err(HwpError::RenderError(format!(
                 "그림 배치 영역({}..)의 편집 결과를 완전한 줄 배치로 만들 수 없습니다",
@@ -742,11 +778,11 @@ impl DocumentCore {
             )));
         }
 
-        for (paragraph, line_segs) in staged_paragraphs[new_range.clone()]
+        for (paragraph, (line_segs, space_metrics)) in staged_paragraphs[new_range.clone()]
             .iter_mut()
-            .zip(new_band.line_segs)
+            .zip(new_band.line_segs.into_iter().zip(new_band.space_metrics))
         {
-            paragraph.replace_line_segs(line_segs);
+            paragraph.replace_line_segs_with_space_metrics(line_segs, space_metrics);
         }
 
         // When an edited paragraph clears the exclusion earlier than before,
@@ -796,7 +832,9 @@ impl DocumentCore {
 
         // This staging core owns the section source and every changed LineSeg
         // together. The caller can expose it only after convergence succeeds.
+        let text_reflowed_paths = self.text_reflowed_table_paths_for_snapshot();
         self.document.sections[section_idx].paragraphs = staged_paragraphs;
+        self.restore_text_reflowed_tables_from_snapshot(&text_reflowed_paths);
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
@@ -1388,6 +1426,19 @@ impl DocumentCore {
         char_offset: usize,
         text: &str,
     ) -> Result<String, HwpError> {
+        self.insert_text_at_caret_native(section_idx, para_idx, char_offset, false, text)
+    }
+
+    /// [#7444] `after_inline_control` 이면 `char_offset` 자리에 놓인 개체 뒤에 넣는다
+    /// ([`Paragraph::insert_text_at_caret`]).
+    pub(crate) fn insert_text_at_caret_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        after_inline_control: bool,
+        text: &str,
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1425,7 +1476,7 @@ impl DocumentCore {
             char_offset,
         );
         let apply_insert = |para: &mut Paragraph| {
-            para.insert_text_at(char_offset, text);
+            para.insert_text_at_caret(char_offset, text, after_inline_control);
             keep_inactive_field_start_outside(para, &before_insertions, new_chars_count);
             keep_inactive_field_end_outside(para, &outside_insertions, new_chars_count);
             if has_clickhere_field_range(para) {
@@ -1855,7 +1906,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -1863,7 +1914,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -1897,12 +1948,13 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
-            [parent_para_idx]
-            .controls
-            .get_mut(control_idx)
-        {
-            table.text_reflowed_after_edit = true;
+        if matches!(
+            self.document.sections[section_idx].paragraphs[parent_para_idx]
+                .controls
+                .get(control_idx),
+            Some(Control::Table(_))
+        ) {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
         }
 
         let (flow_advance_after, local_contribution_after) = {
@@ -2230,12 +2282,13 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if let Some(Control::Table(table)) = self.document.sections[section_idx].paragraphs
-            [parent_para_idx]
-            .controls
-            .get_mut(control_idx)
-        {
-            table.text_reflowed_after_edit = true;
+        if matches!(
+            self.document.sections[section_idx].paragraphs[parent_para_idx]
+                .controls
+                .get(control_idx),
+            Some(Control::Table(_))
+        ) {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
         }
 
         let (flow_advance_after, local_contribution_after) = {
@@ -2541,32 +2594,11 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) {
-        fn mark_table_tree_dirty(table: &mut crate::model::table::Table) {
-            table.dirty = true;
-            // 중첩 표 셀의 서식/텍스트 변경은 최외곽 표만 dirty로 두면 이미 완료된
-            // 앞쪽 page fragment가 이전 TextRun을 재사용할 수 있다. 하위 표도 함께
-            // 무효화해야 p81과 p82 같은 분할 셀이 하나의 새 문자 모양으로 다시 조판된다.
-            for cell in &mut table.cells {
-                for paragraph in &mut cell.paragraphs {
-                    for control in &mut paragraph.controls {
-                        if let Control::Table(child) = control {
-                            mark_table_tree_dirty(child);
-                        }
-                    }
-                }
-            }
-        }
-
-        if let Some(ctrl) = self.document.sections[section_idx].paragraphs[parent_para_idx]
-            .controls
-            .get_mut(control_idx)
-        {
-            match ctrl {
-                Control::Table(table) => mark_table_tree_dirty(table),
-                // Shape는 별도 dirty 필드가 없으므로 section dirty만으로 충분
-                _ => {}
-            }
-        }
+        let _ = control_idx;
+        // The outer paragraph is the measurement-cache owner for every nested
+        // table below this control. One revision bit invalidates the complete
+        // measured subtree without writing lifecycle state into source tables.
+        self.mark_paragraph_dirty(section_idx, parent_para_idx);
     }
 
     pub(crate) fn reflow_cell_paragraph(
@@ -2777,7 +2809,7 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let cell_width_px = hwpunit_to_px(cell_width, self.dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
         let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
@@ -2985,6 +3017,60 @@ impl DocumentCore {
         );
     }
 
+    /// [#6639] 각 셀을 한 번 순회한다. 저장 RowBreak 원점은 유지하고 변경된 조각만 갱신한다.
+    pub(crate) fn flush_cell_format_vpos(&mut self) {
+        use crate::model::identity::walk::{walk, Node};
+
+        if !std::mem::take(&mut self.pending_cell_format_vpos) {
+            return;
+        }
+        let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
+        for section in &mut self.document.sections {
+            walk(&mut section.paragraphs, |node| {
+                let Node::Paragraphs(paragraphs) = node else {
+                    return Ok(());
+                };
+                if !paragraphs.iter().any(|p| p.cell_format_vpos_dirty) {
+                    return Ok(());
+                }
+                // 구조 편집에도 표시가 문단과 함께 이동한다. 좌표 변경 전에 경계를 읽는다.
+                for idx in 1..paragraphs.len() {
+                    let reset = cell_vpos_resets(&paragraphs[idx - 1], &paragraphs[idx]);
+                    paragraphs[idx].cell_vpos_reset = Some(reset);
+                }
+                let stops: Vec<usize> = paragraphs
+                    .windows(2)
+                    .enumerate()
+                    .filter_map(|(idx, pair)| {
+                        cell_vpos_resets(&pair[0], &pair[1]).then_some(idx + 1)
+                    })
+                    .chain(std::iter::once(paragraphs.len()))
+                    .collect();
+                let mut start = 0;
+                for stop in stops {
+                    let fragment = &mut paragraphs[start..stop];
+                    let first = fragment.iter().position(|p| p.cell_format_vpos_dirty);
+                    for para in fragment.iter_mut() {
+                        para.cell_format_vpos_dirty = false;
+                    }
+                    if let Some(first) = first {
+                        apply_cell_vpos_ladder(
+                            fragment,
+                            first,
+                            fragment.len(),
+                            &self.styles,
+                            self.dpi,
+                            is_hwp3_variant,
+                        );
+                    }
+                    start = stop;
+                }
+                Ok(())
+            })
+            .expect("cell formatting traversal is infallible");
+        }
+    }
+
     /// [#4138] 표 셀의 vpos 사다리를 처음부터 끝까지 단조 재구축한다.
     ///
     /// `recalculate_cell_paragraph_vpos` 는 저장 vpos 역행을 RowBreak 조각 경계
@@ -3012,6 +3098,10 @@ impl DocumentCore {
             return;
         };
         let stop_para = cell.paragraphs.len();
+        // Width reflow deliberately discards the old fragment coordinate frames.
+        for para in &mut cell.paragraphs {
+            para.cell_vpos_reset = Some(false);
+        }
         apply_cell_vpos_ladder(
             &mut cell.paragraphs,
             0,
@@ -3121,7 +3211,7 @@ impl DocumentCore {
         else {
             return;
         };
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let cell_width_px = hwpunit_to_px(cell_width, dpi);
         let pad_left_px = hwpunit_to_px(pad_left as i32, dpi);
@@ -3158,7 +3248,7 @@ impl DocumentCore {
         start_para: usize,
         ignore_reset_at: Option<usize>,
     ) {
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let is_hwp3_variant = self.document.layout_profile().hwp3_layout();
         if let Ok(paras) = self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)
@@ -3314,6 +3404,7 @@ impl DocumentCore {
                 }
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
+                    self.forget_text_reflowed_tables_in_paragraph_at(section_idx, mid_para);
                     self.document.sections[section_idx]
                         .paragraphs
                         .remove(mid_para);
@@ -3332,11 +3423,23 @@ impl DocumentCore {
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
                 if start_para + 1 < self.document.sections[section_idx].paragraphs.len() {
+                    let source_table_controls =
+                        self.text_reflowed_table_control_indices_at(section_idx, start_para + 1);
+                    let control_offset = self.document.sections[section_idx].paragraphs[start_para]
+                        .controls
+                        .len();
+                    self.forget_text_reflowed_tables_in_paragraph_at(section_idx, start_para + 1);
                     let next = self.document.sections[section_idx]
                         .paragraphs
                         .remove(start_para + 1);
                     self.remove_composed_paragraph(section_idx, start_para + 1);
                     self.document.sections[section_idx].paragraphs[start_para].merge_from(&next);
+                    self.inherit_text_reflowed_table_controls(
+                        section_idx,
+                        start_para,
+                        control_offset,
+                        &source_table_controls,
+                    )?;
                 }
                 // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                 let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
@@ -3479,7 +3582,7 @@ impl DocumentCore {
                 &self.document.sections[section_idx].paragraphs[para_idx],
             );
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             self.document.sections[section_idx]
                 .paragraphs
@@ -3585,7 +3688,7 @@ impl DocumentCore {
             // 기본 상속은 유지하되, merge undo가 준 원래 문단 메타는 모든 생성 분기에서
             // 동일하게 적용해야 한다 (Task #2342 review).
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             self.document.sections[section_idx]
                 .paragraphs
@@ -3625,7 +3728,7 @@ impl DocumentCore {
         let mut new_para =
             self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
         if let Some(meta) = restore_meta {
-            new_para.apply_meta(meta);
+            restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
         }
 
         // 새 문단을 현재 문단 뒤에 삽입
@@ -3793,9 +3896,120 @@ impl DocumentCore {
         )))
     }
 
-    /// 단 나누기 삽입 (Ctrl+Shift+Enter)
-    /// 커서 위치에서 문단을 분리하고 새 문단에 단 나누기 설정.
-    /// 1단 문서에서는 쪽 나누기와 동일하게 동작.
+    /// CLI/MCP의 문단 앞 쪽 나눔 속성 설정. Ctrl+Enter의 문단 분할과 구분한다.
+    /// 기존 텍스트/문단을 보존하고 다른 break 축과 명시적 저장 여부를 함께 갱신한다.
+    /// 이미 같은 명시적 속성이 있으면 false를 반환한다.
+    pub fn mark_page_break_at_paragraph_start_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<bool, HwpError> {
+        use crate::model::paragraph::ColumnBreakType;
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        if para.column_type == ColumnBreakType::Page
+            && para.raw_break_type & 0x04 != 0
+            && !para.page_break_synthesized
+        {
+            return Ok(false);
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        para.column_type = ColumnBreakType::Page;
+        para.raw_break_type |= 0x04;
+        para.page_break_synthesized = false;
+
+        // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+        self.reflow_paragraph(section_idx, para_idx);
+
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            Some(para_idx..para_idx + 1),
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
+
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+
+        // 구조 분할이 아니라 문단 자신의 속성 변경이다.
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(true)
+    }
+
+    /// CLI/MCP의 문단 앞 단 나눔 속성 설정. 사용자 분할 명령과 구분한다.
+    /// 쪽/단은 직교하는 저장 비트이며 유효 조판 분류는 파서와 같은 Page 우선이다.
+    pub fn mark_column_break_at_paragraph_start_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+    ) -> Result<bool, HwpError> {
+        use crate::model::paragraph::ColumnBreakType;
+        let section = self.document.sections.get(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = section
+            .paragraphs
+            .get(para_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("문단 인덱스 {} 범위 초과", para_idx)))?;
+        if para.raw_break_type & 0x08 != 0 {
+            return Ok(false);
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+        // 예전 IR은 명시적 쪽 속성을 enum에만 보관할 수 있다.
+        // raw 비트를 만들 때 HWP writer의 enum fallback이 사라지므로 함께 보존한다.
+        if para.column_type == ColumnBreakType::Page && !para.page_break_synthesized {
+            para.raw_break_type |= 0x04;
+        }
+        para.raw_break_type |= 0x08;
+        para.column_type =
+            if para.column_type == ColumnBreakType::Page || para.raw_break_type & 0x04 != 0 {
+                ColumnBreakType::Page
+            } else {
+                ColumnBreakType::Column
+            };
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(para);
+        self.reflow_paragraph(section_idx, para_idx);
+        let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            Some(para_idx..para_idx + 1),
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            doc_hwp3_layout,
+        );
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        self.event_log.push(DocumentEvent::ParaFormatChanged {
+            section: section_idx,
+            para: para_idx,
+        });
+        Ok(true)
+    }
+
+    /// 단 나누기 삽입 (Ctrl+Shift+Enter).
+    /// 시작 위치에서도 문단을 분리하고 새 문단에 단 나눔을 설정한다.
+    /// 1단 문서에서는 쪽 나누기와 동일하게 동작한다.
     pub fn insert_column_break_native(
         &mut self,
         section_idx: usize,
@@ -3910,7 +4124,10 @@ impl DocumentCore {
                     cd.column_type = col_type;
                     cd.same_width = same_width;
                     cd.spacing = spacing_hu;
-                    if same_width {
+                    // [#7523] HWP 저장은 raw_attr 가 있으면 그 값을 쓴다 — 비워서 바꾼 필드로
+                    // 속성을 다시 만들게 한다. 옛 단 수의 단별 너비도 새 단에 맞지 않는다.
+                    cd.raw_attr = 0;
+                    if same_width || cd.widths.len() != column_count as usize {
                         cd.widths.clear();
                         cd.gaps.clear();
                     }
@@ -3989,14 +4206,26 @@ impl DocumentCore {
         };
 
         // 현재 문단을 이전 문단에 병합
+        let source_table_controls =
+            self.text_reflowed_table_control_indices_at(section_idx, para_idx);
+        let prev_idx = para_idx - 1;
+        let control_offset = self.document.sections[section_idx].paragraphs[prev_idx]
+            .controls
+            .len();
+        self.forget_text_reflowed_tables_in_paragraph_at(section_idx, para_idx);
         let current_para = self.document.sections[section_idx]
             .paragraphs
             .remove(para_idx);
-        let prev_idx = para_idx - 1;
         let removed_meta =
             super::super::helpers::removed_para_meta_field(&current_para.capture_meta());
         let merge_point =
             self.document.sections[section_idx].paragraphs[prev_idx].merge_from(&current_para);
+        self.inherit_text_reflowed_table_controls(
+            section_idx,
+            prev_idx,
+            control_offset,
+            &source_table_controls,
+        )?;
 
         if preserve_square_ole_wrap_line {
             let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
@@ -4120,6 +4349,7 @@ impl DocumentCore {
             .chars()
             .count();
         self.document.sections[section_idx].raw_stream = None;
+        self.forget_text_reflowed_tables_in_paragraph_at(section_idx, para_idx);
         self.document.sections[section_idx]
             .paragraphs
             .remove(para_idx);
@@ -4331,7 +4561,7 @@ impl DocumentCore {
         let original_vpos = cell_para.line_segs.first().map(|seg| seg.vertical_pos);
         let mut new_para = cell_para.split_at(char_offset);
         if let Some(meta) = restore_meta {
-            new_para.apply_meta(meta);
+            restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
         }
 
         // 새 문단을 셀/글상자에 삽입
@@ -4354,7 +4584,6 @@ impl DocumentCore {
                         .paragraphs
                         .insert(new_cell_para_idx, new_para);
                 }
-                table.dirty = true;
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
@@ -4403,7 +4632,10 @@ impl DocumentCore {
             Some(new_cell_para_idx),
         );
 
-        // raw 스트림 무효화, section dirty, 재페이지네이션
+        // raw 스트림 무효화, section dirty, 재페이지네이션.
+        // dirty 전파는 by_path 변형과 동형 — 셀 문단 분할/병합은 행 높이를
+        // 바꾸므로 최외곽 host 문단의 측정 캐시를 무효화해야 한다.
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -4483,7 +4715,6 @@ impl DocumentCore {
                     removed_meta = removed.capture_meta();
                     merge_point = table.cells[cell_idx].paragraphs[prev_idx].merge_from(&removed);
                 }
-                table.dirty = true;
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
@@ -4541,7 +4772,10 @@ impl DocumentCore {
             None,
         );
 
-        // raw 스트림 무효화, section dirty, 재페이지네이션
+        // raw 스트림 무효화, section dirty, 재페이지네이션.
+        // dirty 전파는 by_path 변형과 동형 — 셀 문단 분할/병합은 행 높이를
+        // 바꾸므로 최외곽 host 문단의 측정 캐시를 무효화해야 한다.
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -5392,6 +5626,7 @@ impl DocumentCore {
                                 start_cut,
                                 end_cut,
                                 is_block_split,
+                                start_cut_is_block,
                                 ..
                             } if *para_index == parent_para_idx
                                 && *control_index == control_idx =>
@@ -5406,6 +5641,7 @@ impl DocumentCore {
                                         start_cut,
                                         end_cut,
                                         *is_block_split,
+                                        *start_cut_is_block,
                                         line_target,
                                         &self.styles,
                                     );
@@ -5591,12 +5827,11 @@ impl DocumentCore {
         let new_chars_count = text.chars().count();
         let active_field = self.active_field.clone();
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        let cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         let outside_insertions = inactive_field_end_insertions(
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );
@@ -5604,7 +5839,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );
@@ -5835,7 +6070,7 @@ impl DocumentCore {
                     .map(|seg| seg.vertical_pos);
                 let mut new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
                 if let Some(meta) = restore_meta {
-                    new_para.apply_meta(meta);
+                    restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
                 }
                 cell.paragraphs.insert(cell_para_idx + 1, new_para);
                 break;
@@ -6615,11 +6850,14 @@ mod tests {
         (core, vec![(0, 0, 0), (0, 1, 0)])
     }
 
+    /// [#7412] 셀 내용 상자는 한/글 저장본처럼 폭을 4 HWPUNIT 격자로 내려 발행한다.
+    /// 소유자 폭(5002)과 원시 폭(4998)은 격자 뒤에도 5000 대 4996 으로 갈린다.
     fn resolved_table_frame_segment_width(dpi: f64) -> i32 {
-        crate::renderer::px_to_hwpunit(
+        let width = crate::renderer::px_to_hwpunit(
             crate::renderer::hwpunit_to_px(RESOLVED_TABLE_FRAME_WIDTH, dpi),
             dpi,
-        )
+        );
+        width - width.rem_euclid(4)
     }
 
     #[test]
@@ -7453,12 +7691,10 @@ mod tests {
         }
     }
 
-    /// [#4149] 셀 문단 편집의 단일 관문 reflow_cell_paragraph / _by_path 를 지나면
-    /// 단일줄 과밀 판정 memo 가 미판정으로 돌아가야 한다 (reflow_line_segs 수렴점).
+    /// 셀 문단 편집 관문은 새 줄을 source partition으로 원자 발행한다.
     #[test]
-    fn issue4149_reflow_cell_paragraph_clears_single_line_overflow_memo() {
+    fn reflow_cell_paragraph_publishes_current_stored_partition() {
         use crate::model::control::Control;
-        use crate::model::paragraph::SingleLineOverflowMemo;
         use crate::model::table::{Cell, Table};
 
         let mut core = DocumentCore::new_empty();
@@ -7472,9 +7708,7 @@ mod tests {
             start_pos: 0,
             char_shape_id: 0,
         }];
-        let key = SingleLineOverflowMemo::width_key(123.0);
-        cell_para.single_line_overflow_memo.set(key, true);
-        assert!(!cell_para.single_line_overflow_memo.is_unjudged());
+        cell_para.invalidate_layout_inputs();
 
         let table = Table {
             cells: vec![Cell {
@@ -7491,47 +7725,33 @@ mod tests {
 
         // flat 관문
         core.reflow_cell_paragraph(0, 0, ctrl_idx, 0, 0);
-        let memo_after = |core: &DocumentCore| {
+        let partition_is_current = |core: &DocumentCore| {
             let Control::Table(t) = &core.document.sections[0].paragraphs[0].controls[ctrl_idx]
             else {
                 panic!("expected table");
             };
-            t.cells[0].paragraphs[0]
-                .single_line_overflow_memo
-                .is_unjudged()
+            !t.cells[0].paragraphs[0].stored_text_partition_is_dirty()
         };
-        assert!(
-            memo_after(&core),
-            "reflow_cell_paragraph 경유 후 memo 는 미판정이어야 함"
-        );
+        assert!(partition_is_current(&core));
 
-        // path 관문도 동일하게 비워야 한다.
+        // path 관문도 같은 source-partition publication을 소유한다.
         {
             let Control::Table(t) = &mut core.document.sections[0].paragraphs[0].controls[ctrl_idx]
             else {
                 panic!("expected table");
             };
-            t.cells[0].paragraphs[0]
-                .single_line_overflow_memo
-                .set(key, true);
+            t.cells[0].paragraphs[0].invalidate_layout_inputs();
         }
         core.reflow_cell_paragraph_by_path(0, 0, &[(ctrl_idx, 0, 0)], 0);
-        assert!(
-            memo_after(&core),
-            "reflow_cell_paragraph_by_path 경유 후 memo 는 미판정이어야 함"
-        );
+        assert!(partition_is_current(&core));
     }
 
-    /// [#4149 적대 리뷰] 셀 문단 인라인 그림 삭제가 char_offsets 를 −8 시프트하며
-    /// compose 입력을 바꾸는데, 남은 그림 height>0 분기
-    /// (reflow_paragraph_line_segs_after_control_delete branch 1)는 reflow_line_segs
-    /// 를 타지 않아 memo 무효화가 누락됐었다 — stale Some(false) verdict 가
-    /// 재래핑을 억제하면 과폭 절단 렌더. 실명령 경로로 무효화를 고정한다.
+    /// 셀 그림 삭제 뒤 renderer verdict는 새 composition에만 만들어진다.
     #[test]
-    fn issue4149_cell_picture_delete_clears_single_line_overflow_memo() {
+    fn cell_picture_delete_updates_source_without_cache_state() {
         use crate::model::control::Control;
         use crate::model::image::Picture;
-        use crate::model::paragraph::{LineSeg, SingleLineOverflowMemo};
+        use crate::model::paragraph::LineSeg;
         use crate::model::table::{Cell, Table};
 
         let mut core = DocumentCore::new_empty();
@@ -7563,11 +7783,6 @@ mod tests {
         cell_para.controls.push(Control::Picture(Box::new(pic)));
         cell_para.ctrl_data_records = vec![None, None];
 
-        // 렌더 1회로 설정된 판정을 모사 — 삭제 후 fresh 실측과 모순일 수 있는
-        // stale verdict.
-        let stale_key = SingleLineOverflowMemo::width_key(321.0);
-        cell_para.single_line_overflow_memo.set(stale_key, false);
-
         let table = Table {
             cells: vec![Cell {
                 width: 8000,
@@ -7593,14 +7808,6 @@ mod tests {
         };
         let para = &t.cells[0].paragraphs[0];
         assert_eq!(para.controls.len(), 1, "그림 1개가 삭제돼야 함");
-        assert!(
-            para.single_line_overflow_memo.get(stale_key).is_none(),
-            "인라인 그림 삭제 후 stale verdict 가 남으면 재래핑 억제 → 과폭 절단 렌더"
-        );
-        assert!(
-            para.single_line_overflow_memo.is_unjudged(),
-            "삭제 직후 memo 는 미판정 상태여야 함 (다음 렌더에서 fresh 재판정)"
-        );
     }
 
     #[test]
@@ -7653,6 +7860,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("p325 Picture frame");
         assert_eq!(initial_band.paragraph_range, HOST..DOWNSTREAM);
@@ -7717,6 +7925,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("edited p325 Picture frame");
         let inserted_range = inserted_band.paragraph_range.clone();
@@ -7773,6 +7982,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("inserted Picture frame before delete");
         assert_eq!(before_delete_band.paragraph_range, HOST..331);
@@ -7784,6 +7994,7 @@ mod tests {
             column_width_px,
             &styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("restored p325 Picture frame");
         let deleted_range = deleted_band.paragraph_range.clone();
@@ -7955,7 +8166,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp) = core
+        let (_, _, before_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("initial Picture band");
         assert_eq!(
@@ -7967,7 +8178,7 @@ mod tests {
             .expect("host insert succeeds");
 
         let after_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp) = core
+        let (_, fresh_range, after_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("Picture band after pagination");
         assert_eq!(after_col, 1, "the expanded host moves to the wide column");
@@ -7982,6 +8193,7 @@ mod tests {
             after_width_hwp,
             &core.styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("fresh band at the post-pagination column width");
         assert_eq!(fresh_band.paragraph_range, fresh_range);
@@ -8047,7 +8259,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, _, before_width_hwp) = core
+        let (_, _, before_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("initial Picture band");
         assert_eq!(before_col, 0, "fixture starts in the narrow column");
@@ -8059,7 +8271,7 @@ mod tests {
         core.end_batch_native().expect("end batch");
 
         let after_flush_col = core.para_column_map[0][HOST];
-        let (_, fresh_range, after_width_hwp) = core
+        let (_, fresh_range, after_width_hwp, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("Picture band after final pagination");
         assert_eq!(
@@ -8078,6 +8290,7 @@ mod tests {
             after_width_hwp,
             &core.styles,
             DPI,
+            (0.0, 0.0),
         )
         .expect("fresh band at the post-batch column width");
         assert_eq!(fresh_band.paragraph_range, fresh_range);
@@ -8153,7 +8366,7 @@ mod tests {
         core.paginate();
 
         let before_col = core.para_column_map[0][HOST];
-        let (_, before_range, before_width_px) = core
+        let (_, before_range, before_width_px, _) = core
             .picture_band_owning_body_paragraph(0, HOST)
             .expect("supported Picture band in the wide source column");
         assert_eq!(before_col, 0, "fixture starts in the wide column");

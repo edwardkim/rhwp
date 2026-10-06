@@ -36,6 +36,11 @@ pub struct SourceProvenance {
     /// rhwp HWPX→HWP 변환본 (`/RhwpHwpxOrigin` 마커, Issue #1770) —
     /// `is_hwpx_variant` 동치.
     pub hwpx_lineage: bool,
+    /// [#7051] 저장 줄 사다리가 HFT 한글 전용 face 의 ASCII 반각 조판을 증언한다.
+    /// 계보 신호(`hwp3_lineage`)가 없는 저장본 — HWP3 변환 HWP5 를 한컴이 HWPX 로 다시
+    /// 저장한 파일 등 — 을 위해 `DocumentCore` 가 로드 시 한 번 판정한다
+    /// (`renderer::hft_ascii_evidence`). 파서는 `false` 로 둔다.
+    pub hft_ascii_halfwidth_witnessed: bool,
 }
 
 /// 레이아웃 호환 정책 질의 표면.
@@ -54,6 +59,10 @@ pub struct LayoutCompatibilityProfile {
     hwp5_origin_hwpx: bool,
     native_hwp5_layout: bool,
     hangul2024_layout: bool,
+    /// 이 세션에서 편집 명령이 문서를 변조했다(native HWP5 섹션의 raw_stream 소실).
+    /// 저장 시점 형상 전용 보정(선언 높이 fit-down 등)은 편집 문서에서 꺼야 한다 —
+    /// 한글 편집기도 편집 중에는 측정 기반으로 재조판한다.
+    session_edited: bool,
 }
 
 impl LayoutCompatibilityProfile {
@@ -74,7 +83,20 @@ impl LayoutCompatibilityProfile {
             hwp5_origin_hwpx,
             native_hwp5_layout,
             hangul2024_layout: false,
+            session_edited: false,
         }
+    }
+
+    /// 이 세션의 편집 변조를 표시한다. `Document::layout_profile` 만 이 값을
+    /// 유도한다(native HWP5 raw_stream 소실 신호).
+    pub(crate) fn with_session_edited(mut self, enabled: bool) -> Self {
+        self.session_edited = enabled;
+        self
+    }
+
+    /// 이 세션에서 편집 명령이 문서를 변조했는가.
+    pub fn session_edited(&self) -> bool {
+        self.session_edited
     }
 
     /// HWP3 계보 레이아웃 보정(ParaShape 단위 정규화 등) 적용 여부 —

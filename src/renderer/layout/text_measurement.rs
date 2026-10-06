@@ -217,6 +217,25 @@ pub fn extract_tab_leaders(text: &str, positions: &[f64], style: &TextStyle) -> 
 /// 탭 리더 추출 (tab_extended 지원)
 /// tab_extended: HWPX 인라인 탭 또는 HWP 탭 확장 데이터
 /// (ext[0..2] = 탭 폭(UINT32), ext[2] = (탭 종류 << 8) | 채움 종류)
+/// [#7292] 점끌기 앞 여백 — 뒤 여백과 같은 `0.25em`.
+///
+/// 한/글은 탭 채움을 앞 글자에 붙이지 않고 한 칸 비우고 시작한다. 두 정본에서 같은
+/// 비율이 나온다(`pdftotext -bbox` 의 advance 상자 기준).
+///
+/// ```text
+///   문서                              앞 여백    그 줄 em    비율
+///   1170000-200500003 (한/글 2020)   2.8~2.9pt  11.5~12.5pt  0.23~0.24 em
+///   samples/KTX.hwp   (한/글 2022)   3.7pt      15.0pt       0.247 em
+/// ```
+///
+/// 종전에는 이 여백이 **0**(탭 시작에 바로 붙임)이라 같은 줄에 점이 3~4개 더 들어가고
+/// 글자에 붙어 보였다(정본 63·92개 ↔ 우리 66·96개).
+///
+/// ⚠ 뒤 여백은 규칙이 아니다 — 점은 항상 같은 x 에서 끝나고(탭 정지점) 쪽번호가 오른쪽
+/// 정렬되므로, 그 사이 간격은 번호 폭에 따라 달라진다(정본 실측 5.76pt ↔ 9.2pt).
+/// 그래서 종전 `0.25em` 을 그대로 둔다.
+pub const TAB_LEADER_HEAD_GAP_EM: f64 = 0.25;
+
 pub fn extract_tab_leaders_with_extended(
     text: &str,
     positions: &[f64],
@@ -278,6 +297,8 @@ pub fn extract_tab_leaders_with_extended(
             // 오른쪽 정렬 텍스트 앞에 공백 1개 간격 확보
             let fill_type = if ext_fill > 0 { ext_fill } else { tabdef_fill };
             if fill_type > 0 && after_x > before_x + 1.0 {
+                // [#7292] 앞 여백은 종전에 0 이었다 — 상수 주석의 정본 실측을 본다.
+                let head_gap = style.font_size * TAB_LEADER_HEAD_GAP_EM;
                 let space_gap = style.font_size * 0.25;
                 let content_x = text.chars().enumerate().skip(i + 1).find_map(|(j, ch)| {
                     if ch != '\t' && !ch.is_whitespace() && j < positions.len() {
@@ -290,9 +311,10 @@ pub fn extract_tab_leaders_with_extended(
                     .map(|x| x - space_gap)
                     .unwrap_or(after_x - space_gap)
                     .min(after_x - space_gap);
+                let start_x = (before_x + head_gap).min(after_x);
                 leaders.push(TabLeaderInfo {
-                    start_x: before_x,
-                    end_x: end_x.max(before_x),
+                    start_x,
+                    end_x: end_x.max(start_x),
                     fill_type,
                 });
             }
@@ -336,8 +358,17 @@ fn compute_char_positions_walk(
     let cluster_len = build_cluster_len(&chars);
     let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
 
-    let char_width =
-        |i: usize| -> f64 { char_width_decision(&chars, &cluster_len, i, style).final_width_px };
+    let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
+    let char_width = |i: usize| -> f64 {
+        char_width_decision(
+            &chars,
+            &cluster_len,
+            i,
+            style,
+            supplemental.as_ref().is_some_and(|mask| mask[i]),
+        )
+        .final_width_px
+    };
 
     let mut tab_char_idx = 0usize; // inline_tabs 인덱스
     for i in 0..char_count {
@@ -347,8 +378,14 @@ fn compute_char_positions_walk(
             continue;
         }
         if c == '\t' {
-            if tab_char_idx < style.inline_tabs.len() {
-                let ext = &style.inline_tabs[tab_char_idx];
+            // [#7170] 자리표(저장 폭 없음)는 저장값이 아니다 — 순번만 소비하고 아래
+            // `TabDef` 기준 재계산으로 내려간다. 폭 0 을 결과 위치로 읽으면 탭이
+            // 무폭이 된다(#1892).
+            let stored_ext = style
+                .inline_tabs
+                .get(tab_char_idx)
+                .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+            if let Some(ext) = stored_ext {
                 x = inline_tab_x(i, x, ext, &chars, &cluster_len, &char_width);
                 tab_char_idx += 1;
             } else if has_custom_tabs {
@@ -427,16 +464,31 @@ fn compute_char_positions_walk(
 
 pub struct EmbeddedTextMeasurer;
 
-impl TextMeasurer for EmbeddedTextMeasurer {
-    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+impl EmbeddedTextMeasurer {
+    /// 반올림 없는 폭 — 본 구현 전체(사용자 탭 스톱·인라인 탭 ext 포함)를 그대로 쓰고
+    /// 마지막 `round()` 만 하지 않는다.
+    ///
+    /// [#7254] `estimate_text_width` 는 이 값을 `round()` 해서 돌려준다. 곧 둘은 같은
+    /// 계산이고 차이는 마지막 반올림 하나다. `estimate_text_width_unrounded` 와 혼동하지
+    /// 말 것 — 그쪽은 줄바꿈 엔진 전용의 **다른 구현**이라 사용자 탭 스톱과 인라인 탭 ext
+    /// 데이터를 읽지 않는다.
+    fn estimate_text_width_exact(&self, text: &str, style: &TextStyle) -> f64 {
         let (font_size, _, tab_w) = style_params(style);
         let chars: Vec<char> = text.chars().collect();
         let cluster_len = build_cluster_len(&chars);
         let char_count = chars.len();
         let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
 
+        let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
         let char_width = |i: usize| -> f64 {
-            char_width_decision(&chars, &cluster_len, i, style).final_width_px
+            char_width_decision(
+                &chars,
+                &cluster_len,
+                i,
+                style,
+                supplemental.as_ref().is_some_and(|mask| mask[i]),
+            )
+            .final_width_px
         };
 
         let mut total = 0.0;
@@ -579,7 +631,13 @@ impl TextMeasurer for EmbeddedTextMeasurer {
             }
             total += char_width(i);
         }
-        total.round()
+        total
+    }
+}
+
+impl TextMeasurer for EmbeddedTextMeasurer {
+    fn estimate_text_width(&self, text: &str, style: &TextStyle) -> f64 {
+        self.estimate_text_width_exact(text, style).round()
     }
 
     fn compute_char_positions(&self, text: &str, style: &TextStyle) -> Vec<f64> {
@@ -768,7 +826,16 @@ pub(crate) fn resolved_to_text_style(
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
             font_family: cs.font_family_for_lang(lang_index).to_string(),
-            font_size: cs.font_size,
+            supplemental_metrics: styles.supplemental_metrics.clone(),
+            font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
+            // [#7391] 폭만 선언 face 의 표로 되돌린다. 표시 글꼴(`font_family`)은 그대로다.
+            metric_font_family: cs.metric_face_for_lang(lang_index).map(str::to_string),
+            // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
+            font_space_em: cs.font_space_em,
+            layout_half_space: false,
+            hft_hangul_face: styles.hft_ascii_halfwidth && cs.hft_hangul_face_for_lang(lang_index),
+            hft_fullwidth_dot: cs.hft_fullwidth_dot_for_lang(lang_index),
+            font_size: cs.font_size_for_lang(lang_index),
             color: cs.text_color,
             bold: cs.bold,
             italic: cs.italic,
@@ -807,6 +874,16 @@ pub(crate) fn resolved_to_text_style(
             underline_color: cs.underline_color,
             strike_color: cs.strike_color,
             shade_color: cs.shade_color,
+            // [#7418] 한글 등 영문 외 슬롯 run 에서 ASCII 구두점은 영문 슬롯 메트릭으로 잰다.
+            ascii_punct_latin: (lang_index != 1 && cs.ascii_punct_latin_slot).then(|| {
+                Box::new(crate::renderer::LatinSlotMetrics {
+                    font_family: cs.font_family_for_lang(1).to_string(),
+                    metric_font_family: cs.metric_face_for_lang(1).map(str::to_string),
+                    font_metric_trusted: cs.font_metric_trusted_for_lang(1),
+                    letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
+                    ratio: cs.ratio_for_lang(1),
+                })
+            }),
         }
     } else {
         TextStyle::default()
@@ -865,6 +942,32 @@ fn is_monospace_metric(metric: &font_metrics_data::FontMetric) -> bool {
     count >= 16
 }
 
+/// [#7092] Latin-1 보충(U+00A0~U+00FF) 표가 **폭 정보를 담지 못한 표**인지 판정한다.
+///
+/// 메트릭 DB 는 글리프가 없는 글자를 0 으로 적으므로, 보통은 `em_size` 값도 실제
+/// 전진폭이다. 다만 표의 값이 **0 과 `em_size` 뿐**이면 글자별 폭을 재지 못한 채 채운
+/// 표라 em 을 근거로 쓸 수 없다. 메트릭 DB 570종 중 이 꼴은 20종(휴먼·안상수 계열)이다.
+fn latin1_table_is_uninformative(metric: &font_metrics_data::FontMetric) -> bool {
+    let mut seen = 0u32;
+    for range in metric.latin_ranges {
+        if range.start > 0x00FF || range.end < 0x00A0 {
+            continue;
+        }
+        for (i, &w) in range.widths.iter().enumerate() {
+            let code = range.start + i as u32;
+            if !(0x00A0..=0x00FF).contains(&code) {
+                continue;
+            }
+            seen += 1;
+            if w != 0 && w != metric.em_size {
+                return false;
+            }
+        }
+    }
+    // 표본이 없으면 판단 근거가 없다 — 종전 동작(좁힘 유지)을 택한다.
+    seen > 0
+}
+
 /// 요청 폰트의 내장 메트릭 DB 등록 여부.
 ///
 /// `compute_char_positions` 의 advance 가 실제 글리프 폭(메트릭 DB)에서
@@ -888,6 +991,28 @@ fn quantize_hwp_px(px: f64) -> f64 {
     hwp as f64 / 75.0
 }
 
+/// [#7390] `KoPubDotum` 기본 라틴 문자(U+0020~U+007E) 전진폭, 1000em 기준.
+///
+/// KOPUS 배포본 `ttfs/kopub/KoPubDotum-{Light,Medium,Bold}.ttf` 의 `cmap`+`hmtx` 직독.
+/// 굵기 3종이 완전히 같아 한 벌만 둔다. 공백(첫 항목 290)은 **쓰지 않는다** —
+/// 위 `kopub_char_width` 의 반각 갈래가 먼저 반환한다.
+static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
+    290, 300, 320, 590, 590, 874, 706, 180, 310, 310, 446, 590, 300, 570, 300, 446, 563, 563, 563,
+    563, 563, 563, 563, 563, 563, 563, 316, 316, 425, 590, 425, 486, 882, 662, 664, 664, 713, 609,
+    555, 712, 718, 283, 500, 609, 555, 872, 718, 758, 609, 758, 664, 601, 555, 718, 621, 990, 609,
+    609, 555, 310, 446, 310, 434, 490, 291, 506, 562, 506, 562, 562, 341, 562, 562, 232, 232, 506,
+    232, 891, 562, 549, 562, 562, 341, 506, 341, 562, 504, 802, 506, 504, 451, 310, 386, 310, 527,
+];
+
+/// [#7390] `KoPubBatang` 기본 라틴 문자 전진폭. 위와 같은 출처·같은 규약이다.
+static KOPUB_BATANG_LATIN_0: [u16; 95] = [
+    312, 312, 312, 573, 573, 745, 789, 312, 312, 312, 419, 648, 312, 503, 312, 468, 573, 573, 573,
+    573, 573, 573, 573, 573, 573, 573, 312, 312, 484, 556, 484, 468, 834, 668, 640, 708, 770, 590,
+    554, 768, 770, 352, 358, 746, 552, 874, 778, 812, 612, 816, 672, 532, 652, 740, 686, 954, 708,
+    706, 638, 312, 468, 312, 477, 540, 312, 558, 606, 536, 592, 548, 360, 548, 624, 324, 282, 564,
+    288, 900, 612, 612, 632, 596, 416, 432, 350, 604, 506, 772, 588, 516, 476, 312, 468, 312, 648,
+];
+
 fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
     let lower = primary_name.to_lowercase();
     let is_dotum = primary_name.contains("KoPub돋움체") || lower.contains("kopub dotum");
@@ -896,20 +1021,43 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return None;
     }
 
+    // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
+    // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
+    // `pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf`(KoPub 설치 환경
+    // 인쇄, 서브셋 내장)를 세 방법으로 재면 모두 같은 곳을 가리킨다.
+    //
+    // ```text
+    //   연속 공백 쌍        n=359   0.4767 em (그려진 폭)
+    //   공백 4개 이상 덩어리 n=59    0.4767 em
+    //   183줄 최소제곱      장평 k=0.9510 · 자연 공백 0.5045 em
+    //     고정값별 잔차 중앙: 0.290 -> 0.669 · 0.436 -> 0.314 · 0.484 -> 0.249 · 0.500 -> 0.269
+    // ```
+    //
+    // 글꼴 값 0.290 은 잔차가 2.7배로 가장 나쁘다. 반각 0.5 를 유지한다.
     if c == ' ' {
         return Some(quantize_hwp_px(font_size * 0.5));
     }
+    // [#7390] ASCII 는 종전에 **일률 0.5em** 이었다. 실제 KoPub 은 비례 글꼴이라
+    // `i` 232 · `N`/`H` 718 처럼 3배 넘게 갈린다(1000em 기준). 아래 표는 KOPUS 배포본
+    // `KoPubDotum-*.ttf` / `KoPubBatang-*.ttf` 의 `cmap`+`hmtx` 직독이고, 굵기 3종의
+    // ASCII 전진폭이 **완전히 같아** 계열당 한 벌이면 된다. 같은 표가 위 정본에 내장된
+    // `KoPubDotumLight` 서브셋의 `/Widths` 와 검사한 18글자 전건에서 일치한다.
+    if let Some(index) = (c as u32)
+        .checked_sub(0x20)
+        .filter(|_| ('\u{20}'..='\u{7E}').contains(&c))
+    {
+        let table = if is_dotum {
+            &KOPUB_DOTUM_LATIN_0
+        } else {
+            &KOPUB_BATANG_LATIN_0
+        };
+        let units = table[index as usize];
+        if units > 0 {
+            return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
+        }
+    }
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    // [#2239] 괄호 — KoPub 경로는 86712 한컴 PDF 글리프 직독 실측(13px 문서
-    // 괄호 4px ≈ 0.3em, #2195 stage23)으로 narrow 유지. is_narrow_punctuation
-    // 의 괄호가 폰트 한정(is_narrow_paren_for_font)으로 빠지면서 여기서 보존.
-    if matches!(c, '(' | ')') {
-        return Some(quantize_hwp_px(font_size * 0.3));
-    }
-    if c.is_ascii() {
-        return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
         // [#6389] KoPub돋움체 한글 전각은 872/1000em — 편람 kopub 오라클 PDF 의
@@ -929,53 +1077,79 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
     None
 }
 
-/// #3820 `76076_regulatory_analysis` 한컴 PDF p35의 한양중고딕 공백 advance.
+/// KoPub 양쪽 정렬의 새 줄 경계를 판단할 때 쓰는 실제 글꼴 공백폭.
+/// 저장 줄의 반각 전진폭은 유지하고, 재조판에서 압축 가능한 공백만 hmtx로 잰다.
+pub(crate) fn kopub_space_advance_em(style: &TextStyle) -> Option<f64> {
+    let primary = style.font_family.split(',').next()?.trim();
+    let lower = primary.to_lowercase();
+    let units = if primary.contains("KoPub돋움체") || lower.contains("kopub dotum") {
+        290.0
+    } else if primary.contains("KoPub바탕체") || lower.contains("kopub batang") {
+        312.0
+    } else {
+        return None;
+    };
+    Some(units / 1000.0)
+}
+
+/// 한양중고딕의 자연 공백은 반각이다.
 ///
-/// HWP의 일반적인 U+0020 반각 규약(`em/2`)과 달리, 원명 `한양중고딕`으로
-/// 작성된 표 본문은 한컴 PDF의 p35 line decision에 맞춘 550/1024em advance가 필요하다. p35의
-/// 107자 무-`LINE_SEG` 셀에서 한글 advance와 cell 폭은 RHWP와 일치하지만, 이
-/// 공백 차이(약 2.17px/space)가 누적되어 `…반죽된` 뒤 `용` 한 글자가 잘못
-/// 앞줄에 남는다. 자동 생성 TTF hmtx 테이블은 바꾸지 않고 PDF의 line-decision
-/// 보정만 이 원명에 국한한다. `HY중고딕`은 별 face이므로 반각 규약을 유지한다.
-const HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS: u16 = 550;
+/// 종전 550/1024em은 `76076` 35쪽의 양쪽 정렬된 줄에서 얻은 값으로,
+/// 줄을 채우며 늘어난 공백을 자연 폭으로 재사용했다. 독립 한컴 2020 PDF의
+/// 늘림 없는 말미 줄은 약 0.5em이며, `80168` 한컴 2024 PDF도 같은 반각을 쓴다.
+/// 줄 나눔은 자연 폭으로 계산하고 양쪽 정렬의 늘림은 실제 배치에서 적용한다.
+const HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS: u16 = 512;
 
 fn hanyang_junggothic_pdf_space_width(primary_name: &str) -> Option<u16> {
     (primary_name == "한양중고딕").then_some(HANYANG_JUNGGOTHIC_PDF_SPACE_UNITS)
 }
 
-/// #3820 `76076_regulatory_analysis` 한컴 PDF p81의 한양신명조 공백 advance.
-///
-/// HWP 원본은 `한양신명조`를 지정하지만 기준 PDF의 실제 word gap은
-/// 411/1024em(14pt에서 약 5.64pt)이다. 임베드 HFT의 U+0020 hmtx(518/1024em)를
-/// 그대로 쓰면 p81의 중첩 표에서 여덟 공백마다 차이가 누적되어 `좌석안전`의
-/// `전`이 다음 줄로 밀리고, 뒤의 간접편익 표가 p82로 넘어간다. 글리프·셀 폭·
-/// 저장 510HU margin은 PDF와 일치하므로 이 standard-body 원명 U+0020 line-decision만
-/// 보정한다.
-///
-/// 같은 원명이라도 10pt 접수증은 기준 PDF에서 일반 반각을 쓴다. face 이름만으로
-/// 411/1024em을 적용하면 날짜의 누적 공백이 줄어 `㊞`이 도장 원 밖으로 밀린다.
-const HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS: u16 = 411;
-/// `issue1949` HWPX standard-body는 12pt, #3820 p81 표는 14pt다. 두 문서 모두
-/// 411/1024em line-decision을 쓰지만, 10pt 접수증은 일반 반각이다.
-const HANYANG_SHINMYEONGJO_PDF_SPACE_MIN_FONT_SIZE_PX: f64 = 16.0; // 12pt
-
-fn hanyang_shinmyeongjo_pdf_space_width(primary_name: &str, font_size: f64) -> Option<u16> {
-    (primary_name == "한양신명조"
-        && font_size + 0.01 >= HANYANG_SHINMYEONGJO_PDF_SPACE_MIN_FONT_SIZE_PX)
-        .then_some(HANYANG_SHINMYEONGJO_PDF_SPACE_UNITS)
-}
-
-fn hancom_pdf_space_width(primary_name: &str, font_size: f64) -> Option<u16> {
+// [#7418] 한양신명조는 반각 공백이다. 종전의 12pt 이상 411/1024em 보정(#3820)은
+// `76076` p81 의 **condense 25 문단**에서 줄인 공백을 자연폭으로 잘못 읽은 값이었다
+// (0.5em × 80% ≈ 0.40em). 같은 PDF 에서 늘림·줄임이 없는 줄의 공백은 13pt 58줄 ·
+// 14pt 14줄이 0.5em 이다. 12pt 이상 본문은 condense 25, 10pt 접수증은 condense 0 이라
+// 글자 크기 하한이 condense 를 대신 갈랐던 것이다. 줄임은 이제 줄 나눔의 condense
+// 규칙(`text_token_fits_line_hwp`)이 맡는다.
+fn hancom_pdf_space_width(primary_name: &str) -> Option<u16> {
     hanyang_junggothic_pdf_space_width(primary_name)
-        .or_else(|| hanyang_shinmyeongjo_pdf_space_width(primary_name, font_size))
 }
 
-/// [#2070] ㆍ(U+318D) 폭은 SYMBOL 폰트별: 한양신명조 = 전각(사다리 v3 실측),
-/// 명조(HY견명조 치환) 등 여타 = 반각 (80168 개정안{{7}} p9/p13 '시ㆍ도조례'
-/// 1줄 오라클, 개정안{{1}} P21 마크와 반각 양립 검증). embedded 메트릭
-/// (HY견명조 수록분)이 전각이라 룩업보다 앞서 판정하되, 함초롬(HCR) 계열은
-/// embedded 메트릭을 신뢰한다 (None 반환). [#2279] 한컴바탕/한컴돋움
-/// (Haansoft 실메트릭, ㆍ=1.0em)도 동일하게 embedded 메트릭을 신뢰한다.
+/// ㆍ(U+318D) 는 전각이다. 메트릭이 있는 글꼴은 메트릭을 믿는다(`None`).
+///
+/// [#7080] 종전에는 한양신명조를 뺀 **모든 글꼴에 `font_size * 0.5`** 를 박았다. 이 함수가
+/// 메트릭 조회보다 **앞서** 불리므로, 메트릭 DB 도 `is_cjk_char` 휴리스틱도 전각을 주는데
+/// 결과는 반각이 되는 구조였다 — `ㆍ` 하나마다 뒤 글자가 0.5 em 씩 왼쪽으로 밀린다.
+///
+/// 반각 규칙의 근거는 `#2070` 주석의 *"80168 개정안{{7}} p9/p13 '시ㆍ도조례' 1줄 오라클"*
+/// 한 줄이었다. 저장소의 한컴 정본을 전수로 재면 **반각이 한 건도 없다.**
+///
+/// ```text
+///   정본 PDF 608개(앞 6쪽)   U+318D 관측 158회 / 문서 38개
+///     0.80 em 이상  158회 = 전건
+///     반각(0.35~0.65) 0회
+///
+///   글꼴별 전진 중앙값
+///     휴먼명조 1.000(n=73) · Batang 0.992(n=61) · MalgunGothic 0.880(n=9)
+///     Dotum 1.000(n=8) · Haansoft Batang 1.001(n=6) · BatangChe 1.001(n=1)
+/// ```
+///
+/// `#2070` 이 지목한 80168 도 쪽 제한 없이 다시 읽으면 같다 — `시ㆍ도조례` 가 세 글꼴
+/// 모두 전각이다(`pdf/80168_regulatory_analysis-2022.pdf` 외 2판, 216회 전건 0.8 em 이상).
+///
+/// ```text
+///   p21  Batang        그밖에시ㆍ도조례로   adv 1.001  /W 1.001
+///   p29  MalgunGothic  에서 시ㆍ도조례로    adv 1.001  /W 1.001
+///   p78  휴먼명조       1. 시ㆍ도조례로      adv 1.001  /W 1.001
+/// ```
+///
+/// ⚠ 다만 `#2070` 이 본 것은 같은 문서번호의 **개정안 첨부**이고 위는 **규제영향분석서
+/// 첨부**다. 같은 파일이 아니므로 그 관측 자체를 반증한 것은 아니다. 그 첨부가 나오면
+/// 다시 재야 한다. 전수에서 반각이 0회인 이상 **반각을 기본값으로 둘 근거는 없다.**
+///
+/// 폴백으로 남겨 두는 이유는 메트릭이 **없는** 글꼴 때문이다 — 이 문서들이 `ㆍ` 에 태우는
+/// 사용자(USER) 슬롯 글꼴 `명조` 가 그렇다(별칭도 메트릭도 없다). 그때도 답은 전각이다.
+/// [#2279] 한컴바탕·한컴돋움과 함초롬(HCR) 계열은 종전대로 실측 메트릭을 믿는다(그쪽도
+/// `ㆍ` = 1.0 em 이라 결과는 같다).
 pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Option<f64> {
     let fam = font_family.split(',').next().unwrap_or("").trim();
     if fam.contains("함초롬")
@@ -985,11 +1159,7 @@ pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Opti
     {
         return None;
     }
-    Some(if fam.contains("한양신명조") {
-        font_size
-    } else {
-        font_size * 0.5
-    })
+    Some(font_size)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -1024,6 +1194,28 @@ fn measure_char_width_embedded_decision<'a>(
     c: char,
     font_size: f64,
 ) -> EmbeddedWidthDecision<'a> {
+    measure_char_width_embedded_decision_for_font(
+        font_family,
+        bold,
+        italic,
+        c,
+        font_size,
+        false,
+        false,
+    )
+}
+
+/// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
+/// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
+fn measure_char_width_embedded_decision_for_font<'a>(
+    font_family: &'a str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+    font_metric_trusted: bool,
+    hft_hangul_face: bool,
+) -> EmbeddedWidthDecision<'a> {
     let primary_name = font_family
         .split(',')
         .next()
@@ -1048,8 +1240,20 @@ fn measure_char_width_embedded_decision<'a>(
         };
     };
     // HWP 반각 처리: space 및 한컴이 반각으로 처리하는 구두점/기호.
+    //
+    // [#6646] 묶음 빈칸(U+00A0)은 **줄바꿈만 막는 공백**이라 전진폭이 일반 공백과
+    // 같아야 하는데, 글꼴 글리프 폭을 그대로 쓰면 같은 문서 안에서도 글꼴마다
+    // 제각각이 된다 — `exam_eng.hwp` 1쪽 실측: 일반 공백은 어느 글꼴이든 7.667px
+    // 인데 묶음 빈칸은 `Times New Roman` 3.827 · `HY신명조` 5.093 ·
+    // `한양신명조` 7.747 이다. 글꼴 표 자체도 567개 중 149개에서 두 값이 다르고
+    // **50개는 0** 이라(글자가 자리를 안 차지한다는 뜻) 그대로 쓸 수 없다.
+    //
+    // 공백과 같은 갈래로 넣어 글꼴과 무관하게 같은 폭을 쓴다. 아래 갈래는 이미
+    // `hancom_pdf_space_width` 오버레이와 `em/2` 폴백을 갖고 있어, 공백에 대해
+    // 검증된 회계를 그대로 물려받는다.
+    let c = if c == '\u{00A0}' { ' ' } else { c };
     let (w, width_source) = if c == ' ' {
-        if let Some(width) = hancom_pdf_space_width(primary_name, font_size) {
+        if let Some(width) = hancom_pdf_space_width(primary_name) {
             (width, "metricSpaceOverlay")
         } else {
             (mm.metric.em_size / 2, "metricHalfSpace")
@@ -1063,16 +1267,85 @@ fn measure_char_width_embedded_decision<'a>(
                 character_match: "miss",
             };
         };
+        // HMKMM TrueType의 가운뎃점은512/512 전각이며 독립 PDF도 같은 전진폭이다.
+        // 같은 face 이름의 HFT 출력은 좁은 호환 폭을 쓰므로 명시적 프로그램
+        // 선택이 확인된 세션만 바꾼다. 따옴표는 TrueType 글리프가 전각이어도
+        // 한컴 문단 조판에서 반각 처리되므로 기존 기호 규칙을 유지한다.
+        let human_true_type_punct = font_metric_trusted
+            && matches!(primary_name, "휴먼명조" | "HumanMyeongJo")
+            && c == '\u{00B7}';
+        // [#7051] HWP3 변환본의 HFT 한글 전용 face 는 ASCII 를 반각(`em/2`)으로 전진시킨다.
+        //
+        // HWP3 시절 HFT 글꼴(`명조`·`신명 세명조`·`한양신명조` 등)은 한글 전용이고 ASCII
+        // 글리프를 한글 em 의 절반 폭으로 그린다. rhwp 는 이 글꼴을 TTF(`명조`→`HY견명조`)로
+        // 치환한 뒤 **치환 글꼴의 비례 폭**을 그대로 쓰므로 ASCII 가 42% 넓어진다.
+        //
+        // 한컴 정본은 `pdf/pr7268/`의 추적 분할본으로 보존한다(MCP engine 2024 /
+        // 13.0.0.3901, 763쪽). `hwp3-sample10-hwp5-p301-600-2024.pdf`의 189쪽은
+        // 이 문서의 489쪽이며, 생성·분할 provenance는 `mydocs/pr/archives/pr_7268_review.md`에
+        // 있다. 그 쪽 실측이 값을 말한다(9pt, em=12px):
+        //
+        // ```text
+        //   'TABLESPACE(ROLLBACK_DATA),'          26자  156.64px  자당 6.025  = 0.502 em
+        //   'TEMPORARY'                            9자   54.13px  자당 6.015  = 0.501 em
+        //   'TABLESPACE(TEMPORARY_DATA),USER'     31자  186.70px  자당 6.023  = 0.502 em
+        //   420·198·491쪽 ASCII 낱말 중위값       6.017 · 6.023 · 6.021        = 0.502 em
+        // ```
+        //
+        // 그래서 놓치고 있던 것: 같은 문단의 저장 LineSeg 는 `ts=0/93/157` 로 3줄이고 줄폭은
+        // 42520HU(566.9px)다. 반각이면 93자가 546.0px 로 들어가지만 rhwp 의 0.737em 로는
+        // 804.7px 이 되어 글자가 **용지 밖 136.4px** 까지 나갔다(저장 끊음은 지켰다).
+        //
+        // 적용 경계는 둘을 **함께** 본다.
+        //
+        //  · `FontSubstitutionBoundary::Hft` — 한글 전용 HFT face 만. 진짜 영문 HFT
+        //    (`LegacyLatin` 경계 — HCI Poppy·BT 계열·영문 안상수체)는 비례 글꼴이라 제외한다.
+        //  · `ResolvedStyleSet::hwp3_variant` — HWP3→HWP5 변환본만. **이 게이트가 없으면
+        //    안 된다**: `samples/exam_kor.hwp` 는 legacy HFT 이름(`신명 견명조` 등)을 쓰는
+        //    진짜 HWP5 문서인데, 그 6쪽 큰 숫자 `6` 은 한컴 정본(`pdf/exam_kor-2022.pdf`)에서
+        //    26.93px = 0.645 em 이다(반각 20.87px 이 아니다). 같은 HFT 이름이라도
+        //    HWP3 시대 저장본만 반각으로 조판된다.
+        let hft_hangul_halfwidth_ascii = hft_hangul_face && c.is_ascii_graphic();
         let is_halfwidth_punct = matches!(c, '\u{2018}'..='\u{2027}');
-        let is_narrow_unicode_punct = matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}');
-        let is_b7_notdef_artifact =
-            c == '\u{00B7}' && glyph_w >= mm.metric.em_size && !is_monospace_metric(mm.metric);
-        if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact {
+        // [#7092] 고정폭 표의 작은따옴표는 글꼴이 지닌 전각이 진짜 값이다. `·` 는 이미
+        // `is_monospace_metric` 으로 이 갈래를 빼 두었는데, `‘`·`’` 는 face 를 보지 않고
+        // 전부 0.3em 으로 눌러 왔다. 저장소 한컴 정본 623개 전수(앞 6쪽·리더 반복 제외,
+        // 같은 줄 한글 전진폭 대비 비율)와 글꼴 파일이 같은 값을 말한다.
+        //
+        // ```text
+        //   정본 비율   GulimChe  ‘ n=10 1.011 · ’ n=6  1.000
+        //               BatangChe ‘ n=12 1.000 · ’ n=8  1.000
+        //               DotumChe  ‘ n=12 1.000 · ’ n=12 1.000   (34건 전부 0.98 이상)
+        //   글꼴 파일   ttfs/windows/{gulim,batang}.ttc 의 GulimChe·BatangChe
+        //               `quoteleft`·`quoteright` = 1024/1024 = 1.000 em
+        //   같은 문서   1730000_selection_report(돋움체) 한/글 1.000 ↔ 수정 전 rhwp 0.299
+        //               rowbreak_cell_picture_only_paragraph(굴림체) 1.009 ↔ 0.299
+        // ```
+        //
+        // 비고정폭 face 는 이 변경의 범위 밖이다 — 같은 이름이 TrueType/HFT 두 realization 으로
+        // 갈리고(휴먼명조 `‘` 1.010 ↔ 0.24), 기호 슬롯 선택 축이 따로 있다(#7092 잔여).
+        let quote_width_is_authentic =
+            matches!(c, '\u{2018}' | '\u{2019}') && is_monospace_metric(mm.metric);
+        let is_narrow_unicode_punct =
+            matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
+        // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는
+        // DB 가 0 으로 적는다. 다만 한/글 정본으로 입증된 범위는 TTF 로 선언되고 대체되지
+        // 않은 글꼴뿐이라, 그 밖(HFT · 종류 불명 · 대체됨)과 폭 정보 없는 표는 종전대로 좁힌다.
+        let is_b7_notdef_artifact = c == '\u{00B7}'
+            && glyph_w >= mm.metric.em_size
+            && !is_monospace_metric(mm.metric)
+            && (!font_metric_trusted || latin1_table_is_uninformative(mm.metric));
+        if human_true_type_punct {
+            (mm.metric.em_size, "metricTrueTypeGlyph")
+        } else if hft_hangul_halfwidth_ascii {
+            (mm.metric.em_size / 2, "metricHftHangulHalfwidthAscii")
+        } else if (is_narrow_unicode_punct && glyph_w >= mm.metric.em_size) || is_b7_notdef_artifact
+        {
             (
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
+        } else if is_halfwidth_punct && !quote_width_is_authentic && glyph_w >= mm.metric.em_size {
             (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
@@ -1093,9 +1366,19 @@ pub(crate) fn char_width_decision<'a>(
     cluster_len: &[u8],
     i: usize,
     style: &'a TextStyle,
+    allow_supplemental: bool,
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
     let c = chars[i];
+    // [#7418] 영문 슬롯으로 재는 구두점 — 글꼴·폭 표·자간·장평만 영문 슬롯 값이고, 배치가
+    // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다. 비ASCII 구두점은 재조판
+    // composer가 결정한 run 슬롯을 따른다. 저장 run의 표시 글꼴과 다른 폭을 덮어쓰지 않는다.
+    let latin = c
+        .is_ascii_punctuation()
+        .then_some(style.ascii_punct_latin.as_deref())
+        .flatten();
+    let ratio = latin.map_or(ratio, |l| if l.ratio > 0.0 { l.ratio } else { 1.0 });
+    let letter_spacing = latin.map_or(style.letter_spacing, |l| l.letter_spacing);
     if cluster_len[i] == 0 {
         return CharWidthDecision {
             width_source: "clusterContinuation",
@@ -1107,13 +1390,9 @@ pub(crate) fn char_width_decision<'a>(
             negative_spacing_clamped: false,
         };
     }
-    if c == '\u{FFFC}' || c == '\u{F081C}' {
+    if c == '\u{FFFC}' {
         return CharWidthDecision {
-            width_source: if c == '\u{FFFC}' {
-                "inlineObjectPlaceholder"
-            } else {
-                "hwpPuaFiller"
-            },
+            width_source: "inlineObjectPlaceholder",
             base_width_px: 0.0,
             final_width_px: 0.0,
             metric: None,
@@ -1123,7 +1402,20 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
     if c == '\u{2007}' {
-        let base_width_px = font_size * 0.5;
+        // [#6597] 고정폭 빈칸(HWP5 문자 컨트롤 31 → `U+2007`)의 전진폭은 **0.25em** 이다.
+        //
+        // 한/글 오라클 PDF 를 `rawdict` 글자 origin 델타로 재면 **일반 공백의 정확히
+        // 절반**이다 (문서 `30307`, 글꼴 14.99pt):
+        //
+        // ```text
+        // `권고일자<FW> : `(13쪽)          `자` advance 14.992 → 다음까지 18.710 ⇒ 3.718pt
+        // ` ○<FW><FW>국민소통창구와`(5쪽)   `○` advance 14.992 → 22.428 ⇒ 7.436/2 = 3.718pt
+        // (대조) 일반 공백 U+0020                                        7.436pt
+        // ```
+        //
+        // 3.718 / 14.992 = 0.248em. 종전 `0.5` 는 정확히 두 배라, 이 문서의 글머리
+        // ` ○<FW><FW>` 줄이 전부 10px 오른쪽으로 밀렸다(컨트롤 31 이 35회).
+        let base_width_px = font_size * 0.25;
         let final_width_px = base_width_px * ratio
             + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
             + style.extra_char_spacing;
@@ -1138,7 +1430,22 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
 
-    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = (c == '\u{318D}')
+    // [#7387] `CharShape.use_font_space` 가 켜진 run 의 공백은 반각이 아니라 **영문 슬롯**
+    // 글꼴이 선언한 공백 전진폭이다. 아래 메트릭 갈래는 공백을 무조건 `em_size/2` 로
+    // 누르고(그 run 자신의 글꼴로), 영문 슬롯을 볼 방법이 없으므로 여기서 먼저 가른다.
+    // 묶음 빈칸(U+00A0)은 #6646 에 따라 일반 공백과 같은 전진폭을 쓴다.
+    //
+    // 폭은 메트릭 갈래와 같은 `quantize_hwp_px` 격자(1/75px = HWPUNIT)에 올린다.
+    // 이게 없으면 영문 슬롯 글꼴의 공백이 마침 반각과 같은 run(예: 영문 슬롯이
+    // 휴먼명조 — 256/512 = 0.5 em)까지 공백마다 0.013px 씩 어긋난다.
+    let font_space_width = matches!(c, ' ' | '\u{00A0}')
+        .then_some(style.font_space_em)
+        .flatten()
+        .map(|em| quantize_hwp_px(font_size * em));
+    let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
+    {
+        (w, "useFontSpace", None, "notApplicable")
+    } else if let Some(w) = (c == '\u{318D}')
         .then(|| area_dot_fallback_width(&style.font_family, font_size))
         .flatten()
     {
@@ -1156,13 +1463,41 @@ pub(crate) fn char_width_decision<'a>(
         } else {
             c
         };
-        let embedded = measure_char_width_embedded_decision(
-            &style.font_family,
+        // [#7391] 폭 표를 고를 때만 선언 face 로 되돌린다.
+        let metric_family = match latin {
+            Some(l) => l.metric_font_family.as_deref().unwrap_or(&l.font_family),
+            None => style
+                .metric_font_family
+                .as_deref()
+                .unwrap_or(&style.font_family),
+        };
+        let mut embedded = measure_char_width_embedded_decision_for_font(
+            metric_family,
             style.bold,
             style.italic,
             c,
             font_size,
+            latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
+            latin.is_none() && style.hft_hangul_face,
         );
+        // 행의 공통 측정 규칙으로 폭을 고르며 원문의 useFontSpace 속성을 바꾸지 않는다.
+        // 일반 공백과 NBSP는 메트릭 조회 출처를 보존하고 명시한 글꼴 공백이 우선한다.
+        if style.layout_half_space
+            && matches!(c, ' ' | '\u{00A0}')
+            && embedded.width_source != "metricHalfSpace"
+        {
+            embedded.width_px = Some(font_size * 0.5);
+            embedded.width_source = if embedded.metric.is_some() {
+                "metricHalfSpace"
+            } else {
+                "heuristicHalfwidth"
+            };
+            embedded.character_match = if embedded.metric.is_some() {
+                "hit"
+            } else {
+                "notApplicable"
+            };
+        }
         if let Some(w) = embedded.width_px {
             (
                 w,
@@ -1183,14 +1518,25 @@ pub(crate) fn char_width_decision<'a>(
                 embedded.metric,
                 embedded.character_match,
             )
-        } else if cluster_len[i] > 1 || is_cjk_char(c) || is_fullwidth_symbol(c) {
+        // 원본 HFT 한점 리더의 전진은 전각이다. 폭 표에서 그 글자만 빠졌을 때
+        // 일반 반각 폴백으로 좁히면 뒤 글자가 앞당겨진다. 기존 메트릭 hit는 보존한다.
+        } else if cluster_len[i] > 1
+            || is_cjk_char(c)
+            || is_fullwidth_symbol(c)
+            || (latin.is_none()
+                && style.hft_fullwidth_dot
+                && embedded.metric.is_some()
+                && c == '\u{2024}')
+        {
             (
                 font_size,
                 "heuristicFullwidth",
                 embedded.metric,
                 embedded.character_match,
             )
-        } else if is_narrow_punctuation(c) || is_narrow_paren_for_font(&style.font_family, c) {
+        } else if is_narrow_punctuation(c)
+            || is_narrow_paren_for_font(latin.map_or(&style.font_family, |l| &l.font_family), c)
+        {
             (
                 font_size * 0.3,
                 "heuristicNarrow",
@@ -1206,14 +1552,30 @@ pub(crate) fn char_width_decision<'a>(
             )
         }
     };
+    // Only replace the generic unknown-width decision, not DB hits or HWP's
+    // explicit width rules. Synthetic PUA boxes are painted as shapes, not glyphs.
     let dash_leader = is_dash_leader_run(chars, i);
+    let supplement = (allow_supplemental
+        && width_source == "heuristicHalfwidth"
+        && !dash_leader
+        && !c.is_whitespace()
+        && !c.is_control()
+        && crate::renderer::boxed_pua_number(c).is_none())
+    .then(|| {
+        let snapshot = style.supplemental_metrics.as_ref()?;
+        snapshot.lookup(snapshot.context(), style, c)
+    })
+    .flatten();
+    let (base_width_raw, width_source) = supplement
+        .map(|entry| (entry.natural_advance_px(), entry.width_source()))
+        .unwrap_or((base_width_raw, width_source));
     let base_width_px = if dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {
         base_width_raw
     };
     let mut final_width_px = base_width_px * ratio
-        + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
+        + glyph_letter_spacing(letter_spacing, base_width_px * ratio, font_size)
         + style.extra_char_spacing;
     if c == ' ' {
         final_width_px += style.extra_word_spacing;
@@ -1222,7 +1584,7 @@ pub(crate) fn char_width_decision<'a>(
         final_width_px += style.extra_dash_advance;
     }
     let mut negative_spacing_clamped = false;
-    if style.letter_spacing + style.extra_char_spacing < 0.0 {
+    if letter_spacing + style.extra_char_spacing < 0.0 {
         let min_width = base_width_px * ratio * 0.5;
         if final_width_px < min_width {
             final_width_px = min_width;
@@ -1260,6 +1622,22 @@ pub(crate) fn estimate_text_width(text: &str, style: &TextStyle) -> f64 {
     default_measurer().estimate_text_width(text, style)
 }
 
+/// 텍스트 폭 — 본 구현 그대로, **마지막 반올림만 하지 않는다**.
+///
+/// [#7254] 줄 나눔(`renderer/composer/line_breaking.rs`)은 이미 반올림하지 않은 폭으로
+/// 줄을 짜는데 배치는 `estimate_text_width` 의 정수 폭을 쓰고 있었다. 그러면 같은 줄을
+/// 측정과 배치가 다른 폭으로 소비한다(`AGENTS.md` 의 "측정과 배치의 공통 결과"). run 이
+/// 한 글자면 그 글자의 전진폭 자체가 반올림 대상이라 run 경계마다 최대 ±0.5px 가 붙고,
+/// 뒤 run 들이 그만큼 밀린다. 정답지(한/글 PDF)도 소수 전진폭을 그대로 쓴다 —
+/// `Haansoft Batang` 9.952pt(13.269px)에서 `【` 전진은 13.273 = 1.0003 em 이다.
+///
+/// `estimate_text_width_unrounded` 를 대신 쓰면 안 된다. 그쪽은 줄바꿈 엔진 전용의 다른
+/// 구현이라 사용자 탭 스톱·인라인 탭 ext 데이터를 읽지 않아, 탭이 있는 줄에서 정렬 위치가
+/// 통째로 사라진다.
+pub(crate) fn estimate_text_width_exact(text: &str, style: &TextStyle) -> f64 {
+    default_measurer().estimate_text_width_exact(text, style)
+}
+
 /// 텍스트 폭 추정 (round 없이 raw px 반환)
 ///
 /// 줄바꿈 엔진 전용. 단일 문자 토큰의 반올림 누적 오차를 방지한다.
@@ -1271,8 +1649,17 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
     let cluster_len = build_cluster_len(&chars);
     let char_count = chars.len();
 
-    let char_width =
-        |i: usize| -> f64 { char_width_decision(&chars, &cluster_len, i, style).final_width_px };
+    let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
+    let char_width = |i: usize| -> f64 {
+        char_width_decision(
+            &chars,
+            &cluster_len,
+            i,
+            style,
+            supplemental.as_ref().is_some_and(|mask| mask[i]),
+        )
+        .final_width_px
+    };
 
     let mut total = 0.0;
     for i in 0..char_count {
@@ -1294,14 +1681,18 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
 /// 한컴이 폭 변경 뒤 LINE_SEG를 다시 만들 때 쓰는 공백 advance.
 ///
 /// 저장본은 글꼴 고유 공백 폭을 보존할 수 있지만, 한컴의 새 재조판은 반각 공백을
-/// 사용한다. 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
+/// 사용한다(`use_font_space` 가 켜진 run 은 그 run 의 공백 기준폭, 아래 참조).
+/// 이 규칙을 전역 측정에 넣으면 원본 저장 LINE_SEG의 정합이 깨지므로,
 /// stale cell 복구나 LINE_SEG 부재 재조판처럼 새 줄을 만드는 경로만 opt-in한다.
 ///
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
     let (font_size, ratio, _) = style_params(style);
-    let base_w = font_size * 0.5;
+    // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭이 기준이다.
+    // 이 값을 그대로 두면 아래 `stored_width` 비교가 늘 참이 되어, 고친 공백폭을
+    // 다시 반각으로 되돌린다.
+    let base_w = font_size * style.font_space_em.unwrap_or(0.5);
     let mut width = base_w * ratio
         + glyph_letter_spacing(style.letter_spacing, base_w * ratio, font_size)
         + style.extra_char_spacing
@@ -1354,11 +1745,18 @@ pub(crate) fn trace_char_width_decisions<'a>(
     let chars: Vec<char> = text.chars().collect();
     let cluster_len = build_cluster_len(&chars);
     let positions = compute_char_positions(text, style);
+    let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
     chars
         .iter()
         .enumerate()
         .map(|(i, &ch)| {
-            let mut decision = char_width_decision(&chars, &cluster_len, i, style);
+            let mut decision = char_width_decision(
+                &chars,
+                &cluster_len,
+                i,
+                style,
+                supplemental.as_ref().is_some_and(|mask| mask[i]),
+            );
             if ch == '\t' {
                 let advance = positions
                     .get(i + 1)
@@ -1900,6 +2298,11 @@ mod tests {
         // ㆍ(U+318D): 한컴 계열은 area_dot 폴백 대신 embedded 메트릭(1.0em) 신뢰
         assert!(area_dot_fallback_width("한컴돋움", fs).is_none());
         assert!(area_dot_fallback_width("한컴바탕", fs).is_none());
+        // [#7080] 폴백이 도는 글꼴은 **전각**이다. 메트릭이 없는 글꼴(사용자 슬롯 `명조`)
+        // 에도 답은 전각이고, 그 경로가 갈려 있다는 것 자체가 계약이다.
+        assert_eq!(area_dot_fallback_width("명조", fs), Some(fs));
+        assert_eq!(area_dot_fallback_width("맑은 고딕", fs), Some(fs));
+        assert_eq!(area_dot_fallback_width("한양신명조", fs), Some(fs));
     }
 
     // ── #2430 한양·휴먼 HFT 실측 메트릭의 native/WASM 정합 보장 ──
@@ -1956,12 +2359,12 @@ mod tests {
         );
     }
 
-    /// #3820 — 한양중고딕 원명 space만 한컴 PDF p35의 word gap으로 보정한다.
+    /// 한양중고딕 자연 공백은 양쪽 정렬의 늘림과 별개인 반각이다.
     /// 실제 TTF hmtx 생성 테이블을 변경하지 않아 HY중고딕과 다른 Hanyang face의
     /// 일반 반각 space 계약은 그대로다.
     #[test]
     fn issue_3820_hanyang_junggothic_space_uses_pdf_advance_only() {
-        let fs = 40.0 / 3.0; // 10pt = 13.333px
+        let fs = 40.0 / 3.0; // 10포인트 글꼴
         let hanyang = measure_char_width_embedded("한양중고딕", false, false, ' ', fs)
             .expect("한양중고딕 space metric");
         let hy = measure_char_width_embedded("HY중고딕", false, false, ' ', fs)
@@ -1970,9 +2373,18 @@ mod tests {
             .expect("한양견고딕 space metric");
 
         assert!(
-            (hanyang - quantize_hwp_px(fs * 550.0 / 1024.0)).abs() < f64::EPSILON,
+            (hanyang - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
             "한양중고딕 PDF space advance={hanyang:.3}"
         );
+        // 독립 PDF의 Type3 /Widths는 숫자 0~9를 모두 500/1000em으로 선언한다.
+        for digit in '0'..='9' {
+            let width = measure_char_width_embedded("한양중고딕", false, false, digit, fs)
+                .expect("한양중고딕 숫자 메트릭");
+            assert!(
+                (width - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+                "한양중고딕 숫자 {digit}는 PDF의 반각 전진폭을 보존해야 함: {width}"
+            );
+        }
         assert!(
             (hy - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
             "HY중고딕 일반 반각 space={hy:.3}"
@@ -1983,48 +2395,40 @@ mod tests {
         );
     }
 
-    /// #3820 — 12/14pt standard body의 한양신명조 411/1024em 보정이 접수증 10pt 날짜
-    /// run까지 넓어지면 공백 누적으로 `㊞` anchor가 도장 원 밖으로 이동한다. 크기 하한을
-    /// 고정해 issue1949 원본 HWP line boundary·p81의 line decision·복학원서 일반 반각을 함께
-    /// 보존한다. 분할 stale-cell의 한컴 재조판 규칙은 별도 helper로만 적용한다.
+    /// [#7418] 한양신명조 공백은 글자 크기와 무관하게 반각이다.
+    ///
+    /// 종전(#3820)에는 12pt 이상만 411/1024em 으로 좁혔다. 그 값은 `76076` p81 의
+    /// condense 25 문단에서 **줄인** 공백이었고, 같은 기준 PDF 의 늘림·줄임 없는 줄은
+    /// 13pt·14pt 모두 0.5em 이다. 줄임은 줄 나눔의 condense 규칙이 맡는다.
     #[test]
-    fn issue_3820_hanyang_shinmyeongjo_space_is_standard_body_only() {
+    fn issue_7418_hanyang_shinmyeongjo_space_is_half_em_at_every_size() {
         let standard_body_fs = 16.0; // 12pt
         let p81_fs = 56.0 / 3.0; // 14pt = 18.666px
         let receipt_fs = 40.0 / 3.0; // 10pt = 13.333px
-        let standard_body =
-            measure_char_width_embedded("한양신명조", false, false, ' ', standard_body_fs)
-                .expect("한양신명조 12pt space metric");
-        let p81 = measure_char_width_embedded("한양신명조", false, false, ' ', p81_fs)
-            .expect("한양신명조 14pt space metric");
-        let receipt = measure_char_width_embedded("한양신명조", false, false, ' ', receipt_fs)
-            .expect("한양신명조 10pt space metric");
-
-        assert!(
-            (standard_body - quantize_hwp_px(standard_body_fs * 411.0 / 1024.0)).abs()
-                < f64::EPSILON,
-            "issue1949 원본 한양신명조 12pt PDF space advance={standard_body:.3}"
-        );
-        assert!(
-            (p81 - quantize_hwp_px(p81_fs * 411.0 / 1024.0)).abs() < f64::EPSILON,
-            "p81 한양신명조 14pt PDF space advance={p81:.3}"
-        );
-        assert!(
-            (receipt - quantize_hwp_px(receipt_fs * 0.5)).abs() < f64::EPSILON,
-            "접수증 한양신명조 10pt 일반 반각 space={receipt:.3}"
-        );
+        for (label, fs) in [
+            ("12pt", standard_body_fs),
+            ("14pt", p81_fs),
+            ("10pt", receipt_fs),
+        ] {
+            let space = measure_char_width_embedded("한양신명조", false, false, ' ', fs)
+                .expect("한양신명조 space metric");
+            assert!(
+                (space - quantize_hwp_px(fs * 0.5)).abs() < f64::EPSILON,
+                "한양신명조 {label} 반각 space={space:.3}"
+            );
+        }
 
         let stale_split_style = TextStyle {
             font_family: "한양신명조".to_string(),
             font_size: standard_body_fs,
             ..Default::default()
         };
-        assert!(
-            (hancom_regenerated_space_width(&stale_split_style).expect("split 12pt space")
-                - standard_body_fs * 0.5)
-                .abs()
-                < f64::EPSILON,
-            "#4138 split stale-cell 12pt space must be half-em"
+        // #4138 split stale-cell 재조판은 반각 공백을 쓴다. 측정 공백이 이미 반각이므로
+        // 따로 넓힐 것이 없다.
+        assert_eq!(
+            hancom_regenerated_space_width(&stale_split_style),
+            None,
+            "#4138 split stale-cell 12pt space는 이미 반각이다"
         );
     }
 
@@ -2611,31 +3015,50 @@ mod tests {
         }
     }
 
-    /// [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조)에서 `·`(U+00B7) 글리프
-    /// 부재로 cmap 이 .notdef(em_size) 로 위장 → 전각 측정되던 것을 narrow 로
-    /// 정정한다. 한컴은 점 글리프를 가진 대체 폰트(바탕 ≈0.33em)로 `·` 를
-    /// 렌더하므로 한컴 PDF 정합. 고정폭 폰트(돋움체)는 영향 없음 —
-    /// test_630_middle_dot_full_width_in_registered_font 가 전각 보존을 가드.
+    /// [#7092] 가운뎃점 `·`(U+00B7) 폭은 **믿을 수 있는 표**에서만 글꼴 표를 따른다.
+    ///
+    /// 선행 가드(9d006fd03)는 전각으로 적힌 값을 모두 `.notdef` 위장으로 보고 0.3em 을
+    /// 씌웠다. 한/글 정본이 입증한 범위만 푼다.
+    ///
+    /// - **HY신명조(TTF · 대체 없음)** — 글꼴 파일이 `periodcentered`(gid 20313 · 윤곽선
+    ///   1개)를 1024/1024 로 갖고, 정본이 0.999em 이다(#7092 재현체 `·` 31회 전부 이 face).
+    ///   표를 믿는다.
+    /// - **신명 신신명조(HFT → HY신명조로 대체)** — 점선 리더 26점이 150.6px 칸에 들어간다
+    ///   (`samples/issues/2809/jubo_20260104.hwp`). 전각이면 381px 라 불가능하다 → 좁힌다.
+    /// - **휴먼명조** — 보정325의 독립 한컴 PDF208쪽과 HMKMM.TTF의 hmtx는
+    ///   TrueType 가운뎃점이512/512 전각임을 확인한다. 명시적 TrueType 선택이
+    ///   확인된 신뢰 경로는1.0em, 비신뢰 HFT 호환 경로는 종전0.3em을 유지한다.
+    ///   작은따옴표의 별도 조판 규칙은 변경하지 않는다.
+    ///
+    /// 대체 안 된 HFT 가 전각이라는 정본은 아직 없어 그 경우는 종전대로 좁힌다.
     #[test]
-    fn test_b7_notdef_artifact_narrow_in_proportional_font() {
+    fn test_b7_advance_follows_the_font_table_only_when_trusted() {
         let m = EmbeddedTextMeasurer;
-        let style = TextStyle {
-            font_family: "휴먼명조".to_string(),
-            font_size: 20.0,
-            ratio: 1.0,
-            ..Default::default()
+        let advance = |family: &str, trusted: bool| {
+            let style = TextStyle {
+                font_family: family.to_string(),
+                font_size: 20.0,
+                ratio: 1.0,
+                font_metric_trusted: trusted,
+                ..Default::default()
+            };
+            let positions = m.compute_char_positions("가\u{00B7}나", &style);
+            assert!(positions.len() >= 3, "세 글자의 원점이 모두 있어야 한다");
+            (positions[2] - positions[1]) / style.font_size
         };
-        let positions = m.compute_char_positions("가\u{00B7}나", &style);
-        assert!(positions.len() >= 3, "positions should have ≥ 3 entries");
-        let dot_advance = positions[2] - positions[1];
-        // 비례폰트의 .notdef 위장 전각(≈20px) 이 아니라 narrow(0.3em ≈ 6px) 여야 함.
-        assert!(
-            dot_advance <= style.font_size * 0.4,
-            "휴먼명조의 `·` (U+00B7) 는 .notdef 위장 전각이 아니라 narrow \
-             (≤ font_size * 0.4 = {:.2}) 로 측정되어야 함, got {:.2}",
-            style.font_size * 0.4,
-            dot_advance
-        );
+        for (family, trusted, expected_em) in [
+            ("HY신명조", true, 1.0),
+            ("HY신명조", false, 0.3),
+            ("휴먼명조", true, 1.0),
+            ("휴먼명조", false, 0.3),
+            ("한양신명조", true, 0.384),
+        ] {
+            let em = advance(family, trusted);
+            assert!(
+                (em - expected_em).abs() < 0.05,
+                "{family}(신뢰={trusted}) 가운뎃점 전진폭은 {expected_em}em 이어야 한다 — got {em:.3}em"
+            );
+        }
     }
 
     // Stage 4 검증으로 native tab_type 정정 (정정 2) 은 회귀 발견되어 철회.

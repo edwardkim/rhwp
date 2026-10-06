@@ -1,0 +1,8 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.06s
+     Running tests/generated/regression_suite_004.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_004-3f7682af230fcffe)
+
+running 1 test
+test issue_7174_hwp3_footnote_separator_margins::hwp3_footnote_separator_margins_reach_the_hwp5_slots ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.08s

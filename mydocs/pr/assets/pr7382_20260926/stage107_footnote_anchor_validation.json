@@ -1,0 +1,352 @@
+{
+  "stage": 107,
+  "code_commit": "ff3a23d06dd38db9096ba621c5a340eb8460c29c",
+  "analysis": {
+    "head": "9c6e28ea74dcdbcb05f34b0437f0e9801d11816b",
+    "failure": "기존 footnote_page_number_keeps_the_same_bottom_margin_anchor",
+    "analysis": "24쪽 각주 전제가 독립PDF/현재tree에 모두없어 검사 입력전제 오류.실제 FootnoteArea는25/26/27/28/29/32/34/43/44/45쪽.25쪽 같은원문/PDF Native 직접비교와footer독립좌표부터 확인.90미달이면PR차단해당함수만보류,90이상이면기존검사전제를교정/새함수없음.",
+    "source": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+    "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+    "source_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+    "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+    "independent_pdf_footer25_baseline_px": 1061.7197265625,
+    "preliminary_native25_percent": 97.33607,
+    "direct_inspection": "25쪽 각주1) 본문·구분선·두줄과 쪽번호 보존.24쪽은각주없음.측정된독립PDF25쪽footer기준선1061.7197265625와기존예상값일치.",
+    "scope_error_correction": "보정106경로치환에서 .hwp문자열이 .hwpx접두부까지치환한경로1건을정상samples/HWPX로복원.다른22개보존경로exist/hash감사."
+  },
+  "before": {
+    "file": "tests/cases/issue_1133_page_number_bottom_margin.rs",
+    "case": "issue_1133_page_number_bottom_margin",
+    "function": "footnote_page_number_keeps_the_same_bottom_margin_anchor",
+    "id": 1,
+    "plan": {
+      "caseName": "issue_1133_page_number_bottom_margin",
+      "target": "regression_suite_022",
+      "grouped": true
+    },
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_022",
+      "-E",
+      "test(=issue_1133_page_number_bottom_margin::footnote_page_number_keeps_the_same_bottom_margin_anchor)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 8.616510750260204,
+    "summary": [
+      "     Summary [   0.119s] 1 test run: 0 passed, 1 failed, 234 skipped"
+    ]
+  },
+  "before_failure": "24쪽은 독립PDF/Native 모두각주없음.검사FootnoteArea전제FAIL.렌더러각주소실 증거아님.",
+  "mutation": "기존함수의페이지index23→24(물리24→25).함수·기준선1061.7197265625·공차0.6 유지.새함수/삭제/생산변경없음.보정106의 HWP경로 prefix가 HWPX까지 치환한1건도 정상samples경로로복원.",
+  "native_build": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "head": "9c6e28ea74dcdbcb05f34b0437f0e9801d11816b",
+    "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "9c6e28ea74dcdbcb05f34b0437f0e9801d11816b",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_022",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(issue_1133_page_number_bottom_margin::) or test(rowbreak_hwp_page8_keeps_continued_nested_reference_line) or test(rowbreak_hwp_page12_reference_text_stays_inside_body)"
+        ],
+        "exit_code": 0,
+        "seconds": 146.33573945891112
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.956490125041455
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.41655908338725567
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22871391661465168
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36763133434578776
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 8.50307087507099
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.476270250044763
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.030616750009358
+      },
+      {
+        "step": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "seconds": 180.27027191594243
+      }
+    ]
+  },
+  "fresh_wasm_package": {
+    "pkg": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "de241f6ea15754ebbd5b6c5aff367951e6b4e8c65b18cf41d3981193b3f0e78b"
+    },
+    "studio_sync": {
+      "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp-studio/public/rhwp_bg.wasm": "de241f6ea15754ebbd5b6c5aff367951e6b4e8c65b18cf41d3981193b3f0e78b"
+    },
+    "build": "Mac 로컬 no-opt, Docker 최적화 빌드 아님"
+  },
+  "focused_summary": [
+    "     Summary [   0.187s] 9 tests run: 9 passed, 424 skipped"
+  ],
+  "visual": {
+    "native": {
+      "provenance": {
+        "hwp": {
+          "path": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+          "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+        },
+        "pdf": {
+          "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+          "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb"
+        },
+        "git_head": "9c6e28ea74dcdbcb05f34b0437f0e9801d11816b",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+          "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+        },
+        "font_supply": {
+          "mode": "full",
+          "source": "explicit",
+          "file_count": 715,
+          "inventory_sha256": "a30f34c3cf267a84241c984488bc854bc47f053f21e5797c4b1d6ac32d490f43",
+          "full_inventory": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/visual-final-native/footnote-anchor1937/run_manifest.json"
+        }
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.91028,
+        "worst_pixel_match_percent": 91.91028,
+        "average_ink_match_percent": 28.13864,
+        "worst_ink_match_percent": 28.13864,
+        "average_visual_accuracy_proxy_percent": 28.13864,
+        "worst_visual_accuracy_proxy_percent": 28.13864,
+        "average_tolerant_content_match_percent": 97.33607,
+        "worst_tolerant_content_match_percent": 97.33607,
+        "worst_pages": [
+          25
+        ]
+      },
+      "scope": "선택25쪽.전체51쪽비교아님."
+    },
+    "wasm": {
+      "provenance": {
+        "hwp": {
+          "path": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+          "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+        },
+        "pdf": {
+          "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+          "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb"
+        },
+        "git_head": "9c6e28ea74dcdbcb05f34b0437f0e9801d11816b",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+          "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+              "sha256": "de241f6ea15754ebbd5b6c5aff367951e6b4e8c65b18cf41d3981193b3f0e78b"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --embed-fonts=full --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts --font-path /Users/tsjang/Library/Fonts; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "full",
+          "source": "explicit",
+          "file_count": 715,
+          "inventory_sha256": "a30f34c3cf267a84241c984488bc854bc47f053f21e5797c4b1d6ac32d490f43",
+          "full_inventory": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/visual-final-wasm/footnote-anchor1937/run_manifest.json"
+        }
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.91028,
+        "worst_pixel_match_percent": 91.91028,
+        "average_ink_match_percent": 28.13864,
+        "worst_ink_match_percent": 28.13864,
+        "average_visual_accuracy_proxy_percent": 28.13864,
+        "worst_visual_accuracy_proxy_percent": 28.13864,
+        "average_tolerant_content_match_percent": 97.33607,
+        "worst_tolerant_content_match_percent": 97.33607,
+        "worst_pages": [
+          25
+        ]
+      },
+      "scope": "선택25쪽.전체51쪽비교아님."
+    }
+  },
+  "direct_inspection": "Native/freshWASM25쪽review를직접확인.각주1)두줄/구분선/본문/쪽번호보존.독립PDF25쪽HCRDotum기준선1061.7197265625.24쪽각주없는기준도직접확인.",
+  "limits": "이검사의25쪽각주·쪽번호계약만충족.원문51/기준50쪽/뒤쪽90%미달 미해결은 #7445 유지.전체회귀/PR준비 완료아님.",
+  "setup_error": "Native복사본실행권한미승계1회실패는시각증거제외.권한수정후다시실행complete/exit0."
+}

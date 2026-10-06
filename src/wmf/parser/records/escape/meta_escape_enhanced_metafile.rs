@@ -40,7 +40,9 @@ impl crate::wmf::parser::META_ESCAPE {
                 + enhanced_metafile_data_size_bytes,
         );
 
-        let expected_byte_count = enhanced_metafile_data_size + 34;
+        // [fuzz] 파일 값 `enhanced_metafile_data_size` 가 `u32::MAX - 33` 보다 크면 `+ 34` 가
+        // 넘친다. 그 값은 16비트 `byte_count` 와 결코 같을 수 없으니 불일치로 거부한다.
+        let expected_byte_count = enhanced_metafile_data_size.saturating_add(34);
 
         if u32::from(byte_count) != expected_byte_count {
             return Err(crate::wmf::parser::ParseError::UnexpectedPattern {

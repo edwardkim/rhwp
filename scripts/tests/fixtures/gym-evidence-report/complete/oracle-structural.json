@@ -1,0 +1,15 @@
+{
+  "exports": [
+    "probe"
+  ],
+  "issueCount": 0,
+  "issues": [],
+  "kind": "gymOracleProbe",
+  "mode": "structural",
+  "ok": true,
+  "probes": {},
+  "required": [
+    "probe"
+  ],
+  "schemaVersion": "1.0"
+}

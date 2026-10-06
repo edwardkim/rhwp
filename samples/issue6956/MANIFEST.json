@@ -1,0 +1,16 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6956,
+  "title": "형광펜 표지 왕복 보존",
+  "entries": [
+    {
+      "path": "samples/issue6956/3024739-exposure-algorithm-markpen.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "#6956에서 식별한 3024739 [별표 4] 위해성평가 인체 노출알고리즘 원본 (코퍼스 형광펜 문서 중 최소)",
+      "bytes": 11302,
+      "sha256": "692fd5fe9cb4a8a12aa64006b94ea941a44a1d742ba0c48c96aa2c1860a2156a",
+      "contract": "hp:t 안 형광펜 표지 2쌍이 색까지 왕복 보존된다 (표를 감싼 run-level 1쌍은 별도 축)"
+    }
+  ]
+}

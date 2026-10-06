@@ -102,10 +102,12 @@ fn verify_roundtrip(data: &[u8]) -> Option<usize> {
     let source_format = rhwp::parser::detect_format(data);
     let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(data).ok()?;
     doc.convert_to_editable_native().ok()?;
-    let bytes = doc.export_hwp_with_adapter().ok()?;
+    let snapshot = doc.prepare_hwp_export_snapshot();
+    let expected = snapshot.document().clone();
+    let bytes = snapshot.serialize().ok()?;
     let reloaded = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).ok()?;
 
-    let diff = diff_documents(doc.document(), reloaded.document());
+    let diff = diff_documents(&expected, reloaded.document());
     let diff = match source_format {
         FileFormat::Hwp => diff,
         FileFormat::Hwpx => strip_hwpx_to_hwp_noise(diff),

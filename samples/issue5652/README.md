@@ -5,7 +5,7 @@ B2-엔진 본구현에서 **엔진(`set_chart_data_by_index_native`, `structure:
 판정한 32개 산출**이다. 현행 기준 PDF 는 원본의 저장 제품 메타데이터로 engine을 결정한
 [`pdf/issue5652/`](../../pdf/issue5652/)의 `-2020.pdf` 또는 `-2024.pdf`이며,
 판정 원장은 이 폴더의 [`MANIFEST.json`](MANIFEST.json), 결론은
-[`mydocs/report/task_m100_5652_report.md`](../../mydocs/report/task_m100_5652_report.md) 다.
+[`mydocs/report/task_m100_5652_report.md`](../../mydocs/report/archives/task_m100_5652_report.md) 다.
 [#5447](https://github.com/edwardkim/rhwp/issues/5447) 스파이크 자산([`samples/issue5447/`](../issue5447/))의
 후속이다 — 그쪽은 손으로 만든 변종, 이쪽은 **엔진이 만든 바이트**다.
 

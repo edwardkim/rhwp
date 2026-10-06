@@ -576,14 +576,14 @@ class CoverageDocsTests(unittest.TestCase):
         self.assertIn("gymCoverage", text)
 
     def test_working_notes_exist(self):
-        path = REPO_ROOT / "mydocs" / "working" / "gym_coverage.md"
+        path = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_coverage.md"
         self.assertTrue(path.is_file())
         text = path.read_text(encoding="utf-8")
         self.assertIn("EX03", text)
         self.assertIn("TC02", text)
         self.assertIn("BO02", text)
         self.assertNotIn("T07 복제", text)
-        fat = REPO_ROOT / "mydocs" / "working" / "gym_coverage_and_extract.md"
+        fat = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_coverage_and_extract.md"
         self.assertTrue(fat.is_file())
         fat_text = fat.read_text(encoding="utf-8")
         self.assertIn("EX05", fat_text)

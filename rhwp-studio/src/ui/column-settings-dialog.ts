@@ -4,6 +4,7 @@ import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 import { applyThroughRouter } from './dialog-apply';
 
+import { t } from '../i18n/index.ts';
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
 function hwpunitToMm(hu: number): number {
@@ -27,7 +28,7 @@ export class ColumnSettingsDialog extends ModalDialog {
   private spacingInput!: HTMLInputElement;
 
   constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
-    super('다단 설정', 360);
+    super(t('dialog.columnSettings.mmToHwpunit.title'), 360);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.sectionIdx = sectionIdx;
@@ -53,7 +54,7 @@ export class ColumnSettingsDialog extends ModalDialog {
     };
 
     // 단 수
-    const countRow = addRow('단 수');
+    const countRow = addRow(t('dialog.columnSettings.addRow.label'));
     this.countInput = document.createElement('input');
     this.countInput.type = 'number';
     this.countInput.min = '1';
@@ -62,10 +63,10 @@ export class ColumnSettingsDialog extends ModalDialog {
     countRow.appendChild(this.countInput);
 
     // 단 종류
-    const typeRow = addRow('종류');
+    const typeRow = addRow(t('dialog.columnSettings.addRow.label.x2ec5ae'));
     this.typeSelect = document.createElement('select');
     this.typeSelect.style.cssText = 'width:120px;padding:4px;font-size:13px;';
-    for (const [val, text] of [['0', '일반'], ['1', '배분'], ['2', '평행']]) {
+    for (const [val, text] of [['0', t('dialog.columnSettings.createBody.label')], ['1', t('dialog.columnSettings.createBody.label.x88b36c')], ['2', t('dialog.columnSettings.createBody.label.xb86927')]]) {
       const opt = document.createElement('option');
       opt.value = val;
       opt.textContent = text;
@@ -74,13 +75,13 @@ export class ColumnSettingsDialog extends ModalDialog {
     typeRow.appendChild(this.typeSelect);
 
     // 너비 동일
-    const sameRow = addRow('너비 동일');
+    const sameRow = addRow(t('dialog.columnSettings.addRow.label.x1ce391'));
     this.sameWidthCheck = document.createElement('input');
     this.sameWidthCheck.type = 'checkbox';
     sameRow.appendChild(this.sameWidthCheck);
 
     // 단 간격
-    const spacingRow = addRow('간격 (mm)');
+    const spacingRow = addRow(t('dialog.columnSettings.addRow.label.x35c51a'));
     this.spacingInput = document.createElement('input');
     this.spacingInput.type = 'number';
     this.spacingInput.min = '0';

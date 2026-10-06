@@ -523,6 +523,8 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
             "FRONTEND_PACKAGE_RESULT": "skipped",
+            "PROMOTION_RESULT": "skipped",
+            "CANONICAL_PROMOTION": "false",
             **overrides,
         }
         return subprocess.run(
@@ -669,6 +671,29 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("wasm-pack build --target web --dev", package)
         self.assertIn("npm --prefix rhwp-studio run test", package)
         self.assertIn("npm --prefix rhwp-studio run build", package)
+
+    def test_frontend_package_install_uses_cache_first_without_implicit_audit(self) -> None:
+        package = self._job("frontend-package-gates")
+        install = self._step("Install frontend package dependencies", package)
+
+        self.assertIn("timeout-minutes: 30", package)
+        expected_commands = [
+            f"npm --prefix {package_path} ci --no-audit --prefer-offline"
+            for package_path in (
+                "rhwp-studio",
+                "rhwp-chrome",
+                "rhwp-firefox",
+                "rhwp-vscode",
+            )
+        ]
+        actual_commands = [
+            line.strip()
+            for line in install.splitlines()
+            if line.strip().startswith("npm --prefix")
+        ]
+        self.assertEqual(expected_commands, actual_commands)
+        self.assertNotIn("--offline", install)
+        self.assertNotIn("--ignore-scripts", install)
 
     def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
@@ -1106,6 +1131,32 @@ mod support;
             with self.subTest(lane=name):
                 result = self._run_aggregate(**env)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_aggregate_accepts_canonical_promotion_only_after_gate_success(self) -> None:
+        accepted = self._run_aggregate(
+            CANONICAL_PROMOTION="true",
+            PROMOTION_RESULT="success",
+        )
+        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+
+        rejected_cases = {
+            "canonical-gate-skipped": {
+                "CANONICAL_PROMOTION": "true",
+                "PROMOTION_RESULT": "skipped",
+            },
+            "noncanonical-gate-ran": {
+                "CANONICAL_PROMOTION": "false",
+                "PROMOTION_RESULT": "success",
+            },
+            "canonical-state-missing": {
+                "CANONICAL_PROMOTION": "",
+                "PROMOTION_RESULT": "skipped",
+            },
+        }
+        for name, env in rejected_cases.items():
+            with self.subTest(case=name):
+                result = self._run_aggregate(**env)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_aggregate_rejects_axis_result_mismatches(self) -> None:
         cases = {

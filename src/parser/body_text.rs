@@ -19,6 +19,8 @@ use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
 
+mod drawing_text_structure;
+
 use crate::model::control::{Control, UnknownControl};
 use crate::model::document::{RawRecord, Section, SectionDef};
 use crate::model::footnote::FootnoteShape;
@@ -52,12 +54,17 @@ struct ParaTextParts {
 pub enum BodyTextError {
     RecordError(String),
     ParseError(String),
+    /// An owned drawing text area is incomplete; never replace its section with an empty one.
+    DrawingTextStructure(String),
 }
 
 impl std::fmt::Display for BodyTextError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BodyTextError::RecordError(e) => write!(f, "BodyText 레코드 오류: {}", e),
+            BodyTextError::DrawingTextStructure(e) => {
+                write!(f, "그리기 내부 영역 구조 오류: {}", e)
+            }
             BodyTextError::ParseError(e) => write!(f, "BodyText 파싱 오류: {}", e),
         }
     }
@@ -70,6 +77,7 @@ impl std::error::Error for BodyTextError {}
 /// data: 압축 해제된(배포용은 복호화+해제된) 레코드 바이트 스트림
 pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
     let records = Record::read_all(data).map_err(|e| BodyTextError::RecordError(e.to_string()))?;
+    drawing_text_structure::validate(&records)?;
 
     let mut section = Section::default();
     let mut idx = 0;
@@ -152,15 +160,24 @@ pub fn parse_body_text_section(data: &[u8]) -> Result<Section, BodyTextError> {
 fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
     // (필드 인스턴스 id, HWP5 ctrl_id)
     let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    link_orphan_field_ends_with(paragraphs, &mut open_fields);
+}
 
+/// [`link_orphan_field_ends`] 의 본체 — 열린 필드 스택을 밖에서 넘겨 이어 쓴다.
+///
+/// **짝을 이미 채운 종료 마커에서도 스택을 pop 한다.** HWP5 종료 마커에는 짝 id 가 없어
+/// 순서만이 짝이므로, 이미 이은 마커를 건너뛰면 그 짝이 스택에 남아 뒤에 오는 마커가
+/// **엉뚱한 필드를 닫는다**. 채우기만 조건부로 한다.
+fn link_orphan_field_ends_with(paragraphs: &mut [Paragraph], open_fields: &mut Vec<(u32, u32)>) {
     for para in paragraphs.iter_mut() {
         // 이 문단의 종료 마커는 **앞서 열린** 필드를 닫는다.
         for ofe in para.orphan_field_ends.iter_mut() {
+            let Some((id, ctrl_id)) = open_fields.pop() else {
+                continue;
+            };
             if ofe.begin_id_ref == 0 {
-                if let Some((id, ctrl_id)) = open_fields.pop() {
-                    ofe.begin_id_ref = id;
-                    ofe.begin_ctrl_id = ctrl_id;
-                }
+                ofe.begin_id_ref = id;
+                ofe.begin_ctrl_id = ctrl_id;
             }
         }
 
@@ -177,6 +194,27 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
     }
 }
 
+/// [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다.
+///
+/// [`link_orphan_field_ends`] 는 `BodyText/SectionN` 하나를 파싱한 끝에 걸리므로 열린
+/// 필드 스택이 구역과 함께 버려진다. 그런데 누름틀은 구역 경계를 넘는다 — 재난안전실
+/// 36455713 은 `Section0` 에서 연 `%clk` 을 `Section1` 에서 닫는다. 그 종료 마커는
+/// `begin_id_ref` 가 0 으로 남고, HWPX 직렬화기의 `emit_orphan_field_end` 가 `#5252`
+/// 가드로 그것을 **버린다** — 그 가드는 "0 이면 그 문서 어디에도 짝이 없다"를 전제로
+/// 하는데, 구역을 넘으면 그 전제가 거짓이다(짝은 앞 구역에 멀쩡히 있다).
+///
+/// 최상위 문단 목록만 하나의 스택으로 다시 훑는다. 중첩 목록(셀·각주·글상자)은
+/// 자기 안에서 이미 짝을 지었고 필드가 그 경계를 넘지 못한다.
+///
+/// 진짜로 짝이 없는 종료 마커는 여전히 `begin_id_ref == 0` 으로 남아 `#5252` 가드가
+/// 그대로 버린다 — 07276·02899 의 본문 폐기 방지는 유지된다.
+pub fn link_orphan_field_ends_across_sections(sections: &mut [crate::model::document::Section]) {
+    let mut open_fields: Vec<(u32, u32)> = Vec::new();
+    for section in sections.iter_mut() {
+        link_orphan_field_ends_with(&mut section.paragraphs, &mut open_fields);
+    }
+}
+
 /// [#4827] 문단↔표↔셀 상호재귀 깊이 상한.
 ///
 /// 셀 안의 문단이 다시 표를 품는 사이클(`parse_paragraph`→`parse_ctrl_header`→
@@ -189,6 +227,14 @@ fn link_orphan_field_ends(paragraphs: &mut [Paragraph]) {
 /// 호출부에 관통시키지 않는다). HWPX `MAX_HWPX_SECTION_DEPTH`(#4759)·HWP3(#4285)·HWP5 묶음
 /// 개체(#4761)·HML 의 형제 가드와 같은 취지·같은 값이다. 실문서의 표 중첩은 이에 한참 못 미친다.
 pub(crate) const MAX_HWP5_SECTION_DEPTH: u32 = 64;
+
+/// 짝을 잃은 UTF-16 서로게이트 한 짝을 받는 글자 (#6873).
+///
+/// `PARA_TEXT` 는 UTF-16 코드 단위 배열이라 상위/하위 서로게이트가 **혼자** 실린 문서가
+/// 있다. Rust `char` 도 XML 도 그 값을 담지 못한다 — 한글은 HWPX 로 저장할 때 그 자리를
+/// `□` 로 적는다(engine 2020 정본 실측). 종전에는 파서가 통째로 버려 h2x 에서 글자가
+/// 사라졌다.
+const UNPAIRED_SURROGATE_CHAR: char = '\u{25A1}';
 
 thread_local! {
     static HWP5_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
@@ -324,6 +370,7 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
         i += 1;
     }
 
+    para.import_markpen_range_tags();
     Ok(para)
 }
 
@@ -450,14 +497,15 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
             }
             // 직렬화기의 "데이터 없음" 마커([0,...,0,0x0009] — body_text.rs 탭 방출부)는
-            // IR 에 싣지 않는다. 한컴 실측 탭 확장은 ext[2] 고바이트=종류 enum+1 이라
-            // 전부 0 일 수 없고, 이 마커를 tab_extended 로 실으면 레이아웃이 ext[0]=0 을
+            // 저장 폭으로 쓰지 않는다. 한컴 실측 탭 확장은 ext[2] 고바이트=종류 enum+1 이라
+            // 전부 0 일 수 없고, 이 마커를 실제 폭으로 읽으면 레이아웃이 ext[0]=0 을
             // 탭 결과 위치로 해석해 탭이 무폭이 된다 (#1892 — tab_extended 없던 HWP3
             // 문단이 라운드트립 후 탭 스톱을 잃는 렌더 분기).
-            let is_null_ext = ext[..6].iter().all(|&v| v == 0) && ext[6] == 0x0009;
-            if !is_null_ext {
-                tab_extended.push(ext);
-            }
+            // [#7170] 이 마커를 **버리면** 뒤 탭의 확장이 순번으로 밀려 남의 폭·채움을
+            // 쓴다(`tab_extended` 는 '\t' 순번으로 소비된다). 자리는 그대로 채우고,
+            // 소비자가 `tab_ext_is_placeholder` 로 걸러 `find_next_tab_stop` 재계산을
+            // 택한다.
+            tab_extended.push(ext);
             pos += 16;
         } else if ch == 0x000A {
             // 줄 끝: char 컨트롤 (1 code unit = 2바이트)
@@ -593,7 +641,27 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                     continue;
                 }
             }
-            if let Some(c) = char::from_u32(ch as u32) {
+            // [#6873] **짝 없는 서로게이트를 버리지 말고 한글과 같은 글자로 받는다.**
+            //
+            // 바로 위 갈래가 처리하지 못한 서로게이트 — 상위 뒤에 하위가 없거나 하위가
+            // 혼자 오는 경우 — 는 유효한 UTF-16 이 아니라 `char::from_u32` 가 `None` 을
+            // 주고, 그 글자가 모델에서 통째로 사라졌다. h2h 는 원본 코드 단위를 그대로
+            // 흘려보내 살아남지만 h2x 는 잃는다(19211507 `충 주 시 장 DB80`,
+            // 18096141 `DFDA` — 각 1글자).
+            //
+            // 한글도 XML 에 반쪽 서로게이트를 담을 수 없어 **`□`(U+25A1) 로 바꿔 쓴다** —
+            // engine 2020 정본 HWPX 로 실측한 값이다. 같은 글자로 받아 길이와 모양을
+            // 함께 맞춘다.
+            //
+            // ```text
+            //   19211507  <hp:t>충    주    시    장 </hp:t><hp:t>□</hp:t>
+            //   18096141  <hp:t> □   신 청 인</hp:t>
+            // ```
+            //
+            // 상위/하위 어느 쪽이 남았는지는 구분하지 않는다 — 정본이 둘을 같은 글자로
+            // 적는다.
+            let scalar = char::from_u32(ch as u32).or(Some(UNPAIRED_SURROGATE_CHAR));
+            if let Some(c) = scalar {
                 char_offsets.push(code_unit_pos);
                 text.push(c);
                 char_count += 1;
@@ -1042,6 +1110,7 @@ fn parse_column_def_ctrl(ctrl_data: &[u8]) -> ColumnDef {
     // bit 10-11: 단 방향
     cd.direction = match (attr >> 10) & 0x03 {
         1 => ColumnDirection::RightToLeft,
+        2 => ColumnDirection::Mirror,
         _ => ColumnDirection::LeftToRight,
     };
     // bit 12: 단 너비 동일 여부

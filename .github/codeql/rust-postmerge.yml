@@ -1,0 +1,14 @@
+# #6947: devel push keeps the full Rust source scope and default security suite.
+# Unlike rust-pr.yml, do not add paths or paths-ignore here.
+# Exclude only the three non-alert metrics already excluded for PRs by #6877.
+# Matching kind as well as ID retains a query if it becomes an alert query.
+query-filters:
+  - exclude:
+      id: rust/summary/summary-statistics
+      kind: metric
+  - exclude:
+      id: rust/summary/reduced-summary-statistics
+      kind: metric
+  - exclude:
+      id: rust/summary/query-sink-counts
+      kind: metric

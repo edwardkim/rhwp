@@ -122,6 +122,8 @@ pub enum LayoutKind {
 pub struct EqLayout {
     /// 기본 글꼴 크기 (px)
     pub font_size: f64,
+    dpi: f64,
+    hancom_cjk_advance: bool,
 }
 
 /// 비율 상수
@@ -195,7 +197,21 @@ const TEXT_BASELINE: f64 = 0.8;
 
 impl EqLayout {
     pub fn new(font_size: f64) -> Self {
-        Self { font_size }
+        Self {
+            font_size,
+            dpi: super::super::DEFAULT_DPI,
+            hancom_cjk_advance: false,
+        }
+    }
+
+    /// HYhwpEQ 대체 한글의 전진폭은 한컴 수식의 논리 격자에서 반올림한다.
+    /// 출력 DPI를 바꿔도 같은 물리 전진폭을 소비한다.
+    pub(crate) fn for_equation(equation: &crate::model::control::Equation, dpi: f64) -> Self {
+        Self {
+            font_size: super::super::hwpunit_to_px(equation.font_size.max(1) as i32, dpi),
+            dpi,
+            hancom_cjk_advance: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
+        }
     }
 
     /// AST를 레이아웃 박스로 변환
@@ -310,7 +326,20 @@ impl EqLayout {
                 '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
             )
         });
-        let w = estimate_text_width(text, fs, !has_cjk);
+        let w = if has_cjk && self.hancom_cjk_advance {
+            let advance = (fs * 48.0 / self.dpi).round().max(1.0) * self.dpi / 48.0;
+            text.chars()
+                .map(|ch| {
+                    if super::text_has_cjk(&ch.to_string()) {
+                        advance
+                    } else {
+                        estimate_text_width(&ch.to_string(), fs, false)
+                    }
+                })
+                .sum()
+        } else {
+            estimate_text_width(text, fs, !has_cjk)
+        };
         LayoutBox {
             x: 0.0,
             y: 0.0,

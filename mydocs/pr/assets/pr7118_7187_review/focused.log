@@ -1,0 +1,143 @@
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling bitflags v2.13.1
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling getrandom v0.3.4
+   Compiling rustix v1.1.4
+   Compiling errno v0.3.14
+   Compiling futures-task v0.3.34
+   Compiling futures-core v0.3.34
+   Compiling png v0.18.1
+   Compiling pdf-writer v0.12.1
+   Compiling pin-project-lite v0.2.17
+   Compiling slab v0.4.12
+   Compiling fastrand v2.5.0
+   Compiling futures-util v0.3.34
+   Compiling ppv-lite86 v0.2.21
+   Compiling wait-timeout v0.2.1
+   Compiling quick-error v1.2.3
+   Compiling bit-vec v0.8.0
+   Compiling bit-set v0.8.0
+   Compiling wasm-bindgen-test-macro v0.3.77
+   Compiling moxcms v0.8.1
+   Compiling module-lattice v0.2.3
+   Compiling nu-ansi-term v0.50.3
+   Compiling ml-dsa v0.1.1
+   Compiling ml-kem v0.3.2
+   Compiling rand_core v0.9.5
+   Compiling js-sys v0.3.104
+   Compiling rand v0.9.5
+   Compiling rand_chacha v0.9.0
+   Compiling bytemuck_derive v1.12.0
+   Compiling serde_derive v1.0.229
+   Compiling tempfile v3.27.0
+   Compiling bytemuck v1.25.2
+   Compiling rusty-fork v0.3.1
+   Compiling async-trait v0.1.92
+   Compiling rhwp-contracts v0.1.0 (/Users/tsjang/rhwp/crates/rhwp-contracts)
+   Compiling font-types v0.11.3
+   Compiling read-fonts v0.39.2
+   Compiling tiny-skia-path v0.11.4
+   Compiling rustybuzz v0.20.1
+   Compiling rgb v0.8.53
+   Compiling tiny-skia v0.11.4
+   Compiling serde v1.0.229
+   Compiling image v0.25.10
+   Compiling rand_xorshift v0.4.0
+   Compiling wasm-bindgen-test-shared v0.2.127
+   Compiling unarray v0.1.4
+   Compiling cast v0.3.0
+   Compiling oorandom v11.1.5
+   Compiling regex-syntax v0.8.11
+   Compiling usvg v0.45.1
+   Compiling wasm-bindgen-futures v0.4.77
+   Compiling wasm-bindgen-test v0.3.77
+   Compiling proptest v1.11.0
+   Compiling resvg v0.45.1
+   Compiling skrifa v0.42.1
+   Compiling write-fonts v0.48.1
+   Compiling subsetter v0.2.6
+   Compiling svg2pdf v0.13.0 (/Users/tsjang/rhwp/vendor/svg2pdf)
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 53s
+────────────
+ Nextest run ID 47665110-3f49-4d72-8369-0194a5b06b7b with nextest profile: default
+    Starting 54 tests across 10 binaries (2018 tests skipped)
+        PASS [   0.017s] ( 1/54) rhwp::regression_suite_014 issue_7172_hwp3_hanging_indent_margin::hanging_indent_margin_is_first_line_based_and_not_double_counted
+        PASS [   0.051s] ( 2/54) rhwp::regression_suite_009 issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_count_matches_the_tab_characters
+        PASS [   0.054s] ( 3/54) rhwp::regression_suite_009 issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_fill_follows_the_document
+        PASS [   0.095s] ( 4/54) rhwp::regression_suite_017 issue_7174_hwp3_footnote_separator_margins::hwp3_footnote_separator_margins_reach_the_hwp5_slots
+        PASS [   0.097s] ( 5/54) rhwp::regression_suite_009 issue_7170_hwp3_inline_tab_width::hwp3_inline_tab_carries_its_width
+        PASS [   0.054s] ( 6/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_first_fragment_starting_at_page_top_is_pinned_too
+        PASS [   0.052s] ( 7/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_fragment_box_opens_the_table_outer_top_margin
+        FAIL [   0.052s] ( 8/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+  stdout ───
+
+    running 1 test
+    test issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame ... FAILED
+
+    failures:
+
+    failures:
+        issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.03s
+
+  stderr ───
+
+    thread 'issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame' (188858775) panicked at tests/generated/../cases/issue_7095_page_spanning_fragment_box.rs:60:5:
+    projected content frame must end at its picture: BoundingBox { x: 75.58666666666667, y: 86.92000000000002, width: 634.9866666666667, height: 850.8799999999999 }, PDF bottom=931.4788638656837
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.164s] ( 9/54) rhwp::regression_suite_018 issue_5908_giant_cell_last_fragment_overfill::issue_5908_giant_cell_last_fragment_keeps_splitting
+        PASS [   0.071s] (10/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::issue_7095_last_fragment_and_downstream_contracts_hold
+        PASS [   0.185s] (11/54) rhwp::regression_suite_003 issue_7140_nested_row_unit_paint_height::hwpx_page_count_matches_the_oracle
+        PASS [   0.029s] (12/54) rhwp::regression_suite_021 issue_1440_onsamiro_picture_wrap::issue_6970_no_ls_square_wrap_columns_stay_inside_body_without_overlap
+        PASS [   0.226s] (13/54) rhwp::regression_suite_018 issue_5908_giant_cell_last_fragment_overfill::issue_5908_collapsed_page_stays_inside_the_paper
+        PASS [   0.016s] (14/54) rhwp::regression_suite_021 issue_1892::issue_1892_empty_container_and_size_criterion_roundtrip
+        PASS [   0.023s] (15/54) rhwp::regression_suite_021 issue_1892::issue_1892_hwp3_drawing_group_roundtrip_render_is_self_consistent
+        PASS [   0.021s] (16/54) rhwp::regression_suite_021 issue_1892::issue_1892_hwp3_tab_roundtrip_render_is_self_consistent
+        PASS [   0.020s] (17/54) rhwp::regression_suite_021 issue_1892::issue_1892_null_tab_extension_marker_not_parsed_into_ir
+        PASS [   0.121s] (18/54) rhwp::regression_suite_021 issue_1440_onsamiro_picture_wrap::issue_1440_page6_box_border_connect_and_dash_line_are_preserved
+        PASS [   0.166s] (19/54) rhwp::regression_suite_021 issue_1440_onsamiro_picture_wrap::issue_1440_page35_text_lines_do_not_cross_square_picture
+        PASS [   0.025s] (20/54) rhwp::regression_suite_021 issue_6946_block_seated_float_sibling_gets_its_own_page::back_form_sibling_gets_its_own_page_inside_the_body
+        PASS [   0.126s] (21/54) rhwp::regression_suite_021 issue_1440_onsamiro_picture_wrap::issue_1440_page6_box_paragraph_does_not_double_apply_lineseg_column_start
+        PASS [   0.027s] (22/54) rhwp::regression_suite_021 issue_6946_block_seated_float_sibling_gets_its_own_page::front_form_page_holds_only_the_front_table
+        PASS [   0.137s] (23/54) rhwp::regression_suite_021 issue_1440_onsamiro_picture_wrap::issue_1440_source_linesegs_encode_wrap_zone_for_target_paragraph
+        PASS [   0.035s] (24/54) rhwp::regression_suite_021 issue_6946_block_seated_float_sibling_gets_its_own_page::page_count_matches_hancom_2020_oracle
+        PASS [   0.018s] (25/54) rhwp::regression_suite_021 issue_7174_hwp3_footnote_number_suffix::hwp3_footnote_shape_carries_the_document_number_suffix
+        PASS [   0.013s] (26/54) rhwp::regression_suite_021 issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_drops_the_duplicated_number_suffix
+        PASS [   0.012s] (27/54) rhwp::regression_suite_021 issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_keeps_a_different_leading_char
+        PASS [   0.007s] (28/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::cli_verification_uses_the_snapshot_that_produces_the_bytes
+        PASS [   0.047s] (29/54) rhwp::regression_suite_021 issue_6946_block_seated_float_sibling_gets_its_own_page::no_page_stacks_two_float_tables_on_top_of_each_other
+        PASS [   0.012s] (30/54) rhwp::regression_suite_021 issue_7174_hwp3_footnote_number_suffix::hwp3_note_body_keeps_the_char_when_the_document_turns_decoration_off
+        PASS [   0.012s] (31/54) rhwp::regression_suite_021 issue_7174_hwp3_footnote_number_suffix::synthetic_hwp3_note_has_the_auto_number_placeholder
+        PASS [   0.324s] (32/54) rhwp::regression_suite_003 issue_7140_nested_row_unit_paint_height::nested_row_units_reserve_painted_height
+        PASS [   0.050s] (33/54) rhwp::regression_suite_021 issue_6946_block_seated_float_sibling_gets_its_own_page::unrelated_lane_does_not_hide_a_block_siblings_occupancy
+        PASS [   0.011s] (34/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::floating_stack_admission_requires_same_frame_and_strict_2d_overlap
+        PASS [   0.009s] (35/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::renderer_cache_lifecycle_is_absent_from_source_models
+        PASS [   0.012s] (36/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::hwpx_does_not_persist_layout_only_fill_lines
+        PASS [   0.018s] (37/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_endnote_internal_vpos_zero_is_normalized
+        PASS [   0.031s] (38/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::every_hwp_lowering_api_preserves_the_live_document
+        PASS [   0.017s] (39/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_line_box_reflects_para_margins
+        PASS [   0.035s] (40/54) rhwp::regression_suite_024 issue_4771_derived_layout_state::issue_2004_projection_preserves_each_picture_identity_and_final_bounds
+        PASS [   0.028s] (41/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_endnotes_follow_hwpx_numbering_and_width
+        PASS [   0.027s] (42/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_preserves_blue_text_color_like_hwpx_reference
+        PASS [   0.276s] (43/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::stored_midpage_cut_keeps_its_last_source_unit
+        PASS [   0.380s] (44/54) rhwp::regression_suite_018 issue_5908_giant_cell_last_fragment_overfill::issue_5908_annex_two_moves_off_the_collapsed_page
+        PASS [   0.031s] (45/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwpx_endnote_internal_vpos_zero_is_normalized
+        PASS [   0.024s] (46/54) rhwp::regression_suite_027 cell_square_picture_anchor::issue_4059_cell_square_picture_stays_inside_its_cell
+        PASS [   0.030s] (47/54) rhwp::regression_suite_027 cell_square_picture_anchor::issue_7182_rowbreak_cell_picture_only_paragraphs_render_inside_their_cells
+        PASS [   0.077s] (48/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_title_renders_from_embedded_ole
+        PASS [   0.132s] (49/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_header_footer_page5_matches_reference_contract
+        PASS [   0.086s] (50/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwpx_title_ole_renders_from_embedded_preview
+        PASS [   0.131s] (51/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_page1_school_label_matches_hwpx_y
+        PASS [   0.130s] (52/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow
+        PASS [   0.157s] (53/54) rhwp::regression_suite_026 issue_1692::issue_1692_so_sueop_answer_endnote_pages_match_pdf_ranges
+        PASS [   1.389s] (54/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::fragment_budget_preserves_units_with_visible_and_empty_hosts
+────────────
+     Summary [   1.410s] 54 tests run: 53 passed, 1 failed, 2018 skipped
+        FAIL [   0.052s] ( 8/54) rhwp::regression_suite_019 issue_7095_page_spanning_fragment_box::projected_picture_fragment_does_not_claim_a_stored_page_frame
+error: test run failed

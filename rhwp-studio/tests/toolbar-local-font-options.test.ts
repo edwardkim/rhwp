@@ -3,6 +3,7 @@ import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const source = readFileSync(new URL('../src/ui/toolbar.ts', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/styles/style-bar.css', import.meta.url), 'utf8');
 
@@ -22,11 +23,11 @@ test('글꼴 메뉴는 문서 글꼴을 기본으로 열고 시스템 글꼴은 
 });
 
 test('한컴형 글꼴 메뉴는 범주 목록과 기존 글꼴 적용 이벤트를 함께 사용한다', () => {
-  assert.match(source, /label: '모든 글꼴'/);
-  assert.match(source, /label: '현재 글꼴'/);
-  assert.match(source, /label: '문서 글꼴'/);
-  assert.match(source, /label: '대표 글꼴'/);
-  assert.match(source, /label: '시스템 글꼴'/);
+  assertShowsText(source, '모든 글꼴');
+  assertShowsText(source, '현재 글꼴');
+  assertShowsText(source, '문서 글꼴');
+  assertShowsText(source, '대표 글꼴');
+  assertShowsText(source, '시스템 글꼴');
   assert.match(codeOnly(source), /menu\.className = 'font-picker-menu'/);
   assert.match(source, /this\.fontName\.dispatchEvent\(new Event\('change', \{ bubbles: true \}\)\)/);
 });

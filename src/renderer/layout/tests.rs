@@ -592,6 +592,9 @@ fn test_build_page_with_paragraph() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -676,6 +679,9 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -737,7 +743,9 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_family: "함초롬돋움".to_string(),
@@ -759,6 +767,7 @@ fn test_layout_with_composed_styles() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let page_content = PageContent {
@@ -779,6 +788,9 @@ fn test_layout_with_composed_styles() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -875,7 +887,9 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_size: 16.0,
@@ -892,6 +906,7 @@ fn test_layout_multi_run_x_position() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let page_content = PageContent {
@@ -912,6 +927,9 @@ fn test_layout_multi_run_x_position() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -963,7 +981,9 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
             font_size: 14.0,
@@ -980,6 +1000,7 @@ fn test_resolved_to_text_style() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -998,7 +1019,9 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_size: 16.0,
@@ -1011,6 +1034,7 @@ fn test_resolved_to_text_style_with_ratio() {
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1270,7 +1294,9 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
         ..Default::default()
     };
@@ -1299,6 +1325,9 @@ fn test_layout_table_basic() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1454,6 +1483,9 @@ fn test_layout_table_cell_positions() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1793,6 +1825,7 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
+    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
     assert!(matches!(
         numbering_format_to_number_format(0),
         NumFmt::Digit
@@ -2000,7 +2033,9 @@ fn test_tac_leading_width_block_table_full_line() {
         horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             letter_spacing: -1.6,
@@ -2096,7 +2131,9 @@ fn test_tac_leading_width_inline_table_partial() {
         horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             ..Default::default()
@@ -2727,8 +2764,13 @@ fn header_paper_relative_shape_uses_page_origin() {
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
 }
 
+/// [#6608] 머리말 안 용지 기준 그림은 물리 용지가 아니라 **머리말 틀 원점**에서
+/// 오프셋을 잰다. PR #1682 는 바탕쪽의 용지 원점 규칙을 머리말에도 유추해
+/// 이 테스트를 용지 원점으로 적었지만, 실문서 `pic-in-head-02.hwp` 를 한/글 2020·2022
+/// PDF 와 대조하면 머리말 그림(`PAPER`, 오프셋 (245, 1066)HU)이 틀 원점
+/// (왼쪽 여백, 위 여백) + 오프셋 = (78.68, 51.94)px 에 있다 — 6쪽 전부.
 #[test]
-fn header_paper_relative_picture_uses_page_origin() {
+fn header_paper_relative_picture_uses_header_frame_origin() {
     let tree =
         render_tree_with_header_control(Control::Picture(Box::new(crate::model::image::Picture {
             common: CommonObjAttr {
@@ -2752,8 +2794,14 @@ fn header_paper_relative_picture_uses_page_origin() {
             RenderNodeType::Image(_) | RenderNodeType::Placeholder(_)
         )
     });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+    let header_area =
+        PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default()).header_area;
+    assert!(
+        header_area.x > 0.0 && header_area.y > 0.0,
+        "픽스처 머리말 틀은 용지 원점과 달라야 한다"
+    );
+    assert!((bbox.x - (header_area.x + hwpunit_to_px(1_500, DEFAULT_DPI))).abs() < 0.01);
+    assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
 // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
@@ -2788,7 +2836,9 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {
             fill_color: Some(0x00F0F0F0),
             image_fill: Some(ResolvedImageFill {

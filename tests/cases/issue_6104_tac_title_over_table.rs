@@ -48,7 +48,6 @@ fn table_block(text: &str, height: u32, treat_as_char: bool, offset: u32) -> Tab
         row_count: 1,
         col_count: 1,
         cells: vec![cell(text, height)],
-        dirty: true,
         ..Default::default()
     };
     table.common.width = CELL_W;

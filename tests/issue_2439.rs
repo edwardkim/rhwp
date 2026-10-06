@@ -43,6 +43,7 @@ fn load_with_native_hwp5_provenance(sample: &str) -> HwpDocument {
         format: SourceFormat::Hwp5,
         hwp3_lineage: false,
         hwpx_lineage: false,
+        hft_ascii_halfwidth_witnessed: false,
     };
     let host = &mut model.sections[0].paragraphs[1];
     host.line_segs[0].tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
@@ -117,7 +118,6 @@ fn split_positive_empty_host_doc() -> HwpDocument {
     table.cell_grid = (0..usize::from(ROW_COUNT)).map(Some).collect();
     table.repeat_header = true;
     table.common.height = template_cell.height.saturating_mul(u32::from(ROW_COUNT));
-    table.dirty = true;
     doc.set_document(model);
     doc
 }

@@ -1,0 +1,58 @@
+{
+  "key": "png-pair",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    88,
+    89
+  ],
+  "completed_pages": [
+    88,
+    89
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7554a/wasm/compare/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 88,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7554a/wasm/rhwp_png/rhwp_088.png",
+      "rhwp_sha256": "b3db1f46a01ff9c3eee9663e0be8be83eed152dd5a1ac570a0f7c7fbccd7581a",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7554a/pdf_png/pdf-088.png",
+      "pdf_sha256": "b09f833a1a6f9e9457759bf26205733718aab52a1ccb267cd62b935b0a554a02"
+    },
+    {
+      "page": 89,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7554a/wasm/rhwp_png/rhwp_089.png",
+      "rhwp_sha256": "0a3be28062b1002872b3be8701284999d2a2856d283dd62152c284a1d7718a5a",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7554a/pdf_png/pdf-089.png",
+      "pdf_sha256": "ba635023608ec5069fc8c6fc910ee854212e3bcc27bc22c9fead6ce554de8434"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 88,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 85.09179,
+      "silhouette_boundary_reconciled_pixels": 4300,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56707,
+      "tolerant_content_match_percent": 92.67463
+    },
+    {
+      "page": 89,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.21744,
+      "silhouette_boundary_reconciled_pixels": 742,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42265,
+      "tolerant_content_match_percent": 95.97303
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

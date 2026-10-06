@@ -1,0 +1,169 @@
+//! [Issue #6782] 조각 표의 셀 앵커 그림에서, **그림을 자기 칸 밖으로 통째로 밀어내는**
+//! 세로 오프셋이 그대로 실려 그림이 쪽 위쪽 밖(음수 y)으로 나가 소실되던 결함의 가드.
+//!
+//! ## 계약 — 부호도 크기도 아니라 **칸과 겹치는가**
+//!
+//! 한/글은 셀 앵커 그림의 세로 오프셋을 대체로 그대로 적용하지만, 그 결과가 그림을 자기
+//! 칸 밖으로 완전히 내보내면 쓰지 않는다. 한/글 2020 오라클 실측이 그 축을 가른다.
+//!
+//! ```text
+//!   문제 그림 (h≈65.7)   한/글 y = 235.9     rhwp 종전 y = −233.4  ← 용지 밖, 소실
+//!                                            이 수정   y =  238.7  (한/글과 2.8px)
+//!
+//!   voff −70,819HU = −944.25px, 셀 valign=Center
+//!   232.1 + (79.05 − 65.8 − 944.25) / 2 = −233.4
+//! ```
+//!
+//! ⚠ **음수라고 버리면 안 된다.** `#5734`(156684746 9쪽 왼쪽 칸)의 첫 그림도 저장 vpos 가
+//! 0이라 같은 폴백 갈래로 오는데, 거기서는 `−1,079HU`(14.4px)가 **적용되는 것이 정답**이고
+//! `issue_5734_cell_float_stack_stored_vpos` 가 그 값을 잠근다. 실제로 「음수 → 0」 판과
+//! 「결과 바닥을 칸 상단으로」 판은 **둘 다 그 핀을 깨뜨렸다**(전수 9020 중 그 1건).
+//!
+//! ```text
+//!   #6782  y + h = −167.6 ≤ 칸 상단 232.1   → 칸 밖   → 오프셋 무시
+//!   #5734  y + h =  701.1 >  칸 상단 631.0   → 겹침    → 오프셋 적용
+//! ```
+//!
+//! ## 필수 실물 재현물
+//! 원문 전체를 samples/issue6782에 보존한다. 조각 표의 문맥과 BinData를 바꾸지 않으며,
+//! fixture가 없으면 실패한다. 개인 PC 경로 탐색이나 환경 변수에 따른 묵시적 skip은 없다.
+//!
+//! ## [#6761] 쪽 번호가 하나 밀렸다 — 기하 계약은 그대로다
+//!
+//! 이 fixture 는 `#6761` 이 다루는 바로 그 문서다. `#6761` 수정은 저장 사다리가 적어 둔
+//! 쪽 경계 하나를 복원한다 — 한/글 정본 14쪽(`최종안 제시 및 보고 자료: Design B 최종 제안
+//! 및 결정`)을 rhwp 가 13쪽에 얹고 있었다. 그 쪽이 제자리로 가면서 **뒤쪽 전부가 +1** 밀렸다.
+//!
+//! 그래서 이 파일의 `PAGE_INDEX` 를 76 → 77 로, `page_count` 를 104 → 105 로 옮긴다.
+//! **검사 항목은 하나도 완화하지 않았다** — 칸 안 그림 11개, `row4/col3` 의 CCC, 한/글
+//! 2020 기준 `y = 235.9 ± 3.0` 이 새 쪽 번호에서 그대로 성립한다(실측 `y = 238.7`).
+//!
+//! `page_count` 는 한컴 정본값이 아니다 — 이 문서의 정본은 **103쪽**이고(MCP engine 2024
+//! 변환) rhwp 는 104 → 105 로 움직인다. 이 값은 그저 이 시험의 쪽 좌표 앵커다. 남은 두 쪽
+//! 격차(표 제목행만 남는 빈 쪽 2건)는 `#6761` 범위 밖이다.
+//!
+//! ## [#6761 후속] 빈 조각 쪽이 사라져 쪽수가 105 → 104 다
+//!
+//! 같은 이슈의 개체 칸 회계 수정(`빈 개체 줄을 그림 위에 쌓지 않는다`)으로 이 문서의
+//! `<표 4-1> 국내외 유사 마크 현황` 이 한 쪽에 들어간다. 수정 전에는 마지막 `덴마크` 행의
+//! 그림만 이어받는 **여분 쪽**이 78쪽 뒤에 끼어 있었다. 정본은 그 표를 55쪽 한 장에 담는다.
+//!
+//! - `PAGE_INDEX`(77) 는 그대로다 — 없어진 쪽은 그 **뒤**(0-기반 78)였다.
+//! - `page_count` 는 105 → **104**. 정본은 103쪽이므로 한 쪽 가까워진다.
+//! - 그 쪽의 칸 안 그림은 11 → **12** 개. 정본 55쪽의 그림도 12개다(`pdfimages -list`).
+//!   덴마크 행의 마크가 제 행으로 돌아온 몫이다.
+//!
+//! ## [#6761 잔여 축] 나란히 놓이는 그림을 더하지 않으면서 쪽수가 104 → 103 이다
+//!
+//! 한 문단의 개체를 가로 겹침과 무관하게 세로로 합산하던 측정을 배치와 맞췄다.
+//! `<표 3-4>` 의 마지막 행이 제 쪽에 들어가면서 그 앞의 여분 쪽도 사라진다.
+//!
+//! - `page_count` 104 → **103** — 한컴 정본 쪽수와 같다.
+//! - `PAGE_INDEX` 77 → **76**. 없어진 쪽이 이 쪽 **앞**(`<표 3-4>` 구간)이다.
+//! - 그 쪽의 칸 안 그림은 12장 그대로다(정본 55쪽도 12장).
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::wasm_api::HwpDocument;
+
+const PAGE_INDEX: u32 = 76;
+const PAGE_HEIGHT_PX: f64 = 1122.5;
+const SAMPLE: &str = "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp";
+
+fn sample() -> Vec<u8> {
+    std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE))
+        .expect("#6782 정식 실물 fixture 읽기")
+}
+
+fn collect_cell_images<'a>(
+    node: &'a RenderNode,
+    cell: Option<&'a RenderNode>,
+    out: &mut Vec<(f64, f64, f64)>,
+) {
+    let cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+        Some(node)
+    } else {
+        cell
+    };
+    if matches!(node.node_type, RenderNodeType::Image(_)) {
+        if let Some(cell) = cell {
+            out.push((cell.bbox.y, node.bbox.y, node.bbox.height));
+        }
+    }
+    for child in &node.children {
+        collect_cell_images(child, cell, out);
+    }
+}
+
+#[test]
+fn offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied() {
+    let bytes = sample();
+    let document = HwpDocument::from_bytes(&bytes).expect("parse 1480000-201900042");
+    assert_eq!(
+        document.page_count(),
+        103,
+        "쪽수는 103쪽이어야 한다 (#6761 잔여 축까지 닫혀 정본과 같다)"
+    );
+
+    let tree = document
+        .build_page_render_tree(PAGE_INDEX)
+        .expect("render p77");
+    let mut images = Vec::new();
+    collect_cell_images(&tree.root, None, &mut images);
+
+    assert_eq!(
+        images.len(),
+        12,
+        "77쪽의 칸 안 그림 12개를 보존해야 한다 (정본 55쪽도 12개)"
+    );
+
+    for (cell_y, image_y, image_h) in &images {
+        assert!(
+            *image_y >= 0.0 && *image_y <= PAGE_HEIGHT_PX,
+            "칸 안 그림이 용지 밖으로 나갔다 — 그림 y={image_y:.1}px (용지 0..{PAGE_HEIGHT_PX:.1}). \
+             회귀 시 −233.4px 로 인쇄에서 소실된다"
+        );
+        // 오프셋이 살아 있어도 그림은 자기 칸과 **겹쳐야** 한다. 한/글은 칸 밖으로
+        // 통째로 내보내는 오프셋을 쓰지 않는다.
+        assert!(
+            *image_y + *image_h > *cell_y,
+            "칸 안 그림이 자기 칸 위로 통째로 벗어났다 — 칸 {cell_y:.1}px, \
+             그림 {image_y:.1}+{image_h:.1}px"
+        );
+    }
+}
+
+#[test]
+fn the_ccc_image_is_restored_in_its_original_fragment_cell() {
+    fn collect<'a>(node: &'a RenderNode, in_target: bool, out: &mut Vec<&'a RenderNode>) {
+        let in_target = match &node.node_type {
+            RenderNodeType::TableCell(cell) => {
+                cell.row == 4 && cell.col == 3 && cell.model_cell_index == Some(19)
+            }
+            _ => in_target,
+        };
+        if in_target && matches!(node.node_type, RenderNodeType::Image(_)) {
+            out.push(node);
+        }
+        for child in &node.children {
+            collect(child, in_target, out);
+        }
+    }
+    let document = HwpDocument::from_bytes(&sample()).expect("문서 로드");
+    let tree = document.build_page_render_tree(PAGE_INDEX).expect("77쪽");
+    let mut images = Vec::new();
+    collect(&tree.root, false, &mut images);
+    assert_eq!(images.len(), 1, "row4/col3 조각 셀의 CCC 그림 하나");
+    let image = images[0];
+    if let RenderNodeType::Image(data) = &image.node_type {
+        assert_eq!(data.bin_data_id, 79, "원본 CCC 이미지 참조 보존");
+        assert_eq!(data.para_index, Some(118));
+    }
+    // engine 2020 기준 y=235.9. 현재 오차 약 2.8px를 명시적으로 제한한다.
+    assert!(
+        (image.bbox.y - 235.9).abs() <= 3.0,
+        "CCC 위치: {:?}",
+        image.bbox
+    );
+    assert!((image.bbox.height - 65.8).abs() <= 1.0, "CCC 크기 보존");
+}

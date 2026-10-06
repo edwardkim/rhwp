@@ -312,9 +312,9 @@ function evidenceForFace(face, ledgerRules, surveyRow, contract) {
     );
   }
   if (sourceStatus.status === 'verified') {
-    anchors.push('mydocs/working/task_m100_4739_stage5_validation.md');
+    anchors.push('mydocs/working/archives/task_m100_4739_stage5_validation.md');
   } else if (sourceStatus.status === 'available') {
-    anchors.push('mydocs/working/task_m100_4764_stage1_kopub_canvaskit_sfnt.md');
+    anchors.push('mydocs/working/archives/task_m100_4764_stage1_kopub_canvaskit_sfnt.md');
   }
   if (surveyRow) {
     anchors.push('mydocs/report/assets/survey_korea_downloads_font_jsdelivr_20260815.tsv');

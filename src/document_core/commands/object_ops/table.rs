@@ -217,7 +217,6 @@ impl DocumentCore {
             }
         }
         table.update_ctrl_dimensions();
-        table.dirty = true;
         let new_table_height = table.common.height as i32;
         if let Some((vertical_pos, line_height_extra)) = line_seg_update {
             if let Some(seg) = para.line_segs.first_mut() {
@@ -369,6 +368,27 @@ impl DocumentCore {
         row_count: u16,
         col_count: u16,
     ) -> Result<String, HwpError> {
+        self.create_table_with_options_native(
+            section_idx,
+            para_idx,
+            char_offset,
+            row_count,
+            col_count,
+            &super::TableCreationOptions::default(),
+        )
+    }
+
+    /// 표 생성과 동시에 열 너비·정렬·반복 머리행을 적용한다.
+    /// 기존 create_table_native의 기본값은 바꾸지 않는다.
+    pub fn create_table_with_options_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        row_count: u16,
+        col_count: u16,
+        options: &super::TableCreationOptions,
+    ) -> Result<String, HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::style::{
             BorderFill, BorderLine, BorderLineType, CenterLine, DiagonalLine, Fill,
@@ -396,6 +416,8 @@ impl DocumentCore {
             )));
         }
 
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         // --- 1. 편집 영역 폭 계산 ---
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin_lr: i32 = 283 * 2; // outer_margin left + right (~2mm)
@@ -404,7 +426,9 @@ impl DocumentCore {
                 .max(7200) as u32;
 
         // --- 2. 한컴 기본값 기반 셀 생성 (blank_h_saved.hwp 참조) ---
-        let col_width = content_width / col_count as u32;
+        let col_widths = options
+            .widths(col_count, content_width)
+            .map_err(HwpError::RenderError)?;
         // 한컴 기본: 셀 패딩 L=510 R=510 T=141 B=141
         let cell_pad = crate::model::Padding {
             left: 510,
@@ -416,7 +440,7 @@ impl DocumentCore {
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
         // 한컴 기본: 행 렌더링 높이 = padding_top + line_height(1000) + padding_bottom
         let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
-        let total_width = col_width * col_count as u32;
+        let total_width: u32 = col_widths.iter().sum();
         let total_height = rendered_row_height * row_count as u32;
 
         // BorderFill: 실선 테두리가 있는 기존 항목 재사용, 없으면 새로 생성
@@ -459,18 +483,38 @@ impl DocumentCore {
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
         let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
+        let para_shape_ids: Vec<u16> = (0..col_count)
+            .map(|col| {
+                options
+                    .column_alignments
+                    .as_ref()
+                    .map_or(default_para_shape_id, |alignments| {
+                        self.document.find_or_create_para_shape(
+                            default_para_shape_id,
+                            &crate::model::style::ParaShapeMods {
+                                alignment: Some(alignments[usize::from(col)]),
+                                ..Default::default()
+                            },
+                        )
+                    })
+            })
+            .collect();
 
         // 셀 목록 생성
         let mut cells = Vec::with_capacity((row_count as usize) * (col_count as usize));
         for r in 0..row_count {
             for c in 0..col_count {
+                let col_width = col_widths[usize::from(c)];
                 let mut cell = Cell::new_empty(c, r, col_width, cell_height, cell_border_fill_id);
+                if options.repeat_header.is_some() {
+                    cell.set_header(r == 0 && options.repeat_header == Some(true));
+                }
                 cell.padding = cell_pad;
                 cell.vertical_align = crate::model::table::VerticalAlign::Center; // 한컴 기본값
                                                                                   // 셀 문단 보정: char_count_msb, raw_header_extra, para/char shape
                 for cp in &mut cell.paragraphs {
                     cp.char_count_msb = true;
-                    cp.para_shape_id = default_para_shape_id;
+                    cp.para_shape_id = para_shape_ids[usize::from(c)];
                     // Cell::new_empty() 의 문단은 char_shapes 가 비어 있고, 저장기는 그것을
                     // charPrIDRef="0" 으로 쓴다. 아래 raw_header_extra 가 n_char_shapes=1 을
                     // 주장하는 것과도 어긋난다. 표를 삽입한 문단의 글자모양을 상속한다.
@@ -525,18 +569,6 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        // instance_id (해시 기반, 비-0 필수)
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c150000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-            if h == 0 {
-                h = 0x7c154b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
@@ -555,10 +587,16 @@ impl DocumentCore {
             zones: Vec::new(),
             cells,
             cell_grid: Vec::new(),
-            page_break: TablePageBreak::None,
-            repeat_header: false,
+            page_break: if options.repeat_header.is_some() {
+                // HWPX CELL은 저장소 공통 IR의 RowBreak에 대응한다.
+                TablePageBreak::RowBreak
+            } else {
+                TablePageBreak::None
+            },
+            repeat_header: options.repeat_header.unwrap_or(false),
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                instance_id,
                 treat_as_char: false,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Para,
@@ -575,15 +613,12 @@ impl DocumentCore {
             outer_margin_bottom: 283,
             raw_ctrl_data,
             raw_ctrl_seal: None,
-            raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
+            raw_table_record_attr: options.repeat_header.map_or(0x00000006, |repeat| {
+                // 새 표도 HWP5 저장기의 raw TABLE 레코드 우선 계약을 지킨다.
+                2 | (u32::from(repeat) << 2) // HWPX CELL (HWP5 RowBreak) + repeatHeader
+            }),
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
-            local_resize_rows: Vec::new(),
-            local_resize_cols: Vec::new(),
-            local_resize_cell_widths: Vec::new(),
-            local_resize_cell_heights: Vec::new(),
         };
         table.rebuild_grid();
 
@@ -595,7 +630,7 @@ impl DocumentCore {
         table_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
         table_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
 
-        let table_para = Paragraph {
+        let mut table_para = Paragraph {
             text: String::new(),
             char_count: 9, // 확장 제어문자(8 code units) + 문단끝(1)
             control_mask: 0x00000800,
@@ -668,6 +703,10 @@ impl DocumentCore {
         let mut did_split_for_table = false;
         if is_empty_para {
             // 빈 문단이면 UI에서 넘어온 offset과 무관하게 현재 줄을 표 host로 사용한다.
+            // 같은 문단 자리를 교체하므로 나눔과 그 저장 출처도 유지한다.
+            table_para.column_type = para.column_type;
+            table_para.raw_break_type = para.raw_break_type;
+            table_para.page_break_synthesized = para.page_break_synthesized;
             self.document.sections[section_idx].paragraphs[para_idx] = table_para;
             insert_para_idx = para_idx;
             table_control_idx = 0;
@@ -821,6 +860,8 @@ impl DocumentCore {
 
         // ── 인라인 TAC 표 생성 ──
 
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin: i16 = 283;
         let outer_margin_lr = (outer_margin * 2) as i32;
@@ -962,16 +1003,6 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c160000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            if h == 0 {
-                h = 0x7c164b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
@@ -989,6 +1020,7 @@ impl DocumentCore {
             repeat_header: false,
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                instance_id,
                 treat_as_char: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Page,
@@ -1008,12 +1040,6 @@ impl DocumentCore {
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
-            local_resize_rows: Vec::new(),
-            local_resize_cols: Vec::new(),
-            local_resize_cell_widths: Vec::new(),
-            local_resize_cell_heights: Vec::new(),
         };
         table.rebuild_grid();
 
@@ -1419,7 +1445,56 @@ impl DocumentCore {
         cell_path_json: &str,
         inner_control_idx: usize,
     ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Picture(_)),
+            "그림이",
+        )
+    }
+
+    /// [#6771] 표 셀/글상자 **내부 표** 삭제 (cell_path 기반).
+    ///
+    /// 공공 양식은 작성 안내문을 셀 안 1×1 표(점선 상자)로 넣어 두고 본문에 "안내 박스는
+    /// 반드시 삭제 후 제출"이라고 적는다. 글자는 `delete_text_in_cell_by_path` 로 지울 수
+    /// 있었지만 **그릇을 지울 길이 없었다** — `delete_control_at` 은 본문 리스트만 다루고
+    /// `delete_table_control` 은 `(구역, 문단, 컨트롤)` 셋만 받아 셀 안을 짚지 못한다.
+    /// 절차는 그림 삭제와 같으므로 몸통을 공유한다.
+    pub fn delete_cell_table_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Table(_)),
+            "표가",
+        )
+    }
+
+    /// 셀·글상자 안 컨트롤 하나를 지우는 공통 몸통 — 그림·표가 같은 절차를 쓴다.
+    ///
+    /// `accepts` 가 지목한 컨트롤 종류를 검사하고, 그 컨트롤이 본문에서 차지하던 8바이트
+    /// 자리를 걷어낸 뒤 문단을 다시 흘린다. `kind_label` 은 오류 문구의 조사까지 담는다
+    /// ("그림이" / "표가").
+    fn delete_cell_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        accepts: fn(&Control) -> bool,
+        kind_label: &str,
+    ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
+        let deleted_table;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1431,10 +1506,11 @@ impl DocumentCore {
                     inner_control_idx
                 )));
             }
-            if !matches!(&para.controls[inner_control_idx], Control::Picture(_)) {
-                return Err(HwpError::RenderError(
-                    "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
-                ));
+            if !accepts(&para.controls[inner_control_idx]) {
+                return Err(HwpError::RenderError(format!(
+                    "지정된 셀 내 컨트롤이 {} 아닙니다",
+                    kind_label
+                )));
             }
 
             let text_chars: Vec<char> = para.text.chars().collect();
@@ -1484,7 +1560,7 @@ impl DocumentCore {
                 }
             }
 
-            para.controls.remove(inner_control_idx);
+            deleted_table = matches!(para.controls.remove(inner_control_idx), Control::Table(_));
             if inner_control_idx < para.ctrl_data_records.len() {
                 para.ctrl_data_records.remove(inner_control_idx);
             }
@@ -1500,12 +1576,20 @@ impl DocumentCore {
         self.paginate_if_needed();
         self.invalidate_page_tree_cache();
 
-        let outer_ctrl = path.first().unwrap().0;
-        self.event_log.push(DocumentEvent::PictureDeleted {
-            section: section_idx,
-            para: parent_para_idx,
-            ctrl: outer_ctrl,
-        });
+        if deleted_table {
+            self.event_log.push(DocumentEvent::CellTableDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                cell_path: path,
+                ctrl: inner_control_idx,
+            });
+        } else {
+            self.event_log.push(DocumentEvent::PictureDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                ctrl: path.first().unwrap().0,
+            });
+        }
         Ok("{\"ok\":true}".to_string())
     }
     pub fn set_cell_shape_properties_by_path_native(

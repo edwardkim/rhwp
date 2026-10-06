@@ -45,6 +45,11 @@ PR 생성 전에 번호를 예측해 review 파일명을 만들지 않는다. �
 이 시점에 local CI 검증이 완료됐다면 review 문서와 오늘할일에는 결과를 과거형으로 적는다. 검증을
 다시 실행할 계획처럼 쓰지 말고, 남은 GitHub Actions·작업지시자 승인·merge만 미래 조건으로 분리한다.
 
+오늘할일 갱신이나 다른 PR의 `devel` 병합만을 이유로 검토 branch를 반복 merge/rebase하지
+않는다. 최신 `upstream/devel`의 해당 오늘할일만 읽어 양쪽 기록을 보존하고, 검증된 code head
+위에 문서-only trailing commit을 추가한다. 적용 순서와 실제 충돌·필수 최신화 조건의 예외는
+[검토 중 base 전진과 오늘할일 갱신](review_only_fast_pass.md#a0-검토-중-base-전진과-오늘할일-갱신)을 따른다.
+
 ## 8.3 remote push
 
 collaborator는 권한 제약이 없는 한 fork origin이 아니라 원본 remote upstream의 작업 branch로 push한다.
@@ -89,5 +94,6 @@ clean 상태와 다른 작업의 소유 여부를 확인한 뒤 제거한다. �
 
 작업지시자가 이 경로의 PR 병합과 `merge 후 후속 처리`를 승인했다면, 그 승인은 이번 PR 전용의 clean한
 local branch와 local worktree를 제거하는 데에도 적용된다. 따라서 조건을 만족한 뒤에는 별도의 "정리" 지시를
-기다리지 않고 후속 처리에서 제거한다. 이 승인은 원격 head branch 삭제, 기본 작업공간, 공유 target,
-사용자·다른 도구의 branch/worktree 삭제에는 적용되지 않으며, 그 대상은 별도 승인과 소유 확인이 필요하다.
+기다리지 않고 후속 처리에서 제거한다. 이번 작업에서 만든 PR 전용 임시 upstream head branch도
+`post_merge.md` 7.7의 소유·최종 SHA·병합·CI·활성 작업 조건을 충족하면 별도 승인 질문 없이 자동 정리한다.
+기본 작업공간, 공유 target, contributor fork 및 사용자·다른 도구의 branch/worktree는 자동 삭제하지 않는다.

@@ -1,5 +1,10 @@
+//! 각주 탐색은 현재 마커의 문단·제어 소속과 커서 단위를 검증한다.
+//! 실제 배치는 한컴 PDF 대비 Native/fresh WASM 전쪽 Visual Sweep으로 확인하며,
+//! 이 검사는 절대 픽셀 좌표를 새 기대값으로 고정하지 않는다.
+
 use std::path::Path;
 
+use rhwp::renderer::render_tree::RenderNodeType;
 use rhwp::wasm_api::HwpDocument;
 
 fn json_number(json: &str, key: &str) -> f64 {
@@ -12,6 +17,50 @@ fn json_number(json: &str, key: &str) -> f64 {
     rest[..end].parse::<f64>().expect("json number parse")
 }
 
+fn body_marker_center(doc: &HwpDocument, para_index: usize, number: u16) -> (f64, f64) {
+    let tree = doc.build_page_render_tree(0).expect("본문 마커의 첫 쪽");
+    let mut pending = vec![&tree.root];
+    let mut markers = Vec::new();
+    while let Some(node) = pending.pop() {
+        if let RenderNodeType::FootnoteMarker(marker) = &node.node_type {
+            if marker.section_index == 0
+                && marker.para_index == para_index
+                && marker.control_index == 0
+                && marker.number == number
+            {
+                markers.push(node.bbox);
+            }
+        }
+        pending.extend(node.children.iter());
+    }
+    assert_eq!(
+        markers.len(),
+        1,
+        "마커의 쪽·문단·제어·번호 소속과 누락/중복"
+    );
+    let rect = markers[0];
+    assert!(rect.width > 0.0 && rect.height > 0.0, "가시 마커 상자");
+    (rect.x + rect.width / 2.0, rect.y + rect.height / 2.0)
+}
+
+fn body_paragraph_text_on_page(doc: &HwpDocument, page: u32, para_index: usize) -> String {
+    let tree = doc.build_page_render_tree(page).expect("본문 문단의 쪽");
+    let mut pending = vec![&tree.root];
+    let mut text = String::new();
+    while let Some(node) = pending.pop() {
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            continue;
+        }
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.section_index == Some(0) && run.para_index == Some(para_index) {
+                text.push_str(&run.text);
+            }
+        }
+        pending.extend(node.children.iter().rev());
+    }
+    text
+}
+
 #[test]
 fn issue_598_body_footnote_marker_has_hit_and_cursor_unit() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/footnote-01.hwp");
@@ -19,9 +68,20 @@ fn issue_598_body_footnote_marker_has_hit_and_cursor_unit() {
     let doc = HwpDocument::from_bytes(&bytes).expect("parse footnote-01.hwp");
 
     assert_eq!(doc.get_control_text_positions(0, 3), "[7]");
+    assert_eq!(doc.page_count(), 6, "한컴 PDF와 같은 쪽 소속");
+    assert_eq!(
+        body_paragraph_text_on_page(&doc, 2, 23),
+        "설계도의 데이터를 다운로드하고 자체제작으로 조립",
+        "3쪽 첫 줄 소속"
+    );
+    assert!(
+        !body_paragraph_text_on_page(&doc, 1, 23).contains("설계도의"),
+        "3쪽 첫 줄을 2쪽에도 중복 배치하지 않는다"
+    );
 
+    let (x, y) = body_marker_center(&doc, 3, 1);
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 392.0)
+        .hit_test_body_footnote_marker_native(0, x, y)
         .expect("hit body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"sectionIndex\":0"), "hit json: {hit}");
@@ -56,8 +116,9 @@ fn issue_598_second_body_footnote_marker_has_same_cursor_unit() {
 
     assert_eq!(doc.get_control_text_positions(0, 7), "[6]");
 
+    let (x, y) = body_marker_center(&doc, 7, 2);
     let hit = doc
-        .hit_test_body_footnote_marker_native(0, 214.0, 684.0)
+        .hit_test_body_footnote_marker_native(0, x, y)
         .expect("hit second body footnote marker");
     assert!(hit.contains("\"hit\":true"), "hit json: {hit}");
     assert!(hit.contains("\"paragraphIndex\":7"), "hit json: {hit}");
@@ -89,7 +150,7 @@ fn endnote_marker_can_be_found_and_deleted_like_footnote() {
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
     let mut doc = HwpDocument::from_bytes(&bytes).expect("parse endnote-01.hwp");
 
-    // section 0 / para 3 / ctrl 0 is an endnote marker at text position 7.
+    // 구역0·문단3·제어0의 미주 마커는 문자 위치7에 있다.
     let forward = doc
         .get_footnote_at_cursor_native(0, 3, 7, "forward")
         .expect("find endnote after cursor");
@@ -110,6 +171,8 @@ fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/footnote-01.hwp");
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
     let mut doc = HwpDocument::from_bytes(&bytes).expect("parse footnote-01.hwp");
+
+    let (old_x, old_y) = body_marker_center(&doc, 3, 1);
 
     let backward = doc
         .get_footnote_at_cursor_native(0, 3, 8, "backward")
@@ -165,7 +228,7 @@ fn issue_598_body_footnote_marker_can_be_found_and_deleted_from_cursor() {
     assert_eq!(missed, "{\"hit\":false}");
 
     let old_marker_hit = doc
-        .hit_test_body_footnote_marker_native(0, 264.0, 380.0)
+        .hit_test_body_footnote_marker_native(0, old_x, old_y)
         .expect("hit old marker position after delete");
     assert_eq!(old_marker_hit, "{\"hit\":false}");
 

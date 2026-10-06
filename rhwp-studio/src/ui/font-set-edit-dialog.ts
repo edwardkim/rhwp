@@ -9,6 +9,7 @@ import type { FontSet } from '@/core/user-settings';
 import { REGISTERED_FONTS } from '@/core/font-loader';
 import { getLocalFonts } from '@/core/local-fonts';
 
+import { t } from '../i18n/index.ts';
 /** 웹폰트 목록 (중복 제거 + 정렬) */
 function getWebFonts(): string[] {
   const unique = new Set<string>();
@@ -24,7 +25,7 @@ export class FontSetEditDialog extends ModalDialog {
   private onApply: (fs: FontSet) => void;
 
   constructor(editTarget: FontSet | null, onApply: (fs: FontSet) => void) {
-    super(editTarget ? '대표 글꼴 편집하기' : '대표 글꼴 추가하기', 400);
+    super(editTarget ? t('dialog.fontSetEdit.getWebFonts.title') : t('dialog.fontSetEdit.getWebFonts.title.xf9e4d2'), 400);
     this.editTarget = editTarget;
     this.onApply = onApply;
   }
@@ -44,12 +45,12 @@ export class FontSetEditDialog extends ModalDialog {
 
     const nameLabel = document.createElement('label');
     nameLabel.className = 'dialog-label fse-label';
-    nameLabel.textContent = '대표 글꼴 이름';
+    nameLabel.textContent = t('dialog.fontSetEdit.nameLabel.text');
 
     this.nameInput = document.createElement('input');
     this.nameInput.type = 'text';
     this.nameInput.className = 'dialog-input fse-name-input';
-    this.nameInput.placeholder = '예: 나의 글꼴 세트';
+    this.nameInput.placeholder = t('dialog.fontSetEdit.nameInput.placeholder');
     if (this.editTarget) this.nameInput.value = this.editTarget.name;
 
     nameRow.appendChild(nameLabel);
@@ -117,7 +118,7 @@ export class FontSetEditDialog extends ModalDialog {
   protected onConfirm(): void {
     const name = this.nameInput.value.trim();
     if (!name) {
-      alert('대표 글꼴 이름을 입력하세요.');
+      alert(t('dialog.fontSetEdit.onConfirm.message'));
       return;
     }
 

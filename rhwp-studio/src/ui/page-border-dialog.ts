@@ -5,6 +5,7 @@ import { applyThroughRouter } from './dialog-apply';
 import type { PageBorderFillSettings, BorderLineProps } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 
+import { t } from '../i18n/index.ts';
 const HWPUNIT_PER_MM = 7200 / 25.4;
 
 function hwpToMm(value: number): number {
@@ -23,6 +24,7 @@ const DOC_PAPER_COLOR = 'var(--doc-paper)';
 const DOC_PREVIEW_GUIDE_STROKE = '#d0d0d0';
 
 interface TabDef {
+  id: string;
   label: string;
   builder: () => HTMLElement;
 }
@@ -63,7 +65,7 @@ export class PageBorderDialog extends ModalDialog {
     private sectionIdx: number,
     private services?: CommandServices,
   ) {
-    super('쪽 테두리/배경', 560);
+    super(t('dialog.pageBorder.mmToHwp.title'), 560);
   }
 
   show(): void {
@@ -86,14 +88,15 @@ export class PageBorderDialog extends ModalDialog {
     const panelWrap = document.createElement('div');
 
     const tabs: TabDef[] = [
-      { label: '테두리', builder: () => this.buildBorderTab() },
-      { label: '배경', builder: () => this.buildBackgroundTab() },
+      { id: 'border', label: t('dialog.pageBorder.createBody.label'), builder: () => this.buildBorderTab() },
+      { id: 'background', label: t('dialog.pageBorder.createBody.label.x807c30'), builder: () => this.buildBackgroundTab() },
     ];
 
     tabs.forEach((tab, idx) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'dialog-tab';
+      button.dataset.tab = tab.id;
       button.textContent = tab.label;
       button.addEventListener('click', () => this.switchTab(idx));
       this.tabs.push(button);
@@ -101,6 +104,7 @@ export class PageBorderDialog extends ModalDialog {
 
       const panel = document.createElement('div');
       panel.className = 'dialog-tab-panel';
+      panel.dataset.tab = tab.id;
       panel.appendChild(tab.builder());
       this.panels.push(panel);
       panelWrap.appendChild(panel);
@@ -151,17 +155,17 @@ export class PageBorderDialog extends ModalDialog {
     const root = this.tabContent();
     root.appendChild(this.kindGroup());
 
-    const border = this.group('테두리');
+    const border = this.group(t('dialog.pageBorder.group.label'));
     const borderGrid = document.createElement('div');
     borderGrid.style.cssText = 'display:grid;grid-template-columns:1fr 204px;gap:14px;align-items:start;';
     const controls = document.createElement('div');
     const lineRow = this.row();
-    lineRow.append(this.label('종류'), this.buildLineTypeSelect(), this.label('굵기'), this.buildLineWidthSelect());
+    lineRow.append(this.label(t('dialog.pageBorder.label.label')), this.buildLineTypeSelect(), this.label(t('dialog.pageBorder.label.label.x4482fe')), this.buildLineWidthSelect());
     const colorRow = this.row();
-    colorRow.append(this.label('색'), this.buildColorInput());
-    this.immediateCheck = this.checkbox('선 모양 바로 적용');
+    colorRow.append(this.label(t('dialog.pageBorder.label.label.xa002ac')), this.buildColorInput());
+    this.immediateCheck = this.checkbox(t('dialog.pageBorder.checkbox.label'));
     this.immediateCheck.checked = true;
-    this.borderNoneCheck = this.checkbox('테두리 사용 안 함');
+    this.borderNoneCheck = this.checkbox(t('dialog.pageBorder.checkbox.label.xaae65c'));
     this.borderNoneCheck.addEventListener('change', () => this.handleBorderNoneChange());
     controls.append(lineRow, colorRow, this.checkboxRow(this.immediateCheck), this.checkboxRow(this.borderNoneCheck));
 
@@ -192,9 +196,9 @@ export class PageBorderDialog extends ModalDialog {
     const root = this.tabContent();
     root.appendChild(this.kindGroup());
 
-    const fill = this.group('채우기');
-    this.bgNoneRadio = this.radio('page-border-bg', 'none', '색 채우기 없음');
-    this.bgColorRadio = this.radio('page-border-bg', 'solid', '색');
+    const fill = this.group(t('dialog.pageBorder.group.label.x2ce970'));
+    this.bgNoneRadio = this.radio('page-border-bg', 'none', t('dialog.pageBorder.radio.label'));
+    this.bgColorRadio = this.radio('page-border-bg', 'solid', t('dialog.pageBorder.radio.label.xa002ac'));
     this.bgColorInput = document.createElement('input');
     this.bgColorInput.type = 'color';
     this.bgColorInput.value = '#ffffff';
@@ -218,24 +222,24 @@ export class PageBorderDialog extends ModalDialog {
       this.bgPatternSelect.appendChild(option);
     });
     const colorRow = this.row();
-    colorRow.append(this.bgColorRadio, this.bgColorInput, this.label('무늬 색'), this.bgPatternColorInput, this.bgPatternSelect);
-    const grad = this.radio('page-border-bg', 'gradient', '그라데이션');
+    colorRow.append(this.bgColorRadio, this.bgColorInput, this.label(t('dialog.pageBorder.label.label.xf32d31')), this.bgPatternColorInput, this.bgPatternSelect);
+    const grad = this.radio('page-border-bg', 'gradient', t('dialog.pageBorder.radio.label.x4fb541'));
     grad.disabled = true;
-    const picture = this.checkbox('그림');
+    const picture = this.checkbox(t('dialog.pageBorder.checkbox.label.x2634ad'));
     picture.disabled = true;
     const gradRow = this.row();
-    gradRow.append(this.radioRow(grad), this.disabledSelect(['세로', '가로', '오른쪽 대각선']), this.disabledSwatch(), this.disabledSwatch());
+    gradRow.append(this.radioRow(grad), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label'), t('dialog.pageBorder.disabledSelect.label'), t('dialog.pageBorder.disabledSelect.label.xbba5a5')]), this.disabledSwatch(), this.disabledSwatch());
     const pictureRow = this.row();
-    pictureRow.append(this.checkboxRow(picture), this.disabledSelect(['문서에 포함']), this.disabledSelect(['크기에 맞추어']), this.label('밝기'), this.disabledInput('0'));
+    pictureRow.append(this.checkboxRow(picture), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label.x7bd407')]), this.disabledSelect([t('dialog.pageBorder.buildBackgroundTab.label.x63b824')]), this.label(t('dialog.pageBorder.label.label.x4b520d')), this.disabledInput('0'));
     fill.append(this.radioRow(this.bgNoneRadio), colorRow, gradRow, pictureRow);
     root.appendChild(fill);
 
-    const area = this.group('채울 영역');
-    this.fillAreaPaper = this.radio('page-border-fill-area', 'paper', '종이');
+    const area = this.group(t('dialog.pageBorder.group.label.xe97fdb'));
+    this.fillAreaPaper = this.radio('page-border-fill-area', 'paper', t('dialog.pageBorder.radio.label.xd3445e'));
     area.append(
       this.radioRow(this.fillAreaPaper),
-      this.radioRow(this.radio('page-border-fill-area', 'page', '쪽')),
-      this.radioRow(this.radio('page-border-fill-area', 'border', '테두리')),
+      this.radioRow(this.radio('page-border-fill-area', 'page', t('dialog.pageBorder.radio.label.xc8cbf2'))),
+      this.radioRow(this.radio('page-border-fill-area', 'border', t('dialog.pageBorder.radio.label.x2d7a9f'))),
     );
     root.appendChild(area);
 
@@ -245,10 +249,10 @@ export class PageBorderDialog extends ModalDialog {
   }
 
   private kindGroup(): HTMLElement {
-    const group = this.group('테두리/배경 종류');
-    const both = this.radio('page-border-kind', 'both', '양쪽');
-    const odd = this.radio('page-border-kind', 'odd', '홀수 쪽');
-    const even = this.radio('page-border-kind', 'even', '짝수 쪽');
+    const group = this.group(t('dialog.pageBorder.group.label.x1030cd'));
+    const both = this.radio('page-border-kind', 'both', t('dialog.pageBorder.radio.label.xac51a1'));
+    const odd = this.radio('page-border-kind', 'odd', t('dialog.pageBorder.radio.label.xf8c0bd'));
+    const even = this.radio('page-border-kind', 'even', t('dialog.pageBorder.radio.label.xcf8117'));
     odd.disabled = true;
     even.disabled = true;
     group.append(this.radioRow(both), this.radioRow(odd), this.radioRow(even));
@@ -256,9 +260,9 @@ export class PageBorderDialog extends ModalDialog {
   }
 
   private positionGroup(): HTMLElement {
-    const group = this.group('위치');
-    this.basisPaper = this.radio('page-border-basis', 'paper', '종이 기준');
-    const basisPage = this.radio('page-border-basis', 'page', '쪽 기준');
+    const group = this.group(t('dialog.pageBorder.group.label.x2c24e8'));
+    this.basisPaper = this.radio('page-border-basis', 'paper', t('dialog.pageBorder.radio.label.x545906'));
+    const basisPage = this.radio('page-border-basis', 'page', t('dialog.pageBorder.radio.label.x973a6f'));
     const basisRow = this.row();
     basisRow.append(this.radioRow(this.basisPaper), this.radioRow(basisPage));
 
@@ -270,19 +274,19 @@ export class PageBorderDialog extends ModalDialog {
     };
     group.append(
       basisRow,
-      this.mmRow('왼쪽', this.spacingInputs.Left, '위쪽', this.spacingInputs.Top),
-      this.mmRow('오른쪽', this.spacingInputs.Right, '아래쪽', this.spacingInputs.Bottom),
-      this.checkboxRow(this.disabledCheck('머리말 포함')),
-      this.checkboxRow(this.disabledCheck('꼬리말 포함')),
+      this.mmRow(t('dialog.pageBorder.mmRow.label'), this.spacingInputs.Left, t('dialog.pageBorder.mmRow.label.xa0991a'), this.spacingInputs.Top),
+      this.mmRow(t('dialog.pageBorder.mmRow.label.x19b0fb'), this.spacingInputs.Right, t('dialog.pageBorder.mmRow.label.x5f4a61'), this.spacingInputs.Bottom),
+      this.checkboxRow(this.disabledCheck(t('dialog.pageBorder.disabledCheck.label'))),
+      this.checkboxRow(this.disabledCheck(t('dialog.pageBorder.disabledCheck.label.x011117'))),
     );
     return group;
   }
 
   private applyGroup(): HTMLElement {
-    const group = this.group('적용 쪽');
-    this.applyAll = this.radio('page-border-apply', 'all', '모두');
-    this.applyExceptFirst = this.radio('page-border-apply', 'exceptFirst', '첫 쪽 제외');
-    const firstOnly = this.radio('page-border-apply', 'firstOnly', '첫 쪽만');
+    const group = this.group(t('dialog.pageBorder.group.label.x9c7422'));
+    this.applyAll = this.radio('page-border-apply', 'all', t('dialog.pageBorder.radio.label.xf7473b'));
+    this.applyExceptFirst = this.radio('page-border-apply', 'exceptFirst', t('dialog.pageBorder.radio.label.x9feb5b'));
+    const firstOnly = this.radio('page-border-apply', 'firstOnly', t('dialog.pageBorder.radio.label.x217b96'));
     firstOnly.disabled = true;
     group.append(this.radioRow(this.applyAll), this.radioRow(this.applyExceptFirst), this.radioRow(firstOnly));
     return group;
@@ -525,13 +529,13 @@ export class PageBorderDialog extends ModalDialog {
   private dialogConfigRow(includeFillArea = false): HTMLDivElement {
     const row = this.row();
     row.style.marginTop = '4px';
-    row.append(this.label('적용 범위'), this.disabledSelect(['문서 전체']));
+    row.append(this.label(t('dialog.pageBorder.label.label.xb1824b')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label')]));
     if (includeFillArea) {
-      row.append(this.label('채울 영역'), this.disabledSelect(['종이', '쪽', '테두리']));
+      row.append(this.label(t('dialog.pageBorder.label.label.xe97fdb')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label.xd3445e'), t('dialog.pageBorder.disabledSelect.label.xc8cbf2'), t('dialog.pageBorder.disabledSelect.label.x2d7a9f')]));
     }
     const spacer = document.createElement('span');
     spacer.style.flex = '1';
-    row.append(spacer, this.label('대화 상자 설정'), this.disabledSelect(['사용자 지정']), this.smallPlainButton('구성...'));
+    row.append(spacer, this.label(t('dialog.pageBorder.label.label.x433ed9')), this.disabledSelect([t('dialog.pageBorder.dialogConfigRow.label.x677ccb')]), this.smallPlainButton(t('dialog.pageBorder.smallPlainButton.label')));
     return row;
   }
 

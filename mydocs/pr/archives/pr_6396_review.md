@@ -95,7 +95,7 @@ HWP/PDF fixture나 기준 PDF를 이용한 PDF/SVG visual sweep은 이번 주장
   submode snapshot 복원을 모두 보존하고 #6395의 15줄만 PR 고유 diff로 유지했다.
 - 최신 WASM을 새로 만들고 TypeScript, Studio/editor 전체 test 1,313건, production build 245 modules,
   실제 Chrome E2E, E2E manifest 122/122를 통과했다. 상세 근거는
-  [Stage 2](../../working/task_m100_6395_stage2.md)에 기록했다.
+  [Stage 2](../../working/archives/task_m100_6395_stage2.md)에 기록했다.
 - 이 merge commit이 push되면 이전 녹색 head를 최신 head의 최종 CI 근거로 재사용하지 않는다. 최신 head의
   required checks와 mergeability를 다시 확인한다.
 

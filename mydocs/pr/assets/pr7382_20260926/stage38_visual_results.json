@@ -1,0 +1,48 @@
+[
+  {
+    "stage": 33,
+    "command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/task2105/rowbreak_table_declared_fits.hwpx",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-original-2020.pdf",
+      "--key",
+      "fragmentstart",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage33-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "1,2"
+    ],
+    "exit_code": 1,
+    "elapsed_seconds": 7.9078619997017086
+  },
+  {
+    "stage": 36,
+    "command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/task2105/rowbreak_table_declared_fits.hwpx",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-original-2020.pdf",
+      "--key",
+      "fragmentstart",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage36-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-stage36-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "1,2"
+    ],
+    "exit_code": 1,
+    "elapsed_seconds": 6.704185250215232
+  }
+]

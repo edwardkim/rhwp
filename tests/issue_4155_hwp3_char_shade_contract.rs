@@ -245,8 +245,10 @@ fn so_sueop_char_shades_are_all_no_shade() {
     let shades = shade_colors(SO_SUEOP, &hwp5);
 
     assert!(
-        shades.len() > 1000,
-        "{SO_SUEOP}: CHAR_SHAPE 가 {}개다. Stage 1 실측은 2,512개였다 — 표본이나 변환 \
+        // [#4680] 스타일 풀 중복 제거 전에는 63개 고유 모양이 2,512벌로 쌓여 있었다.
+        // 이 가드는 계약이 아니라 "조용히 0건으로 통과하는 것" 을 막는 용도다.
+        shades.len() > 50,
+        "{SO_SUEOP}: CHAR_SHAPE 가 {}개다. 고유 모양 실측은 63개다 — 표본이나 변환 \
          경로가 바뀌었는지 확인하라",
         shades.len()
     );

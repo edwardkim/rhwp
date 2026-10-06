@@ -1,0 +1,28 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6921,
+  "title": "꼬리말 세로 정렬이 옮긴 구분선이 옮기기 전 자리에 그려진다",
+  "entries": [
+    {
+      "path": "samples/issue6921/148733091-briefing-stenographic-record.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6921",
+      "originalFilename": "148733091_속기자료.hwp",
+      "bytes": 90112,
+      "sha256": "99a4eb493e6415069d51c14a7f9219c98a1c21ff348999a172ae82bbbb66022b",
+      "derivation": "원본 그대로. 결함이 꼬리말 vertAlign 정렬(dy=23.88px)과 그 안 문단 테두리 이중선의 조합에 달려 있어 자르지 않았다(90KB).",
+      "lastSavedWith": {
+        "product": null,
+        "version": "5.7.9.3051"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/148733091-briefing-stenographic-record-2020.pdf",
+      "referencePdfSha256": "3687d825183c4f575f34bdec70b688fde0d66bef2967c93b5ffc6643ce54f3a5",
+      "referencePdfBytes": 252406,
+      "referencePdfPageCount": 36,
+      "referencePdfStatus": "2026-09-09 hwp2024Convert 로 산출. job 222d9fa7-731a-486b-b344-414b63688e52, 요청/응답 engine 2020, 36쪽, 252,406B, 다운로드 blob SHA-256 확인. lastSavedWith.product 가 null 이라 규약 §3.5.1 의 2020 버킷이다.",
+      "contract": "12쪽(0-based 11) 꼬리말 문단 테두리 이중선의 **방출 좌표**(LineNode.y1/y2)가 자기 bbox 와 획 절반 안에서 일치하고, 본문 바닥(1009.2) 아래에 있다. 수정 전에는 bbox 만 1031.80 으로 옮고 방출은 1007.92 에 남아 본문 마지막 글줄(992.0..1012.0)을 가로질렀다. 정본은 같은 선을 1028.2/1029.9 에 그린다 — 수정 후 rhwp 1032.4/1034.5 와의 +4.2px 는 꼬리말 문단 자체의 세로 위치라 이 계약 밖이다. ⚠ 이 문서의 12·20·24·26·30·31쪽 본문 마지막 줄이 본문 바닥을 넘는 것은 #6920 의 별개 축이고 이 수정으로 바뀌지 않는다."
+    }
+  ]
+}

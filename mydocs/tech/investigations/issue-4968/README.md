@@ -51,7 +51,7 @@ python3 scripts/font_kerning_cohort.py \
 - 기준선 도구: [`scripts/kerning_q1_baseline.mjs`](../../../../scripts/kerning_q1_baseline.mjs)
 - 계약 테스트:
   [`scripts/tests/kerning_q1_baseline.test.mjs`](../../../../scripts/tests/kerning_q1_baseline.test.mjs)
-- 수행 보고서: [`task_m100_4968_w9_q1.md`](../../../working/task_m100_4968_w9_q1.md)
+- 수행 보고서: [`task_m100_4968_w9_q1.md`](../../../working/archives/task_m100_4968_w9_q1.md)
 
 W5 공개 fixture의 kerning-off body matrix 9개 run에서 native와 Docker WASM positions가 전항 일치했고,
 SVG는 400,536 bytes로 byte-exact 일치했다. layer-tree 원문에는 synthetic paragraph sentinel의 target
@@ -77,7 +77,7 @@ node scripts/kerning_q1_baseline.mjs
 - OpenType 경계: [`kerning_capability_boundary.json`](kerning_capability_boundary.json)
 - 현행 제품·WASM 기준선: [`kerning_q2_fixture_baseline.json`](kerning_q2_fixture_baseline.json)
 - 한컴 판정: [`kerning_q2_hancom_adjudication.json`](kerning_q2_hancom_adjudication.json)
-- 수행 보고서: [`task_m100_4968_w9_q2.md`](../../../working/task_m100_4968_w9_q2.md)
+- 수행 보고서: [`task_m100_4968_w9_q2.md`](../../../working/archives/task_m100_4968_w9_q2.md)
 - local-only 원장: `output/4968/w9-q2/hyperv-readback/`, mode `0600`
 
 공개 fixture는 `AV To WA HH 가나다`와 ratio 100/90/80, spacing 0/-5/-10, K0/K1을 교차한다. body
@@ -106,13 +106,13 @@ OpenType 경계, 한컴 판정, 통합 Q2 baseline의 canonical SHA-256은 각�
 
 ## Stage W9-Q3
 
-- 의도 전달 보고서: [`task_m100_4968_w9_q3_1.md`](../../../working/task_m100_4968_w9_q3_1.md)
+- 의도 전달 보고서: [`task_m100_4968_w9_q3_1.md`](../../../working/archives/task_m100_4968_w9_q3_1.md)
 - capability provider 보고서:
-  [`task_m100_4968_w9_q3_2.md`](../../../working/task_m100_4968_w9_q3_2.md)
+  [`task_m100_4968_w9_q3_2.md`](../../../working/archives/task_m100_4968_w9_q3_2.md)
 - bounded run gate 보고서:
-  [`task_m100_4968_w9_q3_3.md`](../../../working/task_m100_4968_w9_q3_3.md)
+  [`task_m100_4968_w9_q3_3.md`](../../../working/archives/task_m100_4968_w9_q3_3.md)
 - bounded pair candidate 보고서:
-  [`task_m100_4968_w9_q3_4.md`](../../../working/task_m100_4968_w9_q3_4.md)
+  [`task_m100_4968_w9_q3_4.md`](../../../working/archives/task_m100_4968_w9_q3_4.md)
 - integration 원본:
   `tests/cases/issue_4968_kerning_intent_plumbing.rs`,
   `tests/cases/issue_4968_kerning_capability_provider.rs`
@@ -136,7 +136,7 @@ format 0, unsupported를 기능 탐지하고 GPOS를 우선한다. source 없음
 - 계약 테스트:
   [`scripts/tests/test_kerning_r4e_runtime_fixture.py`](../../../../scripts/tests/test_kerning_r4e_runtime_fixture.py)
 - 수행계획:
-  [`task_m100_4968_w9_q3_5_r4e_entry.md`](../../../working/task_m100_4968_w9_q3_5_r4e_entry.md)
+  [`task_m100_4968_w9_q3_5_r4e_entry.md`](../../../working/archives/task_m100_4968_w9_q3_5_r4e_entry.md)
 
 R4E fixture는 역사적 Q2 fixture를 바꾸지 않고 1,236-byte `RHWPExactKerningSmoke.ttf`를 exact source로
 등록하는 native·Docker WASM 공통 입력이다. body 18개와 table-cell·text-box 4개가 ratio 100/90/80,

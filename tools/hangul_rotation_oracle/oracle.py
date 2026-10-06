@@ -54,6 +54,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from typing import NamedTuple
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -65,17 +66,18 @@ TRANSFORM = re.compile(
 )
 
 
-class Transform:
-    """그림 하나의 변환 상태 — 판정 단위."""
+class Transform(NamedTuple):
+    """그림 하나의 변환 상태 — 판정 단위.
 
-    __slots__ = ("horz_flip", "vert_flip", "angle", "flip", "rotate_image")
+    필드 순서가 곧 판정 키다. 튜플이므로 동등 비교는 다섯 필드 전수 비교이고,
+    별도 key() 를 두지 않는다.
+    """
 
-    def __init__(self, horz_flip, vert_flip, angle, flip, rotate_image):
-        self.horz_flip = horz_flip
-        self.vert_flip = vert_flip
-        self.angle = angle
-        self.flip = flip
-        self.rotate_image = rotate_image
+    horz_flip: bool
+    vert_flip: bool
+    angle: int
+    flip: int
+    rotate_image: bool
 
     @property
     def bit19(self) -> bool:
@@ -84,18 +86,6 @@ class Transform:
     @property
     def rotated(self) -> bool:
         return self.angle % 360 != 0
-
-    def __eq__(self, other) -> bool:
-        return isinstance(other, Transform) and self.key() == other.key()
-
-    def key(self):
-        return (
-            self.horz_flip,
-            self.vert_flip,
-            self.angle,
-            self.flip,
-            self.rotate_image,
-        )
 
     def __str__(self) -> str:
         return (

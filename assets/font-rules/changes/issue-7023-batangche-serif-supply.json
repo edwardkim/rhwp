@@ -1,0 +1,70 @@
+{
+  "changeSetId": "issue-7023.batangche-serif-supply",
+  "decisionPlane": "supply",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7023.batangche-serif-supply",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Repository font strategy: BatangChe is serif mono; bundled Noto Serif KR is the documented serif substitute.",
+      "parentEvidenceIds": [],
+      "sha256": "53faff78ddc02507b67da7f4d6a932dc5f0959002dea08cb85dcdc2211467768",
+      "source": "mydocs/tech/font_fallback_strategy.md"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 0,
+    "projectionId": "canvas2d-webfont",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7023,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "evidenceIds": [
+        "evidence.issue-7023.batangche-serif-supply"
+      ],
+      "expectedSelectionTupleSha256": "771648faa32faf6ceff935d6e6a0cd5f84ca24471d4381b1ddc5940238ca993a",
+      "operationId": "operation.issue-7023.batangche-serif-supply",
+      "replacementRule": {
+        "conditions": {
+          "profile": "canvas2d-css-unknown"
+        },
+        "decisionPlane": "supply",
+        "evidenceIds": [
+          "evidence.issue-7023.batangche-serif-supply"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        },
+        "projectionSequence": 32,
+        "relationType": "supply-source",
+        "ruleId": "rule.studio-supply.batangche-serif.canvas2d",
+        "sourceBoundaryId": "studio-supply.font-list",
+        "sourceFace": "바탕체",
+        "supply": {
+          "external": false,
+          "fontFamily": "바탕체",
+          "format": "woff2",
+          "kind": "canvas2d-webfont",
+          "sourceUrl": "fonts/NotoSerifKR-Regular.woff2",
+          "unicodeRange": null
+        },
+        "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'"
+      },
+      "retiredRuleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d",
+      "retirementReason": "BatangChe serif source was supplied with sans D2Coding; preserve serif paint and leave stored metric selection unchanged.",
+      "type": "retire-and-replace"
+    }
+  ],
+  "parentRegistrySha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16",
+  "schemaVersion": "2.0",
+  "sequence": 1
+}

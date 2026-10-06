@@ -33,19 +33,18 @@ fn web_canvas_all_filter_replays_logical_planes_in_order() {
 }
 
 #[test]
-fn web_canvas_control_code_group_labels_follow_active_replay_plane() {
+fn web_canvas_structural_labels_are_explicit_paint_ops() {
     assert!(
-        WEB_CANVAS_SOURCE.contains("fn should_render_group_label("),
-        "WebCanvas should gate group labels separately from PaintOp replay"
+        WEB_CANVAS_SOURCE.contains("PaintOp::ControlLabel { bbox, label }"),
+        "WebCanvas should translate producer-owned control labels"
     );
     assert!(
-        WEB_CANVAS_SOURCE
-            .contains("group_label_matches_replay_plane(self.active_replay_plane, layer)"),
-        "group labels should be filtered against the active replay plane"
+        !WEB_CANVAS_SOURCE.contains("fn should_render_group_label("),
+        "WebCanvas must not derive labels from structural groups"
     );
     assert!(
-        WEB_CANVAS_SOURCE.contains("if self.should_render_group_label(active_layer)"),
-        "layer group labels should use the replay-plane gate"
+        !WEB_CANVAS_SOURCE.contains("group_label_matches_replay_plane"),
+        "explicit label ops follow normal replay-plane dispatch"
     );
 }
 

@@ -1111,6 +1111,12 @@ async function runScenario(page, fixture, config, scenario, pageErrors) {
   );
 
   const sampleMetrics = buildSampleMetrics(trace);
+  if (process.env.ISSUE3743_CAPTURE_PRECONTRACT === '1') {
+    writeJson(path.join(config.outputRoot, `precontract-${scenarioSlug(scenario)}.json`), {
+      load, initial, final, samples, trace, sampleMetrics,
+      metrics: { ...summarizeSampleMetrics(sampleMetrics), repaint: summarizeRepaintMetrics(trace) },
+    });
+  }
   const expectedSampleCount = config.iterations * INPUT_KINDS[scenario.kind].phases.length;
   assert.equal(samples.length, expectedSampleCount, `${scenarioSlug(scenario)}: browser sample count`);
   assert.equal(trace.samples.length, expectedSampleCount, `${scenarioSlug(scenario)}: trace sample count`);

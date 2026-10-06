@@ -1,0 +1,56 @@
+   Compiling syn v3.0.3
+   Compiling crossbeam-utils v0.8.22
+   Compiling utf8parse v0.2.2
+   Compiling crossbeam-epoch v0.9.20
+   Compiling aho-corasick v1.1.5
+   Compiling anstyle-query v1.1.5
+   Compiling crossbeam-deque v0.8.7
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.5
+   Compiling anstyle v1.0.14
+   Compiling anstyle-parse v1.0.0
+   Compiling regex-syntax v0.8.11
+   Compiling rayon-core v1.13.0
+   Compiling strsim v0.11.1
+   Compiling anyhow v1.0.104
+   Compiling anstream v1.0.0
+   Compiling clap_lex v1.1.0
+   Compiling jiff-core v0.1.0
+   Compiling either v1.17.0
+   Compiling clap_builder v4.6.6
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
+   Compiling which v8.0.6
+   Compiling jiff v0.2.35
+   Compiling rhwp-subsecond v0.0.0 (/Users/tsjang/rhwp/tools/rhwp-subsecond)
+   Compiling regex-automata v0.4.18
+   Compiling bytemuck_derive v1.12.0
+   Compiling serde_derive v1.0.229
+   Compiling clap_derive v4.6.4
+   Compiling rayon v1.12.0
+   Compiling bytemuck v1.25.2
+   Compiling regex v1.13.1
+   Compiling env_filter v2.0.0
+   Compiling clap v4.6.6
+   Compiling font-types v0.11.3
+   Compiling tiny-skia-path v0.11.4
+   Compiling rustybuzz v0.20.1
+   Compiling rgb v0.8.53
+   Compiling image v0.25.10
+   Compiling read-fonts v0.39.2
+   Compiling env_logger v0.11.11
+   Compiling tiny-skia v0.11.4
+   Compiling serde v1.0.229
+   Compiling usvg v0.45.1
+   Compiling llm-verifier-verdict-protocol v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/verdict_protocol)
+   Compiling llm-verifier-claim-bind v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/claim_bind)
+   Compiling llm-verifier-criteria-decomp v0.1.0 (/Users/tsjang/rhwp/tools/llm_verifier/criteria_decomp)
+   Compiling batch-convert v0.1.0 (/Users/tsjang/rhwp/tools/batch-convert)
+   Compiling resvg v0.45.1
+   Compiling write-fonts v0.48.1
+   Compiling skrifa v0.42.1
+   Compiling subsetter v0.2.6
+   Compiling svg2pdf v0.13.0 (/Users/tsjang/rhwp/vendor/svg2pdf)
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+   Compiling rhwp-native-ffi v0.1.0 (/Users/tsjang/rhwp/bindings/Native)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 54.16s

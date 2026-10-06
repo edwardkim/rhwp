@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/release_notes_automation.md
-last_verified: 2026-08-04
+last_verified: 2026-09-03
 ---
 
 # 릴리스 노트 자동 작성 — 무엇까지 기계가 쓸 수 있나
@@ -164,7 +164,7 @@ v0.8.2 는 여기에 `### 확장 인쇄 복구` 가 추가된다 — **섹션 �
 | `rhwp-studio/**`, `rhwp-chrome/**`, `npm/**` | **가시** — 별도 섹션 |
 | `bindings/**` | **가시** — 단, 해당 바인딩 소비자만 |
 | `tests/**` | 비가시 (예외: 계약 테스트가 바뀌면 §4 로 넘긴다) |
-| `mydocs/**`, `docs/**`, `*.md` | 비가시 |
+| `mydocs/**`, `*.md` | 비가시 |
 | `.github/**`, `tools/**`, `scripts/**` | 비가시 |
 | `Cargo.toml`, `Cargo.lock` | **의존성 섹션** — 실측대로 CHANGELOG 에 그 섹션이 있다 |
 

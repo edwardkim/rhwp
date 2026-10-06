@@ -1,0 +1,7 @@
+{
+  "original": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "original_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "control": "output/pr-review/planet6897-7382-20260926/stage25-hancom-controls/liver7379-table259-visible-border.hwpx",
+  "control_sha256": "b9938a6939067c6e6c7df60a501b328f0ae5b4e69425114be3756c073fc7a797",
+  "changes": "문단259의 두 표 네 셀 borderFillIDRef6→3; 같은 .12mm NONE→SOLID, 원본 출력 대용 아님"
+}

@@ -59,20 +59,36 @@ fn render_box(
             let fi = fs;
             // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭).
             // FontStyle::Roman(`rm` 적용)으로 italic=false 가 전달된 경우에도 이탤릭을 적용하지 않는다.
-            let has_cjk = text.chars().any(|c| {
-                matches!(c,
-                    '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-                )
-            });
+            let has_cjk = super::text_has_cjk(text);
             let italic_attr = if !has_cjk && italic {
                 " font-style=\"italic\""
             } else {
                 ""
             };
             let weight_attr = if bold { " font-weight=\"bold\"" } else { "" };
+            if has_cjk && (lb.width - estimate_text_width(text, fi, false)).abs() > 0.01 {
+                for (ch, offset) in super::positioned_cjk_text(text, fi, lb.width) {
+                    svg.push_str(&format!(
+                        "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{} font-family=\"'Haansoft Batang', '한컴바탕', 'Batang', '바탕', serif\">{}</text>\n",
+                        text_x + offset, text_y, fi, color, weight_attr, escape_xml(&ch.to_string()),
+                    ));
+                }
+                return;
+            }
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}{}{}>{}</text>\n",
-                text_x, text_y, fi, color, italic_attr, weight_attr, EQ_FONT_FAMILY, esc,
+                text_x,
+                text_y,
+                fi,
+                color,
+                italic_attr,
+                weight_attr,
+                if has_cjk {
+                    " font-family=\"'Haansoft Batang', '한컴바탕', 'Batang', '바탕', serif\""
+                } else {
+                    EQ_FONT_FAMILY
+                },
+                esc,
             ));
         }
         LayoutKind::Number(text) => {

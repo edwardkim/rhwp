@@ -1,0 +1,1668 @@
+{
+  "candidate": {
+    "head": "34400f95b908fe6e615283e3531c3e5c992b5ede",
+    "previousHead": "13964b34885ba246e970f9b764ed47b8113f23ba",
+    "base": "01bbb649a74420213aec8a93d9e404368c4063d5",
+    "conflictResolution": {
+      "src/document_core/queries/rendering.rs": "Print default; preserve shared layer hyperlink annotations",
+      "src/model/event.rs": "Preserve HyperlinkChanged and TemplateFilled",
+      "src/model/mod.rs": "Preserve hyperlink, hyperlink_format and identity",
+      "tests/issue_2724_passthrough_invalidation_guard.rs": "Preserve both invalidation delegation registries"
+    }
+  },
+  "localGates": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.54
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit": 0,
+      "seconds": 5.33
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 5.31
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 28.28
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 23.9
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 41.84
+    },
+    {
+      "name": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 37.26
+    },
+    {
+      "name": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.34
+    },
+    {
+      "name": "unit-tier",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.72
+    },
+    {
+      "name": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 154.05
+    },
+    {
+      "name": "studio-wasm",
+      "command": [
+        "node",
+        "--experimental-transform-types",
+        "--no-warnings",
+        "tests/support/hyperlink-wasm.runner.mjs"
+      ],
+      "exit": 0,
+      "seconds": 2.38
+    },
+    {
+      "name": "nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 388.41
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit": 0,
+      "seconds": 106.31
+    },
+    {
+      "name": "native-skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 79.76
+    },
+    {
+      "name": "native-skia-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 5.76
+    },
+    {
+      "name": "studio-test",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 5.18
+    },
+    {
+      "name": "studio-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 2.1
+    }
+  ],
+  "browser": {
+    "head": "34400f95b908fe6e615283e3531c3e5c992b5ede",
+    "wasmSha256": "5834d0293661647bdb38af52a111ade6f8c6fb2a58a94f17e0f8b23e6d31d2fa",
+    "ui": {
+      "exit": 0,
+      "mixedOriginalFormatVisual": "red Bottom underline and green no underline restored; bold preserved"
+    },
+    "pdf": {
+      "exit": 0,
+      "browser": "Chrome/152.0.7977.83",
+      "pdfs": {
+        "studio-hwp": {
+          "links": 1,
+          "maxAnnotationVsDomErrorPt": 0.2999799548340434
+        },
+        "studio-hwpx": {
+          "links": 1,
+          "maxAnnotationVsDomErrorPt": 0.2999799548340434
+        },
+        "multiline": {
+          "links": 74,
+          "maxAnnotationVsDomErrorPt": 0.3483368737793171
+        },
+        "textmail": {
+          "links": 1,
+          "maxAnnotationVsDomErrorPt": 0.35608001953130497
+        },
+        "lh": {
+          "links": 4,
+          "maxAnnotationVsDomErrorPt": 0.3802800000000275
+        }
+      },
+      "viewerClick": {
+        "viewer": "Chrome built-in PDF viewer",
+        "url": "https://example.com/%ED%95%9C%EA%B8%80?q=1&lang=ko#%EB%B6%80%EB%B6%84",
+        "x": 390,
+        "y": 142,
+        "externalRequest": "intercepted with local test response"
+      },
+      "visual": "Textmail p1 with/without annotations inspected; LH p8 link region inspected. Existing lower-page clipping limitation retained."
+    }
+  },
+  "nativePdf": {
+    "head": "34400f95b908fe6e615283e3531c3e5c992b5ede",
+    "binary": "target/pr-review/debug/rhwp",
+    "binarySha256": "252b3bfc896d94568dec15cdfa4c4319293f49473000edeec602d5cc094a9aa8",
+    "input": "tests/fixtures/issue_7076/ship-collision-analysis-form.hwp",
+    "inputSha256": "9c7952549166ec9b20efc8f32521fd3d1673f367599e6e82652b65c782e6bc44",
+    "defaultEqualsPrint": true,
+    "defaultDiffersFromScreen": true,
+    "visual": "default/Print omits red empty ClickHere guide text while retaining form borders and body; Screen retains guides",
+    "nativeTextmailUris": [
+      "http://www.hancom.co.kr"
+    ]
+  },
+  "nativeHyperlinkPdf": {
+    "passed": 9,
+    "results": {
+      "coordinate-contract.pdf": {
+        "pages": 1,
+        "links": [
+          {
+            "page": 1,
+            "uri": "https://example.com/%ED%95%9C%EA%B8%80?q=a;b#c",
+            "rect": [
+              7.5,
+              52.5,
+              30.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      "direct-skia.pdf": {
+        "pages": 1,
+        "links": [
+          {
+            "page": 1,
+            "uri": "https://example.com/direct",
+            "rect": [
+              85.040001,
+              732.79999,
+              151.770004,
+              742.79999
+            ]
+          }
+        ]
+      },
+      "lh-fragment-without-annotations.pdf": {
+        "pages": 1,
+        "links": []
+      },
+      "lh-fragment.pdf": {
+        "pages": 1,
+        "links": [
+          {
+            "page": 1,
+            "uri": "https://apply.lh.or.kr/LH/index.html#MN::CLCC_MN_0010:",
+            "rect": [
+              324.21,
+              500.26,
+              426.02,
+              510.26
+            ]
+          }
+        ]
+      },
+      "skipped-page.pdf": {
+        "pages": 2,
+        "links": [
+          {
+            "page": 1,
+            "uri": "https://example.com/first",
+            "rect": [
+              7.5,
+              52.5,
+              30.0,
+              60.0
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/third",
+            "rect": [
+              7.5,
+              52.5,
+              30.0,
+              60.0
+            ]
+          }
+        ]
+      },
+      "textmail-without-annotations.pdf": {
+        "pages": 1,
+        "links": []
+      },
+      "multiline-reordered.pdf": {
+        "pages": 3,
+        "links": [
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              732.66,
+              515.9192,
+              742.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              716.66,
+              515.9192,
+              726.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              700.66,
+              515.9192,
+              710.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              684.66,
+              515.9192,
+              694.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              668.66,
+              515.9192,
+              678.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              652.66,
+              515.9192,
+              662.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              636.66,
+              515.9192,
+              646.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              620.66,
+              515.9192,
+              630.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              604.66,
+              515.9192,
+              614.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              588.66,
+              515.9192,
+              598.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              572.66,
+              515.9192,
+              582.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              556.66,
+              515.9192,
+              566.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              540.66,
+              515.9192,
+              550.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              524.66,
+              515.9192,
+              534.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              508.65997,
+              515.9192,
+              518.66
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              492.65997,
+              515.9192,
+              502.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              476.65997,
+              515.9192,
+              486.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              460.65997,
+              515.9192,
+              470.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              444.65997,
+              515.9192,
+              454.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              428.65997,
+              515.9192,
+              438.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              412.65997,
+              515.9192,
+              422.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              396.65997,
+              515.9192,
+              406.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              380.65997,
+              515.9192,
+              390.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              364.65997,
+              515.9192,
+              374.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              348.65997,
+              515.9192,
+              358.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              332.65997,
+              515.9192,
+              342.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              316.65997,
+              515.9192,
+              326.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              300.65997,
+              515.9192,
+              310.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              284.65997,
+              515.9192,
+              294.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              268.65997,
+              515.9192,
+              278.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              252.65997,
+              515.9192,
+              262.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              236.65997,
+              515.9192,
+              246.65997
+            ]
+          },
+          {
+            "page": 1,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              220.65997,
+              430.69,
+              230.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              732.66,
+              515.9192,
+              742.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              716.66,
+              515.9192,
+              726.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              700.66,
+              515.9192,
+              710.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              684.66,
+              515.9192,
+              694.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              668.66,
+              515.9192,
+              678.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              652.66,
+              515.9192,
+              662.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              636.66,
+              515.9192,
+              646.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              620.66,
+              515.9192,
+              630.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              604.66,
+              515.9192,
+              614.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              588.66,
+              515.9192,
+              598.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              572.66,
+              515.9192,
+              582.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              556.66,
+              515.9192,
+              566.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              540.66,
+              515.9192,
+              550.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              524.66,
+              515.9192,
+              534.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              508.65997,
+              515.9192,
+              518.66
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              492.65997,
+              515.9192,
+              502.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              476.65997,
+              515.9192,
+              486.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              460.65997,
+              515.9192,
+              470.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              444.65997,
+              515.9192,
+              454.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              428.65997,
+              515.9192,
+              438.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              412.65997,
+              515.9192,
+              422.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              396.65997,
+              515.9192,
+              406.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              380.65997,
+              515.9192,
+              390.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              364.65997,
+              515.9192,
+              374.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              348.65997,
+              515.9192,
+              358.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              332.65997,
+              515.9192,
+              342.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              316.65997,
+              515.9192,
+              326.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              300.65997,
+              515.9192,
+              310.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              284.65997,
+              515.9192,
+              294.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              268.65997,
+              515.9192,
+              278.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              252.65997,
+              515.9192,
+              262.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              236.65997,
+              515.9192,
+              246.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              220.65997,
+              515.9192,
+              230.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              204.65997,
+              515.9192,
+              214.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              188.65997,
+              515.9192,
+              198.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              172.65997,
+              515.9192,
+              182.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              156.65997,
+              515.9192,
+              166.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              140.65997,
+              515.9192,
+              150.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              124.65997,
+              515.9192,
+              134.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              108.65997,
+              515.9192,
+              118.65997
+            ]
+          },
+          {
+            "page": 2,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              92.65997,
+              515.9192,
+              102.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              732.66,
+              515.9192,
+              742.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              716.66,
+              515.9192,
+              726.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              700.66,
+              515.9192,
+              710.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              684.66,
+              515.9192,
+              694.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              668.66,
+              515.9192,
+              678.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              652.66,
+              515.9192,
+              662.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              636.66,
+              515.9192,
+              646.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              620.66,
+              515.9192,
+              630.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              604.66,
+              515.9192,
+              614.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              588.66,
+              515.9192,
+              598.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              572.66,
+              515.9192,
+              582.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              556.66,
+              515.9192,
+              566.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              540.66,
+              515.9192,
+              550.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              524.66,
+              515.9192,
+              534.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              508.65997,
+              515.9192,
+              518.66
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              492.65997,
+              515.9192,
+              502.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              476.65997,
+              515.9192,
+              486.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              460.65997,
+              515.9192,
+              470.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              444.65997,
+              515.9192,
+              454.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              428.65997,
+              515.9192,
+              438.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              412.65997,
+              515.9192,
+              422.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              396.65997,
+              515.9192,
+              406.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              380.65997,
+              515.9192,
+              390.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              364.65997,
+              515.9192,
+              374.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              348.65997,
+              515.9192,
+              358.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              332.65997,
+              515.9192,
+              342.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              316.65997,
+              515.9192,
+              326.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              300.65997,
+              515.9192,
+              310.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              284.65997,
+              515.9192,
+              294.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              268.65997,
+              515.9192,
+              278.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              252.65997,
+              515.9192,
+              262.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              236.65997,
+              515.9192,
+              246.65997
+            ]
+          },
+          {
+            "page": 3,
+            "uri": "https://example.com/multiline",
+            "rect": [
+              85.04,
+              220.65997,
+              430.69,
+              230.65997
+            ]
+          }
+        ]
+      },
+      "textmail.pdf": {
+        "pages": 1,
+        "links": [
+          {
+            "page": 1,
+            "uri": "http://www.hancom.co.kr",
+            "rect": [
+              412.495,
+              709.9861,
+              502.005,
+              719.9861
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "commit": "34400f95b908fe6e615283e3531c3e5c992b5ede",
+    "files": [
+      {
+        "path": "samples/basic/Textmail.hwp",
+        "sha256": "3ea41d01844dfe689c58c3aebc4193466df449b954b047c65e6289ded3e6f05c",
+        "unchanged": true
+      },
+      {
+        "path": "pdf/basic/Textmail-2022.pdf",
+        "sha256": "c2d295531e6174142dc0222294bfc0aa0f2066d0d125d70f16c54f36ba685715",
+        "unchanged": true
+      },
+      {
+        "path": "samples/hwpx_sample2.hwpx",
+        "sha256": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+        "unchanged": true
+      },
+      {
+        "path": "pdf/hwpx_sample2-hwpx-2020.pdf",
+        "sha256": "d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc",
+        "unchanged": true
+      },
+      {
+        "path": "samples/hwp-img-001.hwp",
+        "sha256": "0d632afcea1111c5af14413f10f91d982055a67257dc73e5e5db2c04c1c00f60",
+        "unchanged": true
+      },
+      {
+        "path": "pdf/hwp-img-001-2022.pdf",
+        "sha256": "05b1823e949176cc5309b8788f77dee50fa841d2996804e0a6420a4ea7587250",
+        "unchanged": true
+      },
+      {
+        "path": "samples/hwpctl_Action_Table__v1.1.hwp",
+        "sha256": "7076cb9bf6660acad61840dead62a3baeba43b8cb4afe8501777637b2f82fc0e",
+        "unchanged": true
+      },
+      {
+        "path": "pdf/hwpctl_Action_Table__v1.1-2022.pdf",
+        "sha256": "2dd05189158df29c171ec76234ec0bb3991e00af82c64f4866e734aefca39d87",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/hyperlink-preservation.hwpx",
+        "sha256": "f556dd449ddfd77e19e006214280f3dc5c4d36096d65fbfaaf1a58e7a989ac28",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/hyperlink-preservation.pdf",
+        "sha256": "4172302dcec7998f13583c2c6fd98aadea9a83335156f15fb08f490e0eef8b38",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/unlink-before.hwp",
+        "sha256": "9e9377db638c1609f08fb53e30cde4e1709ed19bc5933f840b08ee5e3151cd5e",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/unlink-before.hwpx",
+        "sha256": "7a3c96187c3f9e3718a02b43e8aebb11f576bdcab634bbe6a3e5382ff20aaeb3",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/unlink-restored.hwp",
+        "sha256": "8d6485b58114f787b93dcf6900061a20ce38e5ee96ef98cbff4295054dba1e32",
+        "unchanged": true
+      },
+      {
+        "path": "mydocs/pr/assets/issue6984/unlink-restored.hwpx",
+        "sha256": "97297786aeb1efb6c75eaab4c16e3153e5d6c4d97723f6b5296976e7b1dae879",
+        "unchanged": true
+      }
+    ]
+  },
+  "visualImages": [
+    {
+      "file": "native-form-print.png",
+      "sha256": "99cf348a425836fb99159a0e09a8a75ff911b585915b2a602a8efc97acf3fa71"
+    },
+    {
+      "file": "native-form-screen.png",
+      "sha256": "c9a767c340640834ee175b084379654506e6cda4d88ac446f1767c139b5df368"
+    },
+    {
+      "file": "native-textmail.png",
+      "sha256": "2bef0cf0e59122450791f8334c425a7749de558433b258bfee24e8e411156eaf"
+    },
+    {
+      "file": "unlink-restored.jpg",
+      "sha256": "caad14b2675f34aeb498ce0004ff165ec26d5faca83228eb66392313e884c79c"
+    }
+  ],
+  "limitations": [
+    "The previous Hancom Viewer validation is historical; Viewer was not rerun for this merge.",
+    "The existing LH lower-page clipping and layout differences against Hancom remain outside the hyperlink claim.",
+    "No external-editor re-save metadata persistence is claimed."
+  ],
+  "ci": {
+    "headSha": "34400f95b908fe6e615283e3531c3e5c992b5ede",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757717921"
+      },
+      {
+        "name": "WASM Build",
+        "conclusion": "skipped",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757718420"
+      },
+      {
+        "name": "CI preflight",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757738576"
+      },
+      {
+        "name": "Resolve nextest target duration policy",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757963898"
+      },
+      {
+        "name": "Lint (fmt, clippy, WASM check)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757963900"
+      },
+      {
+        "name": "Native Skia tests",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757963969"
+      },
+      {
+        "name": "Frontend package gates",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757963975"
+      },
+      {
+        "name": "build-test-archive-a / Build test archive (a)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757964027"
+      },
+      {
+        "name": "Workflow promotion preflight",
+        "conclusion": "skipped",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757964464"
+      },
+      {
+        "name": "Frontend unit gates",
+        "conclusion": "skipped",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757964639"
+      },
+      {
+        "name": "build-test-archive-d / Build test archive (d)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757976121"
+      },
+      {
+        "name": "build-test-archive-c / Build test archive (c)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757976127"
+      },
+      {
+        "name": "build-test-archive-b / Build test archive (b)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103757976160"
+      },
+      {
+        "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103758523155"
+      },
+      {
+        "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103758687728"
+      },
+      {
+        "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103758852903"
+      },
+      {
+        "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103758903786"
+      },
+      {
+        "name": "Build & Test",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34769996599/job/103759896545"
+      }
+    ]
+  }
+}

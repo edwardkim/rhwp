@@ -119,14 +119,37 @@ pub fn lex(script: &str) -> Vec<Token> {
             // Words: a run of word characters.
             c if is_word_char(c) => {
                 let mut word = String::new();
-                while let Some(&w) = chars.peek() {
+                let mut after_word = chars.clone();
+                while let Some(&w) = after_word.peek() {
                     if is_word_char(w) {
                         word.push(w);
-                        chars.next();
+                        after_word.next();
                     } else {
                         break;
                     }
                 }
+                // Split only font switches, preserving complete known commands.
+                // Leave the suffix in the input so numbers and structural or
+                // nested commands follow exactly the same path as spaced input.
+                let prefix = if super::latex::command_for(&word).is_none() {
+                    ["bold", "rm", "it"].into_iter().find(|prefix| {
+                        word.get(..prefix.len())
+                            .is_some_and(|head| head.eq_ignore_ascii_case(prefix))
+                            && word.get(prefix.len()..).is_some_and(|rest| {
+                                rest.starts_with(|c: char| c.is_ascii_alphanumeric())
+                            })
+                    })
+                } else {
+                    None
+                };
+                if let Some(prefix) = prefix {
+                    for _ in 0..prefix.len() {
+                        chars.next();
+                    }
+                    tokens.push(Token::Word(prefix.into()));
+                    continue;
+                }
+                chars = after_word;
                 tokens.push(Token::Word(word));
             }
             // Everything else is a verbatim symbol.

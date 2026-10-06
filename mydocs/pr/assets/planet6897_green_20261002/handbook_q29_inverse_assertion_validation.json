@@ -1,0 +1,25 @@
+{
+  "prior_head": "54704ab32",
+  "independent_pdf": {
+    "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+    "sha256": "e77634f4c63c15875797a4d6d354fd90cad27fd65d708cee4cd85b80c4cb1009",
+    "pages": 384,
+    "physical_page296": "Q27 Q28 Q29 title and response present; verified pdftotext"
+  },
+  "input": {
+    "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+    "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+  },
+  "existing_issue": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883936903",
+  "scope": "remove one inverse Q29 absence assertion and its unused constant; preserve source/PDF/function/13page save equivalence and other tests",
+  "new_tests": 0,
+  "new_renderer_golden": false,
+  "renderer_changes": false,
+  "existing_nextest": {
+    "passed": 3,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "whole_fidelity": "existing large-document issue remains; no whole90percent approval",
+  "whole_nextest": "not rerun"
+}

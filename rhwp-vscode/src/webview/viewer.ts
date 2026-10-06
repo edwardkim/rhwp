@@ -136,6 +136,8 @@ const rendererSession = new RendererSession(
       );
     },
     async prepareCanvasKitDocument(renderer, report) {
+      // Explicit CanvasKit has no auto-selection report; retain its previous no-preflight behavior.
+      if (!report) return;
       const plan = canvasKitFontPlan(report.requiredFontFamilies);
       if (plan.unavailableFonts.length > 0) {
         throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(", ")}`);
@@ -1029,6 +1031,8 @@ interface OutlineNavigationItem {
   page: number;
   section: number;
   paragraph: number;
+  /** 표 셀 개요의 셀 경로(바깥 표부터). 본문 개요에는 없다. 이때 `paragraph` 는 표를 품은 문단이다. */
+  cellPath?: { controlIndex: number; cellIndex: number; cellParaIndex: number }[];
 }
 
 interface OutlineTreeNode {
@@ -1037,7 +1041,10 @@ interface OutlineTreeNode {
 }
 
 function outlineKey(entry: OutlineNavigationItem): string {
-  return `${entry.section}:${entry.paragraph}`;
+  const key = `${entry.section}:${entry.paragraph}`;
+  if (!entry.cellPath) return key;
+  // 한 표 안의 셀 개요끼리, 그리고 표를 품은 문단의 개요와 겹치지 않게 셀 경로를 붙인다.
+  return `${key}:${entry.cellPath.map((e) => `${e.controlIndex}.${e.cellIndex}.${e.cellParaIndex}`).join("/")}`;
 }
 
 /**
@@ -1255,7 +1262,11 @@ function buildOutline(): void {
 function navigateToOutline(entry: OutlineNavigationItem): void {
   if (!hwpDoc) return;
   try {
-    const rect = JSON.parse(hwpDoc.getCursorRect(entry.section, entry.paragraph, 0));
+    const rect = JSON.parse(
+      entry.cellPath
+        ? hwpDoc.getCursorRectByPath(entry.section, entry.paragraph, JSON.stringify(entry.cellPath), 0)
+        : hwpDoc.getCursorRect(entry.section, entry.paragraph, 0),
+    );
     if (
       typeof rect?.pageIndex === "number"
       && typeof rect?.y === "number"

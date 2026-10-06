@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6866,
+  "title": "angle=270 회전 그림의 상자를 다시 90° 돌려 눕힌다",
+  "entries": [
+    {
+      "path": "samples/issue6866/156627451-quantum-science-press-note.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6866",
+      "originalFilename": "156627451_240426 조간 (보도참고) 양자과학기술 대도약, 디지털을 넘어 퀀텀의 시대로 v3.hwpx",
+      "bytes": 4066283,
+      "sha256": "57cf43b40a2b465b30c6a3e5ba23fbe7874f93e053336d375d1e0f3925e3ab1b",
+      "lastSavedWith": {
+        "product": null,
+        "version": "9.6.1.7106"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156627451-quantum-science-press-note-2020.pdf",
+      "referencePdfBytes": 1185364,
+      "referencePdfSha256": "b8dd078c223fc257c2175c8c63c1116344a0ab4b6ff45324f56e066399375411",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 15쪽. 12쪽 Im42 배치 행렬은 a=21.95 b=0 c=0 d=40.28 — 회전 행렬 없이 29.3×53.7px 세로 상자다.",
+      "contract": "`hp:rotationInfo/@angle=270` 그림의 렌더 노드 상자는 선언 `hp:sz`(29.3×53.7px) 그대로여야 한다. 종전에는 페인터의 90/270° bbox 뒤집기가 회전 전 비트맵 상자에 한 번 더 걸려 53.7×29.3 으로 눕었다. 같은 문서의 `angle=0` 15장이 문서 내 통제군이다."
+    }
+  ]
+}

@@ -7,9 +7,27 @@ pub(crate) mod helpers;
 pub(crate) use helpers::*;
 
 pub mod builders;
+mod canvas_metric_requests;
+mod canvas_metrics;
+mod font_environment;
+pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
+pub use commands::paragraph_block::{
+    FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
+    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ImportParagraphBlockResult,
+    ImportResourceCounts, ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits,
+    ParagraphBlockMapping, ParagraphBlockPathStep, ParagraphBlockValidationError,
+    RepeatParagraphBlockRequest, RepeatParagraphBlockResult, RepeatTableRowsRequest,
+    RepeatTableRowsResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
+    TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
+    TEMPLATE_REQUEST_MAX_BYTES,
+};
+pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
+/// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
+pub mod hwpjson;
+pub mod hyperlink;
 pub mod queries;
 pub mod table_calc;
 pub mod text_security;
@@ -65,6 +83,9 @@ pub(crate) struct ClipboardData {
     pub(crate) paragraphs: Vec<Paragraph>,
     /// 플레인 텍스트
     pub(crate) plain_text: String,
+    /// The copied control owns renderer text-reflow provenance that must be
+    /// inherited by a pasted table clone.
+    pub(crate) copied_table_text_reflowed: bool,
 }
 
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
@@ -129,12 +150,25 @@ pub(crate) struct RenderNormalizedSection {
     pub(crate) composed: Arc<Vec<ComposedParagraph>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) struct TableTextReflowKey(usize);
+
+impl TableTextReflowKey {
+    pub(crate) fn from_table(table: &crate::model::table::Table) -> Self {
+        Self(table as *const crate::model::table::Table as usize)
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct RenderNormalizationState {
     pub(crate) document_epoch: u64,
     pub(crate) section_revisions: Vec<u64>,
     pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
     pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    /// Stable live Box identities whose stored frame was superseded by text
+    /// reflow. Box pointees survive paragraph/control-vector moves; clones are
+    /// admitted only by explicit split/clipboard inheritance.
+    pub(crate) text_reflowed_tables: std::collections::HashSet<TableTextReflowKey>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
@@ -149,6 +183,8 @@ pub struct DocumentCore {
     pub(crate) pagination: Vec<PaginationResult>,
     /// 해소된 스타일 세트
     pub(crate) styles: ResolvedStyleSet,
+    pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
+    pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
     /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
@@ -230,13 +266,15 @@ pub struct DocumentCore {
     pub(crate) bin_data_epoch: u32,
     /// Batch 모드 플래그 — true이면 paginate() 스킵
     pub(crate) batch_mode: bool,
+    /// 셀 문단 서식으로 무효화된 vpos. RowBreak 조각별 첫 변경부터 한 번만 갱신한다.
+    pub(crate) pending_cell_format_vpos: bool,
     /// 이벤트 로그 (Command 실행 시 누적)
     pub(crate) event_log: Vec<DocumentEvent>,
     /// 글상자 오버플로우 연결 캐시 (섹션별, 지연 계산)
     pub(crate) overflow_links_cache:
         RefCell<HashMap<usize, Vec<queries::doc_tree_nav::OverflowLink>>>,
     /// Undo/Redo용 Document 스냅샷 저장소 (ID → Document 클론)
-    pub(crate) snapshot_store: Vec<(u32, Document)>,
+    pub(crate) snapshot_store: Vec<(u32, Document, std::collections::HashSet<RenderPath>)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
     /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).
@@ -249,6 +287,12 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
+    pub(crate) picture_transform_store: Vec<(
+        u32,
+        commands::picture_transform_journal::PictureTransformCapture,
+    )>,
+    pub(crate) next_picture_transform_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -310,14 +354,13 @@ const _: () = {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ActiveFieldInfo {
     pub section_idx: usize,
+    /// 본문 문단 번호. 셀 내부이면 최상위 표/글상자를 담은 본문 부모 문단이다.
     pub para_idx: usize,
     /// field_ranges의 control_idx (controls[] 내 Field 컨트롤 인덱스)
     pub control_idx: usize,
-    /// 셀 내부 필드인 경우의 전체 경로
-    /// 단일 표: vec![(parent_para_idx, ctrl, cell)]
-    /// 중첩 표: vec![(outer_ctrl, outer_cell, ..), (inner_ctrl, inner_cell, ..)]
-    /// parent_para_idx는 별도 필드에 포함하지 않고 첫 번째 요소의 context로 사용
-    pub cell_path: Option<Vec<(usize, usize, usize)>>, // Vec<(parent_para_idx_or_ctrl, ctrl_or_cell, cell_or_para)>
+    /// 셀 내부 필드이면 (컨트롤, 셀, 셀 문단) 번호로 이루어진 전체 경로.
+    /// 본문 부모 문단은 para_idx, 마지막 셀 문단은 경로의 마지막 요소가 구분한다.
+    pub cell_path: Option<Vec<(usize, usize, usize)>>,
 }
 
 impl DocumentCore {
@@ -332,24 +375,25 @@ impl DocumentCore {
 
     /// 문서 정보를 JSON 문자열로 반환한다.
     pub fn get_document_info(&self) -> String {
-        use crate::renderer::style_resolver::resolve_font_substitution;
+        use crate::renderer::style_resolver::lookup_font_name_in_environment;
 
         let mut fonts = std::collections::BTreeSet::new();
         let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
-            for font in lang_fonts {
-                let resolved = resolve_font_substitution(&font.name, font.alt_type, lang_idx)
-                    .unwrap_or(&font.name);
-                fonts.insert(resolved.to_string());
-                if let Some(substitute) = font
-                    .subst_font
-                    .as_ref()
-                    .filter(|substitute| !substitute.is_embedded)
-                    .filter(|substitute| !substitute.face.trim().is_empty())
-                    .filter(|substitute| substitute.face.trim() != resolved)
-                {
-                    font_substitutions
-                        .insert((resolved.to_string(), substitute.face.trim().to_string()));
+            for (font_idx, _) in lang_fonts.iter().enumerate() {
+                let decision = lookup_font_name_in_environment(
+                    &self.document.doc_info,
+                    lang_idx,
+                    font_idx as u16,
+                    self.font_environment.as_ref(),
+                );
+                if let Some(resolved) = decision.normalized_face {
+                    fonts.insert(resolved.clone());
+                    if decision.environment_profile_id.is_none() {
+                        if let Some(substitute) = decision.subst_font {
+                            font_substitutions.insert((resolved, substitute));
+                        }
+                    }
                 }
             }
         }
@@ -421,9 +465,26 @@ impl DocumentCore {
     /// Rebuild the resolved-style aggregate with the document format's style
     /// normalization. Layout provenance remains in `Document::layout_profile`
     /// and is passed separately to cache-admission consumers.
+    pub(crate) fn resolve_render_styles(&self) -> ResolvedStyleSet {
+        crate::renderer::style_resolver::resolve_styles_with_environment(
+            &self.document,
+            self.dpi,
+            self.font_environment.as_ref(),
+        )
+    }
+
     pub(crate) fn rebuild_resolved_styles(&mut self) {
-        self.styles =
-            crate::renderer::style_resolver::resolve_styles_for_document(&self.document, self.dpi);
+        self.styles = self.resolve_render_styles();
+        self.styles.supplemental_metrics = self
+            .canvas_metrics
+            .as_ref()
+            .and_then(canvas_metrics::CanvasMetricSession::active_snapshot);
+        // [#7436] 번호 문자열은 문단 모양·번호 정의에서 정해지므로 스타일과 함께 다시 계산한다.
+        // 문서를 열 때의 재조판(저장 줄 없는 문단)도 번호 폭을 알고 줄을 나눈다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
@@ -452,6 +513,8 @@ impl DocumentCore {
             document: Document::default(),
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
+            canvas_metrics: None,
+            font_environment: None,
             composed: Vec::new(),
             render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
@@ -482,6 +545,7 @@ impl DocumentCore {
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
+            pending_cell_format_vpos: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
@@ -490,6 +554,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            picture_transform_store: Vec::new(),
+            next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

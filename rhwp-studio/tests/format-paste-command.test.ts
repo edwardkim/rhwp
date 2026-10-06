@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 
 import { canExecuteFormatPaste } from '../src/command/format-paste-availability.ts';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 function source(path: string): string {
@@ -36,7 +37,7 @@ test('edit:format-paste 커맨드는 붙여넣기 전용 경로에 연결되어�
   const edit = source('src/command/commands/edit.ts');
 
   assert.match(edit, /id:\s*'edit:format-paste'/);
-  assert.match(edit, /label:\s*'모양 붙여넣기'/);
+  assertShowsText(edit, '모양 붙여넣기');
   assert.match(edit, /canExecute:\s*canExecuteFormatPaste/);
   assert.match(edit, /performFormatPaste\(\)/);
 });

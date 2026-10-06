@@ -107,8 +107,8 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
-        Some(&"HANBatang.ttf"),
-        "한컴 2020 PDF와 같은 HCR Batang을 휴먼명조보다 먼저 찾아야 함"
+        Some(&"HMKMM.TTF"),
+        "Windows 한컴 PDF의 원 휴먼명조를 먼저 찾고 비트맵 strike는 임베드 사본에서 제거해야 함"
     );
     assert_eq!(
         known_font_filenames("한양신명조").first(),
@@ -182,6 +182,34 @@ fn planned_font_lookup_does_not_descend_below_search_roots() {
         "font lookup must consider direct file names only"
     );
 
+    // 실제 설치 파일이 있으면 같은 루트의 대체 파일보다 먼저 선택한다.
+    let installed = root.join("HANYGO230.ttf");
+    std::fs::write(&installed, b"installed face").expect("설치 파일 후보");
+    std::fs::write(root.join("NotoSansKR-ExtraLight.ttf"), b"substitute").expect("대체 파일 후보");
+    for face in ["한컴 윤고딕 230", "Haan YGodic 230"] {
+        let lookup = plan_svg_font_file_lookup(face, std::slice::from_ref(&root), false);
+        assert_eq!(
+            find_font_file(&lookup),
+            Some(installed.clone()),
+            "원 face 파일 우선: {face}"
+        );
+    }
+    // 서로 다른 원 face가 같은 루트에 있어도 이름에 대응하는 파일을 선택한다.
+    for (face, filename) in [
+        ("HCR Batang", "HANBatang.ttf"),
+        ("HCR Dotum", "HANDotum.ttf"),
+        ("Haansoft Batang", "HBATANG.TTF"),
+        ("Haansoft Dotum", "HDOTUM.TTF"),
+    ] {
+        let installed = root.join(filename);
+        std::fs::write(&installed, b"installed face").expect("원 face 설치 후보");
+        let lookup = plan_svg_font_file_lookup(face, std::slice::from_ref(&root), false);
+        assert_eq!(
+            find_font_file(&lookup),
+            Some(installed),
+            "원 face 파일: {face}"
+        );
+    }
     std::fs::remove_dir_all(root).expect("remove temporary font directory");
 }
 
@@ -274,7 +302,71 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn full_font_embed_uses_real_bold_face_when_document_uses_bold() {
-    let dir = std::env::temp_dir().join(format!("rhwp-svg-bold-font-{}", std::process::id()));
+    // 기존 임베드 검사에서 종료 비문자만 보정하고 정상 문자 매핑은 보존하는지 확인한다.
+    let mut terminal = vec![0, 0, 0, 1, 0, 3, 0, 1, 0, 0, 0, 12];
+    for word in [
+        4u16,
+        32,
+        0,
+        4,
+        4,
+        1,
+        0,
+        65,
+        u16::MAX,
+        0,
+        65,
+        u16::MAX,
+        (-64i16) as u16,
+        0,
+        0,
+        0,
+    ] {
+        terminal.extend_from_slice(&word.to_be_bytes());
+    }
+    let repaired = svg_cmap_terminal_missing_glyph(&terminal, 2).into_owned();
+    let mut expected = terminal.clone();
+    expected[38..40].copy_from_slice(&1u16.to_be_bytes());
+    assert_eq!(
+        repaired, expected,
+        "U+FFFF 종료 델타 외의 원본 매핑은 보존한다"
+    );
+    assert!(matches!(
+        svg_cmap_terminal_missing_glyph(&repaired, 2),
+        std::borrow::Cow::Borrowed(_)
+    ));
+    expected[38..40].copy_from_slice(&2u16.to_be_bytes());
+    assert_eq!(
+        svg_cmap_terminal_missing_glyph(&expected, 2).as_ref(),
+        expected
+    );
+    assert_eq!(
+        svg_cmap_terminal_missing_glyph(&terminal[..43], 2).as_ref(),
+        &terminal[..43]
+    );
+
+    let chars = std::collections::HashSet::from(['가']);
+    let regular = include_bytes!("../../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let bitmap_only = include_bytes!("../../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+    let collection = include_bytes!("../../../tests/fixtures/fonts/RHWPHostFixture.ttc");
+    // 비혼합 윤곽선, 비트맵 전용 및 collection은 입력 bytes를 그대로 보존한다.
+    assert_eq!(svg_outline_font_data(regular, &chars).as_ref(), regular);
+    assert_eq!(
+        svg_outline_font_data(bitmap_only, &chars).as_ref(),
+        bitmap_only
+    );
+    assert_eq!(
+        svg_outline_font_data(collection, &chars).as_ref(),
+        collection
+    );
+    assert_eq!(
+        svg_outline_font_data(b"regular", &chars).as_ref(),
+        b"regular"
+    );
+
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("output/pr-review/regression-temp")
+        .join(format!("rhwp-svg-bold-font-{}", std::process::id()));
     std::fs::create_dir_all(&dir).expect("temporary font directory");
     std::fs::write(dir.join("HANBatang.ttf"), b"regular").expect("regular test font");
     std::fs::write(dir.join("HANBatangB.ttf"), b"bold").expect("bold test font");
@@ -1022,8 +1114,11 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let mut image = ImageNode::new(1, Some(png));
     image.fill_mode = Some(ImageFillMode::FitToSize);
-    image.brightness = -50;
-    image.contrast = 70;
+    // [#6895] `ImageNode` 의 두 필드는 **화면 순서**다 — 한컴 워터마크 프리셋은
+    // 밝기 70 · 대비 −50 이다. 종전 값 `(-50, 70)` 은 이진 저장 순서였는데, 채움
+    // 그림이 `ImageNode` 로 갈 때 이진 순서가 그대로 새던 시절의 흔적이다.
+    image.brightness = 70;
+    image.contrast = -50;
     image.effect = crate::model::image::ImageEffect::RealPic;
     let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
     let mut renderer = SvgRenderer::new();
@@ -1033,8 +1128,12 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
 
     let output = renderer.output();
     assert!(
-        !output.contains("rhwp-img-bc-b-50c70"),
+        !output.contains("rhwp-img-bc-b70c-50"),
         "RealPic background watermark fill should preserve source color without brightness/contrast filter: {output}"
+    );
+    assert!(
+        !output.contains("rhwp-img-bc-b-50c70"),
+        "이진 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
     );
     assert!(
         !output.contains("rhwp-realpic-watermark-tone"),
@@ -1150,16 +1249,28 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=oh/5, left=ow/4 → 우하단 영역.
-    // imgDim 부재 → 적응 폴백(#3239): right/bottom(4000, 2500)이 전체 좌표
-    // 범위 = 디코딩 400×250px 에 대응 (10 HU/px).
+    // [#7015] 좌·상단을 **둘 다** 잘라낸 케이스. 적응 폴백(#3239)은 `right`/`bottom`
+    // 이 전체 좌표 범위라는 가정 위에 서는데, `left > 0` · `top > 0` 이면 두 값 다
+    // 자르기 경계일 뿐이라 그 가정이 성립하지 않는다. 전체 범위를 확인할 축이 하나도
+    // 없으므로 [Task #477] 표준 75 HU/px 로 떨어진다.
     let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
-    // src_x = 1000/10 = 100, src_y = 500/10 = 50
-    // src_w = 3000/10 = 300, src_h = 2000/10 = 200
-    assert!((sx - 100.0).abs() < 0.01);
-    assert!((sy - 50.0).abs() < 0.01);
-    assert!((sw - 300.0).abs() < 0.01);
-    assert!((sh - 200.0).abs() < 0.01);
+    // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
+    // src_w = 3000/75 = 40.0,  src_h = 2000/75 = 26.67
+    assert!((sx - 13.333).abs() < 0.01);
+    assert!((sy - 6.667).abs() < 0.01);
+    assert!((sw - 40.0).abs() < 0.01);
+    assert!((sh - 26.667).abs() < 0.01);
+
+    // #7015 실물 입력의 축을 바꿔, 가로만 자를 때도 확인된 세로 배율을 사용한다.
+    // 기준 크기의 한 축이 0이면 유효한 imgDim으로 취급하지 않고 같은 폴백을 탄다.
+    for reference in [None, Some((0, 88560)), Some((45453, 0))] {
+        let (x, y, width, height) =
+            compute_image_crop_src((20745, 0, 45453, 88560), reference, 945.0, 1181.0);
+        assert!((x - 276.64685).abs() < 0.001, "reference={reference:?}");
+        assert!(y.abs() < 0.001, "reference={reference:?}");
+        assert!((width - 329.49580).abs() < 0.001, "reference={reference:?}");
+        assert!((height - 1181.0).abs() < 0.001, "reference={reference:?}");
+    }
 }
 
 #[test]

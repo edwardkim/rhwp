@@ -1,0 +1,19 @@
+✔ catalog is metadata-only; concurrent face reads share an in-flight request (1.383083ms)
+✔ change immediately invalidates bytes, even if the provider ignores abort (0.287375ms)
+✔ a second change during enumeration supersedes the pending snapshot (0.186541ms)
+✔ replacement distinguishes providers with identical IDs and revisions and ignores detached listeners (0.202125ms)
+✔ malformed catalog fails closed and recovers on the next notification (0.253834ms)
+✔ host faces are selected by exact identity or family and style, without advertising CSS availability (9.578625ms)
+✔ paint requests preserve weight and only read the selected faces (0.400584ms)
+✔ detaching during enumeration discards the late catalog and stops notifications (0.138708ms)
+✔ failed byte reads recover on a new revision and buffers are isolated from the provider (0.2375ms)
+✔ Regular fullName equal to family does not intercept a family Bold request (0.229708ms)
+✔ italic runs can select an unambiguous oblique face when no italic face exists (0.971375ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.403875

@@ -1,0 +1,27 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6551,
+  "title": "근무성적평가 및 경력·가점평정 등 운영지침",
+  "entries": [
+    {
+      "path": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6845",
+      "originalFilename": "113424_근무성적평가 및 경력·가점평정 등 운영지침 일부개정예규안_자체법제심사 결과 반영.hwpx",
+      "bytes": 198937,
+      "sha256": "21cf24446bcf558c62b715965a62e8d656e9dcd64e8b071b110f571cc3fb81e0",
+      "lastSavedWith": {
+        "product": "hancom-office-2024",
+        "version": "13.0.0.1053"
+      },
+      "contract": "그라데이션 축 방향 검증. 문서 전체의 글꼴 및 조판 일치 판정과 구분한다.",
+      "originalIdentityStatus": "2026-09-08 korea_downloads에서 원문을 찾아 등록 샘플과 SHA-256이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다.",
+      "referenceEngine": "2024",
+      "referencePdf": "pdf/113424_evaluation_guideline-2024.pdf",
+      "referencePdfBytes": 713698,
+      "referencePdfSha256": "f2db782bb42cabd2b96cd8985415554803ad7d4322904177a9e1bc903115bf6d",
+      "referencePdfStatus": "2026-09-08 새 MCP에서 start/status/download 비동기 재산출 완료. engine 2024, 실제 한컴 13.0.0.3901, 46쪽. 다운로드 바이트와 SHA-256을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다."
+    }
+  ]
+}

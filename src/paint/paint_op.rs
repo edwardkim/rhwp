@@ -54,6 +54,7 @@ pub enum PaintOp {
     TextRun {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     GlyphRun {
         bbox: BoundingBox,
@@ -70,23 +71,30 @@ pub enum PaintOp {
     CharOverlap {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     /// 문단 끝/줄 바꿈/필드 마커처럼 source text와 visual projection이 다른 표식.
     TextControlMark {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     /// 탭 리더 visual geometry.
     TabLeader {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     /// 밑줄/취소선/강조점 visual geometry.
     TextDecoration {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
         kind: TextDecorationKind,
+        source: Option<TextSourceSpan>,
+        trim_trailing_spaces: usize,
     },
+    /// Editor control-code label for a non-text object.
+    ControlLabel { bbox: BoundingBox, label: String },
     FootnoteMarker {
         bbox: BoundingBox,
         marker: Box<FootnoteMarkerNode>,
@@ -142,6 +150,7 @@ impl PaintOp {
         Self::TextRun {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -163,6 +172,7 @@ impl PaintOp {
         Self::CharOverlap {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -170,6 +180,7 @@ impl PaintOp {
         Self::TextControlMark {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -177,6 +188,7 @@ impl PaintOp {
         Self::TabLeader {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -185,6 +197,15 @@ impl PaintOp {
             bbox,
             run: Box::new(run),
             kind,
+            source: None,
+            trim_trailing_spaces: 0,
+        }
+    }
+
+    pub fn control_label(bbox: BoundingBox, label: impl Into<String>) -> Self {
+        Self::ControlLabel {
+            bbox,
+            label: label.into(),
         }
     }
 
@@ -273,6 +294,7 @@ impl PaintOp {
             | PaintOp::TextControlMark { bbox, .. }
             | PaintOp::TabLeader { bbox, .. }
             | PaintOp::TextDecoration { bbox, .. }
+            | PaintOp::ControlLabel { bbox, .. }
             | PaintOp::FootnoteMarker { bbox, .. }
             | PaintOp::Line { bbox, .. }
             | PaintOp::Rectangle { bbox, .. }
@@ -1686,15 +1708,24 @@ impl PaintTextStyle {
     /// Returns whether a backend may replay this text as a simple fill-only
     /// positioned glyph run without losing HWP text effects.
     pub fn is_fill_only_glyph_replay(&self) -> bool {
+        self.is_simple_glyph_run_replay()
+            && self.outline_type == 0
+            && self.shadow_type == 0
+            && !self.emboss
+            && !self.engrave
+    }
+
+    /// Geometry-compatible glyph replay for backends that explicitly reproduce
+    /// outline, shadow, emboss and engrave. This does not enable those effects
+    /// for fill-only consumers or change the default text variant policy.
+    pub fn is_simple_glyph_run_replay(&self) -> bool {
         let ratio = if self.ratio > 0.0 { self.ratio } else { 1.0 };
         (ratio - 1.0).abs() <= 0.001
             && self.tab_leaders.is_empty()
             && self.underline == UnderlineType::None
             && !self.strikethrough
-            && self.outline_type == 0
-            && self.shadow_type == 0
-            && !self.emboss
-            && !self.engrave
+            && (self.shadow_type == 0
+                || (self.shadow_offset_x.is_finite() && self.shadow_offset_y.is_finite()))
             && !self.superscript
             && !self.subscript
             && self.emphasis_dot == 0

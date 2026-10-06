@@ -260,7 +260,7 @@ test('저장된 도구 상자 설정은 다시 시작해도 복원된다', async
   }
 });
 
-test('쪽 배치는 자동이 기본이며 여러 쪽 설정을 정규화해 저장·복원한다', async () => {
+test('쪽 배치는 한 쪽이 기본이며 여러 쪽 설정을 정규화해 저장·복원한다', async () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();
   const mockStorage = {
@@ -301,7 +301,7 @@ test('쪽 배치는 자동이 기본이며 여러 쪽 설정을 정규화해 저
 
     store.set('rhwp-settings', JSON.stringify({ view: {} }));
     const fresh = await import('../src/core/user-settings.ts?restart=page-arrangement');
-    assert.deepEqual(fresh.userSettings.getViewSettings().pageArrangement, { kind: 'auto' });
+    assert.deepEqual(fresh.userSettings.getViewSettings().pageArrangement, { kind: 'single' });
   } finally {
     userSettings.setPageArrangement({ kind: 'auto' });
     (globalThis as { localStorage?: Storage }).localStorage = originalStorage;

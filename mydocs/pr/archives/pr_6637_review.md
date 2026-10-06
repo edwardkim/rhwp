@@ -1,0 +1,401 @@
+---
+kind: pr-review
+status: active
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-09-06
+pr: 6637
+issue: 6042
+author: postmelee
+---
+
+# PR #6637 review - 다중 페이지 스크롤 렌더링 가상화
+
+## 판정: 메인터너 보정 완료, 수용 가능
+
+2026-09-06 메인터너의 **로컬 검증 기준 판정**이다. 아래의 2026-09-04 자체 검토와 당시 보류 기록은
+이력으로 보존하며 현재 판정과 구분한다. 검증 대상은 원 PR head
+`7a4c255a92b16e9ad52cb4d9c9e442e5d5798586` 위 로컬 브랜치
+`review/6637-local-validation-20260905`의 메인터너 보정 커밋
+`89042d5aefaea8cbb28f8027ffff0c8496eb11cf`다.
+검증 전 원 PR head가 이 보정을 포함하거나 보정 후 원격 CI가 통과했다고 주장하지 않는다.
+
+### 해소한 보류 사유
+
+- CanvasKit에서 `TypeError: path.moveTo is not a function`이 발생해 본문이 빈 화면으로 표시됐다.
+  `Path`에 경로 생성 메서드가 있다고 단언한 타입 캐스트가 실제 API와 달랐다.
+- 도형 경로, 단색 글리프 윤곽, 색상 글리프 경로, 화살표를 `PathBuilder`로 구성한 뒤
+  `detach()`한 `Path`를 그리도록 수정했다. 빌더와 완성 경로의 해제를 분리했다.
+- 해당 CanvasKit 코드는 비교 기준 `upstream/devel`과 원 PR에서 동일했다.
+  #6637이 새로 유입한 가상화 회귀가 아니라 기존 호환 결함을 이번 메인터너 검토에서 보정한 것이다.
+- 초기 화면 스킨 선택 창은 띄우지 않고 기본 클래식을 저장한다. 이미 저장한 모던·올드스쿨 선택은
+  유지한다. 스크롤 스케줄러, DPR 후보, 32M/40M/64M 예산 정책은 바꾸지 않았다.
+
+### 실제 재검증 결과
+
+- Studio 전체: **1,490개 중 1,489개 통과, 기존 스킵 1개, 실패 0개**.
+- 정규 TypeScript `tsc --noEmit` 및 Studio production build 통과. 빌드의 기존 chunk-size 경고는 유지된다.
+- 로컬 공유 의존성에는 `canvaskit-wasm 0.41.1`이 설치되어 있어 PR의 요구 버전
+  `^0.42.0`과 맞지 않았다. 기존 의존성 폴더를 변경하지 않고 `0.42.0`을 임시 경로에 설치하여
+  별도 Vite 서버의 모듈 별칭으로 실제 브라우저를 검증했다.
+- 위 정규 타입 검사와 빌드는 기존 로컬 의존성 환경의 결과다. 추가로 시도한 격리 타입 검사 보조 명령은
+  설치된 TypeScript 패키지의 `ts.sys` API 부재로 실행되지 않아 통과 근거에서 제외했다.
+  `0.42.0` 실브라우저 검증과 타입 검사 결과를 혼동하지 않는다.
+- Chrome, 1280×720 CSS px: Canvas2D DPR 1·2 및 CanvasKit `0.42.0` DPR 2.
+  `exam_kor.hwp` 20쪽과 `hwpspec.hwp` 178쪽, 4열 34%·두 쪽 100%의 **12개 시나리오 통과**.
+- 실제 스크롤 이벤트 수신, 이동 후 visible 집합 일치, 렌더 큐·예약 작업 완료, 휠 입력의 실제 위치 변화,
+  배율·편집 포커스 유지, 분리 LRU 예산 준수를 확인했다. 렌더링 실패 콘솔 로그와 브라우저 예외는 0건이다.
+- 새 사용자 클래식 저장, 기존 모던 유지, 기존 올드스쿨 유지의 **3개 시나리오에서 재접속까지 통과**.
+  초기 스킨 창을 테스트에서 강제로 닫거나 저장값을 클래식으로 주입해 통과시킨 것이 아니다.
+- CanvasKit 4열 34%와 두 쪽 100% 화면의 본문·표·페이지 표시를 직접 열어 확인했다.
+  이전의 상태 검사만 통과한 빈 화면 결과는 수용 근거에서 제외했다.
+
+### 직접 표시할 시각 증적과 코멘트 계획
+
+아래 두 파일만 이번 메인터너 보정의 대표 화면으로 보관한다. PC 전체가 아니라 Studio 영역만 캡처했다.
+같은 픽셀 위치의 정량 before/after 비교나 새로운 성능 개선률, 한컴 출력과의 전체 fidelity 일치를
+입증하는 자료로 해석하지 않는다.
+
+![CanvasKit 보정 후 4열 34% 본문 표시](../assets/pr_6637_maintainer_20260906/canvaskit-four-34.png)
+
+![CanvasKit 보정 후 두 쪽 100% 본문과 표 표시](../assets/pr_6637_maintainer_20260906/canvaskit-double-100.png)
+
+- 원격 게시 승인 후 PR #6637 및 실제 closing reference에 해당하는 이슈에 보정 내용과 실제 최종
+  PR/devel CI 결과를 구분해서 기록한다. 이 문서 링크만 남기지 않고 위 두 PNG의 확정 commit 기반
+  raw URL을 Markdown 이미지로 넣어 코멘트 본문에서 직접 보이게 한다.
+- 동일 검토의 기존 코멘트가 있으면 중복 등록하지 않고 그 코멘트를 수정한다.
+- 임시 검증 스크립트, 실행 로그, 원시 JSON, 중간 PNG는 이번 증적 커밋 대상에 포함하지 않는다.
+  영구 테스트 파일은 변경하지 않았다.
+
+### 잔여 조건과 범위
+
+- 이번에 보류를 발생시킨 CanvasKit 빈 화면은 메인터너 보정과 실제 재검증으로 해소했다.
+- E2E manifest의 `issue-6202-picture-move-reflow.test.mjs` 미등록 1건은 비교 기준 devel에도 존재한다.
+  이번 PR의 신규 누락으로 분류하지 않았고, 해당 manifest 검사가 통과했다고 기록하지 않는다.
+- Rust source 변경이 없어 Rust 전체 회귀 및 WASM 재빌드는 이번 재검증에서 수행하지 않았다.
+  기존 성능 A/B 전체를 재실행하거나 Windows 실제 브라우저까지 검증한 것은 아니다.
+- 사용자 승인에 따라 소스 보정과 이 리뷰·대표 증적을 별도 커밋으로 원 PR 브랜치에 반영한다.
+  리뷰어 지정, GitHub review/comment, 새 PR 생성·머지는 수행하지 않는다.
+  실제 병합은 반영된 최종 head CI 확인과 별도 머지 승인 이후에만 가능하다.
+
+## 기여자의 이전 자체 검토 기록
+
+아래 내용과 수치는 작성 당시의 이력이며 위 2026-09-06 메인터너 판정 및 실행 결과를 대체하지 않는다.
+
+## 결론 - 인라인 보정 로컬 통과, 새 head CI·merge 승인 대기
+
+[PR #6637](https://github.com/edwardkim/rhwp/pull/6637)은 긴 다중 페이지 문서의 일반 scroll에서
+visibility 판정과 여러 쪽 raster가 입력 callback을 연속 점유하던 경로를 row/X index, exact page
+surface LRU, page-boundary scheduler로 분리한다. 사용자가 새 구간의 첫 내용을 더 빨리 볼 수 있게 하면서
+동일 배율 warm 왕복은 완성 surface를 재사용한다. scroll 중에는 현재 surface를 유지하고 마지막 입력
+150ms 뒤 visible 읽기 화질을 별도 safety gate 안에서 회복한다.
+
+self-review 대상 최초 code candidate는 `68beaa5dce0ac0fbc794761324abea959d0245ef`, 당시 직접 base는 #6467
+`23b5bcf73f6e8659a90b25ebfde1311e1965364f`다. 최신 `devel@eb2ea3add` cascading rebase 뒤 검증
+source는 `3edc84c4bc06a69315b818017d952872cdee19d1`, 직접 base #6467은
+`d77f5aac1aec07b2f14cfdc6e765efc396077994`다. 단계별 테스트·실문서 A/B에서 발견한 역방향 cache
+thrash와 fractional DPR geometry 문제를 당시 후보에서 해소했다. 이후 인라인 리뷰에서 발견한 두
+correctness finding은 아래 2026-09-04 보정 기록으로 별도 추적한다.
+
+이 PR은 native stack #6640의 top(3/3)으로 제출했다. 하위 #6458·#6467은 병합됐고 현재 직접 base는
+`devel`, 상태는 Ready / OPEN이다. 이번 보정은 Ready 상태를 바꾸지 않으며 새 exact head의 required
+checks와 사용자 merge 승인을 별도로 확인해야 한다.
+
+## 검토 경로와 metadata
+
+- 기본 경로: `collaborator_self_merge.md`
+- 보조 경로: `local_validation.md`, `visual_fixture_evidence.md`, `review_only_fast_pass.md`,
+  `rework_and_exceptions.md`
+- self PR이므로 reviewer와 GitHub approval review를 지정하지 않는다.
+- 현재: OPEN / Ready, base `devel`, head `codex/issue-6042-page-virtualization`.
+  인라인 보정 전 head는 `777fba96ef437c3f865653e6f96d13a3d0312317`이다.
+- 최초 검토 layer 규모: 205 files, +490,238/-219, 30 commits. 이 중 제품·test·E2E는
+  24 files, +4,063/-218이고, 162 files·약 16MB는 A/B raw evidence다.
+- Rust source/test/fixture, Cargo, workflow 변경은 없다.
+
+## 해결 범위와 사용자 변화
+
+### 문제
+
+#6467은 surface pixel 예산과 쪽별 DPR을 정하지만, 여러 쪽을 언제 판정·raster·보존할지는 기존 수명을
+따른다. 페이지가 많은 문서를 저배율 다중 쪽 보기로 열고 먼 행으로 이동하면 전체 페이지 scan, visible
+raster, 인접 prefetch가 한 입력 구간에 모일 수 있다. 같은 구간을 왕복할 때 완성 bitmap을 다시 그리는
+경로도 있었다.
+
+### 변경 후
+
+- 먼 행 이동은 viewport 중심 visible부터 page 단위로 표시하고 각 쪽 사이에서 main thread에 양보한다.
+- exact key가 같은 완성 main/overlay bundle은 physical-pixel 예산 안에서 LRU로 재부착한다.
+- 새 scroll generation은 낡은 visible/prefetch를 기각하고, 선택 prefetch는 visible 완료 뒤 idle마다
+  한 쪽만 처리한다.
+- scroll 중에는 이미 표시된 bitmap의 DPR을 유지한다. 멈춘 뒤 충분히 노출된 visible만 center-first로
+  화면 DPR을 회복한다.
+- 초기 표시, zoom-settled, resize, edit/undo/redo, strict render와 focus/caret/ruler 의미는 기존처럼
+  동기 처리한다.
+
+## self-review 결과
+
+### visibility와 좌표
+
+- row index는 기존 layout이 만든 row top/bottom을 사용하고 후보 행에서 기존 strict AABB를 적용한다.
+  mixed-size, facing 첫 blank slot, 마지막 미완성 행을 새 모델로 재해석하지 않는다.
+- 모든 쪽이 한 row인 horizontal view는 X monotonic range로 별도 탐색한다. Y index만 적용해 전체 후보를
+  누락하는 경로가 없다.
+- snapshot key는 geometry revision과 scroll/viewport 네 값이다. geometry가 바뀐 같은 frame을 오래된
+  결과로 처리하지 않는다.
+- fractional DPR의 integer physical Canvas를 CSS 크기로 역산하지 않는다. main과 overlay 모두
+  `PageInfo × zoom` logical box를 써 DPR 전환이 page/ruler/scroll geometry를 움직이지 않는다.
+
+### surface 소유·예산
+
+- page bundle exact key는 document/view scope, page, backend, layer 구성과 실제 render scale을 포함한다.
+  zoom·revision·backend가 다른 bitmap을 재사용해 흐리게 표시하지 않는다.
+- main뿐 아니라 background/behind/front overlay를 같이 detach/attach/dispose한다. 불완전 image/RawSvg
+  후속 작업은 cacheable complete로 승격되지 않는다.
+- active, LRU, anonymous pool, pending target reservation을 중복 없이 physical pixel로 센다. mandatory
+  visible 자체가 예산을 넘으면 이를 숨기지 않고 optional cache/prefetch만 포기한다.
+- target DPR 전환 전에 old actual 크기로 LRU를 trim하던 Stage 4 결함은 target-state reservation으로
+  교정했다. 선택 prefetch는 admission과 dispatch 직전에 보존 이득을 다시 확인한다.
+
+### scheduler와 취소
+
+- 일반 scroll만 page scheduler에 연결한다. 1·2 visible initial과 strict/zoom/resize/mutation은 기존
+  synchronous contract를 유지한다.
+- 한 쪽 raster가 4ms를 넘더라도 중간 선점할 수 있다고 주장하지 않는다. page를 마친 뒤 다음 page 전에
+  양보한다.
+- visible queue가 끝나기 전에 prefetch하지 않고, idle deadline이 부족하면 다음 기회로 넘긴다.
+- generation, desired exact key, document/view scope를 dispatch 직전에 다시 확인한다. 새 scroll, zoom,
+  resize, mutation, reset, dispose와 renderer fallback이 낡은 callback을 취소한다.
+
+### scroll-settled 화질
+
+- active scroll planner에는 target이 아니라 DOM에 실제로 붙은 requested DPR을 lock한다. 예약만 된 DPR 2
+  작업을 현재 surface로 오인하지 않는다.
+- 마지막 입력 150ms 뒤 양 축 8 CSS px 이상 노출된 visible을 한 번 계산한다. raw 전체 비용이 64M
+  이하면 화면 DPR, 넘으면 DPR 1.5를 시도하며 그조차 넘으면 #6467 결과를 유지한다.
+- 64M은 retained cache 예산을 확대한 값이 아니다. settled-visible mandatory quality에만 쓰는 absolute
+  guard다. print/high-quality profile은 기존 raw 경로다.
+- viewport 쪽을 편집 focus로 바꾸지 않아 caret와 ruler 의미를 보존한다.
+
+## 발견·교정한 문제
+
+1. 최초 Stage 4는 active downscale이 끝나기 전에 old surface ledger로 exact LRU를 퇴거해
+   `exam_kor` 역방향 raster를 3→5회로 늘렸다. Stage 5를 중단하고 target reservation과 optional
+   prefetch gate를 추가한 뒤 3회로 복구했다.
+2. probe가 admission에서 거절된 retained 후보까지 완료 대상으로 기다려 제품은 정착했지만 진단만
+   timeout됐다. materialized retained set을 별도로 노출해 측정 의미를 교정했다.
+3. scroll-settled DPR 1.5에서 integer physical size를 DPR로 역산하면 page box가 1px 미만 흔들렸다.
+   logical CSS geometry를 직접 사용해 고정했다.
+4. Puppeteer의 `Control+Home` 단일 key 문자열이 실제 DPR 1 E2E 시작 전에 실패했다. modifier down/press/up
+   순서로 고치고 DPR 1 assertion을 추가했다. 제품 동작 변경은 아니다.
+
+위 Stage 5 차단 finding은 당시 code candidate 전에 해결했고 해당 회귀를 결정론적/브라우저 테스트로
+고정했다. 이후 인라인 finding은 다음 보정 기록을 따른다.
+
+## 렌더 영향과 직접 시각 판정
+
+이 PR은 문서 조판·paint 내용이나 한컴 출력 fidelity를 바꾸지 않고 화면 page Canvas의 수명·실행 순서를
+바꾼다. 따라서 한컴 기준 PDF와의 layout visual sweep이 아니라, 같은 Studio fixture·viewport의 Stage 3/
+code candidate A/B, DOM·surface snapshot, 실제 DPR을 직접 대조하는 경로를 선택했다.
+
+review 작성 시 다음 6개 이미지를 직접 열어 확인했다.
+
+| 역할 | 경로 | SHA-256 | 사람 판정 |
+| --- | --- | --- | --- |
+| Canvas2D 자동 34% before | `issue6042-stage5-expanded/canvas2d-exam-auto-34-stage3.jpg` | `209d5de3fbc11296b59a64246176d0f099ce07ce2193c8815a1a135230c48515` | 하단 3열 page grid·본문·ruler 확인 |
+| Canvas2D 자동 34% after | `issue6042-stage5-expanded/canvas2d-exam-auto-34-corrected.jpg` | `cb9a5e20be43237113e23531f303f2e991903e3049edb016658702a473ab0121` | before와 큰 배치 이동·누락 없음 |
+| 두 쪽 100% DPR 1 | `issue6042-stage5-scroll-quality/exam-double-100-before-dpr1.png` | `716b95b77dc117fbc2a900ccf1ede5b4f3f0c1dd7cbc8b31e48c4e119a005a28` | 같은 국어 영역·표·그림 crop 확인 |
+| 두 쪽 100% DPR 2 | `issue6042-stage5-scroll-quality/exam-double-100-after-dpr2.png` | `4794d8b8f09e0c56a0a11aa5af07d18c2b63491eff693e60ab18c8cc2d321564` | 클릭 없이 같은 geometry에서 선명도 회복 |
+| CanvasKit KTX before | `issue6042-stage5-expanded/canvaskit-ktx-100-stage3.jpg` | `3f37a11a5965e0bdb7069d0a8b985567f507ee34aacd7d2b8da7d7935f4472bb` | probe가 상단을 가리고 나머지가 흰 면이라 fidelity 근거로 부적합 |
+| CanvasKit KTX after | `issue6042-stage5-expanded/canvaskit-ktx-100-corrected.jpg` | `fee20c6205a88753c6bd68224309b481ebeaaefe6faa377f621b42775ff556c6` | before와 동일 한계, 기계 surface/image state만 근거로 사용 |
+
+경로의 공통 prefix는 `mydocs/working/assets/`다. 자동 34% JPEG의 상단 절반도 probe JSON이 가리므로
+glyph fidelity 수치로 쓰지 않았다. 실제 내용이 보이는 하단 page grid에서 배치·공백·누락만 확인했고,
+기계 비교는 0.0592% 차이와 동일 DOM/surface snapshot을 보고했다. 두 쪽 crop은 같은 내용·box에서 실제
+DPR 1→2 승격을 보여 주지만 선명도 개선률을 pixel diff로 주장하지 않는다. KTX screenshot은 위 한계 때문에
+시각 수용 근거에서 제외하고 flow image ready, integer layer surface, pending/error 0만 사용했다.
+
+이것은 외부 contributor PR이 아니므로 merge 후 contributor comment 계획은 해당하지 않는다. PR 본문에는
+현재 branch의 안정 경로로 Canvas2D·두 쪽 대표 이미지를 직접 표시했다.
+
+## 성능 판정
+
+Chromium 151, 1280×720 CSS px, 실제 DPR 2, Canvas2D의 교대 A/B다. 경보선은 결과 확인 전에 p50
+`max(10ms, 5%)`, p95 `max(25ms, 10%)`로 고정했다.
+
+- 178쪽 4열·34% cold 20쌍: 첫 visible 271.2/278.9ms → 56.5/59.0ms,
+  `visibility.update` 243.8/247.7ms → 19.1/19.6ms.
+- 같은 cold 표본: main raster 12회 동일, long task 40건·6,887ms → 0건.
+- 178쪽 warm: retained 16.9/17.7ms → 16.6/17.7ms, main raster 양쪽 0회.
+- `exam_kor` 역방향 보정: raster 3/3, cache take 4/4. retained +4.2/+4.6ms로 경보선 안.
+- Canvas2D·CanvasKit 확장 성능 표본 revision당 260개: complete, error 0, 사전 경보선 안.
+- 정착 화질: scroll callback 0/0.1ms 동등. DPR 1→2 추가 raster로 final known work는
+  +33.3/+54.1ms, active surface는 +14,702,520px. 화질 복원을 위한 의도한 후처리 비용이다.
+
+첫 visible 수치를 모든 장치의 frame 개선으로 일반화하지 않는다. long task는 PerformanceObserver 값이지
+compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU 재작업을 줄이는 교환이며 전체
+메모리 감소도 주장하지 않는다.
+
+## 시각·수명 검증
+
+- Canvas2D, CanvasKit, auto fallback
+- 자동 1↔2↔3열, 한 쪽·두 쪽·4열, facing, horizontal, 마지막 미완성 행
+- 34/50/100/200% zoom과 반복 좌표, 빠른 방향 반전
+- `exam_kor`, `hwpspec`, `kps-ai`, 실제 4쪽, 21쪽 다층, KTX 4-layer 문서 교체
+- edit→undo→redo의 네 invalidation scope
+- 실제 DPR 1 Chrome의 28개 viewport resize snapshot
+- embedded image decode 3회 실패 뒤 fallback 3회, 완료 서명·queue·error 잔류 0
+
+사용자는 Stage 3/현재 로컬 서버를 직접 비교하고 scroll-settled 화질 보정 뒤 앞서 제보한 버벅임이
+사라진 것 같다고 확인했다. 주관 관찰은 자동화 근거의 보조로만 사용했다.
+
+## 최초 후보의 로컬 검증
+
+- Studio: 1,434 total / 1,433 pass / 1 policy skip / 0 fail
+- TypeScript `--noEmit`, Vite production build: passed
+- E2E manifest: 127/127
+- scheduler/LRU/CanvasView/budget/visibility/zoom focused suite: 71/71
+- headless Chrome DPR 1 ruler/resize: 28/28
+- headless Chrome image decode failure/fallback: passed
+- Stage 집계기 4종, raw JSON parse, markdown link, secret pattern, ancestry, `git diff --check`: passed
+- Rust source/test/fixture/Cargo/CI 변경 없음: Rust gate N/A
+
+## 잔여 위험과 범위 밖
+
+- 한 쪽 raster 내부는 선점할 수 없어 복잡한 단일 쪽은 여전히 한 task를 길게 점유할 수 있다.
+- settled-visible 64M은 단순 RGBA 약 256MB에 해당하며 GPU 복사·임시 Canvas는 포함하지 않는다. 무조건
+  allocation하는 값이 아니라 raw/1.5/fallback 판정의 상한이지만, 장치별 적응은 후속 범위다.
+- 짧은 문서 전체 surface 상주, 장치 성능 자동 확장, worker/OffscreenCanvas, 저배율 DPR 정책은 포함하지
+  않았다.
+- raw evidence 162개가 GitHub diff 노이즈를 만든다. reviewer는 최종 report와 summary, 24개
+  source/test/E2E부터 확인할 수 있고 raw는 재집계 근거로 보존한다.
+- 하위 두 PR의 병합은 완료했다. 이번 보정 head의 원격 required checks는 이전 head의 통과 결과로
+  대체하지 않는다.
+
+## 2026-09-04 인라인 리뷰 보정
+
+대상은 [review 5109298479](https://github.com/edwardkim/rhwp/pull/6637#pullrequestreview-5109298479)의
+두 correctness finding이다. 사용자가 수정·검증·push·답글을 승인했다. merge, thread resolve,
+DPR/예산/줌 정책 변경은 이번 승인 범위에 포함하지 않았다.
+
+### 1. focus 변경 후 미생성 visible 작업 유실
+
+- [원 코멘트](https://github.com/edwardkim/rhwp/pull/6637#discussion_r3930976474):
+  `setEditingPageIndex`가 plan만 교체해 queued exact key가 stale로 폐기되고, active Canvas가 없는
+  visible 쪽은 다음 입력까지 빈 상태로 남을 수 있었다.
+- 보정: focus plan 갱신 뒤 pending queue가 있으면 visible/prefetch desired work와 선택 surface
+  reservation을 최신 descriptor/비용으로 재구성한다. 같은 viewport/document이므로 generation을
+  유지해 이미 예약된 frame과 150ms settle callback을 보존한다. 작은 missing 집합도 여기서는
+  fast path를 사용하지 않아 클릭 callback에 새 동기 raster를 몰아넣지 않는다.
+- 회귀 테스트: 실제 CanvasView planner/descriptor와 scheduler를 연결하고 DOM/raster만 대체했다.
+  scroll/scroll-settled 각각에서 focus 지정·해제, binding budget에 따른 key 교체, 미생성 쪽 완료,
+  최신 key 일치, 단일 frame·기존 timer 보존을 검증한다.
+
+### 2. 예외 후 scheduler 진행 중단
+
+- [원 코멘트](https://github.com/edwardkim/rhwp/pull/6637#discussion_r3930976480):
+  work 실행/검증에서 throw하면 후속 frame/idle 예약까지 도달하지 못했다. 동기 fast path에서는
+  scroll-settle 예약도 잃을 수 있었다.
+- 보정: visible slice와 prefetch 실행의 `finally`에서 남은 작업을 예약하고, fast path의 빈 frame
+  정리도 `finally`로 보장한다. CanvasView는 fast path dispatch 전에 settle을 예약한다.
+- 오류를 catch해서 성공으로 바꾸지 않는다. 실패 항목은 꺼낸 상태로 남겨 즉시 반복 재시도하지 않고,
+  남은 쪽을 계속 처리한다. 후속 정상 settle/viewport 갱신은 실패했던 visible도 다시 판정할 수 있다.
+- 회귀 테스트: frame/fast-path/idle/timeout × run/isValid 예외 8경로, 마지막 visible 실패 후
+  prefetch 진행, 오류 중 cancelAll 뒤 callback 부활 방지, CanvasView fast-path 예외 후 settle 복구.
+
+### 검증 결과와 한계
+
+- 수정 전 새 테스트에서 12 fail을 확인했다. 보정 후 두 focused 파일은 **34/34 pass**다.
+- Studio 전체: **1,449 total / 1,448 pass / 1 policy skip / 0 fail**.
+- TypeScript noEmit, Vite production build, E2E manifest **127/127**, `git diff --check`: pass.
+  build에는 기존 chunk-size 경고만 있다. Rust/WASM source 변경이 없어 Rust gate는 N/A다.
+- 실제 Browser: Chromium 152, 1280×720, DPR 2, Canvas2D, `exam_kor.hwp` 20쪽, 자동 배치.
+  34%→50%→100%에서 다음 행 이동과 본문 클릭을 수행했다. 각각 3/2/1열이며 관찰 snapshot에서
+  missing visible 0, visible/prefetch queue 0, frame/idle/settle 예약 0, pending image 0, error 0이었다.
+  50%·100% screenshot의 본문·표·페이지·ruler를 직접 확인했고 브라우저 error log도 비어 있었다.
+- 브라우저 smoke는 정상 사용 회귀 확인이다. settle와 rAF 사이 경합 및 invariant throw는 위
+  결정론적 fault injection으로 검증했으며 일반 UI에서 같은 오류 발생률을 입증한 것은 아니다.
+  이번 보정에서 기존 전체 성능 A/B·DPR 1 resize·decode-failure E2E를 다시 실행했다고 주장하지 않는다.
+- 32M/40M/64M 상한, DPR 후보, zoom anchor, cache key, worker 구조는 바꾸지 않았다. 새로운 성능
+  개선률도 주장하지 않는다. 추가 재계산은 focus 변경 시 남은 queue가 있을 때 현재 working set에 한정된다.
+- 원격 CI는 push 후 새 exact head에서 별도로 확인한다. 이전 head CI와 위 로컬 검증을 혼동하지 않는다.
+
+## 2026-09-04 추가 수정 보존·기준선 통합
+
+- 사용자 추가 commit `1c9b5245e217f6b4a6da4b8ceba7eb2c402423b8`을 보존했다. DPR plan 변경 후
+  `renderCanvas`가 실패하면 active surface를 회수하도록 보정해, 실패한 Canvas가 완료된 쪽으로 남는
+  인접 결함을 막는다. DPR 후보나 예산 정책을 바꾸는 수정은 아니다.
+- `devel@a1be9d49313002a42dbca3ec5c03529c00dd6a4b`과 자동 병합은 충돌 없이 완료됐다.
+  merge commit은 `9a52b09d229b474b5ac268a1a41fcca9673fa496`이며, 자동 병합 tree와 동일함을 확인했다.
+  원 PR 커밋을 재작성하거나 추가 source 보정을 하지 않았다. 이후 문서 commit은 이동된 할일 문서의
+  상대 링크, 과거 제출 기록과 현재 검증 상태의 구분, 이 검토 결과만 정리한다.
+- 통합 source 검증: Studio **1,438 total / 1,437 pass / 1 policy skip / 0 fail**, TypeScript
+  noEmit, Vite production build, E2E manifest **127/127**, 변경 문서 링크와 `git diff --check` 통과.
+  build에는 CanvasKit의 Node 모듈 externalization 및 chunk-size 경고가 있다.
+- 최신 source로 WASM을 다시 빌드했다. Docker daemon이 실행되지 않아 문서화된 native
+  `--no-opt` 진단 경로를 사용했다. Rust release 최적화는 적용되지만 `wasm-opt`는 생략하므로,
+  이 서버의 시간 수치를 최적화된 배포판과의 정량 성능 비교에 사용하지 않는다.
+- 새 로컬 서버 `http://127.0.0.1:4198/?renderer=canvas2d&url=/samples/exam_kor.hwp`에서
+  `exam_kor.hwp` 20쪽을 열었다. 100% 본문·표·ruler의 실제 렌더링과 브라우저 error log 0건을
+  확인했다. 이번 확인은 문서 열기 smoke이며 기존 전체 시각·성능 게이트의 재실행을 뜻하지 않는다.
+- 사용자 지시에 따라 새 head를 push하고 서버를 제공하되, CI 완료는 기다리지 않는다. 현재 검증은
+  사용자가 직접 스크롤·줌·클릭을 비교하기 위한 준비이며 merge 승인을 대신하지 않는다.
+
+## 2026-09-04 당시 판정
+
+### 2026-09-04 증적 정리 검토
+
+- 사용자 승인에 따라 원격 rebase head `9b679f07a8b714d680ed822406e41cc62a6174ea` 위 로컬 branch
+  `codex/pr-6637-evidence-trim`에서 문서·검증 자산만 정리했다. 상세 범위/결과는
+  [구현 검토](pr_6637_review_impl.md)의 증적 정리 절을 따른다.
+- 중간 자산은 별도 영구 archive 없이 tree에서 제거하고 핵심 A/B의 모든 반복·불리한 결과·대표
+  화면·환경·재집계 경로를 남겼다. 기존 34파일의 값/해시는 그대로이며 정리 전 commit으로 복구 가능하다.
+- [최소 증거 색인](../../working/assets/issue6042/README.md)에서 과거 단계 요약과 현재 재계산 가능한
+  항목을 구분했다. 새 [패널 안내](../../manual/studio_scroll_probe_guide.md)와 저장 원시 검산은
+  제품 성능 재측정이나 전체 시각 게이트 재수행을 뜻하지 않는다.
+- 해시/JSON, 104개 p50/p95 계열, correction 전체 summary 재생성, 내부 링크, 기존 대비 메타데이터
+  신규 오류 0건을 확인했다. Studio/Rust/패널/테스트 코드 변경이 없어 제품 빌드는 재실행하지 않았다.
+- 사용자가 앞선 로컬 서버에서 회귀 없음을 보고했다. 이번 정리는 source를 변경하지 않는다.
+- **로컬 정리 완료, push 승인 대기**. 원격 PR 본문/댓글·상태·merge는 변경하지 않았다.
+
+### 병합 경계
+
+- 당시 판정: **머지 보류** (현재 판정은 문서 상단의 2026-09-06 메인터너 검토 참조)
+- 원격 상태: Ready / OPEN, 직접 base `devel`; 하위 #6458·#6467 병합 완료
+- 남은 조건: 증적 정리 push 승인, 이후 exact head required checks와 별도 merge 승인
+- 이번 작업은 원격 조치를 아직 하지 않았다. self PR의 GitHub approval review와 thread resolve를
+  만들지 않으며 push·merge는 각각 사용자 승인 전까지 수행하지 않는다.
+
+## 2026-09-06 CI 계약 보정 후 최종 검증
+
+판정: **메인터너 보정 완료, 수용 가능**. 아래 기록은 앞선 로컬 검증 시점의
+"영구 테스트 변경 없음" 범위를 보완한다. 제품 보정 `89042d5aefaea8cbb28f8027ffff0c8496eb11cf`는
+유지했고, CI 계약 테스트 보정은 별도 커밋
+`418a58d2e24a3f6445beea25aceb4b37afdfad27`으로 반영했다.
+
+- 이전 Render Diff 실패는 픽셀 비교 결과가 아니라, 모의 CanvasKit의 `PathBuilder` 누락과
+  구형 `new Path()` 구현을 강제하던 정적 계약 검사 때문이었다.
+- `rhwp-studio/e2e/renderer-contract.test.mjs`의 세 모의 객체를 생성용 `PathBuilder`와 완성된
+  `Path`로 구분했다. 경로 detach, builder 해제, 완성된 path 해제를 각각 한 번 확인한다.
+- 정적 검사는 `createCommandPath` 호출과 `PathBuilder` 생성, 명령 적용, detach,
+  `finally` 해제 계약을 검사하도록 보정했다. 제품 코드를 구형 모의 객체에 맞춰 되돌리지 않았다.
+- 실패했던 CI 단계와 동일한 JavaScript 구문 검사, Python 구문 컴파일,
+  native/CanvasKit 비교 provenance self-test, `npm run e2e:renderer-contract`,
+  `npm run e2e:canvaskit-font-coverage`를 모두 실행했고 종료 코드 0으로 통과했다.
+- 이번 추가 보정은 JavaScript 계약 테스트만 변경했다. 이미 기록한 제품 단위 테스트와 브라우저
+  시각 검증 결과를 다시 실행한 것으로 집계하지 않으며, Rust 전체 회귀 테스트도 추가 실행하지 않았다.
+
+보정 head `418a58d2e24a3f6445beea25aceb4b37afdfad27`의 실제 GitHub Actions 결과:
+
+| Workflow | 결과 | 실행 증적 |
+| --- | --- | --- |
+| CI | 성공 | [실행 33977030278](https://github.com/edwardkim/rhwp/actions/runs/33977030278) |
+| CodeQL | 성공 | [실행 33977030301](https://github.com/edwardkim/rhwp/actions/runs/33977030301) |
+| Render Diff | 성공 | [실행 33977030107](https://github.com/edwardkim/rhwp/actions/runs/33977030107) |
+| Adapter inter-diff | 성공 | [실행 33977030296](https://github.com/edwardkim/rhwp/actions/runs/33977030296) |
+| Proptest roundtrip | 성공 | [실행 33977030254](https://github.com/edwardkim/rhwp/actions/runs/33977030254) |
+
+이 기록은 보정 code head의 결과이며, 뒤따르는 문서 commit의 CI나 devel push CI 성공을
+미리 단정하지 않는다. 최신 head 검사 완료 후 병합하고, 기존 후속 comment 계획에 실제 merge SHA와
+최종 PR/devel CI 결과를 반영한다. PR과 Issue #6042에는 기존 대표 PNG 두 장을 merge SHA로 고정하여
+직접 표시하며, 같은 증적을 중복 게시하지 않는다. 오늘할일과 대표 asset은 원 PR에 이미 포함되어 있어
+별도 후속 PR은 만들지 않는다.

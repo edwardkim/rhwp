@@ -84,7 +84,9 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
     ];
     let composed: Vec<_> = paragraphs.iter().map(compose_paragraph).collect();
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle::default(), ResolvedCharStyle::default()],
         para_styles: vec![
             ResolvedParaStyle {
@@ -101,6 +103,7 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
         bullets: Vec::new(),
         kerning_measurement_context: None,
         horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
     let page_content = PageContent {
         page_index: 0,
@@ -123,6 +126,9 @@ fn synthetic_lineseg_indent_tree() -> crate::renderer::render_tree::PageRenderTr
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            paragraph_float_placements: Default::default(),
         }],
         active_header: None,
         active_footer: None,

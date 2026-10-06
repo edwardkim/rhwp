@@ -16,12 +16,15 @@ import type { PageInfo } from '../src/core/types.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
+  canvasKitImageContainRect,
+  canvasKitImageFillModeContains,
   canvasKitImageFillModeTiles,
   canvasKitImageFillModeStretches,
   canvasKitImagePlacement,
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
+import { imageCropScale, imageCropSelectionIsEmpty, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
 import {
   CANVASKIT_REPLAY_PLANES,
   layerPaintOpReplayPlane,
@@ -31,6 +34,30 @@ import { isExpectedCanvasKitUnsupportedOp } from '../src/view/canvaskit/diagnost
 import type { LayerInfo, LayerPaintOp } from '../src/core/types.ts';
 import { glyphOutlinePayloadResourceKey, glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
 import { collectVectorRawSvgDataUrls } from '../src/view/raw-svg-prefetch.ts';
+import {
+  canvasKitCanonicalClipEnabled,
+  canvasKitCanonicalClipRect,
+} from '../src/view/canvaskit/clip-replay.ts';
+
+test('CanvasKit applies producer-published clip geometry verbatim', () => {
+  const xywh = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
+  assert.deepEqual(
+    canvasKitCanonicalClipRect({ x: 10, y: 20, width: 88, height: 40 }, xywh),
+    { x: 10, y: 20, width: 88, height: 40 },
+    'marked Body width must stay 88 instead of receiving another 48px pad',
+  );
+  assert.deepEqual(
+    canvasKitCanonicalClipRect({ x: 3, y: 4, width: 25, height: 16 }, xywh),
+    { x: 3, y: 4, width: 25, height: 16 },
+    'non-Body clips must remain unchanged',
+  );
+});
+
+test('CanvasKit honors the canonical clip enable switch', () => {
+  assert.equal(canvasKitCanonicalClipEnabled(false, true), false);
+  assert.equal(canvasKitCanonicalClipEnabled(undefined, false), false);
+  assert.equal(canvasKitCanonicalClipEnabled(undefined, undefined), true);
+});
 
 test('render backend resolver keeps Canvas2D as the compatibility default and accepts explicit aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
@@ -222,10 +249,11 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
   assert.match(source, /resetDocumentResources\(\): void/);
 });
 
-test('CanvasKit distinguishes missing-picture editor and print replay', () => {
+test('CanvasKit translates a present missing-picture op without a profile gate', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
   assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
-  assert.match(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.doesNotMatch(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.match(codeOnly(source), /this\.renderPlaceholder\(canvas, op\)/);
   assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });
@@ -475,7 +503,10 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   // [#3315] DOM <img> 는 생산자가 정한 src 를 그대로 쓴다 — 전체 트리 경로의 data URL 이든
   // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
   assert.match(source, /element\.src = image\.src/);
-  assert.match(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL = 75/);
+  // [#6954] crop 축척은 CanvasKit 백엔드·rust 와 공유하는 한 함수가 정한다 — 여기에
+  // 96dpi 상수를 다시 심으면 백엔드끼리 갈린다(canvas 시각 파리티 게이트가 깨졌다).
+  assert.match(codeOnly(source), /imageCropSourceRect\(/);
+  assert.doesNotMatch(codeOnly(source), /HWP_UNITS_PER_CSS_PIXEL/);
   // [#6099] 90/270° 프레임은 회전 전 치수로 만들어지므로 crop 사영도 프레임
   // 치수를 받는다.
   assert.match(source, /applyFlowImageCrop\(element, image, displayScale, frameWidth, frameHeight\)/);
@@ -640,11 +671,20 @@ test('순수 RawSvg 프리페치는 PageLayerTree bbox 계약으로 SVG URL을 �
   assert.equal(urls.length, 1, '내부 raster data URL이 있는 rawSvg는 별도 프리페치하지 않는다');
 });
 
-test('CanvasView renders visible pages before deferred prefetch work', () => {
+test('CanvasView gives visible work precedence over deferred prefetch work', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
-  assert.match(codeOnly(source), /for \(const pageIdx of visiblePages\)/);
-  assert.match(source, /this\.schedulePrefetchPages\(prefetchPages\.filter/);
-  assert.match(source, /requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
+  const scheduler = readFileSync(
+    new URL('../src/view/page-render-scheduler.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    codeOnly(source),
+    /const visibleWork = deferVisible[\s\S]*?buildVisibleRenderWork[\s\S]*?const prefetchWork = this\.buildPrefetchRenderWork[\s\S]*?pageRenderScheduler\.setDesiredWork/,
+  );
+  assert.match(scheduler, /if \(this\.visible\.size > 0\) \{[\s\S]*?this\.cancelDeferredTask\(\)/);
+  assert.match(scheduler, /const DEFAULT_IDLE_TIMEOUT_MS = 1000/);
+  assert.match(scheduler, /requestIdleCallback\?[\s\S]*?requestIdle:/);
+  assert.match(scheduler, /runOnePrefetch/);
   assert.match(source, /cancelPendingPrefetch\(\)/);
 });
 
@@ -768,14 +808,140 @@ test('CanvasKit image replay cache key includes payload fingerprint with repeate
   );
 });
 
+// [#6954] `originalSizeHu` 가 없는 그림에서 SVG 와 같은 창을 잘라 온다.
+//
+// 종전에는 곧장 `HWPUNIT_PER_PIXEL`(96dpi 상수 가정)로 떨어졌다. rust 는 #3239 에서
+// 그 고정 폴백이 비-96dpi 스캔을 확대·절단시킨다는 것을 실측하고 **crop 의
+// right/bottom 을 원본 전체 범위로 읽는 적응식**을 사이에 넣었는데, studio 만 그대로
+// 남아 있었다.
 test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG replay', () => {
-  const crop = canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 });
-  assert.ok(crop);
-  assert.equal(crop.x, 0);
-  assert.equal(crop.y, 0);
-  assert.ok(Math.abs(crop.width - (102366 / HWPUNIT_PER_PIXEL)) < 0.01);
-  assert.equal(crop.height, 354);
+  // #5731 한컴2020 정본은 역전된 높이 선택에서 원본 전체를 복원하지 않는다.
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 72900, right: 2096, bottom: 21632 }), true);
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 0, right: 100, bottom: 100 }), false);
+  assert.equal(imageCropSelectionIsEmpty(null), false);
+  // 자르기 없는 그림 — right/bottom 이 원본 전체 범위라 잘라 올 창이 없다.
+  assert.equal(
+    canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 }),
+    null,
+  );
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
+
+  // 156627451 1쪽 ② 로고 — 두 축을 모두 자른 그림. #6954 는 여기에 적응 배율을 써서
+  // `x 104.05 / w 739.95` 를 고정했지만, 두 축 모두 crop 이 0 에서 시작하지 않으므로
+  // `right`/`bottom` 은 전체 범위가 아니다(#7015). 한컴 2020 PDF(`pdf/156627451-…-2020.pdf`)
+  // 1쪽 로고의 잉크 폭은 140.50px 이고 75 HU/px 창으로 그린 Native SVG 도 140.50px 이다(#7525).
+  const logo = canvasKitImageSourceRect(844, 342, {
+    left: 6947, top: 2777, right: 56348, bottom: 24865,
+  });
+  assert.ok(logo);
+  assert.ok(Math.abs(logo.x - 92.63) < 0.01, `x=${logo.x}`);
+  assert.ok(Math.abs(logo.y - 37.03) < 0.01, `y=${logo.y}`);
+  assert.ok(Math.abs(logo.width - 658.68) < 0.01, `width=${logo.width}`);
+  assert.ok(Math.abs(logo.height - 294.51) < 0.01, `height=${logo.height}`);
+
+  // right/bottom 을 못 쓰면 종전대로 96dpi 가정으로 떨어진다.
+  const degenerate = canvasKitImageSourceRect(200, 100, {
+    left: 750, top: 0, right: 0, bottom: 0,
+  });
+  assert.equal(degenerate, null);
+});
+
+// [#6954] canvas2d(DOM) 백엔드와 CanvasKit 백엔드가 **같은 축척 함수**를 쓴다.
+//
+// 둘이 각자 폴백을 갖고 있어 갈렸다 — CanvasKit 만 고쳤을 때 `pic-crop-01` 의 배너가
+// 두 백엔드에서 다르게 그려져 canvas 시각 파리티 게이트(image-crop)가 깨졌다.
+// 이 시험은 `imageCropScale` 이 rust `compute_image_crop_src` 의 사슬과 같은지,
+// 그리고 CanvasKit 경로가 그 함수의 결과를 그대로 쓰는지를 함께 고정한다.
+test('image crop scale follows the rust fallback chain for both studio backends', () => {
+  // ① imgDim 이 있으면 그것 — 축은 전체 좌표 범위를 디코딩 크기에 대응시킨다.
+  assert.deepEqual(
+    imageCropScale([144000, 81000], { left: 0, top: 0, right: 144000, bottom: 81000 }, 192, 108),
+    { scaleX: 750, scaleY: 750 },
+  );
+
+  // ② imgDim 이 없으면 시작이 0 인 축의 right/bottom 을 원본 전체 범위로 본다(#3239·#7015).
+  // #3239 200dpi 스캔 — 두 축 모두 자르지 않았으므로 두 축 모두 적응 배율(36 HU/px).
+  const adaptive = imageCropScale(null, { left: 0, top: 0, right: 59520, bottom: 84240 }, 1654, 2340);
+  assert.ok(Math.abs(adaptive.scaleX - 59520 / 1654) < 1e-9);
+  assert.ok(Math.abs(adaptive.scaleY - 84240 / 2340) < 1e-9);
+  assert.ok(adaptive.scaleX < HWPUNIT_PER_PIXEL, `scaleX=${adaptive.scaleX}`);
+
+  // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(30442 3쪽: x 축 75.0).
+  const oneAxis = imageCropScale(null, { left: 0, top: 20745, right: 88560, bottom: 45453 }, 1181, 945);
+  assert.ok(Math.abs(oneAxis.scaleX - 88560 / 1181) < 1e-9);
+  assert.equal(oneAxis.scaleY, oneAxis.scaleX);
+  const otherAxis = imageCropScale(null, { left: 20745, top: 0, right: 45453, bottom: 47250 }, 945, 945);
+  assert.equal(otherAxis.scaleX, 50);
+  assert.equal(otherAxis.scaleY, 50);
+
+  // 두 축 모두 잘렸으면 전체 범위를 확인할 축이 없어 ③으로 떨어진다.
+  assert.deepEqual(
+    imageCropScale(null, { left: 6947, top: 2777, right: 56348, bottom: 24865 }, 844, 342),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
+
+  // ③ 둘 다 못 쓰면 96dpi 가정.
+  assert.deepEqual(
+    imageCropScale(null, { left: 0, top: 0, right: 0, bottom: 0 }, 200, 100),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
+  assert.deepEqual(
+    imageCropScale([0, 0], { left: 0, top: 0, right: -1, bottom: -1 }, 200, 100),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
+
+  // 한 축만 유효한 imgDim 은 rust 와 같이 **쌍으로** 버린다 — 섞으면 원본에 없는 사영이
+  // 된다. 여기서는 ②로 내려가 두 축 모두 crop 범위를 쓴다.
+  assert.deepEqual(
+    imageCropScale([144000, 0], { left: 0, top: 0, right: 96000, bottom: 54000 }, 192, 108),
+    { scaleX: 500, scaleY: 500 },
+  );
+
+  // 파리티 게이트 픽스처 `pic-crop-01` 2번 배너 — imgDim 이 없고 crop 이 원본 전체
+  // 범위다. 고정 75 HU/px 면 세로로 58.21px 만 잘라 와 70px 프레임에 늘려 그린다(+20%).
+  const banner = imageCropScale(null, { left: 0, top: 0, right: 47940, bottom: 4366 }, 639, 70);
+  assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
+  assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
+
+  // 자를 것이 없으면 두 백엔드가 **함께** null 을 받는다. 한쪽만 소수점 창으로 다시
+  // 표본화하면 같은 그림이 다르게 그려져 파리티가 벌어진다(게이트 실측 2.17% > 2%).
+  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 4366 }), null);
+  assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 }), null);
+
+  // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
+  const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
+  const scale = imageCropScale(null, crop, 1181, 945);
+  const rect = canvasKitImageSourceRect(1181, 945, crop);
+  assert.ok(rect);
+  assert.ok(Math.abs(rect.y - crop.top / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.height - (crop.bottom - crop.top) / scale.scaleY) < 1e-9);
+});
+
+// [#7525] 저장 HWPUNIT 자르기 범위와 원본 영상 크기의 관계를 검사한다.
+// 화면 배치 좌표를 고정하지 않으며, 한컴 PDF와 두 Studio 백엔드의 실제 그림도 대조한다.
+test('image crop source matches rust per-axis fallback for issue7525 pictures', () => {
+  const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
+  const imageWidth = 1181;
+  const logo = imageCropSourceRect(imageWidth, 945, crop);
+  assert.ok(logo);
+  const confirmedScale = crop.right / imageWidth;
+  assert.equal(logo.x, 0);
+  assert.equal(logo.width, imageWidth);
+  assert.ok(Math.abs(logo.y * confirmedScale - crop.top) < 1e-6, '확인된 가로 축척으로 세로 시작을 환산한다');
+  assert.ok(Math.abs(logo.height * confirmedScale - (crop.bottom - crop.top)) < 1e-6,
+    '확인된 가로 축척으로 세로 자르기 범위를 보존한다');
+
+  // 두 축 모두 시작이 잘린 경우 전체 크기를 추정하지 않고 명세의 기본 환산을 쓴다.
+  const photoCrop = { left: 48247, top: 30284, right: 95750, bottom: 54568 };
+  const photo = imageCropSourceRect(1920, 1080, photoCrop);
+  assert.ok(photo);
+  for (const [actual, stored] of [
+    [photo.x, photoCrop.left], [photo.y, photoCrop.top],
+    [photo.width, photoCrop.right - photoCrop.left],
+    [photo.height, photoCrop.bottom - photoCrop.top],
+  ]) {
+    assert.ok(Math.abs(actual * HWPUNIT_PER_PIXEL - stored) < 1e-6, '저장 자르기 범위의 단위 환산을 보존한다');
+  }
 });
 
 test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {
@@ -813,6 +979,40 @@ test('CanvasKit image TOTAL fill stretches like fitToSize', () => {
   for (const mode of ['none', 'center', 'leftTop', 'tileAll']) {
     assert.equal(canvasKitImageFillModeStretches(mode), false);
   }
+});
+
+// [#7235] `none`(이진 유형 15)·`zoom` 은 배치(원본 크기) 모드가 아니다. 종전에는 이 판정이
+// 없어 둘 다 `canvasKitImagePlacement` 의 leftTop 으로 떨어져 원본 픽셀 크기를 칸 왼쪽 위에
+// 놓고 잘렸다 — 로고가 흰 여백만 남고 사라졌다.
+test('CanvasKit image NONE/ZOOM fill contains instead of placing at original size', () => {
+  for (const mode of ['none', 'zoom']) {
+    assert.equal(canvasKitImageFillModeContains(mode), true);
+    assert.equal(canvasKitImageFillModeStretches(mode), false);
+    assert.equal(canvasKitImageFillModeTiles(mode), false);
+  }
+  for (const mode of [undefined, 'fitToSize', 'total', 'center', 'leftTop', 'tileAll']) {
+    assert.equal(canvasKitImageFillModeContains(mode), false);
+  }
+});
+
+// 기대값은 한/글 출력에서 온다 — 156467175 머리 표 `r=0,c=3` 칸(466.613, 100.267,
+// 253.373x57.107)에 원본 1628x563 로고가 가로 511~676px 에 그려진다. 종횡비 유지 축소·가운데를
+// 계산하면 폭 57.107x(1628/563)=165.16, 왼쪽 510.72, 오른쪽 675.88 로 세 수가 모두 맞는다.
+test('CanvasKit contain rect matches the Hancom cell-fill geometry', () => {
+  const cell = { x: 466.6133333333333, y: 100.26666666666667, width: 253.3733333333333, height: 57.10666666666667 };
+  const fit = canvasKitImageContainRect(cell, 1628, 563);
+  assert.ok(Math.abs(fit.width - 165.16) < 0.05, `width=${fit.width}`);
+  assert.ok(Math.abs(fit.height - cell.height) < 1e-9, `height=${fit.height}`);
+  assert.ok(Math.abs(fit.x - 510.72) < 0.05, `x=${fit.x}`);
+  assert.ok(Math.abs(fit.x + fit.width - 675.88) < 0.05, `right=${fit.x + fit.width}`);
+  assert.ok(Math.abs(fit.y - cell.y) < 1e-9, `y=${fit.y}`);
+  // 원본 크기·왼쪽 위 배치(종전 동작)와 다르다.
+  assert.notEqual(Math.round(fit.width), 1628);
+  assert.notEqual(Math.round(fit.x), Math.round(cell.x));
+  // 크기를 못 읽으면 영역 전체로 폴백한다.
+  assert.deepEqual(canvasKitImageContainRect(cell, 0, 0), {
+    x: cell.x, y: cell.y, width: cell.width, height: cell.height,
+  });
 });
 
 test('GlyphOutline advanced payload gates reject richer payloads by default', () => {

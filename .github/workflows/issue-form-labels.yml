@@ -1,0 +1,96 @@
+name: Label issue form responses
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: issue-form-labels-${{ github.repository }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  label:
+    if: >-
+      github.repository == 'edwardkim/rhwp' &&
+      !github.event.issue.pull_request &&
+      (github.event.action == 'opened' || github.event.changes.body != null)
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # Run only trusted workflow code, without checking out issue-controlled content.
+      - name: Add labels for known form responses
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            const payload = context.payload;
+            if (!payload.issue || payload.issue.pull_request ||
+                !['opened', 'edited'].includes(payload.action) ||
+                (payload.action === 'edited' && !payload.changes?.body)) return;
+
+            const surfaceLabels = new Map([
+              ['Studio', 'rhwp-studio'],
+              ['CLI', 'cli'],
+              ['브라우저 확장', 'browser-extension'],
+              ['라이브러리/API', 'api'],
+              ['MCP', 'mcp'],
+            ]);
+            const formSignatures = [
+              ['표시 문제와 기대 결과', '재현 순서·문제 페이지', '원본 문서·재현 자료'],
+              ['동작 문제와 기대 결과', '재현 순서'],
+              ['하려는 작업과 현재 제약', '원하는 동작'],
+              ['문서 URL 또는 위치', '잘못되거나 부족한 설명', '기대하는 설명'],
+            ];
+
+            function selectedLabel(body) {
+              if (typeof body !== 'string') return null;
+              // Issue Forms produce Markdown headings, not trustworthy template IDs.
+              // Accept only a complete known structure, with one exact surface value.
+              const text = body.replace(/\r\n/g, '\n').trim();
+              if (!text.startsWith('### 사용 경로\n')) return null;
+              const headings = [...text.matchAll(/^### ([^\n]+)\n/gm)];
+              const names = headings.map((match) => match[1]);
+              if (new Set(names).size !== names.length ||
+                  formSignatures.filter((fields) => fields.every((field) => names.includes(field))).length !== 1) {
+                return null;
+              }
+              const value = text.slice(headings[0][0].length, headings[1]?.index).trim();
+              return surfaceLabels.get(value) ?? null;
+            }
+
+            const params = { ...context.repo, issue_number: payload.issue.number };
+            // Queued/retried events must consume the current body, not the old payload.
+            const { data: issue } = await github.rest.issues.get(params);
+            if (issue.pull_request || issue.state !== 'open') return;
+            const label = selectedLabel(issue.body);
+            if (!label || issue.labels.some((entry) => (entry.name ?? entry) === label)) return;
+
+            // Add-only policy: no source/provenance inference and no label removals.
+            // A removed label stays under maintainer control, even on a later retry/edit.
+            const events = await github.paginate(github.rest.issues.listEvents, {
+              ...params, per_page: 100,
+            });
+            if (events.some((event) => event.event === 'unlabeled' && event.label?.name === label)) {
+              core.info('Previously removed label is left for manual triage.');
+              return;
+            }
+            const available = await github.paginate(github.rest.issues.listLabelsForRepo, {
+              ...context.repo, per_page: 100,
+            });
+            if (!available.some((entry) => entry.name === label)) {
+              core.warning(`Configured repository label is missing: ${label}`);
+              return;
+            }
+
+            // Recheck after pagination: another edit or manual addition may have landed.
+            const { data: latest } = await github.rest.issues.get(params);
+            if (latest.state !== 'open' || latest.updated_at !== issue.updated_at ||
+                latest.body !== issue.body ||
+                latest.labels.some((entry) => (entry.name ?? entry) === label)) {
+              core.info('Issue changed during classification; skipping this snapshot.');
+              return;
+            }
+            await github.rest.issues.addLabels({ ...params, labels: [label] });

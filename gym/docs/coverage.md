@@ -10,7 +10,7 @@ last_verified: 2026-08-18
 이 문서는 `gym/tools/coverage.py` 가 내는 `gymCoverage` 1.0 봉투의 정본이다.
 구현은 [`gym/tools/coverage.py`](../tools/coverage.py), 계약 시험은
 [`scripts/tests/test_gym_coverage.py`](../../scripts/tests/test_gym_coverage.py)
-다. 작업 기록은 [`mydocs/working/gym_coverage.md`](../../mydocs/working/gym_coverage.md)
+다. 작업 기록은 [`mydocs/working/gym_coverage.md`](../../mydocs/working/archives/gym_coverage.md)
 를 본다.
 
 ## 왜 이 도구인가

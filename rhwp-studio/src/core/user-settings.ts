@@ -172,7 +172,7 @@ function defaultSettings(): AppSettings {
       clipView: true,
       toolbarBasic: true,
       toolbarFormat: true,
-      pageArrangement: { kind: 'auto' },
+      pageArrangement: { kind: 'single' },
       pageMovement: { ...DEFAULT_PAGE_MOVEMENT },
       zoomFitMode: 'none',
     },
@@ -241,7 +241,14 @@ class UserSettingsService {
       const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       const view: Partial<ViewSettings> = parsed.view ?? {};
       const autosave: Partial<AutosaveSettings> = parsed.autosave ?? {};
-      const pageView = resolvePageViewSettings(view.pageArrangement, view.pageMovement);
+      // 저장값에 쪽 배치가 없으면 기본 설정을 쓴다 — 정규화의 폴백(`DEFAULT_PAGE_ARRANGEMENT`)
+      // 은 손상된 값을 되살리는 용도이자 `setPageDimensions` 의 하위 호환 인자라, 새 사용자의
+      // 기본 쪽 모양과는 뜻이 다르다. 두 갈래를 같은 상수로 묶으면 기본값을 바꿀 때 그리드
+      // 경로의 하위 호환까지 함께 끌려간다.
+      const pageView = resolvePageViewSettings(
+        view.pageArrangement ?? defaults.view.pageArrangement,
+        view.pageMovement,
+      );
       return {
         version: parsed.version ?? defaults.version,
         font: {

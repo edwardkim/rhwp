@@ -1,0 +1,55 @@
+{
+  "sourceCommit": "a47e8ab77f6e616c198f52910b3f22312a9baaf3",
+  "environment": "Windows via SSH -> interactive Scheduled Task -> Node + Chrome, PowerShell Win32 EnumWindows",
+  "browser": "Chrome/153.0.8010.37",
+  "browserPid": 7624,
+  "browserTabTitle": "새 문서.hwp - rhwp-studio",
+  "newDocument": {
+    "title": "새 문서.hwp",
+    "standalone": true
+  },
+  "initialWindows": [
+    {
+      "handle": 1181256,
+      "pid": 7624,
+      "title": "rhwp-studio - 새 문서.hwp"
+    },
+    {
+      "handle": 1049828,
+      "pid": 7624,
+      "title": "새 문서.hwp - rhwp-studio - Chrome"
+    }
+  ],
+  "openDocument": {
+    "title": "para-001.hwp",
+    "windows": [
+      {
+        "handle": 1181256,
+        "pid": 7624,
+        "title": "rhwp-studio - para-001.hwp"
+      },
+      {
+        "handle": 1049828,
+        "pid": 7624,
+        "title": "새 문서.hwp - rhwp-studio - Chrome"
+      }
+    ]
+  },
+  "renamedDocument": {
+    "title": "Windows 저장 확인.hwp",
+    "windows": [
+      {
+        "handle": 1181256,
+        "pid": 7624,
+        "title": "rhwp-studio - Windows 저장 확인.hwp"
+      },
+      {
+        "handle": 1049828,
+        "pid": 7624,
+        "title": "새 문서.hwp - rhwp-studio - Chrome"
+      }
+    ]
+  },
+  "status": "PASS",
+  "uninstalled": true
+}

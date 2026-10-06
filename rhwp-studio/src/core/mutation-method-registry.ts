@@ -34,6 +34,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'createTable', 'createTableEx', 'deleteTableControl', 'insertTableRow', 'splitTable', 'mergeTableWithNext',
   'insertTableColumn', 'deleteTableRow', 'deleteTableColumn', 'mergeTableCells',
   'splitTableCell', 'splitTableCellInto', 'splitTableCellsInRange', 'resizeTableCells',
+  'resizeTableCellsByPath', // [#7189] 중첩 표 셀 크기 조절 — 평면 resizeTableCells 의 경로 변형
   'moveTableOffset', 'setTableProperties', 'setCellProperties', 'setCellZoneProperties',
   'applyCellBorderFillIds', 'removeBorderFillTails',
   'pasteTableCellsTransposed', 'transposeTableCellsInPlace', 'pasteTableCellsTransposedAsTable',
@@ -45,7 +46,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',
   'applyShapeZOrderPairs', // [#5769 후속] z 절대 대입 — SetZOrderCommand 의 undo/redo 경로
   'groupShapes', 'ungroupShape', 'moveLineEndpoint', 'updateConnectorsInSection',
-  'insertEquation', 'setEquationProperties', 'setNoteEquationProperties', 'deleteEquationControl',
+  'insertEquation', 'promoteOleEquation', 'setEquationProperties', 'setNoteEquationProperties', 'deleteEquationControl',
   // 차트 데이터 (#4694) — bin_data_content 슬롯 바이트 변이 (IR 무변경이지만 직렬화 결과가 바뀐다)
   'setChartData', 'setChartDataByIndex',
   // 각주/미주
@@ -54,10 +55,11 @@ export const MUTATING_METHODS: readonly string[] = [
   'mergeParagraphInFootnote', 'applyParaFormatInFootnote',
   // 붙여넣기
   'pasteInternal', 'pasteInternalInCell', 'pasteInternalInCellByPath', 'pasteControl',
-  'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath',
+  'pasteHtml', 'pasteHtmlInCell', 'pasteHtmlInCellByPath', 'pasteHwpJson',
   // 글자/문단 모양
   'applyCharFormat', 'setCharShapeId', 'applyCharFormatInCell', 'applyCharFormatInCellByPath',
   'setCharShapeIdInCell', 'setCharShapeIdInCellByPath',
+  'setCharShapeRuns', 'setCharShapeRunsInCellByPath',
   'applyParaFormat', 'setParaShapeId', 'applyParaFormatInCell', 'setCellParaShapeId',
   // 스타일/번호 정의 (DocInfo 변이 포함)
   'updateStyle', 'updateStyleShapes', 'createStyle', 'deleteStyle', 'applyStyle',
@@ -69,6 +71,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'splitParagraphInHeaderFooter', 'mergeParagraphInHeaderFooter',
   'applyCharFormatInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
   // 필드/양식/찾아바꾸기/책갈피
+  'insertHyperlink', 'updateHyperlink', 'replaceHyperlinkText', 'removeHyperlink',
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
   'updateClickHereProps', 'setFormValue', 'setFormValueInCell',
   'replaceText', 'replaceOne', 'replaceAll',
@@ -90,12 +93,36 @@ export const EXCLUDED_NON_DOCUMENT: readonly string[] = [
   'moveVertical', 'moveVerticalByPath', // 캐럿 세로 탐색 (조회)
   'ensureParagraphStableIds', // 런타임 추적 id 부여
   // [#5769] 삭제 조각(fragment) API — capture·discard 는 IR 비변경(캡처·저장소 정리).
-  // restoreDeleteFragment 는 IR 을 되살리는 변이지만 배선이 CommandHistory.undo 단일
-  // 경로로 고정돼 있어(SnapshotCommand.undo 의 restoreSnapshot 과 같은 취급)
-  // executeOperation 라우팅 강제 대상에서 제외한다. 히스토리 밖 직접 호출 금지.
+  // restoreDeleteFragment 는 IR 을 되살리는 변이지만 배선이 CommandHistory.undo 와
+  // 수정 모드 IME 조합 취소(기록할 편집이 없는 원상 복귀, #7489) 두 경로로 고정돼 있어
+  // (SnapshotCommand.undo 의 restoreSnapshot 과 같은 취급) executeOperation 라우팅 강제
+  // 대상에서 제외한다. 그 밖의 히스토리 밖 직접 호출 금지.
   'captureDeleteRange', 'restoreDeleteFragment', 'discardDeleteFragment',
   // [#5769 Stage 4] 구역 raw 저널 API — capture·discard 는 IR 비변경.
   // restoreSectionRaw 는 passthrough 를 되살리지만 SetSectionPropsCommand.undo 단일
   // 경로로 고정돼 있어(restoreDeleteFragment 와 같은 취급) 제외한다. 히스토리 밖 직접 호출 금지.
   'captureSectionRaw', 'restoreSectionRaw', 'discardSectionRaw',
+  // [#7002] 스냅샷 API — 위 두 저널의 선례이면서 정작 분류가 빠져 있었다
+  // (이 파일의 restoreDeleteFragment 주석이 SnapshotCommand.undo 의 restoreSnapshot 을
+  // 근거로 인용한다). save·discard 는 저장소 적재·해제라 IR 비변경이고,
+  // restoreSnapshot 은 CommandHistory.undo 단일 경로로 고정돼 같은 취급이다.
+  'saveSnapshot', 'restoreSnapshot', 'discardSnapshot',
+  // [#7002] 그림 변환 저널 API — capture·discard 는 IR 비변경.
+  // swapPictureTransform 은 IR 을 바꾸지만 두 경로 다 히스토리 항목을 만들지 않는다:
+  // PictureTransformResizeCommand.execute/undo(Command 안) 와
+  // PictureResizeJournal.cancel(드래그 취소·실패의 원상 복귀 — 되돌릴 편집이 없다).
+  // 위 두 저널과 달리 '단일 경로 고정' 이 아니므로 근거를 따로 적는다.
+  'capturePictureTransform', 'swapPictureTransform', 'discardPictureTransform',
+  // [#7002] 지연 쪽나눔 진행 API — 조판은 파생 상태다. 문서 IR 을 바꾸지 않는다.
+  'beginDeferredPagination', 'stepDeferredPagination',
+  'flushDeferredPagination', 'cancelDeferredPagination',
+  // [#7002 · #4180] 저장 직전 캐럿 스탬프. doc_properties.caret_* 와 DocInfo raw_stream 을
+  // surgical update 하므로 **저장 바이트를 바꾼다**. 그럼에도 제외인 이유는 편집이 아니라
+  // 저장 흐름(onBeforeExport)의 일부이기 때문이다 — 되돌릴 사용자 편집이 없다.
+  'setCaretPosition',
+  // [#7002] 내부 클립보드 적재 — 문서는 읽기만 하고 복사본을 코어 버퍼에 담는다.
+  'copySelection', 'copySelectionInCell', 'copySelectionInCellByPath',
+  'copySelectionInHeaderFooter', 'copyControl', 'copyTableCellsTransposed',
+  // [#7002] 조회 — 본문은 읽기뿐인데 `*_mut` 접근자를 거치느라 `&mut self` 가 됐다.
+  'getCellCharPropertiesAtByPath', 'getCharShapeRunsInCellByPath',
 ];

@@ -1,0 +1,7 @@
+....................................경고: 산출물이 빠진 page manifest를 재생성합니다: /var/folders/y8/ys1kv0ln49l0tgbwdb48grx40000gn/T/tmprzdzg552/pages/page-001.json
+..........Selected page singleton fallback: 산출물 파일명 숫자가 선택 페이지와 다르지만 모든 비교 그룹이 단일 페이지라 1:1로 매칭합니다.
+.....
+----------------------------------------------------------------------
+Ran 51 tests in 2.516s
+
+OK

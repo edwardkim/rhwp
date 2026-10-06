@@ -154,16 +154,16 @@ async function toggleDialogCheckbox(page, labelIncludes) {
   return r;
 }
 
-/** 다이얼로그 탭 클릭 */
-async function clickDialogTab(page, name) {
+/** 다이얼로그 탭 클릭 — 화면 글자가 아니라 탭 ID(data-tab)로 찾는다 */
+async function clickDialogTab(page, id) {
   const ok = await page.evaluate((n) => {
-    const t = [...document.querySelectorAll('.dialog-tab')]
-      .filter(x => x.offsetParent !== null && x.textContent.trim() === n).pop();
+    const t = [...document.querySelectorAll(`.dialog-tab[data-tab="${n}"]`)]
+      .filter(x => x.offsetParent !== null).pop();
     if (!t) return false;
     t.click();
     return true;
-  }, name);
-  if (!ok) throw new Error(`다이얼로그 탭을 찾지 못함: "${name}"`);
+  }, id);
+  if (!ok) throw new Error(`다이얼로그 탭을 찾지 못함: "${id}"`);
   await sleep(page, 300);
 }
 
@@ -358,7 +358,7 @@ runTest('편집 undo 계약 실동작 (Task #2301)', async ({ page }) => {
   const eqDepth0 = await undoDepth(page);
 
   await openObjectPropsDialog(page);
-  await clickDialogTab(page, '수식');
+  await clickDialogTab(page, 'equation');
   await page.evaluate(() => {
     const inp = [...document.querySelectorAll('input[type=number]')]
       .filter(i => i.offsetParent !== null && i.max === '127').pop();

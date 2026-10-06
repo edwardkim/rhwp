@@ -15,6 +15,10 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
+/// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
+pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
+
 /// HWP3 원본에서 HWPX 로 export 한 산출물 마커 — 재열람 시 hwp3_lineage 를
 /// 복원해 직파싱 HWP3 와 같은 레이아웃 계약(저장-스텝 등)을 밟게 한다.
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
@@ -405,6 +409,20 @@ impl Document {
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
         )
+        // native HWP5 는 로드 시 raw_stream 을 보유한 섹션을 raw_provenance 로
+        // 봉인한다(파서 seal_body_raw_provenance). 편집 명령은 raw_stream 만
+        // None 으로 지우고 봉인은 남기므로, "봉인은 있는데 raw_stream 이 사라짐"
+        // = 이 세션의 문서 변조 신호다. 합성·신규 문서(Document::default 직접
+        // 구성)는 봉인 자체가 없어 편집이 아니어도 raw_stream 이 없으므로,
+        // raw_stream 부재만으로 판정하면 오탐이다(오라클 미편집인데 편집 게이트
+        // 발동). 봉인 존재를 함께 요구해 실제 로드된 문서의 편집만 잡는다.
+        .with_session_edited(
+            self.provenance.format == SourceFormat::Hwp5
+                && self
+                    .sections
+                    .iter()
+                    .any(|s| s.raw_provenance.is_some() && s.raw_stream.is_none()),
+        )
     }
 
     /// 외부 이미지 binDataId가 이미 로드되었는지 확인한다.
@@ -570,6 +588,20 @@ impl Document {
         new_id
     }
 
+    /// [#6788] 선택 안의 각 원본 모양에만 속성을 병합한다. 같은 ID는 한 번만 해소한다.
+    pub(crate) fn modified_char_shape_ids(
+        &mut self,
+        base_ids: Vec<u32>,
+        mods: &super::style::CharShapeMods,
+    ) -> std::collections::HashMap<u32, u32> {
+        let mut ids = std::collections::HashMap::new();
+        for base_id in base_ids {
+            ids.entry(base_id)
+                .or_insert_with(|| self.find_or_create_char_shape(base_id, mods));
+        }
+        ids
+    }
+
     /// 기존 ParaShape를 복제하고 수정사항을 적용한 후, 동일한 것이 있으면 재사용한다.
     ///
     /// 반환값: 적용된 ParaShape의 ID (기존 또는 새로 생성)
@@ -671,7 +703,41 @@ impl Document {
 
         for (id, (basename, ext)) in to_load {
             let full_path = base_dir.join(&basename);
-            if let Ok(data) = std::fs::read(&full_path) {
+            let data = (|| {
+                use std::io::Read;
+                let limit = super::bin_data::MAX_BIN_DATA_BYTES;
+                // Reject an existing FIFO/device before opening it; validate the
+                // opened descriptor as well before the bounded read.
+                let metadata = std::fs::metadata(&full_path).ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let file = std::fs::File::open(&full_path).ok()?;
+                let metadata = file.metadata().ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let mut data = Vec::new();
+                file.take(limit as u64 + 1).read_to_end(&mut data).ok()?;
+                if data.len() > limit {
+                    return None;
+                }
+                let mime = crate::renderer::image_resolver::detect_image_mime_type(&data);
+                if mime == "application/octet-stream" {
+                    return None;
+                }
+                // Prefix detection is sufficient for paint routing, but a local
+                // sidecar must actually be an SVG document, not arbitrary XML.
+                if mime == "image/svg+xml" {
+                    let xml = std::str::from_utf8(&data).ok()?;
+                    let svg = roxmltree::Document::parse(xml).ok()?;
+                    if !svg.root_element().has_tag_name("svg") {
+                        return None;
+                    }
+                }
+                Some(data)
+            })();
+            if let Some(data) = data {
                 if !self.inject_external_image_data(id, data, ext) {
                     continue;
                 }

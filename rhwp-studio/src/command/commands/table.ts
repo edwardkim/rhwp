@@ -18,10 +18,13 @@ import {
   type TableDeleteRowColumnMode,
   type TableInsertRowColumnMode,
 } from '@/ui/table-row-column-dialog';
-
+import { t } from '../../i18n/index.ts';
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
 const hasMultiCellSelection = (ctx: EditorContext) => ctx.hasMultiCellSelection;
+// HWP/HWPX cannot persist independent per-row or per-column geometry. Keep
+// commands that require that representation unavailable at command routing.
+const localTableGeometryCanPersist = () => false;
 
 type CellRange = { startRow: number; startCol: number; endRow: number; endCol: number };
 type TableDimensions = { rowCount: number; colCount: number; cellCount: number };
@@ -93,16 +96,6 @@ function selectedBlockCalculationCells(
     cells.push(cellRow);
   }
   return cells;
-}
-
-function equalizeTargetRange(ih: ReturnType<CommandServices['getInputHandler']>, dims: TableDimensions): CellRange {
-  const range = ih?.isInCellSelectionMode?.() ? ih.getSelectedCellRange?.() : null;
-  return range ?? {
-    startRow: 0,
-    startCol: 0,
-    endRow: Math.max(0, dims.rowCount - 1),
-    endCol: Math.max(0, dims.colCount - 1),
-  };
 }
 
 function hasNonRectangularCellSelection(ih: ReturnType<CommandServices['getInputHandler']>): boolean {
@@ -327,7 +320,7 @@ function applyTableDeleteRowColumn(
 }
 
 export const tableCommands: CommandDef[] = [
-  { id: 'table:create', label: '표 만들기', icon: 'icon-table',
+  { id: 'table:create', label: t('command.table.create.label'), icon: 'icon-table',
     opensDialog: true,
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services, params) {
@@ -377,7 +370,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:cell-props',
     opensDialog: true,
-    label: '표/셀 속성',
+    label: t('command.table.cellProps.label'),
     canExecute: (ctx) => ctx.inTable || ctx.inCellSelectionMode || ctx.inTableObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -401,7 +394,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:border-each',
     opensDialog: true,
-    label: '각 셀마다 적용(E)...',
+    label: t('command.table.borderEach.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -425,7 +418,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:border-one',
     opensDialog: true,
-    label: '하나의 셀처럼 적용(Z)...',
+    label: t('command.table.borderOne.registryLabel'),
     canExecute: hasMultiCellSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -449,7 +442,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:insert-row-col',
     opensDialog: true,
-    label: '줄/칸 추가하기(I)...',
+    label: t('command.table.insertRowCol.label'),
     shortcutLabel: 'Alt+Enter',
     canExecute: inTable,
     execute(services) {
@@ -464,7 +457,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:delete-row-col',
     opensDialog: true,
-    label: '줄/칸 지우기(E)...',
+    label: t('command.table.deleteRowCol.label'),
     shortcutLabel: 'Alt+Delete',
     canExecute: inTable,
     execute(services) {
@@ -478,7 +471,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:insert-row-above',
-    label: '위쪽에 줄 추가하기',
+    label: t('command.table.insertRowAbove.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -498,7 +491,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:insert-row-below',
-    label: '아래쪽에 줄 추가하기',
+    label: t('command.table.insertRowBelow.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -518,7 +511,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:insert-col-left',
-    label: '왼쪽에 칸 추가하기',
+    label: t('command.table.insertColLeft.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -538,7 +531,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:insert-col-right',
-    label: '오른쪽에 칸 추가하기',
+    label: t('command.table.insertColRight.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -558,7 +551,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:delete-row',
-    label: '줄 지우기',
+    label: t('command.table.deleteRow.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -578,7 +571,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:delete-col',
-    label: '칸 지우기',
+    label: t('command.table.deleteCol.registryLabel'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -599,7 +592,7 @@ export const tableCommands: CommandDef[] = [
   {
     id: 'table:cell-split',
     opensDialog: true,
-    label: '셀 나누기',
+    label: t('command.table.cellSplit.label'),
     shortcutLabel: 'S',
     canExecute: inTable,
     execute(services) {
@@ -650,7 +643,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:cell-merge',
-    label: '셀 합치기',
+    label: t('command.table.cellMerge.label'),
     shortcutLabel: 'M',
     canExecute: (ctx) => ctx.inCellSelectionMode,
     execute(services) {
@@ -673,7 +666,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:transpose-copy',
-    label: '행/열 바꿈 복사',
+    label: t('command.table.transposeCopy.label'),
     canExecute: (ctx) => ctx.inCellSelectionMode,
     execute(services) {
       const ih = services.getInputHandler();
@@ -700,7 +693,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:transpose-paste',
-    label: '행/열 바꿈 붙여넣기',
+    label: t('command.table.transposePaste.label'),
     canExecute: (ctx) => ctx.hasDocument && ctx.hasTableTransposeClipboard,
     execute(services) {
       const ih = services.getInputHandler();
@@ -817,7 +810,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:split',
-    label: '표 나누기',
+    label: t('command.table.split.registryLabel'),
     shortcutLabel: 'Ctrl+M,A',
     canExecute: (ctx) => ctx.inTable,
     execute(services) {
@@ -864,7 +857,7 @@ export const tableCommands: CommandDef[] = [
     // 한컴 용어는 '붙이기'(attach)지만 의미는 다음 표와의 행 병합이라
     // WASM API 는 mergeTableWithNext, 이벤트는 TablesMerged 를 쓴다.
     id: 'table:attach',
-    label: '표 붙이기',
+    label: t('command.table.attach.registryLabel'),
     shortcutLabel: 'Ctrl+M,Z',
     canExecute: (ctx) => ctx.inTable || ctx.inTableObjectSelection,
     execute(services) {
@@ -898,7 +891,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:delete',
-    label: '표 지우기',
+    label: t('command.table.delete.registryLabel'),
     canExecute: (ctx) => ctx.inTable || ctx.inTableObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -929,7 +922,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:caption-toggle',
-    label: '캡션 넣기',
+    label: t('command.table.captionToggle.registryLabel'),
     canExecute: (ctx) => ctx.inTable || ctx.inTableObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -974,136 +967,37 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:cell-height-equal',
-    label: '셀 높이를 같게',
+    label: t('command.table.cellHeightEqual.label'),
     shortcutLabel: 'H',
-    canExecute: inTableOrCellSelection,
-    execute(services) {
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
-      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
-      try {
-        if (hasNonRectangularCellSelection(ih)) return;
-        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
-        const range = equalizeTargetRange(ih, dims);
-        const bboxes = services.wasm.getTableCellBboxes(sec, ppi, ci);
-        const bboxByCellIdx = new Map(bboxes.map(bbox => [bbox.cellIdx, bbox]));
-        const cells: Array<{ idx: number; height: number; renderHeight: number }> = [];
-        for (let i = 0; i < dims.cellCount; i++) {
-          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
-          if (!isCellInRange(info, range)) continue;
-          if (info.rowSpan > 1) continue;
-          const h = services.wasm.getCellProperties(sec, ppi, ci, i).height;
-          const bbox = bboxByCellIdx.get(i);
-          const renderHeight = bbox ? Math.round(bbox.h * 75) : h;
-          cells.push({ idx: i, height: h, renderHeight });
-        }
-        if (cells.length < 2) return;
-        const totalHeight = cells.reduce((sum, cell) => sum + cell.renderHeight, 0);
-        const avgHeight = Math.round(totalHeight / cells.length);
-        const updates: Parameters<CommandServices['wasm']['resizeTableCells']>[3] = [];
-        let changed = false;
-        for (const c of cells) {
-          if (c.renderHeight !== avgHeight) changed = true;
-          updates.push({
-            cellIdx: c.idx,
-            heightDelta: 0,
-            localResize: true,
-            renderHeight: avgHeight,
-          });
-        }
-        if (!changed) return;
-        safeTableOp(() => ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'equalizeTableCellHeights',
-          operation: (wasm) => {
-            wasm.resizeTableCells(sec, ppi, ci, updates);
-            return pos;
-          },
-        }), '셀 높이를 같게');
-        restoreEditorFocus(ih);
-      } catch (err) {
-        console.warn('[table:cell-height-equal] 높이 균등화 실패:', err);
-      }
-    },
+    canExecute: localTableGeometryCanPersist,
+    execute() {},
   },
   {
     id: 'table:cell-width-equal',
-    label: '셀 너비를 같게',
+    label: t('command.table.cellWidthEqual.label'),
     shortcutLabel: 'W',
-    canExecute: inTableOrCellSelection,
-    execute(services) {
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
-      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
-      try {
-        if (hasNonRectangularCellSelection(ih)) return;
-        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
-        const range = equalizeTargetRange(ih, dims);
-        const bboxes = services.wasm.getTableCellBboxes(sec, ppi, ci);
-        const bboxByCellIdx = new Map(bboxes.map(bbox => [bbox.cellIdx, bbox]));
-        const cells: Array<{ idx: number; col: number; width: number; renderWidth: number }> = [];
-        for (let i = 0; i < dims.cellCount; i++) {
-          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
-          if (!isCellInRange(info, range)) continue;
-          if (info.rowSpan > 1) continue;
-          const w = services.wasm.getCellProperties(sec, ppi, ci, i).width;
-          const bbox = bboxByCellIdx.get(i);
-          const renderWidth = bbox ? Math.round(bbox.w * 75) : w;
-          cells.push({ idx: i, col: info.col, width: w, renderWidth });
-        }
-        if (cells.length < 2) return;
-        const totalWidth = cells.reduce((sum, cell) => sum + cell.renderWidth, 0);
-        const avgWidth = Math.round(totalWidth / cells.length);
-        const updates: Parameters<CommandServices['wasm']['resizeTableCells']>[3] = [];
-        let changed = false;
-        for (const c of cells) {
-          const delta = avgWidth - c.width;
-          if (delta !== 0 || c.renderWidth !== avgWidth) changed = true;
-          updates.push({
-            cellIdx: c.idx,
-            widthDelta: delta,
-            localResize: true,
-            renderWidth: avgWidth,
-          });
-        }
-        if (!changed) return;
-        safeTableOp(() => ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'equalizeTableCellWidths',
-          operation: (wasm) => {
-            wasm.resizeTableCells(sec, ppi, ci, updates);
-            return pos;
-          },
-        }), '셀 너비를 같게');
-        restoreEditorFocus(ih);
-      } catch (err) {
-        console.warn('[table:cell-width-equal] 너비 균등화 실패:', err);
-      }
-    },
+    canExecute: localTableGeometryCanPersist,
+    execute() {},
   },
   {
     id: 'table:formula',
-    label: '계산식(F)...',
+    label: t('command.table.formula.registryLabel'),
     shortcutLabel: 'Ctrl+M,F',
     canExecute: inTable,
     execute(services) { openFormulaDialog(services); },
   },
   {
     id: 'table:block-formula',
-    label: '블록 계산식',
+    label: t('command.table.blockFormula.label'),
     canExecute: inTable,
     execute(services) { openFormulaDialog(services); },
   },
-  blockCalcCommand('table:block-sum', '블록 합계', 'SUM', 'Ctrl+Shift+S'),
-  blockCalcCommand('table:block-avg', '블록 평균', 'AVERAGE', 'Ctrl+Shift+A'),
-  blockCalcCommand('table:block-product', '블록 곱', 'PRODUCT', 'Ctrl+Shift+P'),
+  blockCalcCommand('table:block-sum', t('command.table.blockSum.label'), 'SUM', 'Ctrl+Shift+S'),
+  blockCalcCommand('table:block-avg', t('command.table.blockAvg.label'), 'AVERAGE', 'Ctrl+Shift+A'),
+  blockCalcCommand('table:block-product', t('command.table.blockProduct.label'), 'PRODUCT', 'Ctrl+Shift+P'),
   {
     id: 'table:thousand-sep',
-    label: '1,000 단위 구분 쉼표',
+    label: t('command.table.thousandSep.label'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -1152,7 +1046,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:decimal-add',
-    label: '자릿점 넣기',
+    label: t('command.table.decimalAdd.label'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();
@@ -1197,7 +1091,7 @@ export const tableCommands: CommandDef[] = [
   },
   {
     id: 'table:decimal-remove',
-    label: '자릿점 빼기',
+    label: t('command.table.decimalRemove.label'),
     canExecute: inTable,
     execute(services) {
       const ih = services.getInputHandler();

@@ -1,0 +1,42 @@
+{
+  "schema_version": 2,
+  "key": "ole7406hwpx",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue7406/7406_OLE__CHART.hwpx",
+      "sha256": "a64ee3e5a4b38c9e7d1116cdfa7b2ec9ba7d459d572be5e03af4b83d78e771af"
+    },
+    "pdf": {
+      "path": "pdf/issue7406/7406_OLE__CHART.pdf",
+      "sha256": "bd3a5a0ed14b584717ee694ef08c41feddaaa69029c8450c4a352aafae5bed61"
+    },
+    "git_head": "9e7518243b251193ee91378e2d09e754d0223d64",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review/debug/rhwp",
+      "path": "target/pr-review/debug/rhwp",
+      "sha256": "b4387ef0ee9939bac7861a92fa01f4689f1152f8763c7d19457b1b5fbce1e137"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -15,7 +15,7 @@ use crate::model::bin_data::{BinData, BinDataType, MAX_BIN_DATA_BYTES};
 use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
-use super::body_text::serialize_section;
+use super::body_text::serialize_section_for_version;
 use super::content_loss::{
     ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
 };
@@ -107,6 +107,9 @@ fn serialize_hwp_inner(
         serialize_file_header(&doc.header)
     };
 
+    // raw FileHeader가 보존되면 모델의 version과 다를 수 있으므로 실제 출력값을 쓴다.
+    let output_version = u32::from_le_bytes(header_bytes[32..36].try_into().unwrap());
+
     // 3. BodyText 섹션별 직렬화
     //
     // [#5142] HWPX 는 한 section 파일 안에 `<hp:secPr>` 를 여러 개 둘 수 있고,
@@ -120,6 +123,7 @@ fn serialize_hwp_inner(
     // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
     let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
+    let mut form_id_allocator = None;
     for section in &doc.sections {
         let split_starts: Vec<usize> =
             if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
@@ -139,7 +143,9 @@ fn serialize_hwp_inner(
                     .collect()
             };
         if split_starts.is_empty() {
-            section_bytes_list.push(serialize_section(section));
+            let prepared =
+                super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
+            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
             continue;
         }
         let mut starts = Vec::with_capacity(split_starts.len() + 1);
@@ -166,7 +172,9 @@ fn serialize_hwp_inner(
                 raw_stream: None,
                 raw_provenance: None,
             };
-            section_bytes_list.push(serialize_section(&sub));
+            let prepared =
+                super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
+            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
         }
     }
 
@@ -209,6 +217,11 @@ fn serialize_hwp_inner(
 
     // 6. CFB 컨테이너 조립
     let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
+    let mut extra_streams = doc.extra_streams.clone();
+    extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
+    if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
+        extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));
+    }
     let bytes = write_hwp_cfb(
         &header_bytes,
         &doc_info_bytes,
@@ -216,7 +229,7 @@ fn serialize_hwp_inner(
         &doc.doc_info.bin_data_list,
         &doc.bin_data_content,
         &preview,
-        &doc.extra_streams,
+        &extra_streams,
         compressed,
         password,
         &mut content_loss,

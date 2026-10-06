@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const commands = readFileSync(new URL('../src/command/commands/view.ts', import.meta.url), 'utf8');
@@ -24,7 +25,7 @@ test('대화상자는 한컴 비율·쪽 모양 선택을 제공하고 저장소
     '자동', '한 쪽', '두 쪽', '맞쪽', '여러 쪽',
     '세로 방향', '가로 방향', '마우스 휠을 사용하여 좌우로 스크롤하기',
   ]) {
-    assert.ok(dialog.includes(label), `${label} 선택지가 있어야 한다`);
+    assertShowsText(dialog, label, `${label} 선택지가 있어야 한다`);
   }
   assert.match(style, /@import '\.\/styles\/zoom-dialog\.css';/);
 });
@@ -108,8 +109,8 @@ test('상황 선은 한글 2024 순서로 축소·범위·확대·통합 배율 
 test('상황 선 확대·축소는 플랫폼 단축키를 호버에 표시하고 별도 키 리스너를 만들지 않는다', () => {
   assert.match(commands, /id: 'view:zoom-in'[\s\S]*?shortcutLabel: 'Ctrl\+\+'/);
   assert.match(commands, /id: 'view:zoom-out'[\s\S]*?shortcutLabel: 'Ctrl\+-'/);
-  assert.match(main, /zoomPercentShortcutTitle\('확대', 'Ctrl\+\+'/);
-  assert.match(main, /zoomPercentShortcutTitle\('축소', 'Ctrl\+-'/);
+  assert.match(main, /zoomPercentShortcutTitle\('zoomIn'/);
+  assert.match(main, /zoomPercentShortcutTitle\('zoomOut'/);
   const setupStart = main.indexOf('function setupZoomControls()');
   const setupEnd = main.indexOf('\nlet totalSections', setupStart);
   assert.doesNotMatch(

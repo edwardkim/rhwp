@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/README.md
-last_verified: 2026-08-24
+last_verified: 2026-09-04
 ---
 
 # manual 문서 지도
@@ -21,6 +21,8 @@ last_verified: 2026-08-24
 | 외부 PR 검토, collaborator 처리, merge 후속 | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [조건별 PR review 가이드](pr_review/README.md), [개발 환경 가이드](dev_environment_guide.md) |
 | rhwp 첫 외부 contributor PR | [PR 리뷰·통합 워크플로우](pr_review_workflow.md) | [첫 기여자 외부 PR 처리](pr_review/first_time_contributor.md), [조건별 PR review 가이드](pr_review/README.md) |
 | 로컬 빌드, 테스트, WASM 검증 | [개발 환경 가이드](dev_environment_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md) |
+| 제품에서 선택적 Gym 평가 도구로 이동 | [선택적 Gym 안내](gym_optional_tool.md) | [Gym 벤치마크 운영 매뉴얼](gym_benchmark_operations.md) |
+| Gym 구조 계약·전수 벤치마크·증적 보고를 사람이 수동 실행 | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) | [Gym 증적 seal·HTML 규약](../../gym/docs/evidence_report.md), [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md), [Gym 참가자 안내](../../gym/README.md) |
 | 문서 이동·정보구조의 링크 검사 | [문서 링크와 메타데이터 로컬 검사](markdown_link_check_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 신규 기여자 시작 | [온보딩 가이드](onboarding_guide.md) | [문서와 Git 워크플로우](codex/docs_and_git_workflow.md) |
 | 에이전트가 rhwp 참조 문서를 처음 탐색 | [에이전트 지식 지도](agent_knowledge_map.md) | 루트 [`llms.txt`](../../llms.txt), [CLI 명령어 매뉴얼](cli_commands.md) |
@@ -36,6 +38,7 @@ last_verified: 2026-08-24
 | AI 에이전트 호스트에 rhwp 를 MCP 도구로 연결 | [MCP 통합 가이드](mcp_integration_guide.md) | [CLI 명령어 매뉴얼](cli_commands.md), [CLI JSON 파이프라인 가이드](cli_json_pipeline_guide.md) |
 | 브라우저 확장 개발·배포 | [브라우저 확장 개발 가이드](browser_extension_dev_guide.md) | [Chrome/Edge 확장 빌드·배포](chrome_edge_extension_build_deploy.md) |
 | Studio E2E·CDP 검증 | [E2E 조판 자동 검증](e2e_verification_guide.md) | [CDP E2E 가이드](e2e-cdp.md) |
+| Studio 스크롤·줌 계측과 surface/cache 비용 비교 | [개발 측정 패널 사용 안내](studio_scroll_probe_guide.md) | [#6042 최소 검증 증거](../working/assets/issue6042/README.md), [개발 환경 가이드](dev_environment_guide.md) |
 | 로컬 폰트 감지·이름·backend·정답지 불일치 대응 | [폰트 감지·대체 사고 대응 절차](font_incident_response.md) | [폰트 fallback 전략](../tech/font_fallback_strategy.md), [시각 검증 거버넌스](verification/visual_verification_governance.md) |
 | RenderBackend 네 번째 어댑터를 붙일 때 | [RenderBackend 어댑터 작성 가이드](render_backend_adapter_guide.md) | [출력 백엔드 공통 계약](../tech/render_backend.md) |
 | HWP/HWPX 저장 회귀 기준 | [HWP5 roundtrip baseline](hwp5_roundtrip_baseline.md), [HWPX roundtrip baseline](hwpx_roundtrip_baseline.md) | [문서 진단 도구](document_diagnostics_tool_manual.md), [HWPX2HWP probe 온보딩](hwpx2hwp_probe_onboarding.md) |

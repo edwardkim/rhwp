@@ -42,7 +42,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("function isSampleReferencePath(filename)", self.wf)
         self.assertIn("file.status !== 'added'", self.wf)
         self.assertIn("file.status === 'added' || file.status === 'modified'", self.wf)
-        self.assertIn("const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];", self.wf)
+        self.assertIn("const pdfPrefixes = ['pdf/'];", self.wf)
         self.assertIn("filename.endsWith('.pdf')", self.wf)
         self.assertIn("github.rest.pulls.listCommits", self.wf)
         self.assertIn("github.rest.repos.getCommit", self.wf)

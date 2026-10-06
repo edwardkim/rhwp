@@ -43,6 +43,9 @@ impl SkiaTextReplay<'_> {
         is_para_end: bool,
         is_line_break_end: bool,
         layout_positions: Option<&[f64]>,
+        trim_trailing_spaces: usize,
+        suppress_glyphs: bool,
+        render_marks: bool,
     ) {
         let canvas = self.canvas;
         let output_options = self.output_options;
@@ -295,7 +298,13 @@ impl SkiaTextReplay<'_> {
                 let char_positions =
                     crate::renderer::replay_positions_or_compute(text, style, layout_positions);
                 let clusters = split_into_clusters(text);
-                let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
+                let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
+                let trim = trim_trailing_spaces.min(trailing);
+                let text_width = char_positions
+                    .get(text.chars().count().saturating_sub(trim))
+                    .copied()
+                    .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+                    as f32;
                 // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
                 let (font_size, ratio) = {
                     let (fs, r) =
@@ -303,7 +312,9 @@ impl SkiaTextReplay<'_> {
                     (fs as f32, r as f32)
                 };
                 let has_ratio = (ratio - 1.0).abs() > 0.01;
-                if crate::model::color::char_shade(style.shade_color).is_some() && text_width > 0.0
+                if !suppress_glyphs
+                    && crate::model::color::char_shade(style.shade_color).is_some()
+                    && text_width > 0.0
                 {
                     let mut shade = Paint::default();
                     shade.set_anti_alias(true);
@@ -381,10 +392,8 @@ impl SkiaTextReplay<'_> {
                         _ => draw_styled_line(x1, y, x2, color, 1.0, &[], false),
                     };
 
-                // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
-                // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
-                // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
-                // svg.rs 와 같은 결정이다.
+                // 연속 하이픈은 낱글자로 그리되 원 획이 저장 간격보다 넓어
+                // 겹치는 경우에는 낱글자별 짧은 획을 사용한다.
                 let cluster_advance = |char_idx: usize, cluster: &str| -> f32 {
                     let end = char_idx + cluster.chars().count();
                     if end < char_positions.len() {
@@ -405,12 +414,54 @@ impl SkiaTextReplay<'_> {
                         text_paint.set_style(paint::Style::Fill);
                     }
                     for (char_idx, cluster) in clusters.iter() {
-                        if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
+                        // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                        if cluster.chars().all(char::is_whitespace) {
                             continue;
+                        }
+                        if cluster == "-" {
+                            if let Some((start, end, y_offset, stroke)) =
+                                crate::renderer::overlapping_dash_leader_segment(
+                                    text,
+                                    style,
+                                    *char_idx,
+                                    &char_positions,
+                                    f64::from(font_size),
+                                )
+                            {
+                                let char_x = bbox.x as f32 + char_positions[*char_idx] as f32 + dx;
+                                let line_y = y as f32 + y_offset as f32 + dy;
+                                let mut line_paint = Paint::default();
+                                line_paint.set_anti_alias(true);
+                                line_paint.set_color(color);
+                                line_paint.set_style(paint::Style::Stroke);
+                                line_paint.set_stroke_width(stroke as f32);
+                                canvas.draw_line(
+                                    (char_x + start as f32, line_y),
+                                    (char_x + end as f32, line_y),
+                                    &line_paint,
+                                );
+                                continue;
+                            }
                         }
                         if cluster.starts_with(|ch: char| {
                             ch < '\u{0020}' && !matches!(ch, '\t' | '\n' | '\r')
                         }) {
+                            continue;
+                        }
+                        if let Some((cx, cy, rx, ry)) =
+                            crate::renderer::legacy_hft_bullet_geometry(cluster, style)
+                        {
+                            let left = bbox.x + char_positions[*char_idx] + cx + f64::from(dx);
+                            let top = y + cy + f64::from(dy);
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (left - rx) as f32,
+                                    (top - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
                             continue;
                         }
                         if is_middle_dot(cluster) {
@@ -518,30 +569,32 @@ impl SkiaTextReplay<'_> {
                     }
                 };
 
-                if style.shadow_type > 0 {
-                    draw_text_pass(
-                        colorref_to_skia(style.shadow_color, 1.0),
-                        0.0,
-                        style.shadow_offset_x as f32,
-                        style.shadow_offset_y as f32,
-                    );
+                if !suppress_glyphs {
+                    if style.shadow_type > 0 {
+                        draw_text_pass(
+                            colorref_to_skia(style.shadow_color, 1.0),
+                            0.0,
+                            style.shadow_offset_x as f32,
+                            style.shadow_offset_y as f32,
+                        );
+                    }
+                    if style.outline_type > 0 {
+                        draw_text_pass(
+                            colorref_to_skia(style.color, 1.0),
+                            (font_size * 0.08).max(0.8),
+                            0.0,
+                            0.0,
+                        );
+                    }
+                    if style.emboss {
+                        draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, 1.0, 1.0);
+                    } else if style.engrave {
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
+                        draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
+                    }
+                    draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
                 }
-                if style.outline_type > 0 {
-                    draw_text_pass(
-                        colorref_to_skia(style.color, 1.0),
-                        (font_size * 0.08).max(0.8),
-                        0.0,
-                        0.0,
-                    );
-                }
-                if style.emboss {
-                    draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
-                    draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, 1.0, 1.0);
-                } else if style.engrave {
-                    draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
-                    draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
-                }
-                draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
 
                 if !matches!(style.underline, UnderlineType::None) && text_width > 0.0 {
                     // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
@@ -810,16 +863,18 @@ impl SkiaTextReplay<'_> {
             is_vertical,
             char_overlap,
         );
-        draw_text_marks(
-            text,
-            bbox,
-            style,
-            baseline,
-            rotation,
-            is_vertical,
-            is_marker,
-            is_para_end,
-            is_line_break_end,
-        );
+        if render_marks {
+            draw_text_marks(
+                text,
+                bbox,
+                style,
+                baseline,
+                rotation,
+                is_vertical,
+                is_marker,
+                is_para_end,
+                is_line_break_end,
+            );
+        }
     }
 }

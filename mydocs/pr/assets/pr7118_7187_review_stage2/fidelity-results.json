@@ -1,0 +1,80 @@
+[
+  {
+    "key": "pr7118",
+    "source": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+    "reference_pdf": "pdf/synth_no_ls_square_wrap-2020.pdf",
+    "first_index": 0,
+    "last_index": 2,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  },
+  {
+    "key": "pr7184",
+    "source": "samples/table_giant_cell_overfill.hwpx",
+    "reference_pdf": "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+    "first_index": 0,
+    "last_index": 47,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  },
+  {
+    "key": "nested3637",
+    "source": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+    "reference_pdf": "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+    "first_index": 0,
+    "last_index": 30,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  },
+  {
+    "key": "pr7183",
+    "source": "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp",
+    "reference_pdf": "pdf/rowbreak_cell_picture_only_paragraph-2020.pdf",
+    "first_index": 0,
+    "last_index": 3,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  },
+  {
+    "key": "frame2004",
+    "source": "samples/issue2004_cell_image_stack.hwp",
+    "reference_pdf": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+    "first_index": 0,
+    "last_index": 7,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  },
+  {
+    "key": "terminal42065",
+    "source": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "reference_pdf": "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+    "first_index": 0,
+    "last_index": 16,
+    "exit_code": 0,
+    "options": [
+      "--text-only",
+      "--export-all-svg",
+      "--layout-ledger"
+    ]
+  }
+]

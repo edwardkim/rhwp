@@ -1,0 +1,1660 @@
+{
+  "key": "76076-exact-input-hwp2024",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+  ],
+  "missing_pages": [],
+  "tsv": "output/pr-review/planet6897-20261004/stage23-76076-exact/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "b0e789c07e7b24598db83b1cfa8bd6743b0fdd1901db9e65e53e2b12892e4dc3",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-01.png",
+      "pdf_sha256": "63b9bb32893026db12b8925486a9bd37d719884f815584bf992cc2474021e399"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "c905d6153c992a320408f6a2da7cb186e2fb37f5c90adbe843bb0237b2aee619",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-02.png",
+      "pdf_sha256": "cda2be69fbba29d7f3e6a40bea45d1e6b0c075ccff31277b8e6069c32e5ae989"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "2af6dbb7e4fda5f481c6aab7087ea1de57aa9594f44a70068d24f38318fb90b8",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-03.png",
+      "pdf_sha256": "1a27cec7e9a21216ee5cc9b30509f1636caf94df2e3ed4757d13a14bb889fd93"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "2c18284ecf03353f9d9f146c9893e6780bc7511e6d6beee7762a4cea81044151",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-04.png",
+      "pdf_sha256": "919a6eaeec9f85cbb10da38f82206a2eb3da4366114a02da8b9bb9bb3c0c435f"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "ac60432afc84cd7ef813b6b2d3d7dba239ccb64e73286fb59745b57866269264",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-05.png",
+      "pdf_sha256": "6a92209c378968a6a3933185161648f55bf7ea66596f3c00c295ed250e339bce"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "f5541b04ac3fef2629fa87dcbeab255482a23932edde92bf77a166da32e31a3b",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-06.png",
+      "pdf_sha256": "0326bb232b1fc1696d0062011f368c4e62c73367bdd9c3199b7586b85aad2f77"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "c16ca8e3a27e9e8f4d3243d2d4baca82daa72dfe570a47c02ccad02f5b94fdc4",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-07.png",
+      "pdf_sha256": "f8aaaa52eadb240d5534f79790ba7e9dbb9d51332264741fa356ae714baf337d"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "0073ce71af85c9b3a645abf54335d65dda995a7a8730d9466f0e286b6f1bb469",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-08.png",
+      "pdf_sha256": "1521b4d8f3df90983b5d5a986fafff282cc03287c4b88b11d66112fe194275ae"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "8687c5151d058817ecb2ff129b888e55ede60e5790ccd1ace6833ad76bceab47",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-09.png",
+      "pdf_sha256": "3ab3a8cf4eeca8b2a4987d135d30bcd0a188cc3a3abe15ea2d58817a6bf0da06"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "a116c2330abad3180c223f993dce567777fbac60d1ce2e412d2ca28e24ea286e",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-10.png",
+      "pdf_sha256": "344946d04ae04d016598a0df30e2664a7a59116a3470612ae7d787e86b220c30"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "9e80cae2b56ec12c95b4497ca64d8d31b259d6945785f4760a72338f981cc8b0",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-11.png",
+      "pdf_sha256": "6484dccc4601e23747cd992977e2f6073ab4f687e64f5324a9b005d3af192f51"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "9c7e101a195e7ee92c0b012caa8deeaed1493eb05759c856112f3e6a48470aa2",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-12.png",
+      "pdf_sha256": "5bf56988509c153336092f4156a7441a99e2ea865552e79d78f4286c7b300ddd"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "c4409a9b18ddade0821bc0e6c35c28e7bf38e3b76004595f06b7071b67565c6b",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-13.png",
+      "pdf_sha256": "637bd79e41f9c49c61ad8dc8de27760623d863999fea62aca2206bf4c3367957"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "6f090f85231c134562dd8b2310be37912cd96216acbdeb62348cef6e8f559894",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-14.png",
+      "pdf_sha256": "12c934ab67edc578315ddf54eb8752464099bd23be1b284bff3f49a5ee0e38f7"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "e001812e288b17a33f1346f0fc50733f697b13a6cc7bd7ecf33d5320f9bdf573",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-15.png",
+      "pdf_sha256": "980e829f1ddd3d5a21f9a8ed4a43adb945cfc3204627a9abaea250ed735c8a67"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "d435500d9794cd73326fea32f0d8201ac02c8c159188837bd5adc073d928518a",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-16.png",
+      "pdf_sha256": "ce54a900e5b6e3d1e9ed2d418640960609e8bced254ce9f1d0bd6c2afdd30b4c"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "3927f8759379e70bbe65d2bbe6afa0622c8b599c4667b5b88359f07465438a2c",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-17.png",
+      "pdf_sha256": "98cce82f42434add0e7c6aad83c331797a7a9c1a7cc94af8448c46d4a274fe01"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "43f1c6860dda4cc4af5927d4a0414eb2eff8e457256e1b1565f0753e8c616e8f",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-18.png",
+      "pdf_sha256": "60d7cd14cae94e445e20bb729c568d55d41c304a15b0e5b29784fafa5289cd4a"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "e44f51cb66734cca1dff39d813261239ae68b3502f74976fdcca80e22878ea13",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-19.png",
+      "pdf_sha256": "8a215b61800a7bff2f63f4ad5f7065921d0ff1b4ac53c6583d4f4f1f1b60609c"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "5001a8592651af7ff564020e19a14ba1402c198de63238dda59ad71b5773b810",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-20.png",
+      "pdf_sha256": "40bf64656966cce0ea4e2eb1c8e2b365f3dc34651637a0ecbf3bc23ced11d521"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "080efebb6935f493a0edb41a27b0055503b328e76340207b8afc3b81f5a7f470",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-21.png",
+      "pdf_sha256": "40b23abbf901bb5b15fdfee5504840c7fba9a8c693267f4b3cbcb6c026605cc5"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "b4303e802e57fed757c161bac4a4639881326a91cd7baa1b970af3d13dbefeab",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-22.png",
+      "pdf_sha256": "556622228ca845731f9039c814c714e2a4af22fb9c3fd7722a9629438ca45ffa"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "f780235c7e432ae15473b9a7b98d95a0a895954d1ffda5de1527794cd79e44a6",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-23.png",
+      "pdf_sha256": "083b0ca634f69884e32e934306dd3a68afe0178047b3c90b58ac46e78b3d042b"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "fd8aa56e1154c6902f5a695e11686a454bdcb93d78637a60048dff7352385a86",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-24.png",
+      "pdf_sha256": "f4646ca30149547e48110342cff58998dccbe5c750cd77aeb5858313c0c7b770"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "ae68d4e6c1b80cf60bd6959f5a42ab2749b87b155df84b2cf185a017a4bf6406",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-25.png",
+      "pdf_sha256": "0af8c85f12af11ef5045d80de175980938f5391cbe8d82f9ade3b5d79d85e554"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "977f480b2664dc7441cc6d27596370486fd2e5eb81742a9bed5ee43c2b67b997",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-26.png",
+      "pdf_sha256": "723791e73f1ae47d09b190dc369d9ab76d33651b06105d158ee7fa88edbf6222"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "beb09729d028c3b5d1975decf06e3c074d5b5abf68b370ce1cfa7bd35004af6b",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-27.png",
+      "pdf_sha256": "bbbbc249c9470c23a852b256b18adfac56a95b40557e3802e00c2d730b064e1b"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "c2671987416973db822205eef4e2faee6f53df2d6b8579f29e9a185d75f20850",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-28.png",
+      "pdf_sha256": "4eb9208c5ff0e8aa0ec6bdd10f39a4e8acc1be6d6340bc11ebf6cd1133501baa"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "99317f904fcbe359fd31dbff20a0f1dcb5ecfc26c299b2976e66eb6fa83747c5",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-29.png",
+      "pdf_sha256": "43135fd5ae8cabb8892cc678c2dc50b6c120700708612a37a1a9349b39148d87"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "b0873e20dc743c3affac554a8e3efd267a8e55194fc9fbedeeda91de4c0659f2",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-30.png",
+      "pdf_sha256": "56ddbe30b0c5050aface3940b92d647d12d8927679765fabab0302fc91ca6fca"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "5aa7418d88943dc273adcafcb49c44ec7e590cc9bdd716e84f18f886df60a82c",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-31.png",
+      "pdf_sha256": "d90e04ba685f1d8c48185918299f798bcea5f489dce6828e6e4858df10e409fd"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "85c07536630e036f74c2e83cf4be015658f052c0c04c0461a743e5060faf64bf",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-32.png",
+      "pdf_sha256": "3f9d2bd04bcc75d31a8f9e2c8f14817240c77c31c72f725277484af0b9daf0a5"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "e7c12da64762eee4baacab0eed84107f4acc867c0ece5fff7c70327c20da84a9",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-33.png",
+      "pdf_sha256": "ee8664c3b3a981d6852b7379457430b441d761f67d60bfa7bbb0ccf530a35efe"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "96d7e11e9d2050b5ef752ee3ec232a8f96759b18d7a8b008eb4e17e45d5b2763",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-34.png",
+      "pdf_sha256": "3b72ea05956e54a7aa9faafd0441f0489c205f32268deedf728f2aec7ff6aa23"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "e5c9ab9af52356a62880d42c448e1f99085ea0adf0a66950b6721b89468ae652",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-35.png",
+      "pdf_sha256": "ee9a0ec3b5a2b8eeb918977cfec56d92ab8365cde900802448f6caa5c517645c"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "a0180641a8aebcaddd7141a2f1596be38398bd25cdffa1c835894eb81f4db1bc",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-36.png",
+      "pdf_sha256": "315e98ac2f0b4f9476b01e2b9ecdf68c02444bfd95b29cffd7d32e375a448e5d"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "80d30505860cbed71baa6356bef2ff03e6ed9fd106741bcae756495ac2a4eb4d",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-37.png",
+      "pdf_sha256": "72493696b91baf966f1b13e0f4b7f2e861600619886475e0b45197d2b7f947f2"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "d7df3ae76968bcd93013357693b0fa3496a283783a9739e25acee7a536466da8",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-38.png",
+      "pdf_sha256": "c5ea85b0224dd9603139bbdd7a8015a5d77f562ba6909e99c50b6105d157ebde"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "09d51437c7113425c3a3390371f8e6f5583b47e9f2a65274a52c666fc4138585",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-39.png",
+      "pdf_sha256": "69c0115ac1f2dacde1b578fa923e2e57fd6a2606c1ddcafc242e690c9706ea5c"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "c1b59474c7dc38c496fb770431390dba7be1d37530ba1653935ee8903de33234",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-40.png",
+      "pdf_sha256": "8057572af70328c06213ae4ba3b74a1e43b992814b2b1895c863dd22e2c3fd68"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "71f51a8d4dff691752fc52601e86fd9d7846ccdc3d015f0d1b5a5e08497f84fa",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-41.png",
+      "pdf_sha256": "f476585e0dd305941c660c1a4b2345fc17c612628eac8f4c04263bc919bc2390"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "b941aa874f30af71c2e32dbcdd84d0c5c231f440573b2f5dde45041f12d9e76d",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-42.png",
+      "pdf_sha256": "8adf257d2d511a9606481e9fda8362c9a70f610842da14e0cc31f4c08bfc4035"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "4c9b329007be268fec305dbfbe6b220e5fcfe7b258ff4dbb10c4cfbbad8fa96f",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-43.png",
+      "pdf_sha256": "64fa493fa410f5cb1ece55ffedf477cd2ed625f6ad62d2c9c3fb5d22014978ca"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "475a043e4d97aab9da05b60e9311c5c64d39a8e340ac150414564d9639b53e8e",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-44.png",
+      "pdf_sha256": "a316e9e04b8a8faf3c6c698d898261e9b2ca9b636aa799d537a5f8186d1b679a"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "829ca03819027869248a335d9dc9dc41c76386a7a2d5e0c5ba914b3e99e08d6e",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-45.png",
+      "pdf_sha256": "d493710928c37c3aec3c4e48ff15e472a6b6fd750251529c25a831500e238b85"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "f7b407b362a787f1aa844e43f83060f63e5ea3c23a7de8e7819bbe9428568053",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-46.png",
+      "pdf_sha256": "c62b99cef9d37cf2b31ab3dc18e1b125bf214ab09813c0f2dff0899b488cef09"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "319e3cf6e32779f4c04f538fb68efb686b681c83d06cd2ba792d05a568a14117",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-47.png",
+      "pdf_sha256": "c560f1a5651fa41af8b7364cc7e4e034bf85bff7b617fcf704889ac3db8fc9ee"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "ebbdfd4b55698a78928ec417dae2e5264cecfa783c045c7b53daf02e3fbe3a29",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-48.png",
+      "pdf_sha256": "2f8ab40f0a75cdee4e653aab6f86fa28798954d4b56154766d9d1e312c8b0098"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "64436c1269ed94c9c4098b964c15d153d2f83b014021c593ff3eee062b7f9752",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-49.png",
+      "pdf_sha256": "a7e9b110ba1a56205051459c20aab3dcfb98b5844a1c4cb536018394c97641f7"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "faa81a01fffc3c74896f0a30c25817d6a6fd22872307305b5404fca6e41124ba",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-50.png",
+      "pdf_sha256": "1fbf9bffc5565226de3f4bc04c663e14e05d6557ec06d5221776836ccca407e6"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "815dbcfef666ab38c83620207ea557fc3447b1b53c4db5e5c90de0c8ecde7dae",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-51.png",
+      "pdf_sha256": "0c5d5c41ae4d83f61097e807c8b9e8e2f2fe7636220f0efb11390c5b8955f6cd"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "01bef8a9dc0856b6fa8c9dd132bfedaa53aec0b49ac4ee73ee884597af2525ad",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-52.png",
+      "pdf_sha256": "0d16fbe421a407f04f790b5a4b844a18fbb7a461444d10415f5bfed85969d096"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "88dcb7db319403cfcb109457e70ce8aea46580b8d471daf68b4f6dc7e0daa6a2",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-53.png",
+      "pdf_sha256": "976199fc1e04177c6282a517e7efac55881e3479be84a2eced9c39902a319239"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "27ba4ce2c749cf24c5066ebfe034bc93c06b0c03d47cf4fe89e3059bf99bed83",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-54.png",
+      "pdf_sha256": "8ae18a7c845ad0f0468004106a14a36eb7b11397a90a5c1c5f9267272602ac2a"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "fe1906191dca22114be1b67fb95dd73fa2eb9b0a5ebbac129750e039152aed4d",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-55.png",
+      "pdf_sha256": "3eb2df1cd5c0792f8b86e9fd2a4c53d75f04f892704779704b585ec39f25364c"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "27f5a827f82dab5d70a659c0c967499b7a1ec6789ad1344926f0ccfe5f73d41e",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-56.png",
+      "pdf_sha256": "fa7305ff6259509f17a5dd732a8c8dae4189c8808260a5b95cc1682f8d63cc10"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "4d622b9db07048299785d8345c8e253660865c158208d0789045e2dd808bf9d9",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-57.png",
+      "pdf_sha256": "5e3105ed3f1e88cff2a321fe87f6819fb698d10489421082af158bc891e9b302"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "c153ccfb9da695ff0525b4cd20d40a193cd7ee850bb5ab2fc514c0068ef221ad",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-58.png",
+      "pdf_sha256": "a3a38b261cd473b4e4cff73401db83703cf1efb49c3ba7896b1dc205822e474b"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "6d619256aaae4ec104e8618a21f5d14f98003215592fbd2ec984eb75b42cf869",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-59.png",
+      "pdf_sha256": "5734b863f67241ca39997e441d3210aa4cf2e01ef335aadd8a6aa420a9db262e"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "ee6eb0b829b6a71b3f4424d71d8947e251e731a7e4e2a72bdc9a4d2d0b76d3a6",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-60.png",
+      "pdf_sha256": "fddacaa230704f92a3de93902500c1f8f21d963a48a9652e10410053b5702002"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "01814d4519b87132141233b0cabbcb2b96222c4e3e6fcf63dbe6d4a325066f38",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-61.png",
+      "pdf_sha256": "97c3c104b476ea7de370878cf6f056f0cf65841f128d8785a32cd35a92ce925b"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "8121c3158b8dc919ce95a875ae8fcb96978506ddfa7ef32714ee8f2460a52ec5",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-62.png",
+      "pdf_sha256": "8a8e50e68157c355149b5be448a1aacbe9918af4c9f617e355db71f764991d16"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "935b3ac7e9769694ae3298bba49d395aecd293e4fe177505c5bc0ac8bb6b64a1",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-63.png",
+      "pdf_sha256": "03010153a729804727774b4895a3ba18ecce0fa1aaca70ee7b850cb81add2ccf"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "1c633ee18ba5c28302ab495c12cf57d8154169e50cffe8e2f573ff9b52a51565",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-64.png",
+      "pdf_sha256": "42536d675987d069c56575bdaf6e1c23ad49079e4be11b417f67914a45ff195b"
+    },
+    {
+      "page": 65,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_065.png",
+      "rhwp_sha256": "95b5203cb3fdc4ea020625d9f644d016e83df6adb326cffaf5f125dbc31963e3",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-65.png",
+      "pdf_sha256": "771bcce914ce33ffea73843e21394e2cef4c5993409445403fc70e96a077b2fb"
+    },
+    {
+      "page": 66,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_066.png",
+      "rhwp_sha256": "9e804c3c7485de4c1750cb6b845b016fdb333c49e9105b2ace401a06f7f96f5a",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-66.png",
+      "pdf_sha256": "436751cf3a56caa0695374c06d0cf93ef60afc60b6a4bc7ee8d267fdf6b6b8d2"
+    },
+    {
+      "page": 67,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_067.png",
+      "rhwp_sha256": "b6d23faf8f3ee8b4c4b35626ec467410c6b918d7d4427221ea19eccd84c938b2",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-67.png",
+      "pdf_sha256": "1ba787f20a040decc3afa39096c1c03905ab8686b712942be6d9d39bb8b31528"
+    },
+    {
+      "page": 68,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_068.png",
+      "rhwp_sha256": "0d803c50ad54754f8ffd904dcfb161b4412b9f2baee5e83e32061d8e1eeab4c4",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-68.png",
+      "pdf_sha256": "0ed97dc83bce5da8cdfbb478321af864b665cb467df334ad88642c85f2ed76ab"
+    },
+    {
+      "page": 69,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_069.png",
+      "rhwp_sha256": "c7b1025141e643b22215d9bb216401670f4a573697b1d1e4130218d1fba69752",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-69.png",
+      "pdf_sha256": "6a52d47627b5807ad588f5278679c66cacebde455e92500d46feff10e23d1705"
+    },
+    {
+      "page": 70,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_070.png",
+      "rhwp_sha256": "73bc18d8430ec2bd890fac3b6b3fb2d0b88319c79d1cc2f2f27a07c6c042e505",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-70.png",
+      "pdf_sha256": "213bee55b61758670e63c7ef8763e1cc1bbf4b72bd9b08ea56044658bd653400"
+    },
+    {
+      "page": 71,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_071.png",
+      "rhwp_sha256": "a5259561497f2126b406c83eb71baa595baeae272fbc4d5acfdf6b15b196289a",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-71.png",
+      "pdf_sha256": "a99e64263be350c6742671438f027ba9a07c344ce34cf1b45a135b0d61bca0bd"
+    },
+    {
+      "page": 72,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_072.png",
+      "rhwp_sha256": "563d8d0ec53fa85663478f7f224a55a06cc840fdb5a91ad0d1dd57ea8104f549",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-72.png",
+      "pdf_sha256": "65780133d3a021ac33c5216b1b8f47fce5a923861dbc57f9016ffc15d705e730"
+    },
+    {
+      "page": 73,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_073.png",
+      "rhwp_sha256": "9f9f8daa96fb979de050edaf64a94f9b90e57a1fd357f2f67639bd8ee85fba4f",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-73.png",
+      "pdf_sha256": "6f2e958de96b927b968311367f3ac1a8e2089ca7e4a9948d863e3919d7abad28"
+    },
+    {
+      "page": 74,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_074.png",
+      "rhwp_sha256": "137fb90138353bee3afe9d1ee71a7cdc78ad1708bf5d03d3c50176cd2ee176a7",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-74.png",
+      "pdf_sha256": "0f9aeaf830ad4ef75fea8af2c214514d615fdf4e80abef5c96ee8318ae241211"
+    },
+    {
+      "page": 75,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_075.png",
+      "rhwp_sha256": "0808d9ee6defbf6e31eced34a703e47bd087b7da264b8402244d69ee3846340b",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-75.png",
+      "pdf_sha256": "cbb39f114782023936dca0a27a846b1409b7c7621bc899c7542a92804c62d84f"
+    },
+    {
+      "page": 76,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_076.png",
+      "rhwp_sha256": "c33e80470bf4fd1868a5fea9f236a068517f3bfd9dc939ca569105b32c8a79c0",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-76.png",
+      "pdf_sha256": "f7493e27da5054b1ca86b751978607e56a338ed378e9796ad53ee939bda39073"
+    },
+    {
+      "page": 77,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_077.png",
+      "rhwp_sha256": "ef13aa09e0b5fe93450469f192f2302280023d0196814c843dd4dd2cdffa4a95",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-77.png",
+      "pdf_sha256": "089093b8d4ba2f5166df401b4fbe9be50aad1e3c1ef9abb9aa4261e410e77813"
+    },
+    {
+      "page": 78,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_078.png",
+      "rhwp_sha256": "7bb51fac0a41c7168e4f553c28ec8d8d129e097c014980bb09b8867bbe298592",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-78.png",
+      "pdf_sha256": "a5052083b383df93315cf5cf785c6c53b0b7becaef1f7224ccc9fed545b2918e"
+    },
+    {
+      "page": 79,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_079.png",
+      "rhwp_sha256": "f6bc45489879cff6db741fbe2b3d40074746de6a802c6cba8887055e0d116e74",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-79.png",
+      "pdf_sha256": "76424527065b8d3aa2336c77bcfa9a57b2034a1ca0dc85c0685930e1e1a3f9bd"
+    },
+    {
+      "page": 80,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_080.png",
+      "rhwp_sha256": "73be33ee407d2e6ad188cc9249e3d367bbc051cbe0ff1307cb534537ab6e30cc",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-80.png",
+      "pdf_sha256": "1383efe0618db96f995929a3390938b3942e3f9d70e2dd554aff869a39a4a97f"
+    },
+    {
+      "page": 81,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_081.png",
+      "rhwp_sha256": "b203776d3b22f07dd38deb097fafa0a99ec03840a188682f771874c8759f6938",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-81.png",
+      "pdf_sha256": "ae8fe507b1a8fd41d753a80a43f0ce4a0fc1fe73350c2e968965deb90759a156"
+    },
+    {
+      "page": 82,
+      "rhwp_png": "output/pr-review/planet6897-20261004/stage22-nextest/76076-native/regulatory76076/rhwp_png/rhwp_082.png",
+      "rhwp_sha256": "52d55b5017e27e6a5126987b9086bd0d8199ccb4d50a29c78a805e3b4d1a0967",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage23-76076-exact/pdf_png/pdf-82.png",
+      "pdf_sha256": "0e4a6264f2b16d63a74611a300a0d423e9d90fef1dfe78101613c04592018490"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.42506,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48972,
+      "tolerant_content_match_percent": 97.42506
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.11717,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122694,
+      "tolerant_content_match_percent": 96.11717
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.8506,
+      "silhouette_boundary_reconciled_pixels": 9,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117056,
+      "tolerant_content_match_percent": 97.85829
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.15474,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78437,
+      "tolerant_content_match_percent": 99.15474
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.85705,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45472,
+      "tolerant_content_match_percent": 99.85705
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 91.83644,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 89581,
+      "tolerant_content_match_percent": 91.83644
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 67.71012,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 39548,
+      "tolerant_content_match_percent": 67.71012
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.15415,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 35160,
+      "tolerant_content_match_percent": 98.16553
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.62028,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 27107,
+      "tolerant_content_match_percent": 98.62028
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.63277,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4357,
+      "tolerant_content_match_percent": 99.63277
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.73632,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 10619,
+      "tolerant_content_match_percent": 99.73632
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.17795,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40057,
+      "tolerant_content_match_percent": 96.17795
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 78.06208,
+      "silhouette_boundary_reconciled_pixels": 9,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74998,
+      "tolerant_content_match_percent": 78.07408
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.41072,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40081,
+      "tolerant_content_match_percent": 98.41072
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 72.54853,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44453,
+      "tolerant_content_match_percent": 72.54853
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 74.81663,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60671,
+      "tolerant_content_match_percent": 74.82323
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 59.09683,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82930,
+      "tolerant_content_match_percent": 59.09683
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.62098,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110527,
+      "tolerant_content_match_percent": 95.62098
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.32785,
+      "silhouette_boundary_reconciled_pixels": 73,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103998,
+      "tolerant_content_match_percent": 98.39805
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 71.13219,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78856,
+      "tolerant_content_match_percent": 71.13219
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 51.56257,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43070,
+      "tolerant_content_match_percent": 51.56257
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 79.90978,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117714,
+      "tolerant_content_match_percent": 79.90978
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 26.15375,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80845,
+      "tolerant_content_match_percent": 26.15375
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.95468,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 30362,
+      "tolerant_content_match_percent": 97.96785
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.58775,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25916,
+      "tolerant_content_match_percent": 98.58775
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.63353,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4366,
+      "tolerant_content_match_percent": 99.63353
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72578,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 7658,
+      "tolerant_content_match_percent": 99.72578
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.68049,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 35166,
+      "tolerant_content_match_percent": 95.68049
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 79.48378,
+      "silhouette_boundary_reconciled_pixels": 28,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82291,
+      "tolerant_content_match_percent": 79.51781
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89242,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 23239,
+      "tolerant_content_match_percent": 99.89242
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 78.62064,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 59071,
+      "tolerant_content_match_percent": 78.62064
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 69.90352,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 65712,
+      "tolerant_content_match_percent": 69.90961
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 87.69301,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127326,
+      "tolerant_content_match_percent": 87.69301
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 58.82931,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 97652,
+      "tolerant_content_match_percent": 58.82931
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.04819,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110136,
+      "tolerant_content_match_percent": 97.04819
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 73.14333,
+      "silhouette_boundary_reconciled_pixels": 254,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118451,
+      "tolerant_content_match_percent": 73.35776
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.53749,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68548,
+      "tolerant_content_match_percent": 97.53749
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 90.18264,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 120399,
+      "tolerant_content_match_percent": 90.18264
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 18.97775,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 75246,
+      "tolerant_content_match_percent": 18.97775
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.21901,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 32510,
+      "tolerant_content_match_percent": 98.23131
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.58616,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25887,
+      "tolerant_content_match_percent": 98.58616
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.59393,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4679,
+      "tolerant_content_match_percent": 99.59393
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.70407,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 8786,
+      "tolerant_content_match_percent": 99.70407
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.1743,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 39862,
+      "tolerant_content_match_percent": 96.1743
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 79.94894,
+      "silhouette_boundary_reconciled_pixels": 412,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81472,
+      "tolerant_content_match_percent": 80.45463
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 87.5911,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 10017,
+      "tolerant_content_match_percent": 87.5911
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 86.92953,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45752,
+      "tolerant_content_match_percent": 86.92953
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 78.7459,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56455,
+      "tolerant_content_match_percent": 78.7459
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 68.58653,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63928,
+      "tolerant_content_match_percent": 68.59279
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 54.28599,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115201,
+      "tolerant_content_match_percent": 54.28599
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 42.55246,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 55515,
+      "tolerant_content_match_percent": 42.55246
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.51918,
+      "silhouette_boundary_reconciled_pixels": 18,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117386,
+      "tolerant_content_match_percent": 96.53451
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.75423,
+      "silhouette_boundary_reconciled_pixels": 10,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71281,
+      "tolerant_content_match_percent": 98.76826
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.38308,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29362,
+      "tolerant_content_match_percent": 96.38308
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 78.31529,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88846,
+      "tolerant_content_match_percent": 78.31529
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 16.58182,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 29858,
+      "tolerant_content_match_percent": 16.58182
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.92337,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 27978,
+      "tolerant_content_match_percent": 97.93767
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.58883,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25936,
+      "tolerant_content_match_percent": 98.58883
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.63445,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4377,
+      "tolerant_content_match_percent": 99.63445
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72653,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 7679,
+      "tolerant_content_match_percent": 99.72653
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.7486,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 35847,
+      "tolerant_content_match_percent": 95.7486
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 63.83903,
+      "silhouette_boundary_reconciled_pixels": 793,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 72982,
+      "tolerant_content_match_percent": 64.9256
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.89457,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 37408,
+      "tolerant_content_match_percent": 92.89457
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 76.17874,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49078,
+      "tolerant_content_match_percent": 76.17874
+    },
+    {
+      "page": 65,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 66.4848,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61399,
+      "tolerant_content_match_percent": 66.49131
+    },
+    {
+      "page": 66,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 63.09465,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78723,
+      "tolerant_content_match_percent": 63.09465
+    },
+    {
+      "page": 67,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.06082,
+      "silhouette_boundary_reconciled_pixels": 144,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114594,
+      "tolerant_content_match_percent": 95.18648
+    },
+    {
+      "page": 68,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.75764,
+      "silhouette_boundary_reconciled_pixels": 10,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71477,
+      "tolerant_content_match_percent": 98.77163
+    },
+    {
+      "page": 69,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.34329,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51514,
+      "tolerant_content_match_percent": 94.34329
+    },
+    {
+      "page": 70,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 82.36861,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90475,
+      "tolerant_content_match_percent": 82.36861
+    },
+    {
+      "page": 71,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 29.03816,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 23507,
+      "tolerant_content_match_percent": 29.03816
+    },
+    {
+      "page": 72,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.68946,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26444,
+      "tolerant_content_match_percent": 97.70458
+    },
+    {
+      "page": 73,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.58682,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 25899,
+      "tolerant_content_match_percent": 98.58682
+    },
+    {
+      "page": 74,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.63244,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4353,
+      "tolerant_content_match_percent": 99.63244
+    },
+    {
+      "page": 75,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.72603,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 7665,
+      "tolerant_content_match_percent": 99.72603
+    },
+    {
+      "page": 76,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.91473,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 37574,
+      "tolerant_content_match_percent": 95.91473
+    },
+    {
+      "page": 77,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 68.6391,
+      "silhouette_boundary_reconciled_pixels": 188,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82960,
+      "tolerant_content_match_percent": 68.86572
+    },
+    {
+      "page": 78,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 88.64262,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51614,
+      "tolerant_content_match_percent": 88.64262
+    },
+    {
+      "page": 79,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 77.36042,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 59714,
+      "tolerant_content_match_percent": 77.36042
+    },
+    {
+      "page": 80,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 68.4232,
+      "silhouette_boundary_reconciled_pixels": 4,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63629,
+      "tolerant_content_match_percent": 68.42949
+    },
+    {
+      "page": 81,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 84.09774,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 106532,
+      "tolerant_content_match_percent": 84.09774
+    },
+    {
+      "page": 82,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 75.63947,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 27171,
+      "tolerant_content_match_percent": 75.63947
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 67.71012
+      },
+      {
+        "page": 13,
+        "tolerant_content_match_percent": 78.07408
+      },
+      {
+        "page": 15,
+        "tolerant_content_match_percent": 72.54853
+      },
+      {
+        "page": 16,
+        "tolerant_content_match_percent": 74.82323
+      },
+      {
+        "page": 17,
+        "tolerant_content_match_percent": 59.09683
+      },
+      {
+        "page": 20,
+        "tolerant_content_match_percent": 71.13219
+      },
+      {
+        "page": 21,
+        "tolerant_content_match_percent": 51.56257
+      },
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 79.90978
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.15375
+      },
+      {
+        "page": 29,
+        "tolerant_content_match_percent": 79.51781
+      },
+      {
+        "page": 31,
+        "tolerant_content_match_percent": 78.62064
+      },
+      {
+        "page": 32,
+        "tolerant_content_match_percent": 69.90961
+      },
+      {
+        "page": 33,
+        "tolerant_content_match_percent": 87.69301
+      },
+      {
+        "page": 34,
+        "tolerant_content_match_percent": 58.82931
+      },
+      {
+        "page": 36,
+        "tolerant_content_match_percent": 73.35776
+      },
+      {
+        "page": 39,
+        "tolerant_content_match_percent": 18.97775
+      },
+      {
+        "page": 45,
+        "tolerant_content_match_percent": 80.45463
+      },
+      {
+        "page": 46,
+        "tolerant_content_match_percent": 87.5911
+      },
+      {
+        "page": 47,
+        "tolerant_content_match_percent": 86.92953
+      },
+      {
+        "page": 48,
+        "tolerant_content_match_percent": 78.7459
+      },
+      {
+        "page": 49,
+        "tolerant_content_match_percent": 68.59279
+      },
+      {
+        "page": 50,
+        "tolerant_content_match_percent": 54.28599
+      },
+      {
+        "page": 51,
+        "tolerant_content_match_percent": 42.55246
+      },
+      {
+        "page": 55,
+        "tolerant_content_match_percent": 78.31529
+      },
+      {
+        "page": 56,
+        "tolerant_content_match_percent": 16.58182
+      },
+      {
+        "page": 62,
+        "tolerant_content_match_percent": 64.9256
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 76.17874
+      },
+      {
+        "page": 65,
+        "tolerant_content_match_percent": 66.49131
+      },
+      {
+        "page": 66,
+        "tolerant_content_match_percent": 63.09465
+      },
+      {
+        "page": 70,
+        "tolerant_content_match_percent": 82.36861
+      },
+      {
+        "page": 71,
+        "tolerant_content_match_percent": 29.03816
+      },
+      {
+        "page": 77,
+        "tolerant_content_match_percent": 68.86572
+      },
+      {
+        "page": 78,
+        "tolerant_content_match_percent": 88.64262
+      },
+      {
+        "page": 79,
+        "tolerant_content_match_percent": 77.36042
+      },
+      {
+        "page": 80,
+        "tolerant_content_match_percent": 68.42949
+      },
+      {
+        "page": 81,
+        "tolerant_content_match_percent": 84.09774
+      },
+      {
+        "page": 82,
+        "tolerant_content_match_percent": 75.63947
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "oracle_provenance": {
+    "input": "samples/76076_regulatory_analysis.hwp",
+    "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+    "last_saved_product": "hancom-office-2024",
+    "job_id": "1a5ed915-52cc-4a77-8b36-96fb1199043b",
+    "engine": "2024",
+    "pdf": "pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf",
+    "pdf_sha256": "515133a656a78a9e77db3429f324b0a1f84b658b7a07bc846aa360533cf74072",
+    "previous_wrong_pair_excluded": true
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "contentBundleSha256": "3ba1d6c14b7514143bff42d5e1c690b4d87f41a09ef04424395f3327f772fcaa",
+  "contentBundleSha256": "dd32aa5835c26518e80ae71f01b1466b588fa20bbcf5b739bd53d8a500adbd36",
   "generatedBy": {
     "path": "scripts/font_rule_projection_gen.mjs",
     "sha256": "2070ed0d1823b54e94d89f64555fe88debeb8a16cad7342f3ab1ffba5d0d54fd"
@@ -8,24 +8,24 @@
   "kind": "font-rule-backend-projection-manifest",
   "outputs": [
     {
-      "contentSha256": "82214cae7f427b8216b552eed715d9656cd0351fc391cfe4fe5910862eff702d",
-      "inputSha256": "aa8e2c199e4272e5c12b136d991670aad1c6400197835bed0d95b92b800364f0",
+      "contentSha256": "ba219ad45323b6740c76872e5f49c1c1b1b86902ec77a7aa80186352229f1cfd",
+      "inputSha256": "807590ecc4fba3102fde4a2236ee091fac91b5a19851b76d61a61014a5ee4086",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_name.rs",
       "projectionId": "rust-layout-name",
-      "projectionSha256": "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee",
+      "projectionSha256": "b619cf7584628d61d930696b1b9a8a6c9c08301b1343463cae054b7dc5c0f142",
       "ruleCount": 171
     },
     {
-      "contentSha256": "951b6fcd015f3aa1817a40dea509be125f43d0bc2342618a8acc5e2e0e7d2a64",
-      "inputSha256": "355fde530a2f7d40b539ab534c52251bf6697a5632136bee416842a19f2230dd",
+      "contentSha256": "b71c36d187013ef8f5f486ebc2760e300afe2388a2433acf27f9873310b57be7",
+      "inputSha256": "e6509d5dcdcec0e412acb1773ca9f510ac4ca8a034f0e6e1556be166f32e673a",
       "language": "rust",
       "ownership": "generated-whole-file",
       "path": "src/renderer/font_rule_projections/layout_metric.rs",
       "projectionId": "rust-layout-metric",
-      "projectionSha256": "c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2",
-      "ruleCount": 67
+      "projectionSha256": "10448dda2d70a29dba5346245af09d7e308262e94486e9a3da046b183921c44c",
+      "ruleCount": 68
     },
     {
       "contentSha256": "7ef40df25b56b34840b095695f4b53ad140f18e90884a7c3cc25451a711af4d1",
@@ -38,13 +38,13 @@
       "ruleCount": 281
     },
     {
-      "contentSha256": "7b97c301f127301834b8765b179da5de397b9425595bd992fe58b7c1264873e5",
-      "inputSha256": "dd4604d3f12377ce8deab730d246df72e2e19e607ad11ad8973671698873873b",
+      "contentSha256": "0b96600917c7e4b78e55a77c6904c69f70cfdd0067c00d2b54a58db6887d070e",
+      "inputSha256": "6148c568b05fea9ec317759bfc7a19762f93eded557c5b5af01efbb7057ed266",
       "language": "typescript",
       "ownership": "generated-whole-file",
       "path": "rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts",
       "projectionId": "canvas2d-webfont",
-      "projectionSha256": "730cab042d68ffb019d5867102ee8b2b8e5be41c48170ca5fc75422005e3fbee",
+      "projectionSha256": "b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245",
       "ruleCount": 153
     },
     {
@@ -58,13 +58,13 @@
       "ruleCount": 158
     }
   ],
-  "projectionBundleSha256": "090b4403832a739b7e2928fdc83741126a5cb7e05b4d3ae3fc8be17833e863a6",
+  "projectionBundleSha256": "d1e490ae03731c2be8163cc7f966d400df6b06683e2158a2fb168ec0ee301acb",
   "registry": {
-    "activeRuleCount": 830,
+    "activeRuleCount": 831,
     "path": "assets/font-rules/font_rule_registry_v2.json",
-    "retiredRuleCount": 0,
-    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
-    "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    "retiredRuleCount": 2,
+    "rulesSha256": "837b77ca5f77164eff7913fcab46c8dd4bbe5a78bf7b77a546cbf3c31d1b50c0",
+    "sha256": "7f3147e68865b4e667230abd6049fb548945848b3360f14ef82e567bb4d1555c"
   },
   "schema": {
     "path": "assets/font-rules/font_rule_projection_manifest.schema.json",
@@ -73,15 +73,15 @@
   "schemaVersion": "2.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 830,
+    "activeRuleCount": 831,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 153,
       "canvaskit-sfnt": 158,
-      "rust-layout-metric": 67,
+      "rust-layout-metric": 68,
       "rust-layout-name": 171
     },
     "outputCount": 5,
-    "retiredRuleCount": 0
+    "retiredRuleCount": 2
   }
 }

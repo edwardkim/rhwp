@@ -605,7 +605,7 @@ fn issue_4969_q2_d5_n1_product_no_lineseg_uses_one_common_run_without_nominal_du
     let text_bbox = ops
         .iter()
         .find_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == PRODUCT_TEXT => Some(*bbox),
+            PaintOp::TextRun { bbox, run, .. } if run.text == PRODUCT_TEXT => Some(*bbox),
             _ => None,
         })
         .expect("TextRun fallback");

@@ -19,7 +19,9 @@ pub struct PageLayerTree {
 }
 
 impl PageLayerTree {
-    pub fn new(page_width: f64, page_height: f64, root: LayerNode) -> Self {
+    pub fn new(page_width: f64, page_height: f64, mut root: LayerNode) -> Self {
+        let mut next_text_source_id = 0;
+        bind_text_run_sources(&mut root, &mut next_text_source_id);
         let text_sources = TextSourceTable::from_layer_node(&root);
         Self {
             page_width,
@@ -35,9 +37,11 @@ impl PageLayerTree {
     pub fn with_profile(
         page_width: f64,
         page_height: f64,
-        root: LayerNode,
+        mut root: LayerNode,
         profile: RenderProfile,
     ) -> Self {
+        let mut next_text_source_id = 0;
+        bind_text_run_sources(&mut root, &mut next_text_source_id);
         let text_sources = TextSourceTable::from_layer_node(&root);
         Self {
             page_width,
@@ -89,6 +93,18 @@ pub struct TextSourceSpan {
     pub stable_source_key: Option<String>,
 }
 
+impl TextSourceSpan {
+    /// Binds one text-run fallback to its canonical source-table identity.
+    pub fn for_text_run(id: u32, run: &TextRunNode) -> Self {
+        Self {
+            id: TextSourceId(id),
+            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
+            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
+            stable_source_key: stable_text_source_key(run),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextSourceEntry {
     pub id: TextSourceId,
@@ -97,6 +113,22 @@ pub struct TextSourceEntry {
     pub utf8_range: TextSourceRange,
     pub utf16_range: TextSourceRange,
     pub annotations: Vec<TextSourceAnnotation>,
+}
+
+impl TextSourceEntry {
+    pub(crate) fn matches_text_run(&self, source: &TextSourceSpan, run: &TextRunNode) -> bool {
+        let utf8_range = TextSourceRange::new(0, run.text.len() as u32);
+        let utf16_range = TextSourceRange::new(0, run.text.encode_utf16().count() as u32);
+        self.id == source.id
+            && self.utf8_range == source.utf8_range
+            && self.utf16_range == source.utf16_range
+            && self.stable_source_key == source.stable_source_key
+            && self.stable_source_key == stable_text_source_key(run)
+            && self.text == run.text
+            && self.utf8_range == utf8_range
+            && self.utf16_range == utf16_range
+            && self.annotations == text_source_annotations(run, utf8_range.end, utf16_range.end)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -144,13 +176,15 @@ impl TextSourceTable {
             }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
-                    if let PaintOp::TextRun { run, .. } = op {
-                        let id = TextSourceId(self.entries.len() as u32);
+                    if let PaintOp::TextRun { run, source, .. } = op {
+                        let source = source.clone().unwrap_or_else(|| {
+                            TextSourceSpan::for_text_run(self.entries.len() as u32, run)
+                        });
                         let utf8_range = TextSourceRange::new(0, run.text.len() as u32);
                         let utf16_range =
                             TextSourceRange::new(0, run.text.encode_utf16().count() as u32);
                         self.entries.push(TextSourceEntry {
-                            id,
+                            id: source.id,
                             stable_source_key: stable_text_source_key(run),
                             text: run.text.clone(),
                             utf8_range,
@@ -168,7 +202,67 @@ impl TextSourceTable {
     }
 }
 
-fn stable_text_source_key(run: &TextRunNode) -> Option<String> {
+pub(crate) fn bind_text_run_sources(node: &mut LayerNode, next_id: &mut u32) {
+    match &mut node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for child in children {
+                bind_text_run_sources(child, next_id);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => bind_text_run_sources(child, next_id),
+        LayerNodeKind::Leaf { ops } => {
+            for op in &mut *ops {
+                if let PaintOp::TextRun { run, source, .. } = op {
+                    if source.is_none() {
+                        *source = Some(TextSourceSpan::for_text_run(*next_id, run));
+                    }
+                    if let Some(source) = source {
+                        *next_id = (*next_id).max(source.id.0.saturating_add(1));
+                    }
+                }
+            }
+            let mut active_fallback = None;
+            for op in &mut *ops {
+                match op {
+                    PaintOp::TextRun {
+                        bbox,
+                        run,
+                        source: Some(source),
+                    } => active_fallback = Some((*bbox, run.clone(), source.clone())),
+                    PaintOp::CharOverlap { bbox, run, source }
+                    | PaintOp::TextControlMark { bbox, run, source }
+                    | PaintOp::TabLeader { bbox, run, source }
+                    | PaintOp::TextDecoration {
+                        bbox, run, source, ..
+                    } => {
+                        if source.is_none()
+                            && active_fallback.as_ref().is_some_and(
+                                |(fallback_bbox, fallback_run, _)| {
+                                    same_bounds(*fallback_bbox, *bbox)
+                                        && fallback_run.as_ref() == run.as_ref()
+                                },
+                            )
+                        {
+                            *source = active_fallback
+                                .as_ref()
+                                .map(|(_, _, source)| source.clone());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
+
+fn same_bounds(left: BoundingBox, right: BoundingBox) -> bool {
+    left.x == right.x
+        && left.y == right.y
+        && left.width == right.width
+        && left.height == right.height
+}
+
+pub(crate) fn stable_text_source_key(run: &TextRunNode) -> Option<String> {
     let section = run.section_index?;
     let para = run.para_index?;
     let char_start = run.char_start.unwrap_or(0);

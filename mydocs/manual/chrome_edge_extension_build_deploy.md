@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-01
+last_verified: 2026-09-27
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -15,7 +15,7 @@ last_verified: 2026-09-01
 
 | 항목 | 요구사항 |
 |------|---------|
-| Node.js | v20 이상 |
+| Node.js | v22.12 이상 (잠긴 Puppeteer의 최소 버전) |
 | npm | v10 이상 |
 | WASM 빌드 | `pkg/` 폴더에 WASM 빌드 완료 상태 |
 | 웹폰트 | `assets/fonts/`에 canonical WOFF2 36개 존재 |
@@ -169,7 +169,7 @@ npm --prefix rhwp-chrome run test:e2e:smoke
 - 실행별 임시 Chrome profile·download 디렉터리 생성과 종료 후 정리
 
 사용자 Chrome profile, Web Store 설치 또는 외부 네트워크는 사용하지 않는다. 설정·다운로드 수명주기
-상세 E2E는 #3513, CI 선택 실행과 브라우저 cache는 #3515가 담당한다. flake 확인은 build를 한 번만
+상세 E2E와 배포 후보 선택 실행은 아래 3.8~3.9를 따른다. flake 확인은 build를 한 번만
 수행한 뒤 실행별 새 profile로 smoke를 반복한다. 명령은 실제 Chrome 실행 전에 탭 예산 계약 테스트도
 실행해, 끝나지 않는 surface가 있어도 예상 밖 page target만으로 즉시 실패하는지 확인한다.
 
@@ -200,6 +200,7 @@ directory를 사용해 다음 계약을 검증한다.
 | URL은 `.hwp`, 최종 filename/MIME은 XLSX | 파일 저장, rhwp 탭 0 |
 | 확정 `.hwp` | 파일 저장, 해당 download의 rhwp 탭 1 |
 | extensionless URL + HWP MIME/body | terminal 뒤 파일 저장, 해당 download의 rhwp 탭 1 |
+| 최초 추적 저장 대조군/지연군 각 3회 (#6988) | 실제 complete 이벤트 뒤 저장을 재개해도 ID별 탭 1, 원본 바이트 보존 |
 
 E2E는 CDP `Browser.downloadWillBegin`/`Browser.downloadProgress`, 저장 파일의 존재·크기와
 `chrome.downloads.search()`의 완료된 download id를 교차 확인한다. 사용자 Chrome profile과 외부
@@ -217,7 +218,108 @@ RHWP_EXTENSION_DOWNLOAD_CASE=misleading-hwp-url \
 timeout이나 retry로 제품 실패를 숨기지 말고, 특정 사례 단독 실행과 전체 순차 실행을 비교해 fixture tab
 활성화·정리 같은 하네스 문제를 제품 판정과 분리한다.
 
----
+#6988 경합 사례의 id는 `initial-state-control-1`~`3`, `initial-state-delayed-1`~`3`이다.
+`samples/re-font-dotum-empty-hancom.hwp`를 HWP URL/MIME과 확장자 없는 최종 filename으로 내려준다.
+테스트는 worker의 최초 `storage.session.set`만 보류하며 다운로드와 filename/complete 이벤트는
+Chrome이 발생시킨다. 실제 complete 수신 후 저장을 재개하고 1.5초 동안 ID당 탭이 하나임을 확인한다.
+이는 지연을 주입한 회귀 검증이며 자연 발생 빈도나 worker suspend/resume을 보증하지 않는다.
+
+### 3.8 설정 수명주기와 다운로드 탭 불변식 (#3513)
+
+```bash
+npm --prefix rhwp-chrome run test:e2e:lifecycle
+```
+
+확장을 빌드하고 탭 감시 계약을 검사한 뒤 실제 options UI에서 값을 저장한다. 주 assertion은
+표시된 OFF 상태와 생성된 viewer 탭 0/1개이며, `chrome.storage` 조회는 실패 진단에만 쓴다.
+새 프로필을 사용하는 10개 시나리오는 다음과 같다.
+
+| 전환 | 검사 |
+| --- | --- |
+| OFF 저장 → options 재진입 / worker 종료 / 같은 profile 재시작 | OFF 표시 유지, 추가 탭 0 |
+| OFF / ON → 새 HWP, HWPX 다운로드 | 완료 이벤트와 저장 바이트 확인, viewer 각각 0 / 1 |
+| worker 종료 확인 → 새 HWP, HWPX 다운로드 | 다른 worker target으로 재기동, viewer 정확히 1 |
+| 확장 없이 HWP/HWPX 다운로드 → 확장 시작 → ON 저장 | `chrome://downloads`에서 과거 기록 보존 확인, viewer 0 |
+
+HWP는 `samples/hwp3-pagedef-1915.hwp`, HWPX는 `samples/hwpx_sample2.hwpx`를 사용한다.
+실행마다 고유 파일명과 loopback 서버를 사용하고 단계 timeout은 30초, 관찰 quiet window는 1.5초다.
+잠깐 생겼다가 닫힌 탭도 생성 이력에 포함하며 두 번째 탭은 진행 중 작업을 즉시 실패시킨다.
+worker를 깨울 수 있는 페이지 이동을 먼저 마친 뒤 worker를 종료하므로, 이후 다운로드가 재기동을
+일으켰는지 구분한다. 실제 Web Store 업데이트·계정 동기화·OS 인쇄 UI는 이 검사에 포함하지 않는다.
+
+```bash
+# 한 번 빌드한 dist에서 각 시나리오를 10회 반복한다. 자동 retry는 없다.
+RHWP_EXTENSION_LIFECYCLE_REPEAT=10 node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 실패한 사례만 조사할 때 사용한다.
+RHWP_EXTENSION_LIFECYCLE_CASE=wake-download-hwpx node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 정상 대조군과 방어 제거본을 비교한다. source가 아닌 임시 복사본에서만 변경한다.
+node rhwp-chrome/e2e/lifecycle-mutations.mjs
+```
+
+mutation 검증은 중복 방어 제거 시 실제 Chrome에서 viewer 2개를 검출한다. freshness 제거는 기존
+Node 상태 계약에서 검출한다. 완료된 과거 Chrome 다운로드가 `onCreated`를 다시 발생시키는 것은
+아니므로, 과거 기록 E2E만으로 freshness 방어의 검출력을 입증했다고 보고하지 않는다.
+
+### 3.9 배포 후보 선택 실행과 결과 보고 (#3515)
+
+개발자와 에이전트가 필요할 때 같은 명령을 사용한다. PR/devel/main/tag의 자동 E2E나
+필수 병합 게이트에 연결하지 않으며 npm/editor 검사도 호출하지 않는다. 기존 CI는 기존 정책대로
+동작한다. 이 검사는 배포 전 수동 확인을 보조하며, 성공을 배포 승인으로 사용하지 않는다.
+
+먼저 잠긴 도구 의존성 및 Chrome for Testing을 설치한다.
+
+```bash
+npm --prefix rhwp-chrome ci --no-audit
+# 설치 시 PUPPETEER_SKIP_DOWNLOAD를 설정했다면 브라우저를 별도로 설치한다.
+(cd rhwp-chrome && npx puppeteer browsers install chrome)
+```
+
+이 매뉴얼의 빌드 절차로 준비한 폴더 또는 배포 후보 ZIP을 별도 폴더에 압축 해제해 지정한다.
+`manifest.json`이 지정 폴더 바로 아래에 있어야 한다. 실행기는 후보를 다시 빌드하지 않는다.
+
+```bash
+npm --prefix rhwp-chrome run test:e2e -- --dist /absolute/path/to/extension-candidate
+# 결과 위치를 직접 정할 때는 아직 존재하지 않는 새 디렉터리를 지정한다.
+npm --prefix rhwp-chrome run test:e2e -- \
+  --dist /absolute/path/to/extension-candidate \
+  --output /absolute/path/to/new-e2e-report
+```
+
+`--dist`는 필수다. 지정 폴더의 smoke → download → lifecycle 전체를 한 번씩 실행하며 재시도하지
+않는다. 특정 case/repeat 환경 변수가 남아 있으면 전체 검증으로 오인하지 않도록 실패한다.
+하나라도 실패하면 뒤 suite는 `not-run`으로 기록한다. 브라우저 suite 전체 예산은 220초이며
+시간 초과는 실패다. 후보 안의 symlink·특수 파일, 필수 파일 누락도 실행 전에 거부한다.
+
+기본 결과 위치는 `output/chrome-extension-e2e/run-*/`이다. 마지막 stdout의 JSON이 결과 경로를
+알려준다. 성공 exit code는 0, 검사 실패·환경/입력 오류는 1이다. 인자 오류나 기존 결과 폴더
+재사용처럼 보고서를 만들 수 없는 오류는 stderr를 확인한다.
+
+| 결과 | 내용 |
+| --- | --- |
+| `result.json` | 전체 `pass/fail/error`, suite별 `pass/fail/not-run`, exit code·timeout·실행 시각 |
+| `candidate` | 버전, 상대 경로별 SHA-256 목록과 목록 전체 SHA-256; 검사 전후 동일 여부 |
+| `environment` | Node/OS/아키텍처, Puppeteer/Chrome 버전·실행 파일, 도구 checkout SHA·변경 여부 |
+| `*.log`, 실패 시 `*.json`·`*.png` | suite 로그, 단계·worker·download·console 진단과 확장 화면 |
+
+도구 checkout SHA는 외부 후보를 빌드한 SHA가 아니다. 후보의 출처·빌드 SHA는 릴리즈 기록에서
+별도로 연결하고, 이 보고서의 파일 해시로 실제 검사한 후보를 식별한다. 디렉터리 해시는 ZIP
+바이트 해시와 다르다. 후보가 검사 도중 바뀌면 결과를 `error`로 끝내고 새 실행을 요구한다.
+결과 폴더는 후보 바깥에만 만들며 이전 실행을 덮어쓰지 않는다.
+
+프로필과 다운로드는 실행마다 별도 임시 디렉터리에 만들고 정리한다. 사용자 Chrome 프로필을
+사용하지 않으며 결과에 프로필·원본 문서를 복사하지 않는다. 로그/PNG를 외부 공유하기 전 내용을 확인한다.
+
+**남는 수동 확인:** 스토어 설치·업데이트, 실제 사용자 환경과 권한, Edge/Firefox, 실제 문서의
+표시·인쇄 품질은 이 결과가 보증하지 않는다. 동일 후보의 자동 검사를 참고해 기존 수동 배포
+검증을 수행한다. 개별 `test:e2e:smoke/download/lifecycle` 명령은 개발용이며 먼저 재빌드하므로,
+이미 만든 배포 후보를 검사할 때는 위 `test:e2e -- --dist ...` 진입점을 사용한다.
+
+실행기·탭 감시·진단의 계약 검사는 브라우저 없이 실행할 수 있다.
+
+```bash
+node --test rhwp-chrome/e2e/run.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs \
+  rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs
+```
 
 ## 4. 스토어 배포
 

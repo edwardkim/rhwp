@@ -27,12 +27,14 @@ use super::{
     boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, GradientFillInfo, LineStyle,
     PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash, TextStyle,
 };
+use crate::error::HwpError;
 use crate::model::style::ImageFillMode;
 use crate::model::style::UnderlineType;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
-    paint_op_replay_plane_with_layer, render_layer_replay_plane, ClipKind, GroupKind, LayerNode,
-    LayerNodeKind, PageLayerTree, PaintOp, PaintReplayPlane, RenderProfile,
+    paint_op_replay_plane_with_layer, render_layer_replay_plane, text_visual_replay_role,
+    validate_text_variant_scope, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
+    PaintOp, PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
 };
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
@@ -41,7 +43,7 @@ const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 /// `None` means fail closed: replay the op and let the Canvas clip decide.
 fn partial_text_replay_bounds(op: &PaintOp) -> Option<BoundingBox> {
     match op {
-        PaintOp::TextRun { bbox, run } => expanded_text_replay_bounds(
+        PaintOp::TextRun { bbox, run, .. } => expanded_text_replay_bounds(
             *bbox,
             &run.style,
             run.rotation,
@@ -72,23 +74,12 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
     out
 }
 
-fn group_label_matches_replay_plane(
-    active_replay_plane: Option<PaintReplayPlane>,
-    layer: Option<RenderLayerInfo>,
-) -> bool {
-    match active_replay_plane {
-        Some(active) => render_layer_replay_plane(layer) == active,
-        None => true,
-    }
-}
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
-use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
 use super::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
-use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
 // WASM 단일 스레드이므로 thread_local 안전
@@ -372,7 +363,8 @@ pub struct WebCanvasRenderer {
     /// `LayerFilter::All` renders the layer tree in logical replay-plane order,
     /// independent of raw tree child order.
     active_replay_plane: Option<PaintReplayPlane>,
-    render_profile: RenderProfile,
+    /// Whether structural layer clips selected by the producer are active.
+    layer_clip_enabled: bool,
     /// [#3137 Stage 4] 기존 Canvas의 좁은 영역만 다시 그릴 때 사용하는 page-space clip.
     ///
     /// full render는 `None`을 유지한다. partial render는 canvas 크기를 바꾸지 않고
@@ -384,11 +376,9 @@ pub struct WebCanvasRenderer {
     /// svg.rs 와 같은 계약(밑줄/취소선 길이에서 제외). 문단 마지막 줄·강제
     /// 줄바꿈 줄(서명란 밑줄 공백)은 대상 아님.
     soft_wrap_decoration_trim: Option<(u32, usize)>,
-    /// [#6117] layer tree 재생 경로의 트림 대상 — 줄 그룹이 정하고 그 run 에만
-    /// 적용한다. RenderNode 경로가 node.id 로 짝짓는 것을 여기서는 run 주소로
-    /// 짝짓는다(한 번의 트리 순회 안에서만 유효하며 그 범위에서 안정적이다).
-    layer_decoration_trim: Option<(usize, usize)>,
     active_decoration_trim: usize,
+    suppress_text_glyphs: bool,
+    metric_descriptor_mismatch: std::cell::Cell<bool>,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -410,12 +400,13 @@ impl WebCanvasRenderer {
             layer_filter: LayerFilter::All,
             transparent_page_background: false,
             active_replay_plane: None,
-            render_profile: RenderProfile::Screen,
+            layer_clip_enabled: true,
             partial_clip: None,
             partial_context_saved: false,
             soft_wrap_decoration_trim: None,
-            layer_decoration_trim: None,
             active_decoration_trim: 0,
+            suppress_text_glyphs: false,
+            metric_descriptor_mismatch: std::cell::Cell::new(false),
         })
     }
 
@@ -475,10 +466,6 @@ impl WebCanvasRenderer {
         !self.transparent_page_background
     }
 
-    fn should_render_group_label(&self, layer: Option<RenderLayerInfo>) -> bool {
-        self.show_control_codes && group_label_matches_replay_plane(self.active_replay_plane, layer)
-    }
-
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_node(&tree.root);
@@ -488,6 +475,7 @@ impl WebCanvasRenderer {
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
         self.show_paragraph_marks = tree.output_options.show_paragraph_marks;
         self.show_control_codes = tree.output_options.show_control_codes;
+        self.layer_clip_enabled = tree.output_options.clip_enabled;
         self.transparent_page_background = match self.layer_filter {
             LayerFilter::All => false,
             LayerFilter::BackgroundOnly => false,
@@ -630,16 +618,7 @@ impl WebCanvasRenderer {
 
         // 조판부호 개체 마커 (붉은색 대괄호)
         if self.show_control_codes {
-            let label = match &node.node_type {
-                RenderNodeType::Table(_) => Some("[표]"),
-                RenderNodeType::Image(_) => Some("[그림]"),
-                RenderNodeType::TextBox => Some("[글상자]"),
-                RenderNodeType::Equation(_) => Some("[수식]"),
-                RenderNodeType::Header => Some("[머리말]"),
-                RenderNodeType::Footer => Some("[꼬리말]"),
-                RenderNodeType::FootnoteArea => Some("[각주]"),
-                _ => None,
-            };
+            let label = node.control_code_label();
             if let Some(label) = label {
                 let fs = 10.0;
                 self.ctx.set_fill_style_str("#CC3333");
@@ -666,23 +645,114 @@ impl WebCanvasRenderer {
         }
     }
 
+    fn render_layer_text_visual(
+        &mut self,
+        bbox: &BoundingBox,
+        run: &TextRunNode,
+        role: TextVisualReplayRole,
+        decoration_trim: usize,
+    ) {
+        if role == TextVisualReplayRole::SuppressedFallback {
+            return;
+        }
+        let rotation = run.rotation;
+        let mut projected = run.clone();
+        projected.char_overlap = None;
+        projected.style.tab_leaders.clear();
+        projected.style.underline = UnderlineType::None;
+        projected.style.strikethrough = false;
+        projected.style.emphasis_dot = 0;
+        let (suppress_glyphs, render_marks, rotate_explicit) = match role {
+            TextVisualReplayRole::BaseText => (false, false, false),
+            TextVisualReplayRole::CharOverlap => {
+                projected.char_overlap = run.char_overlap.clone();
+                (false, false, true)
+            }
+            TextVisualReplayRole::ControlMark => (true, true, true),
+            TextVisualReplayRole::TabLeader => {
+                projected
+                    .style
+                    .tab_leaders
+                    .clone_from(&run.style.tab_leaders);
+                (true, false, true)
+            }
+            TextVisualReplayRole::Decoration(kind) => {
+                match kind {
+                    TextDecorationKind::Underline => {
+                        projected.style.underline = run.style.underline
+                    }
+                    TextDecorationKind::Strikethrough => {
+                        projected.style.strikethrough = run.style.strikethrough;
+                    }
+                    TextDecorationKind::EmphasisDot => {
+                        projected.style.emphasis_dot = run.style.emphasis_dot;
+                    }
+                }
+                (true, false, true)
+            }
+            TextVisualReplayRole::SuppressedFallback | TextVisualReplayRole::Other => return,
+        };
+        if rotate_explicit {
+            projected.rotation = 0.0;
+            projected.style.shadow_type = 0;
+            projected.style.shade_color = crate::model::color::NONE;
+        }
+
+        let previous_marks = (self.show_paragraph_marks, self.show_control_codes);
+        if !render_marks {
+            self.show_paragraph_marks = false;
+            self.show_control_codes = false;
+        }
+        let previous_suppression = self.suppress_text_glyphs;
+        self.suppress_text_glyphs = suppress_glyphs;
+        let previous_trim = self.active_decoration_trim;
+        self.active_decoration_trim = if matches!(role, TextVisualReplayRole::Decoration(_)) {
+            decoration_trim
+        } else {
+            0
+        };
+
+        if rotate_explicit && rotation != 0.0 {
+            let cx = bbox.x + bbox.width / 2.0;
+            let cy = bbox.y + bbox.height / 2.0;
+            self.ctx.save();
+            let _ = self.ctx.translate(cx, cy);
+            let _ = self.ctx.rotate(rotation * std::f64::consts::PI / 180.0);
+            let _ = self.ctx.translate(-cx, -cy);
+            self.render_text_run(bbox, &projected);
+            self.ctx.restore();
+        } else {
+            self.render_text_run(bbox, &projected);
+        }
+
+        self.active_decoration_trim = previous_trim;
+        self.suppress_text_glyphs = previous_suppression;
+        self.show_paragraph_marks = previous_marks.0;
+        self.show_control_codes = previous_marks.1;
+    }
+
     fn render_paint_op(&mut self, op: &PaintOp) {
         match op {
             PaintOp::PageBackground { .. } if !self.should_render_page_background() => {}
             PaintOp::PageBackground { bbox, background } => {
                 self.render_page_background(bbox, background);
             }
-            PaintOp::TextRun { bbox, run } => {
-                // [#6117] 줄 그룹이 정한 트림을 이 run 에 적용한다(RenderNode
-                // 경로의 `render_node` 와 같은 배선).
-                let key = (&**run) as *const TextRunNode as usize;
-                self.active_decoration_trim = match self.layer_decoration_trim {
-                    Some((run_key, trim)) if run_key == key => trim,
+            PaintOp::TextRun { bbox, run, .. }
+            | PaintOp::CharOverlap { bbox, run, .. }
+            | PaintOp::TextControlMark { bbox, run, .. }
+            | PaintOp::TabLeader { bbox, run, .. }
+            | PaintOp::TextDecoration { bbox, run, .. } => self.render_layer_text_visual(
+                bbox,
+                run,
+                text_visual_replay_role(op),
+                match op {
+                    PaintOp::TextDecoration {
+                        trim_trailing_spaces,
+                        ..
+                    } => *trim_trailing_spaces,
                     _ => 0,
-                };
-                self.render_text_run(bbox, run);
-                self.active_decoration_trim = 0;
-            }
+                },
+            ),
             PaintOp::FootnoteMarker { bbox, marker } => {
                 self.render_footnote_marker(bbox, marker);
             }
@@ -725,12 +795,12 @@ impl WebCanvasRenderer {
             PaintOp::RawSvg { bbox, raw } => {
                 self.render_raw_svg(bbox, raw);
             }
-            PaintOp::GlyphRun { .. }
-            | PaintOp::GlyphOutline { .. }
-            | PaintOp::CharOverlap { .. }
-            | PaintOp::TextControlMark { .. }
-            | PaintOp::TabLeader { .. }
-            | PaintOp::TextDecoration { .. } => {}
+            PaintOp::ControlLabel { bbox, label } => {
+                self.ctx.set_fill_style_str("#CC3333");
+                self.ctx.set_font("10px sans-serif");
+                let _ = self.ctx.fill_text(label, bbox.x, bbox.y + 10.0);
+            }
+            PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. } => {}
         }
     }
 
@@ -789,7 +859,11 @@ impl WebCanvasRenderer {
             self.draw_image_with_fill_mode(
                 render_data.as_ref(),
                 bbox,
-                Some(img.fill_mode),
+                Some(if img.fill_mode == ImageFillMode::None {
+                    ImageFillMode::FitToSize
+                } else {
+                    img.fill_mode
+                }),
                 None,
                 None,
                 None,
@@ -968,7 +1042,8 @@ impl WebCanvasRenderer {
     }
 
     fn render_image(&mut self, bbox: &BoundingBox, img: &ImageNode, restore_transform: bool) {
-        let eff_bbox = img.transform.effective_image_bbox(bbox);
+        // [#7193] 그림은 틀(bbox)에서 안쪽 여백을 뺀 자리에 그린다.
+        let eff_bbox = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
         self.open_shape_transform(&img.transform, &eff_bbox);
         if img.data.is_none() && img.external_path.is_some() {
             self.ctx.set_fill_style_str("#f0f0f0");
@@ -987,7 +1062,11 @@ impl WebCanvasRenderer {
                 self.ctx.set_text_align("center");
                 let cx = eff_bbox.x + eff_bbox.width / 2.0;
                 let cy = eff_bbox.y + eff_bbox.height / 2.0;
-                let _ = self.ctx.fill_text(&format!("[외부: {}]", path), cx, cy);
+                let label = format!(
+                    "[외부: {}]",
+                    crate::model::image::external_picture_basename(path)
+                );
+                let _ = self.ctx.fill_text(&label, cx, cy);
                 self.ctx.set_text_align("start");
             }
         }
@@ -1162,10 +1241,12 @@ impl WebCanvasRenderer {
         } else {
             1.0
         };
+        let scale_y =
+            super::equation::stored_vertical_scale(bbox.height, eq.layout_box.height, eq.font_size);
         self.ctx.save();
         let _ = self.ctx.translate(bbox.x, bbox.y);
-        if (scale_x - 1.0).abs() > 0.01 {
-            let _ = self.ctx.scale(scale_x, 1.0);
+        if (scale_x - 1.0).abs() > 0.01 || (scale_y - 1.0).abs() > 0.01 {
+            let _ = self.ctx.scale(scale_x, scale_y);
         }
         super::equation::canvas_render::render_equation_canvas(
             &self.ctx,
@@ -1206,9 +1287,6 @@ impl WebCanvasRenderer {
         // 개체 영역 점선 테두리 + 중앙의 작은 그림-없음 아이콘(사선 그어진
         // 그림 픽토그램). 편집자 정보 제공용이며 인쇄 등가 profile에서는 미출력한다.
         if ph.kind == crate::renderer::render_tree::PlaceholderKind::MissingPicture {
-            if !self.render_profile.shows_editor_visuals() {
-                return;
-            }
             // 한글 편집 화면의 테두리는 굵은 파선이 아니라 잔 점선이다 — 오라클 화면
             // 실측(2px on / 2px off)에 맞춘다. `svg.rs` 의 stroke-dasharray 와 같은 값.
             self.set_line_dash(&StrokeDash::Dot);
@@ -1280,166 +1358,55 @@ impl WebCanvasRenderer {
     fn render_layer_node(&mut self, node: &LayerNode, inherited_layer: Option<RenderLayerInfo>) {
         let active_layer = node.layer.or(inherited_layer);
         match &node.kind {
-            LayerNodeKind::Group {
-                children,
-                group_kind,
-                ..
-            } => {
-                // [#6117] soft-wrap 줄-말미 공백 트림(#6028)은 RenderNode 경로에만
-                // 배선돼 있었다. studio 는 **layer tree** 를 재생하므로 그 경로에서
-                // 트림이 서지 않아 밑줄이 배분 정렬로 늘어난 말미 공백까지 그어져
-                // 칸 우측 괘선을 넘었다(교육부 법령안 4문서 4~20px). 줄 그룹이
-                // layer tree 에도 보존되므로(`GroupKind::TextLine`) 같은 규칙을
-                // 여기서 세운다 — 판별·값 모두 svg.rs·RenderNode 경로와 같다.
-                let restore_trim = if let GroupKind::TextLine(_) = group_kind {
-                    let prev = self.layer_decoration_trim;
-                    self.layer_decoration_trim =
-                        crate::renderer::layer_renderer::line_decoration_trim_target(children);
-                    Some(prev)
-                } else {
-                    None
-                };
+            LayerNodeKind::Group { children, .. } => {
                 for child in children {
                     self.render_layer_node(child, active_layer);
-                }
-                if let Some(prev) = restore_trim {
-                    self.layer_decoration_trim = prev;
-                }
-                if self.should_render_group_label(active_layer) {
-                    let label = match group_kind {
-                        GroupKind::Table(_) => Some("[표]"),
-                        GroupKind::TextBox => Some("[글상자]"),
-                        GroupKind::Header => Some("[머리말]"),
-                        GroupKind::Footer => Some("[꼬리말]"),
-                        GroupKind::FootnoteArea => Some("[각주]"),
-                        _ => None,
-                    };
-                    if let Some(label) = label {
-                        let fs = 10.0;
-                        self.ctx.set_fill_style_str("#CC3333");
-                        self.ctx.set_font(&format!("{:.3}px sans-serif", fs));
-                        let _ = self.ctx.fill_text(label, node.bounds.x, node.bounds.y + fs);
-                    }
                 }
             }
             LayerNodeKind::ClipRect {
                 clip,
                 child,
                 clip_kind,
-            } => match clip_kind {
-                ClipKind::Body => {
-                    self.ctx.save();
-                    self.ctx.begin_path();
-                    let right_pad = if self.show_paragraph_marks || self.show_control_codes {
-                        TEXT_MARK_CLIP_RIGHT_PAD
-                    } else {
-                        4.0
-                    };
-                    self.ctx
-                        .rect(clip.x, clip.y, clip.width + right_pad, clip.height);
-                    self.ctx.clip();
+            } => {
+                if !self.layer_clip_enabled {
                     self.render_layer_node(child, active_layer);
-                    self.ctx.restore();
-
-                    let body_left = clip.x;
-                    let body_right = clip.x + clip.width;
-                    let is_overflow_control = |layer: &LayerNode| -> bool {
-                        match &layer.kind {
-                            LayerNodeKind::Group { group_kind, .. } => match group_kind {
-                                GroupKind::TextLine(_)
-                                | GroupKind::Column(_)
-                                | GroupKind::FootnoteArea
-                                | GroupKind::Header
-                                | GroupKind::Footer
-                                | GroupKind::MasterPage
-                                | GroupKind::Body => return false,
-                                _ => {}
-                            },
-                            LayerNodeKind::Leaf { ops } => {
-                                if ops.iter().all(|op| {
-                                    matches!(
-                                        op,
-                                        PaintOp::TextRun { .. }
-                                            | PaintOp::GlyphRun { .. }
-                                            | PaintOp::GlyphOutline { .. }
-                                            | PaintOp::CharOverlap { .. }
-                                            | PaintOp::TextControlMark { .. }
-                                            | PaintOp::TabLeader { .. }
-                                            | PaintOp::TextDecoration { .. }
-                                            | PaintOp::FootnoteMarker { .. }
-                                    )
-                                }) {
-                                    return false;
-                                }
-                            }
-                            LayerNodeKind::ClipRect { .. } => {}
-                        }
-                        layer.bounds.x < body_left
-                            || layer.bounds.x + layer.bounds.width > body_right
-                    };
-                    let body_children = match &child.kind {
-                        LayerNodeKind::Group { children, .. } => children.as_slice(),
-                        _ => &[][..],
-                    };
-                    let has_overflow = body_children.iter().any(|column| match &column.kind {
-                        LayerNodeKind::Group { children, .. } => {
-                            children.iter().any(&is_overflow_control)
-                        }
-                        _ => is_overflow_control(column),
-                    });
-                    if has_overflow {
+                    return;
+                }
+                match clip_kind {
+                    ClipKind::Body => {
                         self.ctx.save();
                         self.ctx.begin_path();
-                        self.ctx.rect(0.0, clip.y, self.width, clip.height);
+                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
                         self.ctx.clip();
-                        for column in body_children {
-                            match &column.kind {
-                                LayerNodeKind::Group { children, .. } => {
-                                    for child in children {
-                                        if is_overflow_control(child) {
-                                            self.render_layer_node(child, active_layer);
-                                        }
-                                    }
-                                }
-                                _ if is_overflow_control(column) => {
-                                    self.render_layer_node(column, active_layer);
-                                }
-                                _ => {}
-                            }
-                        }
+                        self.render_layer_node(child, active_layer);
+                        self.ctx.restore();
+                    }
+                    ClipKind::TableCell => {
+                        self.ctx.save();
+                        self.ctx.begin_path();
+                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                        self.ctx.clip();
+                        self.render_layer_node(child, active_layer);
+                        self.ctx.restore();
+                    }
+                    ClipKind::TextBox => {
+                        self.ctx.save();
+                        self.ctx.begin_path();
+                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                        self.ctx.clip();
+                        self.render_layer_node(child, active_layer);
+                        self.ctx.restore();
+                    }
+                    ClipKind::Generic => {
+                        self.ctx.save();
+                        self.ctx.begin_path();
+                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                        self.ctx.clip();
+                        self.render_layer_node(child, active_layer);
                         self.ctx.restore();
                     }
                 }
-                ClipKind::TableCell => {
-                    self.ctx.save();
-                    self.ctx.begin_path();
-                    self.ctx.rect(
-                        node.bounds.x,
-                        node.bounds.y,
-                        node.bounds.width,
-                        node.bounds.height,
-                    );
-                    self.ctx.clip();
-                    self.render_layer_node(child, active_layer);
-                    self.ctx.restore();
-                }
-                ClipKind::TextBox => {
-                    self.ctx.save();
-                    self.ctx.begin_path();
-                    self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                    self.ctx.clip();
-                    self.render_layer_node(child, active_layer);
-                    self.ctx.restore();
-                }
-                ClipKind::Generic => {
-                    self.ctx.save();
-                    self.ctx.begin_path();
-                    self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                    self.ctx.clip();
-                    self.render_layer_node(child, active_layer);
-                    self.ctx.restore();
-                }
-            },
+            }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
                     // Task #1197: 다층 레이어 필터 — RenderNode.layer 또는 이미지 wrap 기반
@@ -1605,31 +1572,13 @@ impl WebCanvasRenderer {
 
     /// HWP 각도(도) → Canvas linearGradient 좌표 변환
     /// 사각형 (x, y, w, h) 기준으로 (x0, y0, x1, y1) 반환
+    /// [#6845] 그러데이션 축은 SVG 와 **같은 계산**을 쓴다.
+    ///
+    /// 종전에는 방향을 `(sin·w/2, cos·h/2)` 로 축별 배율해 가로세로비만큼 각도가 눕고
+    /// (SVG 의 `objectBoundingBox` 와 같은 왜곡), `cos` 부호가 뒤집혀 `angle=0` 의
+    /// 위아래가 반대였다. 두 렌더러가 규칙을 두 벌로 갖고 있던 것도 함께 없앤다.
     fn angle_to_canvas_coords(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
-        let a = ((angle % 360 + 360) % 360) as f64;
-        match a as i32 {
-            0 => (x, y, x, y + h),
-            45 => (x, y, x + w, y + h),
-            90 => (x, y, x + w, y),
-            135 => (x, y + h, x + w, y),
-            180 => (x, y + h, x, y),
-            225 => (x + w, y + h, x, y),
-            270 => (x + w, y, x, y),
-            315 => (x + w, y, x, y + h),
-            _ => {
-                let rad = a.to_radians();
-                let sin_a = rad.sin();
-                let cos_a = rad.cos();
-                let cx = x + w / 2.0;
-                let cy = y + h / 2.0;
-                (
-                    cx - sin_a * w / 2.0,
-                    cy - cos_a * h / 2.0,
-                    cx + sin_a * w / 2.0,
-                    cy + cos_a * h / 2.0,
-                )
-            }
-        }
+        crate::renderer::linear_gradient_axis(angle, x, y, w, h)
     }
 
     /// PatternFillInfo → Canvas createPattern으로 패턴 채우기 적용
@@ -2084,160 +2033,83 @@ impl WebCanvasRenderer {
     }
 
     fn render_form_object(&self, form: &FormObjectNode, bbox: &super::render_tree::BoundingBox) {
-        let x = bbox.x;
-        let y = bbox.y;
-        let w = bbox.width;
-        let h = bbox.height;
-
-        match form.form_type {
-            FormType::PushButton => {
-                // 명령 단추 (웹 환경 비활성 — 회색 스타일)
-                self.ctx.set_fill_style_str("#d0d0d0");
-                self.ctx.fill_rect(x, y, w, h);
-                self.ctx.set_stroke_style_str("#a0a0a0");
-                self.ctx.set_line_width(0.5);
-                self.ctx.stroke_rect(x, y, w, h);
-                // 캡션 텍스트 (회색)
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.5).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str("#808080");
-                    self.ctx.set_text_align("center");
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + w / 2.0, y + h / 2.0);
-                    self.ctx.set_text_align("left");
-                    self.ctx.set_text_baseline("alphabetic");
+        use super::form_appearance::{form_drawing, FormPrimitive};
+        let drawing = form_drawing(form, *bbox);
+        self.ctx.save();
+        for primitive in drawing.primitives {
+            match primitive {
+                FormPrimitive::Rect { bbox: b, color } => {
+                    self.ctx.set_fill_style_str(&color);
+                    self.ctx.fill_rect(b.x, b.y, b.width, b.height);
                 }
-            }
-            FormType::CheckBox => {
-                let box_size = h.min(14.0);
-                let box_y = y + (h - box_size) / 2.0;
-                // 체크박스 사각형
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill_rect(x, box_y, box_size, box_size);
-                self.ctx.set_stroke_style_str("#000000");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, box_y, box_size, box_size);
-                // 체크 표시
-                if form.value != 0 {
-                    self.ctx.set_stroke_style_str("#000000");
-                    self.ctx.set_line_width(2.0);
+                FormPrimitive::Circle {
+                    x,
+                    y,
+                    radius,
+                    color,
+                } => {
                     self.ctx.begin_path();
-                    self.ctx.move_to(x + 2.0, box_y + box_size / 2.0);
-                    self.ctx.line_to(x + box_size / 3.0, box_y + box_size - 3.0);
-                    self.ctx.line_to(x + box_size - 2.0, box_y + 2.0);
-                    self.ctx.stroke();
-                    self.ctx.set_line_width(1.0);
-                }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.7).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + box_size + 4.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-            }
-            FormType::RadioButton => {
-                let r = h.min(14.0) / 2.0;
-                let cx = x + r;
-                let cy = y + h / 2.0;
-                // 원형 배경
-                self.ctx.begin_path();
-                let _ = self.ctx.arc(cx, cy, r, 0.0, std::f64::consts::TAU);
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill();
-                self.ctx.set_stroke_style_str("#000000");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke();
-                // 선택 표시
-                if form.value != 0 {
-                    self.ctx.begin_path();
-                    let _ = self.ctx.arc(cx, cy, r * 0.5, 0.0, std::f64::consts::TAU);
-                    self.ctx.set_fill_style_str("#000000");
+                    let _ = self.ctx.arc(x, y, radius, 0.0, std::f64::consts::TAU);
+                    self.ctx.set_fill_style_str(&color);
                     self.ctx.fill();
                 }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.7).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + r * 2.0 + 4.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-            }
-            FormType::ComboBox => {
-                let btn_w = h.min(20.0);
-                // 입력 영역
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill_rect(x, y, w - btn_w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, y, w - btn_w, h);
-                // 텍스트
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.6).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-                // 드롭다운 버튼
-                let bx = x + w - btn_w;
-                self.ctx.set_fill_style_str("#c0c0c0");
-                self.ctx.fill_rect(bx, y, btn_w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.stroke_rect(bx, y, btn_w, h);
-                // ▼ 삼각형
-                self.ctx.begin_path();
-                let tri_cx = bx + btn_w / 2.0;
-                let tri_cy = y + h / 2.0;
-                let tri_s = btn_w * 0.3;
-                self.ctx.move_to(tri_cx - tri_s, tri_cy - tri_s / 2.0);
-                self.ctx.line_to(tri_cx + tri_s, tri_cy - tri_s / 2.0);
-                self.ctx.line_to(tri_cx, tri_cy + tri_s / 2.0);
-                self.ctx.close_path();
-                self.ctx.set_fill_style_str("#000000");
-                self.ctx.fill();
-            }
-            FormType::Edit => {
-                // 입력 영역
-                self.ctx.set_fill_style_str(&form.back_color);
-                self.ctx.fill_rect(x, y, w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, y, w, h);
-                // 텍스트
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.6).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
+                FormPrimitive::Polyline {
+                    points,
+                    color,
+                    width,
+                    closed,
+                } => {
+                    self.ctx.begin_path();
+                    for (i, p) in points.iter().enumerate() {
+                        if i == 0 {
+                            self.ctx.move_to(p[0], p[1]);
+                        } else {
+                            self.ctx.line_to(p[0], p[1]);
+                        }
+                    }
+                    if closed {
+                        self.ctx.close_path();
+                        self.ctx.set_fill_style_str(&color);
+                        self.ctx.fill();
+                    } else {
+                        self.ctx.set_stroke_style_str(&color);
+                        self.ctx.set_line_width(width);
+                        self.ctx.stroke();
+                    }
                 }
             }
         }
+        if let Some(label) = drawing.label {
+            let family = label.font_family.replace('\\', "\\\\").replace('\'', "\\'");
+            self.ctx.set_font(&format!(
+                "{} {} {}px '{}'",
+                if label.italic { "italic" } else { "normal" },
+                if label.bold { "bold" } else { "normal" },
+                label.font_size,
+                family
+            ));
+            self.ctx.set_fill_style_str(&label.color);
+            self.ctx.set_text_align("left");
+            self.ctx.set_text_baseline("alphabetic");
+            let _ = self.ctx.fill_text(&label.text, label.x, label.baseline);
+        }
+        self.ctx.restore();
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 impl LayerRenderer for WebCanvasRenderer {
     fn render_page(&mut self, tree: &PageLayerTree) -> LayerRenderResult<()> {
-        self.render_profile = tree.profile;
+        self.metric_descriptor_mismatch.set(false);
+        validate_text_variant_scope(tree).map_err(|error| {
+            HwpError::RenderError(format!("invalid PageLayerTree text contract: {error}"))
+        })?;
         self.render_layer_tree(tree);
+        if self.metric_descriptor_mismatch.get() {
+            return Err(HwpError::RenderError(
+                "Canvas metric descriptor changed; prepare font metrics again".into(),
+            ));
+        }
         Ok(())
     }
 }
@@ -2300,190 +2172,227 @@ impl Renderer for WebCanvasRenderer {
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스 (KTUG 매핑).
         let text = &expand_pua_old_hangul_canvas(text);
 
-        // 글꼴 설정
-        let font_weight = if style.bold { "bold " } else { "" };
-        let font_style = if style.italic { "italic " } else { "" };
-        let base_font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
-
-        // 위첨자/아래첨자: 글꼴 크기 축소 + y좌표 조정
-        let (font_size, y) = style.script_draw_metrics(base_font_size, y);
-        // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
-        let (font_size, ratio) =
-            crate::renderer::condensed_ratio_draw_params(font_size, style.ratio);
+        // Provider and paint share script size, condensed ratio and CSS rounding.
+        let font_setup = super::canvas_text_font::CanvasTextFont::for_positioned_text(style, y);
+        let font_size = font_setup.draw_size();
+        let y = font_setup.baseline();
+        let ratio = font_setup.horizontal_scale();
         let has_ratio = (ratio - 1.0).abs() > 0.01;
-        let font_family = super::canvas_font_family_chain(&style.font_family);
-
-        let font = format!(
-            "{}{}{:.3}px {}",
-            font_style, font_weight, font_size, font_family
-        );
-        let old_hangul_font = format!(
-            "{}{}{:.3}px 'Source Han Serif K Old Hangul', {}",
-            font_style, font_weight, font_size, font_family
-        );
-        self.ctx.set_font(&font);
+        let font = font_setup.descriptor();
+        let old_hangul_font = font_setup.old_hangul_descriptor();
+        self.ctx.set_font(font);
 
         // 클러스터 분할
         let clusters = split_into_clusters(text);
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
         let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
 
-        // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
-        if crate::model::color::char_shade(style.shade_color).is_some() {
-            let text_width = *char_positions.last().unwrap_or(&0.0);
-            if text_width > 0.0 {
-                self.ctx
-                    .set_fill_style_str(&color_to_css(style.shade_color));
-                self.ctx
-                    .fill_rect(x, y - font_size, text_width, font_size * 1.2);
-            }
-        }
-
-        let has_effect =
-            style.outline_type > 0 || style.shadow_type > 0 || style.emboss || style.engrave;
-
-        // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
-        // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
-        // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
-        // svg.rs 와 같은 결정이다.
-
-        if has_effect {
-            self.draw_text_with_effects(
-                &clusters,
-                &char_positions,
-                x,
-                y,
-                style,
-                font_size,
-                ratio,
-                has_ratio,
-                &font,
-                &old_hangul_font,
-            );
-            // 효과 pass에서는 raw PUA를 건너뛰고, 사각 안 숫자는 한 번만 합성한다.
-            // CanvasKit도 이 대역에 글리프가 없을 때 동일한 bounded vector fallback을 쓴다.
-            for (char_idx, cluster_str) in &clusters {
-                if cluster_str.chars().count() != 1 {
-                    continue;
+        if !self.suppress_text_glyphs {
+            // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
+            if crate::model::color::char_shade(style.shade_color).is_some() {
+                let text_width = *char_positions.last().unwrap_or(&0.0);
+                if text_width > 0.0 {
+                    self.ctx
+                        .set_fill_style_str(&color_to_css(style.shade_color));
+                    self.ctx
+                        .fill_rect(x, y - font_size, text_width, font_size * 1.2);
                 }
-                let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number)
-                else {
-                    continue;
-                };
-                self.draw_boxed_pua_number(
-                    number,
-                    x + char_positions[*char_idx],
+            }
+
+            let has_effect =
+                style.outline_type > 0 || style.shadow_type > 0 || style.emboss || style.engrave;
+
+            // 연속 하이픈은 저장 글자 위치마다 그린다. 원 글꼴의 획이
+            // 글자 간격보다 넓어 겹치는 경우만 낱글자별 짧은 획을 쓴다.
+
+            if has_effect {
+                self.draw_text_with_effects(
+                    &clusters,
+                    &char_positions,
+                    x,
                     y,
                     style,
                     font_size,
+                    ratio,
+                    has_ratio,
+                    font,
+                    old_hangul_font,
                 );
-            }
-        } else {
-            // 기본 렌더링 (효과 없음)
-            self.ctx.set_fill_style_str(&color_to_css(style.color));
-            for (char_idx, cluster_str) in clusters.iter() {
-                if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
-                    continue;
-                }
-                if super::contains_old_hangul_jamo(cluster_str) {
-                    self.ctx.set_font(&old_hangul_font);
-                } else {
-                    self.ctx.set_font(&font);
-                }
-                // XML/HTML 무효 제어문자 건너뜀 (SVG의 escape_xml과 동일)
-                if cluster_str
-                    .starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r'))
-                {
-                    continue;
-                }
-                let char_x = x + char_positions[*char_idx];
-
-                let ch = cluster_str.chars().next().unwrap_or(' ');
-
-                if cluster_str.chars().count() == 1 {
-                    if let Some(number) = super::boxed_pua_number(ch) {
-                        self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                // 효과 pass에서는 raw PUA를 건너뛰고, 사각 안 숫자는 한 번만 합성한다.
+                // CanvasKit도 이 대역에 글리프가 없을 때 동일한 bounded vector fallback을 쓴다.
+                for (char_idx, cluster_str) in &clusters {
+                    if cluster_str.chars().count() != 1 {
                         continue;
                     }
-                }
-
-                // 통화 기호 등 글리프 미포함 문자: 폴백 폰트로 임시 전환
-                let needs_font_fallback = matches!(
-                    ch,
-                    '\u{20A9}' | '\u{20AC}' | '\u{00A3}' | '\u{00A5}' // ₩€£¥
-                );
-                if needs_font_fallback {
-                    self.ctx.save();
-                    let fallback_font = format!(
-                        "{}{}{:.3}px 'Malgun Gothic','맑은 고딕',sans-serif",
-                        if style.italic { "italic " } else { "" },
-                        if style.bold { "bold " } else { "" },
-                        font_size
+                    let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number)
+                    else {
+                        continue;
+                    };
+                    self.draw_boxed_pua_number(
+                        number,
+                        x + char_positions[*char_idx],
+                        y,
+                        style,
+                        font_size,
                     );
-                    self.ctx.set_font(&fallback_font);
-                    let _ = self.ctx.fill_text(cluster_str, char_x, y);
-                    self.ctx.restore();
-                    self.ctx.set_font(&font); // 원래 폰트 복원
-                    continue;
                 }
-
-                // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
-                let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
-                    || forces_halfwidth_cjk_quote(
-                        &style.font_family,
-                        style.bold,
-                        style.italic,
-                        ch,
-                        style.font_size,
-                    ))
-                    && !has_ratio;
-
-                if needs_halfwidth_scale {
-                    self.ctx.save();
-                    self.ctx.translate(char_x, y).unwrap_or(());
-                    self.ctx.scale(0.5, 1.0).unwrap_or(());
-                    let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
-                    self.ctx.restore();
-                } else {
-                    let cluster_advance = {
-                        let end = *char_idx + cluster_str.chars().count();
-                        if end < char_positions.len() {
-                            char_positions[end] - char_positions[*char_idx]
-                        } else {
-                            0.0
-                        }
-                    };
-                    let pin_ascii_advance =
-                        cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
-                    let fit_scale = if cluster_advance > 0.0 {
+            } else {
+                // 기본 렌더링 (효과 없음)
+                self.ctx.set_fill_style_str(&color_to_css(style.color));
+                for (char_idx, cluster_str) in clusters.iter() {
+                    // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                    if cluster_str.chars().all(char::is_whitespace) {
+                        continue;
+                    }
+                    if let Some((cx, cy, rx, ry)) =
+                        super::legacy_hft_bullet_geometry(cluster_str, style)
+                    {
+                        self.ctx.begin_path();
                         self.ctx
-                            .measure_text(cluster_str)
-                            .ok()
-                            .map(|metrics| metrics.width())
-                            .and_then(|actual_w| {
-                                super::canvas_cluster_fit_scale(
-                                    style,
-                                    cluster_advance,
-                                    actual_w * ratio,
-                                    pin_ascii_advance,
-                                )
-                            })
+                            .ellipse(
+                                x + char_positions[*char_idx] + cx,
+                                y + cy,
+                                rx,
+                                ry,
+                                0.0,
+                                0.0,
+                                std::f64::consts::TAU,
+                            )
+                            .ok();
+                        self.ctx.fill();
+                        continue;
+                    }
+                    if super::contains_old_hangul_jamo(cluster_str) {
+                        self.ctx.set_font(old_hangul_font);
                     } else {
-                        None
-                    };
+                        self.ctx.set_font(font);
+                    }
+                    let measured_descriptor =
+                        super::supplemental_metrics::canvas_measured_descriptor(style, cluster_str);
+                    if measured_descriptor.is_some_and(|descriptor| descriptor != self.ctx.font()) {
+                        self.metric_descriptor_mismatch.set(true);
+                    }
+                    // XML/HTML 무효 제어문자 건너뜀 (SVG의 escape_xml과 동일)
+                    if cluster_str
+                        .starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r'))
+                    {
+                        continue;
+                    }
+                    let char_x = x + char_positions[*char_idx];
 
-                    self.ctx.save();
-                    self.ctx.translate(char_x, y).unwrap_or(());
-                    self.ctx
-                        .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
-                        .unwrap_or(());
-                    let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
-                    self.ctx.restore();
+                    let ch = cluster_str.chars().next().unwrap_or(' ');
+
+                    if cluster_str == "-" {
+                        if let Some((start, end, y_offset, stroke)) =
+                            super::overlapping_dash_leader_segment(
+                                text,
+                                style,
+                                *char_idx,
+                                &char_positions,
+                                font_size,
+                            )
+                        {
+                            self.ctx.save();
+                            self.ctx.set_stroke_style_str(&color_to_css(style.color));
+                            self.ctx.set_line_width(stroke);
+                            self.ctx.begin_path();
+                            self.ctx.move_to(char_x + start, y + y_offset);
+                            self.ctx.line_to(char_x + end, y + y_offset);
+                            self.ctx.stroke();
+                            self.ctx.restore();
+                            continue;
+                        }
+                    }
+
+                    if cluster_str.chars().count() == 1 {
+                        if let Some(number) = super::boxed_pua_number(ch) {
+                            self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                            continue;
+                        }
+                    }
+
+                    // 통화 기호 등 글리프 미포함 문자: 폴백 폰트로 임시 전환
+                    let needs_font_fallback = matches!(
+                        ch,
+                        '\u{20A9}' | '\u{20AC}' | '\u{00A3}' | '\u{00A5}' // ₩€£¥
+                    );
+                    if needs_font_fallback {
+                        self.ctx.save();
+                        let fallback_font = format!(
+                            "{}{}{:.3}px 'Malgun Gothic','맑은 고딕',sans-serif",
+                            if style.italic { "italic " } else { "" },
+                            if style.bold { "bold " } else { "" },
+                            font_size
+                        );
+                        self.ctx.set_font(&fallback_font);
+                        let _ = self.ctx.fill_text(cluster_str, char_x, y);
+                        self.ctx.restore();
+                        self.ctx.set_font(font); // 원래 폰트 복원
+                        continue;
+                    }
+
+                    // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
+                    let needs_halfwidth_scale =
+                        (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
+                            || forces_halfwidth_cjk_quote(
+                                &style.font_family,
+                                style.bold,
+                                style.italic,
+                                ch,
+                                style.font_size,
+                            ))
+                            && !has_ratio;
+
+                    if needs_halfwidth_scale {
+                        self.ctx.save();
+                        self.ctx.translate(char_x, y).unwrap_or(());
+                        self.ctx.scale(0.5, 1.0).unwrap_or(());
+                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        self.ctx.restore();
+                    } else {
+                        let cluster_advance = {
+                            let end = *char_idx + cluster_str.chars().count();
+                            if end < fit_positions.len() {
+                                fit_positions[end] - fit_positions[*char_idx]
+                            } else {
+                                0.0
+                            }
+                        };
+                        let pin_ascii_advance =
+                            cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
+                        // Measured fallback advance already includes script size and
+                        // document ratio exactly once. Do not fit it a second time.
+                        let fit_scale = if measured_descriptor.is_some() {
+                            None
+                        } else if cluster_advance > 0.0 {
+                            self.ctx
+                                .measure_text(cluster_str)
+                                .ok()
+                                .map(|metrics| metrics.width())
+                                .and_then(|actual_w| {
+                                    super::canvas_cluster_fit_scale(
+                                        style,
+                                        cluster_advance,
+                                        actual_w * ratio,
+                                        pin_ascii_advance,
+                                    )
+                                })
+                        } else {
+                            None
+                        };
+
+                        self.ctx.save();
+                        self.ctx.translate(char_x, y).unwrap_or(());
+                        self.ctx
+                            .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
+                            .unwrap_or(());
+                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        self.ctx.restore();
+                    }
                 }
             }
         }
@@ -3014,6 +2923,11 @@ impl WebCanvasRenderer {
                 } else {
                     ctx.set_font(font);
                 }
+                if super::supplemental_metrics::canvas_measured_descriptor(style, cs)
+                    .is_some_and(|descriptor| descriptor != ctx.font())
+                {
+                    self.metric_descriptor_mismatch.set(true);
+                }
                 if cs.starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r')) {
                     continue;
                 }
@@ -3515,7 +3429,8 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
-            ImageFillMode::Zoom => {
+            // [#7235] 채우기 유형 15(NONE)도 종횡비를 지켜 영역에 맞춘다.
+            ImageFillMode::Zoom | ImageFillMode::None => {
                 let (img_w, img_h) = match parse_image_dimensions_canvas(data) {
                     Some((w, h)) if w > 0 && h > 0 => (w as f64, h as f64),
                     _ => {
@@ -3523,19 +3438,29 @@ impl WebCanvasRenderer {
                         return;
                     }
                 };
-                let scale = (bbox.width / img_w).min(bbox.height / img_h);
-                let w = img_w * scale;
-                let h = img_h * scale;
+                let (sx, sy, sw, sh) = crop
+                    .map(|rect| {
+                        crate::renderer::svg::compute_image_crop_src(
+                            rect,
+                            original_size_hu,
+                            img_w,
+                            img_h,
+                        )
+                    })
+                    .unwrap_or((0.0, 0.0, img_w, img_h));
+                let scale = (bbox.width / sw).min(bbox.height / sh);
+                let w = sw * scale;
+                let h = sh * scale;
                 let x = bbox.x + (bbox.width - w) / 2.0;
                 let y = bbox.y + (bbox.height - h) / 2.0;
                 self.ctx.save();
                 self.ctx.begin_path();
                 self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
                 self.ctx.clip();
-                self.draw_image(data, x, y, w, h);
+                self.draw_image_cropped(data, sx, sy, sw, sh, x, y, w, h);
                 self.ctx.restore();
             }
-            ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
+            ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {
                     if let Some((img_w, img_h)) = parse_image_dimensions_canvas(data) {

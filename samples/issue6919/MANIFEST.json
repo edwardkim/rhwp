@@ -1,0 +1,20 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6919,
+  "title": "SetTextAlign 이 없는 metafile 의 기본 세로 정렬은 TA_TOP 이다",
+  "entries": [
+    {
+      "path": "samples/issue6919/148726703-chart-preview.wmf",
+      "format": "wmf",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6919",
+      "originalFilename": "148726703_sjcu1112.hwp 6쪽 OLE 차트의 OlePres000 미리보기",
+      "bytes": 4286,
+      "sha256": "f8a7084f35f4a8d1fba9b0901c3cd3df0b2af44994a2333fb2030bd3f1263408",
+      "referenceEngine": null,
+      "referencePdfStatus": "이 축의 정답지는 한컴 PDF 가 아니라 Windows GDI+(WMF 표준 재생기)와 [MS-WMF] 2.1.2.18 이다. 원본 문서는 한컴 변환 자체가 실패한다(HwpEditorFrame.SaveAsDocument returned false)라 기준 PDF 를 만들 수 없다. 이슈 본문이 GDI+ 재생 실측(제목 잉크 y = 9.5 .. 20.0, 테두리 y=5)을 정답지로 기록했다.",
+      "contract": "표준 WMF(placeable 아님) 4,286B. META_SETTEXTALIGN 0개, 글자 레코드 9개. [MS-WMF] 2.1.2.18 의 DC 기본 정렬은 TA_LEFT|TA_TOP|TA_NOUPDATECP(=0x0000) 이므로 META_EXTTEXTOUT 의 y 는 글자 셀의 위끝이고 baseline 은 y + ascent 다. 제목(x=110 y=13, font height -12)의 방출 baseline 이 22 여야 한다 — 종전 13 은 차트 테두리(y=5)를 글자가 가로지르게 했다.",
+      "originalIdentityStatus": "2026-09-09 코퍼스 korea_policy_downloads/148726703_sjcu1112.hwp 의 OLE 미리보기 스트림에서 원본 바이트 그대로 잘라 냈다. 87쪽 3.2MB 원본 문서는 렌더 래칫 전수 스윕 비용 때문에 등록하지 않는다."
+    }
+  ]
+}

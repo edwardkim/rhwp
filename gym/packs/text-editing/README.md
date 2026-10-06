@@ -330,7 +330,7 @@ devel 의 TE01–TE10 과 첫 확장 TE11–TE14 는 그대로 둔다. 과제 ID
 전역 고유하다. 이 문서의 TE15–TE90 이 그 위에 여정을 얹는다.
 
 작업 계보는
-[mydocs/working/gym_text_editing.md](../../../mydocs/working/gym_text_editing.md),
+[mydocs/working/gym_text_editing.md](../../../mydocs/working/archives/gym_text_editing.md),
 예외·가장자리는
-[mydocs/working/gym_text_editing_exceptions.md](../../../mydocs/working/gym_text_editing_exceptions.md)
+[mydocs/working/gym_text_editing_exceptions.md](../../../mydocs/working/archives/gym_text_editing_exceptions.md)
 다.

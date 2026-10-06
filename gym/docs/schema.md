@@ -8,7 +8,7 @@ last_verified: 2026-08-18
 # gym pack·task·profile 스키마 규약
 
 이 문서는 `gym/core/schema.py` 의 **검증 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_schema.md`](../../mydocs/working/gym_schema.md) 를 본다.
+[`mydocs/working/gym_schema.md`](../../mydocs/working/archives/gym_schema.md) 를 본다.
 기계 시험은 `scripts/tests/test_gym_schema.py`(예외 칸)와
 `scripts/tests/test_gym_packs.py`(저장소 나무 성공 칸)가 지킨다.
 
@@ -478,4 +478,4 @@ kind 를 겸하면 시험이 갈라지지 못한다.
 - 테마파크 지도: [`gym/PARK.md`](../PARK.md) — 이 PR 은 고치지 않는다
 - 채점 연산자 목록: 열린 PR 5210 의 `gym/docs/checks.md` (이 브랜치에 없음)
 - 채점기 예외 경로: 열린 PR 5278 의 `gym/docs/score_runner.md` (이 브랜치에 없음)
-- 작업 기록: [`mydocs/working/gym_schema.md`](../../mydocs/working/gym_schema.md)
+- 작업 기록: [`mydocs/working/gym_schema.md`](../../mydocs/working/archives/gym_schema.md)

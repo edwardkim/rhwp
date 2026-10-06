@@ -22,12 +22,14 @@ pub(super) fn print() {
     println!(
         "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
     );
+    println!("      --backend <백엔드>      layer(기본)|legacy(compatibility 진단 전용)");
     println!("      --show-para-marks       문단부호(↵/↓) 표시");
     println!("      --annotate-metric-font  배치에 쓴 내장 메트릭 face 를 data-metric-font 로 주석 (#4709)");
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
     println!("      --debug-overlay         디버그 오버레이 (문단/표 경계 + 인덱스 라벨)");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
+    println!("      --font-environment <json>  명시적 조판/출력 폰트 환경");
     println!("      --show-grid[=Nmm]       격자 오버레이 (기본: 1mm, 예: --show-grid=3mm)");
     println!("      --grid-origin=X,Y|auto  격자 종이 기준 위치 (예: --grid-origin=15mm,20mm)");
     println!("      --font-style            @font-face local() 참조 삽입 (폰트 데이터 미포함)");
@@ -45,6 +47,7 @@ pub(super) fn print() {
     println!("      --show-control-codes    조판부호 보이기 상태의 트리 생성");
     println!("      --respect-vpos-reset    LINE_SEG vpos=0 리셋을 단/페이지 강제 경계로 처리");
     println!("      --compat 2022|2024      목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
+    println!("      --font-environment <json>  명시적 조판/출력 폰트 환경");
     println!();
     println!("  export-structure <파일> [--mode auto|outline|clause] [-o out.json] [--json]");
     println!("      문서 개요/조문(편·장·절·관·조·항·호·목) 계층을 중첩 JSON 트리로 추출");
@@ -482,21 +485,25 @@ pub(super) fn print() {
     println!("      --json: 단건은 한 줄 봉투, --batch 는 NDJSON(로드 실패도 error 레코드로 남김)");
     println!("      --json 회귀 검출은 종료 코드 3(검증 단언 실패) — 사람 모드는 종전대로 1");
     println!(
-        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
+        "  layout-anomaly <파일> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--stored-line-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
     println!(
-        "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
+        "  layout-anomaly --batch <폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--stored-line-tolerance <px>] [--types <Type,...>] [--strict] [--json]"
     );
-    println!("      렌더 한 장의 기하만으로 이상 신호 5종 탐지 — render-diff(변위)와 다른 질문");
+    println!("      렌더 한 장의 기하와 원문 저장 줄로 이상 신호 6종 탐지 — render-diff(변위)와 다른 질문");
     println!(
         "      overflow: 본문 여백(Body) 밖 / off-canvas: 페이지 상자 밖 또는 y<0 / overlap: 겹치면 안 되는 흐름 요소끼리 겹침"
     );
     println!("      text-overlap: 텍스트 런 bbox 교차(글자끼리, 표·이미지 겹침 아님) — --strict 확정 신호");
+    println!("      stored-line-escape: 저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음(#7061) — --strict 확정 신호");
+    println!(
+        "      --stored-line-tolerance: stored-line-escape 의 저장 줄 동등 비교 여유(px, 기본 0.5)"
+    );
     println!("      empty_page: 콘텐츠 없는 중간 쪽(첫/끝 제외) — 항상 가능성 신호, --strict 로도 실패 안 함");
     println!("      --types: overflow/overlap 검사 대상 노드 타입만 (예: Table,Image). off-canvas·text-overlap·empty_page 는 영향 없음");
     println!("      --batch: 폴더를 재귀해 .hwp/.hwpx 를 정렬 순으로 스캔. 파일별 오류는 error 레코드(DATA)");
-    println!("      --json: 단건은 한 줄 봉투(offCanvasCount·textOverlapCount·pages[].offCanvas/textOverlap), --batch 는 NDJSON. 기본 종료 코드는 0(판정=데이터)");
-    println!("      --strict: overflow·off-canvas·overlap·text-overlap 확정 신호만 exit 3 (empty_page 제외)");
+    println!("      --json: 단건은 한 줄 봉투(offCanvasCount·textOverlapCount·storedLineEscapeCount·pages[].offCanvas/textOverlap/storedLineEscape), --batch 는 NDJSON. 기본 종료 코드는 0(판정=데이터)");
+    println!("      --strict: overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호만 exit 3 (empty_page 제외)");
     println!("  bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]");
     println!("      단계별 처리 성능 계측 — parse/layout/render/serialize median(ms)");
     println!("      워밍업 1회 후 N회(기본 3) 반복. 파일별 크기/쪽수 + total 표 + TSV");

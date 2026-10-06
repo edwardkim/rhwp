@@ -1,0 +1,19 @@
+{
+  "pageCount": 3,
+  "version": "0.8.6",
+  "browser": "Chrome/153.0.8010.47",
+  "pages": [
+    {
+      "page": 1,
+      "svgSha256": "9da6338fc94f699202002091bade5f0c0f451c9cfd4f0d38c7820b4327455ccd"
+    },
+    {
+      "page": 2,
+      "svgSha256": "cb563d5e779030ac702c0313deae9f618e6972e6cb1c060f9c66db96de45eac6"
+    },
+    {
+      "page": 3,
+      "svgSha256": "de979024b1ce02b8379392197177b362cc95d739564876c75ced7c9550a1236e"
+    }
+  ]
+}

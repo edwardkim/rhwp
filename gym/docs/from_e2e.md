@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 이 문서는 `gym/tools/from_e2e.mjs` 의 **정직 경계**, **예외 kind**, **계약
 리터럴 파서**, **CSV 한 칸 편집**, **과제/기준 조립**을 고정한다. 작업 기록은
-[`mydocs/working/gym_from_e2e.md`](../../mydocs/working/gym_from_e2e.md) 를
+[`mydocs/working/gym_from_e2e.md`](../../mydocs/working/archives/gym_from_e2e.md) 를
 본다. 시험 계약은 `gym/tools/from_e2e_contract.test.mjs` 와
 `gym/tools/from_e2e_exceptions.test.mjs` 가 바이너리 없이 고정한다.
 

@@ -33,7 +33,7 @@ last_verified: 2026-08-12
 부모 웹페이지에서 JavaScript 로 조종하는 방법은
 [`npm/editor/README.md`](../../npm/editor/README.md)의 `createStudio` 절을 따른다.
 설계 근거와 실측 수치는
-[`rhwp_studio_hwpctrl_plugin.md`](../plans/rhwp_studio_hwpctrl_plugin.md)에 있다.
+[`rhwp_studio_hwpctrl_plugin.md`](../plans/archives/rhwp_studio_hwpctrl_plugin.md)에 있다.
 
 **모드를 갈라 구현하지 않는다.** 두 모드가 같은 구현을 공유해야 원장(312/484)이 한 벌로 유지된다.
 `npm/hwpctrl-ocx/test/adapter_parity.test.mjs` 가 같은 시나리오의 산출 바이트 동일성을 검사한다.

@@ -1,0 +1,168 @@
+{
+  "oracle": {
+    "footnote_shapes": [
+      {
+        "suffix": 41,
+        "start": 1,
+        "length": -1,
+        "unused": -1,
+        "above": 852,
+        "below": 568,
+        "between": 424
+      },
+      {
+        "suffix": 41,
+        "start": 1,
+        "length": 0,
+        "unused": 0,
+        "above": 864,
+        "below": 576,
+        "between": 0
+      }
+    ],
+    "paragraphs": 3699,
+    "negative_indent_paras": 1093,
+    "tab_count": 112,
+    "zero_width_tabs": 0,
+    "tabs": [
+      [
+        18676,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        27064,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        34640,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ]
+    ]
+  },
+  "candidate": {
+    "footnote_shapes": [
+      {
+        "suffix": 41,
+        "start": 1,
+        "length": 14160,
+        "unused": 0,
+        "above": 852,
+        "below": 568,
+        "between": 424
+      },
+      {
+        "suffix": 0,
+        "start": 0,
+        "length": 0,
+        "unused": 0,
+        "above": 0,
+        "below": 0,
+        "between": 0
+      }
+    ],
+    "paragraphs": 3702,
+    "negative_indent_paras": 1095,
+    "tab_count": 112,
+    "zero_width_tabs": 0,
+    "tabs": [
+      [
+        18676,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        27064,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        34640,
+        0,
+        3,
+        0,
+        0,
+        0,
+        9
+      ]
+    ],
+    "tab_exact_matches": 112
+  },
+  "before": {
+    "footnote_shapes": [
+      {
+        "suffix": 0,
+        "start": 0,
+        "length": 14160,
+        "unused": 0,
+        "above": 0,
+        "below": 0,
+        "between": 424
+      },
+      {
+        "suffix": 0,
+        "start": 0,
+        "length": 0,
+        "unused": 0,
+        "above": 0,
+        "below": 0,
+        "between": 0
+      }
+    ],
+    "paragraphs": 3702,
+    "negative_indent_paras": 1095,
+    "tab_count": 112,
+    "zero_width_tabs": 112,
+    "tabs": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ]
+    ]
+  }
+}

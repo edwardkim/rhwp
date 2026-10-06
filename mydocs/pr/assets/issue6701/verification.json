@@ -1,0 +1,423 @@
+{
+  "issue": 6701,
+  "historical_source_sha": "1f861362ab372f9fa26e38f9a534a89286f641c4",
+  "upstream_source_sha": "769582fc856f162e57604b318d41414d7b026345",
+  "current_source_sha": "a95bae7fe63d0b2c26f9dfcac4287baf270f57cb",
+  "native_and_wasm_product_source_unchanged_since_issue6706": true,
+  "inputs": {
+    "samples/synam-001.hwp": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b",
+    "pdf/synam-001-2022.pdf": "2f430884f916f00e65796beeb524b65b0f0c4aac48c6283431c40a97a2325fc8"
+  },
+  "units": "SVG absolute baseline pixels at 96 dpi; PDF native points times 4/3, without MediaBox normalization",
+  "upstream_vs_current_svg": {
+    "pages": 35,
+    "different_pages": []
+  },
+  "native_wasm_p26_png_identical": true,
+  "directly_viewed": [
+    "current native p25",
+    "current native p26",
+    "current native p27",
+    "current WASM p26",
+    "historical native p26"
+  ],
+  "scope": "Reported accumulating vertical-flow drift on page 26; not full document or font fidelity",
+  "source_artifact_reference": "mydocs/pr/assets/issue6706/visual_provenance.json",
+  "svg_hashes": {
+    "synam-001_001.svg": {
+      "upstream": "9977a428deed1160857d4f3728d06ab36946e82fdb4540d901672e2b886e46da",
+      "current": "9977a428deed1160857d4f3728d06ab36946e82fdb4540d901672e2b886e46da"
+    },
+    "synam-001_002.svg": {
+      "upstream": "81257aceb8c5772954d623426e4a9428f675998c5fc7de5fb2bdb2c923331578",
+      "current": "81257aceb8c5772954d623426e4a9428f675998c5fc7de5fb2bdb2c923331578"
+    },
+    "synam-001_003.svg": {
+      "upstream": "6f0ed05988033728af5a1c444ef1b369f5d98830add803c5b2fd8390d4415cd7",
+      "current": "6f0ed05988033728af5a1c444ef1b369f5d98830add803c5b2fd8390d4415cd7"
+    },
+    "synam-001_004.svg": {
+      "upstream": "15a313f63d4ad75c3a24d022e7a98cb306839061882b2926c8fca8d297c8b29f",
+      "current": "15a313f63d4ad75c3a24d022e7a98cb306839061882b2926c8fca8d297c8b29f"
+    },
+    "synam-001_005.svg": {
+      "upstream": "37108a1e19f57f6876297aec8fff980c767fd17a51694a3838abb5fb7a168ad0",
+      "current": "37108a1e19f57f6876297aec8fff980c767fd17a51694a3838abb5fb7a168ad0"
+    },
+    "synam-001_006.svg": {
+      "upstream": "08d164378fbfe672e1e4d47d1ddde6aa24394f71818705d0778d6d199cfb85ea",
+      "current": "08d164378fbfe672e1e4d47d1ddde6aa24394f71818705d0778d6d199cfb85ea"
+    },
+    "synam-001_007.svg": {
+      "upstream": "a64e6eaea535915725112e93669a3a712a1c28ecb4d3708c44a1de54e5476819",
+      "current": "a64e6eaea535915725112e93669a3a712a1c28ecb4d3708c44a1de54e5476819"
+    },
+    "synam-001_008.svg": {
+      "upstream": "ac3fbe83a8409867392608b4e2915fc610132a3093d030e8c5dce8d42ae8ad5c",
+      "current": "ac3fbe83a8409867392608b4e2915fc610132a3093d030e8c5dce8d42ae8ad5c"
+    },
+    "synam-001_009.svg": {
+      "upstream": "c6cd15fc2ae38911ec462e9bcf38e2e0714aa863c95cd37f3fc9f33547f31727",
+      "current": "c6cd15fc2ae38911ec462e9bcf38e2e0714aa863c95cd37f3fc9f33547f31727"
+    },
+    "synam-001_010.svg": {
+      "upstream": "b54b261f3ca2ce7a11ac75b62d27a6f9dec0086a9bf9c5f90a84dec2a005342b",
+      "current": "b54b261f3ca2ce7a11ac75b62d27a6f9dec0086a9bf9c5f90a84dec2a005342b"
+    },
+    "synam-001_011.svg": {
+      "upstream": "26cef86fbd76568b776cc01f93f0e240e23cc818f80a08d2154e22412bc16a16",
+      "current": "26cef86fbd76568b776cc01f93f0e240e23cc818f80a08d2154e22412bc16a16"
+    },
+    "synam-001_012.svg": {
+      "upstream": "6d460efee6dd40a3805f5d4898f800f98f098ccd1b3d0546379ad771e55d5e86",
+      "current": "6d460efee6dd40a3805f5d4898f800f98f098ccd1b3d0546379ad771e55d5e86"
+    },
+    "synam-001_013.svg": {
+      "upstream": "a9c8793f50dfe306116c2ffb3b9c35cd7fe3605b76032e47a50f96557ead2a20",
+      "current": "a9c8793f50dfe306116c2ffb3b9c35cd7fe3605b76032e47a50f96557ead2a20"
+    },
+    "synam-001_014.svg": {
+      "upstream": "3c7efbf5734d383145568a7fafb50ed40396ff161f028cf86cc4739acdd6776d",
+      "current": "3c7efbf5734d383145568a7fafb50ed40396ff161f028cf86cc4739acdd6776d"
+    },
+    "synam-001_015.svg": {
+      "upstream": "36057f0d473a7c1ad65b65e35c53efa2221171809d4409fa95ea5bcb3a404948",
+      "current": "36057f0d473a7c1ad65b65e35c53efa2221171809d4409fa95ea5bcb3a404948"
+    },
+    "synam-001_016.svg": {
+      "upstream": "ae764b8fcdb3ba766584005897fccc7483142cbc45a2c72eaae3a0dd341a43ce",
+      "current": "ae764b8fcdb3ba766584005897fccc7483142cbc45a2c72eaae3a0dd341a43ce"
+    },
+    "synam-001_017.svg": {
+      "upstream": "cf83d709c3c50e479528241bf2a52e9dbdc073094447171193c0a0636342aaa5",
+      "current": "cf83d709c3c50e479528241bf2a52e9dbdc073094447171193c0a0636342aaa5"
+    },
+    "synam-001_018.svg": {
+      "upstream": "47191bbba74b02d0613ef34a45a1c1b7325350c528e6ec36aa59794d14e3f508",
+      "current": "47191bbba74b02d0613ef34a45a1c1b7325350c528e6ec36aa59794d14e3f508"
+    },
+    "synam-001_019.svg": {
+      "upstream": "ffc4f6ca2e93b0dfe691c9a7fed6b41490f5d90d1f88d8cb238a37c2224fbfea",
+      "current": "ffc4f6ca2e93b0dfe691c9a7fed6b41490f5d90d1f88d8cb238a37c2224fbfea"
+    },
+    "synam-001_020.svg": {
+      "upstream": "852fc6628ce2826129926f8edc4dd04214f180ddcc900c6e9db259b085a2d084",
+      "current": "852fc6628ce2826129926f8edc4dd04214f180ddcc900c6e9db259b085a2d084"
+    },
+    "synam-001_021.svg": {
+      "upstream": "d001145ca69705425763622867b471b59ca92462e5eb735cdf374e2ae298f4f8",
+      "current": "d001145ca69705425763622867b471b59ca92462e5eb735cdf374e2ae298f4f8"
+    },
+    "synam-001_022.svg": {
+      "upstream": "82fed3e8ffe8a603ec0d294ea9d46b6690b4560b1804055dac6f93118b93ad97",
+      "current": "82fed3e8ffe8a603ec0d294ea9d46b6690b4560b1804055dac6f93118b93ad97"
+    },
+    "synam-001_023.svg": {
+      "upstream": "6c5234b77a7e08d599dc49c382b47e746fdfc541b1ff18d89ee872d1837e33d2",
+      "current": "6c5234b77a7e08d599dc49c382b47e746fdfc541b1ff18d89ee872d1837e33d2"
+    },
+    "synam-001_024.svg": {
+      "upstream": "52d3b2c599be73fcb3adbe03270453c7915308a24959975f68051ffe4ed07967",
+      "current": "52d3b2c599be73fcb3adbe03270453c7915308a24959975f68051ffe4ed07967"
+    },
+    "synam-001_025.svg": {
+      "upstream": "afcab8760246d6912199444448d69b41ba0f582ee602a96c3a0bc2e60ed56992",
+      "current": "afcab8760246d6912199444448d69b41ba0f582ee602a96c3a0bc2e60ed56992"
+    },
+    "synam-001_026.svg": {
+      "upstream": "afa861cf64e9f29026c59043532c2ebed2d96776fd3a04732f358efa3d37ed33",
+      "current": "afa861cf64e9f29026c59043532c2ebed2d96776fd3a04732f358efa3d37ed33"
+    },
+    "synam-001_027.svg": {
+      "upstream": "640452929c694a54a8fee1a2ae987d81cd8fd81642b44637dbee9dfca7ac007e",
+      "current": "640452929c694a54a8fee1a2ae987d81cd8fd81642b44637dbee9dfca7ac007e"
+    },
+    "synam-001_028.svg": {
+      "upstream": "efdcfedb549e9710ee4a3567e904779990d27e6c5a06f949a89286ddc8e3cb6b",
+      "current": "efdcfedb549e9710ee4a3567e904779990d27e6c5a06f949a89286ddc8e3cb6b"
+    },
+    "synam-001_029.svg": {
+      "upstream": "0a9493f8a2c4c71c2cb31988dbdce86a08bb46befa5caca0fe66818c8003d6ad",
+      "current": "0a9493f8a2c4c71c2cb31988dbdce86a08bb46befa5caca0fe66818c8003d6ad"
+    },
+    "synam-001_030.svg": {
+      "upstream": "a26e655b2bd48a68a924dbf1958ea51eac6f36c9af0ba038f194c21afdcbd9e2",
+      "current": "a26e655b2bd48a68a924dbf1958ea51eac6f36c9af0ba038f194c21afdcbd9e2"
+    },
+    "synam-001_031.svg": {
+      "upstream": "eae821cb832aa3adc7defb8db17f0d128d14336387d1b779cdf14ec5afdd5b4b",
+      "current": "eae821cb832aa3adc7defb8db17f0d128d14336387d1b779cdf14ec5afdd5b4b"
+    },
+    "synam-001_032.svg": {
+      "upstream": "24e9c0a8922da3492af665c6e4006793f71ad5b28687335b2e0ca0f8d60c41cb",
+      "current": "24e9c0a8922da3492af665c6e4006793f71ad5b28687335b2e0ca0f8d60c41cb"
+    },
+    "synam-001_033.svg": {
+      "upstream": "21479c3e53d2ff50ae200b94f762cc61710a1808fb01f9f74cca0dcb665b0229",
+      "current": "21479c3e53d2ff50ae200b94f762cc61710a1808fb01f9f74cca0dcb665b0229"
+    },
+    "synam-001_034.svg": {
+      "upstream": "a50888fa9f8632887441bca6c09a887825ef1b64612a362f9da7f8bdd487eda4",
+      "current": "a50888fa9f8632887441bca6c09a887825ef1b64612a362f9da7f8bdd487eda4"
+    },
+    "synam-001_035.svg": {
+      "upstream": "d08c047f8367dc5279b8f76b63b16f6898e7d95aa6c69ed68386d53ddfb62e9f",
+      "current": "d08c047f8367dc5279b8f76b63b16f6898e7d95aa6c69ed68386d53ddfb62e9f"
+    }
+  },
+  "historical_binary_sha256": "8fcc6c8c1bcfd59416fc8479003d8840468f0d5525cbd236c7cb0f585d5d0c04",
+  "historical_build": {
+    "exit_code": 0,
+    "profile": "release-test",
+    "elapsed": "2m16s",
+    "log": "history-build.log"
+  },
+  "sweep_exit_codes": {
+    "current_native": 0,
+    "current_wasm": 0,
+    "historical_native": 0
+  },
+  "measurements": {
+    "current": {
+      "units": "96 dpi physical pixels, PDF points * 4/3",
+      "svg": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/svg/synam-001_026.svg",
+      "pdf": "pdf/synam-001-2022.pdf",
+      "anchors": [
+        {
+          "anchor": "문의처",
+          "pdf_y": 183.2,
+          "svg_y": 181.333,
+          "delta": -1.867
+        },
+        {
+          "anchor": "(www.lh.or.kr)",
+          "pdf_y": 305.12,
+          "svg_y": 305.173,
+          "delta": 0.053
+        },
+        {
+          "anchor": "2022.07.27",
+          "pdf_y": 470.88,
+          "svg_y": 471.0,
+          "delta": 0.12
+        },
+        {
+          "anchor": "부천시",
+          "pdf_y": 747.52,
+          "svg_y": 745.76,
+          "delta": -1.76
+        },
+        {
+          "anchor": "한국토지주택공사인천지역본부",
+          "pdf_y": 856.0,
+          "svg_y": 854.187,
+          "delta": -1.813
+        },
+        {
+          "anchor": "’",
+          "pdf_y": 910.56,
+          "svg_y": 910.56,
+          "delta": 0.0
+        }
+      ]
+    },
+    "history": {
+      "units": "96 dpi physical pixels, PDF points * 4/3",
+      "svg": "/private/tmp/rhwp-issue-6701-20260915/history/issue6701/svg/synam-001_026.svg",
+      "pdf": "pdf/synam-001-2022.pdf",
+      "anchors": [
+        {
+          "anchor": "문의처",
+          "pdf_y": 183.2,
+          "svg_y": 181.333,
+          "delta": -1.867
+        },
+        {
+          "anchor": "(www.lh.or.kr)",
+          "pdf_y": 305.12,
+          "svg_y": 309.973,
+          "delta": 4.853
+        },
+        {
+          "anchor": "2022.07.27",
+          "pdf_y": 470.88,
+          "svg_y": 480.6,
+          "delta": 9.72
+        },
+        {
+          "anchor": "부천시",
+          "pdf_y": 747.52,
+          "svg_y": 755.36,
+          "delta": 7.84
+        },
+        {
+          "anchor": "한국토지주택공사인천지역본부",
+          "pdf_y": 856.0,
+          "svg_y": 871.507,
+          "delta": 15.507
+        },
+        {
+          "anchor": "’",
+          "pdf_y": 910.56,
+          "svg_y": 943.32,
+          "delta": 32.76
+        }
+      ]
+    }
+  },
+  "pdf_metadata": {
+    "format": "PDF 1.6",
+    "title": "",
+    "author": "LH",
+    "subject": "",
+    "keywords": "",
+    "creator": "Hwp 2022 12.0.0.4426",
+    "producer": "Hancom PDF 1.3.0.550",
+    "creationDate": "D:20260507173336+09'00'",
+    "modDate": "D:20260507173336+09'00'",
+    "trapped": "",
+    "encryption": null
+  },
+  "sweep_manifests": {
+    "current": {
+      "schema_version": 1,
+      "key": "issue6701",
+      "provenance": {
+        "hwp": {
+          "path": "samples/synam-001.hwp",
+          "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+        },
+        "pdf": {
+          "path": "pdf/synam-001-2022.pdf",
+          "sha256": "2f430884f916f00e65796beeb524b65b0f0c4aac48c6283431c40a97a2325fc8"
+        },
+        "git_head": "a95bae7fe63d0b2c26f9dfcac4287baf270f57cb",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/private/tmp/rhwp-issue-6706-20260915/rhwp-final",
+          "path": "/private/tmp/rhwp-issue-6706-20260915/rhwp-final",
+          "sha256": "070ead655002490560731dd84884a41f05b68357e3cea057ab73f34f19a05f25"
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "requested_pages": [
+        25,
+        26,
+        27
+      ],
+      "requested_page_shards": [
+        [
+          25,
+          26,
+          27
+        ]
+      ],
+      "run_state": "complete"
+    },
+    "current-wasm": {
+      "schema_version": 1,
+      "key": "issue6701",
+      "provenance": {
+        "hwp": {
+          "path": "samples/synam-001.hwp",
+          "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+        },
+        "pdf": {
+          "path": "pdf/synam-001-2022.pdf",
+          "sha256": "2f430884f916f00e65796beeb524b65b0f0c4aac48c6283431c40a97a2325fc8"
+        },
+        "git_head": "a95bae7fe63d0b2c26f9dfcac4287baf270f57cb",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/private/tmp/rhwp-issue-6706-20260915/rhwp-final",
+          "path": "/private/tmp/rhwp-issue-6706-20260915/rhwp-final",
+          "sha256": "070ead655002490560731dd84884a41f05b68357e3cea057ab73f34f19a05f25"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/private/tmp/rhwp-issue-6706-20260915/wasm-pkg/rhwp.js",
+              "sha256": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899"
+            },
+            {
+              "path": "/private/tmp/rhwp-issue-6706-20260915/wasm-pkg/rhwp_bg.wasm",
+              "sha256": "80d395bd09fc73cc0a642df64cf4209612526dd5ff7b71347da57157f09a0a41"
+            }
+          ],
+          "exporter_sha256": "fa92267b32f4f7617f60e02b37427762fd251d52196c9a001e6e8232c997a3aa",
+          "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "requested_pages": [
+        26
+      ],
+      "requested_page_shards": [
+        [
+          26
+        ]
+      ],
+      "run_state": "complete"
+    },
+    "history": {
+      "schema_version": 1,
+      "key": "issue6701",
+      "provenance": {
+        "hwp": {
+          "path": "samples/synam-001.hwp",
+          "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+        },
+        "pdf": {
+          "path": "pdf/synam-001-2022.pdf",
+          "sha256": "2f430884f916f00e65796beeb524b65b0f0c4aac48c6283431c40a97a2325fc8"
+        },
+        "git_head": "a95bae7fe63d0b2c26f9dfcac4287baf270f57cb",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/private/tmp/rhwp-issue-6701-20260915/rhwp-history",
+          "path": "/private/tmp/rhwp-issue-6701-20260915/rhwp-history",
+          "sha256": "8fcc6c8c1bcfd59416fc8479003d8840468f0d5525cbd236c7cb0f585d5d0c04"
+        }
+      },
+      "dpi": 96,
+      "pixel_diff_threshold": 32,
+      "requested_pages": [
+        26
+      ],
+      "requested_page_shards": [
+        [
+          26
+        ]
+      ],
+      "run_state": "complete"
+    }
+  },
+  "historical_manifest_note": "Sweep ran from current worktree a95bae7fe; its git_head identifies sweep tooling, not the historical renderer. Historical renderer source is historical_source_sha and its binary hash is recorded separately.",
+  "source_input_already_tracked": [
+    "pdf/synam-001-2022.pdf",
+    "samples/synam-001.hwp"
+  ],
+  "captured_evidence_sha256": {
+    "current_p025.png": "1325cd77f2e67985cad9789b13379e6de12d9bd250b05665d14422c885eb0adf",
+    "current_p026.png": "729e01c303ae65816423d2f7ecc9b4ee6cfc40c8e23af16def3b2187b45d518c",
+    "current_p027.png": "f7079e8e8ea9659c3d25eef20721a379cd289434d9975c1e834b7d71ac139d20",
+    "current_wasm_p026.png": "108ee37d43a1206c8a4701c8b7725207e33371a1db12d9e6cdcc9ff289275d89",
+    "history_p026.png": "208dbb22177e116ccf993b5c3f87ea2ef16d7a8b68194cb7777a46d88dcf5f03"
+  },
+  "verification_logs_sha256": "5364f9b027bc0947c5accfe74e0e18a0c23205428495abb44f8cea460c8d8b5e"
+}

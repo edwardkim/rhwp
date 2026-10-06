@@ -28,11 +28,19 @@ impl crate::wmf::parser::META_ESCAPE {
             });
         }
 
-        let data_length = size
-            - (u32::try_from(size_of::<crate::wmf::parser::PointL>())
-                .expect("should be convert u32")
-                + 4
-                + 4);
+        // [fuzz] `size` 는 머리(PointL + 4 + 4)를 포함한 값이다 — 그보다 작으면 잘못된 레코드다.
+        let header_length = u32::try_from(size_of::<crate::wmf::parser::PointL>())
+            .expect("should be convert u32")
+            + 4
+            + 4;
+        let data_length = size.checked_sub(header_length).ok_or_else(|| {
+            crate::wmf::parser::ParseError::UnexpectedPattern {
+                cause: format!(
+                    "The size field `{size:#06X}` must be at least the header length \
+                     `{header_length:#06X}`",
+                ),
+            }
+        })?;
         let (data, c) = crate::wmf::parser::read_variable(buf, data_length as usize)?;
         record_size.consume(c);
 

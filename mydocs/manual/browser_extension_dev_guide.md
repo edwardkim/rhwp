@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-09-01
+last_verified: 2026-09-20
 ---
 
 # 브라우저 확장 프로그램 개발 가이드 (Safari/Chrome/Edge/Firefox)
@@ -524,7 +524,10 @@ Safari는 downloads API가 없어 content-script→background fetch 경로를 �
 - HWP 판정은 `rhwp-shared/sw/download-interceptor-common.js`, 다운로드 신선도·상태 전이는
   `rhwp-shared/sw/download-observer-state.js`를 공통으로 사용한다.
 - `onChanged` 단독 과거 항목, 과거 완료 `onCreated`, 이미 handled인 id는 열지 않는다.
-- 같은 download id의 비동기 처리가 겹칠 수 있으므로 탭을 열기 전 in-flight 선점이 필요하다.
-  Chrome/Edge는 설정 storage 조회 전에 id를 선점하고 `finally`에서 해제한다.
+- 같은 download id의 비동기 처리는 최초 추적 상태의 조회·저장부터 직렬화해야 한다 (#6988).
+  Chrome/Edge는 onCreated/onChanged 수신 시 ID별 Promise 큐에 등록하고, 후보 처리와 terminal
+  기록까지 순서대로 진행한다. 다른 ID는 독립적으로 처리하며 마지막 이벤트가 끝나면 큐에서 제거한다.
+  실패한 이벤트는 오류를 기록하고 다음 이벤트를 진행한다. 생성 이벤트의 신선도는 수신 시각으로
+  판단하고, worker 재시작 이후의 추적·중복 방지는 기존 session 상태를 사용한다.
 - terminal 상태를 기록할 때는 처리 전의 오래된 state가 아니라 `handledAt`이 반영된 최신 state를
   이어서 사용해야 한다.

@@ -25,9 +25,9 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "dd4604d3f12377ce8deab730d246df72e2e19e607ad11ad8973671698873873b",
+  "inputSha256": "6148c568b05fea9ec317759bfc7a19762f93eded557c5b5af01efbb7057ed266",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "730cab042d68ffb019d5867102ee8b2b8e5be41c48170ca5fc75422005e3fbee",
+  "projectionSha256": "b6ff0ce6d73634bc75b15d2ed20f70465d7a32f9c525b8030b365d7a7f464245",
   "ruleCount": 153
 });
 
@@ -737,12 +737,12 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d",
+    "ruleId": "rule.studio-supply.batangche-serif.canvas2d",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "바탕체",
-    "targetFaceOrPolicy": "'fonts/D2Coding-Regular.woff2'",
+    "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'",
     "conditions": {
       "profile": "canvas2d-css-unknown"
     },
@@ -754,7 +754,7 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
       "fontFamily": "바탕체",
       "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "fonts/D2Coding-Regular.woff2",
+      "sourceUrl": "fonts/NotoSerifKR-Regular.woff2",
       "unicodeRange": null
     }
   },

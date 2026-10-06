@@ -1,3 +1,4 @@
+import { isBodyControl } from './picture-hit-policy.ts';
 /** 연결선 드로잉 모드 — input-handler에서 호출되는 헬퍼 함수 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -27,7 +28,7 @@ export function findNearestConnectionPoint(
   excludeRef?: { sec: number; ppi: number; ci: number },
 ): ConnectionPoint | null {
   try {
-    const layout = this.wasm.getPageControlLayout(pageIdx);
+    const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isBodyControl) };
     let best: ConnectionPoint | null = null;
     let bestDist = threshold;
 
@@ -76,7 +77,7 @@ export function showConnectionPointOverlay(
 ): void {
   removeConnectionPointOverlay.call(this);
 
-  const layout = this.wasm.getPageControlLayout(pageIdx);
+  const layout = { controls: this.wasm.getPageControlLayout(pageIdx).controls.filter(isBodyControl) };
   const sc = this.container.querySelector('#scroll-content');
   if (!sc) return;
   const zoom = this.viewportManager.getZoom();

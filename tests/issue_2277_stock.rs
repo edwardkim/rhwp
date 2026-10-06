@@ -156,8 +156,9 @@ fn stock_five_series_keeps_candles_and_hilow() {
         // 나머지 4계열은 코퍼스의 `a:ln > a:noFill` 을 지킨다. 그래서 계열 선은 추가계열
         // 하나뿐이다 — 한컴 편집기가 더한 계열이 선+마커로 보이는 것과 같은 모양이다.
         // (위치 기반 시절의 산출은 전건 noFill 상속이라 선 0 이었다 — 원장 재판정 대기.)
+        // 기본 계열 선은 Office 기본 2.25pt = 3px (#6624 — `a:ln w` 없을 때).
         assert_eq!(
-            svg.matches(r#"stroke-width="2""#).count(),
+            svg.matches(r#"stroke-width="3.00""#).count(),
             1,
             "{rel}: 기본 스타일은 추가계열 하나 — 계열 선 1",
         );

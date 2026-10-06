@@ -1,0 +1,1049 @@
+{
+  "parent_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+  "source_snapshot": {
+    "head": "f436db11333ff90088220681b13b2edcfe88e59a",
+    "dirty_source": true,
+    "binary_sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24",
+    "files": {
+      "src/document_core/queries/rendering.rs": "3784d247c39c5885927b0a3e5345bf36baff4b195ea079a2a29efe819fea2b77",
+      "src/renderer/float_placement.rs": "17afa384b306b0fa608d43aa1a379a9beaf19f48bc6a96b92294271ce4cb6b07",
+      "src/renderer/height_measurer.rs": "cafca111c32ac37273cc71d3ddc047e0dbc271720988f2952606b5ab63c9d043",
+      "src/renderer/layout/table_layout.rs": "ab5f13596267894c806f1c47414c433764cc585310f42953a5969d90371b253b"
+    },
+    "test_files": {
+      "tests/cases/maintainer_hwpx_overlay_table_extent.rs": "dad7bef786a8dd1c9e11b75a2a2514fd21509c3632c46f523d2f00b6d9d644ff"
+    }
+  },
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "new_contract_tests": {
+    "passed": 3,
+    "skipped": 204,
+    "exit_code": 0,
+    "before_source_page_assertion_failures": 3,
+    "before_after_test_metrics_changed_reason": "초기 검사는 PDF 잉크 상단과 글줄 상단을 혼동해 교정했다. 수정 전3FAIL의 페이지 소유 assertion은 변경하지 않았다. 테스트 파일 전체가 전후 동일했다고 주장하지 않는다."
+  },
+  "controls": {
+    "passed": 42,
+    "skipped": 1288,
+    "exit_code": 0
+  },
+  "group_controls": {
+    "passed": 9,
+    "skipped": 419,
+    "exit_code": 0
+  },
+  "gates": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.5968052498064935
+    },
+    {
+      "name": "controls",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_6535_low_slack_absorb_keeps_page) or test(issue_6535_page_anchored_block_vpos_zero) or test(issue_6950_paragraph_end_topbottom_anchor) or test(issue_6312_float_anchor_line_uses_source_vpos) or test(issue_6535_page_anchored_block_keeps_page) or test(issue_6312_tab_host_line_kept) or test(issue_6102_section_first_line_overflow) or test(issue_5593_cell_center_front_object)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 34.07517179194838
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 26.271597458049655
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 21.34997933311388
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 39.072927417233586
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 40.4746597497724
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8146357089281082
+    },
+    {
+      "name": "unit-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 10.353960167150944
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.05248337518423796
+    },
+    {
+      "name": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 178.4531895830296
+    }
+  ],
+  "native_visual_results": [
+    {
+      "key": "low6535",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/36339092_low_slack_absorb_block-2020.pdf",
+        "--key",
+        "low6535",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 8.271345708053559
+    },
+    {
+      "key": "page6535",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6535/36404612_page_anchored_footer_block.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+        "--key",
+        "page6535",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 1,
+      "seconds": 8.731547083240002
+    },
+    {
+      "key": "overtime6102",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6102/36310257_overtime_report.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+        "--key",
+        "overtime6102",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 8.21552204200998
+    },
+    {
+      "key": "para6950",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/hwpx/20260909-para-table.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/hwpx/20260909-para-table-2024.pdf",
+        "--key",
+        "para6950",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 25.18640320841223
+    },
+    {
+      "key": "anchor6312",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+        "--key",
+        "anchor6312",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native",
+        "--pages",
+        "1-4",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 30.726963541004807
+    }
+  ],
+  "wasm_visual_results": [
+    {
+      "key": "low6535",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/36339092_low_slack_absorb_block-2020.pdf",
+        "--key",
+        "low6535",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 21.530987875070423
+    },
+    {
+      "key": "page6535",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6535/36404612_page_anchored_footer_block.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+        "--key",
+        "page6535",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg"
+      ],
+      "exit_code": 1,
+      "seconds": 22.16924679186195
+    },
+    {
+      "key": "overtime6102",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6102/36310257_overtime_report.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+        "--key",
+        "overtime6102",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 21.263192208018154
+    },
+    {
+      "key": "para6950",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/hwpx/20260909-para-table.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/hwpx/20260909-para-table-2024.pdf",
+        "--key",
+        "para6950",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 30.453634208999574
+    },
+    {
+      "key": "anchor6312",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+        "--key",
+        "anchor6312",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-wasm",
+        "--pages",
+        "1-4",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 35.673690625000745
+    }
+  ],
+  "visual": [
+    {
+      "backend": "native",
+      "key": "low6535",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 96.73936,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+          "sha256": "28f17fae566427400084a30985a62e731c1907c42b25d52eaa000bb61a83e0ad"
+        },
+        "pdf": {
+          "path": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+          "sha256": "0772e32e1a98a22042a2c25755ab493fe2b79d5096a1ce9ad5d5b3a400d6f809"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "key": "page6535",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 89.95899
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 89.95899,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6535/36404612_page_anchored_footer_block.hwpx",
+          "sha256": "c187c26644dcdece4b784751250fbcaaa274b34e7662de73505fe0bab6bc013e"
+        },
+        "pdf": {
+          "path": "pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+          "sha256": "6b6aff710e6fc1c943cbd56e05a924e8514b58e6030add7d6c8db5d8e2bb2f97"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "key": "overtime6102",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 91.751,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6102/36310257_overtime_report.hwpx",
+          "sha256": "63827422afe5456995852e74d963ebbe1c7a95dcc6b5b4434a54619af1275c00"
+        },
+        "pdf": {
+          "path": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+          "sha256": "722d24b73684fbdc3e005dddb812cbdf5e0220acae2565242d48a0546a4828ae"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "key": "para6950",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 3,
+      "svg_pages": 3,
+      "worst_tolerant_content_match_percent": 98.66178,
+      "provenance": {
+        "hwp": {
+          "path": "samples/hwpx/20260909-para-table.hwpx",
+          "sha256": "cbf2ee7235861e93011d80834bfc49525349f6776c929b98ebd4f06003581d07"
+        },
+        "pdf": {
+          "path": "pdf/hwpx/20260909-para-table-2024.pdf",
+          "sha256": "c24244980c2c428b06575a1d948349a0971ba168898956a2bbfcccda816dc5ad"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "key": "anchor6312",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 4,
+      "svg_pages": 4,
+      "worst_tolerant_content_match_percent": 92.79928,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918"
+        },
+        "pdf": {
+          "path": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "low6535",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 96.73936,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+          "sha256": "28f17fae566427400084a30985a62e731c1907c42b25d52eaa000bb61a83e0ad"
+        },
+        "pdf": {
+          "path": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+          "sha256": "0772e32e1a98a22042a2c25755ab493fe2b79d5096a1ce9ad5d5b3a400d6f809"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "page6535",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 89.95899
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 89.95899,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6535/36404612_page_anchored_footer_block.hwpx",
+          "sha256": "c187c26644dcdece4b784751250fbcaaa274b34e7662de73505fe0bab6bc013e"
+        },
+        "pdf": {
+          "path": "pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+          "sha256": "6b6aff710e6fc1c943cbd56e05a924e8514b58e6030add7d6c8db5d8e2bb2f97"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "overtime6102",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 1,
+      "svg_pages": 1,
+      "worst_tolerant_content_match_percent": 91.751,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6102/36310257_overtime_report.hwpx",
+          "sha256": "63827422afe5456995852e74d963ebbe1c7a95dcc6b5b4434a54619af1275c00"
+        },
+        "pdf": {
+          "path": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+          "sha256": "722d24b73684fbdc3e005dddb812cbdf5e0220acae2565242d48a0546a4828ae"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "para6950",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 3,
+      "svg_pages": 3,
+      "worst_tolerant_content_match_percent": 98.66178,
+      "provenance": {
+        "hwp": {
+          "path": "samples/hwpx/20260909-para-table.hwpx",
+          "sha256": "cbf2ee7235861e93011d80834bfc49525349f6776c929b98ebd4f06003581d07"
+        },
+        "pdf": {
+          "path": "pdf/hwpx/20260909-para-table-2024.pdf",
+          "sha256": "c24244980c2c428b06575a1d948349a0971ba168898956a2bbfcccda816dc5ad"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "anchor6312",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pdf_pages": 4,
+      "svg_pages": 4,
+      "worst_tolerant_content_match_percent": 92.77058,
+      "provenance": {
+        "hwp": {
+          "path": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918"
+        },
+        "pdf": {
+          "path": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f"
+        },
+        "git_head": "f436db11333ff90088220681b13b2edcfe88e59a",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+          "sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-wasm-pkg/rhwp_bg.wasm",
+              "sha256": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  ],
+  "wasm_package": {
+    "head": "f436db11333ff90088220681b13b2edcfe88e59a",
+    "dirty_source": true,
+    "binary_sha256": "6a9705e06b4e99a1053f2e41cab5447d8c56da7455991e81c312894f7e4a7f24",
+    "files": {
+      "src/document_core/queries/rendering.rs": "3784d247c39c5885927b0a3e5345bf36baff4b195ea079a2a29efe819fea2b77",
+      "src/renderer/float_placement.rs": "17afa384b306b0fa608d43aa1a379a9beaf19f48bc6a96b92294271ce4cb6b07",
+      "src/renderer/height_measurer.rs": "cafca111c32ac37273cc71d3ddc047e0dbc271720988f2952606b5ab63c9d043",
+      "src/renderer/layout/table_layout.rs": "ab5f13596267894c806f1c47414c433764cc585310f42953a5969d90371b253b"
+    },
+    "package_sha256": {
+      "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp_bg.wasm": "4cdd23354575e2bd4b8879ef4519de7115f33127e704d640b0f7f982bf3de959"
+    },
+    "root_pkg_studio_frozen_identical": true,
+    "local_alternative_build": true,
+    "docker_optimized_build_verified": false
+  },
+  "main_tree_difference": [
+    {
+      "kind": "hwp",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-main-tree/hwp"
+      ],
+      "exit_code": 0,
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [],
+      "tree_comparison_is_not_full_raster_fidelity": true
+    },
+    {
+      "kind": "hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/stage47-main-tree/hwpx"
+      ],
+      "exit_code": 0,
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [],
+      "tree_comparison_is_not_full_raster_fidelity": true
+    }
+  ],
+  "group_visual_results": [
+    {
+      "key": "group2470",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue2470/36382471_masked.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue2470/36382471_masked-2022.pdf",
+        "--key",
+        "group2470",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native-groups",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 11.567990124691278
+    },
+    {
+      "key": "group2083",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue2083_hide_fill_page.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue2083_hide_fill_page-hwpx-2020.pdf",
+        "--key",
+        "group2083",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native-groups",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 11.423977166879922
+    },
+    {
+      "key": "group6787",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6787/16774617-electronic-ballot-form.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/16774617-electronic-ballot-form-2020.pdf",
+        "--key",
+        "group6787",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/stage47-rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/stage47-native-groups",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 1,
+      "seconds": 10.797851209063083
+    }
+  ],
+  "full_current_nextest_verified": false,
+  "full_current_visual_accepted": false,
+  "final_decision": "HOLD",
+  "remaining": "page6535 게이트/위치, group6787 원점, 기존 전수 및 기타 회귀 보류"
+}

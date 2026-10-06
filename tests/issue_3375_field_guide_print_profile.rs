@@ -8,6 +8,9 @@
 //! 렌더러는 렌더 트리를 직접 순회해 그 계약 밖에 있었다 — 두 곳을 함께 맞춘다.
 #![cfg(not(target_arch = "wasm32"))]
 
+use rhwp::paint::RenderProfile;
+use rhwp::renderer::svg::FontEmbedMode;
+use rhwp::DocumentCore;
 use std::path::Path;
 
 const SAMPLE: &str = "samples/field-01.hwp";
@@ -21,9 +24,13 @@ fn svg_text(profile: &str) -> String {
     let svg = doc
         .render_page_svg_with_profile(0, profile)
         .unwrap_or_else(|e| panic!("render {profile}: {e:?}"));
+    visible_text(&svg)
+}
+
+fn visible_text(svg: &str) -> String {
     // `<text>` 안 내용만 이어 붙여 공백을 지운다 — SVG 는 글자를 여러 요소로 쪼갠다.
     let mut out = String::new();
-    let mut rest = svg.as_str();
+    let mut rest = svg;
     while let Some(open) = rest.find("<text") {
         let after = &rest[open..];
         let Some(gt) = after.find('>') else {
@@ -60,6 +67,17 @@ fn print_profile_suppresses_field_guide() {
     assert!(
         !text.contains(&guide_needle()),
         "인쇄 프로필에 안내문이 남았다: {text}"
+    );
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(&path).expect("누름틀 문서를 읽는다");
+    let core = DocumentCore::from_bytes(&bytes).expect("누름틀 문서를 연다");
+    let with_fonts = core
+        .render_page_svg_with_fonts_and_profile(0, FontEmbedMode::Style, &[], RenderProfile::Print)
+        .expect("글꼴을 공급한 인쇄 SVG");
+    assert_eq!(
+        visible_text(&with_fonts),
+        text,
+        "시각 비교의 글꼴 공급 경로도 누름틀 안내문만 빼야 한다"
     );
 }
 

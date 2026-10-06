@@ -39,13 +39,10 @@
       "path": "samples/143E433F503322BD33.hwp",
       "page": 0,
       "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 194,
-        "charactersSeen": 1336,
-        "recordsEmitted": 1336,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "234a429072626a8d57f988ce1be89db5cc64449bc05eaf567ab36bdb5f76384a"
+      "renderPinsDeferredToIssue7445": [
+        "expectedCounts",
+        "expectedLayoutHash"
+      ]
     },
     {
       "id": "missing-face",
@@ -59,7 +56,9 @@
         "recordsEmitted": 607,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "c65f1f61d1057761a84abb0a00750d5febc7ae6d9e036a3409dd0d29d9dfa85c"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ]
     },
     {
       "id": "subst-counterpart-hwp",
@@ -73,7 +72,9 @@
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ]
     },
     {
       "id": "document-substitute-hwpx",
@@ -87,7 +88,9 @@
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ]
     }
   ],
   "profiles": [

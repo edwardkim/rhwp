@@ -23,9 +23,9 @@
       ]
     },
     {
-      "name": "목차1[2] 공란",
+      "name": "목차1[2] 안내문구 유지",
       "op": "value_eq",
-      "value": "",
+      "value": "목차 입력",
       "path": "fields[7].value",
       "cmd": [
         "fields",

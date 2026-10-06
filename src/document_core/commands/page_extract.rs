@@ -22,6 +22,10 @@ pub struct PageExtractReport {
     pub kept: usize,
     /// 지운 문단 수
     pub removed: usize,
+    /// [#6840] 정리 전 `BinData` 항목 수
+    pub bin_data_before: usize,
+    /// [#6840] 정리 후 `BinData` 항목 수
+    pub bin_data_after: usize,
 }
 
 impl DocumentCore {
@@ -74,6 +78,11 @@ impl DocumentCore {
             }
         }
 
+        // [#6840] 남은 문단이 참조하지 않는 그림은 버린다. 이 정리가 없으면 쪽을 한
+        // 장만 남겨도 `BinData` 가 그대로 따라가 파일이 거의 줄지 않고(6.5MB → 5.2MB),
+        // 지운 쪽에 있던 그림 원본이 산출물 안에 남는다 — 부분 제출에서는 유출이다.
+        let bin_data = super::bin_data_prune::prune_unreferenced_bin_data(&mut self.document);
+
         self.invalidate_page_tree_cache();
         self.paginate_if_needed();
         Ok(PageExtractReport {
@@ -81,6 +90,8 @@ impl DocumentCore {
             pages_after: self.page_count(),
             kept,
             removed,
+            bin_data_before: bin_data.before,
+            bin_data_after: bin_data.after,
         })
     }
 

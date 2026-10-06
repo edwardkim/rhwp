@@ -1,0 +1,92 @@
+name: Refresh nextest target duration data
+
+# #7070: branch merges run metadata refresh only. Never build/test or request a CI fallback.
+on:
+  push:
+    branches: [devel]
+  workflow_dispatch:
+
+permissions: {}
+concurrency:
+  group: nextest-target-duration-data
+  cancel-in-progress: false
+
+jobs:
+  refresh-nextest-target-duration-data:
+    name: Refresh nextest target duration data
+    if: github.ref == 'refs/heads/devel'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - name: Collect verified PR duration measurements
+        id: collect
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DURATION_DIR: ${{ runner.temp }}/postmerge-duration-data
+        with:
+          script: |
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const { collectPostmergeDurations } = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE, 'scripts/collect-postmerge-duration-data.mjs',
+            )).href);
+            const result = await collectPostmergeDurations({
+              github, ...context.repo, mergeSha: context.sha, outputDir: process.env.DURATION_DIR,
+              notice: (message) => core.notice(message),
+            });
+            core.setOutput('ready', String(result.ready));
+            core.info(JSON.stringify(result));
+            await core.summary.addHeading('PR duration metadata refresh')
+              .addCodeBlock(JSON.stringify(result, null, 2), 'json').write();
+      - name: Refresh duration policy data branch
+        if: steps.collect.outputs.ready == 'true'
+        shell: bash
+        env:
+          METRICS_BRANCH: ci-metrics/nextest-target-durations
+          DURATION_DIR: ${{ runner.temp }}/postmerge-duration-data
+          OUTPUT_POLICY: ${{ runner.temp }}/nextest-target-duration-policy.json
+        run: |
+          set -euo pipefail
+
+          current_devel_sha="$(git ls-remote origin refs/heads/devel | awk 'NR == 1 { print $1 }')"
+          if [[ "${current_devel_sha}" != "${GITHUB_SHA}" ]]; then
+            echo "::notice::A newer devel commit exists; this older measurement is not published."
+            exit 0
+          fi
+
+          node scripts/refresh-nextest-target-duration-policy.mjs \
+            --policy tests/suites/nextest-target-duration-policy.json \
+            --measurement "${DURATION_DIR}/duration-b/target-durations-b.json" \
+            --measurement "${DURATION_DIR}/duration-c/target-durations-c.json" \
+            --measurement "${DURATION_DIR}/duration-d/target-durations-d.json" \
+            --output "${OUTPUT_POLICY}"
+
+          if git ls-remote --exit-code origin "refs/heads/${METRICS_BRANCH}" >/dev/null 2>&1; then
+            git fetch --depth=1 origin \
+              "refs/heads/${METRICS_BRANCH}:refs/remotes/origin/${METRICS_BRANCH}"
+            git switch --detach "refs/remotes/origin/${METRICS_BRANCH}"
+          else
+            git switch --orphan "${METRICS_BRANCH}"
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          cp "${OUTPUT_POLICY}" nextest-target-duration-policy.json
+          git add nextest-target-duration-policy.json
+          if git diff --cached --quiet; then
+            echo 'Duration policy data is unchanged.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "ci: nextest target duration data ${GITHUB_SHA}"
+          git push origin "HEAD:refs/heads/${METRICS_BRANCH}"
+

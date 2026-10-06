@@ -4,7 +4,7 @@
   "rewritten": false,
   "schemaVersion": "1.0",
   "hancomYears": ["2018", "2020", "2022", "2024"],
-  "oracleRoots": ["pdf", "pdf-2020", "pdf-large"],
+  "oracleRoots": ["pdf"],
   "sourceFormats": ["hwp", "hwpx"],
   "pairRequired": [
     "sample",

@@ -1,0 +1,35 @@
+[
+  {
+    "path": "samples/2025 행정업무운영 편람(최종).hwp",
+    "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+    "sha1": "8b7211b2a30bfb51c1fd4811c247071d9b59855a",
+    "commitMatches": true
+  },
+  {
+    "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+    "sha256": "6c7be7602cb92bb9b5e6a0b66e9cd80700fceabeade89fabd1a0fcd32adc4413",
+    "sha1": "3c870712f1bc816d9ff1322ded5f460ee247d7b8",
+    "commitMatches": true,
+    "pdfMetadata": "Producer:        cairo 1.18.0 (https://cairographics.org)\nPages:           383\nPage size:       556 x 754 pts\nPDF version:     1.7"
+  },
+  {
+    "path": "pdf/2025 행정업무운영 편람(최종)-2010-no-ttf.pdf",
+    "sha256": "c33fbf6be76ae43e8254321ec99b5ab3963e492ff4b6179d7c9717ecac2a05e0",
+    "sha1": "d8a2846fa4ebc0e5356c149e7d1cabbd42511be1",
+    "commitMatches": true,
+    "pdfMetadata": "Creator:         Hancom PDF 1.3.0.404\nProducer:        Hancom PDF 1.3.0.404\nPages:           389\nPage size:       555 x 754 pts\nPDF version:     1.4"
+  },
+  {
+    "path": "samples/86712_regulatory_analysis.hwp",
+    "sha256": "32e2ed30e5d744ad747f04f090c022eca8270f9dd2d55e0613e2ad61058099e9",
+    "sha1": "5a8c7aea85207ef0c88d00ebd043c1acc3882c2e",
+    "commitMatches": true
+  },
+  {
+    "path": "pdf/issue1921/86712_regulatory_analysis-2024.pdf",
+    "sha256": "b612638c849d967cf3005d0a7c82df18f47ac66f3b2777632ffe0912135b4a81",
+    "sha1": "ed9c1196270f4c76bf15cf4c228445286a5e65ae",
+    "commitMatches": true,
+    "pdfMetadata": "Creator:         Hwp 2024 13.0.0.3622\nProducer:        Hancom PDF 1.3.0.550\nPages:           65\nPage size:       595 x 841 pts (A4)\nPDF version:     1.6"
+  }
+]

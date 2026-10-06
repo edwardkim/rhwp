@@ -16,6 +16,17 @@
       "op": "file_exists",
       "file": "chart.csv",
       "minBytes": 8
+    },
+    {
+      "name": "라이브 CSV 전체 일치",
+      "op": "text_file_envelope_eq",
+      "file": "chart.csv",
+      "path": "charts[0].csv",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
     }
   ],
   "axis": "추출"

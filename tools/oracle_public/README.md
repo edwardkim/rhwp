@@ -19,7 +19,7 @@ python tools/oracle_public/page_smoke.py
 - `pdf/{stem}.pdf`
 - `pdf/{stem}-*.pdf`
 
-기본 PDF 루트: `pdf/` · `pdf-2020/` · `pdf-large/`. 문서 루트: `samples/`.
+기본 PDF 루트: `pdf/` 하나. 문서 루트: `samples/`.
 
 ## CI (tiny fixture, 269 PDF 불필요)
 
@@ -35,7 +35,7 @@ python -m unittest tools/oracle_public/test_page_smoke.py
 sparse checkout 에 PDF 트리가 있어야 한다.
 
 ```text
-git sparse-checkout add pdf pdf-2020 pdf-large
+git sparse-checkout add pdf
 cargo build --release --bin rhwp
 python tools/oracle_public/page_smoke.py
 python tools/oracle_public/page_smoke.py --json > page-smoke.json
@@ -79,7 +79,8 @@ python tools/oracle_public/page_smoke.py --pdf-count pdf/foo-2022.pdf
 `.hwp` 는 `-hwpx-{year}` PDF 와, `.hwpx` 는 `-hwp-{year}` PDF 와 짝짓지 않는다.
 
 목표 약 269쌍은 이슈의 참고값이다. 실제 개수는 매니페스트의 `pairCount` 를 따른다.
-devel(sparse `pdf`/`pdf-2020`/`pdf-large`) 실측은 링크 409쌍, 매칭 샘플 389, 짝 없음 305.
+실측값은 체크인된 `oracle_pairs.json`의 `pairCount`, `matchedSampleCount`,
+`unmatchedCount`를 따른다. 디렉터리 이름으로 한글 버전을 추론하지 않는다.
 
 ## 한 줄로 매니페스트 만들기
 
@@ -89,17 +90,17 @@ devel(sparse `pdf`/`pdf-2020`/`pdf-large`) 실측은 링크 409쌍, 매칭 샘�
 python tools/oracle_public/oracle_resolver.py --pretty --validate -o tools/oracle_public/oracle_pairs.json
 ```
 
-오라클 PDF 가 비어 있으면 먼저 `git sparse-checkout add pdf pdf-2020 pdf-large crates` 를 한다.
+오라클 PDF 가 비어 있으면 먼저 `git sparse-checkout add pdf crates` 를 한다.
 
 ## 요구사항
 
 - Python 3.10+ (표준 라이브러리만 사용)
-- `samples/` 와 하나 이상의 `pdf/` · `pdf-2020/` · `pdf-large/`
+- `samples/` 와 단일 오라클 루트 `pdf/`
 
 ## 매칭 규칙
 
 1. `samples/` 를 재귀 순회해 `.hwp`/`.hwpx` 만 수집한다.
-2. 같은 상대 하위 경로를 `pdf/`, `pdf-2020/`, `pdf-large/` 에서 찾는다.
+2. 같은 상대 하위 경로를 `pdf/` 에서 찾는다.
 3. 파일명이 `{stem}-{year}.pdf` 이거나 `{stem}-hwp-{year}.pdf` /
    `{stem}-hwpx-{year}.pdf` / `{stem}-hwp-kopub-{year}.pdf` 등 허용 변형이다.
 4. `{stem}.pdf` 이면서 stem 안에 2018·2020·2022·2024 토큰이 있으면 그 연도로 짝짓는다.

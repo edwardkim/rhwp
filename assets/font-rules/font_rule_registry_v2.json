@@ -1,5 +1,21 @@
 {
-  "appliedChangeSets": [],
+  "appliedChangeSets": [
+    {
+      "changeSetId": "issue-7023.batangche-serif-supply",
+      "path": "assets/font-rules/changes/issue-7023-batangche-serif-supply.json",
+      "sha256": "3056d9ec90a57a7d27926586fd2ec6bb92fc0303c233cf341eec6d71349a80ac"
+    },
+    {
+      "changeSetId": "issue-6936.new-gulim-face-identity",
+      "path": "assets/font-rules/changes/issue-6936-new-gulim-face-identity.json",
+      "sha256": "3004278552553a190890b32da12006e83a51786028840309011b0d3c66f327d0"
+    },
+    {
+      "changeSetId": "issue-7196.ygodic230-metric-name",
+      "path": "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json",
+      "sha256": "32ba0e30b0bbb23fa29f46d56ac2dc6ffd80bfb16315090be1886df0b74cccf9"
+    }
+  ],
   "evidenceRecords": [
     {
       "evidenceId": "evidence.issue-5955.sealed-v1-registry",
@@ -8,6 +24,30 @@
       "parentEvidenceIds": [],
       "sha256": "f549ca3a8807be712cc197daf14d96abb1e5f075ac55f1d9142db67c1a56681a",
       "source": "assets/font-rules/font_rule_registry.json"
+    },
+    {
+      "evidenceId": "evidence.issue-7023.batangche-serif-supply",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Repository font strategy: BatangChe is serif mono; bundled Noto Serif KR is the documented serif substitute.",
+      "parentEvidenceIds": [],
+      "sha256": "53faff78ddc02507b67da7f4d6a932dc5f0959002dea08cb85dcdc2211467768",
+      "source": "mydocs/tech/font_fallback_strategy.md"
+    },
+    {
+      "evidenceId": "evidence.issue-6936.hancom-new-gulim",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "New synthetic fixture samples/issue6936/bold-faces.hwp, exported by Hancom 12.0.0.4605 engine 2020. PDF embeds New Gulim for both regular and synthetic-bold lines; source font is 새굴림. No proprietary font file is distributed.",
+      "parentEvidenceIds": [],
+      "sha256": "5b0dc916098847ed3c6e3eadae468f33a9810ee58de3e91c1e2bb2f3a7e2ae12",
+      "source": "pdf/issue6936-bold-faces-2020.pdf"
+    },
+    {
+      "evidenceId": "evidence.issue-7196.ygodic230-pdf",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "정상 한컴 PDF 9·10쪽은 HaanYGodic23을 내장합니다. 기존 font_oracle_readiness.json의 한컴 윤고딕 230 / Haan YGodic 230 이름과 동일한 cdf74617… 실폰트에서 upem1000, ASCII 및 한글 전진폭을 확인했습니다. 글꼴 파일은 배포하지 않습니다.",
+      "parentEvidenceIds": [],
+      "sha256": "5db32d3107d229d471eb43b544e2c87a5fade1d1738b4bdea6338958726cc443",
+      "source": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf"
     }
   ],
   "issue": 5955,
@@ -7500,15 +7540,18 @@
         "w1RuleId": "rule.rust-style-resolution.b6c97b846cf79ce168fa"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-6936.hancom-new-gulim"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-6936.new-gulim-face-identity",
+        "retirementReason": "Preserve the original New Gulim face and its existing metrics instead of substituting HCR Dotum, so PDF synthetic bold uses the requested regular face.",
+        "successorRuleIds": [
+          "rule.rust-style-resolution.100b7126dfe0ddd2d55c"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -7524,7 +7567,7 @@
       "selectionTupleSha256": "44fe3470b9c8215d4ec1f139ae38d76f360da66283ceea89f47dfc34a0e2db74",
       "sourceBoundaryId": "rust-style-resolution.ttf",
       "sourceFace": "새굴림",
-      "status": "active",
+      "status": "retired",
       "supply": null,
       "targetFaceOrPolicy": "함초롬돋움"
     },
@@ -25609,15 +25652,18 @@
         "w1RuleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d"
       },
       "evidenceIds": [
-        "evidence.issue-5955.sealed-v1-registry"
+        "evidence.issue-5955.sealed-v1-registry",
+        "evidence.issue-7023.batangche-serif-supply"
       ],
       "lifecycle": {
         "introducedBy": "migration:issue-5955",
         "lastEvidenceChangeBy": null,
         "predecessorRuleIds": [],
-        "retiredBy": null,
-        "retirementReason": null,
-        "successorRuleIds": []
+        "retiredBy": "issue-7023.batangche-serif-supply",
+        "retirementReason": "BatangChe serif source was supplied with sans D2Coding; preserve serif paint and leave stored metric selection unchanged.",
+        "successorRuleIds": [
+          "rule.studio-supply.batangche-serif.canvas2d"
+        ]
       },
       "metricEntryIds": [],
       "order": null,
@@ -25633,7 +25679,7 @@
       "selectionTupleSha256": "771648faa32faf6ceff935d6e6a0cd5f84ca24471d4381b1ddc5940238ca993a",
       "sourceBoundaryId": "studio-supply.font-list",
       "sourceFace": "바탕체",
-      "status": "active",
+      "status": "retired",
       "supply": {
         "external": false,
         "fontFamily": "바탕체",
@@ -43212,9 +43258,125 @@
       "status": "active",
       "supply": null,
       "targetFaceOrPolicy": "read approved exact PostScript faces in one batch without persistent byte caching"
+    },
+    {
+      "conditions": {
+        "profile": "canvas2d-css-unknown"
+      },
+      "decisionPlane": "supply",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7023.batangche-serif-supply"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7023.batangche-serif-supply",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 32,
+      "projections": [
+        {
+          "id": "canvas2d-webfont",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "supply-source",
+      "ruleId": "rule.studio-supply.batangche-serif.canvas2d",
+      "selectionTupleSha256": "0807211e5cad1eaa1ac33f77e3b7a365f93d3f2a1e796cb2792de71dbd4ea49e",
+      "sourceBoundaryId": "studio-supply.font-list",
+      "sourceFace": "바탕체",
+      "status": "active",
+      "supply": {
+        "external": false,
+        "fontFamily": "바탕체",
+        "format": "woff2",
+        "kind": "canvas2d-webfont",
+        "sourceUrl": "fonts/NotoSerifKR-Regular.woff2",
+        "unicodeRange": null
+      },
+      "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'"
+    },
+    {
+      "conditions": {
+        "languageSlot": "all"
+      },
+      "decisionPlane": "layout-name",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-6936.hancom-new-gulim"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-6936.new-gulim-face-identity",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [
+          "rule.rust-style-resolution.b6c97b846cf79ce168fa"
+        ],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [],
+      "order": null,
+      "projectionSequence": 166,
+      "projections": [
+        {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "style-fallback",
+      "ruleId": "rule.rust-style-resolution.100b7126dfe0ddd2d55c",
+      "selectionTupleSha256": "609917bcd2b57191e5e421ff3760255e39d6678b0528880b17192e6217952147",
+      "sourceBoundaryId": "rust-style-resolution.ttf",
+      "sourceFace": "새굴림",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "New Gulim"
+    },
+    {
+      "conditions": {},
+      "decisionPlane": "layout-metric",
+      "evidence": null,
+      "evidenceIds": [
+        "evidence.issue-7196.ygodic230-pdf"
+      ],
+      "lifecycle": {
+        "introducedBy": "issue-7196.ygodic230-metric-name",
+        "lastEvidenceChangeBy": null,
+        "predecessorRuleIds": [],
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": []
+      },
+      "metricEntryIds": [
+        "font-metric.f3e4274740daf2960ec1"
+      ],
+      "order": null,
+      "projectionSequence": 67,
+      "projections": [
+        {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        }
+      ],
+      "relationType": "metric-surrogate",
+      "ruleId": "rule.rust-metric.ygodic230-name",
+      "selectionTupleSha256": "21a7011063a51039b918ee4faa7c767a1df03a6a4878a0c5048a41201ea58003",
+      "sourceBoundaryId": "rust-metric.metric-alias",
+      "sourceFace": "한컴 윤고딕 230",
+      "status": "active",
+      "supply": null,
+      "targetFaceOrPolicy": "Haan YGodic 230"
     }
   ],
-  "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+  "rulesSha256": "837b77ca5f77164eff7913fcab46c8dd4bbe5a78bf7b77a546cbf3c31d1b50c0",
   "schema": {
     "path": "assets/font-rules/font_rule_registry_v2.schema.json",
     "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
@@ -43226,15 +43388,15 @@
   },
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
   "summary": {
-    "activeRuleCount": 830,
+    "activeRuleCount": 831,
     "countsByProjection": {
       "canvas2d-paint": 281,
       "canvas2d-webfont": 153,
       "canvaskit-sfnt": 158,
-      "rust-layout-metric": 67,
+      "rust-layout-metric": 68,
       "rust-layout-name": 171
     },
-    "retiredRuleCount": 0,
-    "ruleCount": 830
+    "retiredRuleCount": 2,
+    "ruleCount": 833
   }
 }

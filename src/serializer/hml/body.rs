@@ -310,6 +310,7 @@ fn column_direction_name(direction: ColumnDirection) -> &'static str {
     match direction {
         ColumnDirection::LeftToRight => "Left",
         ColumnDirection::RightToLeft => "Right",
+        ColumnDirection::Mirror => "Mirror",
     }
 }
 

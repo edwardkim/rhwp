@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6795,
+  "title": "쪼개진 자리차지 표의 형제 표가 조각 위에 겹친다",
+  "entries": [
+    {
+      "path": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6795",
+      "originalFilename": "1341000-201100013_D0150004-2-002_2011개교예정_사이버대학인가신청서-제2차보고서-최종.hwp",
+      "bytes": 613376,
+      "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "lastSavedWith": {
+        "product": null,
+        "version": "6.7.6.1002"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/1341000-201100013-cyber-university-application-2020.pdf",
+      "referencePdfSha256": "3c1d4b0ae00b0f89169a0168b93f27ff4ec975c02743d9655e47bc58c7d289c5",
+      "referencePdfPageCount": 45,
+      "contract": "빈 host 문단의 co-anchored 자리차지 표는 앞 표가 쪽에 걸쳐 쪼개져도 조각 위에 겹치지 않고 자기 쪽을 받는다. 쪽 idx(0-based) 30 에 pi=113 ci=0 조각 단독, 31 에 pi=113 ci=1 단독, 32 에 pi=114 ci=0. 총 45쪽으로 한/글 2020 정본과 같다."
+    }
+  ]
+}

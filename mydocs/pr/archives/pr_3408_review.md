@@ -70,5 +70,5 @@ sweep은 수행하지 않았다.
 
 owner의 [#3445 범위 지시](https://github.com/edwardkim/rhwp/issues/3445#issuecomment-5083833363)는 당시
 열린 PR을 **v0.8.2 핫픽스 기준선**에서 제외한 것이었다. 이후
-[v0.8.2 릴리즈가 완료](../../report/task_m100_3445_report.md)됐으므로 현재 `devel` merge 보류로
+[v0.8.2 릴리즈가 완료](../../report/archives/task_m100_3445_report.md)됐으므로 현재 `devel` merge 보류로
 확장하지 않는다. **최신 통합 head CI와 mergeable 상태가 성공하면 merge 권고**한다.

@@ -1,0 +1,92 @@
+{
+  "head": "8204bdb29999fdbf96c3227fa25ee860211fd3b1",
+  "workingTreeCorrection": "pr6751-maintainer-correction.patch",
+  "method": "Chrome headless CDP IME; first edit reflows saved segments, then compose at current line boundary; not manual OS IME verification",
+  "firstEditProbe": [
+    {
+      "anchor": {
+        "sectionIndex": 0,
+        "paragraphIndex": 1,
+        "charOffset": 22
+      },
+      "exact": {
+        "pageIndex": 0,
+        "x": 328,
+        "y": 125.8,
+        "height": 13.3
+      },
+      "result": {
+        "pageIndex": 0,
+        "x": 328,
+        "y": 125.8,
+        "height": 13.3
+      },
+      "line": {
+        "lineIndex": 0,
+        "lineCount": 14,
+        "charStart": 0,
+        "charEnd": 26
+      }
+    }
+  ],
+  "boundary": {
+    "position": {
+      "sectionIndex": 0,
+      "paragraphIndex": 1,
+      "charOffset": 26
+    },
+    "line": {
+      "lineIndex": 1,
+      "lineCount": 14,
+      "charStart": 26,
+      "charEnd": 61
+    },
+    "exact": {
+      "pageIndex": 0,
+      "x": 381.3,
+      "y": 125.8,
+      "height": 13.3
+    }
+  },
+  "ime": {
+    "trace": [
+      {
+        "anchor": {
+          "sectionIndex": 0,
+          "paragraphIndex": 1,
+          "charOffset": 26
+        },
+        "exact": {
+          "pageIndex": 0,
+          "x": 381.3,
+          "y": 125.8,
+          "height": 13.3
+        },
+        "result": {
+          "pageIndex": 0,
+          "x": 75.6,
+          "y": 146.5,
+          "height": 13.3
+        },
+        "line": {
+          "lineIndex": 1,
+          "lineCount": 14,
+          "charStart": 26,
+          "charEnd": 60
+        }
+      }
+    ],
+    "anchor": {
+      "sectionIndex": 0,
+      "paragraphIndex": 1,
+      "charOffset": 26
+    },
+    "cursor": {
+      "sectionIndex": 0,
+      "paragraphIndex": 1,
+      "charOffset": 27
+    },
+    "text": "나"
+  },
+  "pass": true
+}

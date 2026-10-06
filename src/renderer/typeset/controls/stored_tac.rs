@@ -1,0 +1,544 @@
+//! 저장 줄을 소유한 TAC 표의 수용 판단과 배치 좌표 계산.
+//! composer의 기존 줄 소속·점유 끝점을 재사용하며 새 줄 구성이나 상태 쓰기를 하지 않는다.
+
+use super::super::paragraph::metrics::FormattedParagraph;
+use crate::model::{
+    control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
+};
+use crate::renderer::composer::{stored_tac_lines, StoredTacLine};
+use crate::renderer::float_placement::InlineBoxPlacement;
+use crate::renderer::height_measurer::MeasuredTable;
+use crate::renderer::hwpunit_to_px;
+
+pub(in crate::renderer::typeset) struct StoredTacPage {
+    pub profile: LayoutCompatibilityProfile,
+    pub current_height: f64,
+    pub vpos_col_anchor: f64,
+    pub vpos_page_base: Option<i32>,
+    pub vpos_lazy_base: Option<i32>,
+    pub side_wrap_empty: bool,
+    pub stored_table_column_base: Option<i32>,
+}
+
+pub(super) struct StoredTacPlan {
+    pub lines: Vec<StoredTacLine>,
+    origin: f64,
+    pub(super) source_origin: Option<i32>,
+}
+
+pub(in crate::renderer::typeset) struct StoredTacControlPlacement {
+    pub control_index: usize,
+    pub inline: InlineBoxPlacement,
+    pub end: f64,
+    pub rebase_line_origin: bool,
+}
+
+/// 같은 문단의 float가 저장 밴드 밖에서 시작해도 TAC 줄은 독립된 흐름을 소유한다.
+/// 이 개체만 확정하여 float의 일반 분할 경로를 보존하고 fit과 paint는 같은 원점·끝을 쓴다.
+pub(super) fn prepare_coanchored_first_line(
+    control_index: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    measured_body_height: f64,
+    page: StoredTacPage,
+    available_height: f64,
+    dpi: f64,
+) -> Option<StoredTacControlPlacement> {
+    if !page.profile.hwp5_stored_pagination_layout()
+        || page.profile.session_edited()
+        || !page.side_wrap_empty
+        || para.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char
+        || table.caption.is_some()
+        || table_has_notes(table)
+        || table.cells.iter().any(|cell| {
+            cell.dirty_flag
+                || cell.paragraphs.iter().any(|para| {
+                    para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
+                })
+        })
+        || crate::renderer::layout::control_line_seg_index(para, control_index) != Some(0)
+        || (measured_body_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
+            > dpi / 7200.0
+        || line.line_spacing < 0
+    {
+        return None;
+    }
+    let mut has_float = false;
+    for (index, control) in para.controls.iter().enumerate() {
+        if index == control_index {
+            continue;
+        }
+        match control {
+            Control::Table(sibling)
+                if crate::renderer::float_placement::is_para_topbottom_float(&sibling.common)
+                    && crate::renderer::float_placement::signed_hwpunit(
+                        sibling.common.vertical_offset,
+                    ) >= line.line_height =>
+            {
+                has_float = true;
+            }
+            Control::SectionDef(_)
+            | Control::ColumnDef(_)
+            | Control::Header(_)
+            | Control::Footer(_) => {}
+            _ => return None,
+        }
+    }
+    if !has_float {
+        return None;
+    }
+    let origin = page.vpos_col_anchor
+        + hwpunit_to_px(
+            line.vertical_pos
+                .saturating_sub(page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0)),
+            dpi,
+        );
+    let end = origin
+        + hwpunit_to_px(line.line_height, dpi)
+        + hwpunit_to_px(line.line_spacing, dpi) * 0.5
+        + fmt.spacing_after;
+    if origin < page.current_height || end > available_height {
+        return None;
+    }
+    Some(StoredTacControlPlacement {
+        control_index,
+        inline: InlineBoxPlacement {
+            x: 0.0,
+            y: origin,
+            clearance: 0.0,
+            advance_end: Some(end),
+        },
+        end,
+        rebase_line_origin: false,
+    })
+}
+
+/// 단일 개체 줄의 물리 점유를 같은 배치 결과로 전달한다.
+/// 실제 저장 줄은 다음 원점이 닫는 상자만 수용하며, 원점·여백·뒤 간격을 한번씩 소비한다.
+pub(super) fn prepare_computed(
+    para_idx: usize,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    fmt: &FormattedParagraph,
+    measured_tables: &[MeasuredTable],
+    page: StoredTacPage,
+    available_height: impl Fn() -> f64,
+    dpi: f64,
+) -> Option<StoredTacControlPlacement> {
+    if !page.profile.hwpx_stored_layout()
+        || page.profile.session_edited()
+        || !page.side_wrap_empty
+        || super::super::para_has_non_whitespace_text(para)
+    {
+        return None;
+    }
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [seg] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let computed = crate::renderer::para_has_no_stored_line_segs(para);
+    let source_vpos = para
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|positions| positions.first())
+        .copied()
+        .unwrap_or(seg.vertical_pos);
+    let saved_top = hwpunit_to_px(source_vpos, dpi);
+    // 원본 줄은 단 맨 위의 양수 저장 간격을 복구할 때만 이 경로를 쓴다.
+    // 구역 누적 좌표는 쪽 위 간격이 아니며, 일반 저장 표는 기존 계획이 소유한다.
+    let saved_column_top = !computed
+        && page.current_height < 1.0
+        && saved_top > 0.0
+        && saved_top <= fmt.spacing_before + 0.5;
+    // 편집되지 않은 원본 한 줄과 후속 원점이 상자를 정확히 닫으면
+    // 바깥 여백을 버리는 일반 단일 TAC 경로로 되돌아가지 않는다.
+    let closed_stored_line = !computed
+        // 후속 원점과의 연결만으로 쪽·단의 좌표축이 확립되지는 않는다.
+        && page
+            .vpos_page_base
+            .or(page.stored_table_column_base)
+            .or(page.vpos_lazy_base)
+            .is_some()
+        && !para.stored_text_partition_is_dirty()
+        && source_vpos == seg.vertical_pos
+        && fmt.spacing_before == 0.0
+        && fmt.spacing_after == 0.0
+        && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && next_para.is_some_and(|next| {
+            !next.stored_text_partition_is_dirty()
+                && next.line_segs.first().is_some_and(|after| {
+                    after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && after.vertical_pos > seg.vertical_pos
+                        && i64::from(after.vertical_pos)
+                            == i64::from(seg.vertical_pos)
+                                + i64::from(seg.line_height)
+                                + i64::from(seg.line_spacing)
+                })
+        });
+    if !computed && !saved_column_top && !closed_stored_line {
+        return None;
+    }
+    if !table.common.treat_as_char
+        || table.caption.is_some()
+        || table_has_notes(table)
+        || seg.line_spacing < 0
+    {
+        return None;
+    }
+    let measured = measured_tables
+        .iter()
+        .find(|m| m.para_index == para_idx && m.control_index == 0)?;
+    // 일반 표 포맷과 paint가 소비하는 저장 셀의 뒤 간격 보정을 먼저 적용한다.
+    // 보정 전 측정값으로 줄 소유를 거절하면 표 뒤 흐름만 legacy 상한으로 되돌아간다.
+    let fitted =
+        super::super::table::fit_measured_for_host(para, table, Some(measured), dpi, || {
+            page.profile
+        });
+    let measured = fitted.as_ref().unwrap_or(measured);
+    let top = hwpunit_to_px(table.outer_margin_top as i32, dpi);
+    let bottom = hwpunit_to_px(table.outer_margin_bottom as i32, dpi);
+    let height = measured.total_height + top + bottom;
+    // 합성 개체 줄은 표 본체 높이 또는 바깥 여백까지 포함한 높이를 갖는다.
+    // 한 줄의 공백은 별도 텍스트 줄이 아니며, 실제 점유에는 여백을 한 번 포함한다.
+    // 두 높이 모두 맞지 않는 커진 표는 일반 분할기로 보낸다.
+    let line_height = hwpunit_to_px(seg.line_height, dpi);
+    if (height - line_height).abs() > 0.5
+        && !(computed && (measured.total_height - line_height).abs() <= 0.5)
+    {
+        return None;
+    }
+    let flow_origin = page.current_height
+        + if page.current_height < 1.0 {
+            if saved_column_top {
+                saved_top
+            } else {
+                0.0
+            }
+        } else {
+            fmt.spacing_before
+        };
+    // 단 첫 완전한 저장 표의 원점은 paint가 처음 확립한 좌표축이다.
+    // 지연 fit 커서가 압축됐어도 그 축의 빈 물리 공간을 삭제하지 않는다.
+    // 새 단에 이전 구역 누적 좌표를 적용하지 않으며, 실제 흐름이 더 자랐으면 보존한다.
+    let origin = if computed && page.current_height >= 1.0 {
+        page.stored_table_column_base
+            .map(|base| {
+                flow_origin.max(
+                    page.vpos_col_anchor
+                        + hwpunit_to_px(seg.vertical_pos.saturating_sub(base), dpi),
+                )
+            })
+            .unwrap_or(flow_origin)
+    } else if closed_stored_line {
+        flow_origin.max(
+            page.vpos_col_anchor
+                + hwpunit_to_px(
+                    seg.vertical_pos.saturating_sub(
+                        page.vpos_page_base
+                            .or(page.stored_table_column_base)
+                            .or(page.vpos_lazy_base)
+                            .unwrap_or(0),
+                    ),
+                    dpi,
+                ),
+        )
+    } else {
+        flow_origin
+    };
+    // 다음 줄의 시작이 이 줄의 끝과 정확히 이어지면 빈 글줄도
+    // 후행 간격 전량 뒤에 놓인다. 글자 유무로 간격을 반감하면
+    // 확정 계획 끝에서 역산한 기준축과 이후 본문 원점이 어긋난다.
+    let full_trailing_spacing = next_para.is_some_and(|next| {
+        next.line_segs.first().is_some_and(|next_seg| {
+            next_seg.vertical_pos > seg.vertical_pos
+                && seg
+                    .vertical_pos
+                    .saturating_add(seg.line_height)
+                    .saturating_add(seg.line_spacing)
+                    == next_seg.vertical_pos
+        })
+    });
+    // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.
+    // 절반만 소비하고 저장 끝으로 기준축을 역산하면 이후 모든 줄이 위로 이동한다.
+    // 저장 좌표가 없는 합성 줄에서만 기존 빈 문단 간격 분배를 적용한다.
+    let trailing_fraction = if saved_column_top || closed_stored_line || full_trailing_spacing {
+        1.0
+    } else {
+        0.5
+    };
+    let end = origin
+        + height
+        + hwpunit_to_px(seg.line_spacing, dpi) * trailing_fraction
+        + fmt.spacing_after;
+    if end > available_height() {
+        return None;
+    }
+    Some(StoredTacControlPlacement {
+        control_index: 0,
+        inline: InlineBoxPlacement {
+            x: 0.0,
+            y: origin,
+            clearance: 0.0,
+            advance_end: Some(end),
+        },
+        end,
+        rebase_line_origin: !closed_stored_line,
+    })
+}
+
+/// 각주·미주는 일반 컨트롤 경로에서 예약·등록해야 하므로 통배치 단축을 쓰지 않는다.
+fn table_has_notes(table: &crate::model::table::Table) -> bool {
+    table.cells.iter().any(|cell| {
+        cell.paragraphs.iter().any(|para| {
+            para.controls.iter().any(|control| match control {
+                Control::Footnote(_) | Control::Endnote(_) => true,
+                Control::Table(nested) => table_has_notes(nested),
+                _ => false,
+            })
+        })
+    })
+}
+
+/// 가용 높이는 원래 all 검사 위치에서 조회한다. 진단 조회를 미리 호출하지 않는다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn prepare(
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    measured_tables: &[MeasuredTable],
+    page: StoredTacPage,
+    shared_spacing_before: f64,
+    next_para: Option<&Paragraph>,
+    next_spacing_before: f64,
+    available_height: impl Fn() -> f64,
+    dpi: f64,
+) -> Option<StoredTacPlan> {
+    // 완전한 저장 줄 계약은 표별 높이를 합산하지 않고, 같은 pen/end를 배치에도 전달한다.
+    if !page.profile.session_edited()
+        && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        && page.side_wrap_empty
+    {
+        // 저장 단일 개체 줄은 캡션과 바깥 여백도 소유한다. 같은 줄의 공백은
+        // 별도 글줄이 아니며 원본 소속과 전체 높이를 아래에서 확인한다.
+        let single_saved_object_line = || {
+            if !para.text.chars().all(char::is_whitespace)
+                || para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+            {
+                return None;
+            }
+            let [seg] = para.line_segs.as_slice() else {
+                return None;
+            };
+            let [Control::Table(table)] = para.controls.as_slice() else {
+                return None;
+            };
+            let control_index = 0;
+            let caption_extent = if let Some(caption) = &table.caption {
+                if !matches!(
+                    caption.direction,
+                    crate::model::shape::CaptionDirection::Top
+                        | crate::model::shape::CaptionDirection::Bottom
+                ) {
+                    return None;
+                }
+                (crate::renderer::composer::caption_height_px(&table.caption, dpi) * 7200.0 / dpi)
+                    .round() as i64
+                    + i64::from(caption.spacing)
+            } else {
+                0
+            };
+            if !table.common.treat_as_char
+                || table_has_notes(table)
+                || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || seg.line_spacing < 0
+                || i64::from(seg.line_height)
+                    != i64::from(table.common.height)
+                        + caption_extent
+                        + i64::from(table.outer_margin_top)
+                        + i64::from(table.outer_margin_bottom)
+            {
+                return None;
+            }
+            let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
+                para,
+                next_para,
+                fmt.spacing_after,
+                next_spacing_before,
+                seg,
+                page.profile,
+                dpi,
+            ) {
+                hwpunit_to_px(seg.line_spacing, dpi)
+            } else {
+                crate::renderer::composer::tac_host_trailing_spacing(
+                    para,
+                    control_index,
+                    seg,
+                    page.profile.hwpx_stored_layout(),
+                    page.profile.hwp5_stored_pagination_layout(),
+                    dpi,
+                )
+            };
+            Some(vec![StoredTacLine {
+                control: control_index,
+                top: 0,
+                occupied_end: seg.line_height,
+                end: seg
+                    .line_height
+                    .checked_add(crate::renderer::px_to_hwpunit(trailing, dpi))?,
+            }])
+        };
+        let owned_lines = stored_tac_lines(para)
+            .map(|lines| (lines, false))
+            .or_else(|| single_saved_object_line().map(|lines| (lines, true)));
+        if let Some((lines, single_saved_line)) = owned_lines {
+            // 2024 단일 TAC의 앞 앵커 회수량은 일반 경로에서 후속 쪽 경계와 함께 소비한다.
+            if page.profile.hangul2024_layout() && lines.len() == 1 && lines[0].top > 0 {
+                return None;
+            }
+            let source_top = hwpunit_to_px(
+                para.source_line_seg_vertical_pos
+                    .as_ref()
+                    .and_then(|positions| positions.first())
+                    .copied()
+                    .unwrap_or(para.line_segs[0].vertical_pos),
+                dpi,
+            );
+            let flow_origin = if single_saved_line {
+                // 저장 줄 원점은 앞 간격을 이미 소유한다. 현재 물리 흐름은 그 하한이며
+                // 앞 간격을 다시 더하지 않는다.
+                page.current_height
+            } else {
+                page.current_height
+                    + if page.current_height < 1.0 {
+                        if source_top > 0.0 && source_top <= fmt.spacing_before + 0.5 {
+                            source_top
+                        } else {
+                            0.0
+                        }
+                    } else {
+                        fmt.spacing_before - shared_spacing_before
+                    }
+            };
+            // 앞 문단의 저장 사다리가 누적 높이보다 앞서 있으면 그 앵커를
+            // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
+            let saved_origin = page.vpos_col_anchor
+                + hwpunit_to_px(
+                    if single_saved_line {
+                        // An original object box is page-relative. A paragraph
+                        // ladder's text base does not authenticate its object origin.
+                        para.line_segs[0].vertical_pos
+                    } else {
+                        para.line_segs[0].vertical_pos.saturating_sub(
+                            page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
+                        )
+                    },
+                    dpi,
+                );
+            // A complete object height authenticates the local line, not the
+            // page-relative origin. A single-line shortcut may only reuse a
+            // source origin which agrees with the current physical flow: its
+            // leading band is either already reserved or still belongs to
+            // this paragraph. Other stored ladders use ordinary TAC flow.
+            if single_saved_line {
+                let unreserved_origin =
+                    page.current_height + fmt.spacing_before - shared_spacing_before;
+                let same_frame = (saved_origin - page.current_height).abs() <= dpi / 7200.0
+                    || (saved_origin - unreserved_origin).abs() <= dpi / 7200.0;
+                if !same_frame {
+                    return None;
+                }
+            }
+            let origin = flow_origin.max(saved_origin);
+            let measured_fits = lines.iter().all(|line| {
+                let Some(Control::Table(table)) = para.controls.get(line.control) else {
+                    return false;
+                };
+                // 새로 수용한 단일 빈 줄/공백 캐리어의 각주 예약은
+                // 일반 경로가 담당한다. 기존 복수 제어 줄의 처리는 유지한다.
+                if (lines.len() == 1 || !para.text.is_empty()) && table_has_notes(table) {
+                    return false;
+                }
+                measured_tables
+                    .iter()
+                    .find(|m| m.para_index == para_idx && m.control_index == line.control)
+                    .is_some_and(|m| {
+                        let caption_extent = table.caption.as_ref().map_or(0.0, |caption| {
+                            crate::renderer::composer::caption_height_px(&table.caption, dpi)
+                                + hwpunit_to_px(i32::from(caption.spacing), dpi)
+                        });
+                        (m.total_height
+                            - hwpunit_to_px(table.common.height as i32, dpi)
+                            - caption_extent)
+                            .abs()
+                            <= 0.5
+                    })
+            });
+            // Fit the occupied line box. Its trailing gap advances the next
+            // line but can lie beyond this page's final object, as for a text
+            // line. Internal gaps already belong to the later occupied ends.
+            let fits = lines.iter().all(|line| {
+                origin + hwpunit_to_px(line.occupied_end, dpi) + fmt.spacing_after
+                    <= available_height()
+            });
+            if measured_fits && fits {
+                let source_origin = (single_saved_line
+                    && page.profile.hwp5_stored_pagination_layout())
+                .then(|| {
+                    let seg = &para.line_segs[0];
+                    // Authenticate the shared coordinate axis at the original
+                    // object origin. A flow-only trailing gap is not a source
+                    // translation and must not shift the following paragraphs.
+                    seg.vertical_pos
+                        .saturating_sub(crate::renderer::px_to_hwpunit(origin, dpi))
+                });
+                return Some(StoredTacPlan {
+                    lines,
+                    origin,
+                    source_origin,
+                });
+            }
+        }
+    }
+    None
+}
+
+impl StoredTacPlan {
+    /// 원래 순서대로 한 표씩 계산·확정한다. 마지막 소유 표에만 문단 아래 간격을 더한다.
+    pub(super) fn placement(
+        &self,
+        line: &StoredTacLine,
+        spacing_after: f64,
+        dpi: f64,
+    ) -> StoredTacControlPlacement {
+        let end = self.origin
+            + hwpunit_to_px(line.end, dpi)
+            + if line.control == self.lines.last().unwrap().control {
+                spacing_after
+            } else {
+                0.0
+            };
+        StoredTacControlPlacement {
+            control_index: line.control,
+            inline: InlineBoxPlacement {
+                x: 0.0,
+                y: self.origin + hwpunit_to_px(line.top, dpi),
+                clearance: 0.0,
+                advance_end: Some(end),
+            },
+            end,
+            rebase_line_origin: false,
+        }
+    }
+}

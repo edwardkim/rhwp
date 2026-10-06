@@ -6,15 +6,18 @@
 use serde::Serialize;
 
 use crate::model::control::Control;
+use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
 pub mod canvas;
+pub mod canvas_text_font;
 pub mod canvaskit_policy;
 pub mod composer;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
 pub mod float_placement;
 pub(crate) mod font_decision;
+pub mod font_environment;
 pub mod font_metrics_data;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod font_paths;
@@ -22,7 +25,9 @@ pub mod font_paths;
 pub(crate) mod font_rule_layout_metric_projection;
 #[path = "font_rule_projections/layout_name.rs"]
 pub(crate) mod font_rule_layout_name_projection;
+pub mod form_appearance;
 pub(crate) mod form_caption;
+pub mod hyperlinks;
 // [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
 // native-skia 와 같은 방식으로 선택적 게이팅해 CI는 GPU 없이도 컴파일된다.
 #[cfg(all(not(target_arch = "wasm32"), feature = "gpu"))]
@@ -30,9 +35,11 @@ pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
+pub(crate) mod hft_ascii_evidence;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
+pub mod inline_flow;
 pub(crate) mod kerning;
 pub mod layer_renderer;
 pub mod layout;
@@ -62,7 +69,9 @@ pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
+pub(crate) mod stored_float_anchor;
 pub mod style_resolver;
+pub mod supplemental_metrics;
 pub mod svg;
 pub mod svg_fragment;
 pub mod svg_layer;
@@ -97,7 +106,7 @@ impl RenderBackend {
 }
 
 /// 탭 정지 (렌더링용)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TabStop {
     /// 절대 위치 (px, 단 시작 기준)
     pub position: f64,
@@ -108,7 +117,7 @@ pub struct TabStop {
 }
 
 /// 탭 리더(채움 기호) 렌더링 정보
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TabLeaderInfo {
     /// 리더 시작 x (run 내 상대 좌표)
     pub start_x: f64,
@@ -138,6 +147,61 @@ pub(crate) fn clamp_tab_leader_end_x(
     content_stop
         .map(|stop| stop.min(leader.end_x).max(leader.start_x))
         .unwrap_or(leader.end_x)
+}
+
+/// 글꼴 원래 하이픈 폭이 저장 글자 간격보다 커서 연속 하이픈이 실선으로
+/// 겹칠 때만, 각 글자의 짧은 획을 그릴 공통 기하를 돌려준다.
+/// 글자마다 별도 획을 남겨 한컴 출력의 파선과 문자 소유를 보존한다.
+pub(crate) fn overlapping_dash_leader_segment(
+    text: &str,
+    style: &TextStyle,
+    char_index: usize,
+    positions: &[f64],
+    font_size: f64,
+) -> Option<(f64, f64, f64, f64)> {
+    if style.shadow_type > 0 || style.outline_type > 0 || style.emboss || style.engrave {
+        return None;
+    }
+    let face = style
+        .font_family
+        .split(',')
+        .next()?
+        .trim()
+        .trim_matches(['\'', '"']);
+    if face != "한양신명조" || positions.len() <= char_index + 1 {
+        return None;
+    }
+    let chars: Vec<char> = text.chars().collect();
+    if chars.get(char_index) != Some(&'-') {
+        return None;
+    }
+    let left = chars[..char_index]
+        .iter()
+        .rev()
+        .take_while(|ch| **ch == '-')
+        .count();
+    let right = chars[char_index + 1..]
+        .iter()
+        .take_while(|ch| **ch == '-')
+        .count();
+    if left + right + 1 < 3 {
+        return None;
+    }
+    let advance = positions[char_index + 1] - positions[char_index];
+    // 저장 폭 표는 좁은 획(588/1024em)을 쓰지만 실제 SVG 글꼴은
+    // H2MJSM의 넓은 하이픈(853/1024em)을 칠한다. 겹침 판정은 칠할
+    // 글꼴의 폭으로 해야 한다.
+    let metric =
+        font_metrics_data::find_metric_decision("HYSinMyeongJo-Medium", style.bold, style.italic)?;
+    let natural_width =
+        f64::from(metric.metric.get_width('-')?) * font_size / f64::from(metric.metric.em_size);
+    if advance <= 0.0 || natural_width <= advance + 0.25 {
+        return None;
+    }
+    // 한컴 출력의 하이픈 획은 저장 글자 원점에서 시작하며 기준선보다
+    // 0.43em 위에 있다. 길이는 저장 advance 안에서만 남긴다.
+    let end = (font_size * 0.38).min(advance * 0.7);
+    Some((0.0, end, -font_size * 0.43, font_size * 0.054))
 }
 
 /// Backend replay 직전의 optional scalar positions를 한 번 더 검증한다.
@@ -181,9 +245,31 @@ pub(crate) fn replay_positions_or_compute<'a>(
         })
 }
 
+/// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
+///
+/// 커닝은 글자 사이만 좁힌다. 커닝한 경계로 폭을 맞추면 쌍의 앞 글자가 커닝만큼
+/// 눌린다. 커닝을 요청한 run이 layout positions로 그려지면 커닝 전 경계로 폭을
+/// 맞추고, 그리는 자리는 호출자의 layout positions를 그대로 쓴다.
+pub(crate) fn glyph_fit_positions<'a>(
+    replay_text: &str,
+    style: &TextStyle,
+    layout_positions: Option<&[f64]>,
+    char_positions: &'a [f64],
+) -> std::borrow::Cow<'a, [f64]> {
+    if style.kerning && validated_replay_positions(replay_text, layout_positions).is_some() {
+        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+    } else {
+        std::borrow::Cow::Borrowed(char_positions)
+    }
+}
+
 /// 텍스트 렌더링 스타일
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
+    /// Session-only glyph metrics; never part of document/style serialization.
+    #[serde(skip)]
+    pub supplemental_metrics:
+        Option<std::sync::Arc<supplemental_metrics::SupplementalMetricSnapshot>>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
@@ -274,6 +360,79 @@ pub struct TextStyle {
     pub strike_color: ColorRef,
     /// 음영 색 (형광펜, 0xFFFFFF = 없음)
     pub shade_color: ColorRef,
+    /// [#7092] 이 run 의 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
+    /// (TTF 선언 · 대체 없음). 모르면 거짓 — 종전의 보수적 측정을 따른다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_metric_trusted: bool,
+    /// [#7391] 폭을 잴 때만 `font_family` 대신 쓸 face 이름.
+    ///
+    /// legacy-latin 폴백은 표시할 글꼴이 없는 환경을 위해 라틴 face 를 한글 face 로
+    /// 보낸다(`AmeriGarmnd BT` → `HY견명조`). 표시로는 뜻이 있어도 폭은 범주가 다르다.
+    /// rhwp 가 선언 face 자신의 표를 이미 가진 경우에만 그 이름이 들어오며, 근거는
+    /// [`crate::renderer::style_resolver::ResolvedCharStyle::font_families_metric_face`] 에 있다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub metric_font_family: Option<String>,
+    /// [#7387] 명시적으로 확인한 공백 전진폭(em). 주로
+    /// `CharShape.use_font_space`가 켜진 run의 **영문 슬롯** 글꼴 폭이며,
+    /// 저장 문서의 독립 출력에서 다른 폭이 확인되면 프로필이 덮어쓸 수 있다.
+    /// `None`이면 아래 일반 글꼴 측정 규칙을 따른다.
+    ///
+    /// 한/글은 이 속성이 켜지면 공백을 반각이 아니라 영문 슬롯 글꼴의 제 공백
+    /// 글리프 전진폭으로 전진시킨다. `1382000_domestic_violence_survey` 정본
+    /// (`Hwp 2018 11.0.0.1623`)의 같은 문서·같은 쪽 대조가 값을 말한다 —
+    /// 미정렬 줄만 골라 charPr 에 붙여 재면:
+    ///
+    /// ```text
+    ///   ufs=0  charPr 12  자간 0   n=37   0.500 em   (반각 그대로)
+    ///   ufs=0  charPr 6·33 자간 -5 n=729  0.469 em   (0.5 x 0.95)
+    ///   ufs=1  charPr 65·54·53·59  자간 0 n=763  0.337 em
+    ///   ufs=1  charPr 24  자간 0   n=18   0.337 em
+    ///   ufs=1  charPr 26  자간 0   n=38   0.489 em  <- 영문 슬롯이 휴먼명조
+    /// ```
+    ///
+    /// 마지막 줄이 상수가 아님을 말한다: 같은 `ufs=1` 이라도 영문 슬롯이 대체 없이
+    /// 쓰인 휴먼명조면 그 글꼴의 제 공백 0.5 em 이 나오고, Batang 으로 대체된
+    /// 슬롯이면 0.333 em(341/1024)이 나온다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub font_space_em: Option<f64>,
+    /// 줄 구성에서 선택한 반각 공백 규칙. 원문의 useFontSpace와 구별한다.
+    #[serde(skip_serializing)]
+    pub layout_half_space: bool,
+    /// [#7051] 이 run 의 글꼴이 **HFT 한글 전용 face** 라서 대체됐는지
+    /// (`FontSubstitutionBoundary::Hft`). 그런 글꼴의 ASCII 는 한컴이 반각(`em/2`)으로
+    /// 전진시키므로 대체 글꼴의 비례 폭을 그대로 쓰면 안 된다. 진짜 영문 HFT
+    /// (`LegacyLatin` 경계 — HCI Poppy·BT 계열·영문 안상수체)는 여기 들어오지 않는다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub hft_hangul_face: bool,
+    /// 원본 한글 HFT 기호 슬롯의 전각 폭 보존 여부. ASCII 반각 판정과 별개다.
+    #[serde(skip_serializing)]
+    pub hft_fullwidth_dot: bool,
+    /// [#7418] 이 run 이 한글 슬롯이고 글자 모양이 `ascii_punct_latin_slot` 이면, ASCII
+    /// 구두점을 잴 때 쓸 **영문 슬롯**의 기본 메트릭. run 을 쪼개지 않고 글자 단위로 폭만
+    /// 영문 슬롯으로 잰다(#7051 HFT 반각 ASCII 와 같은 자리). 양쪽 정렬 여분 등 배치가 얹는
+    /// 값은 run 의 것을 그대로 쓴다.
+    ///
+    /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
+    #[serde(skip_serializing)]
+    pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
+}
+
+/// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LatinSlotMetrics {
+    pub font_family: String,
+    pub metric_font_family: Option<String>,
+    pub font_metric_trusted: bool,
+    pub letter_spacing: f64,
+    pub ratio: f64,
 }
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -290,8 +449,23 @@ impl TextStyle {
     /// 모은 것이다 (#2771). 레이아웃 advance 는 본문 run 기준을 유지하고 실제
     /// 글리프 크기와 baseline 만 조정한다는 계약은 종전과 같다.
     ///
-    /// 비첨자 run 은 인자를 그대로 돌려주므로 기존 출력이 비트 단위로 보존된다.
+    /// HY신명조의 그리기 기준선은 한컴 PDF와 비교한 글꼴 메트릭 차이를 반영한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
+        // exam_kor 한컴 PDF 17쪽 T5와 동일 글자 79개의 가로 원점을 맞춰 대조하면
+        // SVG의 HY신명조 기준선이 1.43~1.56px 낮다(글꼴 크기 약 15px).
+        // 줄 상자와 전진폭은 유지하고 표시 기준선만 글꼴 크기의 0.1em 올린다.
+        let primary_font = self
+            .font_family
+            .split(',')
+            .next()
+            .unwrap_or(&self.font_family)
+            .trim()
+            .trim_matches(['\'', '"']);
+        let baseline_y = if primary_font == "HY신명조" {
+            baseline_y - base_font_size * 0.1
+        } else {
+            baseline_y
+        };
         if self.superscript {
             (
                 base_font_size * SCRIPT_FONT_SCALE,
@@ -398,6 +572,7 @@ pub(crate) fn canvas_cluster_fit_scale(
 impl Default for TextStyle {
     fn default() -> Self {
         Self {
+            supplemental_metrics: None,
             font_family: String::new(),
             font_size: 0.0,
             color: 0,
@@ -435,6 +610,13 @@ impl Default for TextStyle {
             underline_color: 0,
             strike_color: 0,
             shade_color: 0x00FFFFFF,
+            font_metric_trusted: false,
+            metric_font_family: None,
+            font_space_em: None,
+            layout_half_space: false,
+            hft_hangul_face: false,
+            hft_fullwidth_dot: false,
+            ascii_punct_latin: None,
         }
     }
 }
@@ -510,9 +692,145 @@ pub struct GradientFillInfo {
     /// 세로 중심 (%)
     pub center_y: i16,
     /// 색상 목록 (ColorRef)
+    ///
+    /// [`expand_gradient_steps`] 가 편 **띠 단위 stop** 이다 — 모델의 색 목록과 1:1 이
+    /// 아니다. `positions` 와 길이가 같고, 같은 offset 이 두 번 나오면 하드 경계다.
     pub colors: Vec<ColorRef>,
     /// 색상 위치 (0.0~1.0 정규화)
     pub positions: Vec<f64>,
+}
+
+/// 두 색 사이를 채널별로 선형 보간한다.
+fn lerp_color(from: ColorRef, to: ColorRef, t: f64) -> ColorRef {
+    let t = t.clamp(0.0, 1.0);
+    let mut out = 0u32;
+    for shift in [0, 8, 16] {
+        let a = ((from >> shift) & 0xff) as f64;
+        let b = ((to >> shift) & 0xff) as f64;
+        let v = (a + (b - a) * t).round().clamp(0.0, 255.0) as u32;
+        out |= v << shift;
+    }
+    out
+}
+
+/// `(colors, positions)` 가 이루는 색 램프를 `t`(0~1) 에서 표집한다.
+fn sample_ramp(colors: &[ColorRef], positions: &[f64], t: f64) -> ColorRef {
+    match colors.len() {
+        0 => 0,
+        1 => colors[0],
+        n => {
+            let at = |i: usize| -> f64 {
+                positions
+                    .get(i)
+                    .copied()
+                    .unwrap_or(i as f64 / (n - 1) as f64)
+            };
+            let t = t.clamp(0.0, 1.0);
+            for i in 1..n {
+                let (p0, p1) = (at(i - 1), at(i));
+                if t <= p1 || i == n - 1 {
+                    let span = p1 - p0;
+                    let local = if span.abs() < f64::EPSILON {
+                        0.0
+                    } else {
+                        (t - p0) / span
+                    };
+                    return lerp_color(colors[i - 1], colors[i], local);
+                }
+            }
+            colors[n - 1]
+        }
+    }
+}
+
+/// HWP 그러데이션의 `step`(띠 개수)·`step_center`(전이 위치 %)를 렌더 stop 목록으로 편다.
+///
+/// [#6822] 한/글은 그러데이션 축을 **`step` 개의 띠**로 잘라 각 띠를 단색으로 칠하고,
+/// 띠 경계들의 가운데를 `step_center`% 지점에 놓는다. 렌더 IR 은 이 두 값을 담지 않아
+/// 전이가 언제나 50% 에 고정됐다.
+///
+/// 실측(`samples/issue6551/113424_evaluation_guideline.hwpx`, 한/글 2024 정본):
+///
+/// ```text
+///   step=2  stepCenter=8   장 제목 막대  초록→흰색 하드 경계가 축의 8% 지점
+///   step=50 stepCenter=50  구분 막대     균등한 50개 띠 (사실상 매끄러운 램프)
+/// ```
+///
+/// `step <= 1` 이거나 색이 둘 미만이면 띠를 만들지 않고 원본을 그대로 돌려준다 —
+/// 값이 없는 문서의 현행 동작을 바꾸지 않기 위해서다.
+pub fn expand_gradient_steps(
+    colors: &[ColorRef],
+    positions: &[f64],
+    step: i16,
+    step_center: u8,
+) -> (Vec<ColorRef>, Vec<f64>) {
+    let bands = step.max(0) as usize;
+    if bands <= 1 || colors.len() < 2 {
+        return (colors.to_vec(), positions.to_vec());
+    }
+
+    // 띠 경계는 균등 위치 `m` 을 두 구간 선형으로 옮겨 가운데(m=0.5)가 `c` 에 오게 한다.
+    // `c == 0.5` 면 항등이므로 기본값 문서는 지금 그리는 것과 같은 균등 띠가 된다.
+    let c = (step_center as f64 / 100.0).clamp(0.0, 1.0);
+    let warp = |m: f64| -> f64 {
+        if m <= 0.5 {
+            2.0 * m * c
+        } else {
+            c + (m - 0.5) * 2.0 * (1.0 - c)
+        }
+    };
+
+    let mut out_colors = Vec::with_capacity(bands * 2);
+    let mut out_positions = Vec::with_capacity(bands * 2);
+    for i in 0..bands {
+        let color = sample_ramp(colors, positions, i as f64 / (bands - 1) as f64);
+        let start = warp(i as f64 / bands as f64);
+        let end = warp((i + 1) as f64 / bands as f64);
+        out_colors.push(color);
+        out_positions.push(start.clamp(0.0, 1.0));
+        out_colors.push(color);
+        out_positions.push(end.clamp(0.0, 1.0));
+    }
+    (out_colors, out_positions)
+}
+
+/// [#6845] HWP 그러데이션 각도를 **사용자 좌표계**의 축 양 끝점으로 옮긴다.
+///
+/// 종전 두 렌더러는 각도를 상자 정규화 공간에서 다뤄 **가로세로비만큼 축이 눕는** 결함이
+/// 있었다 — SVG 는 `objectBoundingBox` 백분율을 그대로 냈고, canvas 는 방향을
+/// `(sin·w/2, cos·h/2)` 로 축별 배율했다. 둘 다 정사각형 상자에서만 옳다.
+///
+/// ## 축 방향은 `(sin a, −cos a)` 다
+///
+/// 한/글 2024 정본(`pdf/113424_evaluation_guideline-2024.pdf`)에서 두 각도로 확정했다.
+///
+/// ```text
+///   angle=0    5쪽 목차 막대 `#C8EDFF → #FFFFFF`
+///              정본은 아래가 `#C8EDFF`, 위가 흰색 → 축은 **위쪽**       (0, −1)
+///   angle=90   29쪽 구분 막대 `#000080 → #99CCFF`  → 축은 오른쪽        (1, 0)
+///   angle=110  7쪽 장 제목 막대, 등색선 기울기 dx/dy = −0.365
+///              → 축 (0.939, 0.343) = (sin 110°, −cos 110°)
+/// ```
+///
+/// SVG·canvas 는 y 가 아래로 자라므로 `cos` 의 부호를 뒤집어야 한다. 종전 코드는 `+cos`
+/// 라 `angle=0` 에서 위아래가 반대였다.
+///
+/// ## 끝점은 상자를 덮도록 잡는다
+///
+/// 상자를 축 방향으로 정사영한 길이의 절반이 `(|dx|·w + |dy|·h) / 2` 이므로, 중심에서
+/// 그만큼 양쪽으로 벌리면 어떤 각도에서도 상자 전체가 램프 안에 들어온다.
+pub fn linear_gradient_axis(angle: i16, x: f64, y: f64, w: f64, h: f64) -> (f64, f64, f64, f64) {
+    let a = ((angle % 360 + 360) % 360) as f64;
+    let rad = a.to_radians();
+    let (dx, dy) = (rad.sin(), -rad.cos());
+    let (cx, cy) = (x + w / 2.0, y + h / 2.0);
+    let half = (dx.abs() * w + dy.abs() * h) / 2.0;
+    (
+        cx - dx * half,
+        cy - dy * half,
+        cx + dx * half,
+        cy + dy * half,
+    )
 }
 
 /// 선 렌더링 스타일
@@ -721,6 +1039,35 @@ pub fn svg_arc_to_beziers(
     result
 }
 
+/// 한양 HFT 불릿의 원 윤곽을 대체 TTF의 작은 수학 점과 구분한다.
+/// 한컴 PDF Type3 /HFT8: 중심 (500,352), 가로 반지름123.75, 세로123 /1000em.
+/// 명시적으로 검증된 TrueType face와 다른 기호·글꼴은 원 글리프를 유지한다.
+pub(crate) fn legacy_hft_bullet_geometry(
+    text: &str,
+    style: &TextStyle,
+) -> Option<(f64, f64, f64, f64)> {
+    let face = style.font_family.split(',').next().unwrap_or("").trim();
+    if text != "∙"
+        || style.font_metric_trusted
+        || !matches!(face, "한양신명조" | "HanyangSinMyeongJo")
+    {
+        return None;
+    }
+    let size = style.font_size
+        * if style.superscript || style.subscript {
+            SCRIPT_FONT_SCALE
+        } else {
+            1.0
+        };
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    Some((
+        size * ratio * 0.5,
+        -size * 0.352,
+        size * ratio * 0.12375,
+        size * 0.123,
+    ))
+}
+
 /// 렌더러 트레이트 (모든 백엔드가 구현)
 pub trait Renderer {
     /// 페이지 렌더링 시작
@@ -799,7 +1146,8 @@ pub fn corrected_line_metrics(
         match ls_type {
             LineSpacingType::Percent => {
                 // [#2279] sub-100% 퍼센트 음수 gap 존중 (line_breaking 정합)
-                let extra = if ls_val > 0.0 {
+                // 0% 는 실값이다 — line_breaking 과 같은 계약(>=)으로 맞춘다.
+                let extra = if ls_val >= 0.0 {
                     max_fs * (ls_val - 100.0) / 100.0
                 } else {
                     0.0
@@ -854,6 +1202,7 @@ pub(crate) fn composed_line_max_font_size(
     let run_max = line
         .runs
         .iter()
+        .filter(|run| composed_run_reserves_font_height(run))
         .filter_map(|run| {
             styles
                 .char_styles
@@ -866,11 +1215,44 @@ pub(crate) fn composed_line_max_font_size(
         return run_max;
     }
 
+    // 개체 마커만 있는 줄은 개체/저장 줄 상자가 높이를 소유한다.
+    // 빈 문단의 글꼴 폴백과 달리 U+FFFC 자체의 글자 크기를 예약하지 않는다.
+    if !line.runs.is_empty()
+        && line
+            .runs
+            .iter()
+            .all(|run| !composed_run_reserves_font_height(run))
+    {
+        return 0.0;
+    }
+
     para.char_shape_id_at(line.char_start)
         .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
         .and_then(|shape_id| styles.char_styles.get(shape_id as usize))
         .map(|style| style.font_size)
         .unwrap_or(0.0)
+}
+
+/// 공백도 글꼴 줄 상자를 가지지만 개체 대체 문자와 제어 문자에는 가시 글꼴이 없다.
+pub(crate) fn composed_run_reserves_font_height(run: &composer::ComposedTextRun) -> bool {
+    run.text.chars().any(|c| c != '\u{FFFC}' && !c.is_control())
+}
+
+/// 유효 저장 빈 문단 하나만 가진 각주는 본문 없는 인라인 참조다.
+/// 공백·개체·명시 번호와 무효/합성 줄은 기존 각주 본문 계약으로 남긴다.
+pub(crate) fn stored_footnote_is_bodyless(footnote: &crate::model::footnote::Footnote) -> bool {
+    let [paragraph] = footnote.paragraphs.as_slice() else {
+        return false;
+    };
+    let [line] = paragraph.line_segs.as_slice() else {
+        return false;
+    };
+    paragraph.text.is_empty()
+        && paragraph.controls.is_empty()
+        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && line.vertical_pos == 0
+        && line.line_height > 0
+        && line.segment_width > 0
 }
 
 /// 순수 텍스트 줄의 저장 metrics가 글자와 문단 스타일로부터 가능한 줄 advance보다
@@ -898,6 +1280,35 @@ pub(crate) fn source_line_metrics_need_reflow(
 
     raw_lh > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
         && raw_text_height > expected_advance * STALE_SOURCE_LINE_ADVANCE_MULTIPLIER
+}
+
+/// 저장된 다음 줄 좌표를 현재 줄의 흐름 높이로 쓸 수 있으면 그 콘텐츠 높이를 반환한다.
+///
+/// `LINE_SEG.line_height`는 그림·표를 덮는 상자일 수 있지만, 한/글의 다음 줄 위치는
+/// 저장 사다리(`next.vertical_pos - current.vertical_pos`)가 정한다. 다만 재조판된
+/// 상자, 역행·동일 좌표, 글자 또는 글자처럼 취급되는 개체보다 작은 advance에는 저장
+/// 좌표를 섞지 않는다. layout과 fallback measurement가 이 판별자를 공유한다.
+#[inline]
+pub(crate) fn stored_line_flow_height(
+    current: &LineSeg,
+    next: &LineSeg,
+    rendered_line_height: f64,
+    line_spacing: f64,
+    flow_floor: f64,
+    dpi: f64,
+    source_metrics_reflowed: bool,
+) -> Option<f64> {
+    if source_metrics_reflowed
+        || (hwpunit_to_px(current.line_height, dpi) - rendered_line_height).abs() >= 0.5
+        || current.vertical_pos < 0
+        || next.vertical_pos <= current.vertical_pos
+    {
+        return None;
+    }
+
+    let step = hwpunit_to_px(next.vertical_pos - current.vertical_pos, dpi) - line_spacing;
+    (step > 0.0 && step < rendered_line_height && (flow_floor <= 0.0 || step + 0.5 >= flow_floor))
+        .then_some(step)
 }
 
 /// [#5821] 압축 장평(ratio r < 1) 글자의 그리기 파라미터.
@@ -1136,12 +1547,100 @@ pub(crate) fn hwp3_variant_flow_spacing_before(base: f64, is_hwp3_variant: bool)
     }
 }
 
+/// [#6630] 셀 첫 문단의 위 여백(px) — 저장 첫 줄 `LINE_SEG.vertical_pos` 를 상한으로 둔 값.
+///
+/// 한/글은 셀 맨 위 문단의 "문단 위 여백"을 저장 vpos 만큼 둔다 (exam_eng 바탕쪽 머리 표:
+/// 위 여백 1136HU 인데 vpos=568HU=7.57px, 그림이 그만큼 아래·셀 내용 높이도 그만큼 큼).
+/// 본문 column-top 문단의 증거 기반 클램프(#853·#1811)와 같은 규칙을 셀 첫 문단에 쓴다.
+/// 내용 높이 측정(`calc_para_lines_height`·`height_measurer`)과 셀 배치가 같은 값을 써야
+/// 세로 정렬이 어긋나지 않는다. 저장 줄이 없거나 vpos ≤ 0 이면 0 (종전과 같다).
+pub(crate) fn cell_first_para_stored_lead(
+    para: &crate::model::paragraph::Paragraph,
+    spacing_before_px: f64,
+    dpi: f64,
+) -> f64 {
+    if spacing_before_px <= 0.0 {
+        return 0.0;
+    }
+    let vpos = para
+        .line_segs
+        .first()
+        .map(|ls| hwpunit_to_px(ls.vertical_pos, dpi))
+        .unwrap_or(0.0);
+    if vpos <= 0.0 {
+        return 0.0;
+    }
+    spacing_before_px.min(vpos)
+}
+
+/// Stored cell starts already express their lead in the saved frame. Reflow
+/// starts have no such frame and own the paragraph's declared before-space.
+/// Later paragraphs own that space in both paths.
+pub(crate) fn cell_paragraph_spacing_before(
+    para: &crate::model::paragraph::Paragraph,
+    para_index: usize,
+    spacing_before: f64,
+) -> f64 {
+    if para_index > 0 || para_has_no_stored_line_segs(para) {
+        spacing_before
+    } else {
+        0.0
+    }
+}
+
 /// [#2169] 저장 LINE_SEG 부재 판별 — 원본 NO_LS 와 자기-export HWPX 재파싱본
 /// (전부 synthetic, tag 0x8000_0000)을 동일 취급해 왕복 시멘틱을 정합한다
 /// (#1770 계열: 국소 문맥 판별).
 #[inline]
 pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragraph) -> bool {
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
+}
+
+/// These controls do not replace the empty host paragraph's own text line.
+/// Square tables have a separate exclusion/flow owner and are not included.
+pub(crate) fn empty_host_controls_are_flow_neutral(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::{control::Control, shape::TextWrap};
+    para.controls.iter().all(|control| {
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            Control::Table(table) => {
+                return !table.common.treat_as_char
+                    && matches!(
+                        table.common.text_wrap,
+                        TextWrap::InFrontOfText | TextWrap::BehindText
+                    );
+            }
+            marker => return composer::control_is_width_neutral_marker(marker),
+        };
+        !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::Square
+            )
+    })
+}
+
+/// 합성 Square 구간은 시작 위치까지의 왼쪽 여백을 이미 차지한다.
+/// 이를 본문 상자의 폭으로 환산해 측정과 배치가 같은 프레임을 사용하게 하며,
+/// 글꼴별 임의 허용 폭은 더하지 않는다.
+pub(crate) fn synthetic_wrap_column_width(
+    column_width: f64,
+    margin_left: f64,
+    anchor: Option<&pagination::WrapAnchorRef>,
+    dpi: f64,
+) -> f64 {
+    let Some(anchor) = anchor.filter(|a| a.band_y_range.is_none() && a.anchor_sw > 0) else {
+        return column_width;
+    };
+    let start = hwpunit_to_px(anchor.anchor_cs + anchor.anchor_image_margin_right, dpi);
+    let width = hwpunit_to_px(
+        (anchor.anchor_sw - anchor.anchor_image_margin_right).max(0),
+        dpi,
+    );
+    column_width.min(width + margin_left.min(start))
 }
 
 /// 셀 문단의 저장 `LINE_SEG.vertical_pos` 를 절대 앵커로 신뢰할 수 있는지 판정한다.
@@ -1169,13 +1668,19 @@ pub(crate) fn tac_object_flow_height_px(
     ctrl: &crate::model::control::Control,
     dpi: f64,
 ) -> Option<f64> {
+    tac_object_flow_height_hu(ctrl).map(|height_hu| hwpunit_to_px(height_hu, dpi))
+}
+
+/// [`tac_object_flow_height_px`] 와 같은 값의 HWPUNIT 판. 저장 `LineSeg.line_height`
+/// 와 직접 견주는 자리는 dpi 를 거치지 않아야 반올림 없이 같은 줄을 짚는다.
+#[inline]
+pub(crate) fn tac_object_flow_height_hu(ctrl: &crate::model::control::Control) -> Option<i32> {
     use crate::model::control::Control;
-    let height_hu = match ctrl {
-        Control::Picture(pic) if pic.common.treat_as_char => pic.common.height as i32,
-        Control::Shape(shape) if shape.common().treat_as_char => shape.flow_height_hu(),
-        _ => return None,
-    };
-    Some(hwpunit_to_px(height_hu, dpi))
+    match ctrl {
+        Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
+        Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
+        _ => None,
+    }
 }
 
 /// 저장 줄 높이가 문단의 인라인 개체 하나로 설명될 때, 그 개체의 흐름 높이(px).
@@ -1277,25 +1782,98 @@ pub(crate) fn composed_line_tac_object_height_px(
 pub(crate) fn cell_vpos_ladder_is_intact(
     paragraphs: &[crate::model::paragraph::Paragraph],
 ) -> bool {
-    paragraphs
+    paragraphs.iter().enumerate().all(|(idx, para)| {
+        // 0 위치 자체는 유효하다. 텍스트가 전진하는 연속 줄의 위치가 모두 0이고
+        // 같은 줄의 가로 조각이나 page/column 전환이 아닐 때만 앵커 부재로 본다.
+        // 같은 text_start의 중복과 양수 위치에서 0으로 돌아오는 저장 리셋은 보존한다.
+        first_seg_vpos_is_anchor(para, idx)
+            && !para.line_segs.windows(2).enumerate().any(|(i, pair)| {
+                let (prev, seg) = (&pair[0], &pair[1]);
+                prev.vertical_pos == 0
+                    && seg.vertical_pos == 0
+                    && seg.text_start > prev.text_start
+                    && !seg.is_first_line_of_page()
+                    && !seg.is_first_line_of_column()
+                    && !height_measurer::stored_seg_is_row_fragment(para, i + 1)
+            })
+    })
+}
+
+/// [#6923] 이 칸의 저장 사다리가 **줄 상자를 계통적으로 겹쳐** 적었는가.
+///
+/// 줄 전진(`다음 vpos − 이 vpos`)이 줄 높이보다 작은 걸음이 셋 이상이면 그 사다리의
+/// 서명이다(한두 건은 우연). `line_spacing` 이 음수인 옛 문서에서 나온다 —
+/// `148738070` 1쪽 감싼 칸: `p2 vpos 9800 lh 1400 ls −560 → p3 vpos 10640`.
+pub(crate) fn cell_uses_overlapping_line_boxes(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> bool {
+    let segs: Vec<&crate::model::paragraph::LineSeg> = paragraphs
         .iter()
-        .enumerate()
-        .all(|(idx, para)| first_seg_vpos_is_anchor(para, idx))
+        .flat_map(|para| para.line_segs.iter())
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    segs.windows(2)
+        .filter(|w| {
+            let prev_end = w[0].vertical_pos.saturating_add(w[0].line_height);
+            w[1].vertical_pos >= w[0].vertical_pos && w[1].vertical_pos < prev_end
+        })
+        .count()
+        >= 3
+}
+
+/// [#6923] 겹침 걸음 사다리에서 **빈 줄 문단이 실제로 점유하는 전진(HWPUNIT)**.
+///
+/// 저장 사다리가 이 줄의 점유를 직접 말한다 — 다음 문단의 저장 `vpos` 까지의 거리다.
+/// 겹침 사다리에서는 줄 높이(`lh`)가 점유가 아니다. 접어서 0 으로 두면 뒤따르는 내용이
+/// 그만큼 위로 올라가고(`148738070` 1쪽 중첩 표 −15.9px), 반대로 `lh` 를 쓰면 아래로
+/// 내려간다. 측정(`cell_units`)과 배치(`layout_horizontal_cell_paragraphs`)가 이 한
+/// 결과를 함께 소비한다.
+///
+/// 전진이 줄 높이를 넘으면 겹침 걸음이 아니라 평범한 줄이므로 기존 보존 경로가 판정한다.
+/// 되감김(전진 ≤ 0)도 이 규칙의 대상이 아니다.
+pub(crate) fn stored_overlap_spacer_advance_hu(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_idx: usize,
+) -> Option<i32> {
+    let synthetic = |seg: &crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    };
+    let para = paragraphs.get(para_idx)?;
+    if !para.text.trim().is_empty() || !para.controls.is_empty() {
+        return None;
+    }
+    let seg = match para.line_segs.as_slice() {
+        [seg] if !synthetic(seg) && seg.line_height > 0 => seg,
+        _ => return None,
+    };
+    let next = paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    if synthetic(next) {
+        return None;
+    }
+    let forward = i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
+    (forward > 0 && forward <= i64::from(seg.line_height)).then_some(forward as i32)
 }
 
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
-/// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별 (최대 높이, 0)
-/// 을 돌려준다.
+/// 줄 메트릭 합성. 컨트롤 폭을 가용 폭에 greedy wrap 하여 줄별
+/// (최대 높이, leading) 을 돌려준다.
 ///
 /// 한글은 글자처럼 개체를 줄박스로 취급해 그림 높이만큼 본문 흐름을 전진시키나,
 /// rhwp 는 composed lines 가 비면(빈 텍스트 + 컨트롤) 문단 높이가 0 으로 붕괴해
 /// 차트/스캔 그림 수십 장이 한 쪽에 응축된다 (미래부 정서분석 88 vs 한글 129쪽,
 /// 농촌 S-OJT 꼬리 26쪽 응축 — 10k 서베이 r14 대형 음수 델타 지배 성분).
 /// 호출부는 pairs 가 빈 경우(합성 폴백 실패 후)에만 사용한다.
+///
+/// [#7079] 두 번째 값(leading)은 **개체 높이가 아니라 호스트 문단의 글자모양·줄간격**에서
+/// 나온다 — `tac_object_stack_line_leading_px` 를 본다. 문단 전진은 `높이 + leading` 이며,
+/// 개체 잉크 위치는 유지하고 leading 을 줄 **뒤** 간격으로 소비한다. 렌더·측정·조판은
+/// 같은 높이와 간격의 합으로 다음 줄을 전진시킨다.
 pub(crate) fn tac_object_stack_line_metrics(
     para: &crate::model::paragraph::Paragraph,
     dpi: f64,
     available_width_px: Option<f64>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<Vec<(f64, f64)>> {
     use crate::model::control::Control;
     if !para_has_no_stored_line_segs(para) {
@@ -1318,13 +1896,14 @@ pub(crate) fn tac_object_stack_line_metrics(
     if objs.is_empty() {
         return None;
     }
+    let leading = tac_object_stack_line_leading_px(para, styles, para_style);
     let avail = available_width_px.unwrap_or(f64::INFINITY).max(1.0);
     let mut lines: Vec<(f64, f64)> = Vec::new();
     let mut line_w = 0.0f64;
     let mut line_h = 0.0f64;
     for (w, h) in objs {
         if line_w > 0.0 && line_w + w > avail + 0.5 {
-            lines.push((line_h, 0.0));
+            lines.push((line_h, leading));
             line_w = 0.0;
             line_h = 0.0;
         }
@@ -1332,15 +1911,266 @@ pub(crate) fn tac_object_stack_line_metrics(
         line_h = line_h.max(h);
     }
     if line_h > 0.0 {
-        lines.push((line_h, 0.0));
+        lines.push((line_h, leading));
     }
     (!lines.is_empty()).then_some(lines)
+}
+
+/// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
+///
+/// 조성기는 글자 없이 표 하나만 든 문단에 줄을 만들지 않는다. 표 높이는 표 배치
+/// (`place_table_with_text` 의 `table_total_height`, 바깥 여백 포함)가 따로 계상하지만, 그 줄의
+/// **줄간격**은 문단 형식 높이에만 실리므로 줄이 없으면 통째로 빠졌다. 한/글 2024 합성 문서
+/// (`samples/issue7418/tac_host_line_synthetic`, 글자 10·17pt × 줄간격 100·160·200% × 표 높이
+/// 1716·3014)의 저장 줄은 12조합 모두 `vertsize = 표 높이 + 바깥 여백`,
+/// `spacing = 글자 크기 × (줄간격 − 100%)` 이다 — 그림·도형 줄(`#7079`)과 같은 leading 이다.
+/// 높이는 바깥 여백을 뺀 표 높이다(여백은 `tac_outer_margin_v_px` 가 예산에 더한다).
+pub(crate) fn tac_table_host_line_metrics(
+    para: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+) -> Option<(f64, f64)> {
+    use crate::model::control::Control;
+    if !para_has_no_stored_line_segs(para) || !para.text.is_empty() {
+        return None;
+    }
+    let height = para
+        .controls
+        .iter()
+        .filter_map(|c| match c {
+            Control::Table(t) if t.common.treat_as_char => {
+                Some(hwpunit_to_px(t.common.height as i32, dpi))
+            }
+            _ => None,
+        })
+        .fold(None, |acc: Option<f64>, h| {
+            Some(acc.map_or(h, |a| a.max(h)))
+        })?;
+    Some((
+        height,
+        tac_object_stack_line_leading_px(para, styles, para_style),
+    ))
+}
+
+/// [#7079] 합성 TAC 줄의 leading — 호스트 문단의 글자 크기와 문단 줄간격에서 나온다.
+///
+/// 저장 사다리 둘이 그 값을 못박는다. 156060125 2쪽은 `p[11] vpos=30525 lh=600 ls=0`
+/// 다음 `p[13] vpos=61874` 라 그림 문단이 30749HU 를 차지하는데 그림은 29997HU 다 —
+/// 남는 752HU 는 글자 20.0px · 150% 의 `20.0 * 0.5 = 10.0px(750HU)` 다. 156596828
+/// 1쪽은 남는 값이 720HU 이고 글자 16.0px · 160% → `16.0 * 0.6 = 9.6px(720HU)` 로
+/// 정확히 같다. 개체 높이는 29997 vs 2023 으로 14배 다른데 이 몫은 글자에서만 나온다.
+///
+/// 그 몫의 위치는 같은 96dpi 래스터에서 비교한다. 156060125 2쪽 한컴 engine 2020
+/// 출력은 앞 본문줄→도해 잉크 84px, 도해→뒤 상자 360px 이다. leading 을 개체 뒤에
+/// 두면 86px/360px, 앞에 두면 96px/350px 이므로 개체 잉크는 그대로 두고 뒤 간격에
+/// 반영한다. 서로 다른 glyph bbox·TextLine 좌표를 섞은 초기 실측은 사용하지 않는다.
+///
+/// 빈 문단 폴백(`empty_no_lineseg_paragraph_metrics`)과 같은 `corrected_line_metrics`
+/// 계약을 쓰되 줄 높이는 개체가 정하므로 간격 몫만 취한다. 글자모양·문단모양을 못 찾거나
+/// Percent 가 아닌 종류(그 계약에서 간격이 0 이거나 줄 높이에 흡수된다)는 0 이다.
+pub(crate) fn tac_object_stack_line_leading_px(
+    para: &crate::model::paragraph::Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+) -> f64 {
+    // 합성 tag(`0x8000_0000`) seg 라도 **저장된 seg 가 있으면** 그 줄의 높이·baseline 이
+    // 개체 배치의 근거다 — 거기에 leading 을 얹으면 baseline 정렬 위로 개체가 밀린다
+    // (#6708 tac-img-02: 글자 264px → 158px 이동). leading 은 seg 가 아예 없어 줄을
+    // 통째로 합성한 문단에서만 나온다. `#2287` 의 높이 합성 범위는 그대로 둔다.
+    if !para.line_segs.is_empty() {
+        return 0.0;
+    }
+    let Some(char_shape_id) = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
+    else {
+        return 0.0;
+    };
+    let Some(char_style) = styles.char_styles.get(char_shape_id as usize) else {
+        return 0.0;
+    };
+    let font_size = char_style.font_size;
+    if font_size <= 0.0 {
+        return 0.0;
+    }
+    let Some(style) = para_style else {
+        return 0.0;
+    };
+    corrected_line_metrics(
+        0.0,
+        0.0,
+        font_size,
+        style.line_spacing_type,
+        style.line_spacing,
+    )
+    .1
 }
 
 /// HWPUNIT을 픽셀로 변환
 #[inline]
 pub fn hwpunit_to_px(hwpunit: i32, dpi: f64) -> f64 {
     hwpunit as f64 * dpi / HWPUNIT_PER_INCH
+}
+
+/// 다단 뒤의 단일 단 제목은 저장 한 줄 여백을 온전히 보존한다.
+/// 다른 단 전환은 기존 1200HU 간격을 따른다.
+pub(crate) fn solo_zone_pad_px(entering_solo: bool, prior_multicol: bool, dpi: f64) -> f64 {
+    hwpunit_to_px(
+        if entering_solo && prior_multicol {
+            1500
+        } else {
+            1200
+        },
+        dpi,
+    )
+}
+
+/// 명시 단나누기가 다단에서 다음 다단 밴드를 시작할 때 저장 한 줄 간격.
+pub(crate) fn multicol_band_break_pad_px(dpi: f64) -> f64 {
+    hwpunit_to_px(1500, dpi)
+}
+
+/// 큰 디자인 간격의 한 줄 표 헤더 앞뒤에 나누어 예약할 직전 제목의 줄간격.
+pub(crate) fn solo_header_gap_half_px(
+    title: &crate::model::paragraph::Paragraph,
+    header: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    if title.line_segs.len() != 1
+        || title.text.trim().is_empty()
+        || header.line_segs.len() != 1
+        || !title.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+        })
+        || title.controls.iter().any(|control| matches!(control, Control::Table(_)))
+        || !header.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing > 283)
+        })
+        || !header.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.common.treat_as_char
+                && matches!(table.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
+        })
+    {
+        return None;
+    }
+    let spacing = title.line_segs.first()?.line_spacing;
+    (spacing > 0).then(|| hwpunit_to_px(spacing, dpi) / 2.0)
+}
+
+/// 저장 한 줄 소제목에서 다단 본문으로 넘어갈 때 본문 두 줄 진행을 확보한다.
+/// 제목에서 이미 소비한 줄 상자와 별도로 더할 디자인 간격은 예약에서 제외한다.
+pub(crate) fn solo_title_exit_pad_px(
+    title: &crate::model::paragraph::Paragraph,
+    body: &crate::model::paragraph::Paragraph,
+    title_design_px: f64,
+    body_design_px: f64,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::control::Control;
+    if title.line_segs.len() != 1
+        || !title.text.trim_start().starts_with('<')
+        || !title.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
+        })
+        || !body.controls.iter().any(|control| {
+            matches!(control, Control::ColumnDef(cd) if cd.column_count.max(1) > 1)
+        })
+    {
+        return None;
+    }
+    let title_line = title.line_segs.first()?;
+    let body_line = body.line_segs.first()?;
+    let title_advance = title_line
+        .line_height
+        .saturating_add(title_line.line_spacing);
+    let body_advance = body_line.line_height.saturating_add(body_line.line_spacing);
+    if title_advance <= 0 || body_advance <= 0 {
+        return None;
+    }
+    Some(
+        (2.0 * hwpunit_to_px(body_advance, dpi)
+            - hwpunit_to_px(title_advance, dpi)
+            - title_design_px / 2.0
+            - body_design_px / 2.0)
+            .max(0.0),
+    )
+}
+
+/// 같은 저장 줄을 끝으로 갖는 다단에서 빈 마지막 문단의 추가 줄간격.
+/// 글자가 있는 다른 단의 줄 상자는 유지하고, 빈 단의 뒤쪽 여백만 다음 구역에서 제외한다.
+pub(crate) fn parallel_blank_tail_spacing_excess_px(
+    columns: &[pagination::ColumnContent],
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    dpi: f64,
+) -> f64 {
+    let Some(last_col) = columns.last() else {
+        return 0.0;
+    };
+    if last_col
+        .zone_layout
+        .as_ref()
+        .is_none_or(|layout| layout.column_areas.len() < 2)
+    {
+        return 0.0;
+    }
+    let mut visible = Vec::new();
+    let mut blank = Vec::new();
+    for col in columns
+        .iter()
+        .rev()
+        .take_while(|col| (col.zone_y_offset - last_col.zone_y_offset).abs() < 0.1)
+    {
+        let Some(pagination::PageItem::FullParagraph { para_index }) = col.items.last() else {
+            continue;
+        };
+        let Some(para) = paragraphs.get(*para_index) else {
+            continue;
+        };
+        let Some(line) = para.line_segs.last() else {
+            continue;
+        };
+        let key = (line.vertical_pos, line.line_height);
+        if para.text.trim().is_empty() && para.controls.is_empty() {
+            blank.push((key, line.line_spacing));
+        } else if !para.text.trim().is_empty() {
+            visible.push((key, line.line_spacing));
+        }
+    }
+    let excess_hu = blank
+        .iter()
+        .flat_map(|(blank_key, blank_spacing)| {
+            visible
+                .iter()
+                .filter(move |(visible_key, _)| visible_key == blank_key)
+                .map(move |(_, visible_spacing)| blank_spacing - visible_spacing)
+        })
+        .max()
+        .unwrap_or(0)
+        .max(0);
+    hwpunit_to_px(excess_hu, dpi)
+}
+
+/// 한 줄 표 헤더 뒤의 예약 높이. 아래 바깥여백은 저장 줄에서 이미 소비했다.
+pub(crate) fn single_tac_header_tail_px(table_height_hu: u32, margin_top_hu: i16, dpi: f64) -> f64 {
+    (hwpunit_to_px(table_height_hu.min(i32::MAX as u32) as i32, dpi)
+        + hwpunit_to_px(i32::from(margin_top_hu), dpi))
+    .max(0.0)
+}
+
+/// 저장 줄을 먼저 소비한 헤더 띠 뒤의 잔여 높이.
+/// 표 본체와 아래 여백은 남고, 선행 줄의 마지막 줄간격 절반은 이미 소비됐다.
+pub(crate) fn partial_tac_header_tail_px(
+    table_height_hu: u32,
+    margin_bottom_hu: i16,
+    line_spacing_hu: i32,
+    dpi: f64,
+) -> f64 {
+    (hwpunit_to_px(table_height_hu.min(i32::MAX as u32) as i32, dpi)
+        + hwpunit_to_px(i32::from(margin_bottom_hu), dpi)
+        - hwpunit_to_px(line_spacing_hu, dpi) / 2.0)
+        .max(0.0)
 }
 
 /// 픽셀을 HWPUNIT으로 변환
@@ -1443,6 +2273,100 @@ pub(crate) fn empty_host_square_table_left_strip(
     })?;
 
     (left_width > 0 && left_width < column_width_hu).then_some((0, left_width))
+}
+
+/// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
+/// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
+pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
+    !para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        && para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
+/// 저장 LINE_SEG 가 없는 host 문단의 Square 표 옆 글자 띠 (cs, sw) HU 도출.
+///
+/// 저장 줄이 있으면 첫 줄의 `column_start`/`segment_width` 가 한글이 흘린 띠를 그대로
+/// 인코딩하지만, 저장 줄이 없는 문서(기계 생성 서식)는 그 증거가 없다. 이때 띠는 표
+/// 자신의 기하(가로 기준·정렬·오프셋·폭·바깥여백)와 글자 흐름 방향으로 정해진다.
+/// typeset(흐름 전진)과 layout(host 글자 페인트)이 같은 띠를 써야 두 장부가 갈리지
+/// 않는다.
+///
+/// 표 하나만 앵커하고 가시 글자가 있는 host 에 한정한다. 가운데 놓여 양쪽 띠가 모두
+/// 넓은 형상이나 쪽/용지 기준 표는 기존 경로에 남긴다(None).
+pub(crate) fn no_lineseg_square_table_host_band(
+    para: &crate::model::paragraph::Paragraph,
+    column_width_hu: i32,
+) -> Option<(i32, i32)> {
+    use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, TextWrap};
+    const MIN_BAND_HU: i32 = 2000;
+
+    if !is_no_lineseg_visible_text_host(para) || column_width_hu <= 0 {
+        return None;
+    }
+
+    let is_square_float = |common: &crate::model::shape::CommonObjAttr| {
+        !common.treat_as_char && matches!(common.text_wrap, TextWrap::Square)
+    };
+    let square_float_count = para
+        .controls
+        .iter()
+        .filter(|control| match control {
+            crate::model::control::Control::Table(t) => is_square_float(&t.common),
+            crate::model::control::Control::Picture(p) => is_square_float(&p.common),
+            crate::model::control::Control::Shape(s) => is_square_float(s.common()),
+            _ => false,
+        })
+        .count();
+    let common = para.controls.iter().find_map(|control| match control {
+        crate::model::control::Control::Table(t) if is_square_float(&t.common) => Some(&t.common),
+        _ => None,
+    })?;
+    if square_float_count != 1 || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+    {
+        return None;
+    }
+
+    let width = common.width as i32;
+    let offset = common.horizontal_offset as i32;
+    let left = match common.horz_align {
+        HorzAlign::Left => offset,
+        HorzAlign::Right => column_width_hu - width - offset,
+        _ => return None,
+    };
+    let obj_left = left - common.margin.left as i32;
+    let obj_right = left + width + common.margin.right as i32;
+    let left_gap = obj_left.clamp(0, column_width_hu);
+    let right_gap = (column_width_hu - obj_right).clamp(0, column_width_hu);
+    let left_band = (0, left_gap);
+    let right_band = (obj_right.clamp(0, column_width_hu), right_gap);
+
+    let band = match common.text_flow {
+        TextFlow::LeftOnly => left_band,
+        TextFlow::RightOnly => right_band,
+        TextFlow::LargestOnly => {
+            if left_gap >= right_gap {
+                left_band
+            } else {
+                right_band
+            }
+        }
+        // 양쪽 흐름은 한쪽 띠가 글자 하나도 못 들어갈 만큼 좁을 때만 한 띠로 본다.
+        TextFlow::BothSides => {
+            if right_gap < MIN_BAND_HU {
+                left_band
+            } else if left_gap < MIN_BAND_HU {
+                right_band
+            } else {
+                return None;
+            }
+        }
+    };
+    (band.1 >= MIN_BAND_HU).then_some(band)
 }
 
 /// [#3314] 요청 face 의 굵기/폭 접미사를 벗긴 base family.
@@ -1677,7 +2601,7 @@ pub fn render_font_family_chain_for_weight(font_family: &str, bold: bool) -> Str
 ///
 /// [#3314] Canvas API가 요구하는 인용 형식을 유지하면서, 굵기 접미사 face
 /// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
-/// 측정 경로에는 사용하지 않는다.
+/// 정적 DB 조회의 family key와는 다르다. Canvas 실측은 paint와 이 체인을 공유한다.
 pub fn canvas_font_family_chain(font_family: &str) -> String {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
@@ -1746,15 +2670,17 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     {
         return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',sans-serif";
     }
-    // KoPub Batang uses "바탕체" in the family name, but it is a proportional
-    // serif publication face, not the Windows fixed-width BatangChe face.
-    if font_family.contains("KoPub바탕체") || lower.contains("kopub batang") {
+    // BatangChe is fixed-width serif. Its stored glyph advances are replayed
+    // independently of the paint fallback; choosing a sans coding face here
+    // discards the source's serif appearance without preserving layout better.
+    if font_family.contains("바탕체")
+        || lower.contains("batangche")
+        || lower.contains("kopub batang")
+    {
         return "'Batang','바탕','Nanum Myeongjo','AppleMyungjo','Noto Serif KR','Noto Serif CJK KR','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','Source Han Serif K Old Hangul',serif";
     }
     if font_family.contains("굴림체")
-        || font_family.contains("바탕체")
         || lower.contains("gulimche")
-        || lower.contains("batangche")
         || lower.contains("coding")
         || lower.contains("courier")
         || lower.contains("mono")
@@ -1944,6 +2870,8 @@ pub enum NumberFormat {
     LatinLower,
     /// 한글 가나다: 가, 나, 다
     HangulGaNaDa,
+    /// 한글 자모: ㄱ, ㄴ, ㄷ
+    HangulJamo,
     /// 한글 일이삼: 일, 이, 삼
     HangulNumber,
     /// 한자 一二三: 一, 二, 三
@@ -1978,6 +2906,16 @@ pub fn format_number(number: u16, format: NumberFormat) -> String {
         NumberFormat::LatinUpper => format_latin(number, true),
         NumberFormat::LatinLower => format_latin(number, false),
         NumberFormat::HangulGaNaDa => format_hangul_ganada(number),
+        NumberFormat::HangulJamo => {
+            const JAMO: [char; 14] = [
+                'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+            ];
+            number
+                .checked_sub(1)
+                .and_then(|index| JAMO.get(index as usize))
+                .map(char::to_string)
+                .unwrap_or_else(|| number.to_string())
+        }
         NumberFormat::HangulNumber => format_hangul_number(number),
         NumberFormat::HanjaNumber => format_hanja_number(number),
     }
@@ -2147,6 +3085,107 @@ fn format_hanja_number(n: u16) -> String {
     result
 }
 
+/// [#7470] 빈 host 줄이 문단 기준 자리차지 개체의 **띠 안에 흡수**되는가.
+///
+/// 한/글은 비TAC · `vert=Para` · TopAndBottom 개체에 줄 폭 전체가 막힌 host 줄을
+/// `segment_width = 0` 으로 저장하고, 그 줄의 높이·줄간격을 개체 띠와 별도로 전진하지 않는다
+/// (다음 문단 저장 vpos − 현 vpos = 개체 높이). `sw > 0`(개체 옆에 줄 폭이 남음)인 빈 host 는
+/// 종전처럼 개체 뒤에 host 한 줄을 더 전진한다(pr-149, Task #683).
+///
+/// ```text
+///   156636617 pi74  그림 h=20409  host lh=1100 ls=772 sw=0      다음 vpos − 현 vpos = 20409
+///   memo_field pi331 그림 h=20218 host lh=1200 ls=480 sw=0      다음 vpos − 현 vpos = 20218
+///   pr-149          그림 h=15696  host lh=1000 ls=600 sw=42520  host 한 줄 추가 전진
+/// ```
+///
+/// 조판과 배치가 같은 판별을 쓰도록 한 곳에 둔다. 미주 흐름은 별도 조판 경로라 배치도 본문 단에서만
+/// 이 판별을 쓴다.
+pub(crate) fn empty_host_line_absorbed_by_topbottom_float(
+    para: &crate::model::paragraph::Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    // 띠가 앵커에서 시작할 때만 host 줄이 띠 안에 든다. 양수 세로 오프셋이면 host 줄은 개체 위에
+    // 따로 놓인다(PrEP 3.214: `sw=0` 이지만 오프셋 504HU, 한/글 캡션 위치는 종전 전진과 일치).
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) != 0
+    {
+        return false;
+    }
+    let has_visible_text = para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}');
+    if has_visible_text || para.line_segs.len() != 1 {
+        return false;
+    }
+    let seg = &para.line_segs[0];
+    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && seg.segment_width == 0
+}
+
+/// [#6888] **자기 앵커보다 아래로 떨어진 자리차지(TopAndBottom) 개체**인가.
+///
+/// `#409` 는 비-TAC · `vert=Para` · TopAndBottom 개체가 뒤따르는 콘텐츠를 개체 높이만큼
+/// 밀어낸다고 보고 조판·배치 양쪽에서 그 높이를 흐름에 계상한다. 그 전제는 밴드가
+/// **앵커에서 시작할 때**(`vertOffset == 0`) 참이다. 양수 오프셋이 밴드를 아래로 내려
+/// 놓으면 그 사이에 들어갈 콘텐츠는 밀릴 이유가 없다.
+///
+/// 판별은 문서가 준다 — **다음 문단의 저장 `vpos` 가 이 문단 마지막 줄 바로 뒤**면
+/// 한글이 개체 자리를 만들어 주지 않았다는 증언이다.
+///
+/// ```text
+///   156730935 1쪽  도형 h=62.7px  vOff=150.3px (TopAndBottom, vert=Para)
+///   p17 마지막 vpos 61789 + lh 1400 + ls 420 = 63609
+///   p18 저장 vpos                            63609      ← 틈 0
+///   종전: 흐름·배치가 각각 +62.7px  → 담당자 표가 본문을 49.3px 넘어 사라진다
+///   정본: 표 945.2..1013.6(본문 안) · 도형 1018.7(표 아래)
+/// ```
+///
+/// 조판(`typeset`)과 배치(`layout`)가 **같은 답**을 써야 `#409` 가 막으려던 desync 가
+/// 생기지 않으므로 한 곳에 둔다.
+pub(crate) fn topbottom_float_displaced_below_following_flow(
+    para: &crate::model::paragraph::Paragraph,
+    next_para: Option<&crate::model::paragraph::Paragraph>,
+    common: &crate::model::shape::CommonObjAttr,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+
+    if common.treat_as_char
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+    {
+        return false;
+    }
+    let v_off = hwpunit_to_px(
+        crate::renderer::float_placement::signed_hwpunit(common.vertical_offset),
+        dpi,
+    );
+    if v_off <= 0.5 {
+        return false;
+    }
+    // 밴드 상단 = 앵커 문단의 첫 줄 + 세로 오프셋. 저장 사다리와 같은 좌표계다.
+    let Some(anchor_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) else {
+        return false;
+    };
+    let band_top = anchor_vpos.saturating_add(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    ));
+
+    next_para
+        .and_then(|next| next.line_segs.last())
+        .is_some_and(|next_last| {
+            // 다음 문단이 사다리에서 차지하는 바닥. 밴드가 **그 아래에서** 시작하면
+            // 사이에 들어갈 콘텐츠가 밀릴 이유가 없다. "틈이 없다"보다 강한 조건이다 —
+            // 오프셋이 작아 밴드가 다음 콘텐츠와 겹치면 종전대로 밀어낸다.
+            let next_bottom = next_last
+                .vertical_pos
+                .saturating_add(next_last.line_height.max(0));
+            next_last.vertical_pos > anchor_vpos && band_top >= next_bottom
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2309,10 +3348,39 @@ mod tests {
         }
     }
 
+    // [#7079] 합성 TAC 줄의 leading 은 호스트 문단의 글자 크기·문단 줄간격에서 나온다.
+    // 글자모양 0번을 `font_size` px, 문단모양을 Percent `percent` 로 세운 스타일 세트.
+    fn tac_styles(
+        font_size: f64,
+        percent: f64,
+    ) -> (
+        crate::renderer::style_resolver::ResolvedStyleSet,
+        crate::renderer::style_resolver::ResolvedParaStyle,
+    ) {
+        let mut styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let char_style = crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size,
+            ..Default::default()
+        };
+        styles.char_styles.push(char_style);
+        let para_style = crate::renderer::style_resolver::ResolvedParaStyle {
+            line_spacing_type: crate::model::style::LineSpacingType::Percent,
+            line_spacing: percent,
+            ..Default::default()
+        };
+        (styles, para_style)
+    }
+
     // [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC 그림 줄 메트릭 합성.
+    // [#7079] leading 은 문단의 글자모양에서 나오므로 실제 문서처럼 0번 글자모양을 단다.
     fn tac_picture_para(sizes_hu: &[(i32, i32)]) -> crate::model::paragraph::Paragraph {
         use crate::model::control::Control;
         let mut para = crate::model::paragraph::Paragraph::default();
+        para.char_shapes
+            .push(crate::model::paragraph::CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            });
         for (w, h) in sizes_hu {
             let mut pic = crate::model::image::Picture::default();
             pic.common.treat_as_char = true;
@@ -2327,38 +3395,111 @@ mod tests {
     fn test_tac_object_stack_single_picture_line() {
         // 590×387px 그림 1장 (미래부 정서분석 pi854 형상) — 1줄, 그림 높이.
         let para = tac_picture_para(&[(44222, 29069)]);
-        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        let (styles, para_style) = tac_styles(20.0, 100.0);
+        let lines =
+            tac_object_stack_line_metrics(&para, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines.len(), 1);
         assert!((lines[0].0 - hwpunit_to_px(29069, 96.0)).abs() < 0.01);
+        // 100% 는 여분이 없다.
         assert_eq!(lines[0].1, 0.0);
+
+        // [#7079] leading 은 호스트 문단의 글자·퍼센트에서 나온다.
+        // 156060125 2쪽: 글자 20.0px · 150% → 10.0px (저장 사다리 752HU).
+        let para_fsc = tac_picture_para(&[(44852, 29997)]);
+        let (styles_fsc, ps_fsc) = tac_styles(20.0, 150.0);
+        let fsc =
+            tac_object_stack_line_metrics(&para_fsc, 96.0, Some(661.0), &styles_fsc, Some(&ps_fsc))
+                .unwrap();
+        assert!((fsc[0].0 - hwpunit_to_px(29997, 96.0)).abs() < 0.01);
+        assert!((fsc[0].1 - 10.0).abs() < 0.01, "{:?}", fsc[0]);
+
+        // 156596828 1쪽: 글자 16.0px · 160% → 9.6px (저장 사다리 720HU). 개체 높이가
+        // 14배 작아도 같은 값이다 — leading 은 개체가 아니라 글자에서 나온다.
+        let para_mafra = tac_picture_para(&[(10435, 2023)]);
+        let (styles_mafra, ps_mafra) = tac_styles(16.0, 160.0);
+        let mafra = tac_object_stack_line_metrics(
+            &para_mafra,
+            96.0,
+            Some(661.0),
+            &styles_mafra,
+            Some(&ps_mafra),
+        )
+        .unwrap();
+        assert!((mafra[0].0 - hwpunit_to_px(2023, 96.0)).abs() < 0.01);
+        assert!((mafra[0].1 - 9.6).abs() < 0.01, "{:?}", mafra[0]);
+
+        // 문단모양을 못 찾으면 종전대로 0 이다.
+        let no_style =
+            tac_object_stack_line_metrics(&para_fsc, 96.0, Some(661.0), &styles_fsc, None).unwrap();
+        assert_eq!(no_style[0].1, 0.0);
     }
 
     #[test]
     fn test_tac_object_stack_wraps_by_width() {
         // 590px 그림 3장, 가용 661px — 줄당 1장씩 3줄 (농촌 S-OJT 스택 형상).
         let para = tac_picture_para(&[(44222, 29069); 3]);
-        let lines = tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).unwrap();
+        let (styles, para_style) = tac_styles(20.0, 150.0);
+        let lines =
+            tac_object_stack_line_metrics(&para, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines.len(), 3);
+        // leading 은 줄마다 같은 몫이다.
+        assert!(lines.iter().all(|(_, ls)| (ls - 10.0).abs() < 0.01));
         // 300px 그림 2장, 가용 661px — 한 줄 수용.
         let para2 = tac_picture_para(&[(22000, 10000), (22000, 12000)]);
-        let lines2 = tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).unwrap();
+        let lines2 =
+            tac_object_stack_line_metrics(&para2, 96.0, Some(661.0), &styles, Some(&para_style))
+                .unwrap();
         assert_eq!(lines2.len(), 1);
         assert!((lines2[0].0 - hwpunit_to_px(12000, 96.0)).abs() < 0.01);
     }
 
     #[test]
     fn test_tac_object_stack_rejects_stored_ls_and_non_tac() {
+        let (styles, para_style) = tac_styles(20.0, 150.0);
         // 저장 LINE_SEG 보유 문단 제외 (이중 계상 방지).
         let mut para = tac_picture_para(&[(44222, 29069)]);
         para.line_segs
             .push(crate::model::paragraph::LineSeg::default());
-        assert!(tac_object_stack_line_metrics(&para, 96.0, Some(661.0)).is_none());
+        assert!(tac_object_stack_line_metrics(
+            &para,
+            96.0,
+            Some(661.0),
+            &styles,
+            Some(&para_style)
+        )
+        .is_none());
         // 비-TAC 그림 제외 (PageItem::Shape 오버레이 경로 유지).
         let mut para2 = tac_picture_para(&[(44222, 29069)]);
         if let crate::model::control::Control::Picture(pic) = &mut para2.controls[0] {
             pic.common.treat_as_char = false;
         }
-        assert!(tac_object_stack_line_metrics(&para2, 96.0, Some(661.0)).is_none());
+        assert!(tac_object_stack_line_metrics(
+            &para2,
+            96.0,
+            Some(661.0),
+            &styles,
+            Some(&para_style)
+        )
+        .is_none());
+        // [#7079] 합성 tag seg 를 가진 문단은 높이 합성은 그대로(#2287) 두되 leading 은
+        // 0 이다 — 그 seg 의 baseline 이 개체 배치의 근거라 leading 을 얹으면 개체가
+        // 밀린다 (#6708 tac-img-02: 글자 264px → 158px).
+        let mut para3 = tac_picture_para(&[(44222, 29069)]);
+        para3.line_segs.push(crate::model::paragraph::LineSeg {
+            tag: crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY,
+            ..Default::default()
+        });
+        assert_eq!(
+            tac_object_stack_line_leading_px(&para3, &styles, Some(&para_style)),
+            0.0
+        );
+        let synth =
+            tac_object_stack_line_metrics(&para3, 96.0, Some(661.0), &styles, Some(&para_style))
+                .expect("합성 tag seg 문단도 높이 합성은 유지한다");
+        assert!((synth[0].0 - hwpunit_to_px(29069, 96.0)).abs() < 0.01);
+        assert_eq!(synth[0].1, 0.0);
     }
 
     #[test]
@@ -2739,7 +3880,8 @@ mod tests {
             .starts_with("'Noto Sans KR ExtraLight','Malgun Gothic'"));
         // 고정폭 계열
         assert_eq!(generic_fallback("굴림체"), mono);
-        assert_eq!(generic_fallback("바탕체"), mono);
+        assert_eq!(generic_fallback("바탕체"), serif);
+        assert_eq!(generic_fallback("BatangChe"), serif);
         assert_eq!(generic_fallback("Courier New"), mono);
         assert_eq!(generic_fallback("D2Coding ligature"), mono);
         assert_eq!(generic_fallback("Noto Sans Mono"), mono);
@@ -2820,6 +3962,9 @@ mod tests {
 
     #[test]
     fn test_format_number_hangul() {
+        for (number, expected) in [(1, "ㄱ"), (2, "ㄴ"), (4, "ㄹ"), (14, "ㅎ")] {
+            assert_eq!(format_number(number, NumberFormat::HangulJamo), expected);
+        }
         assert_eq!(format_number(1, NumberFormat::HangulGaNaDa), "가");
         assert_eq!(format_number(2, NumberFormat::HangulGaNaDa), "나");
         assert_eq!(format_number(1, NumberFormat::HangulNumber), "일");

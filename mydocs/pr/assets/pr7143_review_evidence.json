@@ -1,0 +1,4410 @@
+{
+  "source_head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+  "review_head": "4a9546f8c07da89acab4848f52d646377fb68081",
+  "base": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815",
+  "merge_tree": "b4f461a06d26f33badbdbed0aec0dcd6f6cd1bba",
+  "ci": {
+    "run": 34839089236,
+    "conclusion": "success",
+    "head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "archive_tests_passed": 9668,
+    "archive_tests_skipped": 51
+  },
+  "focused": {
+    "command": "node scripts/run-rust-test.mjs issue_6981_split_straddle_row_height -- --cargo-profile release-test --target-dir target/pr7143-review-20260914",
+    "passed": 4,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "inputs": [
+    {
+      "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "samples/issue6803/1376496-neighborhood-facility-land-table.hwp",
+      "sha256": "2482b695bc92c0cafe661af63c54acea834b6927bf9c666bdf47299910e3801d",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    },
+    {
+      "path": "pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+      "sha256": "6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2",
+      "source_commit": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "commit_content_matches": true
+    }
+  ],
+  "info": {
+    "format": "hwp5",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": null,
+      "version": "9.1.1.3933"
+    },
+    "pageCount": 414
+  },
+  "visual": {
+    "reference_pdf_pages": 415,
+    "base_pages": 413,
+    "candidate_pages": 414,
+    "selected_pages": [
+      81,
+      82,
+      83,
+      151,
+      152,
+      153,
+      271,
+      273,
+      285,
+      287,
+      376,
+      377,
+      378,
+      379
+    ],
+    "structural_flagged": 0,
+    "analyzed_pages": 14,
+    "mapped_metrics": [
+      {
+        "page": 271,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_271.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-273.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_271.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 126001,
+        "diff_ratio": 0.14131027,
+        "pixel_match_percent": 85.86897,
+        "ink_union_pixels": 191295,
+        "ink_diff_pixels": 126001,
+        "ink_diff_ratio": 0.65867378,
+        "ink_match_percent": 34.13262,
+        "visual_accuracy_proxy_percent": 34.13262,
+        "mean_abs_channel_delta": 18.931,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1040,
+          744
+        ],
+        "rhwp_page": 271,
+        "pdf_page": 273
+      },
+      {
+        "page": 285,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_285.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-287.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_285.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 138837,
+        "diff_ratio": 0.15570586,
+        "pixel_match_percent": 84.42941,
+        "ink_union_pixels": 198415,
+        "ink_diff_pixels": 138837,
+        "ink_diff_ratio": 0.69973036,
+        "ink_match_percent": 30.02696,
+        "visual_accuracy_proxy_percent": 30.02696,
+        "mean_abs_channel_delta": 20.607,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1043,
+          744
+        ],
+        "rhwp_page": 285,
+        "pdf_page": 287
+      },
+      {
+        "page": 377,
+        "rhwp_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/rhwp_png/rhwp_377.png",
+        "pdf_png": "/private/tmp/rhwp-pr7143-review/sweep/pr7143-edu/pdf_png/pdf-378.png",
+        "overlay_png": "/private/tmp/rhwp-pr7143-review/mapped/overlay_377.png",
+        "width": 1123,
+        "height": 794,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 127627,
+        "diff_ratio": 0.14313383,
+        "pixel_match_percent": 85.68662,
+        "ink_union_pixels": 192262,
+        "ink_diff_pixels": 127627,
+        "ink_diff_ratio": 0.66381812,
+        "ink_match_percent": 33.61819,
+        "visual_accuracy_proxy_percent": 33.61819,
+        "mean_abs_channel_delta": 19.99,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          75,
+          1040,
+          744
+        ],
+        "rhwp_page": 377,
+        "pdf_page": 378
+      }
+    ],
+    "opened_review_pages": [
+      82,
+      152,
+      271,
+      285,
+      377
+    ],
+    "same_base_candidate_raster_pages": [
+      81,
+      82,
+      151,
+      152,
+      376
+    ],
+    "not_claimed": "full document fidelity or WASM execution"
+  },
+  "reproduction": {
+    "kind": "in-memory reduced IR contract, not a Hancom-generated document",
+    "source_section_zero_based": 28,
+    "source_paragraph_zero_based": 2,
+    "page_definition_unchanged": true,
+    "base_output": "84188\t4",
+    "candidate_output": "84188\t4\tp3 table_bottom=722.35 body_bottom=718.13",
+    "candidate_diagnostic": "target section=28 para=2 rows=83\nD6981S r=24 cursor_row=24 need=3.8 have=24.5 h=24.5\nD6981S r=36 cursor_row=24 need=3.8 have=373.6 h=19.8\nD6981S r=59 cursor_row=44 need=3.8 have=430.1 h=35.1\nD6981S r=66 cursor_row=66 need=3.8 have=19.8 h=19.8\nD6981R r=24 start_row=24 end_row=45 need=3.8 have=24.5\nD6981R r=36 start_row=24 end_row=45 need=3.8 have=373.6\nD6981R r=44 start_row=44 end_row=66 need=20.9 have=17.1\nD6981R r=59 start_row=44 end_row=66 need=3.8 have=416.6\nLAYOUT_OVERFLOW: page=2, sec=0, col=0, para=0, type=PartialTable, first=true, y=721.6, bottom=718.1, overflow=3.5px\nD6981R r=44 start_row=44 end_row=66 need=20.9 have=17.1\nD6981R r=59 start_row=44 end_row=66 need=3.8 have=416.6\nLAYOUT_OVERFLOW: page=2, sec=0, col=0, para=0, type=PartialTable, first=true, y=721.6, bottom=718.1, overflow=3.5px\nheight=84188 needlepage=3\nD6981R r=66 start_row=66 end_row=83 need=3.8 have=19.8\nD6981R r=82 start_row=66 end_row=83 need=3.8 have=484.6\n",
+    "table_bottom_px": 722.3466666666666,
+    "body_bottom_px": 718.1333333333333,
+    "body_overflow_px": 4.213333333333367,
+    "baseline_tolerance_px": 0.5,
+    "source": "mydocs/pr/assets/pr7143_repro_probe.rs",
+    "candidate_precise_output": "84188\t4\tp3 table_bottom=722.34666667 body_bottom=718.13333333",
+    "probe_sha256": "733923663b08cb6b43504f600cae1e37a3436f036686578eb64bdefc66538ee0"
+  },
+  "final_pr_state": {
+    "headRefOid": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "state": "OPEN"
+  },
+  "maintainer": {
+    "code_head": "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121",
+    "commits": [
+      "9d1607bff0a3d6568900fc8f09853073727542d9",
+      "ecbe4ce8212b577d319358177acf2351299c5955",
+      "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121"
+    ],
+    "branch": "codex/pr7143-review-20260914",
+    "source_files_sha256": {
+      "src/renderer/layout/table_layout.rs": "5f972e349818672700800f5621717109b5827780598aa2ec916366095fab7e1b",
+      "src/renderer/layout/table_partial.rs": "2a88d978e07b0b78c85732f31ff0aff458ef85c962fd931aa31c5790e50a3df7",
+      "src/renderer/typeset.rs": "47e3a738b1ec57d9db6cadc797f14d5fd18e531df6e9667b2e03a102fa52f21e",
+      "tests/cases/issue_6981_split_straddle_row_height.rs": "c24f06de1bb154047c0687e56ee37fc75731c4730c0eaf14e56b07bb897518ea"
+    },
+    "remote_push": false,
+    "remote_ci_for_correction": "not_run",
+    "corrections": [
+      "shared start/end unit ownership, including native paragraph owner",
+      "consumed physical blank band from original row height minus remaining row height",
+      "one padding charge in visible cell height",
+      "continuation reservation in both row-placement paths using accepted cumulative height",
+      "no fallback to the smaller uncorrected row height after budget rejection",
+      "Finish a fully consumed terminal row cut before allocating its empty continuation page; preserve paint cut and caption/footnote/physical-tail guards. Restore devel page-count baseline 413; Hancom 415 unchanged."
+    ],
+    "focused": {
+      "passed": 8,
+      "skipped": 194,
+      "run_id": "05f28ef2-e05e-4337-9256-ca9f606be607"
+    },
+    "full": {
+      "passed": 9884,
+      "skipped": 51,
+      "seconds": 306.844,
+      "no_failure_or_leak": true
+    },
+    "validation_logs": {
+      "fmt": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-fmt.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit_code": 0,
+        "summary": []
+      },
+      "focused": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-focused.log",
+        "sha256": "7931b9d9b8936daf8bfc21e5f63b47286579720cfd8dc01b8e3f964c8e285b68",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 1m 44s",
+          "Summary [   4.218s] 8 tests run: 8 passed, 194 skipped"
+        ]
+      },
+      "release-build": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-release-build.log",
+        "sha256": "bf6769a800e11fcf60d83a6760f888775abd54ffd0a602f09af7b08bb7d5c640",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 1m 32s"
+        ]
+      },
+      "clippy-native": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-clippy-native.log",
+        "sha256": "34c6da1fd7b3aa9961d4d86bb44df9908da6080a9c40b7d845dce969a506b208",
+        "exit_code": 0,
+        "summary": [
+          "Finished `dev` profile [unoptimized + debuginfo] target(s) in 15.12s"
+        ]
+      },
+      "clippy-wasm": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-clippy-wasm.log",
+        "sha256": "b8dea8dd46a636f75c73cdc947710cba1850694152b745fd393f542587e19510",
+        "exit_code": 0,
+        "summary": [
+          "Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.92s"
+        ]
+      },
+      "workspace-build": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-workspace-build.log",
+        "sha256": "94c5b1d55dbe80da4cdad8386ff614fb2f9b6b2bf405866b6cc1388c49b59256",
+        "exit_code": 0,
+        "summary": [
+          "Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.39s"
+        ]
+      },
+      "clippy-workspace": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-clippy-workspace.log",
+        "sha256": "046b59418f60ae1bf60099133b5ba61028475c31a655d91d1054c612c512a4bb",
+        "exit_code": 0,
+        "summary": [
+          "Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.23s"
+        ]
+      },
+      "manifest": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-manifest.log",
+        "sha256": "796bb3ff0c5b86015c83cd0a0ab5855267cb369e0faa3e774d70faf37a036795",
+        "exit_code": 0,
+        "summary": []
+      },
+      "full": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-full.log",
+        "sha256": "bb6ced8d22b02a437bdde1d7ebef21297819ad49fe7acc0b278da3da73e53e38",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 5m 25s",
+          "Summary [ 306.844s] 9884 tests run: 9884 passed (3 slow), 51 skipped"
+        ]
+      },
+      "skia-lib": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-skia-lib.log",
+        "sha256": "40a6cd2bfc99f8ca3df2b3cf22d15f77827dad1315d1fa93a129905e13c2666e",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 2m 02s",
+          "test result: ok. 3930 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 19.32s",
+          "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+        ]
+      },
+      "skia-placeholder": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-skia-placeholder.log",
+        "sha256": "74f59e55f73695721facbc045bb37947172dc6a44e06c294fe190f52c44e6f57",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 1m 53s",
+          "Summary [   0.988s] 2 tests run: 2 passed, 197 skipped"
+        ]
+      },
+      "skia-pdf": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-skia-pdf.log",
+        "sha256": "0bf40bbcf2f848b9f2c6a632672335d4f01171796e21479e04f64832535d81ab",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release-test` profile [optimized] target(s) in 4.34s",
+          "Summary [   0.729s] 4 tests run: 4 passed, 197 skipped"
+        ]
+      },
+      "wasm-package": {
+        "path": "/private/tmp/rhwp-pr7143-review/terminal-wasm-package.log",
+        "sha256": "c2c9467f33ccedf44705e96ffa0b215fefd487fb602a6d7b0488acbc2ccbbbed",
+        "exit_code": 0,
+        "summary": [
+          "Finished `release` profile [optimized] target(s) in 2m 35s",
+          "[INFO]: 📦   Your wasm pkg is ready to publish at /private/tmp/rhwp-pr7143-review/wasm-pkg-terminal."
+        ]
+      }
+    },
+    "wasm_build_limit": "Native wasm-pack-locked.sh --no-opt diagnostic; Docker daemon unavailable; not an optimized deployment build.",
+    "reproduction": {
+      "input": "same committed source with only section 28 / paragraph 2 retained in memory; page definition, cells and text unchanged",
+      "page_count": 4,
+      "page3_body_bottom": 718.1333333333,
+      "before_table_bottom": 722.3466666667,
+      "after_table_bottom": 718.5866666667,
+      "tolerance_px": 0.5,
+      "budget_cases": 41,
+      "budget_delta_hu": [
+        -1500,
+        1500
+      ],
+      "budget_step_hu": 75,
+      "body_cell_and_unique_needle_assertions": "passed",
+      "hancom_saved_reduced_document": false,
+      "image": "pr7143_maintainer_body_bounds.png"
+    },
+    "visual": {
+      "native": {
+        "manifest": {
+          "schema_version": 1,
+          "key": "pr7143-terminal",
+          "provenance": {
+            "hwp": {
+              "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+              "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+            },
+            "pdf": {
+              "path": "pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+              "sha256": "6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2"
+            },
+            "git_head": "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+            },
+            "svg_rasterizer": "webfont",
+            "rhwp_binary": {
+              "configured": "target/pr7143-review-20260914/release-test/rhwp",
+              "path": "target/pr7143-review-20260914/release-test/rhwp",
+              "sha256": "075fadbeb3079633d650f85275c98e483a83f1b2f72214e4c100e0d8c35c3dce"
+            }
+          },
+          "dpi": 96,
+          "pixel_diff_threshold": 32,
+          "requested_pages": [
+            81,
+            82,
+            83,
+            84,
+            151,
+            152,
+            153,
+            271,
+            273,
+            285,
+            287,
+            376,
+            377,
+            378,
+            379,
+            380
+          ],
+          "requested_page_shards": [
+            [
+              81,
+              82,
+              83,
+              84,
+              151,
+              152,
+              153,
+              271,
+              273,
+              285,
+              287,
+              376,
+              377,
+              378,
+              379,
+              380
+            ]
+          ],
+          "run_state": "complete"
+        },
+        "counts": {
+          "completed_pages": [
+            81,
+            82,
+            83,
+            84,
+            151,
+            152,
+            153,
+            271,
+            273,
+            285,
+            287,
+            376,
+            377,
+            378,
+            379,
+            380
+          ],
+          "missing_pages": [],
+          "exported_svg_pages": 413,
+          "exported_render_tree_pages": 413,
+          "rasterized_svg_pages": 16,
+          "rasterized_pdf_pages": 16
+        },
+        "flagged_pages": []
+      },
+      "wasm": {
+        "manifest": {
+          "schema_version": 1,
+          "key": "pr7143-wasm",
+          "provenance": {
+            "hwp": {
+              "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+              "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+            },
+            "pdf": {
+              "path": "pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+              "sha256": "6d1119be4b5043f75ba057ed9aeb06753a03eef4b82f78014bfcd02729cf05f2"
+            },
+            "git_head": "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121",
+            "sweep_script": {
+              "path": "scripts/visual_sweep.py",
+              "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+            },
+            "svg_rasterizer": "webfont",
+            "rhwp_binary": {
+              "configured": "target/pr7143-review-20260914/release-test/rhwp",
+              "path": "target/pr7143-review-20260914/release-test/rhwp",
+              "sha256": "229147b741b99f6475b584994de9092c7dd04199b3f369c9fe5fedb8f39f1746"
+            },
+            "wasm": {
+              "files": [
+                {
+                  "path": "/private/tmp/rhwp-pr7143-review/wasm-pkg-terminal/rhwp.js",
+                  "sha256": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899"
+                },
+                {
+                  "path": "/private/tmp/rhwp-pr7143-review/wasm-pkg-terminal/rhwp_bg.wasm",
+                  "sha256": "ebcbf82f0783c94095ba1db26bd5db77f1cb0df0aa26880d3a60153bbcb9b104"
+                }
+              ],
+              "exporter_sha256": "fa92267b32f4f7617f60e02b37427762fd251d52196c9a001e6e8232c997a3aa",
+              "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+              "render_tree": "WASM getPageRenderTree"
+            }
+          },
+          "dpi": 96,
+          "pixel_diff_threshold": 32,
+          "requested_pages": [
+            81,
+            82,
+            83,
+            84,
+            151,
+            152,
+            153,
+            271,
+            273,
+            285,
+            287,
+            376,
+            377,
+            378,
+            379,
+            380
+          ],
+          "requested_page_shards": [
+            [
+              81,
+              82,
+              83,
+              84,
+              151,
+              152,
+              153,
+              271,
+              273,
+              285,
+              287,
+              376,
+              377,
+              378,
+              379,
+              380
+            ]
+          ],
+          "run_state": "complete"
+        },
+        "counts": {
+          "completed_pages": [
+            81,
+            82,
+            83,
+            84,
+            151,
+            152,
+            153,
+            271,
+            273,
+            285,
+            287,
+            376,
+            377,
+            378,
+            379,
+            380
+          ],
+          "missing_pages": [],
+          "exported_svg_pages": 413,
+          "exported_render_tree_pages": 413,
+          "rasterized_svg_pages": 16,
+          "rasterized_pdf_pages": 16
+        },
+        "runtime_manifest": {
+          "pageCount": 413,
+          "version": "0.8.6",
+          "browser": "Chrome/152.0.7977.83",
+          "sha256": "4eb0e61f9f28838c72e3d0b390d6bb3eb2ceab37b960b646533d1424138bd8a7",
+          "selected_pages": [
+            {
+              "page": 81,
+              "svgSha256": "6c83023d6316568e736fd295941530e3cb3970c44dcef82cd9ba05e511ec1e89"
+            },
+            {
+              "page": 82,
+              "svgSha256": "1de4669b3787d19a147a5e625c10b6ff8ab503d027c1f592f0802c89abc3d69f"
+            },
+            {
+              "page": 83,
+              "svgSha256": "3e0211ebe39cb374473002e6857bd6acc9b471fd3202115f267f6c5c5436154a"
+            },
+            {
+              "page": 84,
+              "svgSha256": "b34f62015abb6cba5b5e71d6552e867af0cd9a615372d7d2f9deb08655587adb"
+            },
+            {
+              "page": 151,
+              "svgSha256": "703d41f2e32a8e25fee0bb112be706ed07063454fcdf8a4ac1c70e890ea5c423"
+            },
+            {
+              "page": 152,
+              "svgSha256": "9ee568838fef99317ab4a40daf8a4b819e7c2d32a939612a1723628f1b10b902"
+            },
+            {
+              "page": 153,
+              "svgSha256": "2e63c9147999d64602cb40167967a6298568f126d3022a5eba7cf9f0a0384ae4"
+            },
+            {
+              "page": 271,
+              "svgSha256": "98ec3078446b6ed16742ab9850e0b1ef91ab4e45132e07d0833164bde4d51a6d"
+            },
+            {
+              "page": 273,
+              "svgSha256": "7b83e2c0b546a4ff53f6f33eaa63f90c53da7f2937c4d23fad2e877a5b59f595"
+            },
+            {
+              "page": 285,
+              "svgSha256": "50b94f9c8b4549fed9d58c763b3809f373ac204f44c9c6ee9fc122597f9c515c"
+            },
+            {
+              "page": 287,
+              "svgSha256": "cf6e61f622ee9ae1be4d338094007328f049c4bba07e8746ebe2991aac187800"
+            },
+            {
+              "page": 376,
+              "svgSha256": "3bd24ccee47f271f35ec816ebcc4a13a827da3c8b5fe1e51003782fa0a882904"
+            },
+            {
+              "page": 377,
+              "svgSha256": "54c2edd85c21f483c168b0ff0b715e76d6e04090ac53167e566d6881dab8a4f0"
+            },
+            {
+              "page": 378,
+              "svgSha256": "02e7f12ef24c19d9f18c8ddb740034e378fdee6849657e13db55699388bde704"
+            },
+            {
+              "page": 379,
+              "svgSha256": "562c2dab88e9e82b1a4001b4b3fa143f89300ed02fa5fabb16e809ab82ca0afb"
+            },
+            {
+              "page": 380,
+              "svgSha256": "ebc957ea717d816cf5a8095c06e2665d73a769abc3758feaba2dd680ddb5bb85"
+            }
+          ]
+        },
+        "flagged_pages": []
+      },
+      "mapped": [
+        {
+          "page": 83,
+          "rhwp_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/rhwp_png/rhwp_083.png",
+          "pdf_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/pdf_png/pdf-083.png",
+          "overlay_png": "/private/tmp/rhwp-pr7143-review/wasm-mapped/overlay_083.png",
+          "width": 1123,
+          "height": 794,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 90078,
+          "diff_ratio": 0.10102258,
+          "pixel_match_percent": 89.89774,
+          "ink_union_pixels": 99096,
+          "ink_diff_pixels": 90078,
+          "ink_diff_ratio": 0.90899734,
+          "ink_match_percent": 9.10027,
+          "visual_accuracy_proxy_percent": 9.10027,
+          "mean_abs_channel_delta": 12.571,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            75,
+            132,
+            1040,
+            744
+          ],
+          "rhwp_page": 83,
+          "pdf_page": 83
+        },
+        {
+          "page": 271,
+          "rhwp_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/rhwp_png/rhwp_271.png",
+          "pdf_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/pdf_png/pdf-273.png",
+          "overlay_png": "/private/tmp/rhwp-pr7143-review/wasm-mapped/overlay_271.png",
+          "width": 1123,
+          "height": 794,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 126015,
+          "diff_ratio": 0.14132597,
+          "pixel_match_percent": 85.8674,
+          "ink_union_pixels": 191311,
+          "ink_diff_pixels": 126015,
+          "ink_diff_ratio": 0.65869187,
+          "ink_match_percent": 34.13081,
+          "visual_accuracy_proxy_percent": 34.13081,
+          "mean_abs_channel_delta": 18.934,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            75,
+            75,
+            1040,
+            744
+          ],
+          "rhwp_page": 271,
+          "pdf_page": 273
+        },
+        {
+          "page": 285,
+          "rhwp_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/rhwp_png/rhwp_285.png",
+          "pdf_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/pdf_png/pdf-287.png",
+          "overlay_png": "/private/tmp/rhwp-pr7143-review/wasm-mapped/overlay_285.png",
+          "width": 1123,
+          "height": 794,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 138837,
+          "diff_ratio": 0.15570586,
+          "pixel_match_percent": 84.42941,
+          "ink_union_pixels": 198415,
+          "ink_diff_pixels": 138837,
+          "ink_diff_ratio": 0.69973036,
+          "ink_match_percent": 30.02696,
+          "visual_accuracy_proxy_percent": 30.02696,
+          "mean_abs_channel_delta": 20.607,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            75,
+            75,
+            1043,
+            744
+          ],
+          "rhwp_page": 285,
+          "pdf_page": 287
+        },
+        {
+          "page": 377,
+          "rhwp_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/rhwp_png/rhwp_377.png",
+          "pdf_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/pdf_png/pdf-378.png",
+          "overlay_png": "/private/tmp/rhwp-pr7143-review/wasm-mapped/overlay_377.png",
+          "width": 1123,
+          "height": 794,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 127213,
+          "diff_ratio": 0.14266953,
+          "pixel_match_percent": 85.73305,
+          "ink_union_pixels": 191997,
+          "ink_diff_pixels": 127213,
+          "ink_diff_ratio": 0.66257806,
+          "ink_match_percent": 33.74219,
+          "visual_accuracy_proxy_percent": 33.74219,
+          "mean_abs_channel_delta": 20.022,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            75,
+            75,
+            1040,
+            744
+          ],
+          "rhwp_page": 377,
+          "pdf_page": 378
+        },
+        {
+          "page": 378,
+          "rhwp_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/rhwp_png/rhwp_378.png",
+          "pdf_png": "/private/tmp/rhwp-pr7143-review/wasm-sweep/pr7143-wasm/pdf_png/pdf-380.png",
+          "overlay_png": "/private/tmp/rhwp-pr7143-review/wasm-mapped/overlay_378.png",
+          "width": 794,
+          "height": 1123,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 66040,
+          "diff_ratio": 0.07406394,
+          "pixel_match_percent": 92.59361,
+          "ink_union_pixels": 135188,
+          "ink_diff_pixels": 66040,
+          "ink_diff_ratio": 0.4885049,
+          "ink_match_percent": 51.14951,
+          "visual_accuracy_proxy_percent": 51.14951,
+          "mean_abs_channel_delta": 9.752,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            76,
+            76,
+            714,
+            1073
+          ],
+          "rhwp_page": 378,
+          "pdf_page": 380
+        }
+      ],
+      "native_wasm_pixels": [
+        {
+          "page": 81,
+          "pixel_identical": true,
+          "native_sha256": "27bd6c9094699128bf628b6b3649349569eaea8515851f5e11c15055780d7e1f",
+          "wasm_sha256": "27bd6c9094699128bf628b6b3649349569eaea8515851f5e11c15055780d7e1f"
+        },
+        {
+          "page": 82,
+          "pixel_identical": true,
+          "native_sha256": "1cc6f1128a0a89cd7d0d910a674340013287f7a980754cd7b2d936da0b57eb1c",
+          "wasm_sha256": "1cc6f1128a0a89cd7d0d910a674340013287f7a980754cd7b2d936da0b57eb1c"
+        },
+        {
+          "page": 83,
+          "pixel_identical": true,
+          "native_sha256": "17f65d10cebef6bcf7b8f9301575f2bfb4013d38b2118bd76df34077b34fe307",
+          "wasm_sha256": "17f65d10cebef6bcf7b8f9301575f2bfb4013d38b2118bd76df34077b34fe307"
+        },
+        {
+          "page": 84,
+          "pixel_identical": true,
+          "native_sha256": "4fb873276c5c29f1ec48e80ea6f8ecd367eff2cfbc47b37b1d363b47f3e4bed9",
+          "wasm_sha256": "4fb873276c5c29f1ec48e80ea6f8ecd367eff2cfbc47b37b1d363b47f3e4bed9"
+        },
+        {
+          "page": 151,
+          "pixel_identical": false,
+          "native_sha256": "68a460b9963bdd14612c34f2df66065ce71d49e5d593b8b62999c7d94ce8570b",
+          "wasm_sha256": "eb08f30aec8742997ed749ad32ac23cdb5c079c6b4440562631bef4943f24b3e"
+        },
+        {
+          "page": 152,
+          "pixel_identical": false,
+          "native_sha256": "6088a23a9e194b6585afc14c789c6106de4b699467e49b710c1ea2deff1d1f70",
+          "wasm_sha256": "a9a9a8e9b69e4246a1ed69a33bf318e11c84f885a621d026d031d349ca5e9d48"
+        },
+        {
+          "page": 153,
+          "pixel_identical": false,
+          "native_sha256": "5b1ea523f553bee42d9b321277473d46c571e81f8cc000cac94172b60020f561",
+          "wasm_sha256": "fa7b97f3876622bb8d30615d57868eb2d8b3da67b1d5d02ce0096ed9522e5616"
+        },
+        {
+          "page": 271,
+          "pixel_identical": false,
+          "native_sha256": "81b232a6dc935e1031eb81849239f3a66b6aa8faff385d9857863c684045e630",
+          "wasm_sha256": "5448b29b09805097d5b1859813aade48217b268024e725b11686fbc2ed4403b9"
+        },
+        {
+          "page": 273,
+          "pixel_identical": true,
+          "native_sha256": "bb159b2159fd7ba42e0816629dc8ec408c0ac5452e8b53e56d33c691253f0142",
+          "wasm_sha256": "bb159b2159fd7ba42e0816629dc8ec408c0ac5452e8b53e56d33c691253f0142"
+        },
+        {
+          "page": 285,
+          "pixel_identical": true,
+          "native_sha256": "cbdbacddb7131d699128b514c272258735833f0f9900201635d23b5ddbd097b2",
+          "wasm_sha256": "cbdbacddb7131d699128b514c272258735833f0f9900201635d23b5ddbd097b2"
+        },
+        {
+          "page": 287,
+          "pixel_identical": true,
+          "native_sha256": "3dae8f308a69814019b512ce2505794ee5d7e3f79977707da6ac5e0d20ef3db2",
+          "wasm_sha256": "3dae8f308a69814019b512ce2505794ee5d7e3f79977707da6ac5e0d20ef3db2"
+        },
+        {
+          "page": 376,
+          "pixel_identical": true,
+          "native_sha256": "9d67409c5f848db8aee35e9095cc40b5845789405dd93bceb3768c2f09f15583",
+          "wasm_sha256": "9d67409c5f848db8aee35e9095cc40b5845789405dd93bceb3768c2f09f15583"
+        },
+        {
+          "page": 377,
+          "pixel_identical": true,
+          "native_sha256": "3ed6a2ebcc00a65a5e1aa550a328b0801a41a7c1608ffcb8cb5df014cbf91c1d",
+          "wasm_sha256": "3ed6a2ebcc00a65a5e1aa550a328b0801a41a7c1608ffcb8cb5df014cbf91c1d"
+        },
+        {
+          "page": 378,
+          "pixel_identical": false,
+          "native_sha256": "5e0e61b102bd00933858d75a7dba7acaea8bffb82912abbfb679cef42a7d9fca",
+          "wasm_sha256": "119affe19372e87e1d7c79d91a1f6f5e3dcfa6f48150b96484c217e3c6546666"
+        },
+        {
+          "page": 379,
+          "pixel_identical": true,
+          "native_sha256": "c8602b3a5d9720f8b02da6997135945cca53cfc1578a738f99504f51ebb1f5ca",
+          "wasm_sha256": "c8602b3a5d9720f8b02da6997135945cca53cfc1578a738f99504f51ebb1f5ca"
+        },
+        {
+          "page": 380,
+          "pixel_identical": false,
+          "native_sha256": "89ba02317fc2ded90a99cf8d4a342cdef83e0648c8cb7d9c8ad37f46fb0cf4b4",
+          "wasm_sha256": "6755b0a038751d3bccb2692835908894be369706244dfc3b97f8b0741272fbd6"
+        }
+      ],
+      "backend_pixel_differences": [
+        {
+          "page": 151,
+          "different_pixels": 24,
+          "total_pixels": 891662,
+          "over32_pixels": 15,
+          "bbox": [
+            321,
+            276,
+            798,
+            406
+          ]
+        },
+        {
+          "page": 152,
+          "different_pixels": 64,
+          "total_pixels": 891662,
+          "over32_pixels": 36,
+          "bbox": [
+            330,
+            318,
+            735,
+            704
+          ]
+        },
+        {
+          "page": 153,
+          "different_pixels": 9,
+          "total_pixels": 891662,
+          "over32_pixels": 5,
+          "bbox": [
+            772,
+            431,
+            775,
+            434
+          ]
+        },
+        {
+          "page": 271,
+          "different_pixels": 35,
+          "total_pixels": 891662,
+          "over32_pixels": 20,
+          "bbox": [
+            342,
+            179,
+            680,
+            422
+          ]
+        },
+        {
+          "page": 378,
+          "different_pixels": 30,
+          "total_pixels": 891662,
+          "over32_pixels": 21,
+          "bbox": [
+            327,
+            652,
+            542,
+            660
+          ]
+        },
+        {
+          "page": 380,
+          "different_pixels": 11,
+          "total_pixels": 891662,
+          "over32_pixels": 6,
+          "bbox": [
+            523,
+            275,
+            526,
+            279
+          ]
+        }
+      ],
+      "backend_tree_differences": [
+        {
+          "page": 81,
+          "platform_paragraph_index_sentinel_differences": 0,
+          "other_differences": 0
+        },
+        {
+          "page": 82,
+          "platform_paragraph_index_sentinel_differences": 0,
+          "other_differences": 0
+        },
+        {
+          "page": 83,
+          "platform_paragraph_index_sentinel_differences": 0,
+          "other_differences": 0
+        },
+        {
+          "page": 84,
+          "platform_paragraph_index_sentinel_differences": 0,
+          "other_differences": 0
+        },
+        {
+          "page": 151,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 152,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 153,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 271,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 273,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 285,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 287,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 376,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 377,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 378,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 379,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        },
+        {
+          "page": 380,
+          "platform_paragraph_index_sentinel_differences": 8,
+          "other_differences": 0
+        }
+      ],
+      "human_review": {
+        "pages": [
+          82,
+          83,
+          84,
+          152,
+          271,
+          285,
+          377,
+          378
+        ],
+        "findings": "Target line and final row retained; p83 province continuation retained; next section begins at rhwp378/PDF380 without an empty page. Existing row-height, page-ownership, and font differences versus Hancom remain. Pixel scores are auxiliary metrics, not human accuracy.",
+        "mapped_pages": [
+          [
+            83,
+            83
+          ],
+          [
+            271,
+            273
+          ],
+          [
+            285,
+            287
+          ],
+          [
+            377,
+            378
+          ],
+          [
+            378,
+            380
+          ]
+        ]
+      },
+      "backend_tree_note": "All 16 selected render trees have identical structure, text and geometry. Differences are only paragraph index sentinels usize::MAX and usize::MAX-1 on 64-bit Native versus 32-bit WASM. Six raster pages differ by 9-64 pixels; directly inspected without visible layout/content changes. Cause of raster differences not separately established."
+    },
+    "page_count": {
+      "devel": 413,
+      "original_pr": 414,
+      "maintainer": 413,
+      "hancom_2022": 415,
+      "baseline_diff_from_devel": false
+    },
+    "historical_candidates": [
+      {
+        "head": "9d1607bff",
+        "full_passed": 9882,
+        "visual_finding": "unnecessary p83 province-row deferral; fixed in ecbe"
+      },
+      {
+        "head": "ecbe4ce82",
+        "full_passed": 9883,
+        "visual_finding": "empty p378 after fully consumed terminal cut; fixed in32aa"
+      }
+    ],
+    "assets_sha256": {
+      "pr7143_maintainer_body_bounds.png": "dfca675ab4522e0741d8f050086b18ca5d2a12e3c4578fa5863f48e3b5293c31",
+      "pr7143_maintainer_hancom_p083.png": "f8c35aa05cf292c67572371a8ac4ab8c3dab2e2f56ab983ef2c70b717dbadfc3",
+      "pr7143_maintainer_hancom_rhwp377_pdf378.png": "30411d1e600421dc83feace503e11d7b1e9c1268f303c923bf823b517fa830a4",
+      "pr7143_maintainer_hancom_rhwp378_pdf380.png": "8fff35ec3c7159abd2c680c96976a1cdcb67f198ff6e3adf3cd90e157eff5561"
+    },
+    "remote_state_recheck": {
+      "checked_at": "2026-09-15T00:36:57.457388+09:00",
+      "head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+      "state": "OPEN",
+      "mergeable": "MERGEABLE",
+      "merge_state_status": "CLEAN",
+      "maintainer_can_modify": true,
+      "upstream_devel": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815"
+    }
+  },
+  "direct_source_alignment": {
+    "recorded_at": "2026-09-15T00:50:30.100349+09:00",
+    "source_head": "34e1186f40f9f0b2d4d72596f3d0996b363b4f88",
+    "base": "38af2aae3571dc9d7f43671c1ca1a2bc8f24c815",
+    "candidate_before_alignment_docs": "155c680eb60655eb6a2d5c249693635cd5e5252c",
+    "local_branch": "codex/pr7143-review-20260914",
+    "remote": "planet6897/rhwp",
+    "remote_branch": "fix/6981-split-row-height",
+    "repository_push_permission": false,
+    "maintainer_can_modify": true,
+    "nonempty_fast_forward_dry_run": "passed",
+    "lfs_objects_in_update": false,
+    "previous_integration_head": "81d8c3b59a28c3f9bd19570baa0952c1ea6263a3",
+    "merge_tree": "0d83ff7e53a7efd0de814d2cdd19329a43b3acbf",
+    "previous_integration_tree": "0d83ff7e53a7efd0de814d2cdd19329a43b3acbf",
+    "exact_whole_tree_equal": true,
+    "replayed_commits": [
+      {
+        "before": "f4f83efa0bf6ccc8e3cabda4c9c1f7508414e1b8",
+        "after": "c6c236127bb71195129e03b8d4a26a4a254bcdd7"
+      },
+      {
+        "before": "9d1607bff0a3d6568900fc8f09853073727542d9",
+        "after": "9452fd5648014a97f05ec4994238c3df5aa04c8b"
+      },
+      {
+        "before": "ecbe4ce8212b577d319358177acf2351299c5955",
+        "after": "832afd2cf572fbd42c5d2da762cf501accc09241"
+      },
+      {
+        "before": "32aa62ed8e7d8f9c52fe64f1e08f9af3710ef121",
+        "after": "6ad0b295090753ea73a9539803a10d11bec29e49"
+      },
+      {
+        "before": "f5f8c586d668d3789f2b3fc129b15d02469059e3",
+        "after": "f75502f5ffe0fa0d8a9ce654a5a767443ffaa305"
+      },
+      {
+        "before": "81d8c3b59a28c3f9bd19570baa0952c1ea6263a3",
+        "after": "155c680eb60655eb6a2d5c249693635cd5e5252c"
+      }
+    ],
+    "validation_scope": "Prior Rust/WASM/visual results apply to identical current-base merged code; source-only execution not claimed. New PR CI remains to be checked.",
+    "additional_changes": [
+      "mydocs/pr/archives/pr_7143_review.md",
+      "mydocs/pr/archives/pr_7143_review_impl.md",
+      "mydocs/pr/assets/pr7143_review_evidence.json"
+    ]
+  },
+  "code_ci": {
+    "recorded_at": "2026-09-14T16:08:26.485674+00:00",
+    "head_sha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+    "repository": "edwardkim/rhwp",
+    "source_repository": "planet6897/rhwp",
+    "source_branch": "fix/6981-split-row-height",
+    "runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 34864916164,
+        "event": "pull_request",
+        "headSha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+        "jobs": [
+          {
+            "completedAt": "2026-09-14T15:51:48Z",
+            "conclusion": "success",
+            "databaseId": 104046210833,
+            "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+            "startedAt": "2026-09-14T15:51:40Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Default to full verification",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:44Z",
+                "conclusion": "success",
+                "name": "Capture PR merge-tree evidence",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Upload PR merge-tree evidence",
+                "number": 4,
+                "startedAt": "2026-09-14T15:51:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Resolve trusted source base parent",
+                "number": 5,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Checkout trusted verifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Evaluate exact PR workflow evidence",
+                "number": 7,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive B duration measurement",
+                "number": 8,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive C duration measurement",
+                "number": 9,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive D duration measurement",
+                "number": 10,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Finalize reuse after validated evidence publication",
+                "number": 11,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 12,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046210833"
+          },
+          {
+            "completedAt": "2026-09-14T15:51:36Z",
+            "conclusion": "skipped",
+            "databaseId": 104046212021,
+            "name": "WASM Build",
+            "startedAt": "2026-09-14T15:51:37Z",
+            "status": "completed",
+            "steps": [],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046212021"
+          },
+          {
+            "completedAt": "2026-09-14T15:53:20Z",
+            "conclusion": "success",
+            "databaseId": 104046282038,
+            "name": "CI preflight",
+            "startedAt": "2026-09-14T15:52:02Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:52:05Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:52:04Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:05Z",
+                "conclusion": "success",
+                "name": "Select test profile policy",
+                "number": 2,
+                "startedAt": "2026-09-14T15:52:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:13Z",
+                "conclusion": "success",
+                "name": "Detect review-only fast pass",
+                "number": 3,
+                "startedAt": "2026-09-14T15:52:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:13Z",
+                "conclusion": "skipped",
+                "name": "Check out current-base merge tree inputs",
+                "number": 4,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:13Z",
+                "conclusion": "skipped",
+                "name": "Verify current-base merge tree",
+                "number": 5,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:13Z",
+                "conclusion": "success",
+                "name": "Finalize review-only fast pass",
+                "number": 6,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:15Z",
+                "conclusion": "success",
+                "name": "Check out trusted CI impact classifier",
+                "number": 7,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:16Z",
+                "conclusion": "success",
+                "name": "Collect CI impact input",
+                "number": 8,
+                "startedAt": "2026-09-14T15:53:15Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:16Z",
+                "conclusion": "success",
+                "name": "Classify CI impact",
+                "number": 9,
+                "startedAt": "2026-09-14T15:53:16Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:16Z",
+                "conclusion": "success",
+                "name": "Summarize CI impact classification",
+                "number": 10,
+                "startedAt": "2026-09-14T15:53:16Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:16Z",
+                "conclusion": "success",
+                "name": "Post Check out trusted CI impact classifier",
+                "number": 20,
+                "startedAt": "2026-09-14T15:53:16Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:16Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-14T15:53:16Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046282038"
+          },
+          {
+            "completedAt": "2026-09-14T16:00:39Z",
+            "conclusion": "success",
+            "databaseId": 104046833404,
+            "name": "Frontend package gates",
+            "startedAt": "2026-09-14T15:53:23Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:25Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:18Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:25Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:29Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T15:54:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:30Z",
+                "conclusion": "success",
+                "name": "Install wasm-pack",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:43Z",
+                "conclusion": "success",
+                "name": "Restore frontend WASM cargo cache",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:53Z",
+                "conclusion": "success",
+                "name": "Build fresh WASM package for frontend gates",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:55Z",
+                "conclusion": "success",
+                "name": "Set up Node.js",
+                "number": 7,
+                "startedAt": "2026-09-14T15:55:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:08Z",
+                "conclusion": "success",
+                "name": "Install frontend package dependencies",
+                "number": 8,
+                "startedAt": "2026-09-14T15:55:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:08Z",
+                "conclusion": "success",
+                "name": "Verify WASM bindings and editor embed contract",
+                "number": 9,
+                "startedAt": "2026-09-14T15:56:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:08Z",
+                "conclusion": "success",
+                "name": "Run editor package tests when declared",
+                "number": 10,
+                "startedAt": "2026-09-14T15:56:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:09Z",
+                "conclusion": "success",
+                "name": "Run shared and extension service worker tests",
+                "number": 11,
+                "startedAt": "2026-09-14T15:56:08Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:09Z",
+                "conclusion": "success",
+                "name": "Run Chrome extension options UI tests",
+                "number": 12,
+                "startedAt": "2026-09-14T15:56:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:41Z",
+                "conclusion": "success",
+                "name": "Run Studio unit tests",
+                "number": 13,
+                "startedAt": "2026-09-14T15:56:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:41Z",
+                "conclusion": "success",
+                "name": "Install headless Chrome",
+                "number": 14,
+                "startedAt": "2026-09-14T15:56:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:29Z",
+                "conclusion": "success",
+                "name": "Run undo depth measurement gate (#5769)",
+                "number": 15,
+                "startedAt": "2026-09-14T15:56:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:13Z",
+                "conclusion": "success",
+                "name": "Run Studio responsive toolbar gate (#6118,",
+                "number": 16,
+                "startedAt": "2026-09-14T15:58:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:17Z",
+                "conclusion": "success",
+                "name": "Build Studio",
+                "number": 17,
+                "startedAt": "2026-09-14T16:00:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:21Z",
+                "conclusion": "success",
+                "name": "Build browser extensions",
+                "number": 18,
+                "startedAt": "2026-09-14T16:00:17Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:21Z",
+                "conclusion": "success",
+                "name": "Verify extension distributions",
+                "number": 19,
+                "startedAt": "2026-09-14T16:00:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:35Z",
+                "conclusion": "success",
+                "name": "Compile VS Code extension",
+                "number": 20,
+                "startedAt": "2026-09-14T16:00:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:35Z",
+                "conclusion": "success",
+                "name": "Verify VS Code webview outline keyboard contract",
+                "number": 21,
+                "startedAt": "2026-09-14T16:00:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "success",
+                "name": "Verify font asset contracts",
+                "number": 22,
+                "startedAt": "2026-09-14T16:00:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "skipped",
+                "name": "Save frontend WASM cargo cache",
+                "number": 23,
+                "startedAt": "2026-09-14T16:00:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "success",
+                "name": "Post Set up Node.js",
+                "number": 45,
+                "startedAt": "2026-09-14T16:00:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 46,
+                "startedAt": "2026-09-14T16:00:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 47,
+                "startedAt": "2026-09-14T16:00:36Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046833404"
+          },
+          {
+            "completedAt": "2026-09-14T15:53:26Z",
+            "conclusion": "success",
+            "databaseId": 104046833428,
+            "name": "Resolve nextest target duration policy",
+            "startedAt": "2026-09-14T15:53:23Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:24Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:24Z",
+                "conclusion": "success",
+                "name": "Run set -euo pipefail",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:24Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046833428"
+          },
+          {
+            "completedAt": "2026-09-14T16:02:10Z",
+            "conclusion": "success",
+            "databaseId": 104046833449,
+            "name": "Lint (fmt, clippy, WASM check)",
+            "startedAt": "2026-09-14T15:53:24Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:27Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:25Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:09Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:21Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T15:55:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:31Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 4,
+                "startedAt": "2026-09-14T15:55:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:32Z",
+                "conclusion": "success",
+                "name": "Prepare derived Rust test suites",
+                "number": 5,
+                "startedAt": "2026-09-14T15:55:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:43Z",
+                "conclusion": "success",
+                "name": "Format check",
+                "number": 6,
+                "startedAt": "2026-09-14T15:55:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:54Z",
+                "conclusion": "success",
+                "name": "Validate CI impact classifier",
+                "number": 7,
+                "startedAt": "2026-09-14T15:55:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:04Z",
+                "conclusion": "success",
+                "name": "Validate Rust test suite manifest",
+                "number": 8,
+                "startedAt": "2026-09-14T15:55:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:07Z",
+                "conclusion": "success",
+                "name": "Test internal Rust crates",
+                "number": 9,
+                "startedAt": "2026-09-14T15:56:04Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:34Z",
+                "conclusion": "success",
+                "name": "Validate LLM verifier tool contracts",
+                "number": 10,
+                "startedAt": "2026-09-14T15:56:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:34Z",
+                "conclusion": "success",
+                "name": "Validate Render Diff trigger policy",
+                "number": 11,
+                "startedAt": "2026-09-14T15:56:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:34Z",
+                "conclusion": "success",
+                "name": "Validate canvaskit-parity batch map",
+                "number": 12,
+                "startedAt": "2026-09-14T15:56:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate workflow contracts",
+                "number": 13,
+                "startedAt": "2026-09-14T15:56:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate adoption spine contract",
+                "number": 14,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate planner templates",
+                "number": 15,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate agent org contract",
+                "number": 16,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate agent frame contract",
+                "number": 17,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:50Z",
+                "conclusion": "success",
+                "name": "Validate external reality check contract",
+                "number": 18,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:50Z",
+                "conclusion": "success",
+                "name": "Clippy",
+                "number": 19,
+                "startedAt": "2026-09-14T15:56:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:36Z",
+                "conclusion": "success",
+                "name": "Clippy (WASM32)",
+                "number": 20,
+                "startedAt": "2026-09-14T15:57:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:37Z",
+                "conclusion": "success",
+                "name": "Check workspace members (FFI bindings, tools)",
+                "number": 21,
+                "startedAt": "2026-09-14T15:58:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:39Z",
+                "conclusion": "success",
+                "name": "Agent preflight (failure-path sweep + undeclared-command detection)",
+                "number": 22,
+                "startedAt": "2026-09-14T16:01:37Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:07Z",
+                "conclusion": "success",
+                "name": "Check WASM target",
+                "number": 23,
+                "startedAt": "2026-09-14T16:01:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:07Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 45,
+                "startedAt": "2026-09-14T16:02:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:08Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 46,
+                "startedAt": "2026-09-14T16:02:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:08Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 47,
+                "startedAt": "2026-09-14T16:02:08Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046833449"
+          },
+          {
+            "completedAt": "2026-09-14T16:05:37Z",
+            "conclusion": "success",
+            "databaseId": 104046833579,
+            "name": "Native Skia tests",
+            "startedAt": "2026-09-14T15:53:23Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:24Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:14Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:14Z",
+                "conclusion": "success",
+                "name": "Free disk space (remove unused pre-installed toolchains)",
+                "number": 3,
+                "startedAt": "2026-09-14T15:54:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:23Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:28Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:41Z",
+                "conclusion": "success",
+                "name": "Install native Skia runtime packages",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:42Z",
+                "conclusion": "success",
+                "name": "Prepare derived Rust test suites",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:35Z",
+                "conclusion": "success",
+                "name": "Native Skia tests",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:36Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 15,
+                "startedAt": "2026-09-14T16:05:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:36Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 16,
+                "startedAt": "2026-09-14T16:05:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:36Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 17,
+                "startedAt": "2026-09-14T16:05:36Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046833579"
+          },
+          {
+            "completedAt": "2026-09-14T15:58:24Z",
+            "conclusion": "success",
+            "databaseId": 104046834477,
+            "name": "build-test-archive-a / Build test archive (a)",
+            "startedAt": "2026-09-14T15:53:23Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:27Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:27Z",
+                "conclusion": "success",
+                "name": "Validate test archive policy",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:19Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:19Z",
+                "conclusion": "success",
+                "name": "Free disk space (remove unused pre-installed toolchains)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:19Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:29Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:19Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:30Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:40Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:40Z",
+                "conclusion": "success",
+                "name": "Inspect disk space after Rust build cache",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:40Z",
+                "conclusion": "success",
+                "name": "Summarize test archive policy",
+                "number": 9,
+                "startedAt": "2026-09-14T15:54:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:18Z",
+                "conclusion": "success",
+                "name": "Build default-feature test archive",
+                "number": 10,
+                "startedAt": "2026-09-14T15:54:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:20Z",
+                "conclusion": "success",
+                "name": "Upload test archive",
+                "number": 11,
+                "startedAt": "2026-09-14T15:58:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:21Z",
+                "conclusion": "success",
+                "name": "Upload archive expected count",
+                "number": 12,
+                "startedAt": "2026-09-14T15:58:20Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:22Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 23,
+                "startedAt": "2026-09-14T15:58:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:22Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 24,
+                "startedAt": "2026-09-14T15:58:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:22Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 25,
+                "startedAt": "2026-09-14T15:58:22Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046834477"
+          },
+          {
+            "completedAt": "2026-09-14T15:53:20Z",
+            "conclusion": "skipped",
+            "databaseId": 104046835003,
+            "name": "Workflow promotion preflight",
+            "startedAt": "2026-09-14T15:53:20Z",
+            "status": "completed",
+            "steps": [],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046835003"
+          },
+          {
+            "completedAt": "2026-09-14T15:53:20Z",
+            "conclusion": "skipped",
+            "databaseId": 104046835355,
+            "name": "Frontend unit gates",
+            "startedAt": "2026-09-14T15:53:20Z",
+            "status": "completed",
+            "steps": [],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046835355"
+          },
+          {
+            "completedAt": "2026-09-14T16:00:33Z",
+            "conclusion": "success",
+            "databaseId": 104046869168,
+            "name": "build-test-archive-d / Build test archive (d)",
+            "startedAt": "2026-09-14T15:53:29Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:33Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:33Z",
+                "conclusion": "success",
+                "name": "Validate test archive policy",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:45Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:45Z",
+                "conclusion": "success",
+                "name": "Free disk space (remove unused pre-installed toolchains)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:55Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:56Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:07Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:07Z",
+                "conclusion": "success",
+                "name": "Inspect disk space after Rust build cache",
+                "number": 8,
+                "startedAt": "2026-09-14T15:55:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:07Z",
+                "conclusion": "success",
+                "name": "Summarize test archive policy",
+                "number": 9,
+                "startedAt": "2026-09-14T15:55:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:26Z",
+                "conclusion": "success",
+                "name": "Build default-feature test archive",
+                "number": 10,
+                "startedAt": "2026-09-14T15:55:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:30Z",
+                "conclusion": "success",
+                "name": "Upload test archive",
+                "number": 11,
+                "startedAt": "2026-09-14T16:00:26Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:31Z",
+                "conclusion": "success",
+                "name": "Upload archive expected count",
+                "number": 12,
+                "startedAt": "2026-09-14T16:00:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:31Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 23,
+                "startedAt": "2026-09-14T16:00:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:31Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 24,
+                "startedAt": "2026-09-14T16:00:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:32Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 25,
+                "startedAt": "2026-09-14T16:00:31Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046869168"
+          },
+          {
+            "completedAt": "2026-09-14T16:02:14Z",
+            "conclusion": "success",
+            "databaseId": 104046869225,
+            "name": "build-test-archive-c / Build test archive (c)",
+            "startedAt": "2026-09-14T15:54:38Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:54:41Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:54:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:41Z",
+                "conclusion": "success",
+                "name": "Validate test archive policy",
+                "number": 2,
+                "startedAt": "2026-09-14T15:54:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:42Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:54:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:42Z",
+                "conclusion": "success",
+                "name": "Free disk space (remove unused pre-installed toolchains)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:55:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:50Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 5,
+                "startedAt": "2026-09-14T15:55:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:51Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 6,
+                "startedAt": "2026-09-14T15:55:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:03Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 7,
+                "startedAt": "2026-09-14T15:55:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:03Z",
+                "conclusion": "success",
+                "name": "Inspect disk space after Rust build cache",
+                "number": 8,
+                "startedAt": "2026-09-14T15:56:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:03Z",
+                "conclusion": "success",
+                "name": "Summarize test archive policy",
+                "number": 9,
+                "startedAt": "2026-09-14T15:56:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:01Z",
+                "conclusion": "success",
+                "name": "Build default-feature test archive",
+                "number": 10,
+                "startedAt": "2026-09-14T15:56:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:10Z",
+                "conclusion": "success",
+                "name": "Upload test archive",
+                "number": 11,
+                "startedAt": "2026-09-14T16:02:01Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:11Z",
+                "conclusion": "success",
+                "name": "Upload archive expected count",
+                "number": 12,
+                "startedAt": "2026-09-14T16:02:10Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:11Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 23,
+                "startedAt": "2026-09-14T16:02:11Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:12Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 24,
+                "startedAt": "2026-09-14T16:02:11Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:12Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 25,
+                "startedAt": "2026-09-14T16:02:12Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046869225"
+          },
+          {
+            "completedAt": "2026-09-14T16:00:42Z",
+            "conclusion": "success",
+            "databaseId": 104046869361,
+            "name": "build-test-archive-b / Build test archive (b)",
+            "startedAt": "2026-09-14T15:53:29Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:31Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:31Z",
+                "conclusion": "success",
+                "name": "Validate test archive policy",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:28Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:28Z",
+                "conclusion": "success",
+                "name": "Free disk space (remove unused pre-installed toolchains)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:37Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:37Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:37Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:46Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:37Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:46Z",
+                "conclusion": "success",
+                "name": "Inspect disk space after Rust build cache",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:46Z",
+                "conclusion": "success",
+                "name": "Summarize test archive policy",
+                "number": 9,
+                "startedAt": "2026-09-14T15:54:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:36Z",
+                "conclusion": "success",
+                "name": "Build default-feature test archive",
+                "number": 10,
+                "startedAt": "2026-09-14T15:54:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:39Z",
+                "conclusion": "success",
+                "name": "Upload test archive",
+                "number": 11,
+                "startedAt": "2026-09-14T16:00:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:40Z",
+                "conclusion": "success",
+                "name": "Upload archive expected count",
+                "number": 12,
+                "startedAt": "2026-09-14T16:00:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:40Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 23,
+                "startedAt": "2026-09-14T16:00:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:40Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 24,
+                "startedAt": "2026-09-14T16:00:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:40Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 25,
+                "startedAt": "2026-09-14T16:00:40Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104046869361"
+          },
+          {
+            "completedAt": "2026-09-14T16:00:24Z",
+            "conclusion": "success",
+            "databaseId": 104048662476,
+            "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+            "startedAt": "2026-09-14T15:58:27Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:58:29Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:58:28Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:26Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:58:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:34Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T15:59:26Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:35Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 4,
+                "startedAt": "2026-09-14T15:59:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:35Z",
+                "conclusion": "success",
+                "name": "Download shared test archive",
+                "number": 5,
+                "startedAt": "2026-09-14T15:59:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:22Z",
+                "conclusion": "success",
+                "name": "Run Archive A",
+                "number": 6,
+                "startedAt": "2026-09-14T15:59:35Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:23Z",
+                "conclusion": "success",
+                "name": "Upload Archive A count",
+                "number": 7,
+                "startedAt": "2026-09-14T16:00:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:23Z",
+                "conclusion": "skipped",
+                "name": "Upload upstream PR B/C/D target durations",
+                "number": 8,
+                "startedAt": "2026-09-14T16:00:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:23Z",
+                "conclusion": "skipped",
+                "name": "Upload devel B/C/D target durations",
+                "number": 9,
+                "startedAt": "2026-09-14T16:00:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:23Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T16:00:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:00:23Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T16:00:23Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104048662476"
+          },
+          {
+            "completedAt": "2026-09-14T16:04:35Z",
+            "conclusion": "success",
+            "databaseId": 104049431309,
+            "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+            "startedAt": "2026-09-14T16:00:37Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T16:00:41Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T16:00:38Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:41Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T16:00:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:51Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T16:01:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:52Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 4,
+                "startedAt": "2026-09-14T16:01:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:57Z",
+                "conclusion": "success",
+                "name": "Download shared test archive",
+                "number": 5,
+                "startedAt": "2026-09-14T16:01:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:30Z",
+                "conclusion": "success",
+                "name": "Run Archive D",
+                "number": 6,
+                "startedAt": "2026-09-14T16:01:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:31Z",
+                "conclusion": "success",
+                "name": "Upload Archive D count",
+                "number": 7,
+                "startedAt": "2026-09-14T16:04:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:33Z",
+                "conclusion": "success",
+                "name": "Upload upstream PR B/C/D target durations",
+                "number": 8,
+                "startedAt": "2026-09-14T16:04:31Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:33Z",
+                "conclusion": "skipped",
+                "name": "Upload devel B/C/D target durations",
+                "number": 9,
+                "startedAt": "2026-09-14T16:04:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:33Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T16:04:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:04:33Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T16:04:33Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104049431309"
+          },
+          {
+            "completedAt": "2026-09-14T16:07:58Z",
+            "conclusion": "success",
+            "databaseId": 104049481307,
+            "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+            "startedAt": "2026-09-14T16:00:45Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T16:00:48Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T16:00:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:48Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T16:00:48Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:57Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T16:01:48Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:01:57Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 4,
+                "startedAt": "2026-09-14T16:01:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:02:02Z",
+                "conclusion": "success",
+                "name": "Download shared test archive",
+                "number": 5,
+                "startedAt": "2026-09-14T16:01:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:53Z",
+                "conclusion": "success",
+                "name": "Run Archive B",
+                "number": 6,
+                "startedAt": "2026-09-14T16:02:02Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:54Z",
+                "conclusion": "success",
+                "name": "Upload Archive B count",
+                "number": 7,
+                "startedAt": "2026-09-14T16:07:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:55Z",
+                "conclusion": "success",
+                "name": "Upload upstream PR B/C/D target durations",
+                "number": 8,
+                "startedAt": "2026-09-14T16:07:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:55Z",
+                "conclusion": "skipped",
+                "name": "Upload devel B/C/D target durations",
+                "number": 9,
+                "startedAt": "2026-09-14T16:07:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:55Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T16:07:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:07:55Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T16:07:55Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104049481307"
+          },
+          {
+            "completedAt": "2026-09-14T16:06:33Z",
+            "conclusion": "success",
+            "databaseId": 104050039184,
+            "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+            "startedAt": "2026-09-14T16:02:17Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T16:02:21Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T16:02:18Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:03:32Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T16:02:21Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:03:41Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T16:03:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:03:42Z",
+                "conclusion": "success",
+                "name": "Install cargo-nextest",
+                "number": 4,
+                "startedAt": "2026-09-14T16:03:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:03:58Z",
+                "conclusion": "success",
+                "name": "Download shared test archive",
+                "number": 5,
+                "startedAt": "2026-09-14T16:03:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:27Z",
+                "conclusion": "success",
+                "name": "Run Archive C",
+                "number": 6,
+                "startedAt": "2026-09-14T16:03:58Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:29Z",
+                "conclusion": "success",
+                "name": "Upload Archive C count",
+                "number": 7,
+                "startedAt": "2026-09-14T16:06:27Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:30Z",
+                "conclusion": "success",
+                "name": "Upload upstream PR B/C/D target durations",
+                "number": 8,
+                "startedAt": "2026-09-14T16:06:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:30Z",
+                "conclusion": "skipped",
+                "name": "Upload devel B/C/D target durations",
+                "number": 9,
+                "startedAt": "2026-09-14T16:06:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:30Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T16:06:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:06:30Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T16:06:30Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104050039184"
+          },
+          {
+            "completedAt": "2026-09-14T16:08:09Z",
+            "conclusion": "success",
+            "databaseId": 104052105559,
+            "name": "Build & Test",
+            "startedAt": "2026-09-14T16:08:01Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T16:08:03Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T16:08:02Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:04Z",
+                "conclusion": "success",
+                "name": "Download archive A expected count",
+                "number": 2,
+                "startedAt": "2026-09-14T16:08:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:05Z",
+                "conclusion": "success",
+                "name": "Download archive B expected count",
+                "number": 3,
+                "startedAt": "2026-09-14T16:08:04Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:06Z",
+                "conclusion": "success",
+                "name": "Download archive C expected count",
+                "number": 4,
+                "startedAt": "2026-09-14T16:08:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:06Z",
+                "conclusion": "success",
+                "name": "Download archive D expected count",
+                "number": 5,
+                "startedAt": "2026-09-14T16:08:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:07Z",
+                "conclusion": "success",
+                "name": "Download shard counts",
+                "number": 6,
+                "startedAt": "2026-09-14T16:08:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:07Z",
+                "conclusion": "success",
+                "name": "Verify archive shard totals",
+                "number": 7,
+                "startedAt": "2026-09-14T16:08:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:07Z",
+                "conclusion": "success",
+                "name": "Check Build & Test worker results",
+                "number": 8,
+                "startedAt": "2026-09-14T16:08:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:08:07Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 9,
+                "startedAt": "2026-09-14T16:08:07Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164/job/104052105559"
+          }
+        ],
+        "name": "CI",
+        "status": "completed",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916164"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 34864916195,
+        "event": "pull_request",
+        "headSha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+        "jobs": [
+          {
+            "completedAt": "2026-09-14T15:51:44Z",
+            "conclusion": "success",
+            "databaseId": 104046210473,
+            "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+            "startedAt": "2026-09-14T15:51:40Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:41Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:41Z",
+                "conclusion": "success",
+                "name": "Default to full verification",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Capture PR merge-tree evidence",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Upload PR merge-tree evidence",
+                "number": 4,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Resolve trusted source base parent",
+                "number": 5,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Checkout trusted verifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Evaluate exact PR workflow evidence",
+                "number": 7,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive B duration measurement",
+                "number": 8,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive C duration measurement",
+                "number": 9,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive D duration measurement",
+                "number": 10,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Finalize reuse after validated evidence publication",
+                "number": 11,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 12,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195/job/104046210473"
+          },
+          {
+            "completedAt": "2026-09-14T15:53:09Z",
+            "conclusion": "success",
+            "databaseId": 104046259844,
+            "name": "CodeQL preflight",
+            "startedAt": "2026-09-14T15:51:49Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:51Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:03Z",
+                "conclusion": "success",
+                "name": "Detect review-only fast pass",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:51Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:03Z",
+                "conclusion": "skipped",
+                "name": "Check out current-base merge tree inputs",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:03Z",
+                "conclusion": "skipped",
+                "name": "Verify current-base merge tree",
+                "number": 4,
+                "startedAt": "2026-09-14T15:53:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:03Z",
+                "conclusion": "success",
+                "name": "Finalize review-only fast pass",
+                "number": 5,
+                "startedAt": "2026-09-14T15:53:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:05Z",
+                "conclusion": "success",
+                "name": "Check out trusted CodeQL impact classifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:53:03Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Collect CodeQL impact input",
+                "number": 7,
+                "startedAt": "2026-09-14T15:53:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Classify CodeQL impact",
+                "number": 8,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Finalize CodeQL language selection",
+                "number": 9,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Summarize CodeQL impact classification",
+                "number": 10,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Post Check out trusted CodeQL impact classifier",
+                "number": 20,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 21,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195/job/104046259844"
+          },
+          {
+            "completedAt": "2026-09-14T15:56:26Z",
+            "conclusion": "success",
+            "databaseId": 104046770177,
+            "name": "Analyze (python)",
+            "startedAt": "2026-09-14T15:53:12Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:14Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:15Z",
+                "conclusion": "skipped",
+                "name": "Skip unselected language",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:15Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:05Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:15Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "success",
+                "name": "Initialize CodeQL (non-Rust)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust)",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust post-merge)",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust full scan)",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Install Rust toolchain",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:23Z",
+                "conclusion": "success",
+                "name": "Perform CodeQL Analysis",
+                "number": 9,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:23Z",
+                "conclusion": "success",
+                "name": "Post Perform CodeQL Analysis",
+                "number": 16,
+                "startedAt": "2026-09-14T15:56:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:24Z",
+                "conclusion": "success",
+                "name": "Post Initialize CodeQL (non-Rust)",
+                "number": 17,
+                "startedAt": "2026-09-14T15:56:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:24Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T15:56:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:24Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T15:56:24Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195/job/104046770177"
+          },
+          {
+            "completedAt": "2026-09-14T16:05:10Z",
+            "conclusion": "success",
+            "databaseId": 104046770204,
+            "name": "Analyze (rust)",
+            "startedAt": "2026-09-14T15:53:13Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:15Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:15Z",
+                "conclusion": "skipped",
+                "name": "Skip unselected language",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:15Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:06Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:15Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:06Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (non-Rust)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "success",
+                "name": "Initialize CodeQL (Rust)",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust post-merge)",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust full scan)",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:24Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:06Z",
+                "conclusion": "success",
+                "name": "Perform CodeQL Analysis",
+                "number": 9,
+                "startedAt": "2026-09-14T15:54:24Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:06Z",
+                "conclusion": "success",
+                "name": "Post Perform CodeQL Analysis",
+                "number": 16,
+                "startedAt": "2026-09-14T16:05:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:07Z",
+                "conclusion": "success",
+                "name": "Post Initialize CodeQL (Rust)",
+                "number": 17,
+                "startedAt": "2026-09-14T16:05:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:07Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T16:05:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T16:05:07Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T16:05:07Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195/job/104046770204"
+          },
+          {
+            "completedAt": "2026-09-14T15:56:07Z",
+            "conclusion": "success",
+            "databaseId": 104046770335,
+            "name": "Analyze (javascript-typescript)",
+            "startedAt": "2026-09-14T15:53:12Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:53:14Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:53:13Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:14Z",
+                "conclusion": "skipped",
+                "name": "Skip unselected language",
+                "number": 2,
+                "startedAt": "2026-09-14T15:53:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:14Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:34Z",
+                "conclusion": "success",
+                "name": "Initialize CodeQL (non-Rust)",
+                "number": 4,
+                "startedAt": "2026-09-14T15:54:14Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:34Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust)",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:34Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust post-merge)",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:34Z",
+                "conclusion": "skipped",
+                "name": "Initialize CodeQL (Rust full scan)",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:34Z",
+                "conclusion": "skipped",
+                "name": "Install Rust toolchain",
+                "number": 8,
+                "startedAt": "2026-09-14T15:54:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:04Z",
+                "conclusion": "success",
+                "name": "Perform CodeQL Analysis",
+                "number": 9,
+                "startedAt": "2026-09-14T15:54:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:05Z",
+                "conclusion": "success",
+                "name": "Post Perform CodeQL Analysis",
+                "number": 16,
+                "startedAt": "2026-09-14T15:56:04Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:05Z",
+                "conclusion": "success",
+                "name": "Post Initialize CodeQL (non-Rust)",
+                "number": 17,
+                "startedAt": "2026-09-14T15:56:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:05Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T15:56:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:05Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T15:56:05Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195/job/104046770335"
+          }
+        ],
+        "name": "CodeQL",
+        "status": "completed",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916195"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 34864915804,
+        "event": "pull_request",
+        "headSha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+        "jobs": [
+          {
+            "completedAt": "2026-09-14T15:51:49Z",
+            "conclusion": "success",
+            "databaseId": 104046209217,
+            "name": "Render Diff preflight",
+            "startedAt": "2026-09-14T15:51:39Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:41Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:44Z",
+                "conclusion": "success",
+                "name": "Detect review-only fast pass",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:44Z",
+                "conclusion": "skipped",
+                "name": "Check out current-base merge tree inputs",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:44Z",
+                "conclusion": "skipped",
+                "name": "Verify current-base merge tree",
+                "number": 4,
+                "startedAt": "2026-09-14T15:51:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:44Z",
+                "conclusion": "success",
+                "name": "Finalize review-only fast pass",
+                "number": 5,
+                "startedAt": "2026-09-14T15:51:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Check out trusted CI impact classifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:51:44Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Collect Render Diff impact input",
+                "number": 7,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:48Z",
+                "conclusion": "success",
+                "name": "Classify Render Diff impact",
+                "number": 8,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:48Z",
+                "conclusion": "success",
+                "name": "Summarize Render Diff impact",
+                "number": 9,
+                "startedAt": "2026-09-14T15:51:48Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:48Z",
+                "conclusion": "success",
+                "name": "Post Check out trusted CI impact classifier",
+                "number": 18,
+                "startedAt": "2026-09-14T15:51:48Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:48Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T15:51:48Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864915804/job/104046209217"
+          },
+          {
+            "completedAt": "2026-09-14T15:59:48Z",
+            "conclusion": "success",
+            "databaseId": 104046290983,
+            "name": "Canvas visual diff",
+            "startedAt": "2026-09-14T15:51:53Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:54Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:55Z",
+                "conclusion": "success",
+                "name": "Render Diff identity PR #7143 base 410d22cdf77e3e9e45159999cab19719c621c025",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:53Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:55Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:56Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 4,
+                "startedAt": "2026-09-14T15:52:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Install PDF raster tools",
+                "number": 5,
+                "startedAt": "2026-09-14T15:52:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:06Z",
+                "conclusion": "success",
+                "name": "Install wasm-pack",
+                "number": 6,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:09Z",
+                "conclusion": "success",
+                "name": "Restore cargo registry & build cache",
+                "number": 7,
+                "startedAt": "2026-09-14T15:53:06Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:05Z",
+                "conclusion": "success",
+                "name": "Build WASM package",
+                "number": 8,
+                "startedAt": "2026-09-14T15:53:09Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:22Z",
+                "conclusion": "success",
+                "name": "Build native CLI for PDF report",
+                "number": 9,
+                "startedAt": "2026-09-14T15:55:05Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:22Z",
+                "conclusion": "skipped",
+                "name": "Save cargo registry & build cache",
+                "number": 10,
+                "startedAt": "2026-09-14T15:57:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:23Z",
+                "conclusion": "success",
+                "name": "Setup Node.js",
+                "number": 11,
+                "startedAt": "2026-09-14T15:57:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:29Z",
+                "conclusion": "success",
+                "name": "Install Studio dependencies",
+                "number": 12,
+                "startedAt": "2026-09-14T15:57:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:36Z",
+                "conclusion": "success",
+                "name": "Install Chromium",
+                "number": 13,
+                "startedAt": "2026-09-14T15:57:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:57:39Z",
+                "conclusion": "success",
+                "name": "Check render diff script syntax",
+                "number": 14,
+                "startedAt": "2026-09-14T15:57:36Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:58:34Z",
+                "conclusion": "success",
+                "name": "Run canvas visual diff and PDF report",
+                "number": 15,
+                "startedAt": "2026-09-14T15:57:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:45Z",
+                "conclusion": "success",
+                "name": "Run selected CanvasKit readiness gate",
+                "number": 16,
+                "startedAt": "2026-09-14T15:58:34Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:45Z",
+                "conclusion": "success",
+                "name": "Add render diff summary",
+                "number": 17,
+                "startedAt": "2026-09-14T15:59:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:46Z",
+                "conclusion": "success",
+                "name": "Upload render diff artifacts",
+                "number": 18,
+                "startedAt": "2026-09-14T15:59:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:47Z",
+                "conclusion": "success",
+                "name": "Post Setup Node.js",
+                "number": 35,
+                "startedAt": "2026-09-14T15:59:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:47Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 36,
+                "startedAt": "2026-09-14T15:59:47Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:59:47Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 37,
+                "startedAt": "2026-09-14T15:59:47Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864915804/job/104046290983"
+          }
+        ],
+        "name": "Render Diff",
+        "status": "completed",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34864915804"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 34864916267,
+        "event": "pull_request",
+        "headSha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+        "jobs": [
+          {
+            "completedAt": "2026-09-14T15:51:45Z",
+            "conclusion": "success",
+            "databaseId": 104046210526,
+            "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+            "startedAt": "2026-09-14T15:51:40Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:41Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:41Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:42Z",
+                "conclusion": "success",
+                "name": "Default to full verification",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Capture PR merge-tree evidence",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Upload PR merge-tree evidence",
+                "number": 4,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Resolve trusted source base parent",
+                "number": 5,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Checkout trusted verifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Evaluate exact PR workflow evidence",
+                "number": 7,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive B duration measurement",
+                "number": 8,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive C duration measurement",
+                "number": 9,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive D duration measurement",
+                "number": 10,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Finalize reuse after validated evidence publication",
+                "number": 11,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 12,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916267/job/104046210526"
+          },
+          {
+            "completedAt": "2026-09-14T15:52:25Z",
+            "conclusion": "success",
+            "databaseId": 104046261054,
+            "name": "adapter inter-diff preflight",
+            "startedAt": "2026-09-14T15:51:48Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:50Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:48Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:23Z",
+                "conclusion": "success",
+                "name": "Classify review-only or trusted trailing review tail",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:23Z",
+                "conclusion": "skipped",
+                "name": "Check out current-base merge tree inputs",
+                "number": 3,
+                "startedAt": "2026-09-14T15:52:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:23Z",
+                "conclusion": "skipped",
+                "name": "Verify current-base merge tree",
+                "number": 4,
+                "startedAt": "2026-09-14T15:52:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:23Z",
+                "conclusion": "success",
+                "name": "Finalize adapter impact",
+                "number": 5,
+                "startedAt": "2026-09-14T15:52:23Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:23Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 6,
+                "startedAt": "2026-09-14T15:52:23Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916267/job/104046261054"
+          },
+          {
+            "completedAt": "2026-09-14T15:55:43Z",
+            "conclusion": "success",
+            "databaseId": 104046505061,
+            "name": "adapter inter-diff",
+            "startedAt": "2026-09-14T15:52:28Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:52:30Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:52:29Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:30Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:52:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:39Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:30Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:52Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 4,
+                "startedAt": "2026-09-14T15:53:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:56Z",
+                "conclusion": "success",
+                "name": "Check adapter-diff runner contract",
+                "number": 5,
+                "startedAt": "2026-09-14T15:53:52Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:56Z",
+                "conclusion": "success",
+                "name": "Check adapter-diff harness",
+                "number": 6,
+                "startedAt": "2026-09-14T15:53:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:56Z",
+                "conclusion": "success",
+                "name": "Discover adapters (honest skip)",
+                "number": 7,
+                "startedAt": "2026-09-14T15:53:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:57Z",
+                "conclusion": "success",
+                "name": "Prepare derived Rust test suites",
+                "number": 8,
+                "startedAt": "2026-09-14T15:53:56Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:40Z",
+                "conclusion": "success",
+                "name": "Run adapter inter-diff case",
+                "number": 9,
+                "startedAt": "2026-09-14T15:53:57Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:40Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 17,
+                "startedAt": "2026-09-14T15:55:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:41Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 18,
+                "startedAt": "2026-09-14T15:55:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:55:41Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 19,
+                "startedAt": "2026-09-14T15:55:41Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916267/job/104046505061"
+          }
+        ],
+        "name": "Adapter inter-diff",
+        "status": "completed",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916267"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 34864916219,
+        "event": "pull_request",
+        "headSha": "c3b3c87ebb1d8902f58fc8b7247a3b4ca190f47b",
+        "jobs": [
+          {
+            "completedAt": "2026-09-14T15:51:48Z",
+            "conclusion": "success",
+            "databaseId": 104046211016,
+            "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+            "startedAt": "2026-09-14T15:51:40Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:42Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:43Z",
+                "conclusion": "success",
+                "name": "Default to full verification",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:45Z",
+                "conclusion": "success",
+                "name": "Capture PR merge-tree evidence",
+                "number": 3,
+                "startedAt": "2026-09-14T15:51:43Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Upload PR merge-tree evidence",
+                "number": 4,
+                "startedAt": "2026-09-14T15:51:45Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Resolve trusted source base parent",
+                "number": 5,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Checkout trusted verifier",
+                "number": 6,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Evaluate exact PR workflow evidence",
+                "number": 7,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive B duration measurement",
+                "number": 8,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive C duration measurement",
+                "number": 9,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "skipped",
+                "name": "Publish validated Archive D duration measurement",
+                "number": 10,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Finalize reuse after validated evidence publication",
+                "number": 11,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:51:46Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 12,
+                "startedAt": "2026-09-14T15:51:46Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916219/job/104046211016"
+          },
+          {
+            "completedAt": "2026-09-14T15:52:35Z",
+            "conclusion": "success",
+            "databaseId": 104046284630,
+            "name": "Proptest preflight",
+            "startedAt": "2026-09-14T15:51:52Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:51:54Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:51:53Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:33Z",
+                "conclusion": "success",
+                "name": "Detect review-only or trusted trailing review tail",
+                "number": 2,
+                "startedAt": "2026-09-14T15:51:54Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:33Z",
+                "conclusion": "skipped",
+                "name": "Check out current-base merge tree inputs",
+                "number": 3,
+                "startedAt": "2026-09-14T15:52:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:33Z",
+                "conclusion": "skipped",
+                "name": "Verify current-base merge tree",
+                "number": 4,
+                "startedAt": "2026-09-14T15:52:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:33Z",
+                "conclusion": "success",
+                "name": "Finalize fast pass",
+                "number": 5,
+                "startedAt": "2026-09-14T15:52:33Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:52:33Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 6,
+                "startedAt": "2026-09-14T15:52:33Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916219/job/104046284630"
+          },
+          {
+            "completedAt": "2026-09-14T15:56:34Z",
+            "conclusion": "success",
+            "databaseId": 104046570813,
+            "name": "prop roundtrip",
+            "startedAt": "2026-09-14T15:52:38Z",
+            "status": "completed",
+            "steps": [
+              {
+                "completedAt": "2026-09-14T15:52:40Z",
+                "conclusion": "success",
+                "name": "Set up job",
+                "number": 1,
+                "startedAt": "2026-09-14T15:52:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:39Z",
+                "conclusion": "success",
+                "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 2,
+                "startedAt": "2026-09-14T15:52:40Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:53:50Z",
+                "conclusion": "success",
+                "name": "Install Rust toolchain",
+                "number": 3,
+                "startedAt": "2026-09-14T15:53:39Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:07Z",
+                "conclusion": "success",
+                "name": "Rust build cache",
+                "number": 4,
+                "startedAt": "2026-09-14T15:53:50Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:20Z",
+                "conclusion": "success",
+                "name": "Check property runner contract",
+                "number": 5,
+                "startedAt": "2026-09-14T15:54:07Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:54:22Z",
+                "conclusion": "success",
+                "name": "Prepare derived Rust test suites",
+                "number": 6,
+                "startedAt": "2026-09-14T15:54:20Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:32Z",
+                "conclusion": "success",
+                "name": "Run property roundtrip cases",
+                "number": 7,
+                "startedAt": "2026-09-14T15:54:22Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:32Z",
+                "conclusion": "success",
+                "name": "Post Rust build cache",
+                "number": 13,
+                "startedAt": "2026-09-14T15:56:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:32Z",
+                "conclusion": "success",
+                "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+                "number": 14,
+                "startedAt": "2026-09-14T15:56:32Z",
+                "status": "completed"
+              },
+              {
+                "completedAt": "2026-09-14T15:56:32Z",
+                "conclusion": "success",
+                "name": "Complete job",
+                "number": 15,
+                "startedAt": "2026-09-14T15:56:32Z",
+                "status": "completed"
+              }
+            ],
+            "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916219/job/104046570813"
+          }
+        ],
+        "name": "Proptest roundtrip",
+        "status": "completed",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/34864916219"
+      }
+    ],
+    "review_verdict": "approved",
+    "remaining_issue_scope": "#6981 p82/p152 not proven fully resolved; keep OPEN",
+    "trailing_commit_scope": "review, implementation log, evidence, today work only; final-head checks required before merge"
+  }
+}

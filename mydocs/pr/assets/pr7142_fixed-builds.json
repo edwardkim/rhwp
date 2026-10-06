@@ -1,0 +1,30 @@
+[
+  {
+    "name": "chrome-package",
+    "cmd": [
+      "node",
+      "rhwp-chrome/build.mjs"
+    ],
+    "exit": 0,
+    "seconds": 1.05
+  },
+  {
+    "name": "firefox-package",
+    "cmd": [
+      "node",
+      "rhwp-firefox/build.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.91
+  },
+  {
+    "name": "dist-contract",
+    "cmd": [
+      "node",
+      "--test",
+      "scripts/frontend-extension-dist.test.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.14
+  }
+]

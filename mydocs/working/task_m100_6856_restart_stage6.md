@@ -1,0 +1,166 @@
+# #6856 재착수 Stage 6 — 전체 검증과 PR 준비
+
+- Issue: #6856. 2026-09-08 메인테이너의 “전체 검증과 PR 준비를 하세요” 지시에 따른다.
+- 선행 결과: [Stage 5](task_m100_6856_restart_stage5.md).
+- 기준 계약: [재착수 구현계획](../plans/task_m100_6856_restart_impl.md), 특히 §6.5의 HWP 0문단 손상 거부.
+- 최종 제품·시험 검증 후보: `bc0bc00e4` (`task_m100_6856_baseline`). 제품 source는 `492bdb3f7`과 같다.
+- 이 승인은 로컬 전체 검증과 PR 초안 준비이며 원격 push·PR 생성·merge·issue close는 포함하지 않는다.
+
+## 검증 기준과 원격 정합
+
+착수 시 `upstream/devel`을 fetch해 `91147aec33`을 확인했다. 최초 후보와 공통 조상은 `b5eee9c50`이며,
+후보 고유 7커밋·devel 고유 4커밋이다. devel 추가 변경은 `.github/codeql/rust-pr.yml`,
+오늘할일, PR #6877 리뷰 기록뿐이고 제품 source·test·Cargo 변경은 없다.
+`git merge-tree --write-tree upstream/devel HEAD`는 충돌 없이 종료했으며 통합 tree는
+`2763cf48762211a494c86eaf519db2f0e89e4f8e`다. 후보와 통합 tree의 제품 검증 입력은 같다.
+후보 PR 범위 및 통합 tree의 `git diff --check`도 통과했다. 실제 merge/rebase는 하지 않았다.
+
+기존 검증 worktree `rhwp-review-6856`의 clean 상태를 확인하고 후보 commit으로 전환했다.
+이전 detached head `538257c07`은 보존 branch `task_m100_6856`에 포함되어 있다.
+기본 checkout의 작업 branch·과거 구현은 되돌리거나 삭제하지 않았다.
+
+## 실행 환경과 필수 게이트
+
+- WSL2 Linux, 논리 CPU 16개, RAM 31 GiB. 시작 시 가용 메모리 약 20 GiB, 디스크 약 136 GiB.
+- 고정 target: `/home/edward/mygithub/rhwp-6812-review-target` 재사용. 이동·삭제하지 않는다.
+- Cargo는 순차 실행한다. 전체 nextest는 host 메모리를 고려해 test threads 8개를 사용한다.
+- `--prepare`는 review worktree에서만 실행했다. 1,201 source, 28 suite + 20 exception target이다.
+  generated suite·manifest는 제출 파일이 아니다.
+- 실행 로그는 review worktree의 `output/6856/pr-validation/`에만 보관하며 커밋하지 않는다.
+
+| 검증 | 상태 |
+| --- | --- |
+| 전체 fmt 및 fmt check | 통과, 원본 파일 포맷 변경 없음 |
+| native root Clippy (`--locked`, `-D warnings`) | 최종 후보 통과 |
+| WASM32 library Clippy | 최종 후보 통과 |
+| workspace build / all-target Clippy | 최종 후보 통과, 최초 실패·정정은 아래 기록 |
+| manifest check / 배정 규칙 계약 시험 | 통과 / 21개 통과 |
+| release-test 전체 nextest | `bc0bc00e4`에서 9,248 통과·0 실패·46 skip, 컴파일 1분 06초·시험 309.428초 |
+| Native Skia 3종 | lib 4,112 통과·13 ignored, missing picture 2 통과, direct PDF 4 통과 |
+| Docker WASM / 최신 산출물 확인 | 표준 최적화 빌드 통과, 새 WASM 실행 스모크 통과 |
+| 대표 시각 산출물·문서 정합 | A4 판정본 동일성·최신 PNG 확인, 링크 검사 통과 |
+
+위 대기 항목을 통과하기 전 PR 준비 완료로 보고하지 않는다. 실패 시 원인과 후보 귀속을 먼저 확인하며,
+실패를 피하기 위한 baseline 변경·테스트 제외·오류 무시는 하지 않는다.
+
+### 전체 lint에서 발견한 시험 작성 오류
+
+`issue_6856_rectangle_structure.rs`의 `Box::new(Picture::default())`가 `clippy::box_default`에
+걸렸다. `Box::default()`로 정정하고 불필요해진 import를 제거한다. 제품 동작·시험 기대값은 변경하지
+않으며 lint를 allow하지 않는다. 정정 commit을 검증 worktree에 반영하고 lint 묶음부터 재실행한다.
+
+정정 뒤 formatter가 위 호출을 한 줄로 줄여 test source의 크기가 바뀌었다. 이 때문에 포맷 전 생성한
+가중치 기반 suite 배정과 포맷 후 manifest의 배정이 달라져 drift가 검출되었다. 포맷 결과를 source
+commit에 반영하고 그 commit에서 다시 `--prepare`한 뒤 fmt check·manifest check가 모두 통과했다.
+이는 파생 준비 순서의 문제이며 생성기·정책·시험 기대값은 수정하지 않았다.
+
+## PR 범위와 보고 경계
+
+### 전체 회귀 1차 결과와 #5797 기대값 정정
+
+`4784ec0a4`에서 전체 lint·manifest check 및 배정 규칙 21개가 통과했다.
+전체 nextest는 컴파일 4분 04초, 시험 317.855초에 **9,247 통과·1 실패·46 skip**으로 종료했다.
+실패는 `issue5797_self_closing_paragraph_does_not_swallow_next_paragraph` 한 건이다.
+이슈 #6856의 집중 시험 및 #6852 보호 시험 30개는 모두 통과했다.
+
+기존 #5797 입력은 첫 도형에 `<p/>`와 `검토/승인` 문단을 순서대로 가진다. 시험 helper가 모든
+문단 텍스트를 `join("\n")`하므로, 승인된 P1의 빈 문단 보존 뒤 결과는 `"\n검토/승인"`이다.
+기존 기대값 `"검토/승인"`은 빈 문단을 버린 결과였다. 실제 뒤 두 형제의 id와 글자는 그대로였다.
+따라서 이번 실패는 뒤 문단 소실 회귀가 아니라 **빈 문단 보존 계약과 이전 기대값의 불일치**다.
+기대 문자열과 설명을 정정하되 trim/filter로 빈 문단을 숨기지 않고 형제 검사도 유지한다.
+제품 source·golden·baseline 원장은 바꾸지 않는다. 정정 뒤 필수 lint와 전체 회귀를 재실행한다.
+
+P1 구현 시 기존 #5797 기대값과의 정합성 점검을 누락했다. 이번 전체 검증에서 이를 발견해 정정했다.
+재실행 후보 `bc0bc00e4`는 native·WASM32·workspace lint, manifest check·규칙 21개와 전체
+nextest 9,248개가 모두 통과했다. 46개 skip은 기존 nextest 설정의 제외이며 통과 건수에 합산하지 않았다.
+nextest 0.9.137에서 권장 0.9.140 안내 및 CI 전용 `report-skipped` 설정 경고가 있었으며,
+default profile 실제 실행·종료 코드 0과 테스트 수를 확인했다. 경고를 없애려고 도구·설정은 바꾸지 않았다.
+
+1차 실패 직후에는 Native Skia와 Docker WASM을 실행하지 않았고 미실행으로 남겼다.
+1차 실패 로그는 review worktree의 `output/6856/pr-validation/full-nextest-first.log`에 보존한다.
+
+### 최신 대표 출력 확인
+
+제품 코드가 같은 `492bdb3f7`의 workspace debug 바이너리로 A4 HWP/HWPX를 canonical layer SVG로
+내보냈다. 두 출력은 바이트 단위 동일하며 사각형 1개·글상자 2개를 표시했다. PNG를 직접 열어
+한글 label과 실선, 빈 글상자 및 글자 포함 글상자를 확인했다. legacy SVG도 선행 메인테이너 판정본
+`output/6856/identification/a4-hwp-control-codes.svg`와 바이트 단위 동일했다.
+
+- 대표 PNG: `mydocs/pr/assets/issue6856_a4_control_codes.png`.
+- PNG SHA256: `c92adc23dacf6bb36b9d1f48d44afea369b2522a0f4abde1009ea955554d868a`.
+- A4 layer SVG SHA256(두 형식 동일): `38f06fd85f5813db0e9a628c8cac8ad61f14d591adeab96b3725ba074c626078`.
+- 바이너리 SHA256: `89951139972dd4402c13bfdbd4228f9b215c25b3321d33f9b59e45667e980238`.
+- 원본 #6852 HWP/HWPX 5쪽 layer SVG도 동일(`81312df7ceace805dd48154b79d55791f4c506f026d3858befbc7db5ed875e9c`), 각 11쪽·선택 5쪽 overflow 0이었다.
+- 편람 쌍은 열기·9쪽 내보내기에 성공했다. HWP 384쪽/HWPX 382쪽은 이번 실행의 관측값이며
+  포맷 간 전체 출력 동일성이나 한컴 정답 판정을 의미하지 않는다.
+- 동일 0문단 HWP 원본은 최신 CLI `info`에서도 구조 오류로 거부했다.
+
+이 확인은 이미 승인된 조판부호의 유지 검증이며 새로운 PDF fidelity sweep 통과 주장이 아니다.
+
+이번 승인 구현은 소유 내부 영역에 따른 사각형/글상자 식별, 조판부호 소비 통일, HWPX 빈 문단 보존,
+확정적 소유 구조 오류의 문서 열기 전달, HWP 사각형 소유 목록의 0문단 거부다.
+18조합 모델 시험은 한컴 정상 fixture 18개를 확보했다는 뜻이 아니다.
+
+원격 #6856 본문에는 재착수 전 A 선 억제 조건 재검토와 더 넓은 수용 조건이 남아 있다.
+이번 변경은 A 조건을 수정하지 않는다. PR 초안에는 승인된 최신 계획과 이 차이를 명시하고,
+이슈 본문 현행화·close 여부는 별도 승인 단계에서 처리한다. 모든 과거 수용 조건이 해결됐다고
+주장하거나 자동 close 문구를 먼저 넣지 않는다.
+
+기존 조판부호 시각 판정 통과와 0문단 파일의 한컴 손상 판정은 메인테이너 근거다.
+새 parser 검증 뒤의 정상 지정 샘플·출력 유지와 전체 회귀는 별도로 기록한다.
+미실행 성능 측정, 전체 한컴 호환성 또는 코퍼스 전수 정답 검증을 통과로 확대하지 않는다.
+
+## 최종 완료 기록
+
+- Native Skia lib는 root 3,930개와 내부 crate 182개가 통과했고 기존 ignored는 13개다.
+  missing picture 2개와 direct PDF 4개도 통과했다. 각 focused 실행의 188/168 skipped는 필터로
+  선택하지 않은 같은 suite의 시험 수이지 이슈 회귀를 새로 제외한 것이 아니다.
+- native 묶음 종료 후 기본 checkout에서 `docker compose --env-file .env.docker run --rm wasm`을
+  실행했다. 기존 이미지·named volume·환경 파일을 재사용했다. 컴파일 3분 41초, wasm-opt 포함
+  전체 6분 22초에 종료 코드 0이었다. host native WASM으로 대체하지 않았다.
+- 새 `pkg/rhwp_bg.wasm`: 10,359,673 bytes,
+  SHA256 `e2fcd65cc84dc758621711ee3b95ed264e0cda3d977ad39c916474d156c4f7ce`.
+- `node output/6856/pr-validation/wasm-smoke.mjs`로 새 WASM을 직접 초기화해 A4 HWP/HWPX의
+  1쪽·사각형 1개·글상자 2개, 표시 OFF 때 부호 없음, 실제 0문단 손상 파일의 오류 거부를 확인했다.
+  이 실행은 Node의 WASM 스모크이며 Studio 마우스 상호작용 재검증으로 부풀리지 않는다.
+- 기존 7700 Studio 서버는 유지했다. `/@fs/home/edward/mygithub/rhwp/pkg/rhwp_bg.wasm`의 HTTP
+  수신 바이트 SHA256이 새 WASM 파일과 같았다. 프런트엔드 source·dist는 수정하지 않았다.
+- 종료 전 `upstream/devel`을 다시 fetch해 `91147aec33` 유지와 PR 미생성을 확인했다.
+  `bc0bc00e4`의 최신 base 통합 tree는 `73077c707c8fe270bef039648e9c361bd4904a75`, 충돌 없음이다.
+- source/test 검증 이후 변경은 결과보고서·Stage 6·PR 제출 계획뿐이다. 검증 입력·baseline은 같다.
+  generated suite·manifest는 review worktree의 ignored 산출물이고 tracked 변경·stage는 없다.
+- [결과보고서](../report/task_m100_6856_report.md) 및 [PR 제출 계획](../plans/task_m100_6856_pr.md)을
+  준비했다. 게시용 본문은 `output/6856/pr-validation/pr-body.md`에 별도 준비하며 원격 push·PR 생성
+  승인을 기다린다. 이슈 현행화·close·comment·merge는 실행하지 않았다.
+
+## 게시 승인 뒤 최신 devel 통합 재검증 (2026-09-08)
+
+메인테이너가 원격 push·PR 생성을 승인했다. 직전 fetch에서 `upstream/devel`이
+`a7de17ff8ed911727fa5ff129945b341c79f8c7d`로 전진한 것을 확인했다. PR #6889의 기여자 통합으로
+renderer·문서 편집·시험·fixture가 추가됐으며 `svg.rs`, `web_canvas.rs`가 이번 변경 파일과 겹친다.
+겹치는 수정은 그라데이션 좌표 처리이며 조판부호 변경과 다른 구간이지만, 이전 검증의 제품 입력과
+더 이상 같지 않으므로 검증 결과를 그대로 재사용하지 않았다.
+
+기본 작업 branch는 `ac22d309b`에 유지하고, clean한 기존 `rhwp-review-6856`에서 그 head를
+checkout한 뒤 `git merge --no-commit --no-ff a7de17ff8`로 통합했다. 자동 병합은 충돌 없으며
+검증 tree는 `e68d40647229f6a57a3471a984be20a0461afcdd`다. 새 branch·worktree는 만들지 않았고
+원격 변경을 우리 source commit에 합쳐 제출하지 않는다.
+
+- 같은 고정 Cargo target과 threads 8, `--locked` 조건으로 순차 재검증했다.
+- fmt/check, native·WASM32·workspace all-target Clippy, workspace build 모두 통과했다.
+- manifest prepare/check 및 배정 규칙 21개가 통과했다. formatter에 의한 추가 source 수정은 없다.
+- 전체 nextest: 컴파일 4분 29초, 시험 337.163초, **9,266 통과·0 실패·46 skip**.
+  선행 후보의 9,248개보다 18개 늘어난 것은 최신 devel의 추가 시험이다.
+- 통합본 debug CLI의 A4 HWP legacy SVG는 메인테이너 판정본과 바이트 동일했다. HWPX layer SVG도
+  선행 검증본과 동일했다. 동일한 0문단 HWP는 구조 오류로 거부했다.
+- Native Skia lib 4,112 통과·13 ignored, missing picture 2 통과, direct PDF 4 통과.
+  focused 실행의 184/169 skip은 같은 suite의 선택하지 않은 시험이다.
+- 통합본 Docker WASM은 wasm-opt 포함 6분 48초에 통과했다(컴파일 4분 01초).
+  기본 checkout에서 기존 `.env.docker`·image·named volume을 사용하되
+  `docker compose --env-file .env.docker run --rm -v /home/edward/mygithub/rhwp-review-6856:/app wasm`으로
+  `/app`만 통합 검증 worktree로 지정했다. 기본 checkout의 `pkg/`와 Studio 서버는 바꾸지 않는다.
+- `node output/6856/pr-validation/merge-wasm-smoke.mjs`로 실제 새 WASM을 초기화해 A4 HWP/HWPX의
+  1쪽·사각형 1개·글상자 2개, 부호 OFF, 동일 손상 HWP의 오류 거부를 모두 확인했다.
+  통합 WASM SHA256: `3e4b1e60112933cc3c0f70b18981301ef2e0c2927bd0d9a15c4a687bde1efcdc`.
+- 통합 후 제품·시험·baseline 추가 수정은 없다. 기본 branch에는 이 재검증의 문서 기록만 추가한다.
+- 추가 로그: review worktree의 `output/6856/pr-validation/merge-*.log`.

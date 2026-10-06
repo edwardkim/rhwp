@@ -1,0 +1,31 @@
+{
+  "branch": "review/planet6897-20261004",
+  "tested_head": "0c2eec6080e18340b6e40bebbca8ebcb7370936e",
+  "nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E \"test(issue_7428) | test(issue_7398) | test(issue_7431) | test(issue_6875) | test(issue_4599) | test(issue_7412) | test(issue_7416) | test(issue_5585) | test(floating_anchor_char_line_height) | test(issue_7051) | test(issue_7387) | test(issue_6761) | test(issue_7548)\"",
+    "passed": 63,
+    "failed": 2,
+    "exit_code": 100,
+    "log_path": "output/pr-review/planet6897-20261004/focused-nextest.log",
+    "log_sha256": "868e79d93f870c6c611c6ef770bb1374854a0d0bbb6077f5e0d216bcbb65499f",
+    "failures": [
+      "issue_5585_continued_para_relative_table_reopens_outer_margins",
+      "issue_5585_row_content_stays_and_empty_band_continues"
+    ]
+  },
+  "pr7542": {
+    "result": "4/4 passed; integrated overall validation remains blocked",
+    "inputs": [
+      {
+        "path": "samples/hwpx/mel-001.hwpx",
+        "sha256": "ec75dc24ade52e055c54ea0529af100a623027c465571fda7edaa97f6e736d8b",
+        "tracked": true
+      },
+      {
+        "path": "samples/hwpx/hancom-hwp/mel-001.hwp",
+        "sha256": "dcdefa929e90493684136d181ef3e2b204f1395382f2f47bd98c3aeed4cfc6af",
+        "tracked": true
+      }
+    ]
+  }
+}

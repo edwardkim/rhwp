@@ -18,7 +18,7 @@ use super::shaping_vertical::{
 };
 use super::{GradientFillInfo, LineStyle, PathCommand, ShapeStyle, TextStyle};
 use crate::model::image::ImageEffect;
-use crate::model::shape::TextWrap;
+use crate::model::shape::{RectangleControlKind, TextWrap};
 use crate::model::style::ImageFillMode;
 use crate::model::{ColorRef, Rect};
 
@@ -83,12 +83,18 @@ pub const REAL_PICTURE_WATERMARK_FILL_CHROMA_GAIN: f64 = 0.42;
 pub const REAL_PICTURE_WATERMARK_FILL_WHITE_BLEND: f64 = 0.16;
 pub const LEGACY_IMAGE_WATERMARK_OPACITY: f64 = 0.17;
 
+/// 한컴 "워터마크 효과" 프리셋(밝기 70 · 대비 −50)인지.
+///
+/// [#6895] 인자는 **화면 순서**다. 종전에는 이진 저장 순서(`-50, 70`)로 적혀 있었는데,
+/// 그 자리에 값을 넘기는 두 소비자 중 `PageBackgroundImage` 는 이진 순서를 담고
+/// `ImageNode` 는 화면 순서를 담는다 — 채움 그림이 `ImageNode` 로 갈 때 이진 순서가
+/// 그대로 새던 시절에만 우연히 맞았다. 축을 화면 순서로 못박고 부르는 쪽이 맞춘다.
 pub fn is_real_picture_watermark_tone_preset(
     effect: ImageEffect,
-    brightness: i8,
-    contrast: i8,
+    display_bright: i8,
+    display_contrast: i8,
 ) -> bool {
-    matches!(effect, ImageEffect::RealPic) && brightness == -50 && contrast == 70
+    matches!(effect, ImageEffect::RealPic) && display_bright == 70 && display_contrast == -50
 }
 
 /// 렌더 노드 고유 ID
@@ -153,6 +159,20 @@ pub struct RenderNode {
     /// 문단 부호·투명 테두리처럼 편집 화면에서만 보여야 하는 보조 표시.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub editor_only: bool,
+    /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
+    #[serde(skip)]
+    pub control_code: ControlCode,
+    /// Public source provenance, separate from header/footer layout cache keys.
+    #[serde(skip)]
+    pub header_footer_source: Option<(usize, HeaderFooterImageRef)>,
+}
+
+#[derive(Debug, Default, Clone, Copy, Serialize)]
+pub enum ControlCode {
+    #[default]
+    Automatic,
+    Hidden,
+    Rectangle(RectangleControlKind),
 }
 
 impl RenderNode {
@@ -165,6 +185,8 @@ impl RenderNode {
             children: Vec::new(),
             visible: true,
             editor_only: false,
+            control_code: ControlCode::Automatic,
+            header_footer_source: None,
         }
     }
 
@@ -183,6 +205,35 @@ impl RenderNode {
     pub fn with_editor_only(mut self) -> Self {
         self.editor_only = true;
         self
+    }
+
+    /// 사각형 컨트롤 하나에 부호 하나만 부여한다. 내부 TextBox는 편집 영역이지 새 컨트롤이 아니다.
+    pub fn set_rectangle_control_kind(&mut self, kind: RectangleControlKind) {
+        self.control_code = ControlCode::Rectangle(kind);
+        for child in &mut self.children {
+            if matches!(child.node_type, RenderNodeType::TextBox) {
+                child.control_code = ControlCode::Hidden;
+            }
+        }
+    }
+
+    pub fn control_code_label(&self) -> Option<&'static str> {
+        match self.control_code {
+            ControlCode::Hidden => return None,
+            ControlCode::Rectangle(RectangleControlKind::Rectangle) => return Some("[사각형]"),
+            ControlCode::Rectangle(RectangleControlKind::TextBox) => return Some("[글상자]"),
+            ControlCode::Automatic => {}
+        }
+        match self.node_type {
+            RenderNodeType::Table(_) => Some("[표]"),
+            RenderNodeType::Image(_) => Some("[그림]"),
+            RenderNodeType::TextBox => Some("[글상자]"),
+            RenderNodeType::Equation(_) => Some("[수식]"),
+            RenderNodeType::Header => Some("[머리말]"),
+            RenderNodeType::Footer => Some("[꼬리말]"),
+            RenderNodeType::FootnoteArea => Some("[각주]"),
+            _ => None,
+        }
     }
 
     /// 렌더 트리를 JSON 문자열로 직렬화한다.
@@ -204,10 +255,14 @@ impl RenderNode {
             RenderNodeType::Body { .. } => ("Body", String::new()),
             RenderNodeType::Column(c) => ("Column", format!(",\"col\":{}", c)),
             RenderNodeType::FootnoteArea => ("FootnoteArea", String::new()),
-            RenderNodeType::TextLine(tl) => (
-                "TextLine",
-                format!(",\"pi\":{}", tl.para_index.unwrap_or(0)),
-            ),
+            RenderNodeType::TextLine(tl) => {
+                let mut extra = format!(",\"pi\":{}", tl.para_index.unwrap_or(0));
+                if let Some(owner) = &tl.caption_owner {
+                    extra.push_str(",\"captionOwner\":");
+                    extra.push_str(&serde_json::to_string(owner).expect("integer caption address"));
+                }
+                ("TextLine", extra)
+            }
             RenderNodeType::TextRun(tr) => {
                 let mut extra = format!(
                     ",\"text\":{},\"pi\":{}",
@@ -591,6 +646,11 @@ pub struct FormObjectNode {
     pub caption: String,
     /// 텍스트 (ComboBox, Edit)
     pub text: String,
+    /// 편집용 원문과 분리한 폼 표시 문자열(콤보 초기 항목/암호 마스킹).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display_text: Option<String>,
+    /// 문서 글자 속성과 출력 해상도에서 해소한 공통 폼 외형.
+    pub appearance: super::form_appearance::FormAppearance,
     /// 글자 색 (CSS #rrggbb)
     pub fore_color: String,
     /// 배경 색 (CSS #rrggbb)
@@ -610,6 +670,25 @@ pub struct FormObjectNode {
     /// 셀 내부 위치 (표 셀 안에 있는 경우)
     /// (table_para_index, table_control_index, cell_index, cell_para_index)
     pub cell_location: Option<(usize, usize, usize, usize)>,
+}
+
+impl FormObjectNode {
+    pub(crate) fn form_display_text(form: &crate::model::control::FormObject) -> Option<String> {
+        // 한컴 ComboBox의 빈 selectedValue는 첫 목록 값을 표시한다.
+        // HWP serializer의 ComboBox Text 규칙과 동일하며, 모델의 선택값은 유지한다.
+        if form.form_type == crate::model::control::FormType::ComboBox && form.text.is_empty() {
+            return form.properties.get("listItem0").cloned();
+        }
+        if form.form_type != crate::model::control::FormType::Edit {
+            return None;
+        }
+        let mask = form.properties.get("PasswordChar")?.chars().next()?;
+        Some(mask.to_string().repeat(form.text.chars().count()))
+    }
+
+    pub fn display_or_text(&self) -> &str {
+        self.display_text.as_deref().unwrap_or(&self.text)
+    }
 }
 
 /// 바운딩 박스 (위치 + 크기, 픽셀 단위)
@@ -729,13 +808,55 @@ impl PageBackgroundImage {
     }
 
     pub fn is_real_picture_watermark_tone_preset(&self) -> bool {
-        is_real_picture_watermark_tone_preset(self.effect, self.brightness, self.contrast)
+        // 이 구조체는 이진 저장 순서를 담으므로 화면 순서로 바꿔 넘긴다(#6895).
+        let (bright, contrast) = self.display_brightness_contrast();
+        is_real_picture_watermark_tone_preset(self.effect, bright, contrast)
+    }
+}
+
+/// Source control address for a caption, independent of its text and placement.
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CaptionOwner {
+    pub sec_idx: usize,
+    pub para_idx: usize,
+    pub control_idx: usize,
+    pub control_kind: CaptionControlKind,
+    pub caption_ordinal: usize,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CaptionControlKind {
+    Table,
+    Image,
+    Shape,
+}
+
+impl CaptionOwner {
+    /// Missing provenance must not become a fabricated zero address.
+    pub fn new(
+        section_index: Option<usize>,
+        para_index: Option<usize>,
+        control_index: Option<usize>,
+        control_kind: CaptionControlKind,
+    ) -> Option<Self> {
+        Some(Self {
+            sec_idx: section_index?,
+            para_idx: para_index?,
+            control_idx: control_index?,
+            control_kind,
+            caption_ordinal: 0,
+        })
     }
 }
 
 /// 텍스트 줄 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct TextLineNode {
+    /// Optional source ownership; ordinary body lines keep their existing JSON.
+    #[serde(rename = "captionOwner", skip_serializing_if = "Option::is_none")]
+    pub caption_owner: Option<CaptionOwner>,
     /// 줄 높이 (px)
     pub line_height: f64,
     /// 베이스라인 위치 (줄 상단으로부터, px)
@@ -754,6 +875,7 @@ impl TextLineNode {
     /// 기본 생성 (문단 식별 정보 없음)
     pub fn new(line_height: f64, baseline: f64) -> Self {
         Self {
+            caption_owner: None,
             line_height,
             baseline,
             section_index: None,
@@ -777,6 +899,7 @@ impl TextLineNode {
             para_index: Some(para_index),
             line_index: None,
             vpos: None,
+            caption_owner: None,
         }
     }
 
@@ -796,12 +919,13 @@ impl TextLineNode {
             para_index: Some(para_index),
             line_index: Some(line_index),
             vpos: Some(vpos),
+            caption_owner: None,
         }
     }
 }
 
 /// 텍스트 런 노드 (동일 글자 모양의 연속 텍스트)
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextRunNode {
     /// 텍스트 내용
     pub text: String,
@@ -838,8 +962,8 @@ pub struct TextRunNode {
     /// Layout owner가 확정한 run-relative 문자 경계값.
     ///
     /// 보이는 문자열 N개 scalar에 N+1개 값을 보존한다. exact kerning이 실제로
-    /// 적용된 K1 run에서만 `Some`이며 K0·미지원·fail-closed에서는 필드를
-    /// 직렬화하지 않아 기존 layer-tree byte 계약을 유지한다. Font payload나
+    /// 적용된 K1 run 또는 cross-run 끝 탭의 advance를 확정한 run에서 `Some`이다.
+    /// 그 외 K0·미지원·fail-closed에서는 필드를 직렬화하지 않는다. Font payload나
     /// source provenance는 이 필드에 들어가지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub layout_positions: Option<Vec<f64>>,
@@ -852,6 +976,47 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
+    /// [#6801] 다음 블록 배치가 확정한 끝 탭 경계를 모든 replay 소비자에 전달한다.
+    /// 앞선 가시 문자의 폭은 보존하고 뒤 공백/탭만 남은 advance에 맞춘다.
+    pub(crate) fn resolve_trailing_tab_end(
+        &mut self,
+        requested_width: f64,
+        leader_limit_width: f64,
+    ) -> Option<f64> {
+        let text = self.display_or_text();
+        if !text.ends_with('\t')
+            || !requested_width.is_finite()
+            || requested_width < 0.0
+            || !leader_limit_width.is_finite()
+            || leader_limit_width < requested_width
+        {
+            return None;
+        }
+        let chars: Vec<char> = text.chars().collect();
+        let mut positions = self.replay_positions_for(text).into_owned();
+        super::validated_replay_positions(text, Some(&positions))?;
+        let visible_end = chars
+            .iter()
+            .rposition(|ch| !ch.is_whitespace())
+            .map_or(0, |index| index + 1);
+        // 실제 잉크가 다음 블록을 침범하면 그 겹침을 bbox 절단으로 숨기지 않는다.
+        let width = requested_width.max(positions[visible_end]);
+        for position in &mut positions[visible_end..] {
+            *position = position.min(width);
+        }
+        *positions.last_mut()? = width;
+        super::validated_replay_positions(text, Some(&positions))?;
+        self.layout_positions = Some(positions);
+        // 공백 carry-over의 논리 경계와 점선의 그리기 끝은 다르다.
+        // 기존 점선은 공백 구간을 지나갈 수 있지만 다음 가시 런을 침범하지 않는다.
+        // 저장된 점선 끝을 늘리지 않아 목차 번호 앞의 원래 간격도 보존한다.
+        for leader in &mut self.style.tab_leaders {
+            leader.start_x = leader.start_x.min(leader_limit_width);
+            leader.end_x = leader.end_x.min(leader_limit_width).max(leader.start_x);
+        }
+        Some(width)
+    }
+
     /// 사람이 보게 될 텍스트 — 그리기·폭 계산, 그리고 **문자열을 만들어 내보내는**
     /// 추출·직렬화(쪽 텍스트, 마크다운)가 이것을 쓴다.
     ///
@@ -1313,6 +1478,12 @@ pub struct ImageNode {
     /// 투영(`CellContext::last_image_indices`)으로 유지(하위호환). 본문 picture 는 `None`.
     #[serde(default)]
     pub cell_context: Option<CellContext>,
+    /// [#7193] 그림 안쪽 여백 — 노드 bbox(개체 틀) 크기에 대한 비율
+    /// `[left, top, right, bottom]`. 틀은 흐름·선택 기준으로 그대로 두고, 그림 자체는
+    /// 이 여백을 뺀 자리에 그린다. 페인터는 [`ImageNode::paint_bbox`] 로 소비한다.
+    /// `None` 이면 틀 전체에 그린다.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_inset: Option<[f64; 4]>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -1342,6 +1513,7 @@ impl ImageNode {
     }
 
     pub fn is_real_picture_watermark_tone_preset(&self) -> bool {
+        // `ImageNode` 의 두 필드는 이미 화면 순서다(#6895).
         is_real_picture_watermark_tone_preset(self.effect, self.brightness, self.contrast)
     }
 
@@ -1368,7 +1540,24 @@ impl ImageNode {
             cell_para_index: None,
             outer_table_control_index: None,
             cell_context: None,
+            content_inset: None,
         }
+    }
+
+    /// [#7193] 개체 틀(`frame`) 안에서 그림이 실제로 그려질 사각형.
+    ///
+    /// 한/글은 그림 틀(`hp:sz`) 안쪽 여백(`hp:inMargin`)을 뺀 자리에 그림을 그린다.
+    /// 모든 페인터가 이 한 계산을 거쳐야 백엔드마다 그리는 자리가 갈리지 않는다.
+    pub fn paint_bbox(&self, frame: &BoundingBox) -> BoundingBox {
+        let Some([left, top, right, bottom]) = self.content_inset else {
+            return *frame;
+        };
+        BoundingBox::new(
+            frame.x + frame.width * left,
+            frame.y + frame.height * top,
+            frame.width * (1.0 - left - right),
+            frame.height * (1.0 - top - bottom),
+        )
     }
 }
 

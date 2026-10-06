@@ -180,4 +180,4 @@ ROADMAP·대전·표면 플레이북을 첫 문서로 열지 않는다.
 
 - [`llms.txt`](../../../llms.txt)
 - [`mydocs/manual/agent_knowledge_map.md`](../../../mydocs/manual/agent_knowledge_map.md)
-- 처리 결과: [`mydocs/working/agent_knowledge_map_skill.md`](../../../mydocs/working/agent_knowledge_map_skill.md)
+- 처리 결과: [`mydocs/working/agent_knowledge_map_skill.md`](../../../mydocs/working/archives/agent_knowledge_map_skill.md)

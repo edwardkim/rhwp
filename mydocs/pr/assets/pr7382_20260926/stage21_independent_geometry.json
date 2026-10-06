@@ -1,0 +1,40 @@
+{
+  "producer_head": "c34c15bbd",
+  "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+  "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+  "reference_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+  "reference_page_count": 215,
+  "source_para": 962,
+  "source_line": {
+    "vpos_hu": 46000,
+    "height_hu": 1000,
+    "spacing_hu": 1000,
+    "tag": "0x00060000"
+  },
+  "source_table": {
+    "offset_hu": 1390,
+    "outer_top_hu": 283,
+    "rows": 7,
+    "columns": 6,
+    "relation": "Para/Top/TopAndBottom"
+  },
+  "pdf90": {
+    "caption_top_96dpi": 696.4210611979166,
+    "caption_bottom_96dpi": 709.7010904947916,
+    "table_top_96dpi": 718.0947265625,
+    "table_bottom_96dpi": 995.710693359375
+  },
+  "before": {
+    "caption_top_96dpi": 696.5,
+    "caption_height_96dpi": 13.3,
+    "table_top_96dpi": 700.3,
+    "table_height_96dpi": 278.3
+  },
+  "offset_counter": {
+    "delta_hu": 500,
+    "expected_table_delta_px": 6.666666666666667,
+    "caption_unchanged": true,
+    "classification": "수동 좌표 계약, 한컴 원본 출력의 대용이 아님"
+  }
+}

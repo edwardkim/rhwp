@@ -16,9 +16,8 @@ use crate::paint::{
     LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
     LayerVector, LocalizedName, OpenTypeFeatureSetting, PaintTextStyle, PaintVariantMeta,
     ResourceArena, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement,
-    TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
-    VariationAxisValue, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES, MAX_PORTABLE_GLYPHS_PER_RUN,
-    RESOURCE_KEY_ALGORITHM,
+    TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality, VariationAxisValue,
+    WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES, MAX_PORTABLE_GLYPHS_PER_RUN, RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use crate::renderer::shaping_publication::{
@@ -659,7 +658,7 @@ fn build_variable_outline_shadow(
     prepared: &HorizontalShapingPreparedSource,
     projection: &HorizontalShapingReplayProjection,
     clusters: &[GlyphCluster],
-    text_source_id: u32,
+    source: &TextSourceSpan,
     run: &TextRunNode,
 ) -> Result<
     (
@@ -668,6 +667,7 @@ fn build_variable_outline_shadow(
     ),
     HorizontalShapingGlyphLoweringRejectReason,
 > {
+    let text_source_id = source.id.0;
     let measurement = decision
         .measurement()
         .ok_or(HorizontalShapingGlyphLoweringRejectReason::RejectedDecision)?;
@@ -786,12 +786,7 @@ fn build_variable_outline_shadow(
         run_local_bbox: BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y),
     };
     let outline = LayerGlyphOutlinePaint {
-        source: TextSourceSpan {
-            id: TextSourceId(text_source_id),
-            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
-            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
-            stable_source_key: None,
-        },
+        source: source.clone(),
         variant,
         payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
         color_layers: None,
@@ -995,11 +990,12 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
     resources: &mut ResourceArena,
     prepared_sources: &mut HorizontalShapingPreparedSourceCache,
 ) -> HorizontalShapingGlyphLoweringReport {
+    let source = TextSourceSpan::for_text_run(text_source_id, run);
     lower_horizontal_shaping_source_shadow(
         node.source_node_id,
         bbox,
         run,
-        text_source_id,
+        &source,
         sidecars,
         resources,
         prepared_sources,
@@ -1010,11 +1006,12 @@ fn lower_horizontal_shaping_source_shadow(
     source_node_id: Option<u32>,
     bbox: BoundingBox,
     run: &TextRunNode,
-    text_source_id: u32,
+    source: &TextSourceSpan,
     sidecars: &HorizontalShapingPageSidecars,
     resources: &mut ResourceArena,
     prepared_sources: &mut HorizontalShapingPreparedSourceCache,
 ) -> HorizontalShapingGlyphLoweringReport {
+    let text_source_id = source.id.0;
     let Some(source_node_id) = source_node_id else {
         return HorizontalShapingGlyphLoweringReport::rejected(
             None,
@@ -1082,7 +1079,7 @@ fn lower_horizontal_shaping_source_shadow(
             &prepared,
             &projection,
             &clusters,
-            text_source_id,
+            source,
             run,
         ) {
             Ok(value) => Some(value),
@@ -1165,12 +1162,7 @@ fn lower_horizontal_shaping_source_shadow(
     paint_style.font_size = projection.draw_font_size_px;
     paint_style.ratio = 1.0;
     let glyph_run = LayerGlyphRunPaint {
-        source: TextSourceSpan {
-            id: TextSourceId(text_source_id),
-            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
-            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
-            stable_source_key: None,
-        },
+        source: source.clone(),
         variant,
         paint_style,
         shape_key: ShapeKey {
@@ -1277,19 +1269,27 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
             crate::paint::LayerNodeKind::Leaf { ops } => {
                 let mut lowered = Vec::with_capacity(ops.len());
                 for op in ops.drain(..) {
-                    if let crate::paint::PaintOp::TextRun { bbox, run } = op {
-                        let text_source_id = *next_text_source_id;
-                        *next_text_source_id = next_text_source_id.saturating_add(1);
+                    if let crate::paint::PaintOp::TextRun { bbox, run, source } = op {
+                        let source = source.unwrap_or_else(|| {
+                            crate::paint::TextSourceSpan::for_text_run(*next_text_source_id, &run)
+                        });
+                        let text_source_id = source.id.0;
+                        *next_text_source_id =
+                            (*next_text_source_id).max(text_source_id.saturating_add(1));
                         let report = lower_horizontal_shaping_source_shadow(
                             source_node_id,
                             bbox,
                             &run,
-                            text_source_id,
+                            &source,
                             sidecars,
                             resources,
                             prepared_sources,
                         );
-                        lowered.push(crate::paint::PaintOp::TextRun { bbox, run });
+                        lowered.push(crate::paint::PaintOp::TextRun {
+                            bbox,
+                            run,
+                            source: Some(source),
+                        });
                         if report.claims_glyph_run_slot {
                             if report.atomic_outline_required {
                                 if let (Some(glyph_run), Some(glyph_outline)) =

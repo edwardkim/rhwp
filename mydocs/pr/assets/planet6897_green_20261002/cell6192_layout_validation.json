@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-03",
+  "branch": "review/planet6897-green-20261002",
+  "parent_head": "f50ebcc55a800ce343d467f7e91f7e14ff61fc6b",
+  "base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "input": "samples/issue6192/cell_behind_text_para_anchor.hwpx",
+  "reference": "pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf",
+  "font_metric_source": {
+    "font": "/Users/tsjang/Library/Fonts/HANYGO240.ttf",
+    "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d",
+    "unitsPerEm": 1000,
+    "hangulWidths": {
+      "900": 11172
+    },
+    "quoteWidth": 410
+  },
+  "native_wasm_pages": [
+    99.99263,
+    100.0
+  ],
+  "blank_pages": [
+    2
+  ],
+  "counter5755_native_wasm": [
+    99.32105,
+    99.13619,
+    99.76615
+  ],
+  "counter7081_native_wasm": [
+    100.0
+  ],
+  "initial_focused": {
+    "run": 55,
+    "passed": 54,
+    "failed": 1,
+    "failure": "#7081 absolute first-glyph x 346.7/652.3 vs345.12/650.72"
+  },
+  "final_focused": {
+    "run": 55,
+    "passed": 55,
+    "failed": 0,
+    "exit": 0
+  },
+  "new_tests": 0,
+  "removed_tests": 0,
+  "existing_tests_updated": [
+    "issue_6192_cell_overlay_picture_para_anchor",
+    "issue_7081_cell_trailing_space_alignment::center_aligned_cell_excludes_trailing_spaces"
+  ],
+  "skia_feature_type_check_exit": 0,
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_015",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(renderer::layout::paragraph_layout::) | test(renderer::font_metrics_data::) | test(issue_6192) | test(issue_7081) | test(issue_1285) | test(issue_6443) | test(issue_4966)"
+      ],
+      "exit": 0,
+      "seconds": 5.805
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 19.214
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 21.8
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 33.133
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 50.229
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.715
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "ab4dcfaca5d6c151a814536570b9c7e2832daa8c"
+      ],
+      "exit": 1,
+      "seconds": 0.587
+    },
+    {
+      "gate": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.597
+    },
+    {
+      "gate": "manifest-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "ab4dcfaca5d6c151a814536570b9c7e2832daa8c"
+      ],
+      "exit": 0,
+      "seconds": 0.378
+    },
+    {
+      "gate": "fmt-final",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.313
+    },
+    {
+      "gate": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "ab4dcfaca5d6c151a814536570b9c7e2832daa8c"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "markdown-links",
+      "command": [
+        "python3",
+        "scripts/check_markdown_links.py",
+        "mydocs/pr/archives/pr_7423_review.md"
+      ],
+      "exit": 0
+    }
+  ],
+  "manifest_repair": "기존 검사 변경 후 generated harness 메타데이터를 준비하여 최신 base 고정 검사 통과; generated 파일 미커밋",
+  "mac_wasm": "로컬 --no-opt 대체 빌드; Docker 최적화 빌드 아님",
+  "whole_current_head_passed": false,
+  "source_hashes": {
+    "src/renderer/layout/paragraph_layout.rs": "3390cba2448587321846f7b1d8a50cc21b23d6c1a2eb99a94947dab264f85ff2",
+    "src/renderer/font_metrics_overlays.rs": "d6c513f53fc7d916eab6ceba8ae060688f7fd21d124fe767027145d4f30ea05e",
+    "src/renderer/mod.rs": "c8b793ad0c1c4a824e4e2cd6f5851321d62358d60781c68b23df0504b502750a",
+    "src/renderer/svg.rs": "65cf6bfa3c27b1b79542fef99727932505208711c3db91af88604841aeab8dbc",
+    "src/renderer/skia/text_replay.rs": "0bc46542a69a7d32092a536cde0309e82b5f4c6398ef18a47df953df1735953d",
+    "src/renderer/web_canvas.rs": "8fbe2e34dbfa5aa3fc46d3a25e68b45e8fcb78d54b929740b4735e99dca40912",
+    "tests/cases/issue_6192_cell_overlay_picture_para_anchor.rs": "7955e3959e43d195af63c5a5377af72f568bf6cdc512012b639f9c5f26da4979",
+    "tests/cases/issue_7081_cell_trailing_space_alignment.rs": "ad4ecc4bfa7b235a003d4173ad2317d1d436f35726cf6cde1e5d303c09a7254f"
+  },
+  "binary_hashes": {
+    "target/pr-review/release-test/rhwp": "ce826f60b2f241e03d4f4f802419a810f57a127152184af902179b96a1773ba4",
+    "pkg/rhwp_bg.wasm": "6bfa013bc78127a8dcbf75653511750376b0c24ebb72e82594ff799e3f65ede0"
+  }
+}

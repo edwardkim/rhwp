@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-09-13
 ---
 
 # Merge 후속 처리
@@ -13,7 +13,10 @@ last_verified: 2026-08-30
 
 ## 7. 필수 실행 순서
 
-1. 원 코드 PR merge 완료와 merge SHA를 확인한다.
+1. 원 코드 PR merge 완료와 merge SHA를 확인한다. 검증 CI는 병합 전 PR에서 완료한다.
+   병합 뒤에는 `Refresh nextest target duration data`의 성공 또는 증거 부족에 따른 갱신 보류를
+   확인한다. CI·CodeQL·Adapter·Proptest·Oracle 검증을 시작하거나 재실행하지 않는다.
+   예상 밖 실행은 트리거 회귀로 조사한다. [실행 경계](../github_operations.md#병합-후-자동-실행-정책-7070)를 따른다.
 2. review 문서·asset·오늘할일의 후속 반영 필요 여부를 결정한다.
 3. archive 이동과 오늘할일을 준비하고, maintainer 직접 반영 또는 후속 기록 PR을 완료한다.
 4. 최종 devel을 upstream/devel로 fast-forward한다.
@@ -26,8 +29,9 @@ last_verified: 2026-08-30
 
 작업지시자가 PR 병합과 `merge 후 후속 처리`를 함께 승인한 경우, 7번은 선택 보고가 아니라 완료 전 실행
 게이트다. 해당 PR만을 위해 만든 clean한 local branch와 local worktree의 제거는 별도 승인 없이 이 단계에서
-수행한다. 원격 branch 삭제나 기본 작업공간·공유 산출물·사용자 또는 다른 도구 소유 대상의 삭제는 포함하지
-않는다.
+수행한다. 이번 작업에서 원본 저장소에 만든 PR 전용 임시 원격 head branch도 7.7의 안전 조건을
+충족하면 별도 승인 질문 없이 자동 정리한다. 기본 작업공간·공유 산출물·사용자 또는 다른 도구 소유 대상과
+contributor fork branch의 삭제는 포함하지 않는다.
 
 ## 7.5 renderer golden 선행조건
 
@@ -134,6 +138,7 @@ gh issue comment N --repo edwardkim/rhwp --body-file <issue-comment.md>
 ~~~
 
 CLOSED여도 같은 merge commit·같은 검증 증적의 maintainer comment가 아직 없으면 다음을 담은 comment를 남긴다.
+issue comment도 한국어 존댓말로 작성하고, 원 기여·메인터너 보정·남은 차이를 사실에 맞게 구분한다.
 
 - merge PR과 merge commit
 - GitHub Actions와 local 검증 요약
@@ -163,7 +168,9 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 
 ## 7.4 contributor PR comment
 
-원 PR에는 감사, merge 사실, 실제 검증 결과, 필요하면 후속 issue를 남긴다. issue·PR·comment는 평문 번호
+원 PR에는 한국어 존댓말로 감사, merge 사실, 실제 검증 결과, 필요하면 후속 issue를 남긴다. 보정이 있었다면
+원 기여의 성과를 먼저 인정하고 **왜 메인터너 보정이 필요했는지**를 PDF 비교·회귀 근거와 함께 설명한다.
+반말·기여자 책임 전가 표현은 쓰지 않는다. issue·PR·comment는 평문 번호
 대신 Markdown direct link로 쓴다.
 
 시각 검증을 merge 판단 근거로 썼다면 [Visual Sweep의 GitHub merge comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
@@ -178,15 +185,15 @@ direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 �
 ~~~markdown
 검토 및 머지 완료했습니다. 감사합니다.
 
-- CI: Build & Test, CodeQL, Render Diff의 최신 head 결과 확인
-- 로컬 검증: 실제 실행한 focused/release-test/Native Skia 등
-- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름
-- visual sweep: pN, flagged=0/N, pixel match NN.NNNNN%
+- CI: Build & Test, CodeQL, Render Diff의 최신 head 결과를 확인했습니다.
+- 로컬 검증: 아래에 적은 focused/release-test/Native Skia 검증을 실제로 실행했습니다.
+- 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따랐습니다.
+- visual sweep: pN에서 flagged=0/N, pixel match NN.NNNNN%를 확인했습니다.
 
 코멘트: 내용 픽셀 중심 자동 일치율 보조값 = 약 NN.NN%.
-높을수록 좋음: 기준 PDF와 rhwp PNG가 더 비슷함
-낮을수록 나쁨/검토 필요: 잉크 위치나 형태 차이가 큼
-단, 사람 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다
+값이 높을수록 기준 PDF와 rhwp PNG가 더 비슷합니다.
+값이 낮으면 잉크 위치나 형태 차이가 커서 직접 검토가 필요합니다.
+이 값은 사람의 판정 정확도가 아니라 내용 픽셀 중심 자동 일치율 보조값입니다.
 
 ![PR N pN visual review](https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/<review>.png)
 ~~~
@@ -202,6 +209,11 @@ heavy worker skip, final aggregate, issue 상태를 PR comment에 남긴다. 반
 
 성공 merge뿐 아니라 reject/close, supersede, review 중단, 후속 기록 fast-pass 완료도 최종 종료 gate다.
 정리 또는 유지 사유를 확인하기 전에는 후속 처리 완료라고 보고하지 않는다.
+
+PR이 merge되고 필수 후속 처리가 끝나면, 해당 검토가 만든
+`output/pr-review/<review-id>/`의 로그와 임시 산출물을 정리한다. 먼저 이 경로를 사용하는 실행이 없는지,
+필요한 결과 요약·영구 증적이 검토 문서와 추적 asset에 남았는지 확인한다. 정확히 해당 review가 소유한
+경로만 제거하며 다른 검토의 `output`과 공유 산출물은 보존한다. merge 전 보류 중인 검토의 로그는 유지한다.
 
 이번 PR 또는 검토만을 위해 만든 별도 local worktree는 merge와 필수 후속 처리가 끝난 뒤 **제거가 기본**이다.
 여기에는 commit·push를 만들지 않고 PR diff 열람, CI 로그 조사, 재현, 검증, cherry-pick 누적 또는 merge
@@ -241,13 +253,23 @@ git branch -D <local-docs-branch>
 git fetch upstream --prune
 ~~~
 
-해당 작업에서 만들지 않았거나 존재하지 않는 placeholder 명령은 실행하지 않는다. PR head repository가
-원본 edwardkim/rhwp이고, current collaborator가 이번 작업에서 만든 exact head branch일 때만 작업지시자
-승인 뒤 upstream remote branch를 삭제한다. contributor fork의 head branch나 같은 이름의 다른 upstream
-branch를 삭제하지 않는다.
+해당 작업에서 만들지 않았거나 존재하지 않는 placeholder 명령은 실행하지 않는다. PR 병합과 후속 처리
+승인은 이번 작업에서 만든 PR 전용 임시 upstream head branch의 삭제까지 포함한다. 아래 조건을 모두
+충족하면 별도 승인 질문 없이 자동 삭제한다.
+
+- PR이 실제 MERGED이고 duration 갱신 결과 확인과 comment·issue 처리가 완료되어야 한다. 자료 부족으로 duration 갱신이 보류되면 그 이유를 기록하며 검증 CI를 다시 실행하지 않는다.
+- PR head repository가 `edwardkim/rhwp`이며 이번 작업에서 만든 exact `headRefName`이어야 한다.
+- merge SHA가 최신 `upstream/devel`에 포함되고 기본 작업공간이 clean이며 관련 활성 작업이 없어야 한다.
+- `main`, `devel`, 저장소 기본 branch, 보호 branch, 다른 OPEN PR 또는 다른 작업이 사용하는 branch는 제외한다.
+- 삭제 직전 remote SHA가 병합한 PR의 최종 `headRefOid`와 같은지 확인한다. 다른 SHA로 전진했으면 삭제하지
+  않고 새 작업 가능성을 보고한다. 이미 삭제되었으면 재삭제하지 않고 부재를 기록한다.
+- contributor fork, 사용자·다른 도구 소유 branch 및 명시적으로 보존하라는 branch는 자동 정리하지 않는다.
+
+조회와 삭제 사이에 새 push가 생겨도 지워지지 않도록 exact ref와 예상 SHA를 지정한 lease로 삭제한다.
+안전 조건을 충족하지 못하면 유지 사유를 보고하며, 단순히 별도 정리 승인을 기다리기 위해 남기지 않는다.
 
 ~~~bash
-git push upstream --delete <headRefName>
+git push --force-with-lease=refs/heads/<headRefName>:<headRefOid> upstream :refs/heads/<headRefName>
 ~~~
 
 삭제 뒤에는 다음을 모두 확인한다.

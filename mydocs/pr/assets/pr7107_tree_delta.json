@@ -1,0 +1,333 @@
+[
+  {
+    "page": "render_tree_001.json",
+    "changed_values": 51,
+    "changes": [
+      {
+        "path": "/children/3/children/6/children/0/children/0/children/0/children/0/bbox/x",
+        "before": 308.9,
+        "after": 305.3
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/0/children/0/bbox/x",
+        "before": 308.9,
+        "after": 305.3
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/0/bbox/x",
+        "before": 299.4,
+        "after": 295.9
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/1/children/0/children/0/bbox/x",
+        "before": 358.1,
+        "after": 354.5
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/1/children/0/bbox/x",
+        "before": 358.1,
+        "after": 354.5
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/1/bbox/x",
+        "before": 356.2,
+        "after": 352.7
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/2/bbox/x",
+        "before": 299.4,
+        "after": 295.9
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/3/bbox/x",
+        "before": 299.4,
+        "after": 295.9
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/4/bbox/x",
+        "before": 299.2,
+        "after": 295.7
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/5/bbox/x",
+        "before": 356.0,
+        "after": 352.4
+      },
+      {
+        "path": "/children/3/children/6/children/0/children/6/bbox/x",
+        "before": 488.2,
+        "after": 484.6
+      },
+      {
+        "path": "/children/3/children/6/children/0/bbox/x",
+        "before": 299.4,
+        "after": 295.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/0/children/0/children/0/bbox/x",
+        "before": 535.9,
+        "after": 532.4
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/0/children/0/bbox/x",
+        "before": 520.1,
+        "after": 516.5
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/0/bbox/x",
+        "before": 518.2,
+        "after": 514.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/1/children/0/children/0/bbox/x",
+        "before": 628.3,
+        "after": 624.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/1/children/0/bbox/x",
+        "before": 616.7,
+        "after": 613.1
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/1/bbox/x",
+        "before": 614.8,
+        "after": 611.2
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/2/children/0/children/0/bbox/x",
+        "before": 655.2,
+        "after": 651.6
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/2/children/0/bbox/x",
+        "before": 643.6,
+        "after": 640.1
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/2/bbox/x",
+        "before": 641.7,
+        "after": 638.2
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/3/children/0/children/0/bbox/x",
+        "before": 670.5,
+        "after": 667.0
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/3/children/0/bbox/x",
+        "before": 670.5,
+        "after": 667.0
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/3/bbox/x",
+        "before": 668.7,
+        "after": 665.1
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/4/children/0/children/0/bbox/x",
+        "before": 697.5,
+        "after": 693.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/4/children/0/bbox/x",
+        "before": 697.5,
+        "after": 693.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/4/bbox/x",
+        "before": 695.6,
+        "after": 692.0
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/5/children/0/children/0/bbox/x",
+        "before": 724.4,
+        "after": 720.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/5/children/0/bbox/x",
+        "before": 724.4,
+        "after": 720.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/5/bbox/x",
+        "before": 722.5,
+        "after": 719.0
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/6/children/0/children/0/bbox/x",
+        "before": 751.3,
+        "after": 747.8
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/6/children/0/bbox/x",
+        "before": 751.3,
+        "after": 747.8
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/6/bbox/x",
+        "before": 749.5,
+        "after": 745.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/7/children/0/children/0/bbox/x",
+        "before": 778.3,
+        "after": 774.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/7/children/0/bbox/x",
+        "before": 778.3,
+        "after": 774.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/7/bbox/x",
+        "before": 776.4,
+        "after": 772.8
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/8/bbox/x",
+        "before": 518.2,
+        "after": 514.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/9/bbox/x",
+        "before": 518.2,
+        "after": 514.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/10/bbox/x",
+        "before": 518.0,
+        "after": 514.4
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/11/bbox/x",
+        "before": 614.5,
+        "after": 611.0
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/12/bbox/x",
+        "before": 641.5,
+        "after": 637.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/13/bbox/x",
+        "before": 668.4,
+        "after": 664.9
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/14/bbox/x",
+        "before": 695.3,
+        "after": 691.8
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/15/bbox/x",
+        "before": 722.3,
+        "after": 718.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/16/bbox/x",
+        "before": 749.2,
+        "after": 745.7
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/17/bbox/x",
+        "before": 776.1,
+        "after": 772.6
+      },
+      {
+        "path": "/children/3/children/6/children/1/children/18/bbox/x",
+        "before": 803.1,
+        "after": 799.5
+      },
+      {
+        "path": "/children/3/children/6/children/1/bbox/x",
+        "before": 518.2,
+        "after": 514.7
+      },
+      {
+        "path": "/children/3/children/6/children/2/children/0/bbox/x",
+        "before": 492.2,
+        "after": 488.7
+      },
+      {
+        "path": "/children/3/children/6/children/2/children/1/bbox/x",
+        "before": 803.3,
+        "after": 799.8
+      },
+      {
+        "path": "/children/3/children/6/children/2/bbox/w",
+        "before": 618.6,
+        "after": 622.6
+      }
+    ]
+  },
+  {
+    "page": "render_tree_002.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_003.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_004.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_005.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_006.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_007.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_008.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_009.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_010.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_011.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_012.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_013.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_014.json",
+    "changed_values": 0,
+    "changes": []
+  },
+  {
+    "page": "render_tree_015.json",
+    "changed_values": 0,
+    "changes": []
+  }
+]

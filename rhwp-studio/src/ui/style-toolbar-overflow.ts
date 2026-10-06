@@ -1,7 +1,13 @@
+import { getLocale } from '../i18n/core.ts';
+
+import { t } from '../i18n/index.ts';
 export const STYLE_TOOLBAR_FULL_ROW_MIN = 962;
 export const STYLE_TOOLBAR_COMMAND_INLINE_MIN = 460;
 export const STYLE_TOOLBAR_ONE_ROW_MIN = 808;
 export const STYLE_TOOLBAR_OVERFLOW_QUERY = `(max-width: ${STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1}px), (min-width: ${STYLE_TOOLBAR_ONE_ROW_MIN}px) and (max-width: ${STYLE_TOOLBAR_FULL_ROW_MIN - 1}px)`;
+
+// 영어 Font Set 열에 추가한 20px를 CSS의 828px / 982px 경계와 함께 반영한다.
+export const STYLE_TOOLBAR_EN_OVERFLOW_QUERY = `(max-width: ${STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1}px), (min-width: ${STYLE_TOOLBAR_ONE_ROW_MIN + 20}px) and (max-width: ${STYLE_TOOLBAR_FULL_ROW_MIN + 20 - 1}px)`;
 
 const PARAGRAPH_BUTTON_SELECTOR = '.sb-paragraph-ribbon-group .sb-btn';
 const DEFAULT_ALIGNMENT_ICON = 'sb-al-left';
@@ -106,7 +112,9 @@ export class StyleToolbarOverflowController {
     this.trigger = trigger;
     this.triggerIcon = triggerIcon;
     this.panel = panel;
-    this.mediaQuery = matchMedia(STYLE_TOOLBAR_OVERFLOW_QUERY);
+    this.mediaQuery = matchMedia(getLocale() === 'en'
+      ? STYLE_TOOLBAR_EN_OVERFLOW_QUERY
+      : STYLE_TOOLBAR_OVERFLOW_QUERY);
     this.paragraphButtons = Array.from(
       panel.querySelectorAll<HTMLButtonElement>(PARAGRAPH_BUTTON_SELECTOR),
     );
@@ -171,12 +179,12 @@ export class StyleToolbarOverflowController {
     this.trigger.disabled = toolbarDisabled;
     const currentAlignment = activeCommand?.title;
     const accessibleLabel = currentAlignment
-      ? `문단 정렬 더보기, 현재 ${currentAlignment}`
-      : '문단 정렬 더보기';
+      ? t('ui.styleToolbarOverflow.alignMoreCurrent', { p1: currentAlignment })
+      : t('ui.styleToolbarOverflow.alignMore');
     this.trigger.setAttribute('aria-label', accessibleLabel);
     this.trigger.title = currentAlignment
-      ? `문단 정렬 더보기 (현재 ${currentAlignment})`
-      : '문단 정렬 더보기';
+      ? t('dialog.styleToolbarOverflow.trigger.tooltip', { p1: currentAlignment })
+      : t('dialog.styleToolbarOverflow.syncIndicator.tooltip');
   }
 
   dispose(): void {

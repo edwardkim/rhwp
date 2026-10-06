@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rustMutatingExports } from './helpers/rust-mutating-exports.ts';
 
 // [Task #2327] 계급 1(기록 옵트인) 회귀를 저작 시점에 차단하는 소스 가드.
 //
@@ -55,7 +56,7 @@ function bridgePublicMethods(): string[] {
 // 문서 변경을 시사하는 동사 접두어. MUTATING_METHODS 의 모든 이름을 커버해야
 // 하며(아래 자기정합 단언이 강제), 그래야 새 브리지 뮤테이터가 drift 에 걸린다.
 // find* 는 쿼리(findNextEditableControl 등)가 많아 findOrCreate 로 좁힌다.
-const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark)/;
+const MUTATING_VERB = /^(insert|delete|create|apply|add|remove|move|resize|merge|split|update|toggle|replace|paste|assign|group|ungroup|change|clear|evaluate|transpose|promote|ensure|findOrCreate|reflow|setPage|setSection|setColumn|setCell|setTable|setPicture|setShape|setEquation|setNote|setChar|setPara|setField|setForm|setNumbering|setHeaderFooter|setActiveField|renameBookmark)/;
 
 test('MUTATING_VERB 는 MUTATING_METHODS 전 항목을 커버한다(drift 사각 방지)', () => {
   // 목록에 있으나 동사 패턴에 안 걸리는 이름이 있으면, 그 계열의 신규 브리지
@@ -79,6 +80,30 @@ test('드리프트: 문서-변경형 브리지 공개 메서드는 모두 분류
   );
 });
 
+test('[#7002] Rust `&mut self` 내보내기에 대응하는 브리지 메서드는 모두 분류돼야 한다', () => {
+  // MUTATING_VERB 는 손으로 유지하는 동사 목록인데 드리프트 시험의 **감사 대상을
+  // 정하는 필터**라, 동사에 안 걸리는 이름은 분류를 요구받지 않는다. 실제로 저널·
+  // 스냅샷·지연조판·내보내기·캐럿 14개가 그렇게 빠져 있었다(#7002). 여기서는 동사와
+  // 무관하게 Rust 쪽 변이 표면을 권위로 삼아 같은 사각이 다시 생기지 않게 한다.
+  const classified = new Set([...MUTATING, ...EXCLUDED]);
+  const bridge = new Set(bridgePublicMethods());
+  const unclassified = [...new Set(rustMutatingExports(source('../src/wasm_api.rs')))]
+    .filter((n) => bridge.has(n))
+    .filter((n) => !classified.has(n))
+    .sort();
+  assert.deepEqual(
+    unclassified,
+    [],
+    [
+      `wasm_api.rs 의 \`&mut self\` 내보내기인데 분류되지 않은 브리지 메서드: `
+        + unclassified.join(', '),
+      '→ mutation-method-registry.ts 의 MUTATING_METHODS 또는 EXCLUDED_NON_DOCUMENT 에 '
+        + '사유와 함께 추가하라.',
+      '`&mut self` 가 불필요한 래퍼라면 그 사실을 사유에 적는다.',
+    ].join(' '),
+  );
+});
+
 test('MUTATING_METHODS / EXCLUDED_NON_DOCUMENT 는 서로 겹치지 않는다', () => {
   const dup = MUTATING.filter((m) => EXCLUDED.includes(m));
   assert.deepEqual(dup, [], `양쪽에 중복 분류됨: ${dup.join(', ')}`);
@@ -94,6 +119,33 @@ test('MUTATING_METHODS 는 모두 실제 브리지 공개 메서드여야 한다
     [],
     `MUTATING_METHODS 에 브리지에 없는 이름: ${missing.join(', ')}\n` +
       `→ 브리지에서 rename/제거된 메서드. 목록을 갱신하라(방치 시 가드 무통보 비활성).`,
+  );
+});
+
+test('EXCLUDED_NON_DOCUMENT 은 감사 대상인 이름만 담는다(낡은 면제 래칫)', () => {
+  // 제외 항목은 두 감사 경로 중 하나가 **물어보기 때문에** 필요하다 —
+  // 동사 드리프트(MUTATING_VERB) 또는 Rust `&mut self` 인벤토리(#7002).
+  // 둘 다 물지 않는 이름이 남아 있으면 그 항목은 아무것도 걸러내지 않고, 사유 문구만
+  // 과거 상태를 설명하며 썬다. 실제로 #7021 이 저장 진입점을 `&self` 로 좁힌 뒤
+  // `exportHwp*` 3종이 그 상태가 됐다.
+  //
+  // 래칫 방향은 **줄어드는 쪽**이다. 나중에 다시 `&mut self` 로 넓혀지면 드리프트
+  // 시험이 분류를 요구하므로 지워도 안전하다. 같은 계급을 Rust 쪽은
+  // tests/issue_2724_passthrough_invalidation_guard.rs 의 stale_exemptions_are_reclaimed 가 맡는다.
+  const bridge = new Set(bridgePublicMethods());
+  const rust = new Set(rustMutatingExports(source('../src/wasm_api.rs')));
+  const inert = EXCLUDED
+    .filter((n) => bridge.has(n))
+    .filter((n) => !MUTATING_VERB.test(n) && !rust.has(n))
+    .sort();
+  assert.deepEqual(
+    inert,
+    [],
+    [
+      'EXCLUDED_NON_DOCUMENT 에 감사가 물지 않는 항목이 남았다: ' + inert.join(', '),
+      '→ 동사에도 안 걸리고 Rust `&mut self` 내보내기도 아니므로 제외할 것이 없다.',
+      '목록에서 지우라(면제는 줄어드는 방향이다).',
+    ].join(' '),
   );
 });
 
@@ -186,6 +238,7 @@ function mutatorCallCount(src: string): number {
 // 뮤테이션 표면 원장 (2026-07-17 동결). 이관/추가 시 이 표를 의식적으로 갱신한다.
 // 값을 낮추는 방향(이관)만 무해하며, 높이거나 신규 키 추가는 리뷰 대상이다.
 const BASELINE: Readonly<Record<string, number>> = {
+  'src/command/commands/hyperlink.ts': 7, // #6963: 삽입·주소/표시 문자열 수정·해제 및 본문/셀 글자 삽입 모두 executeOperation snapshot 내부
   'src/command/commands/edit.ts': 1,
   'src/command/commands/format.ts': 1,
   'src/command/commands/insert.ts': 16, // -3: z순서 4 호출부를 changeZOrder 헬퍼 1곳으로 합침(#2370 A)
@@ -211,12 +264,13 @@ const BASELINE: Readonly<Record<string, number>> = {
   'src/ui/table-cell-props-dialog.ts': 2,
   'src/ui/toolbar.ts': 4,
   // engine/input-handler* — 드래그/nudge 등 직접-뮤테이션 최고밀도 영역.
-  'src/engine/input-handler.ts': 33, // +1: 누름틀 제거 이관 시 removeFieldAt 이 양식모드(직접 유지)/일반모드(snapshot) 두 분기로 분리 / +1: Edit 오버레이 커밋이 셀 내부는 setFormValueInCell 로 분기(CheckBox 와 동일 조건 — 기존 flat 호출은 표 컨트롤 슬롯을 가리켜 실패) / +1: 셀 블록 글자 서식이 applyCharFormatInCell 을 executeOperation snapshot 안에서 호출(여러 셀에 걸친 글자 서식 커맨드 부재) / +1: 중첩 셀 블록 글자 서식도 applyCharFormatInCellByPath 를 같은 snapshot 안에서 호출 / +2: 머리말·꼬리말(applyParaFormatInHf)과 각주(applyParaFormatInFootnote) 문단 서식 배선 — 둘 다 snapshot 라우팅 / +2: #4121 HF 범위 치환·부분 글자 서식을 SubmodeSelectionSnapshotCommand 안에서 원자 기록
+  'src/engine/input-handler.ts': 35, // +1: 누름틀 제거 이관 시 removeFieldAt 이 양식모드(직접 유지)/일반모드(snapshot) 두 분기로 분리 / +1: Edit 오버레이 커밋이 셀 내부는 setFormValueInCell 로 분기(CheckBox 와 동일 조건 — 기존 flat 호출은 표 컨트롤 슬롯을 가리켜 실패) / +1: 셀 블록 글자 서식이 applyCharFormatInCell 을 executeOperation snapshot 안에서 호출(여러 셀에 걸친 글자 서식 커맨드 부재) / +1: 중첩 셀 블록 글자 서식도 applyCharFormatInCellByPath 를 같은 snapshot 안에서 호출 / +2: 머리말·꼬리말(applyParaFormatInHf)과 각주(applyParaFormatInFootnote) 문단 서식 배선 — 둘 다 snapshot 라우팅 / +2: #4121 HF 범위 치환·부분 글자 서식을 SubmodeSelectionSnapshotCommand 안에서 원자 기록 / +2: #6741 셀 블록 내용 지우기가 deleteRangeInCell·deleteRangeInCellByPath 를 executeOperation snapshot 안에서 호출(선택 칸 전체를 한 엔트리로)
   'src/engine/input-handler-connector.ts': 1,
   'src/engine/input-handler-keyboard.ts': 21,
   'src/engine/input-handler-mouse.ts': 3,
   'src/engine/input-handler-picture.ts': 11,
-  'src/engine/input-handler-table.ts': 7, // -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨)
+  'src/engine/input-handler-table.ts': 10, // +1 [#7189]: 중첩 표 확정이 resizeTableCellsByPath 로 갈라진다 (같은 executeOperation snapshot 안, 평면 호출과 배타) / -2: 한컴 3모드 셀 크기 조절의 직접 WASM 호출을 executeOperation snapshot 경로로 이관 (undo 기록됨) / +2 [#7442]: applyKeyboardResize·resizeTableProportional 도 중첩 ctx 에서 resizeTableCellsByPath 로 갈라진다 (같은 snapshot 안, 평면 호출과 배타)
+  'src/engine/input-handler-hyperlink-delete.ts': 3, // #6963: removeHyperlink + 본문/셀 deleteText는 모두 deleteHyperlink snapshot 안에서 실행. 실제 WASM runner가 원자 복구·undo/redo를 검증한다.
   'src/engine/input-handler-text.ts': 11, // #2424: raw IME delete를 command 공통 typed helper로 이관
   // ── hwpctl — 의도적 미라우팅 (#3648 정책 판정, 2026-07-31) ──
   //

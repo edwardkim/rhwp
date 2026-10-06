@@ -3,7 +3,7 @@
   "claim": "M01-f",
   "kind": "oraclePairFixture",
   "hancomVersion": "2022",
-  "pairCount": 294,
+  "pairCount": 364,
   "pairs": [
     {
       "id": "samples/2010-01-06.hwp::pdf/2010-01-06-2022.pdf",
@@ -1646,14 +1646,14 @@
       "oracleRoot": "pdf"
     },
     {
-      "id": "samples/issue2006/1790387_prep_final_report.hwpx::pdf-large/issue2006/1790387_prep_final_report-2022.pdf",
+      "id": "samples/issue2006/1790387_prep_final_report.hwpx::pdf/issue2006/1790387_prep_final_report-2022.pdf",
       "sample": "samples/issue2006/1790387_prep_final_report.hwpx",
-      "pdf": "pdf-large/issue2006/1790387_prep_final_report-2022.pdf",
+      "pdf": "pdf/issue2006/1790387_prep_final_report-2022.pdf",
       "stem": "1790387_prep_final_report",
       "hancomVersion": "2022",
       "variant": "2022",
       "sourceFormat": "hwpx",
-      "oracleRoot": "pdf-large"
+      "oracleRoot": "pdf"
     },
     {
       "id": "samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp::pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf",
@@ -1702,6 +1702,706 @@
       "stem": "36382471_masked",
       "hancomVersion": "2022",
       "variant": "2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/3차원묶은세로막대형-대조군.hwpx::pdf/issue5447/3차원묶은세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/3차원묶은세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5447/3차원묶은세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "3차원묶은세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/3차원묶은세로막대형-행추가.hwp::pdf/issue5447/3차원묶은세로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/3차원묶은세로막대형-행추가.hwp",
+      "pdf": "pdf/issue5447/3차원묶은세로막대형-행추가-hwp-2022.pdf",
+      "stem": "3차원묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/3차원묶은세로막대형-행추가.hwpx::pdf/issue5447/3차원묶은세로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/3차원묶은세로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5447/3차원묶은세로막대형-행추가-hwpx-2022.pdf",
+      "stem": "3차원묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx::pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "pdf": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-대조군-hwpx-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp::pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp",
+      "pdf": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwp-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx::pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx",
+      "pdf": "pdf/issue5447/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwpx-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/누적세로막대형-계열삭제.hwp::pdf/issue5447/누적세로막대형-계열삭제-hwp-2022.pdf",
+      "sample": "samples/issue5447/누적세로막대형-계열삭제.hwp",
+      "pdf": "pdf/issue5447/누적세로막대형-계열삭제-hwp-2022.pdf",
+      "stem": "누적세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/누적세로막대형-계열삭제.hwpx::pdf/issue5447/누적세로막대형-계열삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5447/누적세로막대형-계열삭제.hwpx",
+      "pdf": "pdf/issue5447/누적세로막대형-계열삭제-hwpx-2022.pdf",
+      "stem": "누적세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/누적세로막대형-대조군.hwpx::pdf/issue5447/누적세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/누적세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5447/누적세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "누적세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은가로막대형-대조군.hwpx::pdf/issue5447/묶은가로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은가로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5447/묶은가로막대형-대조군-hwpx-2022.pdf",
+      "stem": "묶은가로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은가로막대형-행추가.hwp::pdf/issue5447/묶은가로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은가로막대형-행추가.hwp",
+      "pdf": "pdf/issue5447/묶은가로막대형-행추가-hwp-2022.pdf",
+      "stem": "묶은가로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은가로막대형-행추가.hwpx::pdf/issue5447/묶은가로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은가로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5447/묶은가로막대형-행추가-hwpx-2022.pdf",
+      "stem": "묶은가로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열명변경.hwp::pdf/issue5447/묶은세로막대형-계열명변경-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열명변경.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열명변경-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열명변경",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열명변경.hwpx::pdf/issue5447/묶은세로막대형-계열명변경-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열명변경.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열명변경-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열명변경",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열삭제.hwp::pdf/issue5447/묶은세로막대형-계열삭제-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열삭제.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열삭제-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열삭제.hwpx::pdf/issue5447/묶은세로막대형-계열삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열삭제.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열삭제-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열추가.hwp::pdf/issue5447/묶은세로막대형-계열추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열추가.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열추가-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-계열추가.hwpx::pdf/issue5447/묶은세로막대형-계열추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-계열추가.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-계열추가-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-대조군.hwpx::pdf/issue5447/묶은세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-라벨변경.hwp::pdf/issue5447/묶은세로막대형-라벨변경-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-라벨변경.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-라벨변경-hwp-2022.pdf",
+      "stem": "묶은세로막대형-라벨변경",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-라벨변경.hwpx::pdf/issue5447/묶은세로막대형-라벨변경-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-라벨변경.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-라벨변경-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-라벨변경",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-행삭제.hwp::pdf/issue5447/묶은세로막대형-행삭제-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-행삭제.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-행삭제-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-행삭제.hwpx::pdf/issue5447/묶은세로막대형-행삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-행삭제.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-행삭제-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-행삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-행추가-HWPX에서변환.hwp::pdf/issue5447/묶은세로막대형-행추가-HWPX에서변환-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-행추가-HWPX에서변환.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-행추가-HWPX에서변환-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행추가-HWPX에서변환",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-행추가.hwp::pdf/issue5447/묶은세로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-행추가.hwp",
+      "pdf": "pdf/issue5447/묶은세로막대형-행추가-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/묶은세로막대형-행추가.hwpx::pdf/issue5447/묶은세로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/묶은세로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5447/묶은세로막대형-행추가-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/시가고가저가종가-계열삭제.hwp::pdf/issue5447/시가고가저가종가-계열삭제-hwp-2022.pdf",
+      "sample": "samples/issue5447/시가고가저가종가-계열삭제.hwp",
+      "pdf": "pdf/issue5447/시가고가저가종가-계열삭제-hwp-2022.pdf",
+      "stem": "시가고가저가종가-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/시가고가저가종가-계열삭제.hwpx::pdf/issue5447/시가고가저가종가-계열삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5447/시가고가저가종가-계열삭제.hwpx",
+      "pdf": "pdf/issue5447/시가고가저가종가-계열삭제-hwpx-2022.pdf",
+      "stem": "시가고가저가종가-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/시가고가저가종가-대조군.hwpx::pdf/issue5447/시가고가저가종가-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/시가고가저가종가-대조군.hwpx",
+      "pdf": "pdf/issue5447/시가고가저가종가-대조군-hwpx-2022.pdf",
+      "stem": "시가고가저가종가-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/원형대원형-계열추가.hwp::pdf/issue5447/원형대원형-계열추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/원형대원형-계열추가.hwp",
+      "pdf": "pdf/issue5447/원형대원형-계열추가-hwp-2022.pdf",
+      "stem": "원형대원형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/원형대원형-계열추가.hwpx::pdf/issue5447/원형대원형-계열추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/원형대원형-계열추가.hwpx",
+      "pdf": "pdf/issue5447/원형대원형-계열추가-hwpx-2022.pdf",
+      "stem": "원형대원형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/원형대원형-대조군.hwpx::pdf/issue5447/원형대원형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/원형대원형-대조군.hwpx",
+      "pdf": "pdf/issue5447/원형대원형-대조군-hwpx-2022.pdf",
+      "stem": "원형대원형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/직선및표식이있는분산형-대조군.hwpx::pdf/issue5447/직선및표식이있는분산형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/직선및표식이있는분산형-대조군.hwpx",
+      "pdf": "pdf/issue5447/직선및표식이있는분산형-대조군-hwpx-2022.pdf",
+      "stem": "직선및표식이있는분산형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/직선및표식이있는분산형-점추가.hwp::pdf/issue5447/직선및표식이있는분산형-점추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/직선및표식이있는분산형-점추가.hwp",
+      "pdf": "pdf/issue5447/직선및표식이있는분산형-점추가-hwp-2022.pdf",
+      "stem": "직선및표식이있는분산형-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/직선및표식이있는분산형-점추가.hwpx::pdf/issue5447/직선및표식이있는분산형-점추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/직선및표식이있는분산형-점추가.hwpx",
+      "pdf": "pdf/issue5447/직선및표식이있는분산형-점추가-hwpx-2022.pdf",
+      "stem": "직선및표식이있는분산형-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/표식이있는꺽은선형-대조군.hwpx::pdf/issue5447/표식이있는꺽은선형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5447/표식이있는꺽은선형-대조군.hwpx",
+      "pdf": "pdf/issue5447/표식이있는꺽은선형-대조군-hwpx-2022.pdf",
+      "stem": "표식이있는꺽은선형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/표식이있는꺽은선형-행추가.hwp::pdf/issue5447/표식이있는꺽은선형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5447/표식이있는꺽은선형-행추가.hwp",
+      "pdf": "pdf/issue5447/표식이있는꺽은선형-행추가-hwp-2022.pdf",
+      "stem": "표식이있는꺽은선형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5447/표식이있는꺽은선형-행추가.hwpx::pdf/issue5447/표식이있는꺽은선형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5447/표식이있는꺽은선형-행추가.hwpx",
+      "pdf": "pdf/issue5447/표식이있는꺽은선형-행추가-hwpx-2022.pdf",
+      "stem": "표식이있는꺽은선형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/3차원묶은세로막대형-대조군.hwpx::pdf/issue5652/3차원묶은세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/3차원묶은세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5652/3차원묶은세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "3차원묶은세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/3차원묶은세로막대형-행추가.hwp::pdf/issue5652/3차원묶은세로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/3차원묶은세로막대형-행추가.hwp",
+      "pdf": "pdf/issue5652/3차원묶은세로막대형-행추가-hwp-2022.pdf",
+      "stem": "3차원묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/3차원묶은세로막대형-행추가.hwpx::pdf/issue5652/3차원묶은세로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/3차원묶은세로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5652/3차원묶은세로막대형-행추가-hwpx-2022.pdf",
+      "stem": "3차원묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx::pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-대조군.hwpx",
+      "pdf": "pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-대조군-hwpx-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp::pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwp",
+      "pdf": "pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwp-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx::pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가.hwpx",
+      "pdf": "pdf/issue5652/가로막대형_하나만있을떄_단일시리즈제목-점추가-hwpx-2022.pdf",
+      "stem": "가로막대형_하나만있을떄_단일시리즈제목-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/누적세로막대형-계열삭제.hwp::pdf/issue5652/누적세로막대형-계열삭제-hwp-2022.pdf",
+      "sample": "samples/issue5652/누적세로막대형-계열삭제.hwp",
+      "pdf": "pdf/issue5652/누적세로막대형-계열삭제-hwp-2022.pdf",
+      "stem": "누적세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/누적세로막대형-계열삭제.hwpx::pdf/issue5652/누적세로막대형-계열삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5652/누적세로막대형-계열삭제.hwpx",
+      "pdf": "pdf/issue5652/누적세로막대형-계열삭제-hwpx-2022.pdf",
+      "stem": "누적세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/누적세로막대형-대조군.hwpx::pdf/issue5652/누적세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/누적세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5652/누적세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "누적세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은가로막대형-대조군.hwpx::pdf/issue5652/묶은가로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은가로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5652/묶은가로막대형-대조군-hwpx-2022.pdf",
+      "stem": "묶은가로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은가로막대형-행추가.hwp::pdf/issue5652/묶은가로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은가로막대형-행추가.hwp",
+      "pdf": "pdf/issue5652/묶은가로막대형-행추가-hwp-2022.pdf",
+      "stem": "묶은가로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은가로막대형-행추가.hwpx::pdf/issue5652/묶은가로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은가로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5652/묶은가로막대형-행추가-hwpx-2022.pdf",
+      "stem": "묶은가로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열명변경.hwp::pdf/issue5652/묶은세로막대형-계열명변경-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열명변경.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열명변경-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열명변경",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열명변경.hwpx::pdf/issue5652/묶은세로막대형-계열명변경-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열명변경.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열명변경-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열명변경",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열삭제.hwp::pdf/issue5652/묶은세로막대형-계열삭제-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열삭제.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열삭제-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열삭제.hwpx::pdf/issue5652/묶은세로막대형-계열삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열삭제.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열삭제-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열추가.hwp::pdf/issue5652/묶은세로막대형-계열추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열추가.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열추가-hwp-2022.pdf",
+      "stem": "묶은세로막대형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-계열추가.hwpx::pdf/issue5652/묶은세로막대형-계열추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-계열추가.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-계열추가-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-계열추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-대조군.hwpx::pdf/issue5652/묶은세로막대형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-대조군.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-대조군-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-라벨변경.hwp::pdf/issue5652/묶은세로막대형-라벨변경-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-라벨변경.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-라벨변경-hwp-2022.pdf",
+      "stem": "묶은세로막대형-라벨변경",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-라벨변경.hwpx::pdf/issue5652/묶은세로막대형-라벨변경-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-라벨변경.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-라벨변경-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-라벨변경",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-행삭제.hwp::pdf/issue5652/묶은세로막대형-행삭제-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-행삭제.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-행삭제-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행삭제",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-행삭제.hwpx::pdf/issue5652/묶은세로막대형-행삭제-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-행삭제.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-행삭제-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-행삭제",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-행추가-HWPX에서변환.hwp::pdf/issue5652/묶은세로막대형-행추가-HWPX에서변환-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-행추가-HWPX에서변환.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-행추가-HWPX에서변환-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행추가-HWPX에서변환",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-행추가.hwp::pdf/issue5652/묶은세로막대형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-행추가.hwp",
+      "pdf": "pdf/issue5652/묶은세로막대형-행추가-hwp-2022.pdf",
+      "stem": "묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/묶은세로막대형-행추가.hwpx::pdf/issue5652/묶은세로막대형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/묶은세로막대형-행추가.hwpx",
+      "pdf": "pdf/issue5652/묶은세로막대형-행추가-hwpx-2022.pdf",
+      "stem": "묶은세로막대형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/직선및표식이있는분산형-대조군.hwpx::pdf/issue5652/직선및표식이있는분산형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/직선및표식이있는분산형-대조군.hwpx",
+      "pdf": "pdf/issue5652/직선및표식이있는분산형-대조군-hwpx-2022.pdf",
+      "stem": "직선및표식이있는분산형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/직선및표식이있는분산형-점추가.hwp::pdf/issue5652/직선및표식이있는분산형-점추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/직선및표식이있는분산형-점추가.hwp",
+      "pdf": "pdf/issue5652/직선및표식이있는분산형-점추가-hwp-2022.pdf",
+      "stem": "직선및표식이있는분산형-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/직선및표식이있는분산형-점추가.hwpx::pdf/issue5652/직선및표식이있는분산형-점추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/직선및표식이있는분산형-점추가.hwpx",
+      "pdf": "pdf/issue5652/직선및표식이있는분산형-점추가-hwpx-2022.pdf",
+      "stem": "직선및표식이있는분산형-점추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/표식이있는꺽은선형-대조군.hwpx::pdf/issue5652/표식이있는꺽은선형-대조군-hwpx-2022.pdf",
+      "sample": "samples/issue5652/표식이있는꺽은선형-대조군.hwpx",
+      "pdf": "pdf/issue5652/표식이있는꺽은선형-대조군-hwpx-2022.pdf",
+      "stem": "표식이있는꺽은선형-대조군",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/표식이있는꺽은선형-행추가.hwp::pdf/issue5652/표식이있는꺽은선형-행추가-hwp-2022.pdf",
+      "sample": "samples/issue5652/표식이있는꺽은선형-행추가.hwp",
+      "pdf": "pdf/issue5652/표식이있는꺽은선형-행추가-hwp-2022.pdf",
+      "stem": "표식이있는꺽은선형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwp-2022",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue5652/표식이있는꺽은선형-행추가.hwpx::pdf/issue5652/표식이있는꺽은선형-행추가-hwpx-2022.pdf",
+      "sample": "samples/issue5652/표식이있는꺽은선형-행추가.hwpx",
+      "pdf": "pdf/issue5652/표식이있는꺽은선형-행추가-hwpx-2022.pdf",
+      "stem": "표식이있는꺽은선형-행추가",
+      "hancomVersion": "2022",
+      "variant": "hwpx-2022",
       "sourceFormat": "hwpx",
       "oracleRoot": "pdf"
     },

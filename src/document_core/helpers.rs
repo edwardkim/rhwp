@@ -208,6 +208,20 @@ pub(crate) fn get_caption_from_shape(
     }
 }
 
+/// [`get_caption_from_shape`] 의 가변 짝 — 변형별 캡션 자리 판정은 그 문서를 따른다.
+pub(crate) fn get_caption_from_shape_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject;
+    match shape {
+        ShapeObject::Group(g) => g.caption.as_mut(),
+        ShapeObject::Picture(p) => p.caption.as_mut(),
+        ShapeObject::Chart(c) => c.caption.as_mut(),
+        ShapeObject::Ole(o) => o.caption.as_mut(),
+        _ => shape.drawing_mut().and_then(|d| d.caption.as_mut()),
+    }
+}
+
 /// 문단 목록에서 DocumentPath를 따라 중첩 표에 대한 가변 참조를 얻는다.
 ///
 /// 경로 형식:
@@ -928,6 +942,32 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
     format!("#{:02x}{:02x}{:02x}", r, g, b)
 }
 
+/// 테두리/배경 채우기의 속성 JSON 값 `(fillType, fillColor, patternColor, patternType)`.
+///
+/// 면 색이 '색 없음'(상위 바이트 ≠ 0, 한컴 `0xFFFFFFFF`)이고 무늬도 없으면 `none` 이다.
+/// 렌더러(`style_resolver::resolve_single_border_style`)가 칠하지 않는 채우기와 같다.
+/// HWPX `faceColor="none"` 은 파서가 이미 `FillType::None` 으로 읽지만(#1172), HWP 는
+/// 단색 레코드로 남는다. `color_ref_to_css` 가 상위 바이트를 버리므로 이 판정이 없으면
+/// '색 없음'이 흰색 단색으로 보인다.
+pub(crate) fn fill_json_values(
+    fill: &crate::model::style::Fill,
+) -> (&'static str, String, String, i32) {
+    use crate::model::style::FillType;
+    match (&fill.fill_type, &fill.solid) {
+        (FillType::Solid, Some(s)) => {
+            let no_fill = s.pattern_type <= 0
+                && crate::model::color::opaque_rgb(s.background_color).is_none();
+            (
+                if no_fill { "none" } else { "solid" },
+                color_ref_to_css(s.background_color),
+                color_ref_to_css(s.pattern_color),
+                s.pattern_type,
+            )
+        }
+        _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
+    }
+}
+
 // === HTML 파싱 유틸리티 함수 ===
 
 /// chars 배열에서 pos부터 target 문자를 찾아 인덱스를 반환한다.
@@ -1181,10 +1221,21 @@ pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
             let after = &tag[start + pat.len()..];
             let delim = if pat.ends_with('"') { '"' } else { '\'' };
             if let Some(end) = after.find(delim) {
-                let val_str = &after[..end];
-                // "200px" → 200.0, "200" → 200.0
-                let num_str = val_str.trim_end_matches("px").trim();
-                return num_str.parse().ok();
+                let val_str = &after[..end].trim();
+                // 한글은 `width="97pt"` 로 낸다 — pt 를 px 로 읽으면 그림이 25% 작아진다.
+                // "200px"·"200" → 200.0, "97pt" → 129.3(px), "2cm"·"20mm" 도 px 로 환산.
+                let (num_str, factor) = if let Some(v) = val_str.strip_suffix("pt") {
+                    (v, 96.0 / 72.0)
+                } else if let Some(v) = val_str.strip_suffix("cm") {
+                    (v, 96.0 / 2.54)
+                } else if let Some(v) = val_str.strip_suffix("mm") {
+                    (v, 96.0 / 25.4)
+                } else if let Some(v) = val_str.strip_suffix("in") {
+                    (v, 96.0)
+                } else {
+                    (val_str.trim_end_matches("px"), 1.0)
+                };
+                return num_str.trim().parse::<f64>().ok().map(|n| n * factor);
             }
         }
     }

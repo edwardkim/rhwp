@@ -146,7 +146,7 @@ class MiniRepoTests(unittest.TestCase):
             for item in manifest["pairs"]
             if item["sample"] == "samples/exam_kor.hwp"
         }
-        self.assertEqual(exam_roots, {"pdf", "pdf-2020"})
+        self.assertEqual(exam_roots, {"pdf"})
 
     def test_counts_are_consistent(self) -> None:
         manifest = load_mini()

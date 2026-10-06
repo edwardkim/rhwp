@@ -20,6 +20,7 @@ import {
   type ActivePageSnapshot,
 } from './active-page.ts';
 import { resolveRulerScale } from './ruler-scale.ts';
+import { isRulerLabelInsidePage } from './ruler-label-geometry.ts';
 
 export type { RulerPinCommit };
 
@@ -668,7 +669,15 @@ export class Ruler {
         // 숫자는 cm 단위. 저배율에서는 5cm·10cm처럼 더 큰 단계만 남는다.
         const cm = mm / 10;
         if (cm > 0) {
-          ctx.fillText(`${cm}`, x, 1);
+          const label = `${cm}`;
+          if (isRulerLabelInsidePage(
+            x,
+            ctx.measureText(label).width,
+            pageScreenLeft,
+            pageDisplayWidth,
+          )) {
+            ctx.fillText(label, x, 1);
+          }
         }
       } else if (tickIndex % middleEvery === 0) {
         tickH = 6;

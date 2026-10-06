@@ -68,7 +68,7 @@ FAMILIES: tuple[str, ...] = (
     "훈령별표",
 )
 
-ORACLE_ROOTS = ("pdf", "pdf-2020", "pdf-large")
+ORACLE_ROOTS = ("pdf",)
 FORMATS = ("hwp", "hwpx")
 VARIANTS = ("", "hwp", "hwpx", "kopub", "no-ttf", "print", "hancom")
 

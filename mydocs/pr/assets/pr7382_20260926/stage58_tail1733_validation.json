@@ -1,0 +1,5499 @@
+{
+  "stage": 58,
+  "candidate": 28,
+  "before_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+  "candidate_identity": {
+    "head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+    "profile": "release-test",
+    "sources": {
+      "src/document_core/queries/rendering.rs": "34b1cba1180f112e0e33673057008b30f85be72c8adeaaca8a0756b784c474c4",
+      "src/paint/json.rs": "9f2b25a1635ac3b43eef55911a41818b4d32eca82da69188d993451df890c81b",
+      "src/paint/resources.rs": "bbc0254ba0bb6051b8fa6c942102db919f82ac52dc48f0df49fd80a2322bbedc",
+      "src/parser/hwpx/section.rs": "0263ddf7762c396a768750a7bda15fd08b081a1145c7dcc07582664802706ea7",
+      "src/renderer/equation/mod.rs": "2db7289682bece0df9ffabd6bf3d0b4b152c65f56ccca60715641ce530c2ce78",
+      "src/renderer/float_placement.rs": "0e6ba4eed184ac0d086394d6e110c22a5f59263e0ba7382b1eae2b44fe46ffe0",
+      "src/renderer/image_resolver.rs": "75dab9fcb9d36654e9f34acc7f428173a7c25b2d152bbd6d49a10dc0f8c769dd",
+      "src/renderer/layout.rs": "596af48ab26bf000bfd30d30f8ec3d700614b73dbee19c87ee30ff299981e813",
+      "src/renderer/layout/paragraph_layout.rs": "07db6e65d2ed7d86b485685b6de05ca589327c4ad70e39ea70a8382328141400",
+      "src/renderer/layout/picture_footnote.rs": "3f3bbe2abf81b4aa9b377fe268dce90fcebce5b61315825a740eca5d69571bf5",
+      "src/renderer/layout/shape_layout.rs": "e7e775ae58c52b3ceddc704da118f0128619bf4bd74521e4eac24c5ad2e5037d",
+      "src/renderer/layout/table_layout.rs": "0a999c76915e7368595e486904238d23644fe8e1b2afc2aeed306f394f1e4237",
+      "src/renderer/mod.rs": "a9f97bed775b8928eeae72b00301935bbd99f46d032748ba39eb9cc4c8a1bb4b",
+      "src/renderer/skia/renderer.rs": "2fa5d304a9f4537989bd3292e2823cc649a658ab16ddfe67c7590c7604740a20",
+      "src/renderer/svg.rs": "e8b68cfa35ed48272cd5c371243a5f76c214ac948b6ed62065d756a24a5dbfa2",
+      "src/renderer/typeset.rs": "b7ae0c453f04102e20bd2e3aef576357e9b34e12b72c7531a706a7757b4dea1b",
+      "src/renderer/typeset/controls/wrap_flow.rs": "6d16e74329db5dc8f9eb387f8a84978c001471b54c94fa7b695df94dfbd69c9d",
+      "src/renderer/typeset/notes/footnotes/body.rs": "4577a35943f988da404143b0d450a18f9fa4a5c9c9b47a488ca541ec773bb98c",
+      "src/renderer/typeset/notes/footnotes/boundary.rs": "661ba717bb4e20a70fc03b69b953ebf3efd3eff8dbadbc84e08af698ead8206a",
+      "src/renderer/typeset/paragraph.rs": "5aca165cbaa935460423cc6155334cb05929db61f2cf1f10ba936f93f21029ae",
+      "src/renderer/typeset/paragraph/metrics.rs": "bbb6c7241f400f31832890702b7b5380d7b2b07596a09ad5ade753b05745c3f5",
+      "src/renderer/typeset/paragraph/scan.rs": "c348a3c8ba4f68c055e8a078aa1a9a7741954cd910f173a1f8ae755e5a30d621",
+      "src/renderer/typeset/section/controls.rs": "1c995684d2ef15c5e313f2486e246ac3da38c92268672361a9e51c2117d5b1ee",
+      "src/renderer/typeset/section/post_flow.rs": "79c2c264db1e4cc501f4ab70e6dd4d9e5dac99ffc73e1fba801b709889524dad",
+      "src/renderer/typeset/state.rs": "62046ebaa96602ddb8dc63ab6f9a77326245b1ef71f24d70dfc1b69bfd1675c8",
+      "src/renderer/typeset/state/commands.rs": "e16e433a275e441c91d22a997076dc1f64c0a07f22f773bfcb7249109e9cb4bc",
+      "src/renderer/typeset/state/data.rs": "dcef5b9cb1e411fe3c9389d59e99f9fbb312e72e7268a08e3b6440f5232954bc",
+      "src/renderer/typeset/state/transition.rs": "2b1acbc06d15bfdfa9b1ec867f11253b7c3aef3817717b6f86f9cbc83906b3c6",
+      "src/renderer/typeset/table/block/entry.rs": "fcb36afb165b76ebc0ff1e96b8cd7b46cb83823e83e728599524f136846f8105",
+      "src/renderer/typeset/table/block/whole_fit.rs": "052a0509a29a6caf8b08f0e8fc7a022be8bfb9b4e9229ec9ec29500fd3599c49",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "05878c9741a4a2ae8d7ff32a74d7fe9506c319af7b5fb99dc57f675789341752",
+      "src/renderer/typeset/table/scan/runner/row_step.rs": "9877c5c6b380e667b882c2dfdc8f82eb2d0a17d393545905547512e2c6543938",
+      "src/renderer/typeset/table/scan/source_frame.rs": "fe5e635dae45d7f3b470ac5a730c8b62b0e8111bce22c815a53c476c8ac57834",
+      "src/renderer/web_canvas.rs": "5d8d30ff300a92048021c6d6b3dacfd94af0257d8718cf5861fcac58d5fb94a7"
+    },
+    "binary_sha256": "d04dad4748ef3fc82b74e2687a2d2607c574e3debadc24d2ee49b8e08b542841"
+  },
+  "fresh_wasm_package": {
+    "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp_bg.wasm.d.ts": "384563a209cab9666fadcb1b51446985c8bc71b2e8cdab072d2388e459dd0fe1",
+    "README.md": "cc21f6df81a0005e78fcaae6be711e3a451fb4aa8392362b2fc2173168729ba8",
+    "rhwp_bg.wasm": "f98ad4a4f40ff71d3ce495d7a577f3c76447ab461520dd6cd4c64873be8abc1b",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "a5babd0be02df91bdef71e0df93054a528431c9be4ce2c8c409e47fe205efd47",
+    "rhwp.d.ts": "a04a48f383223dae50d0a3052f2efe1a25ca33abdf92791238381f4b7daf7e8c"
+  },
+  "wasm_build": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "environment": {
+      "CARGO_TARGET_DIR": "target/pr-review"
+    },
+    "exit_code": 0,
+    "seconds": 314.81885625002906
+  },
+  "visual": [
+    {
+      "backend": "native",
+      "format": "hwp",
+      "count": 242,
+      "minimum": {
+        "page": 215,
+        "tolerant_content_match_percent": 91.19751
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task1725/text_footnote_tail_overpagination.hwp",
+          "sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9"
+        },
+        "pdf": {
+          "path": "pdf/issue1733/text_footnote_tail_overpagination-hwp-2020-20260814.pdf",
+          "sha256": "d20505d2af9989c2fb03c9992ba50e01b938a86dba69a613b353f4a7bc22ba61"
+        },
+        "git_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "sha256": "d04dad4748ef3fc82b74e2687a2d2607c574e3debadc24d2ee49b8e08b542841"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "page_metrics": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 99.95557
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.96799
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.79312
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 99.08046
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.62659
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 99.92725
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 99.89239
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 99.80631
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 99.91238
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 98.44656
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 99.95906
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 99.97193
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 99.98369
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 99.96891
+        },
+        {
+          "page": 15,
+          "tolerant_content_match_percent": 99.96423
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 99.97594
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 99.96822
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 99.97837
+        },
+        {
+          "page": 19,
+          "tolerant_content_match_percent": 99.93494
+        },
+        {
+          "page": 20,
+          "tolerant_content_match_percent": 99.9393
+        },
+        {
+          "page": 21,
+          "tolerant_content_match_percent": 99.97188
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 99.9858
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 99.70786
+        },
+        {
+          "page": 24,
+          "tolerant_content_match_percent": 99.97918
+        },
+        {
+          "page": 25,
+          "tolerant_content_match_percent": 99.96069
+        },
+        {
+          "page": 26,
+          "tolerant_content_match_percent": 99.98495
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 99.98989
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 98.10551
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 99.6642
+        },
+        {
+          "page": 30,
+          "tolerant_content_match_percent": 97.19922
+        },
+        {
+          "page": 31,
+          "tolerant_content_match_percent": 99.96625
+        },
+        {
+          "page": 32,
+          "tolerant_content_match_percent": 99.94301
+        },
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 99.9367
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 99.92813
+        },
+        {
+          "page": 35,
+          "tolerant_content_match_percent": 99.92827
+        },
+        {
+          "page": 36,
+          "tolerant_content_match_percent": 99.97277
+        },
+        {
+          "page": 37,
+          "tolerant_content_match_percent": 99.99507
+        },
+        {
+          "page": 38,
+          "tolerant_content_match_percent": 99.97757
+        },
+        {
+          "page": 39,
+          "tolerant_content_match_percent": 99.97135
+        },
+        {
+          "page": 40,
+          "tolerant_content_match_percent": 99.97557
+        },
+        {
+          "page": 41,
+          "tolerant_content_match_percent": 99.98903
+        },
+        {
+          "page": 42,
+          "tolerant_content_match_percent": 99.97669
+        },
+        {
+          "page": 43,
+          "tolerant_content_match_percent": 99.98295
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 98.15875
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 92.73676
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 99.37432
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 94.75759
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 99.97913
+        },
+        {
+          "page": 49,
+          "tolerant_content_match_percent": 99.96337
+        },
+        {
+          "page": 50,
+          "tolerant_content_match_percent": 99.96699
+        },
+        {
+          "page": 51,
+          "tolerant_content_match_percent": 99.68622
+        },
+        {
+          "page": 52,
+          "tolerant_content_match_percent": 99.95486
+        },
+        {
+          "page": 53,
+          "tolerant_content_match_percent": 99.36102
+        },
+        {
+          "page": 54,
+          "tolerant_content_match_percent": 99.96434
+        },
+        {
+          "page": 55,
+          "tolerant_content_match_percent": 99.96638
+        },
+        {
+          "page": 56,
+          "tolerant_content_match_percent": 99.86942
+        },
+        {
+          "page": 57,
+          "tolerant_content_match_percent": 99.97522
+        },
+        {
+          "page": 58,
+          "tolerant_content_match_percent": 99.92437
+        },
+        {
+          "page": 59,
+          "tolerant_content_match_percent": 99.1333
+        },
+        {
+          "page": 60,
+          "tolerant_content_match_percent": 98.13317
+        },
+        {
+          "page": 61,
+          "tolerant_content_match_percent": 99.73289
+        },
+        {
+          "page": 62,
+          "tolerant_content_match_percent": 99.77134
+        },
+        {
+          "page": 63,
+          "tolerant_content_match_percent": 99.81854
+        },
+        {
+          "page": 64,
+          "tolerant_content_match_percent": 99.99104
+        },
+        {
+          "page": 65,
+          "tolerant_content_match_percent": 99.9438
+        },
+        {
+          "page": 66,
+          "tolerant_content_match_percent": 99.52096
+        },
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 99.95842
+        },
+        {
+          "page": 68,
+          "tolerant_content_match_percent": 99.96032
+        },
+        {
+          "page": 69,
+          "tolerant_content_match_percent": 99.45516
+        },
+        {
+          "page": 70,
+          "tolerant_content_match_percent": 99.47
+        },
+        {
+          "page": 71,
+          "tolerant_content_match_percent": 99.93293
+        },
+        {
+          "page": 72,
+          "tolerant_content_match_percent": 99.9814
+        },
+        {
+          "page": 73,
+          "tolerant_content_match_percent": 99.95629
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 99.96908
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 99.94548
+        },
+        {
+          "page": 76,
+          "tolerant_content_match_percent": 99.1596
+        },
+        {
+          "page": 77,
+          "tolerant_content_match_percent": 96.45535
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 98.98344
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 99.9602
+        },
+        {
+          "page": 80,
+          "tolerant_content_match_percent": 99.96628
+        },
+        {
+          "page": 81,
+          "tolerant_content_match_percent": 99.94409
+        },
+        {
+          "page": 82,
+          "tolerant_content_match_percent": 99.41106
+        },
+        {
+          "page": 83,
+          "tolerant_content_match_percent": 99.95673
+        },
+        {
+          "page": 84,
+          "tolerant_content_match_percent": 99.96186
+        },
+        {
+          "page": 85,
+          "tolerant_content_match_percent": 99.97494
+        },
+        {
+          "page": 86,
+          "tolerant_content_match_percent": 99.7988
+        },
+        {
+          "page": 87,
+          "tolerant_content_match_percent": 99.97006
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 98.86396
+        },
+        {
+          "page": 89,
+          "tolerant_content_match_percent": 99.94423
+        },
+        {
+          "page": 90,
+          "tolerant_content_match_percent": 99.95587
+        },
+        {
+          "page": 91,
+          "tolerant_content_match_percent": 98.71933
+        },
+        {
+          "page": 92,
+          "tolerant_content_match_percent": 98.36253
+        },
+        {
+          "page": 93,
+          "tolerant_content_match_percent": 93.53814
+        },
+        {
+          "page": 94,
+          "tolerant_content_match_percent": 98.72325
+        },
+        {
+          "page": 95,
+          "tolerant_content_match_percent": 92.82699
+        },
+        {
+          "page": 96,
+          "tolerant_content_match_percent": 98.94132
+        },
+        {
+          "page": 97,
+          "tolerant_content_match_percent": 99.97632
+        },
+        {
+          "page": 98,
+          "tolerant_content_match_percent": 98.65028
+        },
+        {
+          "page": 99,
+          "tolerant_content_match_percent": 99.97216
+        },
+        {
+          "page": 100,
+          "tolerant_content_match_percent": 97.1589
+        },
+        {
+          "page": 101,
+          "tolerant_content_match_percent": 99.9042
+        },
+        {
+          "page": 102,
+          "tolerant_content_match_percent": 99.97873
+        },
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 99.7191
+        },
+        {
+          "page": 104,
+          "tolerant_content_match_percent": 99.19429
+        },
+        {
+          "page": 105,
+          "tolerant_content_match_percent": 99.96844
+        },
+        {
+          "page": 106,
+          "tolerant_content_match_percent": 99.96976
+        },
+        {
+          "page": 107,
+          "tolerant_content_match_percent": 99.9682
+        },
+        {
+          "page": 108,
+          "tolerant_content_match_percent": 98.54181
+        },
+        {
+          "page": 109,
+          "tolerant_content_match_percent": 99.98557
+        },
+        {
+          "page": 110,
+          "tolerant_content_match_percent": 99.9787
+        },
+        {
+          "page": 111,
+          "tolerant_content_match_percent": 97.84527
+        },
+        {
+          "page": 112,
+          "tolerant_content_match_percent": 98.27857
+        },
+        {
+          "page": 113,
+          "tolerant_content_match_percent": 99.94485
+        },
+        {
+          "page": 114,
+          "tolerant_content_match_percent": 99.98837
+        },
+        {
+          "page": 115,
+          "tolerant_content_match_percent": 99.97148
+        },
+        {
+          "page": 116,
+          "tolerant_content_match_percent": 99.6221
+        },
+        {
+          "page": 117,
+          "tolerant_content_match_percent": 99.9725
+        },
+        {
+          "page": 118,
+          "tolerant_content_match_percent": 99.93642
+        },
+        {
+          "page": 119,
+          "tolerant_content_match_percent": 98.8309
+        },
+        {
+          "page": 120,
+          "tolerant_content_match_percent": 96.64632
+        },
+        {
+          "page": 121,
+          "tolerant_content_match_percent": 98.44143
+        },
+        {
+          "page": 122,
+          "tolerant_content_match_percent": 98.91506
+        },
+        {
+          "page": 123,
+          "tolerant_content_match_percent": 99.41676
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 99.95859
+        },
+        {
+          "page": 125,
+          "tolerant_content_match_percent": 99.96344
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 99.92092
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 99.98077
+        },
+        {
+          "page": 128,
+          "tolerant_content_match_percent": 99.42731
+        },
+        {
+          "page": 129,
+          "tolerant_content_match_percent": 97.87833
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 99.97632
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 99.96149
+        },
+        {
+          "page": 132,
+          "tolerant_content_match_percent": 99.96333
+        },
+        {
+          "page": 133,
+          "tolerant_content_match_percent": 99.60786
+        },
+        {
+          "page": 134,
+          "tolerant_content_match_percent": 99.97657
+        },
+        {
+          "page": 135,
+          "tolerant_content_match_percent": 99.21417
+        },
+        {
+          "page": 136,
+          "tolerant_content_match_percent": 99.98045
+        },
+        {
+          "page": 137,
+          "tolerant_content_match_percent": 99.90478
+        },
+        {
+          "page": 138,
+          "tolerant_content_match_percent": 99.96201
+        },
+        {
+          "page": 139,
+          "tolerant_content_match_percent": 99.95162
+        },
+        {
+          "page": 140,
+          "tolerant_content_match_percent": 99.96954
+        },
+        {
+          "page": 141,
+          "tolerant_content_match_percent": 99.96696
+        },
+        {
+          "page": 142,
+          "tolerant_content_match_percent": 99.9828
+        },
+        {
+          "page": 143,
+          "tolerant_content_match_percent": 99.97125
+        },
+        {
+          "page": 144,
+          "tolerant_content_match_percent": 99.98144
+        },
+        {
+          "page": 145,
+          "tolerant_content_match_percent": 99.95323
+        },
+        {
+          "page": 146,
+          "tolerant_content_match_percent": 99.97746
+        },
+        {
+          "page": 147,
+          "tolerant_content_match_percent": 99.95161
+        },
+        {
+          "page": 148,
+          "tolerant_content_match_percent": 99.45374
+        },
+        {
+          "page": 149,
+          "tolerant_content_match_percent": 99.67103
+        },
+        {
+          "page": 150,
+          "tolerant_content_match_percent": 97.64541
+        },
+        {
+          "page": 151,
+          "tolerant_content_match_percent": 96.82382
+        },
+        {
+          "page": 152,
+          "tolerant_content_match_percent": 98.92823
+        },
+        {
+          "page": 153,
+          "tolerant_content_match_percent": 98.65381
+        },
+        {
+          "page": 154,
+          "tolerant_content_match_percent": 99.45624
+        },
+        {
+          "page": 155,
+          "tolerant_content_match_percent": 96.42871
+        },
+        {
+          "page": 156,
+          "tolerant_content_match_percent": 98.40749
+        },
+        {
+          "page": 157,
+          "tolerant_content_match_percent": 99.96796
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 99.98711
+        },
+        {
+          "page": 159,
+          "tolerant_content_match_percent": 99.98702
+        },
+        {
+          "page": 160,
+          "tolerant_content_match_percent": 99.98351
+        },
+        {
+          "page": 161,
+          "tolerant_content_match_percent": 98.29772
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 96.08991
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 95.15116
+        },
+        {
+          "page": 164,
+          "tolerant_content_match_percent": 98.25798
+        },
+        {
+          "page": 165,
+          "tolerant_content_match_percent": 99.98808
+        },
+        {
+          "page": 166,
+          "tolerant_content_match_percent": 99.98706
+        },
+        {
+          "page": 167,
+          "tolerant_content_match_percent": 99.97421
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 99.57424
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 99.98991
+        },
+        {
+          "page": 170,
+          "tolerant_content_match_percent": 99.97389
+        },
+        {
+          "page": 171,
+          "tolerant_content_match_percent": 99.92582
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 99.98382
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 99.94506
+        },
+        {
+          "page": 174,
+          "tolerant_content_match_percent": 99.97235
+        },
+        {
+          "page": 175,
+          "tolerant_content_match_percent": 99.95238
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 97.58225
+        },
+        {
+          "page": 177,
+          "tolerant_content_match_percent": 99.93003
+        },
+        {
+          "page": 178,
+          "tolerant_content_match_percent": 99.94477
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 99.97762
+        },
+        {
+          "page": 180,
+          "tolerant_content_match_percent": 99.96623
+        },
+        {
+          "page": 181,
+          "tolerant_content_match_percent": 99.98666
+        },
+        {
+          "page": 182,
+          "tolerant_content_match_percent": 99.96504
+        },
+        {
+          "page": 183,
+          "tolerant_content_match_percent": 99.45922
+        },
+        {
+          "page": 184,
+          "tolerant_content_match_percent": 99.96262
+        },
+        {
+          "page": 185,
+          "tolerant_content_match_percent": 99.83633
+        },
+        {
+          "page": 186,
+          "tolerant_content_match_percent": 99.08997
+        },
+        {
+          "page": 187,
+          "tolerant_content_match_percent": 98.51231
+        },
+        {
+          "page": 188,
+          "tolerant_content_match_percent": 99.81245
+        },
+        {
+          "page": 189,
+          "tolerant_content_match_percent": 99.8704
+        },
+        {
+          "page": 190,
+          "tolerant_content_match_percent": 99.55282
+        },
+        {
+          "page": 191,
+          "tolerant_content_match_percent": 99.09271
+        },
+        {
+          "page": 192,
+          "tolerant_content_match_percent": 97.23828
+        },
+        {
+          "page": 193,
+          "tolerant_content_match_percent": 99.91651
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 99.52959
+        },
+        {
+          "page": 195,
+          "tolerant_content_match_percent": 99.93955
+        },
+        {
+          "page": 196,
+          "tolerant_content_match_percent": 99.40261
+        },
+        {
+          "page": 197,
+          "tolerant_content_match_percent": 98.6196
+        },
+        {
+          "page": 198,
+          "tolerant_content_match_percent": 99.94891
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 98.36961
+        },
+        {
+          "page": 200,
+          "tolerant_content_match_percent": 99.92076
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 92.35483
+        },
+        {
+          "page": 202,
+          "tolerant_content_match_percent": 99.86509
+        },
+        {
+          "page": 203,
+          "tolerant_content_match_percent": 99.98062
+        },
+        {
+          "page": 204,
+          "tolerant_content_match_percent": 98.63255
+        },
+        {
+          "page": 205,
+          "tolerant_content_match_percent": 97.80144
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 99.9791
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 99.79557
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 99.67457
+        },
+        {
+          "page": 209,
+          "tolerant_content_match_percent": 98.47649
+        },
+        {
+          "page": 210,
+          "tolerant_content_match_percent": 99.61758
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 99.07834
+        },
+        {
+          "page": 212,
+          "tolerant_content_match_percent": 99.88075
+        },
+        {
+          "page": 213,
+          "tolerant_content_match_percent": 99.96836
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 99.93401
+        },
+        {
+          "page": 215,
+          "tolerant_content_match_percent": 91.19751
+        },
+        {
+          "page": 216,
+          "tolerant_content_match_percent": 98.62994
+        },
+        {
+          "page": 217,
+          "tolerant_content_match_percent": 99.21869
+        },
+        {
+          "page": 218,
+          "tolerant_content_match_percent": 97.67727
+        },
+        {
+          "page": 219,
+          "tolerant_content_match_percent": 98.20336
+        },
+        {
+          "page": 220,
+          "tolerant_content_match_percent": 99.95847
+        },
+        {
+          "page": 221,
+          "tolerant_content_match_percent": 98.18326
+        },
+        {
+          "page": 222,
+          "tolerant_content_match_percent": 98.07919
+        },
+        {
+          "page": 223,
+          "tolerant_content_match_percent": 99.94186
+        },
+        {
+          "page": 224,
+          "tolerant_content_match_percent": 98.22418
+        },
+        {
+          "page": 225,
+          "tolerant_content_match_percent": 97.08595
+        },
+        {
+          "page": 226,
+          "tolerant_content_match_percent": 99.32579
+        },
+        {
+          "page": 227,
+          "tolerant_content_match_percent": 99.88627
+        },
+        {
+          "page": 228,
+          "tolerant_content_match_percent": 99.99039
+        },
+        {
+          "page": 229,
+          "tolerant_content_match_percent": 99.96906
+        },
+        {
+          "page": 230,
+          "tolerant_content_match_percent": 99.51333
+        },
+        {
+          "page": 231,
+          "tolerant_content_match_percent": 99.96158
+        },
+        {
+          "page": 232,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 233,
+          "tolerant_content_match_percent": 99.97998
+        },
+        {
+          "page": 234,
+          "tolerant_content_match_percent": 99.97722
+        },
+        {
+          "page": 235,
+          "tolerant_content_match_percent": 99.85255
+        },
+        {
+          "page": 236,
+          "tolerant_content_match_percent": 98.07217
+        },
+        {
+          "page": 237,
+          "tolerant_content_match_percent": 98.31659
+        },
+        {
+          "page": 238,
+          "tolerant_content_match_percent": 99.51241
+        },
+        {
+          "page": 239,
+          "tolerant_content_match_percent": 99.98909
+        },
+        {
+          "page": 240,
+          "tolerant_content_match_percent": 99.96652
+        },
+        {
+          "page": 241,
+          "tolerant_content_match_percent": 99.16177
+        },
+        {
+          "page": 242,
+          "tolerant_content_match_percent": 99.91299
+        }
+      ],
+      "representative_assets": [
+        {
+          "page": 45,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_045.png",
+          "sha256": "ee01505280923eef2ee67246b012b71839a8b1b2d6307146fb71dc28853b8185"
+        },
+        {
+          "page": 45,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_045.png",
+          "sha256": "d8e6f7ae784a61f7ad6633dccab0ad7d76b55b39543bd192c48587d82d4037fe"
+        },
+        {
+          "page": 192,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_192.png",
+          "sha256": "85f753c8e7ce8e6b690908a155c5b769a4ae4791a2cd4c5887e40dfdf53a4f9a"
+        },
+        {
+          "page": 192,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_192.png",
+          "sha256": "3765b4d2027538ae3b88c07ce168a6f5f3f109950ab77c3eb9bcfc31ed7a934f"
+        },
+        {
+          "page": 196,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_196.png",
+          "sha256": "4e8ac827372d8942bd22564458c87952307ecc8782487825e643cbce81657bb5"
+        },
+        {
+          "page": 196,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_196.png",
+          "sha256": "7f1c751ff7d17dae4accbf2c3c8efaf80d8402c1a9dfab123ccb206fffd4417d"
+        },
+        {
+          "page": 201,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_201.png",
+          "sha256": "f2c43b2ead1b21e454b8ec4e4c7006545280883fd09fc59193ea6d963c811916"
+        },
+        {
+          "page": 201,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_201.png",
+          "sha256": "6f38c6227e2005db60504b8911def7e53e8922c80e2551863adb553eeb93ede4"
+        },
+        {
+          "page": 206,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_206.png",
+          "sha256": "17e68489071fec48163884cc7aa482143259642b5da1ec80f2799b93d1f9c7c0"
+        },
+        {
+          "page": 206,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_206.png",
+          "sha256": "d44da9069fc003771c001cea34e404a7988e084cbf087e29206c120ee2981adc"
+        },
+        {
+          "page": 215,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_215.png",
+          "sha256": "b3c1659d14fa1efcb33aac8b2cb5519f8be3c7dccea7a2c1ce4856b25a1b7757"
+        },
+        {
+          "page": 215,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_215.png",
+          "sha256": "8779a0cfbaf458371545574c36e9977c40263d2ec57d43574d0c96372b1f1a5c"
+        },
+        {
+          "page": 219,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_219.png",
+          "sha256": "6a668147b92ffb6f6c6617eea2d45d49949bfbe6c6ec544e44cf25028057de67"
+        },
+        {
+          "page": 219,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_219.png",
+          "sha256": "14764532097cc42c2f6d78be380f3ff9bba31632fa469940c6825ac1821a455d"
+        },
+        {
+          "page": 224,
+          "kind": "review",
+          "path": "stage58_after_native_hwp_review_224.png",
+          "sha256": "0111b1bf55ee5897a882a7b615ae4d2246c47e68cca47d5334f1bf77dcb9d586"
+        },
+        {
+          "page": 224,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwp_overlay_224.png",
+          "sha256": "4ca07ce1ecdb34573b3e9aa056229a95da2dad951993b752ffa6e5f8dae8b2a7"
+        }
+      ]
+    },
+    {
+      "backend": "native",
+      "format": "hwpx",
+      "count": 242,
+      "minimum": {
+        "page": 215,
+        "tolerant_content_match_percent": 91.41441
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task1725/text_footnote_tail_overpagination.hwpx",
+          "sha256": "fccd4f8525feb2e9f2668532444c7e539649c0ec90a5d78273a1ac05dbca5b47"
+        },
+        "pdf": {
+          "path": "pdf/issue1733/text_footnote_tail_overpagination-hwpx-2020-20260814.pdf",
+          "sha256": "09caa268b790d553ad8aba6935e550d319bd518a8877654058d8639a886e4c2f"
+        },
+        "git_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "sha256": "d04dad4748ef3fc82b74e2687a2d2607c574e3debadc24d2ee49b8e08b542841"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "page_metrics": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 99.96467
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.97311
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.73539
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 99.08294
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.65199
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 99.95461
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 99.95905
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 99.87952
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 99.95998
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 98.47937
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 99.98103
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 99.99265
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 99.9858
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 99.96975
+        },
+        {
+          "page": 15,
+          "tolerant_content_match_percent": 99.97936
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 99.98787
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 99.97414
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 99.98496
+        },
+        {
+          "page": 19,
+          "tolerant_content_match_percent": 99.96723
+        },
+        {
+          "page": 20,
+          "tolerant_content_match_percent": 99.95168
+        },
+        {
+          "page": 21,
+          "tolerant_content_match_percent": 99.98031
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 99.99284
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 99.71638
+        },
+        {
+          "page": 24,
+          "tolerant_content_match_percent": 99.98637
+        },
+        {
+          "page": 25,
+          "tolerant_content_match_percent": 99.97946
+        },
+        {
+          "page": 26,
+          "tolerant_content_match_percent": 99.98833
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 99.98296
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 99.71907
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 99.89099
+        },
+        {
+          "page": 30,
+          "tolerant_content_match_percent": 97.16488
+        },
+        {
+          "page": 31,
+          "tolerant_content_match_percent": 99.96163
+        },
+        {
+          "page": 32,
+          "tolerant_content_match_percent": 99.9414
+        },
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 99.94329
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 99.94023
+        },
+        {
+          "page": 35,
+          "tolerant_content_match_percent": 99.95599
+        },
+        {
+          "page": 36,
+          "tolerant_content_match_percent": 99.98774
+        },
+        {
+          "page": 37,
+          "tolerant_content_match_percent": 99.97819
+        },
+        {
+          "page": 38,
+          "tolerant_content_match_percent": 99.98442
+        },
+        {
+          "page": 39,
+          "tolerant_content_match_percent": 99.96039
+        },
+        {
+          "page": 40,
+          "tolerant_content_match_percent": 99.96335
+        },
+        {
+          "page": 41,
+          "tolerant_content_match_percent": 99.98011
+        },
+        {
+          "page": 42,
+          "tolerant_content_match_percent": 99.99141
+        },
+        {
+          "page": 43,
+          "tolerant_content_match_percent": 99.99283
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 98.12772
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 94.65215
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 99.40243
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 94.74087
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 99.98279
+        },
+        {
+          "page": 49,
+          "tolerant_content_match_percent": 99.98408
+        },
+        {
+          "page": 50,
+          "tolerant_content_match_percent": 99.98328
+        },
+        {
+          "page": 51,
+          "tolerant_content_match_percent": 99.8597
+        },
+        {
+          "page": 52,
+          "tolerant_content_match_percent": 99.97134
+        },
+        {
+          "page": 53,
+          "tolerant_content_match_percent": 99.35903
+        },
+        {
+          "page": 54,
+          "tolerant_content_match_percent": 99.98531
+        },
+        {
+          "page": 55,
+          "tolerant_content_match_percent": 99.97391
+        },
+        {
+          "page": 56,
+          "tolerant_content_match_percent": 99.85942
+        },
+        {
+          "page": 57,
+          "tolerant_content_match_percent": 99.97649
+        },
+        {
+          "page": 58,
+          "tolerant_content_match_percent": 99.97439
+        },
+        {
+          "page": 59,
+          "tolerant_content_match_percent": 99.16135
+        },
+        {
+          "page": 60,
+          "tolerant_content_match_percent": 98.1672
+        },
+        {
+          "page": 61,
+          "tolerant_content_match_percent": 99.94579
+        },
+        {
+          "page": 62,
+          "tolerant_content_match_percent": 99.95038
+        },
+        {
+          "page": 63,
+          "tolerant_content_match_percent": 99.85235
+        },
+        {
+          "page": 64,
+          "tolerant_content_match_percent": 99.98957
+        },
+        {
+          "page": 65,
+          "tolerant_content_match_percent": 99.97744
+        },
+        {
+          "page": 66,
+          "tolerant_content_match_percent": 99.57001
+        },
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 99.93794
+        },
+        {
+          "page": 68,
+          "tolerant_content_match_percent": 99.9885
+        },
+        {
+          "page": 69,
+          "tolerant_content_match_percent": 99.47684
+        },
+        {
+          "page": 70,
+          "tolerant_content_match_percent": 99.49675
+        },
+        {
+          "page": 71,
+          "tolerant_content_match_percent": 99.95448
+        },
+        {
+          "page": 72,
+          "tolerant_content_match_percent": 99.96687
+        },
+        {
+          "page": 73,
+          "tolerant_content_match_percent": 99.98652
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 99.98343
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 99.98592
+        },
+        {
+          "page": 76,
+          "tolerant_content_match_percent": 99.13546
+        },
+        {
+          "page": 77,
+          "tolerant_content_match_percent": 96.47642
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 98.97582
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 99.96888
+        },
+        {
+          "page": 80,
+          "tolerant_content_match_percent": 99.98733
+        },
+        {
+          "page": 81,
+          "tolerant_content_match_percent": 99.92548
+        },
+        {
+          "page": 82,
+          "tolerant_content_match_percent": 99.48673
+        },
+        {
+          "page": 83,
+          "tolerant_content_match_percent": 99.97855
+        },
+        {
+          "page": 84,
+          "tolerant_content_match_percent": 99.96672
+        },
+        {
+          "page": 85,
+          "tolerant_content_match_percent": 99.98195
+        },
+        {
+          "page": 86,
+          "tolerant_content_match_percent": 99.72247
+        },
+        {
+          "page": 87,
+          "tolerant_content_match_percent": 99.98824
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 98.85159
+        },
+        {
+          "page": 89,
+          "tolerant_content_match_percent": 99.92873
+        },
+        {
+          "page": 90,
+          "tolerant_content_match_percent": 99.96469
+        },
+        {
+          "page": 91,
+          "tolerant_content_match_percent": 98.72816
+        },
+        {
+          "page": 92,
+          "tolerant_content_match_percent": 98.44963
+        },
+        {
+          "page": 93,
+          "tolerant_content_match_percent": 93.66741
+        },
+        {
+          "page": 94,
+          "tolerant_content_match_percent": 98.7887
+        },
+        {
+          "page": 95,
+          "tolerant_content_match_percent": 92.87274
+        },
+        {
+          "page": 96,
+          "tolerant_content_match_percent": 98.96197
+        },
+        {
+          "page": 97,
+          "tolerant_content_match_percent": 99.97927
+        },
+        {
+          "page": 98,
+          "tolerant_content_match_percent": 98.62339
+        },
+        {
+          "page": 99,
+          "tolerant_content_match_percent": 99.98771
+        },
+        {
+          "page": 100,
+          "tolerant_content_match_percent": 97.13207
+        },
+        {
+          "page": 101,
+          "tolerant_content_match_percent": 99.95125
+        },
+        {
+          "page": 102,
+          "tolerant_content_match_percent": 99.99329
+        },
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 99.74266
+        },
+        {
+          "page": 104,
+          "tolerant_content_match_percent": 99.15154
+        },
+        {
+          "page": 105,
+          "tolerant_content_match_percent": 99.99291
+        },
+        {
+          "page": 106,
+          "tolerant_content_match_percent": 99.96726
+        },
+        {
+          "page": 107,
+          "tolerant_content_match_percent": 99.98013
+        },
+        {
+          "page": 108,
+          "tolerant_content_match_percent": 98.59003
+        },
+        {
+          "page": 109,
+          "tolerant_content_match_percent": 99.98672
+        },
+        {
+          "page": 110,
+          "tolerant_content_match_percent": 99.98477
+        },
+        {
+          "page": 111,
+          "tolerant_content_match_percent": 97.83943
+        },
+        {
+          "page": 112,
+          "tolerant_content_match_percent": 98.25669
+        },
+        {
+          "page": 113,
+          "tolerant_content_match_percent": 99.98144
+        },
+        {
+          "page": 114,
+          "tolerant_content_match_percent": 99.99609
+        },
+        {
+          "page": 115,
+          "tolerant_content_match_percent": 99.99108
+        },
+        {
+          "page": 116,
+          "tolerant_content_match_percent": 99.61441
+        },
+        {
+          "page": 117,
+          "tolerant_content_match_percent": 99.99244
+        },
+        {
+          "page": 118,
+          "tolerant_content_match_percent": 99.99302
+        },
+        {
+          "page": 119,
+          "tolerant_content_match_percent": 98.84789
+        },
+        {
+          "page": 120,
+          "tolerant_content_match_percent": 96.58819
+        },
+        {
+          "page": 121,
+          "tolerant_content_match_percent": 98.3992
+        },
+        {
+          "page": 122,
+          "tolerant_content_match_percent": 99.18469
+        },
+        {
+          "page": 123,
+          "tolerant_content_match_percent": 99.74673
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 99.99167
+        },
+        {
+          "page": 125,
+          "tolerant_content_match_percent": 99.99043
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 99.99023
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 99.98906
+        },
+        {
+          "page": 128,
+          "tolerant_content_match_percent": 99.4334
+        },
+        {
+          "page": 129,
+          "tolerant_content_match_percent": 97.87637
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 99.99086
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 99.99567
+        },
+        {
+          "page": 132,
+          "tolerant_content_match_percent": 99.98909
+        },
+        {
+          "page": 133,
+          "tolerant_content_match_percent": 99.61095
+        },
+        {
+          "page": 134,
+          "tolerant_content_match_percent": 99.96979
+        },
+        {
+          "page": 135,
+          "tolerant_content_match_percent": 99.19229
+        },
+        {
+          "page": 136,
+          "tolerant_content_match_percent": 99.98269
+        },
+        {
+          "page": 137,
+          "tolerant_content_match_percent": 99.94232
+        },
+        {
+          "page": 138,
+          "tolerant_content_match_percent": 99.9923
+        },
+        {
+          "page": 139,
+          "tolerant_content_match_percent": 99.98331
+        },
+        {
+          "page": 140,
+          "tolerant_content_match_percent": 99.99282
+        },
+        {
+          "page": 141,
+          "tolerant_content_match_percent": 99.99199
+        },
+        {
+          "page": 142,
+          "tolerant_content_match_percent": 99.99455
+        },
+        {
+          "page": 143,
+          "tolerant_content_match_percent": 99.98648
+        },
+        {
+          "page": 144,
+          "tolerant_content_match_percent": 99.98992
+        },
+        {
+          "page": 145,
+          "tolerant_content_match_percent": 99.99049
+        },
+        {
+          "page": 146,
+          "tolerant_content_match_percent": 99.98296
+        },
+        {
+          "page": 147,
+          "tolerant_content_match_percent": 99.98086
+        },
+        {
+          "page": 148,
+          "tolerant_content_match_percent": 99.47562
+        },
+        {
+          "page": 149,
+          "tolerant_content_match_percent": 99.76942
+        },
+        {
+          "page": 150,
+          "tolerant_content_match_percent": 97.70825
+        },
+        {
+          "page": 151,
+          "tolerant_content_match_percent": 96.8443
+        },
+        {
+          "page": 152,
+          "tolerant_content_match_percent": 98.86941
+        },
+        {
+          "page": 153,
+          "tolerant_content_match_percent": 98.60591
+        },
+        {
+          "page": 154,
+          "tolerant_content_match_percent": 99.46776
+        },
+        {
+          "page": 155,
+          "tolerant_content_match_percent": 96.42697
+        },
+        {
+          "page": 156,
+          "tolerant_content_match_percent": 98.36536
+        },
+        {
+          "page": 157,
+          "tolerant_content_match_percent": 99.95792
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 99.96062
+        },
+        {
+          "page": 159,
+          "tolerant_content_match_percent": 99.98401
+        },
+        {
+          "page": 160,
+          "tolerant_content_match_percent": 99.99161
+        },
+        {
+          "page": 161,
+          "tolerant_content_match_percent": 98.3362
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 94.47524
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 95.13613
+        },
+        {
+          "page": 164,
+          "tolerant_content_match_percent": 98.26945
+        },
+        {
+          "page": 165,
+          "tolerant_content_match_percent": 99.97953
+        },
+        {
+          "page": 166,
+          "tolerant_content_match_percent": 99.98904
+        },
+        {
+          "page": 167,
+          "tolerant_content_match_percent": 99.98704
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 99.5685
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 99.96943
+        },
+        {
+          "page": 170,
+          "tolerant_content_match_percent": 99.99472
+        },
+        {
+          "page": 171,
+          "tolerant_content_match_percent": 99.93604
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 99.98865
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 99.96941
+        },
+        {
+          "page": 174,
+          "tolerant_content_match_percent": 99.99303
+        },
+        {
+          "page": 175,
+          "tolerant_content_match_percent": 99.96285
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 97.54887
+        },
+        {
+          "page": 177,
+          "tolerant_content_match_percent": 99.95637
+        },
+        {
+          "page": 178,
+          "tolerant_content_match_percent": 99.96904
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 99.99373
+        },
+        {
+          "page": 180,
+          "tolerant_content_match_percent": 99.97714
+        },
+        {
+          "page": 181,
+          "tolerant_content_match_percent": 99.99776
+        },
+        {
+          "page": 182,
+          "tolerant_content_match_percent": 99.9898
+        },
+        {
+          "page": 183,
+          "tolerant_content_match_percent": 99.4694
+        },
+        {
+          "page": 184,
+          "tolerant_content_match_percent": 99.98918
+        },
+        {
+          "page": 185,
+          "tolerant_content_match_percent": 99.8654
+        },
+        {
+          "page": 186,
+          "tolerant_content_match_percent": 98.81875
+        },
+        {
+          "page": 187,
+          "tolerant_content_match_percent": 98.58655
+        },
+        {
+          "page": 188,
+          "tolerant_content_match_percent": 99.92607
+        },
+        {
+          "page": 189,
+          "tolerant_content_match_percent": 99.97719
+        },
+        {
+          "page": 190,
+          "tolerant_content_match_percent": 99.94164
+        },
+        {
+          "page": 191,
+          "tolerant_content_match_percent": 98.93102
+        },
+        {
+          "page": 192,
+          "tolerant_content_match_percent": 97.3534
+        },
+        {
+          "page": 193,
+          "tolerant_content_match_percent": 99.94669
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 99.66887
+        },
+        {
+          "page": 195,
+          "tolerant_content_match_percent": 99.94977
+        },
+        {
+          "page": 196,
+          "tolerant_content_match_percent": 99.52606
+        },
+        {
+          "page": 197,
+          "tolerant_content_match_percent": 98.81936
+        },
+        {
+          "page": 198,
+          "tolerant_content_match_percent": 99.96834
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 98.48515
+        },
+        {
+          "page": 200,
+          "tolerant_content_match_percent": 99.94907
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 92.31167
+        },
+        {
+          "page": 202,
+          "tolerant_content_match_percent": 99.87419
+        },
+        {
+          "page": 203,
+          "tolerant_content_match_percent": 99.99537
+        },
+        {
+          "page": 204,
+          "tolerant_content_match_percent": 99.67176
+        },
+        {
+          "page": 205,
+          "tolerant_content_match_percent": 99.94695
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 99.8323
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 99.70099
+        },
+        {
+          "page": 209,
+          "tolerant_content_match_percent": 98.50712
+        },
+        {
+          "page": 210,
+          "tolerant_content_match_percent": 99.76592
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 99.11028
+        },
+        {
+          "page": 212,
+          "tolerant_content_match_percent": 99.87081
+        },
+        {
+          "page": 213,
+          "tolerant_content_match_percent": 99.95183
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 99.93964
+        },
+        {
+          "page": 215,
+          "tolerant_content_match_percent": 91.41441
+        },
+        {
+          "page": 216,
+          "tolerant_content_match_percent": 98.95935
+        },
+        {
+          "page": 217,
+          "tolerant_content_match_percent": 99.17374
+        },
+        {
+          "page": 218,
+          "tolerant_content_match_percent": 97.65271
+        },
+        {
+          "page": 219,
+          "tolerant_content_match_percent": 98.79763
+        },
+        {
+          "page": 220,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 221,
+          "tolerant_content_match_percent": 98.22481
+        },
+        {
+          "page": 222,
+          "tolerant_content_match_percent": 98.68362
+        },
+        {
+          "page": 223,
+          "tolerant_content_match_percent": 99.96076
+        },
+        {
+          "page": 224,
+          "tolerant_content_match_percent": 98.17651
+        },
+        {
+          "page": 225,
+          "tolerant_content_match_percent": 97.04764
+        },
+        {
+          "page": 226,
+          "tolerant_content_match_percent": 99.75536
+        },
+        {
+          "page": 227,
+          "tolerant_content_match_percent": 99.94211
+        },
+        {
+          "page": 228,
+          "tolerant_content_match_percent": 99.99152
+        },
+        {
+          "page": 229,
+          "tolerant_content_match_percent": 99.98083
+        },
+        {
+          "page": 230,
+          "tolerant_content_match_percent": 99.95517
+        },
+        {
+          "page": 231,
+          "tolerant_content_match_percent": 99.99029
+        },
+        {
+          "page": 232,
+          "tolerant_content_match_percent": 99.94814
+        },
+        {
+          "page": 233,
+          "tolerant_content_match_percent": 99.99276
+        },
+        {
+          "page": 234,
+          "tolerant_content_match_percent": 99.98367
+        },
+        {
+          "page": 235,
+          "tolerant_content_match_percent": 99.84766
+        },
+        {
+          "page": 236,
+          "tolerant_content_match_percent": 99.22335
+        },
+        {
+          "page": 237,
+          "tolerant_content_match_percent": 98.44416
+        },
+        {
+          "page": 238,
+          "tolerant_content_match_percent": 99.51175
+        },
+        {
+          "page": 239,
+          "tolerant_content_match_percent": 99.9923
+        },
+        {
+          "page": 240,
+          "tolerant_content_match_percent": 99.98423
+        },
+        {
+          "page": 241,
+          "tolerant_content_match_percent": 99.14452
+        },
+        {
+          "page": 242,
+          "tolerant_content_match_percent": 99.90952
+        }
+      ],
+      "representative_assets": [
+        {
+          "page": 162,
+          "kind": "review",
+          "path": "stage58_after_native_hwpx_review_162.png",
+          "sha256": "165798bb06d9ed681855c1b9509df904b587a50675110e8d19102943716c39d7"
+        },
+        {
+          "page": 162,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwpx_overlay_162.png",
+          "sha256": "c3df749daf020c5683a2c8fb83fdcbc446f54c0ee98c99fd31e8de2f35a8d7c1"
+        },
+        {
+          "page": 196,
+          "kind": "review",
+          "path": "stage58_after_native_hwpx_review_196.png",
+          "sha256": "a5fa1fc31b435d25f141faec8f628fd3982eecfcfbf50e4dd62d7f5fb68dd8c4"
+        },
+        {
+          "page": 196,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwpx_overlay_196.png",
+          "sha256": "a6d14a301adb0d0770d1fc659996d3704800b56c88c6eaf0eaceff3a9cfee0cd"
+        },
+        {
+          "page": 201,
+          "kind": "review",
+          "path": "stage58_after_native_hwpx_review_201.png",
+          "sha256": "9eaca700b311a55aaba6c1e37bc095e72a66fbe65ce2fcaf26d59d8c9c3d6dcb"
+        },
+        {
+          "page": 201,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwpx_overlay_201.png",
+          "sha256": "264beceafa25a4f1b374307543df546f6684f9642deda5e49cfa921360691845"
+        },
+        {
+          "page": 215,
+          "kind": "review",
+          "path": "stage58_after_native_hwpx_review_215.png",
+          "sha256": "212bf03585b69434a87e03cd95ff59f4f148435f390c12de5a20cd083ba2636c"
+        },
+        {
+          "page": 215,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwpx_overlay_215.png",
+          "sha256": "8043216c7f2e0712ee4cde2349c386c690515cacaa4410dda6f024f822a29091"
+        },
+        {
+          "page": 224,
+          "kind": "review",
+          "path": "stage58_after_native_hwpx_review_224.png",
+          "sha256": "ed2a380312a2861785149df9fe6ed523d9b72698cae82d48ebc4ba8be9c5b6af"
+        },
+        {
+          "page": 224,
+          "kind": "overlay",
+          "path": "stage58_after_native_hwpx_overlay_224.png",
+          "sha256": "24f7f71b05ef0aa76fec5c3a5f7133febc389f9c8dee28eec7d27600bebb00a3"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "format": "hwp",
+      "count": 242,
+      "minimum": {
+        "page": 215,
+        "tolerant_content_match_percent": 91.19751
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task1725/text_footnote_tail_overpagination.hwp",
+          "sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9"
+        },
+        "pdf": {
+          "path": "pdf/issue1733/text_footnote_tail_overpagination-hwp-2020-20260814.pdf",
+          "sha256": "d20505d2af9989c2fb03c9992ba50e01b938a86dba69a613b353f4a7bc22ba61"
+        },
+        "git_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "sha256": "d04dad4748ef3fc82b74e2687a2d2607c574e3debadc24d2ee49b8e08b542841"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/pkg/rhwp_bg.wasm",
+              "sha256": "f98ad4a4f40ff71d3ce495d7a577f3c76447ab461520dd6cd4c64873be8abc1b"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "page_metrics": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 99.95557
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.96799
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.79312
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 99.08046
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.62659
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 99.92725
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 99.89239
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 99.80631
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 99.91238
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 98.44656
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 99.95906
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 99.97193
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 99.98369
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 99.96891
+        },
+        {
+          "page": 15,
+          "tolerant_content_match_percent": 99.96423
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 99.97594
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 99.96822
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 99.97837
+        },
+        {
+          "page": 19,
+          "tolerant_content_match_percent": 99.93494
+        },
+        {
+          "page": 20,
+          "tolerant_content_match_percent": 99.9393
+        },
+        {
+          "page": 21,
+          "tolerant_content_match_percent": 99.97188
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 99.9858
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 99.70786
+        },
+        {
+          "page": 24,
+          "tolerant_content_match_percent": 99.97918
+        },
+        {
+          "page": 25,
+          "tolerant_content_match_percent": 99.96069
+        },
+        {
+          "page": 26,
+          "tolerant_content_match_percent": 99.98495
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 99.98989
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 98.10551
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 99.6642
+        },
+        {
+          "page": 30,
+          "tolerant_content_match_percent": 97.19922
+        },
+        {
+          "page": 31,
+          "tolerant_content_match_percent": 99.96625
+        },
+        {
+          "page": 32,
+          "tolerant_content_match_percent": 99.94301
+        },
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 99.9367
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 99.92813
+        },
+        {
+          "page": 35,
+          "tolerant_content_match_percent": 99.92827
+        },
+        {
+          "page": 36,
+          "tolerant_content_match_percent": 99.97277
+        },
+        {
+          "page": 37,
+          "tolerant_content_match_percent": 99.99507
+        },
+        {
+          "page": 38,
+          "tolerant_content_match_percent": 99.97757
+        },
+        {
+          "page": 39,
+          "tolerant_content_match_percent": 99.97135
+        },
+        {
+          "page": 40,
+          "tolerant_content_match_percent": 99.97557
+        },
+        {
+          "page": 41,
+          "tolerant_content_match_percent": 99.98903
+        },
+        {
+          "page": 42,
+          "tolerant_content_match_percent": 99.97669
+        },
+        {
+          "page": 43,
+          "tolerant_content_match_percent": 99.98295
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 98.15875
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 92.73676
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 99.37432
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 94.75759
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 99.97913
+        },
+        {
+          "page": 49,
+          "tolerant_content_match_percent": 99.96337
+        },
+        {
+          "page": 50,
+          "tolerant_content_match_percent": 99.96699
+        },
+        {
+          "page": 51,
+          "tolerant_content_match_percent": 99.68622
+        },
+        {
+          "page": 52,
+          "tolerant_content_match_percent": 99.95486
+        },
+        {
+          "page": 53,
+          "tolerant_content_match_percent": 99.36102
+        },
+        {
+          "page": 54,
+          "tolerant_content_match_percent": 99.96434
+        },
+        {
+          "page": 55,
+          "tolerant_content_match_percent": 99.96638
+        },
+        {
+          "page": 56,
+          "tolerant_content_match_percent": 99.86942
+        },
+        {
+          "page": 57,
+          "tolerant_content_match_percent": 99.97522
+        },
+        {
+          "page": 58,
+          "tolerant_content_match_percent": 99.92437
+        },
+        {
+          "page": 59,
+          "tolerant_content_match_percent": 99.1333
+        },
+        {
+          "page": 60,
+          "tolerant_content_match_percent": 98.13317
+        },
+        {
+          "page": 61,
+          "tolerant_content_match_percent": 99.73289
+        },
+        {
+          "page": 62,
+          "tolerant_content_match_percent": 99.77134
+        },
+        {
+          "page": 63,
+          "tolerant_content_match_percent": 99.81854
+        },
+        {
+          "page": 64,
+          "tolerant_content_match_percent": 99.99104
+        },
+        {
+          "page": 65,
+          "tolerant_content_match_percent": 99.9438
+        },
+        {
+          "page": 66,
+          "tolerant_content_match_percent": 99.52096
+        },
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 99.95842
+        },
+        {
+          "page": 68,
+          "tolerant_content_match_percent": 99.96032
+        },
+        {
+          "page": 69,
+          "tolerant_content_match_percent": 99.45516
+        },
+        {
+          "page": 70,
+          "tolerant_content_match_percent": 99.47
+        },
+        {
+          "page": 71,
+          "tolerant_content_match_percent": 99.93293
+        },
+        {
+          "page": 72,
+          "tolerant_content_match_percent": 99.9814
+        },
+        {
+          "page": 73,
+          "tolerant_content_match_percent": 99.95629
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 99.96908
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 99.94548
+        },
+        {
+          "page": 76,
+          "tolerant_content_match_percent": 99.1596
+        },
+        {
+          "page": 77,
+          "tolerant_content_match_percent": 96.45535
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 98.98344
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 99.9602
+        },
+        {
+          "page": 80,
+          "tolerant_content_match_percent": 99.96628
+        },
+        {
+          "page": 81,
+          "tolerant_content_match_percent": 99.94409
+        },
+        {
+          "page": 82,
+          "tolerant_content_match_percent": 99.41106
+        },
+        {
+          "page": 83,
+          "tolerant_content_match_percent": 99.95673
+        },
+        {
+          "page": 84,
+          "tolerant_content_match_percent": 99.96186
+        },
+        {
+          "page": 85,
+          "tolerant_content_match_percent": 99.97494
+        },
+        {
+          "page": 86,
+          "tolerant_content_match_percent": 99.7988
+        },
+        {
+          "page": 87,
+          "tolerant_content_match_percent": 99.97006
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 98.86396
+        },
+        {
+          "page": 89,
+          "tolerant_content_match_percent": 99.94423
+        },
+        {
+          "page": 90,
+          "tolerant_content_match_percent": 99.95587
+        },
+        {
+          "page": 91,
+          "tolerant_content_match_percent": 98.71933
+        },
+        {
+          "page": 92,
+          "tolerant_content_match_percent": 98.36253
+        },
+        {
+          "page": 93,
+          "tolerant_content_match_percent": 93.53814
+        },
+        {
+          "page": 94,
+          "tolerant_content_match_percent": 98.72325
+        },
+        {
+          "page": 95,
+          "tolerant_content_match_percent": 92.82699
+        },
+        {
+          "page": 96,
+          "tolerant_content_match_percent": 98.94132
+        },
+        {
+          "page": 97,
+          "tolerant_content_match_percent": 99.97632
+        },
+        {
+          "page": 98,
+          "tolerant_content_match_percent": 98.65028
+        },
+        {
+          "page": 99,
+          "tolerant_content_match_percent": 99.97216
+        },
+        {
+          "page": 100,
+          "tolerant_content_match_percent": 97.1589
+        },
+        {
+          "page": 101,
+          "tolerant_content_match_percent": 99.9042
+        },
+        {
+          "page": 102,
+          "tolerant_content_match_percent": 99.97873
+        },
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 99.7191
+        },
+        {
+          "page": 104,
+          "tolerant_content_match_percent": 99.19429
+        },
+        {
+          "page": 105,
+          "tolerant_content_match_percent": 99.96844
+        },
+        {
+          "page": 106,
+          "tolerant_content_match_percent": 99.96976
+        },
+        {
+          "page": 107,
+          "tolerant_content_match_percent": 99.9682
+        },
+        {
+          "page": 108,
+          "tolerant_content_match_percent": 98.54181
+        },
+        {
+          "page": 109,
+          "tolerant_content_match_percent": 99.98557
+        },
+        {
+          "page": 110,
+          "tolerant_content_match_percent": 99.9787
+        },
+        {
+          "page": 111,
+          "tolerant_content_match_percent": 97.84527
+        },
+        {
+          "page": 112,
+          "tolerant_content_match_percent": 98.27857
+        },
+        {
+          "page": 113,
+          "tolerant_content_match_percent": 99.94485
+        },
+        {
+          "page": 114,
+          "tolerant_content_match_percent": 99.98837
+        },
+        {
+          "page": 115,
+          "tolerant_content_match_percent": 99.97148
+        },
+        {
+          "page": 116,
+          "tolerant_content_match_percent": 99.6221
+        },
+        {
+          "page": 117,
+          "tolerant_content_match_percent": 99.9725
+        },
+        {
+          "page": 118,
+          "tolerant_content_match_percent": 99.93642
+        },
+        {
+          "page": 119,
+          "tolerant_content_match_percent": 98.8309
+        },
+        {
+          "page": 120,
+          "tolerant_content_match_percent": 96.64632
+        },
+        {
+          "page": 121,
+          "tolerant_content_match_percent": 98.44143
+        },
+        {
+          "page": 122,
+          "tolerant_content_match_percent": 98.91506
+        },
+        {
+          "page": 123,
+          "tolerant_content_match_percent": 99.41676
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 99.95859
+        },
+        {
+          "page": 125,
+          "tolerant_content_match_percent": 99.96344
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 99.92092
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 99.98077
+        },
+        {
+          "page": 128,
+          "tolerant_content_match_percent": 99.42731
+        },
+        {
+          "page": 129,
+          "tolerant_content_match_percent": 97.87833
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 99.97632
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 99.96149
+        },
+        {
+          "page": 132,
+          "tolerant_content_match_percent": 99.96333
+        },
+        {
+          "page": 133,
+          "tolerant_content_match_percent": 99.60786
+        },
+        {
+          "page": 134,
+          "tolerant_content_match_percent": 99.97657
+        },
+        {
+          "page": 135,
+          "tolerant_content_match_percent": 99.21417
+        },
+        {
+          "page": 136,
+          "tolerant_content_match_percent": 99.98045
+        },
+        {
+          "page": 137,
+          "tolerant_content_match_percent": 99.90478
+        },
+        {
+          "page": 138,
+          "tolerant_content_match_percent": 99.96201
+        },
+        {
+          "page": 139,
+          "tolerant_content_match_percent": 99.95162
+        },
+        {
+          "page": 140,
+          "tolerant_content_match_percent": 99.96954
+        },
+        {
+          "page": 141,
+          "tolerant_content_match_percent": 99.96696
+        },
+        {
+          "page": 142,
+          "tolerant_content_match_percent": 99.9828
+        },
+        {
+          "page": 143,
+          "tolerant_content_match_percent": 99.97125
+        },
+        {
+          "page": 144,
+          "tolerant_content_match_percent": 99.98144
+        },
+        {
+          "page": 145,
+          "tolerant_content_match_percent": 99.95323
+        },
+        {
+          "page": 146,
+          "tolerant_content_match_percent": 99.97746
+        },
+        {
+          "page": 147,
+          "tolerant_content_match_percent": 99.95161
+        },
+        {
+          "page": 148,
+          "tolerant_content_match_percent": 99.45374
+        },
+        {
+          "page": 149,
+          "tolerant_content_match_percent": 99.67103
+        },
+        {
+          "page": 150,
+          "tolerant_content_match_percent": 97.64541
+        },
+        {
+          "page": 151,
+          "tolerant_content_match_percent": 96.82382
+        },
+        {
+          "page": 152,
+          "tolerant_content_match_percent": 98.92823
+        },
+        {
+          "page": 153,
+          "tolerant_content_match_percent": 98.65381
+        },
+        {
+          "page": 154,
+          "tolerant_content_match_percent": 99.45624
+        },
+        {
+          "page": 155,
+          "tolerant_content_match_percent": 96.42871
+        },
+        {
+          "page": 156,
+          "tolerant_content_match_percent": 98.40749
+        },
+        {
+          "page": 157,
+          "tolerant_content_match_percent": 99.96796
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 99.98711
+        },
+        {
+          "page": 159,
+          "tolerant_content_match_percent": 99.98702
+        },
+        {
+          "page": 160,
+          "tolerant_content_match_percent": 99.98351
+        },
+        {
+          "page": 161,
+          "tolerant_content_match_percent": 98.29772
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 96.08991
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 95.15116
+        },
+        {
+          "page": 164,
+          "tolerant_content_match_percent": 98.25798
+        },
+        {
+          "page": 165,
+          "tolerant_content_match_percent": 99.98808
+        },
+        {
+          "page": 166,
+          "tolerant_content_match_percent": 99.98706
+        },
+        {
+          "page": 167,
+          "tolerant_content_match_percent": 99.97421
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 99.57424
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 99.98991
+        },
+        {
+          "page": 170,
+          "tolerant_content_match_percent": 99.97389
+        },
+        {
+          "page": 171,
+          "tolerant_content_match_percent": 99.92582
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 99.98382
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 99.94506
+        },
+        {
+          "page": 174,
+          "tolerant_content_match_percent": 99.97235
+        },
+        {
+          "page": 175,
+          "tolerant_content_match_percent": 99.95238
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 97.58225
+        },
+        {
+          "page": 177,
+          "tolerant_content_match_percent": 99.93003
+        },
+        {
+          "page": 178,
+          "tolerant_content_match_percent": 99.94477
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 99.97762
+        },
+        {
+          "page": 180,
+          "tolerant_content_match_percent": 99.96623
+        },
+        {
+          "page": 181,
+          "tolerant_content_match_percent": 99.98666
+        },
+        {
+          "page": 182,
+          "tolerant_content_match_percent": 99.96504
+        },
+        {
+          "page": 183,
+          "tolerant_content_match_percent": 99.45922
+        },
+        {
+          "page": 184,
+          "tolerant_content_match_percent": 99.96262
+        },
+        {
+          "page": 185,
+          "tolerant_content_match_percent": 99.83633
+        },
+        {
+          "page": 186,
+          "tolerant_content_match_percent": 99.08997
+        },
+        {
+          "page": 187,
+          "tolerant_content_match_percent": 98.51231
+        },
+        {
+          "page": 188,
+          "tolerant_content_match_percent": 99.81245
+        },
+        {
+          "page": 189,
+          "tolerant_content_match_percent": 99.8704
+        },
+        {
+          "page": 190,
+          "tolerant_content_match_percent": 99.55282
+        },
+        {
+          "page": 191,
+          "tolerant_content_match_percent": 99.09271
+        },
+        {
+          "page": 192,
+          "tolerant_content_match_percent": 97.23828
+        },
+        {
+          "page": 193,
+          "tolerant_content_match_percent": 99.91651
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 99.52959
+        },
+        {
+          "page": 195,
+          "tolerant_content_match_percent": 99.93955
+        },
+        {
+          "page": 196,
+          "tolerant_content_match_percent": 99.40261
+        },
+        {
+          "page": 197,
+          "tolerant_content_match_percent": 98.6196
+        },
+        {
+          "page": 198,
+          "tolerant_content_match_percent": 99.94891
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 98.36961
+        },
+        {
+          "page": 200,
+          "tolerant_content_match_percent": 99.92076
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 92.35483
+        },
+        {
+          "page": 202,
+          "tolerant_content_match_percent": 99.86509
+        },
+        {
+          "page": 203,
+          "tolerant_content_match_percent": 99.98062
+        },
+        {
+          "page": 204,
+          "tolerant_content_match_percent": 98.63255
+        },
+        {
+          "page": 205,
+          "tolerant_content_match_percent": 97.80144
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 99.9791
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 99.79557
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 99.67457
+        },
+        {
+          "page": 209,
+          "tolerant_content_match_percent": 98.47649
+        },
+        {
+          "page": 210,
+          "tolerant_content_match_percent": 99.61758
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 99.07834
+        },
+        {
+          "page": 212,
+          "tolerant_content_match_percent": 99.88075
+        },
+        {
+          "page": 213,
+          "tolerant_content_match_percent": 99.96836
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 99.93401
+        },
+        {
+          "page": 215,
+          "tolerant_content_match_percent": 91.19751
+        },
+        {
+          "page": 216,
+          "tolerant_content_match_percent": 98.62994
+        },
+        {
+          "page": 217,
+          "tolerant_content_match_percent": 99.21869
+        },
+        {
+          "page": 218,
+          "tolerant_content_match_percent": 97.67727
+        },
+        {
+          "page": 219,
+          "tolerant_content_match_percent": 98.20336
+        },
+        {
+          "page": 220,
+          "tolerant_content_match_percent": 99.95847
+        },
+        {
+          "page": 221,
+          "tolerant_content_match_percent": 98.18326
+        },
+        {
+          "page": 222,
+          "tolerant_content_match_percent": 98.07919
+        },
+        {
+          "page": 223,
+          "tolerant_content_match_percent": 99.94186
+        },
+        {
+          "page": 224,
+          "tolerant_content_match_percent": 98.22418
+        },
+        {
+          "page": 225,
+          "tolerant_content_match_percent": 97.08595
+        },
+        {
+          "page": 226,
+          "tolerant_content_match_percent": 99.32579
+        },
+        {
+          "page": 227,
+          "tolerant_content_match_percent": 99.88627
+        },
+        {
+          "page": 228,
+          "tolerant_content_match_percent": 99.99039
+        },
+        {
+          "page": 229,
+          "tolerant_content_match_percent": 99.96906
+        },
+        {
+          "page": 230,
+          "tolerant_content_match_percent": 99.51333
+        },
+        {
+          "page": 231,
+          "tolerant_content_match_percent": 99.96158
+        },
+        {
+          "page": 232,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 233,
+          "tolerant_content_match_percent": 99.97998
+        },
+        {
+          "page": 234,
+          "tolerant_content_match_percent": 99.97722
+        },
+        {
+          "page": 235,
+          "tolerant_content_match_percent": 99.85255
+        },
+        {
+          "page": 236,
+          "tolerant_content_match_percent": 98.07217
+        },
+        {
+          "page": 237,
+          "tolerant_content_match_percent": 98.31659
+        },
+        {
+          "page": 238,
+          "tolerant_content_match_percent": 99.51241
+        },
+        {
+          "page": 239,
+          "tolerant_content_match_percent": 99.98909
+        },
+        {
+          "page": 240,
+          "tolerant_content_match_percent": 99.96652
+        },
+        {
+          "page": 241,
+          "tolerant_content_match_percent": 99.16177
+        },
+        {
+          "page": 242,
+          "tolerant_content_match_percent": 99.91299
+        }
+      ],
+      "representative_assets": [
+        {
+          "page": 45,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_045.png",
+          "sha256": "697332d6760ad7c7742cb17e34005fc37e020635f35b926e695428cfc5cebb16"
+        },
+        {
+          "page": 45,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_045.png",
+          "sha256": "b90e1b617858ffd607d56f06037a000b757ace07fd5c4f15d653fcac4e9f5dda"
+        },
+        {
+          "page": 192,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_192.png",
+          "sha256": "e9bed75f66cb53de596a0cebb1a2f778e686adb7cda5bfc2b20435eef8a25818"
+        },
+        {
+          "page": 192,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_192.png",
+          "sha256": "e196b0d3468e98f71afb9c44902df7603eb6342b577e26696541cc4e1223bbd9"
+        },
+        {
+          "page": 196,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_196.png",
+          "sha256": "657a8d0354882cf6047384a0da8d4d65987bc8f098e7d73e8c66e2927554c8c4"
+        },
+        {
+          "page": 196,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_196.png",
+          "sha256": "627f771044014e43bfe82a1d1a36192b4141e11400d8d9dd4b33f451cfd4a7b5"
+        },
+        {
+          "page": 201,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_201.png",
+          "sha256": "a0acc32a2f08cc9d696ed17904bedca7911ce7fe4ae581a1a0707091b86997f6"
+        },
+        {
+          "page": 201,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_201.png",
+          "sha256": "0ab16c5f73f92d1b461ee7a7394939593437a8760919637627defdee2ee3f759"
+        },
+        {
+          "page": 206,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_206.png",
+          "sha256": "126d3ba0a2723cf76c1f00e82f61394c1139f9eb827b114aafcedbd1e5ba7eaf"
+        },
+        {
+          "page": 206,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_206.png",
+          "sha256": "658673dd1b92f0e2b78a7669a1afee1187be955f88c0114f3d9fc84f9c4cb191"
+        },
+        {
+          "page": 215,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_215.png",
+          "sha256": "c64c5642df620f8a5446527b9ca0a702d83d29213fa28800f941721771eb28d1"
+        },
+        {
+          "page": 215,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_215.png",
+          "sha256": "0f93f4001963f1ea06e0a49f9419244317b953403b6375f4b991052f4baf9a63"
+        },
+        {
+          "page": 219,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_219.png",
+          "sha256": "88f4f7a90cf418547fd92b074d7148b05ca63672c21bb178c654c394c99f07dd"
+        },
+        {
+          "page": 219,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_219.png",
+          "sha256": "20b3143b6c427eda53f7d84c0c741742fe15fd110634c75368a72073a26ee27e"
+        },
+        {
+          "page": 224,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwp_review_224.png",
+          "sha256": "f7b0caf14d06b455f26217d15bd05e75c328982b45b992ed7f5809de81a381a8"
+        },
+        {
+          "page": 224,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwp_overlay_224.png",
+          "sha256": "d95cb5ee3a55febb37b1109bce6c29d8d1c9cae746ade0dc3f7035c672510f8d"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "format": "hwpx",
+      "count": 242,
+      "minimum": {
+        "page": 215,
+        "tolerant_content_match_percent": 91.41441
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "provenance": {
+        "hwp": {
+          "path": "samples/task1725/text_footnote_tail_overpagination.hwpx",
+          "sha256": "fccd4f8525feb2e9f2668532444c7e539649c0ec90a5d78273a1ac05dbca5b47"
+        },
+        "pdf": {
+          "path": "pdf/issue1733/text_footnote_tail_overpagination-hwpx-2020-20260814.pdf",
+          "sha256": "09caa268b790d553ad8aba6935e550d319bd518a8877654058d8639a886e4c2f"
+        },
+        "git_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+        },
+        "svg_rasterizer": "webfont",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "path": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/rhwp",
+          "sha256": "d04dad4748ef3fc82b74e2687a2d2607c574e3debadc24d2ee49b8e08b542841"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28/pkg/rhwp_bg.wasm",
+              "sha256": "f98ad4a4f40ff71d3ce495d7a577f3c76447ab461520dd6cd4c64873be8abc1b"
+            }
+          ],
+          "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "page_metrics": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 99.96467
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.97311
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.73539
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 99.08294
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 95.65199
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 99.95461
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 99.95905
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 99.87952
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 99.95998
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 98.47937
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 99.98103
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 99.99265
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 99.9858
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 99.96975
+        },
+        {
+          "page": 15,
+          "tolerant_content_match_percent": 99.97936
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 99.98787
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 99.97414
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 99.98496
+        },
+        {
+          "page": 19,
+          "tolerant_content_match_percent": 99.96723
+        },
+        {
+          "page": 20,
+          "tolerant_content_match_percent": 99.95168
+        },
+        {
+          "page": 21,
+          "tolerant_content_match_percent": 99.98031
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 99.99284
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 99.71638
+        },
+        {
+          "page": 24,
+          "tolerant_content_match_percent": 99.98637
+        },
+        {
+          "page": 25,
+          "tolerant_content_match_percent": 99.97946
+        },
+        {
+          "page": 26,
+          "tolerant_content_match_percent": 99.98833
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 99.98296
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 99.71907
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 99.89099
+        },
+        {
+          "page": 30,
+          "tolerant_content_match_percent": 97.16488
+        },
+        {
+          "page": 31,
+          "tolerant_content_match_percent": 99.96163
+        },
+        {
+          "page": 32,
+          "tolerant_content_match_percent": 99.9414
+        },
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 99.94329
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 99.94023
+        },
+        {
+          "page": 35,
+          "tolerant_content_match_percent": 99.95599
+        },
+        {
+          "page": 36,
+          "tolerant_content_match_percent": 99.98774
+        },
+        {
+          "page": 37,
+          "tolerant_content_match_percent": 99.97819
+        },
+        {
+          "page": 38,
+          "tolerant_content_match_percent": 99.98442
+        },
+        {
+          "page": 39,
+          "tolerant_content_match_percent": 99.96039
+        },
+        {
+          "page": 40,
+          "tolerant_content_match_percent": 99.96335
+        },
+        {
+          "page": 41,
+          "tolerant_content_match_percent": 99.98011
+        },
+        {
+          "page": 42,
+          "tolerant_content_match_percent": 99.99141
+        },
+        {
+          "page": 43,
+          "tolerant_content_match_percent": 99.99283
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 98.12772
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 94.65215
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 99.40243
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 94.74087
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 99.98279
+        },
+        {
+          "page": 49,
+          "tolerant_content_match_percent": 99.98408
+        },
+        {
+          "page": 50,
+          "tolerant_content_match_percent": 99.98328
+        },
+        {
+          "page": 51,
+          "tolerant_content_match_percent": 99.8597
+        },
+        {
+          "page": 52,
+          "tolerant_content_match_percent": 99.97134
+        },
+        {
+          "page": 53,
+          "tolerant_content_match_percent": 99.35903
+        },
+        {
+          "page": 54,
+          "tolerant_content_match_percent": 99.98531
+        },
+        {
+          "page": 55,
+          "tolerant_content_match_percent": 99.97391
+        },
+        {
+          "page": 56,
+          "tolerant_content_match_percent": 99.85942
+        },
+        {
+          "page": 57,
+          "tolerant_content_match_percent": 99.97649
+        },
+        {
+          "page": 58,
+          "tolerant_content_match_percent": 99.97439
+        },
+        {
+          "page": 59,
+          "tolerant_content_match_percent": 99.16135
+        },
+        {
+          "page": 60,
+          "tolerant_content_match_percent": 98.1672
+        },
+        {
+          "page": 61,
+          "tolerant_content_match_percent": 99.94579
+        },
+        {
+          "page": 62,
+          "tolerant_content_match_percent": 99.95038
+        },
+        {
+          "page": 63,
+          "tolerant_content_match_percent": 99.85235
+        },
+        {
+          "page": 64,
+          "tolerant_content_match_percent": 99.98957
+        },
+        {
+          "page": 65,
+          "tolerant_content_match_percent": 99.97744
+        },
+        {
+          "page": 66,
+          "tolerant_content_match_percent": 99.57001
+        },
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 99.93794
+        },
+        {
+          "page": 68,
+          "tolerant_content_match_percent": 99.9885
+        },
+        {
+          "page": 69,
+          "tolerant_content_match_percent": 99.47684
+        },
+        {
+          "page": 70,
+          "tolerant_content_match_percent": 99.49675
+        },
+        {
+          "page": 71,
+          "tolerant_content_match_percent": 99.95448
+        },
+        {
+          "page": 72,
+          "tolerant_content_match_percent": 99.96687
+        },
+        {
+          "page": 73,
+          "tolerant_content_match_percent": 99.98652
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 99.98343
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 99.98592
+        },
+        {
+          "page": 76,
+          "tolerant_content_match_percent": 99.13546
+        },
+        {
+          "page": 77,
+          "tolerant_content_match_percent": 96.47642
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 98.97582
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 99.96888
+        },
+        {
+          "page": 80,
+          "tolerant_content_match_percent": 99.98733
+        },
+        {
+          "page": 81,
+          "tolerant_content_match_percent": 99.92548
+        },
+        {
+          "page": 82,
+          "tolerant_content_match_percent": 99.48673
+        },
+        {
+          "page": 83,
+          "tolerant_content_match_percent": 99.97855
+        },
+        {
+          "page": 84,
+          "tolerant_content_match_percent": 99.96672
+        },
+        {
+          "page": 85,
+          "tolerant_content_match_percent": 99.98195
+        },
+        {
+          "page": 86,
+          "tolerant_content_match_percent": 99.72247
+        },
+        {
+          "page": 87,
+          "tolerant_content_match_percent": 99.98824
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 98.85159
+        },
+        {
+          "page": 89,
+          "tolerant_content_match_percent": 99.92873
+        },
+        {
+          "page": 90,
+          "tolerant_content_match_percent": 99.96469
+        },
+        {
+          "page": 91,
+          "tolerant_content_match_percent": 98.72816
+        },
+        {
+          "page": 92,
+          "tolerant_content_match_percent": 98.44963
+        },
+        {
+          "page": 93,
+          "tolerant_content_match_percent": 93.66741
+        },
+        {
+          "page": 94,
+          "tolerant_content_match_percent": 98.7887
+        },
+        {
+          "page": 95,
+          "tolerant_content_match_percent": 92.87274
+        },
+        {
+          "page": 96,
+          "tolerant_content_match_percent": 98.96197
+        },
+        {
+          "page": 97,
+          "tolerant_content_match_percent": 99.97927
+        },
+        {
+          "page": 98,
+          "tolerant_content_match_percent": 98.62339
+        },
+        {
+          "page": 99,
+          "tolerant_content_match_percent": 99.98771
+        },
+        {
+          "page": 100,
+          "tolerant_content_match_percent": 97.13207
+        },
+        {
+          "page": 101,
+          "tolerant_content_match_percent": 99.95125
+        },
+        {
+          "page": 102,
+          "tolerant_content_match_percent": 99.99329
+        },
+        {
+          "page": 103,
+          "tolerant_content_match_percent": 99.74266
+        },
+        {
+          "page": 104,
+          "tolerant_content_match_percent": 99.15154
+        },
+        {
+          "page": 105,
+          "tolerant_content_match_percent": 99.99291
+        },
+        {
+          "page": 106,
+          "tolerant_content_match_percent": 99.96726
+        },
+        {
+          "page": 107,
+          "tolerant_content_match_percent": 99.98013
+        },
+        {
+          "page": 108,
+          "tolerant_content_match_percent": 98.59003
+        },
+        {
+          "page": 109,
+          "tolerant_content_match_percent": 99.98672
+        },
+        {
+          "page": 110,
+          "tolerant_content_match_percent": 99.98477
+        },
+        {
+          "page": 111,
+          "tolerant_content_match_percent": 97.83943
+        },
+        {
+          "page": 112,
+          "tolerant_content_match_percent": 98.25669
+        },
+        {
+          "page": 113,
+          "tolerant_content_match_percent": 99.98144
+        },
+        {
+          "page": 114,
+          "tolerant_content_match_percent": 99.99609
+        },
+        {
+          "page": 115,
+          "tolerant_content_match_percent": 99.99108
+        },
+        {
+          "page": 116,
+          "tolerant_content_match_percent": 99.61441
+        },
+        {
+          "page": 117,
+          "tolerant_content_match_percent": 99.99244
+        },
+        {
+          "page": 118,
+          "tolerant_content_match_percent": 99.99302
+        },
+        {
+          "page": 119,
+          "tolerant_content_match_percent": 98.84789
+        },
+        {
+          "page": 120,
+          "tolerant_content_match_percent": 96.58819
+        },
+        {
+          "page": 121,
+          "tolerant_content_match_percent": 98.3992
+        },
+        {
+          "page": 122,
+          "tolerant_content_match_percent": 99.18469
+        },
+        {
+          "page": 123,
+          "tolerant_content_match_percent": 99.74673
+        },
+        {
+          "page": 124,
+          "tolerant_content_match_percent": 99.99167
+        },
+        {
+          "page": 125,
+          "tolerant_content_match_percent": 99.99043
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 99.99023
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 99.98906
+        },
+        {
+          "page": 128,
+          "tolerant_content_match_percent": 99.4334
+        },
+        {
+          "page": 129,
+          "tolerant_content_match_percent": 97.87637
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 99.99086
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 99.99567
+        },
+        {
+          "page": 132,
+          "tolerant_content_match_percent": 99.98909
+        },
+        {
+          "page": 133,
+          "tolerant_content_match_percent": 99.61095
+        },
+        {
+          "page": 134,
+          "tolerant_content_match_percent": 99.96979
+        },
+        {
+          "page": 135,
+          "tolerant_content_match_percent": 99.19229
+        },
+        {
+          "page": 136,
+          "tolerant_content_match_percent": 99.98269
+        },
+        {
+          "page": 137,
+          "tolerant_content_match_percent": 99.94232
+        },
+        {
+          "page": 138,
+          "tolerant_content_match_percent": 99.9923
+        },
+        {
+          "page": 139,
+          "tolerant_content_match_percent": 99.98331
+        },
+        {
+          "page": 140,
+          "tolerant_content_match_percent": 99.99282
+        },
+        {
+          "page": 141,
+          "tolerant_content_match_percent": 99.99199
+        },
+        {
+          "page": 142,
+          "tolerant_content_match_percent": 99.99455
+        },
+        {
+          "page": 143,
+          "tolerant_content_match_percent": 99.98648
+        },
+        {
+          "page": 144,
+          "tolerant_content_match_percent": 99.98992
+        },
+        {
+          "page": 145,
+          "tolerant_content_match_percent": 99.99049
+        },
+        {
+          "page": 146,
+          "tolerant_content_match_percent": 99.98296
+        },
+        {
+          "page": 147,
+          "tolerant_content_match_percent": 99.98086
+        },
+        {
+          "page": 148,
+          "tolerant_content_match_percent": 99.47562
+        },
+        {
+          "page": 149,
+          "tolerant_content_match_percent": 99.76942
+        },
+        {
+          "page": 150,
+          "tolerant_content_match_percent": 97.70825
+        },
+        {
+          "page": 151,
+          "tolerant_content_match_percent": 96.8443
+        },
+        {
+          "page": 152,
+          "tolerant_content_match_percent": 98.86941
+        },
+        {
+          "page": 153,
+          "tolerant_content_match_percent": 98.60591
+        },
+        {
+          "page": 154,
+          "tolerant_content_match_percent": 99.46776
+        },
+        {
+          "page": 155,
+          "tolerant_content_match_percent": 96.42697
+        },
+        {
+          "page": 156,
+          "tolerant_content_match_percent": 98.36536
+        },
+        {
+          "page": 157,
+          "tolerant_content_match_percent": 99.95792
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 99.96062
+        },
+        {
+          "page": 159,
+          "tolerant_content_match_percent": 99.98401
+        },
+        {
+          "page": 160,
+          "tolerant_content_match_percent": 99.99161
+        },
+        {
+          "page": 161,
+          "tolerant_content_match_percent": 98.3362
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 94.47524
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 95.13613
+        },
+        {
+          "page": 164,
+          "tolerant_content_match_percent": 98.26945
+        },
+        {
+          "page": 165,
+          "tolerant_content_match_percent": 99.97953
+        },
+        {
+          "page": 166,
+          "tolerant_content_match_percent": 99.98904
+        },
+        {
+          "page": 167,
+          "tolerant_content_match_percent": 99.98704
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 99.5685
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 99.96943
+        },
+        {
+          "page": 170,
+          "tolerant_content_match_percent": 99.99472
+        },
+        {
+          "page": 171,
+          "tolerant_content_match_percent": 99.93604
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 99.98865
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 99.96941
+        },
+        {
+          "page": 174,
+          "tolerant_content_match_percent": 99.99303
+        },
+        {
+          "page": 175,
+          "tolerant_content_match_percent": 99.96285
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 97.54887
+        },
+        {
+          "page": 177,
+          "tolerant_content_match_percent": 99.95637
+        },
+        {
+          "page": 178,
+          "tolerant_content_match_percent": 99.96904
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 99.99373
+        },
+        {
+          "page": 180,
+          "tolerant_content_match_percent": 99.97714
+        },
+        {
+          "page": 181,
+          "tolerant_content_match_percent": 99.99776
+        },
+        {
+          "page": 182,
+          "tolerant_content_match_percent": 99.9898
+        },
+        {
+          "page": 183,
+          "tolerant_content_match_percent": 99.4694
+        },
+        {
+          "page": 184,
+          "tolerant_content_match_percent": 99.98918
+        },
+        {
+          "page": 185,
+          "tolerant_content_match_percent": 99.8654
+        },
+        {
+          "page": 186,
+          "tolerant_content_match_percent": 98.81875
+        },
+        {
+          "page": 187,
+          "tolerant_content_match_percent": 98.58655
+        },
+        {
+          "page": 188,
+          "tolerant_content_match_percent": 99.92607
+        },
+        {
+          "page": 189,
+          "tolerant_content_match_percent": 99.97719
+        },
+        {
+          "page": 190,
+          "tolerant_content_match_percent": 99.94164
+        },
+        {
+          "page": 191,
+          "tolerant_content_match_percent": 98.93102
+        },
+        {
+          "page": 192,
+          "tolerant_content_match_percent": 97.3534
+        },
+        {
+          "page": 193,
+          "tolerant_content_match_percent": 99.94669
+        },
+        {
+          "page": 194,
+          "tolerant_content_match_percent": 99.66887
+        },
+        {
+          "page": 195,
+          "tolerant_content_match_percent": 99.94977
+        },
+        {
+          "page": 196,
+          "tolerant_content_match_percent": 99.52606
+        },
+        {
+          "page": 197,
+          "tolerant_content_match_percent": 98.81936
+        },
+        {
+          "page": 198,
+          "tolerant_content_match_percent": 99.96834
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 98.48515
+        },
+        {
+          "page": 200,
+          "tolerant_content_match_percent": 99.94907
+        },
+        {
+          "page": 201,
+          "tolerant_content_match_percent": 92.31167
+        },
+        {
+          "page": 202,
+          "tolerant_content_match_percent": 99.87419
+        },
+        {
+          "page": 203,
+          "tolerant_content_match_percent": 99.99537
+        },
+        {
+          "page": 204,
+          "tolerant_content_match_percent": 99.67176
+        },
+        {
+          "page": 205,
+          "tolerant_content_match_percent": 99.94695
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 99.8323
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 99.70099
+        },
+        {
+          "page": 209,
+          "tolerant_content_match_percent": 98.50712
+        },
+        {
+          "page": 210,
+          "tolerant_content_match_percent": 99.76592
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 99.11028
+        },
+        {
+          "page": 212,
+          "tolerant_content_match_percent": 99.87081
+        },
+        {
+          "page": 213,
+          "tolerant_content_match_percent": 99.95183
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 99.93964
+        },
+        {
+          "page": 215,
+          "tolerant_content_match_percent": 91.41441
+        },
+        {
+          "page": 216,
+          "tolerant_content_match_percent": 98.95935
+        },
+        {
+          "page": 217,
+          "tolerant_content_match_percent": 99.17374
+        },
+        {
+          "page": 218,
+          "tolerant_content_match_percent": 97.65271
+        },
+        {
+          "page": 219,
+          "tolerant_content_match_percent": 98.79763
+        },
+        {
+          "page": 220,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 221,
+          "tolerant_content_match_percent": 98.22481
+        },
+        {
+          "page": 222,
+          "tolerant_content_match_percent": 98.68362
+        },
+        {
+          "page": 223,
+          "tolerant_content_match_percent": 99.96076
+        },
+        {
+          "page": 224,
+          "tolerant_content_match_percent": 98.17651
+        },
+        {
+          "page": 225,
+          "tolerant_content_match_percent": 97.04764
+        },
+        {
+          "page": 226,
+          "tolerant_content_match_percent": 99.75536
+        },
+        {
+          "page": 227,
+          "tolerant_content_match_percent": 99.94211
+        },
+        {
+          "page": 228,
+          "tolerant_content_match_percent": 99.99152
+        },
+        {
+          "page": 229,
+          "tolerant_content_match_percent": 99.98083
+        },
+        {
+          "page": 230,
+          "tolerant_content_match_percent": 99.95517
+        },
+        {
+          "page": 231,
+          "tolerant_content_match_percent": 99.99029
+        },
+        {
+          "page": 232,
+          "tolerant_content_match_percent": 99.94814
+        },
+        {
+          "page": 233,
+          "tolerant_content_match_percent": 99.99276
+        },
+        {
+          "page": 234,
+          "tolerant_content_match_percent": 99.98367
+        },
+        {
+          "page": 235,
+          "tolerant_content_match_percent": 99.84766
+        },
+        {
+          "page": 236,
+          "tolerant_content_match_percent": 99.22335
+        },
+        {
+          "page": 237,
+          "tolerant_content_match_percent": 98.44416
+        },
+        {
+          "page": 238,
+          "tolerant_content_match_percent": 99.51175
+        },
+        {
+          "page": 239,
+          "tolerant_content_match_percent": 99.9923
+        },
+        {
+          "page": 240,
+          "tolerant_content_match_percent": 99.98423
+        },
+        {
+          "page": 241,
+          "tolerant_content_match_percent": 99.14452
+        },
+        {
+          "page": 242,
+          "tolerant_content_match_percent": 99.90952
+        }
+      ],
+      "representative_assets": [
+        {
+          "page": 162,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwpx_review_162.png",
+          "sha256": "446a3fa5a5c6266ed92cf8abf9d6d206392d8a7915aaeaa0856401da888af9b3"
+        },
+        {
+          "page": 162,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwpx_overlay_162.png",
+          "sha256": "b27eca73995974e7c7ca19edea4b820155cc04f8bb922a4414e9f9d5e0cadb07"
+        },
+        {
+          "page": 196,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwpx_review_196.png",
+          "sha256": "e7a072a7cd3b02cfcd265f1340fff4fce67326757b6db8998c28e5e5a3a49205"
+        },
+        {
+          "page": 196,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwpx_overlay_196.png",
+          "sha256": "f9f3a0d98b7c22d93cf0cdfa5a324173463eedaaaed1b4d831b28b37ad630144"
+        },
+        {
+          "page": 201,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwpx_review_201.png",
+          "sha256": "b1f7d2683b696327ae8125b1b3a61049b871751ddc290b3a2b4bbb3e292abbe0"
+        },
+        {
+          "page": 201,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwpx_overlay_201.png",
+          "sha256": "309b3cc5588279f9977aea8e1833822e0b0e4abe1e9a7feae3b6bc284005a96b"
+        },
+        {
+          "page": 215,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwpx_review_215.png",
+          "sha256": "0e59110ab9f803d6c66d99a5ea3305a79b125b96a58ad48f06a2b6758ea45052"
+        },
+        {
+          "page": 215,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwpx_overlay_215.png",
+          "sha256": "b52c0699141047662b81537595fb914687a90756ffe30bd2f3a0fea9f8d8a1fb"
+        },
+        {
+          "page": 224,
+          "kind": "review",
+          "path": "stage58_after_wasm_hwpx_review_224.png",
+          "sha256": "ff36e45d49bf4f0ad1068afb591d45b0f1f7987a6bc32492d5e9f0a3cb13dbbf"
+        },
+        {
+          "page": 224,
+          "kind": "overlay",
+          "path": "stage58_after_wasm_hwpx_overlay_224.png",
+          "sha256": "caf12d4d866e78b93569f2f62fcb2ed1d4ea63596850ce4e6af60d93dc61edad"
+        }
+      ]
+    }
+  ],
+  "result_integration_error": {
+    "exit_code": 1,
+    "cause": "공유 SVG hardlink를 동일 파일로 copyfile해 SameFileError. 렌더러 또는 시각 게이트 실패가 아님. 8개 worker는 모두 exit0. finalize-full.py에서 같은 inode의 복사를 생략하고 고정 체크포인트를 재검증.",
+    "finalizer_first_attempt": {
+      "exit_code": 143,
+      "cause": "복사 보완의 들여쓰기 오류로 각 쪽의 마지막 analysis만 복사해 resume가 PNG 누락을 검출. 소유한5프로세스를 종료하고 원래 유효한 shard의 모든 산출물을 다시 합침. 원본 체크포인트/실행파일/소스/점수는 변경하지 않음."
+    }
+  },
+  "focused": [
+    {
+      "case": "issue_5789_tac_line_shape_baseline",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_5789_tac_line_shape_baseline",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 103.37753050029278
+    },
+    {
+      "case": "issue_6606_tac_shape_outer_margin",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6606_tac_shape_outer_margin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.29040233278647
+    },
+    {
+      "case": "issue_6551_tac_shape_advance_keeps_spacing",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6551_tac_shape_advance_keeps_spacing",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.468646541703492
+    },
+    {
+      "case": "issue_3315_image_bytes_by_key",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_3315_image_bytes_by_key",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.17439587507397
+    },
+    {
+      "case": "issue_3315_image_base64_round_trip",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_3315_image_base64_round_trip",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.1492376672104
+    },
+    {
+      "case": "issue_3315_image_key",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_3315_image_key",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 9.61051220819354
+    },
+    {
+      "case": "issue_3315_flow_image_narrow_query",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_3315_flow_image_narrow_query",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.4847753327339888
+    },
+    {
+      "case": "issue_1244_tab_extended_fallback",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_1244_tab_extended_fallback",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.0060727908276021
+    },
+    {
+      "case": "issue_2439",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2439",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.607363999821246
+    },
+    {
+      "case": "issue_2097_none_table_declared_fits",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2097_none_table_declared_fits",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 9.910815708804876
+    },
+    {
+      "case": "issue_7288_table_page_break_split_policy",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7288_table_page_break_split_policy",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.1951437080279
+    },
+    {
+      "case": "issue_6511_behindtext_background_fullpage_exclusion",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6511_behindtext_background_fullpage_exclusion",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 0.996707874815911
+    },
+    {
+      "case": "issue_6035_cell_row_line_split_keep",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6035_cell_row_line_split_keep",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 9.419736750423908
+    },
+    {
+      "case": "issue_6761_zero_origin_rewind_row_split",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6761_zero_origin_rewind_row_split",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.629034500103444
+    },
+    {
+      "case": "issue_2097_rowbreak_midpage_declared_fits",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2097_rowbreak_midpage_declared_fits",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.01052900031209
+    },
+    {
+      "case": "issue_7048_stored_picture_successor",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7048_stored_picture_successor",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.630772791802883
+    },
+    {
+      "case": "issue_6950_paragraph_end_topbottom_anchor",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6950_paragraph_end_topbottom_anchor",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.017811957746744
+    },
+    {
+      "case": "issue_3738_rowbreak_table_footnote_fragment",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_3738_rowbreak_table_footnote_fragment",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 11.65660220803693
+    }
+  ],
+  "focused_summary": {
+    "cases": 18,
+    "tests": 109,
+    "passed": 109,
+    "nonzero": []
+  },
+  "lint_before_test_update": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 2.3405586248263717,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 15.919801708776504,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 14.04445558320731,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 56.53600304201245,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 49.33137595932931,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 79.2952162916772,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 86.1396127496846,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "exit_code": 0,
+      "seconds": 3.887393791228533,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.19673041719943285,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    }
+  ],
+  "existing_tests_and_final_lint": [
+    {
+      "label": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.5853799995966256
+    },
+    {
+      "label": "before",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/before-source",
+      "exit_code": 100,
+      "seconds": 6.1470310827717185
+    },
+    {
+      "label": "force-current-library",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--lib",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 64.7507034172304
+    },
+    {
+      "label": "after",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 92.12129074987024
+    },
+    {
+      "label": "gate-01",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.6048943749628961
+    },
+    {
+      "label": "gate-02",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 5.674950500018895
+    },
+    {
+      "label": "gate-03",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 5.679753541946411
+    },
+    {
+      "label": "gate-04",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.3314809170551598
+    },
+    {
+      "label": "gate-05",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.2137102079577744
+    },
+    {
+      "label": "gate-06",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.3402043329551816
+    },
+    {
+      "label": "gate-07",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 4.360616125166416
+    },
+    {
+      "label": "gate-08",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 1.6894719591364264
+    },
+    {
+      "label": "gate-09",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.06568720797076821
+    },
+    {
+      "label": "after-final-formatted",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 6.356472583021969
+    }
+  ],
+  "shared_library_before_rebuild": {
+    "library": "target/pr-review/release-test/deps/librhwp.rlib",
+    "sha256": "eaedab00df91edce7c887d064ea0d602c7c0de508ae43f1e15ee3d4a626cb42f",
+    "build_rs_sha256": "4ef10e44f4772651c94a9c535ab805dc2b1488501705226626ca53ec34839ec5",
+    "after_attempt_exit_code": 100,
+    "after_build_seconds": 0.12,
+    "cause": "공유 target의 unhashed librhwp.rlib가 보정 전 library build로 바뀌었으나 현재 Cargo fingerprint는 fresh로 판단. build.rs의 mtime만 갱신해 현재 코드 library를 다시 빌드."
+  },
+  "shared_library_after_rebuild": {
+    "sha256": "62d41fa37fc12fe89b52279cd291909f403dc5e3824523e7efb723bc2d860e28",
+    "build_rs_sha256": "4ef10e44f4772651c94a9c535ab805dc2b1488501705226626ca53ec34839ec5"
+  },
+  "after_first_reused_library_attempt": [
+    {
+      "label": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.5853799995966256
+    },
+    {
+      "label": "before",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/before-source",
+      "exit_code": 100,
+      "seconds": 6.1470310827717185
+    },
+    {
+      "label": "after",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 100,
+      "seconds": 0.5306612076237798
+    }
+  ],
+  "existing_test_first_no_tests_attempt": [
+    {
+      "label": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.6035910001955926
+    },
+    {
+      "label": "before",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_001",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/before-source",
+      "exit_code": 4,
+      "seconds": 95.33096045814455
+    }
+  ],
+  "resolved_plan": {
+    "caseName": "issue_1733",
+    "target": "regression_suite_026",
+    "grouped": true
+  },
+  "resolved_final_plan": {
+    "caseName": "issue_1733",
+    "target": "regression_suite_016",
+    "grouped": true
+  },
+  "gates_first_manifest_drift_attempt": [
+    {
+      "label": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.5853799995966256
+    },
+    {
+      "label": "before",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/before-source",
+      "exit_code": 100,
+      "seconds": 6.1470310827717185
+    },
+    {
+      "label": "force-current-library",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--lib",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 64.7507034172304
+    },
+    {
+      "label": "after",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/(^|::)issue_1733::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 92.12129074987024
+    },
+    {
+      "label": "gate-01",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 0.7300558327697217
+    },
+    {
+      "label": "gate-02",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 5.740102457813919
+    },
+    {
+      "label": "gate-03",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 5.98107441700995
+    },
+    {
+      "label": "gate-04",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 15.937828708905727
+    },
+    {
+      "label": "gate-05",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 13.415107417386025
+    },
+    {
+      "label": "gate-06",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 15.259215207770467
+    },
+    {
+      "label": "gate-07",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "seconds": 26.320726749952883
+    },
+    {
+      "label": "gate-08",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 1,
+      "seconds": 1.815036416053772
+    }
+  ],
+  "original_test_functions": 2,
+  "final_test_functions": 2,
+  "test_sha256": "468cedd03e59cae220f94f735e72a9baa0d86defde3809e375740d97a578a40d",
+  "before_summary": [
+    "     Summary [   0.194s] 2 tests run: 0 passed, 2 failed, 227 skipped"
+  ],
+  "after_summary": [
+    "     Summary [   0.253s] 2 tests run: 2 passed, 228 skipped"
+  ],
+  "before_failure_log_sha256": "8d85047d79a2c2f5cd6d69d2b7194c84b2ade64065a715593822a2f04d76917c",
+  "before_failure_evidence": "보정 전 두 함수가 실제 쪽 소유 실패로 실패. HWPX243/242 불일치도 함께 수집. 각주 예약의 기존 overflow는 후보26/27의 같은 실제 쪽 비교에서 별도로 확인.",
+  "full_validation_status": "38개 고정 실패 함수의 개별 보정 완료 뒤 전체 nextest/Native Skia 및 최종 PR head 검증 예정",
+  "residual_differences": [
+    "45쪽 수식 간격/획",
+    "162쪽 일부 본문 줄바꿈/각주 번호",
+    "201쪽 얇은 화살표 획/작은 글자",
+    "215쪽 지도 위 별도 글상자의 위치/줄바꿈과 그림 프레임"
+  ],
+  "output_path": "output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate28",
+  "before_spacing_assets": [
+    {
+      "path": "stage58_before_spacing_native_hwp_overlay_196.png",
+      "sha256": "64bb85282590b4d104448bb7491faa276f66ead3644fce672ca4e64648284dd3"
+    },
+    {
+      "path": "stage58_before_spacing_native_hwp_review_196.png",
+      "sha256": "4637c3ec0bbc6ba706bb6fc11379799dea962ca4035e5fa31b9191a2e3bd21ad"
+    }
+  ],
+  "verified_code_commit": "d6992abefb46744defce93b9333aff82d699cb97",
+  "verified_src_tree": "dea609c6dbbf3365fbd957c7a044e2fd1d29334a",
+  "source_commit_mapping": "캡처 때 git HEAD는80f7e778a+보정58 작업트리였으며, 그 Native/freshWASM 소스 파일SHA와 최종 formatted 검사SHA가 이 코드 커밋과 같음을 확인. 이후 통합 PR 최종head의 새 검증을 대체하지 않음."
+}

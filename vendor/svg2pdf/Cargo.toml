@@ -1,0 +1,70 @@
+[workspace]
+members = []
+default-members = ["."]
+resolver = "2"
+
+[workspace.package]
+version = "0.13.0"
+authors = ["Laurenz Stampfl <laurenz.stampfl@gmail.com>", "Martin Haug <mhaug@live.de>"]
+edition = "2021"
+repository = "https://github.com/typst/svg2pdf"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+log = "0.4"
+svg2pdf = { path = ".", default-features = false, version = "0.13.0" }
+clap = { version = "4.5", features = ["derive"] }
+clap_complete = "4.5"
+clap_mangen = "0.2"
+fontdb = "0.23"
+image = { version = "0.25.5", default-features = false, features = ["jpeg", "png", "gif"] }
+miniz_oxide = "0.8"
+once_cell = "1.18"
+oxipng = { version = "9", default-features = false, features = ["filetime", "parallel", "zopfli"] }
+pdf-writer = "0.12"
+pdfium-render = "=0.8.20"
+termcolor = "1.2"
+usvg = { version = "0.45", default-features = false }
+tiny-skia = "0.11.4"
+resvg = { version = "0.45", default-features = false }
+subsetter = "0.2"
+ttf-parser = { version = "0.25" }
+siphasher = { version = "1.0.1"}
+
+[package]
+name = "svg2pdf"
+description = "Convert SVG files to PDFs."
+categories = ["encoding", "graphics", "multimedia"]
+keywords = ["svg", "pdf", "vector-graphics", "conversion"]
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
+
+[lib]
+bench = false
+
+[features]
+default = ["image", "filters", "text"]
+image = ["dep:image"]
+filters = ["image", "dep:tiny-skia", "resvg/raster-images"]
+text = [
+    "usvg/text", "resvg/text", "dep:siphasher",
+    "dep:subsetter", "dep:ttf-parser", "dep:fontdb",
+]
+
+[dependencies]
+miniz_oxide = { workspace = true }
+once_cell = { workspace = true }
+pdf-writer = { workspace = true }
+fontdb = { workspace = true, optional = true }
+usvg = { workspace = true }
+log = { workspace = true }
+image = { workspace = true, optional = true }
+tiny-skia = { workspace = true, optional = true }
+resvg = { workspace = true, optional = true }
+subsetter = { workspace = true, optional = true }
+ttf-parser = { workspace = true, optional = true }
+siphasher = { workspace = true, optional = true }

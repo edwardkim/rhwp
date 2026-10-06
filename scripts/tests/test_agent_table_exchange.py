@@ -7,7 +7,7 @@
 gym/ 을 열지 않는다. 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-table-exchange/
-작업 기록: mydocs/working/agent_table_exchange.md
+작업 기록: mydocs/working/archives/agent_table_exchange.md
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ TRANS = FIXTURES / "transcripts"
 CSV = FIXTURES / "csv"
 DECS = FIXTURES / "decisions"
 CATALOG = FIXTURES / "catalog.json"
-WORKING = REPO / "mydocs" / "working" / "agent_table_exchange.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_table_exchange.md"
 
 REFERENCE_NAMES = (
     "export_tables_matrix.md",

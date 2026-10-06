@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[2]
 SKILL = REPO / ".claude" / "skills" / "rhwp-codex"
 FIX = SKILL / "fixtures"
 REF = SKILL / "references"
-WORKING = REPO / "mydocs" / "working" / "agent_codex_skill.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_codex_skill.md"
 GEN = REPO / "tools" / "gen_agent_codex.py"
 
 FORBIDDEN_SKILLS = [

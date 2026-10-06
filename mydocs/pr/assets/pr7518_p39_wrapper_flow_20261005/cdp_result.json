@@ -1,0 +1,149 @@
+{
+  "sourceHead": "2869859ee38461645235978f6c05604013c05430",
+  "input": "samples/76076_regulatory_analysis.hwp",
+  "inputSha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "wasmSha256": "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+  "checks": [
+    {
+      "name": "fresh compiled WASM served with cache disabled",
+      "passed": true,
+      "detail": {
+        "pkgHash": "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+        "publicHash": "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+        "served": [
+          "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+          "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1"
+        ]
+      }
+    },
+    {
+      "name": "title and intentional blank paragraph preserved",
+      "passed": true,
+      "detail": {
+        "title": {
+          "x": 75.6,
+          "y": 260.2,
+          "w": 642.5,
+          "h": 20
+        },
+        "spacer": {
+          "x": 75.6,
+          "y": 290.2,
+          "w": 642.5,
+          "h": 5.3
+        }
+      }
+    },
+    {
+      "name": "table follows intentional blank line",
+      "passed": true,
+      "detail": {
+        "spacer": {
+          "x": 75.6,
+          "y": 290.2,
+          "w": 642.5,
+          "h": 5.3
+        },
+        "table": {
+          "x": 79.3,
+          "y": 303.9,
+          "w": 635,
+          "h": 100.6
+        }
+      }
+    },
+    {
+      "name": "following paragraph follows table",
+      "passed": true,
+      "detail": {
+        "tail": {
+          "x": 75.6,
+          "y": 418.6,
+          "w": 642.5,
+          "h": 10.7
+        },
+        "table": {
+          "x": 79.3,
+          "y": 303.9,
+          "w": 635,
+          "h": 100.6
+        }
+      }
+    },
+    {
+      "name": "opinion cell retains padding and four wrapped lines",
+      "passed": true,
+      "detail": {
+        "cell": {
+          "x": 478.1,
+          "y": 328.7,
+          "w": 115.2,
+          "h": 75.7
+        },
+        "lines": [
+          {
+            "x": 484.9,
+            "y": 330.6,
+            "w": 101.6,
+            "h": 14.7
+          },
+          {
+            "x": 484.9,
+            "y": 349.7,
+            "w": 101.6,
+            "h": 14.7
+          },
+          {
+            "x": 484.9,
+            "y": 368.8,
+            "w": 101.6,
+            "h": 14.7
+          },
+          {
+            "x": 484.9,
+            "y": 387.9,
+            "w": 101.6,
+            "h": 14.7
+          }
+        ]
+      }
+    },
+    {
+      "name": "original 82 pages preserved",
+      "passed": true,
+      "detail": {
+        "pageCount": 82
+      }
+    },
+    {
+      "name": "p39 Native and portable WASM final geometry agrees",
+      "passed": true,
+      "detail": {
+        "nativeCount": 51,
+        "wasmCount": 51
+      }
+    },
+    {
+      "name": "page 22 Native/portable WASM geometry agrees",
+      "passed": true,
+      "detail": {
+        "nativeCount": 48,
+        "wasmCount": 48
+      }
+    },
+    {
+      "name": "page 38 Native/portable WASM geometry agrees",
+      "passed": true,
+      "detail": {
+        "nativeCount": 47,
+        "wasmCount": 47
+      }
+    },
+    {
+      "name": "no browser errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

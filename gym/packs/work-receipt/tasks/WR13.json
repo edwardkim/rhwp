@@ -4,7 +4,7 @@
   "title": "두 걸음 계획 step 수",
   "input": "samples/field-01.hwp",
   "axis": "조회",
-  "instructions": "WR13 — 치환 두 걸음 계획의 steps==2. 입력 표본은 `samples/field-01.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. work-receipt pack 은 에이전트가 매일 밟는 영수증 한 장·뿌리 계보·부모 링크·폴더 회계만 짧은 여정으로 둔다.\n\n판정은 말이 아니라 봉투 데이터다. 같은 계획을 채점 시점에 다시 돌려 해시를 라이브 대조하거나, 제출 캡슐을 lineage/audit 로 읽어 좌표를 지목한다. 정답 숫자를 과제 파일에 박제하지 마라.\n\n한 계획에 replace_text 를 두 번 넣는다. 채점은 봉투 steps 가 2 인지 본다. WR01 의 steps==1 라이브와 자리를 가른다. 힌트: rhwp replay --plan-json '{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"일차장\", \"replace\": \"이차장\"}]}' --json\n\n금지: AU02 의 reproducedRate==1.0+total≥1, AU12 의 depth==2, AU07 의 gate --deep, XC01–XC05(적합성 L5·리콜·정산·3세대 --deep·감사표준 L3), T07 서식 채움(fill-fields·첫 필드 홍길동)은 복제하지 마라. 새 CLI 도 없다. 원본 픽스처를 덮어쓰지 마라. `--deep` 으로 사다리를 완주하지 마라.",
+  "instructions": "WR13 — 치환 두 걸음 계획의 steps==2. 입력 표본은 `samples/field-01.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. work-receipt pack 은 에이전트가 매일 밟는 영수증 한 장·뿌리 계보·부모 링크·폴더 회계만 짧은 여정으로 둔다.\n\n판정은 말이 아니라 봉투 데이터다. 같은 계획을 채점 시점에 다시 돌려 해시를 라이브 대조하거나, 제출 캡슐을 lineage/audit 로 읽어 좌표를 지목한다. 정답 숫자를 과제 파일에 박제하지 마라.\n\n한 계획에 replace_text 를 두 번 넣는다. 채점은 봉투 steps 가 2 인지 본다. WR01 의 steps==1 라이브와 자리를 가른다. 힌트: rhwp replay --plan-json '{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"회사\", \"replace\": \"회사정비\"}]}' --json\n\n금지: AU02 의 reproducedRate==1.0+total≥1, AU12 의 depth==2, AU07 의 gate --deep, XC01–XC05(적합성 L5·리콜·정산·3세대 --deep·감사표준 L3), T07 서식 채움(fill-fields·첫 필드 홍길동)은 복제하지 마라. 새 CLI 도 없다. 원본 픽스처를 덮어쓰지 마라. `--deep` 으로 사다리를 완주하지 마라.",
   "submit": {
     "kind": "answer",
     "files": [
@@ -14,13 +14,13 @@
   "checks": [
     {
       "name": "실행 step 수 2",
-      "op": "value_eq",
-      "value": 2,
+      "op": "answer_eq",
+      "answer": "steps",
       "path": "steps",
       "cmd": [
         "replay",
         "--plan-json",
-        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"일차장\", \"replace\": \"이차장\"}]}",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"회사\", \"replace\": \"회사정비\"}]}",
         "--json"
       ]
     }

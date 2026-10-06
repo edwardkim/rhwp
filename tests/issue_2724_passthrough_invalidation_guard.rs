@@ -86,6 +86,122 @@ enum Exempt {
 ///
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
+    (
+        "font_environment.rs",
+        "set_font_environment",
+        Exempt::SessionState,
+        "#6389: 명시적 폰트 환경과 파생 조판·측정 캐시만 교체한다. issue_6389_environment_changes_measurement_and_paint_without_editing_document에서 적용·해제 전후 저장 bytes와 원본 face 보존을 검사한다.",
+    ),
+    // #7084 render-session APIs do not mutate serialized document state.
+    // issue_7084_canvas_metric_session checks original HWP/HWPX IR and portable SVG preservation.
+    (
+        "canvas_metric_requests.rs",
+        "collect_canvas_metric_requests",
+        Exempt::SessionState,
+        "#7084: 원문에서 측정 요청을 읽고 세션의 pending ticket만 갱신한다. 원문 IR 보존은 collected_original_requests_register_and_preserve_ir_and_portable_svg에서 검사한다.",
+    ),
+    (
+        "canvas_metric_requests.rs",
+        "register_canvas_metric_replies",
+        Exempt::SessionState,
+        "#7084: 요청 세대·descriptor 검증 후 렌더 전용 측정 snapshot을 등록한다. 원문·원본 스트림은 변경하지 않으며 실패 원자성과 정상 IR 보존을 issue_7084_canvas_metric_session에서 검사한다.",
+    ),
+    (
+        "canvas_metrics.rs",
+        "begin_canvas_metric_session",
+        Exempt::SessionState,
+        "#7084: 문서/폰트/backend 세대의 측정 소유자와 파생 조판 상태만 교체한다. canvas_session_switch_rebuilds_positions_and_protects_portable_output에서 IR 무변경을 검사한다.",
+    ),
+    (
+        "canvas_metrics.rs",
+        "register_canvas_metrics",
+        Exempt::SessionState,
+        "#7084: 보충 진행폭 store와 파생 조판만 갱신한다. canvas_session_switch_rebuilds_positions_and_protects_portable_output에서 IR·portable 출력 보존을 검사한다.",
+    ),
+    (
+        "canvas_metrics.rs",
+        "select_canvas_metrics",
+        Exempt::SessionState,
+        "#7084: Canvas/portable 렌더 문맥만 전환하고 저장 원본은 보존한다. collected_original_requests_register_and_preserve_ir_and_portable_svg에서 전환 전후를 대조한다.",
+    ),
+    (
+        "hyperlink.rs",
+        "insert_hyperlink_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "검증한 필드 삽입 후보를 공통 commit helper에 넘긴다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "update_hyperlink_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "주소가 바뀐 경우에만 공통 commit helper로 적용한다. helper가 구역 raw_stream을 무효화하며 동일 주소는 무변경이다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "replace_hyperlink_text_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "표시 문자열 교체 후보의 raw_stream 및 페이지 무효화를 공통 commit helper에 위임한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "remove_hyperlink_native",
+        Exempt::DelegatesTo("remove_hyperlink_with_format_native"),
+        "서식 복원 없이 필드만 제거하는 호환 래퍼. 복원 옵션을 받는 제거 경로와 공통 commit helper를 거쳐 무효화한다 (#6963).",
+    ),
+    (
+        "hyperlink.rs",
+        "remove_hyperlink_with_format_native",
+        Exempt::DelegatesTo("commit_hyperlink_paragraph"),
+        "표시 글자를 보존한 제거 후보를 공통 commit helper로 적용한다. helper가 구역 raw_stream과 페이지 캐시를 무효화한다 (#6963).",
+    ),
+    (
+        "commands/paragraph_block/import_json.rs",
+        "import_paragraph_block_json_native",
+        Exempt::DelegatesTo("import_paragraph_block_native"),
+        "#3587: JSON 어댑터의 dry-run은 무변경, 실행은 native 가져오기의 DocInfo/구역 무효화 경로에 위임한다. issue_3587_template_operation과 실제 WASM import-wasm-contract에서 실패 무변경 및 저장 재열기를 검사한다.",
+    ),
+    (
+        "commands/paragraph_block/import.rs",
+        "import_paragraph_block_native",
+        Exempt::DelegatesTo("commit_block_content"),
+        "#3587: 자원 준비 후 Resources::commit은 DocInfo를 dirty로 표시하고, 공통 commit_block_content가 삽입한 구역 raw_stream을 무효화한다. 실패 무변경 및 HWP/HWPX 재열기는 issue_3587_block_import에서 검사한다.",
+    ),
+    (
+        "commands/paragraph_block/repeat.rs",
+        "repeat_paragraph_block_native",
+        Exempt::DelegatesTo("repeat_paragraph_block_prepared"),
+        "#3587: 준비 후 commit_paragraph_block이 삽입과 대상 구역 raw_stream 무효화를 함께 수행한다.",
+    ),
+    (
+        "commands/paragraph_block/template.rs",
+        "repeat_and_fill_paragraph_block_native",
+        Exempt::DelegatesTo("commit_paragraph_block"),
+        "#3587: detached 채우기 준비 후 공통 commit에서 삽입·구역 원본 스트림 무효화를 수행한다.",
+    ),
+    (
+        "commands/paragraph_block/template_operation.rs",
+        "apply_template_operation_json_native",
+        Exempt::DelegatesTo("execute_template_operation_native"),
+        "#3587: dry-run은 무변경 조회, 실제 실행은 typed 연산 디스패처로 위임한다.",
+    ),
+    (
+        "commands/paragraph_block/template_operation.rs",
+        "execute_template_operation_native",
+        Exempt::DelegatesTo("repeat_and_fill_paragraph_block_native"),
+        "#3587: 문단 복제는 공통 commit, 나머지 분기는 fill_template_native·repeat_and_fill_table_rows_native가 직접 구역 원본 스트림을 무효화한다. 세 경로의 저장·재열기는 issue_3587_template_plan 및 template_operation에서 검증한다.",
+    ),
+    (
+        "commands/object_ops/table.rs",
+        "delete_cell_picture_control_by_path_native",
+        Exempt::DelegatesTo("delete_cell_control_by_path_native"),
+        "그림 종류를 지정하는 래퍼. 공통 helper가 삭제와 구역 raw_stream 무효화를 수행한다.",
+    ),
+    (
+        "commands/object_ops/table.rs",
+        "delete_cell_table_control_by_path_native",
+        Exempt::DelegatesTo("delete_cell_control_by_path_native"),
+        "표 종류를 지정하는 래퍼. 공통 helper가 삭제와 구역 raw_stream 무효화를 수행한다.",
+    ),
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
         "mod.rs",
@@ -151,6 +267,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/clipboard.rs",
+        "copy_selection_logical_native",
+        Exempt::SessionState,
+        "[#7444] 논리 오프셋 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
         "copy_selection_in_cell_native",
         Exempt::SessionState,
         "복사 — 읽기 후 `self.clipboard` 에만 기록.",
@@ -160,6 +282,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "copy_selection_in_cell_by_path_native",
         Exempt::SessionState,
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/formatting_runs.rs",
+        "get_char_shape_runs_in_cell_by_path_native",
+        Exempt::SessionState,
+        "[#6788] 구간 검증과 모양 목록 직렬화만 하는 순수 조회. `&mut` 는 가변 셀 접근자 재사용 때문이며 문서 IR 비변경.",
     ),
     (
         "commands/header_footer_ops.rs",
@@ -238,6 +366,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "discard_section_raw_native",
         Exempt::SessionState,
         "[#5769] 구역 raw 저널에서 항목 제거. 문서 IR 비변경.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "capture_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 common/shape 변환 상태를 복제해 Undo 저널과 ID만 갱신. 원본 문서 IR·구역 raw는 읽기만 한다.",
+    ),
+    (
+        "commands/picture_transform_journal.rs",
+        "discard_picture_transform_native",
+        Exempt::SessionState,
+        "[#6806] 그림 변환 Undo 저널에서 handle만 제거. 문서 IR·구역 raw는 변경하지 않는다.",
     ),
     (
         "commands/formatting.rs",
@@ -374,24 +514,10 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     // ── 위임 ───────────────────────────────────────────────────────────────
     (
-        "commands/document.rs",
-        "export_hwp_with_adapter",
-        Exempt::DelegatesTo("convert_if_hwpx_source"),
-        "저장 직전 어댑터 변환. IR 변경은 전부 어댑터 안에서 일어나며 그쪽이 \
-         `raw_stream_dirty` 를 세운다.",
-    ),
-    (
-        "commands/document.rs",
-        "export_hwp_with_adapter_with_password",
-        Exempt::DelegatesTo("convert_if_hwpx_source"),
-        "암호 HWP 저장도 평문 저장과 같은 HWPX-to-HWP 어댑터만 IR을 변경한다. \
-         어댑터가 `raw_stream_dirty` 를 세우고, 비밀번호 직렬화는 IR을 변경하지 않는다.",
-    ),
-    (
-        "commands/document.rs",
-        "serialize_hwp_with_verify",
-        Exempt::DelegatesTo("export_hwp_with_adapter"),
-        "export 후 재로드 검증만 수행. 자체 IR 변경 없음.",
+        "commands/object_ops/table.rs",
+        "create_table_native",
+        Exempt::DelegatesTo("create_table_with_options_native"),
+        "[#5819] 기본 옵션을 전달하는 래퍼. 공통 표 생성 함수가 구역 raw_stream을 무효화한다.",
     ),
     (
         "commands/table_ops.rs",
@@ -419,6 +545,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#5959] doc_info.border_fills 의 고아 꼬리 절단 + dirty 플래그 원복만 한다 — \
          섹션 본문 IR 무변경이며 passthrough 무효화·복원은 호출자(TS undo 의 \
          applyIds → restoreSectionRaw 3단)가 담당한다.",
+    ),
+    (
+        "commands/text_editing.rs",
+        "insert_text_native",
+        Exempt::DelegatesTo("insert_text_at_caret_native"),
+        "[#7444] 얇은 래퍼 — 개체 뒤 여부만 false 로 넘기고 삽입·무효화는 위임 대상이 한다.",
     ),
     (
         "commands/text_editing.rs",
@@ -457,12 +589,6 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "delete_text_in_cell_native_deferred_pagination",
         Exempt::DelegatesTo("delete_text_in_cell_native_impl"),
         "페이지네이션 지연 플래그만 다른 래퍼 — 본체는 `_impl`.",
-    ),
-    (
-        "queries/field_query.rs",
-        "set_field_value_by_id",
-        Exempt::DelegatesTo("set_field_text_at"),
-        "필드 위치를 조회한 뒤 텍스트 치환 헬퍼에 위임.",
     ),
     (
         "queries/field_query.rs",
@@ -600,11 +726,15 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
 /// 증가는 통과하며 갱신을 안내한다. 함수 단위 검사(검사 1)가 못 잡는 "한 함수 안 여러
 /// 무효화 갈래 중 일부만 제거" 를 잡는 것이 목적이다.
 const INVALIDATION_LEDGER: &[(&str, usize)] = &[
+    // 한글 클립보드 문서모델 붙여넣기 — 서식표 병합 1 · 구역 raw_stream 1 · 진입점 1
+    ("commands/foreign_paste.rs", 3),
     ("commands/clipboard.rs", 4),
     ("commands/footnote_ops.rs", 6),
     ("commands/formatting.rs", 16),
     ("commands/header_footer_ops.rs", 9),
-    ("commands/html_import.rs", 5),
+    // 인라인 변환을 자식 모듈로 옮긴 두 사이트까지 합계 5곳의 방어를 유지한다.
+    ("commands/html_import.rs", 3),
+    ("commands/html_import/inline_content.rs", 2),
     ("commands/object_ops/common.rs", 2),
     ("commands/object_ops/connector.rs", 4),
     ("commands/object_ops/equation.rs", 3),

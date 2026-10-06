@@ -178,13 +178,9 @@ export class CaretRenderer {
 
   /** 페이지의 화면 X 좌표를 계산한다 (그리드/단일 열 공통) */
   private calcPageLeft(pageIndex: number): number {
-    const gridLeft = this.virtualScroll.getPageLeft(pageIndex);
-    if (gridLeft >= 0) return gridLeft;
-    // 단일 열: CSS 중앙 정렬 보정
     const scrollContent = this.container.querySelector('#scroll-content');
     const contentWidth = scrollContent?.clientWidth ?? 0;
-    const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIndex);
-    return (contentWidth - pageDisplayWidth) / 2;
+    return this.virtualScroll.getPageLeftResolved(pageIndex, contentWidth);
   }
 
   /** 캐럿 엘리먼트가 DOM에 없으면 재부착한다 (loadDocument 후 컨테이너 교체 대응) */

@@ -53,4 +53,4 @@ playbook 여정을 끝까지 도는 **레시피**이지 권위가 아니다.
 
 - 함정 장: [02_judgment_traps.md](02_judgment_traps.md)
 - 여정 카탈로그: [17_journeys.md](17_journeys.md)
-- 처리 결과: [`mydocs/working/agent_bug_hunter.md`](../../../../mydocs/working/agent_bug_hunter.md)
+- 처리 결과: [`mydocs/working/agent_bug_hunter.md`](../../../../mydocs/working/archives/agent_bug_hunter.md)

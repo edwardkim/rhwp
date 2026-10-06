@@ -147,4 +147,4 @@ info --json
 - [`recipes/04_safety_check_untrusted_doc.md`](../../../mydocs/manual/recipes/04_safety_check_untrusted_doc.md)
 - [`cli_json_pipeline_guide.md`](../../../mydocs/manual/cli_json_pipeline_guide.md)
 - [`mydocs/tech/agent_security/consumer_guide.md`](../../../mydocs/tech/agent_security/consumer_guide.md)
-- 처리 결과: [`mydocs/working/agent_doc_triage.md`](../../../mydocs/working/agent_doc_triage.md)
+- 처리 결과: [`mydocs/working/agent_doc_triage.md`](../../../mydocs/working/archives/agent_doc_triage.md)

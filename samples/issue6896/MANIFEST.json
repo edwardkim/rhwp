@@ -1,0 +1,29 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6896,
+  "title": "잘린 EMF 를 먼저 잡아 쓸 수 있는 WMF 미리보기를 안 채운다",
+  "entries": [
+    {
+      "path": "samples/issue6896/156564340-ip-dispute-mediation.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6896",
+      "originalFilename": "156564340_085 [특허청] “소송 대신 합의” 지식재산 분쟁조정 신청 ‘쑥’.hwpx",
+      "bytes": 919682,
+      "sha256": "3e38b37946c5cd4017be33a2189156d33fc6f5b7520d01d82eca056a3e0bbe13",
+      "derivation": "원본 그대로. 결함이 BinData/ole5.ole(12.6MB CFB) 안 OlePres000 스트림의 형상에 달려 있어 자를 수 없다.",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156564340-ip-dispute-mediation-2020.pdf",
+      "referencePdfSha256": "3dcdaab2fc0b81ca340875d143d5aa9053f2e91ae98b8e0d9f7b21521a76aba9",
+      "referencePdfBytes": 365217,
+      "referencePdfPageCount": 4,
+      "referencePdfStatus": "2026-09-08 hwp2024Convert MCP 로 start/status/download 재산출. engine 2020, 4쪽. 다운로드 바이트와 SHA-256 을 확인했다. 쪽수 일치만으로 전체 시각 일치를 주장하지 않는다.",
+      "contract": "4쪽(0-based 3) OLE 개체(pi=59 ci=0)는 자리표시자가 아니라 미리보기로 그려진다. OlePres000 은 EMF 를 ' WMFC' 주석으로 감싼 WMF 인데, 그 안의 EMF 조각이 선언 6,022,292B 중 6,022,272B 에서 0xFF 로 끊겨 EMF 렌더가 실패한다. offset 40 의 WMF 는 멀쩡하므로 폴백이 받아야 한다. 정본은 같은 자리를 그림 601.9 × 843.7px 로 그린다.",
+      "originalIdentityStatus": "2026-09-09 korea_downloads 원문과 SHA-256 이 동일함을 확인했다(919,682 B). 원래 형식과 바이트를 그대로 보존한다."
+    }
+  ]
+}

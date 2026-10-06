@@ -246,14 +246,21 @@ fn render_note_line_spacing(shape: &crate::model::footnote::FootnoteShape) -> (S
     (note_line, note_spacing)
 }
 
-/// FootnoteNumbering → HWPX `type` 토큰. 템플릿 계열(CONTINUOUS/EACH_COLUMN/DIGIT)과
-/// 동일한 UPPER_SNAKE 표기를 쓰며, 파서도 이 토큰을 수용한다.
+/// FootnoteNumbering → HWPX `type` 토큰.
+///
+/// [#6872] **한컴이 실제로 쓰는 토큰만 낸다.** 종전에는 `RESTART_PAGE`·`RESTART_SECTION`
+/// 을 냈는데, rhwp 파서는 그것을 수용하지만(그래서 x2x 가 자기 눈에는 무결했다) 한글은
+/// 못 알아듣고 **연속 번호로 떨어진다** — 쪽마다 1) 로 재시작하던 각주가 왕복 뒤
+/// 1) 2) 3) … 으로 이어진다(156584446 정답지 PDF 실측).
+///
+/// 코퍼스 실측이 토큰을 확정한다 — 원본 HWPX 3,391 파일의 `<hp:numbering type>` 은
+/// `CONTINUOUS` 7,640 · `ON_PAGE` 12 뿐이고 `RESTART_*` 는 **0건**이다.
 fn note_numbering_str(numbering: crate::model::footnote::FootnoteNumbering) -> &'static str {
     use crate::model::footnote::FootnoteNumbering::*;
     match numbering {
         Continue => "CONTINUOUS",
-        RestartSection => "RESTART_SECTION",
-        RestartPage => "RESTART_PAGE",
+        RestartSection => "ON_SECTION",
+        RestartPage => "ON_PAGE",
     }
 }
 
@@ -366,12 +373,24 @@ fn note_deco_char_attr(c: char, fallback: &str) -> String {
 /// [#2742] FootnoteShape → `<hp:autoNumFormat .../>`.
 /// 속성 순서는 템플릿·한컴 실물과 같이 type → userChar → prefixChar → suffixChar → supscript.
 fn render_auto_num_format(shape: &crate::model::footnote::FootnoteShape) -> String {
+    // [#6872] 번호 모양이 **사용자 기호**면 표시는 그 기호 하나로 끝난다 — 한컴도
+    // `suffixChar` 를 비운다(코퍼스 HWPX 3,418건의 노트 모양 7,778개 중 `suffixChar=""`
+    // 는 1개이고 그것이 유일한 `USER_CHAR` 다). 이때 기본값 `)` 를 채우면 표시가 `*` 에서
+    // `*)` 로 바뀐다. 숫자 계열(7,651개가 `)`)의 폴백은 그대로 둔다.
+    // Preserve explicit source emptiness for every format, including digits.
+    let suffix_fallback = if shape.deco_chars_from_source
+        || shape.number_format == crate::model::footnote::NumberFormat::UserChar
+    {
+        ""
+    } else {
+        ")"
+    };
     format!(
         r#"<hp:autoNumFormat type="{}" userChar="{}" prefixChar="{}" suffixChar="{}" supscript="{}"/>"#,
         note_number_format_str(shape.number_format),
         note_deco_char_attr(shape.user_char, ""),
         note_deco_char_attr(shape.prefix_char, ""),
-        note_deco_char_attr(shape.suffix_char, ")"),
+        note_deco_char_attr(shape.suffix_char, suffix_fallback),
         u8::from(shape.number_code_superscript),
     )
 }
@@ -676,17 +695,20 @@ pub(crate) fn render_hp_p_open(p: &Paragraph, id: u32, style_id_ref: u8) -> Stri
     // 합성 쪽나눔(파서가 자연 쪽 경계에서 승격, HWP3)은 문서 내용이 아니라 조판
     // 힌트라 저장하지 않는다. 저장하면 한글 재조판의 자연 경계와 이중 작용해
     // 빈 쪽을 만든다(07615: 합성 138건이 264→329쪽 부풀림, 중화 시 264쪽 복원).
-    let page_break = if matches!(p.column_type, ColumnBreakType::Page) && !p.page_break_synthesized
+    let page_break = if (matches!(p.column_type, ColumnBreakType::Page)
+        || p.raw_break_type & 0x04 != 0)
+        && !p.page_break_synthesized
     {
         1
     } else {
         0
     };
-    let column_break = if matches!(p.column_type, ColumnBreakType::Column) {
-        1
-    } else {
-        0
-    };
+    let column_break =
+        if matches!(p.column_type, ColumnBreakType::Column) || p.raw_break_type & 0x08 != 0 {
+            1
+        } else {
+            0
+        };
     format!(
         r#"<hp:p id="{}" paraPrIDRef="{}" styleIDRef="{}" pageBreak="{}" columnBreak="{}" merged="0">"#,
         id, p.para_shape_id, style_id_ref, page_break, column_break,
@@ -744,8 +766,31 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let (runs_xml, position_axis_intact, serialized_axis_end, mut hwp5_only_slot_positions) =
-        render_runs(para, ctx);
+    // 첫 run의 secPr/colPr는 각각 실제 8유닛 슬롯이다. 원본에 없는 정의만
+    // 템플릿이 추가하면 뒤 줄의 시작도 같은 폭만큼 전진해야 한다.
+    let injected_prefix_units = if ctx.line_segs_on_paragraph_axis
+        && ctx.sub_list_depth == 0
+        && ctx.body_coldef_template_pending
+    {
+        let has_section = para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::SectionDef(_)));
+        let has_column = para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::ColumnDef(_)));
+        8 * (u32::from(!has_section) + u32::from(!has_column))
+    } else {
+        0
+    };
+    let (
+        runs_xml,
+        position_axis_intact,
+        serialized_axis_end,
+        mut hwp5_only_slot_positions,
+        collapsed_slot_positions,
+    ) = render_runs(para, ctx);
 
     // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
     // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
@@ -782,33 +827,63 @@ pub(crate) fn render_paragraph_parts(
     // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
     // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
     // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
-    let hwp5_only_units = if ctx.line_segs_on_hwpx_axis {
+    // [#7526] rhwp 원본 마커 문서는 문단마다 가른다 — HWPX 에서 읽은 그대로인 문단(보정폭
+    // 0 아님)만 날값을 둔다.
+    if ctx.line_segs_on_hwpx_axis || para.hwpx_axis_shift != 0 {
         hwp5_only_slot_positions.clear();
-        0
-    } else {
-        8 * hwp5_only_slot_positions.len() as u32
-    };
-    let rebased_line_segs: Option<Vec<LineSeg>> =
-        (!hwp5_only_slot_positions.is_empty() && !para.line_segs.is_empty()).then(|| {
-            para.line_segs
-                .iter()
-                .map(|seg| {
-                    let shift = 8 * hwp5_only_slot_positions
-                        .iter()
-                        .filter(|&&pos| pos < seg.text_start)
-                        .count() as u32;
-                    LineSeg {
-                        text_start: seg.text_start.saturating_sub(shift),
-                        ..seg.clone()
-                    }
-                })
-                .collect()
-        });
-    let source_line_segs = rebased_line_segs.as_deref().unwrap_or(&para.line_segs);
+    }
+    // [#6871] 우리가 **접은** 슬롯은 출처와 무관하게 축에서 뺀다.
+    //
+    // 위 게이트가 다루는 `secd`·`cold` 는 HWPX 축에 **원래 없던** 자리라, HWPX 출처면
+    // 이미 빠져 있어 다시 빼면 왕복이 깨진다. 반면 `#6869` 가 접는 중복 쪽번호는 원본
+    // HWPX 축에 **분명히 있던** 자리다 — 접고도 빼지 않으면 `textpos` 가 방출 축보다
+    // 길어져 한글이 파일을 열지 못한다.
+    //
+    // 실측(156730118, s39 `02482`): 원본은 한글이 1쪽으로 폐기하고 컨트롤만 접은 산출도
+    // 마찬가지인데, 접기 + 축 −16 을 함께 하면 **2쪽으로 정상 개봉**한다. `#6871` 의 네
+    // 문서가 모두 이 형상(한 문단에 쪽번호 3개)이다.
+    hwp5_only_slot_positions.extend(collapsed_slot_positions);
+    hwp5_only_slot_positions.sort_unstable();
+    hwp5_only_slot_positions.dedup();
+    let hwp5_only_units = 8 * hwp5_only_slot_positions.len() as u32;
+    let serializable_line_segs = para.serializable_line_segs();
+    let rebased_line_segs: Option<Vec<LineSeg>> = ((!hwp5_only_slot_positions.is_empty()
+        || ctx.line_segs_on_paragraph_axis)
+        && !serializable_line_segs.is_empty())
+    .then(|| {
+        serializable_line_segs
+            .iter()
+            .map(|seg| {
+                let text_start = if ctx.line_segs_on_paragraph_axis {
+                    para.line_seg_text_start_of(seg.text_start)
+                } else {
+                    seg.text_start
+                };
+                let shift = 8 * hwp5_only_slot_positions
+                    .iter()
+                    .filter(|&&pos| pos < text_start)
+                    .count() as u32;
+                LineSeg {
+                    text_start: text_start.saturating_sub(shift).saturating_add(
+                        if text_start == 0 {
+                            0
+                        } else {
+                            injected_prefix_units
+                        },
+                    ),
+                    ..seg.clone()
+                }
+            })
+            .collect()
+    });
+    let source_line_segs = rebased_line_segs
+        .as_deref()
+        .unwrap_or(serializable_line_segs);
 
     let line_seg_axis_end = para
         .char_count
         .max(serialized_axis_end)
+        .saturating_add(injected_prefix_units)
         .saturating_sub(hwp5_only_units);
     let axis_line_segs = if para.stored_text_partition_is_dirty() {
         // The retained rows are an edit-reflow template, not a partition of
@@ -903,6 +978,10 @@ pub(crate) struct InlineCursor<'a> {
     pub tab_idx: usize,
     /// 문단의 제목 차례 표시 전체 (문자 인덱스 오름차순)
     pub title_marks: &'a [TitleMark],
+    /// [#6956] 문단의 형광펜 표지 전체 (문자 인덱스 오름차순)
+    pub markpen_marks: &'a [crate::model::paragraph::MarkpenMark],
+    /// 다음에 방출할 `markpen_marks` 인덱스
+    pub markpen_idx: usize,
     /// [#5537] `title_marks[i]` 가 **앞(닫히는) run 소유**인가 — char_shapes 경계
     /// 유닛이 표시 끝 유닛과 일치하면 원본은 표시까지를 앞 run 에 뒀다는 증거다.
     /// 비어 있으면 전부 false(종전 동작: 다음 run 머리 방출).
@@ -927,6 +1006,21 @@ pub(crate) struct InlineCursor<'a> {
 impl InlineCursor<'_> {
     /// 현재 문자 위치에 걸린 제목 차례 표시를 전부 방출한다.
     fn flush_marks_at_cursor(&mut self, t_xml: &mut String, buf: &mut String) {
+        // [#6956] 형광펜 표지 — 제목 차례 표시와 같은 자리에서 순서대로 흘린다.
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
         while let Some(m) = self.title_marks.get(self.mark_idx) {
             if m.char_idx > self.char_idx {
                 break;
@@ -956,6 +1050,24 @@ impl InlineCursor<'_> {
 
     /// [#5537] 조각 말미에서 닫히는 run 소유의 표시만 방출한다 — 나머지는
     /// 종전대로 다음 run 머리에서 flush 된다(한컴 실측 두 형태 공존).
+    /// [#6956] 조각 말미에서 현재 문자 위치에 걸린 형광펜 표지를 마저 낸다.
+    fn flush_markpen_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
+        while let Some(m) = self.markpen_marks.get(self.markpen_idx) {
+            if m.char_idx > self.char_idx {
+                break;
+            }
+            flush_buf(t_xml, buf);
+            match &m.color {
+                Some(color) => t_xml.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => t_xml.push_str("<hp:markpenEnd/>"),
+            }
+            self.markpen_idx += 1;
+        }
+    }
+
     fn flush_prev_owned_marks_at_fragment_end(&mut self, t_xml: &mut String, buf: &mut String) {
         while self.has_pending_prev_owned_mark() {
             let m = &self.title_marks[self.mark_idx];
@@ -996,7 +1108,12 @@ pub(crate) fn render_hp_t_content(
                 let (width, leader, tab_type) = if let Some(ext) = tab_extended.get(cursor.tab_idx)
                 {
                     cursor.tab_idx += 1;
-                    (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
+                    if crate::model::paragraph::tab_ext_is_placeholder(ext) {
+                        // [#7170] 자리표는 파서가 알아보는 마커 표기로 되돌린다.
+                        (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
+                    } else {
+                        (ext[0] as u32, ext[2] & 0x00ff, (ext[2] >> 8) & 0x00ff)
+                    }
                 } else {
                     (TAB_NO_DATA_WIDTH_MARKER, 0u16, 1u16)
                 };
@@ -1057,6 +1174,9 @@ pub(crate) fn render_hp_t_content(
     // [#5537] 조각 말미 — 닫히는 run 소유의 표시(경계 유닛 = 표시 끝 유닛)는 여기서
     // 방출한다. 다음 run 머리로 넘기면 재파싱 char_shapes 경계가 8유닛 무너진다.
     cursor.flush_prev_owned_marks_at_fragment_end(&mut t_xml, &mut buf);
+    // [#6956] 형광펜 닫는 표지는 런 **끝**에 오는 것이 한컴 실측 형태다. 문자 루프는
+    // 글자 **앞**에서만 흘리므로 여기서 현재 위치에 걸린 것을 마저 낸다.
+    cursor.flush_markpen_at_fragment_end(&mut t_xml, &mut buf);
     flush_buf(&mut t_xml, &mut buf);
     t_xml.push_str("</hp:t>");
     t_xml
@@ -1317,11 +1437,27 @@ fn render_control_slot_tracked(
     ctx: &mut SerializeContext,
     hwp5_pos: u32,
     hwp5_only_slot_positions: &mut Vec<u32>,
+    collapsed_slot_positions: &mut Vec<u32>,
 ) {
     let before = out.len();
+    // XML이 인라인에서 비어도 구역 머리 run이나 별도 secPr run으로 옮겨진
+    // 정의는 실제 출력에 남는다. 새 문단 축 계약에서 이를 삭제 슬롯으로 세지 않는다.
+    let relocated_definition = ctx.line_segs_on_paragraph_axis
+        && (matches!(control, Control::SectionDef(_))
+            || (matches!(control, Control::ColumnDef(_))
+                && ctx.sub_list_depth == 0
+                && ctx.body_coldef_template_pending));
+    // [#6871] 이 슬롯이 **우리가 접은 것**인지 미리 안다 — 두 번째 이후 쪽번호 위치.
+    let collapses_here =
+        matches!(control, Control::PageNumberPos(_)) && ctx.para_page_num_pos_emitted;
     render_control_slot(out, control, ctx);
-    if out.len() == before {
-        hwp5_only_slot_positions.push(hwp5_pos);
+    if out.len() == before && !relocated_definition {
+        if collapses_here {
+            // [#6871] **출처와 무관하게** 축에서 빼야 한다 — 아래 호출부 주석.
+            collapsed_slot_positions.push(hwp5_pos);
+        } else {
+            hwp5_only_slot_positions.push(hwp5_pos);
+        }
     }
 }
 
@@ -1334,7 +1470,64 @@ fn render_control_slot_tracked(
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
+/// 문자와 개체 슬롯을 같은 UTF-16 축에서 보며, 형광펜 자체는 축을 소비하지 않는다.
+struct PositionedMarkpens<'a> {
+    marks: Vec<(u32, &'a crate::model::paragraph::MarkpenMark)>,
+    next: usize,
+}
+
+impl PositionedMarkpens<'_> {
+    fn flush(
+        &mut self,
+        position: u32,
+        splitter: &mut RunSplitter,
+        text: &mut String,
+        para: &Paragraph,
+        cursor: &mut InlineCursor<'_>,
+    ) {
+        if !self
+            .marks
+            .get(self.next)
+            .is_some_and(|(pos, _)| *pos <= position)
+        {
+            return;
+        }
+        flush_text_fragment(&mut splitter.content, text, &para.tab_extended, cursor);
+        while let Some(&(pos, mark)) = self.marks.get(self.next) {
+            if pos > position {
+                break;
+            }
+            splitter.cut_before(pos);
+            splitter.content.push_str("<hp:t>");
+            match &mark.color {
+                Some(color) => splitter.content.push_str(&format!(
+                    r#"<hp:markpenBegin color="{}"/>"#,
+                    xml_escape(color)
+                )),
+                None => splitter.content.push_str("<hp:markpenEnd/>"),
+            }
+            splitter.content.push_str("</hp:t>");
+            self.next += 1;
+        }
+    }
+}
+
+fn render_runs(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
+    // [#6869/#6871] 표·머리말 등 자식 문단도 같은 context로 재귀 호출된다.
+    // 본체의 조기 반환을 포함해 문단 종료 뒤에는 부모의 방출 상태로 돌아가야 한다.
+    let parent_page_num_pos_emitted = std::mem::replace(&mut ctx.para_page_num_pos_emitted, false);
+    let result = render_runs_in_paragraph_scope(para, ctx);
+    ctx.para_page_num_pos_emitted = parent_page_num_pos_emitted;
+    result
+}
+
+fn render_runs_in_paragraph_scope(
+    para: &Paragraph,
+    ctx: &mut SerializeContext,
+) -> (String, bool, u32, Vec<u32>, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1353,9 +1546,10 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         && para.orphan_field_ends.is_empty()
         // 표시만 있고 텍스트가 없는 문단도 8유닛을 점유한다 — 여기서 빠지면 축이 밀린다.
         && para.title_marks.is_empty()
+        && para.markpen_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true, 0, Vec::new());
+        return (String::new(), true, 0, Vec::new(), Vec::new());
     }
 
     let mut splitter = RunSplitter::new(para);
@@ -1472,6 +1666,8 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         .collect();
     let mut cursor = InlineCursor {
         title_marks: &para.title_marks,
+        markpen_marks: &para.markpen_marks,
+        markpen_idx: 0,
         mark_owned_by_prev: &mark_owned_by_prev,
         // [#4895] 출처가 제어 표기였던 문단만 `<hp:hyphen/>` 로 되돌린다.
         soft_hyphen_as_element: para.control_mask & (1u32 << 0x0018) != 0,
@@ -1497,6 +1693,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.finish(),
             slot_count == 0 || marker_count >= slot_count,
             0,
+            Vec::new(),
             Vec::new(),
         );
     }
@@ -1543,6 +1740,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             marker_count >= shortfall || text_unshifted_and_in_range,
             0,
             Vec::new(),
+            Vec::new(),
         );
     }
 
@@ -1552,12 +1750,24 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     let axis_faithful = slots.iter().all(|c| emits_hwpx_slot_xml(c));
 
     // 메인 경로 — UTF-16 위치 축 위에서 슬롯/필드/문자/경계를 함께 처리
+    cursor.markpen_marks = &[];
+    let mut markpens = PositionedMarkpens {
+        marks: para
+            .markpen_marks
+            .iter()
+            .map(|m| (m.stream_position(para), m))
+            .collect(),
+        next: 0,
+    };
+    markpens.marks.sort_by_key(|(pos, _)| *pos);
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
     // [#5943] XML 을 한 글자도 내지 않은 슬롯의 **HWP5 축** 위치. 저장 lineseg 의
     // `textpos` 를 HWPX 축으로 내릴 때 쓴다 — 아래 `render_control_slot_tracked` 주석.
     let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
+    // [#6871] 우리가 접은 슬롯(중복 쪽번호)의 위치 — 출처와 무관하게 축에서 뺀다.
+    let mut collapsed_slot_positions: Vec<u32> = Vec::new();
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
     // [Task #1556] 고아 fieldEnd 방출 추적.
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
@@ -1570,12 +1780,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1675,12 +1893,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
@@ -1739,12 +1965,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1799,12 +2033,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
+            markpens.flush(
+                expected_utf16_pos,
+                &mut splitter,
+                &mut text_buf,
+                para,
+                &mut cursor,
+            );
             render_control_slot_tracked(
                 &mut splitter.content,
                 slots[slot_idx],
                 ctx,
                 expected_utf16_pos,
                 &mut hwp5_only_slot_positions,
+                &mut collapsed_slot_positions,
             );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1822,6 +2064,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.cut_before(char_pos);
         }
 
+        markpens.flush(char_pos, &mut splitter, &mut text_buf, para, &mut cursor);
         text_buf.push(c);
         let width = char_utf16_width(c);
         if char_pos >= expected_utf16_pos {
@@ -1902,12 +2145,20 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
+        markpens.flush(
+            expected_utf16_pos,
+            &mut splitter,
+            &mut text_buf,
+            para,
+            &mut cursor,
+        );
         render_control_slot_tracked(
             &mut splitter.content,
             slots[slot_idx],
             ctx,
             expected_utf16_pos,
             &mut hwp5_only_slot_positions,
+            &mut collapsed_slot_positions,
         );
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
@@ -1942,11 +2193,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             field_end_emitted[i] = true;
         }
     }
+    markpens.flush(u32::MAX, &mut splitter, &mut text_buf, para, &mut cursor);
     (
         splitter.finish(),
         axis_faithful,
         expected_utf16_pos,
         hwp5_only_slot_positions,
+        collapsed_slot_positions,
     )
 }
 
@@ -2240,7 +2493,15 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
             out.push_str("</hp:ctrl>");
         }
         Control::PageHide(ph) => out.push_str(&render_page_hiding(ph)),
-        Control::PageNumberPos(pn) => out.push_str(&render_page_num(pn)),
+        Control::PageNumberPos(pn) => {
+            // [#6869] 같은 문단의 두 번째 이후 쪽번호 위치 컨트롤은 내지 않는다.
+            // XML 을 한 글자도 내지 않으므로 `render_control_slot_tracked` 가 이 슬롯을
+            // "HWP5 축에만 있는 슬롯" 으로 세고, `#5943` 의 `textpos` 보정이 그대로 걸린다.
+            if !ctx.para_page_num_pos_emitted {
+                ctx.para_page_num_pos_emitted = true;
+                out.push_str(&render_page_num(pn));
+            }
+        }
         Control::PageNumCtrl(pnc) => out.push_str(&format!(
             r#"<hp:ctrl><hp:pageNumCtrl pageStartsOn="{}"/></hp:ctrl>"#,
             pnc.page_starts_on.as_hwpx()
@@ -2392,6 +2653,7 @@ fn render_col_pr_ctrl(cd: &ColumnDef) -> String {
     };
     let layout = match cd.direction {
         ColumnDirection::RightToLeft => "RIGHT",
+        ColumnDirection::Mirror => "MIRROR",
         ColumnDirection::LeftToRight => "LEFT",
     };
     let mut out = format!(
@@ -2526,6 +2788,10 @@ fn render_autonum(an: &AutoNumber) -> String {
         // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
         ty = if an.format == 1 {
             "CIRCLED_DIGIT"
+        } else if an.format == 18 {
+            // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
+            // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
+            "USER_CHAR"
         } else {
             page_num_format_to_str(an.format)
         },
@@ -3071,6 +3337,8 @@ struct NoteAttrs {
     prefix_char: u16,
     /// `after_decoration_letter` — 항상 방출.
     suffix_char: u16,
+    /// [#6872] true 면 `suffixChar` 가 아니라 `userChar` 라는 이름으로 방출한다.
+    decoration_is_user_char: bool,
     /// HWP5 `numberShape` — 0 이면 속성 생략(한컴 계약).
     number_shape: u32,
     /// HWP5 `instanceId` — 항상 방출.
@@ -3098,9 +3366,17 @@ fn render_note_attrs(attrs: &NoteAttrs) -> String {
     if attrs.prefix_char != 0 {
         out.push_str(&format!(r#" prefixChar="{}""#, attrs.prefix_char));
     }
+    // [#6872] 사용자 기호로 온 장식 문자는 같은 이름으로 되돌린다. 한컴은 번호 모양이
+    // 사용자 기호일 때 `suffixChar` 를 아예 쓰지 않으므로(156513948 각주 5개 실측),
+    // 이름을 바꿔 내보내면 표시가 `*` 에서 `*)` 로 바뀐다.
+    let deco_name = if attrs.decoration_is_user_char {
+        "userChar"
+    } else {
+        "suffixChar"
+    };
     out.push_str(&format!(
-        r#" suffixChar="{}" instId="{}""#,
-        attrs.suffix_char, attrs.inst_id
+        r#" {}="{}" instId="{}""#,
+        deco_name, attrs.suffix_char, attrs.inst_id
     ));
     out
 }
@@ -3192,6 +3468,7 @@ fn render_footnote(note: &Footnote, ctx: &mut SerializeContext) -> String {
             number: note.number,
             prefix_char: note.before_decoration_letter,
             suffix_char: note.after_decoration_letter,
+            decoration_is_user_char: note.decoration_is_user_char,
             number_shape: note.number_shape,
             inst_id: note.instance_id,
         },
@@ -3208,6 +3485,7 @@ fn render_endnote(note: &Endnote, ctx: &mut SerializeContext) -> String {
             number: note.number,
             prefix_char: note.before_decoration_letter,
             suffix_char: note.after_decoration_letter,
+            decoration_is_user_char: note.decoration_is_user_char,
             number_shape: note.number_shape,
             inst_id: note.instance_id,
         },
@@ -4201,7 +4479,7 @@ mod tests {
     /// `tab_extended` 항목을 만들지 않는다 — 렌더러가 실제 `TabDef` 기준으로 탭 정지를
     /// 다시 계산하게 한다.
     #[test]
-    fn issue4403_implicit_tab_stays_empty_after_hwpx_roundtrip() {
+    fn issue4403_implicit_tab_stays_a_placeholder_after_hwpx_roundtrip() {
         use crate::parser::hwpx::section::parse_hwpx_section;
 
         let mut para = Paragraph::default();
@@ -4223,9 +4501,17 @@ mod tests {
         let reparsed = parse_hwpx_section(&xml).unwrap();
         let reparsed_para = &reparsed.paragraphs[0];
         assert_eq!(reparsed_para.text, "I.소설의 이해\t3");
+        // [#7170] 마커는 버리지 않고 자리표로 싣는다 — 버리면 그 뒤 탭의 확장이
+        // 순번으로 밀린다. 저장 폭이 아니라는 판정은 `tab_ext_is_placeholder` 가 준다.
+        assert_eq!(
+            reparsed_para.tab_extended.len(),
+            1,
+            "탭 1개의 자리표가 남아야 함: {:?}",
+            reparsed_para.tab_extended
+        );
         assert!(
-            reparsed_para.tab_extended.is_empty(),
-            "width=0 마커 재파싱 후 tab_extended 는 비어 있어야 함(원본과 동일): {:?}",
+            crate::model::paragraph::tab_ext_is_placeholder(&reparsed_para.tab_extended[0]),
+            "width=0 마커는 자리표로 읽혀야 함: {:?}",
             reparsed_para.tab_extended
         );
     }
@@ -4477,11 +4763,11 @@ mod tests {
         let xml = String::from_utf8(write_section(&section, &doc, 0, &mut ctx).unwrap()).unwrap();
 
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_PAGE" newNum="3"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_PAGE" newNum="3"/>"#),
             "각주 numbering 이 IR 값이어야 함"
         );
         assert!(
-            xml.contains(r#"<hp:numbering type="RESTART_SECTION" newNum="5"/>"#),
+            xml.contains(r#"<hp:numbering type="ON_SECTION" newNum="5"/>"#),
             "미주 numbering 이 IR 값이어야 함"
         );
         assert!(

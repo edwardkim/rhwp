@@ -9,7 +9,7 @@ gym/ 을 열지 않는다. 네트워크를 부르지 않는다.
 poppler/ImageMagick 이 없는 환경에서도 통과해야 한다.
 
 정본: .claude/skills/rhwp-exam-ingest/
-작업 기록: mydocs/working/agent_exam_ingest.md
+작업 기록: mydocs/working/archives/agent_exam_ingest.md
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ SCHEMAS = FIXTURES / "schemas"
 MATS = FIXTURES / "matrices"
 TRANS = FIXTURES / "transcripts"
 HFIX = FIXTURES / "helpers"
-WORKING = REPO / "mydocs" / "working" / "agent_exam_ingest.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_exam_ingest.md"
 CANON_SCHEMA = REPO / "tools" / "rhwp-ingest" / "schema" / "ingest_schema_v1.json"
 
 ISSUE = 5319

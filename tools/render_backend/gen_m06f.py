@@ -16,7 +16,7 @@ FIXTURE = ROOT / "tests" / "fixtures" / "render_backend"
 CASES = ROOT / "tests" / "cases"
 DOCS_MANUAL = ROOT / "mydocs" / "manual"
 DOCS_TECH = ROOT / "mydocs" / "tech"
-DOCS_WORKING = ROOT / "mydocs" / "working"
+DOCS_WORKING = ROOT / "mydocs" / "working" / "archives"
 
 KINDS = [
     "pageBackground",

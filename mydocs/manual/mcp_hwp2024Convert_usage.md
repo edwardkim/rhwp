@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-08-30
+last_verified: 2026-10-05
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -25,6 +25,33 @@ PDF 산출에서는 저장 제품을 세분화해 `-2018.pdf`, `-2022.pdf`처럼
 PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 항상 `--engine`과
 `--output-filename`을 명시한다.
 
+## 기준 PDF 인쇄 계약
+
+조판·렌더링 검증의 기준 PDF는 **원본 저장 버전에 맞는 한컴의 Print 인쇄 경로**로 출력한다.
+MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → download`로 산출한다.
+`--target pdf`는 결과 형식 지정이므로 이것만으로 Print 실행을 입증하지는 않는다.
+서비스 실행 증거에서 실제 한컴 제품/빌드와 Print 경로를 확인해 기록한다. 확인할 수 없으면
+출력 방법은 미검증이며, 성공 job·PDF Creator·파일명만으로 Print 출력으로 간주하지 않는다.
+현재 MCP의 `status.result`에 있는 `engine`, `hancom_version`, `pdf_print_method`,
+`pdf_output_mode`를 확인한다. 예를 들어 2020 출력의 `pdf_print_method: 0`과
+`pdf_output_mode: hancom2020_pdf_driver_one_up`은 한 쪽씩 PDF 인쇄 경로의 실행 증거다.
+결과 필드가 누락되거나 다른 모드이면 해당 engine의 실제 인쇄 경로를 별도로 확인한다.
+
+- 수동 출력도 해당 한컴에서 **파일 → 인쇄(Print) → PDF 출력**을 사용한다.
+  PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를 기준으로 대신하지 않는다.
+- 기본은 원본 용지·방향을 유지한 전체 문서, 100% 배율·한 쪽씩(1-up) 인쇄다.
+  모아 찍기·맞춰 찍기·용지 재지정이 검증 대상이면 설정과 비교 범위를 별도로 기록한다.
+- 입력 SHA-256·저장 제품 판정, 실제 한컴 제품/빌드·OS·글꼴, Print 출력 방법과 인쇄 설정,
+  PDF SHA-256·전체 쪽수, MCP engine·job 식별자를 증적에 연결한다. 인증 정보는 기록하지 않는다.
+- 기존 PDF도 같은 원본·버전·Print 출력 출처를 확인한 경우 재사용한다.
+  PDF 형식 버전이나 Creator 표기의 연도만으로 승인하거나 폐기하지 않는다.
+- 일반 기여자는 MCP 권한 없이 본인의 해당 버전 한컴에서 직접 Print 출력해 제출할 수 있다.
+  여러 제품 버전을 비교하면 각 버전의 Print PDF를 구분한다. 직접 출력본은 실제 제품 버전으로
+  이름 붙이고, 아래 MCP의 `2020`/`2024` bucket 명칭으로 바꾸지 않는다.
+
+편집 동작을 검증할 때도 동일하게 편집한 저장본을 해당 한컴에서 열어 Print PDF를 만든다.
+기준 PDF가 없다는 이유로 조판 변경의 Visual Sweep을 비해당으로 처리하지 않는다.
+
 | `rhwp info --json`의 `lastSavedWith.product` | 요청 engine | 기준 PDF 파일명 |
 | --- | --- | --- |
 | `hancom-office-2024` | `2024` | `<원본-stem>-2024.pdf` |
@@ -41,10 +68,9 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 ## 개요
 
 - MCP server 이름: `hwp2024Convert`
-- 권장 실행 방식: `hwp2024-mcp-convert` CLI의 비동기 `start → status → download` 흐름.
-  다쪽 문서, 변환 시간이 긴 문서와 PR review 기준 PDF는 항상 이 흐름을 사용한다.
-- 동기 `hwp2024-mcp-convert convert` 호출은 소형 문서의 즉시 변환 확인에만 사용한다.
-- VS Code 연동 방식: stdio MCP bridge `hwp2024-mcp-bridge`. 실제 변환은 비동기 tool을 우선한다.
+- 실행 방식: `hwp2024-mcp-convert` CLI의 비동기 `start → status → download` 흐름.
+  모든 문서 변환과 PR review 기준 PDF는 이 흐름을 사용한다.
+- VS Code 연동 방식: stdio MCP bridge `hwp2024-mcp-bridge`. 비동기 tool만 사용한다.
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
@@ -52,7 +78,6 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 - PR review 기준 PDF 이름: `lastSavedWith.product`가 `hancom-office-2024`이면 `-2024.pdf`,
   그 외(`null`, 2010, 2018, 2020, 2022, 알 수 없는 구버전)는 `-2020.pdf`
 - 선택적 암호 문서: MCP tool의 `password` 또는 CLI의 비공개 `--password-file`
-- 동기 tool: `convert_local_document`
 - 비동기 tool: `start_local_document_conversion`, `get_local_conversion_status`,
   `save_local_conversion_result`
 - 지원 client 환경: Node.js 22 이상의 macOS, Linux, Windows PowerShell. Windows `cmd.exe`를 쓸 때는
@@ -66,7 +91,8 @@ resource blob의 byte 수와 SHA-256을 검증한 뒤 local output directory에 
 
 server URL/IP, bearer token과 `.env.local` 내용은 Git, issue, PR, 공개 문서와 로그에 기록하지 않는다.
 이 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용할 수 있다.
-접근 정보는 MCP 관리자에게 비공개 경로로 전달받는다.
+[Discussion #858의 Slack 가입 안내](https://github.com/edwardkim/rhwp/discussions/858)를 참고해
+Slack에 가입한 뒤 메인터너 또는 collaborator에게 접근 정보를 비공개로 요청한다.
 
 ## 최신 client artifact
 
@@ -120,7 +146,7 @@ token은 전송 구간 암호화를 제공하지 않으므로 신뢰할 수 있�
 HTTPS reverse proxy 뒤에 둔다.
 
 암호 문서를 CLI로 변환할 때는 문서 암호를 command line 인자에 직접 넣지 않는다. Git 밖의 현재 사용자만
-읽을 수 있는 단일 행 파일을 만들고 `convert` 또는 `start`에 `--password-file <경로>`를 지정한다.
+읽을 수 있는 단일 행 파일을 만들고 `start`에 `--password-file <경로>`를 지정한다.
 MCP tool에서는 요청의 선택적 `password` 필드로만 전달한다. client는 암호를 결과 JSON, job 상태,
 파일명 또는 로그에 기록하지 않는다.
 
@@ -147,9 +173,8 @@ $EnvFile = 'C:\Users\<사용자>\hwp-convert-2024\.env.local'
 & $Npx --version
 ```
 
-실제 문서 변환은 비동기 `start → status → download`를 기본으로 사용한다. 아래 동기 예제는 설치 확인이나
-수 초 안에 끝나는 소형 문서 smoke test에만 사용한다. `--input`과 `--output-dir`은 모두 client PC의
-local 경로다.
+실제 문서 변환은 비동기 `start → status → download`만 사용한다. `--input`과 `--output-dir`은 모두
+client PC의 local 경로다.
 
 도움말 (macOS/Linux):
 
@@ -165,44 +190,9 @@ npx -y --package="file:$HWP2024_MCP_PACKAGE" -- hwp2024-mcp-convert --help
   -- hwp2024-mcp-convert --help
 ```
 
-### 소형 문서 확인 전용: 동기 변환
+### 비동기 변환
 
-작은 문서는 `convert`가 upload, 원격 변환, download, SHA-256 검증과 local 저장을 한 번에 수행한다.
-
-macOS/Linux:
-
-```bash
-npx -y --package="file:$HWP2024_MCP_PACKAGE" -- hwp2024-mcp-convert convert \
-  --env-file "$HWP2024_MCP_ENV_FILE" \
-  --input "$HOME/rhwp/samples/example.hwp" \
-  --target pdf \
-  --engine 2024 \
-  --output-dir "$HOME/rhwp/pdf" \
-  --output-filename example-2024.pdf \
-  --timeout-seconds 900
-```
-
-Windows PowerShell:
-
-```powershell
-& $Npx -y `
-  "--package=file:$Package" `
-  -- hwp2024-mcp-convert convert `
-  --env-file $EnvFile `
-  --input 'C:\Users\<사용자>\rhwp\samples\example.hwp' `
-  --target pdf `
-  --engine 2024 `
-  --output-dir 'C:\Users\<사용자>\rhwp\pdf' `
-  --output-filename 'example-2024.pdf' `
-  --timeout-seconds 900
-```
-
-성공하면 `status`, `output_path`, `target`, `size`, `sha256`와 server 변환 metadata가 JSON으로
-출력된다. 기존 output file은 덮어쓰지 않는다.
-
-### 권장: 비동기 변환
-
-큰 문서, 변환 시간이 긴 문서와 PR review 기준 PDF는 `start → status → download` 순서로 처리한다.
+모든 문서는 `start → status → download` 순서로 처리한다.
 
 macOS/Linux:
 
@@ -275,6 +265,30 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 - 여러 service endpoint를 병렬로 쓰는 client wrapper는 `start`에 성공한 endpoint를 해당 job의
   `status`와 `download`까지 고정해야 한다. 서로 다른 endpoint에 상태 조회나 결과 저장을 보내면
   그 서버에는 job journal과 result blob이 없어 `job_id was not found or has expired`가 반환될 수 있다.
+
+### 문서 열기 보안 경고: 수동 PDF 생성
+
+한컴이 문서를 여는 중 다음 경고를 표시하면 MCP는 무인 변환을 중단하고 오류로 반환한다.
+비동기 job은 `failed`가 되며 결과 파일은 없으므로 download하지 않는다. 실패한 job은 활성
+변환 슬롯과 대기열을 반환하고, 상태 조회용 실패 기록은 보존 기간 동안 남는다.
+
+| 한컴 경고 | MCP 오류 코드 |
+| --- | --- |
+| 문서가 손상되었거나 변조되었을 가능성이 있으며 문서 보안 설정을 낮춰야 한다는 경고 | `HANCOM_DOCUMENT_OPEN_REJECTED` |
+| 파일 접근에 따른 손상·유출 위험을 알리며 접근 허용 여부를 묻는 경고 | `HANCOM_FILE_ACCESS_APPROVAL_REQUIRED` |
+
+이 경우에는 timeout을 늘려 재시도하지 말고, 보안 검토가 가능한 대화형 한컴 환경에서
+**수동으로 PDF를 생성한다**. MCP는 확인·접근 허용 버튼을 자동으로 누르거나 문서 보안 설정을
+낮추지 않는다.
+
+1. 원본의 출처와 저장 제품을 확인하고 적합한 한컴 버전에서 직접 연다. 접근 권한 요청은 사용자가
+   파일과 작업을 검토한 뒤 판단한다. 손상·변조 경고 때문에 안전하게 열 수 없다면 보안 설정을
+   낮추지 말고 원본 제공자에게 정상 사본을 요청한다.
+2. 정상적으로 열린 문서의 내용·쪽수·조판을 확인한 뒤 **인쇄(Print)의 PDF 출력**으로 생성한다.
+   PDF 저장/내보내기로 대신하지 않고, 위 기준 PDF 인쇄 계약의 배율·용지·전체 쪽수도 확인한다.
+   기준 PDF 이름은 위의 저장 제품별 `-2020.pdf` / `-2024.pdf` 규칙을 따른다.
+3. 생성된 PDF를 직접 열어 누락·빈 페이지·출력 손상을 확인한다. 원본과 생성 PDF를 함께 보존하고,
+   검증 기록에는 MCP 실패 코드, 수동 생성 사실과 실제 사용한 한컴 버전을 남긴다.
 
 ## VS Code MCP 등록
 
@@ -366,34 +380,6 @@ VS Code MCP 접근이 차단되어 있으면 user settings에 다음을 추가�
 
 ## MCP tool 사용
 
-### 동기
-
-macOS/Linux 경로 예시:
-
-```json
-{
-  "input_path": "/home/<사용자>/rhwp/samples/example.hwp",
-  "target": "pdf",
-  "engine": "2024",
-  "output_dir": "/home/<사용자>/rhwp/pdf",
-  "output_filename": "example-2024.pdf",
-  "timeout_seconds": 900
-}
-```
-
-Windows 경로 예시:
-
-```json
-{
-  "input_path": "C:\\Users\\<사용자>\\rhwp\\samples\\example.hwp",
-  "target": "pdf",
-  "engine": "2024",
-  "output_dir": "C:\\Users\\<사용자>\\rhwp\\pdf",
-  "output_filename": "example-2024.pdf",
-  "timeout_seconds": 900
-}
-```
-
 ### 비동기 시작
 
 macOS/Linux 경로 예시:
@@ -452,7 +438,7 @@ Windows 경로 예시:
 `/Users/<사용자>/...`, Windows는 `C:\Users\<사용자>\...`를 쓰며 server 내부 경로를 입력하지 않는다.
 `output_filename`은 경로가 없는 파일명이어야 하며 target 확장자와 일치해야 한다.
 
-암호 문서는 동기 또는 비동기 시작 요청에만 `password`를 추가한다. 상태 확인과 결과 저장 요청에는
+암호 문서는 비동기 시작 요청에만 `password`를 추가한다. 상태 확인과 결과 저장 요청에는
 암호를 다시 넣지 않는다.
 
 ```json
@@ -472,8 +458,7 @@ HTTP MCP server는 여러 client session을 받을 수 있지만 한컴 runtime 
 server process 전체에서 하나씩 직렬 실행한다. 비동기 요청은 기본 8개까지 대기열에 들어간다.
 
 `timeout_seconds` 허용 범위는 10~1800초이고 기본값은 600초다. 일반 문서는 600~900초, 큰 문서·이미지가
-많은 문서·거대 표·중첩 표는 1800초를 권장한다. client의 동기 HTTP request는 변환 timeout에 120초
-여유를 더해 기다린다.
+많은 문서·거대 표·중첩 표는 1800초를 권장한다.
 
 ## HWP5 입력 사전 차단
 
@@ -579,9 +564,9 @@ Get-FileHash -Algorithm SHA256 -LiteralPath 'C:\Users\<사용자>\rhwp\pdf\examp
 - 실제 archive CLI의 비동기 `start`가 engine `2020`, 엔진별 기본 파일명, 비공개 암호 파일을 remote argument로 전달
 - 결과 JSON에는 `status`, `job_id`, `engine`만 있고 암호 값은 없음
 
-2026-08-24 실제 배포 MCP server에는 최신 artifact로 engine `2024`의 작은 HWPX를 동기 `convert`와
-비동기 `start → status → download`로 각각 변환했다. 두 경로 모두 `success`, client/server SHA-256 일치와
-PDF 서명을 확인했고, 비동기 `start`와 `status`의 `engine`은 요청값 `2024`와 일치했다. 또한 Hancom Office
+2026-08-24 실제 배포 MCP server에는 최신 artifact로 engine `2024`의 작은 HWPX를 비동기
+`start → status → download`로 변환했다. `success`, client/server SHA-256 일치와 PDF 서명을 확인했고,
+비동기 `start`와 `status`의 `engine`은 요청값 `2024`와 일치했다. 또한 Hancom Office
 2020 저장본 `kps-ai.hwp`는 `--engine 2020`을 명시한 비동기 흐름에서 `queued → succeeded → success`,
 `start`·`status`의 `engine: "2020"`, PDF 서명 및 SHA-256 일치를 확인했다. `server.engine`은
 `hancom-2024-direct-host` backend 식별자를 반환했고 `server.engine_profile`과 `server.hancom_version`은
@@ -592,9 +577,8 @@ PDF 서명을 확인했고, 비동기 `start`와 `status`의 `engine`은 요청�
 - tarball에서 `hwp2024-mcp-convert --help` 실행 성공
 - stdio initialize와 tool discovery 성공, tool 4개
 - archive 내 `node_modules` 0개, runtime dependency import 0개
-- 동기 HWP→HWPX: `success`, output 67,709 bytes
 - 비동기 HWP→PDF: `queued → succeeded → success`, output 106,341 bytes
-- 두 경로 모두 client/server output byte 수와 SHA-256 일치
+- client/server output byte 수와 SHA-256 일치
 - server engine `hancom-2024-direct-host`, backend `hwp-managed-direct-dll-host`, worker 32-bit
 
 실제 server 주소와 token은 검증 기록에 포함하지 않았다.

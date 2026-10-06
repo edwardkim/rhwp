@@ -898,6 +898,10 @@ pub struct Field {
     /// 로 재조립하며, 둘 다 없으면 기존처럼 `command` 하나만 담은 최소
     /// `<hp:parameters cnt="1">` 를 합성한다.
     pub parameters: ParameterList,
+    /// rhwp가 링크 색/밑줄을 적용하기 전의 서식. 한컴 필드 Command에 섞지 않고
+    /// 별도 rhwp 컨테이너 메타데이터로 보존한다. 없으면 해제 시 현재 서식을 유지한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hyperlink_format: Option<Box<super::hyperlink_format::OriginalFormat>>,
     /// [#3545] 적재 정규화(`clear_initial_field_texts`)가 지운 안내문 본문 run 의 잔재.
     ///
     /// 한컴은 미기입 누름틀(dirty="0")의 안내문을 **파일에는 본문 run 으로 유지**하고

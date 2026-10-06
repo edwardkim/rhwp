@@ -21,7 +21,7 @@ devel 실측 pairCount 는 409 (매칭 샘플 389). 이슈 참고값 269를 실�
 
 한 줄 전수 (로컬, 무거움 — 409쌍을 돌릴 수 있다):
 
-    git sparse-checkout add pdf pdf-2020 pdf-large crates
+    git sparse-checkout add pdf crates
     cargo build --release --bin rhwp
     python tools/oracle_public/sweep_runner.py --top 20 -o oracle-sweep.json
 
@@ -57,7 +57,7 @@ CLAIM_ID = "M01-2"
 REFERENCE_TARGET_PAIR_COUNT = 269
 MEASURED_DEVEL_PAIR_COUNT = 409
 DEFAULT_TOP = 10
-DEFAULT_ORACLE_ROOTS = ("pdf", "pdf-2020", "pdf-large")
+DEFAULT_ORACLE_ROOTS = ("pdf",)
 SAMPLE_EXTS = {".hwp", ".hwpx"}
 HANCOM_YEARS = ("2018", "2020", "2022", "2024")
 MODES = ("cheap", "export-svg", "render-diff", "fidelity")
@@ -1326,7 +1326,7 @@ def resolve_pairs(
         notes.append(
             "PDF 루트 없음: "
             + ", ".join(missing)
-            + " — `git sparse-checkout add pdf pdf-2020 pdf-large crates` 후 전수 스윕"
+            + " — `git sparse-checkout add pdf crates` 후 전수 스윕"
         )
     pairs, unmatched = discover_pairs(repo, args.samples_dir, roots)
     notes.append(

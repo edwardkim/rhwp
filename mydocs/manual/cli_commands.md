@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-08-23
+last_verified: 2026-09-16
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -140,14 +140,16 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
 - `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
-  `{"schemaVersion":"1.0","source","format":"svg","outputDir","pageCount","renderedCount","overflowCellLines","pages":[{"page","path","bytes","overflowCellLines"}]}`
+  `{"schemaVersion":"1.0","source","format":"svg","backend":"layer|legacy","outputDir","pageCount","renderedCount","overflowCellLines","pages":[{"page","path","bytes","overflowCellLines"}]}`
+  `backend`은 기본 production 경로의 `layer` 또는 명시적 compatibility 진단 경로의
+  `legacy`이므로 자동화가 두 artifact를 혼동하지 않는다.
   기본 출력(사람용 진행 메시지)은 무변경이며, `--json` 모드에서는 stdout 에 JSON 만 나간다.
   `search --json`(#3283)과 조합하면 **찾은 페이지만 렌더해 VLM 에 넘기는** 루프가 닫힌다.
   - `overflowCellLines` (#3668): 셀 안 줄의 윗변이 쪽 하단 밖에 그려져 **보이지 않는 줄 수**
     (`LAYOUT_OVERFLOW_CELL` 진단과 같은 조건). top-level 은 문서 합계, `pages[]` 항목은
     페이지별 카운트다. 0 이 아니면 그 페이지의 셀 콘텐츠 일부가 소실 렌더된 것이다 —
     #3236 계열(분할 대신 통짜 배치 후 clip) 조사의 1차 신호. 원장 게이트는
-    [`local_validation.md` 4.3.1](pr_review/local_validation.md#431-새-hwphwpx-fixture의-baseline-등록--ir-sweep--overflow-cell-원장) 참조.
+    [`local_validation.md` 4.3.1](pr_review/local_validation.md#431-새-hwphwpx-fixture의-baseline-등록--코퍼스-래칫-여섯) 참조.
 - `-o`, `-p` (공통)
 - `--show-para-marks` — 문단부호(↵/↓)
 - `--show-control-codes` — 조판부호(문단부호 + 개체 마커)
@@ -164,13 +166,14 @@ HWP/HWPX → SVG.
 - `--embed-fonts` — 폰트 서브셋 임베딩(사용 글자만 base64)
 - `--embed-fonts=full` — 폰트 전체 임베딩
 - `--font-path <경로>` — 폰트 탐색 경로(여러 번 지정 가능)
-- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존(legacy) 경로
-  (`render_page_svg_native` → `SvgRenderer` 직행, paint 계층 미경유)다.
-  **legacy 경로는 인쇄 등가 출력이 아니다** — 기본값이 `RenderProfile::Screen` 과 같아
-  `editor_only` 노드(빈 누름틀 안내문 등)를 편집 화면처럼 표시한다. 그림 미지정
-  placeholder만 예외로 항상 억제된다(#2225). 인쇄 등가 산출물이 필요하면 이 옵션으로
-  `--profile print`(또는 `high-quality`)를 명시한다 — 두 경로의 배경과 `editor_only`
-  판정 통합은 #4379.
+- `--backend layer|legacy` — 기본값은 canonical `layer`. `legacy`는 migration 중
+  `PageRenderTree → SvgRenderer` 출력을 명시적으로 비교하는 compatibility/diagnostic 전용이며
+  `--profile`·`--font-style`·`--embed-fonts`와 함께 사용할 수 없다.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시에도
+  `render_page_svg_native`가 `RenderProfile::Screen`의 `PageLayerTree`를 직접 재생한다.
+  인쇄 등가 산출물이 필요하면 `--profile print`(또는 `high-quality`)를 명시한다.
+  font style/embedding도 같은 screen layer tree를 소비하며, production routing은
+  `RHWP_RENDER_PATH` 같은 환경변수로 legacy backend를 고르지 않는다.
   **제약**: `--font-style`/`--embed-fonts` 와 함께 사용할 수 없다(오류 종료).
 
 ### `export-png <파일> [옵션]` *(native-skia feature 필요)*
@@ -225,8 +228,8 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
   폰트 서브셋 경로를 건너뛰어 **메모리를 크게 절감**(실측 예: 124→78 MB)
   하는 대신 **PDF 의 텍스트 선택·검색 기능을 잃는다** (시각 출력 동일,
   파일 크기는 증가). 저메모리 환경(Quick Look 등)용 옵트아웃.
-- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 기존
-  (legacy) 경로.
+- `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시 `svg` backend는
+  `screen`, `direct` backend는 `print`를 사용한다.
 - `<파일>`, `<경로>`, `<family>`는 자리표시자이며 실제 입력에는 꺾쇠괄호를 쓰지 않는다.
 - 공백이 없는 값은 그대로 입력한다. 예: `--font-path ./ttfs`
 - 공백이 있는 경로/폰트명은 큰따옴표를 권장한다. 예:
@@ -251,6 +254,11 @@ rhwp export-pdf input.hwp -o out.pdf \
 - 선택한 fallback family 또는 수식 폰트가 fontdb에 없으면 warning을 출력한다.
 - direct/vector `PageLayerTree → PDF` backend는 `--backend direct`로 이미 사용 가능하다
   (`native-skia` feature 빌드 필요, 위 옵션 설명 참고).
+- 두 backend 모두 HWP5/HWPX의 본문·표 셀·글상자 텍스트 필드에 있는 HTTP/HTTPS 및
+  mailto 링크를 PDF 링크 주석으로 보존한다(#6963). 줄이나 페이지가 나뉘면 실제 출력된
+  글자 영역마다 클릭 영역을 만든다. 문서 내부 이동(GoTo), 머리말·꼬리말·각주·캡션 및
+  HWP3 링크는 아직 지원하지 않는다. 회전·세로쓰기·글자 겹침·표시값 길이가 달라지는
+  URI 링크의 출력 영역은 오류를 반환한다. Studio의 브라우저 PDF 저장은 별도 경로다.
 
 ### `export-text <파일> [옵션]`
 페이지별 텍스트 → TXT. `-o`, `-p`.
@@ -1185,13 +1193,43 @@ rhwp edit insert-text-in-cell 양식.hwpx --table 0 --row 1 --col 2 --cell-para 
 구역 정의(머리말 감추기·시작 번호 등)를 바꾼다. 코어 `set_section_def_native`. `--props` 필수.
 
 ### `edit insert-page-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#4993)
-문단을 지정 오프셋에서 가르고 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
+문단을 지정 오프셋에서 가르고 새 문단에 쪽 나눔을 넣는다. 코어 `insert_page_break_native` 배선.
+`--offset 0`(문단 시작)이면 문단을 가르지 않고 그 문단에만 쪽 나눔을 건다(#7218) — 가르면 원 문단 모양(개요 수준 포함)을
+물려받은 빈 문단이 앞에 남아 개요 번호가 비어 보인다. 이미 쪽·구역 나눔이 있는 문단에는 아무것도 하지 않는다.
+`--json` 봉투는 `paragraphDelta`(문단 수 변화: offset 0 이면 0, 아니면 1)와 `pageBreakParagraph`(쪽 나눔이 걸린 문단 번호)를 싣는다.
 
 ### `edit insert-column-break <파일> [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5019)
 문단을 지정 오프셋에서 가르고 단 나눔을 넣는다. 코어 `insert_column_break_native` 배선.
 
-### `edit insert-table <파일> --rows N --cols N [--section N] [--para N] [--offset N] [-o <출력>] [--dry-run] [--verify] [--json]` (#5040)
-본문 좌표에 빈 표를 만든다. 코어 `create_table_native`. `--rows`/`--cols` 는 1 이상이고, 열 수는 256 이하이다.
+<a id="edit-insert-table"></a>
+
+### `edit insert-table <파일> --rows N --cols N [--section N --para N --offset N | --at-field 이름] [--widths 목록] [--alignments 목록] [--repeat-header true|false] [-o <출력>] [--dry-run] [--verify] [--json]` (#5819)
+
+본문에 빈 표를 만든다. `--rows`는 1~65535, `--cols`는 1~256이며 좌표는 0부터 시작한다.
+`--at-field`는 이름이 유일한 **본문 필드가 있는 문단 바로 뒤**에 독립된 표를 삽입한다.
+필드 이름·ID·안내문·내용을 유지하며 필드 내부를 분할하지 않는다. 좌표 옵션과 함께 쓸 수 없고,
+없는 이름·중복 이름·표 셀/글상자 내부 필드는 오류로 거부한다. 후자는 기존 본문 표 생성 명령의 범위 밖이다.
+
+| 옵션 | 계약 |
+| --- | --- |
+| `--widths 3000,6000,9000` | 열별 HWPUNIT 정수. 개수는 열 수와 같고 각 값은 양수, 합계는 2147483647 이하. 전체 표 폭은 합계다. |
+| `--widths 20%,30%,50%` | 기존 기본 표 폭에 대한 양수 비율. 합계 100%, 단위 혼용 불가. 누적 경계를 반올림해 전체 폭을 보존하며 1 HWPUNIT 미만으로 반올림되는 열은 거부한다. |
+| `--alignments left,center,right` | 열별 텍스트 문단 정렬. 개수는 열 수와 같아야 한다. 생략하면 삽입 문단의 서식을 상속한다. |
+| `--repeat-header true` | 기본값. 첫 행을 머리행으로 지정하고 `repeatHeader=1`, `pageBreak=CELL`로 생성한다. |
+| `--repeat-header false` / `--no-repeat-header` | 반복 머리행을 끈다. `pageBreak=CELL`은 유지한다. |
+
+너비를 생략하면 기존 균등 열 폭을 유지한다. 절대 너비는 페이지 폭에 맞추어 자동 축소하지 않는다.
+`--dry-run`도 실제 인메모리 생성·입력 검증을 거치며 파일 쓰기만 생략한다. JSON의 `tableParagraph`와
+`control`은 생성된 표의 실제 위치, `widths`는 확정된 HWPUNIT 너비다. `--verify`는 저장본의 IR 재파싱 비교이며
+한컴 화면·PDF 일치 판정은 아니다.
+
+```bash
+rhwp edit insert-table template.hwpx --rows 12 --cols 3 --at-field MR_LIST \
+  --widths 20%,30%,50% --alignments left,center,right -o report.hwpx --verify --json
+```
+
+MCP `hwp_insert_table`은 `atField`, `widths`, `alignments`, `repeatHeader`로 같은 옵션을 제공한다.
+`widths`와 `alignments`는 CLI와 동일한 쉼표 구분 문자열이며 `repeatHeader:false`는 명시적으로 머리행 반복을 끈다.
 
 ### `edit set-chart-data <파일> --chart N --data <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 문서 순번 차트의 숫자 데이터를 바꾼다. 코어 `set_chart_data_by_index_native`. `--chart` 는
@@ -1646,6 +1684,48 @@ rhwp export-svg output/poc/ingest/sample_minimal.hwpx \
   복원할 수 없다. 이 경우 ingest 단계에서 이미지/media 또는 전용 구조로 분류하고,
   결함 유형을 hotfix/follow-up 으로 나누어 기록한다.
 
+### `scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]`
+구조화된 명세(JSON) → HWPX 생성. `build-from-ingest` 와 같은 **무(無)에서 생성** 축이며,
+입력은 문서가 아니라 호출자가 쓴 계획서다(그래서 봉투에 신뢰 불가 표지가 붙지 않는다).
+
+명세 모델의 정본은 `src/scaffold/schema.rs` 다. 미지 필드는 조용히 버리지 않고 즉시 거부한다.
+
+| 필드 | 필수 | 설명 |
+| --- | --- | --- |
+| `version` | ✓ | `"1"` 고정 (`schema_registry::SCAFFOLD_SCHEMA_VERSION`) |
+| `title` |  | 있으면 본문 최상단 가운데 정렬 제목 문단 |
+| `font` |  | 기본 글꼴 이름 (기본값 `함초롬바탕`) |
+| `page_size` |  | `{"width_mm":210,"height_mm":297}` (기본 A4) |
+| `blocks` |  | `heading`(level 1~7) · `paragraph` · `table` 블록의 나열 |
+
+`table` 블록:
+
+| 필드 | 필수 | 설명 |
+| --- | --- | --- |
+| `rows` | ✓ | 행마다 셀 텍스트 목록. 길이가 다르면 최대 열 수에 맞춰 빈 칸으로 채운다 |
+| `cell_align` |  | [#7232] 셀 문단의 가로 정렬 — `"justify"`(기본) · `"left"` · `"center"` · `"right"`, 또는 **열 수와 길이가 같은 목록** |
+
+`cell_align` 의 낱말과 열 단위 축은 편집 경로 `edit insert-table --alignments` 와 같다.
+생략하면 종전과 같은 양쪽 정렬이며, 좁은 열에 긴 영문 토큰(코드명·경로·SQL)이 오면 한/글이
+폭을 채우려 글자 사이를 벌리므로 그런 표에는 `"left"` 를 지정한다.
+
+```bash
+rhwp scaffold spec.json -o out.hwpx --json
+```
+
+```json
+{"version":"1","title":"점검표","blocks":[
+  {"type":"heading","level":1,"text":"1. 개요"},
+  {"type":"paragraph","text":"본문 문단"},
+  {"type":"table","cell_align":["center","left","right"],
+   "rows":[["No","항목","금액"],["1","INSERT…VALUES APPEND","1,000"]]}
+]}
+```
+
+- `--json` 봉투: `schemaVersion`·`source`·`output`·`format`·`bytes`·`blockCount`·
+  `paragraphCount`·`tableCount`.
+- 지원 요소는 왕복 검증을 통과한 것만 노출한다 — 제목, 개요 수준 제목, 본문 문단, 단순 표.
+
 ### `hwpx-roundtrip <파일.hwpx | --batch 폴더> [-o <출력폴더>] [--lineseg-report]`
 HWPX → IR → HWPX roundtrip 검증(**구조 보존 게이트**, #1315 baseline). 재조립 `.rt.hwpx` 와
 `inventory.tsv` 산출(기본 `output/poc/task1315`). 하드 실패 존재 시 종료 코드 1.
@@ -1674,29 +1754,35 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   `Δ Line: 4→0 (-4)  RawSvg: 1→0 (-1)`, 배치는 콘솔/`struct_delta` 컬럼에 `Line:-4;RawSvg:-1`).
   음수=라운드트립 손실, 양수=추가. 손실 노드 타입으로 직렬화 누락 원인을 즉시 좁힌다.
 
-### `layout-anomaly <파일 | --batch 폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--types <Type,...>] [--strict] [--json]`
+### `layout-anomaly <파일 | --batch 폴더> [-p <페이지>] [--overflow-tolerance <px>] [--overlap-tolerance <px>] [--stored-line-tolerance <px>] [--types <Type,...>] [--strict] [--json]`
 **렌더 한 장의 이상탐지** — `render-diff` 가 두 렌더 사이 **변위**를 재는 것과 달리, 렌더 한 장
 만으로 "정상적인 문서로 보이는가"를 판정한다. 두 렌더가 똑같이 망가져 있으면 변위는 0이라
 `render-diff` 는 못 잡는 케이스를 이 명령이 잡는다. 설계 배경:
 [layout_anomaly_detection.md](../tech/layout_anomaly_detection.md).
-- 판정 4종: `overflow`(요소 bbox가 본문 여백 초과) · `overlap`(겹치면 안 되는 흐름 요소끼리 겹침) ·
+- 판정 6종: `overflow`(요소 bbox가 본문 여백 초과) · `off-canvas`(페이지 상자 밖 또는 y<0) ·
+  `overlap`(겹치면 안 되는 흐름 요소끼리 겹침) ·
   `text-overlap`(텍스트 런 bbox 교차 — 글자끼리, 표·이미지 겹침 아님) ·
+  `stored-line-escape`(저장 줄을 재현한 줄의 글자가 **남의** 저장 줄 baseline 에 앉음 — 상자를
+  넘거나 겹치지 않는 배치 이탈, #7061) ·
   `empty_page`(콘텐츠 없는 중간 쪽 — 항상 "가능성 신호").
 - 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호
-  (overflow·overlap·text-overlap)를 종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도
+  (overflow·off-canvas·overlap·text-overlap·stored-line-escape)를 종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도
   실패를 유발하지 않는다(의도된 빈 쪽과 기하만으로 구분 불가). `text-overlap` 을 확정에 넣는
   이유: 글자 bbox 교차는 의도된 wrap 이 아니고 빈 쪽처럼 애매하지도 않다.
 - `--overflow-tolerance`(기본 1.0px) / `--overlap-tolerance`(기본 2.0px, 폭·높이 둘 다 초과해야
    잡음; text-overlap 도 같은 허용치) 로 민감도 조절. `-p` 는 사람 모드 출력만 좁힌다(스캔 자체는
-   항상 전 페이지).
+   항상 전 페이지). `--stored-line-tolerance`(기본 0.5px)는 stored-line-escape 에서 렌더 줄과 저장
+   줄을 같다고 볼 여유다.
 - `--types Table,Image` 처럼 overflow·overlap 검사 대상을 노드 타입으로 좁힌다. `empty_page` 는
   페이지 단위 신호라 필터의 영향을 받지 않는다. 알 수 없는 타입은 사용법 오류(exit 2).
 - `--batch <폴더>` 는 `render-diff --batch` 와 같다: `.hwp`/`.hwpx` 를 재귀 수집해 상대 경로
   정렬 순으로 보고하고, 파일별 로드·스캔 실패는 스트림에서 빼지 않고 `error` 레코드(DATA)로
   남긴다. `--json` 배치는 NDJSON. 한 건이라도 측정 실패면 exit 1 이 `--strict` 의 3보다 우선한다.
-- `--json` 봉투는 `pageCount`, `pageFilter`, 두 tolerance, `strict`, `overflowCount`,
-  `mode`, `types`, `overlapCount`, `textOverlapCount`, `emptyPageCount`, `hasSignal`, 페이지별
-  `pages[]`(각 `textOverlap`)를 낸다. 자동화는 사람용 출력이 아니라 이 필드와 종료 코드로만
+- `--json` 봉투는 `pageCount`, `pageFilter`, 세 tolerance(`overflowTolerancePx`·`overlapTolerancePx`·
+  `storedLineTolerancePx`), `strict`, `overflowCount`, `offCanvasCount`,
+  `mode`, `types`, `overlapCount`, `textOverlapCount`, `storedLineEscapeCount`, `emptyPageCount`,
+  `hasSignal`, 페이지별 `pages[]`(각 `offCanvas`·`textOverlap`·`storedLineEscape`)를 낸다. `--batch` 의
+  `error` 레코드도 같은 카운트 키를 0으로 채운다. 자동화는 사람용 출력이 아니라 이 필드와 종료 코드로만
   판정한다.
 
 ### `bench <파일...> | --batch <폴더> [-n <반복수>] [--tsv <출력.tsv>]`
@@ -1725,10 +1811,17 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
 ### `run <계획.json> | --plan-json <JSON> [--dry-run] [--json]`
 선언적 편집 계획을 전부 정적 검증한 뒤 인메모리에서 원자 실행한다. 모든 단언이 통과할 때만 한 번
 저장하므로, 사용법·계획 오류가 있으면 디스크는 바뀌지 않는다.
-- 현재 계획 step은 `fill_fields`, `replace_text`, `set_cell`, `set_checkbox`이며, 각 step에
+- 기존 계획 step은 `fill_fields`, `replace_text`, `set_cell`, `set_checkbox`이며, 각 step에
   `if` 조건(`fieldExists`, `fieldEquals`, `textFound`)을 둘 수 있다. 조건이 거짓이면 해당
   step은 `skipped:true` 저널을 남기고 건너뛴다.
+- `fill_template`, `repeat_and_fill_paragraph_block`, `repeat_and_fill_table_rows`는 `request`를
+  받는 단독 step이다. 기존 action과 섞거나 여러 템플릿 step을 넣으면 `invalid[]`로 거부한다.
+  dry-run도 동일 native 준비 경로를 실행한다. 요청·주소·WASM·MCP 계약은
+  [템플릿 자동화 API](template_automation.md)를 따른다.
 - `--dry-run` 또는 계획의 `dryRun:true`는 preview 저널만 내고 파일을 쓰지 않는다.
+  `import_paragraph_block`도 단독 step이며 `source:{path,sha256}`와 native `request`를 받는다.
+  원본 한 번 읽기로 SHA-256을 검사하고 같은 바이트를 파싱한다. 원본은 대상 입력/출력과
+  별도인 64 MiB 이하 일반 파일이다. 지문 불일치는 exit 3, 읽기/파싱 실패는 exit 1이다.
   계획 문법은 `export-plan-schema --bare`로 먼저 검증한다.
 - `preconditions.inputSha256`에 입력 파일의 64자리 SHA-256을 넣으면 compare-and-swap으로
   원본 변경을 막는다. 불일치는 사용법 오류가 아니라 판정 실패(exit 3)이며, JSON에는
@@ -1882,3 +1975,9 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
   누락된 GPU PNG, LLM 청크, 스키마/온톨로지/에이전트 매니페스트, scan/threat-scan,
   `dump-extents`, watermark 검사, 계획 실행·CAS SHA-256 저널, 영수증·감사·계보·정책 명령군,
   내부 진단 프로브를 보완했다. `layout-anomaly --json` 봉투 필드와 exit 3 판정 의미도 함께 정정했다.
+
+## 명시적 폰트 환경
+
+`export-svg`, `export-render-tree`, `export-pdf`는 `--font-environment <JSON 파일>`로
+호출자가 지정한 대체 폰트를 조판과 출력에 함께 적용한다. 기본 동작과 저장 원본은 유지하며,
+설정 형식·WASM API·Visual Sweep 연계는 [명시적 조판 폰트 환경](font_environment.md)을 따른다.

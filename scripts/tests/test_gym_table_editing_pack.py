@@ -25,7 +25,7 @@ PACK = REPO_ROOT / "gym" / "packs" / "table-editing"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_table_editing.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_table_editing.md"
 PACK_JSON = PACK / "pack.json"
 
 ALLOWED_SAMPLES = {

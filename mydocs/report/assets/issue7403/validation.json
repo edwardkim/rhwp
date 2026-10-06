@@ -1,0 +1,422 @@
+{
+  "sourceSha": "eb91a11f1052b88ae6efdfeb7e42b6233dbfde84",
+  "baseSha": "505661360e9a2d596f55300d0cb0c5222f0e14b4",
+  "unit": {
+    "pass": 1787,
+    "fail": 0,
+    "skip": 0
+  },
+  "visual": {
+    "native": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.42164,
+      "worst_pixel_match_percent": 99.42164,
+      "average_ink_match_percent": 28.63272,
+      "worst_ink_match_percent": 28.63272,
+      "average_visual_accuracy_proxy_percent": 28.63272,
+      "worst_visual_accuracy_proxy_percent": 28.63272,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "wasm": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.42164,
+      "worst_pixel_match_percent": 99.42164,
+      "average_ink_match_percent": 28.63272,
+      "worst_ink_match_percent": 28.63272,
+      "average_visual_accuracy_proxy_percent": 28.63272,
+      "worst_visual_accuracy_proxy_percent": 28.63272,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "host-canvaskit": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.3816,
+      "worst_pixel_match_percent": 99.3816,
+      "average_ink_match_percent": 16.4672,
+      "worst_ink_match_percent": 16.4672,
+      "average_visual_accuracy_proxy_percent": 16.4672,
+      "worst_visual_accuracy_proxy_percent": 16.4672,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    },
+    "host-canvas2d": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 99.37218,
+      "worst_pixel_match_percent": 99.37218,
+      "average_ink_match_percent": 21.60762,
+      "worst_ink_match_percent": 21.60762,
+      "average_visual_accuracy_proxy_percent": 21.60762,
+      "worst_visual_accuracy_proxy_percent": 21.60762,
+      "average_tolerant_content_match_percent": 100.0,
+      "worst_tolerant_content_match_percent": 100.0,
+      "worst_pages": [
+        1
+      ]
+    }
+  },
+  "visualGates": {
+    "native": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "wasm": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "host-canvaskit": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "host-canvas2d": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    }
+  },
+  "browser": {
+    "canvaskit": {
+      "Document lifecycle contracts": {
+        "historyResult": {
+          "clean": true,
+          "bytesUnchanged": true,
+          "undoUnchanged": true,
+          "redoUnchanged": true,
+          "redoCount": 1,
+          "beforeLength": 15,
+          "redoneLength": 16,
+          "undoneLength": 15
+        },
+        "switched": {
+          "changedDocument": true,
+          "sameImage": true,
+          "sameBytes": true,
+          "countBefore": 1,
+          "countAfter": 1
+        },
+        "replacedRace": {
+          "aborted": true,
+          "sameImage": true,
+          "count": 1
+        }
+      },
+      "Face paint contracts": {
+        "checks": [
+          {
+            "type": "textRun",
+            "style": "Italic",
+            "count": 1,
+            "sameAsStandalone": true,
+            "differsFromUpright": true
+          },
+          {
+            "type": "textRun",
+            "style": "Oblique",
+            "count": 1,
+            "sameAsStandalone": true,
+            "differsFromUpright": true
+          },
+          {
+            "type": "charOverlap",
+            "style": "Italic",
+            "count": 1,
+            "sameAsStandalone": true,
+            "differsFromUpright": true
+          },
+          {
+            "type": "charOverlap",
+            "style": "Oblique",
+            "count": 1,
+            "sameAsStandalone": true,
+            "differsFromUpright": true
+          }
+        ],
+        "invalid": {
+          "count": 0,
+          "failed": 1
+        },
+        "recoveredCount": 1,
+        "reads": 12
+      },
+      "document": {
+        "result": {
+          "metadataReads": 0,
+          "reads": [
+            {
+              "id": "face-400",
+              "version": "serif"
+            },
+            {
+              "id": "face-700",
+              "version": "serif"
+            },
+            {
+              "id": "face-400",
+              "version": "sans"
+            },
+            {
+              "id": "face-700",
+              "version": "sans"
+            },
+            {
+              "id": "face-400",
+              "version": "failed"
+            },
+            {
+              "id": "face-700",
+              "version": "failed"
+            },
+            {
+              "id": "face-400",
+              "version": "recovered"
+            },
+            {
+              "id": "face-700",
+              "version": "recovered"
+            }
+          ],
+          "cssBefore": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", sans-serif",
+          "cssAfter": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", sans-serif",
+          "storedBefore": null,
+          "storedAfter": null,
+          "exactMatchesStyles": true,
+          "replacementChangesPixels": true,
+          "recoveryRestoresPixels": true,
+          "failedCount": 2,
+          "registered": 2
+        },
+        "preserved": {
+          "dirty": true,
+          "generation": 2,
+          "expectedGeneration": 2,
+          "hwpUnchanged": true,
+          "roundtrips": [
+            {
+              "name": "smoke.hwp",
+              "fonts": [
+                "RHWP Host Smoke",
+                "함초롬돋움",
+                "함초롬바탕"
+              ],
+              "bold": true
+            },
+            {
+              "name": "smoke.hwpx",
+              "fonts": [
+                "RHWP Host Smoke",
+                "함초롬돋움",
+                "함초롬바탕"
+              ],
+              "bold": true
+            }
+          ],
+          "svgUnchanged": true,
+          "svgHasAlias": false
+        }
+      }
+    },
+    "canvas2d": {
+      "Document lifecycle contracts": {
+        "historyResult": {
+          "clean": true,
+          "bytesUnchanged": true,
+          "undoUnchanged": true,
+          "redoUnchanged": true,
+          "redoCount": 1,
+          "beforeLength": 15,
+          "redoneLength": 16,
+          "undoneLength": 15
+        },
+        "switched": {
+          "changedDocument": true,
+          "sameImage": true,
+          "sameBytes": true,
+          "countBefore": 1,
+          "countAfter": 1
+        },
+        "replacedRace": {
+          "aborted": true,
+          "sameImage": true,
+          "count": 1
+        }
+      },
+      "Canvas2D face and measurement contracts": {
+        "checks": [
+          {
+            "style": "Regular",
+            "samePixels": true,
+            "width": 43.19999694824219,
+            "expectedWidth": 43.2,
+            "referenceWidth": 43.19999694824219,
+            "measuredWidth": 43.19999694824219,
+            "aliasUsedByPaint": true,
+            "aliasUsedByMeasure": true,
+            "installed": 1
+          },
+          {
+            "style": "Italic",
+            "samePixels": true,
+            "width": 51.839996337890625,
+            "expectedWidth": 51.84,
+            "referenceWidth": 51.839996337890625,
+            "measuredWidth": 51.839996337890625,
+            "aliasUsedByPaint": true,
+            "aliasUsedByMeasure": true,
+            "installed": 1
+          },
+          {
+            "style": "Oblique",
+            "samePixels": true,
+            "width": 57.59999084472656,
+            "expectedWidth": 57.6,
+            "referenceWidth": 57.59999084472656,
+            "measuredWidth": 57.59999084472656,
+            "aliasUsedByPaint": true,
+            "aliasUsedByMeasure": true,
+            "installed": 1
+          }
+        ],
+        "failed": {
+          "loaded": 0,
+          "pending": 0,
+          "failed": 1
+        },
+        "recovered": {
+          "loaded": 1,
+          "pending": 0,
+          "failed": 0
+        },
+        "detached": 0
+      },
+      "Canvas2D real charOverlap": {
+        "family": "굴림",
+        "loaded": 1,
+        "calls": [
+          {
+            "text": "1",
+            "x": 87.13333333333334,
+            "y": 171.60000000000002,
+            "font": "13.333px __rhwp_host_face_1_1, 굴림, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"Source Han Serif K Old Hangul\", sans-serif"
+          }
+        ],
+        "pageCount": 17
+      },
+      "document": {
+        "result": {
+          "metadataReads": 0,
+          "reads": [
+            {
+              "id": "face-400",
+              "version": "serif"
+            },
+            {
+              "id": "face-700",
+              "version": "serif"
+            },
+            {
+              "id": "face-400",
+              "version": "sans"
+            },
+            {
+              "id": "face-700",
+              "version": "sans"
+            },
+            {
+              "id": "face-400",
+              "version": "failed"
+            },
+            {
+              "id": "face-700",
+              "version": "failed"
+            },
+            {
+              "id": "face-400",
+              "version": "recovered"
+            },
+            {
+              "id": "face-700",
+              "version": "recovered"
+            }
+          ],
+          "cssBefore": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", sans-serif",
+          "cssAfter": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", sans-serif",
+          "storedBefore": null,
+          "storedAfter": null,
+          "exactMatchesStyles": true,
+          "replacementChangesPixels": true,
+          "recoveryRestoresPixels": true,
+          "failedCount": 2,
+          "registered": 2
+        },
+        "preserved": {
+          "dirty": true,
+          "generation": 4,
+          "expectedGeneration": 4,
+          "hwpUnchanged": true,
+          "roundtrips": [
+            {
+              "name": "smoke.hwp",
+              "fonts": [
+                "RHWP Host Smoke",
+                "함초롬돋움",
+                "함초롬바탕"
+              ],
+              "bold": true
+            },
+            {
+              "name": "smoke.hwpx",
+              "fonts": [
+                "RHWP Host Smoke",
+                "함초롬돋움",
+                "함초롬바탕"
+              ],
+              "bold": true
+            }
+          ],
+          "svgUnchanged": true,
+          "svgHasAlias": false
+        }
+      }
+    }
+  },
+  "wasmHashes": {
+    "rhwp.js": {
+      "pkg/rhwp.js": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+      "rhwp-studio/public/rhwp.js": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3"
+    },
+    "rhwp_bg.wasm": {
+      "pkg/rhwp_bg.wasm": "fcb45acbe3491a981e02c5f752595fd039ca9a3e6826fe3bd730ae7b9801a35f",
+      "rhwp-studio/public/rhwp_bg.wasm": "fcb45acbe3491a981e02c5f752595fd039ca9a3e6826fe3bd730ae7b9801a35f"
+    }
+  },
+  "syntheticFixtureHashes": {
+    "tests/fixtures/fonts/RHWPHostFixture-Oblique.ttf": "e3b86278af359b9e02128fea72e483e1627506c59739b15ee75672ec6eb6be56",
+    "tests/fixtures/fonts/RHWPHostFixture-Regular.ttf": "44479fbcc1e0cb20f97e13405a1fcb26b29fbcdf445ca52b41f6f645b3bd6aa5",
+    "tests/fixtures/fonts/RHWPHostFixture.ttc": "adc2b93966ad2cee31a5edece6d84efd4763a613b3a8bda76720d97f8a26dabf",
+    "tests/fixtures/fonts/RHWPHostFixture-Italic.ttf": "b6f6f576995a976e35eb4323a39633352060ad6b884fd791152a8fce1b1c1e81"
+  }
+}

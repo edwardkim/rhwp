@@ -21,6 +21,17 @@ impl EquationTacLineFlow {
     }
 }
 
+/// 수식 전용 문단은 저장 줄 수가 같아도 너비에 맞춰 개체를 재배정한다.
+/// 저장 UTF-16 소유 줄 사영이 이 현재 줄 구성 결과를 덮어쓰면 안 된다.
+pub(crate) fn uses_equation_only_flow(para: &Paragraph, composed: &ComposedParagraph) -> bool {
+    !composed.tac_controls.is_empty()
+        && composed.lines.iter().all(|line| line.runs.is_empty())
+        && composed
+            .tac_controls
+            .iter()
+            .all(|(_, _, index)| matches!(para.controls.get(*index), Some(Control::Equation(_))))
+}
+
 pub(crate) fn compute_equation_only_tac_line_flow(
     para: Option<&Paragraph>,
     composed: &ComposedParagraph,
@@ -142,6 +153,31 @@ fn pack_equation_tac_rows(
     }
 
     (tac_rows, row + 1)
+}
+
+/// 본문과 번호 있는 각주는 같은 원본 줄 번호와 저장 들여쓰기 플래그를 소비한다.
+/// 셀 또는 줄 수가 바뀐 재조판에서는 문단의 줄별 들여쓰기 규칙을 사용한다.
+pub(crate) fn paragraph_line_indent_for_source(
+    indent: f64,
+    visual_line_idx: usize,
+    paragraph: Option<&Paragraph>,
+    composed_line_count: usize,
+    respect_stored_ladder: bool,
+) -> f64 {
+    use crate::model::paragraph::LineSeg;
+    let stored_seg_denies_indent = respect_stored_ladder
+        && paragraph.is_some_and(|para| para.line_segs.len() == composed_line_count)
+        && paragraph
+            .and_then(|para| para.line_segs.get(visual_line_idx))
+            .is_some_and(|seg| {
+                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.tag & LineSeg::TAG_INDENTATION == 0
+            });
+    if stored_seg_denies_indent {
+        0.0
+    } else {
+        paragraph_line_indent(indent, visual_line_idx)
+    }
 }
 
 pub(crate) fn paragraph_line_indent(indent: f64, visual_line_idx: usize) -> f64 {

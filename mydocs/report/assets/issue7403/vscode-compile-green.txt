@@ -1,0 +1,57 @@
+
+> rhwp-vscode@0.8.6 compile
+> npm run typecheck && webpack --mode production
+
+
+> rhwp-vscode@0.8.6 typecheck
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json
+
+asset extension.js 182 KiB [compared for emit] [minimized] (name: main) 1 related asset
+asset hwp-editor-provider.d.ts 1.48 KiB [compared for emit]
+asset wasm-host.d.ts 241 bytes [compared for emit]
+asset extension.d.ts 152 bytes [compared for emit]
+runtime modules 403 bytes 2 modules
+orphan modules 1 bytes [orphan] 1 module
+built modules 581 KiB [built]
+  cacheable modules 581 KiB
+    ./src/extension.ts 8.52 KiB [built] [code generated]
+    ./src/hwp-editor-provider.ts 24 KiB [built] [code generated]
+    ./src/wasm-host.ts 2.54 KiB [built] [code generated]
+    ../pkg/rhwp.js 546 KiB [built] [code generated]
+  external "fs" 42 bytes [built] [code generated]
+  external "path" 42 bytes [built] [code generated]
+  external "os" 42 bytes [built] [code generated]
+  external "crypto" 42 bytes [built] [code generated]
+  external "vscode" 42 bytes [built] [code generated]
+webpack 5.111.0 compiled successfully in 3854 ms
+
+assets by status 6.98 MiB [cached] 1 asset
+assets by status 47.7 MiB [big]
+  assets by path ../media/fonts/*.woff2 8.11 MiB
+    asset ../media/fonts/D2Coding-Regular.woff2 1.42 MiB [compared for emit] [from: ../assets/fonts/D2Coding-Regular.woff2] [copied] [big]
+    asset ../media/fonts/NotoSerifKR-Bold.woff2 1010 KiB [compared for emit] [from: ../assets/fonts/NotoSerifKR-Bold.woff2] [copied] [big]
+    asset ../media/fonts/NotoSerifKR-Regular.woff2 949 KiB [compared for emit] [from: ../assets/fonts/NotoSerifKR-Regular.woff2] [copied] [big]
+    asset ../media/fonts/Pretendard-Bold.woff2 773 KiB [compared for emit] [from: ../assets/fonts/Pretendard-Bold.woff2] [copied] [big]
+    + 8 assets
+  asset ../media/rhwp_bg.wasm 39.1 MiB [compared for emit] [from: ../pkg/rhwp_bg.wasm] [copied] [big]
+  asset viewer.js 499 KiB [compared for emit] [minimized] [big] (name: main) 1 related asset
+assets by path ../licenses/*.txt 2.68 KiB
+  asset ../licenses/canvaskit-wasm-LICENSE.txt 1.6 KiB [compared for emit] [from: node_modules/canvaskit-wasm/LICENSE] [copied]
+  asset ../licenses/noble-hashes-LICENSE.txt 1.08 KiB [compared for emit] [from: node_modules/@noble/hashes/LICENSE] [copied]
+asset 463.viewer.js 136 KiB [compared for emit] [minimized] 1 related asset
+asset 745.viewer.js 116 KiB [compared for emit] [minimized] (id hint: vendors) 1 related asset
+orphan modules 1.26 MiB [orphan] 32 modules
+runtime modules 7.07 KiB 9 modules
+cacheable modules 1.64 MiB (javascript) 6.98 MiB (asset)
+  modules by path ./ 802 KiB (javascript) 6.98 MiB (asset)
+    modules by path ./node_modules/@noble/hashes/*.js 76.3 KiB 2 modules
+    modules by path ./node_modules/canvaskit-wasm/bin/ 118 KiB (javascript) 6.98 MiB (asset) 2 modules
+    ./src/webview/viewer.ts + 3 modules 607 KiB [built] [code generated]
+  modules by path ../ 882 KiB
+    modules by path ../rhwp-studio/src/core/*.ts 527 KiB
+      ../rhwp-studio/src/core/font-loader.ts 12.1 KiB [built] [code generated]
+      ../rhwp-studio/src/core/font-rule-runtime.ts + 3 modules 515 KiB [built] [code generated]
+    ../rhwp-studio/src/view/canvaskit-renderer.ts + 19 modules 355 KiB [built] [code generated]
+    ../pkg/rhwp_bg.wasm 1 bytes [built] [code generated]
+  fs (ignored) 15 bytes [built] [code generated]
+webpack 5.111.0 compiled successfully in 4955 ms

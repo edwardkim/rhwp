@@ -154,12 +154,17 @@ fn issue_2215_hwp_and_hwpx_preserve_normal_selection_oracles() {
         let mut doc = load_sample(file_name);
 
         let first_rects = selection_rects_with_hints(&doc, first);
-        assert_single_rect_near(file_name, "first", &first_rects, 0, 84.1, 242.4, 105.0); // [#2430] 메트릭 교정: 111.7→105.0 실측
+        // [#7063] x 84.1 → 87.9. 자리차지 표가 자기 `outMargin.left`(283HU=3.77px)
+        // 만큼 안으로 들어가면서 안의 글자가 따라갔다. 이 문서 정본
+        // (`pdf/issue1949_giant_cell_nested_tables_perf-hwp-2024.pdf`) 1쪽의 `1.1.1` 은
+        // x=87.79 다 — 종전 84.1 이 3.7px 짧았고 지금은 0.11px 안이다.
+        assert_single_rect_near(file_name, "first", &first_rects, 0, 87.9, 242.4, 105.0); // [#2430] 메트릭 교정: 111.7→105.0 실측
         let first_text = copied_text(&mut doc, first);
         assert_eq!(first_text, "1.1.1 수면비행");
 
         let middle_rects = selection_rects_with_hints(&doc, middle);
-        assert_single_rect_near(file_name, "middle", &middle_rects, 54, 92.1, 588.5, 7.9); // [#2430] 10.0→7.9 실측
+        // [#7063] x 92.1 → 95.9 — `first` 와 같은 +3.77px(283HU) 이동.
+        assert_single_rect_near(file_name, "middle", &middle_rects, 54, 95.9, 588.5, 7.9); // [#2430] 10.0→7.9 실측
         let middle_text = copied_text(&mut doc, middle);
         assert_eq!(middle_text, "8");
 

@@ -22,6 +22,7 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
+import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-scale.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -86,12 +87,13 @@ const IMAGE_RE_RENDER_FALLBACK_DELAY_MS = 1500;
 // 순수 SVG 차트/OLE는 prefetch 대상 data URL이 없을 수 있다. 첫 paint가 시작한
 // 이미지 decode를 빠르게 반영하되, 일반 이미지처럼 전역 반복 재렌더는 피한다.
 const RAW_SVG_EARLY_RE_RENDER_DELAYS_MS = [0, 32, 96, 240] as const;
-const HWP_UNITS_PER_CSS_PIXEL = 75;
 
 export class PageRenderer {
   private reRenderJobs = new Map<number, ReRenderJob>();
   private imageRetryCounts = new Map<number, string>();
   private layerSummaryCache = new Map<number, LayerSummaryCacheEntry>();
+  /** zoom과 무관한 페이지별 Canvas surface 상한. 문서/revision 경계에서만 무효화한다. */
+  private surfaceLayerCountCache = new Map<number, number>();
   private canvaskitDiagnosticsByPage = new Map<number, CanvasKitRenderDiagnostics>();
   /**
    * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
@@ -144,6 +146,7 @@ export class PageRenderer {
     this.cancelAll();
     if (!preserveCanvasKitDiagnostics) this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.backend = backend;
     this.renderProfile = renderProfile;
     this.canvaskitRenderer = canvaskitRenderer;
@@ -188,6 +191,7 @@ export class PageRenderer {
 
     this.imageRetryCounts.clear();
     this.prefetchedImageSignatures.clear();
+    this.surfaceLayerCountCache.clear();
     // 신원을 모르면(`digest === null`) 항목이 어느 문서 것인지 표시할 수 없다. 그 상태에서는
     // `buildImageRetryKey` 도 서명 기록도 멈추므로 지킬 것이 없다 — 범위를 비워 둔다.
     this.documentScope = identity.digest === null ? null : identity;
@@ -197,6 +201,7 @@ export class PageRenderer {
     this.cancelAll();
     this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     // [#3315] object URL 캐시는 여기서 비우지 않는다. 이 메서드는 renderer decision key 에
     // 묶여 있어 같은 문서를 편집할 때마다 불리므로, 여기서 비우면 캐시가 매 키 입력에 수 MB 를
     // 다시 읽는다 — 캐시가 없는 것과 같아진다. 문서 경계는 `beginDocument` 가 가른다.
@@ -213,6 +218,7 @@ export class PageRenderer {
   ): PageRenderResult {
     if (this.backend === 'canvaskit') {
       this.layerSummaryCache.delete(pageIdx);
+      this.surfaceLayerCountCache.set(pageIdx, 1);
       const renderedCanvas = this.renderPageCanvasKit(pageIdx, canvas, renderScale);
       return { needsTextEditStaticLayerVerification: false, renderedCanvas };
     }
@@ -226,6 +232,7 @@ export class PageRenderer {
     }
 
     const layers = this.getLayerPlaneSummary(pageIdx, canvas, renderScale, context);
+    this.surfaceLayerCountCache.set(pageIdx, this.canvasSurfaceLayerCount(layers));
     const preferStaticFlow = this.shouldSplitStaticFlow(layers);
     let reuseStaticFlow = this.renderFlowCanvas(pageIdx, canvas, renderScale, preferStaticFlow);
     const flowImages = reuseStaticFlow && layers.flowImageCount > 0
@@ -259,6 +266,7 @@ export class PageRenderer {
     } catch (error) {
       if (!reuseStaticFlow) throw error;
       this.flowSplitSupported = false;
+      this.surfaceLayerCountCache.clear();
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
@@ -291,6 +299,33 @@ export class PageRenderer {
 
   getBackend(): RenderBackend {
     return this.backend;
+  }
+
+  getRenderProfile(): LayerRenderProfile {
+    return this.renderProfile;
+  }
+
+  /**
+   * 해당 페이지가 만들 수 있는 Canvas surface 수를 콘텐츠 plane 구성에서 계산한다.
+   * 아직 렌더하지 않은 retained 페이지도 전역 예산에 넣을 수 있도록 zoom과 독립적으로 캐시한다.
+   */
+  getCanvasSurfaceLayerCount(pageIdx: number): number {
+    if (this.backend === 'canvaskit') return 1;
+    const cached = this.surfaceLayerCountCache.get(pageIdx);
+    if (cached !== undefined) return cached;
+
+    const layers = this.getLayerPlaneSummaryFromOverlayImages(pageIdx)
+      ?? this.getLayerPlaneSummaryFromTree(pageIdx);
+    const layerCount = this.canvasSurfaceLayerCount(layers);
+    this.surfaceLayerCountCache.set(pageIdx, layerCount);
+    return layerCount;
+  }
+
+  private canvasSurfaceLayerCount(layers: LayerPlaneSummary): number {
+    return 1
+      + (this.shouldSplitStaticFlow(layers) ? 1 : 0)
+      + (layers.hasBehind ? 2 : 0)
+      + (layers.hasFront ? 1 : 0);
   }
 
   getCanvasKitRenderDiagnostics(pageIdx: number): CanvasKitRenderDiagnostics | null {
@@ -338,6 +373,35 @@ export class PageRenderer {
 
   releaseAllPageDiagnostics(): void {
     this.canvaskitDiagnosticsByPage.clear();
+  }
+
+  /** 비동기 이미지/RawSvg 보정까지 끝난 surface만 완성 cache entry로 승격한다. */
+  isPageSurfaceComplete(parent: HTMLElement, pageIdx: number): boolean {
+    if (this.reRenderJobs.has(pageIdx)) return false;
+    return Array.from(
+      parent.querySelectorAll<HTMLImageElement>(
+        `[data-rhwp-overlay-page="${pageIdx}"] img`,
+      ),
+    ).every(image => image.complete && image.naturalWidth > 0);
+  }
+
+  /** main Canvas와 해당 page overlay를 현재 DOM 순서 그대로 분리한다. */
+  detachPageSurfaceElements(
+    parent: HTMLElement,
+    pageIdx: number,
+    mainCanvas: HTMLCanvasElement,
+  ): HTMLElement[] {
+    const page = String(pageIdx);
+    const elements = Array.from(parent.children).filter((element): element is HTMLElement => (
+      element === mainCanvas
+      || (element instanceof HTMLElement && element.dataset.rhwpOverlayPage === page)
+    ));
+    for (const element of elements) element.remove();
+    return elements;
+  }
+
+  attachPageSurfaceElements(parent: HTMLElement, elements: readonly HTMLElement[]): void {
+    for (const element of elements) parent.appendChild(element);
   }
 
   private renderPageCanvasKit(
@@ -854,6 +918,7 @@ export class PageRenderer {
       return true;
     } catch (error) {
       this.flowSplitSupported = false;
+      this.surfaceLayerCountCache.clear();
       console.warn('[PageRenderer] flow-dynamic 렌더 미지원, 기존 flow 렌더로 fallback:', error);
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
       return false;
@@ -1060,7 +1125,10 @@ export class PageRenderer {
       return;
     }
     const retryKey = this.buildImageRetryKey(pageIdx, imageCount, rawSvgCount, policy);
-    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey) return;
+    // 완료된 decode만 재사용한다. 같은 그림이어도 이전 bitmap의 job이 아직 대기 중이면
+    // 새 canvas/scale을 대상으로 교체해야 구 배율 callback이 최신 surface를 덮지 않는다.
+    if (retryKey !== null && this.imageRetryCounts.get(pageIdx) === retryKey
+      && !this.reRenderJobs.has(pageIdx)) return;
 
     this.cancelReRender(pageIdx);
     if (retryKey === null) this.imageRetryCounts.delete(pageIdx);
@@ -1100,6 +1168,10 @@ export class PageRenderer {
 
     // 자체 prefetch로 실제 decode를 마친 경우에만 fallback보다 먼저 다시 그린다.
     queueMicrotask(() => {
+      // 취소/교체된 microtask 자체는 큐에서 제거할 수 없다. 완료뿐 아니라 시작도
+      // 현재 job/token에 한정해 구 요청이 새 문서의 layer 조회·decode를 만들지 않게 한다.
+      if (job.completed || this.reRenderJobs.get(pageIdx) !== job
+        || this.prefetchRequestTokens.get(pageIdx) !== prefetchRequestToken) return;
       this.prefetchLayerImages(pageIdx, rawSvgCount, prefetchRequestToken)
         .then((decoded) => {
           if (decoded) finish();
@@ -1183,6 +1255,7 @@ export class PageRenderer {
           renderedStaticFlow = true;
         } catch (error) {
           this.flowSplitSupported = false;
+          this.surfaceLayerCountCache.clear();
           flowStatic.remove();
           console.warn('[PageRenderer] flow-static 지연 재렌더 실패, 기존 flow 재렌더로 fallback:', error);
         }
@@ -1331,6 +1404,8 @@ export class PageRenderer {
     this.prefetchRequestTokens.delete(pageIdx);
     const job = this.reRenderJobs.get(pageIdx);
     if (job) {
+      // 미완료 job의 취소는 decode 완료가 아니다. 같은 그림의 다음 요청을 허용한다.
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
@@ -1340,7 +1415,8 @@ export class PageRenderer {
 
   /** 모든 지연 재렌더링을 취소한다 */
   cancelAll(): void {
-    for (const job of this.reRenderJobs.values()) {
+    for (const [pageIdx, job] of this.reRenderJobs) {
+      this.imageRetryCounts.delete(pageIdx);
       job.completed = true;
       clearTimeout(job.fallbackTimer);
       for (const timer of job.earlyRawSvgTimers) clearTimeout(timer);
@@ -1365,6 +1441,7 @@ export class PageRenderer {
   resetImageRetryState(): void {
     this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
   }
 
@@ -1374,6 +1451,7 @@ export class PageRenderer {
     this.prefetchedImageSignatures.clear();
     this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.flowImageUrls.releaseAll();
     this.documentScope = null;
@@ -1504,8 +1582,21 @@ function applyFlowImageCrop(
   frameWidth: number = image.bbox.width,
   frameHeight: number = image.bbox.height,
 ): void {
-  const crop = image.crop;
-  if (!crop || element.naturalWidth <= 0 || element.naturalHeight <= 0) {
+  // 빈 선택은 프레임을 유지하고 선택 안에 원본 픽셀이 없음을 반영한다.
+  element.style.visibility = imageCropSelectionIsEmpty(image.crop) ? 'hidden' : '';
+  if (imageCropSelectionIsEmpty(image.crop)) return;
+  // [#6954] 잘라 올 창은 CanvasKit 백엔드와 **같은 함수**가 정한다 — 축척 폴백(rust
+  // `compute_image_crop_src` 와 같은 사슬)도, "자를 것이 있나" 판정도 그 안에 있다.
+  // 종전에는 둘 다 여기 따로 있어서 갈렸다: `originalSizeHu` 가 없으면 96dpi 상수로
+  // 떨어져 원본의 다른 창을 잘라 왔고(그만큼 확대), 자를 것이 없는 그림도 소수점 창으로
+  // 다시 표본화해 CanvasKit 의 통짜 그리기와 파리티가 벌어졌다.
+  const source = imageCropSourceRect(
+    element.naturalWidth,
+    element.naturalHeight,
+    image.crop ?? undefined,
+    image.originalSizeHu,
+  );
+  if (!source) {
     element.style.left = '0';
     element.style.top = '0';
     element.style.width = '100%';
@@ -1513,22 +1604,10 @@ function applyFlowImageCrop(
     return;
   }
 
-  const scaleXHu = image.originalSizeHu
-    ? image.originalSizeHu[0] / element.naturalWidth
-    : HWP_UNITS_PER_CSS_PIXEL;
-  const scaleYHu = image.originalSizeHu
-    ? image.originalSizeHu[1] / element.naturalHeight
-    : HWP_UNITS_PER_CSS_PIXEL;
-  const sourceLeft = crop.left / scaleXHu;
-  const sourceTop = crop.top / scaleYHu;
-  const sourceWidth = (crop.right - crop.left) / scaleXHu;
-  const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
-  if (sourceWidth <= 0 || sourceHeight <= 0) return;
-
-  const scaleX = (frameWidth * displayScale) / sourceWidth;
-  const scaleY = (frameHeight * displayScale) / sourceHeight;
-  element.style.left = `${-sourceLeft * scaleX}px`;
-  element.style.top = `${-sourceTop * scaleY}px`;
+  const scaleX = (frameWidth * displayScale) / source.width;
+  const scaleY = (frameHeight * displayScale) / source.height;
+  element.style.left = `${-source.x * scaleX}px`;
+  element.style.top = `${-source.y * scaleY}px`;
   element.style.width = `${element.naturalWidth * scaleX}px`;
   element.style.height = `${element.naturalHeight * scaleY}px`;
 }

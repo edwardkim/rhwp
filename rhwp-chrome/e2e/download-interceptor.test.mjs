@@ -8,13 +8,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { observePageDiagnostics, saveFailureDiagnostics } from './failure-diagnostics.mjs';
 
 const CURRENT_FILE = fileURLToPath(import.meta.url);
 const HERE = path.dirname(CURRENT_FILE);
 const EXTENSION_DIR = path.resolve(HERE, '..');
 const ROOT = path.resolve(EXTENSION_DIR, '..');
-const DIST_DIR = path.join(EXTENSION_DIR, 'dist');
+const DIST_DIR = path.resolve(process.env.RHWP_EXTENSION_DIST_DIR ?? path.join(EXTENSION_DIR, 'dist'));
 const HWP_FIXTURE_FILE = path.join(ROOT, 'samples', 'hwp3-pagedef-1915.hwp');
+const RACE_FIXTURE_FILE = path.join(ROOT, 'samples', 're-font-dotum-empty-hancom.hwp');
 const TIMEOUT_MS = positiveInteger(
   process.env.RHWP_EXTENSION_DOWNLOAD_TIMEOUT_MS,
   30_000,
@@ -52,6 +54,16 @@ const ALL_CASES = Object.freeze([
     suggestedFilename: 'extensionless',
     expectedViewerCount: 1,
   },
+  ...Array.from({ length: 3 }, (_, run) => [false, true].map(holdInitialState => {
+    const id = `initial-state-${holdInitialState ? 'delayed' : 'control'}-${run + 1}`;
+    return {
+      id,
+      pathname: `/race.hwp?run=${id}`,
+      suggestedFilename: id,
+      expectedViewerCount: 1,
+      holdInitialState,
+    };
+  })).flat(),
 ]);
 const CASES = selectCases(ALL_CASES, process.env.RHWP_EXTENSION_DOWNLOAD_CASE);
 
@@ -85,6 +97,7 @@ async function main() {
       userDataDir,
       args: chromeArgs(fixture.origin),
     });
+    await observePageDiagnostics(browser, downloads);
 
     const pages = await browser.pages();
     const fixturePage = pages[0] ?? await browser.newPage();
@@ -115,11 +128,13 @@ async function main() {
     const worker = await workerTarget.worker();
     assert.ok(worker, 'MV3 service worker 실행 컨텍스트를 얻지 못했습니다.');
     await worker.evaluate(async settings => chrome.storage.sync.set(settings), SETTINGS);
+    await installInitialStateBarrier(worker);
 
     await fixturePage.goto(`${fixture.origin}/fixture.html`, { waitUntil: 'domcontentloaded' });
 
     const results = [];
     for (const testCase of CASES) {
+      downloads.stage = testCase.id;
       process.stdout.write(`START ${testCase.id}\n`);
       const result = await runDownloadCase({
         browser,
@@ -144,12 +159,19 @@ async function main() {
     if (CASES.length === ALL_CASES.length) {
       assert.equal(
         results.reduce((sum, result) => sum + result.viewerCount, 0),
-        2,
-        '네 다운로드에서 HWP 두 건에만 viewer 탭이 생성되어야 합니다.',
+        ALL_CASES.reduce((sum, testCase) => sum + testCase.expectedViewerCount, 0),
+        '각 HWP 다운로드 ID에 viewer 탭이 하나씩 생성되어야 합니다.',
       );
-      process.stdout.write('PASS: XLSX 2건 탭 0, HWP 2건 download id별 탭 1\n');
+      process.stdout.write('PASS: XLSX 2건 탭 0, HWP 8건 download id별 탭 1 (초기 저장 지연 3건 포함)\n');
+      downloads.stage = 'own-blob-save';
+      await runOwnBlobSaveCase({ browser, downloads, downloadDir, extensionId });
     }
   } catch (error) {
+    await saveFailureDiagnostics(browser, 'download', {
+      ...downloads, error: error.message, progress: [...downloads.progress],
+    }).catch(diagnosticError => {
+      process.stderr.write(`Could not save download diagnostics: ${diagnosticError.message}\n`);
+    });
     failure = new Error(`${error.message ?? error}\n${formatDownloadDiagnostics(downloads)}`, { cause: error });
   } finally {
     const cleanupErrors = [];
@@ -189,6 +211,11 @@ async function runDownloadCase({
   const endpoint = new URL(testCase.pathname, fixtureOrigin).href;
   const beforeBegun = downloads.begun.length;
   const beforeViewerUrls = getViewerUrls(browser, extensionId);
+  await worker.evaluate(hold => {
+    globalThis.__downloadWriteBarrier.hold = hold;
+    globalThis.__downloadWriteBarrier.downloadId = null;
+    globalThis.__downloadWriteBarrier.completed.clear();
+  }, Boolean(testCase.holdInitialState));
 
   await fixturePage.bringToFront();
   await operationWithin(fixturePage.click(`#${testCase.id}`), `${testCase.id} click`);
@@ -213,12 +240,30 @@ async function runDownloadCase({
   });
   assert.ok(downloadedStat.isFile());
   assert.ok(downloadedStat.size > 0, `다운로드 파일이 비어 있습니다: ${begun.suggestedFilename}`);
+  if (testCase.pathname.startsWith('/race.hwp')) {
+    assert.deepEqual(await readFile(downloadedPath), await readFile(RACE_FIXTURE_FILE));
+  }
+
+  if (testCase.holdInitialState) {
+    // Wait for the real extension complete event while the initial storage write
+    // is still held. Only storage is fault-injected; no browser event is forged.
+    await waitUntil(() => worker.evaluate(() => {
+      const barrier = globalThis.__downloadWriteBarrier;
+      return barrier.downloadId !== null && barrier.completed.has(barrier.downloadId);
+    }));
+    assert.equal(viewerUrlsForEndpoint(browser, extensionId, endpoint).length, 0);
+    await worker.evaluate(() => {
+      const barrier = globalThis.__downloadWriteBarrier;
+      barrier.hold = false;
+      barrier.release();
+    });
+  }
 
   if (testCase.expectedViewerCount > 0) {
     await waitUntil(() => viewerUrlsForEndpoint(browser, extensionId, endpoint).length
       === testCase.expectedViewerCount);
   }
-  await delay(750);
+  await delay(testCase.pathname.startsWith('/race.hwp') ? 1500 : 750);
 
   const afterViewerUrls = getViewerUrls(browser, extensionId);
   const newViewerUrls = afterViewerUrls.filter(url => !beforeViewerUrls.includes(url));
@@ -233,6 +278,11 @@ async function runDownloadCase({
     testCase.expectedViewerCount,
     `${testCase.id}가 다른 viewer 탭을 만들었습니다: ${JSON.stringify(newViewerUrls)}`,
   );
+
+  // #6961: real DownloadItem.filename is absolute; only its leaf may reach Studio.
+  for (const viewerUrl of matchingViewerUrls) {
+    assert.equal(new URL(viewerUrl).searchParams.get('filename'), testCase.suggestedFilename);
+  }
 
   const downloadItems = await worker.evaluate(async url => {
     const items = await chrome.downloads.search({});
@@ -256,6 +306,55 @@ async function runDownloadCase({
   };
 }
 
+async function installInitialStateBarrier(worker) {
+  await worker.evaluate(() => {
+    const barrier = { hold: false, downloadId: null, release: null, completed: new Set() };
+    globalThis.__downloadWriteBarrier = barrier;
+    chrome.downloads.onChanged.addListener(delta => {
+      if (delta.state?.current === 'complete') barrier.completed.add(delta.id);
+    });
+    const set = chrome.storage.session.set.bind(chrome.storage.session);
+    chrome.storage.session.set = async values => {
+      const state = Object.values(values).find(value => value?.lastReason === 'fresh-created');
+      if (barrier.hold && state && barrier.downloadId === null) {
+        barrier.downloadId = state.id;
+        await new Promise(resolve => { barrier.release = resolve; });
+      }
+      return set(values);
+    };
+  });
+}
+
+async function runOwnBlobSaveCase({ browser, downloads, downloadDir, extensionId }) {
+  const page = await browser.newPage();
+  try {
+    await page.goto(`chrome-extension://${extensionId}/options.html`, { waitUntil: 'domcontentloaded' });
+    const beforeViewerUrls = getViewerUrls(browser, extensionId);
+    const fixture = await readFile(HWP_FIXTURE_FILE);
+    const beforeBegun = downloads.begun.length;
+    const blobUrl = await page.evaluate(bytes => {
+      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/x-hwp' }));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = 'own-editor-save.hwp';
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      return url;
+    }, [...fixture]);
+    const begun = await waitUntil(() => downloads.begun.slice(beforeBegun).find(event => event.url === blobUrl));
+    await waitUntil(() => downloads.progress.get(begun.guid)?.state === 'completed');
+    await delay(750);
+    assert.equal(begun.suggestedFilename, 'own-editor-save.hwp');
+    assert.deepEqual(await readFile(path.join(downloadDir, begun.suggestedFilename)), fixture);
+    assert.deepEqual(getViewerUrls(browser, extensionId), beforeViewerUrls, 'own Blob save must not open a viewer (#6964)');
+    await page.evaluate(url => URL.revokeObjectURL(url), blobUrl);
+    process.stdout.write('PASS: own extension Blob saved intact, additional viewer tabs 0\n');
+  } finally {
+    await page.close();
+  }
+}
+
 function getViewerUrls(browser, extensionId) {
   const prefix = `chrome-extension://${extensionId}/viewer.html`;
   return browser.targets()
@@ -272,6 +371,7 @@ function viewerUrlsForEndpoint(browser, extensionId, endpoint) {
 
 async function startFixtureServer() {
   const hwpBytes = await readFile(HWP_FIXTURE_FILE);
+  const raceBytes = await readFile(RACE_FIXTURE_FILE);
   const xlsxBytes = Buffer.from('PK\x03\x04rhwp-xlsx-download-fixture', 'latin1');
   const server = http.createServer((request, response) => {
     const host = request.headers.host ?? '';
@@ -296,12 +396,16 @@ async function startFixtureServer() {
   <a id="misleading-hwp-url" href="/misleading.hwp">misleading HWP URL</a>
   <a id="confirmed-hwp" href="/document.hwp">confirmed HWP</a>
   <a id="extensionless-hwp" href="/download?id=extensionless">extensionless HWP</a>
+  ${ALL_CASES.filter(testCase => testCase.pathname.startsWith('/race.hwp'))
+    .map(testCase => `<a id="${testCase.id}" href="${testCase.pathname}">${testCase.id}</a>`).join('\n')}
 </body>
 </html>`);
       return;
     }
 
-    const responseSpec = responseFor(requestUrl, hwpBytes, xlsxBytes);
+    const responseSpec = requestUrl.pathname === '/race.hwp'
+      ? { body: raceBytes, contentType: 'application/x-hwp', filename: requestUrl.searchParams.get('run') }
+      : responseFor(requestUrl, hwpBytes, xlsxBytes);
     if (responseSpec) {
       response.writeHead(200, {
         'cache-control': 'no-store',
@@ -375,7 +479,7 @@ function chromeArgs(fixtureOrigin) {
 }
 
 function createDownloadDiagnostics() {
-  return { begun: [], progress: new Map() };
+  return { stage: 'launch', begun: [], progress: new Map() };
 }
 
 function formatDownloadDiagnostics(downloads) {

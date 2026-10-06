@@ -1,69 +1,22 @@
-# 함정 — 에이전트가 절차를 깨는 자리
+# 반복 오류 방지
 
-## 1. 낡은 fmt 명령을 게이트로 적음
+- 구현에 맞춰 테스트 기대값을 만들지 않는다. 독립적인 기준을 먼저 정한다.
+- 정상 사례 하나만으로 완료하지 않는다. 적용 제외, 경계와 혼재 사례를 해당 수정에 맞게 고른다.
+- fixture 누락의 조용한 return과 0건 실행을 회귀 통과로 보고하지 않는다.
+- 페이지 수, 텍스트나 해시가 같아도 실제 겹침과 누락이 남을 수 있다. 출력물을 직접 비교한다.
+- 그림을 숨기거나 좌표를 강제로 제한해 증상만 사라진 상태를 원인 해결로 부르지 않는다.
+- 측정/paint/backend의 적용 조건과 좌표계를 서로 다르게 바꾸지 않는다.
+- once 처리의 수명과 소유 범위를 확인한다. 개별 control마다 상태를 초기화하면 문서 전체 once가 아니다.
+- 파서의 null, 빈 문자열과 0을 혼동하지 않는다. 재귀 제한은 비싼 처리 전에 적용한다.
+- native Clippy와 related test를 모든 Rust 변경의 전체 게이트라고 안내하지 않는다.
+- 파생 integration suite/manifest와 진단 로그를 source PR에 stage하지 않는다.
+- 생성 suite 번호를 고정하거나 검사 횟수를 반복하는 것으로 의미 있는 경계 검증을 대신하지 않는다.
+- 검증 SHA와 제출 SHA를 구분한다. 미발행/취소/실패 CI를 성공으로 바꾸어 쓰지 않는다.
+- 과거 스킬 작업의 DocumentCore/CLI/gym 금지 목록을 모든 기여에 적용하지 않는다.
+- 부분 해결에 issue 전체 종료 키워드를 붙이지 않는다.
+- 기존 PR 보정 요청에 불필요한 통합 PR을 만들거나 다른 기여자의 변경을 되돌리지 않는다.
+- 임시 로그와 중간 이미지는 ignored output에 두고 최종 보관용 증거만 정책에 맞게 포함한다.
 
-`cargo fmt --check` 만 돌리고 통과했다고 PR 에 쓴다. CI Lint 가 다시
-실패한다. 정본은 `cargo fmt --all -- --check`.
-
-## 2. `git add -A`
-
-생성물, 다른 스킬, gym, 로컬 메모가 같이 올라간다. 경로를 지정한다.
-
-## 3. named worktree 훔침
-
-`rhwp`, `rhwp-desk*`, `rhwp-handoff`, `rhwp-scaffold-final`,
-`rhwp-doc-repro` 또는 `git worktree list` 의 기존 이름에 들어가
-구현한다. 다른 작업이 죽는다.
-
-## 4. DocumentCore 편집 로직 발명
-
-이슈가 렌더 버그여도 이 스킬은 기여 **절차**다. 새 편집 연산자를
-`src/document_core/` 에 짜지 않는다.
-
-## 5. 새 CLI
-
-`rhwp contribute` / `rhwp pr-gate` 같은 명령을  dod 에 넣지 않는다.
-있는 명령만 안내한다.
-
-## 6. 영수증 스킬 재작성
-
-`replay` / `audit` / `lineage` 계약을 여기 복제하거나
-`rhwp-work-receipt/SKILL.md` 를 고친다. 포인터만 둔다.
-
-## 7. 중복 열린 PR
-
-같은 주제로 두 번째 PR 을 연다. 먼저 `gh pr list --state open`.
-
-## 8. noci 를 FAILURE 로 읽음
-
-문서 전용에 검사가 안 뜬 것을 실패로 보고하고 재실행을 반복한다.
-반대: 빨간 Lint 를 "문서라서 무시" 한다.
-
-## 9. 한글 PR 본문을 파이프로 깨뜨림
-
-PowerShell here-string → `gh --body-file -`. BOM/`??` 가 생긴다.
-UTF-8 without BOM 파일 + `--body-file`.
-
-## 10. base=`main`
-
-GitHub 기본 선택이 `main` 이다. `--base devel` 을 명시한다.
-
-## 11. fetch 없이 로컬 devel 에서 분기
-
-이미 낡은 devel. `git fetch upstream devel` 이 단 3 의 첫 명령이다.
-
-## 12. 시각 근거 없이 레이아웃 PR
-
-페이지 수가 바뀌는 패치에 SVG 전후가 없다. 게이트 미완.
-
-## 13. 관련 시험 없이 "테스트 통과"
-
-어떤 명령을 돌렸는지 본문에 없다. 관련 `cargo test` 이름을 적는다.
-
-## 14. 이슈 없이 PR
-
-`closes #` 가 비어 있다. 단 1 을 먼저 닫는다.
-
-## 15. gym 으로 기여를 채점
-
-이 경로는 Maker seat 실 PR 이다. gym pack 을 만들지 않는다.
+현재 명령과 제출 조건은 [CONTRIBUTING.md](../../../../CONTRIBUTING.md),
+메인터너의 판정과 후속 처리는
+[PR review workflow](../../../../mydocs/manual/pr_review_workflow.md)를 따른다.

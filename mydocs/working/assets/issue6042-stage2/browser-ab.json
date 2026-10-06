@@ -1,0 +1,55 @@
+{
+  "recordedAt": "2026-09-02T13:06:00+09:00",
+  "scenario": {
+    "document": "samples/hwpspec.hwp",
+    "pages": 178,
+    "renderer": "canvas2d",
+    "viewportCssPx": [1280, 720],
+    "devicePixelRatio": 2,
+    "arrangement": "auto",
+    "columns": 4,
+    "zoom": 0.34,
+    "interaction": "three sequential probe-scroll-row requests with 900ms settling"
+  },
+  "before": {
+    "source": "codex/issue-6042-stage1-restacked-20260902@1466d79eb34426caedd80a1f7b7eb937ddc0c54d",
+    "traces": [
+      { "linearCalls": 2, "linearPageUnits": 356, "prefetchCalls": 1, "visibilityUpdateMs": 20.5 },
+      { "linearCalls": 2, "linearPageUnits": 356, "prefetchCalls": 1, "visibilityUpdateMs": 32.099999994039536 },
+      { "linearCalls": 2, "linearPageUnits": 356, "prefetchCalls": 1, "visibilityUpdateMs": 13.400000005960464 }
+    ]
+  },
+  "after": {
+    "source": "Stage 2 working tree based on 1466d79eb34426caedd80a1f7b7eb937ddc0c54d",
+    "traces": [
+      { "snapshotCalls": 1, "candidatePageUnits": 12, "visibilityUpdateMs": 20.299999997019768 },
+      { "snapshotCalls": 1, "candidatePageUnits": 12, "visibilityUpdateMs": 27.799999997019768 },
+      { "snapshotCalls": 1, "candidatePageUnits": 12, "visibilityUpdateMs": 12.899999991059303 }
+    ]
+  },
+  "parity": {
+    "visiblePages": [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    "retainedPages": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+    "probeErrors": 0,
+    "browserWarningsOrErrors": 0
+  },
+  "zoomCenterChecksCssPx": [
+    { "zoom": 0.5, "columns": 3, "displayedGroupCenter": 650.0703125, "editingAreaCenter": 650, "absoluteDelta": 0.0703125 },
+    { "zoom": 1, "columns": 1, "displayedGroupCenter": 649.9921875, "editingAreaCenter": 650, "absoluteDelta": 0.0078125 },
+    { "zoom": 0.34, "columns": 4, "displayedGroupCenter": 650.06640625, "editingAreaCenter": 650, "absoluteDelta": 0.06640625 }
+  ],
+  "documentSwitch": {
+    "fromPages": 178,
+    "toDocument": "samples/21868765_별표2_보건소_분장사무.hwp",
+    "toPages": 4,
+    "renderedPages": 4,
+    "browserWarningsOrErrors": 0
+  },
+  "screenshot": {
+    "path": "hwpspec-auto-34.jpg",
+    "mimeType": "image/jpeg",
+    "sha256": "c69e693d4bf300c530ee251ef86ab4869072c8addd85cded44855cde69e6d165",
+    "purpose": "layout evidence only; not a lossless quality comparison"
+  },
+  "interpretation": "The exact page-predicate work fell from 356 page units across two visible scans to 12 candidate pages in one snapshot (96.63%). Three samples are a correctness and call-count A/B, not an end-to-end performance claim; rendering dominates visibilityUpdateMs and timer resolution is coarse."
+}

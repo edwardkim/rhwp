@@ -1,4 +1,5 @@
 import type { CommandDef } from '../types';
+import { hyperlinkCommand, editHyperlinkCommand, removeHyperlinkCommand } from './hyperlink';
 import { PicturePropsDialog } from '@/ui/picture-props-dialog';
 import { ChartDataDialog } from '@/ui/chart-data-dialog';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
@@ -17,6 +18,7 @@ import type { InputHandler } from '@/engine/input-handler';
 import { SetObjectPropsCommand, SetZOrderCommand, type RefreshPolicy } from '@/engine/command';
 import { getObjectProps, setObjectProps, type ObjectPropsRef } from '@/engine/object-props';
 
+import { t } from '../../i18n/index.ts';
 /** 스텁 커맨드 생성 헬퍼 */
 function stub(id: string, label: string, icon?: string, shortcut?: string): CommandDef {
   return {
@@ -97,7 +99,7 @@ function insertNote(
 export const insertCommands: CommandDef[] = [
   {
     id: 'insert:shape',
-    label: '도형',
+    label: t('command.insert.shape.label'),
     icon: 'icon-shape',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -113,7 +115,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:image',
-    label: '그림',
+    label: t('command.insert.image.label'),
     icon: 'icon-image',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -144,14 +146,14 @@ export const insertCommands: CommandDef[] = [
           });
           ih.enterImagePlacementMode(data, ext, img.naturalWidth, img.naturalHeight, file.name);
           showToast({
-            message: '그림을 넣을 위치를 문서 본문 또는 표 셀 안에서 클릭하거나 드래그하세요.',
+            message: t('command.insert.execute.message'),
             durationMs: 3500,
           });
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           console.warn('[insert:image] 이미지 준비 실패:', err);
           showToast({
-            message: `그림을 삽입할 수 없습니다.\n${msg}`,
+            message: t('command.insert.execute.message.x56c45a', { p1: msg }),
             durationMs: 6000,
           });
         } finally {
@@ -163,7 +165,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:textbox',
-    label: '글상자',
+    label: t('command.insert.textbox.label'),
     icon: 'icon-textbox',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -175,7 +177,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:equation',
     opensDialog: true,
-    label: '수식',
+    label: t('command.insert.equation.label'),
     shortcutLabel: 'Ctrl+M,M',
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services) {
@@ -208,7 +210,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:field',
     opensDialog: true,
-    label: '필드 입력',
+    label: t('command.insert.field.label'),
     shortcutLabel: 'Ctrl+K+E',
     canExecute: (ctx) => ctx.hasDocument && !ctx.isFormMode,
     execute(services) {
@@ -246,20 +248,20 @@ export const insertCommands: CommandDef[] = [
       fieldInsertDialog.show();
     },
   },
-  stub('insert:caption-top', '캡션 - 위'),
-  stub('insert:caption-lt', '캡션 - 왼쪽 위'),
-  stub('insert:caption-lm', '캡션 - 왼쪽 가운데'),
-  stub('insert:caption-lb', '캡션 - 왼쪽 아래'),
-  stub('insert:caption-rt', '캡션 - 오른쪽 위'),
-  stub('insert:caption-rm', '캡션 - 오른쪽 가운데'),
-  stub('insert:caption-rb', '캡션 - 오른쪽 아래'),
-  stub('insert:caption-bottom', '캡션 - 아래'),
-  stub('insert:caption-none', '캡션 없음'),
-  stub('insert:para-band', '문단 띠'),
-  stub('insert:comment', '주석', 'icon-comment'),
+  stub('insert:caption-top', t('command.insert.captionTop.registryLabel')),
+  stub('insert:caption-lt', t('command.insert.captionLt.registryLabel')),
+  stub('insert:caption-lm', t('command.insert.captionLm.registryLabel')),
+  stub('insert:caption-lb', t('command.insert.captionLb.registryLabel')),
+  stub('insert:caption-rt', t('command.insert.captionRt.registryLabel')),
+  stub('insert:caption-rm', t('command.insert.captionRm.registryLabel')),
+  stub('insert:caption-rb', t('command.insert.captionRb.registryLabel')),
+  stub('insert:caption-bottom', t('command.insert.captionBottom.registryLabel')),
+  stub('insert:caption-none', t('command.insert.captionNone.label')),
+  stub('insert:para-band', t('command.insert.paraBand.label')),
+  stub('insert:comment', t('command.insert.comment.label'), 'icon-comment'),
   {
     id: 'insert:footnote',
-    label: '각주',
+    label: t('command.insert.footnote.label'),
     icon: 'icon-footnote',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -268,7 +270,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:endnote',
-    label: '미주',
+    label: t('command.insert.endnote.label'),
     icon: 'icon-endnote',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -277,7 +279,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:note-close',
-    label: '닫기',
+    label: t('command.insert.noteClose.registryLabel'),
     icon: 'icon-delete',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -294,7 +296,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:endnote-shape',
     opensDialog: true,
-    label: '미주 모양',
+    label: t('command.insert.endnoteShape.label'),
     icon: 'icon-endnote',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -307,7 +309,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:symbols',
     opensDialog: true,
-    label: '문자표',
+    label: t('command.insert.symbols.label'),
     icon: 'icon-symbols',
     shortcutLabel: 'Alt+F10',
     canExecute: (ctx) => ctx.hasDocument,
@@ -318,11 +320,13 @@ export const insertCommands: CommandDef[] = [
       symbolsDialog.show();
     },
   },
-  stub('insert:hyperlink', '하이퍼링크', 'icon-hyperlink', 'Ctrl+K+H'),
+  hyperlinkCommand,
+  editHyperlinkCommand,
+  removeHyperlinkCommand,
   {
     id: 'insert:bookmark',
     opensDialog: true,
-    label: '책갈피',
+    label: t('command.insert.bookmark.label'),
     shortcutLabel: 'Ctrl+K,B',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -335,7 +339,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:picture-props',
     opensDialog: true,
-    label: '개체 속성',
+    label: t('command.insert.pictureProps.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -382,7 +386,7 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:chart-data-edit',
     opensDialog: true,
-    label: '차트 데이터 편집',
+    label: t('command.insert.chartDataEdit.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -414,13 +418,26 @@ export const insertCommands: CommandDef[] = [
   {
     id: 'insert:equation-edit',
     opensDialog: true,
-    label: '수식 편집',
+    label: t('command.insert.equationEdit.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
-      const ref = ih.getSelectedPictureRef();
-      if (!ref || ref.type !== 'equation') return;
+      let ref = ih.getSelectedPictureRef();
+      if (!ref || (ref.type !== 'equation' && ref.type !== 'ole')) return;
+      // 레거시 hwpeq5 OLE은 원본 방언을 안전하게 되쓸 수 없다. native equation으로
+      // 같은 슬롯에서 전환한 뒤 일반 편집기를 연다. snapshot 경로라 undo도 원 OLE로 복원된다.
+      if (ref.type === 'ole') {
+        const oleRef = ref;
+        let promoted: { ok: boolean; paraIdx: number; controlIdx: number } | undefined;
+        recordObjectMutation(ih, 'promoteOleEquation', (wasm) => {
+          promoted = wasm.promoteOleEquation(oleRef.sec, oleRef.ppi, oleRef.ci);
+          if (!promoted?.ok) throw new Error('[insert:equation-edit] 레거시 OLE 수식 전환 실패');
+        });
+        if (!promoted) return;
+        ih.selectPictureObject(oleRef.sec, promoted.paraIdx, promoted.controlIdx, 'equation');
+        ref = { ...oleRef, ppi: promoted.paraIdx, ci: promoted.controlIdx, type: 'equation' };
+      }
       if (!equationEditorDialog) {
         equationEditorDialog = new EquationEditorDialog(services.wasm, services.eventBus, services);
       }
@@ -429,7 +446,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:caption-toggle',
-    label: '캡션 넣기',
+    label: t('command.insert.captionToggle.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -475,7 +492,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:arrange-front',
-    label: '맨 앞으로',
+    label: t('command.insert.arrangeFront.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -487,7 +504,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:arrange-forward',
-    label: '앞으로',
+    label: t('command.insert.arrangeForward.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -499,7 +516,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:arrange-backward',
-    label: '뒤로',
+    label: t('command.insert.arrangeBackward.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -511,7 +528,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:arrange-back',
-    label: '맨 뒤로',
+    label: t('command.insert.arrangeBack.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -523,7 +540,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:picture-delete',
-    label: '개체 지우기',
+    label: t('command.insert.pictureDelete.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -531,7 +548,10 @@ export const insertCommands: CommandDef[] = [
       const ref = ih.getSelectedPictureRef();
       if (!ref) return;
       recordObjectMutation(ih, 'deleteObject', (wasm) => {
-        if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group') {
+        // [#7105] OLE 는 코어에서 `Control::Shape(Ole)` 다 — 그림 삭제(`deletePictureControl`)는
+        // `Control::Picture` 만 받아 거부하므로 도형 삭제로 보낸다. 키보드 Delete 경로
+        // (`deleteObjectControl`)와 같은 종류 집합이다.
+        if (ref.type === 'shape' || ref.type === 'line' || ref.type === 'group' || ref.type === 'ole') {
           wasm.deleteShapeControl(ref.sec, ref.ppi, ref.ci);
         } else if (ref.type === 'equation') {
           wasm.deleteEquationControl(ref.sec, ref.ppi, ref.ci);
@@ -547,7 +567,7 @@ export const insertCommands: CommandDef[] = [
   // ─── 개체 묶기/풀기 ──────────────────────────────
   {
     id: 'insert:group-shapes',
-    label: '개체 묶기',
+    label: t('command.insert.groupShapes.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -569,7 +589,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:ungroup-shapes',
-    label: '개체 풀기',
+    label: t('command.insert.ungroupShapes.registryLabel'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       const ih = services.getInputHandler();
@@ -587,7 +607,7 @@ export const insertCommands: CommandDef[] = [
   // ─── 회전/대칭 ──────────────────────────────────
   {
     id: 'insert:rotate-cw',
-    label: '오른쪽 90° 회전',
+    label: t('command.insert.rotateCw.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       applyRotationDelta(services, 90);
@@ -595,7 +615,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:rotate-ccw',
-    label: '왼쪽 90° 회전',
+    label: t('command.insert.rotateCcw.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       applyRotationDelta(services, -90);
@@ -603,7 +623,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:flip-horz',
-    label: '좌우 대칭',
+    label: t('command.insert.flipHorz.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       toggleFlip(services, 'horzFlip');
@@ -611,7 +631,7 @@ export const insertCommands: CommandDef[] = [
   },
   {
     id: 'insert:flip-vert',
-    label: '상하 대칭',
+    label: t('command.insert.flipVert.label'),
     canExecute: (ctx) => ctx.inPictureObjectSelection,
     execute(services) {
       toggleFlip(services, 'vertFlip');

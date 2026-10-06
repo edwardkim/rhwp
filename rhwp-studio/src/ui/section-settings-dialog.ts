@@ -6,6 +6,7 @@ import type { CommandServices } from '@/command/types';
 import { applyCommandThroughRouter } from './dialog-apply';
 import { SetSectionPropsAllCommand, SetSectionPropsCommand } from '@/engine/command';
 
+import { t as i18nText } from '../i18n/index.ts';
 const HWPUNIT_PER_PT = 100; // 1pt = 100 HWPUNIT (HWP 내부 단위)
 
 function hwpunitToPt(hu: number): number {
@@ -45,7 +46,7 @@ export class SectionSettingsDialog extends ModalDialog {
   private applyScopeSelect!: HTMLSelectElement;
 
   constructor(wasm: WasmBridge, eventBus: EventBus, sectionIdx: number, private services?: CommandServices) {
-    super('구역 설정', 400);
+    super(i18nText('dialog.sectionSettings.ptToHwpunit.title'), 400);
     this.wasm = wasm;
     this.eventBus = eventBus;
     this.sectionIdx = sectionIdx;
@@ -61,57 +62,57 @@ export class SectionSettingsDialog extends ModalDialog {
     const body = document.createElement('div');
 
     // ── 시작 쪽 번호 ──
-    const pageNumSection = this.createSection('시작 쪽 번호');
+    const pageNumSection = this.createSection(i18nText('dialog.sectionSettings.createSection.label'));
     this.pageNumCombo = this.createPageNumCombo();
-    pageNumSection.appendChild(this.labeledRow('종류(N):', this.pageNumCombo));
+    pageNumSection.appendChild(this.labeledRow(i18nText('dialog.sectionSettings.labeledRow.label'), this.pageNumCombo));
     body.appendChild(pageNumSection);
 
     // ── 개체 시작 번호 ──
-    const objNumSection = this.createSection('개체 시작 번호');
+    const objNumSection = this.createSection(i18nText('dialog.sectionSettings.createSection.label.x7dec29'));
     this.pictureNumCombo = this.createObjNumCombo();
     this.tableNumCombo = this.createObjNumCombo();
     this.equationNumCombo = this.createObjNumCombo();
-    objNumSection.appendChild(this.labeledRow('그림(P):', this.pictureNumCombo));
-    objNumSection.appendChild(this.labeledRow('표(A):', this.tableNumCombo));
-    objNumSection.appendChild(this.labeledRow('수식(E):', this.equationNumCombo));
+    objNumSection.appendChild(this.labeledRow(i18nText('dialog.sectionSettings.labeledRow.label.x7aecc2'), this.pictureNumCombo));
+    objNumSection.appendChild(this.labeledRow(i18nText('dialog.sectionSettings.labeledRow.label.x0c22ba'), this.tableNumCombo));
+    objNumSection.appendChild(this.labeledRow(i18nText('dialog.sectionSettings.labeledRow.label.x45784f'), this.equationNumCombo));
     body.appendChild(objNumSection);
 
     // ── 기타 ──
-    const etcSection = this.createSection('기타');
+    const etcSection = this.createSection(i18nText('dialog.sectionSettings.createSection.label.x5babec'));
 
     this.hideHeaderCheck = document.createElement('input');
     this.hideHeaderCheck.type = 'checkbox';
-    etcSection.appendChild(this.checkRow(this.hideHeaderCheck, '첫 쪽에만 머리말/꼬리말 감추기(H)'));
+    etcSection.appendChild(this.checkRow(this.hideHeaderCheck, i18nText('dialog.sectionSettings.checkRow.label')));
 
     this.hideMasterPageCheck = document.createElement('input');
     this.hideMasterPageCheck.type = 'checkbox';
-    etcSection.appendChild(this.checkRow(this.hideMasterPageCheck, '첫 쪽에만 바탕쪽 감추기(M)'));
+    etcSection.appendChild(this.checkRow(this.hideMasterPageCheck, i18nText('dialog.sectionSettings.checkRow.label.xec8286')));
 
     this.hideBorderCheck = document.createElement('input');
     this.hideBorderCheck.type = 'checkbox';
-    etcSection.appendChild(this.checkRow(this.hideBorderCheck, '첫 쪽에만 테두리/배경 감추기(E)'));
+    etcSection.appendChild(this.checkRow(this.hideBorderCheck, i18nText('dialog.sectionSettings.checkRow.label.x8d1e33')));
 
     this.hideEmptyLineCheck = document.createElement('input');
     this.hideEmptyLineCheck.type = 'checkbox';
-    etcSection.appendChild(this.checkRow(this.hideEmptyLineCheck, '빈 줄 감추기(L)'));
+    etcSection.appendChild(this.checkRow(this.hideEmptyLineCheck, i18nText('dialog.sectionSettings.checkRow.label.xc7fefc')));
 
     this.columnSpacingInput = this.numberInput();
-    etcSection.appendChild(this.labeledRowSimple('단 사이 간격(G):', this.columnSpacingInput, 'pt'));
+    etcSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label'), this.columnSpacingInput, 'pt'));
 
     this.defaultTabSpacingInput = this.numberInput();
-    etcSection.appendChild(this.labeledRowSimple('기본 탭 간격(I):', this.defaultTabSpacingInput, 'pt'));
+    etcSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label.x8e1910'), this.defaultTabSpacingInput, 'pt'));
 
     body.appendChild(etcSection);
 
     // ── 적용 범위 ──
-    const scopeSection = this.createSection('적용 범위');
+    const scopeSection = this.createSection(i18nText('dialog.sectionSettings.createSection.label.xb1824b'));
     this.applyScopeSelect = document.createElement('select');
     this.applyScopeSelect.className = 'dialog-select';
     this.applyScopeSelect.style.width = '160px';
     for (const [label, value] of [
-      ['선택된 문자열', 'selection'],
-      ['현재 구역', 'current'],
-      ['문서 전체', 'all'],
+      [i18nText('dialog.sectionSettings.createBody.label'), 'selection'],
+      [i18nText('dialog.sectionSettings.createBody.label.xa4076c'), 'current'],
+      [i18nText('dialog.sectionSettings.createBody.label.x7c2737'), 'all'],
     ] as const) {
       const opt = document.createElement('option');
       opt.value = value;
@@ -119,7 +120,7 @@ export class SectionSettingsDialog extends ModalDialog {
       this.applyScopeSelect.appendChild(opt);
     }
     this.applyScopeSelect.value = 'current';
-    scopeSection.appendChild(this.labeledRowSimple('적용 범위(Y):', this.applyScopeSelect));
+    scopeSection.appendChild(this.labeledRowSimple(i18nText('dialog.sectionSettings.labeledRowSimple.label.x50fdb4'), this.applyScopeSelect));
     body.appendChild(scopeSection);
 
     return body;
@@ -328,10 +329,10 @@ export class SectionSettingsDialog extends ModalDialog {
     sel.className = 'dialog-select';
     sel.style.width = '80px';
     for (const [label, value] of [
-      ['이어서', 'continue'],
-      ['홀수', 'odd'],
-      ['짝수', 'even'],
-      ['사용자', 'custom'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label'), 'continue'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.xb4edee'), 'odd'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.x86e8dd'), 'even'],
+      [i18nText('dialog.sectionSettings.createPageNumCombo.label.x2f0255'), 'custom'],
     ] as const) {
       const opt = document.createElement('option');
       opt.value = value;
@@ -360,7 +361,7 @@ export class SectionSettingsDialog extends ModalDialog {
     const sel = document.createElement('select');
     sel.className = 'dialog-select';
     sel.style.width = '80px';
-    for (const [label, value] of [['이어서', 'continue'], ['사용자', 'custom']] as const) {
+    for (const [label, value] of [[i18nText('dialog.sectionSettings.createObjNumCombo.label'), 'continue'], [i18nText('dialog.sectionSettings.createObjNumCombo.label.x2f0255'), 'custom']] as const) {
       const opt = document.createElement('option');
       opt.value = value;
       opt.textContent = label;

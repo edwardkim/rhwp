@@ -3,11 +3,22 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
 function source(path: string): string {
   return readFileSync(join(rootDir, path), 'utf8');
+}
+
+/**
+ * [Task #6759 후속] 위치 판정은 코드만 본다.
+ *
+ * 구간 경계는 주석 표지(`// ─── …`)로 잡으므로 원문에서 잘라야 하고, 잘라낸 구간의
+ * 위치 비교는 주석 인용에 뚫리면 안 되므로 그때 `codeOnly` 를 씌운다.
+ */
+function codeSlice(src: string, from: number, to: number): string {
+  return codeOnly(src.slice(from, to));
 }
 
 function tabCaseBlock(): string {
@@ -16,7 +27,7 @@ function tabCaseBlock(): string {
   const end = keyboard.indexOf("case 'Insert': {", start);
   assert.notEqual(start, -1, 'Tab case not found');
   assert.notEqual(end, -1, 'Insert case after Tab not found');
-  return keyboard.slice(start, end);
+  return codeSlice(keyboard, start, end);
 }
 
 function exitTableBlock(): string {
@@ -25,7 +36,7 @@ function exitTableBlock(): string {
   const end = cursor.indexOf('// ─── 캐럿 좌표 갱신', start);
   assert.notEqual(start, -1, 'exitTable method not found');
   assert.notEqual(end, -1, 'exitTable method end not found');
-  return cursor.slice(start, end);
+  return codeSlice(cursor, start, end);
 }
 
 test('Tab in a table cell uses cell navigation before inserting a tab character', () => {

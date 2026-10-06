@@ -216,14 +216,12 @@ impl HtmlRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 if let Some(ref data) = img.data {
-                    self.draw_image(
-                        data,
-                        node.bbox.x,
-                        node.bbox.y,
-                        node.bbox.width,
-                        node.bbox.height,
-                    );
+                    let paint = img.paint_bbox(&node.bbox);
+                    self.draw_image(data, paint.x, paint.y, paint.width, paint.height);
                 } else {
                     self.output.push_str(&format!(
                         "<div class=\"hwp-image\" style=\"position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:#eee;\"></div>\n",
@@ -242,15 +240,8 @@ impl HtmlRenderer {
         // 조판부호 개체 마커 (붉은색 대괄호)
         if self.show_control_codes {
             let label = match &node.node_type {
-                RenderNodeType::Table(_) => Some("[표]"),
-                RenderNodeType::Image(_) => Some("[그림]"),
-                RenderNodeType::TextBox => Some("[글상자]"),
-                RenderNodeType::Equation(_) => Some("[수식]"),
                 RenderNodeType::FormObject(_) => Some("[양식]"),
-                RenderNodeType::Header => Some("[머리말]"),
-                RenderNodeType::Footer => Some("[꼬리말]"),
-                RenderNodeType::FootnoteArea => Some("[각주]"),
-                _ => None,
+                _ => node.control_code_label(),
             };
             if let Some(label) = label {
                 let fs = 10.0;

@@ -28,8 +28,21 @@
         "--json"
       ],
       "expect_exits": [
-        0,
-        3
+        0
+      ]
+    },
+    {
+      "name": "정상 재현 1건",
+      "op": "value_eq",
+      "value": 1,
+      "path": "reproduced",
+      "cmd": [
+        "audit",
+        "{file:receipts}",
+        "--json"
+      ],
+      "expect_exits": [
+        0
       ]
     }
   ]

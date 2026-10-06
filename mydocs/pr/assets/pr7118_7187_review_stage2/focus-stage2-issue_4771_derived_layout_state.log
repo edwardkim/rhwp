@@ -1,0 +1,25 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 7.02s
+     Running tests/generated/regression_suite_024.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_024-fbd9e35d6a0cc6aa)
+
+running 6 tests
+test issue_4771_derived_layout_state::cli_verification_uses_the_snapshot_that_produces_the_bytes ... ok
+test issue_4771_derived_layout_state::renderer_cache_lifecycle_is_absent_from_source_models ... ok
+test issue_4771_derived_layout_state::hwpx_does_not_persist_layout_only_fill_lines ... ok
+test issue_4771_derived_layout_state::floating_stack_admission_requires_same_frame_and_strict_2d_overlap ... ok
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+[hwp5] 필드(ClickHere) 파라미터 2개 손실 — HWP5 CTRL_DATA에 규정된 슬롯 없음(#4396): Prop, Direction
+test issue_4771_derived_layout_state::every_hwp_lowering_api_preserves_the_live_document ... ok
+test issue_4771_derived_layout_state::issue_2004_projection_preserves_each_picture_identity_and_final_bounds ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 193 filtered out; finished in 0.03s

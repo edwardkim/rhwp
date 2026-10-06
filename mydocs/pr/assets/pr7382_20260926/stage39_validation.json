@@ -1,0 +1,712 @@
+{
+  "source_proof": {
+    "source_sha": "af3a8574e8e1b10258589be781a6510022a44b43",
+    "files": {
+      "src/renderer/float_placement.rs": "8514fa1f0f5085ded29fd7056af7382462465b114b0a33de0d4ac3528d16adfa",
+      "src/renderer/layout.rs": "ad796fe5ae0897edeb2a5c31cdb22323e6554e92b57df5377b7b54af1f69bb98",
+      "src/renderer/typeset/controls/empty_float.rs": "2d8072036d27bc64782304d7b947dab14688b0b95873b13bdb4d4483f546c14b",
+      "src/renderer/typeset/paragraph/flow.rs": "631c266d6d6f126c2608b5deda2158b4b47041fce602239491e5848ab793212e",
+      "src/renderer/typeset/table/block/whole_fit.rs": "b1653410450d7a4efdb4080fecd3f72cf35beff163da2e04847fa9072f5b3f90",
+      "src/renderer/typeset/table/continuation/fragment/budget.rs": "40defd49d8091d172268b74dc37e38f2d65c5cb2de5c9a3c1f848e20fa4c793a",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "b56d6a0675d34a06b2ffb18b842aff01f75ae27b4cb8eedc4e8f8431bef82cde",
+      "tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs": "c49fa0908e396c97505115c1990f9ede5d756d6cfd85ce1a1b4315c23741c0ec",
+      "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "d8253f16f8da17968f3e09dc2cb4b20934208b20ba325dbcc351ceb4db4d0043"
+    },
+    "runtime_diff_sha256": "1683b586e8094aba62315008ba8f172b043925cb7c77d38ec157f59f2ed434f4",
+    "test_diff_sha256": "7965342657725f097e75275988574f0e049c929c67a8fa880d0114e4c2528ba4"
+  },
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "checks": {
+    "before": {
+      "result": {
+        "exit_code": 100,
+        "elapsed_seconds": 94.2719191252254
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(captioned_empty_host_table_keeps_its_complete_original_outer_frame)"
+      ],
+      "summary": [
+        "Summary [   0.230s] 2 tests run: 0 passed, 2 failed, 225 skipped"
+      ]
+    },
+    "after": {
+      "result": {
+        "exit_code": 100,
+        "elapsed_seconds": 99.51624925015494
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   5.602s] 84 tests run: 81 passed, 3 failed, 143 skipped"
+      ]
+    },
+    "after-runtime": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 95.84711616719142
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   5.069s] 84 tests run: 84 passed, 143 skipped"
+      ]
+    },
+    "expanded": {
+      "result": {
+        "exit_code": 101,
+        "elapsed_seconds": 144.52775770891458
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": []
+    },
+    "expanded-final": {
+      "result": {
+        "exit_code": 100,
+        "elapsed_seconds": 88.33520304178819
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_028",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   7.843s] 223 tests run: 222 passed, 1 failed, 4308 skipped"
+      ]
+    },
+    "expanded-complete": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 88.9383551669307
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_028",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   7.684s] 223 tests run: 223 passed, 4546 skipped"
+      ]
+    },
+    "all-content-boundary": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 101.1113174171187
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(captioned_closed_empty_host_frame_preserves_rows_and_caption_when_budget_requires_split)"
+      ],
+      "summary": [
+        "Summary [   0.202s] 1 test run: 1 passed, 217 skipped"
+      ]
+    },
+    "all-content-expanded": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 93.73535879096016
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_028",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   7.698s] 218 tests run: 218 passed, 4551 skipped"
+      ]
+    },
+    "all-content-complete": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 19.3712794999592
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation)"
+      ],
+      "summary": [
+        "Summary [   7.660s] 223 tests run: 223 passed, 4570 skipped"
+      ]
+    },
+    "cli-build": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 81.53332533314824,
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--bin",
+          "rhwp"
+        ],
+        "cli_sha256": "8770e0c52638217bf88cc75be858956110df41b4a8dab6c9f7af73da4c4d0481"
+      },
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "summary": []
+    }
+  },
+  "visual": [
+    {
+      "phase": "before",
+      "extra": false,
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 84.9647
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 97.52687
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "extra": false,
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 84.9647
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 98.83521
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "extra": false,
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 92.75732
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 97.52687
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "extra": false,
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 92.75732
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 98.83521
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "extra": true,
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 84.22025
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "extra": true,
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 84.22025
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "extra": true,
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 94.67057
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "extra": true,
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 94.67057
+        }
+      ]
+    }
+  ],
+  "assets": [
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_review_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_overlay_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_review_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_overlay_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_review_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_overlay_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_review_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_overlay_127.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwpx_review_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwpx_overlay_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwp_review_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwp_overlay_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_before_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwpx_review_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwpx_overlay_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwp_review_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwp_overlay_131.png",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_after_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_source_proof.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_source_proof.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_cli_runtime_proof.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_independent_geometry.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_english_comment_scan.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_original_tree_difference.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_after_visual_results.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_visual_result.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_before_hwp_visual_result.json",
+    "mydocs/pr/assets/pr7382_20260926/stage39_extra_visual_results.json"
+  ],
+  "directly_inspected_png_count": 24,
+  "classification": "원본 표/캡션 전체 프레임 복원; 보류 사유가 남아 전체 PR 승인 미완료",
+  "own_errors": "후속 앞 간격 중복 후보3FAIL, 생성자 필드 누락 컴파일101, 분할 행 번호 중복의 잘못된 검사1FAIL, 최종 suite 목록 누락5건(218PASS)은 구현 수정 전 결함 증거로 세지 않음",
+  "remaining": "126쪽 각주171/172 이어지는 줄 들여쓰기, #6782 76/78쪽, 실제 TABLE 편집/래퍼 분할, 최신 전수 Native/fresh WASM 및 전체 Rust/lint/Skia",
+  "log_sha256": {
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-after-hwp-visual.log": "997cc786dca3507155b34e888e5fdbcb33831ccbf4a76868d305f2c60faa17c9",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-after-hwpx-visual.log": "7805ecb152a9662e193653d255c883792f3b60f72b4d3c096ccd0c12906ef167",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-after-runtime.log": "16f23cee994b852198de0dd0264a82ef53753cd9724d1c8ee0d64c13f113b3ff",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-after.log": "f89fa18937430bd5bd53e4160f30cecfa6c1a9016f79d08901e0824d901a53a2",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-all-content-boundary.log": "22effbdf27ae13a3dc2bdb8181ab756795ce50a83897deb2a7b3f657f006bab2",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-all-content-complete.log": "350a5f18bd61b84731fbbbeac9cd879ab8e8a1d43961af070e97cb8f971fe858",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-all-content-expanded.log": "e2b4f4d4f2574d7fa2c2b1f14fb092b237124a71df85f398fb125c46fb32bdf5",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-before-hwp-visual.log": "ba618ded81309e8dceb105d8cd60c4ee36f2c044484472df9c23ba219813bc0c",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-before-hwpx-visual.log": "b264534fefad4d25a7877a5f9b46e09306fa0b293706411ab0035254c9ce958f",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-before-table-drift.log": "e2de1748fb7c86de929be16073b502dbf91acf54e62d6927ec695d50b6f15c59",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-before.log": "dcdc1064e17676e55aec9fb83cfed4e2bec9569726296e4b6dd54928bd1de716",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-boundary-final.log": "53477e1906c6fa10b17c3c4e956edb01cfa8aabd99ed139c5c494d5f19d27a35",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-cli-build.log": "9c7864f3522eb75195e4922840f069a993937b9f546be9d26a57ee4bbbbea5ce",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-expanded-complete.log": "2ea022a30cbabbb9fda00e5fb0be3b70b818efeaf43b4d57eff4932db91b3764",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-expanded-final.log": "7933cd176ebd8066f24f6b330ebb7b0dee1dc3b115c8f36406b0f1d43cc2cbf5",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-expanded.log": "39b1f80d5dfba11bc28da1eefac4488904684842281d495d6eb7a3b843c22d30",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-extra-after-hwp-visual.log": "44b1e3ce19cfa36a4a5829a920a8d62ef4448e878bbfe6c269084b1ff83098d4",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-extra-after-hwpx-visual.log": "fd582d07d549b0e0dbfdf76ec9b10bbd9b90e867b8b8e64150f813aae9d354e2",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-extra-before-hwp-visual.log": "09db789b47e684251c30f82aa5dfa733f501a3b42883f60268e6256c281c63b3",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-extra-before-hwpx-visual.log": "3466078b34c7b7bff40de77d6465194d5e415a728f58b0fbc0039d1400247c4a",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-0.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-1.log": "411a8eef4688f54b3cb7ae82379a26fc3960d2778d4e22221a51015f5fe16b37",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-2.log": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-final-0.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-final-1.log": "a049bc13c7f7ef0fbb877cb521aaf01cab76a87857ed79085e77c6644d8eb835",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-policy-final-2.log": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32",
+    "output/pr-review/planet6897-7382-20260926/logs/stage39-prepare.log": "0fd13358a61e16d4d045e467b85c10f242dedf45e4d29c73fc832c29bc102c77"
+  },
+  "policies": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

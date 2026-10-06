@@ -1,90 +1,222 @@
 # M01-f 매니페스트에 안 묶인 오라클 PDF
 
-84건. 상대 경로·포맷 태그·허용 접미사 밖.
+216건. 상대 경로·포맷 태그·허용 접미사 밖.
 
 | # | PDF | 루트 | 쪽 | 이유 | 후보 샘플 |
 | ---: | --- | --- | ---: | --- | ---: |
-| 1 | `pdf/156457624_210622-2020.pdf` | pdf | 5 | no_stem_candidate | 0 |
-| 2 | `pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf` | pdf | 388 | suffix_not_oracle | 2 |
-| 3 | `pdf/2025 행정업무운영 편람(최종)-2010-no-ttf.pdf` | pdf | 389 | suffix_not_oracle | 2 |
-| 4 | `pdf/3-09월_교육_통합_2023.pdf` | pdf | 20 | suffix_not_oracle | 2 |
-| 5 | `pdf/36384689_결재문서본문_화재발생종합보고서(제2026-298호)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
-| 6 | `pdf/36385445_결재문서본문_화재발생종합보고서(제2026-189호, 2026. 5. 14.)-2024.pdf` | pdf | 2 | unmatched_relative_path | 1 |
-| 7 | `pdf/36388711_사회보장제도 신설 협의요청서(청년오피스)_260624-2024.pdf` | pdf | 9 | unmatched_relative_path | 1 |
-| 8 | `pdf/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
-| 9 | `pdf/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
-| 10 | `pdf/distribution_doc-2024.pdf` | pdf | 3 | unmatched_relative_path | 1 |
-| 11 | `pdf/endnote_end_of_document_fixture-2024.pdf` | pdf | 2 | no_stem_candidate | 0 |
-| 12 | `pdf/endnote_multi_note_fixture-2024.pdf` | pdf | 3 | no_stem_candidate | 0 |
-| 13 | `pdf/exam_social-current-2020.pdf` | pdf | 4 | suffix_not_oracle | 2 |
-| 14 | `pdf/exclusion_probe_line_spacing-2024.pdf` | pdf | 2 | unmatched_relative_path | 1 |
-| 15 | `pdf/HWP3-password-123456.pdf` | pdf | 5 | suffix_not_oracle | 1 |
-| 16 | `pdf/hwp3/hwp3-sample11-2020.pdf` | pdf | — | unmatched_relative_path | 2 |
-| 17 | `pdf/hwp3/hwp3-sample14-2020.pdf` | pdf | 11 | unmatched_relative_path | 2 |
-| 18 | `pdf/issue-2809-jubo_20260104-2020.pdf` | pdf | 6 | suffix_not_oracle | 1 |
-| 19 | `pdf/issue1510_coanchored_float_tables.hwp.pdf` | pdf | 1 | suffix_not_oracle | 2 |
-| 20 | `pdf/issue1510_coanchored_float_tables.hwpx.pdf` | pdf | 2 | suffix_not_oracle | 2 |
-| 21 | `pdf/issue1733/text_footnote_tail_overpagination-hwp-2020-20260814.pdf` | pdf | 242 | unmatched_relative_path | 2 |
-| 22 | `pdf/issue1733/text_footnote_tail_overpagination-hwpx-2020-20260814.pdf` | pdf | 242 | unmatched_relative_path | 2 |
-| 23 | `pdf/issue1921/86712_regulatory_analysis-2024.pdf` | pdf | 65 | unmatched_relative_path | 2 |
-| 24 | `pdf/issue1948_cross_para_fieldend-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
-| 25 | `pdf/issue1949_split_1x2_current_reflow_20260810_2020.pdf` | pdf | — | no_stem_candidate | 0 |
-| 26 | `pdf/issue1994/issue_1994.pdf` | pdf | 4 | no_stem_candidate | 0 |
-| 27 | `pdf/issue2019/issue2019_floating_form_74312-2020.pdf` | pdf | 18 | unmatched_relative_path | 1 |
-| 28 | `pdf/issue2020/issue2020_comparison_report.pdf` | pdf | 3 | no_stem_candidate | 0 |
-| 29 | `pdf/issue2020/niklp_2022_workplan-2022.pdf` | pdf | 35 | no_stem_candidate | 0 |
-| 30 | `pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf` | pdf | 2 | suffix_not_oracle | 1 |
-| 31 | `pdf/issue2020/복학원서-2022.pdf` | pdf | 1 | unmatched_relative_path | 2 |
-| 32 | `pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf` | pdf | 39 | unmatched_relative_path | 1 |
-| 33 | `pdf/issue2439/issue2439_hancom2024_landscape.pdf` | pdf | 10 | no_stem_candidate | 0 |
-| 34 | `pdf/issue3637/regulatory_impact_nested_table_escape-current-2020.pdf` | pdf | 31 | suffix_not_oracle | 1 |
-| 35 | `pdf/issue3820/156492236-regulatory-sandbox-min-hwp2020-20260814.pdf` | pdf | 17 | no_stem_candidate | 0 |
-| 36 | `pdf/issue3820/2025-administration-final-hwp-hwp2020-20260814.pdf` | pdf | — | no_stem_candidate | 0 |
-| 37 | `pdf/issue3820/2025-administration-final-hwpx-hwp2020-20260814.pdf` | pdf | — | no_stem_candidate | 0 |
-| 38 | `pdf/issue3820/76076-regulatory-analysis-hwp2020-20260814.pdf` | pdf | 82 | no_stem_candidate | 0 |
-| 39 | `pdf/issue4090/156492236_규제샌드박스_min-hancom2020-production-verify.pdf` | pdf | 17 | suffix_not_oracle | 1 |
-| 40 | `pdf/issue4490/148720174_111014-hancom2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
-| 41 | `pdf/issue4491/30213_1-혼합단지등-제도개선-방안-hancom2020.pdf` | pdf | 38 | no_stem_candidate | 0 |
-| 42 | `pdf/issue_4055_b1_spike/00-control-hwp-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 43 | `pdf/issue_4055_b1_spike/00-control-hwpx-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 44 | `pdf/issue_4055_b1_spike/H-A-nested-ooxml-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 45 | `pdf/issue_4055_b1_spike/H-B-legacy-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 46 | `pdf/issue_4055_b1_spike/H-C-both-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 47 | `pdf/issue_4055_b1_spike/H-D-both-no-emf-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 48 | `pdf/issue_4055_b1_spike/X-A-zip-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 49 | `pdf/issue_4055_b1_spike/X-B-legacy-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 50 | `pdf/issue_4055_b1_spike/X-C-all-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 51 | `pdf/issue_4055_b1_spike/X-D-all-no-emf-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
-| 52 | `pdf/nested_group_vectors-2024.pdf` | pdf | 15 | unmatched_relative_path | 1 |
-| 53 | `pdf/pr-review-planet6897-20260813/hwp3-sample10-hwp5-lineseg-normalized-2020.pdf` | pdf | — | suffix_not_oracle | 3 |
-| 54 | `pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf` | pdf | 215 | unmatched_relative_path | 2 |
-| 55 | `pdf/pr3740/hwpx/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf` | pdf | 215 | unmatched_relative_path | 2 |
-| 56 | `pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf` | pdf | — | unmatched_relative_path | 2 |
-| 57 | `pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf` | pdf | — | unmatched_relative_path | 2 |
-| 58 | `pdf/table_outer_margin_common_sync-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
-| 59 | `pdf/tac-host-spacing.pdf` | pdf | 1 | suffix_not_oracle | 1 |
-| 60 | `pdf/task3307/beopryeong_3307-2020.pdf` | pdf | 9 | no_stem_candidate | 0 |
-| 61 | `pdf/task4097/SO-SUEOP-after-hwp.pdf` | pdf | 46 | suffix_not_oracle | 2 |
-| 62 | `pdf/task4097/SO-SUEOP-before-hwp.pdf` | pdf | 46 | suffix_not_oracle | 2 |
-| 63 | `pdf/task4097/SO-SUEOP.pdf` | pdf | 46 | suffix_not_oracle | 2 |
-| 64 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_cell_p5_append_56-2020.pdf` | pdf | — | no_stem_candidate | 0 |
-| 65 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_cell_p5_append_61-2020.pdf` | pdf | — | no_stem_candidate | 0 |
-| 66 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_hwpx_cell_p5_append_56-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
-| 67 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_hwpx_cell_p5_append_61-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
-| 68 | `pdf/text_footnote_tail_overpagination-2024.pdf` | pdf | 242 | unmatched_relative_path | 2 |
-| 69 | `pdf/수식-문자처럼취급-아님.pdf` | pdf | 1 | suffix_not_oracle | 2 |
-| 70 | `pdf-large/hwpx/143E433F503322BD33.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 71 | `pdf-large/hwpx/2026_oss_rst.pdf` | pdf-large | 6 | suffix_not_oracle | 2 |
-| 72 | `pdf-large/hwpx/[2027] 온새미로 1 본교재.pdf` | pdf-large | 46 | suffix_not_oracle | 4 |
-| 73 | `pdf-large/hwpx/el-school-001.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 74 | `pdf-large/hwpx/eq-002.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 75 | `pdf-large/hwpx/footnote-tbox-01.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 76 | `pdf-large/hwpx/hcar-001.pdf` | pdf-large | 6 | suffix_not_oracle | 2 |
-| 77 | `pdf-large/hwpx/hy-001.pdf` | pdf-large | 2 | suffix_not_oracle | 2 |
-| 78 | `pdf-large/hwpx/hy-002.pdf` | pdf-large | 2 | suffix_not_oracle | 2 |
-| 79 | `pdf-large/hwpx/issue_1133.pdf` | pdf-large | 3 | suffix_not_oracle | 2 |
-| 80 | `pdf-large/hwpx/k-water-rfp.pdf` | pdf-large | 27 | suffix_not_oracle | 3 |
-| 81 | `pdf-large/hwpx/math-001.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 82 | `pdf-large/hwpx/shape-001.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
-| 83 | `pdf-large/hwpx/ta-pic-001-r.pdf` | pdf-large | 1 | suffix_not_oracle | 6 |
-| 84 | `pdf-large/hwpx/tb-org-02.pdf` | pdf-large | 1 | suffix_not_oracle | 2 |
+| 1 | `pdf/05434_vehicle_log_form-2020.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 2 | `pdf/113424_evaluation_guideline-2024.pdf` | pdf | 46 | unmatched_relative_path | 1 |
+| 3 | `pdf/1341000_research_report_footnotes-2020.pdf` | pdf | 92 | unmatched_relative_path | 1 |
+| 4 | `pdf/156457624_210622-2020.pdf` | pdf | 5 | no_stem_candidate | 0 |
+| 5 | `pdf/156489219_satellite_pm_release-2020.pdf` | pdf | 8 | unmatched_relative_path | 1 |
+| 6 | `pdf/156518878-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 7 | `pdf/16418295_square_rowbreak_table-2020.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 8 | `pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf` | pdf | 388 | suffix_not_oracle | 2 |
+| 9 | `pdf/2025 행정업무운영 편람(최종)-2010-no-ttf.pdf` | pdf | 389 | suffix_not_oracle | 2 |
+| 10 | `pdf/3-09월_교육_통합_2023.pdf` | pdf | 20 | suffix_not_oracle | 2 |
+| 11 | `pdf/3249937_asset_management_rules-2020.pdf` | pdf | 60 | unmatched_relative_path | 1 |
+| 12 | `pdf/36339092_low_slack_absorb_block-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 13 | `pdf/36374873_night_guard_log-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 14 | `pdf/36384689_결재문서본문_화재발생종합보고서(제2026-298호)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 15 | `pdf/36385445_결재문서본문_화재발생종합보고서(제2026-189호, 2026. 5. 14.)-2024.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 16 | `pdf/36388711_사회보장제도 신설 협의요청서(청년오피스)_260624-2024.pdf` | pdf | 9 | unmatched_relative_path | 1 |
+| 17 | `pdf/36389312_결재문서본문_특정소방대상물 화재발생 알림(화재번호 2026-177)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 18 | `pdf/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과)-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 19 | `pdf/BlogForm_BookReview-2020.pdf` | pdf | 1 | unmatched_relative_path | 2 |
+| 20 | `pdf/cell_char_spacing_fit-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 21 | `pdf/cell_float_stack_stored_vpos-2020.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 22 | `pdf/distribution_doc-2024.pdf` | pdf | 3 | unmatched_relative_path | 1 |
+| 23 | `pdf/endnote_end_of_document_fixture-2024.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 24 | `pdf/endnote_multi_note_fixture-2024.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 25 | `pdf/exam_social-current-2020.pdf` | pdf | 4 | suffix_not_oracle | 2 |
+| 26 | `pdf/exclusion_probe_line_spacing-2024.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 27 | `pdf/HWP3-password-123456.pdf` | pdf | 24 | suffix_not_oracle | 1 |
+| 28 | `pdf/hwp3/hwp3-sample11-2020.pdf` | pdf | 151 | unmatched_relative_path | 2 |
+| 29 | `pdf/hwp3/hwp3-sample14-2020.pdf` | pdf | 11 | unmatched_relative_path | 2 |
+| 30 | `pdf/hwpx/143E433F503322BD33.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 31 | `pdf/hwpx/2026_oss_rst.pdf` | pdf | 6 | suffix_not_oracle | 2 |
+| 32 | `pdf/hwpx/[2027] 온새미로 1 본교재.pdf` | pdf | 46 | suffix_not_oracle | 4 |
+| 33 | `pdf/hwpx/el-school-001.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 34 | `pdf/hwpx/eq-002.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 35 | `pdf/hwpx/footnote-tbox-01.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 36 | `pdf/hwpx/hcar-001.pdf` | pdf | 6 | suffix_not_oracle | 2 |
+| 37 | `pdf/hwpx/hy-001.pdf` | pdf | 2 | suffix_not_oracle | 2 |
+| 38 | `pdf/hwpx/hy-002.pdf` | pdf | 2 | suffix_not_oracle | 2 |
+| 39 | `pdf/hwpx/issue_1133.pdf` | pdf | 3 | suffix_not_oracle | 2 |
+| 40 | `pdf/hwpx/k-water-rfp.pdf` | pdf | 27 | suffix_not_oracle | 3 |
+| 41 | `pdf/hwpx/math-001.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 42 | `pdf/hwpx/shape-001.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 43 | `pdf/hwpx/ta-pic-001-r.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 44 | `pdf/hwpx/tb-org-02.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 45 | `pdf/issue-2809-jubo_20260104-2020.pdf` | pdf | 6 | suffix_not_oracle | 1 |
+| 46 | `pdf/issue1510_coanchored_float_tables.hwp.pdf` | pdf | 1 | suffix_not_oracle | 2 |
+| 47 | `pdf/issue1510_coanchored_float_tables.hwpx.pdf` | pdf | 2 | suffix_not_oracle | 2 |
+| 48 | `pdf/issue1733/text_footnote_tail_overpagination-hwp-2020-20260814.pdf` | pdf | 242 | unmatched_relative_path | 2 |
+| 49 | `pdf/issue1733/text_footnote_tail_overpagination-hwpx-2020-20260814.pdf` | pdf | 242 | unmatched_relative_path | 2 |
+| 50 | `pdf/issue1921/86712_regulatory_analysis-2024.pdf` | pdf | 65 | unmatched_relative_path | 2 |
+| 51 | `pdf/issue1948_cross_para_fieldend-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 52 | `pdf/issue1949_split_1x2_current_reflow_20260810_2020.pdf` | pdf | 197 | no_stem_candidate | 0 |
+| 53 | `pdf/issue1994/issue_1994.pdf` | pdf | 4 | no_stem_candidate | 0 |
+| 54 | `pdf/issue2019/issue2019_floating_form_74312-2020.pdf` | pdf | 18 | unmatched_relative_path | 1 |
+| 55 | `pdf/issue2020/issue2020_comparison_report.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 56 | `pdf/issue2020/niklp_2022_workplan-2022.pdf` | pdf | 35 | no_stem_candidate | 0 |
+| 57 | `pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf` | pdf | 2 | suffix_not_oracle | 1 |
+| 58 | `pdf/issue2020/복학원서-2022.pdf` | pdf | 1 | unmatched_relative_path | 2 |
+| 59 | `pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf` | pdf | 39 | unmatched_relative_path | 1 |
+| 60 | `pdf/issue2439/issue2439_hancom2024_landscape.pdf` | pdf | 10 | no_stem_candidate | 0 |
+| 61 | `pdf/issue3637/regulatory_impact_nested_table_escape-current-2020.pdf` | pdf | 31 | suffix_not_oracle | 1 |
+| 62 | `pdf/issue3820/156492236-regulatory-sandbox-min-hwp2020-20260814.pdf` | pdf | 17 | no_stem_candidate | 0 |
+| 63 | `pdf/issue3820/2025-administration-final-hwp-hwp2020-20260814.pdf` | pdf | 383 | no_stem_candidate | 0 |
+| 64 | `pdf/issue3820/2025-administration-final-hwpx-hwp2020-20260814.pdf` | pdf | 383 | no_stem_candidate | 0 |
+| 65 | `pdf/issue3820/76076-regulatory-analysis-hwp2020-20260814.pdf` | pdf | 82 | no_stem_candidate | 0 |
+| 66 | `pdf/issue4090/156492236_규제샌드박스_min-hancom2020-production-verify.pdf` | pdf | 17 | suffix_not_oracle | 1 |
+| 67 | `pdf/issue4490/148720174_111014-hancom2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 68 | `pdf/issue4491/30213_1-혼합단지등-제도개선-방안-hancom2020.pdf` | pdf | 38 | no_stem_candidate | 0 |
+| 69 | `pdf/issue6037/2차원원형-계열추가-데이터추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 70 | `pdf/issue6037/2차원원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 71 | `pdf/issue6037/engine/2차원원형-계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 72 | `pdf/issue6037/engine/2차원원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 73 | `pdf/issue6037/engine/3차원원형-계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 74 | `pdf/issue6037/engine/3차원원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 75 | `pdf/issue6037/engine/고가저가종가-꼬리계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 76 | `pdf/issue6037/engine/고가저가종가-꼬리계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 77 | `pdf/issue6037/engine/시가고가저가종가-중간계열삭제-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 78 | `pdf/issue6037/engine/시가고가저가종가-중간계열삭제.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 79 | `pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 80 | `pdf/issue6037/engine/시가고가저가종가-중간계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 81 | `pdf/issue6037/engine/원형대가로막대형-계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 82 | `pdf/issue6037/engine/원형대가로막대형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 83 | `pdf/issue6037/engine/원형대원형-계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 84 | `pdf/issue6037/engine/원형대원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 85 | `pdf/issue6037/engine/쪼개진원형-계열추가-hwpx.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 86 | `pdf/issue6037/engine/쪼개진원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 4 |
+| 87 | `pdf/issue6037/고가저가종가-계열추가-데이터추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 88 | `pdf/issue6037/고가저가종가-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 89 | `pdf/issue6037/고가저가종가-꼬리계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 90 | `pdf/issue6037/시가고가저가종가-계열삭제.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 91 | `pdf/issue6037/시가고가저가종가-계열추가-데이터추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 92 | `pdf/issue6037/시가고가저가종가-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 93 | `pdf/issue6037/시가고가저가종가-꼬리계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 94 | `pdf/issue6037/시가고가저가종가-종가삭제.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 95 | `pdf/issue6037/시가고가저가종가-첫계열삭제.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 96 | `pdf/issue6037/원형대원형-계열추가-데이터추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 97 | `pdf/issue6037/원형대원형-계열추가.pdf` | pdf | 1 | suffix_not_oracle | 6 |
+| 98 | `pdf/issue6122-2020.pdf` | pdf | 12 | no_stem_candidate | 0 |
+| 99 | `pdf/issue6123-2020.pdf` | pdf | 14 | no_stem_candidate | 0 |
+| 100 | `pdf/issue6124-2020.pdf` | pdf | 8 | no_stem_candidate | 0 |
+| 101 | `pdf/issue_4055_b1_spike/00-control-hwp-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 102 | `pdf/issue_4055_b1_spike/00-control-hwpx-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 103 | `pdf/issue_4055_b1_spike/H-A-nested-ooxml-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 104 | `pdf/issue_4055_b1_spike/H-B-legacy-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 105 | `pdf/issue_4055_b1_spike/H-C-both-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 106 | `pdf/issue_4055_b1_spike/H-D-both-no-emf-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 107 | `pdf/issue_4055_b1_spike/X-A-zip-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 108 | `pdf/issue_4055_b1_spike/X-B-legacy-only-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 109 | `pdf/issue_4055_b1_spike/X-C-all-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 110 | `pdf/issue_4055_b1_spike/X-D-all-no-emf-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 111 | `pdf/memo_field_hwp5-2020.pdf` | pdf | 20 | unmatched_relative_path | 1 |
+| 112 | `pdf/microbe_bank_cell_picture-2020.pdf` | pdf | 5 | unmatched_relative_path | 1 |
+| 113 | `pdf/nested_group_vectors-2024.pdf` | pdf | 15 | unmatched_relative_path | 1 |
+| 114 | `pdf/nested_row_first_line_height-2020.pdf` | pdf | 2 | unmatched_relative_path | 1 |
+| 115 | `pdf/pr-review-planet6897-20260813/hwp3-sample10-hwp5-lineseg-normalized-2020.pdf` | pdf | 763 | suffix_not_oracle | 3 |
+| 116 | `pdf/pr3740/hwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf` | pdf | 215 | unmatched_relative_path | 2 |
+| 117 | `pdf/pr3740/hwpx/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-2020.pdf` | pdf | 215 | unmatched_relative_path | 2 |
+| 118 | `pdf/pr6009_issue5885_3171199_design_capability_criteria-2020.pdf` | pdf | 7 | suffix_not_oracle | 2 |
+| 119 | `pdf/pr6014_issue5712_3184241_medical_exam_equipment-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 120 | `pdf/pr6017/156518601_p1_square_host-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 121 | `pdf/pr6481-visual/pr6481-issue6298-copay-cap-tac-table-leading-2020.pdf` | pdf | 12 | no_stem_candidate | 0 |
+| 122 | `pdf/pr6481-visual/pr6481-issue6299-forest-press-wrap-seg-pairs-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 123 | `pdf/pr6481-visual/pr6481-issue6300-trade-report-forced-break-object-2020.pdf` | pdf | 20 | no_stem_candidate | 0 |
+| 124 | `pdf/pr6481-visual/pr6481-issue6310-press-release-cell-logo-2020.pdf` | pdf | 51 | no_stem_candidate | 0 |
+| 125 | `pdf/pr6481-visual/pr6481-issue6312-fiscal-trend-float-table-anchor-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 126 | `pdf/pr6481-visual/pr6481-issue6312-hidden-original-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 127 | `pdf/pr6481-visual/pr6481-issue6442-access-pass-form-2020.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 128 | `pdf/pr6481-visual/pr6481-issue6443-research-project-design-form-2020.pdf` | pdf | 8 | no_stem_candidate | 0 |
+| 129 | `pdf/pr6481-visual/pr6481-issue6465-press-release-footer-logos-2020.pdf` | pdf | 13 | no_stem_candidate | 0 |
+| 130 | `pdf/pr6485-visual/pr6485-issue6298-copay-cap-tac-table-leading-2020.pdf` | pdf | 12 | no_stem_candidate | 0 |
+| 131 | `pdf/pr6485-visual/pr6485-issue6299-forest-press-wrap-seg-pairs-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 132 | `pdf/pr6485-visual/pr6485-issue6300-trade-report-forced-break-object-2020.pdf` | pdf | 20 | no_stem_candidate | 0 |
+| 133 | `pdf/pr6485-visual/pr6485-issue6312-hidden-original-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 134 | `pdf/pr6485-visual/pr6485-issue6442-access-pass-form-2020.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 135 | `pdf/pr6485-visual/pr6485-issue6443-research-project-design-form-2020.pdf` | pdf | 8 | no_stem_candidate | 0 |
+| 136 | `pdf/pr6485-visual/pr6485-issue6465-press-release-footer-logos-2020.pdf` | pdf | 13 | no_stem_candidate | 0 |
+| 137 | `pdf/pr_5770/issue5720_2734559_hancom2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 138 | `pdf/pr_5770/issue5721_2568129_hancom2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 139 | `pdf/pr_5770/issue5727_156732636_hancom2020.pdf` | pdf | 4 | no_stem_candidate | 0 |
+| 140 | `pdf/pr_5772_issue5747_156532835_hancom2020.pdf` | pdf | 20 | no_stem_candidate | 0 |
+| 141 | `pdf/pr_5772_issue5748_156682735_hancom2020.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 142 | `pdf/pr_5786/hancom2020/issue5780_flow_image_page_background_hancom2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 143 | `pdf/pr_5813/hancom2020/2025 행정업무운영 편람(최종)-2020.pdf` | pdf | 383 | unmatched_relative_path | 2 |
+| 144 | `pdf/pr_5814/hancom2020/issue1880_takeplace_oracle_p13-hancom2020.pdf` | pdf | 13 | unmatched_relative_path | 1 |
+| 145 | `pdf/pr_5815/hancom2020/issue5800-hancom-symbol-hancom2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 146 | `pdf/pr_5849/hancom2020/condensed_ratio_title_box-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 147 | `pdf/pr_5849/hancom2020/offcolumn_float_table_no_band-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 148 | `pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf` | pdf | 2 | suffix_not_oracle | 1 |
+| 149 | `pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5966_franchise_review_report_1130000-202100008_franchise_review_report-2020.pdf` | pdf | 142 | suffix_not_oracle | 1 |
+| 150 | `pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf` | pdf | 4 | suffix_not_oracle | 2 |
+| 151 | `pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf` | pdf | 60 | suffix_not_oracle | 1 |
+| 152 | `pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules_action-local2020.pdf` | pdf | 60 | no_stem_candidate | 0 |
+| 153 | `pdf/pr_6088_6144/local_hancom2020/pr_6089_issue6035_cosmetics_gmp_checklist-local2020.pdf` | pdf | 11 | no_stem_candidate | 0 |
+| 154 | `pdf/pr_6088_6144/local_hancom2020/pr_6093_6094_issue6060_local_service_reform-local2020.pdf` | pdf | 13 | no_stem_candidate | 0 |
+| 155 | `pdf/pr_6088_6144/local_hancom2020/pr_6096_issue6086_resident_registration_reform-local2020.pdf` | pdf | 15 | no_stem_candidate | 0 |
+| 156 | `pdf/pr_6088_6144/local_hancom2020/pr_6097_issue6025_employment_support_criteria-local2020.pdf` | pdf | 4 | no_stem_candidate | 0 |
+| 157 | `pdf/pr_6088_6144/local_hancom2020/pr_6098_issue5966_franchise_review_report-local2020.pdf` | pdf | 142 | no_stem_candidate | 0 |
+| 158 | `pdf/pr_6088_6144/local_hancom2020/pr_6100_issue6095_icepack_levy_criteria-local2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 159 | `pdf/pr_6088_6144/local_hancom2020/pr_6103_issue6099_scanned_form-local2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 160 | `pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_approval_doc_body-local2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 161 | `pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_firefighter_training_plan-local2020.pdf` | pdf | 11 | no_stem_candidate | 0 |
+| 162 | `pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 163 | `pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_traffic_fine_exemption-local2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 164 | `pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_vehicle_inspection_expense-local2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 165 | `pdf/pr_6088_6144/local_hancom2020/pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 166 | `pdf/pr_6088_6144/local_hancom2020/pr_6137_issue6127_vessel_pass_application-local2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 167 | `pdf/pr_6088_6144/local_hancom2020/pr_6144_issue6121_police_press_header-local2020.pdf` | pdf | 3 | no_stem_candidate | 0 |
+| 168 | `pdf/pr_6217_issue6186_footer_vertalign_bottom-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 169 | `pdf/pr_6274/by_saved_version/pr6274_issue6271_rowbreak_float_tail_line-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 170 | `pdf/pr_6275/by_saved_version/pr6275_issue6167_leading_space_tac_table-2024.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 171 | `pdf/pr_6275/by_saved_version/pr6275_issue6173_textbox_right_align_logos-2020.pdf` | pdf | 2 | suffix_not_oracle | 1 |
+| 172 | `pdf/pr_6275/by_saved_version/pr6275_issue6174_police_press_release-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 173 | `pdf/pr_6275/by_saved_version/pr6275_issue6179_right_tab_footer_logo-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 174 | `pdf/pr_6275/by_saved_version/pr6275_issue6186_defense_press_release-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 175 | `pdf/pr_6275/by_saved_version/pr6275_issue6190_center_align_first_line_indent-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 176 | `pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf` | pdf | 2 | suffix_not_oracle | 1 |
+| 177 | `pdf/pr_6275/by_saved_version/pr6275_issue6194_agri_press_release-2020.pdf` | pdf | 2 | no_stem_candidate | 0 |
+| 178 | `pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 179 | `pdf/pr_6275/by_saved_version/pr6275_issue6206_acrc_113424_review-2024.pdf` | pdf | 46 | no_stem_candidate | 0 |
+| 180 | `pdf/pr_6275/by_saved_version/pr6275_issue6206_securities_settlement_review-2020.pdf` | pdf | 17 | no_stem_candidate | 0 |
+| 181 | `pdf/pr_6275/by_saved_version/pr6275_issue6208_print_method_nup-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 182 | `pdf/pr_6309_156518601_mobile_driver_license-2020.pdf` | pdf | 10 | no_stem_candidate | 0 |
+| 183 | `pdf/pr_6314_issue6175_seed_expo_square_float_body-2020.pdf` | pdf | 4 | suffix_not_oracle | 1 |
+| 184 | `pdf/pr_6526_issue6524_p3_2020.pdf` | pdf | 15 | no_stem_candidate | 0 |
+| 185 | `pdf/pr_6528_issue6181_p5_2020.pdf` | pdf | 12 | no_stem_candidate | 0 |
+| 186 | `pdf/pr_6529_issue6180_p7_2020.pdf` | pdf | 13 | no_stem_candidate | 0 |
+| 187 | `pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf` | pdf | 6 | unmatched_relative_path | 1 |
+| 188 | `pdf/pr_open_20260821/cell_square_logo_text_wrap-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 189 | `pdf/pr_open_20260821/coanchored_float_tac_order-2020.pdf` | pdf | 3 | unmatched_relative_path | 1 |
+| 190 | `pdf/pr_open_20260821/nested_square_table_horz_offset-2020.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 191 | `pdf/pr_open_20260821/tac_table_missing_anchor_line_spacing-2020.pdf` | pdf | 8 | unmatched_relative_path | 1 |
+| 192 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 193 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6281_issue6266_seizure_list_form_button-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 194 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6286_issue6264_env_satellite_report_form-2020.pdf` | pdf | 4 | no_stem_candidate | 0 |
+| 195 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6287_issue6204_square_picture_band_host-2020.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 196 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6287_issue6204_square_picture_moved-2020.pdf` | pdf | 1 | no_stem_candidate | 0 |
+| 197 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6292_issue6269_public_sector_jobs_stats-2020.pdf` | pdf | 57 | no_stem_candidate | 0 |
+| 198 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6294_issue6280_prosecutor_transfer_list-2020.pdf` | pdf | 21 | no_stem_candidate | 0 |
+| 199 | `pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf` | pdf | 34 | suffix_not_oracle | 1 |
+| 200 | `pdf/rowbreak_fragment_overfill-2020.pdf` | pdf | 8 | unmatched_relative_path | 1 |
+| 201 | `pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf` | pdf | 383 | unmatched_relative_path | 2 |
+| 202 | `pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf` | pdf | 383 | unmatched_relative_path | 2 |
+| 203 | `pdf/table_outer_margin_common_sync-2024.pdf` | pdf | 1 | unmatched_relative_path | 1 |
+| 204 | `pdf/tac-host-spacing.pdf` | pdf | 1 | suffix_not_oracle | 1 |
+| 205 | `pdf/tac_cell_leftover_fits-2020.pdf` | pdf | 3 | unmatched_relative_path | 1 |
+| 206 | `pdf/task3307/beopryeong_3307-2020.pdf` | pdf | 9 | no_stem_candidate | 0 |
+| 207 | `pdf/task4097/SO-SUEOP-after-hwp.pdf` | pdf | 46 | suffix_not_oracle | 2 |
+| 208 | `pdf/task4097/SO-SUEOP-before-hwp.pdf` | pdf | 46 | suffix_not_oracle | 2 |
+| 209 | `pdf/task4097/SO-SUEOP.pdf` | pdf | 46 | suffix_not_oracle | 2 |
+| 210 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_cell_p5_append_56-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
+| 211 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_cell_p5_append_61-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
+| 212 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_hwpx_cell_p5_append_56-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
+| 213 | `pdf/task_m100_3820_stage86_wasm_boundary_oracle/issue1949_hwpx_cell_p5_append_61-2020.pdf` | pdf | 115 | no_stem_candidate | 0 |
+| 214 | `pdf/text_footnote_tail_overpagination-2024.pdf` | pdf | 242 | unmatched_relative_path | 2 |
+| 215 | `pdf/underline_run_fragments-2020.pdf` | pdf | 6 | unmatched_relative_path | 1 |
+| 216 | `pdf/수식-문자처럼취급-아님.pdf` | pdf | 1 | suffix_not_oracle | 2 |

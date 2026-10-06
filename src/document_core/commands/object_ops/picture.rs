@@ -102,7 +102,7 @@ impl DocumentCore {
             )),
         }
     }
-    fn resolve_picture_control_mut(
+    pub(crate) fn resolve_picture_control_mut(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -224,17 +224,8 @@ impl DocumentCore {
     fn picture_transform_fingerprint(
         pic: &crate::model::image::Picture,
     ) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
-        (
-            pic.common.width,
-            pic.common.height,
-            pic.common.horizontal_offset,
-            pic.common.vertical_offset,
-            pic.shape_attr.current_width,
-            pic.shape_attr.current_height,
-            pic.shape_attr.rotation_angle,
-            pic.shape_attr.horz_flip,
-            pic.shape_attr.vert_flip,
-        )
+        // [#6740] 판정은 도형 경로와 공용이다 — 둘이 갈라지면 같은 결함이 한쪽에만 남는다.
+        super::common::shape_transform_fingerprint(&pic.common, &pic.shape_attr)
     }
     pub(crate) fn picture_rotated_bounds(width: u32, height: u32, angle: i16) -> (u32, u32) {
         if width == 0 || height == 0 || angle.rem_euclid(360) == 0 {
@@ -996,12 +987,18 @@ impl DocumentCore {
         let transform_before = Self::picture_transform_fingerprint(pic);
         let mut rotation_changed = false;
 
-        // 크기 변경
+        // 크기 변경 — [#6806] 키가 있어도 값이 같으면 건드리지 않는다. 종전에는 게터가 낸
+        // 봉지를 그대로 되먹여도 `current_*` 가 `common.*` 로 덮여(파싱값이 1 어긋난 문서가
+        // corpus 에 69건) 지문이 흔들리고 한컴 원본 렌더링 행렬이 지워졌다.
         if let Some(w) = json_u32(props_json, "width") {
-            Self::apply_picture_display_width(pic, w);
+            if w != pic.common.width {
+                Self::apply_picture_display_width(pic, w);
+            }
         }
         if let Some(h) = json_u32(props_json, "height") {
-            Self::apply_picture_display_height(pic, h);
+            if h != pic.common.height {
+                Self::apply_picture_display_height(pic, h);
+            }
         }
 
         // 위치 속성
@@ -1084,10 +1081,13 @@ impl DocumentCore {
                 pic.common.attr &= !(1 << 20);
             }
         }
-        if pic.common.flow_with_text {
-            pic.common.allow_overlap = false;
-            pic.common.attr &= !(1 << 14);
-        }
+        // [#6806] 「쪽 영역 안으로 제한」이 켜졌다는 이유로 「서로 겹침 허용」을 끄지
+        // 않는다 — 한컴은 두 플래그를 **동시에 켜서 저장**한다(코퍼스: 그림 518 중 70,
+        // 도형 894 중 12, 표 5428 중 39). 이 강제는 봉지에 무엇이 있든 돌아서, 게터가
+        // 내보낸 `allowOverlap:true` 를 되먹이기만 해도 false 로 뒤집었다(get∘set 비항등).
+        // 사용자가 실제로 「쪽 영역 제한」을 켜는 편집은 위 `restrictInPage` 갈래가
+        // 종전대로 겹침을 끄므로 그 계약은 그대로다. 도형·수식이 쓰는 공용 경로
+        // (`apply_common_obj_attr_from_json`)에는 이 강제가 이미 없다.
         if let Some(v) = json_i32(props_json, "vertOffset") {
             pic.common.vertical_offset = v as u32;
         }
@@ -1115,10 +1115,14 @@ impl DocumentCore {
             };
         }
 
-        // 회전/대칭
+        // 회전/대칭 — [#6806] "키 존재" 가 아니라 "값 변화" 가 회전 변경이다. 게터는 이 키를
+        // 항상 내보내므로, 종전에는 같은 각도를 되먹여도 `refresh_picture_rotation_layout_for_save`
+        // 가 돌아 `common` 을 `current` 로 다시 세웠다(#6355 지문 판정을 앞단에서 무력화).
         if let Some(v) = json_i16(props_json, "rotationAngle") {
-            pic.shape_attr.rotation_angle = v;
-            rotation_changed = true;
+            if v != pic.shape_attr.rotation_angle {
+                pic.shape_attr.rotation_angle = v;
+                rotation_changed = true;
+            }
         }
         if let Some(v) = json_bool(props_json, "horzFlip") {
             pic.shape_attr.horz_flip = v;
@@ -1373,6 +1377,21 @@ impl DocumentCore {
         if control_idx < para.ctrl_data_records.len() {
             para.ctrl_data_records.remove(control_idx);
         }
+        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
+        for range in &mut para.field_ranges {
+            if range.control_idx > control_idx {
+                range.control_idx -= 1;
+            }
+        }
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
+                && active.cell_path.is_none()
+                && active.control_idx > control_idx
+            {
+                active.control_idx -= 1;
+            }
+        }
 
         // char_count 갱신
         if para.char_count >= 8 {
@@ -1401,7 +1420,7 @@ impl DocumentCore {
     /// 최댓값+1 로 채번한다 — 순번 채번은 storage id 에 구멍이 있는 문서에서
     /// 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가 뒤바뀌거나
     /// 소실된다. (insert_picture_native 와 그림 지정이 규칙 공유.)
-    fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
+    pub(crate) fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
         use crate::model::bin_data::{
             BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
         };
@@ -1553,9 +1572,10 @@ impl DocumentCore {
     /// 이던 것이 그 탓이다. 수식·각주 경로가 이미 이 꼴이다.
     fn leave_coordinate_trace(
         paragraph: &mut crate::model::paragraph::Paragraph,
+        control_idx: usize,
         char_offset: usize,
     ) {
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(control_idx, char_offset);
         paragraph.char_count += 8;
     }
 
@@ -1720,7 +1740,7 @@ impl DocumentCore {
                         .controls
                         .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
                     target_para.ctrl_data_records.insert(new_ctrl_idx, None);
-                    target_para.shift_for_inline_control_insert(char_offset);
+                    target_para.shift_for_inline_control_insert(new_ctrl_idx, char_offset);
                     target_para.control_mask |= 0x00000800;
                     let logical_positions =
                         crate::document_core::helpers::find_logical_control_positions(target_para);
@@ -1808,15 +1828,9 @@ impl DocumentCore {
                 .unwrap_or_else(|| parent.text.chars().count())
                 + 1;
 
-            // outer table dirty 마킹 (재측정 유도)
+            // 최외곽 표 host 문단의 측정 revision을 무효화한다.
             let outer_ctrl = cell_path[0].0;
-            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
-                [para_idx]
-                .controls
-                .get_mut(outer_ctrl)
-            {
-                t.dirty = true;
-            }
+            self.mark_cell_control_dirty(section_idx, para_idx, outer_ctrl);
             self.mark_section_dirty(section_idx);
             self.paginate_if_needed();
             // [Task #1151 v9 결함 F] page tree cache invalidate — v5 와 동일 결함 (다른
@@ -1886,7 +1900,7 @@ impl DocumentCore {
             .controls
             .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
         parent.ctrl_data_records.insert(new_ctrl_idx, None);
-        Self::leave_coordinate_trace(parent, char_offset);
+        Self::leave_coordinate_trace(parent, new_ctrl_idx, char_offset);
         let logical_positions =
             crate::document_core::helpers::find_logical_control_positions(parent);
         let logical_after = logical_positions
@@ -1894,6 +1908,7 @@ impl DocumentCore {
             .copied()
             .unwrap_or_else(|| parent.text.chars().count())
             + 1;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, new_ctrl_idx);
 
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();

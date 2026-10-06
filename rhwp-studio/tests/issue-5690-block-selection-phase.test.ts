@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { functionBodyFrom } from './support/source-guard.ts';
+import { codeOnly, functionBodyFrom } from './support/source-guard.ts';
 
 // [#5690] F3 블록 선택 삭제를 undo 하면 **확장 단계까지** 되돌아와야 한다.
 //
@@ -22,7 +22,7 @@ import { functionBodyFrom } from './support/source-guard.ts';
 // 단어 범위(16~27)에 머물렀을 것이다.
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const src = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+const src = (rel: string): string => codeOnly(readFileSync(join(rootDir, rel), 'utf8'));
 
 test('[#5690] 삭제 커맨드가 블록 확장 단계를 함께 들고 있다', async () => {
   const vite = await createServer({

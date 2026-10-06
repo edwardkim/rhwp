@@ -1,0 +1,249 @@
+{
+  "phases": [
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": 1789459108.583781,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 46.246150970458984
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915"
+      ],
+      "started": 1789459154.830317,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 81.9795069694519
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started": 1789459236.810209,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 65.42977595329285
+    },
+    {
+      "name": "full",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started": 1789459302.240491,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 715.7535519599915
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "started": 1789460017.994839,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 165.17047715187073
+    },
+    {
+      "name": "skia-picture",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--features",
+        "native-skia"
+      ],
+      "started": 1789460183.165715,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 127.02438402175903
+    },
+    {
+      "name": "skia-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/issue-6706-20260915",
+        "--features",
+        "native-skia"
+      ],
+      "started": 1789460310.190472,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 7.486394166946411
+    },
+    {
+      "name": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/private/tmp/rhwp-issue-6706-20260915/wasm-pkg"
+      ],
+      "started": 1789460317.6771939,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 205.37196493148804
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started": 1789460523.049531,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 6.209034204483032
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check"
+      ],
+      "started": 1789460529.259011,
+      "status": "passed",
+      "exit_code": 0,
+      "seconds": 0.31121110916137695
+    }
+  ],
+  "base_sha": "769582fc856f162e57604b318d41414d7b026345",
+  "issue": 6706,
+  "full_result": {
+    "run": 9885,
+    "passed": 9885,
+    "failed": 0,
+    "skipped": 51,
+    "runtime_seconds": 334.878
+  },
+  "focused_result": {
+    "run": 102,
+    "passed": 102,
+    "failed": 0
+  },
+  "skia_lib_result": {
+    "passed": 4112,
+    "failed": 0,
+    "ignored": 13
+  },
+  "skia_picture_result": {
+    "passed": 2,
+    "failed": 0
+  },
+  "skia_pdf_result": {
+    "passed": 4,
+    "failed": 0
+  },
+  "clippy_native": {
+    "exit_code": 0
+  },
+  "visual": {
+    "before_exit_code": 0,
+    "after_exit_code": 0,
+    "final_exit_code": 0,
+    "wasm_exit_code": 0,
+    "native_wasm_png_identical": true,
+    "independent_oracle": "pdf/hwp3-sample16-hwp5-2022.pdf"
+  },
+  "not_performed": [
+    "remote push",
+    "PR",
+    "CI",
+    "merge",
+    "issue close"
+  ],
+  "log_sha256": {
+    "baseline-build.log": "e2793d6294690c84ec7527bb9128248d6b317be5dccd63ffc1438d0e6cc15394",
+    "candidate-build.log": "ea15a366627b54a9c9b4004f84eb746d90e46bece04baf491832aec34eb05a6f",
+    "focused.log": "f930a1770a9965eb819990e5c40579f69e9f9ce1b2ead08aa087a380a01dd00d",
+    "clippy-native.log": "b69d05c8176520a9475977c02e4440d11bd88341056d57988929db7266bd08bb",
+    "clippy-wasm.log": "4bd1d948d7d3b4cb1e65df4795cda4be941d2ed65e9d72aebe8892106397b50f",
+    "workspace-build.log": "b4253bbe5cddfc0e5874a365916fbdd7f67889e893ad86d67ba9edc537f14443",
+    "clippy-workspace.log": "595e6ea9d65ad6bcb75925e22d4c40f307c205dcd0550f893dcace64793a9f8f",
+    "full.log": "c450d3d397068a03e75beb2e48d8887c89dbbde5a48b453fa5ccb0c2a71c8fb1",
+    "skia-lib.log": "e8199a987f44ce87b16e3356885707a93dec54a405466bb3864aa19bae92c517",
+    "skia-picture.log": "05360973547dc30d1383e519bea9afcdaf396fe0087fa1329b958d5b9b33d536",
+    "skia-pdf.log": "17d65876c388166e98c5c58a094f70b4db702fdd1e2407b1410791b8583aa2e0",
+    "wasm-build.log": "119e8491bd5277fdcfdd85e96d678d342a30b70c937ee81da1e8bde82c263835",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifest.log": "3ccb09fab122c921c072471923f98ea3791f5862e4787d80edb577c8b63dc1c5",
+    "before-sweep.log": "f39e21b7e4501955cd20436b7f5b3d0a57f0919f5303502619ccdbe1acc59cd2",
+    "after-sweep.log": "dec094911f4c37170b6f78a8055b23f580ae2c4fa06b24d362f75501d400ac7d",
+    "final-sweep.log": "a465cac0606c78a889968fa790fc06d5fe06bb42309f7a79d51910b9ddb94fb4",
+    "wasm-sweep.log": "4c2c6a70f7b15db38dd773ecf71da0178e917e16b2bce8749ce19bb62ad20d3b",
+    "ovr-before.log": "da101f70f81e9e7c0171a046a4f5f5473b7e04004e8810057a7ac484365c5984",
+    "ovr-after.log": "3e19b02c432e1e9b7e68db89c49ddc2d398254fe84d3a4eca260233184ef5998",
+    "fidelity-after.log": "41ba1321d275bf60c65f7fe5da5c572ac4e47df03058639197513e4f93490e43"
+  }
+}

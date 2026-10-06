@@ -17,7 +17,7 @@
 | `layout.rs` | `EqNode` → `LayoutBox` |
 | `svg_render.rs` | `LayoutBox` → SVG 조각 |
 | `canvas_render.rs` | WASM Canvas 경로 |
-| `mod.rs` | `intrinsic_size_hwp` 진입점 |
+| `mod.rs` | `intrinsic_size_hwp`, 한글 대체 `flow_metrics_hwp`와 공통 글꼴 정책 |
 
 ## 디스패치 순서
 

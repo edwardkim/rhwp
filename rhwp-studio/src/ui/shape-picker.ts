@@ -3,6 +3,7 @@
  * 한컴 스타일 층구조: 그리기 개체 / 연결선
  */
 
+import { t } from '../i18n/index.ts';
 export type ShapeType = 'line' | 'rectangle' | 'ellipse' | 'polygon' | 'arc'
   | 'connector-straight' | 'connector-stroke' | 'connector-arc'
   | 'connector-straight-arrow' | 'connector-stroke-arrow' | 'connector-arc-arrow';
@@ -19,26 +20,26 @@ interface ShapeGroup {
 
 const GROUPS: ShapeGroup[] = [
   {
-    title: '그리기 개체',
+    title: t('dialog.shapePicker.tooltip'),
     columns: 5,
     items: [
-      { type: 'line',      label: '직선',   icon: '╲' },
-      { type: 'rectangle', label: '사각형', icon: '▭' },
-      { type: 'ellipse',   label: '타원',   icon: '⬭' },
-      { type: 'polygon',   label: '다각형', icon: '△' },
-      { type: 'arc',       label: '호',     icon: '⌒' },
+      { type: 'line',      label: t('dialog.shapePicker.label'),   icon: '╲' },
+      { type: 'rectangle', label: t('dialog.shapePicker.label.x397378'), icon: '▭' },
+      { type: 'ellipse',   label: t('dialog.shapePicker.label.x1d636c'),   icon: '⬭' },
+      { type: 'polygon',   label: t('dialog.shapePicker.label.x496f50'), icon: '△' },
+      { type: 'arc',       label: t('dialog.shapePicker.label.x86220f'),     icon: '⌒' },
     ],
   },
   {
-    title: '연결선',
+    title: t('dialog.shapePicker.tooltip.x7e90bf'),
     columns: 3,
     items: [
-      { type: 'connector-straight',       label: '직선',         icon: '─' },
-      { type: 'connector-straight-arrow', label: '직선 화살표', icon: '→' },
-      { type: 'connector-stroke',         label: '꺾인',         icon: '⌐' },
-      { type: 'connector-stroke-arrow',   label: '꺾인 화살표', icon: '⮎' },
-      { type: 'connector-arc',            label: '곡선',         icon: '∼' },
-      { type: 'connector-arc-arrow',      label: '곡선 화살표', icon: '↝' },
+      { type: 'connector-straight',       label: t('dialog.shapePicker.label'),         icon: '─' },
+      { type: 'connector-straight-arrow', label: t('dialog.shapePicker.label.xf3879e'), icon: '→' },
+      { type: 'connector-stroke',         label: t('dialog.shapePicker.label.x9d1e71'),         icon: '⌐' },
+      { type: 'connector-stroke-arrow',   label: t('dialog.shapePicker.label.x558836'), icon: '⮎' },
+      { type: 'connector-arc',            label: t('dialog.shapePicker.label.xd79077'),         icon: '∼' },
+      { type: 'connector-arc-arrow',      label: t('dialog.shapePicker.label.x75a223'), icon: '↝' },
     ],
   },
 ];

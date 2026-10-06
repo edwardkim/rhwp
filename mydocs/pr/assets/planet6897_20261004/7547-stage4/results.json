@@ -1,0 +1,20 @@
+{
+  "status": "blocked",
+  "stage4_nextest": {
+    "passed": 37,
+    "failed": 2,
+    "exit_code": 100,
+    "log_sha256": "4def9e4aa207571bc3f3bec6fc4111dc9da2ab2b919402f3fb5964522d8eeadf",
+    "log_path": "output/pr-review/planet6897-20261004/stage4-7547-nextest.log"
+  },
+  "source_sha256": {
+    "src/renderer/typeset/table/scan/runner/row_step.rs": "b142c18d470339bfd4717d8126c31832254e16a5ad9898c377661ad6ddcc6f1f",
+    "src/renderer/typeset/table/scan/source_frame.rs": "7dd183ea3b131f1be5e6c5bbc78688c51f92eb79821efc2c1ba026df15ef5ed3"
+  },
+  "visual_scope": "Native intermediate stage3 binary; fresh WASM baseline built before maintainer source changes. Neither is final stage4 Native/WASM proof.",
+  "remaining": [
+    "issue1133 HWP/HWPX closed centered source frame regressions",
+    "issue6929 page15 silhouette 69.32327% on stage3 intermediate candidate",
+    "final integrated full gates not run"
+  ]
+}

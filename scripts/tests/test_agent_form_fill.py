@@ -19,7 +19,7 @@ SKILL = REPO / ".claude" / "skills" / "rhwp-form-fill"
 REF = SKILL / "references"
 FIXT = REF / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_form_fill.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_form_fill.md"
 REGISTRY = REPO / "mydocs" / "manual" / "agent_capability_registry.md"
 
 FORBIDDEN_SKILLS = [

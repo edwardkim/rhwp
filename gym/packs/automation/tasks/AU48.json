@@ -21,6 +21,60 @@
         "restored.json",
         "work.capsule.json"
       ]
+    },
+    {
+      "name": "원본 캡슐 스키마",
+      "op": "json_keys_contain",
+      "file": "work.capsule.json",
+      "keys": [
+        "kind",
+        "schemaVersion",
+        "plan",
+        "receipt"
+      ]
+    },
+    {
+      "name": "원본 캡슐 kind",
+      "op": "json_value_eq",
+      "file": "work.capsule.json",
+      "path": "kind",
+      "value": "workCapsule"
+    },
+    {
+      "name": "가림본 스키마",
+      "op": "json_keys_contain",
+      "file": "redacted.json",
+      "keys": [
+        "kind",
+        "schemaVersion",
+        "originalCapsuleSha256",
+        "planRedacted"
+      ]
+    },
+    {
+      "name": "개봉 자료 스키마",
+      "op": "json_keys_contain",
+      "file": "opening.json",
+      "keys": [
+        "kind",
+        "schemaVersion",
+        "originalCapsuleSha256",
+        "openings"
+      ]
+    },
+    {
+      "name": "개봉 자료 kind",
+      "op": "json_value_eq",
+      "file": "opening.json",
+      "path": "kind",
+      "value": "capsuleOpening"
+    },
+    {
+      "name": "복원본 kind",
+      "op": "json_value_eq",
+      "file": "restored.json",
+      "path": "kind",
+      "value": "workCapsule"
     }
   ],
   "axis": "자동화"

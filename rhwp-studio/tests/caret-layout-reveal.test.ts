@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 
 import { CaretLayoutReveal } from '../src/engine/caret-layout-reveal.ts';
 
-test('쪽/단 나누기는 다음 layout 완료에 한 번만 캐럿 reveal을 예약한다', () => {
-  for (const operationType of ['pageBreak', 'columnBreak', 'snapshot:pageBreak', 'snapshot:columnBreak']) {
+test('쪽/단 나누기와 본문 Enter는 다음 layout 완료에 한 번만 캐럿 reveal을 예약한다', () => {
+  for (const operationType of ['pageBreak', 'columnBreak', 'splitParagraph', 'snapshot:pageBreak', 'snapshot:columnBreak', 'snapshot:splitParagraph']) {
     const reveal = new CaretLayoutReveal();
     reveal.requestFor(operationType);
     assert.equal(reveal.consume(), true, `${operationType}: layout 완료 뒤 reveal`);
@@ -16,6 +16,17 @@ test('일반 전체 편집은 지연 reveal을 예약하지 않는다', () => {
   const reveal = new CaretLayoutReveal();
   reveal.requestFor('insertText');
   reveal.requestFor('snapshot:pasteInternal');
+  reveal.requestFor('splitParagraphInCell');
+  reveal.requestFor('splitParagraphInHeaderFooter');
+  reveal.requestFor('splitParagraphInFootnote');
+  assert.equal(reveal.consume(), false);
+});
+
+test('여러 본문 Enter의 예약은 한 완료 경계에서 합쳐 소비한다', () => {
+  const reveal = new CaretLayoutReveal();
+  reveal.requestFor('splitParagraph');
+  reveal.requestFor('splitParagraph');
+  assert.equal(reveal.consume(), true);
   assert.equal(reveal.consume(), false);
 });
 

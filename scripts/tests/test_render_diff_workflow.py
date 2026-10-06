@@ -21,6 +21,11 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
         self.assertIn("      - 'scripts/ci-impact-classifier.cjs'", pull_request_trigger)
         self.assertIn("      - 'scripts/generate_exact_face_collection_fixture.py'", pull_request_trigger)
         self.assertIn("      - 'scripts/generate_exact_kerning_fixture.py'", pull_request_trigger)
+        self.assertIn(
+            "      - 'mydocs/tech/canvaskit-parity-implementation.md'",
+            pull_request_trigger,
+        )
+        self.assertIn("      - 'mydocs/tech/text-ir-v2.md'", pull_request_trigger)
         self.assertNotIn("'mydocs/**'", pull_request_trigger)
 
     def test_canvas_uses_the_base_classifier_render_axis(self) -> None:

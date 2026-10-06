@@ -25,7 +25,7 @@ TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 ASSETS = PACK / "assets"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_coverage_and_extract.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_coverage_and_extract.md"
 PACK_JSON = PACK / "pack.json"
 
 ALLOWED_CMDS = {"batch", "search"}

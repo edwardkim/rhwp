@@ -1,0 +1,14 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 5.82s
+     Running tests/generated/regression_suite_009.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_009-97580b56b9e7e734)
+
+running 5 tests
+test issue_6946_block_seated_float_sibling_gets_its_own_page::page_count_matches_hancom_2020_oracle ... ok
+test issue_6946_block_seated_float_sibling_gets_its_own_page::front_form_page_holds_only_the_front_table ... ok
+test issue_6946_block_seated_float_sibling_gets_its_own_page::back_form_sibling_gets_its_own_page_inside_the_body ... ok
+LAYOUT_OVERFLOW: page=2, sec=3, col=0, para=0, type=Table, first=true, y=1046.5, bottom=1020.5, overflow=26.1px
+LAYOUT_OVERFLOW: page=3, sec=3, col=0, para=0, type=Table, first=true, y=1046.5, bottom=1020.5, overflow=26.1px
+test issue_6946_block_seated_float_sibling_gets_its_own_page::no_page_stacks_two_float_tables_on_top_of_each_other ... ok
+test issue_6946_block_seated_float_sibling_gets_its_own_page::unrelated_lane_does_not_hide_a_block_siblings_occupancy ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 209 filtered out; finished in 0.04s

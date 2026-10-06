@@ -68,7 +68,6 @@ fn table_with_cell_para(para: Paragraph) -> Table {
         row_count: 1,
         col_count: 1,
         cells: vec![cell],
-        dirty: true,
         ..Default::default()
     };
     table.common.width = CELL_W;

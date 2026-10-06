@@ -1,0 +1,12 @@
+{
+  "issue": 7312,
+  "files": [
+    {
+      "path": "36494702_approval_tac_band.hwpx",
+      "sha256": "66804c7a0313633e1cbbfa49f2554ec5af64416a0500cfa1c7d4de5594255bf0",
+      "bytes": 14990,
+      "source": "samples/서울아리수본부 강서수도사업소 시설관리과/36494702_결재문서본문.hwpx",
+      "purpose": "TAC table stored outer band must keep the table on its own line"
+    }
+  ]
+}

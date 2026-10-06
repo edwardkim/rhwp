@@ -8,6 +8,7 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::Document;
+use rhwp::model::paragraph::tab_ext_is_placeholder;
 
 /// blank2010.hwp를 로드한다.
 fn load_blank() -> Vec<u8> {
@@ -32,13 +33,12 @@ fn first_tab_extended(doc: &Document) -> [u16; 7] {
 
 /// 편집으로 삽입한 탭이 HWP 직렬화 후에도 탭으로 보존되는지 확인한다.
 ///
-/// [#1892 계약 정제] 직렬화기는 tab_extended 없는 탭에 null 마커
-/// `[0,...,0,0x0009]` 를 방출하고(한컴이 탭으로 인식하는 데 필수 — #1244 원계약),
-/// 파서는 이 마커를 "데이터 없음"으로 정규화해 tab_extended 로 싣지 않는다
-/// (실으면 레이아웃이 ext[0]=0 을 탭 결과 위치로 해석해 탭이 무폭 — #1892).
-/// 재파스 IR 이 삽입 직후 IR 과 같아지는(빈 tab_extended) 것이 정상이며,
-/// 직렬화기가 마커를 누락(ext[6]=0)하면 파서가 null 마커로 인식하지 못해
-/// ext[6]=0 항목이 유입되므로 아래 단언들이 #1244 회귀도 그대로 잡는다.
+/// [#1892 계약 정제 / #7170 갱신] 직렬화기는 tab_extended 없는 탭에 null 마커
+/// `[0,...,0,0x0009]` 를 방출한다(한컴이 탭으로 인식하는 데 필수 — #1244 원계약).
+/// 파서는 그 마커를 **자리표로 실어** 탭 순번을 지키고(버리면 뒤 탭이 남의 확장을
+/// 쓴다 — #7170), 소비자가 `tab_ext_is_placeholder` 로 걸러 저장 폭으로 읽지 않는다
+/// (읽으면 레이아웃이 ext[0]=0 을 탭 결과 위치로 해석해 탭이 무폭 — #1892).
+/// 직렬화기가 마커를 누락(ext[6]=0)하면 #1244 회귀이므로 ext[6] 도 함께 단언한다.
 #[test]
 fn issue_1244_inserted_tab_has_marker_after_roundtrip() {
     let blank = load_blank();
@@ -59,10 +59,20 @@ fn issue_1244_inserted_tab_has_marker_after_roundtrip() {
         para.text.contains('\t'),
         "탭을 삽입했으나 재파싱 텍스트에 탭이 없음 — 마커 직렬화 누락 (issue #1244)"
     );
+    assert_eq!(
+        para.tab_extended.len(),
+        1,
+        "탭 1개의 자리표가 남아야 한다 (#7170 순번 계약): {:?}",
+        para.tab_extended
+    );
+    assert_eq!(
+        para.tab_extended[0][6], 0x0009,
+        "직렬화기가 한컴이 요구하는 ext[6]=0x0009 마커를 빠뜨렸다 (#1244): {:?}",
+        para.tab_extended
+    );
     assert!(
-        para.tab_extended.is_empty(),
-        "null 마커가 tab_extended 로 유입됨 (ext[6]=0x0009 누락 시 #1244 회귀 / \
-         유입 시 #1892 탭 무폭 회귀): {:?}",
+        tab_ext_is_placeholder(&para.tab_extended[0]),
+        "삽입 탭은 저장 폭이 없다 — 자리표로 읽혀야 한다 (#1892 탭 무폭 회귀 차단): {:?}",
         para.tab_extended
     );
 }
@@ -87,9 +97,20 @@ fn issue_1244_multiple_inserted_tabs_all_have_marker() {
         "탭 2개를 삽입했으나 재파싱 텍스트의 탭 수가 다름: {:?}",
         para.text
     );
+    assert_eq!(
+        para.tab_extended.len(),
+        2,
+        "탭 2개의 자리표가 순번대로 남아야 한다 (#7170): {:?}",
+        para.tab_extended
+    );
     assert!(
-        para.tab_extended.is_empty(),
-        "null 마커가 tab_extended 로 유입됨 (#1244/#1892): {:?}",
+        para.tab_extended.iter().all(tab_ext_is_placeholder),
+        "삽입 탭은 저장 폭이 없다 — 전부 자리표여야 한다 (#1892): {:?}",
+        para.tab_extended
+    );
+    assert!(
+        para.tab_extended.iter().all(|ext| ext[6] == 0x0009),
+        "한컴이 요구하는 ext[6]=0x0009 마커 누락 (#1244): {:?}",
         para.tab_extended
     );
 }

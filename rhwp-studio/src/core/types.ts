@@ -577,6 +577,7 @@ export interface ControlLayoutItem {
   /** 각주/미주 내부 컨트롤인 경우 원본 위치 */
   noteRef?: NoteControlRef;
   outerTableControlIdx?: number;
+  /** Source HF subList; secIdx is its owning section, not the displayed page section. */
   headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number };
   /**
    * [Task #1280 v2] 렌더 정렬키 — 겹침 클릭 시 "최상단 개체" 판정용.
@@ -593,6 +594,8 @@ export interface ControlLayoutItem {
    * (`doc_path_for_node`, render_tree.rs). `next_id()` 카운터에도, layer 유무에 따라
    * 서로 다른 자릿수 공간을 쓰던 예전 패킹된 u32 에도 의존하지 않는다. 사전식 비교
    * (`compareLexArrays`, input-handler-picture.ts) 로 정렬한다.
+   * HF nodes can retain internal sentinel components here. Use secIdx plus
+   * headerFooter for source ownership; stableIndex is only a paint ordering key.
    */
   stableIndex?: number[];
   /** [Task #1280 v2] 텍스트 어울림 모드(이미지뿐 아니라 shape/line/group에도 노출). */
@@ -801,6 +804,8 @@ export interface FormObjectInfoResult {
 /** 텍스트 검색 결과 */
 export interface SearchResult {
   found: boolean;
+  /** Find/F3가 실제로 순회할 수 있는 전체 매치 수. 이전 WASM에서는 없을 수 있다. */
+  totalMatchCount?: number;
   wrapped?: boolean;
   sec?: number;
   para?: number;
@@ -1095,6 +1100,7 @@ export type LayerPaintOp =
   | LayerPlaceholderOp
   | LayerRawSvgOp
   | LayerTextDecorationOp
+  | LayerControlLabelOp
   | LayerTextControlMarkOp
   | LayerTabLeaderOp
   | LayerCharOverlapOp
@@ -1336,6 +1342,14 @@ export interface LayerEquationOp {
   layoutBox?: LayerEquationLayoutBox;
 }
 
+export interface LayerControlLabelOp {
+  type: 'controlLabel';
+  bbox: LayerBounds;
+  label: string;
+  fontSize?: number;
+  color?: string;
+}
+
 export type LayerEquationMatrixStyle = 'plain' | 'paren' | 'bracket' | 'vert';
 export type LayerEquationDecoration =
   | 'hat'
@@ -1407,6 +1421,17 @@ export interface LayerFormObjectOp {
   backColor?: string;
   value?: boolean;
   enabled?: boolean;
+  drawing?: {
+    primitives: Array<
+      | { kind: 'rect'; bbox: LayerBounds; color: string }
+      | { kind: 'circle'; x: number; y: number; radius: number; color: string }
+      | { kind: 'polyline'; points: [number, number][]; color: string; width: number; closed: boolean }
+    >;
+    label?: {
+      text: string; x: number; baseline: number; fontFamily: string; fontSize: number;
+      bold: boolean; italic: boolean; color: string;
+    } | null;
+  };
 }
 
 export interface LayerPlaceholderOp {
@@ -1794,4 +1819,10 @@ export interface LayerSvgGlyphPayload {
   externalResourcesAllowed?: boolean;
   interactivityAllowed?: boolean;
   transformToRun?: LayerAffineTransform;
+}
+/** 글자 모양 history 구간. offset은 문단 기준 문자 단위(UTF-16 아님). */
+export interface CharShapeRun {
+  startOffset: number;
+  endOffset: number;
+  charShapeId: number;
 }

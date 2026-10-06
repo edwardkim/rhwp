@@ -231,6 +231,6 @@ last_verified: 2026-08-18
 
 ## 관련 문서
 
-- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/gym_om_lr_cd.md)
+- 작업 노트: [mydocs/working/gym_om_lr_cd.md](../../../mydocs/working/archives/gym_om_lr_cd.md)
 - 개체 pack: [../objects-media/README.md](../objects-media/README.md)
 - 조판 pack: [../layout-rendering/README.md](../layout-rendering/README.md)

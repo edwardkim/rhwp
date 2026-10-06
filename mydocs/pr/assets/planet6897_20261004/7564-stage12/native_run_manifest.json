@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "page-square",
+  "provenance": {
+    "hwp": {
+      "path": "samples/page_anchored_square/page_anchored_square.hwp",
+      "sha256": "36571e1991a5fdb9f0646284ab92a47db2e9a697e70bd2ff15d1bce1b222936b"
+    },
+    "pdf": {
+      "path": "pdf/page_anchored_square/page_anchored_square-2020.pdf",
+      "sha256": "736a7b58e5ba418b05bddbf0f154f683e3c4c16a0444a70059564084c82a0af7"
+    },
+    "git_head": "c393aa1f4afcfb91d4e959d6fb3bdadeb0992d4c",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "6b591e4fa3e4bded1e8ea4a18107bb60dd5c2fd692014fbbece45c8770e52151"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

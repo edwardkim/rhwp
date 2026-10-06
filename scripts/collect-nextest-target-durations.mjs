@@ -137,6 +137,13 @@ function main() {
     run_id: process.env.GITHUB_RUN_ID ?? null,
     ref: process.env.GITHUB_REF ?? null,
     sha: process.env.GITHUB_SHA ?? null,
+    run_attempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
+    repository_id: process.env.GITHUB_REPOSITORY_ID ?? null,
+    repository: process.env.GITHUB_REPOSITORY ?? null,
+    pull_number: process.env.DURATION_PULL_NUMBER ?? null,
+    head_repository_id: process.env.DURATION_HEAD_REPOSITORY_ID ?? null,
+    head_sha: process.env.DURATION_HEAD_SHA ?? null,
+    head_ref: process.env.DURATION_HEAD_REF ?? null,
     ...measurement,
   };
   fs.mkdirSync(path.dirname(options.output), { recursive: true });

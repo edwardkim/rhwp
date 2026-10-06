@@ -19,7 +19,7 @@ ORACLE_RESOLVER_CONTRACT: dict[str, Any] = {
     "schema_version": "1.0",
     "pair_years": ["2018", "2020", "2022", "2024"],
     "source_formats": ["hwp", "hwpx"],
-    "oracle_roots": ["pdf", "pdf-2020", "pdf-large"],
+    "oracle_roots": ["pdf"],
     "pair_required": [
         "sample",
         "pdf",

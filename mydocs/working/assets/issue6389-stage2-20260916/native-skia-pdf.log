@@ -1,0 +1,14 @@
+[RustTestSuite] render_p37_direct_pdf_export -> regression_suite_009::render_p37_direct_pdf_export
+[RustTestSuite] cargo nextest run --locked --test regression_suite_009 -E test(/(^|::)render_p37_direct_pdf_export::/) --cargo-profile release-test --target-dir /Users/tsjang/rhwp/target/issue6389-20260916 --features native-skia
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 4.84s
+────────────
+ Nextest run ID 3d23351a-1ca9-402d-8839-18fd94e81bb0 with nextest profile: default
+    Starting 4 tests across 1 binary (208 tests skipped)
+        PASS [   0.016s] (1/4) rhwp::regression_suite_009 render_p37_direct_pdf_export::document_core_direct_pdf_preserves_selection_errors
+        PASS [   0.077s] (2/4) rhwp::regression_suite_009 render_p37_direct_pdf_export::document_core_direct_pdf_exports_page_selection_and_document
+        PASS [   0.664s] (3/4) rhwp::regression_suite_009 render_p37_direct_pdf_export::export_pdf_cli_rejects_backend_specific_option_mismatches
+        PASS [   0.752s] (4/4) rhwp::regression_suite_009 render_p37_direct_pdf_export::export_pdf_cli_selects_direct_backend_explicitly
+────────────
+     Summary [   0.753s] 4 tests run: 4 passed, 208 skipped

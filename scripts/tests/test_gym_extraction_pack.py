@@ -24,7 +24,7 @@ PACK = REPO_ROOT / "gym" / "packs" / "extraction"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_coverage_and_extract.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_coverage_and_extract.md"
 PACK_JSON = PACK / "pack.json"
 
 ALLOWED_CMDS = {"extract-data", "export-text", "chart-to-csv"}

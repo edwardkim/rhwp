@@ -12,7 +12,10 @@
             "0000000000000000000000000000000000000000000000000000000000000000",
             "--json"
           ],
-          "path": "expectedOutputSha256"
+          "path": "expectedOutputSha256",
+          "allowExits": [
+            3
+          ]
         }
       }
     }

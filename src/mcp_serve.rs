@@ -907,10 +907,11 @@ const DOC_RESOURCES: &[DocResource] = &[
         uri: "rhwp://docs/gym",
         name: "gym-readme",
         title: "rhwp 에이전트 운동장 (gym)",
-        description:
-            "에이전트가 실문서로 실력을 겨루고 기록으로 남기는 벤치마크 — 과제판·채점·리더보드.",
+        description: "선택적 Gym 평가 도구 안내 — 제품 실행에는 Gym 설치가 필요하지 않습니다.",
         mime_type: "text/markdown",
-        text: include_str!("../gym/README.md"),
+        // #6916: URI는 보존하되 제품 빌드가 선택적 Gym 자산을 요구하지 않게 한다.
+        // 제품 소유 안내만 내장하며 Gym README 복제·런타임 파일/네트워크 조회는 하지 않는다.
+        text: include_str!("../mydocs/manual/gym_optional_tool.md"),
     },
 ];
 
@@ -2465,20 +2466,22 @@ fn run_cli_tool(def: &serde_json::Value, args: &serde_json::Value) -> serde_json
             let Some(key) = optional.get("when").and_then(|v| v.as_str()) else {
                 return tool_error("MCP optionalArgs.when 정의가 올바르지 않습니다".into());
             };
-            // 존재 여부만으로는 부족하다. `--dry-run` 같은 presence 플래그는 값이 없어
-            // "있으면 켜짐" 이므로, `dryRun: false` 를 존재로 세면 **끄라고 보낸 요청이
-            // 켜는 요청이 된다**. JSON 의 false/null 은 "그 축을 쓰지 않음" 으로 읽는다.
-            match args.get(key) {
-                None | Some(serde_json::Value::Null) | Some(serde_json::Value::Bool(false)) => {
-                    continue;
-                }
-                Some(_) => {}
-            }
             let Some(template) = optional.get("args").and_then(|v| v.as_array()) else {
                 return tool_error(format!(
                     "MCP optionalArgs.{key}.args 정의가 올바르지 않습니다"
                 ));
             };
+            // presence 플래그(dryRun:false)는 생략하지만, 값을 받는 옵션
+            // (--repeat-header {repeatHeader})의 false는 명시적 끄기이므로 전달한다.
+            let value_placeholder = format!("{{{key}}}");
+            let consumes_value = template
+                .iter()
+                .any(|v| v.as_str() == Some(&value_placeholder));
+            match args.get(key) {
+                None | Some(serde_json::Value::Null) => continue,
+                Some(serde_json::Value::Bool(false)) if !consumes_value => continue,
+                Some(_) => {}
+            }
             match substitute_args(template, args) {
                 // [#3835] `cli.args` 에 POSIX `--` 옵션 종결자가 있으면(예: hwp_search 의
                 // `{query}` 앞) 선택 인자를 그 **앞**에 끼워 넣는다. 뒤에 붙이면 이미

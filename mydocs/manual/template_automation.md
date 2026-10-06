@@ -1,0 +1,227 @@
+---
+kind: guide
+status: active
+canonical: mydocs/manual/consumer_edit_api_guide.md
+last_verified: 2026-09-13
+---
+
+# 템플릿 복제·채우기 API (#3587)
+
+고정 양식의 명시 영역에 값을 쓰거나 원형을 복제한 뒤 복사본별로 값을 채운다.
+Gym 없이 native·WASM·CLI `run`·MCP `hwp_run_plan`에서 같은 문서 코어를 사용한다.
+한컴 조판 결과를 맞추려고 표 높이·글꼴·빈 문단을 바꾸는 기능이 아니다.
+
+## 연산과 주소
+
+| action | native 요청 | 동작 |
+| --- | --- | --- |
+| `fill_template` | `FillTemplateRequest` | 기존 ID와 문단 구조를 유지하며 지정 범위만 채움 |
+| `repeat_and_fill_paragraph_block` | `TemplateFillRequest` | `[sourceStart, sourceEnd)` 문단 묶음을 복제하고 복사본별로 채움 |
+| `repeat_and_fill_table_rows` | `RepeatTableRowsRequest` | 본문 최상위 표의 완결 행 묶음 `[startRow, endRow)`을 복제·채움 |
+| `import_paragraph_block` | `ImportParagraphBlockRequest` | 다른 문서의 완결 문단 블록을 대상 경계에 가져옴. CLI에는 별도 `source`가 필요 |
+
+채우기/반복 action은 `{action, request}`, CLI 가져오기는 `{action, source, request}`로 구성한다. 요청의 필드명은 camelCase이며,
+정확한 스키마는 `rhwp export-plan-schema --bare`에서 얻는다. 요청의 알 수 없는 필드나
+잘못된 타입은 오류다. 계획 스키마 판번호는 `1.4`, 계획의 `planVersion`과 응답 봉투의
+`schemaVersion`은 계속 `1.0`이다.
+
+모든 인덱스는 **실행 전 문서의 0 기준**이다. 페이지 번호나 화면 좌표는 주소가 아니다.
+본문 문단 블록의 binding은 원형 시작 문단에 상대적인 경로를 사용한다. 고정 양식도
+`scope.start`에 상대적이다. 예: `[{"kind":"paragraph","index":0}]`.
+하위 소유 경로는 `control`, `shape`, `cell`, `textBox`, `caption`, `groupChild`로
+구성하며 단일 노드인 shape/textBox/caption에는 index를 쓰지 않는다.
+
+행 복제의 binding은 `paragraph(0)/control(0)/cell(n)/paragraph(p)`로 시작한다.
+`n`은 **선택된 셀을 행·열 앵커 순으로 정렬한 인덱스**이고 원본 표 전체의 셀 번호가 아니다.
+결과의 행 복제 `copies[].mappings`는 원본·목적지 모두 실제 절대 소유 경로다.
+문단 복제 mapping의 source는 원형 상대 경로, destination은 삽입 직후 절대 경로다.
+이 대응표는 영구 ID가 아니며 후속 편집 뒤 그대로 재사용하지 않는다.
+
+## 값과 보존 계약
+
+- `bindings`는 `{key, target}` 배열, `record`는 문자열 값 객체다. 복제 요청은
+  `records` 배열을 받으며 문단 복제의 `block.count`는 그 길이와 같아야 한다.
+- `target.kind: "textRange"`는 문단의 `path`, `start`, `end`를 받는다. offset은
+  UTF-16 코드 유닛이 아닌 **Unicode scalar 인덱스**다. 끝은 포함하지 않는다.
+- `target.kind: "field"`는 같은 문단 안에서 닫힌 ClickHere의 `fieldRangeIndex`를 받는다.
+  문서 전체 필드 occurrence가 아니다. native의 범위 제한 이름/셀 편의 selector로
+  명시 binding을 만들 수 있다.
+- 누락/여분 key, 중복 binding, 겹친 범위, 그림·필드 등 다른 컨트롤 경계 침범은 거부한다.
+  빈 문자열은 범위의 값만 비운다. 셀 전체를 평탄화하거나 빈 문단을 삭제하지 않는다.
+- 행 복제는 source·삽입 경계를 가로지르는 병합/zone, 제목 셀 복제와 제목 블록 앞/내부
+  삽입을 거부한다. 중첩 표 내부 행 증가는 초기 지원 범위가 아니다.
+- 복제는 **멱등 연산이 아니다**. 같은 요청을 두 번 실행하면 다시 추가한다.
+  CLI의 `preconditions.inputSha256`은 입력 버전 보호이며 영구 요청 중복 제거가 아니다.
+
+블록의 구조 보존 지원과 값 채우기 대상은 다르다. 기본 글상자와 일반 하이퍼링크 필드는
+블록 복제/가져오기에서 보존하지만, `target.kind: "field"`로 값을 채우는 대상은 계속 ClickHere다.
+링크 주소는 데이터로 복사하며 복제 중 접속하거나 실행하지 않는다. HWPX의 단일 `Command`
+매개변수는 기존 링크 문자열 및 표준 표현과 일치할 때만 허용하며, 미지 매개변수·양식/이름을
+가진 글상자 확장은 명시적으로 거부한다. 다른 문서 가져오기는 아래 별도 WASM 핸들 경로를 사용한다.
+CLI/MCP는 아래 `import_paragraph_block` 단독 계획 경로를 사용한다.
+
+## 먼저 dry-run, 이어서 실행
+
+### CLI/MCP 다른 문서 가져오기
+
+`run` 계획의 `steps`에는 다음 한 개만 넣는다. 인덱스는 0 기준이며 source와 대상은
+**서로 다른 파일**이다. 상대 경로는 계획 파일 위치가 아니라 프로세스 작업 폴더 기준이다.
+
+```json
+{
+  "action": "import_paragraph_block",
+  "source": {"path": "source.hwp", "sha256": "원본 파일의 64자리 SHA-256으로 교체"},
+  "request": {
+    "sourceSection": 0, "sourceStart": 12, "sourceEnd": 13,
+    "targetSection": 0, "insertBefore": 13, "count": 1
+  }
+}
+```
+
+- `source.path`는 64 MiB 이하 로컬 일반 파일이다. 이 **압축 파일 입력 상한**은
+  native의 디코딩된 바이너리/metadata 예산과 별개다. source를 한 번 읽어 그 바이트로
+  SHA-256 검증·파싱하고, 같은 문서 snapshot으로 preview와 실행을 수행한다.
+- 원본 지문 불일치: exit 3, `preconditionFailed.kind="sourceSha256"`; 실행·저장 없음.
+  경로 읽기/파싱 실패는 exit 1, 요청 문법·지원 범위·상한 위반은 exit 2다.
+  원본이 변경되면 새 내용을 확인하고 범위와 지문을 재계획한다. 지문만 자동 교체하지 않는다.
+- 기존 `preconditions.inputSha256`은 **대상** 입력의 CAS다. source 지문과 대체 관계가 아니다.
+  source는 대상 input/output과 같거나 기존 symlink/Unix hardlink로 같은 파일이면 거부한다.
+  저장 전에도 output 별칭을 확인하지만 비협조 프로세스의 경로 교체 경합까지 보장하지 않는다.
+- 거짓 `if`는 원본을 읽지 않고 건너뛴다. `count=0`은 원본 지문/주소 검증 후 core 무변경이며,
+  실행 모드의 `run`은 기존 계약대로 결과 파일을 저장한다. 파일 무기록은 `dryRun:true`다.
+- `preview[]`/`steps[]`는 `source:{path,sha256}`와 `operationResult`를 반환한다.
+  `resources`는 `operationResult.result` 안에 있다. 가져오기는 `workload`를 반환하지 않는다.
+- 다음 `fill_template` 계획은 저장 결과를 input으로, 앞 `outputSha256`을 대상 CAS로 사용한다.
+  `copies[].mappings.destination`의 첫 paragraph 인덱스에서 `inserted.start`를 빼면
+  C의 scope 상대 경로가 된다. 각 계획은 별도 저장이며 두 호출 전체 rollback은 없다.
+- MCP는 동일 계획을 기존 `hwp_run_plan`에 전달한다. 새 서비스나 Gym은 필요 없다.
+  캡슐의 계획에는 source 경로/지문이 포함되지만 외부 source 파일 자체를 자동 포장하지 않는다.
+  재실행 환경에도 같은 원본 바이트가 필요하다.
+
+실행 가능한 연구노트 가져오기→반환 경로 채우기 예제:
+
+```bash
+node mydocs/tech/investigations/issue-3587/probes/import-plan-recipe.mjs \
+  target/pr-review/release-test/rhwp output/3587/d2-cli
+```
+
+출력 폴더는 새 폴더여야 한다. 원본 HWP와 rhwp 파생 HWPX를 각각 사용하며,
+그 파생본을 한컴 독립 정답지라 하지 않는다. 이 예제의 12/13 및 셀 경로는 해당
+연구노트 입력의 주소일 뿐 엔진 규칙이나 다른 템플릿의 주소가 아니다.
+
+### 기존 채우기/복제 공통 절차
+
+dry-run은 실행과 같은 경로로 detached 사본의 채우기·ID/참조·작업량 검증까지 수행하고
+반영 직전에 버린다. 원본·raw cache·이벤트·클립보드·조판·파일은 바꾸지 않는다.
+기존 native `validate_template_fill_native`는 더 가벼운 선검증으로, 이 전체 준비와 구별한다.
+실제 반영용 용량 확보가 환경 메모리 부족으로 실패할 가능성과 OOM/process abort 복구까지
+dry-run 성공이 보증하지는 않는다.
+
+독립적으로 검사 가능한 잘못된 target은 최대 16개까지 함께 보고한다. 구조·key·예산
+선검증 실패는 먼저 중단하며, 선행 구조가 없어 검사할 수 없는 대상을 추측해 오류로 만들지 않는다.
+CLI 실행 모드는 선검증과 반영에서 준비 경로를 각각 한 번 호출한다. 이 비용은 별도
+C 종료 계측 대상이며 `workload`가 그 실행 시간이나 메모리 비용을 대신하지 않는다.
+
+WASM은 `HwpDocument.applyTemplateOperation(optionsJson)`을 사용한다.
+
+```javascript
+const operation = {
+  action: "fill_template",
+  request: {
+    scope: { sectionIndex: 0, start: 1, end: 2 },
+    bindings: [{ key: "title", target: {
+      kind: "textRange", path: [{ kind: "paragraph", index: 0 }],
+      start: 0, end: 0
+    } }],
+    record: { title: "실험 기록" }
+  }
+};
+// 예시 주소다. 실제 입력에서 대상과 범위를 먼저 확인해야 한다.
+const preview = JSON.parse(doc.applyTemplateOperation(JSON.stringify({operation, dryRun: true})));
+const result = JSON.parse(doc.applyTemplateOperation(JSON.stringify({operation})));
+```
+
+생략한 `dryRun`은 false이고 문자열 `"false"` 같은 잘못된 타입은 거부한다.
+오류는 JS 예외로 전달한다. 성공 응답에는 `operationResult`의 적용/예정 대상·대응표,
+`dryRun`, 출처 표지가 있으며 `changedPages`는 아직 확정하지 않으므로 null이다.
+`workload`는 record 수·확장 target 수·대체 문자열 UTF-8 바이트 수다.
+실제 메모리 사용량이나 조판 비용의 실측값은 아니며 CLI 저널에도 같은 항목을 싣는다.
+이 API는 메모리 문서만 편집한다. 파일 저장은 기존 별도 export API로 수행한다.
+브라우저에서는 이 binding을 포함하여 빌드한 WASM 패키지가 필요하다.
+
+CLI 계획은 `steps: [operation]`으로 동일 요청을 넣는다.
+
+```json
+{
+  "planVersion": "1.0",
+  "input": "samples/rnote/labnote-001.hwp",
+  "output": "output/labnote-rows.hwp",
+  "steps": [{
+    "action": "repeat_and_fill_table_rows",
+    "request": {
+      "sectionIndex": 0, "paragraphIndex": 12, "controlIndex": 1,
+      "startRow": 5, "endRow": 6, "insertBefore": 6,
+      "bindings": [], "records": [{}, {}]
+    }
+  }]
+}
+```
+
+`rhwp run plan.json --dry-run --json`으로 먼저 확인하고, 승인 후 `--dry-run` 없이
+실행한다. 기존 `run`은 **입력 형식을 보존**한다. HWP 입력에 `.hwpx` 이름만 지정해도
+HWPX 변환이 되지는 않는다. 먼저 `rhwp export-hwpx`로 변환한 HWPX를 입력으로 사용한다.
+기존 예외인 HWPX 입력의 `.hwp` 출력은 어댑터 경유 변환과 경고를 유지한다. `assertions.verify:true`는
+기존 저장 자기검증을 추가하며 한컴 시각 판정을 대신하지 않는다. MCP는 위 계획을 그대로
+`hwp_run_plan`의 `plan` 인자로 준다. 별도 MCP 전용 복제 엔진이나 세션 API는 없다.
+
+새 템플릿 action은 **계획당 단독 step만 허용**한다. 여러 target/record는 한 요청에 묶고,
+다음 연산은 저장 결과를 입력으로 하는 다음 계획으로 연결한다. 기존 네 action만 사용하는
+다중 step 계획과 `if` 조건은 유지한다. 조건이 거짓이면 기존 계약대로 건너뛰며, 이를
+실제로 채웠다는 성공으로 해석하지 않는다.
+
+## 다른 문서의 블록 가져오기 — WASM
+
+`target.importParagraphBlock(source, optionsJson)`은 서로 다른 두 `HwpDocument` 핸들을 받는다.
+source를 소비하거나 문서 전체를 복제하지 않는다. **같은 핸들은 JS에서 호출 전에 거부해야 한다.**
+동일 핸들을 직접 넘기면 WASM borrow 검사에서 예외가 발생하며 그 핸들의 후속 사용/free도 실패할 수 있다.
+이는 native 요청 오류의 복구 계약 밖인 ABI 오사용이다. 같은 문서 복제는 기존 문단 복제 API를 사용한다.
+
+```javascript
+const request = {
+  sourceSection: 0, sourceStart: 1, sourceEnd: 2,
+  targetSection: 0, insertBefore: 1, count: 2
+};
+// 실제 두 문서에서 확인한 주소로 교체한다.
+if (target === source) throw new TypeError("원본과 대상은 서로 다른 문서 핸들이어야 합니다");
+const preview = JSON.parse(target.importParagraphBlock(source, JSON.stringify({request, dryRun: true})));
+const applied = JSON.parse(target.importParagraphBlock(source, JSON.stringify({request})));
+```
+
+원본의 완전한 문단 묶음만 가져오고, 대상의 앞뒤 문단·빈 Enter·용지 설정은 유지한다.
+스타일/이미지는 선택 블록에서 필요한 것만 이식·재사용하며 복사본 신원은 새로 배정한다.
+구역 컨트롤·미지원 참조는 조용히 버리지 않고 거부한다. 원본 문서의 용지를 자동 복사하지 않는다.
+`dryRun`은 full native 준비와 같으며, 실제 반영 권한이나 후속 snapshot에도 유효한 허가증이 아니다.
+
+응답 `operationResult.action`은 `import_paragraph_block`, `result`에는 `targetSection`,
+`inserted`, `copies`, `resources`가 있다. `copies[].mappings.source`는 선택 블록 상대 경로,
+`destination`은 삽입 직후 대상 구역 내 절대 경로다. 같은 문서 복제의 `sourceAfter`는 없다.
+`resources`는 실제 자원 준비 수치이며 실행 시간이나 RSS는 아니다. 파일 저장과 후속 내용 채우기는 별도 호출이다.
+여러 호출 전체의 원자성을 보장하지 않는다. 원본 bytes/경로는 options JSON에 넣지 않는다.
+
+요청은 `{request, dryRun?}`의 엄격한 JSON이며 최대 8 MiB다. `request.limits` 생략 시 기본값,
+지정 시 `block`(기존 블록 상한), `maxResourceMetadataBytes`(32 MiB 이하),
+`maxBinaryBytes`(64 MiB 이하)를 사용한다. `block` 생략은 기본값이며 각 상한은 낮출 수만 있다.
+바이너리 예산에는 중복 비교용 읽기도 포함된다. lazy 자원 읽기 캐시는 채워질 수 있으나 원본 의미는 불변이다.
+
+## 안전 상한과 검증 범위
+
+요청 JSON은 최대 8 MiB이며 기본 serde 재귀 제한도 유지한다. native typed 요청도
+실제 작업량 제한을 적용한다. 복사 1,000회, 추가 문단 10,000개, 추가 노드 100,000개,
+깊이 64, 구조 32 MiB, 대응표 8 MiB, 원본 검사 노드 1,000,000개가 기본 상한이다.
+`limits`를 지정하면 모든 필드를 명시하며 각 상한은 낮출 수만 있다. 상한은 파일 형식
+제한이나 프로세스 전체 메모리 사용량 보장이 아니다.
+
+출력 구조·저장 성공과 Studio의 재편집 조판은 별도 판정이다. 현재 알려진
+[#7065](https://github.com/edwardkim/rhwp/issues/7065) 재편집 페이지네이션과
+[#7084](https://github.com/edwardkim/rhwp/issues/7084) 이모티콘 폭 문제는 이 API로 해결했다고
+간주하지 않는다. 후속 Gym 평가는 별도 단계다.

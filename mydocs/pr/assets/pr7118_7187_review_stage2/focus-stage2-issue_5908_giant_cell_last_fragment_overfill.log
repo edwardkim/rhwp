@@ -1,0 +1,89 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 7.85s
+     Running tests/generated/regression_suite_022.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_022-d9b7d77e42d74e1b)
+
+running 3 tests
+test issue_5908_giant_cell_last_fragment_overfill::issue_5908_giant_cell_last_fragment_keeps_splitting ... ok
+LAYOUT_OVERFLOW: page=39, sec=0, col=0, para=0, type=PartialTable, first=true, y=1571.1, bottom=1084.7, overflow=486.4px
+LAYOUT_OVERFLOW: page=39, sec=0, col=0, para=0, type=PartialTable, first=true, y=1571.1, bottom=1084.7, overflow=486.4px
+test issue_5908_giant_cell_last_fragment_overfill::issue_5908_collapsed_page_stays_inside_the_paper ... ok
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=0 y=1137.0 page_bottom=1122.5 overflow=14.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=1 y=1158.4 page_bottom=1122.5 overflow=35.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=2 y=1179.7 page_bottom=1122.5 overflow=57.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=3 y=1201.0 page_bottom=1122.5 overflow=78.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=4 y=1222.4 page_bottom=1122.5 overflow=99.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1556.2 page_bottom=1122.5 overflow=433.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=1579.7 page_bottom=1122.5 overflow=457.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=1 line=0 y=1603.1 page_bottom=1122.5 overflow=480.6px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1579.7 page_bottom=1122.5 overflow=457.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1579.7 page_bottom=1122.5 overflow=457.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1307.3 page_bottom=1122.5 overflow=184.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=1328.6 page_bottom=1122.5 overflow=206.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=1 line=0 y=1349.9 page_bottom=1122.5 overflow=227.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=1 line=1 y=1371.3 page_bottom=1122.5 overflow=248.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=0 y=1392.6 page_bottom=1122.5 overflow=270.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=1 y=1413.9 page_bottom=1122.5 overflow=291.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=2 y=1435.3 page_bottom=1122.5 overflow=312.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=2 line=3 y=1456.6 page_bottom=1122.5 overflow=334.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=3 line=0 y=1477.9 page_bottom=1122.5 overflow=355.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=3 line=1 y=1499.3 page_bottom=1122.5 overflow=376.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=3 line=2 y=1520.6 page_bottom=1122.5 overflow=398.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=3 line=3 y=1541.9 page_bottom=1122.5 overflow=419.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=4 line=0 y=1563.3 page_bottom=1122.5 overflow=440.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=5 line=0 y=1584.6 page_bottom=1122.5 overflow=462.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=6 line=0 y=1605.9 page_bottom=1122.5 overflow=483.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=8 line=0 y=1640.1 page_bottom=1122.5 overflow=517.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=8 line=1 y=1661.4 page_bottom=1122.5 overflow=538.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=8 line=2 y=1682.7 page_bottom=1122.5 overflow=560.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=8 line=3 y=1704.1 page_bottom=1122.5 overflow=581.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=9 line=0 y=1725.4 page_bottom=1122.5 overflow=602.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=9 line=1 y=1746.7 page_bottom=1122.5 overflow=624.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=0 y=1768.1 page_bottom=1122.5 overflow=645.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=1 y=1789.4 page_bottom=1122.5 overflow=666.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=2 y=1810.7 page_bottom=1122.5 overflow=688.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=3 y=1832.1 page_bottom=1122.5 overflow=709.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=4 y=1853.4 page_bottom=1122.5 overflow=730.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=5 y=1874.7 page_bottom=1122.5 overflow=752.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=0 y=1896.1 page_bottom=1122.5 overflow=773.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=1 y=1917.4 page_bottom=1122.5 overflow=794.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=2 y=1938.7 page_bottom=1122.5 overflow=816.2px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=3 y=1960.1 page_bottom=1122.5 overflow=837.5px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=4 y=1981.4 page_bottom=1122.5 overflow=858.9px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1996.7 page_bottom=1122.5 overflow=874.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=2022.3 page_bottom=1122.5 overflow=899.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=2 y=2047.9 page_bottom=1122.5 overflow=925.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=2022.9 page_bottom=1122.5 overflow=900.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=2022.9 page_bottom=1122.5 overflow=900.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1938.3 page_bottom=1122.5 overflow=815.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=1959.6 page_bottom=1122.5 overflow=837.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=2 y=1980.9 page_bottom=1122.5 overflow=858.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=3 y=2002.3 page_bottom=1122.5 overflow=879.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=4 y=2023.6 page_bottom=1122.5 overflow=901.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=5 y=2044.9 page_bottom=1122.5 overflow=922.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=6 y=2066.3 page_bottom=1122.5 overflow=943.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=7 y=2087.6 page_bottom=1122.5 overflow=965.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=8 y=2108.9 page_bottom=1122.5 overflow=986.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=10 line=5 y=1125.6 page_bottom=1122.5 overflow=3.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=0 y=1147.0 page_bottom=1122.5 overflow=24.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=1 y=1168.3 page_bottom=1122.5 overflow=45.8px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=2 y=1189.6 page_bottom=1122.5 overflow=67.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=3 y=1211.0 page_bottom=1122.5 overflow=88.4px
+LAYOUT_OVERFLOW_CELL: section=0 pi=11 line=4 y=1232.3 page_bottom=1122.5 overflow=109.8px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1311.6 page_bottom=1122.5 overflow=189.1px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=1337.2 page_bottom=1122.5 overflow=214.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=2 y=1362.8 page_bottom=1122.5 overflow=240.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1337.8 page_bottom=1122.5 overflow=215.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1337.8 page_bottom=1122.5 overflow=215.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=0 y=1253.2 page_bottom=1122.5 overflow=130.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=1 y=1274.5 page_bottom=1122.5 overflow=152.0px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=2 y=1295.8 page_bottom=1122.5 overflow=173.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=3 y=1317.2 page_bottom=1122.5 overflow=194.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=4 y=1338.5 page_bottom=1122.5 overflow=216.0px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=5 y=1359.8 page_bottom=1122.5 overflow=237.3px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=6 y=1381.2 page_bottom=1122.5 overflow=258.7px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=7 y=1402.5 page_bottom=1122.5 overflow=280.0px
+LAYOUT_OVERFLOW_CELL: section=0 pi=0 line=8 y=1423.8 page_bottom=1122.5 overflow=301.3px
+LAYOUT_OVERFLOW: page=43, sec=0, col=0, para=0, type=PartialTable, first=true, y=1469.4, bottom=1084.7, overflow=384.7px
+test issue_5908_giant_cell_last_fragment_overfill::issue_5908_annex_two_moves_off_the_collapsed_page ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.31s

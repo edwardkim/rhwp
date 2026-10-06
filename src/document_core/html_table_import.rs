@@ -338,8 +338,12 @@ impl DocumentCore {
 
             // 셀 내용 파싱
             // &nbsp; 등 HTML 엔티티를 디코딩한 후 공백만 남으면 빈 셀로 처리
-            let cell_paragraphs = if pc.content_html.trim().is_empty()
-                || html_to_plain_text(&pc.content_html).is_empty()
+            // 그림만 있는 셀(로고 칸 등)은 평문이 비어 있어
+            // 종전에는 '빈 셀'로 처리돼 그림이 통째로 사라졌다.
+            let cell_has_image = pc.content_html.to_ascii_lowercase().contains("<img");
+            let cell_paragraphs = if !cell_has_image
+                && (pc.content_html.trim().is_empty()
+                    || html_to_plain_text(&pc.content_html).is_empty())
             {
                 vec![Paragraph::new_empty()]
             } else {
@@ -361,7 +365,10 @@ impl DocumentCore {
                 cp_para.char_count_msb = true; // 셀 문단은 항상 MSB 설정
                                                // char_count에 문단끝 마커(+1) 포함
                 let text_chars = cp_para.text.chars().count() as u32;
-                cp_para.char_count = text_chars + 1;
+                // 컨트롤(그림·중첩 표)은 확장 제어문자 8 코드유닛을 차지한다.
+                // 그 자리를 빼먹으면 저장 때 컨트롤이 통째로 사라진다(셀 안 그림 실측).
+                let control_units = cp_para.controls.len() as u32 * 8;
+                cp_para.char_count = text_chars + control_units + 1;
 
                 // [#4275] CSS 에서 만든 para_shape_id 를 보존한다. 종전에는 무조건 0 으로
                 // 덮어 정렬·줄간격이 교차 문서 HTML 붙여넣기에서 사라졌다.
@@ -517,20 +524,22 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        // [32..36] instance_id (DIFF-7 수정: 해시 기반 유니크 값 생성)
-        // 정상 HWP 파일에서는 instance_id가 고유한 비-0 값을 가짐
+        // [32..36] instance_id — 공용 할당기로 받은 고유 개체 id.
+        //
+        // [#7231] 종전에는 행·열 수와 셀 수·전체 폭·높이로 만든 해시를 썼다. 크기가 같은
+        // 표끼리 같은 값이 나오고, `common.instance_id` 는 0 으로 남아 HWPX `<hp:tbl id>`
+        // 가 `"0"` 이 됐다. `model/identity.rs` 의 주석이 그 함정을 적어 뒀다 —
+        // *"dimensions, clock time and wrapping hashes cannot establish uniqueness"*.
+        //
+        // 이 함수는 HTML 하나에 표가 여러 개면 **반복 호출**되고, 만든 표는 아직
+        // `self.document` 에 들어가지 않은 `paragraphs` 에 쌓인다. 그래서 문서의 사용
+        // 집합에 이번 붙여넣기 분(`paragraph_ids`)까지 더해 예약한다.
         let instance_id: u32 = {
-            // 행/열 수, 셀 수, 총 폭/높이를 조합한 간단한 해시
-            let mut h: u32 = 0x7c150000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-            h ^= cells.len() as u32 * 0x4b69;
-            if h == 0 {
-                h = 0x7c154b69;
-            } // 절대 0이 되지 않도록
-            h
+            let mut used = crate::model::identity::used_instance_ids(&self.document);
+            used.extend(crate::model::identity::paragraph_ids(paragraphs));
+            crate::model::identity::Allocator { used, next: 1 }
+                .id()
+                .unwrap_or(0)
         };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
         // [36..38] desc_len = 0
@@ -600,7 +609,23 @@ impl DocumentCore {
             page_break: TablePageBreak::None,
             repeat_header: has_header_row,
             caption: None,
-            common: Default::default(),
+            // raw attr(0x082A2311)엔 '글자처럼 취급·문단 기준'이 들어 있지만 렌더러·HWPX
+            // 내보내기는 파싱된 `common` 을 읽는다. Default(treat_as_char=false, PAPER 기준 0,0)로 두면
+            // 붙여넣은 표가 전부 종이 좌상단에 겹쳐 놓인다(실측). 편집기 표 삽입(object_ops/table.rs)과 동일값.
+            common: crate::model::shape::CommonObjAttr {
+                treat_as_char: true,
+                text_wrap: crate::model::shape::TextWrap::TopAndBottom,
+                vert_rel_to: crate::model::shape::VertRelTo::Page,
+                horz_rel_to: crate::model::shape::HorzRelTo::Para,
+                vert_align: crate::model::shape::VertAlign::Top,
+                horz_align: crate::model::shape::HorzAlign::Left,
+                width: total_width,
+                height: total_height,
+                // [#7231] IR 과 raw 가 같은 값을 갖는다 — HWPX 저장기는 이 필드를,
+                // HWP5 쪽은 `raw_ctrl_data` 를 읽는다.
+                instance_id,
+                ..Default::default()
+            },
             outer_margin_left: outer_margin,
             outer_margin_right: outer_margin,
             outer_margin_top: outer_margin,
@@ -609,12 +634,6 @@ impl DocumentCore {
             raw_ctrl_seal: None,
             raw_table_record_attr: tbl_rec_attr,
             raw_table_record_extra: vec![0u8; 2], // 표준 추가 2바이트
-            dirty: true,
-            text_reflowed_after_edit: false,
-            local_resize_rows: Vec::new(),
-            local_resize_cols: Vec::new(),
-            local_resize_cell_widths: Vec::new(),
-            local_resize_cell_heights: Vec::new(),
         };
         table.rebuild_grid();
 
@@ -914,22 +933,7 @@ impl DocumentCore {
     /// <img> 태그를 파싱하여 이미지 데이터를 문서에 추가한다.
     /// (base64 data URI만 지원)
     pub(crate) fn parse_img_html(&mut self, paragraphs: &mut Vec<Paragraph>, img_tag: &str) {
-        // src="data:image/...;base64,..." 추출
-        let src = if let Some(src_start) = img_tag.find("src=\"") {
-            let after = &img_tag[src_start + 5..];
-            if let Some(end) = after.find('"') {
-                &after[..end]
-            } else {
-                return;
-            }
-        } else if let Some(src_start) = img_tag.find("src='") {
-            let after = &img_tag[src_start + 5..];
-            if let Some(end) = after.find('\'') {
-                &after[..end]
-            } else {
-                return;
-            }
-        } else {
+        let Some(src) = html_img_src(img_tag) else {
             return;
         };
 
@@ -952,41 +956,84 @@ impl DocumentCore {
             return;
         }
 
-        // data:image/png;base64,XXXXX 파싱
-        let after_data = &src[5..]; // "image/png;base64,XXXXX"
-        let base64_start = if let Some(comma) = after_data.find(',') {
-            comma + 1
-        } else {
+        let Some(pic) = self.html_data_img_picture(img_tag, src) else {
             return;
         };
-        let base64_str = &after_data[base64_start..];
+        let (w_hu, h_hu) = (pic.common.width, pic.common.height);
+
+        // 종전에는 본문 텍스트를 "[이미지]" 로 두고 Picture 컨트롤만 붙여
+        // 저장·렌더 어느 쪽도 그림을 보지 못했다(HWPX 에 <hp:pic> 없음, 화면엔 글자 "[이미지]").
+        // 표 문단(parse_table_html)과 같은 규약으로 만든다 —
+        // 본문 없음 + 확장 제어문자 자리(char_count 9) + control_mask bit11 + 글자처럼 취급(인라인).
+        let mut para = Paragraph::default();
+        // 그림이 든 문단의 정렬(가운데 등)은 <img> 로 옮겨 실어 온다 —
+        // 스튜디오가 문단 밖으로 올리면서 style 을 복사한다. 없으면 기본 문단서식.
+        let img_style = extract_html_attr(img_tag, "style").unwrap_or_default();
+        para.para_shape_id = if img_style.is_empty() {
+            0
+        } else {
+            self.css_to_para_shape_id(&img_style)
+        };
+        para.text = String::new();
+        para.char_count = 9; // 확장 제어문자(8 code units) + 문단끝(1)
+        para.control_mask = 0x00000800;
+        para.char_offsets = vec![];
+        para.has_para_text = true;
+        if self.document.doc_info.char_shapes.is_empty() {
+            self.document
+                .doc_info
+                .char_shapes
+                .push(crate::model::style::CharShape::default());
+        }
+        para.char_shapes = vec![crate::model::paragraph::CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        para.line_segs = vec![crate::model::paragraph::LineSeg {
+            text_start: 0,
+            line_height: h_hu.min(i32::MAX as u32) as i32,
+            text_height: h_hu.min(i32::MAX as u32) as i32,
+            baseline_distance: (h_hu as f64 * 0.85).min(i32::MAX as f64) as i32,
+            line_spacing: 600,
+            segment_width: w_hu.min(i32::MAX as u32) as i32,
+            tag: crate::model::paragraph::LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        }];
+        para.controls.push(Control::Picture(Box::new(pic)));
+        para.ctrl_data_records = vec![None];
+
+        paragraphs.push(para);
+    }
+
+    /// `data:` URI `<img>` 를 글자처럼 취급하는 그림 컨트롤로 만든다.
+    /// 그림 데이터는 문서에 등록한다. 디코드할 수 없으면 None.
+    pub(crate) fn html_data_img_picture(
+        &mut self,
+        img_tag: &str,
+        src: &str,
+    ) -> Option<crate::model::image::Picture> {
+        // data:image/png;base64,XXXXX 파싱
+        let after_data = src.strip_prefix("data:")?; // "image/png;base64,XXXXX"
+        let base64_str = &after_data[after_data.find(',')? + 1..];
 
         use base64::Engine;
-        let decoded = match base64::engine::general_purpose::STANDARD.decode(base64_str) {
-            Ok(d) => d,
-            Err(_) => return,
-        };
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(base64_str)
+            .ok()?;
 
         if decoded.is_empty() {
-            return;
+            return None;
         }
 
-        // BinData로 등록 — bin_data_id(위치)와 storage id 분리 채번
-        // (insert_picture_native 와 동일 규칙, 기존 storage id 충돌 방지)
-        let new_bin_id = (self.document.bin_data_content.len() + 1) as u16;
-        let storage_id = self.document.next_bin_data_storage_id();
+        // 종전에는 bin_data_content 에만 넣어 DocInfo BinData 레코드가 없었다 —
+        // HWPX 로는 나가지만 HWP(5.0) 저장에서 그림이 통째로 사라졌다(클라우드 '웹 저장' 실측).
+        // 그림 삽입 경로와 같은 register_embedded_bin_data 로 등록해 두 형식 모두에서 살아남게 한다.
         let extension = detect_clipboard_image_mime(&decoded)
             .split('/')
             .nth(1)
             .unwrap_or("png")
             .to_string();
-        self.document
-            .bin_data_content
-            .push(crate::model::bin_data::BinDataContent {
-                id: storage_id,
-                data: crate::model::bin_data::BinDataBytes::from_shared(decoded),
-                extension,
-            });
+        let new_bin_id = self.register_embedded_bin_data(&decoded, &extension);
 
         // width/height 추출
         let width = parse_html_attr_f64(img_tag, "width").unwrap_or(200.0);
@@ -996,32 +1043,111 @@ impl DocumentCore {
         let w_hu = crate::renderer::px_to_hwpunit(width, self.dpi) as u32;
         let h_hu = crate::renderer::px_to_hwpunit(height, self.dpi) as u32;
 
-        // Picture Control 생성 (placeholder로 텍스트 표현)
-        let mut para = Paragraph::default();
-        para.text = "[이미지]".to_string();
-        // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
-        para.char_count = para.text.encode_utf16().count() as u32 + 1;
-        para.char_offsets = para
-            .text
-            .chars()
-            .scan(0u32, |acc, c| {
-                let off = *acc;
-                *acc += c.len_utf16() as u32;
-                Some(off)
-            })
-            .collect();
-
-        // Picture 컨트롤 생성
+        // Picture 컨트롤 — insert_picture_native 와 같은 절대 크기 기준, 인라인(글자처럼 취급).
         let mut pic = crate::model::image::Picture::default();
         pic.image_attr.bin_data_id = new_bin_id;
+        pic.common.ctrl_id = 0x67736F20; // 'gso '
+        pic.common.attr = 0x01 | (4 << 15) | (2 << 18); // treat_as_char + 폭·높이 절대값
+        pic.common.treat_as_char = true;
+        pic.common.text_wrap = crate::model::shape::TextWrap::TopAndBottom;
         pic.common.width = w_hu;
         pic.common.height = h_hu;
         pic.common.vertical_offset = 0;
         pic.common.horizontal_offset = 0;
-        para.controls.push(Control::Picture(Box::new(pic)));
-
-        paragraphs.push(para);
+        pic.common.z_order = 1;
+        // 한글이 내보낸 문서와 같은 배치 기준(문단 기준·글자처럼 취급·본문 흐름 따라감).
+        pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
+        pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
+        pic.common.flow_with_text = true;
+        pic.shape_attr = crate::model::shape::ShapeComponentAttr {
+            original_width: w_hu,
+            original_height: h_hu,
+            current_width: w_hu,
+            current_height: h_hu,
+            local_file_version: 1,
+            render_sx: 1.0,
+            render_sy: 1.0,
+            ..Default::default()
+        };
+        pic.border_x = [0i32, 0, w_hu as i32, 0];
+        pic.border_y = [w_hu as i32, h_hu as i32, 0, h_hu as i32];
+        // crop 은 **원본 픽셀 좌표계**(px × 75)다. 종전에는 표시 크기(HWPUNIT)를
+        // 넣어 큰 그림이 왼쪽 위 일부만 남고 잘렸다("그림이 반쪽" 신고). insert_picture_native 와 같은 규약.
+        let (nat_w, nat_h) =
+            image_pixel_size(&decoded).unwrap_or((width.max(1.0) as u32, height.max(1.0) as u32));
+        pic.crop = crate::model::image::CropInfo {
+            left: 0,
+            top: 0,
+            right: (nat_w * 75) as i32,
+            bottom: (nat_h * 75) as i32,
+        };
+        // img_dim 은 crop 과 같은 좌표계(px × 75)다 — 픽셀값을 그대로 넣으면 HWPX 직렬화기가
+        // imgClip 보다 작은 imgDim 을 보고 그림을 버린다(실측: <hp:pic> 자체가 사라졌다).
+        pic.img_dim = (nat_w * 75, nat_h * 75);
+        Some(pic)
     }
+}
+
+/// `<img>` 태그의 src 값(따옴표 양쪽 지원).
+pub(crate) fn html_img_src(img_tag: &str) -> Option<&str> {
+    ['"', '\''].into_iter().find_map(|quote| {
+        let after = &img_tag[img_tag.find(&format!("src={quote}"))? + 5..];
+        Some(&after[..after.find(quote)?])
+    })
+}
+
+/// 태그에서 속성 문자열을 그대로 뽑는다(따옴표 양쪽 지원).
+pub(crate) fn extract_html_attr(tag: &str, attr: &str) -> Option<String> {
+    let lower = tag.to_lowercase();
+    for quote in ['"', '\''] {
+        let needle = format!("{}={}", attr, quote);
+        if let Some(start) = lower.find(&needle) {
+            let after = &tag[start + needle.len()..];
+            if let Some(end) = after.find(quote) {
+                return Some(after[..end].to_string());
+            }
+        }
+    }
+    None
+}
+
+/// PNG·JPEG·BMP·GIF 헤더에서 원본 픽셀 크기를 읽는다.
+/// 그림 `crop`·`img_dim` 은 **원본 픽셀 좌표계**라서 표시 크기로 채우면 그림이 잘린다.
+pub(crate) fn image_pixel_size(data: &[u8]) -> Option<(u32, u32)> {
+    if data.len() > 24 && data[..8] == [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a] {
+        let w = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
+        let h = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
+        return Some((w, h));
+    }
+    if data.len() > 26 && data[0] == b'B' && data[1] == b'M' {
+        let w = i32::from_le_bytes([data[18], data[19], data[20], data[21]]).unsigned_abs();
+        let h = i32::from_le_bytes([data[22], data[23], data[24], data[25]]).unsigned_abs();
+        return Some((w, h));
+    }
+    if data.len() > 10 && &data[..3] == b"GIF" {
+        let w = u16::from_le_bytes([data[6], data[7]]) as u32;
+        let h = u16::from_le_bytes([data[8], data[9]]) as u32;
+        return Some((w, h));
+    }
+    if data.len() > 4 && data[0] == 0xFF && data[1] == 0xD8 {
+        let mut i = 2usize;
+        while i + 9 < data.len() {
+            if data[i] != 0xFF {
+                i += 1;
+                continue;
+            }
+            let marker = data[i + 1];
+            let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
+            if (0xC0..=0xCF).contains(&marker) && marker != 0xC4 && marker != 0xC8 && marker != 0xCC
+            {
+                let h = u16::from_be_bytes([data[i + 5], data[i + 6]]) as u32;
+                let w = u16::from_be_bytes([data[i + 7], data[i + 8]]) as u32;
+                return Some((w, h));
+            }
+            i += 2 + len;
+        }
+    }
+    None
 }
 
 /// #4413: clipboard export가 셀 안 중첩 표를 `<table>`로 내보내도, import 쪽이 셀

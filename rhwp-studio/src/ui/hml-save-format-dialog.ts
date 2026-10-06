@@ -3,6 +3,7 @@ import type { HmlOpenMetadata } from '../core/wasm-bridge';
 import { resolveHmlSaveCapability } from '../core/hml-save-capability';
 import { buildHmlSaveFormatMessage } from './hml-save-format-message';
 
+import { t } from '../i18n/index.ts';
 export type HmlSaveFormatChoice = 'hml' | 'hwp' | 'hwpx' | null;
 
 class HmlSaveFormatDialog extends ModalDialog {
@@ -14,7 +15,7 @@ class HmlSaveFormatDialog extends ModalDialog {
     metadata: HmlOpenMetadata | null,
     exporterAvailable: boolean,
   ) {
-    super('HML 문서 저장', 440);
+    super(t('dialog.hmlSaveFormat.title'), 440);
     const capability = resolveHmlSaveCapability(metadata, exporterAvailable);
     this.hmlEnabled = capability.hmlEnabled;
     this.message = buildHmlSaveFormatMessage(metadata, exporterAvailable);
@@ -72,13 +73,13 @@ class HmlSaveFormatDialog extends ModalDialog {
       };
 
       if (this.hmlEnabled) {
-        if (primaryButton) primaryButton.textContent = 'HML로 저장';
-        addFormatButton('HWP로 저장', 'hwp');
+        if (primaryButton) primaryButton.textContent = t('dialog.hmlSaveFormat.primaryButton.text');
+        addFormatButton(t('dialog.hmlSaveFormat.addFormatButton.label'), 'hwp');
       } else {
-        if (primaryButton) primaryButton.textContent = 'HWP로 저장';
-        addFormatButton('HML로 저장 (저장 불가)', null, true);
+        if (primaryButton) primaryButton.textContent = t('dialog.hmlSaveFormat.primaryButton.text.xa0b100');
+        addFormatButton(t('dialog.hmlSaveFormat.addFormatButton.label.xbb83b2'), null, true);
       }
-      addFormatButton('HWPX로 저장', 'hwpx');
+      addFormatButton(t('dialog.hmlSaveFormat.addFormatButton.label.x36ad05'), 'hwpx');
     });
   }
 }

@@ -6,6 +6,12 @@
 /// 문서 변경 이벤트
 #[derive(Debug, Clone)]
 pub enum DocumentEvent {
+    /// Atomic fixed-form fill; paragraph indices are section-local owning roots.
+    TemplateFilled {
+        section: usize,
+        paragraphs: Vec<usize>,
+        targets: usize,
+    },
     // ── 텍스트 편집 ──
     TextInserted {
         section: usize,
@@ -53,6 +59,14 @@ pub enum DocumentEvent {
         para: usize,
     },
 
+    /// 텍스트를 보존한 하이퍼링크 메타데이터 변경.
+    HyperlinkChanged {
+        section: usize,
+        para: usize,
+        cell_path: Vec<(usize, usize, usize)>,
+        field_id: u32,
+    },
+
     // ── 서식 변경 ──
     CharFormatChanged {
         section: usize,
@@ -66,6 +80,13 @@ pub enum DocumentEvent {
     },
 
     // ── 표 구조 ──
+    /// 셀 또는 글상자의 경로로 지정한 내부 표를 삭제했다.
+    CellTableDeleted {
+        section: usize,
+        para: usize,
+        cell_path: Vec<(usize, usize, usize)>,
+        ctrl: usize,
+    },
     TableRowInserted {
         section: usize,
         para: usize,
@@ -159,6 +180,22 @@ impl DocumentEvent {
     /// 이벤트를 JSON 객체 문자열로 직렬화한다.
     pub fn to_json(&self) -> String {
         match self {
+            DocumentEvent::HyperlinkChanged {
+                section,
+                para,
+                cell_path,
+                field_id,
+            } => serde_json::json!({ "type": "HyperlinkChanged", "section": section,
+                    "para": para, "cellPath": cell_path, "fieldId": field_id })
+            .to_string(),
+            DocumentEvent::TemplateFilled {
+                section,
+                paragraphs,
+                targets,
+            } => format!(
+                r#"{{"type":"TemplateFilled","section":{},"paragraphs":{:?},"targets":{}}}"#,
+                section, paragraphs, targets
+            ),
             // 텍스트 편집
             DocumentEvent::TextInserted {
                 section,
@@ -237,6 +274,25 @@ impl DocumentEvent {
             ),
 
             // 표 구조
+            DocumentEvent::CellTableDeleted {
+                section,
+                para,
+                cell_path,
+                ctrl,
+            } => serde_json::json!({
+                "type": "CellTableDeleted",
+                "section": section,
+                "para": para,
+                "cellPath": cell_path.iter().map(|&(control, cell, paragraph)| {
+                    serde_json::json!({
+                        "controlIndex": control,
+                        "cellIndex": cell,
+                        "cellParaIndex": paragraph,
+                    })
+                }).collect::<Vec<_>>(),
+                "innerControlIndex": ctrl,
+            })
+            .to_string(),
             DocumentEvent::TableRowInserted {
                 section,
                 para,

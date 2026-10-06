@@ -1,0 +1,11 @@
+{
+  "manual": {
+    "equalPageTrees": 313,
+    "totalPages": 384
+  },
+  "reflowHcr": {
+    "equalPageTrees": 65,
+    "totalPages": 65
+  },
+  "comparison": "Parsed render-tree JSON exact equality; not a PDF fidelity verdict"
+}

@@ -671,7 +671,7 @@ fn data_comes_from_the_file_not_stdin() {
 }
 
 #[test]
-fn verify_verdict_is_data_and_drives_exit_3() {
+fn verify_accepts_a_roundtripped_field_fill() {
     let names = unique_field_names();
     let tmp = TmpDir::new("verify");
     let data = tmp.join("rows.jsonl");
@@ -694,17 +694,14 @@ fn verify_verdict_is_data_and_drives_exit_3() {
     let output = run(&args);
     let records = ndjson(&args, &output);
     assert_eq!(records.len(), 1, "{}", describe(&args, &output));
-    let identical = records[0]["verify"]["identical"]
-        .as_bool()
-        .unwrap_or_else(|| panic!("--verify 판정이 데이터로 오지 않았습니다: {}", records[0]));
-    // 판정은 실패가 아니다 — 저장은 됐고 산출물도 있다. 3 은 "검토 대상", 1 은 "재실행 대상".
-    let expected = if identical { 0 } else { 3 };
     assert_eq!(
         output.status.code(),
-        Some(expected),
-        "verify 판정과 종료 코드가 어긋났습니다\n{}",
+        Some(0),
+        "정상 필드 채움의 저장 왕복이 검증에 실패했습니다\n{}",
         describe(&args, &output)
     );
+    assert_eq!(records[0]["verify"]["identical"], true, "{}", records[0]);
+    assert_eq!(records[0]["verify"]["diffCount"], 0, "{}", records[0]);
     assert!(
         Path::new(records[0]["output"].as_str().expect("output")).is_file(),
         "검증 판정과 무관하게 산출물은 남아야 합니다: {}",

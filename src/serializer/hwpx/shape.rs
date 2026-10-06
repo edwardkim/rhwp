@@ -1010,8 +1010,13 @@ pub(crate) fn write_fill_brush<W: Write>(
             match ctx.resolve_bin_id(img.bin_data_id) {
                 Some(manifest_id) => {
                     start_tag_attrs(w, "hc:imgBrush", &[("mode", mode)])?;
-                    let bright = img.brightness.to_string();
-                    let contrast = img.contrast.to_string();
+                    // [#6895] `ImageFill` 은 이진 HWP5 저장 순서를 담으므로 HWPX 속성명으로
+                    // 나갈 때 되돌린다. 종전엔 그대로 써서 **HWPX 를 열어 저장할 때마다 두
+                    // 값이 뒤바뀌었다**(두 번 저장하면 원상 복귀). 한/글은 같은 문서에서
+                    // bright/contrast 를 보존한다.
+                    let (display_bright, display_contrast) = img.display_brightness_contrast();
+                    let bright = display_bright.to_string();
+                    let contrast = display_contrast.to_string();
                     let effect = match img.effect {
                         1 => "GRAY_SCALE",
                         2 => "BLACK_WHITE",

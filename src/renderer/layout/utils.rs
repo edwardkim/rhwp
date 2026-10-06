@@ -137,6 +137,32 @@ pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
     }
 }
 
+/// [#7193] 그림 안쪽 여백을 개체 틀(`common`) 크기에 대한 비율로 돌려준다.
+///
+/// 한/글은 틀(`hp:sz`) 안에서 안쪽 여백(`hp:inMargin`)을 뺀 자리에 그림을 그린다 —
+/// 틀은 `curSz + inMargin` 이다(코퍼스 HWPX 에서 여백 있는 그림 6/6 이 이 관계). 틀은
+/// 흐름·선택의 기준이므로 바꾸지 않고, 비율로 넘겨 페인터가 실제 bbox 에 적용한다.
+///
+/// 적용하지 않는 경우(`None`): 여백이 모두 0, 틀 크기가 없음(묶음 자식 등), 회전 그림
+/// (틀이 회전 후 외접 사각형이라 축이 맞지 않는다), 여백이 틀을 다 덮는 손상 값.
+pub(crate) fn picture_content_inset(picture: &Picture) -> Option<[f64; 4]> {
+    let p = &picture.padding;
+    if p.left == 0 && p.right == 0 && p.top == 0 && p.bottom == 0 {
+        return None;
+    }
+    let (w, h) = (picture.common.width as f64, picture.common.height as f64);
+    if w <= 0.0 || h <= 0.0 || picture.shape_attr.rotation_angle.rem_euclid(360) != 0 {
+        return None;
+    }
+    let inset = [
+        f64::from(p.left.max(0)) / w,
+        f64::from(p.top.max(0)) / h,
+        f64::from(p.right.max(0)) / w,
+        f64::from(p.bottom.max(0)) / h,
+    ];
+    (inset[0] + inset[2] < 1.0 && inset[1] + inset[3] < 1.0).then_some(inset)
+}
+
 /// 문단의 실효 numbering_id를 반환한다.
 /// Outline 문단이고 para_style.numbering_id==0이면 구역의 outline_numbering_id로 fallback.
 pub fn resolve_numbering_id(
@@ -231,7 +257,7 @@ pub(crate) fn expand_numbering_format(
     result
 }
 
-/// HWP 표 43 번호 형식 코드 → NumberFormat 변환
+/// HWP 표 41 번호 형식 코드 → NumberFormat 변환
 pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
     match code {
         0 => NumFmt::Digit,         // 1, 2, 3
@@ -241,6 +267,7 @@ pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
         4 => NumFmt::LatinUpper,    // A, B, C
         5 => NumFmt::LatinLower,    // a, b, c
         8 => NumFmt::HangulGaNaDa,  // 가, 나, 다
+        10 => NumFmt::HangulJamo,   // ㄱ, ㄴ, ㄷ
         12 => NumFmt::HangulNumber, // 일, 이, 삼
         13 => NumFmt::HanjaNumber,  // 一, 二, 三
         _ => NumFmt::Digit,
@@ -322,12 +349,15 @@ pub(crate) fn drawing_to_shape_style(
             } else {
                 g.positions.iter().map(|&p| p as f64 / 100.0).collect()
             };
+            // [#6822] `step`(띠 개수)·`step_center`(전이 위치)를 stop 으로 편다.
+            let (colors, positions) =
+                super::super::expand_gradient_steps(&g.colors, &positions, g.blur, g.step_center);
             Box::new(GradientFillInfo {
                 gradient_type: g.gradient_type,
                 angle: g.angle,
                 center_x: g.center_x,
                 center_y: g.center_y,
-                colors: g.colors.clone(),
+                colors,
                 positions,
             })
         }),

@@ -152,8 +152,13 @@ impl CanvasRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                let eff_bbox = img.transform.effective_image_bbox(&node.bbox);
+                let eff_bbox = img
+                    .transform
+                    .effective_image_bbox(&img.paint_bbox(&node.bbox));
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 if let Some(ref data) = img.data {
                     self.draw_image(
@@ -207,13 +212,25 @@ impl CanvasRenderer {
                                 ));
                             }
                         }
-                        PaintOp::TextRun { bbox, run } => {
+                        PaintOp::TextRun { bbox, run, .. } => {
                             self.draw_text_positioned(
                                 run.display_or_text(),
                                 bbox.x,
                                 bbox.y + bbox.height,
                                 &run.style,
                                 run.validated_layout_positions_for(run.display_or_text()),
+                            );
+                        }
+                        PaintOp::ControlLabel { bbox, label } => {
+                            self.draw_text(
+                                label,
+                                bbox.x,
+                                bbox.y + 10.0,
+                                &TextStyle {
+                                    font_size: 10.0,
+                                    color: 0x003333CC,
+                                    ..Default::default()
+                                },
                             );
                         }
                         PaintOp::Rectangle { bbox, rect } => {
@@ -252,7 +269,9 @@ impl CanvasRenderer {
                             resolved,
                         } => {
                             // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                            let eff_bbox = image.transform.effective_image_bbox(bbox);
+                            let eff_bbox = image
+                                .transform
+                                .effective_image_bbox(&image.paint_bbox(bbox));
                             self.open_shape_transform(&image.transform, &eff_bbox);
                             let data = resolved
                                 .as_deref()
@@ -740,6 +759,8 @@ mod tests {
                 form_type: FormType::PushButton,
                 caption: "OK".to_string(),
                 text: String::new(),
+                display_text: None,
+                appearance: Default::default(),
                 fore_color: "#000000".to_string(),
                 back_color: "#ffffff".to_string(),
                 value: 0,

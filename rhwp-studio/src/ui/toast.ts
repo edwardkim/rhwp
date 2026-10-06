@@ -7,6 +7,7 @@
  * - 일반 재사용 가능 — 다른 안내에도 활용 가능
  */
 
+import { t } from '../i18n/index.ts';
 const CONTAINER_ID = 'rhwp-toast-container';
 const DEFAULT_DURATION_MS = 8000;
 const SLIDE_DURATION_MS = 200;
@@ -123,7 +124,7 @@ export function showToast(options: ToastOptions): void {
   } else {
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', '닫기');
+    closeBtn.setAttribute('aria-label', t('dialog.toast.ensureContainer.label'));
     closeBtn.textContent = '×';
     closeBtn.style.background = 'transparent';
     closeBtn.style.color = '#94a3b8';

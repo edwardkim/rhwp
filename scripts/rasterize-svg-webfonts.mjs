@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { basename, delimiter, dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { spawn } from 'node:child_process';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(SCRIPT_DIR, '..');
@@ -13,6 +13,42 @@ const TERMINAL_FALLBACK_FAMILY = '__rhwp_visual_sweep_noto_sans_kr__';
 
 function cssString(value) {
   return `"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
+}
+
+function fontFaceFamily(rule) {
+  const value = rule.match(/(?:^|[;{])\s*font-family\s*:\s*([^;}]+)/iu)?.[1]?.trim();
+  if (!value) return null;
+  return value.replace(/^(['"])(.*)\1$/u, '$2').toLocaleLowerCase('en-US');
+}
+
+// Embedded full fonts can make a single @font-face rule tens of megabytes long.
+// V8's regexp iterator over that rule can exhaust its stack before Chrome runs.
+function fontFaceRanges(source) {
+  const ranges = [];
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf('@', offset);
+    if (start < 0) break;
+    const opening = source.slice(start, start + 64).match(/^@font-face\s*\{/iu);
+    if (!opening) {
+      offset = start + 1;
+      continue;
+    }
+    const close = source.indexOf('}', start + opening[0].length);
+    if (close < 0) break;
+    ranges.push([start, close + 1]);
+    offset = close + 1;
+  }
+  return ranges;
+}
+
+function declaredFontFaceFamilies(source) {
+  return new Set(fontFaceRanges(source)
+    .map(([start, end]) => (
+      fontFaceFamily(source.slice(start, Math.min(end, start + 4096)))
+      ?? fontFaceFamily(source.slice(Math.max(start, end - 4096), end))
+    ))
+    .filter(family => family !== null));
 }
 
 export function parseWebfontRules(source) {
@@ -37,10 +73,12 @@ export function parseWebfontRules(source) {
 
 export function selectWebfontRules(svgSource, rules) {
   const lowerSource = svgSource.toLocaleLowerCase('en-US');
+  const declaredFamilies = declaredFontFaceFamilies(svgSource);
   const selected = new Map();
   for (const rule of rules) {
     const sourceFace = rule.sourceFace.toLocaleLowerCase('en-US');
-    if (lowerSource.includes(sourceFace)) {
+    if (lowerSource.includes(sourceFace)
+      && !declaredFamilies.has(rule.supply.fontFamily.toLocaleLowerCase('en-US'))) {
       selected.set(`${rule.supply.fontFamily}\u0000${rule.supply.sourceUrl}`, rule);
     }
   }
@@ -68,22 +106,40 @@ export function buildWebfontCss(root, selectedRules) {
 
 function appendTerminalFallback(fontList) {
   if (fontList.includes(TERMINAL_FALLBACK_FAMILY)) return fontList;
-  return `${fontList.trim()}, ${cssString(TERMINAL_FALLBACK_FAMILY)}`;
+  // This identifier needs no CSS quotes, which would break quoted SVG attributes.
+  return `${fontList.trim()}, ${TERMINAL_FALLBACK_FAMILY}`;
 }
 
 export function prepareSvgForWebfontRaster(svgSource, webfontCss) {
-  const withoutLocalFaces = svgSource.replace(/@font-face\s*\{[^{}]*\}/giu, '');
-  const withAttributeFallback = withoutLocalFaces.replace(
+  // [#6891] export-svg --font-style owns local aliases and legacy-face safety
+  // ordering. Webfont supply must supplement, not discard or shadow, that policy.
+  const declaredFamilies = declaredFontFaceFamilies(svgSource);
+  const supplementalCss = webfontCss.replace(
+    /@font-face\s*\{[^{}]*\}/giu,
+    rule => declaredFamilies.has(fontFaceFamily(rule)) ? '' : rule,
+  );
+  const withAttributeFallback = svgSource.replace(
     /font-family=(['"])(.*?)\1/giu,
     (_match, quote, fontList) => `font-family=${quote}${appendTerminalFallback(fontList)}${quote}`,
   );
-  const withCssFallback = withAttributeFallback.replace(
+  // Leave embedded @font-face blocks byte-for-byte intact. A regexp that spans
+  // their data URLs overflows the JS stack on full HCR/Haansoft font exports.
+  const cssFallback = part => part.replace(
     /(font-family\s*:\s*)([^;}]+)/giu,
     (_match, prefix, fontList) => `${prefix}${appendTerminalFallback(fontList)}`,
   );
+  const chunks = [];
+  let cursor = 0;
+  for (const [start, end] of fontFaceRanges(withAttributeFallback)) {
+    chunks.push(cssFallback(withAttributeFallback.slice(cursor, start)));
+    chunks.push(withAttributeFallback.slice(start, end));
+    cursor = end;
+  }
+  chunks.push(cssFallback(withAttributeFallback.slice(cursor)));
+  const withCssFallback = chunks.join('');
   return withCssFallback.replace(
     /<svg\b[^>]*>/iu,
-    match => `${match}<style>${webfontCss}</style>`,
+    match => `${match}<style>${supplementalCss}</style>`,
   );
 }
 
@@ -102,9 +158,8 @@ function optionValue(args, name) {
   return index === -1 ? undefined : args[index + 1];
 }
 
-function findChrome(configured) {
-  if (configured) return configured;
-  const candidates = [
+export function findChrome(configured) {
+  const candidates = configured ? [configured] : [
     process.env.VISUAL_SWEEP_CHROME,
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
@@ -114,66 +169,133 @@ function findChrome(configured) {
     'chromium-browser',
   ].filter(Boolean);
   for (const candidate of candidates) {
-    if (!candidate.includes('/') || existsSync(candidate)) return candidate;
+    if (existsSync(candidate)) return resolve(candidate);
+    for (const directory of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
+      const executable = resolve(directory, candidate);
+      if (existsSync(executable)) return executable;
+      if (process.platform === 'win32' && existsSync(`${executable}.exe`)) return `${executable}.exe`;
+    }
   }
   throw new Error('Chrome/Chromium을 찾지 못했습니다. VISUAL_SWEEP_CHROME으로 실행 경로를 지정하세요.');
 }
 
-async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
-  const args = [
-    '--headless=new',
-    '--disable-gpu',
-    '--hide-scrollbars',
-    '--no-first-run',
-    '--no-default-browser-check',
-    '--allow-file-access-from-files',
-    `--user-data-dir=${profileDir}`,
-    '--virtual-time-budget=10000',
-    `--force-device-scale-factor=${zoom}`,
-    `--window-size=${Math.ceil(viewport.width)},${Math.ceil(viewport.height)}`,
-    `--screenshot=${outputPath}`,
-    pathToFileURL(htmlPath).href,
-  ];
-  await new Promise((resolvePromise, reject) => {
-    const child = spawn(chrome, args, { stdio: ['ignore', 'ignore', 'pipe'] });
-    let stderr = '';
-    let completed = false;
-    let screenshotReady = false;
-    let killTimer;
-    const finish = error => {
-      if (completed) return;
-      completed = true;
-      clearInterval(poll);
-      clearTimeout(timeout);
-      clearTimeout(killTimer);
-      if (error) reject(error);
-      else resolvePromise();
+export async function recoverUnavailableLocalBoldFaces(page) {
+  return page.evaluate(async () => {
+    const familyKey = value => value.trim().replace(/^(['"])(.*)\1$/u, '$2').toLowerCase();
+    const weightValue = value => {
+      if (value === 'normal' || value === '') return 400;
+      if (value === 'bold') return 700;
+      return /^\d+$/u.test(value) ? Number(value) : null;
     };
-    const terminate = () => {
-      if (child.killed) return;
-      child.kill('SIGTERM');
-      killTimer = setTimeout(() => child.kill('SIGKILL'), 2000);
-    };
-    const poll = setInterval(() => {
-      if (existsSync(outputPath) && statSync(outputPath).size > 0) {
-        screenshotReady = true;
-        terminate();
+    const faces = [...document.fonts];
+    const recovered = [];
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try {
+        rules = [...sheet.cssRules];
+      } catch {
+        // Cross-origin sheets are not owned by this SVG capture.
+        continue;
       }
-    }, 100);
-    const timeout = setTimeout(() => {
-      terminate();
-      finish(new Error(`Chrome webfont raster timeout: ${stderr.trim()}`));
-    }, 30000);
-    child.stderr.on('data', chunk => { stderr += chunk; });
-    child.on('error', error => finish(error));
-    child.on('close', code => {
-      if (screenshotReady && existsSync(outputPath) && statSync(outputPath).size > 0) {
-        finish();
-      } else if (!completed) {
-        finish(new Error(`Chrome webfont raster failed (exit=${code}): ${stderr.trim()}`));
+      for (const rule of rules) {
+        if (rule.type !== CSSRule.FONT_FACE_RULE) continue;
+        const source = rule.style.getPropertyValue('src').trim();
+        const remainder = source.replace(
+          /local\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^)]*)\s*\)/giu,
+          '',
+        ).replace(/[\s,]/gu, '');
+        // Never remove embedded/web font rules or change an available real bold face.
+        if (!source || remainder !== '') continue;
+        const family = familyKey(rule.style.getPropertyValue('font-family'));
+        const weight = weightValue(rule.style.getPropertyValue('font-weight').trim());
+        if (weight === null || weight < 600) continue;
+        const style = rule.style.getPropertyValue('font-style').trim() || 'normal';
+        const stretch = rule.style.getPropertyValue('font-stretch').trim() || 'normal';
+        const failed = faces.find(face => (
+          familyKey(face.family) === family
+          && weightValue(face.weight) === weight
+          && face.style === style
+          && face.stretch === stretch
+          && face.status === 'error'
+        ));
+        if (!failed) continue;
+        let regular;
+        for (const face of faces) {
+          if (familyKey(face.family) !== family || weightValue(face.weight) !== 400
+            || face.style !== failed.style || face.stretch !== failed.stretch
+            || face.unicodeRange !== failed.unicodeRange) continue;
+          try {
+            await face.load();
+            regular = face;
+            break;
+          } catch {
+            // Keep searching; failure alone must not discard the bold declaration.
+          }
+        }
+        if (!regular) continue;
+        // A failed explicit bold face can send Blink to LastResort instead of the
+        // safe regular alias. Removing only that rule permits synthetic bold from
+        // the loaded regular face without rewriting the SVG's text or geometry.
+        const index = [...sheet.cssRules].indexOf(rule);
+        if (index < 0) continue;
+        sheet.deleteRule(index);
+        recovered.push({ family, weight, fallback: 'synthetic-bold-from-loaded-regular' });
       }
-    });
+    }
+    if (recovered.length > 0) {
+      // Flush style invalidation before waiting for the replacement font selection.
+      document.documentElement.getBoundingClientRect();
+      await document.fonts.ready;
+    }
+    return recovered;
   });
+}
+
+async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
+  // 전체 글꼴을 포함한 대형 SVG는 로딩 시간이 기본 30초를 넘을 수 있다.
+  // 대기 한도만 조절하며 글꼴·좌표·캡처 완료 조건은 그대로 유지한다.
+  const timeoutMs = Number(process.env.RHWP_VISUAL_RASTER_TIMEOUT_MS ?? '30000');
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error('RHWP_VISUAL_RASTER_TIMEOUT_MS는 양의 정수여야 합니다.');
+  }
+  const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
+  let puppeteerPath;
+  try {
+    puppeteerPath = studioRequire.resolve('puppeteer-core');
+  } catch {
+    throw new Error('puppeteer-core가 없습니다. npm --prefix rhwp-studio ci를 먼저 실행하세요.');
+  }
+  const { default: puppeteer } = await import(pathToFileURL(puppeteerPath).href);
+  const browser = await puppeteer.launch({
+    executablePath: chrome,
+    headless: true,
+    userDataDir: profileDir,
+    timeout: timeoutMs,
+    protocolTimeout: timeoutMs,
+    args: ['--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files'],
+  });
+  try {
+    const page = await browser.newPage();
+    // Window size includes browser chrome on some platforms. Set the content
+    // viewport through CDP so the full SVG survives capture at every DPI.
+    await page.setViewport({
+      width: Math.ceil(viewport.width),
+      height: Math.ceil(viewport.height),
+      deviceScaleFactor: zoom,
+    });
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: timeoutMs });
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    const recoveredFontFaces = await recoverUnavailableLocalBoldFaces(page);
+    await page.screenshot({ path: outputPath, type: 'png' });
+    return recoveredFontFaces;
+  } finally {
+    await browser.close();
+    // 브라우저 종료 뒤 자식의 출력 파이프가 남으면 Node가 캡처 완료 후에도
+    // 대기한다. 이 실행이 소유한 스트림만 닫고 화면·글꼴 완료 조건은 유지한다.
+    for (const stream of browser.process()?.stdio ?? []) {
+      stream?.destroy();
+    }
+  }
 }
 
 async function main() {
@@ -197,8 +319,9 @@ async function main() {
   const profileDir = resolve(dirname(outputPath), `.webfont-chrome-profile-${process.pid}`);
   const html = `<!doctype html><meta charset="utf-8"><style>html,body{margin:0;padding:0;overflow:hidden;width:${viewport.width}px;height:${viewport.height}px}svg{display:block}</style>${preparedSvg}`;
   writeFileSync(wrapperPath, html);
+  let recoveredFontFaces;
   try {
-    await renderWithChrome({
+    recoveredFontFaces = await renderWithChrome({
       chrome: findChrome(configuredChrome),
       htmlPath: wrapperPath,
       outputPath,
@@ -218,6 +341,8 @@ async function main() {
     viewport,
     projectionSha256: createHash('sha256').update(projectionSource).digest('hex'),
     appliedRuleIds: rules.map(rule => rule.ruleId),
+    preservedFontFaceFamilies: [...declaredFontFaceFamilies(svgSource)],
+    recoveredFontFaces,
     terminalFallbackFamily: TERMINAL_FALLBACK_FAMILY,
   }));
 }

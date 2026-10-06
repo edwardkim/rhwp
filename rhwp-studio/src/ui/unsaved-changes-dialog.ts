@@ -6,6 +6,7 @@
  */
 import { ModalDialog } from './dialog';
 
+import { t } from '../i18n/index.ts';
 export type UnsavedChangesChoice = 'save' | 'discard' | 'cancel';
 
 interface UnsavedChangesDialogOptions {
@@ -19,7 +20,7 @@ class UnsavedChangesDialog extends ModalDialog {
   private resolve!: (value: UnsavedChangesChoice) => void;
 
   constructor(private readonly options: UnsavedChangesDialogOptions) {
-    super('저장 확인', 420);
+    super(t('dialog.unsavedChanges.title'), 420);
   }
 
   protected createBody(): HTMLElement {
@@ -28,11 +29,11 @@ class UnsavedChangesDialog extends ModalDialog {
     body.style.lineHeight = '1.6';
     body.style.whiteSpace = 'pre-line';
 
-    const fileName = this.options.fileName || '현재 문서';
-    const reason = this.options.saveUnavailableReason ?? '이 문서는 현재 직접 저장할 수 없습니다.';
+    const fileName = this.options.fileName || t('dialog.unsavedChanges.createBody.text');
+    const reason = this.options.saveUnavailableReason ?? t('dialog.unsavedChanges.createBody.text.x4f7291');
     body.textContent = this.options.canSave
-      ? `"${fileName}" 문서에 저장하지 않은 변경사항이 있습니다.\n계속하기 전에 저장하시겠습니까?`
-      : `"${fileName}" 문서에 저장하지 않은 변경사항이 있습니다.\n${reason} 변경사항을 버리고 계속할 수 있습니다.`;
+      ? t('dialog.unsavedChanges.body.text', { p1: fileName })
+      : t('dialog.unsavedChanges.createBody.text.x8f3cf8', { p1: fileName, p2: reason });
 
     return body;
   }
@@ -63,20 +64,20 @@ class UnsavedChangesDialog extends ModalDialog {
       const cancelBtn = footer?.querySelector('.dialog-btn:not(.dialog-btn-primary)') as HTMLButtonElement | null;
 
       if (saveBtn) {
-        saveBtn.textContent = '저장';
+        saveBtn.textContent = t('dialog.unsavedChanges.saveBtn.text');
         saveBtn.disabled = !this.options.canSave;
         saveBtn.title = this.options.canSave
           ? ''
-          : this.options.saveUnavailableReason ?? 'HWPX 문서는 현재 직접 저장할 수 없습니다.';
+          : this.options.saveUnavailableReason ?? t('dialog.unsavedChanges.saveBtn.tooltip');
       }
       if (cancelBtn) {
-        cancelBtn.textContent = '취소';
+        cancelBtn.textContent = t('dialog.unsavedChanges.cancelBtn.text');
       }
 
       const discardBtn = document.createElement('button');
       discardBtn.type = 'button';
       discardBtn.className = 'dialog-btn';
-      discardBtn.textContent = '저장 안 함';
+      discardBtn.textContent = t('dialog.unsavedChanges.discardBtn.text');
       discardBtn.addEventListener('click', () => {
         this.resolve('discard');
         super.hide();

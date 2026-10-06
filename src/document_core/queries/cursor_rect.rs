@@ -125,7 +125,6 @@ fn find_cursor_in_cell_node(
     offset: usize,
     page_index: u32,
 ) -> Option<CellCursorHit> {
-    use crate::renderer::layout::compute_char_positions;
     use crate::renderer::render_tree::RenderNodeType;
     if let RenderNodeType::TextRun(ref text_run) = node.node_type {
         let matches_cell = text_run.cell_context.as_ref().map_or(false, |ctx| {
@@ -139,8 +138,8 @@ fn find_cursor_in_cell_node(
                 && ctx.path[0].cell_index == c_idx
                 && ctx.path[0].cell_para_index == cp_idx
         });
-        if matches_cell {
-            let char_start = text_run.char_start.unwrap_or(0);
+        // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+        if let (true, Some(char_start)) = (matches_cell, text_run.char_start) {
             let char_count = effective_char_count(text_run);
 
             if offset >= char_start && offset <= char_start + char_count {
@@ -148,7 +147,7 @@ fn find_cursor_in_cell_node(
                 let positions = if text_run.char_overlap.is_some() && char_count == 1 {
                     vec![0.0, node.bbox.width]
                 } else {
-                    compute_char_positions(&text_run.text, &text_run.style)
+                    text_run.replay_positions_for(&text_run.text).into_owned()
                 };
                 let x_in_run = if local_offset < positions.len() {
                     positions[local_offset]
@@ -558,7 +557,7 @@ impl DocumentCore {
                 {
                     let para_chars: Vec<char> = para.text.chars().collect();
                     let run_chars: Vec<char> = text_run.text.chars().collect();
-                    let positions = compute_char_positions(&text_run.text, &text_run.style);
+                    let positions = text_run.replay_positions_for(&text_run.text).into_owned();
                     let font_size = text_run.style.font_size;
                     let ascent = font_size * 0.8;
                     let caret_y = node.bbox.y + text_run.baseline - ascent;
@@ -825,6 +824,15 @@ impl DocumentCore {
         } else {
             None
         };
+        // [#7418] 마커 글자 x 에서 본문 시작까지 — 배치가 쓴 마커 기하(영역·정렬)와 같은 값.
+        let list_marker_body_dx = if is_list_para {
+            self.get_render_paragraph_ref(section_idx, para_idx)
+                .ok()
+                .and_then(|para| crate::renderer::layout::list_marker_geometry(para, &self.styles))
+                .map(|geometry| -geometry.marker_dx_px)
+        } else {
+            None
+        };
 
         // 렌더 트리에서 커서 위치를 찾는 재귀 함수
         // exact_only: true이면 정확한 매칭(zero-width 앵커)만 반환
@@ -927,12 +935,13 @@ impl DocumentCore {
                                 } else {
                                     let local_offset = offset - char_start;
                                     // PUA 다자리 글자겹침: 커서 위치는 [0.0, bbox.width]
-                                    let positions =
-                                        if text_run.char_overlap.is_some() && char_count == 1 {
-                                            vec![0.0, node.bbox.width]
-                                        } else {
-                                            compute_char_positions(&text_run.text, &text_run.style)
-                                        };
+                                    let positions = if text_run.char_overlap.is_some()
+                                        && char_count == 1
+                                    {
+                                        vec![0.0, node.bbox.width]
+                                    } else {
+                                        text_run.replay_positions_for(&text_run.text).into_owned()
+                                    };
                                     let x_in_run = if local_offset < positions.len() {
                                         positions[local_offset]
                                     } else if !positions.is_empty() {
@@ -1024,6 +1033,19 @@ impl DocumentCore {
                     || p.controls.iter().any(|ctrl| {
                         is_inline_cursor_control(ctrl)
                             || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
+                    })
+                    // 빈 ClickHere는 TextRun이 아니라 renderer가 만든 zero-width anchor로
+                    // 캐럿 위치를 보존한다. 빈 호스트 문단 최적화가 이 anchor를 찾는
+                    // 페이지 scan까지 건너뛰면 TextLine 좌단 fallback으로 떨어져 문단
+                    // 가운데·오른쪽 정렬이 사라진다 (#6766).
+                    || p.field_ranges.iter().any(|range| {
+                        range.start_char_idx == range.end_char_idx
+                            && matches!(
+                                p.controls.get(range.control_idx),
+                                Some(Control::Field(field))
+                                    if field.field_type
+                                        == crate::model::control::FieldType::ClickHere
+                            )
                     })
             })
             .unwrap_or(true);
@@ -1174,6 +1196,7 @@ impl DocumentCore {
             para: usize,
             is_list_para: bool,
             list_marker_char_shape_id: Option<u32>,
+            list_marker_body_dx: Option<f64>,
             styles: &crate::renderer::style_resolver::ResolvedStyleSet,
             hit: &mut ParaLineHit,
         ) {
@@ -1189,10 +1212,12 @@ impl DocumentCore {
                         && text_run.field_marker
                             == crate::renderer::render_tree::FieldMarkerType::None
                     {
-                        let marker_width = list_marker_char_shape_id
-                            .map(|cs_id| {
-                                let marker_style = resolved_to_text_style(styles, cs_id, 0);
-                                estimate_text_width(&text_run.text, &marker_style)
+                        let marker_width = list_marker_body_dx
+                            .or_else(|| {
+                                list_marker_char_shape_id.map(|cs_id| {
+                                    let marker_style = resolved_to_text_style(styles, cs_id, 0);
+                                    estimate_text_width(&text_run.text, &marker_style)
+                                })
                             })
                             .unwrap_or(node.bbox.width);
                         hit.marker_end_x.get_or_insert(node.bbox.x + marker_width);
@@ -1208,6 +1233,7 @@ impl DocumentCore {
                     para,
                     is_list_para,
                     list_marker_char_shape_id,
+                    list_marker_body_dx,
                     styles,
                     hit,
                 );
@@ -1221,6 +1247,7 @@ impl DocumentCore {
             para: usize,
             is_list_para: bool,
             list_marker_char_shape_id: Option<u32>,
+            list_marker_body_dx: Option<f64>,
             styles: &crate::renderer::style_resolver::ResolvedStyleSet,
         ) -> Option<ParaLineHit> {
             if let RenderNodeType::TextLine(ref line) = node.node_type {
@@ -1238,6 +1265,7 @@ impl DocumentCore {
                         para,
                         is_list_para,
                         list_marker_char_shape_id,
+                        list_marker_body_dx,
                         styles,
                         &mut hit,
                     );
@@ -1269,6 +1297,7 @@ impl DocumentCore {
                     para,
                     is_list_para,
                     list_marker_char_shape_id,
+                    list_marker_body_dx,
                     styles,
                 ) {
                     return Some(r);
@@ -1411,6 +1440,7 @@ impl DocumentCore {
             para_idx,
             is_list_para,
             list_marker_char_shape_id,
+            list_marker_body_dx,
             &self.styles,
         ) {
             let x = line_hit.cursor_x(is_list_para, char_offset);
@@ -1514,7 +1544,7 @@ impl DocumentCore {
 
     /// 페이지 좌표에서 문서 위치 찾기 (네이티브)
     pub fn hit_test_native(&self, page_num: u32, x: f64, y: f64) -> Result<String, HwpError> {
-        use crate::renderer::layout::{compute_char_positions, CellContext, CellPathEntry};
+        use crate::renderer::layout::{CellContext, CellPathEntry};
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree_cached(page_num)?;
@@ -1781,7 +1811,7 @@ impl DocumentCore {
                         let positions = if text_run.char_overlap.is_some() && ecc == 1 {
                             vec![0.0, node.bbox.width]
                         } else {
-                            compute_char_positions(&text_run.text, &text_run.style)
+                            text_run.replay_positions_for(&text_run.text).into_owned()
                         };
                         runs.push(RunInfo {
                             section_index: si,
@@ -2401,19 +2431,45 @@ impl DocumentCore {
         //
         // 글상자 안 표 셀 (textbox 안 cell) 매칭이 textbox 영역보다 specific 이므로
         // clicked_cell 을 textbox_hit 보다 먼저 처리한다.
+
+        // 2. 셀 bbox 기반으로 클릭한 셀 판별 (글상자 안 표 셀 포함)
+        // hit_cell 반환 전에 미리 계산한다 — 바깥 칸 run 이 안쪽 칸의 빈 영역·괘선을
+        // 덮는지 판별하기 위해 필요 (#7442).
+        let clicked_cell: Option<&CellBboxInfo> = cell_bboxes
+            .iter()
+            .filter(|cb| cb.has_meta)
+            .filter(|cb| x >= cb.x && x <= cb.x + cb.w && y >= cb.y && y <= cb.y + cb.h)
+            .min_by_key(|cb| ((cb.w.max(0.0) * cb.h.max(0.0)) * 1000.0) as i64);
+
+        // [#7442] 중첩 표를 품은 바깥 칸의 run은 TAC 줄 높이만큼 bbox가 커서 안쪽 칸의
+        // 빈 영역·괘선까지 덮는다. hit_cell이 있어도 클릭된 칸이 그 run보다 더 깊은
+        // 경로(같은 parent_para_index 아래 run 경로를 (control,cell) 접두사로 갖는
+        // 자손 칸)를 가리키면 run hit를 건너뛰고 그 칸 분기를 사용한다. 같은 깊이나
+        // 무관한 경로에서는 지금처럼 텍스트 run 정밀도가 우선한다.
+        let hit_cell = hit_cell.filter(|&(idx, _)| {
+            match (
+                runs[idx].cell_context.as_ref(),
+                clicked_cell.and_then(|cb| cb.cell_context.as_ref()),
+            ) {
+                (Some(run_ctx), Some(cell_ctx)) => {
+                    let clicked_is_descendant = cell_ctx.parent_para_index
+                        == run_ctx.parent_para_index
+                        && cell_ctx.path.len() > run_ctx.path.len()
+                        && run_ctx.path.iter().zip(&cell_ctx.path).all(|(r, c)| {
+                            r.control_index == c.control_index && r.cell_index == c.cell_index
+                        });
+                    !clicked_is_descendant
+                }
+                _ => true,
+            }
+        });
+
         if let Some((idx, offset)) = hit_cell {
             return Ok(format_hit(&runs[idx], offset, page_num));
         }
 
         // 클릭 좌표가 속한 칼럼 결정 (다단 지원)
         let click_column = self.find_column_at_x(page_num, x);
-
-        // 2. 셀 bbox 기반으로 클릭한 셀 판별 (글상자 안 표 셀 포함)
-        let clicked_cell: Option<&CellBboxInfo> = cell_bboxes
-            .iter()
-            .filter(|cb| cb.has_meta)
-            .filter(|cb| x >= cb.x && x <= cb.x + cb.w && y >= cb.y && y <= cb.y + cb.h)
-            .min_by_key(|cb| ((cb.w.max(0.0) * cb.h.max(0.0)) * 1000.0) as i64);
 
         // 셀 내부 클릭이면: 해당 셀의 run만 검색하여 가장 가까운 위치 반환
         if let Some(cb) = clicked_cell {
@@ -3088,6 +3144,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
@@ -3150,6 +3207,23 @@ impl DocumentCore {
         if *is_continuation && table.repeat_header && cell_end_row <= *start_row {
             return Ok(Unsupported);
         }
+        // [#6976] 쪽을 끝내는 조각은 마지막 그린 행의 상자를 배치 뒤에 접고, 그 양은
+        // 그 행 **모든 칸**이 내놓는 여분의 최솟값이다. 셀 하나만 방출하는 이 프로브는
+        // 대상 셀이 그 행의 유일한 칸일 때만 같은 값을 재현한다 — 그 밖에는 legacy 로
+        // 폴백한다. 접는 조각에서는 여분이 실제 배치 커서로 정해지므로 대상 셀을 끝까지
+        // 렌더한다(`needs_full_cell_for_bounds` 와 같은 이유·같은 방법).
+        let fragment_may_fold = end_cut.iter().any(|&unit| unit > 0);
+        if fragment_may_fold {
+            let Some(fold_row) = (*end_row).min(table.row_count as usize).checked_sub(1) else {
+                return Ok(Unsupported);
+            };
+            let sole_target = table.cells.iter().enumerate().all(|(idx, c)| {
+                c.row as usize + (c.row_span as usize).max(1) != fold_row + 1 || idx == cell_idx
+            });
+            if !sole_target {
+                return Ok(Unsupported);
+            }
+        }
 
         // ── 좌표계 프라이밍 — build_page_tree/build_single_column 과 동일 상태.
         // (memoized cell_units 등 포인터-키 캐시가 동일 값으로 채워지도록, 상태
@@ -3182,8 +3256,10 @@ impl DocumentCore {
             .set_hidden_empty_paras(&pr.hidden_empty_paras);
         self.layout_engine
             .set_pre_emitted_host_paras(&pr.pre_emitted_host_paras);
-        self.layout_engine
-            .set_pre_emitted_host_heights(&pr.pre_emitted_host_heights);
+        self.layout_engine.set_pre_emitted_host_heights(
+            &pr.pre_emitted_host_heights,
+            &pr.pre_emitted_host_content_heights,
+        );
         let layout = &page_content.layout;
         self.layout_engine.prime_column_layout_env(layout);
 
@@ -3205,6 +3281,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             *is_block_split,
+            *start_cut_is_block,
             &self.styles,
             cell_para_idx,
         );
@@ -3299,7 +3376,7 @@ impl DocumentCore {
         );
         let probe = PartialTableCellProbe {
             cell_idx,
-            stop_after_para: if needs_full_cell_for_bounds {
+            stop_after_para: if needs_full_cell_for_bounds || fragment_may_fold {
                 n_paras - 1
             } else {
                 cell_para_idx
@@ -3330,6 +3407,7 @@ impl DocumentCore {
             start_cut,
             end_cut,
             *is_block_split,
+            *start_cut_is_block,
             *row_cursor_is_nested,
             *end_row_height_override,
             *start_row_height_override,
@@ -3339,6 +3417,9 @@ impl DocumentCore {
             None,
             false,
             Some(&probe),
+            col.paragraph_float_placements
+                .get(&(parent_para_idx, control_idx))
+                .map(|p| col_area.y + p.table_top),
         );
 
         // legacy 와 동일한 매칭 함수로 캐럿·셀 bbox 탐색
@@ -3471,7 +3552,7 @@ impl DocumentCore {
         char_offset: usize,
         hint_page: Option<u32>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::{compute_char_positions, CellContext, CellPathEntry};
+        use crate::renderer::layout::{CellContext, CellPathEntry};
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let path = Self::parse_cell_path(path_json)?;
@@ -3644,14 +3725,17 @@ impl DocumentCore {
                 if let Some(ref mut ctx) = cell_context {
                     core.repair_unwrapped_wrapper_cell_context(section_idx, ctx);
                 }
-                if cell_context_matches(&cell_context, parent_para, path) {
-                    let cs = tr.char_start.unwrap_or(0);
+                // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                if let (true, Some(cs)) = (
+                    cell_context_matches(&cell_context, parent_para, path),
+                    tr.char_start,
+                ) {
                     let cc = effective_char_count(tr);
                     if offset >= cs && offset <= cs + cc {
                         let positions = if tr.char_overlap.is_some() && cc == 1 {
                             vec![0.0, node.bbox.width]
                         } else {
-                            compute_char_positions(&tr.text, &tr.style)
+                            tr.replay_positions_for(&tr.text).into_owned()
                         };
                         let lo = offset - cs;
                         let xr = if lo < positions.len() {
@@ -4315,7 +4399,6 @@ impl DocumentCore {
         char_offset: usize,
         preview_page_hint: i32,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // 머리말/꼬리말 문단의 para_index 마커 값
@@ -4354,7 +4437,7 @@ impl DocumentCore {
                             let positions = if text_run.char_overlap.is_some() && char_count == 1 {
                                 vec![0.0, node.bbox.width]
                             } else {
-                                compute_char_positions(&text_run.text, &text_run.style)
+                                text_run.replay_positions_for(&text_run.text).into_owned()
                             };
                             let x_in_run = if local_offset < positions.len() {
                                 positions[local_offset]
@@ -4637,7 +4720,6 @@ impl DocumentCore {
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let actual_target = self.resolve_header_footer_target(page_num, is_header);
@@ -4692,8 +4774,9 @@ impl DocumentCore {
                         let hf_para_idx = usize::MAX - marker_para;
                         // 폭은 화면에 그려지는 글자로, 오프셋은 모델 글자로 센다.
                         // 필드는 모델 1자가 표시 N자라 둘이 다르다 (Task #3216).
-                        let positions =
-                            compute_char_positions(text_run.display_or_text(), &text_run.style);
+                        let positions = text_run
+                            .replay_positions_for(text_run.display_or_text())
+                            .into_owned();
                         runs.push(HfRunInfo {
                             hf_para_idx,
                             char_start: cs,
@@ -4919,7 +5002,6 @@ impl DocumentCore {
         end_hf_para_idx: usize,
         end_char_offset: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let actual_target = self.resolve_header_footer_target(page_num, is_header);
@@ -4985,7 +5067,9 @@ impl DocumentCore {
                             hf_para_idx: usize::MAX - marker_para,
                             char_start,
                             char_count: effective_char_count(tr),
-                            char_positions: compute_char_positions(tr.display_or_text(), &tr.style),
+                            char_positions: tr
+                                .replay_positions_for(tr.display_or_text())
+                                .into_owned(),
                             bbox_x: node.bbox.x,
                             bbox_y: node.bbox.y,
                             bbox_w: node.bbox.width,
@@ -5175,7 +5259,6 @@ impl DocumentCore {
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
@@ -5230,7 +5313,8 @@ impl DocumentCore {
                         let fn_para_idx = usize::MAX - 2000 - marker_para;
                         if let Some(cs) = text_run.char_start {
                             // 본문 텍스트 TextRun
-                            let positions = compute_char_positions(&text_run.text, &text_run.style);
+                            let positions =
+                                text_run.replay_positions_for(&text_run.text).into_owned();
                             runs.push(FnRunInfo {
                                 footnote_index: marker_section,
                                 fn_para_idx,
@@ -5405,7 +5489,6 @@ impl DocumentCore {
         end_fn_para_idx: usize,
         end_char_offset: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
@@ -5440,7 +5523,7 @@ impl DocumentCore {
                                 fn_para_idx,
                                 char_start: cs,
                                 char_count: tr.text.chars().count(),
-                                char_positions: compute_char_positions(&tr.text, &tr.style),
+                                char_positions: tr.replay_positions_for(&tr.text).into_owned(),
                                 bbox_x: node.bbox.x,
                                 bbox_y: node.bbox.y,
                                 bbox_w: node.bbox.width,
@@ -5543,7 +5626,6 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<Option<String>, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         struct CursorRun {
@@ -5565,7 +5647,7 @@ impl DocumentCore {
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if tr.section_index == Some(section_idx) && tr.para_index == Some(para_idx) {
                     if let Some(cs) = tr.char_start {
-                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        let positions = tr.replay_positions_for(&tr.text).into_owned();
                         runs.push(CursorRun {
                             char_start: cs,
                             char_count: effective_char_count(tr),
@@ -5820,7 +5902,6 @@ impl DocumentCore {
         fn_para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
@@ -5862,7 +5943,7 @@ impl DocumentCore {
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if tr.section_index == Some(target_section) && tr.para_index == Some(target_para) {
                     if let Some(cs) = tr.char_start {
-                        let positions = compute_char_positions(&tr.text, &tr.style);
+                        let positions = tr.replay_positions_for(&tr.text).into_owned();
                         runs.push(FnCursorRun {
                             char_start: cs,
                             char_count: tr.text.chars().count(),
@@ -6917,6 +6998,7 @@ mod tests {
             start_cut,
             end_cut,
             is_block_split,
+            start_cut_is_block,
             ..
         }) = col.items.first()
         {
@@ -6929,6 +7011,7 @@ mod tests {
                 start_cut,
                 end_cut,
                 *is_block_split,
+                *start_cut_is_block,
                 &core.styles,
                 6,
             );
@@ -6982,11 +7065,13 @@ mod tests {
         issue4149_assert_fast_parity("samples/hwp_table_test_saved.hwp", 400);
     }
 
-    /// [#4149] fast path 웜 지연 실측 — 브라우저 IME 시나리오(같은 좌표 반복 질의)에서
-    /// 페이지 트리 재빌드(~17ms) 없이 1ms 미만이어야 한다. 콜드 1회(유닛 메모 예열)는
-    /// 측정에서 제외한다.
+    /// [#4149] 웜 캐럿 질의는 전체 페이지 트리를 재빌드하지 않아야 한다.
+    /// #3743에서 전체 렌더도 가시 창만 compose하게 되어 두 경로의 지연 배율은
+    /// 더 이상 작업량의 대리 지표가 아니다. 기존 thread-local 카운터로 원래
+    /// 계약을 직접 검증하고, 시간은 진단값으로만 남긴다.
     #[test]
-    fn issue4149_fast_path_giant_cell_warm_latency_beats_legacy() {
+    fn issue4149_fast_path_giant_cell_warm_avoids_page_tree_builds() {
+        use crate::diagnostics::perf_counters;
         use std::time::Instant;
         let (core, host_pi, host_ci, cell_idx) = issue4128_fixture();
         // 브라우저 실측 좌표와 동일 (ppi0 ci2 cell2 para6 off5) — 픽스처가 같은 셀을 고른다.
@@ -6998,29 +7083,32 @@ mod tests {
             .expect("fast");
         assert!(fast.is_some(), "perf 대상 좌표에서 fast path 미적중");
 
-        // 절대 벽시계 기준은 러너 속도에 종속돼 CI 에서 거짓 실패한다(실측: 로컬
-        // 0.6ms/CI 1ms+). 같은 프로세스에서 legacy 대비 배율로 판정한다 — fast 의
-        // 핵심 주장은 "페이지 트리 재빌드 회피"이므로 배율이 기계 무관 신호다.
+        // 다른 테스트 스레드의 빌드는 포함하지 않는다. 공개 진입점이 legacy로
+        // 폴백하면 아래의 0-build 계약이 실패해야 한다.
         let iters = 10;
+        perf_counters::reset_thread_page_tree_builds();
         let t = Instant::now();
         for _ in 0..iters {
-            let _ = core
+            let rect = core
                 .get_cursor_rect_in_cell_native(0, host_pi, host_ci, cell_idx, 6, 5)
                 .expect("rect");
+            assert_eq!(Some(&rect), fast.as_ref());
         }
         let fast_ms = t.elapsed().as_secs_f64() * 1000.0 / iters as f64;
+        assert_eq!(perf_counters::thread_page_tree_builds(), 0);
+        perf_counters::reset_thread_page_tree_builds();
         let t = Instant::now();
         for _ in 0..iters {
-            let _ = core
+            let rect = core
                 .cursor_rect_in_cell_via_page_tree(0, host_pi, host_ci, cell_idx, 6, 5)
                 .expect("legacy rect");
+            assert_eq!(Some(&rect), fast.as_ref());
         }
         let legacy_ms = t.elapsed().as_secs_f64() * 1000.0 / iters as f64;
         eprintln!("#4149 웜 지연: fast {fast_ms:.3}ms vs legacy {legacy_ms:.3}ms/call");
         assert!(
-            fast_ms * 4.0 < legacy_ms,
-            "fast path 웜 지연 {fast_ms:.3}ms 가 legacy {legacy_ms:.3}ms 의 1/4 미만이 아니다 \
-             — 페이지 트리 재빌드 회피가 회귀했는지 확인 (로컬 실측 약 28배)"
+            perf_counters::thread_page_tree_builds() >= iters,
+            "페이지 경로의 실제 빌드를 카운터로 관측해야 한다"
         );
     }
 }

@@ -1,0 +1,112 @@
+{
+  "stage": 321,
+  "source_file": "src/renderer/layout/table_layout.rs",
+  "source_sha256": "f78e9e68e8181f89da3cd9b43ec4e71ef6d110d8ff9767d134c64a13e4ab0e77",
+  "native_build_exit": 0,
+  "focused_passed": 14,
+  "focused_exit": 0,
+  "existing_trim_test_passed": 1,
+  "existing_trim_test_exit": 0,
+  "wasm_build_exit": 0,
+  "initial_wasm_sweep_exit": 1,
+  "initial_wasm_sweep_reason": "기본 debug 실행 파일의 노후 검사에서 중단; 최신 Native 실행 파일을 명시한 재실행 완료",
+  "backends": {
+    "native": {
+      "exit_code": 0,
+      "scores": [
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "99.75662",
+          "below_90": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "92.98011",
+          "below_90": "0"
+        },
+        {
+          "page": "106",
+          "tolerant_content_match_percent": "99.88046",
+          "below_90": "0"
+        },
+        {
+          "page": "107",
+          "tolerant_content_match_percent": "98.86043",
+          "below_90": "0"
+        },
+        {
+          "page": "168",
+          "tolerant_content_match_percent": "99.94271",
+          "below_90": "0"
+        },
+        {
+          "page": "169",
+          "tolerant_content_match_percent": "99.91753",
+          "below_90": "0"
+        },
+        {
+          "page": "170",
+          "tolerant_content_match_percent": "99.95118",
+          "below_90": "0"
+        }
+      ],
+      "output": "output/pr-review/planet6897-7382-20260926/stage321-native/liver7379",
+      "pageCount": 215
+    },
+    "wasm": {
+      "exit_code": 0,
+      "scores": [
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "99.75662",
+          "below_90": "0"
+        },
+        {
+          "page": "24",
+          "tolerant_content_match_percent": "92.98011",
+          "below_90": "0"
+        },
+        {
+          "page": "106",
+          "tolerant_content_match_percent": "99.88046",
+          "below_90": "0"
+        },
+        {
+          "page": "107",
+          "tolerant_content_match_percent": "98.86043",
+          "below_90": "0"
+        },
+        {
+          "page": "168",
+          "tolerant_content_match_percent": "99.94271",
+          "below_90": "0"
+        },
+        {
+          "page": "169",
+          "tolerant_content_match_percent": "99.91753",
+          "below_90": "0"
+        },
+        {
+          "page": "170",
+          "tolerant_content_match_percent": "99.95118",
+          "below_90": "0"
+        }
+      ],
+      "output": "output/pr-review/planet6897-7382-20260926/stage321-wasm/liver7379",
+      "pageCount": 215
+    }
+  },
+  "backend_png_identical_pages": [
+    17,
+    24,
+    106,
+    107,
+    168,
+    169,
+    170
+  ],
+  "direct_visual_inspection": [
+    169
+  ],
+  "limitation": "개별 보정 검증이며 최종 전체 nextest 및 전수 TSV는 잔존합니다."
+}

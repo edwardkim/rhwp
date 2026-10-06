@@ -10,7 +10,8 @@ use crate::model::document::Document;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{Caption, DrawingObjAttr, ShapeObject};
 use crate::renderer::composer::{
-    compose_section, layout_picture_band, reflow_line_segs, ParagraphBox,
+    compose_section, layout_picture_band, reflow_line_segs, reflow_line_segs_in_stored_section,
+    ParagraphBox,
 };
 use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
@@ -38,8 +39,36 @@ pub struct HwpExportVerification {
     pub recovered: bool,
 }
 
-type PageBorderFillExtras = Vec<crate::model::page::PageBorderFill>;
-type HwpPageBorderFillOverlay = Vec<(PageBorderFillExtras, Vec<Vec<Option<PageBorderFillExtras>>>)>;
+/// One immutable HWP-lowered document shared by serialization and verification.
+///
+/// Callers may inspect the exact IR that produces the bytes, but cannot run a
+/// second partial lowering pipeline or mutate this adapter-owned snapshot.
+pub struct HwpExportSnapshot {
+    document: Document,
+}
+
+impl HwpExportSnapshot {
+    pub fn document(&self) -> &Document {
+        &self.document
+    }
+
+    fn serialize_with<T>(
+        &self,
+        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
+    ) -> Result<T, HwpError> {
+        serialize(&self.document).map_err(|error| HwpError::RenderError(error.to_string()))
+    }
+
+    pub fn serialize(&self) -> Result<Vec<u8>, HwpError> {
+        self.serialize_with(crate::serializer::serialize_document)
+    }
+
+    pub fn serialize_with_password(&self, password: &[u8]) -> Result<Vec<u8>, HwpError> {
+        self.serialize_with(|document| {
+            crate::serializer::serialize_hwp_with_password(document, password)
+        })
+    }
+}
 
 const MAX_EXACT_FONT_INSTANCE_OPTIONS_BYTES: usize = 16 * 1024;
 
@@ -166,7 +195,28 @@ impl DocumentCore {
         }
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
-        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        let mut styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
+        // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
+        if !styles.hft_ascii_halfwidth {
+            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+                &document,
+                &styles,
+                DEFAULT_DPI,
+            );
+            if std::env::var_os("RHWP_DIAG_HFT_EVIDENCE").is_some() {
+                eprintln!(
+                    "[HFT_EVIDENCE] halfwidth={} proportional={} proves={}",
+                    witnesses.halfwidth,
+                    witnesses.proportional,
+                    witnesses.proves_halfwidth()
+                );
+            }
+            if witnesses.proves_halfwidth() {
+                document.provenance.hft_ascii_halfwidth_witnessed = true;
+                styles.hft_ascii_halfwidth = true;
+            }
+        }
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && document
@@ -202,6 +252,9 @@ impl DocumentCore {
         // 본문 텍스트 문단 합성은 흐름 소비 팽창으로 sijang 밀도 핀 -5쪽(#2070v2).
         // HWP3 변환본은 #998 게이트(sample16-hwp5=64) 정합상 종전 유지.
         let include_cell_empty = !document.layout_profile().hwp3_layout();
+        // [#7436] 저장 줄 없는 번호 문단도 번호 폭을 뺀 상자로 줄을 나눈다 — 재조판 전에
+        // 문서 순서로 번호 문자열을 정해 둔다.
+        crate::renderer::layout::assign_numbering_markers(&mut document.sections, &styles);
         Self::reflow_zero_height_paragraphs(
             &mut document,
             &styles,
@@ -228,6 +281,8 @@ impl DocumentCore {
             document,
             pagination: Vec::new(),
             styles,
+            canvas_metrics: None,
+            font_environment: None,
             composed: Vec::new(),
             render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
@@ -258,6 +313,7 @@ impl DocumentCore {
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
+            pending_cell_format_vpos: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
@@ -266,6 +322,8 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            picture_transform_store: Vec::new(),
+            next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,
@@ -468,12 +526,22 @@ impl DocumentCore {
                 if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
                     // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
-                    reflow_line_segs(
-                        para,
-                        ParagraphBox::body_for_style(col_width, para_style, dpi),
-                        styles,
-                        dpi,
-                    );
+                    // 개체 여백은 공통으로 계상하고, 저장 구역의 간격 호환은 전용 진입점에 둔다.
+                    if section_sized {
+                        reflow_line_segs_in_stored_section(
+                            para,
+                            ParagraphBox::body_for_style(col_width, para_style, dpi),
+                            styles,
+                            dpi,
+                        );
+                    } else {
+                        reflow_line_segs(
+                            para,
+                            ParagraphBox::body_for_style(col_width, para_style, dpi),
+                            styles,
+                            dpi,
+                        );
+                    }
                     body_line_seg_changed = true;
                     reflowed_paras.insert(pi);
                 }
@@ -598,19 +666,31 @@ impl DocumentCore {
                                     // 표 소유자가 이미 확정한 셀 폭을 흔든다.
                                     reflow_line_segs(
                                         cell_para,
-                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                                        // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                                        // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                                        ParagraphBox::content_for_style(
+                                            cell_inner_width,
+                                            styles
+                                                .para_styles
+                                                .get(cell_para.para_shape_id as usize),
+                                            dpi,
+                                        ),
                                         styles,
                                         dpi,
                                     );
                                 }
+                                if include_cell_empty && !include_empty {
+                                    Self::reflow_nested_native_empty_cell_paragraphs(
+                                        cell_para,
+                                        styles,
+                                        dpi,
+                                        section_sized,
+                                    );
+                                }
                             }
                             if include_empty && is_rowbreak_table {
-                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(
-                                    cell,
-                                    styles,
-                                    dpi,
-                                    table.common.treat_as_char,
-                                );
+                                Self::fit_hwpx_rowbreak_synthetic_cell_lines(cell, styles, dpi);
                             }
                         }
                     }
@@ -664,8 +744,82 @@ impl DocumentCore {
                         ))
                     })
                     .collect();
+                // 재구성 전에 실제 글줄 끝과 다음 줄 전진 끝을 함께 고정한다.
+                let orig_plain_tail: Vec<Option<(i32, i32)>> = section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, para)| {
+                        if reflowed_paras.contains(&i)
+                            || para.stored_text_partition_dirty
+                            || !para.controls.is_empty()
+                            || para.line_segs.iter().any(|line| {
+                                line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                            })
+                        {
+                            return None;
+                        }
+                        let last = para.line_segs.last()?;
+                        let painted_end = last.vertical_pos.saturating_add(last.line_height);
+                        Some((
+                            painted_end,
+                            painted_end.saturating_add(last.line_spacing.max(0)),
+                        ))
+                    })
+                    .collect();
+                // 원본 줄 사이의 빈 물리 공간도 저장 조판의 일부다. 합성 줄을
+                // 끼워 넣더라도 뒤의 원본 앵커가 확보한 공간을 삭제하지 않는다.
+                // 합성 내용이 자랐으면 이미 소비한 끝점을 유지하여 되감지 않는다.
+                let mut source_anchor_end: Option<(i32, i32)> = None;
+                let body_height_hu = (layout.body_area.height * 7200.0 / dpi).round() as i32;
                 for (pi, para) in section.paragraphs.iter_mut().enumerate() {
                     let was_reflowed = reflowed_paras.contains(&pi);
+                    // 필드는 저장 글줄 안의 텍스트 범위를 표시할 뿐 별도 높이를
+                    // 차지하지 않는다. 필드가 있다는 이유로 저장 간격을 끊으면
+                    // 다음 문단의 빈 물리 공간이 사라진다.
+                    let text_only_controls = para
+                        .controls
+                        .iter()
+                        .all(|control| matches!(control, Control::Field(_)));
+                    // 저장 줄이 없는 글자취급 그림의 높이는 재구성 사다리가 이미
+                    // 소비한다. 직전 저장 글줄의 앵커를 유지해야 그림 뒤 원본 줄의
+                    // 저장 간격과 재구성된 그림 높이 중 큰 쪽을 사용할 수 있다.
+                    // 별도 부동 배치나 저장 줄을 지닌 개체는 좌표계가 달라 끊는다.
+                    let inline_reflowed_picture = was_reflowed
+                        && orig_span[pi].is_none()
+                        && !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Picture(picture) if picture.common.treat_as_char)
+                        });
+                    // 저장된 글자취급 표의 첫 줄이 앞 본문 끝보다 뒤에 있으면
+                    // 그 차이는 표 문단의 원본 간격이다. 현 문단의 개체 때문에
+                    // 앞 앵커를 먼저 끊으면 이 간격이 재계산에서 사라진다.
+                    let inline_saved_table = !was_reflowed
+                        && orig_span[pi].is_some()
+                        && !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Table(table) if table.common.treat_as_char)
+                        })
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_span[prev])
+                            .zip(orig_span[pi])
+                            .is_some_and(|((_, prev_end), (first, _))| {
+                                let before = styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|ps| (ps.spacing_before * 7200.0 / dpi).round() as i32)
+                                    .unwrap_or(0);
+                                before > 0
+                                    && prev_end > 0
+                                    && first <= body_height_hu
+                                    && first == prev_end.saturating_add(before)
+                            });
+                    if !text_only_controls && !inline_reflowed_picture && !inline_saved_table {
+                        source_anchor_end = None;
+                    }
                     let hosts_bottom_fixed_frame = para.controls.iter().any(|c| {
                         matches!(c, Control::Table(t)
                         if !t.common.treat_as_char
@@ -678,7 +832,64 @@ impl DocumentCore {
                                 crate::model::shape::VertAlign::Bottom
                             ))
                     });
-                    if !was_reflowed
+                    let first_source = para.line_segs.first();
+                    // 구역의 첫 문단에 붙은 Section 표지는 새 쪽으로 이월할
+                    // 이전 문단이 없으므로 저장 양수 vpos의 재기준 근거가 아니다.
+                    let source_page_break = pi > 0
+                        && !was_reflowed
+                        && orig_span[pi].is_some()
+                        // 명시적 쪽나눔은 조판기가 처리한다. 양수 프레임 원점만
+                        // 위 간격을 담으며, 0은 누적 축의 생성본에서도 쓰인다.
+                        && first_source.is_some_and(|line| {
+                            line.vertical_pos > 0 && line.vertical_pos < body_height_hu
+                        })
+                        && matches!(
+                            para.column_type,
+                            crate::model::paragraph::ColumnBreakType::Page
+                                | crate::model::paragraph::ColumnBreakType::Section
+                        );
+                    // 저장 TAC 줄 전체가 다음 프레임을 소유하고, 직전 끝의 간격까지
+                    // 이어서는 본문에 들어가지 않으면 원래 0 원점을 보존한다.
+                    // 단순한 생성기 0 좌표나 같은 프레임에 들어가는 표에는 적용하지 않는다.
+                    let source_tac_reset = !was_reflowed
+                        && crate::renderer::composer::stored_first_tac_line(para)
+                            .is_some_and(|line| line.vertical_pos == 0)
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_span[prev])
+                            .zip(first_source)
+                            .is_some_and(|((_, end), line)| {
+                                end > 0 && end.saturating_add(line.line_height) > body_height_hu
+                            });
+                    // 일반 저장 글줄도 앞 프레임의 실제 끝은 본문 안에 있으나
+                    // 다음 글줄을 이어 담을 공간이 없으면 0은 다음 쪽의 원점이다.
+                    // 누적 축·개체·합성/편집 줄의 0을 물리 경계로 추측하지 않는다.
+                    let source_plain_reset = !was_reflowed
+                        && !para.stored_text_partition_dirty
+                        && para.controls.is_empty()
+                        && orig_span[pi].is_some()
+                        && orig_plain_tail[pi].is_some()
+                        && first_source
+                            .is_some_and(|line| line.vertical_pos == 0 && line.line_height > 0)
+                        // 이 구역에 앞서 실제 0 원점을 기록한 저장 줄이 있어야
+                        // 현재 0을 쪽-상대 프레임 리셋으로 읽을 수 있다. 시작부터
+                        // 누적 좌표만 가진 구역은 뒤의 0을 독립 쪽 근거로 삼지 않는다.
+                        && orig_span[..pi]
+                            .iter()
+                            .any(|span| span.is_some_and(|(first, _)| first == 0))
+                        && pi
+                            .checked_sub(1)
+                            .and_then(|prev| orig_plain_tail[prev])
+                            .is_some_and(|(painted_end, advance_end)| {
+                                painted_end > 0
+                                    && painted_end <= body_height_hu
+                                    && advance_end.saturating_add(
+                                        first_source.expect("저장 첫 줄").line_height,
+                                    ) > body_height_hu
+                            });
+                    if source_page_break || source_tac_reset || source_plain_reset {
+                        running_vpos = first_source.expect("저장 프레임 원점").vertical_pos;
+                    } else if !was_reflowed
                         && hosts_bottom_fixed_frame
                         && prev_stored_last_vpos > 5000
                         && para.line_segs.first().map(|s| s.vertical_pos) == Some(0)
@@ -745,6 +956,17 @@ impl DocumentCore {
                             running_vpos = 0;
                         }
                     }
+                    if let (Some((original_first, _)), Some((source_end, rebuilt_end))) =
+                        (orig_span[pi], source_anchor_end)
+                    {
+                        // 저장 쪽·단 리셋은 위 경계 처리의 소유다. 같은 축의
+                        // 후속 앵커만 변환하며 원본 높이로 합성 내용의 성장을 덮지 않는다.
+                        if original_first >= source_end {
+                            let anchored = rebuilt_end
+                                .saturating_add(original_first.saturating_sub(source_end));
+                            running_vpos = running_vpos.max(anchored);
+                        }
+                    }
                     let original_last_vpos = if was_reflowed {
                         None
                     } else {
@@ -766,6 +988,18 @@ impl DocumentCore {
                         para.source_line_seg_vertical_pos =
                             Some(para.line_segs.iter().map(|s| s.vertical_pos).collect());
                     }
+                    let source_positions: Vec<_> = para
+                        .line_segs
+                        .iter()
+                        .map(|line| line.vertical_pos)
+                        .collect();
+                    let preserve_source_frames = !was_reflowed
+                        && para.controls.is_empty()
+                        && !para.stored_text_partition_dirty
+                        && para.line_segs.iter().all(|line| {
+                            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        });
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
                         first_seg.vertical_pos = running_vpos;
@@ -773,7 +1007,24 @@ impl DocumentCore {
                     // 문단 내 LINE_SEG vpos 재계산 (문단 내 누적)
                     // TAC 표가 lh에 포함된 경우: 다음 줄 vpos = th + ls (HWP 동작)
                     let mut inner_vpos = running_vpos;
-                    for seg in para.line_segs.iter_mut() {
+                    let mut previous_source_end = None;
+                    for (line_index, seg) in para.line_segs.iter_mut().enumerate() {
+                        let source_vpos = source_positions[line_index];
+                        if preserve_source_frames
+                            && line_index > 0
+                            && source_vpos == 0
+                            && previous_source_end.is_some_and(|end: i32| {
+                                end > 0 && end.saturating_add(seg.line_height) > body_height_hu
+                            })
+                        {
+                            // 정상 저장 줄의 물리 경계를 합성 줄의 연속 축으로 지우지 않는다.
+                            inner_vpos = source_vpos;
+                        }
+                        previous_source_end = Some(
+                            source_vpos
+                                .saturating_add(seg.line_height)
+                                .saturating_add(seg.line_spacing),
+                        );
                         seg.vertical_pos = inner_vpos;
                         let advance = if seg.line_height > seg.text_height && seg.text_height > 0 {
                             // lh가 th보다 큼 = TAC 컨트롤 높이 포함 → th 기준 누적
@@ -862,6 +1113,12 @@ impl DocumentCore {
                         }
                     }
                     running_vpos = inner_vpos;
+                    if let Some((_, original_end)) = orig_span[pi].filter(|_| text_only_controls) {
+                        source_anchor_end = Some((original_end, running_vpos));
+                    } else if inline_saved_table {
+                        // 표 높이는 다음 일반 글줄의 저장 간격으로 재가산하지 않는다.
+                        source_anchor_end = None;
+                    }
                     if let Some(v) = original_last_vpos {
                         prev_stored_last_vpos = v;
                     }
@@ -1072,6 +1329,78 @@ impl DocumentCore {
         }
     }
 
+    /// Native HWP의 순수 빈 셀 문단 복원을 중첩 표에도 적용한다.
+    ///
+    /// 바깥 표만 처리하면 중첩 셀의 NO_LS 빈 문단이 높이 0으로 남아,
+    /// 뒤따르는 TAC 그림이 앞쪽 페이지의 잔여 공간에 잘못 들어간다(#6776).
+    /// 기존 #2195와 동일하게 텍스트/컨트롤 호스트와 대각선 셀은 제외하고,
+    /// 저장 줄 및 구역의 0높이 줄 권위도 그대로 보존한다.
+    fn reflow_nested_native_empty_cell_paragraphs(
+        para: &mut Paragraph,
+        styles: &ResolvedStyleSet,
+        dpi: f64,
+        section_sized: bool,
+    ) {
+        for control in &mut para.controls {
+            let Control::Table(table) = control else {
+                continue;
+            };
+            let owner_widths = table.paragraph_frame_owner_widths();
+            let table_padding = table.padding;
+            let bf_has_diagonal = |id: u16| {
+                id != 0
+                    && styles
+                        .border_styles
+                        .get((id as usize).saturating_sub(1))
+                        .is_some_and(crate::renderer::layout::border_style_has_diagonal)
+            };
+            for (cell, owner_width) in table.cells.iter_mut().zip(owner_widths) {
+                let padding = cell.paragraph_frame_padding(&table_padding);
+                let inner_width = crate::renderer::composer::cell_inner_text_width(
+                    crate::renderer::hwpunit_to_px(owner_width, dpi),
+                    crate::renderer::hwpunit_to_px(padding.left as i32, dpi),
+                    crate::renderer::hwpunit_to_px(padding.right as i32, dpi),
+                    dpi,
+                );
+                let diagonal = bf_has_diagonal(cell.border_fill_id)
+                    || table.zones.iter().any(|zone| {
+                        zone.start_row <= cell.row
+                            && cell.row <= zone.end_row
+                            && zone.start_col <= cell.col
+                            && cell.col <= zone.end_col
+                            && bf_has_diagonal(zone.border_fill_id)
+                    });
+                for child_para in &mut cell.paragraphs {
+                    if !diagonal
+                        && child_para.text.is_empty()
+                        && child_para.controls.is_empty()
+                        && Self::needs_line_seg_reflow_in_scope(child_para, true, section_sized)
+                    {
+                        reflow_line_segs(
+                            child_para,
+                            // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                            // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                            // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                            ParagraphBox::content_for_style(
+                                inner_width,
+                                styles.para_styles.get(child_para.para_shape_id as usize),
+                                dpi,
+                            ),
+                            styles,
+                            dpi,
+                        );
+                    }
+                    Self::reflow_nested_native_empty_cell_paragraphs(
+                        child_para,
+                        styles,
+                        dpi,
+                        section_sized,
+                    );
+                }
+            }
+        }
+    }
+
     /// HWPX RowBreak 표 셀의 합성 lineSeg를 셀에 저장된 세로 정보와 맞춘다.
     ///
     /// HWPX는 표 셀 안의 문단별 `<hp:linesegarray>`를 생략하면서도, 셀 높이와 마지막
@@ -1087,7 +1416,6 @@ impl DocumentCore {
         cell: &mut crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         dpi: f64,
-        allow_without_anchor: bool,
     ) {
         if cell.height == 0 || cell.paragraphs.len() < 2 {
             return;
@@ -1107,7 +1435,9 @@ impl DocumentCore {
                 && para.line_segs[0].vertical_pos > 0
                 && para.line_segs[0].segment_width > 0
         });
-        if !has_stored_anchor && !allow_without_anchor {
+        // 선언 셀 높이의 빈 공간은 추가 글줄의 증거가 아니다. 실제 저장
+        // anchor가 없는 셀은 재조판한 줄 경계를 그대로 사용한다.
+        if !has_stored_anchor {
             return;
         }
         if !cell.paragraphs.iter().any(para_is_synthetic) {
@@ -1256,7 +1586,7 @@ impl DocumentCore {
         }
 
         // 스타일은 재해소해도 동일 결과이므로 재계산하여 borrow 충돌 회피.
-        let styles = resolve_styles_for_document(&self.document, self.dpi);
+        let styles = self.resolve_render_styles();
         let dpi = self.dpi;
         let mut reflowed = 0usize;
         let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
@@ -1303,6 +1633,7 @@ impl DocumentCore {
                             picture_col_width,
                             &styles,
                             dpi,
+                            (layout.body_area.x, layout.body_area.y),
                         );
                         // A tracked host keeps ownership until a complete
                         // projection proves that its band already ended.
@@ -1324,11 +1655,13 @@ impl DocumentCore {
                         let paragraph_range = band.paragraph_range;
                         let band_len = paragraph_range.len();
                         debug_assert_eq!(band.line_segs.len(), band_len);
-                        for (paragraph, line_segs) in section.paragraphs[paragraph_range.clone()]
-                            .iter_mut()
-                            .zip(band.line_segs)
+                        for (paragraph, (line_segs, space_metrics)) in section.paragraphs
+                            [paragraph_range.clone()]
+                        .iter_mut()
+                        .zip(band.line_segs.into_iter().zip(band.space_metrics))
                         {
-                            paragraph.replace_line_segs(line_segs);
+                            paragraph
+                                .replace_line_segs_with_space_metrics(line_segs, space_metrics);
                         }
                         reflowed += band_len;
                         min_reflowed_idx =
@@ -1384,7 +1717,16 @@ impl DocumentCore {
                                     // 셀 내용 상자 — 위와 같은 이유로 미스냅.
                                     reflow_line_segs(
                                         cell_para,
-                                        ParagraphBox::content_width_px(cell_inner_width, dpi),
+                                        // [#7407] 칸 내용 상자도 본문과 **같은** 문단 여백 계약을 쓴다. 여백을 빼지
+                                        // 않으면 같은 문단이 본문일 때와 칸일 때 다른 상자를 받는다 — 칸 31 에서
+                                        // 줄 폭이 한/글의 39208 대신 40808 이 되어 줄마다 한 글자를 더 먹었다.
+                                        ParagraphBox::content_for_style(
+                                            cell_inner_width,
+                                            styles
+                                                .para_styles
+                                                .get(cell_para.para_shape_id as usize),
+                                            dpi,
+                                        ),
                                         &styles,
                                         dpi,
                                     );
@@ -1442,6 +1784,9 @@ impl DocumentCore {
         let sec_count = document.sections.len();
 
         self.document = document;
+        self.pending_cell_format_vpos = false;
+        self.canvas_metrics = None;
+        self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_resolved_styles();
         self.composed = composed;
@@ -1468,103 +1813,242 @@ impl DocumentCore {
 
     /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화 (네이티브 에러 타입)
     pub fn export_hwp_native(&self) -> Result<Vec<u8>, HwpError> {
-        crate::serializer::serialize_document(&self.document)
+        // [#7114] 어댑터 없는 경로도 같은 저장 프레임을 낸다 — 두 진입점이 다른 조판을
+        // 저장하면 «저장본을 다시 열면 배치가 달라진다» 가 경로마다 갈린다.
+        // 재래핑된 표가 없으면 복제 없이 live IR 을 그대로 쓴다.
+        if self.render_normalization.text_reflowed_tables.is_empty() {
+            return crate::serializer::serialize_document(&self.document)
+                .map_err(|e| HwpError::RenderError(e.to_string()));
+        }
+        let mut snapshot = self.document.clone();
+        self.writeback_reflowed_table_frames(&mut snapshot);
+        crate::serializer::serialize_document(&snapshot)
             .map_err(|e| HwpError::RenderError(e.to_string()))
     }
 
-    /// HWPX 원본의 pageBorderFill XML 구조를 저장 전 보관한다.
+    /// Run format lowering and serialization against one disposable snapshot.
     ///
-    /// 한컴 HWP5 출력은 구역마다 세 PAGE_BORDER_FILL record가 필요하다. 하지만 HWPX
-    /// 원본은 일반적으로 BOTH 하나만 가지므로, adapter가 채운 EVEN/ODD는 저장 직후
-    /// `SectionDef`와 serializer가 읽는 `Control::SectionDef`에서 함께 복원한다.
-    fn snapshot_hwpx_page_border_fill_overlay(&self) -> Option<HwpPageBorderFillOverlay> {
-        // [#5933] HML 출처도 저장 직전에 PBF 를 3개로 채우므로(HWP5 스트림 계약),
-        // 저장 뒤 live IR 은 원래 형상(단일 BOTH)으로 되돌린다 — HWPX 와 같은 계약.
-        matches!(
-            self.source_format,
-            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
-        )
-        .then(|| {
-            self.document
-                .sections
-                .iter()
-                .map(|section| {
-                    (
-                        section.section_def.extra_page_border_fills.clone(),
-                        section
-                            .paragraphs
-                            .iter()
-                            .map(|paragraph| {
-                                paragraph
-                                    .controls
-                                    .iter()
-                                    .map(|control| match control {
-                                        Control::SectionDef(section_def) => {
-                                            Some(section_def.extra_page_border_fills.clone())
-                                        }
-                                        _ => None,
-                                    })
-                                    .collect::<Vec<_>>()
-                            })
-                            .collect::<Vec<_>>(),
-                    )
-                })
-                .collect::<Vec<_>>()
-        })
-    }
+    /// The adapter may insert controls, rewrite image tone values, and rebuild
+    /// raw DocInfo caches. None of those output-format decisions are allowed to
+    /// become the editable document after save.
+    /// [#7114] 재래핑된 표의 저장 `LINE_SEG` 프레임을 **실제 조판 컷**으로 되쓴다.
+    ///
+    /// 셀 텍스트를 편집하면 그 셀의 줄 구성이 바뀌지만, 저장 사다리가 적어 둔 쪽 경계는
+    /// 편집 전 줄 자리에 그대로 남는다. 조판은 이 사실을 이미 알고 있어 — 편집 관문이
+    /// 남긴 `render_normalization.table_text_reflowed` 가 그 표의 저장 프레임 꼬리 흡수를
+    /// 막는다 — 편집 직후 화면은 옳다. 그러나 그 판단은 메모리에만 있고 파일에는 실리지
+    /// 않아, 저장본을 다시 열면 **조판기 자신이 기각한 프레임**을 근거로 꼬리를 흡수한다.
+    /// 첫 조각이 한 유닛 더 차면서 표가 통째로 다음 쪽으로 밀린다(115 → 116쪽).
+    ///
+    /// 여기서 pagination 이 확정한 조각 시작(`PageItem::PartialTable::start_cut`)을 저장
+    /// 사다리의 되감김 위치로 옮긴다. 컷 판정과 저장이 같은 `cell_units` 결과를 소비하므로
+    /// 재열기 배치가 편집 직후 배치와 **구성적으로** 같아진다 — 값을 맞추는 게 아니라 같은
+    /// 결과를 쓰는 것이다.
+    ///
+    /// 되쓰기는 저장 스냅숏에서만 일어나며 live IR 은 건드리지 않는다. 컷 서수 공간이 행
+    /// 공간이 아닌 조각(rowspan 블록 분할·중첩 행 커서)은 이 매핑으로 줄 자리를 정할 수
+    /// 없으므로 그 표의 사다리를 그대로 둔다 — 종전 동작이다.
+    fn writeback_reflowed_table_frames(&self, snapshot: &mut Document) {
+        use crate::model::control::Control;
+        use crate::renderer::layout::table_layout::CellUnitLineAnchor;
+        use crate::renderer::pagination::PageItem;
+        use std::collections::{BTreeMap, BTreeSet};
 
-    fn restore_hwpx_page_border_fill_overlay(&mut self, saved_extras: HwpPageBorderFillOverlay) {
-        debug_assert_eq!(saved_extras.len(), self.document.sections.len());
-        for (section, (section_extras, control_extras)) in
-            self.document.sections.iter_mut().zip(saved_extras)
-        {
-            section.section_def.extra_page_border_fills = section_extras.clone();
-            for (paragraph_idx, paragraph) in section.paragraphs.iter_mut().enumerate() {
-                for (control_idx, control) in paragraph.controls.iter_mut().enumerate() {
-                    if let Control::SectionDef(section_def) = control {
-                        let original_extras = control_extras
-                            .get(paragraph_idx)
-                            .and_then(|paragraph_controls| paragraph_controls.get(control_idx))
-                            .and_then(|extras| extras.as_ref())
-                            .unwrap_or(&section_extras);
-                        section_def.extra_page_border_fills = original_extras.clone();
+        if self.render_normalization.text_reflowed_tables.is_empty() {
+            return;
+        }
+
+        // 1단계 — 고칠 자리를 live IR 에서 정한다. 유닛 캐시가 live 셀 포인터로 메모이즈
+        // 돼 있으므로 스냅숏 포인터를 캐시에 넣지 않는다.
+        let mut plans: Vec<(usize, usize, usize, usize, Vec<(usize, usize)>)> = Vec::new();
+        for (section_idx, section) in self.document.sections.iter().enumerate() {
+            let Some(pagination) = self.pagination.get(section_idx) else {
+                continue;
+            };
+            for (para_idx, paragraph) in section.paragraphs.iter().enumerate() {
+                for (control_idx, control) in paragraph.controls.iter().enumerate() {
+                    let Control::Table(table) = control else {
+                        continue;
+                    };
+                    if !self.table_text_reflowed_path_exists(section_idx, para_idx, control_idx) {
+                        continue;
                     }
+                    let mut per_cell: BTreeMap<usize, BTreeSet<usize>> = BTreeMap::new();
+                    let mut unmappable = false;
+                    for page in &pagination.pages {
+                        for column in &page.column_contents {
+                            for item in &column.items {
+                                let PageItem::PartialTable {
+                                    para_index,
+                                    control_index,
+                                    start_row,
+                                    start_cut,
+                                    start_cut_is_block,
+                                    row_cursor_is_nested,
+                                    ..
+                                } = item
+                                else {
+                                    continue;
+                                };
+                                if *para_index != para_idx || *control_index != control_idx {
+                                    continue;
+                                }
+                                if start_cut.is_empty() {
+                                    continue;
+                                }
+                                if *start_cut_is_block || *row_cursor_is_nested {
+                                    unmappable = true;
+                                    continue;
+                                }
+                                let row_cells =
+                                    crate::renderer::layout::LayoutEngine::row_cut_cell_order(
+                                        table, *start_row,
+                                    );
+                                if row_cells.len() != start_cut.len() {
+                                    unmappable = true;
+                                    continue;
+                                }
+                                for (slot, consumed) in start_cut.iter().enumerate() {
+                                    if *consumed > 0 {
+                                        per_cell
+                                            .entry(row_cells[slot])
+                                            .or_default()
+                                            .insert(*consumed);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if unmappable || per_cell.is_empty() {
+                        continue;
+                    }
+                    for (cell_idx, units) in per_cell {
+                        let Some(cell) = table.cells.get(cell_idx) else {
+                            continue;
+                        };
+                        let anchors =
+                            self.layout_engine
+                                .cell_unit_line_anchors(cell, table, &self.styles);
+                        let mut resets: Vec<(usize, usize)> = Vec::with_capacity(units.len());
+                        for unit in units.iter() {
+                            match anchors.get(*unit) {
+                                // 조각이 이 줄에서 시작한다.
+                                Some(CellUnitLineAnchor::Opens(para, line)) => {
+                                    resets.push((*para, *line))
+                                }
+                                // 줄을 차지하지 않는 유닛(자리차지 개체)에서 시작하면 첫 줄은
+                                // 뒤의 첫 `Opens` 다.
+                                Some(CellUnitLineAnchor::NoLineOfItsOwn) => {
+                                    if let Some((para, line)) =
+                                        anchors.get(*unit..).and_then(|tail| {
+                                            tail.iter().find_map(|anchor| match anchor {
+                                                CellUnitLineAnchor::Opens(para, line) => {
+                                                    Some((*para, *line))
+                                                }
+                                                _ => None,
+                                            })
+                                        })
+                                    {
+                                        resets.push((para, line));
+                                    }
+                                }
+                                // 이미 열린 줄 안(중첩 표 행)은 host 사다리가 가리킬 수 없다.
+                                // 뒤 줄을 대신 적으면 그 구조를 통째로 앞 쪽에 넣으라는 거짓이
+                                // 되므로 이 경계는 **쓰지 않는다** — 읽는 쪽이 제 용량 컷을
+                                // 쓰게 두는 것이 편집 직후 배치와 같다.
+                                Some(CellUnitLineAnchor::InsideAnOpenLine) | None => {}
+                            }
+                        }
+                        resets.sort_unstable();
+                        resets.dedup();
+                        if resets.is_empty() {
+                            continue;
+                        }
+                        plans.push((section_idx, para_idx, control_idx, cell_idx, resets));
+                    }
+                }
+            }
+        }
+
+        // 2단계 — 되감김 위치만 옮긴다.
+        //
+        // 사다리를 통째로 다시 깔면 안 된다. 저장 vpos 는 조각 경계 말고도 **줄 사이 간격**을
+        // 나르고(조판의 `vpos_gap_before` 등이 읽는다), 촘촘한 사다리로 덮으면 그 신호가
+        // 사라져 읽는 쪽이 더 채운다(실측: 문단 2276 편집에서 103쪽이 11낱말 더 먹었다).
+        // 그래서 줄 사이 **원래 간격을 그대로 이어 붙이고**, 되감김만 실제 컷 자리로 옮긴다.
+        for (section_idx, para_idx, control_idx, cell_idx, resets) in plans {
+            let Some(Control::Table(table)) = snapshot
+                .sections
+                .get_mut(section_idx)
+                .and_then(|section| section.paragraphs.get_mut(para_idx))
+                .and_then(|paragraph| paragraph.controls.get_mut(control_idx))
+            else {
+                continue;
+            };
+            let Some(cell) = table.cells.get_mut(cell_idx) else {
+                continue;
+            };
+            let resets: BTreeSet<(usize, usize)> = resets.into_iter().collect();
+            let mut previous: Option<(i32, i32, i32)> = None; // (원래 vpos, 새 vpos, 줄 점유 높이)
+            for (cell_para_idx, cell_para) in cell.paragraphs.iter_mut().enumerate() {
+                for (line_idx, seg) in cell_para.line_segs.iter_mut().enumerate() {
+                    let stored = seg.vertical_pos;
+                    let occupied = seg.line_height.saturating_add(seg.line_spacing);
+                    let next = match previous {
+                        None => stored,
+                        Some((previous_stored, previous_new, previous_occupied)) => {
+                            if resets.contains(&(cell_para_idx, line_idx)) {
+                                // 조각 시작 — 원래도 여기서 되감겼으면 그 원점을 그대로 쓰고,
+                                // 아니면 셀-로컬 원점 0 을 쓴다(이 문서의 조각 원점 관행).
+                                if stored < previous_stored {
+                                    stored
+                                } else {
+                                    0
+                                }
+                            } else {
+                                // 같은 조각 안 — 원래 간격을 그대로 잇는다. 원래 여기서
+                                // 되감겼다면(조각 경계가 옮겨갔다) 이을 간격이 없으므로 앞
+                                // 줄의 점유 높이를 쓴다.
+                                let advance = stored - previous_stored;
+                                previous_new
+                                    + if advance > 0 {
+                                        advance
+                                    } else {
+                                        previous_occupied
+                                    }
+                            }
+                        }
+                    };
+                    seg.vertical_pos = next;
+                    previous = Some((stored, next, occupied));
                 }
             }
         }
     }
 
-    /// Adapter 적용 뒤 직렬화하고, HWPX 원본에 한해 pageBorderFill overlay를 되돌린다.
-    /// 다른 adapter materialization은 기존처럼 live IR에 유지한다.
-    fn serialize_hwp_after_adapter<T>(
-        &mut self,
-        saved_hwpx_page_border_fills: Option<HwpPageBorderFillOverlay>,
-        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
-    ) -> Result<T, HwpError> {
-        let result = serialize(&self.document);
-        if let Some(saved_extras) = saved_hwpx_page_border_fills {
-            self.restore_hwpx_page_border_fill_overlay(saved_extras);
-        }
-        result.map_err(|error| HwpError::RenderError(error.to_string()))
-    }
+    pub fn prepare_hwp_export_snapshot(&self) -> HwpExportSnapshot {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
 
+        let mut snapshot = self.document.clone();
+        self.writeback_reflowed_table_frames(&mut snapshot);
+        let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        super::header_footer_ops::lower_header_footer_field_markers(
+            &mut snapshot,
+            &self.file_name,
+            false,
+        );
+        Self::refresh_doc_info_raw_cache(&mut snapshot);
+        HwpExportSnapshot { document: snapshot }
+    }
     /// HWPX 출처 IR 을 HWP 호환 형태로 변환 후 HWP 5.0 CFB 바이너리로 직렬화한다 (#178).
     ///
     /// HWP 출처는 어댑터가 no-op 이므로 `export_hwp_native` 와 동일 결과.
     /// 사용자 시나리오: HWPX 로 연 문서를 편집 후 HWP 로 저장하는 모든 경로의 단일 진입점.
     ///
     /// HWPX 원본의 단일 BOTH pageBorderFill은 HWP 저장에는 세 record로 materialize하고,
-    /// 저장 후 live IR에서는 원래 구조로 복원한다.
-    pub fn export_hwp_with_adapter(&mut self) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-
-        let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
-        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
-        self.refresh_doc_info_raw_cache();
-        self.serialize_hwp_after_adapter(
-            saved_hwpx_page_border_fills,
-            crate::serializer::serialize_document,
-        )
+    /// live IR에는 반영하지 않는다.
+    pub fn export_hwp_with_adapter(&self) -> Result<Vec<u8>, HwpError> {
+        self.prepare_hwp_export_snapshot().serialize()
     }
 
     /// [#4432] DocInfo raw 캐시 재밀봉 — dirty(또는 봉인 불일치) 상태로 저장에
@@ -1574,8 +2058,7 @@ impl DocumentCore {
     /// "직렬화 성공 지점에서 되돌리는 것이 자연스러운 자리" 를 &mut 저장
     /// 진입점에서 구현한 것이다. raw 캐시가 없던 문서(HWPX/HWP3 출처)는 건드리지
     /// 않는다(raw_stream 유무가 출처 판별에 쓰이는 경로를 오염시키지 않기 위함).
-    fn refresh_doc_info_raw_cache(&mut self) {
-        let doc = &mut self.document;
+    fn refresh_doc_info_raw_cache(doc: &mut Document) {
         if doc.doc_info.raw_stream.is_none() {
             return;
         }
@@ -1598,21 +2081,9 @@ impl DocumentCore {
 
     /// 어댑터를 **복제본에 적용해** HWP5 를 낸다 — 호출자의 IR 은 그대로다.
     ///
-    /// `export_hwp_with_adapter` 는 살아 있는 IR 을 직접 정규화한다. 저장 직후 종료하는
-    /// CLI 에서는 관측되지 않지만, 저장 뒤에도 계속 쓰이는 핸들(MCP 세션)에서는 저장이
-    /// 문서를 바꿔 버린다. 특히 어댑터는 `Hwpx | Hwp3` 양쪽에서 돌면서 각 구역 첫 문단의
-    /// `controls[0]` 에 `Control::SectionDef` 를 끼워 넣는데, 같은 문단의
-    /// `field_ranges[].control_idx` 는 밀어 주지 않는다 — 저장 한 번에 누름틀이 가리키는
-    /// 컨트롤이 한 칸씩 어긋난다. 저장은 스냅숏이어야 하므로 복제본에만 어댑터를 태운다.
-    ///
-    /// 비용은 `Document` 1회 clone 이다. 그 값을 치를 이유가 없는 CLI 경로는
-    /// `export_hwp_with_adapter` 를 계속 쓴다.
+    /// 모든 HWP lowering entrypoint가 같은 snapshot helper로 수렴한다.
     pub fn export_hwp_with_adapter_snapshot(&self) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_document(&snapshot)
-            .map_err(|e| HwpError::RenderError(e.to_string()))
+        self.prepare_hwp_export_snapshot().serialize()
     }
 
     /// 스냅숏 HWP 저장 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
@@ -1623,11 +2094,8 @@ impl DocumentCore {
     pub fn export_hwp_with_adapter_snapshot_with_report(
         &self,
     ) -> Result<crate::serializer::SerializedDocument, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_document_with_report(&snapshot)
-            .map_err(|error| HwpError::RenderError(error.to_string()))
+        self.prepare_hwp_export_snapshot()
+            .serialize_with(crate::serializer::serialize_document_with_report)
     }
 
     /// 비밀번호 HWP 스냅숏 저장 + 내용 손실 보고 (#4430).
@@ -1635,11 +2103,10 @@ impl DocumentCore {
         &self,
         password: &[u8],
     ) -> Result<crate::serializer::SerializedDocument, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_hwp_with_password_and_report(&snapshot, password)
-            .map_err(|error| HwpError::RenderError(error.to_string()))
+        self.prepare_hwp_export_snapshot()
+            .serialize_with(|document| {
+                crate::serializer::serialize_hwp_with_password_and_report(document, password)
+            })
     }
 
     /// HWPX 출처 어댑터를 적용한 뒤 HWP5 EncryptVersion 4 비밀번호 문서로 저장한다.
@@ -1647,17 +2114,11 @@ impl DocumentCore {
     /// 일반 HWP 저장과 마찬가지로 HWPX 출처는 반드시 adapter를 먼저 통과한다. 암호화만
     /// 별도 serializer로 우회하면 차트·그림 HWPX IR이 HWP5 계약으로 정규화되지 않는다.
     pub fn export_hwp_with_adapter_with_password(
-        &mut self,
+        &self,
         password: &[u8],
     ) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-
-        let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
-        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
-        self.refresh_doc_info_raw_cache();
-        self.serialize_hwp_after_adapter(saved_hwpx_page_border_fills, |document| {
-            crate::serializer::serialize_hwp_with_password(document, password)
-        })
+        self.prepare_hwp_export_snapshot()
+            .serialize_with_password(password)
     }
 
     /// 어댑터 적용 + 직렬화 + 자기 재로드 검증을 한 번에 수행한다 (#178 Stage 6).
@@ -1676,7 +2137,7 @@ impl DocumentCore {
     ///
     /// 1회 paginate + 1회 직렬화 + 1회 from_bytes (paginate 포함). 작은 문서 ~수 ms,
     /// 큰 문서 수백 ms 가능.
-    pub fn serialize_hwp_with_verify(&mut self) -> Result<HwpExportVerification, HwpError> {
+    pub fn serialize_hwp_with_verify(&self) -> Result<HwpExportVerification, HwpError> {
         let page_count_before = self.page_count();
         let bytes = self.export_hwp_with_adapter()?;
         let bytes_len = bytes.len();
@@ -1729,16 +2190,21 @@ impl DocumentCore {
     ) -> Result<T, HwpError> {
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
+        let lower_markers = |doc: &mut Document| {
+            super::header_footer_ops::lower_header_footer_field_markers(doc, &self.file_name, true)
+        };
         let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
             let mut doc = self.document.clone();
-            if !doc
+            if let Some((_, value)) = doc
                 .hwpx_aux_entries
-                .iter()
-                .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
             {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            } else {
                 doc.hwpx_aux_entries.push((
                     crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH.to_string(),
-                    b"1".to_vec(),
+                    crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec(),
                 ));
             }
             // HWP3→HWP5 변환본의 HWPX export 도 hwp3 계보를 이어 준다.
@@ -1746,10 +2212,27 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
+            lower_markers(&mut doc);
             serialize(&doc)
-        } else if hwp3_origin {
+        } else if hwp3_origin
+            || self
+                .document
+                .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .is_some()
+            || super::header_footer_ops::has_header_footer_field_markers(&self.document)
+        {
             let mut doc = self.document.clone();
-            Self::push_hwp3_origin_marker(&mut doc);
+            if let Some((_, value)) = doc
+                .hwpx_aux_entries
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            }
+            if hwp3_origin {
+                Self::push_hwp3_origin_marker(&mut doc);
+            }
+            lower_markers(&mut doc);
             serialize(&doc)
         } else {
             serialize(&self.document)
@@ -2018,6 +2501,7 @@ impl DocumentCore {
     /// [Task #741 후속] 문서의 IR mutable 참조를 반환한다.
     /// WASM 영역 영역 외부 image inject 영역 의 영역 영역 영역.
     pub fn document_mut(&mut self) -> &mut Document {
+        self.flush_cell_format_vpos();
         &mut self.document
     }
 
@@ -2025,10 +2509,12 @@ impl DocumentCore {
     ///
     /// [#4582] 이미 문서가 들어 있던 core 에도 쓸 수 있으므로 파생 상태는 손으로 고르지 않고
     /// [`DocumentCore::rebuild_derived_state`] 에 통째로 맡긴다. 종전에는 스타일·문단 구성·
-    /// dirty 표시만 다시 만들고 측정 캐시를 그대로 뒀다 — 그러면 새 문서의 `!table.dirty` 인 표와
-    /// clean 으로 남은 문단이 **이전 문서의 측정값**을 재사용했다.
+    /// dirty 표시만 다시 만들고 측정 캐시를 그대로 둬 새 문서의 문단이 **이전 문서의
+    /// 측정값**을 재사용했다.
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
+        self.canvas_metrics = None;
+        self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_derived_state();
     }
@@ -2267,6 +2753,7 @@ impl DocumentCore {
     /// 종료 시 paginate()를 1회 실행하여 모든 dirty 구역을 처리한다.
     pub fn end_batch_native(&mut self) -> Result<String, HwpError> {
         self.batch_mode = false;
+        self.flush_cell_format_vpos();
         self.paginate();
         let result = self.serialize_event_log();
         self.event_log.clear();
@@ -2277,17 +2764,30 @@ impl DocumentCore {
 
     /// 현재 Document를 클론하여 스냅샷 저장소에 보관한다.
     /// 반환값: 스냅샷 ID (u32)
+    /// undo 스냅샷 저장소의 축출 상한 — **이 값이 유일한 출처다**.
+    ///
+    /// [Task #2328] studio 히스토리(`rhwp-studio/src/engine/history.ts`)의 예산은
+    /// 이 상한에서 파생된다(`상한 - 2`). 종전에는 studio 가 같은 숫자를 따로 들고
+    /// 있어 주석으로만 결합돼 있었고, 순 Rust 변경은 frontend 두 레인이 모두 skip
+    /// 되므로 상한을 낮추고 studio 를 잊어도 CI 가 그린이었다(#6332 가 그 사각을
+    /// 양 레인 소스 대조로 막았다). 값을 브리지로 내보내 사본 자체를 없앤다.
+    ///
+    /// 상한이 studio 의 피크 동시 참조 밑으로 내려가면 참조 중인 스냅샷이 무통보
+    /// 축출돼 undo 예외가 재발한다(#2328).
+    pub const MAX_SNAPSHOTS: usize = 100;
+
     pub fn save_snapshot_native(&mut self) -> u32 {
+        self.flush_cell_format_vpos();
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
-        self.snapshot_store.push((id, self.document.clone()));
-        // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
-        // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
-        // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
-        // studio 가 참조 중인 오래된 undo 스냅샷이 무통보 축출돼 undo 예외가
-        // 재발한다. 변경 시 반드시 studio 상수도 함께 갱신한다.
-        const MAX_SNAPSHOTS: usize = 100;
-        while self.snapshot_store.len() > MAX_SNAPSHOTS {
+        self.snapshot_store.push((
+            id,
+            self.document.clone(),
+            self.text_reflowed_table_paths_for_snapshot(),
+        ));
+        // 초과 시 가장 오래된 스냅샷 제거. 상한은 `Self::MAX_SNAPSHOTS` 하나뿐이고
+        // studio 는 `snapshotCapacity()` 로 그 값을 받아 예산을 계산한다(#7002 후속).
+        while self.snapshot_store.len() > Self::MAX_SNAPSHOTS {
             self.snapshot_store.remove(0);
         }
         id
@@ -2318,10 +2818,11 @@ impl DocumentCore {
         let idx = self
             .snapshot_store
             .iter()
-            .position(|(sid, _)| *sid == id)
+            .position(|(sid, _, _)| *sid == id)
             .ok_or_else(|| HwpError::RenderError(format!("스냅샷 {} 없음", id)))?;
-        let (_, doc) = self.snapshot_store[idx].clone();
+        let (_, doc, text_reflowed_table_paths) = self.snapshot_store[idx].clone();
         self.document = doc;
+        self.restore_text_reflowed_tables_from_snapshot(&text_reflowed_table_paths);
         self.bump_bin_data_epoch();
         // 문서를 통째로 갈아끼웠으므로 파생 상태는 전부 새 원본에서 다시 만든다.
         self.rebuild_derived_state();
@@ -2330,7 +2831,7 @@ impl DocumentCore {
 
     /// 지정 ID의 스냅샷을 저장소에서 제거하여 메모리를 해제한다.
     pub fn discard_snapshot_native(&mut self, id: u32) {
-        self.snapshot_store.retain(|(sid, _)| *sid != id);
+        self.snapshot_store.retain(|(sid, _, _)| *sid != id);
     }
 
     pub fn measure_width_diagnostic_native(
@@ -2635,11 +3136,7 @@ impl DocumentCore {
                     }
                 }
             }
-            if any_removed {
-                // [#4149] text/char_shapes 직접 수술 — 단일줄 과밀 memo 무효화
-                // (process_table 경유로 셀 문단에도 적용된다).
-                para.invalidate_single_line_overflow_memo();
-            }
+            if any_removed {}
         }
 
         fn process_table(table: &mut crate::model::table::Table) {
@@ -2951,8 +3448,8 @@ mod validate_linesegs_tests {
                     row_span: 1,
                     col_span: 1,
                     width: RAW_TRACK_WIDTH,
-                    // The saved cell padding remains a paint fallback only when
-                    // the table's stored padding is all zero.
+                    // 저장 칸 안 여백은 표의 저장 안 여백이 모두 0일 때만
+                    // 페인트 fallback으로 남으며 재조판 폭에서는 중복 차감하지 않는다.
                     padding: Padding {
                         left: 141,
                         right: 141,
@@ -2970,8 +3467,8 @@ mod validate_linesegs_tests {
             cells,
             ..Default::default()
         };
-        // Each raw row is 4 HWPUNIT short. The frame owner is the resolved
-        // table track, so the residual belongs to the last column.
+        // 원시 행의 합은 표 폭보다 4 HWPUNIT 작다. 마지막 열은
+        // 표의 나머지 폭을 소유하므로 원시 칸 폭만 사용해서는 안 된다.
         table.common.width = 10_000;
 
         Document {
@@ -2990,6 +3487,14 @@ mod validate_linesegs_tests {
         }
     }
 
+    /// 표 선언 폭에서 앞 열 원시 폭을 뺀 나머지가 마지막 칸 문단의 독립 폭이다.
+    fn short_table_frame_target_width(document: &Document) -> i32 {
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("표 제어");
+        };
+        i32::try_from(table.common.width - table.cells[0].width).expect("표 폭 범위")
+    }
+
     fn short_table_frame_target_line(document: &Document) -> &LineSeg {
         let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
             panic!("table control");
@@ -2999,8 +3504,8 @@ mod validate_linesegs_tests {
 
     #[test]
     fn eager_reflow_uses_table_frame_owner_width_and_padding() {
-        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
         let mut document = short_table_frame_document();
+        let owner_width = short_table_frame_target_width(&document);
         let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
 
         DocumentCore::reflow_zero_height_paragraphs(
@@ -3012,40 +3517,35 @@ mod validate_linesegs_tests {
         );
 
         let line = short_table_frame_target_line(&document);
-        assert_eq!(
-            line.segment_width,
-            crate::renderer::px_to_hwpunit(
-                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, DEFAULT_DPI),
-                DEFAULT_DPI,
-            ),
-            "eager reflow must use the table-owned frame width and the table's zero padding"
+        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
+        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
+        assert!(
+            (line.segment_width - owner_width).abs() <= 1,
+            "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
+            line.segment_width
         );
     }
 
     #[test]
     fn on_demand_reflow_uses_table_frame_owner_width_and_padding() {
-        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
         let document = short_table_frame_document();
+        let owner_width = short_table_frame_target_width(&document);
         let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
             panic!("table control");
         };
-        assert_eq!(
-            table.paragraph_frame_owner_widths()[1],
-            RESOLVED_LAST_TRACK_WIDTH
-        );
+        assert_eq!(table.paragraph_frame_owner_widths()[1], owner_width);
         let mut core = DocumentCore::new_empty();
         core.set_document(document);
         core.validation_report = DocumentCore::validate_linesegs(core.document(), false);
 
         assert_eq!(core.reflow_linesegs_on_demand(), 1);
         let line = short_table_frame_target_line(core.document());
-        assert_eq!(
-            line.segment_width,
-            crate::renderer::px_to_hwpunit(
-                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, core.dpi),
-                core.dpi,
-            ),
-            "on-demand reflow must use the table-owned frame width and the table's zero padding"
+        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
+        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
+        assert!(
+            (line.segment_width - owner_width).abs() <= 1,
+            "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
+            line.segment_width
         );
     }
 
@@ -3127,11 +3627,7 @@ mod validate_linesegs_tests {
 
         for paragraph in &mut section.paragraphs[325..332] {
             paragraph.invalidate_layout_inputs();
-            paragraph.single_line_overflow_memo.set(123, true);
         }
-        section.paragraphs[332]
-            .single_line_overflow_memo
-            .set(123, true);
         section.paragraphs[325].line_segs.clear();
         core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
         assert!(
@@ -3183,12 +3679,6 @@ mod validate_linesegs_tests {
                 expected_vpos += actual.line_height + actual.line_spacing;
             }
         }
-        assert!(
-            section.paragraphs[325..332]
-                .iter()
-                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
-            "each published row invalidates its derived overflow memo"
-        );
         assert!(
             section.paragraphs[325..332]
                 .iter()
@@ -3249,12 +3739,6 @@ mod validate_linesegs_tests {
                 .all(|line| line.column_start == 0 && line.segment_width > 3_406),
             "p332 is the first full-width row after the side-wrap band"
         );
-        assert!(
-            !section.paragraphs[332]
-                .single_line_overflow_memo
-                .is_unjudged(),
-            "p332 was not published as part of the Picture band"
-        );
     }
 
     #[test]
@@ -3269,9 +3753,6 @@ mod validate_linesegs_tests {
         let stored_p326_segment_width = stored_band[1][0].segment_width;
         let first_full_width = section.paragraphs[332].line_segs[0].segment_width;
 
-        for paragraph in &mut section.paragraphs[325..332] {
-            paragraph.single_line_overflow_memo.set(123, true);
-        }
         section.paragraphs[326].line_segs.clear();
         core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
         assert!(
@@ -3323,12 +3804,6 @@ mod validate_linesegs_tests {
                 expected_vpos += actual.line_height + actual.line_spacing;
             }
         }
-        assert!(
-            section.paragraphs[325..332]
-                .iter()
-                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
-            "the stored host and every successor are atomically republished"
-        );
         let p326 = &section.paragraphs[326].line_segs[0];
         assert_eq!(p326.column_start, stored_p326_column_start);
         assert_eq!(p326.segment_width, stored_p326_segment_width);
@@ -3344,9 +3819,6 @@ mod validate_linesegs_tests {
         let section = &mut core.document.sections[0];
         section.paragraphs[326].line_segs.clear();
         section.paragraphs[329].column_type = ColumnBreakType::Page;
-        for paragraph in &mut section.paragraphs[325..333] {
-            paragraph.single_line_overflow_memo.set(123, true);
-        }
         let source_rows = section.paragraphs[325..333]
             .iter()
             .map(|paragraph| line_seg_fields(&paragraph.line_segs))
@@ -3373,12 +3845,6 @@ mod validate_linesegs_tests {
         assert!(
             section.paragraphs[326].line_segs.is_empty(),
             "the rejected tracked host must not scalar-reflow the missing successor"
-        );
-        assert!(
-            section.paragraphs[325..333]
-                .iter()
-                .all(|paragraph| !paragraph.single_line_overflow_memo.is_unjudged()),
-            "the failed transaction must not publish or invalidate any source row"
         );
     }
 
@@ -3557,8 +4023,8 @@ mod set_document_tests {
         core.measured_tables[0][0].total_height
     }
 
-    /// [#4582] 이미 문서가 들어 있던 core 에 새 문서를 넣으면, 증분 측정이 `!table.dirty`
-    /// 인 표에 대해 **이전 문서의 `MeasuredTable`** 을 재사용한다. `set_document` 가
+    /// [#4582] 이미 문서가 들어 있던 core 에 새 문서를 넣으면, 증분 측정이 clean 문단의
+    /// 표에 대해 **이전 문서의 `MeasuredTable`** 을 재사용한다. `set_document` 가
     /// 측정 캐시를 비우지 않기 때문이다.
     ///
     /// 판정 기준은 "빈 core 에 같은 문서를 넣었을 때의 측정값" 이다 — 문서가 같으면

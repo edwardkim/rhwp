@@ -1,0 +1,343 @@
+{
+  "stage": 135,
+  "preanalysis": {
+    "stage": 135,
+    "head": "496f6d6b7693894a8dd30d1c02673d9d4f723f6b",
+    "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+    "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+    "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+    "pdf_sha256": "e77634f4c63c15875797a4d6d354fd90cad27fd65d708cee4cd85b80c4cb1009",
+    "pdf_pages": 384,
+    "native_pages": 385,
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "devel_existing_tests": "stage134 devel-control 기존#7009/#3931 8PASS",
+    "analysis": "HWPX 실제쪽수/구조와두포맷비대칭3실패를개별재현. 정상부록74쪽/문답같은물리쪽/다른HWP저장줄과기존함수는유지. 정상한컴2024 HWPX PDF384쪽에선택표/부록/말미Native출력을비교해90미만일때만실제실패assertion·쪽수전용함수를#7445보류. oracle는이입력기존격차가개선되어현재차단이아니므로원장행을제거/완화하지않음. 새함수추가/현재숫자에맞춘기준값변경금지."
+  },
+  "code_commit": "2085dfdce823ef7eaf2b122b599a2c82705db4e4",
+  "before": [
+    {
+      "case": "issue_7009_handbook_structure_landmarks",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "-E",
+        "test(issue_7009_handbook_structure_landmarks::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 11.49570450000465
+    },
+    {
+      "case": "issue_3931_declared_rowbreak",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_3931_declared_rowbreak::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.063084291294217
+    },
+    {
+      "case": "issue_6389_cell_stored_ladder_compresses_to_fit",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_012",
+        "-E",
+        "test(issue_6389_cell_stored_ladder_compresses_to_fit::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.13133570831269
+    }
+  ],
+  "post_count_diagnostic": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_028",
+      "-E",
+      "test(=issue_7009_handbook_structure_landmarks::hwpx_appendix_span_already_matches_the_oracle) or test(=issue_3931_declared_rowbreak::issue_3931_hwpx_keeps_existing_fragment_route)"
+    ],
+    "exit_code": 100,
+    "seconds": 13.576858459040523
+  },
+  "deferred_scope": [
+    "#7009 HWPX 총쪽수/간지assertion2곳",
+    "#3931 HWPX쪽수assertion1곳",
+    "두포맷비대칭전용한함수만"
+  ],
+  "preserved_scope": [
+    "#7009 기존HWP/HWPX 함수와부록구간71/74쪽/랜드마크존재",
+    "#3931 문답같은물리쪽PASS·다른저장줄/분할계약",
+    "#6389 정상2함수",
+    "HWPX oracle 원장384/382행(현재385쪽은차1로기준차2보다개선)",
+    "모든다른입력/축/원문/PDF"
+  ],
+  "visual_command": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "handbook-hwpx",
+    "samples/2025 행정업무운영 편람(최종).hwpx",
+    "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+    "--pages",
+    "158,159,310-312,383,384",
+    "--dpi",
+    "96",
+    "--rhwp-bin",
+    "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "--embed-fonts=full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage135-handbook-hwpx/visual-native"
+  ],
+  "selected_pages": [
+    158,
+    159,
+    310,
+    311,
+    312,
+    383,
+    384
+  ],
+  "native_pages": 385,
+  "pdf_pages": 384,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 158,
+        "tolerant_content_match_percent": 87.17084
+      },
+      {
+        "page": 310,
+        "tolerant_content_match_percent": 0.0
+      },
+      {
+        "page": 311,
+        "tolerant_content_match_percent": 0.0
+      },
+      {
+        "page": 312,
+        "tolerant_content_match_percent": 0.0
+      },
+      {
+        "page": 383,
+        "tolerant_content_match_percent": 35.17977
+      },
+      {
+        "page": 384,
+        "tolerant_content_match_percent": 6.04996
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "direct_inspection": "선택전체contact sheet·311review/384overlay/추가385직접확인. 부록간지PDF310→Native311,말미판권PDF384→Native385. 310/311/312는한쪽만빈페이지로0%;글꼴예외아님.",
+  "devel_control_evidence": "../issue7445/handbook_hwp_blocking_scope_validation.json (고정devel 원래8PASS)",
+  "after_summary": {
+    "passed": 23,
+    "failed": 1,
+    "skipped": 601,
+    "normal_tests_passed": 8,
+    "oracle_partitions_passed": 15,
+    "oracle_partitions_failed": 1,
+    "summary": [
+      "     Summary [   4.265s] 24 tests run: 23 passed, 1 failed, 601 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "496f6d6b7693894a8dd30d1c02673d9d4f723f6b",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_023",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "(test(oracle_page_count_baseline::)) or (test(issue_7009_handbook_structure_landmarks::)) or (test(issue_3931_declared_rowbreak::)) or (test(issue_6389_cell_stored_ladder_compresses_to_fit::))"
+        ],
+        "exit_code": 100,
+        "seconds": 18.71336125023663
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.0699731251224875
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3259486248716712
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.25894541619345546
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3899247501976788
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.767117084003985
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.6051010829396546
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.676423917058855
+      }
+    ]
+  },
+  "issue_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5875912864",
+  "stable_image_sha256": {
+    "handbook_hwpx_native_review_311.png": "a33ad546fb4c589e60c24e6b90c83baaf2a40bd5e8823cade3be15653c153b56",
+    "handbook_hwpx_native_overlay_384.png": "078756ee62e22c2fd640cfd09f8bdbb56f87684164a4081b888cb7005b2e3cd4",
+    "handbook_hwpx_native_extra_385.png": "f0abebf5fd0749598c50e18cfcc9e97e63fe05960291b0127ebbcc0cb2b7b2e8"
+  },
+  "limits": [
+    "전384쪽/freshWASM미실행. 선택7쪽부정증거만",
+    "집중1실패는정책연구HWP oracle;다른body/cell/시장/font 검사와최종전체·PR준비미완료",
+    "생산변경/새함수/기준값완화/정상oracle행삭제없음"
+  ]
+}

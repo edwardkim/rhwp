@@ -1,0 +1,799 @@
+{
+  "branch": "codex/pr7141-7175-7178-20260916",
+  "base": "263b61a64a77a0679e9d8679c5be2e1d180cee1a",
+  "review_head": "a85189909b62174d89ea92c48507e9d8487e78d1",
+  "source_patch_sha256": "837efe31cbdbe954346ebc85c886ab34077e9a793f16435ab0b2f8cfacb8c488",
+  "source_blobs": [
+    "2541e670192da31392a272f98c66234972aae461 src/renderer/float_placement.rs",
+    "ddc0b658a8d694fff1349c118fdbbbbd47ebdd32 src/renderer/layout.rs",
+    "a3511e44a3d4d8e37f1544de65dfee62e6c5d1ad src/renderer/layout/table_layout.rs",
+    "473707842f057ec51ce56996ba736966b6d2fc89 src/renderer/layout/table_partial.rs",
+    "3a6eec8739291c1151ded458f4437a473634f7b8 src/renderer/typeset.rs",
+    "6aa356bf6a7ea2b1e610bccfc1a89bb7abff1077 tests/cases/issue_6946_block_seated_float_sibling_gets_its_own_page.rs",
+    "b2b53872592cf1c0842a6313dd1a6344f855f382 tests/cases/issue_7095_page_spanning_fragment_box.rs"
+  ],
+  "inputs": [
+    {
+      "path": "samples/issue7062/tac_object_host_line_height.hwp",
+      "sha256": "2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb",
+      "bytes": 286720,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/tac_object_host_line_height-2020.pdf",
+      "sha256": "f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051",
+      "bytes": 719340,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/issue6023/30269_reform_recommendation.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "bytes": 470016,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+      "bytes": 572193,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/issue6946/44529-logistics-policy-rule-amendment.hwp",
+      "sha256": "e7225ebb6d97981ffb10c98fbb6a639ef2efe77e43ca30d11d4fd172c3c2c1d6",
+      "bytes": 34816,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf",
+      "sha256": "a1b36d69d544cb68f0d9ba84391fcb366e2dacf8887e62a1eaf71ed3c2719eb1",
+      "bytes": 242282,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/issue2004_cell_image_stack.hwp",
+      "sha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50",
+      "bytes": 2396160,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "sha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90",
+      "bytes": 903153,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/KTX.hwp",
+      "sha256": "b6c1492152f53e8dd7d4bbbb4faca88866bb8458e9018c70c936cd469ea6fab3",
+      "bytes": 163840,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/KTX-2022.pdf",
+      "sha256": "f6fad0448109ee477f7b259e947408314f2c6e12a0defde21d25e01dfb1e9d78",
+      "bytes": 717971,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/80168_regulatory_analysis.hwp",
+      "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+      "bytes": 218624,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+      "sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982",
+      "bytes": 940965,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "bytes": 553984,
+      "matches_tracked_blob": true
+    },
+    {
+      "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+      "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+      "bytes": 1056768,
+      "matches_tracked_blob": true
+    }
+  ],
+  "visual": {
+    "native:7062": [
+      {
+        "page": 1,
+        "visual_accuracy_proxy_percent": 24.68643,
+        "pixel_match_percent": 81.30603,
+        "compare": "/private/tmp/pr-final-native/maint-7062/compare/compare_001.png",
+        "review": "/private/tmp/pr-final-native/maint-7062/review/review_001.png"
+      },
+      {
+        "page": 2,
+        "visual_accuracy_proxy_percent": 27.8714,
+        "pixel_match_percent": 76.69072,
+        "compare": "/private/tmp/pr-final-native/maint-7062/compare/compare_002.png",
+        "review": "/private/tmp/pr-final-native/maint-7062/review/review_002.png"
+      },
+      {
+        "page": 3,
+        "visual_accuracy_proxy_percent": 10.23245,
+        "pixel_match_percent": 80.24184,
+        "compare": "/private/tmp/pr-final-native/maint-7062/compare/compare_003.png",
+        "review": "/private/tmp/pr-final-native/maint-7062/review/review_003.png"
+      },
+      {
+        "page": 10,
+        "visual_accuracy_proxy_percent": 44.3824,
+        "pixel_match_percent": 87.47743,
+        "compare": "/private/tmp/pr-final-native/maint-7062/compare/compare_010.png",
+        "review": "/private/tmp/pr-final-native/maint-7062/review/review_010.png"
+      }
+    ],
+    "wasm-sweep:7062": [
+      {
+        "page": 1,
+        "visual_accuracy_proxy_percent": 24.68643,
+        "pixel_match_percent": 81.30603,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-7062/compare/compare_001.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-7062/review/review_001.png"
+      },
+      {
+        "page": 2,
+        "visual_accuracy_proxy_percent": 27.8714,
+        "pixel_match_percent": 76.69072,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-7062/compare/compare_002.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-7062/review/review_002.png"
+      },
+      {
+        "page": 3,
+        "visual_accuracy_proxy_percent": 10.23245,
+        "pixel_match_percent": 80.24184,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-7062/compare/compare_003.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-7062/review/review_003.png"
+      },
+      {
+        "page": 10,
+        "visual_accuracy_proxy_percent": 44.3824,
+        "pixel_match_percent": 87.47743,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-7062/compare/compare_010.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-7062/review/review_010.png"
+      }
+    ],
+    "native:30269": [
+      {
+        "page": 9,
+        "visual_accuracy_proxy_percent": 9.81292,
+        "pixel_match_percent": 91.23053,
+        "compare": "/private/tmp/pr-final-native/maint-30269/compare/compare_009.png",
+        "review": "/private/tmp/pr-final-native/maint-30269/review/review_009.png"
+      },
+      {
+        "page": 10,
+        "visual_accuracy_proxy_percent": 11.53815,
+        "pixel_match_percent": 86.34225,
+        "compare": "/private/tmp/pr-final-native/maint-30269/compare/compare_010.png",
+        "review": "/private/tmp/pr-final-native/maint-30269/review/review_010.png"
+      },
+      {
+        "page": 11,
+        "visual_accuracy_proxy_percent": 13.52991,
+        "pixel_match_percent": 94.9648,
+        "compare": "/private/tmp/pr-final-native/maint-30269/compare/compare_011.png",
+        "review": "/private/tmp/pr-final-native/maint-30269/review/review_011.png"
+      }
+    ],
+    "wasm-sweep:30269": [
+      {
+        "page": 9,
+        "visual_accuracy_proxy_percent": 9.81292,
+        "pixel_match_percent": 91.23053,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-30269/compare/compare_009.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-30269/review/review_009.png"
+      },
+      {
+        "page": 10,
+        "visual_accuracy_proxy_percent": 11.53815,
+        "pixel_match_percent": 86.34225,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-30269/compare/compare_010.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-30269/review/review_010.png"
+      },
+      {
+        "page": 11,
+        "visual_accuracy_proxy_percent": 13.52991,
+        "pixel_match_percent": 94.9648,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-30269/compare/compare_011.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-30269/review/review_011.png"
+      }
+    ],
+    "native:44529": [
+      {
+        "page": 6,
+        "visual_accuracy_proxy_percent": 39.52441,
+        "pixel_match_percent": 91.56317,
+        "compare": "/private/tmp/pr-final-native/maint-44529/compare/compare_006.png",
+        "review": "/private/tmp/pr-final-native/maint-44529/review/review_006.png"
+      },
+      {
+        "page": 7,
+        "visual_accuracy_proxy_percent": 18.17107,
+        "pixel_match_percent": 86.33765,
+        "compare": "/private/tmp/pr-final-native/maint-44529/compare/compare_007.png",
+        "review": "/private/tmp/pr-final-native/maint-44529/review/review_007.png"
+      },
+      {
+        "page": 8,
+        "visual_accuracy_proxy_percent": 56.06163,
+        "pixel_match_percent": 95.8325,
+        "compare": "/private/tmp/pr-final-native/maint-44529/compare/compare_008.png",
+        "review": "/private/tmp/pr-final-native/maint-44529/review/review_008.png"
+      },
+      {
+        "page": 9,
+        "visual_accuracy_proxy_percent": 7.41468,
+        "pixel_match_percent": 94.86756,
+        "compare": "/private/tmp/pr-final-native/maint-44529/compare/compare_009.png",
+        "review": "/private/tmp/pr-final-native/maint-44529/review/review_009.png"
+      }
+    ],
+    "wasm-sweep:44529": [
+      {
+        "page": 6,
+        "visual_accuracy_proxy_percent": 39.52441,
+        "pixel_match_percent": 91.56317,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-44529/compare/compare_006.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-44529/review/review_006.png"
+      },
+      {
+        "page": 7,
+        "visual_accuracy_proxy_percent": 18.17107,
+        "pixel_match_percent": 86.33765,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-44529/compare/compare_007.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-44529/review/review_007.png"
+      },
+      {
+        "page": 8,
+        "visual_accuracy_proxy_percent": 56.06163,
+        "pixel_match_percent": 95.8325,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-44529/compare/compare_008.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-44529/review/review_008.png"
+      },
+      {
+        "page": 9,
+        "visual_accuracy_proxy_percent": 7.41468,
+        "pixel_match_percent": 94.86756,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-44529/compare/compare_009.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-44529/review/review_009.png"
+      }
+    ],
+    "native:2004": [
+      {
+        "page": 4,
+        "visual_accuracy_proxy_percent": 43.33985,
+        "pixel_match_percent": 87.74031,
+        "compare": "/private/tmp/pr-final-native/maint-2004/compare/compare_004.png",
+        "review": "/private/tmp/pr-final-native/maint-2004/review/review_004.png"
+      },
+      {
+        "page": 5,
+        "visual_accuracy_proxy_percent": 31.11427,
+        "pixel_match_percent": 84.79188,
+        "compare": "/private/tmp/pr-final-native/maint-2004/compare/compare_005.png",
+        "review": "/private/tmp/pr-final-native/maint-2004/review/review_005.png"
+      },
+      {
+        "page": 6,
+        "visual_accuracy_proxy_percent": 27.70045,
+        "pixel_match_percent": 83.15763,
+        "compare": "/private/tmp/pr-final-native/maint-2004/compare/compare_006.png",
+        "review": "/private/tmp/pr-final-native/maint-2004/review/review_006.png"
+      },
+      {
+        "page": 7,
+        "visual_accuracy_proxy_percent": 33.03847,
+        "pixel_match_percent": 84.52362,
+        "compare": "/private/tmp/pr-final-native/maint-2004/compare/compare_007.png",
+        "review": "/private/tmp/pr-final-native/maint-2004/review/review_007.png"
+      },
+      {
+        "page": 8,
+        "visual_accuracy_proxy_percent": 30.27915,
+        "pixel_match_percent": 85.58546,
+        "compare": "/private/tmp/pr-final-native/maint-2004/compare/compare_008.png",
+        "review": "/private/tmp/pr-final-native/maint-2004/review/review_008.png"
+      }
+    ],
+    "wasm-sweep:2004": [
+      {
+        "page": 4,
+        "visual_accuracy_proxy_percent": 43.30035,
+        "pixel_match_percent": 87.72674,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-2004/compare/compare_004.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-2004/review/review_004.png"
+      },
+      {
+        "page": 5,
+        "visual_accuracy_proxy_percent": 31.11427,
+        "pixel_match_percent": 84.79188,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-2004/compare/compare_005.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-2004/review/review_005.png"
+      },
+      {
+        "page": 6,
+        "visual_accuracy_proxy_percent": 27.70045,
+        "pixel_match_percent": 83.15763,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-2004/compare/compare_006.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-2004/review/review_006.png"
+      },
+      {
+        "page": 7,
+        "visual_accuracy_proxy_percent": 33.03847,
+        "pixel_match_percent": 84.52362,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-2004/compare/compare_007.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-2004/review/review_007.png"
+      },
+      {
+        "page": 8,
+        "visual_accuracy_proxy_percent": 30.27915,
+        "pixel_match_percent": 85.58546,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-2004/compare/compare_008.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-2004/review/review_008.png"
+      }
+    ],
+    "native:ktx": [
+      {
+        "page": 24,
+        "visual_accuracy_proxy_percent": 57.74464,
+        "pixel_match_percent": 99.34527,
+        "compare": "/private/tmp/pr-final-native/maint-ktx/compare/compare_024.png",
+        "review": "/private/tmp/pr-final-native/maint-ktx/review/review_024.png"
+      },
+      {
+        "page": 25,
+        "visual_accuracy_proxy_percent": 27.15908,
+        "pixel_match_percent": 87.83945,
+        "compare": "/private/tmp/pr-final-native/maint-ktx/compare/compare_025.png",
+        "review": "/private/tmp/pr-final-native/maint-ktx/review/review_025.png"
+      },
+      {
+        "page": 26,
+        "visual_accuracy_proxy_percent": 15.91149,
+        "pixel_match_percent": 86.97926,
+        "compare": "/private/tmp/pr-final-native/maint-ktx/compare/compare_026.png",
+        "review": "/private/tmp/pr-final-native/maint-ktx/review/review_026.png"
+      }
+    ],
+    "wasm-sweep:ktx": [
+      {
+        "page": 24,
+        "visual_accuracy_proxy_percent": 57.74464,
+        "pixel_match_percent": 99.34527,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-ktx/compare/compare_024.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-ktx/review/review_024.png"
+      },
+      {
+        "page": 25,
+        "visual_accuracy_proxy_percent": 27.15908,
+        "pixel_match_percent": 87.83945,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-ktx/compare/compare_025.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-ktx/review/review_025.png"
+      },
+      {
+        "page": 26,
+        "visual_accuracy_proxy_percent": 15.91149,
+        "pixel_match_percent": 86.97926,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-ktx/compare/compare_026.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-ktx/review/review_026.png"
+      }
+    ],
+    "native:80168": [
+      {
+        "page": 28,
+        "visual_accuracy_proxy_percent": 5.66491,
+        "pixel_match_percent": 96.52256,
+        "compare": "/private/tmp/pr-final-native/maint-80168/compare/compare_028.png",
+        "review": "/private/tmp/pr-final-native/maint-80168/review/review_028.png"
+      },
+      {
+        "page": 29,
+        "visual_accuracy_proxy_percent": 15.53975,
+        "pixel_match_percent": 90.06193,
+        "compare": "/private/tmp/pr-final-native/maint-80168/compare/compare_029.png",
+        "review": "/private/tmp/pr-final-native/maint-80168/review/review_029.png"
+      },
+      {
+        "page": 30,
+        "visual_accuracy_proxy_percent": 7.8208,
+        "pixel_match_percent": 84.39824,
+        "compare": "/private/tmp/pr-final-native/maint-80168/compare/compare_030.png",
+        "review": "/private/tmp/pr-final-native/maint-80168/review/review_030.png"
+      }
+    ],
+    "wasm-sweep:80168": [
+      {
+        "page": 28,
+        "visual_accuracy_proxy_percent": 5.66491,
+        "pixel_match_percent": 96.52256,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-80168/compare/compare_028.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-80168/review/review_028.png"
+      },
+      {
+        "page": 29,
+        "visual_accuracy_proxy_percent": 15.53975,
+        "pixel_match_percent": 90.06193,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-80168/compare/compare_029.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-80168/review/review_029.png"
+      },
+      {
+        "page": 30,
+        "visual_accuracy_proxy_percent": 7.8208,
+        "pixel_match_percent": 84.39824,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-80168/compare/compare_030.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-80168/review/review_030.png"
+      }
+    ],
+    "native:rowbreak": [
+      {
+        "page": 13,
+        "visual_accuracy_proxy_percent": 54.40069,
+        "pixel_match_percent": 85.92774,
+        "compare": "/private/tmp/pr-final-native/maint-rowbreak/compare/compare_013.png",
+        "review": "/private/tmp/pr-final-native/maint-rowbreak/review/review_013.png"
+      },
+      {
+        "page": 14,
+        "visual_accuracy_proxy_percent": 41.13275,
+        "pixel_match_percent": 85.76972,
+        "compare": "/private/tmp/pr-final-native/maint-rowbreak/compare/compare_014.png",
+        "review": "/private/tmp/pr-final-native/maint-rowbreak/review/review_014.png"
+      },
+      {
+        "page": 15,
+        "visual_accuracy_proxy_percent": 33.36509,
+        "pixel_match_percent": 87.44749,
+        "compare": "/private/tmp/pr-final-native/maint-rowbreak/compare/compare_015.png",
+        "review": "/private/tmp/pr-final-native/maint-rowbreak/review/review_015.png"
+      }
+    ],
+    "wasm-sweep:rowbreak": [
+      {
+        "page": 13,
+        "visual_accuracy_proxy_percent": 54.40069,
+        "pixel_match_percent": 85.92774,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/compare/compare_013.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/review/review_013.png"
+      },
+      {
+        "page": 14,
+        "visual_accuracy_proxy_percent": 41.13275,
+        "pixel_match_percent": 85.76972,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/compare/compare_014.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/review/review_014.png"
+      },
+      {
+        "page": 15,
+        "visual_accuracy_proxy_percent": 33.36509,
+        "pixel_match_percent": 87.44749,
+        "compare": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/compare/compare_015.png",
+        "review": "/private/tmp/pr-final-wasm-sweep/maint-rowbreak/review/review_015.png"
+      }
+    ]
+  },
+  "validation": [
+    {
+      "stage": "fmt",
+      "exit": 0,
+      "seconds": 5.8,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ]
+    },
+    {
+      "stage": "prepare",
+      "exit": 0,
+      "seconds": 0.57,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ]
+    },
+    {
+      "stage": "focused",
+      "exit": 0,
+      "seconds": 189.29,
+      "command": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import {resolveCasePlan} from './scripts/run-rust-test.mjs'; import {spawnSync} from 'node:child_process';\nconst cs=['issue_7095_page_spanning_fragment_box','issue_4771_derived_layout_state','issue_6924_fragment_owned_line_kept','issue_7086_empty_spacer_before_segless_host','issue_6946_block_seated_float_sibling_gets_its_own_page','issue_6795_split_float_sibling_gets_its_own_page','issue_6981_split_straddle_row_height','layout_anomaly_contract','security_corpus_regression','issue_6950_paragraph_end_topbottom_anchor'];\nconst ts=[...new Set(cs.map(c=>resolveCasePlan(c).target))];const args=['nextest','run','--locked','--cargo-profile','release-test','--target-dir','target/pr7141-7175-7178-20260916',...ts.flatMap(t=>['--test',t]),'--no-fail-fast','-E',cs.map(c=>`test(/(^|::)${c}::/)`).join(' | ')];console.log(args.join(' '));process.exit(spawnSync('cargo',args,{stdio:'inherit'}).status??1);"
+      ]
+    },
+    {
+      "stage": "full",
+      "exit": 0,
+      "seconds": 896.55,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ]
+    },
+    {
+      "stage": "fmt-check",
+      "exit": 0,
+      "seconds": 6.22,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "stage": "clippy-native",
+      "exit": 0,
+      "seconds": 51.94,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "stage": "clippy-wasm",
+      "exit": 0,
+      "seconds": 56.71,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "stage": "workspace-build",
+      "exit": 0,
+      "seconds": 102.36,
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916"
+      ]
+    },
+    {
+      "stage": "clippy-all",
+      "exit": 0,
+      "seconds": 76.54,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "stage": "manifest",
+      "exit": 0,
+      "seconds": 0.47,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "263b61a64a77a0679e9d8679c5be2e1d180cee1a"
+      ]
+    },
+    {
+      "stage": "unit-tiers",
+      "exit": 0,
+      "seconds": 8.2,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "263b61a64a77a0679e9d8679c5be2e1d180cee1a"
+      ]
+    },
+    {
+      "stage": "skia-lib",
+      "exit": 0,
+      "seconds": 187.75,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--features",
+        "native-skia",
+        "--lib"
+      ]
+    },
+    {
+      "stage": "skia-issue_2225_missing_picture_placeholder",
+      "exit": 0,
+      "seconds": 152.99,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--features",
+        "native-skia"
+      ]
+    },
+    {
+      "stage": "skia-render_p37_direct_pdf_export",
+      "exit": 0,
+      "seconds": 9.48,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr7141-7175-7178-20260916",
+        "--features",
+        "native-skia"
+      ]
+    },
+    {
+      "stage": "wasm",
+      "exit": 0,
+      "seconds": 177.37,
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/private/tmp/pr-maint-wasm",
+        "--no-opt"
+      ]
+    }
+  ],
+  "logs": {
+    "fmt": {
+      "sha256": "b9f11f94054944cb2b5308c0bf43491c54cec26ff13793ba592442b026c597c5",
+      "summary": []
+    },
+    "prepare": {
+      "sha256": "f5405449fd7ee68040bac27b51fdaa3d80554ec78d8b9e4ff15c52f51ac1bd78",
+      "summary": []
+    },
+    "focused": {
+      "sha256": "0c0f98bc45dd981c30f58f56ace9dbac3fcda294f2ad97d8050f276a7d7639f4",
+      "summary": [
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "Summary [   6.010s] 80 tests run: 80 passed, 1318 skipped"
+      ]
+    },
+    "full": {
+      "sha256": "7bc08d889153c9915f1a8adfc68c3e7aaf1599bb355144ff4dd75e610547b857",
+      "summary": [
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "LEAK [   4.061s] (5147/9916) rhwp::regression_suite_006 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+        "LEAK [   0.632s] (8415/9916) rhwp::regression_suite_022 issue_2007_nested_cell_pagination::issue_2007_nested_cell_content_paginates",
+        "Summary [ 370.437s] 9916 tests run: 9916 passed (5 slow, 2 leaky), 51 skipped"
+      ]
+    },
+    "fmt-check": {
+      "sha256": "6380244d1eefa16a55cc2f35debcef90ea7eb7b072192c704ffc9880676bfa8c",
+      "summary": []
+    },
+    "clippy-native": {
+      "sha256": "8f6dff6bb1a5baf3332a5f59f1a8bdcd40a3a8e1523614735486cb054428df60",
+      "summary": []
+    },
+    "clippy-wasm": {
+      "sha256": "842f38b42f0fa82b1b077108733b9f33894be43c0e7129eb06177b3aa2f987b4",
+      "summary": []
+    },
+    "workspace-build": {
+      "sha256": "437a87dc3e534422c69ad7187e51ca1c81a7413fad8e082a7fcb494a455928a8",
+      "summary": []
+    },
+    "clippy-all": {
+      "sha256": "72b228f469b905229c1d8fdf26c5b6881f1c6dfe03e929c2e76c9243a68905a0",
+      "summary": []
+    },
+    "manifest": {
+      "sha256": "6b044db54c967184f40fea858348615ee72540c213ba7c78a70407224556f240",
+      "summary": []
+    },
+    "unit-tiers": {
+      "sha256": "8f73baf304e24ed7471a4f672ce75ea66cf9a6a1de2c8d74a8c51fc89982e8dd",
+      "summary": []
+    },
+    "skia-lib": {
+      "sha256": "11ca6d5d5f0a8ec1b26cdc82fe4ac1d5c6814cc8e58f84a6f17cdf8371db451a",
+      "summary": [
+        "test result: ok. 3930 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 22.02s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "skia-issue_2225_missing_picture_placeholder": {
+      "sha256": "53904128bb9bcbeff8e7b3a2bdea0884bea902567a5284b432f1ad4173b4dd3d",
+      "summary": [
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "Summary [   0.990s] 2 tests run: 2 passed, 201 skipped"
+      ]
+    },
+    "skia-render_p37_direct_pdf_export": {
+      "sha256": "f2cf9cf5814d2548d047b8c50d1ce676f0c91f9c5122c07b66b1a76ef03c1058",
+      "summary": [
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "Summary [   0.761s] 4 tests run: 4 passed, 191 skipped"
+      ]
+    },
+    "wasm": {
+      "sha256": "3fad7c1c1eaa07e9299e92dde894d06d1d00d091aeb444d57b2834d4c0a88410",
+      "summary": []
+    }
+  },
+  "leak_recheck": {
+    "exit": 0,
+    "passed": 2,
+    "skipped": 398,
+    "leaky": 0,
+    "seconds": 1.362,
+    "sha256": "ed926c7248d7cc8455039b718fbaba91e7982d9034c361d1a3c57d3912c89a7d"
+  },
+  "wasm_sha256": "e20d5c7067af06410233ac190eaacbe197b824ad0d668b6084491b28d536852f",
+  "environment": {
+    "DEVELOPER_DIR": "/Library/Developer/CommandLineTools",
+    "CARGO_TARGET_DIR": "target/pr7141-7175-7178-20260916",
+    "focused_RHWP_SECURITY_SWEEP_SAMPLES_JSON": [
+      "samples/issue6946/44529-logistics-policy-rule-amendment.hwp"
+    ]
+  },
+  "validated_runtime_commit": "6cdca94640bc411d215f070aea06a436aaab8f0c",
+  "runtime_equivalent_additional_head": "4670dce74b455e4a050c10c14ba282f27c20ff64",
+  "additional_source_commit": "d2403022946af730d2110b17f7d03d750fb75ca1",
+  "post_validation_delta": "Documentation and whole-line Rust comments only; non-comment source equality verified."
+}

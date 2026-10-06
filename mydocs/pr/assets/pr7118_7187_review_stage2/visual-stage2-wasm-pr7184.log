@@ -1,0 +1,15 @@
+== pr7184 ==
++ /private/tmp/rhwp-review-open-20260916/rhwp-stage2-final dump-note-shape /Users/tsjang/rhwp/samples/table_giant_cell_overfill.hwpx
++ node /Users/tsjang/rhwp/scripts/export-wasm-for-sweep.mjs --pkg /Users/tsjang/rhwp/pkg --input /Users/tsjang/rhwp/samples/table_giant_cell_overfill.hwpx --out /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/wasm
++ /private/tmp/rhwp-review-open-20260916/rhwp-stage2-final export-svg /Users/tsjang/rhwp/samples/table_giant_cell_overfill.hwpx --font-style -o /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/font_policy
+SVG export pages: 48
++ pdftoppm -f 18 -l 18 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftoppm -f 19 -l 19 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftoppm -f 20 -l 20 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftoppm -f 21 -l 21 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftoppm -f 47 -l 47 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftoppm -f 48 -l 48 -r 96 -png /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_png/pdf
++ pdftotext -bbox-layout /Users/tsjang/rhwp/pdf/table_giant_cell_overfill-hwpx-2024.pdf /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/pr7184/pdf_bbox.html
+Selected pages: [18, 19, 20, 21, 47, 48]
+Raster PNG pages: rhwp=6, pdf=6
+summary: /private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/pr7184/summary.json

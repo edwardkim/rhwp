@@ -52,8 +52,7 @@ def write_mini_tree(root: Path) -> None:
         "pdf/multi-2018.pdf",
         "pdf/multi-2024.pdf",
         "pdf/unused-2022.pdf",
-        "pdf-2020/exam_kor-2020.pdf",
-        "pdf-large/hwpx/lonely.pdf",
+        "pdf/hwpx/lonely.pdf",
     ]
     for rel in files:
         _touch(root / rel)
@@ -130,7 +129,7 @@ class MiniRepoTests(unittest.TestCase):
         self.assertEqual(report["unmatchedCount"], 2)
         self.assertEqual(report["sampleCount"], 10)
         self.assertEqual(report["matchedSampleCount"], 8)
-        self.assertEqual(report["pairCount"], 13)
+        self.assertEqual(report["pairCount"], 11)
 
     def test_format_tag_does_not_cross_hwp_hwpx(self) -> None:
         report = cov.build_report(MINI_REPO)
@@ -184,14 +183,14 @@ class MiniRepoTests(unittest.TestCase):
             for item in report["pairs"]
             if item["sample"] == "samples/exam_kor.hwp"
         }
-        self.assertEqual(exam_roots, {"pdf", "pdf-2020"})
+        self.assertEqual(exam_roots, {"pdf"})
 
     def test_version_table_counts(self) -> None:
         report = cov.build_report(MINI_REPO)
         by_ver = report["byHancomVersion"]
         self.assertEqual(by_ver["2018"]["pairCount"], 1)
         self.assertEqual(by_ver["2018"]["sampleCount"], 1)
-        self.assertEqual(by_ver["2020"]["pairCount"], 6)
+        self.assertEqual(by_ver["2020"]["pairCount"], 4)
         self.assertEqual(by_ver["2020"]["sampleCount"], 4)
         self.assertEqual(by_ver["2022"]["pairCount"], 5)
         self.assertEqual(by_ver["2022"]["sampleCount"], 5)

@@ -1,0 +1,4834 @@
+{
+  "baseline": "313bd4273dc0cc36a3f3f9b01425797636601b61",
+  "method": "tracked static inventory; literal references are candidates; no benchmark execution",
+  "exclusions": "untracked/generated/submissions/binary files; text >2 MiB; mydocs historical references; dynamic calls not resolved",
+  "scannedTextFiles": 8273,
+  "targets": [
+    {
+      "name": "font-metric-gen",
+      "source": "src/tools/font_metric_gen.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "Cargo.toml",
+          "line": 28
+        },
+        {
+          "file": "scripts/tests/font_metric_gen.test.mjs",
+          "line": 11
+        },
+        {
+          "file": "tests/cases/agent_codex_skill_contract.rs",
+          "line": 380
+        },
+        {
+          "file": "tests/cases/agent_contributor_skill_contract.rs",
+          "line": 143
+        },
+        {
+          "file": "tests/cases/agent_handoff_skill_contract.rs",
+          "line": 123
+        },
+        {
+          "file": "tests/cases/agent_provenance_skill_contract.rs",
+          "line": 140
+        },
+        {
+          "file": "tests/cases/agent_strategist_skill_contract.rs",
+          "line": 121
+        },
+        {
+          "file": "tests/cases/agent_work_receipt_skill_contract.rs",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "name": "rhwp",
+      "source": "src/main.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "product-cli",
+      "gymRelation": "gym-consumes-product",
+      "references": []
+    },
+    {
+      "name": "rhwp-agent",
+      "source": "src/bin/rhwp-agent/main.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "experimental-cli",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "scripts/font_metric_coverage_full_manifest.mjs",
+          "line": 198
+        },
+        {
+          "file": "scripts/tests/test_agent_knowledge_map.py",
+          "line": 29
+        },
+        {
+          "file": "scripts/tests/test_agent_surface.py",
+          "line": 1
+        },
+        {
+          "file": "src/bin/rhwp-q-kit/main.rs",
+          "line": 4
+        },
+        {
+          "file": "src/bin/rhwp-q-more/main.rs",
+          "line": 3
+        },
+        {
+          "file": "src/bin/rhwp-q-pack/main.rs",
+          "line": 3
+        },
+        {
+          "file": "src/plan_schema.rs",
+          "line": 182
+        },
+        {
+          "file": "tests/agent_context_cost_contract.rs",
+          "line": 1
+        },
+        {
+          "file": "tests/agent_toolkit_contract.rs",
+          "line": 1
+        },
+        {
+          "file": "tests/cases/agent_cli_pack_contract.rs",
+          "line": 1
+        },
+        {
+          "file": "tests/cases/agent_knowledge_map_skill_contract.rs",
+          "line": 204
+        },
+        {
+          "file": "tests/cases/agent_surface_skill_contract.rs",
+          "line": 21
+        },
+        {
+          "file": "tools/skill_router/catalog.json",
+          "line": 5
+        },
+        {
+          "file": "tools/skill_router/gate_new_skill.py",
+          "line": 63
+        },
+        {
+          "file": "tools/skill_router/graph.py",
+          "line": 737
+        },
+        {
+          "file": "tools/skill_router/intents.py",
+          "line": 271
+        },
+        {
+          "file": "tools/skill_router/test_skills_repeat.py",
+          "line": 70
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-char-shape",
+      "source": "src/bin/rhwp-q-char-shape.rs",
+      "requiredFeatures": [],
+      "singleCommand": "char-shape",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_char_shape_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-control-layout",
+      "source": "src/bin/rhwp-q-control-layout.rs",
+      "requiredFeatures": [],
+      "singleCommand": "control-layout",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_control_layout_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-cursor-model",
+      "source": "src/bin/rhwp-q-cursor-model.rs",
+      "requiredFeatures": [],
+      "singleCommand": "cursor-model",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_cursor_model_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-cursor-rect",
+      "source": "src/bin/rhwp-q-cursor-rect.rs",
+      "requiredFeatures": [],
+      "singleCommand": "cursor-rect",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_cursor_rect_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-font-layout-evidence",
+      "source": "src/bin/rhwp-q-font-layout-evidence.rs",
+      "requiredFeatures": [],
+      "singleCommand": "font-layout-evidence",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "scripts/font_rank8_private_qualification.py",
+          "line": 314
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-font-trace",
+      "source": "src/bin/rhwp-q-font-trace.rs",
+      "requiredFeatures": [],
+      "singleCommand": "font-trace",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "scripts/font_rank1_metric_hypothesis.py",
+          "line": 295
+        },
+        {
+          "file": "scripts/font_rank7_metric_hypothesis.py",
+          "line": 233
+        },
+        {
+          "file": "scripts/font_rank7_runtime_boundary.mjs",
+          "line": 152
+        },
+        {
+          "file": "scripts/font_rank8_metric_hypothesis.py",
+          "line": 725
+        },
+        {
+          "file": "scripts/font_rank8_trace_baseline.mjs",
+          "line": 268
+        },
+        {
+          "file": "src/bin/rhwp-q-font-layout-evidence.rs",
+          "line": 4
+        },
+        {
+          "file": "tests/cases/agent_q_font_trace_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-form-info",
+      "source": "src/bin/rhwp-q-form-info.rs",
+      "requiredFeatures": [],
+      "singleCommand": "form-info",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_form_info_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-hit-test",
+      "source": "src/bin/rhwp-q-hit-test.rs",
+      "requiredFeatures": [],
+      "singleCommand": "hit-test",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_hit_test_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-kit",
+      "source": "src/bin/rhwp-q-kit/main.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "scripts/kerning_q1_baseline.mjs",
+          "line": 16
+        },
+        {
+          "file": "scripts/kerning_q2_fixture_baseline.mjs",
+          "line": 26
+        },
+        {
+          "file": "src/bin/rhwp-q-more/main.rs",
+          "line": 3
+        },
+        {
+          "file": "src/bin/rhwp-q-pack/main.rs",
+          "line": 3
+        },
+        {
+          "file": "tests/cases/agent_q_kit_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-markdown",
+      "source": "src/bin/rhwp-q-markdown.rs",
+      "requiredFeatures": [],
+      "singleCommand": "markdown",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_markdown_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-more",
+      "source": "src/bin/rhwp-q-more/main.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_more_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-object-cycle",
+      "source": "src/bin/rhwp-q-object-cycle.rs",
+      "requiredFeatures": [],
+      "singleCommand": "object-cycle",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_object_cycle_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-objects",
+      "source": "src/bin/rhwp-q-objects.rs",
+      "requiredFeatures": [],
+      "singleCommand": "objects",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_objects_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-pack",
+      "source": "src/bin/rhwp-q-pack/main.rs",
+      "requiredFeatures": [],
+      "singleCommand": null,
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_pack_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-page-caret",
+      "source": "src/bin/rhwp-q-page-caret.rs",
+      "requiredFeatures": [],
+      "singleCommand": "page-caret",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_page_caret_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-page-def",
+      "source": "src/bin/rhwp-q-page-def.rs",
+      "requiredFeatures": [],
+      "singleCommand": "page-def",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_page_def_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-page-images",
+      "source": "src/bin/rhwp-q-page-images.rs",
+      "requiredFeatures": [],
+      "singleCommand": "page-images",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_page_images_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-page-items",
+      "source": "src/bin/rhwp-q-page-items.rs",
+      "requiredFeatures": [],
+      "singleCommand": "page-items",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_page_items_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-para-shape",
+      "source": "src/bin/rhwp-q-para-shape.rs",
+      "requiredFeatures": [],
+      "singleCommand": "para-shape",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_para_shape_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-scan-items",
+      "source": "src/bin/rhwp-q-scan-items.rs",
+      "requiredFeatures": [],
+      "singleCommand": "scan-items",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_scan_items_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-section-starts",
+      "source": "src/bin/rhwp-q-section-starts.rs",
+      "requiredFeatures": [],
+      "singleCommand": "section-starts",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_section_starts_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-text-file",
+      "source": "src/bin/rhwp-q-text-file.rs",
+      "requiredFeatures": [],
+      "singleCommand": "text-file",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "tests/cases/agent_q_text_file_contract.rs",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "name": "rhwp-q-text-layout",
+      "source": "src/bin/rhwp-q-text-layout.rs",
+      "requiredFeatures": [],
+      "singleCommand": "text-layout",
+      "role": "developer-diagnostic",
+      "gymRelation": "no-direct-reference-observed",
+      "references": [
+        {
+          "file": "scripts/font_rank7_runtime_boundary.mjs",
+          "line": 160
+        },
+        {
+          "file": "scripts/font_rank8_metric_hypothesis.py",
+          "line": 377
+        },
+        {
+          "file": "scripts/font_rank8_trace_baseline.mjs",
+          "line": 290
+        },
+        {
+          "file": "tests/cases/agent_q_text_layout_contract.rs",
+          "line": 1
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "file": "src/agent/dsel/ast.rs",
+      "lines": 926,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/error.rs",
+      "lines": 237,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/eval.rs",
+      "lines": 741,
+      "role": "public-dsel-library",
+      "declaredModules": [
+        "tests"
+      ]
+    },
+    {
+      "file": "src/agent/dsel/eval_tests.rs",
+      "lines": 349,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/glob.rs",
+      "lines": 385,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/lex.rs",
+      "lines": 402,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/mod.rs",
+      "lines": 121,
+      "role": "public-dsel-library",
+      "declaredModules": [
+        "ast",
+        "error",
+        "eval",
+        "glob",
+        "lex",
+        "node",
+        "parse",
+        "suggest",
+        "token"
+      ]
+    },
+    {
+      "file": "src/agent/dsel/node.rs",
+      "lines": 617,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/parse.rs",
+      "lines": 884,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/suggest.rs",
+      "lines": 87,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/dsel/token.rs",
+      "lines": 182,
+      "role": "public-dsel-library",
+      "declaredModules": []
+    },
+    {
+      "file": "src/agent/mod.rs",
+      "lines": 88,
+      "role": "public-dsel-library",
+      "declaredModules": [
+        "dsel"
+      ]
+    },
+    {
+      "file": "src/bin/rhwp-agent/caps.rs",
+      "lines": 1036,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/chunkplan.rs",
+      "lines": 203,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/compare.rs",
+      "lines": 156,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/contextcost.rs",
+      "lines": 212,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/difftext.rs",
+      "lines": 373,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/doctor.rs",
+      "lines": 166,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/envelope.rs",
+      "lines": 310,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/envlint.rs",
+      "lines": 102,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/evidence.rs",
+      "lines": 249,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/explaincmd.rs",
+      "lines": 101,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/explorecmd.rs",
+      "lines": 118,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/fields.rs",
+      "lines": 62,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/files.rs",
+      "lines": 85,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/fingerprint.rs",
+      "lines": 316,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/grepcmd.rs",
+      "lines": 137,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/harvest.rs",
+      "lines": 277,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/inspect.rs",
+      "lines": 471,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/locate.rs",
+      "lines": 323,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/lookups.rs",
+      "lines": 529,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/main.rs",
+      "lines": 99,
+      "role": "experimental-cli",
+      "declaredModules": [
+        "caps",
+        "chunkplan",
+        "compare",
+        "contextcost",
+        "difftext",
+        "doctor",
+        "envelope",
+        "envlint",
+        "evidence",
+        "explaincmd",
+        "explorecmd",
+        "fields",
+        "files",
+        "fingerprint",
+        "grepcmd",
+        "harvest",
+        "inspect",
+        "locate",
+        "lookups",
+        "piiscan",
+        "planlint",
+        "safety",
+        "scan",
+        "searchcmd",
+        "stats",
+        "structurecmd",
+        "tables",
+        "verify"
+      ]
+    },
+    {
+      "file": "src/bin/rhwp-agent/piiscan.rs",
+      "lines": 198,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/planlint.rs",
+      "lines": 80,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/safety.rs",
+      "lines": 803,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/scan.rs",
+      "lines": 340,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/searchcmd.rs",
+      "lines": 159,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/stats.rs",
+      "lines": 258,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/structurecmd.rs",
+      "lines": 84,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/tables.rs",
+      "lines": 174,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-agent/verify.rs",
+      "lines": 295,
+      "role": "experimental-cli",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-char-shape.rs",
+      "lines": 325,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-control-layout.rs",
+      "lines": 267,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-cursor-model.rs",
+      "lines": 254,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-cursor-rect.rs",
+      "lines": 297,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-font-layout-evidence.rs",
+      "lines": 204,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-font-trace.rs",
+      "lines": 257,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-form-info.rs",
+      "lines": 321,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-hit-test.rs",
+      "lines": 395,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/auto_numbers.rs",
+      "lines": 45,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/bin_data.rs",
+      "lines": 101,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/canvaskit_preflight.rs",
+      "lines": 100,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/caret_stops.rs",
+      "lines": 90,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cell_shape.rs",
+      "lines": 124,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/char_index.rs",
+      "lines": 112,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/chart_csv.rs",
+      "lines": 151,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/chart_list.rs",
+      "lines": 38,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/covering_pages.rs",
+      "lines": 90,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cur_field_state.rs",
+      "lines": 99,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cursor_in_cell.rs",
+      "lines": 162,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cursor_in_footnote.rs",
+      "lines": 157,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cursor_in_hf.rs",
+      "lines": 195,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/cursor_in_note.rs",
+      "lines": 156,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/empty_doc.rs",
+      "lines": 24,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/envelope.rs",
+      "lines": 351,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/equations.rs",
+      "lines": 42,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/field_by_id.rs",
+      "lines": 98,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/field_info_at.rs",
+      "lines": 111,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/field_list_json.rs",
+      "lines": 64,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/flow_images.rs",
+      "lines": 127,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/fn_selection_rects.rs",
+      "lines": 151,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/footnote_footholds.rs",
+      "lines": 87,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/footnote_hit.rs",
+      "lines": 146,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/footnote_info.rs",
+      "lines": 141,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/form_at.rs",
+      "lines": 112,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/form_value.rs",
+      "lines": 121,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hf_edit_target.rs",
+      "lines": 108,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hidden_comments.rs",
+      "lines": 36,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hit_fn_marker.rs",
+      "lines": 112,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hit_header.rs",
+      "lines": 146,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hit_in_footnote.rs",
+      "lines": 112,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hit_in_hf.rs",
+      "lines": 136,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/hyperlinks.rs",
+      "lines": 35,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/index_marks.rs",
+      "lines": 35,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/layer_tree.rs",
+      "lines": 79,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/line_starts.rs",
+      "lines": 90,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/main.rs",
+      "lines": 175,
+      "role": "developer-diagnostic",
+      "declaredModules": [
+        "envelope",
+        "auto_numbers",
+        "bin_data",
+        "canvaskit_preflight",
+        "caret_stops",
+        "cell_shape",
+        "char_index",
+        "chart_csv",
+        "chart_list",
+        "covering_pages",
+        "cur_field_state",
+        "cursor_in_cell",
+        "cursor_in_footnote",
+        "cursor_in_hf",
+        "cursor_in_note",
+        "empty_doc",
+        "equations",
+        "field_by_id",
+        "field_info_at",
+        "field_list_json",
+        "flow_images",
+        "fn_selection_rects",
+        "footnote_footholds",
+        "footnote_hit",
+        "footnote_info",
+        "form_at",
+        "form_value",
+        "hf_edit_target",
+        "hidden_comments",
+        "hit_fn_marker",
+        "hit_header",
+        "hit_in_footnote",
+        "hit_in_hf",
+        "hyperlinks",
+        "index_marks",
+        "layer_tree",
+        "line_starts",
+        "note_edit_info",
+        "overflow_cells",
+        "overlay_images",
+        "page_border_fill",
+        "page_hide",
+        "page_text",
+        "para_bounds",
+        "pictures",
+        "ruby",
+        "search_all",
+        "source_image_bytes",
+        "table_overlaps",
+        "word_end",
+        "word_starts"
+      ]
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/note_edit_info.rs",
+      "lines": 140,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/overflow_cells.rs",
+      "lines": 32,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/overlay_images.rs",
+      "lines": 131,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/page_border_fill.rs",
+      "lines": 80,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/page_hide.rs",
+      "lines": 33,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/page_text.rs",
+      "lines": 86,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/para_bounds.rs",
+      "lines": 93,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/pictures.rs",
+      "lines": 44,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/ruby.rs",
+      "lines": 40,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/search_all.rs",
+      "lines": 85,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/source_image_bytes.rs",
+      "lines": 95,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/table_overlaps.rs",
+      "lines": 50,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/word_end.rs",
+      "lines": 104,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-kit/word_starts.rs",
+      "lines": 90,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-markdown.rs",
+      "lines": 216,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-more/envelope.rs",
+      "lines": 139,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-more/inventory.rs",
+      "lines": 1315,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-more/main.rs",
+      "lines": 109,
+      "role": "developer-diagnostic",
+      "declaredModules": [
+        "envelope",
+        "inventory",
+        "probe"
+      ]
+    },
+    {
+      "file": "src/bin/rhwp-q-more/probe.rs",
+      "lines": 205,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-object-cycle.rs",
+      "lines": 144,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-objects.rs",
+      "lines": 160,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-pack/envelope.rs",
+      "lines": 139,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-pack/inventory.rs",
+      "lines": 1345,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-pack/main.rs",
+      "lines": 109,
+      "role": "developer-diagnostic",
+      "declaredModules": [
+        "envelope",
+        "inventory",
+        "probe"
+      ]
+    },
+    {
+      "file": "src/bin/rhwp-q-pack/probe.rs",
+      "lines": 195,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-page-caret.rs",
+      "lines": 201,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-page-def.rs",
+      "lines": 263,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-page-images.rs",
+      "lines": 251,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-page-items.rs",
+      "lines": 282,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-para-shape.rs",
+      "lines": 306,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-scan-items.rs",
+      "lines": 231,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-section-starts.rs",
+      "lines": 177,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-text-file.rs",
+      "lines": 217,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/bin/rhwp-q-text-layout.rs",
+      "lines": 257,
+      "role": "developer-diagnostic",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/batch/mod.rs",
+      "lines": 429,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "ordered",
+        "query"
+      ]
+    },
+    {
+      "file": "src/cli/batch/ordered.rs",
+      "lines": 143,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/batch/query.rs",
+      "lines": 183,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/catalog.rs",
+      "lines": 1035,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/batch_convert.rs",
+      "lines": 166,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/batch_fill.rs",
+      "lines": 505,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/caption_validation.rs",
+      "lines": 317,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/conversion.rs",
+      "lines": 744,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/bookmarks.rs",
+      "lines": 372,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/cell_paragraphs.rs",
+      "lines": 308,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/cells.rs",
+      "lines": 968,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/controls.rs",
+      "lines": 103,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/document_objects.rs",
+      "lines": 668,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/document_text.rs",
+      "lines": 1082,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/equations.rs",
+      "lines": 348,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/fields.rs",
+      "lines": 365,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/formatting.rs",
+      "lines": 995,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/header_footer_content.rs",
+      "lines": 1158,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/header_footer_properties.rs",
+      "lines": 531,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/media.rs",
+      "lines": 1010,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/mod.rs",
+      "lines": 186,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "bookmarks",
+        "cell_paragraphs",
+        "cells",
+        "controls",
+        "document_objects",
+        "document_text",
+        "equations",
+        "fields",
+        "formatting",
+        "header_footer_content",
+        "header_footer_properties",
+        "media",
+        "note_content",
+        "notes",
+        "page",
+        "privacy",
+        "runtime",
+        "shapes",
+        "tables",
+        "text"
+      ]
+    },
+    {
+      "file": "src/cli/commands/edit/note_content.rs",
+      "lines": 689,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/notes.rs",
+      "lines": 293,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/page.rs",
+      "lines": 466,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/privacy.rs",
+      "lines": 802,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/runtime.rs",
+      "lines": 278,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/shapes.rs",
+      "lines": 549,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/tables/coordinates.rs",
+      "lines": 108,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/tables/grid.rs",
+      "lines": 853,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/tables/layout.rs",
+      "lines": 701,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/tables/mod.rs",
+      "lines": 20,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "coordinates",
+        "grid",
+        "layout",
+        "structure"
+      ]
+    },
+    {
+      "file": "src/cli/commands/edit/tables/structure.rs",
+      "lines": 547,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/edit/text.rs",
+      "lines": 376,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/generation.rs",
+      "lines": 295,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/internal_validation.rs",
+      "lines": 107,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/commands/mod.rs",
+      "lines": 12,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "batch_convert",
+        "batch_fill",
+        "caption_validation",
+        "conversion",
+        "edit",
+        "generation",
+        "internal_validation",
+        "tabular_import"
+      ]
+    },
+    {
+      "file": "src/cli/commands/tabular_import.rs",
+      "lines": 753,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/document_io.rs",
+      "lines": 222,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/integrity.rs",
+      "lines": 109,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/capabilities/core.rs",
+      "lines": 477,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/capabilities/extended.rs",
+      "lines": 808,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/capabilities/mod.rs",
+      "lines": 759,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "core",
+        "extended"
+      ]
+    },
+    {
+      "file": "src/cli/metadata/help/diagnostics.rs",
+      "lines": 35,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/help/edit.rs",
+      "lines": 628,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/help/metadata.rs",
+      "lines": 168,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/help/mod.rs",
+      "lines": 151,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "diagnostics",
+        "edit",
+        "metadata",
+        "protocol",
+        "public",
+        "sink"
+      ]
+    },
+    {
+      "file": "src/cli/metadata/help/protocol.rs",
+      "lines": 65,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/help/public.rs",
+      "lines": 575,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/help/sink.rs",
+      "lines": 93,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/advanced.rs",
+      "lines": 633,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/edit_content.rs",
+      "lines": 763,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/edit_format.rs",
+      "lines": 324,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/edit_structure.rs",
+      "lines": 757,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/exchange.rs",
+      "lines": 327,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/mod.rs",
+      "lines": 344,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "advanced",
+        "edit_content",
+        "edit_format",
+        "edit_structure",
+        "exchange",
+        "protocol",
+        "read"
+      ]
+    },
+    {
+      "file": "src/cli/metadata/mcp/protocol.rs",
+      "lines": 440,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mcp/read.rs",
+      "lines": 813,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/metadata/mod.rs",
+      "lines": 5,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "capabilities",
+        "help",
+        "mcp"
+      ]
+    },
+    {
+      "file": "src/cli/mod.rs",
+      "lines": 36,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "batch",
+        "catalog",
+        "commands",
+        "document_io",
+        "integrity",
+        "metadata",
+        "outputs",
+        "protocol",
+        "queries",
+        "units"
+      ]
+    },
+    {
+      "file": "src/cli/outputs/doclang.rs",
+      "lines": 169,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/mod.rs",
+      "lines": 16,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "doclang",
+        "pdf",
+        "preview",
+        "raster",
+        "tabular",
+        "text",
+        "vector"
+      ]
+    },
+    {
+      "file": "src/cli/outputs/pdf.rs",
+      "lines": 513,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/preview.rs",
+      "lines": 165,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/raster.rs",
+      "lines": 904,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/tabular.rs",
+      "lines": 547,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/text.rs",
+      "lines": 765,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/outputs/vector.rs",
+      "lines": 832,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/capsule/audit.rs",
+      "lines": 155,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/capsule/lineage.rs",
+      "lines": 376,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/capsule/mod.rs",
+      "lines": 209,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "audit",
+        "lineage",
+        "replay",
+        "signing"
+      ]
+    },
+    {
+      "file": "src/cli/protocol/capsule/replay.rs",
+      "lines": 260,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/capsule/signing.rs",
+      "lines": 179,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/exchange/bundle.rs",
+      "lines": 538,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/exchange/disclosure.rs",
+      "lines": 328,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/exchange/mod.rs",
+      "lines": 7,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "bundle",
+        "disclosure",
+        "settlement"
+      ]
+    },
+    {
+      "file": "src/cli/protocol/exchange/settlement.rs",
+      "lines": 443,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/harness.rs",
+      "lines": 542,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/mod.rs",
+      "lines": 40,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "capsule",
+        "exchange",
+        "harness",
+        "plan",
+        "trust"
+      ]
+    },
+    {
+      "file": "src/cli/protocol/plan/condition.rs",
+      "lines": 110,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/plan/execution.rs",
+      "lines": 671,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/plan/mod.rs",
+      "lines": 169,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "condition",
+        "execution"
+      ]
+    },
+    {
+      "file": "src/cli/protocol/trust/anchor.rs",
+      "lines": 274,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/trust/gate.rs",
+      "lines": 313,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/trust/governance.rs",
+      "lines": 850,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/protocol/trust/mod.rs",
+      "lines": 7,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "anchor",
+        "gate",
+        "governance"
+      ]
+    },
+    {
+      "file": "src/cli/queries/control_dump/mod.rs",
+      "lines": 576,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "shape",
+        "story",
+        "table"
+      ]
+    },
+    {
+      "file": "src/cli/queries/control_dump/shape.rs",
+      "lines": 368,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/control_dump/story.rs",
+      "lines": 299,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/control_dump/table.rs",
+      "lines": 207,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/data_extraction.rs",
+      "lines": 156,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/diagnostics.rs",
+      "lines": 1096,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/digest.rs",
+      "lines": 332,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/document_inventory.rs",
+      "lines": 289,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/explain.rs",
+      "lines": 240,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/explore.rs",
+      "lines": 158,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/info.rs",
+      "lines": 400,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/ir_comparison.rs",
+      "lines": 1085,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/mod.rs",
+      "lines": 19,
+      "role": "product-cli-adapter",
+      "declaredModules": [
+        "control_dump",
+        "data_extraction",
+        "diagnostics",
+        "digest",
+        "document_inventory",
+        "explain",
+        "explore",
+        "info",
+        "ir_comparison",
+        "page_dump",
+        "position_diagnostics",
+        "scan",
+        "search",
+        "security_inspection",
+        "structure",
+        "structured_objects",
+        "verification"
+      ]
+    },
+    {
+      "file": "src/cli/queries/page_dump.rs",
+      "lines": 120,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/position_diagnostics.rs",
+      "lines": 165,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/scan.rs",
+      "lines": 356,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/search.rs",
+      "lines": 149,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/security_inspection.rs",
+      "lines": 1062,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/structure.rs",
+      "lines": 132,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/structured_objects.rs",
+      "lines": 331,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/queries/verification.rs",
+      "lines": 393,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    },
+    {
+      "file": "src/cli/units.rs",
+      "lines": 11,
+      "role": "product-cli-adapter",
+      "declaredModules": []
+    }
+  ],
+  "commands": {
+    "mainDispatch": [
+      {
+        "name": "export-svg",
+        "source": "src/main.rs",
+        "line": 109
+      },
+      {
+        "name": "export-render-tree",
+        "source": "src/main.rs",
+        "line": 110
+      },
+      {
+        "name": "export-structure",
+        "source": "src/main.rs",
+        "line": 113
+      },
+      {
+        "name": "export-png",
+        "source": "src/main.rs",
+        "line": 116
+      },
+      {
+        "name": "export-png-gpu",
+        "source": "src/main.rs",
+        "line": 119
+      },
+      {
+        "name": "gpu-info",
+        "source": "src/main.rs",
+        "line": 120
+      },
+      {
+        "name": "export-pdf",
+        "source": "src/main.rs",
+        "line": 121
+      },
+      {
+        "name": "export-text",
+        "source": "src/main.rs",
+        "line": 122
+      },
+      {
+        "name": "export-markdown",
+        "source": "src/main.rs",
+        "line": 123
+      },
+      {
+        "name": "export-tables",
+        "source": "src/main.rs",
+        "line": 124
+      },
+      {
+        "name": "export-llm",
+        "source": "src/main.rs",
+        "line": 125
+      },
+      {
+        "name": "table-to-csv",
+        "source": "src/main.rs",
+        "line": 126
+      },
+      {
+        "name": "csv-to-table",
+        "source": "src/main.rs",
+        "line": 127
+      },
+      {
+        "name": "chart-to-csv",
+        "source": "src/main.rs",
+        "line": 128
+      },
+      {
+        "name": "csv-to-chart",
+        "source": "src/main.rs",
+        "line": 129
+      },
+      {
+        "name": "export-hwpx",
+        "source": "src/main.rs",
+        "line": 130
+      },
+      {
+        "name": "export-hml",
+        "source": "src/main.rs",
+        "line": 131
+      },
+      {
+        "name": "export-doclang",
+        "source": "src/main.rs",
+        "line": 132
+      },
+      {
+        "name": "export-ir-schema",
+        "source": "src/main.rs",
+        "line": 133
+      },
+      {
+        "name": "export-capabilities-schema",
+        "source": "src/main.rs",
+        "line": 134
+      },
+      {
+        "name": "export-ontology",
+        "source": "src/main.rs",
+        "line": 135
+      },
+      {
+        "name": "capabilities",
+        "source": "src/main.rs",
+        "line": 136
+      },
+      {
+        "name": "export-provenance-map",
+        "source": "src/main.rs",
+        "line": 139
+      },
+      {
+        "name": "export-agent-manifest",
+        "source": "src/main.rs",
+        "line": 142
+      },
+      {
+        "name": "mcp-serve",
+        "source": "src/main.rs",
+        "line": 143
+      },
+      {
+        "name": "batch",
+        "source": "src/main.rs",
+        "line": 144
+      },
+      {
+        "name": "scan",
+        "source": "src/main.rs",
+        "line": 145
+      },
+      {
+        "name": "threat-scan",
+        "source": "src/main.rs",
+        "line": 146
+      },
+      {
+        "name": "info",
+        "source": "src/main.rs",
+        "line": 149
+      },
+      {
+        "name": "word-count",
+        "source": "src/main.rs",
+        "line": 150
+      },
+      {
+        "name": "bookmarks",
+        "source": "src/main.rs",
+        "line": 151
+      },
+      {
+        "name": "charts",
+        "source": "src/main.rs",
+        "line": 152
+      },
+      {
+        "name": "form-value",
+        "source": "src/main.rs",
+        "line": 153
+      },
+      {
+        "name": "header-footer",
+        "source": "src/main.rs",
+        "line": 154
+      },
+      {
+        "name": "headers-footers",
+        "source": "src/main.rs",
+        "line": 157
+      },
+      {
+        "name": "digest",
+        "source": "src/main.rs",
+        "line": 160
+      },
+      {
+        "name": "dump",
+        "source": "src/main.rs",
+        "line": 161
+      },
+      {
+        "name": "dump-note-shape",
+        "source": "src/main.rs",
+        "line": 162
+      },
+      {
+        "name": "dump-endnote-lines",
+        "source": "src/main.rs",
+        "line": 165
+      },
+      {
+        "name": "dump-pages",
+        "source": "src/main.rs",
+        "line": 168
+      },
+      {
+        "name": "dump-extents",
+        "source": "src/main.rs",
+        "line": 169
+      },
+      {
+        "name": "diag",
+        "source": "src/main.rs",
+        "line": 170
+      },
+      {
+        "name": "search",
+        "source": "src/main.rs",
+        "line": 171
+      },
+      {
+        "name": "inspect",
+        "source": "src/main.rs",
+        "line": 172
+      },
+      {
+        "name": "armor",
+        "source": "src/main.rs",
+        "line": 173
+      },
+      {
+        "name": "extract-data",
+        "source": "src/main.rs",
+        "line": 174
+      },
+      {
+        "name": "convert",
+        "source": "src/main.rs",
+        "line": 177
+      },
+      {
+        "name": "extract-pages",
+        "source": "src/main.rs",
+        "line": 178
+      },
+      {
+        "name": "build-from-ingest",
+        "source": "src/main.rs",
+        "line": 179
+      },
+      {
+        "name": "scaffold",
+        "source": "src/main.rs",
+        "line": 182
+      },
+      {
+        "name": "hwp5-inventory",
+        "source": "src/main.rs",
+        "line": 183
+      },
+      {
+        "name": "hwp5-inventory-diff",
+        "source": "src/main.rs",
+        "line": 184
+      },
+      {
+        "name": "hwp5-contract-analyze",
+        "source": "src/main.rs",
+        "line": 187
+      },
+      {
+        "name": "hwp5-ctrl-data-trace",
+        "source": "src/main.rs",
+        "line": 190
+      },
+      {
+        "name": "hwp5-contract-probe",
+        "source": "src/main.rs",
+        "line": 193
+      },
+      {
+        "name": "hwp5-table-probe",
+        "source": "src/main.rs",
+        "line": 196
+      },
+      {
+        "name": "hwp5-mel-personnel-probe",
+        "source": "src/main.rs",
+        "line": 197
+      },
+      {
+        "name": "hwp5-borderfill-diagonal-probe",
+        "source": "src/main.rs",
+        "line": 200
+      },
+      {
+        "name": "hwp5-first-para-control-probe",
+        "source": "src/main.rs",
+        "line": 203
+      },
+      {
+        "name": "hwp5-anchor-trace",
+        "source": "src/main.rs",
+        "line": 206
+      },
+      {
+        "name": "hwp5-char-shape-audit",
+        "source": "src/main.rs",
+        "line": 209
+      },
+      {
+        "name": "hwp5-cell-header-probe",
+        "source": "src/main.rs",
+        "line": 212
+      },
+      {
+        "name": "dump-records",
+        "source": "src/main.rs",
+        "line": 215
+      },
+      {
+        "name": "test-shape",
+        "source": "src/main.rs",
+        "line": 216
+      },
+      {
+        "name": "test-caption",
+        "source": "src/main.rs",
+        "line": 217
+      },
+      {
+        "name": "gen-table",
+        "source": "src/main.rs",
+        "line": 218
+      },
+      {
+        "name": "gen-pua",
+        "source": "src/main.rs",
+        "line": 219
+      },
+      {
+        "name": "test-field",
+        "source": "src/main.rs",
+        "line": 220
+      },
+      {
+        "name": "ir-diff",
+        "source": "src/main.rs",
+        "line": 221
+      },
+      {
+        "name": "ir-sweep",
+        "source": "src/main.rs",
+        "line": 222
+      },
+      {
+        "name": "dump-anchors",
+        "source": "src/main.rs",
+        "line": 223
+      },
+      {
+        "name": "dump-carets",
+        "source": "src/main.rs",
+        "line": 226
+      },
+      {
+        "name": "verify",
+        "source": "src/main.rs",
+        "line": 229
+      },
+      {
+        "name": "hwpx-roundtrip",
+        "source": "src/main.rs",
+        "line": 230
+      },
+      {
+        "name": "hwp5-roundtrip",
+        "source": "src/main.rs",
+        "line": 231
+      },
+      {
+        "name": "render-diff",
+        "source": "src/main.rs",
+        "line": 232
+      },
+      {
+        "name": "layout-anomaly",
+        "source": "src/main.rs",
+        "line": 233
+      },
+      {
+        "name": "measure-width",
+        "source": "src/main.rs",
+        "line": 234
+      },
+      {
+        "name": "core-pages",
+        "source": "src/main.rs",
+        "line": 235
+      },
+      {
+        "name": "bench",
+        "source": "src/main.rs",
+        "line": 236
+      },
+      {
+        "name": "thumbnail",
+        "source": "src/main.rs",
+        "line": 237
+      },
+      {
+        "name": "fields",
+        "source": "src/main.rs",
+        "line": 238
+      },
+      {
+        "name": "explain",
+        "source": "src/main.rs",
+        "line": 239
+      },
+      {
+        "name": "explore",
+        "source": "src/main.rs",
+        "line": 240
+      },
+      {
+        "name": "edit",
+        "source": "src/main.rs",
+        "line": 241
+      },
+      {
+        "name": "run",
+        "source": "src/main.rs",
+        "line": 242
+      },
+      {
+        "name": "replay",
+        "source": "src/main.rs",
+        "line": 243
+      },
+      {
+        "name": "audit",
+        "source": "src/main.rs",
+        "line": 244
+      },
+      {
+        "name": "lineage",
+        "source": "src/main.rs",
+        "line": 245
+      },
+      {
+        "name": "keygen",
+        "source": "src/main.rs",
+        "line": 246
+      },
+      {
+        "name": "verify-signature",
+        "source": "src/main.rs",
+        "line": 247
+      },
+      {
+        "name": "harness",
+        "source": "src/main.rs",
+        "line": 248
+      },
+      {
+        "name": "harness-status",
+        "source": "src/main.rs",
+        "line": 252
+      },
+      {
+        "name": "anchor",
+        "source": "src/main.rs",
+        "line": 253
+      },
+      {
+        "name": "gate",
+        "source": "src/main.rs",
+        "line": 254
+      },
+      {
+        "name": "bundle",
+        "source": "src/main.rs",
+        "line": 255
+      },
+      {
+        "name": "disclose",
+        "source": "src/main.rs",
+        "line": 256
+      },
+      {
+        "name": "settle",
+        "source": "src/main.rs",
+        "line": 257
+      },
+      {
+        "name": "audit-report",
+        "source": "src/main.rs",
+        "line": 258
+      },
+      {
+        "name": "recall-scope",
+        "source": "src/main.rs",
+        "line": 259
+      },
+      {
+        "name": "conformance",
+        "source": "src/main.rs",
+        "line": 260
+      },
+      {
+        "name": "export-plan-schema",
+        "source": "src/main.rs",
+        "line": 262
+      }
+    ],
+    "mainCatalog": [
+      {
+        "name": "info",
+        "source": "src/cli/catalog.rs",
+        "line": 107
+      },
+      {
+        "name": "word-count",
+        "source": "src/cli/catalog.rs",
+        "line": 116
+      },
+      {
+        "name": "bookmarks",
+        "source": "src/cli/catalog.rs",
+        "line": 125
+      },
+      {
+        "name": "header-footer",
+        "source": "src/cli/catalog.rs",
+        "line": 134
+      },
+      {
+        "name": "headers-footers",
+        "source": "src/cli/catalog.rs",
+        "line": 143
+      },
+      {
+        "name": "charts",
+        "source": "src/cli/catalog.rs",
+        "line": 152
+      },
+      {
+        "name": "form-value",
+        "source": "src/cli/catalog.rs",
+        "line": 161
+      },
+      {
+        "name": "export-text",
+        "source": "src/cli/catalog.rs",
+        "line": 170
+      },
+      {
+        "name": "export-structure",
+        "source": "src/cli/catalog.rs",
+        "line": 179
+      },
+      {
+        "name": "digest",
+        "source": "src/cli/catalog.rs",
+        "line": 188
+      },
+      {
+        "name": "export-ir-schema",
+        "source": "src/cli/catalog.rs",
+        "line": 197
+      },
+      {
+        "name": "run",
+        "source": "src/cli/catalog.rs",
+        "line": 206
+      },
+      {
+        "name": "replay",
+        "source": "src/cli/catalog.rs",
+        "line": 215
+      },
+      {
+        "name": "lineage",
+        "source": "src/cli/catalog.rs",
+        "line": 224
+      },
+      {
+        "name": "keygen",
+        "source": "src/cli/catalog.rs",
+        "line": 233
+      },
+      {
+        "name": "verify-signature",
+        "source": "src/cli/catalog.rs",
+        "line": 242
+      },
+      {
+        "name": "harness",
+        "source": "src/cli/catalog.rs",
+        "line": 251
+      },
+      {
+        "name": "harness-status",
+        "source": "src/cli/catalog.rs",
+        "line": 260
+      },
+      {
+        "name": "anchor",
+        "source": "src/cli/catalog.rs",
+        "line": 269
+      },
+      {
+        "name": "gate",
+        "source": "src/cli/catalog.rs",
+        "line": 278
+      },
+      {
+        "name": "bundle",
+        "source": "src/cli/catalog.rs",
+        "line": 287
+      },
+      {
+        "name": "disclose",
+        "source": "src/cli/catalog.rs",
+        "line": 296
+      },
+      {
+        "name": "settle",
+        "source": "src/cli/catalog.rs",
+        "line": 305
+      },
+      {
+        "name": "audit-report",
+        "source": "src/cli/catalog.rs",
+        "line": 314
+      },
+      {
+        "name": "recall-scope",
+        "source": "src/cli/catalog.rs",
+        "line": 323
+      },
+      {
+        "name": "conformance",
+        "source": "src/cli/catalog.rs",
+        "line": 332
+      },
+      {
+        "name": "audit",
+        "source": "src/cli/catalog.rs",
+        "line": 341
+      },
+      {
+        "name": "export-plan-schema",
+        "source": "src/cli/catalog.rs",
+        "line": 350
+      },
+      {
+        "name": "capabilities",
+        "source": "src/cli/catalog.rs",
+        "line": 359
+      },
+      {
+        "name": "export-provenance-map",
+        "source": "src/cli/catalog.rs",
+        "line": 368
+      },
+      {
+        "name": "export-agent-manifest",
+        "source": "src/cli/catalog.rs",
+        "line": 377
+      },
+      {
+        "name": "mcp-serve",
+        "source": "src/cli/catalog.rs",
+        "line": 386
+      },
+      {
+        "name": "export-svg",
+        "source": "src/cli/catalog.rs",
+        "line": 395
+      },
+      {
+        "name": "export-png",
+        "source": "src/cli/catalog.rs",
+        "line": 404
+      },
+      {
+        "name": "export-png-gpu",
+        "source": "src/cli/catalog.rs",
+        "line": 413
+      },
+      {
+        "name": "gpu-info",
+        "source": "src/cli/catalog.rs",
+        "line": 422
+      },
+      {
+        "name": "export-pdf",
+        "source": "src/cli/catalog.rs",
+        "line": 431
+      },
+      {
+        "name": "export-markdown",
+        "source": "src/cli/catalog.rs",
+        "line": 440
+      },
+      {
+        "name": "export-hwpx",
+        "source": "src/cli/catalog.rs",
+        "line": 449
+      },
+      {
+        "name": "export-hml",
+        "source": "src/cli/catalog.rs",
+        "line": 458
+      },
+      {
+        "name": "export-doclang",
+        "source": "src/cli/catalog.rs",
+        "line": 467
+      },
+      {
+        "name": "export-capabilities-schema",
+        "source": "src/cli/catalog.rs",
+        "line": 476
+      },
+      {
+        "name": "export-ontology",
+        "source": "src/cli/catalog.rs",
+        "line": 485
+      },
+      {
+        "name": "export-tables",
+        "source": "src/cli/catalog.rs",
+        "line": 494
+      },
+      {
+        "name": "table-to-csv",
+        "source": "src/cli/catalog.rs",
+        "line": 503
+      },
+      {
+        "name": "csv-to-table",
+        "source": "src/cli/catalog.rs",
+        "line": 512
+      },
+      {
+        "name": "chart-to-csv",
+        "source": "src/cli/catalog.rs",
+        "line": 521
+      },
+      {
+        "name": "csv-to-chart",
+        "source": "src/cli/catalog.rs",
+        "line": 530
+      },
+      {
+        "name": "extract-pages",
+        "source": "src/cli/catalog.rs",
+        "line": 539
+      },
+      {
+        "name": "search",
+        "source": "src/cli/catalog.rs",
+        "line": 548
+      },
+      {
+        "name": "extract-data",
+        "source": "src/cli/catalog.rs",
+        "line": 557
+      },
+      {
+        "name": "fields",
+        "source": "src/cli/catalog.rs",
+        "line": 566
+      },
+      {
+        "name": "explain",
+        "source": "src/cli/catalog.rs",
+        "line": 575
+      },
+      {
+        "name": "explore",
+        "source": "src/cli/catalog.rs",
+        "line": 584
+      },
+      {
+        "name": "inspect",
+        "source": "src/cli/catalog.rs",
+        "line": 593
+      },
+      {
+        "name": "armor",
+        "source": "src/cli/catalog.rs",
+        "line": 602
+      },
+      {
+        "name": "export-render-tree",
+        "source": "src/cli/catalog.rs",
+        "line": 611
+      },
+      {
+        "name": "convert",
+        "source": "src/cli/catalog.rs",
+        "line": 620
+      },
+      {
+        "name": "build-from-ingest",
+        "source": "src/cli/catalog.rs",
+        "line": 629
+      },
+      {
+        "name": "scaffold",
+        "source": "src/cli/catalog.rs",
+        "line": 638
+      },
+      {
+        "name": "thumbnail",
+        "source": "src/cli/catalog.rs",
+        "line": 647
+      },
+      {
+        "name": "edit",
+        "source": "src/cli/catalog.rs",
+        "line": 656
+      },
+      {
+        "name": "batch",
+        "source": "src/cli/catalog.rs",
+        "line": 665
+      },
+      {
+        "name": "scan",
+        "source": "src/cli/catalog.rs",
+        "line": 674
+      },
+      {
+        "name": "threat-scan",
+        "source": "src/cli/catalog.rs",
+        "line": 683
+      },
+      {
+        "name": "dump",
+        "source": "src/cli/catalog.rs",
+        "line": 692
+      },
+      {
+        "name": "dump-pages",
+        "source": "src/cli/catalog.rs",
+        "line": 701
+      },
+      {
+        "name": "dump-extents",
+        "source": "src/cli/catalog.rs",
+        "line": 710
+      },
+      {
+        "name": "dump-note-shape",
+        "source": "src/cli/catalog.rs",
+        "line": 719
+      },
+      {
+        "name": "dump-endnote-lines",
+        "source": "src/cli/catalog.rs",
+        "line": 728
+      },
+      {
+        "name": "dump-records",
+        "source": "src/cli/catalog.rs",
+        "line": 737
+      },
+      {
+        "name": "diag",
+        "source": "src/cli/catalog.rs",
+        "line": 746
+      },
+      {
+        "name": "ir-diff",
+        "source": "src/cli/catalog.rs",
+        "line": 755
+      },
+      {
+        "name": "verify",
+        "source": "src/cli/catalog.rs",
+        "line": 764
+      },
+      {
+        "name": "render-diff",
+        "source": "src/cli/catalog.rs",
+        "line": 773
+      },
+      {
+        "name": "layout-anomaly",
+        "source": "src/cli/catalog.rs",
+        "line": 782
+      },
+      {
+        "name": "hwpx-roundtrip",
+        "source": "src/cli/catalog.rs",
+        "line": 791
+      },
+      {
+        "name": "hwp5-roundtrip",
+        "source": "src/cli/catalog.rs",
+        "line": 800
+      },
+      {
+        "name": "measure-width",
+        "source": "src/cli/catalog.rs",
+        "line": 809
+      },
+      {
+        "name": "core-pages",
+        "source": "src/cli/catalog.rs",
+        "line": 818
+      },
+      {
+        "name": "bench",
+        "source": "src/cli/catalog.rs",
+        "line": 827
+      },
+      {
+        "name": "hwp5-inventory",
+        "source": "src/cli/catalog.rs",
+        "line": 836
+      },
+      {
+        "name": "hwp5-inventory-diff",
+        "source": "src/cli/catalog.rs",
+        "line": 845
+      },
+      {
+        "name": "hwp5-contract-analyze",
+        "source": "src/cli/catalog.rs",
+        "line": 854
+      },
+      {
+        "name": "hwp5-contract-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 863
+      },
+      {
+        "name": "hwp5-ctrl-data-trace",
+        "source": "src/cli/catalog.rs",
+        "line": 872
+      },
+      {
+        "name": "hwp5-table-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 881
+      },
+      {
+        "name": "hwp5-mel-personnel-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 890
+      },
+      {
+        "name": "hwp5-borderfill-diagonal-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 899
+      },
+      {
+        "name": "hwp5-first-para-control-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 908
+      },
+      {
+        "name": "hwp5-anchor-trace",
+        "source": "src/cli/catalog.rs",
+        "line": 917
+      },
+      {
+        "name": "hwp5-char-shape-audit",
+        "source": "src/cli/catalog.rs",
+        "line": 926
+      },
+      {
+        "name": "hwp5-cell-header-probe",
+        "source": "src/cli/catalog.rs",
+        "line": 935
+      },
+      {
+        "name": "test-shape",
+        "source": "src/cli/catalog.rs",
+        "line": 944
+      },
+      {
+        "name": "test-caption",
+        "source": "src/cli/catalog.rs",
+        "line": 953
+      },
+      {
+        "name": "test-field",
+        "source": "src/cli/catalog.rs",
+        "line": 962
+      },
+      {
+        "name": "gen-table",
+        "source": "src/cli/catalog.rs",
+        "line": 971
+      },
+      {
+        "name": "gen-pua",
+        "source": "src/cli/catalog.rs",
+        "line": 980
+      },
+      {
+        "name": "export-llm",
+        "source": "src/cli/catalog.rs",
+        "line": 991
+      },
+      {
+        "name": "ir-sweep",
+        "source": "src/cli/catalog.rs",
+        "line": 1000
+      },
+      {
+        "name": "dump-anchors",
+        "source": "src/cli/catalog.rs",
+        "line": 1009
+      },
+      {
+        "name": "dump-carets",
+        "source": "src/cli/catalog.rs",
+        "line": 1018
+      }
+    ],
+    "agentRegistry": [
+      {
+        "name": "capabilities",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 32
+      },
+      {
+        "name": "doctor",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 42
+      },
+      {
+        "name": "scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 55
+      },
+      {
+        "name": "fingerprint",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 71
+      },
+      {
+        "name": "diff-text",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 87
+      },
+      {
+        "name": "verify",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 101
+      },
+      {
+        "name": "pii-scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 123
+      },
+      {
+        "name": "chunk-plan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 138
+      },
+      {
+        "name": "context-cost",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 151
+      },
+      {
+        "name": "evidence",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 161
+      },
+      {
+        "name": "info",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 181
+      },
+      {
+        "name": "format",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 191
+      },
+      {
+        "name": "pages",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 201
+      },
+      {
+        "name": "page-window",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 211
+      },
+      {
+        "name": "empty-pages",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 225
+      },
+      {
+        "name": "char-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 235
+      },
+      {
+        "name": "para-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 245
+      },
+      {
+        "name": "sample-text",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 255
+      },
+      {
+        "name": "outline",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 268
+      },
+      {
+        "name": "search",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 278
+      },
+      {
+        "name": "search-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 291
+      },
+      {
+        "name": "contains",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 304
+      },
+      {
+        "name": "grep-pages",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 317
+      },
+      {
+        "name": "grep",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 330
+      },
+      {
+        "name": "compare-pages",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 352
+      },
+      {
+        "name": "compare-text",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 362
+      },
+      {
+        "name": "field-diff",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 372
+      },
+      {
+        "name": "fields",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 382
+      },
+      {
+        "name": "field-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 392
+      },
+      {
+        "name": "tables",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 402
+      },
+      {
+        "name": "table-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 412
+      },
+      {
+        "name": "table-inspect",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 422
+      },
+      {
+        "name": "hangul-ratio",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 435
+      },
+      {
+        "name": "ascii-ratio",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 445
+      },
+      {
+        "name": "line-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 455
+      },
+      {
+        "name": "unique-chars",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 465
+      },
+      {
+        "name": "section-count",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 475
+      },
+      {
+        "name": "longest-page",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 485
+      },
+      {
+        "name": "shortest-page",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 495
+      },
+      {
+        "name": "text-hash",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 505
+      },
+      {
+        "name": "hash",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 515
+      },
+      {
+        "name": "size",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 525
+      },
+      {
+        "name": "magic",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 535
+      },
+      {
+        "name": "plan-lint",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 545
+      },
+      {
+        "name": "envelope-lint",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 555
+      },
+      {
+        "name": "nextcall",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 565
+      },
+      {
+        "name": "extract-data",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 575
+      },
+      {
+        "name": "field-values",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 589
+      },
+      {
+        "name": "table-csv",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 599
+      },
+      {
+        "name": "form-ready",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 613
+      },
+      {
+        "name": "threat-scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 623
+      },
+      {
+        "name": "injection-scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 633
+      },
+      {
+        "name": "hidden-text",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 643
+      },
+      {
+        "name": "unicode-scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 657
+      },
+      {
+        "name": "structure",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 670
+      },
+      {
+        "name": "explore",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 683
+      },
+      {
+        "name": "explain",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 693
+      },
+      {
+        "name": "notes",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 703
+      },
+      {
+        "name": "bookmarks",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 713
+      },
+      {
+        "name": "charts",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 723
+      },
+      {
+        "name": "digest",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 733
+      },
+      {
+        "name": "page-hashes",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 746
+      },
+      {
+        "name": "empty-fields",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 756
+      },
+      {
+        "name": "merged-tables",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 766
+      },
+      {
+        "name": "encrypted",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 776
+      },
+      {
+        "name": "armor",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 786
+      },
+      {
+        "name": "stego-scan",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 799
+      },
+      {
+        "name": "sweep",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 812
+      },
+      {
+        "name": "outline-nav",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 822
+      },
+      {
+        "name": "field-locate",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 832
+      },
+      {
+        "name": "captions",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 842
+      },
+      {
+        "name": "headers-footers",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 852
+      },
+      {
+        "name": "batch-info",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 862
+      },
+      {
+        "name": "doc-info",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 872
+      },
+      {
+        "name": "page-info",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 882
+      },
+      {
+        "name": "section-def",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 895
+      },
+      {
+        "name": "field-get",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 908
+      },
+      {
+        "name": "page-pos",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 921
+      },
+      {
+        "name": "para-page",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 934
+      },
+      {
+        "name": "chart-data",
+        "source": "src/bin/rhwp-agent/caps.rs",
+        "line": 948
+      }
+    ],
+    "kitRegistry": [
+      {
+        "name": "empty-doc",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 69
+      },
+      {
+        "name": "cell-shape",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 70
+      },
+      {
+        "name": "overlay-images",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 71
+      },
+      {
+        "name": "flow-images",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 72
+      },
+      {
+        "name": "footnote-info",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 73
+      },
+      {
+        "name": "footnote-hit",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 74
+      },
+      {
+        "name": "footnote-footholds",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 75
+      },
+      {
+        "name": "note-edit-info",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 76
+      },
+      {
+        "name": "cursor-in-cell",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 77
+      },
+      {
+        "name": "cursor-in-hf",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 78
+      },
+      {
+        "name": "cursor-in-footnote",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 79
+      },
+      {
+        "name": "cursor-in-note",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 80
+      },
+      {
+        "name": "hit-header",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 81
+      },
+      {
+        "name": "hit-in-hf",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 82
+      },
+      {
+        "name": "hit-in-footnote",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 83
+      },
+      {
+        "name": "hit-fn-marker",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 84
+      },
+      {
+        "name": "hf-edit-target",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 85
+      },
+      {
+        "name": "fn-selection-rects",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 86
+      },
+      {
+        "name": "field-info-at",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 87
+      },
+      {
+        "name": "field-by-id",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 88
+      },
+      {
+        "name": "field-list-json",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 89
+      },
+      {
+        "name": "cur-field-state",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 90
+      },
+      {
+        "name": "form-at",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 91
+      },
+      {
+        "name": "form-value",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 92
+      },
+      {
+        "name": "para-bounds",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 93
+      },
+      {
+        "name": "line-starts",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 94
+      },
+      {
+        "name": "word-starts",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 95
+      },
+      {
+        "name": "word-end",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 96
+      },
+      {
+        "name": "caret-stops",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 97
+      },
+      {
+        "name": "char-index",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 98
+      },
+      {
+        "name": "page-text",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 99
+      },
+      {
+        "name": "bin-data",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 100
+      },
+      {
+        "name": "source-image-bytes",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 101
+      },
+      {
+        "name": "overflow-cells",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 102
+      },
+      {
+        "name": "table-overlaps",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 103
+      },
+      {
+        "name": "page-border-fill",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 104
+      },
+      {
+        "name": "covering-pages",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 105
+      },
+      {
+        "name": "chart-csv",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 106
+      },
+      {
+        "name": "chart-list",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 107
+      },
+      {
+        "name": "search-all",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 108
+      },
+      {
+        "name": "canvaskit-preflight",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 109
+      },
+      {
+        "name": "layer-tree",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 110
+      },
+      {
+        "name": "hyperlinks",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 111
+      },
+      {
+        "name": "equations",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 112
+      },
+      {
+        "name": "pictures",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 113
+      },
+      {
+        "name": "hidden-comments",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 114
+      },
+      {
+        "name": "index-marks",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 115
+      },
+      {
+        "name": "auto-numbers",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 116
+      },
+      {
+        "name": "ruby",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 117
+      },
+      {
+        "name": "page-hide",
+        "source": "src/bin/rhwp-q-kit/main.rs",
+        "line": 118
+      }
+    ],
+    "moreDispatch": [
+      {
+        "name": "volume-probe",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 52
+      },
+      {
+        "name": "para-empty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 53
+      },
+      {
+        "name": "para-has-ctrl",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 54
+      },
+      {
+        "name": "section-para-lens",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 55
+      },
+      {
+        "name": "body-text-len",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 56
+      },
+      {
+        "name": "ctrl-per-para",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 57
+      },
+      {
+        "name": "table-border-fill",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 58
+      },
+      {
+        "name": "table-spacing",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 59
+      },
+      {
+        "name": "table-attr",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 60
+      },
+      {
+        "name": "picture-border-width",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 61
+      },
+      {
+        "name": "picture-opacity",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 62
+      },
+      {
+        "name": "picture-href-set",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 63
+      },
+      {
+        "name": "equation-baseline",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 64
+      },
+      {
+        "name": "equation-color",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 65
+      },
+      {
+        "name": "equation-attr",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 66
+      },
+      {
+        "name": "form-height",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 67
+      },
+      {
+        "name": "form-caption",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 68
+      },
+      {
+        "name": "form-fore-color",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 69
+      },
+      {
+        "name": "field-properties",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 70
+      },
+      {
+        "name": "field-ctrl-id",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 71
+      },
+      {
+        "name": "ruby-align",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 72
+      },
+      {
+        "name": "ruby-pos",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 73
+      },
+      {
+        "name": "pagehide-border",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 74
+      },
+      {
+        "name": "pagehide-fill",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 75
+      },
+      {
+        "name": "pagehide-master",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 76
+      },
+      {
+        "name": "autonumber-super",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 77
+      },
+      {
+        "name": "char-overlap-border",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 78
+      },
+      {
+        "name": "hyperlink-text-len",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 79
+      },
+      {
+        "name": "bookmark-empty-name",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 80
+      },
+      {
+        "name": "header-nonempty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 81
+      },
+      {
+        "name": "footer-nonempty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 82
+      },
+      {
+        "name": "footnote-nonempty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 83
+      },
+      {
+        "name": "endnote-nonempty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 84
+      },
+      {
+        "name": "hidden-nonempty",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 85
+      },
+      {
+        "name": "shape-height",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 86
+      },
+      {
+        "name": "table-zones",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 87
+      },
+      {
+        "name": "table-grid-len",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 88
+      },
+      {
+        "name": "field-extra-props",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 89
+      },
+      {
+        "name": "form-back-color",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 90
+      },
+      {
+        "name": "equation-version",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 91
+      },
+      {
+        "name": "index-both-keys",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 92
+      },
+      {
+        "name": "para-char-count",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 93
+      },
+      {
+        "name": "section-ctrl-total",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 94
+      },
+      {
+        "name": "caption-para-count",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 95
+      },
+      {
+        "name": "enabled-forms-only",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 96
+      },
+      {
+        "name": "nonempty-urls",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 97
+      },
+      {
+        "name": "nonempty-scripts",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 98
+      },
+      {
+        "name": "lock-pictures-only",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 99
+      },
+      {
+        "name": "picture-crop-left",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 100
+      },
+      {
+        "name": "form-name-len",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 101
+      },
+      {
+        "name": "field-command-len",
+        "source": "src/bin/rhwp-q-more/main.rs",
+        "line": 102
+      }
+    ],
+    "packDispatch": [
+      {
+        "name": "volume-probe",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 52
+      },
+      {
+        "name": "forms-all",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 53
+      },
+      {
+        "name": "shapes-all",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 54
+      },
+      {
+        "name": "char-overlaps",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 55
+      },
+      {
+        "name": "headers-list",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 56
+      },
+      {
+        "name": "footers-list",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 57
+      },
+      {
+        "name": "footnotes-list",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 58
+      },
+      {
+        "name": "endnotes-list",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 59
+      },
+      {
+        "name": "new-numbers",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 60
+      },
+      {
+        "name": "page-num-ctrls",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 61
+      },
+      {
+        "name": "page-number-pos",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 62
+      },
+      {
+        "name": "column-defs",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 63
+      },
+      {
+        "name": "unknown-ctrls",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 64
+      },
+      {
+        "name": "tables-model",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 65
+      },
+      {
+        "name": "field-ctrls",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 66
+      },
+      {
+        "name": "bookmark-names",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 67
+      },
+      {
+        "name": "treat-as-char",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 68
+      },
+      {
+        "name": "logical-inline",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 69
+      },
+      {
+        "name": "picture-crops",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 70
+      },
+      {
+        "name": "equation-scripts",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 71
+      },
+      {
+        "name": "form-types",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 72
+      },
+      {
+        "name": "hyperlink-hosts",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 73
+      },
+      {
+        "name": "ruby-mains",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 74
+      },
+      {
+        "name": "pagehide-headers",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 75
+      },
+      {
+        "name": "autonumber-nums",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 76
+      },
+      {
+        "name": "index-second-keys",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 77
+      },
+      {
+        "name": "hidden-comment-len",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 78
+      },
+      {
+        "name": "table-rows",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 79
+      },
+      {
+        "name": "table-cells",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 80
+      },
+      {
+        "name": "shape-sizes",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 81
+      },
+      {
+        "name": "header-paras",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 82
+      },
+      {
+        "name": "footer-paras",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 83
+      },
+      {
+        "name": "footnote-paras",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 84
+      },
+      {
+        "name": "endnote-paras",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 85
+      },
+      {
+        "name": "picture-locks",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 86
+      },
+      {
+        "name": "picture-reverse",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 87
+      },
+      {
+        "name": "equation-fonts",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 88
+      },
+      {
+        "name": "form-enabled",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 89
+      },
+      {
+        "name": "field-commands",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 90
+      },
+      {
+        "name": "field-ids",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 91
+      },
+      {
+        "name": "form-sizes",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 92
+      },
+      {
+        "name": "section-defs",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 93
+      },
+      {
+        "name": "caption-tables",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 94
+      },
+      {
+        "name": "ctrl-kinds",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 95
+      },
+      {
+        "name": "page-starts-on",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 96
+      },
+      {
+        "name": "hidden-comment-count",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 97
+      },
+      {
+        "name": "ruby-ratio",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 98
+      },
+      {
+        "name": "char-overlap-len",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 99
+      },
+      {
+        "name": "table-cols",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 100
+      },
+      {
+        "name": "picture-instance",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 101
+      },
+      {
+        "name": "index-first-keys",
+        "source": "src/bin/rhwp-q-pack/main.rs",
+        "line": 102
+      }
+    ]
+  },
+  "comparisons": {
+    "mainAgentSameNames": [
+      "armor",
+      "bookmarks",
+      "capabilities",
+      "charts",
+      "digest",
+      "explain",
+      "explore",
+      "extract-data",
+      "fields",
+      "headers-footers",
+      "info",
+      "scan",
+      "search",
+      "threat-scan",
+      "verify"
+    ],
+    "dispatchNotCatalog": [],
+    "catalogNotDispatch": [],
+    "morePackEnvelopeEqualAfterToolName": true
+  },
+  "gym": {
+    "scannedPackJsonFiles": 2092,
+    "commandHeads": [
+      {
+        "command": "anchor",
+        "occurrences": 86,
+        "fileCount": 45,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "audit",
+        "occurrences": 40,
+        "fileCount": 22,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "audit-report",
+        "occurrences": 17,
+        "fileCount": 17,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "batch",
+        "occurrences": 17,
+        "fileCount": 17,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "bundle",
+        "occurrences": 9,
+        "fileCount": 8,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "capabilities",
+        "occurrences": 98,
+        "fileCount": 96,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "chart-to-csv",
+        "occurrences": 77,
+        "fileCount": 74,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "conformance",
+        "occurrences": 24,
+        "fileCount": 24,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "convert",
+        "occurrences": 24,
+        "fileCount": 24,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "csv-to-chart",
+        "occurrences": 14,
+        "fileCount": 14,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "csv-to-table",
+        "occurrences": 14,
+        "fileCount": 14,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "digest",
+        "occurrences": 6,
+        "fileCount": 6,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "disclose",
+        "occurrences": 17,
+        "fileCount": 10,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "dump-pages",
+        "occurrences": 16,
+        "fileCount": 16,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "edit",
+        "occurrences": 253,
+        "fileCount": 226,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "explain",
+        "occurrences": 44,
+        "fileCount": 44,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-agent-manifest",
+        "occurrences": 8,
+        "fileCount": 8,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-capabilities-schema",
+        "occurrences": 11,
+        "fileCount": 11,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-doclang",
+        "occurrences": 10,
+        "fileCount": 10,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-hml",
+        "occurrences": 1,
+        "fileCount": 1,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-hwpx",
+        "occurrences": 14,
+        "fileCount": 14,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-ir-schema",
+        "occurrences": 9,
+        "fileCount": 9,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-markdown",
+        "occurrences": 22,
+        "fileCount": 22,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-ontology",
+        "occurrences": 9,
+        "fileCount": 7,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-pdf",
+        "occurrences": 30,
+        "fileCount": 20,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-plan-schema",
+        "occurrences": 11,
+        "fileCount": 11,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-provenance-map",
+        "occurrences": 12,
+        "fileCount": 10,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-render-tree",
+        "occurrences": 40,
+        "fileCount": 40,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-structure",
+        "occurrences": 8,
+        "fileCount": 8,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-svg",
+        "occurrences": 6,
+        "fileCount": 6,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-tables",
+        "occurrences": 120,
+        "fileCount": 98,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "export-text",
+        "occurrences": 18,
+        "fileCount": 18,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "extract-data",
+        "occurrences": 38,
+        "fileCount": 38,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "extract-pages",
+        "occurrences": 27,
+        "fileCount": 27,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "fields",
+        "occurrences": 242,
+        "fileCount": 135,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "gate",
+        "occurrences": 8,
+        "fileCount": 8,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "harness",
+        "occurrences": 3,
+        "fileCount": 1,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "harness-status",
+        "occurrences": 2,
+        "fileCount": 1,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "info",
+        "occurrences": 265,
+        "fileCount": 261,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "inspect",
+        "occurrences": 147,
+        "fileCount": 132,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "ir-diff",
+        "occurrences": 55,
+        "fileCount": 50,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "keygen",
+        "occurrences": 24,
+        "fileCount": 24,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "lineage",
+        "occurrences": 72,
+        "fileCount": 41,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "recall-scope",
+        "occurrences": 21,
+        "fileCount": 20,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "render-diff",
+        "occurrences": 20,
+        "fileCount": 18,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "replay",
+        "occurrences": 407,
+        "fileCount": 196,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "run",
+        "occurrences": 230,
+        "fileCount": 80,
+        "keys": [
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "scan",
+        "occurrences": 36,
+        "fileCount": 36,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "search",
+        "occurrences": 216,
+        "fileCount": 158,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "settle",
+        "occurrences": 36,
+        "fileCount": 29,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "table-to-csv",
+        "occurrences": 34,
+        "fileCount": 28,
+        "keys": [
+          "cmd",
+          "run"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "thumbnail",
+        "occurrences": 34,
+        "fileCount": 34,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "verify",
+        "occurrences": 44,
+        "fileCount": 40,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      },
+      {
+        "command": "verify-signature",
+        "occurrences": 7,
+        "fileCount": 7,
+        "keys": [
+          "cmd"
+        ],
+        "inMainDispatch": true
+      }
+    ],
+    "directAuxiliaryReferences": []
+  },
+  "dselReferenceCandidates": []
+}

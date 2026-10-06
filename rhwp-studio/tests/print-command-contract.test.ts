@@ -3,6 +3,7 @@ import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const commandSource = readFileSync(
   new URL('../src/command/commands/file.ts', import.meta.url),
   'utf8',
@@ -73,12 +74,12 @@ test('파일 메뉴는 별도 PDF 진입점과 브라우저의 남은 단계를 
 
 test('PDF 경로는 안내·진행 모달을 닫은 뒤 native 인쇄창을 호출한다', () => {
   assert.match(pdfDialogSource, /PDF_PRINT_GUIDANCE/);
-  assert.match(pdfDialogSource, /인쇄 창 열기/);
-  assert.match(pdfDialogSource, /다음부터 이 안내를 표시하지 않기/);
+  assertShowsText(pdfDialogSource, '인쇄 창 열기');
+  assertShowsText(pdfDialogSource, '다음부터 이 안내를 표시하지 않기');
   assert.match(pdfDialogSource, /printProgressText\('pdf'/);
   assert.match(commandSource, /getShowPdfPrintGuidance\(\)/);
   assert.match(commandSource, /setShowPdfPrintGuidance\(false\)/);
-  assert.match(optionsDialogSource, /PDF로 저장할 때 저장 방법 안내 표시/);
+  assertShowsText(optionsDialogSource, 'PDF로 저장할 때 저장 방법 안내 표시');
   assert.match(commandSource, /dialog\.closeBeforePrint\(\)/);
   assert.match(commandSource, /await waitForHostPaint\(\)/);
   assert.match(commandSource, /document\.title = pdfPrintTitle\(wasm\.fileName\)/);

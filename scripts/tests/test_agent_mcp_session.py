@@ -18,7 +18,7 @@ SKILL = REPO / ".claude" / "skills" / "rhwp-mcp-session"
 REF = SKILL / "references"
 FIXT = REF / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_mcp_session.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_mcp_session.md"
 
 HWP_NAME = re.compile(r"\bhwp_[a-z0-9_]+\b")
 # 픽스처가 일부러 싣는 오타 이름 — 복구 시나리오 전용.

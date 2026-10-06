@@ -1,0 +1,33 @@
+{
+  "date": "2026-08-31 KST",
+  "baselineCommit": "ba68cd655aed5fd94804f725c033cf615231ce4b",
+  "planCommit": "da1c4d9d6",
+  "branch": "codex/issue-6042-page-virtualization",
+  "renderer": "canvas2d",
+  "viewportCss": { "width": 1280, "height": 720 },
+  "dpr": 2,
+  "node": "24.15.0",
+  "npm": "11.12.1",
+  "vite": "8.2.2",
+  "baselinePort": 4188,
+  "probePort": 4186,
+  "fixtures": {
+    "exam_kor.hwp": { "pages": 20, "sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69" },
+    "hwpspec.hwp": { "pages": 178, "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d" },
+    "kps-ai.hwp": { "pages": 77, "sha256": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9" },
+    "basic/KTX.hwp": { "pages": 1, "sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1" },
+    "21868765_별표2_보건소_분장사무.hwp": { "pages": 4, "sha256": "ae694583e739ac48af97cb12ce573c2da9f4cb637721fdf84e5af4bf7ca17c13" },
+    "issue6280/156742029_prosecutor_transfer_list.hwp": { "pages": 21, "sha256": "522b4522395bbd25993f52799eb0607e9f81286f875b7ceddad7264edecc6ead" }
+  },
+  "sha256": {
+    "page-scroll-probe.ts": "8838d96e12ba6aa4e6a2e68abbd922be8da91262b7227c93067eadc09ea66dc3",
+    "scroll-observation.ts": "0d864ce1a75af7a69a5febea602e5e349fa06a71e4cd9218ca022064cd3c14fd",
+    "main.ts": "556f344f9086c48b1073b3c5b77c216449766cbe9742fd2b516ea034eeaff18d",
+    "rhwp_bg.wasm": "44fd90d539d06727dac3c6f8899a492e8e0d48b31ba797eed386f0ef58b51e24",
+    "rhwp.js": "63d5ab9d5d7fd3632fe883e38726ce0ae3ba44fe09bd8cd9537eb3437f103288",
+    "package-lock.json": "dbad1720e7ae446b13460977610db68edb9d90f3d7b67e26792aa6f6df59d03d",
+    "fontManifest36Files": "81ed06958faaf58e8b37d8815e1cac1bdc9db9feb84a8f1c1fd7d20cec459008"
+  },
+  "fontManifestRecipe": "font basenames sorted; for each woff/woff2/ttf/otf append basename + ':' + SHA256(bytes) + newline; SHA256(concatenation). Same digest on baseline and observer.",
+  "timingNote": "programmatic scrollTop → existing native scroll event/rAF path; known work + two-frame stability, not compositor presentation; screenshots are separate runs"
+}

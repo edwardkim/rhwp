@@ -1252,7 +1252,9 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                     continue;
                 }
             }
-            if let Some(c) = char::from_u32(ch as u32) {
+            // [#6873] 짝을 잃은 서로게이트는 버리지 않고 `□` 로 받는다 — 본 구현과 같다.
+            let scalar = char::from_u32(ch as u32).or(Some(super::UNPAIRED_SURROGATE_CHAR));
+            if let Some(c) = scalar {
                 char_offsets.push(code_unit_pos);
                 text.push(c);
                 char_count += 1;

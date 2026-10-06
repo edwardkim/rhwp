@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -91,7 +92,7 @@ class RegistryContractTests(unittest.TestCase):
     def test_registry_keeps_existing_keys(self):
         checks, _runner, _schema = load_core()
         required = EXISTING_FILE_OPS + NEW_OPS + (
-            "answer_eq", "len_answer_eq", "len_ge", "value_eq", "value_ge",
+            "text_file_envelope_eq", "answer_eq", "len_answer_eq", "len_ge", "value_eq", "value_ge",
             "value_in", "deep_contains", "not_contains", "cell_text_eq",
         )
         for op in required:
@@ -113,6 +114,81 @@ class RegistryContractTests(unittest.TestCase):
         checks, _runner, _schema = load_core()
         self.assertTrue(checks.needs_cli("value_eq"))
         self.assertTrue(checks.needs_cli("cell_text_eq"))
+        self.assertTrue(checks.needs_cli("text_file_envelope_eq"))
+
+
+class TextFileEnvelopeEqTests(unittest.TestCase):
+    CHECK = {
+        "name": "라이브 CSV 전체 대조",
+        "op": "text_file_envelope_eq",
+        "file": "chart.csv",
+        "path": "charts[0].csv",
+        "cmd": ["chart-to-csv", "{input}", "--json"],
+    }
+
+    def score(self, submitted, expected):
+        _checks, runner, _schema = load_core()
+        original = runner.run_cli
+        try:
+            runner.run_cli = lambda _bin, _args: (
+                0,
+                {"charts": [{"csv": expected}]},
+                "",
+            )
+            with tempfile.TemporaryDirectory() as sub_dir:
+                _write(sub_dir, "chart.csv", submitted)
+                return runner.eval_check(
+                    self.CHECK,
+                    {"input": "samples/chart.hwp"},
+                    sub_dir,
+                    {},
+                    "rhwp",
+                )
+        finally:
+            runner.run_cli = original
+
+    def test_exact_crlf_csv_passes_and_reports_only_digests(self):
+        body = ",계열 1\r\n항목 1,4.3\r\n"
+        detail = self.score(body, body)
+        self.assertTrue(detail["ok"], detail)
+        self.assertEqual(detail["expected"], detail["actual"])
+        self.assertNotIn("계열 1", str(detail))
+
+    def test_different_cell_and_newline_fail(self):
+        detail = self.score(",계열 1\n항목 1,0\n", ",계열 1\r\n항목 1,4.3\r\n")
+        self.assertFalse(detail["ok"], detail)
+        self.assertNotEqual(detail["expected"], detail["actual"])
+
+    def test_non_string_envelope_value_fails(self):
+        detail = self.score("csv", ["not", "text"])
+        self.assertFalse(detail["ok"], detail)
+        self.assertIn("문자열", detail["actual"])
+
+    def test_size_mismatch_fails_before_content_comparison(self):
+        detail = self.score("x", "x" * 100)
+        self.assertFalse(detail["ok"], detail)
+        self.assertEqual(detail["actual"], {"sha256": None, "bytes": 1})
+
+    def test_oversize_submitted_file_fails_before_file_read(self):
+        checks, _runner, _schema = load_core()
+        with mock.patch.object(checks, "MAX_TEXT_FILE_ENVELOPE_BYTES", 3):
+            detail = self.score(b"xxxx", "abc")
+        self.assertFalse(detail["ok"], detail)
+        self.assertEqual(detail["actual"], {"sha256": None, "bytes": 4})
+
+    def test_oversize_envelope_text_fails_without_echoing_content(self):
+        checks, _runner, _schema = load_core()
+        with mock.patch.object(checks, "MAX_TEXT_FILE_ENVELOPE_BYTES", 3):
+            detail = self.score("xxxx", "xxxx")
+        self.assertFalse(detail["ok"], detail)
+        self.assertIn("상한 초과", detail["actual"])
+        self.assertNotIn("xxxx", str(detail))
+
+    def test_invalid_utf8_fails_without_echoing_submitted_bytes(self):
+        detail = self.score(b"\xff\xfe", "ok")
+        self.assertFalse(detail["ok"], detail)
+        self.assertIn("전체 텍스트 대조 실패", detail["actual"])
+        self.assertNotIn("\\xff", str(detail))
 
 
 class SchemaAcceptanceTests(unittest.TestCase):

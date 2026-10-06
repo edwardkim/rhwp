@@ -615,7 +615,7 @@ def format_markdown(report: Report) -> str:
         "--root samples --top 20 "
         "--json-out mydocs/working/m02-8-layout-anomaly-batch-report.json "
         "--tsv-out mydocs/working/m02-8-layout-anomaly-batch-report.tsv "
-        "--md-out mydocs/working/m02-8-layout-anomaly-batch-report.md"
+        "--md-out mydocs/working/archives/m02-8-layout-anomaly-batch-report.md"
     )
     lines = [
         "# M02-8 samples/ layout-anomaly 배치 리포트",

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [#2756] getCharPropertiesAtCursor() 의 중첩 셀 좌표 축 가드.
 //
@@ -21,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 // comparePositions 쪽(selection-ordering-nested-cell.test.ts)에서 실경로로 확보한다.
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const src = readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8');
+const src = codeOnly(readFileSync(join(rootDir, 'src/engine/input-handler.ts'), 'utf8'));
 
 /** `NAME(` 시그니처부터 매칭 중괄호가 닫힐 때까지 메서드 본문을 추출. */
 function methodBody(name: string): string {

@@ -3,7 +3,7 @@
   "tier": 2,
   "title": "치환 후 형식 유지",
   "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
-  "instructions": "입력 문서의 '규제' 를 모두 '심사' 로 바꾼 산출물을 edited54.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 산출물 형식은 여전히 hwp5 다.",
+  "instructions": "입력 문서의 '규제' 를 모두 '심사' 로 바꾼 hwp5 형식 산출물을 edited54.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건).",
   "submit": {
     "kind": "artifact",
     "files": [

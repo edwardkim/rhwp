@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/nightly_cycle.md
-last_verified: 2026-08-12
+last_verified: 2026-09-03
 ---
 
 # 야간 자율 정비 사이클 — 무엇을 하려면 무엇이 필요한가
@@ -106,7 +106,7 @@ CI 는 **변경이 있을 때** 돈다. 그런데 드리프트의 정의가 정�
 - 그런데 **명령이 그대로인데 문서가 낡는 것**은 아무 이벤트도 만들지 않는다.
 - `last_verified` 가 오래되는 것도 이벤트가 아니다. 시간만 흐른다.
 
-**[실측]** `.github/workflows/ci.yml` 의 `paths-ignore` 에 `mydocs/**`·`docs/**`·`*.md`
+**[실측]** `.github/workflows/ci.yml` 의 push `paths-ignore` 에 `mydocs/**`·`*.md`
 가 들어 있다. 문서만 바뀐 push 는 CI 를 아예 트리거하지 않는다.
 
 **[실측]** `ci.yml` 의 `preflight` job 은 `mydocs-only` 변경을 **fast pass** 로 판정해

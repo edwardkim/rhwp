@@ -20,8 +20,8 @@ PACK = GYM / "packs" / "serialization"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_serialization_pack.md"
-EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "gym_serialization_exceptions.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_serialization_pack.md"
+EXCEPTIONS = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_serialization_exceptions.md"
 
 EXPECTED_IDS = [f"SR{i:02d}" for i in range(1, 57)]
 

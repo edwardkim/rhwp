@@ -353,9 +353,11 @@ let png: RasterRenderOutput = backend.finish()?;
   `rustfmt --edition 2021 --check <파일>` 을 쓴다.
 - `renderer::composer::re_sample_gen::tests::test_gen_re_multisize` 는 이 변경과
   무관하게 원래 실패한다. 회귀로 오인하지 않는다.
-- sparse-checkout 에서 `gym/` 을 빼면 `src/mcp_serve.rs:827` 의
+- 과거 #6916 이전에는 sparse-checkout 에서 `gym/` 을 빼면 `src/mcp_serve.rs:827` 의
   `include_str!("../gym/README.md")` 때문에 **bin 타깃 빌드가 실패한다.**
-  `git sparse-checkout add gym` 으로 해소한다(라이브러리 빌드는 영향 없음).
+  당시에는 `git sparse-checkout add gym` 으로 해소했다(라이브러리 빌드는 영향 없음).
+  #6916 이후 제품은 [제품 소유의 선택적 안내](../manual/gym_optional_tool.md)를 내장하며
+  Gym 디렉터리는 빌드 입력이 아니다. 위 명령을 현재 제품 빌드의 필수 준비로 적용하지 않는다.
 
 ## 8. M06-f 계약 카탈로그·픽스처
 

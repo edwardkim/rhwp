@@ -279,8 +279,6 @@ test('new sample document PR runs targeted security sweep without render workers
 test('new review reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/new-reference.pdf',
-    'pdf-2020/new-reference.pdf',
-    'pdf-large/nested/new-reference.pdf',
   ]) {
     const files = [{ filename, status: 'added' }];
     const policy = determinePolicy(policyInput({ files }));
@@ -299,11 +297,32 @@ test('new review reference PR keeps required aggregates without product workers'
   }
 });
 
+test('Gym-only PR keeps aggregates but delegates product lanes to Gym workflow', () => {
+  const files = [
+    { filename: 'gym/packs/work-receipt/tasks/WR13.json', status: 'modified' },
+    { filename: 'scripts/tests/test_gym_work_receipt_pack.py', status: 'modified' },
+  ];
+  const policy = determinePolicy(policyInput({
+    files,
+    classification: classificationFor(files),
+  }));
+  assert.equal(policy.decision, 'selective');
+  assert.deepEqual(policy.expected_workflows, {
+    CI: 'true',
+    CodeQL: 'true',
+    'Render Diff': 'false',
+  });
+  assert.equal(policy.classification.rust_required, 'false');
+  assert.equal(policy.classification.frontend_mode, 'none');
+  assert.equal(policy.classification.render_required, 'false');
+  assert.equal(policy.classification.native_skia_required, 'false');
+  assert.equal(policy.classification.codeql_languages, 'none');
+  assert.equal(policy.classification.reason, 'classified:gym-benchmark');
+});
+
 test('existing PDF reference PR keeps required aggregates without product workers', () => {
   for (const filename of [
     'pdf/existing-reference.pdf',
-    'pdf-2020/existing-reference.pdf',
-    'pdf-large/nested/existing-reference.pdf',
   ]) {
     const files = [{ filename, status: 'modified' }];
     const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
@@ -319,6 +338,22 @@ test('existing PDF reference PR keeps required aggregates without product worker
     assert.equal(policy.classification.native_skia_required, 'false', filename);
     assert.equal(policy.classification.codeql_languages, 'none', filename);
     assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('retired PDF roots stay on the fail-closed full policy', () => {
+  for (const filename of [
+    'pdf-2020/new-reference.pdf',
+    'pdf-large/nested/new-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({
+      files,
+      classification: classificationFor(files),
+    }));
+    assert.equal(policy.decision, 'full', filename);
+    assert.equal(policy.classification.classification_status, 'full', filename);
+    assert.equal(policy.classification.reason, 'fail-closed:unclassified-path', filename);
   }
 });
 
@@ -430,7 +465,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
     v: '6',
-    cv: '6',
+    cv: '7',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -451,7 +486,7 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   const workflows = path.join(__dirname, '..', '..', '.github', 'workflows');
   function triggerItems(filename, start, end) {
     const workflow = fs.readFileSync(path.join(workflows, filename), 'utf8');
-    const block = workflow.split(start, 2)[1].split(end, 1)[0];
+    const block = (workflow.split(start, 2)[1] || '').split(end, 1)[0];
     return Array.from(
       block.matchAll(/^      - ['"]?([^'"\n]+)['"]?$/gm),
       (match) => match[1],
@@ -533,7 +568,6 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     ...CI_FRONTEND_JOBS,
     'Build & Test',
     'resolve-nextest-duration-policy',
-    'refresh-nextest-target-duration-data',
   ]);
   assert.deepEqual(
     [...new Set(Object.values(CI_AUDITED_JOB_IDS))].sort(),
@@ -590,6 +624,25 @@ test('workflow selection prefers the newest run and rejects a mismatched PR asso
     ),
     newerRun,
   );
+});
+
+test('diagnostic run/job/step metadata does not change policy verdicts', () => {
+  const input = policyInput();
+  const policy = determinePolicy(input);
+  for (const conclusion of ['success', 'failure', 'cancelled', 'timed_out']) {
+    const workflows = workflowEvidence(policy);
+    workflows.CI.run.conclusion = conclusion;
+    const original = { ...input, policy, currentHeadSha: HEAD_SHA, workflows };
+    const enriched = structuredClone(original);
+    for (const evidence of Object.values(enriched.workflows)) {
+      Object.assign(evidence.run, { id: 12345, attempt: 2 });
+      for (const [index, item] of evidence.jobs.entries()) {
+        Object.assign(item, { id: 23456 + index, runId: 12345, attempt: 2 });
+        for (const [number, entry] of item.steps.entries()) entry.number = number + 1;
+      }
+    }
+    assert.deepEqual(auditPolicyRuns(enriched), auditPolicyRuns(original));
+  }
 });
 
 test('status description binds the same head policy to its evaluated base generation', () => {
@@ -927,6 +980,15 @@ test('review candidate lineage accepts only single-parent review tails and verif
     baseMergeBridge: null,
   });
 
+  const renderContract = {
+    ...review,
+    files: [{ filename: 'mydocs/tech/text-ir-v2.md', status: 'modified' }],
+  };
+  assert.equal(
+    selectReviewOnlyCandidate([candidate, renderContract], baseSha).eligible,
+    false,
+  );
+
   const disconnectedReview = {
     ...review,
     parents: [{ sha: '9'.repeat(40) }],
@@ -1043,4 +1105,48 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
   assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
+});
+
+test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {
+  const files = [{ filename: 'src/lib.rs', status: 'modified' }];
+  const input = policyInput({ files, classification: classificationFor(files) });
+  const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  const lint = workflows.CI.jobs.find((entry) => entry.name === CI_RUST_JOBS[0]);
+  const observed = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/ci-impact-policy/issue7069-lint-snapshot.json'), 'utf8'));
+  assert.equal(observed.run.conclusion, 'success');
+  assert.ok(observed.lint.steps.every((s) => s.status === 'completed' && s.conclusion === 'success'));
+  Object.assign(lint, { status: observed.lint.status, conclusion: observed.lint.conclusion, steps: observed.lint.steps });
+  assert.deepEqual(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }), {
+    publish: 'true', conclusion: 'pending',
+    reason: 'CI:pending-job:Lint (fmt, clippy, WASM check):in_progress',
+  });
+  lint.status = 'completed'; lint.conclusion = 'success';
+  assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, 'success');
+  for (const conclusion of ['failure', 'cancelled', 'timed_out', 'skipped', '']) {
+    lint.conclusion = conclusion;
+    assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, 'failure');
+  }
+});
+
+test('#7069 completed CodeQL job with a pending analysis step blocks approval', () => {
+  const input = policyInput(); const policy = determinePolicy(input);
+  const workflows = workflowEvidence(policy);
+  const entry = workflows.CodeQL.jobs.find((j) => j.name === CODEQL_JOBS['javascript-typescript']);
+  const analysis = entry.steps.find((s) => s.name === 'Perform CodeQL Analysis');
+  analysis.status = 'in_progress'; analysis.conclusion = '';
+  const result = auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(result.conclusion, 'pending');
+  assert.match(result.reason, /pending-step/);
+});
+
+test('#7069 collection identity failures and exhausted snapshots cannot pass', () => {
+  const input = policyInput(); const policy = determinePolicy(input);
+  for (const [field, value, expected] of [
+    ['collectionFailure', 'job-evidence-identity-mismatch', 'failure'],
+    ['collectionPendingReason', 'workflow-snapshot-changed', 'pending'],
+  ]) {
+    const workflows = workflowEvidence(policy); workflows.CI[field] = value;
+    assert.equal(auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows }).conclusion, expected);
+  }
 });

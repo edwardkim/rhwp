@@ -15,8 +15,8 @@ use crate::paint::{
     GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, LayerAffineTransform,
     LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerPoint, LayerVector, LocalizedName,
     OpenTypeFeatureSetting, PaintOp, PaintTextStyle, PaintVariantMeta, ResourceArena, ScriptTag,
-    ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement, TextSourceId, TextSourceRange,
-    TextSourceSpan, TextVariantKind, TextVariantQuality, VariationAxisValue, WritingMode,
+    ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement, TextSourceRange, TextSourceSpan,
+    TextVariantKind, TextVariantQuality, VariationAxisValue, WritingMode,
     MAX_PORTABLE_FONT_BLOB_BYTES, RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::PageLayoutContext;
@@ -55,12 +55,18 @@ pub(crate) fn prepare_vertical_shaping_line_shadow(
         let LayerNodeKind::Leaf { ops } = &child.kind else {
             return Err(VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface);
         };
-        let [PaintOp::TextRun { bbox, run }] = ops.as_slice() else {
+        let [PaintOp::TextRun {
+            bbox, run, source, ..
+        }] = ops.as_slice()
+        else {
             return Err(VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface);
         };
-        let text_source_id = first_text_source_id
-            .checked_add(u32::try_from(index).unwrap_or(u32::MAX))
-            .ok_or(VerticalGlyphLayerShadowRejectReason::TextSourceIdOverflow)?;
+        let text_source_id = match source {
+            Some(source) => source.id.0,
+            None => first_text_source_id
+                .checked_add(u32::try_from(index).unwrap_or(u32::MAX))
+                .ok_or(VerticalGlyphLayerShadowRejectReason::TextSourceIdOverflow)?,
+        };
         leaves.push(VerticalGlyphPublicationLeafInput {
             source_node_id,
             text_source_id,
@@ -233,6 +239,7 @@ fn prepare_vertical_font_delta(
 
 fn build_vertical_leaf_glyph_run(
     fallback: &crate::renderer::render_tree::TextRunNode,
+    source: TextSourceSpan,
     leaf: &crate::renderer::shaping_vertical::VerticalGlyphPublicationLeafShadow,
     sidecar: &Arc<BoundedVerticalHwp5TableCellSidecar>,
     face_key: FontFaceKey,
@@ -290,12 +297,7 @@ fn build_vertical_leaf_glyph_run(
     let font_size = paint_style.font_size;
 
     Ok(LayerGlyphRunPaint {
-        source: TextSourceSpan {
-            id: TextSourceId(leaf.text_source_id()),
-            utf8_range: TextSourceRange::new(utf8_start, utf8_end),
-            utf16_range: TextSourceRange::new(utf16_start, utf16_end),
-            stable_source_key: None,
-        },
+        source,
         variant,
         paint_style,
         shape_key: ShapeKey {
@@ -408,7 +410,7 @@ fn prepare_vertical_line_publication(
                 VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface,
             ));
         };
-        let [PaintOp::TextRun { bbox, run }] = ops.as_slice() else {
+        let [PaintOp::TextRun { bbox, run, source }] = ops.as_slice() else {
             return Err(VerticalGlyphLinePublicationRejectReason::Shadow(
                 VerticalGlyphLayerShadowRejectReason::UnsupportedLineSurface,
             ));
@@ -416,8 +418,18 @@ fn prepare_vertical_line_publication(
         if run.style.font_family != family {
             return Err(VerticalGlyphLinePublicationRejectReason::UnsupportedFallbackStyle);
         }
-        let glyph_run =
-            build_vertical_leaf_glyph_run(run, leaf, sidecar, resource_delta.face.id.clone())?;
+        // The glyph alternative must carry the exact identity already bound to
+        // its fallback; synthesizing a parallel span loses stable source keys.
+        let source = source
+            .clone()
+            .unwrap_or_else(|| TextSourceSpan::for_text_run(leaf.text_source_id(), run));
+        let glyph_run = build_vertical_leaf_glyph_run(
+            run,
+            source,
+            leaf,
+            sidecar,
+            resource_delta.face.id.clone(),
+        )?;
         ops.push(PaintOp::GlyphRun {
             bbox: *bbox,
             run: Box::new(glyph_run),
@@ -508,8 +520,13 @@ pub(crate) fn lower_vertical_shaping_page_sidecars(
             }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
-                    if matches!(op, PaintOp::TextRun { .. }) {
-                        *next_text_source_id = next_text_source_id.saturating_add(1);
+                    if let PaintOp::TextRun { source, .. } = op {
+                        *next_text_source_id = match source {
+                            Some(source) => {
+                                (*next_text_source_id).max(source.id.0.saturating_add(1))
+                            }
+                            None => next_text_source_id.saturating_add(1),
+                        };
                     }
                 }
             }

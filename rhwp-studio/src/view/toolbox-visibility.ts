@@ -10,6 +10,8 @@
  * DOM 은 인자로 받아 전역 `document` 없이 검증할 수 있게 둔다.
  */
 
+import { t } from '../i18n/index.ts';
+
 /** 도구 상자 표시 상태 (기본/서식) */
 export interface ToolboxVisibility {
   basic: boolean;
@@ -21,7 +23,7 @@ export const TOOLBOX_TARGETS = [
   {
     key: 'basic',
     cmd: 'view:toolbox-basic',
-    name: '기본 도구 상자',
+    nameKey: 'ui.toolbox.basic',
     shortcut: 'Ctrl+F1',
     datasetKey: 'toolboxBasic',
     attribute: 'data-toolbox-basic',
@@ -30,7 +32,7 @@ export const TOOLBOX_TARGETS = [
   {
     key: 'format',
     cmd: 'view:toolbox-format',
-    name: '서식 도구 상자',
+    nameKey: 'ui.toolbox.format',
     shortcut: undefined,
     datasetKey: 'toolboxFormat',
     attribute: 'data-toolbox-format',
@@ -39,7 +41,7 @@ export const TOOLBOX_TARGETS = [
 ] as const satisfies ReadonlyArray<{
   key: keyof ToolboxVisibility;
   cmd: string;
-  name: string;
+  nameKey: string;
   shortcut?: string;
   datasetKey: string;
   attribute: string;
@@ -71,8 +73,9 @@ export function applyToolboxVisibility(dom: ToolboxDom, visibility: ToolboxVisib
     for (const item of dom.querySelectorAll(`[data-cmd="${target.cmd}"]`)) {
       item.classList.toggle('active', visible);
       if (item.getAttribute('aria-controls') === target.elementId) {
-        const action = visible ? '접기' : '펴기';
-        const label = `${target.name} ${action}`;
+        const label = visible
+          ? t('ui.toolbox.collapseLabel', { p1: t(target.nameKey) })
+          : t('ui.toolbox.expandLabel', { p1: t(target.nameKey) });
         item.setAttribute('aria-expanded', String(visible));
         item.setAttribute('aria-label', label);
         item.setAttribute('title', target.shortcut ? `${label} (${target.shortcut})` : label);

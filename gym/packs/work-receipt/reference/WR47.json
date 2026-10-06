@@ -5,7 +5,7 @@
       "run": [
         "replay",
         "--plan-json",
-        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"규제\", \"replace\": \"표회계\"}]}",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"품질\", \"replace\": \"표회계\"}]}",
         "--capsule",
         "{sub:receipts/day.capsule.json}",
         "--json"

@@ -1,0 +1,22 @@
+{
+  "stage": 178,
+  "ledger_items": [
+    20,
+    21,
+    22
+  ],
+  "original_pr": 7382,
+  "starting_head": "c0d285998",
+  "tests": {
+    "svg_snapshot::form_002_page_0": "PASS",
+    "svg_snapshot::issue_267_ktx_toc_page": "PASS",
+    "svg_snapshot::issue_147_aift_page3": "PASS"
+  },
+  "evidence": "보정177의 cargo nextest SVG 검사 묶음 7실행/6PASS/1FAIL 로그; 이 세 함수는 모두 PASS",
+  "remaining_failure_in_suite": "svg_snapshot::issue_617_exam_kor_page5",
+  "production_change": false,
+  "test_change": false,
+  "golden_change": false,
+  "visual_claim": "기존 스냅샷 통과만 확인; 이 세 원문의 전페이지 한컴 PDF 일치는 이 단계에서 주장하지 않음",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage177-svg157/snapshot-suite-nextest.log"
+}

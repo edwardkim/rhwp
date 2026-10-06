@@ -36,7 +36,7 @@ RESOLUTION_CHECK = ROOT / "scripts/verify_review_only_merge_resolution.py"
 
 class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     def test_all_preflights_share_reference_pdf_directories(self) -> None:
-        expected = "const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];"
+        expected = "const pdfPrefixes = ['pdf/'];"
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):
                 workflow = workflow_path.read_text(encoding="utf-8")
@@ -48,6 +48,18 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                     "pdfPrefixes.some((prefix) => filename.startsWith(prefix))",
                     workflow,
                 )
+
+    def test_render_contract_docs_are_not_review_only(self) -> None:
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                self.assertIn("const renderContractPaths = new Set([", workflow)
+                self.assertIn(
+                    "'mydocs/tech/canvaskit-parity-implementation.md'",
+                    workflow,
+                )
+                self.assertIn("'mydocs/tech/text-ir-v2.md'", workflow)
+                self.assertIn("!renderContractPaths.has(filename)", workflow)
 
     def test_sample_document_files_are_not_review_only_fast_pass_references(self) -> None:
         workflow_paths = {
@@ -190,7 +202,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         self.assertIn("allowPriorPrBase\n                  ? step.name.startsWith(identityPrefix)", workflow)
         self.assertIn("await renderDiffResult(sourceParent.sha, pr, true)", workflow)
         self.assertIn(
-            "await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge))",
+            "await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge) && !candidatesContainingBase.has(candidateSha))",
             workflow,
         )
 
@@ -198,8 +210,8 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         base_sha = "b" * 40
         prior_base_sha = "a" * 40
         code_candidate = "c" * 40
-        merge_sha = "m" * 40
-        review_tail = "r" * 40
+        merge_sha = "1" * 40
+        review_tail = "2" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "mydocs/orders/20260827.md", "status": "modified"},
@@ -245,7 +257,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     ) -> None:
         base_sha = "b" * 40
         code_candidate = "c" * 40
-        review_tail = "r" * 40
+        review_tail = "2" * 40
         commits = [
             {
                 "sha": code_candidate,
@@ -283,8 +295,8 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     ) -> None:
         base_sha = "b" * 40
         code_candidate = "c" * 40
-        merge_sha = "m" * 40
-        review_tail = "r" * 40
+        merge_sha = "1" * 40
+        review_tail = "2" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "mydocs/orders/20260827.md", "status": "modified"},
@@ -398,7 +410,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 self.assertEqual(output["fast_pass"], "false")
                 self.assertEqual(output["reason"], reason)
 
-        second_merge = "n" * 40
+        second_merge = "3" * 40
         multiple_merge_output = self._run_render_diff_preflight(
             files=files,
             commits=[
@@ -448,6 +460,14 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         rejected = self._run_resolution_check("src/lib.rs")
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("current-base-merge-resolution-not-mydocs", rejected.stderr)
+        render_contract = self._run_resolution_check(
+            "mydocs/tech/text-ir-v2.md"
+        )
+        self.assertNotEqual(render_contract.returncode, 0)
+        self.assertIn(
+            "current-base-merge-resolution-not-mydocs",
+            render_contract.stderr,
+        )
         wrong_base = self._run_resolution_check(
             "mydocs/orders/20260807.md",
             expected_base_sha="0" * 40,
@@ -494,7 +514,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     ) -> None:
         code_candidate = "c" * 40
         evidence_commit = "e" * 40
-        review_commit = "r" * 40
+        review_commit = "2" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "pdf/pr_5772_reference.pdf", "status": "added"},
@@ -538,7 +558,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     def test_worker_preflights_require_a_verified_base_merge_bridge(self) -> None:
         base_sha = "b" * 40
         code_candidate = "c" * 40
-        merge_sha = "m" * 40
+        merge_sha = "1" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "mydocs/orders/20260827.md", "status": "modified"},
@@ -593,7 +613,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     ) -> None:
         code_candidate = "c" * 40
         green_review_head = "g" * 40
-        trailing_review = "r" * 40
+        trailing_review = "2" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "mydocs/pr/archives/pr_5832_review.md", "status": "added"},
@@ -652,7 +672,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     ) -> None:
         code_candidate = "c" * 40
         failed_review_head = "f" * 40
-        trailing_review = "r" * 40
+        trailing_review = "2" * 40
         files = [
             {"filename": "src/renderer/layout.rs", "status": "modified"},
             {"filename": "mydocs/pr/archives/pr_5834_review.md", "status": "added"},
@@ -704,7 +724,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
 
     def test_worker_preflights_reuse_modified_pdf_tail_and_reject_wrong_fork_candidate(self) -> None:
         code_candidate = "c" * 40
-        modified_pdf = "m" * 40
+        modified_pdf = "1" * 40
         modified_pdf_commits = [
             {
                 "sha": code_candidate,
@@ -726,7 +746,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             "conclusion": "success",
             "created_at": "2026-08-20T12:00:00Z",
         }
-        trailing_review = "r" * 40
+        trailing_review = "2" * 40
         trusted_tail = [
             modified_pdf_commits[0],
             {

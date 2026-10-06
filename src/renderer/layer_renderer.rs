@@ -489,6 +489,7 @@ impl TextVariantCandidate {
                             options.backend,
                             VariantSelectionBackend::CanvasKit
                                 | VariantSelectionBackend::CanvasKitBrowser
+                                | VariantSelectionBackend::NativeSkia
                         ))
                 {
                     reasons.insert(VariantRejectReason::BackendDoesNotSupportVariant);
@@ -624,10 +625,17 @@ fn collect_glyph_run_reject_reasons(
     {
         reasons.insert(VariantRejectReason::GlyphAdvanceCountMismatch);
     }
-    if !run.paint_style.is_fill_only_glyph_replay() {
+    let paint_supported = if options.backend == VariantSelectionBackend::NativeSkia {
+        run.paint_style.is_simple_glyph_run_replay()
+    } else {
+        run.paint_style.is_fill_only_glyph_replay()
+    };
+    if !paint_supported {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }
-    if run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic {
+    if (run.shape_key.font_instance.synthetic_bold || run.shape_key.font_instance.synthetic_italic)
+        && options.backend != VariantSelectionBackend::NativeSkia
+    {
         reasons.insert(VariantRejectReason::SyntheticStyleAuthorityPending);
     }
     if !matches!(run.direction, TextDirection::Ltr)
@@ -663,7 +671,9 @@ fn collect_glyph_run_reject_reasons(
             | VariantSelectionBackend::CanvasKitBrowser
             | VariantSelectionBackend::NativeSkia
     ) {
-        if !run.shape_key.font_instance.variations.is_empty() {
+        if !run.shape_key.font_instance.variations.is_empty()
+            && options.backend != VariantSelectionBackend::NativeSkia
+        {
             reasons.insert(VariantRejectReason::VariationUnsupported);
         }
         if matches!(
@@ -711,7 +721,10 @@ fn collect_glyph_run_reject_reasons(
         reasons.insert(VariantRejectReason::AdvanceNotFinite);
     }
     let font_size = run.shape_key.font_instance.size_px;
-    if !font_size.is_finite() || font_size <= 0.0 || font_size > 4096.0 {
+    if !font_size.is_finite()
+        || font_size <= 0.0
+        || font_size > crate::paint::MAX_GLYPH_FONT_SIZE_PX
+    {
         reasons.insert(VariantRejectReason::FontInstanceInvalid);
     }
 }
@@ -808,11 +821,48 @@ fn collect_glyph_run_font_resource_reject_reasons(
             {
                 reasons.insert(VariantRejectReason::FontBlobDigestMismatch);
             }
+            let parsed_face = ttf_parser::Face::parse(bytes, face.face_index);
             if (face.face_index != 0
-                && options.backend != VariantSelectionBackend::CanvasKitBrowser)
-                || ttf_parser::Face::parse(bytes, face.face_index).is_err()
+                && !matches!(
+                    options.backend,
+                    VariantSelectionBackend::CanvasKitBrowser | VariantSelectionBackend::NativeSkia
+                ))
+                || parsed_face.is_err()
             {
                 reasons.insert(VariantRejectReason::FaceIndexUnsupported);
+            }
+            if options.backend == VariantSelectionBackend::NativeSkia
+                && !run.shape_key.font_instance.variations.is_empty()
+            {
+                // This proves the portable instance contract, not Skia construction.
+                // Native replay must still prepare the exact Typeface before selecting
+                // any part of the strict variant or suppressing its TextRun fallback.
+                let variations = &run.shape_key.font_instance.variations;
+                let mut seen = BTreeSet::new();
+                let valid = variations.len()
+                    <= crate::renderer::shaping::MAX_SHAPING_VARIATION_AXES
+                    && parsed_face.as_ref().is_ok_and(|parsed| {
+                        variations.iter().all(|variation| {
+                            let Ok(tag_bytes) = <&[u8; 4]>::try_from(variation.tag.as_bytes())
+                            else {
+                                return false;
+                            };
+                            if !tag_bytes.iter().all(|byte| (0x20..=0x7e).contains(byte))
+                                || !variation.value.is_finite()
+                                || !seen.insert(variation.tag.as_str())
+                            {
+                                return false;
+                            }
+                            parsed.variation_axes().into_iter().any(|axis| {
+                                axis.tag == ttf_parser::Tag::from_bytes(tag_bytes)
+                                    && variation.value >= axis.min_value
+                                    && variation.value <= axis.max_value
+                            })
+                        })
+                    });
+                if !valid {
+                    reasons.insert(VariantRejectReason::VariationUnsupported);
+                }
             }
         }
         None => {
@@ -978,64 +1028,6 @@ fn collect_text_variant_diagnostics_reject_reasons(
     if diagnostics.used_fallback_font_count > 0 {
         reasons.insert(VariantRejectReason::FontNotPortable);
     }
-}
-
-/// [#6117] 줄 그룹 안에서 장식선(밑줄/취소선) 트림 대상 run 과 트림 길이를 고른다.
-///
-/// #6028 이 정한 규칙 — soft-wrap 이 소비한 줄-말미 공백은 장식선 길이에서 뺀다 — 은
-/// RenderNode 경로(`svg.rs` / 캔버스의 RenderNode 분기)에만 배선돼 있었다. layer tree 를
-/// **그대로 재생**하는 경로(studio 캔버스)는 그 배선이 없어 밑줄이 배분 정렬로 늘어난
-/// 말미 공백까지 그어져 표 칸 괘선을 넘었다(#6117: 교육부 법령안 등 4~20px).
-/// layer→SVG 경로는 RenderNode 로 되돌려 그리기 때문에 이 결손이 드러나지 않는다.
-///
-/// 판별은 원 계약과 같다: 뒤에서부터 첫 **가시 텍스트** run 을 찾고, 그 run 이 문단 끝
-/// (`is_para_end`)이거나 강제 줄바꿈 끝(`is_line_break_end`)이면 대상에서 뺀다 — 그때의
-/// 말미 공백은 저자 콘텐츠(밑줄 서명란 등)다.
-///
-/// 반환하는 키는 그 run 의 주소다. 한 번의 트리 순회 안에서만 쓰이며 그 범위에서 안정적이다.
-pub fn line_decoration_trim_target(children: &[LayerNode]) -> Option<(usize, usize)> {
-    fn scan(node: &LayerNode, found: &mut Option<Option<(usize, usize)>>) {
-        if found.is_some() {
-            return;
-        }
-        match &node.kind {
-            LayerNodeKind::Leaf { ops } => {
-                for op in ops.iter().rev() {
-                    if let PaintOp::TextRun { run, .. } = op {
-                        if run.text.chars().any(|ch| ch != ' ') {
-                            if run.is_para_end || run.is_line_break_end {
-                                *found = Some(None);
-                                return;
-                            }
-                            let trailing =
-                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
-                            let key = (&**run) as *const crate::renderer::render_tree::TextRunNode
-                                as usize;
-                            *found = Some((trailing > 0).then_some((key, trailing)));
-                            return;
-                        }
-                    }
-                }
-            }
-            LayerNodeKind::Group { children, .. } => {
-                for child in children.iter().rev() {
-                    scan(child, found);
-                    if found.is_some() {
-                        return;
-                    }
-                }
-            }
-            LayerNodeKind::ClipRect { child, .. } => scan(child, found),
-        }
-    }
-    let mut found = None;
-    for child in children.iter().rev() {
-        scan(child, &mut found);
-        if found.is_some() {
-            break;
-        }
-    }
-    found.flatten()
 }
 
 #[cfg(test)]
@@ -2074,7 +2066,7 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_rejects_variation_instances_until_exact_construction_is_proven() {
+    fn native_skia_rejects_variation_axes_missing_from_the_exact_face() {
         let mut op = glyph_run(diagnostics(), 42);
         if let PaintOp::GlyphRun { run, .. } = &mut op {
             run.shape_key.font_instance.variations = vec![VariationAxisValue {
@@ -2092,18 +2084,19 @@ mod tests {
     }
 
     #[test]
-    fn native_skia_rejects_non_default_collection_face_until_exact_construction_is_proven() {
+    fn native_skia_accepts_a_parseable_non_default_collection_face_contract() {
         let report = first_report_with_resource_setup(
             vec![text_op(), glyph_run(diagnostics(), 42)],
             native_skia_options(),
             |resources| add_portable_font_bytes(resources, FIXTURE_TTC, 1),
         );
 
-        assert_eq!(report.selected_variant_kind, Some(TextVariantKind::TextRun));
-        assert!(report.fallback_required);
-        assert!(report.rejected_variants[0]
-            .reasons
-            .contains(&VariantRejectReason::FaceIndexUnsupported));
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(TextVariantKind::GlyphRun)
+        );
+        assert!(!report.fallback_required);
+        assert!(report.rejected_variants.is_empty());
     }
 
     #[test]

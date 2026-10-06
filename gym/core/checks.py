@@ -21,6 +21,9 @@ import os
 from xml.etree import ElementTree
 
 
+MAX_TEXT_FILE_ENVELOPE_BYTES = 8 * 1024 * 1024
+
+
 def sha256_of(path):
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -477,6 +480,43 @@ def op_text_line_contains(ctx):
 # --- 봉투 연산자 — CLI 봉투의 지목된 자리를 본다 ---
 
 
+def _text_digest(value):
+    encoded = value.encode("utf-8")
+    return {"sha256": hashlib.sha256(encoded).hexdigest(), "bytes": len(encoded)}
+
+
+def op_text_file_envelope_eq(ctx):
+    """제출 텍스트 전체를 CLI JSON 봉투의 지목 문자열과 대조한다.
+
+    CSV 수치를 task JSON에 복제하지 않고 채점 시점의 rhwp가 생성한
+    ``charts[0].csv`` 같은 문자열을 정답으로 쓴다. ``newline=""``로 CRLF를
+    보존해 BOM·개행·모든 셀이 일치해야 통과한다. 상세에는 출처 문자열
+    대신 해시와 바이트 수만 남겨 untrusted content를 재출력하지 않는다.
+    """
+    try:
+        expected_text = ctx.dug()
+        if not isinstance(expected_text, str):
+            raise TypeError(f"봉투 값이 문자열이 아님: {type(expected_text).__name__}")
+        expected = _text_digest(expected_text)
+        if expected["bytes"] > MAX_TEXT_FILE_ENVELOPE_BYTES:
+            raise ValueError(f"봉투 텍스트가 상한 초과: {expected['bytes']} 바이트")
+        submitted_path = ctx.sub_path(ctx.check["file"])
+        actual_size = os.path.getsize(submitted_path)
+        if actual_size != expected["bytes"]:
+            return {
+                "expected": expected,
+                "actual": {"sha256": None, "bytes": actual_size},
+                "ok": False,
+            }
+        with open(submitted_path, encoding="utf-8", newline="") as fh:
+            actual_text = fh.read()
+        actual = _text_digest(actual_text)
+    except (OSError, UnicodeError, KeyError, IndexError, TypeError, ValueError) as exc:
+        return {"expected": "CLI 봉투의 지목 텍스트", "actual": f"전체 텍스트 대조 실패: {exc}",
+                "ok": False}
+    return {"expected": expected, "actual": actual, "ok": actual_text == expected_text}
+
+
 def op_answer_eq(ctx):
     got = ctx.dug()
     actual = ctx.answer.get(ctx.check["answer"])
@@ -569,6 +609,7 @@ REGISTRY = {
     "text_line_count_eq": (op_text_line_count_eq, False),
     "text_line_contains": (op_text_line_contains, False),
     # 봉투 연산자(CLI 호출)
+    "text_file_envelope_eq": (op_text_file_envelope_eq, True),
     "answer_eq": (op_answer_eq, True),
     "len_answer_eq": (op_len_answer_eq, True),
     "len_ge": (op_len_ge, True),

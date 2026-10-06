@@ -1,0 +1,486 @@
+{
+  "code_head": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+  "baseline_renderer": "2f59c89373f497068f9a0bcb2c22730ec7dc7e51",
+  "baseline_limit": "renderer source unchanged vs d2fc85a9; Cargo dependency updates differ",
+  "inputs": [
+    {
+      "path": "samples/21_언어_기출_편집가능본.hwp",
+      "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "blob": "e17044941fd84b0577df4caa1c4095e2653d7ea0",
+      "bytes": 435200,
+      "matches_commit": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c"
+    },
+    {
+      "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+      "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72",
+      "blob": "8145f043f646c67243e0c9aa73ceb04f342903ca",
+      "bytes": 851275,
+      "matches_commit": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c"
+    },
+    {
+      "path": "tests/fixtures/inline_table_outer_margins/two_digits.hwpx",
+      "sha256": "3b1629e42dbd4f2ac78340b362a2a8e91d0c1c5f3a6149092ad526589e915dd0",
+      "blob": "2349247ae7b51f9cc9cfff364d2b1875697d35aa",
+      "bytes": 6337,
+      "matches_commit": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c"
+    },
+    {
+      "path": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799",
+      "blob": "979ffea1820f6e7bcc36c422016ce934755d8733",
+      "bytes": 243200,
+      "matches_commit": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c"
+    },
+    {
+      "path": "pdf/pr-planet6897-20260914/synth-no-lineseg-hwp-2020.pdf",
+      "sha256": "70b63c11514d3d927418c1f116a0cc421614e7db5e9de312bd0d9f964b34e9a3",
+      "blob": "9cdc427de1879fb4a84b4a033e753777688d80c6",
+      "bytes": 575393,
+      "matches_commit": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c"
+    }
+  ],
+  "pdf_metadata": {
+    "format": "PDF 1.6",
+    "title": "",
+    "author": "이하늘",
+    "subject": "",
+    "keywords": "",
+    "creator": "Hwp 2022 12.0.0.4426",
+    "producer": "Hancom PDF 1.3.0.550",
+    "creationDate": "D:20260507171919+09'00'",
+    "modDate": "D:20260507171919+09'00'",
+    "trapped": "",
+    "encryption": null
+  },
+  "pdf_border_paths": [
+    {
+      "rect_pt": [
+        599.10498046875,
+        199.9530029296875,
+        599.10498046875,
+        224.4219970703125
+      ],
+      "width_pt": 0.36000001430511475
+    },
+    {
+      "rect_pt": [
+        385.37799072265625,
+        199.9530029296875,
+        599.343994140625,
+        199.9530029296875
+      ],
+      "width_pt": 0.36000001430511475
+    },
+    {
+      "rect_pt": [
+        385.37799072265625,
+        224.4219970703125,
+        599.343994140625,
+        224.4219970703125
+      ],
+      "width_pt": 0.36000001430511475
+    },
+    {
+      "rect_pt": [
+        385.37799072265625,
+        224.4219970703125,
+        599.343994140625,
+        224.4219970703125
+      ],
+      "width_pt": 0.36000001430511475
+    },
+    {
+      "rect_pt": [
+        385.37799072265625,
+        199.9530029296875,
+        599.343994140625,
+        199.9530029296875
+      ],
+      "width_pt": 0.36000001430511475
+    }
+  ],
+  "pdf_horizontal_border_right_px": 799.1253255208334,
+  "native_control_bbox_right_px_before": 803.3,
+  "native_control_bbox_right_px_after": 799.8,
+  "coordinate_precision": "render_tree JSON rounded to 0.1px; horizontal PDF stroke endpoint differs from vertical stroke x",
+  "visual_runs": [
+    {
+      "key": "answer-sheet",
+      "requested_pages": [
+        1
+      ],
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 88.11366,
+        "worst_pixel_match_percent": 88.11366,
+        "average_ink_match_percent": 12.41514,
+        "worst_ink_match_percent": 12.41514,
+        "average_visual_accuracy_proxy_percent": 12.41514,
+        "worst_visual_accuracy_proxy_percent": 12.41514,
+        "worst_pages": [
+          1
+        ]
+      },
+      "renderer": "before-native",
+      "flagged_pages": [],
+      "manifest": {
+        "schema_version": 1,
+        "key": "answer-sheet",
+        "provenance": {
+          "hwp": {
+            "path": "samples/21_언어_기출_편집가능본.hwp",
+            "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15"
+          },
+          "pdf": {
+            "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+            "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72"
+          },
+          "git_head": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "/Users/tsjang/.Trash/rhwp-pr7138-target-20260914/debug/rhwp",
+            "path": "/Users/tsjang/.Trash/rhwp-pr7138-target-20260914/debug/rhwp",
+            "sha256": "ff920c8eff591822aecae7bcc29eca1dc7014d63380058c45c49e998cf9342e4"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    },
+    {
+      "key": "answer-sheet",
+      "requested_pages": [
+        1
+      ],
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 88.12173,
+        "worst_pixel_match_percent": 88.12173,
+        "average_ink_match_percent": 12.44823,
+        "worst_ink_match_percent": 12.44823,
+        "average_visual_accuracy_proxy_percent": 12.44823,
+        "worst_visual_accuracy_proxy_percent": 12.44823,
+        "worst_pages": [
+          1
+        ]
+      },
+      "renderer": "candidate-native",
+      "flagged_pages": [],
+      "manifest": {
+        "schema_version": 1,
+        "key": "answer-sheet",
+        "provenance": {
+          "hwp": {
+            "path": "samples/21_언어_기출_편집가능본.hwp",
+            "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15"
+          },
+          "pdf": {
+            "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+            "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72"
+          },
+          "git_head": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "target/pr7107-conflict-20260914/debug/rhwp",
+            "path": "target/pr7107-conflict-20260914/debug/rhwp",
+            "sha256": "03a35f41c00e2fcb95b85606e651493d4394a0655a070d2bc78b078533e1730c"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    },
+    {
+      "key": "synth-no-lineseg",
+      "requested_pages": [
+        1
+      ],
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 82.89834,
+        "worst_pixel_match_percent": 82.89834,
+        "average_ink_match_percent": 11.48821,
+        "worst_ink_match_percent": 11.48821,
+        "average_visual_accuracy_proxy_percent": 11.48821,
+        "worst_visual_accuracy_proxy_percent": 11.48821,
+        "worst_pages": [
+          1
+        ]
+      },
+      "renderer": "candidate-native",
+      "flagged_pages": [
+        {
+          "page": 1,
+          "flags": [
+            "square_wrap_text_overlap",
+            "large_ink_region_drift"
+          ]
+        }
+      ],
+      "manifest": {
+        "schema_version": 1,
+        "key": "synth-no-lineseg",
+        "provenance": {
+          "hwp": {
+            "path": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+            "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799"
+          },
+          "pdf": {
+            "path": "pdf/pr-planet6897-20260914/synth-no-lineseg-hwp-2020.pdf",
+            "sha256": "70b63c11514d3d927418c1f116a0cc421614e7db5e9de312bd0d9f964b34e9a3"
+          },
+          "git_head": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "target/pr7107-conflict-20260914/debug/rhwp",
+            "path": "target/pr7107-conflict-20260914/debug/rhwp",
+            "sha256": "03a35f41c00e2fcb95b85606e651493d4394a0655a070d2bc78b078533e1730c"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    },
+    {
+      "key": "answer-sheet",
+      "requested_pages": [
+        1
+      ],
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 88.12173,
+        "worst_pixel_match_percent": 88.12173,
+        "average_ink_match_percent": 12.44823,
+        "worst_ink_match_percent": 12.44823,
+        "average_visual_accuracy_proxy_percent": 12.44823,
+        "worst_visual_accuracy_proxy_percent": 12.44823,
+        "worst_pages": [
+          1
+        ]
+      },
+      "renderer": "candidate-wasm",
+      "flagged_pages": [],
+      "manifest": {
+        "schema_version": 1,
+        "key": "answer-sheet",
+        "provenance": {
+          "hwp": {
+            "path": "samples/21_언어_기출_편집가능본.hwp",
+            "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15"
+          },
+          "pdf": {
+            "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+            "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72"
+          },
+          "git_head": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "target/pr7107-conflict-20260914/debug/rhwp",
+            "path": "target/pr7107-conflict-20260914/debug/rhwp",
+            "sha256": "03a35f41c00e2fcb95b85606e651493d4394a0655a070d2bc78b078533e1730c"
+          },
+          "wasm": {
+            "files": [
+              {
+                "path": "/private/tmp/rhwp-pr7107-conflict-20260914/review/pkg/rhwp.js",
+                "sha256": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899"
+              },
+              {
+                "path": "/private/tmp/rhwp-pr7107-conflict-20260914/review/pkg/rhwp_bg.wasm",
+                "sha256": "7d8b6205817a367dde0ec74c86dd7388d94a9780a17c9cd83fb1573e0481087b"
+              }
+            ],
+            "exporter_sha256": "fa92267b32f4f7617f60e02b37427762fd251d52196c9a001e6e8232c997a3aa",
+            "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+            "render_tree": "WASM getPageRenderTree"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/pr7107_inline_table_before_review_p001.png",
+      "sha256": "1fd5fd68b1a885b75c017bd70e5e4e4565b75ccafb6a0948029f3ecc9f16c408"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7107_inline_table_native_review_p001.png",
+      "sha256": "26bc7ad64c5646389cd4ddec00ab06363faa83663d7efda3211191e6ea97cce7"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7107_inline_table_wasm_review_p001.png",
+      "sha256": "d42c9febe9862d8b45405895246611d8bbc7b69577b82cf246aaef627335c657"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7107_inline_table_wasm_review_p001_ovl.png",
+      "sha256": "990d0de490d87673287349f9898164771924981dcf25d3407ca4b5b50f828586"
+    }
+  ],
+  "ci": {
+    "attempt": 2,
+    "conclusion": "success",
+    "event": "pull_request",
+    "headSha": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/34834644226"
+  },
+  "no_ls_baseline_parity": [
+    {
+      "page": "synth_no_ls_square_wrap_001.svg",
+      "sameAsReviewedDevelRenderer": true
+    },
+    {
+      "page": "synth_no_ls_square_wrap_002.svg",
+      "sameAsReviewedDevelRenderer": true
+    },
+    {
+      "page": "synth_no_ls_square_wrap_003.svg",
+      "sameAsReviewedDevelRenderer": true
+    }
+  ],
+  "wasm_browser_manifest": {
+    "pageCount": 15,
+    "version": "0.8.6",
+    "browser": "Chrome/152.0.7977.83",
+    "pages": [
+      {
+        "page": 1,
+        "svgSha256": "097e12d45f25b68edd7de6811eb8df1923f9dc61aa8a8286f9219d5c5861112c"
+      },
+      {
+        "page": 2,
+        "svgSha256": "3ccfc9c9809e560d0063126bad281bfecf17707700e115ace853a50b9d2a340c"
+      },
+      {
+        "page": 3,
+        "svgSha256": "03e19e787bf8efb3e700455131808a42de7b6ec3f6945059ec0c2ce0d17bc7bb"
+      },
+      {
+        "page": 4,
+        "svgSha256": "ec523e831dfbb0c1888c6d9c17a3038f80cf7659c7b8c140991135f9eb8ec6b7"
+      },
+      {
+        "page": 5,
+        "svgSha256": "3e7bc7a0a6038cd9e60ed1abccfb4f7fea353dc16ecb8bc40b536b7102000e2b"
+      },
+      {
+        "page": 6,
+        "svgSha256": "32c54f98946e4a9a4c05092c6aa6e1606241812dfde593842124b02f2fa0a0a4"
+      },
+      {
+        "page": 7,
+        "svgSha256": "5ab7a69f950c40d9c2e4904795ab03e6f759fd5ac1cd4a501d7089e103ad6951"
+      },
+      {
+        "page": 8,
+        "svgSha256": "11b907a5e31dd95393367c11731a5eeea65f6d0dd1fe8efdd86ad100068b194e"
+      },
+      {
+        "page": 9,
+        "svgSha256": "c53e889de28f5f71ede2688112ff7eb6e5ce35a930b6b8d8d2238a24faa572a3"
+      },
+      {
+        "page": 10,
+        "svgSha256": "0910424bffb2e1c5b6b214d815752b4a4853ad62d973b36762f6146487b8aa5a"
+      },
+      {
+        "page": 11,
+        "svgSha256": "92b0a01fa4d0bd27abe127b02114dafde330e9b01ac9fd65a302bd290e9804a4"
+      },
+      {
+        "page": 12,
+        "svgSha256": "9b06fb6015ffce6fb84ba509183c5aec40a879b5a4b7e894fbc4da07f05e60a6"
+      },
+      {
+        "page": 13,
+        "svgSha256": "1a354b67cab56a6d0a2d5403b5629efdf50ede3577eac7493dbc1550bcfaf89d"
+      },
+      {
+        "page": 14,
+        "svgSha256": "85656bc691d063b81f9b8ec382c36b3aaab434e40c702c308cd8d9586fd98a52"
+      },
+      {
+        "page": 15,
+        "svgSha256": "0fb2820a64e1c44754e15cec85765137afecfd9fd04f86308d60b6174233c585"
+      }
+    ]
+  },
+  "wasm_control_bbox_right_px_after": 799.8
+}

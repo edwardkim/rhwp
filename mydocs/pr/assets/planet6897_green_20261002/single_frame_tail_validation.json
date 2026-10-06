@@ -1,0 +1,170 @@
+{
+  "date": "2026-10-03",
+  "branch": "review/planet6897-green-20261002",
+  "parent_head": "a5898b327",
+  "status": "쪽 소속·회귀13건 복원 검증 완료. 잔존14건과 중첩 문서 시각 미달은 계속 보류.",
+  "cause": "원시 행 잔여 높이를 시작 행 전체 높이 override로 전달하면 scan이 다음 저장 쪽 컷까지 소비하지 않고 행 전체를 완료한다. 여러 저장 프레임을 가진 행에 단일 프레임 통배치 경로가 잘못 적용됨.",
+  "correction": "다음 컷의 실제 행/rowspan 블록 셀 순서를 보존하고, 현재 행 잔여 유닛에 추가 hard/stored/page-frame 경계가 없을 때만 원시 물리 잔여를 통배치한다.",
+  "rejected_v1": "블록 컷을 일반 행 컷으로 읽어 sample2 14쪽58.34091%; 컷 index 공간을 정정함.",
+  "source_sha256": {
+    "src/renderer/layout/table_layout.rs": "1f8eda214d623f90d4212281fb80735e3bc4c803b317dddf3741428f8475be9c",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "5179792761753cbe95ab1d389f94760b297824a7d81fb6a3022c503eb828ae9a"
+  },
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "baseline_changes": 0,
+  "focused_previous27": {
+    "PASS": [
+      "rhwp::regression_suite_009 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+      "rhwp::regression_suite_014 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+      "rhwp::regression_suite_016 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1"
+    ],
+    "FAIL": [
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+      "rhwp::regression_suite_008 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "rhwp::regression_suite_013 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+      "rhwp::regression_suite_018 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "rhwp::regression_suite_017 text_overlap_baseline::text_overlaps_do_not_grow_partition_0"
+    ],
+    "summary": "Summary [  85.485s] 27 tests run: 13 passed (1 slow), 14 failed, 1598 skipped",
+    "exit_code": 100
+  },
+  "focused_pixel_contracts": {
+    "run": 5,
+    "passed": 5,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "native_build_exit": 0,
+  "wasm_build": {
+    "exit_code": 0,
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "environment": "Mac local substitute; not Docker optimization"
+  },
+  "sample2_native": {
+    "pages": 29,
+    "minimum_percent": 92.22927,
+    "below90_pages": [],
+    "exit_code": 0,
+    "svg_and_tree_equivalence": {
+      "baseline": "sample2-p28-final-all-native",
+      "current": "single-frame-tail-v2-sample2-native",
+      "svg_count": [
+        29,
+        29
+      ],
+      "svg_changed": [],
+      "tree_count": 29,
+      "tree_changed": []
+    }
+  },
+  "nested_hwp": {
+    "source": "samples/issue5875/nested_table_text_caption.hwp",
+    "pdf": "pdf/issue5875/nested_table_text_caption-2020.pdf",
+    "source_pages_before": 11,
+    "source_pages_after": 12,
+    "pdf_pages": 12,
+    "off_canvas_after": 0,
+    "table_overlap_after": 0,
+    "v1_v2_tree_equivalence": {
+      "v1_pages": 12,
+      "v2_pages": 12,
+      "changed": []
+    },
+    "visual_status": "미달 재검증 중; 쪽수 복원과 시각 완료는 구분",
+    "native_whole_visual": {
+      "pages": 12,
+      "exit_code": 1,
+      "minimum_percent": 31.95012,
+      "below90_count": 7
+    }
+  },
+  "final_full_nextest": "pending after remaining14 corrections",
+  "integration_pr_ready": false,
+  "rust_gates": {
+    "root_clippy_exit": 0,
+    "sequential_workspace_and_wasm": [
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      }
+    ],
+    "fmt_exit": 0,
+    "diff_check_exit": 0,
+    "manifest_check_exit": 0
+  },
+  "assets": [
+    "single_frame_tail_sample2_native.tsv",
+    "single_frame_tail_5875_native.tsv",
+    "single_frame_tail_5875_p2_hold.png",
+    "single_frame_tail_sample2_wasm.tsv"
+  ],
+  "sample2_fresh_wasm": {
+    "pages": 29,
+    "minimum_percent": 92.22927,
+    "below90_pages": [],
+    "native_metrics_identical": true,
+    "exit_code": 0
+  },
+  "native_binary_sha256": "d0a959835d429464865efd94e57018cb27f39771c7c87701cac77bdcebe44f8a",
+  "wasm_binary_sha256": "45d64f4fa0f2f3ab60d3dd74da53313a85abc1b57d821ad044dd058df010d87d"
+}

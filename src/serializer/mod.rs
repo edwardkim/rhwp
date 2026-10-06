@@ -10,6 +10,7 @@ pub(crate) mod char_shape;
 pub mod content_loss;
 pub mod control;
 pub mod doc_info;
+mod form_identity;
 pub mod header;
 pub mod hml;
 pub mod hwpx;

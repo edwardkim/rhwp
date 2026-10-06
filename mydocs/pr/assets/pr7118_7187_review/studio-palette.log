@@ -1,0 +1,22 @@
+  ➜  Local:   http://127.0.0.1:7794/
+=== E2E: /커맨드 팔레트 ===
+
+  [browser] headless Chrome 실행
+  Screenshot: e2e/screenshots/palette-01-opened.png
+  PASS: TC1: Ctrl+/ 키로 팔레트 열림
+  Screenshot: e2e/screenshots/palette-02-filtered.png
+  PASS: TC2: 필터링 결과 있음 (5개)
+  PASS: TC2: "저장" 항목 표시됨
+  Screenshot: e2e/screenshots/palette-03-closed.png
+  PASS: TC3: Escape로 팔레트 닫힘
+  PASS: TC4: 팔레트 재오픈
+  Screenshot: e2e/screenshots/palette-04-ctrl-search.png
+  PASS: TC4: "ctrl" 검색 결과 있음 (44개)
+  PASS: TC5: "조판" 항목 검색됨
+  Screenshot: e2e/screenshots/palette-05-executed.png
+  PASS: TC5: Enter로 커맨드 실행 후 팔레트 닫힘
+  PASS: TC6: 팔레트 재오픈 정상
+  Screenshot: e2e/screenshots/palette-07-all-items.png
+  PASS: TC7: 빈 검색어 시 전체 목록 (191개)
+
+📋 HTML 보고서: ../output/e2e/command-palette-report.html

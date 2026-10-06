@@ -18,9 +18,9 @@
       "minBytes": 1024
     },
     {
-      "name": "한 쪽 문서",
+      "name": "재조판 결과 두 쪽",
       "op": "value_eq",
-      "value": 1,
+      "value": 2,
       "path": "pageCount",
       "cmd": [
         "info",

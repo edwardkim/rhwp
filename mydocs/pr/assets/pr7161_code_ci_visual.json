@@ -1,0 +1,252 @@
+{
+  "code_candidate_sha": "68af356c36147e3a4c38c6e2caef52157e5958bd",
+  "ci_url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100",
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "jobs": [
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314019144"
+    },
+    {
+      "name": "WASM Build",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314019886"
+    },
+    {
+      "name": "CI preflight",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314061056"
+    },
+    {
+      "name": "Native Skia tests",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314413632"
+    },
+    {
+      "name": "Resolve nextest target duration policy",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314413746"
+    },
+    {
+      "name": "Lint (fmt, clippy, WASM check)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314413816"
+    },
+    {
+      "name": "build-test-archive-a / Build test archive (a)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314413873"
+    },
+    {
+      "name": "Frontend package gates",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314415319"
+    },
+    {
+      "name": "Workflow promotion preflight",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314415439"
+    },
+    {
+      "name": "Frontend unit gates",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314415608"
+    },
+    {
+      "name": "build-test-archive-d / Build test archive (d)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314457755"
+    },
+    {
+      "name": "build-test-archive-c / Build test archive (c)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314457759"
+    },
+    {
+      "name": "build-test-archive-b / Build test archive (b)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104314457836"
+    },
+    {
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104316234540"
+    },
+    {
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104316586330"
+    },
+    {
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104316746843"
+    },
+    {
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104317093293"
+    },
+    {
+      "name": "Build & Test",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/34948644100/job/104318803545"
+    }
+  ],
+  "issue6706": {
+    "completed_pages": [
+      18
+    ],
+    "flagged_pages": [],
+    "overlay": {
+      "summary": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 76.77876,
+        "worst_pixel_match_percent": 76.77876,
+        "average_ink_match_percent": 29.36386,
+        "worst_ink_match_percent": 29.36386,
+        "average_visual_accuracy_proxy_percent": 29.36386,
+        "worst_visual_accuracy_proxy_percent": 29.36386,
+        "worst_pages": [
+          18
+        ]
+      },
+      "pages": [
+        {
+          "page": 18,
+          "rhwp_png": "/private/tmp/rhwp-issue-6706-20260915/final/issue6706/rhwp_png/rhwp_018.png",
+          "pdf_png": "/private/tmp/rhwp-issue-6706-20260915/final/issue6706/pdf_png/pdf-18.png",
+          "overlay_png": "/private/tmp/rhwp-issue-6706-20260915/final/issue6706/overlay/overlay_018.png",
+          "width": 794,
+          "height": 1123,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 207055,
+          "diff_ratio": 0.23221243,
+          "pixel_match_percent": 76.77876,
+          "ink_union_pixels": 293129,
+          "ink_diff_pixels": 207055,
+          "ink_diff_ratio": 0.70636136,
+          "ink_match_percent": 29.36386,
+          "visual_accuracy_proxy_percent": 29.36386,
+          "mean_abs_channel_delta": 20.152,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            28,
+            47,
+            764,
+            1083
+          ]
+        }
+      ]
+    }
+  },
+  "issue6701": {
+    "completed_pages": [
+      25,
+      26,
+      27
+    ],
+    "flagged_pages": [],
+    "overlay": {
+      "summary": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 90.16914,
+        "worst_pixel_match_percent": 83.87932,
+        "average_ink_match_percent": 46.59265,
+        "worst_ink_match_percent": 9.34136,
+        "average_visual_accuracy_proxy_percent": 46.59265,
+        "worst_visual_accuracy_proxy_percent": 9.34136,
+        "worst_pages": [
+          25,
+          27,
+          26
+        ]
+      },
+      "pages": [
+        {
+          "page": 25,
+          "rhwp_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/rhwp_png/rhwp_025.png",
+          "pdf_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/pdf_png/pdf-25.png",
+          "overlay_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/overlay/overlay_025.png",
+          "width": 794,
+          "height": 1123,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 143742,
+          "diff_ratio": 0.16120683,
+          "pixel_match_percent": 83.87932,
+          "ink_union_pixels": 158553,
+          "ink_diff_pixels": 143742,
+          "ink_diff_ratio": 0.90658644,
+          "ink_match_percent": 9.34136,
+          "visual_accuracy_proxy_percent": 9.34136,
+          "mean_abs_channel_delta": 22.921,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            41,
+            75,
+            742,
+            1055
+          ]
+        },
+        {
+          "page": 26,
+          "rhwp_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/rhwp_png/rhwp_026.png",
+          "pdf_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/pdf_png/pdf-26.png",
+          "overlay_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/overlay/overlay_026.png",
+          "width": 794,
+          "height": 1123,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 30787,
+          "diff_ratio": 0.03452766,
+          "pixel_match_percent": 96.54723,
+          "ink_union_pixels": 128415,
+          "ink_diff_pixels": 30787,
+          "ink_diff_ratio": 0.23974614,
+          "ink_match_percent": 76.02539,
+          "visual_accuracy_proxy_percent": 76.02539,
+          "mean_abs_channel_delta": 4.4,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            37,
+            77,
+            756,
+            901
+          ]
+        },
+        {
+          "page": 27,
+          "rhwp_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/rhwp_png/rhwp_027.png",
+          "pdf_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/pdf_png/pdf-27.png",
+          "overlay_png": "/private/tmp/rhwp-issue-6701-20260915/current/issue6701/overlay/overlay_027.png",
+          "width": 794,
+          "height": 1123,
+          "pixel_diff_threshold": 32,
+          "total_pixels": 891662,
+          "diff_pixels": 88445,
+          "diff_ratio": 0.09919117,
+          "pixel_match_percent": 90.08088,
+          "ink_union_pixels": 194006,
+          "ink_diff_pixels": 88445,
+          "ink_diff_ratio": 0.45588796,
+          "ink_match_percent": 54.4112,
+          "visual_accuracy_proxy_percent": 54.4112,
+          "mean_abs_channel_delta": 13.436,
+          "max_channel_delta": 255,
+          "diff_bbox": [
+            38,
+            75,
+            752,
+            1057
+          ]
+        }
+      ]
+    }
+  }
+}

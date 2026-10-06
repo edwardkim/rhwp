@@ -358,15 +358,42 @@ pub struct ParaShape {
     /// 문단 수준 (0~6 → 1~7수준, attr1 bit 25~27)
     pub para_level: u8,
     /// [#4898] HWPX 원본이 `hp:switch` 없이 여백·줄간격을 평문으로 적었는지 보존한다.
-    /// 한컴은 `hp:case`(HwpUnitChar) 를 우선 읽으므로, 평문 원본을 switch 형태로 되쓰면서
-    /// `case` 에 절반값을 넣으면 한글이 보는 여백이 절반이 된다(쪽수 증가). 파서가 이 표기를
-    /// 남기고 HWPX 직렬화기가 같은 표기로 되돌려 원본 조판을 지킨다.
+    /// 평문 고정 줄간격은 switch와 다른 저장 계약이므로 원본 표기를 유지한다.
+    /// 평문 여백의 패키지 버전별 단위는 아래 출처와 함께 보존한다.
     pub hwpx_plain_para_margin: bool,
+    /// 패키지 xmlVersion 1.4 이상에서 평문 여백이 물리 HWPUNIT인지 보존한다.
+    /// 이전 버전은 저장값이 이미 공통 IR 단위이므로 직렬화에서도 절반으로 줄이지 않는다.
+    pub hwpx_plain_para_margin_physical: bool,
     /// [#1986] HWPX breakSetting@breakLatinWord 원문 보존
     /// (BREAK_WORD/KEEP_WORD/HYPHENATION). 파서 미수집 시 None → 직렬화 기본값
     /// KEEP_WORD. 값이 3가지라 attr1 비트 인코딩 대신 원문 보존으로 무손실 방출.
     /// 꼬리말·표셀 등 재계산 경로에서 줄나눔이 달라져 레이아웃이 갈리는 것을 막는다.
     pub break_latin_word: Option<String>,
+}
+
+/// [#6875] 문단 줄바꿈 방식("한 줄로 입력") — HWP5 ParaShape `attr2` bits 0-1 ↔
+/// OWPML `hh:breakSetting@lineWrap`.
+///
+/// 값 대응은 셀 줄바꿈(#4898, LIST_HEADER bit 19-20)과 같은 열거 순서다:
+/// `0`=BREAK · `1`=SQUEEZE · `2`=KEEP. 한컴 변환본으로 1↔SQUEEZE 를 확인했다.
+pub const PARA_ATTR2_LINE_WRAP_MASK: u32 = 0x03;
+
+/// OWPML `lineWrap` 문자열 → `attr2` bits 0-1 값. 모르는 값은 BREAK(0).
+pub fn para_line_wrap_bits(value: &str) -> u32 {
+    match value {
+        "SQUEEZE" => 1,
+        "KEEP" => 2,
+        _ => 0,
+    }
+}
+
+/// `attr2` bits 0-1 → OWPML `lineWrap` 문자열. 3(정의되지 않음)은 BREAK.
+pub fn para_line_wrap_str(attr2: u32) -> &'static str {
+    match attr2 & PARA_ATTR2_LINE_WRAP_MASK {
+        1 => "SQUEEZE",
+        2 => "KEEP",
+        _ => "BREAK",
+    }
 }
 
 /// ParaShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
@@ -554,7 +581,7 @@ pub struct Style {
 }
 
 /// 테두리/배경 (HWPTAG_BORDER_FILL)
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct BorderFill {
     /// 원본 레코드 바이트 (라운드트립 보존용)
     pub raw_data: Option<Vec<u8>>,
@@ -638,7 +665,7 @@ impl CenterLine {
 }
 
 /// 테두리선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct BorderLine {
     /// 선 종류
     pub line_type: BorderLineType,
@@ -692,7 +719,7 @@ pub enum BorderLineType {
 }
 
 /// 대각선 정보
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct DiagonalLine {
     /// 대각선 선 종류 코드. BorderLineType의 HWP/HWPX 코드와 같은 값을 사용한다.
     pub diagonal_type: u8,
@@ -703,7 +730,7 @@ pub struct DiagonalLine {
 }
 
 /// 채우기 정보
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct Fill {
     /// 채우기 종류
     pub fill_type: FillType,
@@ -728,7 +755,7 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default, serde::Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
@@ -739,7 +766,7 @@ pub struct SolidFill {
 }
 
 /// 그러데이션 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct GradientFill {
     /// 유형 (1: 줄무늬, 2: 원형, 3: 원뿔형, 4: 사각형)
     pub gradient_type: i16,
@@ -760,18 +787,40 @@ pub struct GradientFill {
 }
 
 /// 이미지 채우기
-#[derive(Debug, Clone, Default, serde::Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize)]
 pub struct ImageFill {
     /// 채우기 유형
     pub fill_mode: ImageFillMode,
-    /// 밝기
+    /// HWP5 이진 `FILL_INFO` 의 **첫 바이트** — 화면 `contrast` 다. [`Self::display_brightness_contrast`] 참조.
     pub brightness: i8,
-    /// 명암
+    /// HWP5 이진 `FILL_INFO` 의 **둘째 바이트** — 화면 `bright` 다. [`Self::display_brightness_contrast`] 참조.
     pub contrast: i8,
     /// 그림 효과
     pub effect: u8,
     /// BinData ID 참조
     pub bin_data_id: u16,
+}
+
+impl ImageFill {
+    /// 화면·HWPX 속성 순서의 `(bright, contrast)`.
+    ///
+    /// `ImageFill` 의 두 필드는 **HWP5 이진 `FILL_INFO` 의 저장 순서**를 그대로 담는다.
+    /// 그 순서는 HWPX 속성 이름과 반대다 — 이진 1번 바이트가 HWPX `contrast`, 2번
+    /// 바이트가 HWPX `bright` 다. `#6895` 에서 한/글 오라클로 확인했다:
+    ///
+    /// ```text
+    ///   원본 HWPX               bright="50"  contrast="-15"
+    ///   한/글이 HWP5 로 저장     이진 1번 = -15 · 2번 = 50
+    ///   한/글이 다시 HWPX 로     bright="50"  contrast="-15"   (보존)
+    /// ```
+    ///
+    /// 그래서 **화면·HWPX 로 나갈 때는 반드시 이 함수를 거친다.** 필드를 곧바로
+    /// 쓰면 두 값이 뒤바뀐다(저장마다 뒤집히고, 칸 배경 그림은 색조가 반대로 그려졌다).
+    /// [`crate::renderer::render_tree::PageBackgroundImage::display_brightness_contrast`]
+    /// 와 같은 계약이다.
+    pub const fn display_brightness_contrast(&self) -> (i8, i8) {
+        (self.contrast, self.brightness)
+    }
 }
 
 /// 이미지 채우기 유형

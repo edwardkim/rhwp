@@ -1,0 +1,2 @@
+candidate text_matched_paras 3699 left_margin_mismatch 0 tuple_mismatch 0
+before text_matched_paras 3248 left_margin_mismatch 786 tuple_mismatch 786

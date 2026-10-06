@@ -12,7 +12,7 @@ bug-hunter(우리가 고른 여정 vs 정답지) 와 입구·산출물·시간 �
 정본: [`mydocs/manual/fde_playbook.md`](../../../mydocs/manual/fde_playbook.md).
 기계 골격: [`tools/fde/triage.py`](../../../tools/fde/triage.py).
 실행 주체(있으면 링크만): [`.claude/agents/rhwp-fde.md`](../../agents/rhwp-fde.md).
-처리 결과: [`mydocs/working/agent_fde.md`](../../../mydocs/working/agent_fde.md).
+처리 결과: [`mydocs/working/agent_fde.md`](../../../mydocs/working/archives/agent_fde.md).
 
 상세는 `references/` 를 연다. SKILL.md 는 접수·사다리·라우트·정지 규칙만 담는다.
 
@@ -185,4 +185,4 @@ python3 tools/fde/triage.py <고객문서> --bin <rhwp> --symptom "<증상 문�
 - [`tools/fde/triage.py`](../../../tools/fde/triage.py)
 - [`.claude/agents/rhwp-fde.md`](../../agents/rhwp-fde.md) (있으면 링크만, 엔진 재발명 금지)
 - [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
-- 처리 결과: [`mydocs/working/agent_fde.md`](../../../mydocs/working/agent_fde.md)
+- 처리 결과: [`mydocs/working/agent_fde.md`](../../../mydocs/working/archives/agent_fde.md)

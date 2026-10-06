@@ -1,0 +1,39 @@
+{
+  "pageCount": 8,
+  "version": "0.8.6",
+  "browser": "Chrome/153.0.8010.47",
+  "pages": [
+    {
+      "page": 1,
+      "svgSha256": "a66280fd4e6e0decc9e402a4accb827e5827e48170769f5ebe91f211717eff78"
+    },
+    {
+      "page": 2,
+      "svgSha256": "4482bf2d750c769a45e2aff578e63023f0bda20cde83fa5e74642189daa33342"
+    },
+    {
+      "page": 3,
+      "svgSha256": "1fed7abfede3babd840574d7a24a740cb1325ec1450c7652afc5ffb1d29c2e6d"
+    },
+    {
+      "page": 4,
+      "svgSha256": "d0d242a4ec6acd6e5aa667fa455cde0a1d93ce5cd3cc8ac7b4a1428b315a2103"
+    },
+    {
+      "page": 5,
+      "svgSha256": "706a8c174f24fde7f426efd8f9a3608ec43b624f7642f38b60bdc06679d1153b"
+    },
+    {
+      "page": 6,
+      "svgSha256": "9c5fe07808200a6751fc63a9d5aa10ec1c64c567a54240fe81831023e8c7bafc"
+    },
+    {
+      "page": 7,
+      "svgSha256": "2181a5b472cee552cb8530e6ef709a0ba82d9b9a6644c2d2235ffee19a331533"
+    },
+    {
+      "page": 8,
+      "svgSha256": "fffb9889598c9c5fa4f1b6ef1b27cc08b09d2bcde3793045bac3e80be6bbdf3c"
+    }
+  ]
+}

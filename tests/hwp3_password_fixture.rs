@@ -161,7 +161,11 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
     // HWP3 조합형 0xD3C5는 아래아를 포함한 "ᄒᆞᆫ"이다. 기존에는 지원하지
     // 않는 중성으로 간주해 첫 글자를 버렸고, 제목이 "글 97"로 시작했다.
     // 같은 문서의 HWPX는 이 자모열을 명시하므로 두 fixture로 회귀를 고정한다.
-    assert!(hwp3_text.contains("ᄒᆞᆫ글 97 안내문"));
+    // [#4680] 이 자리는 HWP3 고정폭 빈칸(코드 31)이다. 종전에는 파서가 일반 공백으로
+    // 눌러 써서 HWP3 쪽만 U+0020 이었다 — 같은 문서의 HWPX 판은 U+2007 이다.
+    // 제어 표기를 보존하면 두 fixture 가 같은 문자를 낸다(실측 확인). 이 파일이
+    // 스스로 적어 둔 "같은 문서의 HWPX 로 회귀를 고정한다" 는 취지에 비로소 맞는다.
+    assert!(hwp3_text.contains("ᄒᆞᆫ글\u{2007}97 안내문"));
     assert!(hwpx_text.contains("ᄒᆞᆫ글\u{2007}97 안내문"));
 
     // HWP3 원본 머리말의 0x37C0..=0x37C5 graphic char는 HWPX 변환본과

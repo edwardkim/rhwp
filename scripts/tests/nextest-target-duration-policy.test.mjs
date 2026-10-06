@@ -98,8 +98,8 @@ test("CLI consumes streamed cargo metadata without synchronous stdin reads", () 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, "case-a\n");
   assert.match(result.stderr, /integration_targets=2 selected_targets=1/);
-  assert.match(result.stderr, /estimated_wall_seconds=60\.000/);
-  assert.match(result.stderr, /max_testcase_seconds=60\.000/);
+  assert.match(result.stderr, /estimated_wall_seconds=5\.000/);
+  assert.match(result.stderr, /max_testcase_seconds=5\.000/);
   assert.match(result.stderr, /parallelism_factor=4/);
 });
 

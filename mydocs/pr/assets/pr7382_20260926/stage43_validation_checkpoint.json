@@ -1,0 +1,337 @@
+{
+  "tested_runtime_head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "phase": "기존 기대값 재검토",
+  "checks": [
+    {
+      "name": "release-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--release",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 1043.6842787498608,
+      "log_sha256": "5a3b4224ec5a1ddf5304d36478b0495e49b09bdb0139bb567570e54fa79e8586"
+    },
+    {
+      "name": "release-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 716.8931703749113,
+      "log_sha256": "2566323fa3afa5f8de1bfc1c088005b701f9637db180a6d1f23c0b17eafa2abe"
+    },
+    {
+      "name": "nextest-full",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 100,
+      "elapsed_seconds": 1241.2433373341337,
+      "log_sha256": "fc97c8a29070cf9f8e0c62c0ad2544a031a3cbe482bbdb8ed8613cd429b7c2c6"
+    },
+    {
+      "name": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 346.36076445830986,
+      "log_sha256": "e6ca6def153b93dc6e2fd81940ff0eb24643edfd85632662ab8450a32468d31b"
+    },
+    {
+      "name": "skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 240.5669927080162,
+      "log_sha256": "ce28f93eef745f311fb53c1668526bc8b73a05765d187f089b7a80c50fe97054"
+    },
+    {
+      "name": "skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 19.502243667375296,
+      "log_sha256": "4d803eb8660e2bcaa08da3794a8aea5ad1c73cd1abb01a5b8d6d32ebeba17c19"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 23.012901874724776,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 0.07113424967974424,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 100.41686987504363,
+      "log_sha256": "52327c8ab09b00c65feb02906466d169d23f04ee1edc7a2f6765cd2c198a45d6"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 94.05623558303341,
+      "log_sha256": "cc772a1ecafc41e4e3894c0f5465eb32a05c5ba8de6010312b664f8544db8acb"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 136.4060216252692,
+      "log_sha256": "f0895eaee6ccee0d63b72be7f43b01c43df38913006afc71a1a7500b86f31911"
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 130.6835847501643,
+      "log_sha256": "6de9e2fb0e0876e1d3cf8a615d88c8264730415aa947be349351e4c7bad5d558"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 2.3801645832136273,
+      "log_sha256": "3992168b34fe7d4830baee13b15af8a1e45d4a78be08f32374fd73f8c5492a00"
+    },
+    {
+      "name": "unit-policy",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 37.25248029222712,
+      "log_sha256": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32"
+    },
+    {
+      "name": "doc-test",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 208.21811029082164,
+      "log_sha256": "a90c90828cc5f8927109cb30715599e9d4515ffa65b471943b804333d8df7639"
+    },
+    {
+      "name": "typescript",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/Users/tsjang/rhwp/rhwp-studio",
+      "exit_code": 0,
+      "elapsed_seconds": 2.653947209008038,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "studio-tests",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "test"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 27.105104041751474,
+      "log_sha256": "cd76cff8e543351d1a0f57d42d5d26e4729dbea2ad5b88c2aaad78041cd9bcde"
+    },
+    {
+      "name": "wasm-fresh",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "exit_code": 0,
+      "elapsed_seconds": 545.1071569588967,
+      "log_sha256": "a9d8f32d9a4d023da6618ea1d505e5da2a7c3949037a33b566f5534c5a039c69"
+    }
+  ],
+  "full_visual_state": "Native/fresh WASM 전수 비교 실행 중; 완료로 판정하지 않음",
+  "regression_comparisons": {
+    "individual_jobs": 27,
+    "baseline_jobs": 40,
+    "missing_independent_pdf": [
+      "samples/한글문서파일형식_5.0_revision1.3.hwp"
+    ]
+  },
+  "full_nextest": "10327 PASS /43 FAIL /50 SKIP",
+  "additional_counts": {
+    "release_lib_pass": 4055,
+    "skia_lib_pass": 4112,
+    "skia_placeholder_pass": 2,
+    "skia_direct_pdf_pass": 4,
+    "doc_pass": 8,
+    "studio_pass": 1785,
+    "studio_skip": 2
+  },
+  "logs_root": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/logs",
+  "local_index": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/index.html",
+  "assets": {
+    "caption3738_review": "visual/native-hwp/liver7379/review/review_023.png",
+    "caption3738_overlay": "visual/native-hwp/liver7379/overlay/overlay_023.png",
+    "low6535_base_review": "visual/regression-base/low6535/review/review_001.png",
+    "low6535_head_review": "visual/regression-head/low6535/review/review_001.png",
+    "nested1133_hwp_review": "visual/baseline-head/nested1133-hwp/review/review_002.png"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-13",
+  "scenario": "Actual Studio toolbar insert and context-menu unlink; red bottom underline + green plain; text and bold preserved. Synthetic input, not a Hancom-rendering oracle.",
+  "wasm_sha256": "8a16f13268ff4c2db10dcb13eb99a806c548b364a14e2c8087a2c543f337f89b",
+  "artifacts": [
+    {
+      "file": "unlink-before.jpg",
+      "sha256": "0f4679e924b3a332b31b5e03e6c075c8fe5ecb7bdfaa40eb97fdf4445fa2f3eb",
+      "bytes": 70772
+    },
+    {
+      "file": "unlink-restored.jpg",
+      "sha256": "caad14b2675f34aeb498ce0004ff165ec26d5faca83228eb66392313e884c79c",
+      "bytes": 70960
+    },
+    {
+      "file": "unlink-before.hwp",
+      "sha256": "9e9377db638c1609f08fb53e30cde4e1709ed19bc5933f840b08ee5e3151cd5e",
+      "bytes": 13312
+    },
+    {
+      "file": "unlink-before.hwpx",
+      "sha256": "7a3c96187c3f9e3718a02b43e8aebb11f576bdcab634bbe6a3e5382ff20aaeb3",
+      "bytes": 7883
+    },
+    {
+      "file": "unlink-restored.hwp",
+      "sha256": "8d6485b58114f787b93dcf6900061a20ce38e5ee96ef98cbff4295054dba1e32",
+      "bytes": 12800
+    },
+    {
+      "file": "unlink-restored.hwpx",
+      "sha256": "97297786aeb1efb6c75eaab4c16e3153e5d6c4d97723f6b5296976e7b1dae879",
+      "bytes": 7429
+    }
+  ]
+}

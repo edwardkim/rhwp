@@ -1,0 +1,171 @@
+{
+  "stage": "분할 표 뒤 빈 줄의 후행 간격 중복 제거",
+  "parent_head": "ea4c08083",
+  "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_027",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(height_cursor::) | test(owned_rowbreak_tac_height) | test(issue_7062) | test(issue_6192) | test(issue_5755) | test(issue_7081)"
+      ],
+      "exit": 0,
+      "seconds": 238.435
+    },
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 182.441
+    },
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.774
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 21.024
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 17.883
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 37.699
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 62.933
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 8.289
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.491
+    }
+  ],
+  "focused": {
+    "passed": 63,
+    "failed": 0,
+    "skipped": 4884
+  },
+  "native_wasm_all_pages": [
+    98.73402,
+    98.66489,
+    99.78726,
+    99.84525,
+    97.9904,
+    86.7543,
+    99.09872,
+    99.03672
+  ],
+  "counter5755_native_wasm": [
+    99.32105,
+    99.13619,
+    99.76615
+  ],
+  "new_tests": 0,
+  "removed_tests": 0,
+  "ready": false,
+  "wasm": "Mac no-opt 대체 빌드; Docker 최적화 빌드 아님",
+  "sha256": {
+    "samples/issue2470/36341511_masked.hwpx": "315b7fc1ffadc1f8096daae8ca92c46e5233598a0efbb81f99db2678b027d909",
+    "pdf/issue2470/36341511_masked-2022.pdf": "fe40f07cbf7f716543bfcf91429cbe90639f901406d53d7ce2be91b0e143cbfc",
+    "target/pr-review/release-test/rhwp": "8c955b4627e4552970672190782da73de17198636ffc6dd023d897d0c8441f6a",
+    "pkg/rhwp_bg.wasm": "61c6352765687d1436e9bf40e044fdcf41b5a4a786e550a9e52ca1ac0e95b009",
+    "src/renderer/height_cursor.rs": "fa6a429d6634d14de57ff678eec2b000318f604cd9de94fa8caa597d765fe9f4"
+  }
+}

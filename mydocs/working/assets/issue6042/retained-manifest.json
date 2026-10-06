@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "sourceHead": "9b679f07a8b714d680ed822406e41cc62a6174ea",
+  "note": "2026-09-04 증적 정리 전 head의 보존 파일 목록. 측정 revision은 각 summary/comparison 및 README를 따른다. sourceHead를 측정 head로 해석하지 않는다.",
+  "files": [
+    {
+      "path": "issue6042-stage2/browser-ab.json",
+      "bytes": 2654,
+      "sha256": "15a55a7925b3e7326a535278082c21a01dffbf2f5745085a4c2603d73a756363"
+    },
+    {
+      "path": "issue6042-stage2/hwpspec-auto-34.jpg",
+      "bytes": 133612,
+      "sha256": "c69e693d4bf300c530ee251ef86ab4869072c8addd85cded44855cde69e6d165"
+    },
+    {
+      "path": "issue6042-stage5-correction/exam-4col-34-corrected-b1.json",
+      "bytes": 161661,
+      "sha256": "a751f2aa0099deee6fa3eb8831931cb8f29ac553c3e6f659e4649268cee1b255"
+    },
+    {
+      "path": "issue6042-stage5-correction/exam-4col-34-corrected-b2.json",
+      "bytes": 162076,
+      "sha256": "f9c503847dc50f049b115b939f303b743324023433dfd194e9ea3d778a8acfaf"
+    },
+    {
+      "path": "issue6042-stage5-correction/exam-4col-34-stage3-a1.json",
+      "bytes": 152794,
+      "sha256": "93fdcd0c158ed3e3ea84ef0c78e2233e5c747cd11e36d754120c38258e246756"
+    },
+    {
+      "path": "issue6042-stage5-correction/exam-4col-34-stage3-a2.json",
+      "bytes": 153220,
+      "sha256": "4c60faac5ee1995f7ce9ab8f9da4d17433a5de0321681438bbfd794c9caa9541"
+    },
+    {
+      "path": "issue6042-stage5-correction/hwpspec-4col-34-corrected-b1.json",
+      "bytes": 194812,
+      "sha256": "e3d0b0d3943ded59a115c2ea84deb92ee4829ca3b594325a898f5b3db4b29bbd"
+    },
+    {
+      "path": "issue6042-stage5-correction/hwpspec-4col-34-corrected-b2.json",
+      "bytes": 184436,
+      "sha256": "5e0e902ef884c93142891e6eede15b642352196baefe6f3219b31baf09ab31e6"
+    },
+    {
+      "path": "issue6042-stage5-correction/hwpspec-4col-34-stage3-a1.json",
+      "bytes": 189104,
+      "sha256": "8505c3a5c626930581b60ca4e390b54d76f7d4c246b91f3248ca360cb59813db"
+    },
+    {
+      "path": "issue6042-stage5-correction/hwpspec-4col-34-stage3-a2.json",
+      "bytes": 178068,
+      "sha256": "1f957f1e4e8deef0f4d6501c1f1564e36411ebfc70eaeaf501766afe3824415c"
+    },
+    {
+      "path": "issue6042-stage5-correction/summarize.mjs",
+      "bytes": 5562,
+      "sha256": "403e334ef2fb06c67d8b38146a391ecdfd098de7f6cabe6a434da4d0ef66b862"
+    },
+    {
+      "path": "issue6042-stage5-correction/summary.json",
+      "bytes": 10566,
+      "sha256": "d5050d7c0871db4df48f3cea712755f4d139c08062728602ab60793cf085f77c"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-auto-34-corrected.jpg",
+      "bytes": 134913,
+      "sha256": "cb9a5e20be43237113e23531f303f2e991903e3049edb016658702a473ab0121"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-auto-34-diff.png",
+      "bytes": 399956,
+      "sha256": "7ecddd33e5ad0669cd47130a4f1a9f18104623d4e646bce71f59020d4a2d90d6"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-auto-34-stage3.jpg",
+      "bytes": 134962,
+      "sha256": "209d5de3fbc11296b59a64246176d0f099ce07ce2193c8815a1a135230c48515"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-double-50-corrected-b1.json",
+      "bytes": 286529,
+      "sha256": "d972750aa4caa746cfbd2149f50a096c5d3eef4ec3be0c052c69b1ef0a1fbe85"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-double-50-corrected-b2.json",
+      "bytes": 284047,
+      "sha256": "956931f006e49b2b9437fd10392a5072552bd7e48807b9c2e25aef2e9a68613c"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-double-50-stage3-a1.json",
+      "bytes": 277982,
+      "sha256": "afc93159b0c870bbf29dac2b9e8c3b6b768921acefe2bbb34d0843d4d8a2ce8a"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvas2d-exam-double-50-stage3-a2.json",
+      "bytes": 272250,
+      "sha256": "3605781c307c49e5c7d2d78a3dad383977a50a93b4cd01f1bfef38408444ff80"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvaskit-ktx-100-corrected.jpg",
+      "bytes": 50707,
+      "sha256": "fee20c6205a88753c6bd68224309b481ebeaaefe6faa377f621b42775ff556c6"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvaskit-ktx-100-diff.png",
+      "bytes": 120944,
+      "sha256": "e88dcdb5d1974f4e9df4ccbc8d9eca430b1e699a801954a361d617f7f2a25bb5"
+    },
+    {
+      "path": "issue6042-stage5-expanded/canvaskit-ktx-100-stage3.jpg",
+      "bytes": 50954,
+      "sha256": "3f37a11a5965e0bdb7069d0a8b985567f507ee34aacd7d2b8da7d7935f4472bb"
+    },
+    {
+      "path": "issue6042-stage5-expanded/compare-visuals.mjs",
+      "bytes": 2926,
+      "sha256": "db4becc1039f61970a33ac9c3c9caaa2bba85147a72dbf8bfc932a8900701b7c"
+    },
+    {
+      "path": "issue6042-stage5-expanded/summary.json",
+      "bytes": 20098,
+      "sha256": "4c827ee9c171d439e4c82fbeb56393d949f14092ccab7f2427baa570f88fc7f6"
+    },
+    {
+      "path": "issue6042-stage5-expanded/visual-comparison.json",
+      "bytes": 1052,
+      "sha256": "19042ffe5fbfde3d2263eded1604d80b516de8e4cb917f882ff0ddc48ba209a4"
+    },
+    {
+      "path": "issue6042-stage5-scroll-quality/exam-double-100-after-20.json",
+      "bytes": 277036,
+      "sha256": "c5f40b03198c17ce07661dc419133d951f729d53ccf30d4a9bcb68ce40ec41a7"
+    },
+    {
+      "path": "issue6042-stage5-scroll-quality/exam-double-100-after-dpr2.png",
+      "bytes": 30754,
+      "sha256": "4794d8b8f09e0c56a0a11aa5af07d18c2b63491eff693e60ab18c8cc2d321564"
+    },
+    {
+      "path": "issue6042-stage5-scroll-quality/exam-double-100-before-20.json",
+      "bytes": 279119,
+      "sha256": "61605e6b282d56a4afdb2f1afe148fb381ec9ff4a38c8a725818007b59069f25"
+    },
+    {
+      "path": "issue6042-stage5-scroll-quality/exam-double-100-before-dpr1.png",
+      "bytes": 31501,
+      "sha256": "716b95b77dc117fbc2a900ccf1ede5b4f3f0c1dd7cbc8b31e48c4e119a005a28"
+    },
+    {
+      "path": "issue6042-stage5-scroll-quality/summary.json",
+      "bytes": 2948,
+      "sha256": "94adb63886e9408f03d744e261336d7676d9694442760a3c53720a718854f3ea"
+    },
+    {
+      "path": "issue6042-stage5/hwpspec-4col-34-cold-alternating.json",
+      "bytes": 853613,
+      "sha256": "bba68d82f08207766a180655de366a96d25ec72f31cc8f2bc53414eb206a15f9"
+    },
+    {
+      "path": "issue6042-stage5/summary.json",
+      "bytes": 25497,
+      "sha256": "f5ad06decd72406885ee791901cbbe0d560841ad0b10e60c437c2f5a62f42d29"
+    },
+    {
+      "path": "issue6042/environment.json",
+      "bytes": 2163,
+      "sha256": "6d529862cd16a84e648494b933e4993f512b779ec8e0e28b159e167ae607da1c"
+    },
+    {
+      "path": "issue6042/summary.json",
+      "bytes": 94564,
+      "sha256": "12caee02205609c7a246c6abbba9e4698403f4b3f65097b15eaa94ccaeb1aa89"
+    }
+  ]
+}

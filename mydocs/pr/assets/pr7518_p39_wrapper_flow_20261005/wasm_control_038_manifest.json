@@ -1,0 +1,70 @@
+{
+  "source_sha": "2869859ee38461645235978f6c05604013c05430",
+  "method": "selected portable WASM print SVG via CDP, canonical visual_sweep font-policy/raster/compare/overlay/review helpers",
+  "pages": [
+    38
+  ],
+  "document_page_count": 82,
+  "dpi": 96,
+  "input_sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "reference_pdf_sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d",
+  "wasm_sha256": "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+  "raw_wasm_svg_sha256": "183e33858a043c6f6e0d23bbd990ea65ae6201617c29163ab2d0a02561ca2d87",
+  "font_recovery_manifest_sha256": "6708e94f073d6b33cbf66729fd9022d1e022a919d83b0c9bb40b72441047c8fd",
+  "raster_command": [
+    "node",
+    "scripts/rasterize-svg-webfonts.mjs",
+    "--input",
+    "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-p38-frame-wasm/control-38/svg/wasm_038.svg",
+    "--output",
+    "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-p38-frame-wasm/control-38/rhwp_png/rhwp_038.png",
+    "--zoom",
+    "1",
+    "--chrome",
+    "/home/edward/.cache/puppeteer/chrome/linux-152.0.7977.54/chrome-linux64/chrome"
+  ],
+  "metrics": [
+    {
+      "page": 38,
+      "rhwp_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-p38-frame-wasm/control-38/rhwp_png/rhwp_038.png",
+      "pdf_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-p38-frame-native/regulatory-p22-p38-frame/pdf_png/pdf-38.png",
+      "overlay_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-p38-frame-wasm/control-38/overlay/overlay_038.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 82097,
+      "diff_ratio": 0.09207188,
+      "pixel_match_percent": 90.79281,
+      "ink_union_pixels": 117797,
+      "ink_diff_pixels": 82097,
+      "ink_diff_ratio": 0.69693625,
+      "ink_match_percent": 30.30637,
+      "visual_accuracy_proxy_percent": 30.30637,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 93.41579,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117797,
+      "tolerant_content_match_percent": 93.41579,
+      "mean_abs_channel_delta": 10.013,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        76,
+        719,
+        1081
+      ]
+    }
+  ],
+  "pr_review_gate": {
+    "status": "passed",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_png_sha256": "78c99b75bb3799dcc9ea8808737eac5489f782df593c002f1bfde5640fd94f55",
+  "wasm_png_sha256": "78c99b75bb3799dcc9ea8808737eac5489f782df593c002f1bfde5640fd94f55"
+}

@@ -1,0 +1,363 @@
+{
+  "stage": 143,
+  "head": "5e199f8bb52afc8fbab2f1dfc1c77fa3e1135266",
+  "analysis": "전체137 복학원서 원문의 #938 layer metadata 및 SVG snapshot 실제2FAIL만 판정. #6101에서 원본 해상도 효과를 PNG에 선적용한 경우 canonical 그림 op는 효과를 realPic/0/0으로 비워 중복 적용을 막는다. #938의 grayScale/-50/70 기대는 이전 필터 상태를 요구하며 source 원형과 실제paint지시를 혼동할 가능성. 독립 한컴1쪽PDF/현재Native 전체1쪽90% gate를 먼저 확인한다. 미달이면 실제차단function만7445이관하고,90이상이면사양·실제payload/oldgolden차이를 확인해기존검사만보정. 정상SVG/overlay2함수·원문/PDF·다른snapshot유지. 새함수/생산개선 없음.",
+  "inputs": [
+    {
+      "path": "samples/복학원서.hwp",
+      "sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+      "committed_identical": true
+    },
+    {
+      "path": "pdf/복학원서-hwp-2020.pdf",
+      "sha256": "ed28f2655a27d22acdbf214520115522ad3124a3643d18fba58beebba1935068",
+      "committed_identical": true
+    }
+  ],
+  "reference_mapping": "mydocs/pr/archives/pr_7212_review.md:121-122의 같은원문SHA/한컴PDFSHA를확인",
+  "source_consumption": [
+    "src/renderer/image_resolver.rs::resolve_image_payload (BakedWatermark/suppress_effects=true)",
+    "resolved_image_effects -> src/paint/json.rs:1017 -> 원본효과중복적용하지않는canonicalPaintOp",
+    "resolved_image_effects -> src/document_core/queries/rendering.rs:2504 -> 그림프로퍼티 실제출력"
+  ],
+  "decision": "현재 전체1쪽77.85291%/90미만이므로 메타데이터·golden을 현재값으로보정하지 않고 실제FAIL한layer함수1·snapshot함수1만7445이관. 정상SVG/overlay2함수와원문PDF/기존golden보존.",
+  "visual": {
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 77.85291
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.84852,
+      "worst_pixel_match_percent": 92.84852,
+      "average_ink_match_percent": 46.5015,
+      "worst_ink_match_percent": 46.5015,
+      "average_visual_accuracy_proxy_percent": 46.5015,
+      "worst_visual_accuracy_proxy_percent": 46.5015,
+      "average_tolerant_content_match_percent": 77.85291,
+      "worst_tolerant_content_match_percent": 77.85291,
+      "worst_pages": [
+        1
+      ]
+    },
+    "completed_pages": [
+      1
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "exit_code": 1,
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "bokhak938",
+      "samples/복학원서.hwp",
+      "pdf/복학원서-hwp-2020.pdf",
+      "--pages",
+      "1",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage143-bokhak938/visual-native"
+    ],
+    "direct_read": [
+      "1쪽review와standalone overlay",
+      "본문 표의 줄구성·칸높이·뒤문단 위치 차이; 워터마크윤곽도직접확인"
+    ],
+    "fresh_wasm": "미실행; Native부정증거",
+    "production_binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+  },
+  "code_commit": "2234af963e60f7cc855592be0493e6282858314c",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_022",
+      "-E",
+      "test(issue_938::) or test(=svg_snapshot::issue_677_bokhakwonseo_page1)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_938",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_022",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 12.933164000045508,
+    "summary": [
+      "Summary [   0.047s] 4 tests run: 2 passed, 2 failed, 397 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_027",
+      "-E",
+      "test(issue_938::) or test(=svg_snapshot::issue_677_bokhakwonseo_page1)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_938",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_027",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 9.842675917316228
+  },
+  "removal_validation": {
+    "removed": [
+      {
+        "source": "tests/issue_938.rs",
+        "function": "issue_938_layer_tree_watermark_is_resolved_hancom_baked_png",
+        "function_line_start": 174,
+        "function_line_end": 224,
+        "function_sha256": "6b38af4ec7bbb277c4da0e7bdd2e57c8f4a8ac7a22c56a975b0385f3c143f5a1"
+      },
+      {
+        "source": "tests/svg_snapshot.rs",
+        "function": "issue_677_bokhakwonseo_page1",
+        "function_line_start": 149,
+        "function_line_end": 151,
+        "function_sha256": "4b633c46a1d2383db13065a4d7faad8131b13020e13698a87adb8f27a51bd076"
+      }
+    ],
+    "existing_golden_svg_unchanged": true,
+    "new_test_functions": 0,
+    "production_changes": false,
+    "kept_golden": {
+      "path": "tests/golden_svg/issue-677/bokhakwonseo-page1.svg",
+      "sha256": "ee505944bc34f9cf0e31b17a31ab1631fd82fcf21dddbf801d00a228f41650ec",
+      "unchanged": true
+    },
+    "remaining_function_body_audit": [
+      {
+        "source": "tests/issue_938.rs",
+        "all_remaining_function_bodies_identical": 7
+      },
+      {
+        "source": "tests/svg_snapshot.rs",
+        "all_remaining_function_bodies_identical": 8
+      }
+    ],
+    "commands": [
+      {
+        "step": "prepare-before-fmt",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.624855374917388
+      },
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.531518249772489
+      },
+      {
+        "step": "prepare-final",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5962010002695024
+      },
+      {
+        "step": "focused",
+        "command": [
+          "python3",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage143-bokhak938/run-focused.py",
+          "after"
+        ],
+        "exit_code": 0,
+        "seconds": 10.212461791932583
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.911403541918844
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.29314320906996727
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2225975003093481
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3584805834107101
+      },
+      {
+        "step": "clippy-alltargets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.7624086663126945
+      },
+      {
+        "step": "manifest-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.8409525002352893
+      },
+      {
+        "step": "unit-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.05439137481153
+      }
+    ],
+    "after_summary": [
+      "Summary [   0.040s] 2 tests run: 2 passed, 437 skipped"
+    ]
+  },
+  "diagnostic_snapshot": {
+    "source": "tests/golden_svg/issue-677/bokhakwonseo-page1.actual.svg",
+    "diagnostic_output": "output/pr-review/planet6897-7382-20260926/stage143-bokhak938/snapshot-actual/bokhakwonseo-page1.actual.svg",
+    "sha256": "a6b52455311211c3da09d649d26e870b0e578aad21c691458b92560766f3c7a5",
+    "expected_golden_changed": false
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883744483",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "scope": {
+    "removed_actual_failed_functions": 2,
+    "kept": [
+      "기존 SVG·overlay 워터마크2함수",
+      "다른5개snapshot·determinism와 모든남은함수본문",
+      "원문/PDF/기존goldenSVG/모든다른입력·축"
+    ],
+    "production_changes": false,
+    "new_functions": 0,
+    "golden_update": false
+  }
+}

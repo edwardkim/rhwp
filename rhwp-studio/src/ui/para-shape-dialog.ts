@@ -34,21 +34,22 @@ import {
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
 
+import { t as i18nText } from '../i18n/index.ts';
 /** 정렬 아이콘 (SVG 아이콘 — 서식바와 동일) */
 const ALIGN_OPTIONS: { value: string; label: string; cssClass: string }[] = [
-  { value: 'justify',    label: '양쪽 정렬',   cssClass: 'sb-al-justify' },
-  { value: 'left',       label: '왼쪽 정렬',   cssClass: 'sb-al-left' },
-  { value: 'right',      label: '오른쪽 정렬',  cssClass: 'sb-al-right' },
-  { value: 'center',     label: '가운데 정렬',  cssClass: 'sb-al-center' },
-  { value: 'distribute', label: '배분 정렬',   cssClass: 'sb-al-distribute' },
-  { value: 'split',      label: '나눔 정렬',   cssClass: 'sb-al-split' },
+  { value: 'justify',    label: i18nText('dialog.paraShape.label'),   cssClass: 'sb-al-justify' },
+  { value: 'left',       label: i18nText('dialog.paraShape.label.x76c4c8'),   cssClass: 'sb-al-left' },
+  { value: 'right',      label: i18nText('dialog.paraShape.label.x90ce12'),  cssClass: 'sb-al-right' },
+  { value: 'center',     label: i18nText('dialog.paraShape.label.xd11292'),  cssClass: 'sb-al-center' },
+  { value: 'distribute', label: i18nText('dialog.paraShape.label.x3ea503'),   cssClass: 'sb-al-distribute' },
+  { value: 'split',      label: i18nText('dialog.paraShape.label.x0ef550'),   cssClass: 'sb-al-split' },
 ];
 
 const LINE_SPACING_TYPES: { value: string; label: string }[] = [
-  { value: 'Percent',   label: '글자에 따라' },
-  { value: 'Fixed',     label: '고정 값' },
-  { value: 'SpaceOnly', label: '여백만 지정' },
-  { value: 'Minimum',   label: '최소' },
+  { value: 'Percent',   label: i18nText('dialog.paraShape.label.x48248d') },
+  { value: 'Fixed',     label: i18nText('dialog.paraShape.label.xa82cae') },
+  { value: 'SpaceOnly', label: i18nText('dialog.paraShape.label.x84b71a') },
+  { value: 'Minimum',   label: i18nText('dialog.paraShape.label.x153b4a') },
 ];
 
 // ─── 단위 변환 ─────────────────────────────────
@@ -186,7 +187,7 @@ export class ParaShapeDialog {
     // 타이틀 바
     const titleBar = document.createElement('div');
     titleBar.className = 'dialog-title';
-    titleBar.textContent = '문단 모양';
+    titleBar.textContent = i18nText('dialog.paraShape.titleBar.text');
     const closeBtn = document.createElement('button');
     closeBtn.className = 'dialog-close';
     closeBtn.textContent = '\u00D7';
@@ -205,11 +206,18 @@ export class ParaShapeDialog {
     // 탭 그룹
     const tabGroup = document.createElement('div');
     tabGroup.className = 'dialog-tabs';
-    const tabNames = ['기본', '확장', '탭 설정', '테두리/배경'];
-    tabNames.forEach((name, i) => {
+    // 탭은 ID 로 구분한다. 화면 글자(label)는 표시에만 쓴다.
+    const tabDefs = [
+      { id: 'basic', label: i18nText('dialog.paraShape.tab.basic') },
+      { id: 'extended', label: i18nText('dialog.paraShape.tab.extended') },
+      { id: 'tabStops', label: i18nText('dialog.paraShape.tab.tabStops') },
+      { id: 'borderFill', label: i18nText('dialog.paraShape.tab.borderFill') },
+    ];
+    tabDefs.forEach(({ id, label }, i) => {
       const btn = document.createElement('button');
       btn.className = 'dialog-tab';
-      btn.textContent = name;
+      btn.dataset.tab = id;
+      btn.textContent = label;
       btn.addEventListener('click', () => this.switchTab(i));
       tabGroup.appendChild(btn);
       this.tabs.push(btn);
@@ -223,7 +231,10 @@ export class ParaShapeDialog {
     this.panels.push(this.buildExtendedPanel());
     this.panels.push(this.buildTabSettingsPanel());
     this.panels.push(this.buildBorderPanel());
-    this.panels.forEach(p => body.appendChild(p));
+    this.panels.forEach((p, i) => {
+      p.dataset.tab = tabDefs[i].id;
+      body.appendChild(p);
+    });
     leftCol.appendChild(body);
 
     // 우측 버튼 영역
@@ -231,11 +242,11 @@ export class ParaShapeDialog {
     rightCol.className = 'cs-right-col';
     const okBtn = document.createElement('button');
     okBtn.className = 'dialog-btn dialog-btn-primary';
-    okBtn.textContent = '설정(D)';
+    okBtn.textContent = i18nText('dialog.paraShape.okBtn.text');
     okBtn.addEventListener('click', () => this.handleOk());
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'dialog-btn';
-    cancelBtn.textContent = '취소';
+    cancelBtn.textContent = i18nText('dialog.paraShape.cancelBtn.text');
     cancelBtn.addEventListener('click', () => this.hide());
     rightCol.appendChild(okBtn);
     rightCol.appendChild(cancelBtn);
@@ -268,7 +279,7 @@ export class ParaShapeDialog {
     panel.className = 'dialog-tab-panel';
 
     // ── 정렬 방식
-    const alignFs = createFieldset('정렬 방식');
+    const alignFs = createFieldset(i18nText('dialog.paraShape.createFieldset.label'));
     const alignRow = document.createElement('div');
     alignRow.className = 'ps-align-row';
     ALIGN_OPTIONS.forEach(opt => {
@@ -294,9 +305,9 @@ export class ParaShapeDialog {
     marginFirstRow.className = 'ps-two-col';
 
     // 여백 (좌측)
-    const marginFs = createFieldset('여백');
+    const marginFs = createFieldset(i18nText('dialog.paraShape.createFieldset.label.xcd8cef'));
     const mlRow = row();
-    const mlLabel = label('왼쪽(E):');
+    const mlLabel = label(i18nText('dialog.paraShape.label.label'));
     mlLabel.style.minWidth = '62px';
     mlLabel.style.textAlign = 'right';
     mlRow.appendChild(mlLabel);
@@ -307,7 +318,7 @@ export class ParaShapeDialog {
     marginFs.appendChild(mlRow);
 
     const mrRow = row();
-    const mrLabel = label('오른쪽(O):');
+    const mrLabel = label(i18nText('dialog.paraShape.label.label.x90513b'));
     mrLabel.style.minWidth = '62px';
     mrLabel.style.textAlign = 'right';
     mrRow.appendChild(mrLabel);
@@ -318,7 +329,7 @@ export class ParaShapeDialog {
     marginFs.appendChild(mrRow);
 
     // 첫 줄 (우측)
-    const firstLineFs = createFieldset('첫 줄');
+    const firstLineFs = createFieldset(i18nText('dialog.paraShape.createFieldset.label.x89510d'));
     this.firstLineRadios = [];
 
     const normalRow = row();
@@ -328,7 +339,7 @@ export class ParaShapeDialog {
     normalRadio.value = 'normal';
     this.firstLineRadios.push(normalRadio);
     normalRow.appendChild(normalRadio);
-    normalRow.appendChild(label('보통(N)'));
+    normalRow.appendChild(label(i18nText('dialog.paraShape.label.label.xecfda9')));
     firstLineFs.appendChild(normalRow);
 
     const indentRow = row();
@@ -339,7 +350,7 @@ export class ParaShapeDialog {
     indentRadio.value = 'indent';
     this.firstLineRadios.push(indentRadio);
     indentRow.appendChild(indentRadio);
-    const indentLabel = label('들여쓰기(A)');
+    const indentLabel = label(i18nText('dialog.paraShape.label.label.x5fd558'));
     indentLabel.style.whiteSpace = 'nowrap';
     indentRow.appendChild(indentLabel);
     this.indentInput = numberInput(0, 999, 0.1);
@@ -355,7 +366,7 @@ export class ParaShapeDialog {
     hangRadio.value = 'hanging';
     this.firstLineRadios.push(hangRadio);
     hangRow.appendChild(hangRadio);
-    const hangLabel = label('내어쓰기(B)');
+    const hangLabel = label(i18nText('dialog.paraShape.label.label.x6b4a43'));
     hangLabel.style.whiteSpace = 'nowrap';
     hangRow.appendChild(hangLabel);
     firstLineFs.appendChild(hangRow);
@@ -373,10 +384,10 @@ export class ParaShapeDialog {
     panel.appendChild(marginFirstRow);
 
     // ── 간격
-    const spacingFs = createFieldset('간격');
+    const spacingFs = createFieldset(i18nText('dialog.paraShape.createFieldset.label.x0ad57d'));
 
     const lsRow = row();
-    lsRow.appendChild(label('줄 간격(S):'));
+    lsRow.appendChild(label(i18nText('dialog.paraShape.label.label.x8f5075')));
     this.lineSpacingTypeSelect = document.createElement('select');
     this.lineSpacingTypeSelect.className = 'dialog-select';
     this.lineSpacingTypeSelect.style.width = '100px';
@@ -397,12 +408,12 @@ export class ParaShapeDialog {
     spacingFs.appendChild(lsRow);
 
     const paraSpRow = row();
-    paraSpRow.appendChild(label('문단 위(U):'));
+    paraSpRow.appendChild(label(i18nText('dialog.paraShape.label.label.xbc6080')));
     this.spacingBeforeInput = numberInput(0, 999, 0.1);
     this.spacingBeforeInput.style.width = '55px';
     paraSpRow.appendChild(this.spacingBeforeInput);
     paraSpRow.appendChild(unit('pt'));
-    const afterLabel = label('문단 아래(V):');
+    const afterLabel = label(i18nText('dialog.paraShape.label.label.x241c37'));
     afterLabel.style.marginLeft = '12px';
     paraSpRow.appendChild(afterLabel);
     this.spacingAfterInput = numberInput(0, 999, 0.1);
@@ -416,7 +427,7 @@ export class ParaShapeDialog {
     // ── 미리보기
     this.previewEl = document.createElement('div');
     this.previewEl.className = 'ps-preview';
-    this.previewEl.textContent = '미리보기';
+    this.previewEl.textContent = i18nText('dialog.paraShape.previewEl.text');
     panel.appendChild(this.previewEl);
 
     return panel;
@@ -435,13 +446,13 @@ export class ParaShapeDialog {
     typeSection.className = 'dialog-section';
     const typeTitle = document.createElement('div');
     typeTitle.className = 'dialog-section-title';
-    typeTitle.textContent = '문단 종류';
+    typeTitle.textContent = i18nText('dialog.paraShape.typeTitle.text');
     typeSection.appendChild(typeTitle);
 
     this.headTypeRadios = [];
     const headTypes: [string, string][] = [
-      ['None', '없음(O)'], ['Outline', '개요 문단(U)'],
-      ['Number', '번호 문단(M)'], ['Bullet', '글머리표 문단(B)'],
+      ['None', i18nText('dialog.paraShape.buildExtendedPanel.label.x5da145')], ['Outline', i18nText('dialog.paraShape.buildExtendedPanel.label.xaec369')],
+      ['Number', i18nText('dialog.paraShape.buildExtendedPanel.label.x300e3a')], ['Bullet', i18nText('dialog.paraShape.buildExtendedPanel.label.xd555b2')],
     ];
 
     // 수준 드롭다운 (개요/번호 선택 시만 활성)
@@ -452,7 +463,7 @@ export class ParaShapeDialog {
     for (let i = 0; i < 7; i++) {
       const opt = document.createElement('option');
       opt.value = String(i);
-      opt.textContent = `${i + 1} 수준`;
+      opt.textContent = i18nText('dialog.paraShape.opt.text', { p1: i + 1 });
       this.paraLevelSelect.appendChild(opt);
     }
 
@@ -476,7 +487,7 @@ export class ParaShapeDialog {
       if (val === 'Outline') {
         const span = document.createElement('span');
         span.style.marginLeft = '12px';
-        span.appendChild(document.createTextNode('수준(L): '));
+        span.appendChild(document.createTextNode(i18nText('dialog.paraShape.buildExtendedPanel.text')));
         span.appendChild(this.paraLevelSelect);
         row.appendChild(span);
       }
@@ -490,7 +501,7 @@ export class ParaShapeDialog {
     etcSection.className = 'dialog-section';
     const etcTitle = document.createElement('div');
     etcTitle.className = 'dialog-section-title';
-    etcTitle.textContent = '기타';
+    etcTitle.textContent = i18nText('dialog.paraShape.etcTitle.text');
     etcSection.appendChild(etcTitle);
 
     const makeCb = (label: string): HTMLInputElement => {
@@ -508,14 +519,14 @@ export class ParaShapeDialog {
       return cb;
     };
 
-    this.widowOrphanCb = makeCb('외톨이줄 보호(K)');
-    this.keepWithNextCb = makeCb('다음 문단과 함께(N)');
-    this.keepLinesCb = makeCb('문단 보호(P)');
-    this.pageBreakBeforeCb = makeCb('문단 앞에서 항상 쪽 나눔(E)');
-    this.fontLineHeightCb = makeCb('글꼴에 어울리는 줄 높이(H)');
-    this.singleLineCb = makeCb('한 줄로 입력(W)');
-    this.autoSpaceKrEnCb = makeCb('한글과 영어 간격을 자동 조절(G)');
-    this.autoSpaceKrNumCb = makeCb('한글과 숫자 간격을 자동 조절(R)');
+    this.widowOrphanCb = makeCb(i18nText('dialog.paraShape.makeCb.label'));
+    this.keepWithNextCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x5299ca'));
+    this.keepLinesCb = makeCb(i18nText('dialog.paraShape.makeCb.label.xb53572'));
+    this.pageBreakBeforeCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x3d7811'));
+    this.fontLineHeightCb = makeCb(i18nText('dialog.paraShape.makeCb.label.xec1296'));
+    this.singleLineCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x509636'));
+    this.autoSpaceKrEnCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x79dbd2'));
+    this.autoSpaceKrNumCb = makeCb(i18nText('dialog.paraShape.makeCb.label.x9beab1'));
 
     // 세로 정렬
     const vaRow = document.createElement('div');
@@ -523,13 +534,13 @@ export class ParaShapeDialog {
     vaRow.style.padding = '2px 0';
     const vaLabel = document.createElement('label');
     vaLabel.className = 'dialog-label';
-    vaLabel.textContent = '세로 정렬(S):';
+    vaLabel.textContent = i18nText('dialog.paraShape.vaLabel.text');
     vaLabel.style.marginRight = '8px';
     this.verticalAlignSelect = document.createElement('select');
     this.verticalAlignSelect.className = 'dialog-select';
     this.verticalAlignSelect.style.width = '100px';
     const vaOptions: [string, string][] = [
-      ['0', '글꼴 기준'], ['1', '위쪽'], ['2', '가운데'], ['3', '아래쪽'],
+      ['0', i18nText('dialog.paraShape.buildExtendedPanel.label.xa403c3')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.xa0991a')], ['2', i18nText('dialog.paraShape.buildExtendedPanel.label.x55b22e')], ['3', i18nText('dialog.paraShape.buildExtendedPanel.label.x5f4a61')],
     ];
     vaOptions.forEach(([v, t]) => {
       const opt = document.createElement('option');
@@ -542,14 +553,14 @@ export class ParaShapeDialog {
     etcSection.appendChild(vaRow);
 
     // ── 줄바꿈 기준 ──────────────────────
-    const breakFs = createFieldset('줄 나눔 기준');
+    const breakFs = createFieldset(i18nText('dialog.paraShape.createFieldset.label.x47b371'));
 
     const krRow = row();
-    krRow.appendChild(label('한글(K):'));
+    krRow.appendChild(label(i18nText('dialog.paraShape.label.label.x631688')));
     this.koreanBreakSelect = document.createElement('select');
     this.koreanBreakSelect.className = 'dialog-select';
     this.koreanBreakSelect.style.width = '100px';
-    for (const [v, t] of [['0', '어절'], ['1', '글자']] as const) {
+    for (const [v, t] of [['0', i18nText('dialog.paraShape.buildExtendedPanel.label')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.xe09d1a')]] as const) {
       const o = document.createElement('option');
       o.value = v; o.textContent = t;
       this.koreanBreakSelect.appendChild(o);
@@ -558,11 +569,11 @@ export class ParaShapeDialog {
     breakFs.appendChild(krRow);
 
     const enRow = row();
-    enRow.appendChild(label('영어(E):'));
+    enRow.appendChild(label(i18nText('dialog.paraShape.label.label.xd7f637')));
     this.englishBreakSelect = document.createElement('select');
     this.englishBreakSelect.className = 'dialog-select';
     this.englishBreakSelect.style.width = '100px';
-    for (const [v, t] of [['0', '단어'], ['1', '하이픈'], ['2', '글자']] as const) {
+    for (const [v, t] of [['0', i18nText('dialog.paraShape.buildExtendedPanel.label.x88aa1c')], ['1', i18nText('dialog.paraShape.buildExtendedPanel.label.x87dbf5')], ['2', i18nText('dialog.paraShape.buildExtendedPanel.label.xe09d1a')]] as const) {
       const o = document.createElement('option');
       o.value = v; o.textContent = t;
       this.englishBreakSelect.appendChild(o);
@@ -737,8 +748,8 @@ export class ParaShapeDialog {
 
     this.previewEl.replaceChildren();
     const sampleLines = [
-      '이것은 문단 미리보기입니다. 이렇게 문단의 정렬과 여백, 들여쓰기가 적용된 모습을 확인할 수 있습니다.',
-      '두 번째 줄은 보통 여백만 적용됩니다.',
+      i18nText('dialog.paraShape.updatePreview.label'),
+      i18nText('dialog.paraShape.updatePreview.label.x9db5eb'),
     ];
     sampleLines.forEach((text, i) => {
       const p = document.createElement('div');

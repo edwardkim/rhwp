@@ -5,10 +5,13 @@ import type {
   WasmBridge,
 } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
-import type { HeaderFooterTextPosition } from './cursor';
+import type { HeaderFooterTextPosition, CellBlockSelectionState } from './cursor';
+import type { CharShapeRun } from '@/core/types';
+import { hyperlinkTarget } from '../core/hyperlink';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
+import { CharFormatError, CharFormatRecoveryError, isCharFormatError } from '../core/char-format-error';
 
 /** 편집 명령 공통 인터페이스 */
 export interface EditCommand {
@@ -35,6 +38,8 @@ export interface EditCommand {
    * 구현하지 않으면 종전대로 항상 기록된다.
    */
   isNoOp?(): boolean;
+  /** 부분 변경이 남았으면 실패해도 Undo 정보를 폐기하지 않는다. */
+  retainOnFailure?(): boolean;
   /** page-local refresh 판정을 위한 가벼운 텍스트 편집 payload. */
   getPageLocalTextEditOptions?(): { insertedText?: string; deleteCount?: number };
   /** 방금 실행한 mutation effect를 한 번만 반환한다. */
@@ -103,7 +108,22 @@ export type HeaderFooterSelectionSnapshot = {
   readonly previewPage: number;
 };
 
-export type EditSelectionSnapshot = BodySelectionSnapshot | HeaderFooterSelectionSnapshot;
+/**
+ * [Task #6741] F5 셀 블록 선택 스냅샷.
+ *
+ * 셀 블록은 `cellAnchor`/`cellFocus` 축이라 본문 텍스트 선택(start/end)을 만들지 않는다.
+ * 그래서 `BodySelectionSnapshot` 에 얹지 못하고 별도 분기로 둔다 — 머리말/꼬리말 서브모드가
+ * `mode` 태그로 갈라지는 것과 같은 형태다.
+ */
+export type CellBlockSelectionSnapshot = {
+  readonly mode: 'cellBlock';
+  readonly state: CellBlockSelectionState;
+};
+
+export type EditSelectionSnapshot =
+  | BodySelectionSnapshot
+  | HeaderFooterSelectionSnapshot
+  | CellBlockSelectionSnapshot;
 
 /** text mutation의 document pagination/flow 경계와 immediate 완료를 함께 전달한다. */
 export interface FocusedCellCursorGeometry {
@@ -520,6 +540,39 @@ export function replaceCellTextWithMutationEffects(
   };
 }
 
+/**
+ * 본문·셀에서 `deleteCount`자를 지우고 `text`를 넣는다. IME 조합과 수정(덮어쓰기) 입력이
+ * 같이 쓴다. 조건이 맞으면 한 번의 local replace fast path로 처리한다.
+ */
+export function replaceTextWithMutationEffects(
+  wasm: WasmBridge,
+  pos: DocumentPosition,
+  deleteCount: number,
+  text: string,
+): TextMutationEffects {
+  if (canUseDeferredCellTextReplace(pos, deleteCount, text)) {
+    return replaceCellTextWithMutationEffects(wasm, pos, deleteCount, text);
+  }
+  if (canUseLocalBodyTextReplace(pos, deleteCount, text)) {
+    return replaceBodyTextWithMutationEffects(wasm, pos, deleteCount, text);
+  }
+  const effects = new TextMutationEffectAccumulator();
+  if (deleteCount > 0) effects.add(deleteTextWithMutationEffects(wasm, pos, deleteCount));
+  if (text.length > 0) effects.add(insertTextWithMutationEffects(wasm, pos, text));
+  return effects.consume();
+}
+
+/**
+ * [#7489] 글자를 덮어쓰기 직전 문단을 조각으로 잡는다. 지운 글자를 다시 끼워 넣으면 링크·누름틀
+ * 범위와 글자 모양이 되살아나지 않으므로, 되돌릴 때 이 조각으로 문단을 통째로 돌려놓는다.
+ * 캡션은 hyperlinkTarget 대상이 아니어서 null 이다(글자 역연산으로 되돌린다).
+ */
+export function captureTextFragment(wasm: WasmBridge, pos: DocumentPosition): number | null {
+  if (pos.cellIndex === 65534 || pos.cellPath?.some(entry => entry.cellIndex === 65534)) return null;
+  const target = hyperlinkTarget(pos);
+  return wasm.captureDeleteRange(target.section, target.para, target.para);
+}
+
 /** undo/구조 명령의 full-refresh 복원은 flat cell에서도 immediate pagination을 사용한다. */
 function doInsertTextImmediate(wasm: WasmBridge, pos: DocumentPosition, text: string): void {
   if (isNestedCell(pos)) {
@@ -612,6 +665,8 @@ export class InsertTextCommand implements EditCommand {
   readonly type = 'insertText';
   readonly timestamp: number;
   private lastMutationEffects: TextMutationEffects = NO_TEXT_MUTATION_EFFECTS;
+  /** [#7489] 덮어쓴 입력 하나하나의 [넣은 글자, 덮은 글자]. 다시 실행할 때 입력 순서대로 되풀이한다. */
+  private steps: [string, string][];
 
   constructor(
     private position: DocumentPosition,
@@ -619,8 +674,13 @@ export class InsertTextCommand implements EditCommand {
     timestamp?: number,
     /** [#4162] 선택 없이 지정한 예약 글자 모양 — 삽입된 텍스트에 그대로 건다. */
     private charFormat?: Partial<CharProperties>,
+    /** [#7489] 수정(덮어쓰기) 모드에서 입력 글자가 덮어쓴 캐럿 뒤 글자. */
+    private replacedText = '',
+    /** [#7489] 덮어쓰기 직전 문단 조각. 첫 조각으로 되돌리고, 병합으로 붙은 나머지는 버린다. */
+    private fragmentIds: number[] = [],
   ) {
     this.timestamp = timestamp ?? Date.now();
+    this.steps = [[text, replacedText]];
   }
 
   getCharFormat(): Partial<CharProperties> | undefined {
@@ -629,8 +689,29 @@ export class InsertTextCommand implements EditCommand {
 
   execute(wasm: WasmBridge): DocumentPosition {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
-    this.lastMutationEffects = insertTextWithMutationEffects(wasm, this.position, this.text);
-    const after = { ...this.position, charOffset: this.position.charOffset + this.text.length };
+    if (this.replacedText) {
+      const fragmentId = captureTextFragment(wasm, this.position);
+      if (fragmentId !== null) this.fragmentIds = [fragmentId];
+      try {
+        // 병합한 입력을 한 번에 바꾸면 링크·누름틀 범위가 처음 입력과 달라진다.
+        const effects = new TextMutationEffectAccumulator();
+        let charOffset = this.position.charOffset;
+        for (const [text, replaced] of this.steps) {
+          effects.add(replaceTextWithMutationEffects(
+            wasm, { ...this.position, charOffset }, charCount(replaced), text,
+          ));
+          charOffset += charCount(text);
+        }
+        this.lastMutationEffects = effects.consume();
+      } catch (error) {
+        this.discard(wasm);
+        throw error;
+      }
+    } else {
+      this.lastMutationEffects = insertTextWithMutationEffects(wasm, this.position, this.text);
+    }
+    // 코어 오프셋은 Unicode scalar 다 — UTF-16 길이로 옮기면 😀 뒤 캐럿이 한 글자 더 간다.
+    const after = { ...this.position, charOffset: this.position.charOffset + charCount(this.text) };
     if (this.charFormat) {
       applyCharShapeModsToRange(wasm, this.position, this.position.charOffset, after.charOffset, this.charFormat);
     }
@@ -649,10 +730,23 @@ export class InsertTextCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
+    const [fragmentId, ...mergedIds] = this.fragmentIds;
+    if (fragmentId !== undefined) {
+      wasm.restoreDeleteFragment(fragmentId);
+      this.fragmentIds = mergedIds;
+      this.discard(wasm);
+      return { ...this.position };
+    }
     // [#2337-review] 삭제 count 는 char(Unicode scalar) 단위다. UTF-16 length 를 넘기면
     // astral 문자에서 실제보다 많이 지워 인접 문자를 잃는다 → HF/FN 과 동일하게 charCount.
     doDeleteTextImmediate(wasm, this.position, charCount(this.text));
+    if (this.replacedText) doInsertTextImmediate(wasm, this.position, this.replacedText);
     return { ...this.position };
+  }
+
+  discard(wasm: WasmBridge): void {
+    for (const id of this.fragmentIds) wasm.discardDeleteFragment(id);
+    this.fragmentIds = [];
   }
 
   mergeWith(other: EditCommand): EditCommand | null {
@@ -668,7 +762,7 @@ export class InsertTextCommand implements EditCommand {
       if (other.position.cellParaIndex !== this.position.cellParaIndex) return null;
     }
     // 연속 위치 확인
-    const expectedOffset = this.position.charOffset + this.text.length;
+    const expectedOffset = this.position.charOffset + charCount(this.text);
     if (other.position.charOffset !== expectedOffset) return null;
     // 300ms 이내
     if (other.timestamp - this.timestamp > 300) return null;
@@ -677,7 +771,15 @@ export class InsertTextCommand implements EditCommand {
     // [#4162] 예약 글자 모양이 다르면 하나의 undo 단위로 묶지 않는다
     if (!sameCharFormat(this.charFormat, other.charFormat)) return null;
 
-    return new InsertTextCommand(this.position, this.text + other.text, this.timestamp, this.charFormat);
+    // [#7489] 조각 없이 끼워 넣은 글자 뒤에 덮어쓴 글자는 묶지 않는다 — 앞 명령의 조각이
+    // 병합 전체를 되돌릴 기준이다. 덮어쓴 글자는 입력 순서대로 캐럿 뒤에 이어져 있었다.
+    if (this.fragmentIds.length === 0 && other.fragmentIds.length > 0) return null;
+    const merged = new InsertTextCommand(
+      this.position, this.text + other.text, this.timestamp, this.charFormat,
+      this.replacedText + other.replacedText, [...this.fragmentIds, ...other.fragmentIds],
+    );
+    merged.steps = [...this.steps, ...other.steps];
+    return merged;
   }
 }
 
@@ -689,6 +791,7 @@ export class DeleteTextCommand implements EditCommand {
 
   /** undo용 삭제된 텍스트 (execute 시 보존) */
   private deletedText: string;
+  private fragmentId: number | null = null;
   private lastMutationEffects: TextMutationEffects = NO_TEXT_MUTATION_EFFECTS;
 
   constructor(
@@ -708,7 +811,25 @@ export class DeleteTextCommand implements EditCommand {
     if (!this.deletedText) {
       this.deletedText = doGetTextRange(wasm, this.position, this.count);
     }
-    this.lastMutationEffects = deleteTextWithMutationEffects(wasm, this.position, this.count);
+    // 링크 글자 삭제는 범위·서식 경계를 잃으므로 일반 재삽입으로 반전할 수 없다.
+    // 기존 문단 조각은 상위 문단의 셀/중첩 셀/글상자까지 함께 보존한다.
+    // 캡션은 hyperlinkTarget의 지원 대상이 아니며 기존 문자 역연산을 유지한다.
+    const isCaption = this.position.cellIndex === 65534
+      || this.position.cellPath?.some(entry => entry.cellIndex === 65534);
+    if (!isCaption && this.count > 0) {
+      const target = hyperlinkTarget(this.position);
+      const context = wasm.getHyperlinkContext(target);
+      if (context.links.some(link => this.position.charOffset < link.end
+        && link.start < this.position.charOffset + this.count)) {
+        this.fragmentId = wasm.captureDeleteRange(target.section, target.para, target.para);
+      }
+    }
+    try {
+      this.lastMutationEffects = deleteTextWithMutationEffects(wasm, this.position, this.count);
+    } catch (error) {
+      this.discard(wasm);
+      throw error;
+    }
     return { ...this.position };
   }
 
@@ -724,13 +845,27 @@ export class DeleteTextCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     this.lastMutationEffects = NO_TEXT_MUTATION_EFFECTS;
-    doInsertTextImmediate(wasm, this.position, this.deletedText);
+    if (this.fragmentId !== null) {
+      wasm.restoreDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    } else {
+      doInsertTextImmediate(wasm, this.position, this.deletedText);
+    }
     const restoredLen = this.deletedText.length;
     return { ...this.position, charOffset: this.position.charOffset + restoredLen };
   }
 
+  discard(wasm: WasmBridge): void {
+    if (this.fragmentId !== null) {
+      wasm.discardDeleteFragment(this.fragmentId);
+      this.fragmentId = null;
+    }
+  }
+
   mergeWith(other: EditCommand): EditCommand | null {
     if (!(other instanceof DeleteTextCommand)) return null;
+    // 각 조각은 삭제 직전 문단 전체를 복원한다. 서로 다른 시점과 합치지 않는다.
+    if (this.fragmentId !== null || other.fragmentId !== null) return null;
     if (other.direction !== this.direction) return null;
     if (other.timestamp - this.timestamp > 300) return null;
     // 같은 문단/셀 확인
@@ -983,6 +1118,19 @@ export class DeleteSelectionCommand implements EditCommand {
         );
         return { ...start };
       });
+    } else if (start.sectionIndex !== end.sectionIndex) {
+      // 교차 구역 선택 — 조각 캡처는 단일 구역 전제(start.sectionIndex 만 사용,
+      // delete_fragment.rs)라 다른 구역의 문단 인덱스를 넘기면 캡처 단계에서
+      // 오류가 나거나 잘못된 범위를 잡는다. 스냅샷은 통째 복원이라 어떤 선택
+      // 모양이든 되돌릴 수 있다 — 방어적 폴백.
+      this.fragment = null;
+      this.snapshot = new SnapshotCommand('deleteSelection', end, start, (wasm) => {
+        wasm.deleteRange(
+          start.sectionIndex, start.paragraphIndex, start.charOffset,
+          end.paragraphIndex, end.charOffset,
+        );
+        return { ...start };
+      });
     } else {
       // 비셀 선택 — 조각 경로 (#5769)
       this.snapshot = null;
@@ -1043,20 +1191,19 @@ export class DeleteSelectionCommand implements EditCommand {
 
 /** 문단 하나에 대한 서식 적용 정보 */
 interface ParaFormatEntry {
-  paraIndex: number;       // 본문: paragraphIndex, 셀: cellParaIndex
+  paraIndex: number;
+  cellPathJson?: string;
   startOffset: number;
   endOffset: number;
-  /** undo용: 적용 전 charShapeId */
-  beforeCharShapeId?: number;
-  /** redo용: 적용 후 charShapeId */
-  afterCharShapeId?: number;
+  beforeRuns: CharShapeRun[];
+  afterRuns?: CharShapeRun[];
 }
 
 export class ApplyCharFormatCommand implements EditCommand {
   readonly type = 'applyCharFormat';
   readonly timestamp = Date.now();
-
   private entries: ParaFormatEntry[] = [];
+  private recoveryNeeded = false;
 
   constructor(
     private start: DocumentPosition,
@@ -1065,86 +1212,135 @@ export class ApplyCharFormatCommand implements EditCommand {
   ) {}
 
   execute(wasm: WasmBridge): DocumentPosition {
-    if (this.entries.length > 0 && this.entries.every((entry) => entry.afterCharShapeId !== undefined)) {
-      this.restoreCharShapeIds(wasm, 'after');
+    try {
+      return this.executeFormat(wasm);
+    } catch (error) {
+      if (isCharFormatError(error)) throw error;
+      throw new CharFormatError('글자 서식을 적용하지 못했습니다.', { cause: error });
+    }
+  }
+
+  private executeFormat(wasm: WasmBridge): DocumentPosition {
+    if (this.entries.length > 0 && this.entries.every((entry) => entry.afterRuns !== undefined)) {
+      this.restoreCharShapeRuns(wasm, 'after');
       return { ...this.start };
     }
 
     const { start, end } = this;
-    const propsJson = JSON.stringify(this.props);
-
-    if (isCell(start)) {
-      // 중첩 셀 좌표 축 정합: flat controlIndex/cellIndex 는 cellPath[0](최외곽)이라 중첩
-      // 셀에서 바깥 셀에 서식을 적용한다. 최내곽 셀을 ...ByPath 로 라우팅하고 문단 인덱스는
-      // cellPath[last](cellParaIndexOf)에서 읽는다. undo(restoreCharShapeIds)도 같은 축.
-      const sec = start.sectionIndex;
-      const ppi = start.parentParaIndex!;
-      const startPara = cellParaIndexOf(start);
-      const endPara = cellParaIndexOf(end);
-
-      this.entries = [];
-      // 대상 문단 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
-      wasm.runInBatch(() => {
-        for (let p = startPara; p <= endPara; p++) {
-          const pathP = cellPathJsonForPara(start, p);
-          const from = p === startPara ? start.charOffset : 0;
-          const to = p === endPara ? end.charOffset : wasm.getCellParagraphLengthByPath(sec, ppi, pathP);
-          if (to <= from) continue;
-
-          const prevProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-          this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
-
-          wasm.applyCharFormatInCellByPath(sec, ppi, pathP, from, to, propsJson);
-          const afterProps = wasm.getCellCharPropertiesAtByPath(sec, ppi, pathP, from);
-          this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
-        }
-      });
-    } else {
-      const sec = start.sectionIndex;
-      const startPara = start.paragraphIndex;
-      const endPara = end.paragraphIndex;
-
-      this.entries = [];
-      for (let p = startPara; p <= endPara; p++) {
-        const from = p === startPara ? start.charOffset : 0;
-        const to = p === endPara ? end.charOffset : wasm.getParagraphLength(sec, p);
-        if (to <= from) continue;
-
-        const prevProps = wasm.getCharPropertiesAt(sec, p, from);
-        this.entries.push({ paraIndex: p, startOffset: from, endOffset: to, beforeCharShapeId: prevProps.charShapeId });
-
-        wasm.applyCharFormat(sec, p, from, to, propsJson);
-        const afterProps = wasm.getCharPropertiesAt(sec, p, from);
-        this.entries[this.entries.length - 1].afterCharShapeId = afterProps.charShapeId;
+    const cell = isCell(start);
+    const first = cell ? cellParaIndexOf(start) : start.paragraphIndex;
+    const last = cell ? cellParaIndexOf(end) : end.paragraphIndex;
+    // 모든 before를 변경 전에 확보한다. 구버전 WASM/잘못된 범위는 mutation 전에 실패한다.
+    this.entries = [];
+    for (let p = first; p <= last; p++) {
+      const cellPathJson = cell ? cellPathJsonForPara(start, p) : undefined;
+      const from = p === first ? start.charOffset : 0;
+      let to = end.charOffset;
+      if (p !== last) {
+        to = cellPathJson !== undefined
+          ? wasm.getCellParagraphLengthByPath(start.sectionIndex, start.parentParaIndex!, cellPathJson)
+          : wasm.getParagraphLength(start.sectionIndex, p);
       }
+      if (to <= from) continue;
+      this.entries.push({
+        paraIndex: p, cellPathJson, startOffset: from, endOffset: to,
+        beforeRuns: this.readRuns(wasm, p, from, to, cellPathJson),
+      });
     }
 
+    const propsJson = JSON.stringify(this.props);
+    const attempted: ParaFormatEntry[] = [];
+    const applyFailures: unknown[] = [];
+    const apply = () => {
+      try {
+        for (const entry of this.entries) {
+          attempted.push(entry);
+          const { paraIndex: p, startOffset: from, endOffset: to } = entry;
+          if (cell) {
+            wasm.applyCharFormatInCellByPath(start.sectionIndex, start.parentParaIndex!,
+              entry.cellPathJson!, from, to, propsJson);
+          } else {
+            wasm.applyCharFormat(start.sectionIndex, p, from, to, propsJson);
+          }
+          entry.afterRuns = this.readRuns(wasm, p, from, to, entry.cellPathJson);
+        }
+      } catch (error) {
+        // batch의 finally/endBatch 오류가 최초 적용 오류를 덮지 않도록 밖에서 보고한다.
+        applyFailures.push(error);
+      }
+    };
+    try {
+      if (cell) wasm.runInBatch(apply);
+      else apply();
+    } catch (error) { applyFailures.push(error); }
+    if (applyFailures.length > 0) {
+      const failures: unknown[] = [];
+      const rollback = () => {
+        for (const entry of attempted.reverse()) {
+          try { this.writeRuns(wasm, entry, entry.beforeRuns); }
+          catch (rollbackError) { failures.push(rollbackError); }
+        }
+      };
+      if (attempted.length > 0) {
+        try {
+          if (cell) wasm.runInBatch(rollback);
+          else rollback();
+        } catch (error) { failures.push(error); }
+      }
+      this.recoveryNeeded = failures.length > 0;
+      // 복원이 덜 끝났으면 before를 유지하고, 복구 후 Redo는 처음부터 다시 적용한다.
+      for (const entry of this.entries) entry.afterRuns = undefined;
+      if (this.recoveryNeeded) throw new CharFormatRecoveryError([...applyFailures, ...failures]);
+      this.entries = [];
+      if (applyFailures.length === 1) throw applyFailures[0];
+      throw new CharFormatError('글자 서식을 적용하지 못했습니다.', { cause: new AggregateError(applyFailures) });
+    }
     return { ...this.start };
+  }
+
+  private readRuns(wasm: WasmBridge, para: number, from: number, to: number, path?: string): CharShapeRun[] {
+    const { start } = this;
+    return path !== undefined
+      ? wasm.getCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!, path, from, to)
+      : wasm.getCharShapeRuns(start.sectionIndex, para, from, to);
+  }
+
+  private writeRuns(wasm: WasmBridge, entry: ParaFormatEntry, runs: CharShapeRun[]): void {
+    const { start } = this;
+    if (isCell(start)) {
+      wasm.setCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!,
+        entry.cellPathJson!, entry.startOffset, entry.endOffset, runs);
+    } else {
+      wasm.setCharShapeRuns(start.sectionIndex, entry.paraIndex, entry.startOffset, entry.endOffset, runs);
+    }
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    this.restoreCharShapeIds(wasm, 'before');
+    this.restoreCharShapeRuns(wasm, 'before');
     return { ...this.start };
   }
 
-  private restoreCharShapeIds(wasm: WasmBridge, side: 'before' | 'after'): void {
-    const { start } = this;
-    for (const entry of this.entries) {
-      const charShapeId = side === 'before' ? entry.beforeCharShapeId : entry.afterCharShapeId;
-      if (charShapeId === undefined) continue;
-
-      if (isCell(start)) {
-        // 중첩 셀 축 정합: 최내곽 셀에 서식 ID 복원(execute 와 동일 축).
-        wasm.setCharShapeIdInCellByPath(
-          start.sectionIndex, start.parentParaIndex!, cellPathJsonForPara(start, entry.paraIndex),
-          entry.startOffset, entry.endOffset, charShapeId,
-        );
-      } else {
-        wasm.setCharShapeId(start.sectionIndex, entry.paraIndex, entry.startOffset, entry.endOffset, charShapeId);
+  private restoreCharShapeRuns(wasm: WasmBridge, side: 'before' | 'after'): void {
+    const failures: unknown[] = [];
+    const restore = () => {
+      for (const entry of this.entries) {
+        try {
+          const runs = side === 'before' ? entry.beforeRuns : entry.afterRuns;
+          if (!runs) throw new Error('글자 모양 복원 구간이 없습니다');
+          this.writeRuns(wasm, entry, runs);
+        } catch (error) { failures.push(error); }
       }
-    }
+    };
+    try {
+      if (isCell(this.start)) wasm.runInBatch(restore);
+      else restore();
+    } catch (error) { failures.push(error); }
+    this.recoveryNeeded = failures.length > 0;
+    if (this.recoveryNeeded) throw new CharFormatRecoveryError(failures);
   }
 
+  isNoOp(): boolean { return this.entries.length === 0; }
+  retainOnFailure(): boolean { return this.recoveryNeeded; }
   mergeWith(): null { return null; }
 }
 
@@ -1337,7 +1533,7 @@ function hfFnStubPosition(sectionIdx: number): DocumentPosition {
  * [Task #2337-review] WASM 삭제 count 는 Rust `Paragraph::delete_text_at` 의 char(Unicode
  * scalar) 단위다. JS `String.length`(UTF-16 code unit)를 넘기면 astral 문자(😀 등)에서
  * 실제보다 많이 삭제해 undo/redo 가 인접 문자를 잃는다 → 코드포인트 수로 계산한다.
- * (커서 오프셋은 studio 의 UTF-16 관례를 유지하므로 여기서만 char 단위를 쓴다.)
+ * [#7489] 본문·셀 캐럿 오프셋도 같은 scalar 단위라 InsertTextCommand 의 캐럿·병합·다시 실행도 이것을 쓴다.
  */
 function charCount(s: string): number {
   return [...s].length;
@@ -2057,7 +2253,13 @@ export class ResizeObjectCommand implements EditCommand {
 
   undo(wasm: WasmBridge): DocumentPosition {
     for (const target of this.targets) {
-      this.setProps(wasm, target, target.before);
+      const isShape = target.type === 'shape' || target.type === 'line'
+        || target.type === 'group' || target.type === 'ole';
+      const restoreStoredZero = isShape
+        && (target.before.width === 0 || target.before.height === 0);
+      this.setProps(wasm, target, restoreStoredZero
+        ? { ...target.before, restoreStoredZero: true }
+        : target.before);
     }
     const first = this.targets[0];
     return { sectionIndex: first?.sec ?? 0, paragraphIndex: first?.ppi ?? 0, charOffset: 0 };
@@ -2781,9 +2983,13 @@ export class SnapshotCommand implements EditCommand {
     private cursorBefore: DocumentPosition,
     private cursorAfter: DocumentPosition,
     private operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly undoSelection: EditSelectionSnapshot | null = null,
   ) {
     this.type = `snapshot:${operationType}`;
   }
+
+  /** 일반 snapshot도 삭제 전 셀 블록을 보존하되 redo 선택은 복원하지 않는다. */
+  selectionBefore(): EditSelectionSnapshot | null { return this.undoSelection; }
 
   execute(wasm: WasmBridge): DocumentPosition {
     if (this.executed) {

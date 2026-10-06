@@ -118,9 +118,14 @@ fn issue_3820_p4_keeps_saved_rowbreak_body_with_its_first_fragment() {
         text,
     );
     let p4_bottom = owned_table_bottom(&p4.root, 15, 0).expect("p4 table bottom");
+    // samples/issue1891/76076_regulatory_analysis-2024.pdf p4의 실제 세로
+    // 테두리 끝은 776.630pt = 1035.507px(96dpi)이다. 종전 1040..1052px
+    // 핀은 PDF 바깥을 정답으로 허용했고, 저장 reset 뒤 줄간격을 제거한 올바른
+    // 조각을 거부했다. 기존 rhwp/PDF 원점 차이(약 1.7px) 안에서 직접 대조한다.
+    let pdf_bottom = 776.630 * 96.0 / 72.0;
     assert!(
-        (1_040.0..=1_052.0).contains(&p4_bottom),
-        "p4 RowBreak fragment bottom={p4_bottom:.1}px; the saved body fragment must fill the PDF footer band"
+        (p4_bottom - pdf_bottom).abs() <= 2.0,
+        "p4 RowBreak fragment bottom={p4_bottom:.2}px differs from Hancom PDF {pdf_bottom:.2}px"
     );
 
     // The source-owned p5 tail prevents this allowance from expanding p4 until
@@ -140,19 +145,26 @@ fn issue_3820_p4_keeps_saved_rowbreak_body_with_its_first_fragment() {
 fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
     let core = core();
 
-    // Hancom PDF p35: `주요내용` is still painted at y≈748pt (≈997px CSS).
-    let p35 = core.build_page_render_tree(34).expect("render HWP PDF p35");
-    let summary_y = text_y(&p35.root, "주요내용")
-        .expect("p35 must retain the `주요내용` content before the page boundary");
+    // 독립 PDF에서 주요내용은 35쪽 표 안에 남고, 표 조각은 본문 하단을 넘지 않는다.
+    let p35 = core.build_page_render_tree(34).expect("35쪽 렌더링");
+    let summary_y = text_y(&p35.root, "주요내용").expect("35쪽 주요내용 소유");
+    let table35 = owned_table(&p35.root, 347, 0).expect("35쪽 원본 표 조각");
+    let p35_table_bottom = table35.bbox.y + table35.bbox.height;
     assert!(
-        (995.0..=1001.0).contains(&summary_y),
-        "p35 `주요내용` y={summary_y:.1}px; PDF-aligned row band must remain at the footer"
+        summary_y >= table35.bbox.y && summary_y < p35_table_bottom,
+        "주요내용은 같은 쪽의 원본 표 조각 안에 있어야 함"
     );
-    let p35_table_bottom =
-        owned_table_bottom(&p35.root, 347, 0).expect("p35 must retain the outer RowBreak table");
+    let page_def = &core.document().sections[0].section_def.page_def;
+    let body_bottom = rhwp::renderer::hwpunit_to_px(
+        (page_def.height - page_def.margin_bottom)
+            .try_into()
+            .expect("원본 본문 하단 단위"),
+        96.0,
+    );
+    let source_quantum = rhwp::renderer::hwpunit_to_px(4, 96.0);
     assert!(
-        (1040.0..=1046.0).contains(&p35_table_bottom),
-        "p35 outer table bottom={p35_table_bottom:.1}px; the PDF retains the RowBreak blank tail through ≈1043px"
+        p35_table_bottom <= body_bottom + source_quantum,
+        "표 조각은 원본 본문 하단 안에 있어야 함: {p35_table_bottom} > {body_bottom}"
     );
     assert!(
         contains_text(
@@ -173,17 +185,40 @@ fn issue_3820_rowbreak_rowspan_band_keeps_pdf_page_35_36_boundary() {
         "p35 다음 줄은 PDF처럼 `용기를 … 인근에`로 끝나야 함"
     );
 
-    // Hancom PDF p36 has the blank tail of that row, but not its text; the
-    // next visible row (`11.영향평가 여부`) begins only after that tail at y≈108px.
-    let p36 = core.build_page_render_tree(35).expect("render HWP PDF p36");
+    // 다음 쪽은 앞쪽 주요내용을 다시 그리지 않고, 빈 이어받기 칸 뒤에 영향평가를 둔다.
+    let p36 = core.build_page_render_tree(35).expect("36쪽 렌더링");
     assert!(
         text_y(&p36.root, "주요내용").is_none(),
-        "p36 must not repaint p35-owned `주요내용` text"
+        "36쪽은 35쪽 소유 주요내용을 중복해서 그리면 안 됨"
     );
-    let impact_y = text_y(&p36.root, "영향평가").expect("p36 must resume at `11.영향평가 여부`");
+    let table36 = owned_table(&p36.root, 347, 0).expect("36쪽 같은 원본 표의 이어받기");
+    let cell_at = |row, col| {
+        table36
+            .children
+            .iter()
+            .find(|node| {
+                matches!(
+                    &node.node_type,
+                    RenderNodeType::TableCell(cell) if cell.row == row && cell.col == col
+                )
+            })
+            .expect("원본 행·열의 이어받기 칸")
+    };
+    let blank_tail = cell_at(12, 2);
+    let impact_cell = cell_at(13, 1);
     assert!(
-        (103.0..=113.0).contains(&impact_y),
-        "p36 `11.영향평가` y={impact_y:.1}px; blank rowspan tail was lost or overgrown"
+        all_text(blank_tail).trim().is_empty(),
+        "이어받은 꼬리는 빈 칸이어야 함"
+    );
+    assert!(blank_tail.bbox.height > 0.0, "빈 꼬리도 공간을 점유해야 함");
+    assert!(
+        impact_cell.bbox.y + source_quantum >= blank_tail.bbox.y + blank_tail.bbox.height,
+        "영향평가 행은 빈 이어받기 꼬리 뒤에 있어야 함"
+    );
+    let impact_y = text_y(impact_cell, "영향평가").expect("이어받은 영향평가 문단");
+    assert!(
+        impact_y >= impact_cell.bbox.y && impact_y < impact_cell.bbox.y + impact_cell.bbox.height,
+        "영향평가 문단은 원본 행의 칸 안에 있어야 함"
     );
 }
 

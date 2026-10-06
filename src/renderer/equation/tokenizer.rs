@@ -584,7 +584,12 @@ fn longest_keyword_prefix(value: &str) -> Option<usize> {
 
 /// 수식 스크립트를 토큰 리스트로 변환
 pub fn tokenize(script: &str) -> Vec<Token> {
-    Tokenizer::new(script).tokenize()
+    // [#7105] 레거시 hwpeq5 OLE 방언(`\CMD 인자 \TAB`)은 먼저 현행 문법으로 옮긴다.
+    // 게이트는 `\TAB` 존재이므로 현행 스크립트는 원문 그대로 지나간다.
+    match super::legacy_hwpeq::normalize(script) {
+        Some(normalized) => Tokenizer::new(&normalized).tokenize(),
+        None => Tokenizer::new(script).tokenize(),
+    }
 }
 
 #[cfg(test)]

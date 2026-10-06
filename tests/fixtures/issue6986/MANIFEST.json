@@ -1,0 +1,21 @@
+{
+  "source": "samples/issue6986/cell-page-and-total-page-in-one-run.hwpx",
+  "kind": "synthetic validation derivatives",
+  "oracle": "Field contract only; these derivatives have no Hancom PDF oracle.",
+  "files": [
+    {
+      "path": "tests/fixtures/issue6986/page-total-page-12-pages.hwpx",
+      "sha256": "d5c3da31e596da4659d0619b0b79b1246a35d5a89d6a5574d526645818951578",
+      "bytes": 5429,
+      "expectedPages": 12,
+      "fieldOrder": "PAGE,TOTAL_PAGE"
+    },
+    {
+      "path": "tests/fixtures/issue6986/total-page-page-12-pages.hwpx",
+      "sha256": "3addd24fa544d339aaf0d150ee341b7867b2274ca93799b06343412342f23487",
+      "bytes": 5428,
+      "expectedPages": 12,
+      "fieldOrder": "TOTAL_PAGE,PAGE"
+    }
+  ]
+}

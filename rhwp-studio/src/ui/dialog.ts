@@ -1,5 +1,6 @@
 import { enableDialogDrag } from './dialog-drag';
 
+import { t } from '../i18n/index.ts';
 /** 마지막 모달이 닫혀 편집기 포커스를 복원할 수 있음을 알리는 문서 이벤트. */
 export const MODAL_DIALOG_CLOSED_EVENT = 'rhwp-modal-dialog-closed';
 
@@ -60,7 +61,7 @@ export abstract class ModalDialog {
 
     const confirmBtn = document.createElement('button');
     confirmBtn.className = 'dialog-btn dialog-btn-primary';
-    confirmBtn.textContent = '확인';
+    confirmBtn.textContent = t('dialog.dialog.confirmBtn.text');
     confirmBtn.addEventListener('click', () => {
       const shouldClose = this.onConfirm();
       if (shouldClose !== false) this.hide();
@@ -68,7 +69,7 @@ export abstract class ModalDialog {
 
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'dialog-btn';
-    cancelBtn.textContent = '취소';
+    cancelBtn.textContent = t('dialog.dialog.cancelBtn.text');
     cancelBtn.addEventListener('click', () => this.hide());
 
     footer.appendChild(confirmBtn);

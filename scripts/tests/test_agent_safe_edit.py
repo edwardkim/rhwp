@@ -8,7 +8,7 @@
 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-safe-edit/
-작업 기록: mydocs/working/agent_safe_edit.md
+작업 기록: mydocs/working/archives/agent_safe_edit.md
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ PLANS = FIXTURES / "plans"
 ENVS = FIXTURES / "envelopes"
 LOOPS = FIXTURES / "loops"
 CATALOG = FIXTURES / "catalog.json"
-WORKING = REPO / "mydocs" / "working" / "agent_safe_edit.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_safe_edit.md"
 
 REFERENCE_NAMES = (
     "single_edit.md",

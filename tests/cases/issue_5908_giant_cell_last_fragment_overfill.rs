@@ -16,12 +16,15 @@
 //!
 //! 수정 전/후 실측 (한글 2024 정본 48쪽):
 //!
-//! | 항목 | 수정 전 | 수정 후 | 정본 |
-//! | --- | --- | --- | --- |
-//! | 쪽수 | 42 | 47 | 48 |
-//! | 40쪽(0기준 39) 글자 baseline 최댓값 | 5,141.6px | 1,103px | — |
-//! | 40쪽 종이(1,122.5px) 밖 글줄 앵커 | 2,124 / 2,923 | 0 | — |
-//! | 부속서 Ⅱ 제목이 있는 쪽(0기준) | 39 (겹침) | 44 | 45 |
+//! | 항목 | 수정 전 | 수정 후 | #7140 후 | 정본 |
+//! | --- | --- | --- | --- | --- |
+//! | 쪽수 | 42 | 47 | 48 | 48 |
+//! | 40쪽(0기준 39) 글자 baseline 최댓값 | 5,141.6px | 1,103px | 1,103px | — |
+//! | 40쪽 종이(1,122.5px) 밖 글줄 앵커 | 2,124 / 2,923 | 0 | 0 | — |
+//! | 부속서 Ⅱ 제목이 있는 쪽(0기준) | 39 (겹침) | 44 | 45 | 45 |
+//!
+//! [#7140] 중첩 표 행 유닛이 페인트 행 높이를 쓰고, 조각 예산이 mixed nested 첫 가시
+//! 유닛 예약을 함께 빼면서 쪽수·부속서 Ⅱ 쪽이 정본과 같아졌다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -76,7 +79,7 @@ fn issue_5908_giant_cell_last_fragment_keeps_splitting() {
     let core = open_sample();
     assert_eq!(
         core.page_count(),
-        47,
+        48,
         "giant cell 마지막 조각이 계속 분할돼야 한다 — 0-전진 붕괴 시 42쪽"
     );
 }
@@ -115,8 +118,8 @@ fn issue_5908_annex_two_moves_off_the_collapsed_page() {
         "부속서 Ⅱ 제목이 {COLLAPSED_PAGE}쪽에 겹쳐 있으면 안 된다"
     );
 
-    // 한글 2024 정본은 부속서 Ⅱ 를 46쪽(0기준 45)에 둔다. rhwp 는 앞쪽에서 1쪽
-    // 적으므로 0기준 44 쪽이며, 어느 쪽이든 붕괴 쪽보다 뒤여야 한다.
+    // 한글 2024 정본은 부속서 Ⅱ 를 46쪽(0기준 45)에 둔다. [#7140] 중첩 표 행 유닛과
+    // 조각 예산을 페인트와 정합시키면서 쪽수가 정본과 같아져 이 쪽도 정본과 일치한다.
     let page_count = u32::try_from(core.page_count()).expect("page count fits u32");
     let annex_page = (COLLAPSED_PAGE..page_count).find(|page| {
         let text = svg_text_concat(&core.render_page_svg_native(*page).expect("page svg"));
@@ -125,7 +128,7 @@ fn issue_5908_annex_two_moves_off_the_collapsed_page() {
     });
     assert_eq!(
         annex_page,
-        Some(44),
+        Some(45),
         "부속서 Ⅱ 는 giant cell 이 끝나는 자기 쪽에 있어야 한다"
     );
 }

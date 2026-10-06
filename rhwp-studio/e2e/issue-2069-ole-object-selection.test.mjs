@@ -128,9 +128,8 @@ async function setOleCaptionAndReadBack(page) {
 
   await page.waitForSelector('.dialog-wrap', { timeout: 5000 });
   const dialogState = await page.evaluate(() => {
-    const marginTab = [...document.querySelectorAll('.dialog-tab')]
-      .find(el => el.textContent?.trim() === '여백/캡션');
-    if (!marginTab) throw new Error('여백/캡션 tab not found');
+    const marginTab = document.querySelector('.dialog-tab[data-tab="margin"]');
+    if (!marginTab) throw new Error('여백/캡션(margin) tab not found');
     marginTab.click();
 
     const captionBtns = [...document.querySelectorAll('.pp-caption-btn')];
@@ -187,9 +186,8 @@ async function removeOleCaptionAndReadBack(page) {
 
   await page.waitForSelector('.dialog-wrap', { timeout: 5000 });
   const dialogState = await page.evaluate(() => {
-    const marginTab = [...document.querySelectorAll('.dialog-tab')]
-      .find(el => el.textContent?.trim() === '여백/캡션');
-    if (!marginTab) throw new Error('여백/캡션 tab not found');
+    const marginTab = document.querySelector('.dialog-tab[data-tab="margin"]');
+    if (!marginTab) throw new Error('여백/캡션(margin) tab not found');
     marginTab.click();
 
     const captionBtns = [...document.querySelectorAll('.pp-caption-btn')];

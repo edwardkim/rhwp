@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 사용법 질문·도움 요청
+    url: https://github.com/edwardkim/rhwp/discussions
+    about: rhwp 사용법과 문제 해결 방법은 Discussions에서 질문해주세요.

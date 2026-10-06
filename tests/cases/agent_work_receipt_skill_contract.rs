@@ -312,7 +312,7 @@ fn scenario_catalog_does_not_invent_commands() {
 
 #[test]
 fn working_doc_records_the_issue_and_scope() {
-    let path = repo().join("mydocs/working/agent_work_receipt.md");
+    let path = repo().join("mydocs/working/archives/agent_work_receipt.md");
     let text = fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
     assert!(text.contains("#5308") || text.contains("5308"), "이슈 번호");
     assert!(text.contains("replay"), "replay");
