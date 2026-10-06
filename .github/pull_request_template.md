@@ -59,9 +59,11 @@ closes #
 ## Visual Sweep 직접 증적 (해당하는 경우)
 
 <!-- 조판/렌더링 영향 변경은 파일 경로와 관계없이 Native/fresh WASM Visual Sweep·TSV를 반드시 실행합니다.
-리뷰 요청 전에 최종 PR head에 있는 대표 review·overlay PNG를 아래에 실제 Markdown 이미지로 표시한다.
-경로·임시 output·review 문서 링크만 남기지 않는다. PR 번호가 아직 없으면 issue 또는 변경 주제의 안정 경로를
-사용하고, raw URL에는 PR head의 repository owner/name과 정확한 head SHA를 쓴다. 이후 코드가 바뀌면
+PR 생성 시부터 대표 review·overlay PNG를 아래에 실제 Markdown 이미지로 표시한다.
+기여자는 PR 번호를 미리 알 필요가 없다. PNG를 mydocs/pr/assets/issue_<이슈번호>_<주제>/ 또는
+주제별 안정 경로에 커밋하고 실제 head repository에 push한 뒤 git rev-parse HEAD로 확인한 SHA를 URL에 넣는다.
+경로·임시 output·review 문서 링크만 남기지 않는다. raw URL의 OWNER/REPOSITORY는 기여자 fork 등 실제
+head repository를 사용하며 target repository로 바꾸지 않는다. 이후 코드가 바뀌면
 새 head의 PNG와 URL로 다시 캡처·교체한다. 비해당이면 이 절을 제거하고 사유를 위 검증 결과에 적는다. -->
 
 - 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)를 따름
@@ -72,23 +74,42 @@ closes #
 - 한컴 제품/빌드·저장 제품 판정·Print 출력 방법/설정·PDF 출처/해시 (MCP이면 engine·job 식별자):
 - TSV 실행 명령·source/build SHA·로컬 산출 경로: <!-- TSV·실행 로그·중간 JSON은 ignored output에 보존하고 Git에 커밋하지 않습니다. -->
 
-| TSV 출력 경로 | 검증 문서·페이지 범위/전체 쪽수 | 최저 일치율·페이지 | 90% 미만/누락/측정 불가 쪽 | 결과·증적 출처 |
-| --- | --- | --- | --- | --- |
-| Native | | | | |
-| fresh WASM | | | | |
+<!-- 입력마다 Native/fresh WASM 두 행을 반복합니다. 대표 이미지의 점수와 검증 범위 전체의 최저값을 구분하세요.
+검증 source SHA·Native binary/fresh WASM 해시·인쇄 프로필·글꼴 공급과 실제 빌드 옵션도 위 환경 정보에 적습니다. -->
+
+| 입력·기준 Print PDF | TSV 출력 경로 | 검증 페이지 범위/전체 쪽수 | 최저 일치율·페이지 | 90% 미만/누락/측정 불가 쪽 | 결과·증적 출처 |
+| --- | --- | --- | --- | --- | --- |
+| | Native | | | | |
+| | fresh WASM | | | | |
 
 <!-- 한 페이지라도 90% 미만 또는 측정 불가이면 스스로 PDF/overlay 원인을 재검토·수정하고 새 head에서 재실행합니다.
 평균값·높은 페이지 선별·단순 글꼴 차이 추정·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다.
 공급으로 해결 불가능한 실제 글꼴 차이만 위 계약의 예외로 제출하고 근거·미달 쪽·최종 font_mismatch_exception을 명시합니다. -->
-- 사람 판독 및 남은 차이: <!-- 자동 수치는 보조값이며, 표·그림·줄바꿈·테두리·앞뒤 내용의 직접 판독을 적는다. -->
+<!-- PR #7591처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
+https://github.com/edwardkim/rhwp/pull/7591 는 첨부 형식 참고이며 검증 통과 사례라는 뜻은 아닙니다.
+같은 입력·쪽의 Native/fresh WASM review/standalone overlay 네 이미지를 한 표에서 바로 대조하게 합니다.
+파일 경로·긴 이미지 나열·서로 다른 쪽을 섞은 표로 대신하지 않습니다. 전쪽 overlay 합성은 요구하지 않습니다. -->
+
+### 입력명 · 기준 PDF pN ↔ rhwp pN
+
+- 기준 Print PDF·입력 식별자: <!-- 위 전체 요약의 입력과 연결하고, 같은 이름의 파일은 경로/해시로 구분합니다. -->
 
 | 출력 경로 | review | overlay |
 | --- | --- | --- |
-| Native | ![Native review](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/REVIEW_PNG_PATH) | ![Native overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/OVERLAY_PNG_PATH) |
-| fresh WASM | ![fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/WASM_REVIEW_PNG_PATH) | ![fresh WASM overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/SHA/WASM_OVERLAY_PNG_PATH) |
+| Native | ![입력명 pN Native review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-native-review.png) | ![입력명 pN Native overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-native-overlay.png) |
+| fresh WASM | ![입력명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png) | ![입력명 pN fresh WASM overlay](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-overlay.png) |
 
-<!-- 조판 영향 변경에서는 Native/fresh WASM 행을 생략하지 않습니다. 실제 asset 존재와 PR 본문 Markdown을
-PR 생성·수정 뒤 다시 확인한다. merge 뒤 comment에는 같은 asset의 merge SHA 고정 URL을 별도로 사용한다. -->
+- 이 쪽의 실루엣 보조값·gate: Native / fresh WASM <!-- 실행한 값과 판정을 각각 적습니다. 개선을 주장하면 같은 입력·쪽의 수정 전후 값과 source SHA를 연결합니다. -->
+- 사람 판독 및 남은 차이: <!-- 이 쪽에서 직접 확인한 표·그림·줄바꿈·테두리·앞뒤 내용과 남은 차이를 적습니다. 자동 수치는 보조값입니다. -->
+
+<!-- 조판 영향 변경에서는 Native/fresh WASM 행을 생략하지 않습니다. 미실행이면 해당 행에 미검증/사유를 적고
+제출 완료로 표시하지 않습니다. 실제 asset 존재와 PR 본문 Markdown을
+PR 생성·수정 뒤 다시 확인한다. OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN을 실제 값으로 치환한다.
+ISSUE_OR_TOPIC 예: issue_6574_endnote_column_bottom (PR 번호 불필요).
+실제 PR 생성 시 본문 이미지 예:
+![3-09 2024 구분선아래20 p17 fresh WASM review](https://raw.githubusercontent.com/planet6897/rhwp/914616fdc7965d92be0fc056dd52bd67c89a5dca/mydocs/pr/assets/issue_6574_endnote_column_bottom/2024-09-below20-p017-wasm-review.png)
+이 예제의 타인 증적을 재사용하지 않고 위 네 이미지를 자신의 제출 head 증적으로 치환한다.
+merge 뒤 comment에는 같은 asset의 merge SHA 고정 URL을 별도로 사용한다. -->
 
 ## 성능 영향 및 측정 결과 (해당하는 경우)
 
