@@ -2,9 +2,11 @@ name: Release operations contracts
 
 # Promotion adapter for workflows whose live events mutate repository metadata.
 # Execute the shipped script and fail-closed API simulations without dispatching
-# those events or granting their write permissions.
+# those events or granting their write permissions. The already registered CI
+# workflow calls this file at the same commit, avoiding dispatch registration on
+# the default branch before devel can be promoted.
 on:
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
