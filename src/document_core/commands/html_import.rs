@@ -1,6 +1,7 @@
 //! HTML 붙여넣기 + HTML 파싱 관련 native 메서드
 
 use super::super::helpers::*;
+use super::clipboard::text_to_split_logical_offset;
 
 mod inline_content;
 use crate::document_core::DocumentCore;
@@ -43,6 +44,10 @@ fn open_format_tags(run: &str) -> String {
 }
 
 impl DocumentCore {
+    /// HTML 을 파싱해 본문 캐럿 자리에 붙인다.
+    ///
+    /// `char_offset` 과 돌려주는 `charOffset` 은 캐럿의 논리 위치다 — 글자와 각주·미주·글자처럼
+    /// 취급한 개체를 한 칸씩 센다(`getLogicalLength`·`navigateNextEditable` 과 같은 축).
     pub fn paste_html_native(
         &mut self,
         section_idx: usize,
@@ -74,19 +79,21 @@ impl DocumentCore {
         let clip_count = parsed_paras.len();
 
         if clip_count == 1 && parsed_paras[0].controls.is_empty() {
-            // 단일 문단 텍스트 삽입
+            // 단일 문단 텍스트 삽입 — 논리 위치를 글자 위치와 그 자리 개체의 앞뒤로 바꿔 넣는다.
+            // 아래 다중 문단 경로의 split_at 도 논리 위치를 받는다.
             let clip_text = parsed_paras[0].text.clone();
             let clip_char_shapes = parsed_paras[0].char_shapes.clone();
             let clip_char_offsets = parsed_paras[0].char_offsets.clone();
             let new_chars = clip_text.chars().count();
 
-            self.document.sections[section_idx].paragraphs[para_idx]
-                .insert_text_at(char_offset, &clip_text);
+            let para = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let (text_offset, after_control) = logical_to_text_offset(para, char_offset);
+            let text_offset = para.insert_text_at_caret(text_offset, &clip_text, after_control);
 
             self.apply_clipboard_char_shapes(
                 section_idx,
                 para_idx,
-                char_offset,
+                text_offset,
                 &clip_char_shapes,
                 &clip_char_offsets,
                 new_chars,
@@ -112,7 +119,10 @@ impl DocumentCore {
             self.recompose_paragraph(section_idx, para_idx);
             self.paginate_if_needed();
 
-            let new_offset = char_offset + new_chars;
+            let new_offset = text_to_logical_offset(
+                &self.document.sections[section_idx].paragraphs[para_idx],
+                text_offset + new_chars,
+            );
             self.event_log.push(DocumentEvent::HtmlImported {
                 section: section_idx,
                 para: para_idx,
@@ -373,7 +383,10 @@ impl DocumentCore {
             return Ok((cell_para_idx, char_offset + new_chars));
         }
 
-        let right_half = cell_paras[cell_para_idx].split_at(char_offset);
+        // 셀 캐럿은 글자 위치다. split_at 이 한 칸으로 세는 컨트롤과 같은 기준으로 바꿔 넘긴다.
+        let split_offset =
+            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
+        let right_half = cell_paras[cell_para_idx].split_at(split_offset);
         cell_paras[cell_para_idx].merge_from(&parsed_paras[0]);
 
         let mut insert_idx = cell_para_idx + 1;
@@ -387,7 +400,7 @@ impl DocumentCore {
         Ok((last_para_idx, merge_point))
     }
 
-    /// HTML 문자열을 파싱하여 셀 내부 캐럿 위치에 삽입한다.
+    /// HTML 문자열을 파싱하여 셀 내부 캐럿 위치에 삽입한다. 셀 캐럿 `char_offset` 은 글자 위치다.
     pub fn paste_html_in_cell_native(
         &mut self,
         section_idx: usize,

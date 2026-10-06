@@ -901,6 +901,38 @@ impl Paragraph {
         }
     }
 
+    /// 마지막 글자가 문단 끝 자동 번호의 자리표면 그 번호의 컨트롤 번호를 돌려준다.
+    ///
+    /// 파서는 자동 번호(0x12) 자리에 공백 한 글자를 남기고, 그 글자가 번호의 8유닛을 함께
+    /// 차지한다. 문단 가운데 자리표는 다음 글자가 8 뒤에 있어 [`Self::control_text_positions`]
+    /// 가 번호를 자리표 자리에 두지만, 마지막 글자는 다음 글자가 없어 번호가 문단 끝(글자 수)에
+    /// 놓인다. 직렬화기(#2740)와 같은 규칙으로, 문단 끝에 놓인 첫 컨트롤이 자동 번호이고 마지막
+    /// 글자가 공백이면 그 공백을 자리표로 본다.
+    fn trailing_auto_number(&self, control_positions: &[usize]) -> Option<usize> {
+        if !self.text.ends_with(' ') {
+            return None;
+        }
+        let text_len = self.text.chars().count();
+        let index = control_positions.iter().position(|&at| at >= text_len)?;
+        matches!(self.controls.get(index), Some(Control::AutoNumber(_))).then_some(index)
+    }
+
+    /// `idx` 번째 글자가 끝나는 스트림 위치. 문단 끝 자동 번호의 자리표(마지막 글자)는 번호의
+    /// 8유닛을 함께 차지한다 ([`Self::trailing_auto_number`]).
+    fn char_stream_end(
+        &self,
+        text_chars: &[char],
+        idx: usize,
+        trailing_number: Option<usize>,
+    ) -> u32 {
+        self.char_offsets[idx]
+            + if trailing_number.is_some() && idx + 1 == text_chars.len() {
+                CTRL_CHAR_CODE_UNITS
+            } else {
+                Self::char_stream_len(text_chars[idx])
+            }
+    }
+
     /// char_offset 위치에 텍스트를 삽입한다.
     /// 인라인 컨트롤(각주/미주/수식/새 번호 등, 8 code unit)을 char_offset 위치에 삽입할 때
     /// 문단 메타데이터를 일괄 시프트한다.
@@ -1106,14 +1138,19 @@ impl Paragraph {
         // 마지막 문자 + 후행 컨트롤 갭을 포함한 값으로 계산
         let effective_char_offset = char_offset.min(text_len);
         let control_positions = self.control_text_positions();
+        // 문단 끝 자동 번호는 마지막 글자(자리표) 자리에 있다. 그 뒤 입력은 번호 앞이 아니다.
+        let trailing_number = self.trailing_auto_number(&control_positions);
+        let char_end = |idx: usize| self.char_stream_end(&text_chars, idx, trailing_number);
         let inserts_before_inline_control = !after_inline_control
             && char_offset <= text_len
             && self
                 .controls
                 .iter()
                 .zip(control_positions.iter())
-                .any(|(ctrl, &pos)| {
+                .enumerate()
+                .any(|(ci, (ctrl, &pos))| {
                     pos == effective_char_offset
+                        && Some(ci) != trailing_number
                         && matches!(
                             ctrl,
                             Control::Shape(_)
@@ -1135,9 +1172,7 @@ impl Paragraph {
         // 삽입 지점의 UTF-16 위치 결정
         let utf16_insert_pos: u32 = if char_offset > text_len && !self.char_offsets.is_empty() {
             // 텍스트 끝 이후 (인라인 컨트롤 뒤): 마지막 문자의 UTF-16 위치 + 폭 + 후행 갭
-            let last_idx = self.char_offsets.len() - 1;
-            let last_char_end =
-                self.char_offsets[last_idx] + Self::char_stream_len(text_chars[last_idx]);
+            let last_char_end = char_end(self.char_offsets.len() - 1);
             // 후행 컨트롤 수 = char_offset - text_len
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
@@ -1145,27 +1180,24 @@ impl Paragraph {
             if effective_char_offset == 0 {
                 0
             } else if !self.char_offsets.is_empty() {
-                let prev_idx = effective_char_offset - 1;
-                self.char_offsets[prev_idx] + Self::char_stream_len(text_chars[prev_idx])
+                char_end(effective_char_offset - 1)
             } else {
                 0
             }
         } else if effective_char_offset < self.char_offsets.len() {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
-            let last_idx = self.char_offsets.len() - 1;
             // 개체 뒤 입력이면 문단 끝에 붙은 개체 자리(개체당 8)도 건너뛴다.
             let trailing_ctrl_count = if after_inline_control {
                 control_positions
                     .iter()
-                    .filter(|&&pos| pos >= text_len)
+                    .enumerate()
+                    .filter(|&(ci, &pos)| pos >= text_len && Some(ci) != trailing_number)
                     .count() as u32
             } else {
                 0
             };
-            self.char_offsets[last_idx]
-                + Self::char_stream_len(text_chars[last_idx])
-                + trailing_ctrl_count * 8
+            char_end(self.char_offsets.len() - 1) + trailing_ctrl_count * 8
         } else {
             // 텍스트가 비어있을 때: 기존 컨트롤 뒤에 삽입 (각 컨트롤 = 8 code units)
             (self.controls.len() as u32) * 8
@@ -1480,13 +1512,16 @@ impl Paragraph {
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
         let text_chars: Vec<char> = self.text.chars().collect();
+        // 문단 끝 자동 번호 뒤에서 나누면 번호는 자리표 글자와 함께 앞 문단에 남는다.
+        let kept_number = (split_pos == text_chars.len())
+            .then(|| self.trailing_auto_number(&self.control_text_positions()))
+            .flatten();
 
         // 분할 지점의 UTF-16 위치
         let utf16_split: u32 = if split_pos < self.char_offsets.len() {
             self.char_offsets[split_pos]
         } else if !self.char_offsets.is_empty() {
-            let last = self.char_offsets.len() - 1;
-            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
+            self.char_stream_end(&text_chars, self.char_offsets.len() - 1, kept_number)
         } else {
             text_chars[..split_pos]
                 .iter()
@@ -1710,9 +1745,10 @@ impl Paragraph {
 
         for (ci, ctrl) in old_controls.into_iter().enumerate() {
             let data = old_ctrl_data.get(ci).cloned().flatten();
-            let move_to_new = (Self::is_split_movable_control(&ctrl)
+            let move_to_new = ((Self::is_split_movable_control(&ctrl)
                 && control_positions.get(ci).copied().unwrap_or(usize::MAX) >= char_offset)
-                || moved_field_control_indices.contains(&ci);
+                || moved_field_control_indices.contains(&ci))
+                && Some(ci) != kept_number;
 
             if move_to_new {
                 moved_control_idx_map.insert(ci, new_controls.len());
@@ -1812,16 +1848,18 @@ impl Paragraph {
         // 현재 문단 끝의 UTF-16 위치.
         // 마지막 문자 뒤(trailing) 컨트롤은 char_offsets에 갭이 인코딩되어 있지 않으므로
         // 컨트롤당 8 code unit을 가산해야 other 텍스트가 컨트롤 갭 뒤로 이어진다 (#1323).
-        let trailing_ctrl_units: u32 = self
-            .control_text_positions()
+        // 문단 끝 자동 번호는 자리표 글자가 번호의 8유닛을 차지하므로 따로 세지 않는다.
+        let control_positions = self.control_text_positions();
+        let trailing_number = self.trailing_auto_number(&control_positions);
+        let trailing_ctrl_units: u32 = control_positions
             .iter()
-            .filter(|&&p| p >= self_text_len)
+            .enumerate()
+            .filter(|&(ci, &p)| p >= self_text_len && Some(ci) != trailing_number)
             .count() as u32
             * 8;
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
-            let last = self.char_offsets.len() - 1;
             let text_chars: Vec<char> = self.text.chars().collect();
-            self.char_offsets[last] + Self::char_stream_len(text_chars[last])
+            self.char_stream_end(&text_chars, self.char_offsets.len() - 1, trailing_number)
         } else {
             0
         } + trailing_ctrl_units;
