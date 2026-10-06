@@ -162,3 +162,7 @@ https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/as
 - 병합 후 workflow는 duration refresh와 issue-close 운영 workflow만 확인했다. 검증 CI·CodeQL·Adapter·Proptest·Oracle은 dispatch하지 않았다.
 
 - 전쪽 TSV·silhouette manifest·대표 PNG·API receipt·실행 로그는 기본 저장소 ignored `output/pr-review/pr7610-20261006/`에도 보존했다. 임시 worktree의 진단 binary·SVG/font raster 중간 파일과 영구 요약을 구분한다.
+
+- [PR 병합 결과 comment](https://github.com/edwardkim/rhwp/pull/7610#issuecomment-6017805110)와 [#7441 부분 처리 comment](https://github.com/edwardkim/rhwp/issues/7441#issuecomment-6017804387)를 게시하고 API로 한국어 본문·UTF-8/BOM·이미지 URL을 재조회했다. #7441은 OPEN으로 유지했다.
+- [Duration refresh 37474041054](https://github.com/edwardkim/rhwp/actions/runs/37474041054) success. `ready:true`, `successful-pr-worker-measurements`, source head `cd879723e87dd19913cb99d0d17ec2970f1aa380`, source CI run `37463326904`를 확인했다.
+- 재현 요약·TSV·manifest·대표 PNG·로그를 기본 저장소 ignored output에 보존한 뒤 clean 상태의 `/tmp/rhwp-pr7610-review-20261006`, `/tmp/rhwp-pr7610-negative-20261006`과 전용 local review branch·fetch alias를 제거했다. contributor fork branch·공유 target·다른 PR worktree는 보존했다.
