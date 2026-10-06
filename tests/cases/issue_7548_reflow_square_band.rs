@@ -14,6 +14,12 @@
 //!   allowOverlap=1 이어도 한/글 배치는 기본형과 같다(개체끼리의 겹침 허용은 글 배제를
 //!   취소하지 않는다).
 //!
+//! - `samples/para_square_lane/para_square_lane_reflow.hwpx` (`pdf/para_square_lane/
+//!   para_square_lane_reflow-2020.pdf`, 21_언어 14쪽 형상): 문단 기준 좁은 어울림 표의 host 뒤
+//!   문단 pi=3 은 표 띠와 겹치는 세 줄 모두 표 오른쪽 차선, pi=4 는 표 아래 전폭.
+//!   (생성기 `full_fontfaces` 인자 — 뼈대의 LATIN fontface 미선언으로 한/글이 라틴을
+//!   Haansoft Batang 으로 그리는 변수를 없앤 입력이다.)
+//!
 //! 수정 전 rhwp 는 host 글자를 표 아래로 보내 한 줄 비우고(pi=3), 뒤 문단의 합성 줄을
 //! 저장 증거로 여겨 표 위에 겹쳐 그렸다. 검사는 절대 좌표가 아니라 관계(표 위/아래·옆
 //! 차선·순서·겹침 없음)로 한다. 저장 LineSeg 입력(`page_anchored_square.hwp`)은
@@ -28,6 +34,7 @@ const BASE: &str = "samples/page_anchored_square/page_anchored_square_reflow.hwp
 const NARROW: &str = "samples/page_anchored_square/page_anchored_square_reflow_narrow.hwpx";
 const ALLOW_OVERLAP: &str =
     "samples/page_anchored_square/page_anchored_square_reflow_allow_overlap.hwpx";
+const PARA_LANE: &str = "samples/para_square_lane/para_square_lane_reflow.hwpx";
 const HOST_PARA: usize = 3;
 const LAST_PARA: usize = 13;
 
@@ -77,7 +84,7 @@ fn collect(node: &RenderNode, in_table: bool, page: &mut Page) {
     }
 }
 
-fn page(sample: &str) -> Page {
+fn render(sample: &str) -> Page {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {sample}: {e}"));
     let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("parse {sample}: {e}"));
@@ -85,6 +92,11 @@ fn page(sample: &str) -> Page {
     let tree = core.build_page_render_tree(0).expect("render 1쪽");
     let mut page = Page::default();
     collect(&tree.root, false, &mut page);
+    page
+}
+
+fn page(sample: &str) -> Page {
+    let page = render(sample);
     let paras: Vec<usize> = page.lines.iter().map(|(p, _)| *p).collect();
     assert_eq!(
         paras,
@@ -197,5 +209,31 @@ fn issue_7548_reflow_narrow_page_square_band_narrows_overlapping_lines() {
     assert!(
         last.y >= table.y + table.h - 0.5 && (last.x - body_x).abs() < 0.5,
         "{NARROW}: 띠 아래 pi={LAST_PARA} 는 전폭으로 돌아온다: {last:?}, table {table:?}"
+    );
+}
+
+#[test]
+fn issue_7548_reflow_para_square_successor_narrows_beside_table() {
+    let page = render(PARA_LANE);
+    let table = page.table.expect("문단 기준 어울림 표");
+    let body_x = page.body_x.expect("본문 영역");
+    assert_flow_order(PARA_LANE, &page);
+    let paras: Vec<usize> = page.lines.iter().map(|(p, _)| *p).collect();
+    assert_eq!(
+        paras,
+        vec![0, 1, 2, 2, 3, 3, 3, 4],
+        "{PARA_LANE}: 한/글 정본과 같은 줄 수(host 2줄, 다음 문단 3줄)로 순서대로 그린다"
+    );
+    let table_right = table.x + table.w;
+    for (para, r) in page.lines.iter().filter(|(p, _)| matches!(p, 2 | 3)) {
+        assert!(
+            r.y < table.y + table.h && r.x >= table_right,
+            "{PARA_LANE}: 띠와 겹치는 pi={para} 줄은 표 오른쪽 차선이다: {r:?}, table {table:?}"
+        );
+    }
+    let last = line(&page, 4);
+    assert!(
+        last.y >= table.y + table.h - 0.5 && (last.x - body_x).abs() < 0.5,
+        "{PARA_LANE}: 띠 아래 pi=4 는 전폭으로 돌아온다: {last:?}, table {table:?}"
     );
 }
