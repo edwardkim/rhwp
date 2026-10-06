@@ -486,10 +486,10 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
     // 한글 2020 PDF 는 HWP5 문단 기준 표(148776468 pi=169·pi=121)의 이어받은 조각도 쪽
     // 머리에서 바깥 위 여백(140HU)만큼 내려 그리고, 다음 문단은 저장 vpos 그대로 그 아래에
     // 둔다. HWP5 의 첫 조각은 호스트 간격이 이미 위 여백을 소유하므로 넓히지 않는다
-    // (넓히면 hwpspec 178→180쪽). 위 행에서 내려온 병합 칸 한가운데서 이어지는 조각은
-    // 앞 조각의 칸 상자가 계속되는 것이라 여백을 다시 열지 않는다 — 한글 2020 PDF 는
-    // 1371000-201200057 8·10·14·15쪽(지역 열 병합 칸 안에서 이어짐)의 조각을 본문 위에
-    // 붙여 그린다.
+    // (넓히면 hwpspec 178→180쪽). [#7531] 위 행에서 내려온 병합 칸 한가운데서 이어지는
+    // 조각도 같다 — 정본 코퍼스의 그런 조각 29건이 모두 여백을 열고(80168·86712·aift·
+    // hwpx_sample2·deferred_takeplace 등), 한글 2020 으로 다시 뽑은 1371000-201200057
+    // 정본도 병합 칸 안에서 이어지는 10·14·15쪽과 그렇지 않은 8쪽의 표 윗변이 같은 자리다.
     let para_anchor_below_first_line = native_host.is_some_and(|host| {
         object_only_saved_table_anchor(host, table)
             && host
@@ -497,14 +497,35 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
                 .first()
                 .is_some_and(|line| line.vertical_pos >= line.line_height)
     });
+    // [#7531] 글이 있는 한 줄 호스트에서 표가 그 글줄 아래(세로 오프셋 ≥ 줄 높이)에서
+    // 시작하면 그 글줄은 표 위 여백을 소유하지 않는다 — 독립 밴드 뒤 앵커와 같다.
+    // 한/글 2024 PDF(deferred_takeplace_fill_ahead 4·5쪽, 문단 기준 표)는 첫 조각과
+    // 이어받는 조각 모두 바깥 위 여백 283HU 아래에 괘선을 그린다.
+    // 1×1 RowBreak 쪽 조각은 #7095 의 별도 상자 계약이 여백을 소유하므로 제외한다
+    // (1382000 16쪽 1×1 표: 정본은 여기서 여백을 다시 열지 않는다).
+    let single_cell_frame = table.row_count == 1 && table.col_count == 1;
+    let para_anchor_below_text_line = !single_cell_frame
+        && native_host.is_some_and(|host| {
+            let [line] = host.line_segs.as_slice() else {
+                return false;
+            };
+            para_has_non_whitespace_text(host)
+                && !host.stored_text_partition_is_dirty()
+                && !host.cell_format_vpos_dirty
+                && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && line.vertical_pos >= 0
+                && line.line_height > 0
+                && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+                && signed_hwpunit(table.common.vertical_offset) >= line.line_height
+        });
     (hwpx_stored || native_object_frame)
         && !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
         && (table.common.horz_rel_to == HorzRelTo::Column
-            || ((hwpx_stored || (is_continuation && !rowspan_straddles_row(table, start_row)))
-                && table.common.horz_rel_to == HorzRelTo::Para
+            || (table.common.horz_rel_to == HorzRelTo::Para
                 && table.common.vert_rel_to == VertRelTo::Para
-                && para_anchor_below_first_line))
+                && (para_anchor_below_text_line
+                    || ((hwpx_stored || is_continuation) && para_anchor_below_first_line))))
         && table.page_break == TablePageBreak::RowBreak
         && table.outer_margin_top > 0
         && ((!is_continuation && start_row == 0 && start_cut.is_empty())
@@ -516,14 +537,6 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
                             && !host.cell_format_vpos_dirty
                             && !host.line_segs.is_empty()
                     })))))
-}
-
-/// 위 행에서 시작한 병합 칸이 `row` 를 걸쳐 내려오는가 (`row` 가 그 칸의 첫 행이 아님).
-fn rowspan_straddles_row(table: &Table, row: usize) -> bool {
-    table.cells.iter().any(|cell| {
-        let top = cell.row as usize;
-        top < row && top + (cell.row_span as usize).max(1) > row
-    })
 }
 
 /// A paragraph-following front overlay still owns a physical RowBreak frame.
