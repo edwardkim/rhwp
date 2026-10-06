@@ -27,7 +27,12 @@ impl TypesetEngine {
         let row_count = input.prepared.row_count;
         let can_intra_split = input.prepared.can_intra_split;
         let layout_engine = &input.prepared.layout_engine;
-        let cut_row_h = &input.prepared.cut_row_heights;
+        let cut_row_h = input
+            .start
+            .relieved_cut_row_heights
+            .as_ref()
+            .unwrap_or(&input.prepared.cut_row_heights);
+        let straddle_row_relief = &input.start.straddle_row_relief;
         let caption_is_top = input.prepared.caption_is_top;
         let caption_overhead = input.prepared.caption_overhead;
         let queue_table_footnotes = input.prepared.queue_table_footnotes;
@@ -778,6 +783,7 @@ impl TypesetEngine {
                     row_cursor_is_nested,
                     end_row_height_override,
                     start_row_height_override,
+                    straddle_row_relief: straddle_row_relief.clone(),
                 });
                 // 마지막 fragment: spacing_after만 포함 (Paginator engine.rs:1051 동일)
                 // host line advance/positive offset은 원 anchor 조각의 계약이며,
@@ -916,6 +922,7 @@ impl TypesetEngine {
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
+            straddle_row_relief: straddle_row_relief.clone(),
         });
         // 저장 host 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // host·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).
@@ -1190,6 +1197,26 @@ impl TypesetEngine {
             }
             (tail > 0.5 && tail_band_continues).then_some(tail)
         }));
+        // [#7531] 행 경계에서 끝난 조각의 쪽 끝 빈 띠는 그 경계를 넘는 걸침 칸이 차지한다.
+        // 행 안에서 끊긴 조각도 남은 물리 공간은 같은 띠다(끝 행이 쪽을 채우면 0).
+        let page_end_band = if split_block_start.is_some() {
+            0.0
+        } else {
+            // 한/글은 쪽 끝 행 상자를 본문 바닥에서 표 바깥 아래 여백을 뺀 자리까지 늘린다.
+            let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+            (avail_for_rows + header_overhead - partial_height - outer_bottom).max(0.0)
+        };
+        continuation.straddle_page_bands =
+            crate::renderer::layout::LayoutEngine::straddle_page_bands_after_fragment(
+                row_geometry_table,
+                &continuation.straddle_page_bands,
+                if split_end_limit > 0.0 {
+                    end_row.saturating_sub(1)
+                } else {
+                    end_row
+                },
+                page_end_band,
+            );
         continuation.advance(end_row, split_block_start, next_cut, split_end_limit > 0.0);
         continuation.start_row_height_override = next_start_row_height_override;
         if let Some(((_, row, cut, height), _)) = stored_rowspan_frame {

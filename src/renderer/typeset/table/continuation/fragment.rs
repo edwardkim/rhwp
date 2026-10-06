@@ -26,6 +26,11 @@ struct FragmentStart {
     start_row_height_override: Option<f64>,
     start_cut: Vec<usize>,
     fragment_starts_intra_row: bool,
+    /// [#7531] 이 조각에서 쪽을 넘어온 걸침 칸의 끝 행 높이에서 덜 양 `(행, px)`.
+    straddle_row_relief: Vec<(usize, f64)>,
+    /// 덜기를 적용한 scan 용 행 높이. 덜기가 없으면 준비 상태의 값을 그대로 쓴다.
+    relieved_cut_row_heights: Option<Vec<f64>>,
+    relieved_whole_row_fit_heights: Option<Vec<f64>>,
 }
 
 #[derive(Clone, Copy)]
@@ -73,7 +78,42 @@ impl TypesetEngine {
     ) -> TableContinuationIteration {
         profile.iterations += 1;
         let start_cut = continuation.start_cut.clone();
+        let straddle_row_relief = if continuation.start_cut_is_block
+            || !continuation.start_cut.is_empty()
+            || continuation.start_row_height_override.is_some()
+        {
+            Vec::new()
+        } else {
+            prepared.layout_engine.straddle_page_band_relief(
+                source.row_geometry_table,
+                &source.measured_table.row_heights,
+                continuation.row,
+                &continuation.straddle_page_bands,
+                source.styles,
+            )
+        };
+        let relieve = |heights: &Vec<f64>| {
+            let mut heights = heights.clone();
+            for &(row, amount) in &straddle_row_relief {
+                if let Some(height) = heights.get_mut(row) {
+                    *height = (*height - amount).max(0.0);
+                }
+            }
+            heights
+        };
+        let (relieved_cut_row_heights, relieved_whole_row_fit_heights) =
+            if straddle_row_relief.is_empty() {
+                (None, None)
+            } else {
+                (
+                    Some(relieve(&prepared.cut_row_heights)),
+                    Some(relieve(&prepared.whole_row_fit_heights)),
+                )
+            };
         let start = FragmentStart {
+            straddle_row_relief,
+            relieved_cut_row_heights,
+            relieved_whole_row_fit_heights,
             cursor_row: continuation.row,
             is_continuation: continuation.is_continuation,
             start_cut_is_block: continuation.start_cut_is_block,

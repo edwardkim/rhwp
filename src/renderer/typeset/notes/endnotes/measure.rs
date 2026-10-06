@@ -111,6 +111,7 @@ impl TypesetEngine {
                         row_cursor_is_nested,
                         end_row_height_override,
                         start_row_height_override,
+                        straddle_row_relief,
                     } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
                         para_index: l + 1,
                         control_index: *control_index,
@@ -124,6 +125,7 @@ impl TypesetEngine {
                         row_cursor_is_nested: *row_cursor_is_nested,
                         end_row_height_override: *end_row_height_override,
                         start_row_height_override: *start_row_height_override,
+                        straddle_row_relief: straddle_row_relief.clone(),
                     }),
                     PageItem::Shape {
                         para_index,

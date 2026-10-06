@@ -39,6 +39,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// Actual physical space accepted for a source-owned full-width row.
     /// Content cuts do not encode the blank band used by vertical alignment.
     pub(in crate::renderer::typeset) stored_row_box_sum: Option<(usize, f64)>,
+    /// [#7531] 행 경계를 넘는 걸침 칸(칸 색인)마다 앞 조각들이 남긴 쪽 끝 빈 띠의 합(px).
+    /// 다음 조각의 scan 과 paint 가 같은 행 높이 덜기(`straddle_page_band_relief`)를 쓴다.
+    pub(in crate::renderer::typeset) straddle_page_bands: Vec<(usize, f64)>,
 }
 
 /// RowBreak 표 셀 각주가 HWP 저장 vpos reset에서 물리 page를 넘을 때의 tail 정보.
@@ -91,6 +94,7 @@ impl TableContinuationCursor {
         self.start_cut.clear();
         self.start_cut_is_block = false;
         self.start_row_height_override = None;
+        self.straddle_page_bands.clear();
         if emitted_fragment {
             self.fragments_emitted = self.fragments_emitted.saturating_add(1);
         }

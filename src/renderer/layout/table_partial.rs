@@ -3838,6 +3838,7 @@ impl LayoutEngine {
                                             false,
                                             None,
                                             None,
+                                            &[],
                                             0.0,
                                             0.0,
                                             None,
@@ -4249,6 +4250,7 @@ impl LayoutEngine {
         row_cursor_is_nested: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
+        straddle_row_relief: &[(usize, f64)],
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -4325,6 +4327,7 @@ impl LayoutEngine {
             row_cursor_is_nested,
             end_row_height_override,
             start_row_height_override,
+            straddle_row_relief,
             host_margin_left,
             host_margin_right,
             measured_table,
@@ -4363,6 +4366,7 @@ impl LayoutEngine {
         row_cursor_is_nested: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
+        straddle_row_relief: &[(usize, f64)],
         host_margin_left: f64,
         host_margin_right: f64,
         measured_table: Option<&MeasuredTable>,
@@ -5008,6 +5012,20 @@ impl LayoutEngine {
                         if let Some(last) = (bs..be_painted).next_back() {
                             row_heights[last] += target - cur;
                         }
+                    }
+                }
+            }
+
+            // [#7531] 쪽을 넘어온 걸침 칸의 끝 행은 앞 쪽 빈 띠만큼 덜어 낸다. 값은
+            // 조판 scan 이 같은 helper(`straddle_page_band_relief`)로 쟀던 그대로다.
+            // 끝 컷으로 잘린 행은 컷 높이가 이미 이 조각의 물리 높이다. 덜기는 온전한 행에만 쓴다
+            // (scan 도 잘린 행은 컷 내용 높이로 잰다).
+            for &(row, amount) in straddle_row_relief {
+                let cut_end_row = !end_cut.is_empty() && row + 1 == end_row;
+                let cut_start_row = !start_cut.is_empty() && row == start_row;
+                if (start_row..end_row).contains(&row) && !cut_end_row && !cut_start_row {
+                    if let Some(height) = row_heights.get_mut(row) {
+                        *height = (*height - amount).max(0.0);
                     }
                 }
             }

@@ -20438,6 +20438,125 @@ impl LayoutEngine {
             .reduce(f64::max)
     }
 
+    /// [#7531] 쪽을 넘은 걸침 칸이 앞 조각에서 차지한 쪽 끝 빈 띠만큼 이어받는 조각의
+    /// 걸침 끝 행 높이에서 덜어낼 양 `(행, px)`.
+    ///
+    /// 측정기는 걸침 칸의 부족분(칸 요구 − 걸친 행 합)을 걸침의 마지막 행에 몰아 둔다.
+    /// 칸이 쪽을 넘으면 한/글은 앞 쪽 마지막 행 상자를 본문 바닥까지 늘리고, 그 띠도 칸
+    /// 높이로 센다. 이어받는 조각의 끝 행은 남은 부족분만 받는다(1342000 구역 5 `pi=11`:
+    /// 칸 `(8,1)` rs=10 선언 636.1 ↔ 정본 147쪽 행 8~16 상자 580.7 + 148쪽 행 17 53.8,
+    /// rhwp 는 행 17 에 부족분 18.5 를 더해 72.9).
+    ///
+    /// `carried_bands` 는 칸 색인별로 앞 조각들이 행 경계에서 끝나며 남긴 띠의 합이다.
+    /// 이어받는 조각의 첫 행에서 끝나는 걸침 칸이 모두 앞 조각에서 시작했고 띠를 가진
+    /// 경우에만, 그 칸이 끝 행에 남긴 부족분 안에서 덜어낸다. 행의 `row_span==1` 칸
+    /// 선언·내용 높이 아래로는 줄이지 않는다. 조판 scan 과 `table_partial` 그리기가 같은
+    /// 값을 쓰도록 결과는 조각 항목에 실어 넘긴다.
+    pub(crate) fn straddle_page_band_relief(
+        &self,
+        table: &crate::model::table::Table,
+        row_heights: &[f64],
+        cursor_row: usize,
+        carried_bands: &[(usize, f64)],
+        styles: &ResolvedStyleSet,
+    ) -> Vec<(usize, f64)> {
+        if carried_bands.is_empty()
+            || !matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+        {
+            return Vec::new();
+        }
+        let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        let mut relief = Vec::new();
+        for row in cursor_row..row_heights.len() {
+            // 이 행에서 끝나는 걸침 칸마다 끝 행에 요구하는 높이를 다시 잰다. 앞 조각에서
+            // 시작한 칸은 앞 쪽 띠를 이미 차지했으므로 그만큼 덜 요구한다. 이 조각에서
+            // 시작한 칸은 종전 요구를 그대로 둔다.
+            let mut demand = 0.0f64;
+            let mut original = 0.0f64;
+            let mut any_crossing = false;
+            let mut any_ending = false;
+            for (index, cell) in table.cells.iter().enumerate() {
+                if cell.row_span <= 1 || cell.row as usize + cell.row_span as usize != row + 1 {
+                    continue;
+                }
+                any_ending = true;
+                let start = cell.row as usize;
+                let declared = if cell.height < 0x8000_0000 {
+                    hwpunit_to_px(cell.height as i32, self.dpi)
+                } else {
+                    0.0
+                };
+                let units = self.cell_units(cell, table, styles).len();
+                let required =
+                    declared.max(self.cell_cut_visible_height(cell, table, styles, 0, units));
+                let others: f64 = row_heights[start..row].iter().sum::<f64>()
+                    + cell_spacing * (row - start) as f64;
+                let band = if start < cursor_row {
+                    carried_bands
+                        .iter()
+                        .find(|(owner, _)| *owner == index)
+                        .map_or(0.0, |(_, height)| *height)
+                } else {
+                    0.0
+                };
+                any_crossing |= band > 0.5;
+                demand = demand.max(required - others - band);
+                original = original.max(required - others);
+            }
+            if !any_ending || !any_crossing {
+                continue;
+            }
+            let declared = table
+                .cells
+                .iter()
+                .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+                .filter(|cell| cell.height < 0x8000_0000)
+                .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                .fold(0.0, f64::max);
+            if declared <= 0.0 {
+                continue;
+            }
+            let natural = declared.max(self.row_complete_cut_content_height(table, row, styles));
+            // 덜 수 있는 양은 걸침 칸들이 이 행에 실제로 더한 몫 안이다. 행이 다른 이유로
+            // 커진 몫(측정 내용 등)은 덜지 않는다.
+            let amount = (row_heights[row].min(natural.max(original))) - natural.max(demand);
+            if amount > 0.5 {
+                relief.push((row, amount));
+            }
+        }
+        relief
+    }
+
+    /// [#7531] 행 경계에서 끝난 조각이 남긴 쪽 끝 빈 띠를, 그 경계를 넘는 걸침 칸마다
+    /// 누적한다. 경계를 다 지난 칸은 버린다. 행 안 분할로 끝난 조각은 띠를 더하지 않는다.
+    pub(crate) fn straddle_page_bands_after_fragment(
+        table: &crate::model::table::Table,
+        carried_bands: &[(usize, f64)],
+        next_row: usize,
+        band: f64,
+    ) -> Vec<(usize, f64)> {
+        table
+            .cells
+            .iter()
+            .enumerate()
+            .filter(|(_, cell)| {
+                cell.row_span > 1
+                    && (cell.row as usize) < next_row
+                    && next_row < cell.row as usize + cell.row_span as usize
+            })
+            .map(|(index, _)| {
+                let before = carried_bands
+                    .iter()
+                    .find(|(owner, _)| *owner == index)
+                    .map_or(0.0, |(_, height)| *height);
+                (index, before + band.max(0.0))
+            })
+            .collect()
+    }
+
     /// Reflow has no saved page frames to replace the declared row minimum.
     /// Only an ordinary row owns that minimum; spanning cells use their block ledger.
     pub(crate) fn row_uses_reflow_physical_frame(
