@@ -1,19 +1,19 @@
 key	input	reference_pdf	pages
-87520_____1	hwpdocs_10k_share/opinion_downloads/식품의약품안전처/87520_(규제영향분석서) 화장품법 시행규칙 일부개정령(안).hwpx	hwpdocs_10k_share/_oracle_pdf_2022/opinion_downloads/식품의약품안전처/87520_(규제영향분석서) 화장품법 시행규칙 일부개정령(안).hwpx.pdf	21
-36293327__2	hwpdocs_10k_share/samples/강남소방서 예방과/36293327_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36293327-2024.pdf	1
-36368692__3	hwpdocs_10k_share/samples/교통실 교통기획관 버스정책과/36368692_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36368692-2024.pdf	1
-36305262__4	hwpdocs_10k_share/samples/도시기반시설본부 시설국 건축부/36305262_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36305262-2024.pdf	1
-36293656__5	hwpdocs_10k_share/samples/마포소방서 현장대응단/36293656_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36293656-2024.pdf	1
-36496061__6	hwpdocs_10k_share/samples/복지실 복지기획관 장애인자립지원과/36496061_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36496061-2024.pdf	1
-36349632__7	hwpdocs_10k_share/samples/서부공원여가센터 공원운영과/36349632_결재문서본문.hwpx	hwpdocs_10k_share/_oracle_pdf_2022/samples/서부공원여가센터 공원운영과/36349632_결재문서본문.hwpx.pdf	2
-36345869__8	hwpdocs_10k_share/samples/서울시립대학교 교무처 교무과/36345869_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36345869-2024.pdf	3,4
-36323513__9	hwpdocs_10k_share/samples/서울아리수본부 동부수도사업소 시설관리과/36323513_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36323513-2024.pdf	1
-36417104__10	hwpdocs_10k_share/samples/여성가족실 영유아담당관/36417104_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36417104-2024.pdf	1
-36415413__11	hwpdocs_10k_share/samples/은평병원 간호부 41병동간호과/36415413_결재문서본문.hwpx	hwpdocs_10k_share/_oracle_pdf_2022/samples/은평병원 간호부 41병동간호과/36415413_결재문서본문.hwpx.pdf	3
-36424611__12	hwpdocs_10k_share/samples/은평병원 마약관리센터/36424611_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36424611-2024.pdf	1
-36353129__13	hwpdocs_10k_share/samples/인재개발원 인재기획과/36353129_결재문서본문.hwpx	hwpdocs_10k_share/_oracle_pdf_2022/samples/인재개발원 인재기획과/36353129_결재문서본문.hwpx.pdf	1
-36456809__14	hwpdocs_10k_share/samples/정원도시국 자연생태과/36456809_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36456809-2024.pdf	1
-36433929__15	hwpdocs_10k_share/samples/중부공원여가센터 조경지원과/36433929_결재문서본문.hwpx	hwpdocs_10k_share/_oracle_pdf_2022/samples/중부공원여가센터 조경지원과/36433929_결재문서본문.hwpx.pdf	2
-36457457__16	hwpdocs_10k_share/samples/소방재난본부 안전지원과/36457457_결재문서본문.hwpx	(MCP 2024, 비공개 보관) 36457457.pdf	all
+87520_____1	corpus:87520	corpus:87520	21
+36293327__2	corpus:36293327	(MCP 2024, 비공개 보관) 36293327-2024.pdf	1
+36368692__3	corpus:36368692	(MCP 2024, 비공개 보관) 36368692-2024.pdf	1
+36305262__4	corpus:36305262	(MCP 2024, 비공개 보관) 36305262-2024.pdf	1
+36293656__5	corpus:36293656	(MCP 2024, 비공개 보관) 36293656-2024.pdf	1
+36496061__6	corpus:36496061	(MCP 2024, 비공개 보관) 36496061-2024.pdf	1
+36349632__7	corpus:36349632	corpus:36349632	2
+36345869__8	corpus:36345869	(MCP 2024, 비공개 보관) 36345869-2024.pdf	3,4
+36323513__9	corpus:36323513	(MCP 2024, 비공개 보관) 36323513-2024.pdf	1
+36417104__10	corpus:36417104	(MCP 2024, 비공개 보관) 36417104-2024.pdf	1
+36415413__11	corpus:36415413	corpus:36415413	3
+36424611__12	corpus:36424611	(MCP 2024, 비공개 보관) 36424611-2024.pdf	1
+36353129__13	corpus:36353129	corpus:36353129	1
+36456809__14	corpus:36456809	(MCP 2024, 비공개 보관) 36456809-2024.pdf	1
+36433929__15	corpus:36433929	corpus:36433929	2
+36457457__16	corpus:36457457	(MCP 2024, 비공개 보관) 36457457.pdf	all
 36376848__17	samples/task2279/36376848_gyeoljae.hwpx	(MCP 2024, 비공개 보관) 36376848.pdf	1
 synthetic	samples/masked_stale_vpos/masked_stale_vpos.hwpx	pdf/masked_stale_vpos/masked_stale_vpos-2020.pdf	all
