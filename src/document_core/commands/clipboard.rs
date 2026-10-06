@@ -5,7 +5,6 @@ use super::super::helpers::{
     get_textbox_from_shape, logical_paragraph_length, logical_to_text_offset,
     utf16_pos_to_char_idx,
 };
-use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -168,9 +167,6 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
     // 구역 첫 문단을 0 부터 복사하면 secd/cold 의 선행 자리(16)가 char_offsets 에 남는다.
     para.release_leading_extended_control_slots(leading_defs);
     para.control_mask = recompute_clipboard_control_mask(para);
-    if !para.field_ranges.is_empty() {
-        rebuild_char_offsets(para);
-    }
 }
 
 /// `after_control` 이면 `text_offset` 자리에 놓인 개체 뒤를 가리킨다.
@@ -196,6 +192,49 @@ pub(super) fn text_to_split_logical_offset(
         .filter(|&&pos| pos < text_offset || (after_control && pos == text_offset))
         .count();
     text_offset + before_count
+}
+
+/// 글자 `end` 뒤에 있으면서 문단을 나눌 때 따라가지 않는 컨트롤(머리말·꼬리말·책갈피 따위)을
+/// 뺀다. 나누면 앞 문단 끝에 남아 선택 끝에 붙은 컨트롤처럼 복사된다.
+///
+/// 누름틀 시작은 범위로 고르고, 구역·단 정의는 문단 맨 앞이라 그대로 둔다. 뺀 컨트롤의
+/// 슬롯은 `end` 뒤 갭에 있어 이어지는 `end` 나누기가 함께 버린다.
+fn drop_fixed_controls_after(para: &mut Paragraph, end: usize) {
+    let positions = para.control_text_positions();
+    let dropped = |ci: usize, ctrl: &Control| {
+        positions.get(ci).is_some_and(|&pos| pos > end)
+            && !Paragraph::is_split_movable_control(ctrl)
+            && !matches!(
+                ctrl,
+                Control::Field(_) | Control::SectionDef(_) | Control::ColumnDef(_)
+            )
+    };
+    if !para
+        .controls
+        .iter()
+        .enumerate()
+        .any(|(ci, ctrl)| dropped(ci, ctrl))
+    {
+        return;
+    }
+    let old_controls = std::mem::take(&mut para.controls);
+    let old_records = std::mem::take(&mut para.ctrl_data_records);
+    let mut index_map = Vec::with_capacity(old_controls.len());
+    for (ci, ctrl) in old_controls.into_iter().enumerate() {
+        if dropped(ci, &ctrl) {
+            index_map.push(None);
+            continue;
+        }
+        index_map.push(Some(para.controls.len()));
+        para.ctrl_data_records
+            .push(old_records.get(ci).cloned().flatten());
+        para.controls.push(ctrl);
+    }
+    for range in &mut para.field_ranges {
+        if let Some(&Some(idx)) = index_map.get(range.control_idx) {
+            range.control_idx = idx;
+        }
+    }
 }
 
 pub(super) fn clip_paragraph_text_range_for_clipboard(
@@ -224,6 +263,7 @@ fn clip_paragraph_caret_range_for_clipboard(
     let end = end_char_offset.min(text_len).max(start);
 
     let mut clipped = source.clone();
+    drop_fixed_controls_after(&mut clipped, end);
     let end_logical = text_to_split_logical_offset(&clipped, end, end_after_control);
     // 문단 끝 개체까지 담는 끝이면 자를 것이 없다.
     if end_logical < text_to_split_logical_offset(&clipped, text_len, true) {
@@ -268,6 +308,7 @@ fn clip_paragraph_caret_range_for_clipboard(
     let mut index_map = vec![None; old_controls.len()];
     let mut new_controls = Vec::new();
     let mut new_records = Vec::new();
+    let mut kept_positions = Vec::new();
     for (old_idx, ctrl) in old_controls.into_iter().enumerate() {
         if !keep_control.get(old_idx).copied().unwrap_or(false) {
             continue;
@@ -275,6 +316,8 @@ fn clip_paragraph_caret_range_for_clipboard(
         index_map[old_idx] = Some(new_controls.len());
         new_records.push(old_records.get(old_idx).cloned().flatten());
         new_controls.push(ctrl);
+        let pos = control_positions.get(old_idx).copied().unwrap_or(text_len);
+        kept_positions.push(pos.saturating_sub(start));
     }
 
     let new_field_ranges: Vec<FieldRange> = old_ranges
@@ -295,8 +338,10 @@ fn clip_paragraph_caret_range_for_clipboard(
     suffix.ctrl_data_records = new_records;
     suffix.field_ranges = new_field_ranges;
     suffix.control_mask = recompute_clipboard_control_mask(&suffix);
+    // 남긴 컨트롤과 누름틀 표지를 원래 글자 자리 앞 갭에 둔다 — 나눈 문단의 갭에는 버린
+    // 컨트롤과 앞 문단에 남은 슬롯이 섞여 있다.
     if !suffix.field_ranges.is_empty() {
-        rebuild_char_offsets(&mut suffix);
+        suffix.rebuild_char_offsets(&kept_positions);
     }
     suffix
 }
@@ -827,15 +872,6 @@ impl DocumentCore {
         let merge_point =
             self.document.sections[section_idx].paragraphs[last_para_idx].merge_from(&right_half);
 
-        for i in para_idx..=last_para_idx {
-            if !self.document.sections[section_idx].paragraphs[i]
-                .field_ranges
-                .is_empty()
-            {
-                rebuild_char_offsets(&mut self.document.sections[section_idx].paragraphs[i]);
-            }
-        }
-
         // 5. 영향받는 모든 문단 리플로우
         for i in para_idx..=last_para_idx {
             self.reflow_paragraph(section_idx, i);
@@ -916,11 +952,6 @@ impl DocumentCore {
 
         let last_para_idx = insert_idx - 1;
         let merge_point = cell_paras[last_para_idx].merge_from(&right_half);
-        for para in &mut cell_paras[cell_para_idx..=last_para_idx] {
-            if !para.field_ranges.is_empty() {
-                rebuild_char_offsets(para);
-            }
-        }
         Ok((last_para_idx, merge_point))
     }
 
