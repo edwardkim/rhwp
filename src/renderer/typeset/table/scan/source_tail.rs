@@ -72,8 +72,21 @@ impl SourceTailQuery<'_> {
             && !(terminal_response_before_empty_spacer
                 && !ordinary_cut_ends_at_plain_text_saved_reset);
 
+        // 일반 컷이 저장 쪽 되감김(다음 줄이 새 쪽 vpos 0)에서 끝났으면 그 자리가 원본
+        // 프레임의 끝이다. 꼬리 확장이 되감김을 넘어 다음 프레임 내용을 이 쪽에 당겨 오면
+        // 한/글이 다음 쪽에 둔 문단이 앞 쪽에 실린다(2025 행정업무운영 편람 hwp 291쪽 표
+        // 칸 (4,2): 문단 2 는 저장 vpos 0 의 새 쪽 첫 문단, 정본도 292쪽 머리).
+        let ordinary_cut_ends_at_stored_page_reset = res.consumed_height > 0.5
+            && layout_engine.row_cut_ends_at_stored_page_reset(
+                table,
+                r,
+                row_start_cut,
+                &res.end_cut,
+                styles,
+            );
         let enabled = (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !table.common.treat_as_char
+            && !ordinary_cut_ends_at_stored_page_reset
             && source_frame_tail_contract;
         SourceTailGate {
             enabled,

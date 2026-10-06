@@ -332,7 +332,34 @@ impl TypesetEngine {
                     });
                 if let Some(frame_height) = first_frame {
                     let last_row = end_row.saturating_sub(1);
-                    if frame_height > partial_height + 0.5
+                    // 저장 프레임이 컷 상자보다 큰 몫은 컷이 뺀 되감김 앞 줄간격 안이어야 한다.
+                    // 그보다 크면 프레임은 이 컷 하나의 상자가 아니다(hwpctl 문단 176: 차 2.6 ≤
+                    // 줄간격, 편람 부록 행 5: 차 4.6 ≤ 6.3).
+                    let reset_trim = layout_engine.row_cut_stored_reset_trim(
+                        table,
+                        last_row,
+                        if last_row == cursor_row {
+                            start_cut.as_slice()
+                        } else {
+                            &[]
+                        },
+                        &split_end_cut,
+                        styles,
+                    );
+                    // 본문을 채우는 원본 프레임은 첫 조각 빈 밴드 경로가 상자와 이어받기를 함께
+                    // 소유한다(form-002 hwpx 7→8쪽: 이어받는 행 상자 = 저장 행 − 첫 프레임).
+                    let body_filling =
+                        crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                            input.source.paragraph,
+                            table,
+                            st.layout.body_area.height,
+                            self.dpi,
+                            st.profile.hwpx_stored_layout(),
+                            st.profile.session_edited(),
+                        );
+                    if !body_filling
+                        && frame_height > partial_height + 0.5
+                        && frame_height <= partial_height + reset_trim + 0.5
                         && frame_height <= avail_for_rows + 0.5
                         && layout_engine.row_cut_ends_at_stored_page_reset(
                             table,
@@ -461,7 +488,23 @@ impl TypesetEngine {
                         styles,
                     )))
             && saved_opening_frame.is_some_and(|frame_height| {
-                (frame_height > partial_height + 0.5
+                // 컷이 저장 되감김 앞 줄간격만 뺀 경우 그 차이는 빈 밴드가 아니다(issue1937
+                // 23쪽 행 2: 프레임 − 컷 = 뺀 간격, 정본 24쪽 이어받는 행은 남은 내용 111.1).
+                let reset_trim = end_row.checked_sub(1).map_or(0.0, |row| {
+                    layout_engine.row_cut_stored_reset_trim(
+                        table,
+                        row,
+                        if row == cursor_row {
+                            start_cut.as_slice()
+                        } else {
+                            &[]
+                        },
+                        &split_end_cut,
+                        styles,
+                    )
+                });
+                // 본문을 채우는 원본 프레임은 아래 두 번째 조건이 따로 소유한다.
+                (frame_height > partial_height + reset_trim + 0.5
                     || (body_filling_source_frame && frame_height >= partial_height)
                     || saved_block_opening_frame.is_some())
                     && frame_height <= avail_for_rows + header_overhead

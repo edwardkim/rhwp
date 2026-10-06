@@ -14583,6 +14583,36 @@ impl LayoutEngine {
     /// 정확히 맞물리는가. 한/글이 그 자리에서 쪽을 갈랐다는 저장 증거라, 쪽 끝에 남는 조각이
     /// 짧아도(첫 줄 하나) 그 조각을 지운다 — 21298295 별표5 행 13: 칸 첫 줄만 1쪽 끝에
     /// 남는다(정본 2020·2022 PDF 1쪽 989px).
+    /// 행 컷이 저장 쪽 되감김에서 끝날 때 앞 조각에서 뺀 되감김 앞 줄간격(칸별 최댓값).
+    pub(crate) fn row_cut_stored_reset_trim(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        start_cut: &[usize],
+        end_cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let order = Self::row_cut_cell_order(table, row);
+        order
+            .iter()
+            .enumerate()
+            .filter_map(|(index, &cell_index)| {
+                let cell = table.cells.get(cell_index)?;
+                if cell.row as usize != row {
+                    return None;
+                }
+                let units = self.cell_units(cell, table, styles);
+                let start = start_cut.get(index).copied().unwrap_or(0);
+                let end = *end_cut.get(index)?;
+                Some(
+                    self.stored_page_reset_cut_trailing_trim(
+                        table, cell, &units, start, end, styles,
+                    ),
+                )
+            })
+            .fold(0.0, f64::max)
+    }
+
     pub(crate) fn row_cut_ends_at_stored_page_reset(
         &self,
         table: &crate::model::table::Table,
