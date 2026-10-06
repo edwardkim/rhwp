@@ -2288,7 +2288,12 @@ impl Paragraph {
         let at = char_offset.min(len);
         let deleted = delete_count.min(len - at);
         let inserted = text.chars().count();
-        let positions = self.control_text_positions();
+        let mut positions = self.control_text_positions();
+        // 문단 끝 자동 번호는 갭 슬롯이 아니라 자리표 글자(마지막 글자)를 차지한다. 그 글자
+        // 자리로 두어야 끝에 친 글자가 번호 앞 갭으로 들어가지 않고, 다시 셀 때 빈 슬롯이 생기지 않는다.
+        if let Some(ci) = self.trailing_auto_number(&positions) {
+            positions[ci] = len - 1;
+        }
         let ranges = self.field_ranges.clone();
 
         // 넣기는 그 자리 갭의 슬롯 가운데 새 글자 앞에 남을 수(`left`)를 고른다.
