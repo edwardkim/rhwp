@@ -73,6 +73,8 @@ head repository를 사용하며 target repository로 바꾸지 않는다. 이후
 - 입력·기준 PDF·대응 페이지·영역:
 - 한컴 제품/빌드·저장 제품 판정·Print 출력 방법/설정·PDF 출처/해시 (MCP이면 engine·job 식별자):
 - TSV 실행 명령·source/build SHA·로컬 산출 경로: <!-- TSV·실행 로그·중간 JSON은 ignored output에 보존하고 Git에 커밋하지 않습니다. -->
+- **전체 검증 범위의 Native/fresh WASM TSV 원본 첨부 링크:** <!-- TSV를 묶은 ZIP을 PR 본문에 업로드하거나 동일 파일의 다운로드 링크를 넣습니다. 입력·출력 경로·검증 head를 명시하고, 요약 표·최저값·로컬 경로만으로 대신하지 않습니다. -->
+- **대표 페이지 이미지:** <!-- 변경 효과·주요 경계를 보여주는 대표 페이지에만 아래 표를 작성합니다. 전체 페이지의 PNG 생성·커밋·첨부는 필요하지 않습니다. 전체 검증 범위는 위 TSV로 제공합니다. -->
 
 <!-- 입력마다 Native/fresh WASM 두 행을 반복합니다. 대표 이미지의 점수와 검증 범위 전체의 최저값을 구분하세요.
 검증 source SHA·Native binary/fresh WASM 해시·인쇄 프로필·글꼴 공급과 실제 빌드 옵션도 위 환경 정보에 적습니다. -->
@@ -90,7 +92,7 @@ PR 생성·제출 갱신·검토 요청을 하지 않습니다. 시간 제약·�
 <!-- PR #7551의 Native/fresh WASM 증적 표처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
 https://github.com/edwardkim/rhwp/pull/7551
 같은 입력·쪽의 Native/fresh WASM review/standalone overlay 네 이미지를 한 표에서 바로 대조하게 합니다.
-파일 경로·긴 이미지 나열·서로 다른 쪽을 섞은 표로 대신하지 않습니다. 전쪽 overlay 합성은 요구하지 않습니다. -->
+대표 이미지 대신 파일 경로만 적거나 서로 다른 쪽을 섞은 표를 쓰지 않습니다. 전체 페이지 이미지 나열·전쪽 overlay 합성은 요구하지 않습니다. -->
 
 ### 입력명 · 기준 PDF pN ↔ rhwp pN
 

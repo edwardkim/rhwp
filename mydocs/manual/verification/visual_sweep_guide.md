@@ -604,6 +604,10 @@ renderer, layout, paint처럼 문서 비교 결과를 reviewer의 판단 근거�
 PNG를 PR 본문에서 바로 볼 수 있게 한다. review 문서·임시 output 경로·asset 파일명만 적어 두고
 reviewer가 저장소를 찾아 열게 하지 않는다.
 
+**제출물은 대표 페이지의 review/standalone overlay PNG와 검증 대상 전체 페이지의 Native/fresh WASM TSV다.**
+전체 페이지의 PNG 생성·커밋·본문 첨부는 요구하지 않는다. 변경 효과·주요 경계를 보여주는 대표 페이지만
+이미지로 첨부하고, 전체 범위의 결과는 TSV 원본과 요약으로 제공한다.
+
 1. 비교를 마친 최종 PR head에 대표 review와 standalone overlay PNG를 `mydocs/pr/assets/` 아래 안정
    경로로 commit한다. PR 번호를 아직 모르면 `issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다.
    PNG가 바뀌면 같은 경로를 써도 되지만, 반드시 새 head SHA로 URL을 바꾼다.
@@ -635,12 +639,15 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
    실제 빌드 명령·옵션·인쇄 프로필·글꼴 공급을 적는다. 입력/기준 Print PDF의 경로·해시·제품/빌드·출처도 연결한다.
 2. 전체 결과: 입력마다 Native/fresh WASM 두 행을 만들어 실제 검증 페이지 범위·전체 쪽수·최저값과 그 쪽,
    90% 미만/누락/측정 불가 쪽·gate를 적는다. 여러 문서의 최저값을 하나로 합쳐 개별 실패를 가리지 않는다.
-   수정 전 비교를 실행했다면 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
+   검증 대상 전체 페이지의 Native/fresh WASM TSV 원본을 ZIP으로 묶어 PR 본문에 업로드하거나
+   검토자가 내려받을 수 있는 동일 파일의 링크를 첨부한다. 첨부 파일의 입력·출력 경로·검증 head를 명시한다.
+   요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않는다. TSV는 ignored output에
+   보존하고 Git에 커밋하지 않는다. 수정 전 비교를 실행했다면 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
 3. 대표 직접 증적: `### 입력명 · 기준 PDF pN ↔ rhwp pN` 아래 한 표로 같은 쪽의 두 출력 경로와
-   review/standalone overlay를 대조한다. 다른 입력·쪽은 소제목/표/판독 묶음을 반복한다.
+   review/standalone overlay를 대조한다. 첨부할 대표 입력·쪽이 여러 개일 때만 소제목/표/판독 묶음을 반복한다.
    이미지 설명에는 입력명·쪽·출력 경로를 넣고, 해당 쪽 수치·실제로 확인한 경계·남은 차이를 바로 아래에 적는다.
 
-대표 이미지 수와 전체 TSV의 검증 페이지 수는 구분한다. 전쪽 overlay 합성을 기본 요구로 삼지 않으며,
+대표 이미지 수와 전체 TSV의 검증 페이지 수는 구분한다. 전체 페이지 PNG 첨부·전쪽 overlay 합성을 요구하지 않으며,
 대표 정상 쪽만으로 검증 범위의 미달·미검증 쪽을 승인하지 않는다. 시간 제약·기존 차이·부분 개선·추후
 검증 등의 사유 기재는 PR 제출 허가가 아니다. 미달·미검증 상태는 로컬에서 수정·재실행하고,
 통과한 뒤 PR을 생성·제출 갱신한다. 이미 열린 PR도 그 전에는 승인·통합하지 않는다.
@@ -660,6 +667,8 @@ reviewer가 저장소를 찾아 열게 하지 않는다.
 - PR head repository/SHA: `<head-owner>/<head-repo>` / `<head-sha>`
 - 검증 source·빌드/글꼴 환경·입력/Print PDF 해시: <실제 실행 기록>
 - Native/fresh WASM TSV 명령과 ignored output 경로: <실제 실행 기록>
+- 전체 검증 범위 TSV 원본: [Native/fresh WASM TSV ZIP](TSV_ATTACHMENT_URL) — <입력·출력 경로·검증 head>
+- 아래 이미지는 대표 페이지에만 첨부한다. 전체 페이지 이미지는 필요하지 않다.
 
 | 입력·기준 Print PDF | 경로 | 검증 범위/전체 쪽수 | 최저 일치율·쪽 | 90% 미만/누락/측정 불가 쪽 | 판정 |
 | --- | --- | --- | --- | --- | --- |
