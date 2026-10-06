@@ -1,0 +1,18 @@
+# 영향 문서 175건의 전체 쪽수. rhwp 쪽수는 수정 전/후 info --json pageCount. 다른 행만 싣는다(나머지 159건 일치).
+source	pdf	pdf_pages	rhwp_base	rhwp_fix
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	64	65	65
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	64	65	65
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	64	65	65
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hwpx-02-2022.pdf	5	9	9
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	12	13	13
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	50	51	51
+samples/issue1891_external_bindata_link.hwpx	pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf	70	74	74
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	21	20	20
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	31	32	32
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	20	40	40
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	74	75	75
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	48	47	47
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	383	381	381
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	204	202	202
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	415	413	413
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	315	314	314

@@ -1,0 +1,1569 @@
+# #7092 영향 쪽(수정 전/후 SVG 가 다른 쪽) 2px 관용 실루엣 일치율(%). 96dpi, --silhouette-only.
+# base=devel 48ff4bb93 Native, fix=이 PR Native, wasm=이 PR fresh WASM. NA=PDF 쪽 범위 밖이라 측정 불가(쪽수 불일치 문서).
+source	pdf	page	base_native	fix_native	fix_wasm	delta_native
+samples/143E433F503322BD33.hwp	pdf/143E433F503322BD33-hwp-2020.pdf	1	88.8024	88.8024	88.8024	0.0
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	5	99.93109	99.93109	99.93109	0.0
+samples/20250130-hongbo.hwp	pdf/20250130-hongbo-2022.pdf	1	99.42733	99.42733	99.42733	0.0
+samples/20250130-hongbo.hwp	pdf/20250130-hongbo-2022.pdf	2	99.49241	99.49241	99.49241	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	3	95.62541	95.62504	95.62504	-0.0004
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	4	98.41811	98.33246	98.33246	-0.0857
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	5	98.10936	98.11259	98.11259	0.0032
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	6	92.96706	92.98399	92.98399	0.0169
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	7	92.20239	92.20239	92.20239	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	8	95.36739	95.37073	95.37073	0.0033
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	9	99.12154	99.06982	99.06982	-0.0517
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	10	99.14929	99.13783	99.13783	-0.0115
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	11	98.45969	98.36954	98.36954	-0.0901
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	12	97.89775	97.89775	97.89775	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	13	95.78148	95.77958	95.77958	-0.0019
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	14	98.29112	98.2928	98.2928	0.0017
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	15	95.38751	95.38751	95.38751	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	17	99.57336	99.57365	99.57365	0.0003
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	19	94.94512	94.94657	94.94657	0.0014
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	20	92.75171	92.75171	92.75171	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	21	96.15426	96.13292	96.13292	-0.0213
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	23	90.93476	90.93476	90.93476	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	24	90.00296	89.98268	89.98268	-0.0203
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	25	98.6364	98.63533	98.63533	-0.0011
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	26	89.74762	89.7511	89.7511	0.0035
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	29	96.70633	96.70633	96.70633	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	30	96.5274	96.38464	96.31303	-0.1428
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	31	77.00604	77.00604	77.00604	0.0
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-2022.pdf	32	85.84803	85.84803	85.84803	0.0
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	1	61.51607	61.53951	61.53951	0.0234
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	2	98.74944	98.7586	98.7586	0.0092
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	3	99.41407	99.41299	99.41299	-0.0011
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	4	99.21741	99.21062	99.21062	-0.0068
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	7	99.18362	99.18111	99.18111	-0.0025
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	8	97.12141	97.12243	97.12243	0.001
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	9	98.04678	98.04695	98.04695	0.0002
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	11	99.14594	99.1437	99.1437	-0.0022
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	12	94.64629	94.64963	94.64963	0.0033
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	13	99.19084	99.1875	99.1875	-0.0033
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	14	98.21316	98.21341	98.21341	0.0002
+samples/21_언어_기출_편집가능본.hwp	pdf/21_언어_기출_편집가능본-2022.pdf	15	96.68973	96.69065	96.69065	0.0009
+samples/3-09월_교육_통합_2024-구분선아래20.hwp	pdf/3-09월_교육_통합_2024-구분선아래20-2024.pdf	16	87.96611	87.9136	87.9136	-0.0525
+samples/3-09월_교육_통합_2024-미주사이20.hwp	pdf/3-09월_교육_통합_2024-미주사이20-2024.pdf	16	56.31159	56.32226	56.32226	0.0107
+samples/KTX.hwp	pdf/KTX-2022.pdf	4	99.38991	99.39369	99.39369	0.0038
+samples/KTX.hwp	pdf/KTX-2022.pdf	9	97.80898	97.80951	97.80951	0.0005
+samples/KTX.hwp	pdf/KTX-2022.pdf	10	94.18009	94.18009	94.18009	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	11	99.31949	99.31949	99.31949	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	12	95.96315	95.96315	95.96315	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	13	96.01599	96.01599	96.01599	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	14	99.65039	99.64985	99.64985	-0.0005
+samples/KTX.hwp	pdf/KTX-2022.pdf	15	98.52943	98.52951	98.52951	0.0001
+samples/KTX.hwp	pdf/KTX-2022.pdf	18	99.57527	99.57527	99.57527	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	21	98.06941	98.06941	98.06941	0.0
+samples/KTX.hwp	pdf/KTX-2022.pdf	22	98.36484	98.37174	98.37174	0.0069
+samples/KTX.hwp	pdf/KTX-2022.pdf	25	94.4294	94.4294	94.4294	0.0
+samples/3-09월_교육_통합_2022.hwp	pdf/3-09월_교육_통합_2022.pdf	16	94.74572	94.69284	94.69284	-0.0529
+samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp	pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf	16	86.39792	86.34082	86.34082	-0.0571
+samples/basic/request.hwp	pdf/basic/request-2022.pdf	1	93.15572	93.15572	93.15572	0.0
+samples/el-school-001.hwp	pdf/hwpx/el-school-001.pdf	1	92.1398	92.1398	92.1398	0.0
+samples/basic/NewYear_s_Day.hwp	pdf/basic/NewYear_s_Day-2022.pdf	2	98.56956	98.56956	98.56956	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	1	94.9364	94.9364	94.9364	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	4	99.02306	99.02306	99.02306	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	7	60.47332	60.47332	60.47332	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	11	49.56041	49.56041	49.56041	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	16	95.69032	95.69032	95.69032	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	18	97.72529	97.72529	97.72529	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	21	63.3112	63.3112	63.3112	0.0
+samples/HWP5-nopassword-123456.hwp	pdf/HWP5-nopassword-123456-hwpx-2024.pdf	24	74.27985	74.27985	74.27985	0.0
+samples/basic/treatise sample.hwp	pdf/basic/treatise sample-2022.pdf	3	98.17859	98.177	98.177	-0.0016
+samples/hwp-img-001.hwp	pdf/hwp-img-001-2022.pdf	1	96.0392	96.03421	96.03421	-0.005
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	1	97.63829	97.63829	97.63829	0.0
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	2	98.87387	98.87387	98.87387	0.0
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	6	98.93275	98.93275	98.93275	0.0
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-2022.pdf	5	99.6151	99.6151	99.6151	0.0
+samples/exam_social.hwp	pdf/exam_social-2022.pdf	3	40.31575	40.31468	40.31468	-0.0011
+samples/exam_social.hwp	pdf/exam_social-2022.pdf	4	38.7764	38.77609	38.77609	-0.0003
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	5	99.70586	99.70586	99.70586	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	7	99.5623	99.5623	99.5623	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	8	99.49697	99.49697	99.49697	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	10	89.92994	89.92994	89.92994	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	18	97.83658	97.83658	97.83658	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	19	99.41101	99.41101	99.41101	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	20	99.35133	99.35133	99.35161	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	21	76.63818	76.63818	76.63818	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	27	84.28948	84.38443	84.38443	0.0949
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	32	99.77459	99.77459	99.77459	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	33	97.71019	97.71019	97.71019	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	35	99.75046	99.75046	99.75046	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	42	99.47264	99.47264	99.47264	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	43	96.95952	96.95952	96.95952	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	51	96.9544	96.9544	96.9544	0.0
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	59	98.87164	98.87164	98.87164	0.0
+samples/hwp3-sample14-hwp5.hwp	pdf/hwp3-sample14-hwp5-2022.pdf	2	97.95009	97.95009	97.95009	0.0
+samples/hwp3-sample14-hwp5.hwp	pdf/hwp3-sample14-hwp5-2022.pdf	4	99.20696	99.20696	99.20696	0.0
+samples/hwp3-sample14-hwp5.hwp	pdf/hwp3-sample14-hwp5-2022.pdf	8	99.22889	99.22889	99.22889	0.0
+samples/hwp3-sample14-hwp5.hwp	pdf/hwp3-sample14-hwp5-2022.pdf	9	99.27049	99.27049	99.27049	0.0
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	1	93.38856	93.38856	93.38856	0.0
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	2	97.52907	97.52907	97.52907	0.0
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	9	98.63066	98.62994	98.62994	-0.0007
+samples/hwp3-sample-hwp5.hwp	pdf/hwp3-sample-hwp5-2022.pdf	4	98.09889	98.09889	98.09889	0.0
+samples/hwp3-sample-hwp5.hwp	pdf/hwp3-sample-hwp5-2022.pdf	10	98.88234	98.88234	98.88234	0.0
+samples/hwp3-sample-hwp5.hwp	pdf/hwp3-sample-hwp5-2022.pdf	14	98.43756	98.43756	98.43756	0.0
+samples/hwp3-sample-hwp5.hwp	pdf/hwp3-sample-hwp5-2022.pdf	15	97.66338	97.66338	97.66338	0.0
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	7	87.29926	87.3119	87.3119	0.0126
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	14	78.46351	78.48926	78.48926	0.0258
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	15	87.48044	87.48949	87.48949	0.0091
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	17	82.10666	82.10552	82.10552	-0.0011
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	19	82.487	82.50662	82.50662	0.0196
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	20	82.33703	82.37692	82.37692	0.0399
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	22	83.4368	83.44679	83.44679	0.01
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	23	88.61903	88.62592	88.62592	0.0069
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	26	78.58782	78.58782	78.58782	0.0
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	27	86.13822	86.13843	86.13843	0.0002
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	28	85.48162	85.48629	85.48629	0.0047
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	29	86.30619	86.31027	86.31027	0.0041
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	30	93.11439	93.11454	93.11454	0.0002
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	31	88.76798	88.77318	88.77318	0.0052
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	32	80.47444	80.48896	80.48896	0.0145
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	33	87.1599	87.1678	87.1678	0.0079
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	34	88.00026	88.03297	88.03297	0.0327
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	36	91.5703	91.58087	91.58087	0.0106
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	38	83.15075	83.15593	83.15593	0.0052
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	39	85.76955	85.77493	85.77493	0.0054
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	40	80.75072	80.75853	80.75853	0.0078
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	41	86.69023	86.69337	86.69337	0.0031
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	42	71.62141	71.62141	71.62141	0.0
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	43	76.91156	76.91156	76.91156	0.0
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	44	62.6466	62.64442	62.64442	-0.0022
+samples/SO-SUEOP.hwp	pdf/SO-SUEOP-2024.pdf	45	67.10905	67.10618	67.10618	-0.0029
+samples/hwp3-sample14.hwp	pdf/hwp3-sample14-hwp-2020.pdf	2	75.28751	75.28751	75.28751	0.0
+samples/hwp3-sample14.hwp	pdf/hwp3-sample14-hwp-2020.pdf	4	69.50742	69.50742	69.50742	0.0
+samples/hwp3-sample14.hwp	pdf/hwp3-sample14-hwp-2020.pdf	8	95.47504	95.47504	95.47504	0.0
+samples/hwp3-sample14.hwp	pdf/hwp3-sample14-hwp-2020.pdf	9	55.15105	55.15105	55.15105	0.0
+samples/hwp3-sample.hwp	pdf/hwp3-sample-2022.pdf	4	93.50578	93.50578	93.50578	0.0
+samples/hwp3-sample.hwp	pdf/hwp3-sample-2022.pdf	10	92.5052	92.5052	92.5052	0.0
+samples/hwp3-sample.hwp	pdf/hwp3-sample-2022.pdf	14	94.19468	94.19468	94.19468	0.0
+samples/hwp3-sample.hwp	pdf/hwp3-sample-2022.pdf	15	92.63901	92.63901	92.63901	0.0
+samples/hwp3-sample-hwpx.hwpx	pdf/hwp3-sample-hwpx-2022.pdf	4	98.09889	98.09889	98.09889	0.0
+samples/hwp3-sample-hwpx.hwpx	pdf/hwp3-sample-hwpx-2022.pdf	10	98.88234	98.88234	98.88234	0.0
+samples/hwp3-sample-hwpx.hwpx	pdf/hwp3-sample-hwpx-2022.pdf	14	98.43756	98.43756	98.43756	0.0
+samples/hwp3-sample-hwpx.hwpx	pdf/hwp3-sample-hwpx-2022.pdf	15	97.66338	97.66338	97.66338	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	4	96.8516	96.8516	96.8516	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	5	97.3055	97.3055	97.3055	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	6	94.03783	94.03783	94.03783	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	7	92.91497	92.91497	92.91497	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	9	97.5894	97.5894	97.5894	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	10	95.6369	95.6369	95.6369	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	16	93.18908	93.18908	93.18908	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	17	99.42299	99.42299	99.42299	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	18	97.0661	97.0661	97.0661	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	21	97.39961	97.39961	97.39961	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	23	97.07269	97.07269	97.07269	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	24	93.58906	93.58906	93.58906	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	27	92.21385	92.21385	92.21385	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	30	90.10541	90.10541	90.10541	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	31	92.83116	92.83116	92.83116	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	40	97.73694	97.73694	97.73694	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	41	90.86289	90.86289	90.86289	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	42	88.62341	88.62341	88.62341	0.0
+samples/[2027] 온새미로 1 본교재.hwp	pdf/[2027] 온새미로 1 본교재-2024.pdf	43	91.91002	91.91002	91.91002	0.0
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	1	97.64135	97.20137	97.20137	-0.44
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	2	96.41963	96.0075	96.01981	-0.4121
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	3	96.96209	96.94581	96.94514	-0.0163
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	4	96.09194	96.09388	96.13015	0.0019
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	5	97.62808	97.64141	97.57445	0.0133
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	6	97.18185	97.18927	97.17688	0.0074
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	7	96.67592	96.68254	96.6059	0.0066
+samples/exam_eng.hwp	pdf/exam_eng-2022.pdf	8	97.45008	97.4758	97.36311	0.0257
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-2022.pdf	4	100.0	100.0	100.0	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	53	99.94705	99.94705	99.94705	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	54	99.9963	99.9963	99.9963	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	64	99.96812	99.96812	99.96812	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	65	99.97457	99.97457	99.97457	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	66	99.62301	99.62301	99.62301	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	67	99.88997	99.88997	99.88997	0.0
+samples/aift.hwp	pdf/aift-2022.pdf	73	99.3408	99.3408	99.3408	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	1	95.09717	95.09717	95.09717	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	2	99.8561	99.8561	99.8561	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	5	74.52449	74.52449	74.52449	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	8	75.77855	75.77855	75.77855	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	11	75.21046	75.21046	75.21046	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	19	72.98472	72.98472	72.98472	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	24	73.8528	73.8528	73.8528	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	51	74.55433	74.55433	74.55433	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	56	73.68163	73.68163	73.68163	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	58	73.70153	73.70153	73.70153	0.0
+samples/basic/sungeo.hwp	pdf/basic/sungeo-2022.pdf	74	73.56656	73.56656	73.56656	0.0
+samples/hwpx/20260909-para-table.hwpx	pdf/hwpx/20260909-para-table-2024.pdf	1	98.86447	98.86447	98.86447	0.0
+samples/hwpx/20260909-para-table.hwpx	pdf/hwpx/20260909-para-table-2024.pdf	2	99.25787	99.25787	99.25787	0.0
+samples/hwpx/20260909-para-table.hwpx	pdf/hwpx/20260909-para-table-2024.pdf	3	99.74479	99.74479	99.74479	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	4	99.45856	99.45856	99.45856	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	13	79.56899	79.56899	79.56899	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	14	75.79631	75.79631	75.79631	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	19	94.79481	94.79464	94.79464	-0.0002
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	20	64.03139	64.03139	64.03139	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	29	93.83579	93.83579	93.83579	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	30	47.85776	47.85776	47.85776	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	35	96.92819	96.92819	96.92819	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	43	80.48005	80.48005	80.48005	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	44	83.22325	83.22325	83.22325	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	49	95.8575	95.8575	95.8575	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	57	68.68116	68.68116	68.68116	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	62	99.65863	99.65863	99.65863	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	70	80.5434	80.5434	80.5434	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	75	94.51515	94.51507	94.51507	-0.0001
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	76	62.95443	62.95344	62.95344	-0.001
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	77	55.91526	55.91526	55.91526	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	85	86.74576	86.74576	86.74576	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	91	96.44914	96.44914	96.44914	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	99	93.07417	93.07417	93.07417	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	108	94.28794	94.28794	94.28794	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	109	57.63668	57.63668	57.63668	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	117	99.26579	99.26579	99.26579	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	118	99.98098	99.98098	99.98098	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	124	90.22756	90.22756	90.22756	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	125	74.37097	74.37023	74.37023	-0.0007
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	133	61.54	61.54	61.54	0.0
+samples/80168_regulatory_analysis.hwp	pdf/80168_regulatory_analysis-2022.pdf	134	48.61381	48.61381	48.61381	0.0
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	4	44.70719	44.71069	44.71069	0.0035
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	5	36.52304	36.52048	36.52048	-0.0026
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	6	51.98479	51.98581	51.98581	0.001
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	7	24.12064	24.11772	24.11772	-0.0029
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	8	46.45941	46.4577	46.4577	-0.0017
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	9	34.29381	34.3126	34.3126	0.0188
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	10	28.25135	28.23548	28.23548	-0.0159
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	19	61.57174	61.57121	61.57121	-0.0005
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	25	30.79062	30.79207	30.79207	0.0014
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	26	39.27361	39.27495	39.27495	0.0013
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	29	37.33666	37.33613	37.33613	-0.0005
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	38	30.13412	30.12633	30.12633	-0.0078
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	44	35.56966	35.57488	35.57488	0.0052
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	46	35.00525	35.00764	35.00764	0.0024
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	49	35.56106	35.56078	35.56078	-0.0003
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	50	43.64577	43.64565	43.64565	-0.0001
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	53	28.02754	28.02754	28.02754	0.0
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	54	15.23919	15.24002	15.24002	0.0008
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	55	24.85832	24.86018	24.86018	0.0019
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	58	28.15287	28.15287	28.15287	0.0
+samples/hwp3-sample16-hwp5.hwp	pdf/hwp3-sample16-hwp5-2020.pdf	60	25.72205	25.72175	25.72175	-0.0003
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	4	26.05674	26.05828	26.05828	0.0015
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	5	36.36427	36.36332	36.36332	-0.0009
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	6	35.58585	35.58648	35.58648	0.0006
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	7	22.45018	22.44425	22.44425	-0.0059
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	8	45.62489	45.62352	45.62352	-0.0014
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	9	33.3572	33.38071	33.38071	0.0235
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	10	29.33661	29.31998	29.31998	-0.0166
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	19	61.72124	61.71831	61.71831	-0.0029
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	25	29.57508	29.57448	29.57448	-0.0006
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	26	38.53928	38.54059	38.54059	0.0013
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	29	36.41363	36.4131	36.4131	-0.0005
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	38	30.02361	30.01593	30.01593	-0.0077
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	44	34.60512	34.61226	34.61226	0.0071
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	46	34.56988	34.57254	34.57254	0.0027
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	49	35.73879	35.73851	35.73851	-0.0003
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	50	43.11197	43.11202	43.11202	0.0001
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	53	27.51784	27.51784	27.51784	0.0
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	54	14.51571	14.51458	14.51458	-0.0011
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	55	25.89816	25.90005	25.90005	0.0019
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	58	25.61377	25.61377	25.61377	0.0
+samples/hwp3-sample16-hwp5-2022.hwp	pdf/hwp3-sample16-hwp5-2022.pdf	60	25.35758	25.35728	25.35728	-0.0003
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	4	44.70719	44.71069	44.71069	0.0035
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	5	36.52304	36.52048	36.52048	-0.0026
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	6	51.98479	51.98581	51.98581	0.001
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	7	24.12064	24.11772	24.11772	-0.0029
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	8	46.45941	46.4577	46.4577	-0.0017
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	9	34.29381	34.3126	34.3126	0.0188
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	10	28.25135	28.23548	28.23548	-0.0159
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	19	61.57174	61.57121	61.57121	-0.0005
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	25	30.79062	30.79207	30.79207	0.0014
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	26	39.27361	39.27495	39.27495	0.0013
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	29	37.33666	37.33613	37.33613	-0.0005
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	38	30.13412	30.12633	30.12633	-0.0078
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	44	35.56966	35.57488	35.57488	0.0052
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	46	35.00525	35.00764	35.00764	0.0024
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	49	35.56106	35.56078	35.56078	-0.0003
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	50	43.64577	43.64565	43.64565	-0.0001
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	53	28.02754	28.02754	28.02754	0.0
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	54	15.23919	15.24002	15.24002	0.0008
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	55	24.85832	24.86018	24.86018	0.0019
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	58	28.15287	28.15287	28.15287	0.0
+samples/hwp3-sample16-hwp5-2010.hwp	pdf/hwp3-sample16-hwp5-2010-2020.pdf	60	25.72205	25.72175	25.72175	-0.0003
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-2022.pdf	1	88.79735	88.79735	88.79735	0.0
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-2022.pdf	2	99.2609	99.2609	99.2609	0.0
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-2022.pdf	9	98.63458	98.63387	98.63387	-0.0007
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-2022.pdf	1	92.27087	92.27087	92.27087	0.0
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-2022.pdf	2	97.89928	97.89928	97.89928	0.0
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-2022.pdf	9	98.63384	98.63313	98.63313	-0.0007
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-2022.pdf	1	96.90555	96.90555	96.90555	0.0
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-2022.pdf	2	99.68608	99.68608	99.68608	0.0
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-2022.pdf	9	98.25428	98.24939	98.24939	-0.0049
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	4	40.88953	40.89195	40.89195	0.0024
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	5	32.36709	32.36499	32.36499	-0.0021
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	6	47.30681	47.31131	47.31131	0.0045
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	7	21.70671	21.7044	21.7044	-0.0023
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	8	58.88925	58.88441	58.88441	-0.0048
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	9	39.28088	39.293	39.293	0.0121
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	10	27.02479	27.02059	27.02059	-0.0042
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	19	62.64119	62.64312	62.64312	0.0019
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	24	51.52072	51.52031	51.52031	-0.0004
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	25	58.56586	58.57047	58.57047	0.0046
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	28	58.77349	58.77269	58.77269	-0.0008
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	37	54.44764	54.4563	54.4563	0.0087
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	43	77.33143	77.33242	77.33242	0.001
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	45	78.27099	78.27108	78.27108	0.0001
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	48	54.59976	54.59994	54.59994	0.0002
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	49	56.34452	56.34494	56.34494	0.0004
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	52	65.0676	65.0676	65.0676	0.0
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	53	53.87328	53.86842	53.86842	-0.0049
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	54	68.03245	68.03347	68.03347	0.001
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	57	63.27464	63.27403	63.27403	-0.0006
+samples/hwp3-sample16.hwp	pdf/hwp3-sample16-2020.pdf	59	87.51362	87.51253	87.51253	-0.0011
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	1	98.71632	98.73013	98.73013	0.0138
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	3	97.37765	97.44249	97.44249	0.0648
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	5	98.68857	98.6886	98.6886	0.0
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	6	98.38577	98.44675	98.44675	0.061
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	7	98.93276	98.9337	98.9337	0.0009
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	8	96.86448	96.8657	96.8657	0.0012
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	9	97.48731	97.50574	97.50574	0.0184
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	11	97.79595	97.81694	97.81694	0.021
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	12	98.04812	98.25456	98.25456	0.2064
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	13	97.83772	97.84185	97.84185	0.0041
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	14	96.23249	96.2326	96.2326	0.0001
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	15	98.17975	98.17986	98.17986	0.0001
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	16	98.1839	98.18573	98.18573	0.0018
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	17	90.1127	90.38112	90.38112	0.2684
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	18	97.14369	97.1919	97.1919	0.0482
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	19	97.82857	98.02919	98.02919	0.2006
+samples/exam_kor.hwp	pdf/exam_kor-2022.pdf	20	98.62113	98.62138	98.62138	0.0003
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-2022.pdf	1	94.59296	94.59296	94.59296	0.0
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-2022.pdf	2	99.12454	99.12454	99.12454	0.0
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-2022.pdf	9	98.00339	97.9978	97.9978	-0.0056
+samples/hwpx/hancom-hwp/hy-001.hwp	pdf/hwpx/hy-001.pdf	1	99.81418	99.80944	99.80944	-0.0047
+samples/hwpx/hancom-hwp/hy-001.hwp	pdf/hwpx/hy-001.pdf	2	84.87035	84.86823	84.86823	-0.0021
+samples/hwpx/hancom-hwp/issue_157.hwp	pdf/hwpx/issue_157-2022.pdf	2	72.88903	72.88903	72.88903	0.0
+samples/hwpx/hancom-hwp/hy-002.hwp	pdf/hwpx/hy-002.pdf	1	97.82401	97.82419	97.82419	0.0002
+samples/hwpx/hancom-hwp/hy-002.hwp	pdf/hwpx/hy-002.pdf	2	99.49912	99.49912	99.49912	0.0
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	4	44.70719	44.71069	44.71069	0.0035
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	5	36.52304	36.52048	36.52048	-0.0026
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	6	34.19815	34.19876	34.19876	0.0006
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	7	24.12064	24.11772	24.11772	-0.0029
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	8	46.45941	46.4577	46.4577	-0.0017
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	9	34.29381	34.3126	34.3126	0.0188
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	10	28.25135	28.23548	28.23548	-0.0159
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	19	76.7922	76.79688	76.79688	0.0047
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	24	48.69839	48.6966	48.6966	-0.0018
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	25	67.52246	67.53395	67.53395	0.0115
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	28	75.17146	75.17064	75.17064	-0.0008
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	37	45.45708	45.44312	45.44312	-0.014
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	43	41.1645	41.17037	41.17037	0.0059
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	45	88.77135	88.77078	88.77078	-0.0006
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	48	56.96666	56.96684	56.96684	0.0002
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	49	64.11048	64.11034	64.11034	-0.0001
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	52	47.8071	47.80646	47.80646	-0.0006
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	53	47.52609	47.51832	47.51832	-0.0078
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	54	75.93647	75.93932	75.93932	0.0028
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	57	49.4097	49.40914	49.40914	-0.0006
+samples/hwp3-sample16-hwp5-2024.hwp	pdf/hwp3-sample16-hwp5-2024-2020.pdf	59	89.67815	89.67765	89.67765	-0.0005
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/form-002-2022.pdf	2	75.20435	75.20435	75.20435	0.0
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/form-002-2022.pdf	8	75.58437	75.58437	75.58437	0.0
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/form-002-2022.pdf	10	75.54605	75.54605	75.54605	0.0
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-2022.pdf	1	92.95451	92.95451	92.95451	0.0
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-2022.pdf	2	99.18231	99.18231	99.18231	0.0
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-2022.pdf	9	98.25428	98.24939	98.24939	-0.0049
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	4	44.70719	44.71069	44.71069	0.0035
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	5	36.52304	36.52048	36.52048	-0.0026
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	6	34.19815	34.19876	34.19876	0.0006
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	7	24.12064	24.11772	24.11772	-0.0029
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	8	46.45941	46.4577	46.4577	-0.0017
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	9	34.29381	34.3126	34.3126	0.0188
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	10	28.25135	28.23548	28.23548	-0.0159
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	19	76.7922	76.79688	76.79688	0.0047
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	24	48.69839	48.6966	48.6966	-0.0018
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	25	67.52246	67.53395	67.53395	0.0115
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	28	75.17146	75.17064	75.17064	-0.0008
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	37	45.45708	45.44312	45.44312	-0.014
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	43	41.1645	41.17037	41.17037	0.0059
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	45	88.77135	88.77078	88.77078	-0.0006
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	48	56.96666	56.96684	56.96684	0.0002
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	49	64.11048	64.11034	64.11034	-0.0001
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	52	47.8071	47.80646	47.80646	-0.0006
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	53	47.52609	47.51832	47.51832	-0.0078
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	54	75.93647	75.93932	75.93932	0.0028
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	57	49.4097	49.40914	49.40914	-0.0006
+samples/hwp3-sample16-hwp5-2018.hwp	pdf/hwp3-sample16-hwp5-2018-2020.pdf	59	89.67815	89.67765	89.67765	-0.0005
+samples/issue1133/page-number-bottom15.hwpx	pdf/issue1133/page-number-bottom15-2020.pdf	1	95.35477	95.35477	95.35477	0.0
+samples/issue1133/page-number-bottom15.hwpx	pdf/issue1133/page-number-bottom15-2020.pdf	2	97.30028	97.30028	97.30039	0.0
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hwpx-02-2022.pdf	1	NA	NA	NA	NA
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hwpx-02-2022.pdf	2	NA	NA	NA	NA
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hwpx-02-2022.pdf	9	NA	NA	NA	NA
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hwpx-01-2022.pdf	1	88.79735	88.79735	88.79735	0.0
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hwpx-01-2022.pdf	2	99.2609	99.2609	99.2609	0.0
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hwpx-01-2022.pdf	9	98.63458	98.63387	98.63387	-0.0007
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hwpx-h-03-2022.pdf	1	94.59296	94.59296	94.59296	0.0
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hwpx-h-03-2022.pdf	2	99.12454	99.12454	99.12454	0.0
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hwpx-h-03-2022.pdf	9	98.00339	97.9978	97.9978	-0.0056
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hwpx-h-02-2022.pdf	1	92.95451	92.95451	92.95451	0.0
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hwpx-h-02-2022.pdf	2	99.18231	99.18231	99.18231	0.0
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hwpx-h-02-2022.pdf	9	98.25428	98.24939	98.24939	-0.0049
+samples/issue1133/page-number-footer15.hwpx	pdf/issue1133/page-number-footer15-2020.pdf	1	95.35477	95.35477	95.35477	0.0
+samples/issue1133/page-number-footer15.hwpx	pdf/issue1133/page-number-footer15-2020.pdf	2	97.30028	97.30028	97.30039	0.0
+samples/img-start-001.hwp	pdf/img-start-001-2022.pdf	1	93.71084	93.70051	93.70645	-0.0103
+samples/issue1770_rowsplit_tolerance.hwpx	pdf/issue1770_rowsplit_tolerance-2024.pdf	1	92.21597	92.21597	92.21597	0.0
+samples/issue1770_rowsplit_tolerance.hwpx	pdf/issue1770_rowsplit_tolerance-2024.pdf	2	26.28859	26.28859	26.28859	0.0
+samples/issue1770_rowsplit_tolerance.hwpx	pdf/issue1770_rowsplit_tolerance-2024.pdf	3	23.92195	23.92195	23.92195	0.0
+samples/issue1770_rowsplit_tolerance.hwpx	pdf/issue1770_rowsplit_tolerance-2024.pdf	4	13.39129	13.39129	13.39129	0.0
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hwpx-h-01-2022.pdf	1	88.79735	88.79735	88.79735	0.0
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hwpx-h-01-2022.pdf	2	99.2609	99.2609	99.2609	0.0
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hwpx-h-01-2022.pdf	9	98.63458	98.63387	98.63387	-0.0007
+samples/hwpx/opengov/36388711_사회보장제도 신설 협의요청서(청년오피스)_260624.hwpx	pdf/36388711_사회보장제도 신설 협의요청서(청년오피스)_260624-2024.pdf	6	97.68019	97.68019	97.68019	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	2	64.44407	64.44407	64.44407	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	3	72.35249	72.35249	72.35249	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	4	15.54868	15.54868	15.54868	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	5	16.19049	16.19049	16.19049	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	6	62.36559	62.36559	62.36559	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	9	68.12239	68.12239	68.12239	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	11	74.81195	74.81195	74.81195	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	13	61.83837	61.83837	61.83837	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	15	74.80464	74.80464	74.80464	0.0
+samples/hwpx/issue2019_floating_form_74312.hwpx	pdf/hwpx/issue2019_floating_form_74312-hwpx-2020.pdf	17	64.13489	64.13489	64.13489	0.0
+samples/issue2020/passport_application_lawgo.hwp	pdf/issue2020/passport_application_lawgo-hwp-2020.pdf	1	83.37556	83.37556	83.37556	0.0
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2020.pdf	1	94.26886	94.26886	94.26886	0.0
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2020.pdf	2	98.603	98.603	98.603	0.0
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2020.pdf	3	98.96117	98.96117	98.96117	0.0
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2020.pdf	4	99.51155	99.51155	99.51155	0.0
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2020.pdf	5	75.8788	75.8788	75.8788	0.0
+samples/issue2004_cell_image_stack.hwp	pdf/issue2004_cell_image_stack-2022.pdf	1	96.06531	96.06531	96.06531	0.0
+samples/issue2004_cell_image_stack.hwp	pdf/issue2004_cell_image_stack-2022.pdf	2	98.749	98.749	98.74179	0.0
+samples/issue2083_hide_fill_page.hwpx	pdf/issue2083_hide_fill_page-hwpx-2020.pdf	2	99.60539	99.60539	99.60539	0.0
+samples/issue2373/156689818_kftc_press.hwpx	pdf/issue2373/156689818_kftc_press-hwpx-2020.pdf	1	96.68564	96.68564	96.68564	0.0
+samples/issue2373/156689818_kftc_press.hwpx	pdf/issue2373/156689818_kftc_press-hwpx-2020.pdf	2	97.81102	97.81102	97.81102	0.0
+samples/issue2217/20200830.hwp	pdf/issue2217/20200830-hwp-2020.pdf	2	97.14372	97.12882	97.12882	-0.0149
+samples/issue2217/20200830.hwp	pdf/issue2217/20200830-hwp-2020.pdf	3	87.07317	87.07317	87.07317	0.0
+samples/issue2217/20200830.hwp	pdf/issue2217/20200830-hwp-2020.pdf	4	95.99899	95.99899	95.99899	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	31	99.90658	99.90658	99.90658	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	48	99.12516	99.12516	99.12516	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	49	100.0	100.0	100.0	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	65	98.53116	98.53116	98.53116	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	69	94.96046	94.96046	94.96046	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	70	71.9414	71.9414	71.9414	0.0
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf	71	99.99601	99.99601	99.99601	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	2	97.46685	97.46685	97.46685	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	3	97.79703	97.79703	97.79703	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	4	99.29761	99.29761	99.29761	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	5	99.3523	99.3523	99.3523	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	6	98.08598	98.08598	98.08598	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	7	97.68564	97.68564	97.68564	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	8	99.66231	99.66231	99.66231	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	9	99.36266	99.36266	99.36266	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	11	98.32702	98.32702	98.32702	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	12	99.14335	99.14335	99.14335	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	13	99.29157	99.29157	99.29157	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	15	99.52818	99.52818	99.52818	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	16	98.03996	98.03996	98.03996	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	17	97.64598	97.64598	97.64598	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	18	99.12355	99.12355	99.12355	0.0
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-2022.pdf	19	96.63397	96.63397	96.63397	0.0
+samples/issue3587/d-pi4-import.hwp	pdf/issue3587/d-pi4-import-hwp-2020.pdf	1	99.59774	99.59775	99.59775	0.0
+samples/issue2808_report_physical_ladder.hwp	pdf/issue2808_report_physical_ladder-hwp-2020.pdf	1	97.86148	97.86148	97.86148	0.0
+samples/issue2808_report_physical_ladder.hwp	pdf/issue2808_report_physical_ladder-hwp-2020.pdf	2	99.69565	99.69565	99.69565	0.0
+samples/issue2470/36341511_masked.hwpx	pdf/issue2470/36341511_masked-2022.pdf	2	99.21697	99.21697	99.21697	0.0
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	5	99.6151	99.6151	99.6151	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	1	95.24428	95.24428	95.24428	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	2	94.18267	94.18267	94.18267	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	3	99.60397	99.60397	99.60397	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	4	97.28001	97.28001	97.28001	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	5	93.29265	93.29265	93.29265	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	6	99.51911	99.51911	99.51911	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	8	97.58172	97.58172	97.58172	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	9	92.5738	92.5738	92.5738	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	12	97.38211	97.38211	97.38211	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	17	49.77347	49.77347	49.77347	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	19	52.85947	52.85947	52.85947	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	20	51.5358	51.5358	51.5358	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	21	58.96917	58.96917	58.96917	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	22	60.00763	60.00763	60.00763	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	23	96.76805	96.76805	96.76805	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	24	99.80502	99.80502	99.80502	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	26	66.69732	66.69732	66.69732	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	28	53.90965	53.90965	53.90965	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	29	64.38874	64.38874	64.38874	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	31	64.06738	64.06738	64.06738	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	33	60.31958	60.31958	60.31958	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	34	66.26868	66.26868	66.26868	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	35	98.72212	98.72212	98.72212	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	36	76.72287	76.72287	76.72287	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	37	65.93488	65.93488	65.93488	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	39	51.49395	51.49395	51.49395	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	40	65.1445	65.1445	65.1445	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	42	65.69419	65.69419	65.69419	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	44	94.60073	94.60073	94.60073	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	46	63.55845	63.55845	63.55845	0.0
+samples/issue1853_caption_precedes_body_split.hwpx	pdf/issue1853_caption_precedes_body_split-2024.pdf	48	79.44262	79.44262	79.44262	0.0
+samples/issue5637/2817919_emfplus_ole_preview.hwpx	pdf/pr7267/2817919_emfplus_ole_preview-2020.pdf	1	90.68694	90.68694	90.68694	0.0
+samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	pdf/pr_open_20260821/tac_table_missing_anchor_line_spacing-2020.pdf	1	96.297	96.297	96.297	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	1	93.66579	93.66579	93.66579	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	2	99.60659	99.60659	99.60663	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	3	99.00578	99.00578	99.00578	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	4	82.85052	82.85052	82.85052	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	5	99.91188	99.91188	99.91188	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	9	97.94972	97.94972	97.94972	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	10	99.72008	99.72008	99.71488	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	11	98.15536	98.15536	98.15684	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	12	99.83159	99.83159	99.83159	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	13	92.96293	92.96293	92.96293	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	15	99.86649	99.86649	99.86649	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	16	99.70599	99.70599	99.70599	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	17	99.73405	99.73405	99.73405	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	19	99.59836	99.59836	99.59836	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	22	99.66617	99.66617	99.66617	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	25	99.83195	99.83195	99.83073	0.0
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-2024.pdf	26	99.7359	99.7359	99.73706	0.0
+samples/issue5821/condensed_ratio_title_box.hwpx	pdf/pr_5849/hancom2020/condensed_ratio_title_box-2020.pdf	1	93.85048	93.85048	93.85048	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	11	99.22521	99.22521	99.22521	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	22	99.38603	99.38603	99.38603	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	40	99.20784	99.20784	99.20784	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	43	94.17069	94.17069	94.17069	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	44	69.23498	69.23498	69.23498	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	49	98.87535	98.87535	98.87535	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	51	99.02827	99.02827	99.02827	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	59	99.01965	99.01965	99.01965	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	62	99.25296	99.25296	99.25296	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	75	98.84505	98.84505	98.84505	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	76	99.13102	99.13102	99.13102	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	78	99.85632	99.85632	99.85635	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	79	99.10096	99.10096	99.10096	0.0
+samples/hwpctl_API_v2.4.hwp	pdf/hwpctl_API_v2.4-2022.pdf	80	98.07607	98.07607	98.07607	0.0
+samples/issue5792/2700727_animal_facility_standards.hwpx	pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf	3	90.86146	90.86146	90.86146	0.0
+samples/issue5792/2700727_animal_facility_standards.hwpx	pdf/pr_open_20260821/2700727_animal_facility_standards-2020.pdf	5	99.99327	99.99327	99.99327	0.0
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	1	97.56401	97.56433	97.56433	0.0003
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	2	87.52918	87.53589	87.53589	0.0067
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	3	64.69398	64.68038	64.68038	-0.0136
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	5	90.29163	90.28049	90.28049	-0.0111
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	6	87.59492	87.6739	87.6739	0.079
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	7	90.81163	90.84187	90.84187	0.0302
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	8	84.88056	84.88056	84.88056	0.0
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	9	74.54843	74.54789	74.54789	-0.0005
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	11	30.48256	30.48466	30.48466	0.0021
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-2020.pdf	12	38.50768	38.51788	38.51788	0.0102
+samples/issue5880/rowbreak_fragment_overfill.hwpx	pdf/rowbreak_fragment_overfill-2020.pdf	1	96.22252	96.22252	96.22252	0.0
+samples/issue5880/rowbreak_fragment_overfill.hwpx	pdf/rowbreak_fragment_overfill-2020.pdf	8	97.32512	97.32512	97.32512	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	3	88.41366	88.41652	88.41652	0.0029
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	4	46.65349	46.65642	46.65642	0.0029
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	23	58.74855	58.749	58.749	0.0005
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	24	93.40239	93.40239	93.40239	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	25	98.37455	98.37455	98.37455	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	26	98.32968	98.32975	98.32975	0.0001
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	27	97.29092	97.29471	97.29471	0.0038
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	28	98.16736	98.16759	98.16759	0.0002
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	29	99.17528	99.17538	99.17538	0.0001
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	31	96.82494	96.82451	96.82451	-0.0004
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	32	88.85098	88.84312	88.84312	-0.0079
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	34	69.63021	69.63021	69.63021	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	43	41.67621	41.67621	41.67621	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	44	15.84654	15.83361	15.83361	-0.0129
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	45	38.88034	38.88034	38.88034	0.0
+samples/issue1937_rowbreak_footnote_overpagination.hwp	pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf	46	33.15664	33.1556	33.1556	-0.001
+samples/issue1891_external_bindata_link.hwpx	pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf	7	76.4866	76.4866	76.4866	0.0
+samples/issue1891_external_bindata_link.hwpx	pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf	37	21.5369	21.57771	21.57771	0.0408
+samples/issue1891_external_bindata_link.hwpx	pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf	40	29.99659	30.00087	30.00087	0.0043
+samples/issue6101/36501883_approval_doc_body.hwpx	pdf/pr7382/36501883_approval_doc_body-2020.pdf	1	98.13337	98.13337	98.13337	0.0
+samples/issue6101/36501883_approval_doc_body.hwpx	pdf/pr7382/36501883_approval_doc_body-2020.pdf	2	95.1074	95.1074	95.1074	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	2	99.60984	99.60984	99.6104	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	3	98.34384	98.34384	98.34384	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	4	96.6555	96.6555	96.6555	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	6	98.20187	98.20187	98.13173	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	7	92.86185	92.86185	92.86185	0.0
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	8	96.59435	96.59435	96.59435	0.0
+samples/basic/issue2007_nested_cell_pagination_42065.hwp	pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf	7	92.50652	92.5066	92.5066	0.0001
+samples/basic/issue2007_nested_cell_pagination_42065.hwp	pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf	9	52.52368	52.52243	52.52243	-0.0012
+samples/basic/issue2007_nested_cell_pagination_42065.hwp	pdf/basic/issue2007_nested_cell_pagination_42065-2020.pdf	16	93.86684	93.73173	93.73173	-0.1351
+samples/issue4514/sample1-repro.hwp	pdf/issue4514/sample1-repro-2020.pdf	6	96.61615	96.61615	96.61615	0.0
+samples/issue4514/sample1-repro.hwp	pdf/issue4514/sample1-repro-2020.pdf	25	88.08226	88.08226	88.08226	0.0
+samples/issue4514/sample1-repro.hwp	pdf/issue4514/sample1-repro-2020.pdf	38	68.54232	68.54232	68.54232	0.0
+samples/issue4514/sample1-repro.hwp	pdf/issue4514/sample1-repro-2020.pdf	42	99.75654	99.75654	99.75654	0.0
+samples/issue6196/cell_char_spacing_fit.hwp	pdf/cell_char_spacing_fit-2020.pdf	1	36.24244	36.24471	36.24471	0.0023
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	1	97.49321	97.49627	97.49627	0.0031
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	2	98.63141	98.63144	98.63144	0.0
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	3	99.22735	99.22745	99.22745	0.0001
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	4	98.59353	98.60294	98.60294	0.0094
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	8	98.62486	98.62486	98.62486	0.0
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	10	99.71078	99.71078	99.71078	0.0
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	2	96.55469	96.55469	96.55469	0.0
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	4	98.6557	98.6557	98.6557	0.0
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	8	34.12102	34.11437	34.11437	-0.0067
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	12	96.69104	96.69104	96.69104	0.0
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	14	95.19215	95.19215	95.19215	0.0
+samples/issue6111/56345_regulatory_impact_analysis.hwp	pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf	18	15.61572	15.60893	15.60893	-0.0068
+samples/issue6312/tab_host_own_line.hwpx	pdf/issue6312/tab_host_own_line-2024.pdf	1	66.748	66.748	66.748	0.0
+samples/issue6312/tab_host_own_line.hwpx	pdf/issue6312/tab_host_own_line-2024.pdf	2	98.24679	98.24679	98.24679	0.0
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	1	98.11588	98.11588	98.11588	0.0
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	2	99.74321	99.74321	99.74321	0.0
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	3	97.77982	97.7781	97.7781	-0.0017
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	4	97.49916	97.49916	97.49916	0.0
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	5	97.80665	97.80665	97.80665	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	2	97.42419	97.42419	97.42419	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	5	95.23286	95.23286	95.23286	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	6	95.88653	95.92519	95.92519	0.0387
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	7	98.96955	98.96954	98.96954	-0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	8	89.631	89.62553	89.62553	-0.0055
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	9	99.39631	99.39631	99.39631	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	14	69.7158	69.7158	69.7158	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	15	78.6208	78.6208	78.6208	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	19	40.87631	40.88061	40.88061	0.0043
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	24	84.91414	84.91414	84.91414	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	25	50.28069	50.28069	50.28069	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	28	73.20586	73.20586	73.20586	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	30	72.53882	72.53882	72.53882	0.0
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	31	98.32094	98.31484	98.31484	-0.0061
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	32	98.9244	98.98859	98.98859	0.0642
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	36	64.07375	64.07375	64.07375	0.0
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	1	98.04581	98.04581	98.04581	0.0
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	2	99.81046	99.81046	99.81046	0.0
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	4	99.59722	99.59722	99.59722	0.0
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	5	98.05934	98.05579	98.05579	-0.0036
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	6	97.46327	97.46327	97.46327	0.0
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	11	50.6877	50.6877	50.6877	0.0
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	20	49.01728	49.01728	49.01728	0.0
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	5	98.92806	98.92617	98.92617	-0.0019
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	16	64.90078	64.89724	64.89724	-0.0035
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	18	97.20842	97.20572	97.20572	-0.0027
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	19	98.00509	98.00302	98.00302	-0.0021
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	22	99.49787	99.48781	99.48781	-0.0101
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf	27	51.9035	51.9035	51.9035	0.0
+samples/issue6575/156489219_satellite_pm_release.hwp	pdf/156489219_satellite_pm_release-2020.pdf	3	99.87992	99.87992	99.87992	0.0
+samples/issue6787/16774617-electronic-ballot-form.hwp	pdf/16774617-electronic-ballot-form-2020.pdf	1	90.3461	90.3461	90.3461	0.0
+samples/issue6787/16774617-electronic-ballot-form.hwp	pdf/16774617-electronic-ballot-form-2020.pdf	2	95.85536	95.85536	95.85536	0.0
+samples/issue6035/cgmp_evaluation_table.hwpx	pdf/cgmp_evaluation_table-hwpx-2020.pdf	2	99.01855	99.01855	99.01855	0.0
+samples/issue6035/cgmp_evaluation_table.hwpx	pdf/cgmp_evaluation_table-hwpx-2020.pdf	4	99.29777	99.29777	99.29777	0.0
+samples/issue6035/cgmp_evaluation_table.hwpx	pdf/cgmp_evaluation_table-hwpx-2020.pdf	12	97.02114	97.02114	97.02114	0.0
+samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf	1	18.28646	18.28646	18.28646	0.0
+samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf	2	27.03002	27.03002	27.03002	0.0
+samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf	3	19.30456	19.30456	19.30456	0.0
+samples/issue6793/1611000-201000141-small-air-transport-study.hwp	pdf/1611000-201000141-small-air-transport-study-2020.pdf	7	99.83241	99.83239	99.83239	-0.0
+samples/issue6793/1611000-201000141-small-air-transport-study.hwp	pdf/1611000-201000141-small-air-transport-study-2020.pdf	8	98.53041	98.53041	98.53041	0.0
+samples/issue6793/1611000-201000141-small-air-transport-study.hwp	pdf/1611000-201000141-small-air-transport-study-2020.pdf	9	99.53033	99.53034	99.53034	0.0
+samples/issue6793/1611000-201000141-small-air-transport-study.hwp	pdf/1611000-201000141-small-air-transport-study-2020.pdf	10	99.26019	99.26017	99.26017	-0.0
+samples/issue6793/1611000-201000141-small-air-transport-study.hwp	pdf/1611000-201000141-small-air-transport-study-2020.pdf	11	99.5575	99.55747	99.55747	-0.0
+samples/issue6800/1192000-202100017-policy-research-report.hwp	pdf/1192000-202100017-policy-research-report-2020.pdf	1	95.16748	95.17338	95.17338	0.0059
+samples/issue6797/156160455-social-pig-farm-income.hwp	pdf/156160455-social-pig-farm-income-2020.pdf	3	67.74435	67.74435	67.74435	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	10	93.81375	93.81375	93.81375	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	11	96.8013	96.80145	96.80145	0.0002
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	12	94.74434	94.74434	94.74184	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	13	96.56567	96.56628	96.56628	0.0006
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	15	60.1552	60.1552	60.15301	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	16	95.22527	95.2231	95.2231	-0.0022
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	18	69.11863	69.09535	69.09247	-0.0233
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	19	67.60962	67.62745	67.62745	0.0178
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	21	23.07654	23.08015	23.07929	0.0036
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	22	75.19469	75.19026	75.18289	-0.0044
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	23	92.26516	92.28831	92.28129	0.0232
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	24	92.03197	92.08764	92.0831	0.0557
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	34	92.1625	92.1625	92.1625	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	36	95.5443	95.5443	95.5443	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	38	98.75803	98.75803	98.75803	0.0
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	44	98.42897	98.42897	98.42897	0.0
+samples/issue6031/3249937_asset_management_rules.hwpx	pdf/3249937_asset_management_rules-2020.pdf	37	99.34591	99.3455	99.3455	-0.0004
+samples/issue6031/3249937_asset_management_rules.hwpx	pdf/3249937_asset_management_rules-2020.pdf	38	96.48126	96.28178	96.28178	-0.1995
+samples/issue6031/3249937_asset_management_rules.hwpx	pdf/3249937_asset_management_rules-2020.pdf	39	66.53256	66.40688	66.40688	-0.1257
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	2	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	3	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	4	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	5	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	7	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	8	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	11	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	16	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	22	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	28	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	39	NA	NA	NA	NA
+samples/issue5866/memo_field_hwp5.hwp	pdf/memo_field_hwp5-2020.pdf	40	NA	NA	NA	NA
+samples/issue6803/1376496-neighborhood-facility-land-table.hwp	pdf/1376496-neighborhood-facility-land-table-2020.pdf	2	93.06084	93.06084	93.06084	0.0
+samples/issue6803/1376496-neighborhood-facility-land-table.hwp	pdf/1376496-neighborhood-facility-land-table-2020.pdf	5	34.51517	34.51517	34.51517	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	20	84.18697	84.18697	84.18697	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	23	81.79575	81.79575	81.79575	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	43	86.44587	86.44587	86.44587	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	56	94.08691	94.08691	94.08691	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	57	86.1978	86.1978	86.1978	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	58	88.26087	88.26087	88.26087	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	59	91.1426	91.1426	91.1426	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	61	82.40401	82.40401	82.40401	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	64	94.81861	94.81861	94.81861	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	94	85.85848	85.85848	85.85848	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	97	85.81695	85.81695	85.81695	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	100	80.46512	80.46512	80.46512	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	103	87.34614	87.34614	87.34614	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	107	84.66503	84.66503	84.66503	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	113	84.65909	84.65909	84.65909	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	130	85.18027	85.18027	85.18027	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	131	84.91231	84.91231	84.91231	0.0
+samples/hwp3-sample11-hwpx.hwpx	pdf/hwp3-sample11-hwpx-hwpx-2020.pdf	138	85.37246	85.37246	85.37246	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	20	83.81237	83.81237	83.81237	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	23	81.21399	81.21399	81.21399	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	43	84.23356	84.23356	84.23356	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	52	72.20267	72.20267	72.20267	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	56	92.46583	92.46583	92.46583	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	57	86.12849	86.12849	86.12849	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	64	58.01936	58.01936	58.01936	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	94	83.04117	83.04117	83.04117	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	97	84.29151	84.29151	84.29151	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	103	83.59304	83.59304	83.59304	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	107	83.88178	83.88178	83.88178	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	113	82.72514	82.72514	82.72514	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	130	82.8861	82.8861	82.8861	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	131	84.90186	84.90186	84.90186	0.0
+samples/hwp3-sample11.hwp	pdf/hwp3-sample11-2020.pdf	138	56.08011	56.08011	56.08011	0.0
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	5	98.89024	98.88956	98.88956	-0.0007
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	16	64.55333	64.55228	64.55228	-0.0011
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	18	97.05304	97.0532	97.0532	0.0002
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	19	97.73945	97.73746	97.73746	-0.002
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	22	99.48256	99.47074	99.47074	-0.0118
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf	27	52.06672	52.06672	52.06672	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	1	99.21251	99.21251	99.21251	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	2	99.6639	99.6639	99.6639	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	3	94.9628	94.9628	94.9628	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	4	57.40823	57.40823	57.40823	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	5	85.28342	85.28342	85.28342	0.0
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	6	99.28199	99.28199	99.28206	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	1	98.68539	98.68539	98.68539	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	2	97.71674	97.71674	97.71674	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	4	47.0299	47.0299	47.0299	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	7	98.89237	98.89237	98.89237	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	8	97.83536	97.83536	97.83536	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	9	97.60782	97.60782	97.60782	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	10	97.91337	97.91337	97.91337	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	16	98.09656	98.09656	98.09656	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	20	99.27151	99.27151	99.27151	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	25	96.06201	96.0645	96.0645	0.0025
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	26	96.49205	96.49205	96.49205	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	27	96.20799	96.20799	96.20799	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	28	99.32142	99.32142	99.32142	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	38	98.34923	98.34923	98.34923	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	40	93.7463	93.7463	93.7463	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	42	98.05068	98.05068	98.05068	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	43	96.257	96.257	96.257	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	45	96.07333	96.07333	96.07333	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	46	95.95654	95.95654	95.95654	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	47	97.31507	97.31507	97.31507	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	48	93.35598	93.35598	93.35598	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	51	97.20153	97.20153	97.20153	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	56	98.34052	98.34052	98.34052	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	58	57.01604	57.01604	57.01604	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	60	42.08781	42.08781	42.08781	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	61	99.40148	99.40148	99.40148	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	68	98.23844	98.23844	98.23844	0.0
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	72	98.38417	98.38114	98.38114	-0.003
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	74	96.59106	96.60126	96.60126	0.0102
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	75	97.88408	97.88196	97.88196	-0.0021
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	76	97.50417	97.54866	97.54866	0.0445
+samples/issue2559/1341000_research_report_footnotes.hwp	pdf/1341000_research_report_footnotes-2020.pdf	92	98.1806	98.22102	98.22102	0.0404
+samples/issue6913/156591199-veterans-joint-burial-press-release.hwpx	pdf/156591199-veterans-joint-burial-press-release-2020.pdf	1	98.91938	98.91938	98.91938	0.0
+samples/issue6913/156591199-veterans-joint-burial-press-release.hwpx	pdf/156591199-veterans-joint-burial-press-release-2020.pdf	2	97.18477	97.18477	97.19097	0.0
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	5	99.52959	99.52959	99.52959	0.0
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	6	81.62336	81.60736	81.60736	-0.016
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	7	94.09684	94.08663	94.08663	-0.0102
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	11	94.90875	94.90875	94.90875	0.0
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	13	93.99712	93.95172	93.95172	-0.0454
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	14	98.40242	98.40242	98.40242	0.0
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	15	93.60739	93.60816	93.60816	0.0008
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	16	95.21829	95.21764	95.21764	-0.0006
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	17	94.56993	94.56993	94.56993	0.0
+samples/issue6844/30269-anticorruption-recommendation-toc.hwp	pdf/30269-anticorruption-recommendation-toc-2020.pdf	20	90.66653	90.59937	90.59937	-0.0672
+samples/issue6896/156564340-ip-dispute-mediation.hwpx	pdf/156564340-ip-dispute-mediation-2020.pdf	1	96.74864	96.74864	96.74864	0.0
+samples/issue6896/156564340-ip-dispute-mediation.hwpx	pdf/156564340-ip-dispute-mediation-2020.pdf	2	92.0451	92.0451	92.0451	0.0
+samples/issue6896/156564340-ip-dispute-mediation.hwpx	pdf/156564340-ip-dispute-mediation-2020.pdf	3	99.53668	99.42072	99.42072	-0.116
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	11	82.37192	82.37192	82.37192	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	16	59.38308	59.38308	59.38308	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	17	65.74871	65.74871	65.74871	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	21	73.89722	73.89722	73.89722	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	22	75.47934	75.47934	75.47934	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	42	74.67597	74.67597	74.67597	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	69	83.14953	83.14953	83.14953	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	70	87.25579	87.25579	87.25579	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	71	76.92039	76.92039	76.92039	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	73	88.5478	88.5478	88.5478	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	74	78.39521	78.39521	78.39521	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	75	84.63536	84.63536	84.63536	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	76	78.43944	78.43944	78.43944	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	77	87.58244	87.58244	87.58244	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	78	83.29617	83.29617	83.29617	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	79	65.54569	65.54569	65.54569	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	82	89.54752	89.54752	89.54752	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	83	86.00336	86.00336	86.00336	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	84	79.24683	79.24683	79.24683	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	85	70.95092	70.95092	70.95092	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	87	85.43625	85.43625	85.43625	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	89	88.91336	88.91336	88.91336	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	90	83.94679	83.94679	83.94679	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	91	74.56924	74.56924	74.56924	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	93	54.57223	54.57223	54.57223	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	94	41.42034	41.42034	41.42034	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	96	70.73989	70.73989	70.73989	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	98	90.36843	90.36843	90.36843	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	102	86.68207	86.68207	86.68207	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	103	78.21657	78.21657	78.21657	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	108	88.37898	88.37898	88.37898	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	109	85.06822	85.06822	85.06822	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	113	74.33464	74.33464	74.33464	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	136	84.95002	84.95002	84.95002	0.0
+samples/hwpspec.hwp	pdf/hwpspec-2024.pdf	150	75.58376	75.58376	75.58376	0.0
+samples/issue6928/148769979_274 반도체포럼 개최(이귀남 최종).hwp	pdf/148769979_274 반도체포럼 개최(이귀남 최종).pdf	1	93.40816	93.39658	93.39658	-0.0116
+samples/issue6928/148769979_274 반도체포럼 개최(이귀남 최종).hwp	pdf/148769979_274 반도체포럼 개최(이귀남 최종).pdf	2	98.88409	98.88409	98.88409	0.0
+samples/issue6928/148769979_274 반도체포럼 개최(이귀남 최종).hwp	pdf/148769979_274 반도체포럼 개최(이귀남 최종).pdf	5	99.62125	99.62116	99.62116	-0.0001
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	1	98.99806	98.99806	98.99806	0.0
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	6	93.18159	93.17042	93.1626	-0.0112
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	8	93.83886	93.83067	93.83565	-0.0082
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	9	92.73155	92.70949	92.70398	-0.0221
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	10	93.62368	93.50512	93.48119	-0.1186
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	12	99.53936	99.53824	99.54544	-0.0011
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	13	98.36018	98.3603	98.3603	0.0001
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	15	98.68543	98.68011	98.58159	-0.0053
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	2	79.79716	79.79041	79.79041	-0.0068
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	4	75.89105	75.89105	75.89105	0.0
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	8	71.45301	71.45301	71.45301	0.0
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	9	96.45784	96.45784	96.45784	0.0
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	12	93.10072	93.10072	93.10072	0.0
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	17	90.30016	90.30016	90.30016	0.0
+samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp	pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf	18	19.97329	19.97329	19.97329	0.0
+samples/issue6892/156726122-recycling-press-release.hwpx	pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf	1	95.92867	95.92867	95.92867	0.0
+samples/issue6892/156726122-recycling-press-release.hwpx	pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf	2	98.5535	98.5535	98.55536	0.0
+samples/issue6892/156726122-recycling-press-release.hwpx	pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf	3	99.54672	99.54672	99.54672	0.0
+samples/issue6892/156726122-recycling-press-release.hwpx	pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf	4	96.63502	96.64583	96.64583	0.0108
+samples/issue6892/156726122-recycling-press-release.hwpx	pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf	6	99.21473	99.21473	99.21473	0.0
+samples/issue6973/83818-appraisal-rules-amendment.hwpx	pdf/83818-appraisal-rules-amendment-2020.pdf	1	94.75057	94.75057	94.75057	0.0
+samples/issue6973/83818-appraisal-rules-amendment.hwpx	pdf/83818-appraisal-rules-amendment-2020.pdf	3	96.21761	96.21761	96.21761	0.0
+samples/issue6973/83818-appraisal-rules-amendment.hwpx	pdf/83818-appraisal-rules-amendment-2020.pdf	7	96.98822	96.98822	96.98856	0.0
+samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp	pdf/rowbreak_cell_picture_only_paragraph-2020.pdf	1	73.49014	73.49014	73.49014	0.0
+samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp	pdf/rowbreak_cell_picture_only_paragraph-2020.pdf	2	36.92692	36.92692	36.92692	0.0
+samples/issue7235/156467175_press_release_header_logo_p1.hwp	pdf/issue7235/156467175_press_release_header_logo_p1-2020.pdf	1	95.78066	95.78066	95.78066	0.0
+samples/issue6924/148751598-briefing.hwp	pdf/148751598-briefing-2020.pdf	1	96.47674	96.47636	96.47636	-0.0004
+samples/issue6924/148751598-briefing.hwp	pdf/148751598-briefing-2020.pdf	2	95.12138	95.12172	95.12172	0.0003
+samples/issue6924/148751598-briefing.hwp	pdf/148751598-briefing-2020.pdf	3	91.82167	91.82864	91.82864	0.007
+samples/issue6924/148751598-briefing.hwp	pdf/148751598-briefing-2020.pdf	4	96.91824	96.91859	96.91859	0.0003
+samples/issue6924/148751598-briefing.hwp	pdf/148751598-briefing-2020.pdf	5	91.0816	91.08278	91.08278	0.0012
+samples/issue_1133.hwp	pdf/hwpx/issue_1133.pdf	1	95.34213	95.34213	95.34213	0.0
+samples/issue_1133.hwp	pdf/hwpx/issue_1133.pdf	2	98.43185	98.43185	98.43191	0.0
+samples/issue6946/44529-logistics-policy-rule-amendment.hwp	pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf	3	96.51701	96.51701	96.51701	0.0
+samples/issue6946/44529-logistics-policy-rule-amendment.hwp	pdf/issue6946/44529-logistics-policy-rule-amendment-hwp-2020.pdf	11	68.86279	68.86279	68.86279	0.0
+samples/issue7336/stored_frame_page_larger_rowbreak.hwpx	pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf	7	96.8473	96.8473	96.8473	0.0
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	3	98.64692	98.64692	98.64692	0.0
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	5	97.70377	97.70046	97.71107	-0.0033
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	1	95.18506	95.18284	95.18284	-0.0022
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	2	99.35209	99.35212	99.35212	0.0
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	5	96.22244	96.22244	96.22244	0.0
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	6	98.12542	98.08536	98.08536	-0.0401
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	7	97.39131	97.38995	97.38995	-0.0014
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	8	96.77557	96.74526	96.74526	-0.0303
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	9	95.78443	95.78032	95.78032	-0.0041
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	5	99.3769	99.3769	99.3769	0.0
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	7	99.85919	99.85919	99.85919	0.0
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	9	99.51372	99.51372	99.51372	0.0
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	12	97.0825	97.0825	97.0825	0.0
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	13	98.40655	98.40655	98.40739	0.0
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	14	98.97931	98.97931	98.97931	0.0
+samples/issue7015/30442-acrc-recommendation-business-burden.hwp	pdf/30442-acrc-recommendation-business-burden-2020.pdf	5	96.68081	96.67199	96.67199	-0.0088
+samples/issue7015/30442-acrc-recommendation-business-burden.hwp	pdf/30442-acrc-recommendation-business-burden-2020.pdf	8	93.40951	93.40951	93.40951	0.0
+samples/issue7015/30442-acrc-recommendation-business-burden.hwp	pdf/30442-acrc-recommendation-business-burden-2020.pdf	9	95.86926	95.86423	95.86423	-0.005
+samples/issue7015/30442-acrc-recommendation-business-burden.hwp	pdf/30442-acrc-recommendation-business-burden-2020.pdf	10	99.3344	99.33443	99.33443	0.0
+samples/issue7015/30442-acrc-recommendation-business-burden.hwp	pdf/30442-acrc-recommendation-business-burden-2020.pdf	17	99.3991	99.39904	99.39904	-0.0001
+samples/multi-table-001.hwp	pdf/multi-table-001-2022.pdf	2	86.87087	86.87087	86.87087	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	2	95.61108	95.61108	95.61108	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	3	99.8909	99.8909	99.8909	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	5	98.76552	98.7643	98.7643	-0.0012
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	6	98.49472	98.49378	98.49378	-0.0009
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	11	99.7375	99.73521	99.73521	-0.0023
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	16	99.47104	99.47106	99.47106	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	21	89.30573	89.30469	89.30469	-0.001
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	22	58.08457	58.09098	58.09098	0.0064
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	24	96.41326	96.42736	96.42736	0.0141
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	29	61.09907	61.09907	61.09907	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	32	98.57659	98.57659	98.57659	0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	34	98.63972	98.63916	98.63916	-0.0006
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	40	99.97593	99.9759	99.9759	-0.0
+samples/issue6795/1341000-201100013-cyber-university-application.hwp	pdf/1341000-201100013-cyber-university-application-2020.pdf	42	98.95724	98.95984	98.95984	0.0026
+samples/multi-table-002.hwp	pdf/multi-table-002-2022.pdf	2	97.46685	97.46685	97.46685	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	4	87.30782	87.30782	87.30782	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	5	98.98355	98.98355	98.98355	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	12	15.60119	15.60119	15.60119	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	23	42.38513	42.38513	42.38513	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	25	35.77261	35.77261	35.77261	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	29	37.54959	37.54959	37.54959	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	30	18.72799	18.72799	18.72799	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	37	36.42972	36.42972	36.42972	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	38	26.11734	26.11734	26.11734	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	46	15.48679	15.48679	15.48679	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	47	38.3811	38.3811	38.3811	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	48	18.5729	18.5729	18.5729	0.0
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/78494-virtual-convergence-industry-decree-2020.pdf	64	29.73938	29.73938	29.73938	0.0
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	1	98.3788	98.40069	98.40069	0.0219
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	3	99.36362	99.36362	99.36362	0.0
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	4	99.34838	99.34838	99.34838	0.0
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	5	99.65583	99.62785	99.62785	-0.028
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	6	97.21857	97.21348	97.21348	-0.0051
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	7	99.30973	99.30914	99.30914	-0.0006
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	8	99.71603	99.70974	99.70974	-0.0063
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	9	99.34049	99.33872	99.33872	-0.0018
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	13	99.50159	99.50159	99.50159	0.0
+samples/loading-fail-01.hwp	pdf/loading-fail-01-2022.pdf	14	99.47701	99.46799	99.46799	-0.009
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	4	94.6227	94.6105	94.6105	-0.0122
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	5	93.98244	93.97462	93.97462	-0.0078
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	7	91.5387	91.51685	91.51685	-0.0219
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	8	94.17444	94.16738	94.16738	-0.0071
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	9	92.58172	92.57275	92.57275	-0.009
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	11	94.7166	94.71369	94.71369	-0.0029
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	19	94.36879	94.36672	94.36672	-0.0021
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	23	93.71342	93.77989	93.77989	0.0665
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	26	95.21004	95.15115	95.15115	-0.0589
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	27	91.6043	91.6191	91.6191	0.0148
+samples/issue6921/148733091-briefing-stenographic-record.hwp	pdf/148733091-briefing-stenographic-record-2020.pdf	28	94.94837	94.94879	94.94879	0.0004
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	53	77.1045	77.1045	77.1045	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	57	79.33495	79.33495	79.33495	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	65	79.32179	79.32179	79.32179	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	66	36.13373	36.13373	36.13373	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	80	67.8686	67.8686	67.8686	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	86	80.17662	80.17662	80.17662	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	87	79.30158	79.30158	79.30158	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	88	80.69777	80.69777	80.69777	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	102	78.52268	78.52268	78.52268	0.0
+samples/issue1949_giant_cell_nested_tables_perf.hwp	pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf	108	30.08219	30.08219	30.08219	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	1	99.0914	99.0914	99.0914	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	2	99.14789	99.14789	99.14789	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	3	75.81388	75.81388	75.81388	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	4	51.56895	51.56895	51.56895	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	5	92.00931	92.00931	92.00931	0.0
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-2022.pdf	6	86.29192	86.29192	86.29192	0.0
+samples/issue_265.hwp	pdf/issue_265-2022.pdf	4	93.50578	93.50578	93.50578	0.0
+samples/issue_265.hwp	pdf/issue_265-2022.pdf	10	92.5052	92.5052	92.5052	0.0
+samples/issue_265.hwp	pdf/issue_265-2022.pdf	14	94.19468	94.19468	94.19468	0.0
+samples/issue_265.hwp	pdf/issue_265-2022.pdf	15	92.63901	92.63901	92.63901	0.0
+samples/table-in-tbox.hwp	pdf/table-in-tbox-2022.pdf	1	98.0618	98.0618	98.0618	0.0
+samples/table-in-tbox.hwp	pdf/table-in-tbox-2022.pdf	2	99.54052	99.54051	99.54051	-0.0
+samples/table-vpos-01.hwp	pdf/table-vpos-01-2022.pdf	1	99.09294	99.09294	99.09294	0.0
+samples/table-vpos-01.hwp	pdf/table-vpos-01-2022.pdf	2	99.65294	99.65294	99.65294	0.0
+samples/table-vpos-01.hwp	pdf/table-vpos-01-2022.pdf	3	99.79701	99.79701	99.79701	0.0
+samples/table-vpos-01.hwp	pdf/table-vpos-01-2022.pdf	4	99.8923	99.8923	99.8923	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	5	99.98465	99.98465	99.98465	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	6	99.826	99.826	99.826	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	7	99.65854	99.65854	99.65854	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	8	99.93819	99.93819	99.93819	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	13	99.8271	99.8271	99.8271	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	14	99.80272	99.80272	99.80272	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	15	95.27736	95.27736	95.27736	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	41	99.79744	99.79744	99.79744	0.0
+samples/issue7333/aaaaaa.hwp	pdf/issue7333/aaaaaa-2020.pdf	43	99.92306	99.92306	99.92306	0.0
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	4	99.90838	99.9084	99.9084	0.0
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	5	99.60727	99.60765	99.60765	0.0004
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	6	98.32271	98.32556	98.32556	0.0028
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	8	99.55239	99.55243	99.55243	0.0
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	9	99.96431	99.96314	99.96314	-0.0012
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	10	99.30843	99.30864	99.30864	0.0002
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	11	99.63795	99.63797	99.63797	0.0
+samples/k-water-rfp.hwp	pdf/k-water-rfp-2022.pdf	20	99.11773	99.11773	99.11773	0.0
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-2024.pdf	7	93.3474	93.3474	93.3474	0.0
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-2024.pdf	9	98.42459	98.42459	98.42459	0.0
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-2024.pdf	11	95.62963	95.62963	95.62981	0.0
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-2024.pdf	14	94.1015	94.1015	94.1015	0.0
+samples/task1789/exclusion_probe_line_spacing.hwpx	pdf/exclusion_probe_line_spacing-2024.pdf	1	96.12477	96.12477	96.12477	0.0
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	4	99.90838	99.9084	99.9084	0.0
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	5	99.60727	99.60765	99.60765	0.0004
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	6	98.32271	98.32556	98.32556	0.0028
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	8	99.55239	99.55243	99.55243	0.0
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	9	99.96431	99.96314	99.96314	-0.0012
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	10	99.30843	99.30864	99.30864	0.0002
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	11	99.63795	99.63797	99.63797	0.0
+samples/k-water-rfp-2024.hwp	pdf/k-water-rfp-2024.pdf	20	99.11787	99.11787	99.11787	0.0
+samples/task2097/1730000_selection_report.hwp	pdf/task2097/1730000_selection_report-2022.pdf	1	98.7135	98.7135	98.7135	0.0
+samples/task2097/1741000_project_application.hwp	pdf/task2097/1741000_project_application-hwp-2020.pdf	1	74.66433	74.65894	74.65894	-0.0054
+samples/task2097/1741000_project_application.hwp	pdf/task2097/1741000_project_application-hwp-2020.pdf	2	52.09546	52.07892	52.07892	-0.0165
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	35	82.47662	82.47662	82.47662	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	36	99.7204	99.7204	99.7204	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	37	99.67083	99.67083	99.67083	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	38	98.17293	98.17293	98.17293	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	41	74.09612	74.09612	74.09612	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	42	99.26279	99.26279	99.26279	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	44	93.80531	93.80531	93.80531	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	45	94.21502	94.21502	94.21502	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	46	67.60741	67.60741	67.60741	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	49	97.07376	97.07376	97.07376	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	50	61.65938	61.65938	61.65938	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	51	99.75836	99.75836	99.75836	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	52	98.76206	98.76206	98.76206	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	53	70.20975	70.20975	70.20975	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	68	95.13954	95.13954	95.13954	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	72	98.6482	98.6482	98.6482	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	73	98.97465	98.97465	98.97465	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	91	94.84953	94.84953	94.84953	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	92	97.42009	97.42009	97.42009	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	93	98.72549	98.72549	98.72549	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	94	74.19811	74.19811	74.19811	0.0
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	pdf/1480000-201900042-chemical-labeling-standards-2020.pdf	95	93.94607	93.94607	93.94607	0.0
+samples/task2137/156618554_petfood_press.hwp	pdf/task2137/156618554_petfood_press-hwp-2020.pdf	1	95.93103	95.93103	95.93103	0.0
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	7	94.46859	94.46859	94.46859	0.0
+samples/task2243/156631374_taxi_press.hwpx	pdf/task2243/156631374_taxi_press-hwpx-2020.pdf	1	94.44666	94.44666	94.44666	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	3	98.80101	98.80101	98.80101	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	5	99.96766	99.96766	99.96766	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	6	99.98508	99.98508	99.98508	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	7	99.99923	99.99923	99.99923	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	8	99.55246	99.55246	99.55246	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	9	99.53465	99.53465	99.53465	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	10	55.5687	55.5687	55.5687	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	11	85.95634	85.95634	85.95634	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	12	99.65627	99.65627	99.65627	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	14	99.68429	99.68429	99.68429	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	17	98.82048	98.82048	98.82048	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	18	98.6662	98.6662	98.6662	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	19	50.77977	50.77977	50.77977	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	20	99.42897	99.42897	99.42897	0.0
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-2022.pdf	21	99.60146	99.60146	99.60146	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	3	98.80101	98.80101	98.80101	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	5	99.96766	99.96766	99.96766	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	6	99.98508	99.98508	99.98508	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	7	99.99923	99.99923	99.99923	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	8	99.55246	99.55246	99.55246	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	9	99.53465	99.53465	99.53465	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	10	55.5687	55.5687	55.5687	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	11	85.95634	85.95634	85.95634	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	12	99.65627	99.65627	99.65627	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	14	99.68429	99.68429	99.68429	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	17	98.82048	98.82048	98.82048	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	18	98.6662	98.6662	98.6662	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	19	50.77977	50.77977	50.77977	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	20	99.42897	99.42897	99.42897	0.0
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-2022.pdf	21	99.60146	99.60146	99.60146	0.0
+samples/task2243/36386907_gyeoljae_sewoon.hwpx	pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf	2	99.2955	99.2955	99.2955	0.0
+samples/task2243/36386907_gyeoljae_sewoon.hwpx	pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf	5	98.98796	98.98796	98.98796	0.0
+samples/task2243/36395325_gyeoljae_consulting.hwpx	pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf	3	99.87939	99.87939	99.87939	0.0
+samples/task2243/36395325_gyeoljae_consulting.hwpx	pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf	4	99.55459	99.55459	99.55459	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	1	99.72904	99.72904	99.72904	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	2	99.1156	99.1156	99.1156	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	4	92.21422	92.21422	92.21422	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	5	53.73604	53.73604	53.73604	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	6	88.32809	88.32809	88.32809	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	7	98.31665	98.31665	98.31665	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	8	96.92495	96.92495	96.92495	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	9	98.21539	98.21539	98.21539	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	10	99.21148	99.21148	99.21148	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	11	97.5857	97.5857	97.5857	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	12	98.23034	98.23034	98.23034	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	15	99.1311	99.1311	99.1311	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	19	85.49467	85.49467	85.49467	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	22	96.75073	96.75073	96.75073	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	23	81.27894	81.27894	81.27894	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	24	80.81101	80.81101	80.81101	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	25	95.45423	95.45423	95.45423	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	26	98.7087	98.7087	98.7087	0.0
+samples/pr-1674.hwp	pdf/pr-1674-2024.pdf	29	98.78316	98.78316	98.78316	0.0
+samples/task3236/issue3236_split_table.hwpx	pdf/task3236/issue3236_split_table-2020.pdf	1	93.35104	93.35104	93.35104	0.0
+samples/task3236/issue3236_split_table.hwpx	pdf/task3236/issue3236_split_table-2020.pdf	2	95.13625	95.13625	95.13625	0.0
+samples/task3307/issue3307_outline_number.hwpx	pdf/task3307/issue3307_outline_number-2020.pdf	3	98.29737	98.29737	98.29737	0.0
+samples/task3307/issue3307_outline_number.hwpx	pdf/task3307/issue3307_outline_number-2020.pdf	4	98.51545	98.51545	98.51545	0.0
+samples/task3307/issue3307_outline_number.hwpx	pdf/task3307/issue3307_outline_number-2020.pdf	5	98.62612	98.62612	98.62612	0.0
+samples/task3307/issue3307_outline_number.hwpx	pdf/task3307/issue3307_outline_number-2020.pdf	7	95.84067	95.84067	95.84067	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	35	82.47662	82.47662	82.47662	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	36	99.7204	99.7204	99.7204	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	37	99.67083	99.67083	99.67083	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	38	98.17293	98.17293	98.17293	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	41	74.40169	74.40169	74.40169	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	42	99.26279	99.26279	99.26279	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	44	98.39687	98.39687	98.39687	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	45	94.21502	94.21502	94.21502	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	46	67.60741	67.60741	67.60741	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	49	97.07376	97.07376	97.07376	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	50	61.65938	61.65938	61.65938	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	51	99.75836	99.75836	99.75836	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	52	98.76206	98.76206	98.76206	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	53	70.20975	70.20975	70.20975	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	68	95.13954	95.13954	95.13954	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	72	98.66279	98.66279	98.66279	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	73	99.0758	99.0758	99.0758	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	91	94.89035	94.89035	94.89035	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	92	97.47131	97.47131	97.47131	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	93	98.72549	98.72549	98.72549	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	94	74.19811	74.19811	74.19811	0.0
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf	95	93.94607	93.94607	93.94607	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	8	92.60784	92.60784	92.6045	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	24	99.4905	99.4905	99.49051	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	26	99.83062	99.83063	99.83258	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	28	99.65381	99.65364	99.65364	-0.0002
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	33	97.44026	97.44014	97.43834	-0.0001
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	39	94.29581	94.29581	94.29581	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	42	90.66815	90.66112	90.66112	-0.007
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	44	94.69444	94.6944	94.73993	-0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	57	99.7444	99.7444	99.7444	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	58	99.96908	99.96908	99.96908	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	66	68.42931	68.42931	68.42328	0.0
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	68	98.77344	98.76875	98.76875	-0.0047
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	74	96.31433	96.31327	96.31327	-0.0011
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	4	91.07165	91.07165	91.08533	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	5	90.69608	90.69589	90.69589	-0.0002
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	6	91.84168	91.84168	91.84168	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	7	90.82616	90.82616	90.82616	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	14	90.64751	90.6638	90.6638	0.0163
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	15	88.06561	88.0685	88.0685	0.0029
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	20	95.96183	95.96183	95.96183	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	23	98.36763	98.36763	98.36763	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	24	90.74909	90.74758	90.74758	-0.0015
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	25	89.41116	89.41116	89.41116	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	31	82.45653	82.46768	82.46768	0.0112
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	34	93.733	93.733	93.733	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	35	92.67047	92.67047	92.67372	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	42	82.18689	82.18689	82.18689	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	43	97.29672	97.29672	97.29672	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	47	91.50965	91.50965	91.50965	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	48	94.2463	94.32094	94.32094	0.0746
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	50	95.42066	95.4335	95.4335	0.0128
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	56	94.57846	94.57846	94.57846	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	57	57.83217	57.83217	57.83217	0.0
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	62	87.28508	87.2842	87.2842	-0.0009
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-2020.pdf	66	42.91717	42.91717	42.91717	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	1	98.98298	98.98298	98.98298	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	2	99.92299	99.92299	99.92299	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	3	97.40013	97.40013	97.40013	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	4	97.19708	97.19708	97.19708	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	7	99.83369	99.83369	99.83369	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	9	98.968	98.968	98.968	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	10	99.84594	99.84594	99.84594	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	12	99.70887	99.70887	99.70887	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	18	99.81491	99.81491	99.81491	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	19	98.94962	98.94962	98.94962	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	34	99.80336	99.80336	99.80336	0.0
+samples/synam-001.hwp	pdf/synam-001-2022.pdf	35	99.27927	99.27927	99.27927	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	3	99.38561	99.38561	99.38561	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	4	99.9235	99.9235	99.9235	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	6	96.07809	96.07809	96.07809	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	10	99.02208	99.02208	99.02208	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	11	98.74726	98.74726	98.74726	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	13	99.25454	99.25454	99.25454	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	15	97.45616	97.45616	97.45616	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	20	99.10513	99.10513	99.10513	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	21	96.02153	96.02153	96.02153	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	24	91.43929	91.43929	91.43929	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	25	99.63525	99.63525	99.63525	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	28	99.06485	99.06485	99.06485	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	30	96.81274	96.81274	96.81274	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	32	98.67837	98.67837	98.67837	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	40	99.63297	99.63297	99.63297	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	42	99.73572	99.73572	99.73572	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	54	97.03246	97.03246	97.03246	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	57	98.87676	98.87676	98.87676	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	58	99.80051	99.80051	99.80051	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	59	99.88545	99.88545	99.88545	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	61	99.10688	99.10688	99.10688	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	65	96.9492	96.9492	96.9492	0.0
+samples/tac-img-02.hwp	pdf/tac-img-02-2022.pdf	66	97.81546	97.81546	97.81546	0.0
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	36	11.55182	11.55182	11.55182	0.0
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	37	25.73624	25.73624	25.73624	0.0
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	40	4.45566	4.45566	4.45566	0.0
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	42	33.22749	33.22749	33.22749	0.0
+samples/task1718/table_giant_cell_overfill.hwp	pdf/table_giant_cell_overfill-2024.pdf	47	15.7934	15.7934	15.7934	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	7	91.82276	91.82276	91.82276	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	8	89.74766	89.74766	89.74766	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	9	89.19572	89.19572	89.19572	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	10	92.65054	92.65054	92.65054	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	11	89.31921	89.31921	89.31921	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	17	68.66778	68.66737	68.66737	-0.0004
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	27	71.80844	71.80844	71.80844	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	28	65.50171	65.50171	65.50171	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	30	71.07781	71.07781	71.07781	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	32	66.55957	66.55957	66.55957	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	33	65.40669	65.40669	65.40669	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	34	67.45217	67.45217	67.45217	0.0
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-2020-print.pdf	35	63.14778	63.14778	63.14778	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	14	99.99548	99.99548	99.99548	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	15	95.79876	95.79876	95.79876	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	23	99.6511	99.6511	99.6511	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	25	95.84484	95.84484	95.84484	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	31	92.13373	92.13373	92.13373	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	32	99.38376	99.38376	99.38376	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	34	99.94083	99.94083	99.94083	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	39	99.99572	99.99572	99.99572	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	43	99.99946	99.99946	99.99946	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	44	100.0	100.0	100.0	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	45	98.68385	98.68385	98.68385	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	47	99.85192	99.85192	99.85192	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	57	99.98456	99.98456	99.98456	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	75	99.9848	99.9848	99.9848	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	76	99.90783	99.90783	99.90783	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	77	99.86012	99.86012	99.86012	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	78	98.54351	98.54351	98.54351	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	79	99.93739	99.93739	99.93739	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	80	99.9793	99.9793	99.9793	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	81	99.97368	99.97368	99.97368	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	82	99.8441	99.8441	99.8441	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	83	97.7432	97.7432	97.7432	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	85	98.82869	98.82869	98.82869	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	87	99.76072	99.76072	99.76072	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	89	99.93414	99.93414	99.93414	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	91	99.85982	99.85982	99.85982	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	96	99.53044	99.53044	99.53044	0.0
+samples/issue2006/1790387_prep_final_report.hwpx	pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf	109	99.98457	99.98457	99.98457	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	4	98.72358	98.72358	98.72358	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	8	98.14981	98.14981	98.14981	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	9	92.88544	92.88544	92.88544	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	11	97.12821	97.12821	97.12821	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	12	94.13721	94.13721	94.13721	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	15	96.23353	96.23353	96.23353	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	16	94.24088	94.24088	94.24088	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	19	96.41052	96.41052	96.41052	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	22	94.58373	94.58373	94.58373	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	24	96.51002	96.51002	96.51002	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	29	96.36185	96.36185	96.36185	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	30	92.06919	92.06919	92.06919	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	41	96.67392	96.67392	96.67392	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	43	94.46249	94.46249	94.46249	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	45	90.96609	90.96609	90.96609	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	46	89.7749	89.7749	89.7749	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	49	92.82395	92.82395	92.82395	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	51	90.87534	90.87534	90.87534	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	52	82.00492	82.00492	82.00492	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	53	97.39282	97.39282	97.39282	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	54	87.10168	87.10168	87.10168	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	55	93.00602	93.00602	93.00602	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	56	85.1224	85.1224	85.1224	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	57	97.63046	97.63046	97.63046	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	65	96.18586	96.18586	96.18586	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	66	92.3713	92.3713	92.3713	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	67	97.57914	97.57914	97.57914	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	68	99.3267	99.3267	99.3267	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	69	97.97048	97.97048	97.97048	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	70	90.04711	90.04711	90.04711	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	71	97.22787	97.22787	97.22787	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	73	98.8344	98.8344	98.8344	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	76	93.85346	93.85346	93.85346	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	77	96.29541	96.29541	96.29541	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	78	95.19393	95.19393	95.19393	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	79	96.11856	96.11856	96.11856	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	80	90.66339	90.66339	90.66339	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	82	96.25304	96.25304	96.25304	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	86	65.12722	65.12722	65.12722	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	91	96.82866	96.82866	96.82866	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	93	90.21614	90.21614	90.21614	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	94	92.28196	92.28196	92.28196	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	97	97.81033	97.81033	97.81033	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	98	94.80964	94.80964	94.80964	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	103	96.37767	96.37767	96.37767	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	106	93.6154	93.6154	93.6154	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	107	98.31801	98.31801	98.31801	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	108	98.6087	98.6087	98.6087	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	109	99.64416	99.64416	99.64416	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	112	94.36022	94.36022	94.36022	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	115	96.97235	96.97235	96.97235	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	119	98.53741	98.53741	98.53741	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	121	96.38768	96.38768	96.38768	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	124	92.91847	92.91847	92.91847	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	133	96.29034	96.28562	96.28562	-0.0047
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	134	97.82888	97.83072	97.83072	0.0018
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	141	95.70361	95.70361	95.70361	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	144	91.09663	91.09663	91.09663	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	147	98.31285	98.31285	98.31285	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	151	85.97116	86.00017	86.00017	0.029
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	152	64.31398	64.31398	64.31398	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	154	56.32045	56.32492	56.32492	0.0045
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	155	71.39146	71.39146	71.39146	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	156	47.04254	47.04254	47.04254	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	157	92.08749	92.08749	92.08749	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	161	96.13479	96.13479	96.13479	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	162	98.34658	98.34658	98.34658	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	164	91.43228	91.43228	91.43228	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	168	89.10484	89.10484	89.10484	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	173	97.94195	97.94195	97.94195	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	185	95.7899	95.7899	95.7899	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	186	93.36318	93.36318	93.36318	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	188	93.0023	93.0023	93.0023	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	190	91.6747	91.6747	91.6747	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	191	97.62012	97.62012	97.62012	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	192	94.90133	94.90133	94.90133	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	193	95.45362	95.45362	95.45362	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	194	91.39926	91.39926	91.39926	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	199	96.50603	96.50603	96.50603	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	200	70.14656	70.14656	70.14656	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	206	94.22649	94.22649	94.22649	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	208	92.38068	92.38068	92.38068	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	210	94.45402	94.45402	94.45402	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	211	96.49935	96.49935	96.49935	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	215	97.85311	97.85311	97.85311	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	221	70.71408	70.71408	70.71408	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	222	89.46442	89.46442	89.46442	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	223	66.71026	66.71026	66.71026	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	227	98.10644	98.10644	98.10644	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	229	96.779	96.779	96.779	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	232	94.99833	94.99833	94.99833	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	233	97.83468	97.83468	97.83468	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	234	98.31426	98.31426	98.31426	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	236	96.32454	96.32454	96.32454	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	237	97.73448	97.73448	97.73448	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	240	82.31929	82.31929	82.31929	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	241	71.13916	71.13785	71.13785	-0.0013
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	246	96.41338	96.41338	96.41338	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	266	96.05254	96.05254	96.05254	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	270	90.91214	90.91214	90.91214	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	272	90.28594	90.28594	90.28594	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	274	90.08435	90.08217	90.08217	-0.0022
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	282	35.17539	35.17539	35.17539	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	285	57.0465	57.05266	57.05266	0.0062
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	286	37.46532	37.46532	37.46532	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	287	52.41367	52.41367	52.41367	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	290	40.11657	40.11657	40.11657	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	291	48.11624	48.11624	48.11624	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	297	59.60232	59.60232	59.60232	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	299	67.79588	67.79392	67.79392	-0.002
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	301	98.0694	98.04573	98.04573	-0.0237
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	303	42.20465	42.21667	42.21667	0.012
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	311	97.62102	97.62102	97.62102	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	312	84.57897	84.57897	84.57897	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	313	91.83549	91.83549	91.83549	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	314	77.07996	77.07996	77.07996	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	315	76.63765	76.63765	76.63765	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	317	77.66509	77.66509	77.66509	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	318	81.035	81.035	81.035	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	319	82.85027	82.84349	82.84349	-0.0068
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	320	78.30645	78.30645	78.30645	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	321	67.34136	67.34136	67.34136	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	322	57.69696	57.69696	57.69696	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	323	64.06678	64.06678	64.06678	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	325	69.65045	69.65045	69.65045	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	326	72.43367	72.43118	72.43118	-0.0025
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	327	66.28042	66.27109	66.27109	-0.0093
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	329	60.76797	60.76797	60.76797	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	330	62.39732	62.39911	62.39911	0.0018
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	331	74.00576	74.00576	74.00576	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	335	56.90248	56.90248	56.90248	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	336	58.89842	58.89842	58.89842	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	337	59.22418	59.22418	59.22418	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	339	68.22774	68.22774	68.22774	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	340	61.82184	61.82184	61.82184	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	343	78.96817	78.96817	78.96817	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	345	71.51261	71.51261	71.51261	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	346	69.93372	69.93372	69.93372	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	348	81.07741	81.07741	81.07741	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	350	64.45206	64.45206	64.45206	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	351	47.22902	47.22902	47.22902	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	353	69.94899	69.94899	69.94899	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	359	60.54598	60.54598	60.54598	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	363	51.98621	51.98621	51.98621	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	364	62.96312	62.96312	62.96312	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	367	32.72473	32.72473	32.72473	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	368	20.99181	20.99181	20.99181	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	370	56.22439	56.22439	56.22439	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	371	56.43841	56.43841	56.43841	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	373	22.89458	22.89458	22.89458	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	374	26.24161	26.24161	26.24161	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	376	32.70849	32.70849	32.70849	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	378	42.176	42.176	42.176	0.0
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2024.pdf	381	2.29634	2.29634	2.29634	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	9	98.97638	98.97575	98.97575	-0.0006
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	11	90.70204	90.72911	90.72911	0.0271
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	16	95.11724	95.102	95.102	-0.0152
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	20	98.14885	98.14813	98.14813	-0.0007
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	30	98.69474	98.69291	98.69291	-0.0018
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	34	98.57881	98.57889	98.57889	0.0001
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	36	97.75444	97.75444	97.75444	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	39	99.25271	99.25271	99.25271	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	47	94.78618	94.78624	94.78624	0.0001
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	48	97.94156	97.94156	97.94214	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	49	55.79937	55.80344	55.80344	0.0041
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	50	71.66745	71.66826	71.67526	0.0008
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	54	99.57316	99.57474	99.5748	0.0016
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	60	98.29889	98.29561	98.29605	-0.0033
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	79	99.00186	98.98874	98.98874	-0.0131
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	80	98.82205	98.75697	98.75697	-0.0651
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	92	99.66499	99.665	99.665	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	93	99.34437	99.34437	99.34437	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	99	97.62013	97.27368	97.26462	-0.3465
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	112	99.30967	99.31051	99.30304	0.0008
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	117	98.7141	98.71325	98.71325	-0.0008
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	122	78.02166	77.95139	77.95139	-0.0703
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	125	28.66856	28.66856	28.66856	0.0
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	132	98.83683	98.83633	98.83633	-0.0005
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf	184	13.17164	13.17164	13.17164	0.0
+samples/task1725/text_footnote_tail_overpagination.hwp	pdf/text_footnote_tail_overpagination-2024.pdf	93	98.09175	98.09175	98.09175	0.0
+samples/task1725/text_footnote_tail_overpagination.hwp	pdf/text_footnote_tail_overpagination-2024.pdf	207	99.65011	99.65011	99.65011	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	2	94.66639	94.66639	94.66639	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	25	99.75431	99.75431	99.75431	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	29	99.7008	99.7008	99.7008	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	32	96.60054	96.60054	96.60054	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	43	99.64152	99.64152	99.64152	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	45	99.91401	99.91401	99.91401	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	53	99.24822	99.24822	99.24822	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	54	99.05564	99.05564	99.05564	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	55	98.77817	98.77817	98.77817	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	56	98.87156	98.87156	98.87156	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	58	96.68269	96.68269	96.68269	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	59	97.20237	97.20237	97.20237	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	61	99.07377	99.07377	99.07377	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	62	99.35395	99.35395	99.35395	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	63	99.44438	99.44438	99.44438	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	68	98.79292	98.79292	98.79292	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	69	99.5589	99.5589	99.5589	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	70	97.46864	97.46864	97.46864	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	71	95.54027	95.54027	95.54027	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	72	99.98697	99.98697	99.98697	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	76	98.46583	98.46583	98.46583	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	77	99.47108	99.47108	99.47108	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	78	98.77195	98.77195	98.77195	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	81	99.33141	99.33141	99.33141	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	82	99.30671	99.30671	99.30671	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	83	97.50225	97.50225	97.50225	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	84	97.60262	97.60262	97.60262	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	86	97.44112	97.44112	97.44112	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	88	96.3831	96.3831	96.3831	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	89	98.41711	98.41711	98.41711	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	90	98.98849	98.98849	98.98849	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	91	98.76136	98.76136	98.76136	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	95	98.00564	98.00564	98.00564	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	98	97.54736	97.54736	97.54736	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	100	99.06323	99.06323	99.06323	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	107	98.89489	98.89489	98.89489	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	114	99.85279	99.85279	99.85279	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	116	98.952	98.952	98.952	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	117	99.21341	99.21341	99.21341	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	121	99.22243	99.22243	99.22243	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	123	98.75617	98.75617	98.75617	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	124	98.95223	98.95223	98.95223	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	125	99.31582	99.31582	99.31582	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	127	99.17816	99.17816	99.17816	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	128	99.43472	99.43472	99.43472	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	130	99.82204	99.82204	99.82204	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	131	96.40397	96.40397	96.40397	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	135	98.5772	98.5772	98.5772	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	136	99.26222	99.26222	99.26222	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	137	99.15009	99.15009	99.15009	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	138	99.59395	99.59395	99.59395	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	139	99.57308	99.57308	99.57308	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	141	98.30738	98.30738	98.30738	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	142	99.85941	99.85941	99.85941	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	143	99.60342	99.60342	99.60342	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	176	88.87878	88.87878	88.87878	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	199	97.27391	97.27391	97.27391	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	202	96.37448	96.37448	96.37448	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	204	99.74203	99.74203	99.74203	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	208	85.02863	85.02863	85.02863	0.0
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf	215	99.14329	99.14329	99.14329	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	6	8.69019	8.69019	8.69019	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	11	31.8907	31.8907	31.89701	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	12	40.10767	40.10767	40.10693	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	13	30.27171	30.27171	30.27322	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	16	32.7215	32.7215	32.72074	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	20	21.08141	21.08141	21.08185	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	25	35.08792	35.08792	35.08792	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	28	40.07448	40.07448	40.07448	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	29	34.68314	34.68314	34.6801	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	30	33.3473	33.3473	33.3473	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	31	33.76116	33.76116	33.76116	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	32	31.38222	31.38222	31.38222	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	35	19.18689	19.18689	19.18689	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	36	35.46364	35.46364	35.46364	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	37	39.40338	39.40338	39.40338	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	38	36.48723	36.48723	36.48723	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	40	35.25997	35.25997	35.25997	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	41	33.37923	33.37923	33.37848	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	42	38.55215	38.55215	38.55215	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	43	38.00902	38.00902	38.00902	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	44	32.38917	32.38917	32.38917	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	45	28.16306	28.16306	28.16728	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	46	21.71758	21.71758	21.71489	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	48	37.43119	37.43119	37.43119	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	49	37.44673	37.44673	37.44673	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	52	31.61314	31.61314	31.61336	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	53	31.60061	31.60061	31.60061	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	54	25.67604	25.67604	25.67604	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	55	40.92599	40.92599	40.92599	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	58	36.94961	36.94961	36.94961	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	59	30.72053	30.72053	30.72053	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	60	33.11102	33.11102	33.11102	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	61	35.66166	35.66166	35.66166	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	62	35.03973	35.03973	35.03973	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	64	30.94931	30.94931	30.94931	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	65	34.45957	34.45957	34.45957	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	67	31.24843	31.24843	31.24843	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	68	29.42095	29.42095	29.42095	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	69	31.48705	31.48705	31.4867	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	70	31.82603	31.82603	31.82603	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	72	27.12519	27.12519	27.12519	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	75	39.50531	39.50531	39.50531	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	76	36.27212	36.27212	36.27212	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	77	37.4265	37.4265	37.47837	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	78	32.63806	32.63806	32.64182	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	82	24.90663	24.90663	24.90663	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	85	34.06867	34.06867	34.06867	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	89	27.53192	27.53192	27.53134	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	90	39.76396	39.76396	39.76396	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	92	35.56595	35.56595	35.56595	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	93	32.34272	32.34272	32.34501	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	94	37.58924	37.58924	37.58924	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	125	45.73262	45.72812	45.72775	-0.0045
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	134	48.3068	48.24213	48.24213	-0.0647
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	140	48.20228	48.20066	48.20066	-0.0016
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	146	50.94442	50.95439	50.95439	0.01
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	148	47.20604	47.20297	47.20297	-0.0031
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	158	49.1048	49.10817	49.10817	0.0034
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	161	46.96097	46.94629	46.94629	-0.0147
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	162	46.58608	46.58378	46.58378	-0.0023
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	163	45.86725	45.87963	45.87963	0.0124
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	172	20.442	20.43905	20.43905	-0.0029
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	173	35.93939	35.91964	35.91964	-0.0198
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	176	42.11976	42.11976	42.11976	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	178	42.68698	42.68889	42.68889	0.0019
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	196	36.15421	36.15421	36.15421	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	197	39.44066	39.44066	39.44066	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	220	39.15468	39.13981	39.13981	-0.0149
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	241	38.26718	38.23462	38.23462	-0.0326
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	256	44.02525	44.01188	44.01188	-0.0134
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	258	41.95932	41.95653	41.95525	-0.0028
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	259	41.41758	41.42227	41.42227	0.0047
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	260	45.57016	45.56515	45.56859	-0.005
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	280	24.71058	24.71058	24.71058	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	281	23.15477	23.15477	23.15477	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	283	41.34974	41.34974	41.34974	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	285	40.75263	40.75263	40.75263	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	288	18.74349	18.7438	18.7438	0.0003
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	292	21.4202	21.41167	21.41167	-0.0085
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	294	42.40542	42.38094	42.38072	-0.0245
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	295	44.70348	44.7061	44.7061	0.0026
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	296	45.22181	45.22036	45.22036	-0.0014
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	297	43.45528	43.45781	43.45827	0.0025
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	319	35.70176	35.70176	35.70156	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	327	24.13709	24.13302	24.13302	-0.0041
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	349	38.86657	38.86657	38.86657	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	384	29.2949	29.29521	29.29521	0.0003
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	385	32.69534	32.69534	32.69775	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	387	44.2754	44.25077	44.25077	-0.0246
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	403	13.89794	13.89794	13.90154	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	404	2.7701	2.7701	2.77	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	405	32.30723	32.30723	32.30754	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	406	30.37408	30.37408	30.37134	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	407	36.24751	36.24751	36.25068	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	408	32.48731	32.48731	32.48761	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	409	30.65337	30.65337	30.65036	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	410	29.38342	29.38342	29.38411	0.0
+samples/task2287/1342000_edu_curriculum_map.hwp	pdf/1342000_edu_curriculum_map-2024.pdf	412	28.99849	28.99849	28.99796	0.0
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	13	99.53565	99.5383	99.5383	0.0027
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	23	96.04796	96.03998	96.03998	-0.008
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	24	97.90323	97.94921	97.94921	0.046
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	28	98.77079	98.7861	98.7861	0.0153
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	31	96.71137	96.70309	96.70309	-0.0083
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	33	98.09781	97.94326	97.94326	-0.1546
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	35	99.80045	99.83452	99.83452	0.0341
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	45	99.71083	99.70916	99.70916	-0.0017
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	49	99.63664	99.63684	99.63684	0.0002
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	53	99.00301	98.99909	98.99909	-0.0039
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	54	99.91851	99.92214	99.92214	0.0036
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	57	99.03868	99.03786	99.03786	-0.0008
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	66	99.16966	99.17437	99.17437	0.0047
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	68	99.5535	99.54946	99.54946	-0.004
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	71	98.99649	98.99879	98.99879	0.0023
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	73	73.81927	73.84677	73.84677	0.0275
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	76	99.53541	99.53123	99.53123	-0.0042
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	77	99.30868	99.31024	99.31024	0.0016
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	78	99.2353	99.23585	99.23585	0.0006
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	92	98.70767	98.72014	98.72014	0.0125
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	103	99.72575	99.71674	99.71674	-0.009
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	107	99.47993	98.87955	98.87955	-0.6004
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	111	99.35288	99.35374	99.35374	0.0009
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	112	98.87279	98.87507	98.87507	0.0023
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	114	99.88586	99.88711	99.88711	0.0013
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	115	99.47365	99.47394	99.47394	0.0003
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	116	99.97914	99.97915	99.97915	0.0
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	119	98.46591	98.45987	98.45987	-0.006
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	120	99.98787	99.98787	99.98787	0.0
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	123	97.2263	97.19304	97.19304	-0.0333
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	124	98.75259	98.68788	98.68788	-0.0647
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	125	98.43814	98.40372	98.40372	-0.0344
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	127	99.15168	99.15332	99.15332	0.0016
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	128	99.56308	99.56152	99.56152	-0.0016
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	131	99.8559	99.85157	99.85157	-0.0043
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	136	99.00968	99.00175	99.00175	-0.0079
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	141	98.81382	98.8157	98.8157	0.0019
