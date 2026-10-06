@@ -400,6 +400,9 @@ mutation이므로 메인테이너 승인 뒤에만 실행한다. inventory에 �
 | Release Binary | `gh workflow run release-binary.yml --ref devel -f tag=test` | verify-only, Release·외부 publish skipped, 5-platform·package artifact 필수 |
 | Publish All Packages | `gh workflow run npm-publish.yml --ref devel -f publish=false -f publish_extensions=true` | verify-only, 네 외부 채널 skipped, `completed` verdict artifact 필수 |
 | Render Diff | `gh workflow run render-diff.yml --ref devel` | direct, artifact 필수 |
+| Release operations contracts | `gh workflow run release-operations-contracts.yml --ref devel` | contracts-only, issue label·duration refresh·trusted reuse의 실제 스크립트/API 실패 계약 |
+
+`build-nextest-archives.yml`과 `run-nextest-archives.yml`은 독립 dispatch 대신 같은 exact SHA의 CI caller run을 증적으로 쓴다. 각각 네 archive build/worker job과 CI preflight·Build & Test의 success를 모두 요구한다. metadata workflow 세 개는 read-only contracts adapter로 검증하며 원래 label/metrics 쓰기 이벤트를 실행하지 않는다. 공유 caller/adapter run에서도 각 변경 파일의 hash·mode·필수 job을 개별 유지한다. contracts-only는 실제 repository metadata 쓰기 성공의 증거와 구분한다.
 
 `workflow_dispatch` API의 `ref`는 branch 또는 tag이므로 명령에 commit SHA를 직접 넘겨 exact성을
 보장하지 않는다. 따라서 dispatch 직전의 `candidate_sha`를 기록하고, 생성된 모든 run의

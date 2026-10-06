@@ -114,6 +114,29 @@ class WorkflowPromotionEvidenceTests(unittest.TestCase):
         self.assertEqual(artifact["files"], ["verdict.json"])
         self.assertEqual(artifact["sha256"], hashlib.sha256(source.archive).hexdigest())
 
+    def test_shared_adapter_retains_each_source_hash_and_mode(self) -> None:
+        source = FakeSource()
+        inventory = self.inventory()
+        second = dict(inventory["entries"][0])
+        second.update({
+            "path": ".github/workflows/reusable.yml",
+            "evidencePath": ".github/workflows/oracle-public-advisory.yml",
+            "after": {"sha256": "d" * 64},
+            "executionMode": "contracts-only",
+        })
+        inventory["entries"].append(second)
+        evidence = self.module.collect_evidence(inventory, source)
+        self.assertEqual(len(evidence["runs"]), 2)
+        self.assertEqual(
+            {(run["workflowSha256"], run["executionMode"]) for run in evidence["runs"]},
+            {("c" * 64, "direct"), ("d" * 64, "contracts-only")},
+        )
+        for run in evidence["runs"]:
+            self.assertEqual(run["id"], 42)
+            self.assertEqual(run["headSha"], "b" * 40)
+            self.assertEqual(run["artifacts"][0]["verdict"], "completed")
+            self.assertTrue(run["paginationComplete"])
+
     def test_incomplete_job_pagination_stays_visible(self) -> None:
         source = FakeSource()
         source.jobs_complete = False
