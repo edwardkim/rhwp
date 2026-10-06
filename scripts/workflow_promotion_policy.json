@@ -209,9 +209,11 @@
         "permissions"
       ],
       "requiredJobs": [
-        "Release operations contracts"
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
       ],
-      "evidencePath": ".github/workflows/release-operations-contracts.yml"
+      "evidencePath": ".github/workflows/ci.yml"
     },
     ".github/workflows/refresh-nextest-duration.yml": {
       "requiredSkippedJobs": [],
@@ -228,9 +230,11 @@
         "artifact"
       ],
       "requiredJobs": [
-        "Release operations contracts"
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
       ],
-      "evidencePath": ".github/workflows/release-operations-contracts.yml"
+      "evidencePath": ".github/workflows/ci.yml"
     },
     ".github/workflows/trusted-postmerge-ci-reuse.yml": {
       "requiredSkippedJobs": [],
@@ -247,9 +251,11 @@
         "artifact"
       ],
       "requiredJobs": [
-        "Release operations contracts"
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
       ],
-      "evidencePath": ".github/workflows/release-operations-contracts.yml"
+      "evidencePath": ".github/workflows/ci.yml"
     },
     ".github/workflows/release-operations-contracts.yml": {
       "requiredSkippedJobs": [],
@@ -261,12 +267,15 @@
         "edwardkim"
       ],
       "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
       "sensitiveSurfaces": [
         "permissions",
         "artifact"
       ],
       "requiredJobs": [
-        "Release operations contracts"
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
       ]
     }
   }
