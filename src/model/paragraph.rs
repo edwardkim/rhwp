@@ -661,6 +661,16 @@ impl Paragraph {
         )
     }
 
+    /// 문단 나누기 offset(캐럿 축)에서 한 칸을 차지하는 컨트롤인가.
+    ///
+    /// 캐럿은 글자처럼 취급하는 개체와 각주·미주([`Control::is_logical_inline`]), 그리고
+    /// 조판에서 한 글자 칸인 글자겹침을 한 칸씩 지난다. 떠 있는 개체는 칸이 없고, 자동 번호는
+    /// 자리표 글자가 이미 한 칸이다. 이들까지 세면 그 뒤에서 한 글자씩 앞에서 나눈다.
+    /// 어느 문단으로 옮길지는 [`Self::is_split_movable_control`] 이 따로 정한다.
+    pub(crate) fn occupies_split_slot(ctrl: &Control) -> bool {
+        ctrl.is_logical_inline() || matches!(ctrl, Control::CharOverlap(_))
+    }
+
     fn control_mask_bit(ctrl: &Control) -> u32 {
         match ctrl {
             Control::SectionDef(_) | Control::ColumnDef(_) => 0x0002,
@@ -710,7 +720,7 @@ impl Paragraph {
             let mut positions = Vec::with_capacity(self.controls.len());
             for ctrl in &self.controls {
                 positions.push(inline_seen);
-                if Self::is_split_movable_control(ctrl) {
+                if Self::occupies_split_slot(ctrl) {
                     inline_seen += 1;
                 }
             }
@@ -725,7 +735,7 @@ impl Paragraph {
         for (ci, ctrl) in self.controls.iter().enumerate() {
             let text_pos = text_positions.get(ci).copied().unwrap_or(text_len);
             positions.push(text_pos + inline_seen);
-            if Self::is_split_movable_control(ctrl) {
+            if Self::occupies_split_slot(ctrl) {
                 inline_seen += 1;
             }
         }
@@ -742,7 +752,7 @@ impl Paragraph {
             .controls
             .iter()
             .enumerate()
-            .filter(|(_, ctrl)| Self::is_split_movable_control(ctrl))
+            .filter(|(_, ctrl)| Self::occupies_split_slot(ctrl))
             .filter(|(ci, _)| {
                 control_positions.get(*ci).copied().unwrap_or(usize::MAX) < logical_offset
             })
@@ -1470,6 +1480,7 @@ impl Paragraph {
 
     /// char_offset 위치에서 문단을 분할한다.
     ///
+    /// `char_offset` 은 캐럿 축이다 — 글자와 [`Self::occupies_split_slot`] 컨트롤을 하나씩 센다.
     /// 현재 문단은 char_offset 이전까지만 유지되고,
     /// char_offset 이후의 텍스트와 메타데이터로 새 문단을 생성하여 반환한다.
     ///

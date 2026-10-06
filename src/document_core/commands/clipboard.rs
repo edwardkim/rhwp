@@ -185,13 +185,13 @@ fn text_to_split_logical_offset(
     }
 
     // 클립보드 range trimming 은 곧바로 Paragraph::split_at()을 호출한다.
-    // 따라서 커서 탐색용 논리 offset이 아니라 split_at()과 같은 movable control
-    // 기준으로 변환해야 non-TAC 그림이 텍스트 앞에 있어도 첫 글자를 잃지 않는다.
+    // 따라서 split_at()이 한 칸으로 세는 컨트롤과 같은 기준으로 변환해야
+    // 앞에 놓인 개체 때문에 범위가 한 글자씩 밀리지 않는다.
     let before_count = para
         .controls
         .iter()
         .enumerate()
-        .filter(|(_, ctrl)| Paragraph::is_split_movable_control(ctrl))
+        .filter(|(_, ctrl)| Paragraph::occupies_split_slot(ctrl))
         .filter_map(|(ci, _)| control_positions.get(ci))
         .filter(|&&pos| pos < text_offset || (after_control && pos == text_offset))
         .count();
