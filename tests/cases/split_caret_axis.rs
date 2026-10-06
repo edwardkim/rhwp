@@ -416,6 +416,47 @@ fn enter_right_after_auto_number_keeps_it_in_first_paragraph() {
     }
 }
 
+#[test]
+fn undo_of_enter_right_after_auto_number_restores_the_paragraph() {
+    // Enter 를 합치기로 되돌리면 문단이 처음과 같다. 이어서 번호 뒤에 친 글자는 저장본에서도
+    // 번호 뒤에 있고, 번호 자리표가 낱 공백으로 남지 않는다.
+    let mut broken = Vec::new();
+    for (format, open) in variants(auto_number) {
+        let mut core = open();
+        let before = body(&core, 1).clone();
+        core.split_paragraph_native(0, 1, 3, None).unwrap();
+        core.merge_paragraph_native(0, 2).unwrap();
+        let merged = body(&core, 1);
+        if merged.text != before.text
+            || merged.char_offsets != before.char_offsets
+            || merged.control_text_positions() != before.control_text_positions()
+        {
+            broken.push(format!(
+                "{format} 되돌리기: {:?} {:?} {:?}",
+                merged.text,
+                merged.char_offsets,
+                merged.control_text_positions()
+            ));
+        }
+        core.insert_text_native(0, 1, 3, "X").unwrap();
+        for (saved, bytes) in [
+            ("HWP", core.export_hwp_native().unwrap()),
+            ("HWPX", core.export_hwpx_native().unwrap()),
+        ] {
+            let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+            let p = body(&reopened, 1);
+            if p.text != "가나 X다라마" || objects(p) != [("번호", 2)] {
+                broken.push(format!(
+                    "{format} 입력 뒤 {saved} 저장: {:?}{:?}",
+                    p.text,
+                    objects(p)
+                ));
+            }
+        }
+    }
+    assert!(broken.is_empty(), "번호가 어긋난 경우: {broken:#?}");
+}
+
 /// 본문 첫 문단의 떠 있는 사각형을, `build` 가 만든 글 `TEXT` 의 2번 글자 앞으로 옮긴 문서.
 fn rect_moved_into(build: fn(&mut DocumentCore)) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
