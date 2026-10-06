@@ -16,6 +16,13 @@ HWP/HWPX 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공�
 | **@rhwp/core** (이 패키지) | WASM 파서/렌더러 — 직접 API 호출 |
 | **@rhwp/editor** | 완전한 에디터 UI — iframe 임베드 |
 
+## v0.8.7
+
+- 연속 TAC 표와 중첩 표의 저장 줄·페이지 분할·셀 패딩 및 문단 배치를 보정했습니다.
+- 호스트 글꼴 공급자, 명시적 폰트 환경과 guarded native glyph replay를 보강했습니다.
+- SVG CSS/XML 직렬화, XML 누적 예산, HWP3 문단 깊이, 연결 그림과 WMF 입력 경계를 보강했습니다.
+- HWP/HWPX 저장 보존과 웹 하이퍼링크, 영어 UI·편집 경계를 개선했습니다.
+
 ## v0.8.6
 
 - exact font instance, guarded kerning, common shaping과 세로쓰기 조판 경로를 보강했습니다.
