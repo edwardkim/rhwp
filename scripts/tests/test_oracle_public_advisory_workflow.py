@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -140,6 +141,23 @@ class OraclePublicAdvisoryWorkflowTests(unittest.TestCase):
         self.assertIn("LIMIT: ${{ inputs.limit || '0' }}", self.workflow)
         self.assertIn("continue-on-error: true", self.workflow)
         self.assertIn("이 잡은 advisory 이며 required check 가 아닙니다.", self.workflow)
+
+    def test_sparse_checkout_covers_cargo_path_patches(self) -> None:
+        repo_root = WORKFLOW_PATH.parents[2]
+        manifest = tomllib.loads((repo_root / "Cargo.toml").read_text(encoding="utf-8"))
+        checkout = self.workflow.split("          sparse-checkout: |\n", 1)[1]
+        checkout = checkout.split("\n\n", 1)[0]
+        entries = {Path(line.strip()) for line in checkout.splitlines()}
+        for registry, patches in manifest.get("patch", {}).items():
+            for name, dependency in patches.items():
+                if "path" not in dependency:
+                    continue
+                relative = Path(dependency["path"])
+                self.assertTrue((repo_root / relative / "Cargo.toml").is_file())
+                self.assertTrue(
+                    any(entry == relative or entry in relative.parents for entry in entries),
+                    f"Cargo patch {registry}/{name}: sparse checkout omits {relative}",
+                )
 
 
 if __name__ == "__main__":
