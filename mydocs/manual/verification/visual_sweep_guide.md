@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-10-05
+last_verified: 2026-10-06
 ---
 
 # PDF/SVG visual sweep 가이드
@@ -604,29 +604,91 @@ renderer, layout, paint처럼 문서 비교 결과를 reviewer의 판단 근거�
 PNG를 PR 본문에서 바로 볼 수 있게 한다. review 문서·임시 output 경로·asset 파일명만 적어 두고
 reviewer가 저장소를 찾아 열게 하지 않는다.
 
+**제출물은 대표 페이지의 review/standalone overlay PNG와 검증 대상 전체 페이지의 Native TSV 원본이다.**
+제출용 TSV는 Native만 필수이며 WASM TSV 첨부는 요구하지 않는다.
+전체 페이지의 PNG 생성·커밋·본문 첨부는 요구하지 않는다. 변경 효과·주요 경계를 보여주는 대표 페이지만
+이미지로 첨부하고, 전체 범위의 결과는 TSV 원본과 요약으로 제공한다.
+
 1. 비교를 마친 최종 PR head에 대표 review와 standalone overlay PNG를 `mydocs/pr/assets/` 아래 안정
    경로로 commit한다. PR 번호를 아직 모르면 `issue_<N>_<topic>/`처럼 issue 또는 변경 주제를 쓴다.
    PNG가 바뀌면 같은 경로를 써도 되지만, 반드시 새 head SHA로 URL을 바꾼다.
+   **기여자의 PR 번호는 이 단계에서 불필요하다.**
+   `mydocs/pr/assets/issue_<이슈번호>_<주제>/<입력명>-p<쪽>-<native|wasm>-<review|overlay>.png`처럼
+   원본·쪽·출력 경로를 알 수 있는 파일명으로 커밋한다. 이슈가 없으면 주제별 안정 경로를 쓴다.
 2. PR 본문에는 해당 PR의 `headRepositoryOwner/headRepository`와 정확한 `headRefOid`를 사용한 아래 형식의
    Markdown 이미지를 넣는다. target repository나 branch 이름으로 대신하지 않는다. 외부 fork PR도
    contributor fork의 head repository와 SHA를 사용한다.
-3. Native/fresh WASM 등 실제 실행한 각 출력 경로마다 대표 review와 overlay를 한 장씩 표시한다. 실행하지
-   않은 경로는 이미지 행을 지우고 사유를 적는다. 자동 수치는 보조값이며 사람의 직접 판독·남은 차이도
-   이미지 위나 아래에 함께 기록한다.
+   PNG를 포함한 제출 head의 SHA는 `git rev-parse HEAD`로 확인한다. 해당 head repository에 push해
+   이미지를 조회할 수 있게 한 뒤 **PR 생성 시부터** `![설명](raw URL)`을 본문에 넣는다.
+   PR 번호를 받기 위한 선행 PR 생성이나 번호에 맞춘 증적 파일 rename은 필요하지 않다.
+3. 기여자 본문은 아래 **입력·페이지별 첨부 형식**을 따른다. 같은 입력·쪽의 Native/fresh WASM을 행으로,
+   review와 standalone overlay를 열로 둔 표에서 실제 이미지를 나란히 표시한다. 자동 수치는 보조값이며
+   해당 쪽의 직접 판독·남은 차이도 표 바로 아래에 기록한다. 검증 범위에 90% 미만·누락·측정 불가
+   쪽이 있거나 필수 경로를 미실행했으면 PR 생성·제출 갱신·검토 요청을 하지 않는다.
+   사유는 제출 전 로컬 작업 기록에 남기고 자기 branch에서 수정·재실행해 통과한 뒤 본문을 완성한다.
 4. `gh pr create` 또는 `gh pr edit --body-file` 뒤 `gh pr view N --json body`로 URL·한글·실제 head SHA를
    재확인하고, `gh api repos/<head-owner>/<head-repo>/contents/<asset>?ref=<head-sha>`로 asset이 그 head에
    존재하는지 확인한다. GitHub PR 화면에서 이미지가 렌더링되는 것도 직접 확인한다.
 
+### 입력·페이지별 첨부 형식
+
+[PR #7551](https://github.com/edwardkim/rhwp/pull/7551)의 Native/fresh WASM review/overlay 표와
+영향 페이지의 수치·판독 기록을 첨부 형식의 참고로 사용한다. 본문에는 기여자 자신의 입력·페이지·
+출력 경로와 실제 검증 결과를 넣는다. 다음 순서로 구성한다.
+
+1. 공통 환경: PR head repository/SHA, 검증한 code source와 Native binary/fresh WASM 해시,
+   실제 빌드 명령·옵션·인쇄 프로필·글꼴 공급을 적는다. 입력/기준 Print PDF의 경로·해시·제품/빌드·출처도 연결한다.
+2. 전체 결과: 입력마다 Native/fresh WASM 두 행을 만들어 실제 검증 페이지 범위·전체 쪽수·최저값과 그 쪽,
+   90% 미만/누락/측정 불가 쪽·gate를 적는다. 여러 문서의 최저값을 하나로 합쳐 개별 실패를 가리지 않는다.
+   검증 대상 전체 페이지의 **Native TSV 원본만** ZIP으로 묶어 PR 본문에 업로드하거나
+   검토자가 내려받을 수 있는 동일 파일의 링크를 첨부한다. WASM TSV는 첨부할 필요가 없다.
+   첨부 파일의 입력·출력 경로·검증 head를 명시한다.
+   요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않는다. TSV는 ignored output에
+   보존하고 Git에 커밋하지 않는다. 수정 전 비교를 실행했다면 source SHA와 같은 입력·페이지의 전후 값도 연결한다.
+3. 대표 직접 증적: `### 입력명 · 기준 PDF pN ↔ rhwp pN` 아래 한 표로 같은 쪽의 두 출력 경로와
+   review/standalone overlay를 대조한다. 첨부할 대표 입력·쪽이 여러 개일 때만 소제목/표/판독 묶음을 반복한다.
+   이미지 설명에는 입력명·쪽·출력 경로를 넣고, 해당 쪽 수치·실제로 확인한 경계·남은 차이를 바로 아래에 적는다.
+
+대표 이미지 수와 전체 TSV의 검증 페이지 수는 구분한다. 전체 페이지 PNG 첨부·전쪽 overlay 합성을 요구하지 않으며,
+대표 정상 쪽만으로 검증 범위의 미달·미검증 쪽을 승인하지 않는다. 시간 제약·기존 차이·부분 개선·추후
+검증 등의 사유 기재는 PR 제출 허가가 아니다. 미달·미검증 상태는 로컬에서 수정·재실행하고,
+통과한 뒤 PR을 생성·제출 갱신한다. 이미 열린 PR도 그 전에는 승인·통합하지 않는다.
+해결 불가능한 실제 글꼴 문제는 정식 글꼴 예외 계약으로만 판정하며 일반적인 사유 기재와 구분한다.
+
+생성 전 첨부 예시는 아래와 같다. `OWNER/REPOSITORY`는 기여자의 실제 head 저장소,
+`HEAD_SHA`는 해당 PNG가 들어 있는 제출 head의 SHA다. `ISSUE_OR_TOPIC`에는 이슈 번호·주제 또는
+주제 이름을 넣는다. 작성자는 자신의 입력·쪽·저장소·head SHA로 치환한다.
+
+~~~markdown
+![문서명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png)
+~~~
+
 ~~~markdown
 ## Visual Sweep 직접 증적
 
-- 대상: 기준 PDF p55 ↔ rhwp p78, 표 외곽·PS 마크·앞뒤 내용
-- 판독: Native/fresh WASM 모두 표 외곽과 마크 상대 위치를 확인했다. 자동 일치율은 보조값이다.
+- PR head repository/SHA: `<head-owner>/<head-repo>` / `<head-sha>`
+- 검증 source·빌드/글꼴 환경·입력/Print PDF 해시: <실제 실행 기록>
+- Native/fresh WASM TSV 명령과 ignored output 경로: <실제 실행 기록>
+- 전체 검증 범위 TSV 원본: [Native TSV ZIP](TSV_ATTACHMENT_URL) — <입력·출력 경로·검증 head>
+- 아래 이미지는 대표 페이지에만 첨부한다. 전체 페이지 이미지는 필요하지 않다.
+
+| 입력·기준 Print PDF | 경로 | 검증 범위/전체 쪽수 | 최저 일치율·쪽 | 90% 미만/누락/측정 불가 쪽 | 판정 |
+| --- | --- | --- | --- | --- | --- |
+| 문서 A · PDF A | Native | <실제 범위> | <최저값과 쪽> | <전체 TSV 결과> | <실제 gate> |
+| 문서 A · PDF A | fresh WASM | <실제 범위> | <최저값과 쪽> | <전체 TSV 결과> | <실제 gate> |
+
+### 문서 A · 기준 PDF p19 ↔ rhwp p19
+
+- 입력: `samples/<input>.hwp`, 기준 Print PDF: `pdf/<reference>.pdf`
 
 | 출력 경로 | review | overlay |
 | --- | --- | --- |
-| Native | ![Native review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_review_078.png) | ![Native overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_overlay_078.png) |
-| fresh WASM | ![fresh WASM review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_review_078.png) | ![fresh WASM overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_overlay_078.png) |
+| Native | ![문서 A p19 Native review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_review_019.png) | ![문서 A p19 Native overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/native_overlay_019.png) |
+| fresh WASM | ![문서 A p19 fresh WASM review](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_review_019.png) | ![문서 A p19 fresh WASM overlay](https://raw.githubusercontent.com/<head-owner>/<head-repo>/<head-sha>/mydocs/pr/assets/issue_<N>_<topic>/wasm_overlay_019.png) |
+
+- 이 쪽의 실루엣 보조값·gate: Native <실제 값/판정>, fresh WASM <실제 값/판정>
+- 사람 판독: <이 쪽에서 확인한 표 외곽·문단 소속·그림 경계·앞뒤 내용>
+- 남은 차이: <실제 관측 또는 없음>. 자동 일치율은 사람의 판정 정확도가 아닌 보조값이다.
 ~~~
 
 PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](#github-merge-comment)는 merge commit SHA와

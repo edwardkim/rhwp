@@ -150,11 +150,49 @@ PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 �
 보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
 메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
+**기여자 PR 본문의 증적 배치:** [PR #7551의 Native/fresh WASM 증적](https://github.com/edwardkim/rhwp/pull/7551)처럼
+먼저 검증 환경과 입력별 Native/fresh WASM 전체 TSV 요약을 적고, 대표 쪽마다
+`### 입력명 · 기준 PDF pN ↔ rhwp pN` 소제목을 만드세요. 각 소제목 아래 한 표에
+Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdown 이미지를 나란히 표시하세요.
+쪽별 일치율, 직접 확인한 표·문단·그림 경계와 남은 차이는 해당 표 바로 아래에 적습니다.
+첨부할 대표 입력·쪽이 여러 개면 이 묶음을 반복하며, 이미지 설명에 입력명·쪽·출력 경로를 표시하세요.
+**전체 페이지의 PNG 생성·커밋·본문 첨부는 필요하지 않습니다.** 변경 효과와 주요 경계를 보여주는
+대표 페이지만 첨부하고, 검증 대상 전체 페이지의 **Native TSV 원본만** 함께 제출하세요.
+WASM TSV는 첨부할 필요가 없습니다.
+같은 쪽의 두 출력 경로와 두 이미지 종류를 본문에서 바로 대조할 수 있어야 합니다.
+작성 예시는 [PR 본문 직접 증적 정본](mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)과
+[PR 템플릿](.github/pull_request_template.md)을 따릅니다.
+기여자는 **PR 생성 전에 PR 번호를 알 필요가 없습니다.** PNG를
+`mydocs/pr/assets/issue_<이슈번호>_<주제>/<입력명>-p<쪽>-<native|wasm>-<review|overlay>.png`에
+커밋하세요. 연결된 이슈가 없으면 주제 이름을 안정 경로로 사용합니다. PNG를 포함한 제출 head의
+SHA를 `git rev-parse HEAD`로 확인해 실제 head 저장소에 push한 뒤, 그 저장소와 SHA의 raw URL을
+PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 뒤 파일명을 바꾸거나 증적 경로를
+다시 만드는 단계는 필요하지 않습니다.
+아래의 `OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN`을 자신의 실제 값으로 치환하세요.
+외부 기여자는 자신의 fork 저장소를 사용하며 `ISSUE_OR_TOPIC`에는 이슈 번호·주제 또는 주제 이름을 넣습니다.
+
+```markdown
+![문서명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png)
+```
+
+대표 이미지의 통과와 전체 검증 범위의 통과를 구분하세요. 입력별·출력 경로별 최저값과
+90% 미만/누락/측정 불가 쪽을 확인합니다. **검증 범위의 한 페이지라도 90% 미만이거나 누락·측정 불가,
+필수 Native/fresh WASM 경로 미실행이면 PR 생성·제출 갱신·검토 요청을 하지 않습니다.**
+시간 제약·기존 차이·부분 개선·추후 검증 등의 사유를 적어도 제출 조건을 충족하지 못합니다.
+그 사유와 실패 결과는 제출 전 로컬 작업 기록에 남기고, 자기 branch에서 수정·재실행해 통과한 뒤
+본문을 완성합니다. 이미 열린 PR도 해당 상태에서는 승인·통합하지 않습니다.
+해결 불가능한 실제 글꼴 문제는 아래의 정식 예외 계약으로만 판정하며 일반적인 사유 기재와 구분합니다.
+
 **페이지별 TSV 산출 명령과 저장 위치:** [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)의 Native/fresh WASM 예제를 각각 실행하세요.
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
-전쪽 overlay PNG를 일률 생성할 필요는 없지만 대표 이미지 제출 의무는 유지합니다.
-TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
+전체 페이지의 review/overlay PNG를 일률 생성하거나 첨부할 필요는 없습니다.
+**PR 본문에는 대표 페이지의 이미지와 전체 검증 범위의 TSV 원본 다운로드 링크를 첨부하세요.**
+제출용 TSV는 **Native만 필수**이며 WASM TSV 첨부는 요구하지 않습니다. Native TSV를
+ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
+동일 파일의 첨부 링크를 넣습니다. 요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않습니다.
+첨부 파일이 어느 입력·출력 경로·검증 head에 대응하는지 명시하며, TSV는 ignored output에 보존하고
+Git에 커밋하지 않습니다. TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
 실루엣 계산 방법, 이진화 원값과 색상 경계 대조 픽셀 수도 함께 기록하세요.
 색상 경계 대조는 실제 흰 배경의 그림 누락·위치 차이를 제외하는 근거가 아닙니다.
 기존 PNG 재사용은 원 실행의 코드·빌드·글꼴 조건을 확인하며 새 head 검증으로 표시하지 않습니다.
