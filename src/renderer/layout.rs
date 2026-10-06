@@ -3653,6 +3653,9 @@ pub struct LayoutEngine {
     /// `cell_units_uncached` 안에서 계산되어 52,694 셀 표에서 O(셀²)(≈28억) 로 폭증했다.
     /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
     table_nested_text_flag_cache: std::cell::RefCell<std::collections::HashMap<usize, bool>>,
+    /// 셀 안에 든 표(중첩 표)의 포인터. 저장 쪽 되감김 줄간격 트림은 쪽 프레임을 소유하는
+    /// 바깥 표에만 쓴다. `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
+    nested_table_ptrs: std::cell::RefCell<std::collections::HashSet<usize>>,
     /// [#4149] 셀 커서 fast path 프로브 차단 스캔(개요/번호 문단·AutoNumber 컨트롤
     /// 보유 여부)의 표 포인터 키 메모 — 거대 표 서브트리 재스캔 방지.
     /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
@@ -3778,6 +3781,7 @@ impl LayoutEngine {
             hwpx_page_preview: std::cell::RefCell::new(None),
             declared_trust_allowed: std::cell::Cell::new(true),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
+            nested_table_ptrs: std::cell::RefCell::new(std::collections::HashSet::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             single_line_overflow_cache: Default::default(),
@@ -3790,6 +3794,7 @@ impl LayoutEngine {
     /// 경계에서 호출해 포인터 키 재사용으로 인한 오재사용을 방지한다.
     pub fn clear_layout_caches(&self) {
         self.cell_units_cache.borrow_mut().clear();
+        self.nested_table_ptrs.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
         self.cursor_probe_block_cache.borrow_mut().clear();
         self.single_line_overflow_cache.clear();

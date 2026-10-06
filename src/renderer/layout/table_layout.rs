@@ -11472,6 +11472,16 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> Vec<CellUnit> {
+        {
+            let mut nested = self.nested_table_ptrs.borrow_mut();
+            for paragraph in &cell.paragraphs {
+                for control in &paragraph.controls {
+                    if let Control::Table(inner) = control {
+                        nested.insert(inner.as_ref() as *const crate::model::table::Table as usize);
+                    }
+                }
+            }
+        }
         if let Some(frame) = self.stored_empty_picture_cell_frame(cell, table) {
             // 같은 원본 프레임의 그림 띠와 마지막 빈 줄은 하나의 배치 소유다.
             // 작은 빈 줄만 먼저 소비하면 그림의 흐름 공간이 뒤 조각으로 갈라진다.
@@ -14703,6 +14713,12 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || table.common.treat_as_char
             || !matches!(table.page_break, TablePageBreak::RowBreak)
+            // 셀 안 표의 되감김은 바깥 쪽 프레임이 아니라 그 칸 안의 위치다 — 바깥 표 조각
+            // 상자가 그 줄간격을 그대로 싣는다(17544911 1쪽 중첩 표 칸 (4,1), 정본 상자 포함).
+            || self
+                .nested_table_ptrs
+                .borrow()
+                .contains(&(table as *const crate::model::table::Table as usize))
             // 걸침 칸 블록에 든 행은 블록 조각 그리기가 따로 높이를 정한다. 그 경로는 이
             // 간격 트림을 소비하지 않아 예약과 그리기가 갈린다(1376496 3쪽 +22.8px).
             || table.cells.iter().any(|owner| {
