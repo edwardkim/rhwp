@@ -157,7 +157,8 @@ Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdow
 쪽별 일치율, 직접 확인한 표·문단·그림 경계와 남은 차이는 해당 표 바로 아래에 적습니다.
 첨부할 대표 입력·쪽이 여러 개면 이 묶음을 반복하며, 이미지 설명에 입력명·쪽·출력 경로를 표시하세요.
 **전체 페이지의 PNG 생성·커밋·본문 첨부는 필요하지 않습니다.** 변경 효과와 주요 경계를 보여주는
-대표 페이지만 첨부하고, 검증 대상 전체 페이지의 Native/fresh WASM TSV 원본을 함께 제출하세요.
+대표 페이지만 첨부하고, 검증 대상 전체 페이지의 **Native TSV 원본만** 함께 제출하세요.
+WASM TSV는 첨부할 필요가 없습니다.
 같은 쪽의 두 출력 경로와 두 이미지 종류를 본문에서 바로 대조할 수 있어야 합니다.
 작성 예시는 [PR 본문 직접 증적 정본](mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)과
 [PR 템플릿](.github/pull_request_template.md)을 따릅니다.
@@ -187,7 +188,8 @@ PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 �
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
 전체 페이지의 review/overlay PNG를 일률 생성하거나 첨부할 필요는 없습니다.
 **PR 본문에는 대표 페이지의 이미지와 전체 검증 범위의 TSV 원본 다운로드 링크를 첨부하세요.**
-Native/fresh WASM TSV를 ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
+제출용 TSV는 **Native만 필수**이며 WASM TSV 첨부는 요구하지 않습니다. Native TSV를
+ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
 동일 파일의 첨부 링크를 넣습니다. 요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않습니다.
 첨부 파일이 어느 입력·출력 경로·검증 head에 대응하는지 명시하며, TSV는 ignored output에 보존하고
 Git에 커밋하지 않습니다. TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
