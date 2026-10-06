@@ -30,6 +30,7 @@ cd rhwp-firefox/dist
 zip -r ../rhwp-firefox-0.8.7.zip .
 ```
 
+Use `unzip` to preserve archive symlinks. The bundled NotoSansKR TTF and its OFL notice are included.
 The output folder is `rhwp-firefox/dist`. Different ZIP timestamps/compression may change archive
 bytes; compare extracted files with the submitted package. The release record lists local tool versions
 and the executed source-package rebuild. No prebuilt WASM is required in the source upload.
