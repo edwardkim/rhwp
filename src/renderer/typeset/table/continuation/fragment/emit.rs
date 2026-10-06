@@ -308,83 +308,6 @@ impl TypesetEngine {
             }
         }
         let mut source_frame_trailing_trim_applied = false;
-        if !is_continuation
-            && cursor_row == 0
-            && start_cut.is_empty()
-            && !split_end_cut.is_empty()
-            && end_row_height_override.is_none()
-            && table_footnotes.is_empty()
-            && !st.profile.session_edited()
-            && !self.render_normalization.table_text_reflowed(table)
-            && std::ptr::eq(table, row_geometry_table)
-        {
-            // 저장 되감김으로 끝나는 첫 조각은 한/글이 저장한 첫 프레임(`common.height`)이 그
-            // 조각의 물리 상자다. 컷 예산은 되감김 앞 줄간격을 빼고 잡지만, 상자는 그 프레임을
-            // 그대로 차지한다 — 렌더도 같은 프레임을 그린다(hwpctl 문단 176: 프레임 105.05,
-            // 간격을 뺀 내용 102.4; 편람 부록 행 5: 프레임 550.5, 정본 표 아래 괘선 644.7).
-            if split_block_start.is_none() {
-                // 1×1 표는 저장 표 높이가 곧 첫 조각 프레임이다(#7095 첫 조각 상자 계약).
-                let first_frame = saved_first_fragment_source_frame
-                    .map(|(height, _)| height)
-                    .or_else(|| {
-                        (table.row_count == 1 && table.col_count == 1 && table.cells.len() == 1)
-                            .then(|| hwpunit_to_px(table.common.height as i32, self.dpi))
-                    });
-                if let Some(frame_height) = first_frame {
-                    let last_row = end_row.saturating_sub(1);
-                    // 저장 프레임이 컷 상자보다 큰 몫은 컷이 뺀 되감김 앞 줄간격 안이어야 한다.
-                    // 그보다 크면 프레임은 이 컷 하나의 상자가 아니다(hwpctl 문단 176: 차 2.6 ≤
-                    // 줄간격, 편람 부록 행 5: 차 4.6 ≤ 6.3).
-                    let reset_trim = layout_engine.row_cut_stored_reset_trim(
-                        table,
-                        last_row,
-                        if last_row == cursor_row {
-                            start_cut.as_slice()
-                        } else {
-                            &[]
-                        },
-                        &split_end_cut,
-                        styles,
-                    );
-                    // 본문을 채우는 원본 프레임은 첫 조각 빈 밴드 경로가 상자와 이어받기를 함께
-                    // 소유한다(form-002 hwpx 7→8쪽: 이어받는 행 상자 = 저장 행 − 첫 프레임).
-                    let body_filling =
-                        crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
-                            input.source.paragraph,
-                            table,
-                            st.layout.body_area.height,
-                            self.dpi,
-                            st.profile.hwpx_stored_layout(),
-                            st.profile.session_edited(),
-                        );
-                    if !body_filling
-                        && frame_height > partial_height + 0.5
-                        && frame_height <= partial_height + reset_trim + 0.5
-                        && frame_height <= avail_for_rows + 0.5
-                        && layout_engine.row_cut_ends_at_stored_page_reset(
-                            table,
-                            last_row,
-                            if last_row == cursor_row {
-                                start_cut.as_slice()
-                            } else {
-                                &[]
-                            },
-                            &split_end_cut,
-                            styles,
-                        )
-                    {
-                        let before_last = cut_row_h.iter().take(last_row).sum::<f64>()
-                            + mt.cell_spacing * last_row.saturating_sub(1) as f64;
-                        let last_height = frame_height - before_last;
-                        if last_height > 0.0 {
-                            end_row_height_override = Some(last_height);
-                            partial_height = frame_height;
-                            source_frame_trailing_trim_applied = true;
-                        }
-                    }
-                }
-            }
-        }
         // 저장 첫 프레임의 마지막 글줄 뒤 간격은 다음 물리 쪽에 속한다.
         // 컷 유닛은 그대로 두고, 모든 셀의 가시 내용이 저장 상자에 들어갈 때만
         // 마지막 행의 그리기 높이를 원본 프레임에 맞춘다.
@@ -488,9 +411,16 @@ impl TypesetEngine {
                         styles,
                     )))
             && saved_opening_frame.is_some_and(|frame_height| {
-                // 컷이 저장 되감김 앞 줄간격만 뺀 경우 그 차이는 빈 밴드가 아니다(issue1937
-                // 23쪽 행 2: 프레임 − 컷 = 뺀 간격, 정본 24쪽 이어받는 행은 남은 내용 111.1).
-                let reset_trim = end_row.checked_sub(1).map_or(0.0, |row| {
+                (frame_height > partial_height + 0.5
+                    || (body_filling_source_frame && frame_height >= partial_height)
+                    || saved_block_opening_frame.is_some())
+                    && frame_height <= avail_for_rows + header_overhead
+            });
+        // 빈 밴드가 저장 되감김 앞 줄간격을 뺀 만큼만 생긴 경우인가. 그 밴드는 원래 컷이
+        // 차지하던 간격이라, 이어받기로 넘길 때 갈린 칸의 남은 내용을 함께 확인한다.
+        let blank_band_within_reset_trim = first_fragment_blank_band
+            && saved_opening_frame.is_some_and(|frame_height| {
+                let trim = end_row.checked_sub(1).map_or(0.0, |row| {
                     layout_engine.row_cut_stored_reset_trim(
                         table,
                         row,
@@ -503,11 +433,7 @@ impl TypesetEngine {
                         styles,
                     )
                 });
-                // 본문을 채우는 원본 프레임은 아래 두 번째 조건이 따로 소유한다.
-                (frame_height > partial_height + reset_trim + 0.5
-                    || (body_filling_source_frame && frame_height >= partial_height)
-                    || saved_block_opening_frame.is_some())
-                    && frame_height <= avail_for_rows + header_overhead
+                trim > 0.5 && frame_height <= partial_height + trim + 0.5
             });
         if first_fragment_blank_band {
             let frame_height = saved_opening_frame.expect("accepted saved opening frame");
@@ -518,6 +444,87 @@ impl TypesetEngine {
                 + mt.cell_spacing * end_row.saturating_sub(2) as f64;
             end_row_height_override = Some((frame_height - before_last).max(0.0));
             partial_height = frame_height;
+        }
+        // 첫 조각 빈 밴드가 이미 저장 프레임으로 닫았으면 그 경로가 상자와 이어받기를 소유한다.
+        if !is_continuation
+            && !first_fragment_blank_band
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && !split_end_cut.is_empty()
+            && end_row_height_override.is_none()
+            && table_footnotes.is_empty()
+            && !st.profile.session_edited()
+            && !self.render_normalization.table_text_reflowed(table)
+            && std::ptr::eq(table, row_geometry_table)
+        {
+            // 저장 되감김으로 끝나는 첫 조각은 한/글이 저장한 첫 프레임(`common.height`)이 그
+            // 조각의 물리 상자다. 컷 예산은 되감김 앞 줄간격을 빼고 잡지만, 상자는 그 프레임을
+            // 그대로 차지한다 — 렌더도 같은 프레임을 그린다(hwpctl 문단 176: 프레임 105.05,
+            // 간격을 뺀 내용 102.4; 편람 부록 행 5: 프레임 550.5, 정본 표 아래 괘선 644.7).
+            if split_block_start.is_none() {
+                // 1×1 표는 저장 표 높이가 곧 첫 조각 프레임이다(#7095 첫 조각 상자 계약).
+                let first_frame = saved_first_fragment_source_frame
+                    .map(|(height, _)| height)
+                    .or_else(|| {
+                        (table.row_count == 1 && table.col_count == 1 && table.cells.len() == 1)
+                            .then(|| hwpunit_to_px(table.common.height as i32, self.dpi))
+                    });
+                if let Some(frame_height) = first_frame {
+                    let last_row = end_row.saturating_sub(1);
+                    // 저장 프레임이 컷 상자보다 큰 몫은 컷이 뺀 되감김 앞 줄간격 안이어야 한다.
+                    // 그보다 크면 프레임은 이 컷 하나의 상자가 아니다(hwpctl 문단 176: 차 2.6 ≤
+                    // 줄간격, 편람 부록 행 5: 차 4.6 ≤ 6.3).
+                    let reset_trim = layout_engine.row_cut_stored_reset_trim(
+                        table,
+                        last_row,
+                        if last_row == cursor_row {
+                            start_cut.as_slice()
+                        } else {
+                            &[]
+                        },
+                        &split_end_cut,
+                        styles,
+                    );
+                    // 본문을 채우는 원본 프레임은 첫 조각 빈 밴드 경로가 상자와 이어받기를 함께
+                    // 소유한다(form-002 hwpx 7→8쪽: 이어받는 행 상자 = 저장 행 − 첫 프레임).
+                    // 같은 저장 구조면 원본 형식과 무관하다(form-002 hwp·hwpx 쌍둥이 정본이 같다).
+                    let body_filling =
+                        crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                            input.source.paragraph,
+                            table,
+                            st.layout.body_area.height,
+                            self.dpi,
+                            st.profile.hwpx_stored_layout()
+                                || st.profile.hwp5_stored_pagination_layout(),
+                            st.profile.session_edited(),
+                        );
+                    if !body_filling
+                        && frame_height > partial_height + 0.5
+                        && frame_height <= partial_height + reset_trim + 0.5
+                        && frame_height <= avail_for_rows + 0.5
+                        && layout_engine.row_cut_ends_at_stored_page_reset(
+                            table,
+                            last_row,
+                            if last_row == cursor_row {
+                                start_cut.as_slice()
+                            } else {
+                                &[]
+                            },
+                            &split_end_cut,
+                            styles,
+                        )
+                    {
+                        let before_last = cut_row_h.iter().take(last_row).sum::<f64>()
+                            + mt.cell_spacing * last_row.saturating_sub(1) as f64;
+                        let last_height = frame_height - before_last;
+                        if last_height > 0.0 {
+                            end_row_height_override = Some(last_height);
+                            partial_height = frame_height;
+                            source_frame_trailing_trim_applied = true;
+                        }
+                    }
+                }
+            }
         }
         // 종료 조각의 실제 프레임과 뒤 저장 줄이 아래 여백을 닫으면 동일한
         // 배치 계획으로 예약과 paint 흐름을 함께 전진시킨다.
@@ -1158,7 +1165,24 @@ impl TypesetEngine {
                 let first = end_row_height_override?;
                 let raw = *table.get_raw_row_heights().get(end_row.checked_sub(1)?)?;
                 let remaining = hwpunit_to_px(raw as i32, self.dpi) - first;
-                (remaining > 0.0).then_some(remaining)
+                // 줄간격 트림이 만든 빈 밴드를 넘길 때, 넘겨받는 행 상자는 이 컷에서 갈린 칸의 남은 내용을 담아야 한다. 아직 시작하지
+                // 않은 칸(컷 0)은 저장 행 높이가 소유한다. 저장 행 − 첫 프레임이 갈린 칸의 남은
+                // 내용보다 작으면 그 차이는 빈 밴드가 아니다(issue1937 24쪽 행 2: 54.2 < 남은
+                // 내용 111.1, 정본 111.1).
+                let split_only_cut: Vec<usize> = next_cut
+                    .iter()
+                    .map(|&cut| if cut == 0 { usize::MAX } else { cut })
+                    .collect();
+                let split_content = layout_engine.row_cut_content_height(
+                    table,
+                    end_row - 1,
+                    &split_only_cut,
+                    &[],
+                    styles,
+                );
+                (remaining > 0.0
+                    && (!blank_band_within_reset_trim || remaining + 0.5 >= split_content))
+                    .then_some(remaining)
                 })();
                 base_remaining.or_else(|| {
                 // A stored opening frame owns blank space without consuming
