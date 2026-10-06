@@ -2040,10 +2040,7 @@ impl SvgRenderer {
                 if let Some(ref path) = img.external_path {
                     let cx = bbox.x + bbox.width / 2.0;
                     let cy = bbox.y + bbox.height / 2.0;
-                    let escaped = path
-                        .replace('&', "&amp;")
-                        .replace('<', "&lt;")
-                        .replace('>', "&gt;");
+                    let escaped = escape_xml(crate::model::image::external_picture_basename(path));
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" text-anchor=\"middle\" fill=\"#666666\" font-size=\"10\">[외부: {}]</text>\n",
                         cx, cy, escaped,

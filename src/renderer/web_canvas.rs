@@ -1062,7 +1062,11 @@ impl WebCanvasRenderer {
                 self.ctx.set_text_align("center");
                 let cx = eff_bbox.x + eff_bbox.width / 2.0;
                 let cy = eff_bbox.y + eff_bbox.height / 2.0;
-                let _ = self.ctx.fill_text(&format!("[외부: {}]", path), cx, cy);
+                let label = format!(
+                    "[외부: {}]",
+                    crate::model::image::external_picture_basename(path)
+                );
+                let _ = self.ctx.fill_text(&label, cx, cy);
                 self.ctx.set_text_align("start");
             }
         }
