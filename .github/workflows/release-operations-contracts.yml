@@ -1,0 +1,41 @@
+name: Release operations contracts
+
+# Promotion adapter for workflows whose live events mutate repository metadata.
+# Execute the shipped script and fail-closed API simulations without dispatching
+# those events or granting their write permissions.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: Release operations contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Verify promotion adapter and repository wiring
+        run: |
+          python3 -m unittest \
+            scripts.tests.test_release_operations_promotion \
+            scripts.tests.test_postmerge_duration_workflow \
+            scripts.tests.test_trusted_postmerge_ci_reuse_workflow
+      - name: Execute label, duration, and trusted reuse contracts
+        run: |
+          node --test \
+            scripts/tests/issue-form-labels.test.mjs \
+            scripts/tests/collect-postmerge-duration-data.test.mjs \
+            scripts/tests/nextest-target-duration-policy.test.mjs \
+            scripts/tests/trusted-postmerge-duration-evidence.test.mjs \
+            scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs \
+            scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
