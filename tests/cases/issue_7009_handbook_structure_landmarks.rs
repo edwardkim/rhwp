@@ -106,9 +106,11 @@ fn hwp_total_matches_the_oracle_only_because_body_and_appendix_cancel() {
     // #7445: HWP의 실제 384→383쪽 실패만 보류합니다.
 
     let appendix_gap = got.after_divider as i64 - ORACLE_AFTER_DIVIDER as i64;
-    // 부록 간지 뒤 PageHide 빈 쪽(정본 310쪽)을 되살려 편차가 −3 → −2 로 줄었다.
-    // 남은 −2 를 잠근다 — 다시 커지면 실패한다.
-    assert_eq!(appendix_gap, -2, "기존 부록 구간 편차를 유지해야 한다");
+    // 부록 간지 뒤 PageHide 빈 쪽(정본 310쪽)을 되살려 편차가 −3 → −2 로 줄었고,
+    // 부록 표의 저장 쪽 되감김 경계를 지켜 −2 → 0 이 됐다. 간지 뒤 쪽수가 정본
+    // (`pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf`, 383쪽, 간지 309쪽 뒤 74쪽)과
+    // 같다 — 이미 맞는 속성으로 정확히 잠근다.
+    assert_eq!(appendix_gap, 0, "부록 구간 길이는 정답지와 같아야 한다");
     // #7445: HWP 부록 간지의 실제 313→312쪽 소속 변화만 보류합니다.
     // #7445: HWP 본문 마지막 쪽의 실제 311→310쪽 소속 변화만 보류합니다.
 }

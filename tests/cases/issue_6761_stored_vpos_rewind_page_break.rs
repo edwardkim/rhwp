@@ -134,10 +134,17 @@ fn stored_rewind_paragraph_starts_the_next_page() {
 #[test]
 fn partial_retreat_inside_a_page_does_not_break() {
     let core = core(SAMPLE_EDU);
+    // 정본 대비 편차 핀(issue_7009 방식). 정본은 한/글 2020 415쪽이다
+    // (`pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf`). 현재 편차는 +1 이고,
+    // 1~155쪽은 정본과 같은 쪽이다. 남은 +1 은 154쪽 행 97 칸 (97,8) 에서 생긴다 —
+    // 저장 줄은 2줄(「…찬반 토 / 론」, 글자 단위 줄 나눔)인데 정본 2020·2022 는 출력
+    // 시점 글자 폭으로 1줄로 다시 흘린다(행 19.7 ↔ rhwp 37.1). 저장 정보로 그 재흐름을
+    // 가를 변수가 없어 글자 폭 정밀도 축으로 넘겼다. 부분 후퇴(pi=219 70880 -> pi=220
+    // 66140)에서 쪽을 끊으면 편차가 +2 로 커진다.
+    const ORACLE_PAGES: i64 = 415;
     assert_eq!(
-        core.page_count(),
-        413,
-        "쪽 상단 재시작이 아닌 부분 후퇴(pi=219 70880 -> pi=220 66140)에서 쪽을 끊으면 \
-         이 문서가 414쪽이 되어 정본(415쪽) 1..144쪽 오프셋 0 정렬이 깨진다"
+        core.page_count() as i64 - ORACLE_PAGES,
+        1,
+        "쪽 상단 재시작이 아닌 부분 후퇴에서 쪽을 끊으면 정본(415쪽) 대비 편차가 커진다"
     );
 }

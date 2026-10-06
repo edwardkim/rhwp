@@ -155,10 +155,14 @@ fn the_continuation_page_has_no_text_overlap() {
 /// 겹침을 쪽을 늘려 없애면 안 된다 — 이 구간의 쪽 번호는 이미 정본과 같다.
 #[test]
 fn the_fix_does_not_add_a_page() {
+    // 정본 대비 편차 핀(issue_7009 방식). 정본 415쪽, 현재 편차 +1 — 1~155쪽은 정본과
+    // 같은 쪽이고, 남은 +1 은 154쪽 행 97 칸 (97,8) 의 저장 2줄 / 정본 1줄 재흐름(글자 폭
+    // 정밀도 축)에서 생긴다. 겹침을 쪽을 늘려 없애면 편차가 커진다.
+    const ORACLE_PAGES: i64 = 415;
     assert_eq!(
-        core().page_count(),
-        413,
-        "쪽수가 변했습니다 — 이 문서의 1..144쪽은 정본(415쪽)과 오프셋 0 으로 정렬한다"
+        core().page_count() as i64 - ORACLE_PAGES,
+        1,
+        "정본(415쪽) 대비 쪽수 편차가 변했습니다"
     );
 }
 
