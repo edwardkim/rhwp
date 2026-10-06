@@ -1072,6 +1072,36 @@ impl Paragraph {
         self.char_count = self.char_count.saturating_sub(released);
     }
 
+    /// 문단을 나눠 만든 새 문단(`self`)의 첫 글자 앞에 나눈 자리 갭에서 넘어온 자리를 비운다.
+    ///
+    /// 나눈 자리 갭은 원래 문단에서 나눈 글자 바로 앞의 제어문자 자리다. 새 문단으로 넘어오는
+    /// 것은 각각 8유닛인 셋이다.
+    /// - 컨트롤: 개체·각주·누름틀 시작 따위. 원래 글자 위치가 나눈 자리인 컨트롤 수를
+    ///   `moved_controls` 로 받는다.
+    /// - 빈 누름틀의 끝 표지: 이 문단 맨 앞에서 시작하고 끝나는 필드 범위마다 하나.
+    /// - 제목 차례 표시: 이 문단 맨 앞의 표지.
+    ///
+    /// 비우지 않으면 넘어온 컨트롤이 문단 끝으로 밀리고, 저장한 글자 위치가 실제 스트림과
+    /// 어긋난다. 글이 없는 문단은 모든 컨트롤을 글 뒤에 쓰므로 비우지 않는다.
+    pub(crate) fn reserve_split_gap_slots(&mut self, moved_controls: usize) {
+        if self.char_offsets.is_empty() {
+            return;
+        }
+        let empty_field_ends = self
+            .field_ranges
+            .iter()
+            .filter(|range| range.start_char_idx == 0 && range.end_char_idx == 0)
+            .count();
+        let title_marks = self
+            .title_marks
+            .iter()
+            .filter(|mark| mark.char_idx == 0)
+            .count();
+        self.reserve_leading_extended_control_slots(
+            moved_controls + empty_field_ends + title_marks,
+        );
+    }
+
     /// 스트림 삽입으로 이동한 텍스트 좌표와 같은 기준을 쓰는 문단 메타데이터를 갱신한다.
     pub(crate) fn shift_position_metadata_for_stream_insertion(
         &mut self,
@@ -1151,27 +1181,29 @@ impl Paragraph {
         // 문단 끝 자동 번호는 마지막 글자(자리표) 자리에 있다. 그 뒤 입력은 번호 앞이 아니다.
         let trailing_number = self.trailing_auto_number(&control_positions);
         let char_end = |idx: usize| self.char_stream_end(&text_chars, idx, trailing_number);
-        let inserts_before_inline_control = !after_inline_control
-            && char_offset <= text_len
-            && self
-                .controls
-                .iter()
-                .zip(control_positions.iter())
-                .enumerate()
-                .any(|(ci, (ctrl, &pos))| {
-                    pos == effective_char_offset
-                        && Some(ci) != trailing_number
-                        && matches!(
-                            ctrl,
-                            Control::Shape(_)
-                                | Control::Table(_)
-                                | Control::Picture(_)
-                                | Control::Equation(_)
-                                | Control::Footnote(_)
-                                | Control::Endnote(_)
-                                | Control::AutoNumber(_)
-                        )
-                });
+        let is_inline_object = |ctrl: &Control| {
+            matches!(
+                ctrl,
+                Control::Shape(_)
+                    | Control::Table(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::AutoNumber(_)
+            )
+        };
+        // 이 자리 컨트롤 가운데 첫 개체의 차례 — 그 앞에 놓인 같은 자리 컨트롤 수와 같다.
+        // 문단 끝 자동 번호는 자리표 글자가 8유닛을 차지하므로 이 자리 컨트롤로 세지 않는다.
+        let controls_before_object = self
+            .controls
+            .iter()
+            .zip(control_positions.iter())
+            .enumerate()
+            .filter(|&(ci, (_, &pos))| pos == effective_char_offset && Some(ci) != trailing_number)
+            .position(|(_, (ctrl, _))| is_inline_object(ctrl));
+        let inserts_before_inline_control =
+            !after_inline_control && char_offset <= text_len && controls_before_object.is_some();
 
         // 바이트 삽입 위치 계산
         let byte_offset: usize = text_chars[..effective_char_offset]
@@ -1187,13 +1219,26 @@ impl Paragraph {
             let trailing_ctrl_count = (char_offset - text_len) as u32;
             last_char_end + trailing_ctrl_count * 8
         } else if inserts_before_inline_control {
-            if effective_char_offset == 0 {
+            let gap_start = if effective_char_offset == 0 || self.char_offsets.is_empty() {
                 0
-            } else if !self.char_offsets.is_empty() {
-                char_end(effective_char_offset - 1)
             } else {
-                0
-            }
+                char_end(effective_char_offset - 1)
+            };
+            // 글은 개체 바로 앞에 넣는다. 개체보다 앞선 같은 자리 컨트롤(구역·단 정의 따위)과
+            // 이 자리에 그대로 남는 표지는 글 앞에 둔다 — 갭 맨 앞에 넣으면 구역 첫 문단의
+            // 정의 제어문자가 글 뒤로 밀리고, 한글은 그런 문서를 열다 멈춘다(#4680).
+            let kept_slots = controls_before_object.unwrap_or(0)
+                + self
+                    .orphan_field_ends
+                    .iter()
+                    .filter(|o| o.char_idx == effective_char_offset)
+                    .count()
+                + self
+                    .title_marks
+                    .iter()
+                    .filter(|m| m.char_idx == effective_char_offset)
+                    .count();
+            gap_start + kept_slots as u32 * CTRL_CHAR_CODE_UNITS
         } else if effective_char_offset < self.char_offsets.len() {
             self.char_offsets[effective_char_offset]
         } else if !self.char_offsets.is_empty() {
@@ -1522,10 +1567,11 @@ impl Paragraph {
     pub fn split_at(&mut self, char_offset: usize) -> Paragraph {
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
+        let text_positions = self.control_text_positions();
         let text_chars: Vec<char> = self.text.chars().collect();
         // 문단 끝 자동 번호 뒤에서 나누면 번호는 자리표 글자와 함께 앞 문단에 남는다.
         let kept_number = (split_pos == text_chars.len())
-            .then(|| self.trailing_auto_number(&self.control_text_positions()))
+            .then(|| self.trailing_auto_number(&text_positions))
             .flatten();
 
         // 분할 지점의 UTF-16 위치
@@ -1778,6 +1824,11 @@ impl Paragraph {
         }
         self.controls = kept_controls;
         self.ctrl_data_records = kept_ctrl_data;
+        // 나눈 자리 갭(글자 `split_pos` 바로 앞)에 있다가 새 문단으로 가는 컨트롤 수.
+        let moved_gap_controls = moved_control_idx_map
+            .keys()
+            .filter(|&&ci| text_positions.get(ci) == Some(&split_pos))
+            .count();
 
         // 6. char_count 갱신
         //    원본 문단에 남은 controls는 각각 8 code unit을 차지하므로 반영 필요
@@ -1805,7 +1856,7 @@ impl Paragraph {
             new_raw_header_extra[6..10].fill(0);
         }
 
-        Paragraph {
+        let mut new_para = Paragraph {
             text: new_text,
             char_offsets: new_char_offsets,
             char_shapes: new_char_shapes,
@@ -1842,7 +1893,9 @@ impl Paragraph {
             cell_vpos_reset: Some(false),
             // 번호는 문서 순서로 다시 계산해야 하는 파생값이다 (#7436).
             numbering_marker: NumberingMarker::Unresolved,
-        }
+        };
+        new_para.reserve_split_gap_slots(moved_gap_controls);
+        new_para
     }
 
     /// 다른 문단의 텍스트와 메타데이터를 현재 문단 끝에 결합한다.
