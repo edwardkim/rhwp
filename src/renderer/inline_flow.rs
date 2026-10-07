@@ -90,11 +90,17 @@ impl InlineFlowPlan {
         row.vertical_pos = 0;
         Self {
             text_rows: Some(vec![row]),
+            square_host_control: None,
+            text_spacing_before: None,
+            square_host_placement: None,
+            square_host_exclusion: None,
             start,
             end: flow_end,
             boxes: Vec::new(),
+            rows: Vec::new(),
             carved: false,
             next_row_top: flow_end,
+            fallback_font_size: 12.0,
         }
     }
 
