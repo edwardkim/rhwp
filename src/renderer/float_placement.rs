@@ -2325,11 +2325,63 @@ impl ParagraphFloatPlacement {
         // 동일 단의 실제 원점0·연속 저장 사다리를 확인한 경우만 저장 원점을 쓴다.
         // 폭0 자체는 현재 흐름과 저장/paint 원점이 같다는 증거가 아니다.
         let stored_origin = stored_origin.filter(|_| saved_whole_empty_table_anchor(para, table));
-        let origin = stored_origin.unwrap_or(origin);
-        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some())
-            || ![origin, table_height, before, after]
-                .iter()
-                .all(|value| value.is_finite())
+        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some()) {
+            return None;
+        }
+        Self::empty_host_box(
+            table,
+            stored_origin.unwrap_or(origin),
+            stored_origin,
+            table_height,
+            before,
+            after,
+            dpi,
+        )
+    }
+
+    /// [#7620] 쪽 경계 나눔이 켜졌지만 통째로 들어가는 빈 개체 앵커 표의 배치.
+    ///
+    /// 저장 첫 줄 원점은 문단 위 간격이 적용된 뒤의 좌표다(앞 줄 끝 + 앞 문단 아래 간격 +
+    /// 이 문단 위 간격). 한글은 문단 기준 표를 그보다 위인 문단 윗변에 두고, 다음 줄은
+    /// `문단 윗변 + 바깥 여백 위 + 표 높이 + 바깥 여백 아래`에서 시작한다. 그래서 상자는
+    /// 문단 윗변에서 세우고 `tail` 에는 문단 아래 간격을 넣지 않는다. 분할 조각의
+    /// 컷·높이는 소유하지 않으므로 호출자는 whole-fit 이 확정된 경우에만 이 배치를 기록한다.
+    pub(crate) fn from_saved_whole_empty_host(
+        para: &Paragraph,
+        table: &Table,
+        stored_origin: Option<f64>,
+        applied_spacing_before: f64,
+        table_height: f64,
+        tail: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        let origin = stored_origin.filter(|_| saved_empty_table_anchor_props(para, table))?;
+        let mut placement = Self::empty_host_box(
+            table,
+            origin - applied_spacing_before,
+            Some(origin),
+            table_height,
+            hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+            tail,
+            dpi,
+        )?;
+        // 앵커는 저장 줄 원점이다(`for_first_fragment` 가 여기서 위 간격을 뺀다).
+        placement.anchor_y = origin;
+        Some(placement)
+    }
+
+    fn empty_host_box(
+        table: &Table,
+        origin: f64,
+        stored_origin: Option<f64>,
+        table_height: f64,
+        before: f64,
+        after: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if ![origin, table_height, before, after]
+            .iter()
+            .all(|value| value.is_finite())
             || table_height < 0.0
         {
             return None;
@@ -3204,8 +3256,13 @@ pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Tabl
 
 /// 저장 원점이 별도로 입증되어야 하는 통째 빈 개체 앵커의 속성 계약.
 fn saved_whole_empty_table_anchor(para: &Paragraph, table: &Table) -> bool {
-    table.page_break == TablePageBreak::None
-        && object_only_saved_table_anchor(para, table)
+    table.page_break == TablePageBreak::None && saved_empty_table_anchor_props(para, table)
+}
+
+/// [#7620] 쪽 나눔 속성을 뺀 빈 개체 앵커의 저장 계약. 쪽 경계 나눔은 분할을 허용할 뿐
+/// 그 표가 실제로 나뉜다는 뜻이 아니다 — 통째 수용 여부는 호출자의 whole-fit 판정이 정한다.
+fn saved_empty_table_anchor_props(para: &Paragraph, table: &Table) -> bool {
+    object_only_saved_table_anchor(para, table)
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && para.line_segs.iter().all(|line| {

@@ -1789,6 +1789,38 @@ impl TypesetEngine {
         } else {
             available
         };
+        // [#7620] 쪽 경계 나눔은 분할을 허용할 뿐이다. 빈 개체 앵커 표가 기존 whole-fit 판정으로
+        // 통째 들어가면 저장 원점에서 세운 상자를 조판·배치가 공유한다(바깥 여백 위·아래 포함).
+        // 상자는 문단 윗변에서 시작하고 문단 아래 간격을 포함하지 않는다(글줄 경로와 같은
+        // 위 간격 규칙). 들어가지 않는 표는 아래 분할 경로가 원본 조각의 컷·높이 계약을
+        // 그대로 소유한다. #2439 양수 오프셋 RowBreak 의 host 줄 꼬리(`strict_following_plain_text_fit`)는
+        // 별도 계약이라 제외한다.
+        let resolved_host_placement = resolved_host_placement.or_else(|| {
+            (table.page_break != crate::model::table::TablePageBreak::None
+                && unconstrained_host_placement.is_none()
+                && !ft.strict_following_plain_text_fit
+                && legacy_whole_fits)
+                .then(|| {
+                    crate::renderer::float_placement::ParagraphFloatPlacement::from_saved_whole_empty_host(
+                        para,
+                        table,
+                        source_host_origin,
+                        if placement_para_start_height > 0.0 {
+                            fmt.spacing_before
+                        } else {
+                            0.0
+                        },
+                        ft.effective_height,
+                        ft.host_spacing.after - ft.host_spacing.spacing_after_only,
+                        self.dpi,
+                    )
+                })
+                .flatten()
+                .map(|p| constrain_host_placement.constrain(p, st))
+                // 아래 판정과 같은 예산을 쓴다. 바깥 여백까지 들어가지 않으면 배치를 기록하지 않아
+                // 종전 whole-fit 판정(흐름 전용 바깥 여백 아래 면제)이 그대로 결정한다.
+                .filter(|p| p.occupied_bottom <= whole_frame_budget)
+        });
         if !painted_rowbreak_exceeds_paper
             && resolved_host_placement.map_or(legacy_whole_fits, |p| {
                 p.occupied_bottom <= whole_frame_budget
