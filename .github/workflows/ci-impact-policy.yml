@@ -243,11 +243,11 @@ jobs:
             const fs = require('node:fs');
             const path = require('node:path');
             const { owner, repo } = context.repo;
-            const { selectLatestWorkflowRun, selectReviewOnlyCandidate } = require(path.join(
+            const { selectLatestWorkflowRun, selectReviewOnlyCandidate, expectedWorkflowMap } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               'trusted-base/scripts/ci-impact-policy.cjs',
             ));
-            const { collectWorkflowEvidence } = require(path.join(
+            const { collectWorkflowEvidence, collectWorkflowRunList } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               'trusted-base/scripts/ci-workflow-evidence.cjs',
             ));
@@ -354,23 +354,8 @@ jobs:
               'Render Diff': '.github/workflows/render-diff.yml',
             };
             if (process.env.MODE === 'audit' || reviewSelection.eligible) {
-              let runs = [];
-              try {
-                runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
-                  owner,
-                  repo,
-                  event: 'pull_request',
-                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
-                  // branch filter finds them; trusted policy code then checks repo,
-                  // branch, exact SHA, and PR/base association when GitHub exposes it.
-                  branch: process.env.HEAD_BRANCH,
-                  per_page: 100,
-                });
-              } catch (error) {
-                core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
-              }
-              async function collectRun(name, expectedPath, headSha, allowPriorBase) {
-                let run = selectLatestWorkflowRun(runs, {
+              function selectRun(runs, name, expectedPath, headSha, allowPriorBase) {
+                return selectLatestWorkflowRun(runs, {
                   name,
                   path: expectedPath,
                   pullNumber: Number(process.env.PULL_NUMBER),
@@ -381,6 +366,33 @@ jobs:
                   headRepository: process.env.HEAD_REPOSITORY,
                   allowPriorBase,
                 });
+              }
+              const expected = expectedWorkflowMap(normalizedFiles, Boolean(forceFullReason));
+              const runs = await collectWorkflowRunList({
+                listRuns: () => github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                  owner,
+                  repo,
+                  event: 'pull_request',
+                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
+                  // branch filter finds them; trusted policy code then checks repo,
+                  // branch, exact SHA, and PR/base association when GitHub exposes it.
+                  branch: process.env.HEAD_BRANCH,
+                  per_page: 100,
+                  request: { timeout: 10000 },
+                }),
+                // Completion audits alone retry missing required current-head runs.
+                // Untriggered paths and initial publication must not wait for workers.
+                missingWorkflows: (runs) => process.env.MODE !== 'audit' ? [] : (
+                  Object.entries(workflowPaths).filter(([name, expectedPath]) => (
+                    expected[name] === 'true'
+                    && !selectRun(runs, name, expectedPath, process.env.HEAD_SHA, false)
+                  )).map(([name]) => name)
+                ),
+                maxAttempts: process.env.MODE === 'audit' ? 4 : 1,
+                warn: (message) => core.warning(message),
+              });
+              async function collectRun(name, expectedPath, headSha, allowPriorBase) {
+                let run = selectRun(runs, name, expectedPath, headSha, allowPriorBase);
                 if (!run) return null;
                 const snapshot = await collectWorkflowEvidence({
                   run,
