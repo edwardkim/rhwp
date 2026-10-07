@@ -43,3 +43,8 @@ Issue: #7650
 - 수정 후 Node 495개, 주요 CI/CodeQL 계약 Python 115개, 전체 workflow Python 185개, promotion Python 35개가 통과했다. 공식 actionlint 1.7.11 checksum 확인 후 변경한 세 YAML을 검증했고, Node 구문·YAML 파싱·diff 검사도 통과했다. shellcheck는 설치되어 있지 않아 actionlint의 shellcheck 외 검증을 실행했다.
 - fixture 기대값 변경은 정책 버전과 전체 분석의 Actions 추가만 반영한다. 기존 선택적 언어·작업 범위는 변경하지 않았다.
 - GitHub exact-head CI와 main 적용·자동 구성 삭제는 아직 수행하지 않았다. 기존 자동 구성 증거는 보존되어 있다.
+
+
+## 적용 시점 결정
+
+PR #7651 등록 후 메인테이너가 main 적용을 다음 `devel → main` 통합으로 지정했다. 이번 작업은 devel의 설정 반영까지이며, main 신규 Actions 분석 확인과 자동 구성 정리는 #7650의 후속 범위로 유지한다.
