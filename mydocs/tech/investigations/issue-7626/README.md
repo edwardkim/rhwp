@@ -5,24 +5,71 @@ canonical: mydocs/manual/verification/visual_verification_governance.md
 last_verified: 2026-10-07
 ---
 
-# #7626 — 재조판 높이와 저장 LineSeg의 쪽 예산
+# #7626 — 미배치 줄 캐시와 문단 끝 글자 상자
 
-- 대상: [이슈 #7626](https://github.com/edwardkim/rhwp/issues/7626), 기준 source `7076f836e2300f7d760d74b58c468cc0f73098a2`.
-- 입력: [공개 gist](https://gist.github.com/flamingo8006/cf171c692b6d4c484027832a060da894)의 Base64 원문을 그대로 디코드했다.
-  입력 SHA-256은 `8fa018bafb94ae023ed1a9be50cd710bec2a09ee19d76dbc755bb1ba0310ed92`.
-  52개 LineSeg 모두 `horzsize=0`, `vertpos=0`, `vertsize=1000`, `flags=0`이다.
-  저장 제품 메타데이터는 한컴 2020이며 실제 작성·치환 과정은 확인되지 않았다.
-- 독립 기준: 동일 입력을 한컴 2020 `11.0.0.9136`의 1-up Print로 생성한 PDF는 2쪽이다.
-  PDF SHA-256은 `2fd348b692e2c555bc33dd26c4feb2f5ed5f33e2f3a7ce2214b515836e5d1546`.
-  직접 판독한 1쪽은 4개 절의 본문, 2쪽은 표와 표준 작성지침을 포함한다.
-- 기준 source의 Native 출력은 1쪽이며 마지막 본문이 y=1278.4px까지 내려가 본문 하단을 넘는다.
-  npm 0.8.4는 2쪽, 0.8.7은 1쪽이다. LineSeg 제거본은 진단용 변형이며 원본 일치의 대용으로 쓰지 않는다.
-- 실제 소비 경로: `composer::recompose_stored_lines_in_frame_with_known_square_band`가 새 줄을 생산하고,
-  `typeset/paragraph/format.rs`가 새 줄 메트릭을 계산한다. 그러나 `height_for_fit`은 원본 vpos span으로
-  다시 낮아지고 `FormattedParagraph::flow_advance_height`가 이를 흐름 높이에 재사용한다.
-  원본 pi6의 관측은 total=38.7px, fit=13.3px, advance=13.3px다. 실제 배치는 새 줄을 그려 누적 차이가 난다.
-- 수정 방향: 프레임이 거절한 줄의 저장 높이를 재조판의 쪽 예산에 다시 적용하지 않는다.
-  유효 저장 줄 및 빈 문단의 공간 계약을 별도 대조한다. 임의 높이 보정·쪽 경계 clamp를 추가하지 않는다.
-- 완료 검증: 원본 전체의 Native/fresh WASM·한컴 PDF 비교, 본문·표·뒤 문단의 쪽 소속/순서,
-  정상 저장 줄·빈 줄 대조군, 수정 전 실패/수정 후 통과를 확인한다. 기준·시각 증거 미달 범위는 미검증으로 남긴다.
-  실행 로그·TSV·중간 산출물은 ignored `output/pr-review/issue7626/`에 보존한다.
+[이슈 #7626](https://github.com/edwardkim/rhwp/issues/7626)의 기준 source는
+`7076f836e2300f7d760d74b58c468cc0f73098a2`다. 원본·한컴 재저장 HWP·독립 Print PDF의
+출처와 해시는 [재현 자료](../../../../samples/issue7626/README.md)에 고정했다.
+원본의 52개 LineSeg는 모두 폭과 원점이 0인 미배치 기록이다. 한컴 PDF는 2쪽이지만
+기준 Native는 1쪽이고 마지막 본문은 y=1278.4px까지 내려가 용지 밖을 넘는다.
+
+## 원인과 공통 결과
+
+1. 폭 0인 원본 기록은 외부 분할 줄로 분류되면서 재조판을 거절한다. 글자 크기로
+   보정한 실제 줄 높이와 달리 쪽 예산은 원본의 짧은 vpos span을 재사용한다.
+   `compute_render_normalized`에서 **구역 전체의 source 줄에 폭·가로 원점·세로 원점이
+   모두 없는 경우**에만 파생 렌더 사본의 캐시를 제외한다. 표 셀·캡션도 같은 사본에서
+   제외하고 재구성하며 원본 document/composed·저장 정보는 보존한다.
+   폭만 0인 유효 높이 사다리, 구현이 생성한 줄, HWP3 저장 기하는 이 조건에 넣지 않는다.
+2. 캐시 제외만 적용하면 2쪽이 되지만 최저 Sweep은 77.80%다. 표 앞 p30의 가시 글자는
+   10pt이고 끝의 빈 run은 12pt다. 한컴 재저장 줄 높이 1200HU·진행 1920HU와 달리
+   재조판이 1000HU·1600HU만 예약해 표와 뒤 본문이 약 4.27px 위로 당겨진다.
+   `layout_paragraph_in_frame_impl`은 `ParagraphEnd`를 채운 **마지막 물리 줄에만**
+   종단 CharShapeRef의 크기를 반영한다. 이 `FrameRowMetrics`에서 줄 높이·줄간격·기준선을
+   함께 게시하며 텍스트 폭이나 앞선 줄은 바꾸지 않는다.
+
+소비 경로는 `compute_render_normalized`의 파생 문단/구성 →
+`layout_paragraph_in_frame_impl`의 프레임 줄 → `resolve_line_metrics`의 formatted 높이 →
+HeightMeasurer·pagination의 쪽 예산 → 실제 layout의 줄/표 배치다.
+원본의 미배치 높이를 이후 fit/flow에 재적용하는 대신 일반 no-cache 경로에서 같은 줄을 소비한다.
+편집 후 파생 문단 갱신에도 같은 캐시 조건을 적용한다. 편집 저장본의 독립 Print 비교는 미검증이다.
+
+## 집중 회귀
+
+`tests/cases/issue_7626_unplaced_lineseg_pagination.rs`는 CLI의 최종 render tree를 검사한다.
+원본 전체 Native/fresh WASM 최저 98.71%를 확인한 뒤 추가했다.
+기대값은 원본 Print의 쪽 소속과 한컴 재저장 줄 메트릭에서 정하며 절대 표 원점이나 SVG 해시를 고정하지 않는다.
+
+| 검사 | 기준 source CLI | 수정 CLI |
+| --- | --- | --- |
+| 41개 본문/표 문단의 쪽 소속·순서, 본문 내부 포함, 본문/표 token 누락·중복 | FAIL: 1쪽 | PASS: 2쪽 |
+| 끝의 빈 run 줄 상자와 다음 표 진행·표 뒤 주석 관계 | FAIL: 1쪽 | PASS |
+| 한컴 재저장본의 유효 줄 진행과 폭 0 표 host 보존 | PASS | PASS |
+
+실행은 같은 정식 Rust test source를 `rustc --test`로 컴파일하고
+`CARGO_BIN_EXE_rhwp`를 각각 보존한 기준 CLI와 수정 CLI로 고정했다.
+기준 exit 101: 1 PASS/2 FAIL, 수정 exit 0: 3 PASS/0 FAIL이다.
+파생 integration suite를 primary checkout에서 준비하거나 변경하지 않았다.
+전체 Cargo integration suite·Clippy·코퍼스 래칫 및 신규 sample 보안 게이트는 아직 실행하지 않았다.
+
+정상 대조군 8개는 동일한 `export-svg --profile print --font-style` 명령으로 전쪽 비교했다.
+쪽수와 SVG가 모두 수정 전과 동일하다. 해시는 진단용 비교이며 회귀 golden으로 추가하지 않았다.
+
+| 대조군 | 쪽수 |
+| --- | ---: |
+| `253E164F57A1BC6934-empty.hwp` | 2 |
+| `hwp3-empty-cell.hwp` | 1 |
+| `issue1639_empty_host_negative_offset_float.hwpx` | 2 |
+| `issue1639_empty_host_positive_only_float.hwpx` | 2 |
+| `issue1880_anchor_stack_sb_convert.hwpx` | 13 |
+| `issue1880_takeplace_host_before.hwpx` | 10 |
+| `basic/BlogForm_BookReview.hwp` | 1 |
+| `tac-case-003.hwp` | 1 |
+
+## 시각 검증
+
+Windows Native debug/fresh WASM dev, print profile, Chrome webfont rasterizer,
+96dpi, `--embed-fonts full --font-path C:\Windows\Fonts`로 동일 원본과 독립 PDF의 2쪽 전체를 비교한다.
+후보 작업 트리의 양쪽 최저 `tolerant_content_match_percent`는 98.70902%이며 gate는 `passed`다.
+최종 코드 commit의 재출력 결과·페이지별 TSV·대표 review/overlay PNG를 이 절에 고정한다.
+엄격 픽셀 ink match는 별도 지표이며 90% 실루엣 gate의 의미로 바꾸어 보고하지 않는다.
