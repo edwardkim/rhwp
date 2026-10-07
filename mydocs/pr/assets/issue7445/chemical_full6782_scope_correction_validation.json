@@ -1,0 +1,212 @@
+{
+  "stage": 105,
+  "code_commit": "9efd1823c57b9e9417ef15cf7492269c27f2c8cb",
+  "analysis": {
+    "head": "b6f37def6d8e5a6726c0460de55ab8209a7708bf",
+    "scope": "사용자 정정: PR#7382 실제 차단 실패만 처리. 보정10319개별검사는 과거PASS 증거가 있어 기존원본/기대값 복원하고 현재head 검증.90%미달 부정시각증거는 유지하되 정상검사 제거 근거로 사용하지 않음.",
+    "blocking_input": "text-overlap 전체원문 신규2건(보정10235번)",
+    "restore_functions": {
+      "issue_6782_cell_float_full_original": [
+        "offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied",
+        "the_ccc_image_is_restored_in_its_original_fragment_cell"
+      ],
+      "issue_6761_zero_origin_rewind_row_split": [
+        "stored_first_line_split_keeps_row_head_on_table_page",
+        "continuation_page_stays_inside_body",
+        "rewind_without_ladder_continuation_is_not_split_evidence",
+        "later_confirmed_rewind_does_not_authorize_an_earlier_cut"
+      ],
+      "issue_7048_stored_picture_successor": [
+        "issue_7048_full_original_body_baselines_match_hancom",
+        "issue_7048_table_first_fragment_keeps_the_footer_clear",
+        "issue_7048_stored_picture_does_not_rewind_across_measured_picture_flow"
+      ],
+      "issue_6761_side_by_side_objects_do_not_stack": [
+        "horizontally_separated_objects_share_one_band",
+        "equivalent_right_alignment_keeps_the_same_row_height",
+        "horizontally_overlapping_objects_still_stack"
+      ],
+      "issue_6761_rewind_fill_gate_page_break": [
+        "paragraph_boundary_rewind_starts_the_page_hancom_starts",
+        "rewind_whose_flow_position_disagrees_does_not_start_a_page"
+      ],
+      "issue_7359_page_top_table_spacing": [
+        "page_top_stored_spacing_aligns_caption_and_table_with_pdf"
+      ],
+      "issue_6761_band_absorbs_spacing_before": [
+        "next_paragraph_starts_at_table_outer_margin_bottom",
+        "spacing_before_larger_than_band_remainder_keeps_flow_position"
+      ],
+      "issue_6761_object_only_cell_row_keeps_declared_height": [
+        "object_only_cell_row_matches_declared_and_hancom_height",
+        "last_row_is_not_split_into_an_extra_page"
+      ]
+    },
+    "new_test_functions": 0,
+    "production_changes": false
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "b6f37def6d8e5a6726c0460de55ab8209a7708bf",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_15) or test(issue_6782_cell_float_full_original::) or test(issue_6761_zero_origin_rewind_row_split::) or test(issue_7048_stored_picture_successor::) or test(issue_6761_side_by_side_objects_do_not_stack::) or test(issue_6761_rewind_fill_gate_page_break::) or test(issue_7359_page_top_table_spacing::) or test(issue_6761_band_absorbs_spacing_before::) or test(issue_6761_object_only_cell_row_keeps_declared_height::)"
+        ],
+        "exit_code": 0,
+        "seconds": 50.42230983264744
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.36651483271271
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4709881250746548
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.24841149989515543
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.40748820872977376
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 9.945891249924898
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.6446862500160933
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.75472587486729
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   3.632s] 20 tests run: 20 passed, 1920 skipped"
+  ],
+  "restored_functions": 19,
+  "restored_body_baseline_rows": 1,
+  "new_test_functions": 0,
+  "production_changes": false,
+  "scope": "#7382 실제 실패text-overlap 전체원문 신규2건 입력만 보류.19정상함수/body원장 복원. 원문 samples/보존asset SHA동일. Native90%미달 부정 증거 보존/피델리티승인 아님.",
+  "related_evidence": "chemical_full6782_test_removal_validation.json",
+  "test_source_sha256": {
+    "issue_6782_cell_float_full_original": "d6d7d2cf739a91adab9517ef7426a83b11dc6649ae183d08cbfafb839ce32288",
+    "issue_6761_zero_origin_rewind_row_split": "0309a84eda2e302f73122d20c41eb0d2838f7e5857e971279c4748e951e4a646",
+    "issue_7048_stored_picture_successor": "fd5193f56eca1d6e13933594a23af2ff40173629d099216b2885ff80e76c3f21",
+    "issue_6761_side_by_side_objects_do_not_stack": "49f8e94bd7528809adaec3ef00a37cdf2bab9fd492ce4d49ff645157a33c2e4b",
+    "issue_6761_rewind_fill_gate_page_break": "44c6689774b462ebace68ed395ea8eae05593c3b5e39d346bfb9e66b45ac2a84",
+    "issue_7359_page_top_table_spacing": "ecdd9b9214aec1b827c29ff4717617b0bc8ec6f6c9621581f7df545a56efa767",
+    "issue_6761_band_absorbs_spacing_before": "d3e58667f9502b08d6b5ddcdbf5992091edc00578e209f3a7c90d644e0e6573b",
+    "issue_6761_object_only_cell_row_keeps_declared_height": "7b98fa824c755c6c11788d08b6ba0ae87453b0e67bc6b9ccd85cdbca8089e68d"
+  }
+}

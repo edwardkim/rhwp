@@ -15,6 +15,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | 파일 | 분류 | 상태 | 용도 | 샘플 | 배선 | 비고 |
 |------|------|------|------|------|------|------|
 | `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책 | — | npm e2e:automation |  |
+| `enter-caret-reveal-issue7486.test.mjs` | 상시 | active | #7486 본문 Enter 새 쪽의 DOM 캐럿·viewport 및 Undo/Redo, 100%/66% 배율·160/200/300% 줄간격 | 편집 API 합성 | npm e2e:enter-caret | 추가 입력 없이 layout 완료 경계 검사 |
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
 | `blogform.test.mjs` | 상시 | active | BlogForm_BookReview.hwp 누름틀 안내문 | BlogForm_BookReview.hwp | 수동 |  |
 | `body-outside-click-fallback.test.mjs` | 진단 | hold | 보류 ② 본문 외곽 클릭 fallback 결함 — 가설 (b) master page 글상자 hit 확정 e2e | hwpctl_Action_Table__v1.1.hwp | 수동 | legacy-name · 보류② 이슈 종속 |
@@ -51,6 +52,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `footnote-insert.test.mjs` | 상시 | active | footnote-01.hwp 각주 삽입 시 문단 위치 이상 확인 | footnote-01.hwp | 수동 |  |
 | `footnote-vpos.test.mjs` | 상시 | active | footnote-01.hwp "원료를" 뒤 스페이스 입력 시 문단 위치 이상 / WASM API 직접 호출로 정확한 재 | footnote-01.hwp | 수동 |  |
 | `form-control.test.mjs` | 상시 | active | 양식 컨트롤 — 셀 커서 진입(#111) + 체크박스 클릭 토글(#112) | form-002.hwpx | 수동 |  |
+| `find-count-edit-refresh.test.mjs` | 상시 | active | #7485 일반 입력·삭제·undo/redo 개수 갱신 1회, 커서 보존과 닫힌 창 검색 0회 | 합성 새 문서 foo foo | 수동 | 실제 Studio 키 이벤트·최적화 WASM |
+| `find-first-click-ime.test.mjs` | 상시 | active | #7485 양방향 첫 클릭, IME 확정·고립 mouseup·늦은 input·중복 click·Enter·드래그 취소와 상태 행 고정 | 합성 새 문서 한글 | 수동 | Chrome IME 및 Mac 이벤트 순서 재현; 네이티브 사용자 확인과 구분 |
 | `form-edit-escape-cancel.test.mjs` | 상시 | active | #2375 Edit 양식 필드 Escape는 blur 뒤에도 취소·무기록 | form-01.hwp | npm e2e:form-edit-escape |  |
 | `gen-screenshot.mjs` | 유틸 | active | README 용 렌더 스크린샷 생성기 | basic/KTX.hwp | 수동 |  |
 | `global-shortcut.test.mjs` | 상시 | active | 시작 시 빈 문서 + 전역 단축키 | — | 수동 |  |
@@ -96,6 +99,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `merged-cell-boundary-drag.test.mjs` | 상시 | active | #6557 세로 병합 셀 표에서 하위 행만 선택하고 열 경계를 드래그 — 선택 필터의 병합 셀 포함·걸친 모든 행의 이웃 보상·균일 결과 무마킹 세 층이 함께 고쳐져야 경계가 전 행에서 같은 x 로 이동 | — | npm e2e:issue-6557-merged-col | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `merged-cell-row-boundary-drag.test.mjs` | 상시 | active | #6557 가로 병합 셀 표의 행 경계 드래그 — 병합 셀이 걸친 모든 열의 아래 이웃이 보상을 받아 표 전체 높이가 보존되는지 검증 | — | npm e2e:issue-6557-merged-row | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
+| `overwrite-mode-issue7489.test.mjs` | 상시 | active | #7489 수정 모드 😀 뒤 캐럿·병합·Undo/Redo(삽입 모드 포함), IME 😀 확정 뒤 조합, 덮은 IME 조합 중 새 문서·문서 열기의 문단 조각 해제 | para-001.hwp | 수동 | fresh WASM · CDP IME, run-with-vite.mjs 경유 |
+| `edited-indent-issue7490.test.mjs` | 상시 | active | #7490 문단 모양 대화창·입력·undo/redo·병합 복원·저장 좌표 | 새 문서 | 수동 | 실제 Studio 키/문단 대화창과 fresh WASM |
 | `page-border-toggle.test.mjs` | 상시 | active | 쪽 테두리/배경 미리보기 버튼 토글 | — | 수동 |  |
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
 | `page-break-caret-reveal.test.mjs` | 상시 | active | Cmd+Enter 쪽 나누기 뒤 새 쪽 캐럿 DOM 재배치와 편집 영역 viewport 자동 스크롤 | — | npm e2e:page-break-caret | dev server 필요 — run-with-vite.mjs 경유 |
@@ -121,6 +126,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
+| `select-all-cmd-a.test.mjs` | 상시 | active | 한컴 정합 ⌘A — 본문 전체·셀 내용만·셀 블록 해제·표 하이라이트·포커스 밖 전역 경로·IME 키·전체 삭제 회귀 | 새 문서, hml/formatting_table.hml | npm e2e:select-all-cmd-a | dev server 필요 — run-with-vite.mjs 경유 |
 | `scenario-runner.mjs` | 유틸 | active | 시나리오 실행기 + 렌더 트리 측정기 + 규칙 검증기 | — | 수동 |  |
 | `wasm-artifact-check.mjs` | 유틸 | active | #7473 앱 초기화 중 실제 수신 WASM과 빌드 manifest SHA-256 대조 | — | 수동 | `helpers.mjs`에서 opt-in, `tests/wasm-artifact-check.test.ts`로 실패 경계 검사 |
 | `vite-server.mjs` | 유틸 | active | Vite dev server 기동·종료 공용 헬퍼 — vite Node API(createServer) in-process 기동, 로그는 customLogger 로 target/ 에 유지 | — | 수동 | `run-render-diff.mjs`·`run-with-vite.mjs`에서 import |
@@ -130,6 +136,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `table-border-hover-resize-issue4117.test.mjs` | 상시 | active | #4117 셀 선택 모드 클릭 없이 표 경계 hover → 리사이즈 커서·드래그 동작 — 이동 스톰 60회 중 엔진 호출 ≤2 단정으로 task 2010 랙 재발 방지 | — | npm e2e:issue-4117-border-hover | dev server 필요 — run-with-vite.mjs 경유 |
 | `table-guide-grid-arrangement-issue7025.test.mjs` | 상시 | active | #7025 그리드 보기(두 쪽·맞쪽·여러 쪽)에서 표 리사이즈 안내선이 그 쪽의 실제 X 를 따르는지 — 마커 left 를 `getPageLeftResolved` 기준값과 대조하고 단일 열 공식으로 되돌아가면 실패 (#685 의 출력 축 잔여) | — | npm e2e:issue-7025-grid-overlay | dev server 필요 — run-with-vite.mjs 경유 |
 | `table-picture-resize-1282.test.mjs` | 상시 | active | E2E 테스트 (Issue #1282): 회전된 표 셀 내부 picture 리사이즈. | ta-pic-001-r-쪽영역안제한.hwp, ta-pic-001-r-쪽영역안제한 | 수동 |  |
+| `tac-prefix-page-handoff-issue7491.test.mjs` | 상시 | active | 실제 셀 Enter 8회 후 TAC의 다음 쪽 소유·상단·본문 끝 좌표 | issue6882/synth_cell_enter_table_growth.hwp | 수동 | fresh WASM / CDP; 저장 셀 높이는 별도 계약 |
 | `tac-inline-create.test.mjs` | 상시 | active | 빈 문서에서 인라인 TAC 표 직접 생성 (Issue #32) | — | 수동 |  |
 | `tac-inline-table.test.mjs` | 상시 | active | 인라인 TAC 표 배치 검증 (Issue #31) | tac-case-001.hwp | 수동 |  |
 | `tac-verify.test.mjs` | 상시 | active | E2E 자동 검증: 인라인 TAC 표 조판 (Issue #33) | — | 수동 |  |

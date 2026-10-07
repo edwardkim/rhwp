@@ -1,0 +1,275 @@
+{
+  "stage": 120,
+  "code_commit": "9d1b255c4759b02c29545bfa8b9d5f7dcdde9602",
+  "analysis": {
+    "head": "d2789bb1d7d4c3f9b2f0804b2e8984e61e054a96",
+    "analysis": "#7382 현재 text-overlap 이 입력10→19 실제증가만. 동일원문/정상한컴PDF/생산binary 및빈src diff로39쪽47.03148%,53쪽58.70083% 부정증거 재사용. text축의이입력과baseline10행만 #7445보류하며정상near-top203쪽/작은대조1쪽·#7147정상objectheight130px 및 모든다른축/문서·원문/PDF 유지. 10을19로완화하지않음.",
+    "files": {
+      "samples/issue5941/1480000-201900698-native-neartop-reset.hwp": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+      "pdf/issue5941-1480000-201900698-2020.pdf": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "negative_visual": {
+      "native_pages_compared": [
+        39,
+        53
+      ],
+      "percent_by_page": {
+        "39": 47.03148,
+        "53": 58.70083
+      },
+      "actual_page_count": 203,
+      "pdf_page_count": 205,
+      "wasm_reexecution": "미실행; Native 미달로 사용자 승인 이관. 전체205쪽 시각 통과 아님.",
+      "source_code": "b7436944b81d20ad799edcd59ead3b94621902b3",
+      "source_head": "aa7dc390c6e11e98658926513150be8f93695e7b",
+      "cli_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+      "gate": "re_review_required"
+    },
+    "direct_inspection": "39쪽 review의 문단/표내용소유가 다르고 표외곽/뒤문단/글줄 차이. 글꼴예외 아님. 전체205쪽Native/freshWASM미완료. 정상다른assertion근거는독립계약으로유지.",
+    "planned_input": "issue5941/1480000-201900698-native-neartop-reset.hwp",
+    "planned_row": "issue5941/1480000-201900698-native-neartop-reset.hwp\t10",
+    "checks": [
+      [
+        "text_overlap_baseline",
+        "text_overlaps_do_not_grow_partition_0"
+      ]
+    ],
+    "plans": [
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_5941_neartop_reset_only_on_empty_page",
+        "target": "regression_suite_018",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_7147_row_declaration_beats_object_height",
+        "target": "regression_suite_014",
+        "grouped": true
+      }
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 9.578155208844692,
+      "summary": [
+        "Summary [   1.312s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "observations": []
+    }
+  ],
+  "mutation": {
+    "deferred_axis_input": "issue5941/1480000-201900698-native-neartop-reset.hwp",
+    "removed_row": "issue5941/1480000-201900698-native-neartop-reset.hwp\t10",
+    "removed_functions": [],
+    "kept": "near-top203쪽/작은대조1쪽/#7147개체높이반례 및 모든다른축/문서·원문/PDF·공차 유지"
+  },
+  "focused_summary": [
+    "Summary [  54.663s] 19 tests run: 15 passed, 4 failed, 642 skipped"
+  ],
+  "normal_results": [
+    "PASS [   0.017s] (11/19) rhwp::regression_suite_021 issue_5941_neartop_reset_only_on_empty_page::issue_5921_empty_page_relaxation_still_applies",
+    "PASS [   1.077s] (13/19) rhwp::regression_suite_014 issue_7147_row_declaration_beats_object_height::object_height_that_ends_mid_row_still_reconciles",
+    "PASS [   0.983s] (14/19) rhwp::regression_suite_021 issue_5941_neartop_reset_only_on_empty_page::stored_neartop_reset_survives_on_a_filled_page"
+  ],
+  "text_axis_results": "전체16분할12PASS/4FAIL. 해당입력없고다른4실패보존. 정상3PASS와합계15PASS/4FAIL/642SKIP.",
+  "actual_remaining_text_failures": [
+    {
+      "test_result": "FAIL [   4.355s] ( 3/19) rhwp::regression_suite_013 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [  10.075s] ( 8/19) rhwp::regression_suite_013 text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "observations": [
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test_result": "FAIL [  10.653s] ( 9/19) rhwp::regression_suite_013 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   7.381s] (10/19) rhwp::regression_suite_013 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "observations": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "d2789bb1d7d4c3f9b2f0804b2e8984e61e054a96",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_021",
+          "-E",
+          "(test(text_overlap_baseline::)) or (test(issue_5941_neartop_reset_only_on_empty_page::)) or (test(=issue_7147_row_declaration_beats_object_height::object_height_that_ends_mid_row_still_reconciles))"
+        ],
+        "exit_code": 100,
+        "seconds": 68.33560995804146
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.541475999634713
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3789969999343157
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22598750004544854
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36959725013002753
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.018225333187729
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.523955499753356
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.204853500239551
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "a9b5d0a71c25a5500953525865a04c0be56f632066d5c94d4e4a03ece741045f",
+    "tests/fixtures/text_overlap_baseline.tsv": "f9d5dfa7d4e6ed48cc21564d0ab0bccc0a016ea3f8ec93860dcdc6786fb1ebcc"
+  },
+  "source_after_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "a441daba3bc131469fd315d02e9e604089c5514ea5e041575f334119ac34904f",
+    "tests/fixtures/text_overlap_baseline.tsv": "f6880dc77437eeb2de6dbb07469bc661df3fa9d2dc784b8f643d8aa50fa6d492"
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5868460165",
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/neartop5941_native_review_039.png",
+    "mydocs/pr/assets/issue7445/neartop5941_native_overlay_053.png"
+  ],
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "remaining": "다른text4입력/off및다른축 실패·최종37개별/전체검증/PR준비 미완료"
+}

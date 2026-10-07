@@ -1,0 +1,55 @@
+{
+  "source": "same original HWPX and Hancom2024 PDF; synthetic counter separate",
+  "independent_lines": [
+    {
+      "page": 30,
+      "text": "29) Dattani, Nikesh, et al. \"Clinical and histological outcomes following living-related liver transplantation in ",
+      "bbox_px96": [
+        94.559998,
+        1010.448568,
+        702.591227,
+        1023.299723
+      ]
+    },
+    {
+      "page": 31,
+      "text": "문제가 나타남. 조직학적 검사 32.9%가 간염, 29.5%가 거부반응 소견을 보여 이식 결과 이환율에 ",
+      "bbox_px96": [
+        94.559998,
+        83.141057,
+        705.838704,
+        96.421061
+      ]
+    },
+    {
+      "page": 31,
+      "text": "대한 추적 관찰이 필요함이 나타남.",
+      "bbox_px96": [
+        94.559998,
+        109.861064,
+        311.412313,
+        123.141062
+      ]
+    },
+    {
+      "page": 31,
+      "text": "30) Aktuelle Entwicklungen der Lebertransplantation in Deutschland: MELD-basierte Organallokation und ",
+      "bbox_px96": [
+        94.559998,
+        1027.568604,
+        702.98527,
+        1039.248535
+      ]
+    },
+    {
+      "page": 32,
+      "text": "„incentives” für Transplantationszentren",
+      "bbox_px96": [
+        112.0,
+        1027.568604,
+        325.680318,
+        1039.248535
+      ]
+    }
+  ]
+}

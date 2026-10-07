@@ -1,6 +1,7 @@
 const LAYOUT_BOUNDARY_OPERATION_TYPES = new Set([
   'pageBreak',
   'columnBreak',
+  'splitParagraph',
 ]);
 
 function baseOperationType(operationType: string): string {
@@ -10,8 +11,8 @@ function baseOperationType(operationType: string): string {
 }
 
 /**
- * 쪽/단 경계 삽입은 mutation 직후의 WASM 좌표보다 CanvasView의 가상 쪽 배치가 늦게 갱신된다.
- * 해당 명령만 다음 mutation layout 완료 뒤 캐럿을 한 번 더 드러내도록 예약한다.
+ * 쪽/단 나누기와 본문 Enter는 mutation 직후의 WASM 좌표보다 가상 쪽 배치가 늦게 갱신된다.
+ * 다음 mutation layout 완료 뒤 캐럿을 한 번 더 드러내도록 예약한다.
  */
 export class CaretLayoutReveal {
   private pending = false;

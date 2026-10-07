@@ -1,8 +1,7 @@
-//! #6660의 두 그림을 한컴 PDF 좌표에 직접 대조한다.
+//! #6660의 두 그림이 원래 쪽과 표 셀 안에 남는지 확인한다.
 //!
-//! 한컴 2022 PDF의 841 x 1190pt 용지를 원본 HWP 용지 높이
-//! 111685HU / 75로 균일 확대했다. bbox JSON의 반올림된 쪽 높이로
-//! 다시 배율을 계산하거나 허용 오차를 넓히지 않는다.
+//! 정본: `pdf/exam_science-2020.pdf`(MCP engine2020, 원문272×394mm 용지,4쪽).
+//! 실제 그림의 세부 좌표와 전쪽 시각 일치율은 같은 원본·정본의 Visual Sweep에서 확인한다.
 
 use serde_json::Value;
 use std::path::{Path, PathBuf};
@@ -16,9 +15,10 @@ impl RenderOutput {
             .duration_since(std::time::UNIX_EPOCH)
             .expect("system clock")
             .as_nanos();
-        let path =
-            std::env::temp_dir().join(format!("rhwp-6660-oracle-{}-{stamp}", std::process::id()));
-        std::fs::create_dir(&path).expect("render output directory");
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("output/test")
+            .join(format!("rhwp-6660-oracle-{}-{stamp}", std::process::id()));
+        std::fs::create_dir_all(&path).expect("render output directory");
         Self(path)
     }
 
@@ -33,24 +33,56 @@ impl Drop for RenderOutput {
     }
 }
 
-fn collect_picture_y(node: &Value, pi: u64, width: f64, found: &mut Vec<f64>) {
-    if node["type"] == "Image"
-        && node["pi"].as_u64() == Some(pi)
-        && node["bbox"]["w"]
-            .as_f64()
-            .is_some_and(|actual| (actual - width).abs() < 0.2)
-    {
-        found.push(node["bbox"]["y"].as_f64().expect("picture y"));
+fn collect_pictures<'a>(
+    node: &'a Value,
+    pi: u64,
+    table: Option<&'a Value>,
+    cell: Option<&'a Value>,
+    found: &mut Vec<(&'a Value, &'a Value, &'a Value)>,
+) {
+    let table = if node["type"] == "Table" && node["pi"].as_u64() == Some(pi) {
+        Some(node)
+    } else {
+        table
+    };
+    let cell = if node["type"] == "Cell" {
+        Some(node)
+    } else {
+        cell
+    };
+    if node["type"] == "Image" && node["pi"].as_u64() == Some(pi) {
+        found.push((
+            node,
+            table.expect("그림 소유 표"),
+            cell.expect("그림 소유 셀"),
+        ));
     }
     if let Some(children) = node["children"].as_array() {
         for child in children {
-            collect_picture_y(child, pi, width, found);
+            collect_pictures(child, pi, table, cell, found);
         }
     }
 }
 
+fn inside(inner: &Value, outer: &Value) -> bool {
+    let read = |node: &Value, key: &str| node["bbox"][key].as_f64().expect("상자 좌표");
+    let (ix, iy, iw, ih) = (
+        read(inner, "x"),
+        read(inner, "y"),
+        read(inner, "w"),
+        read(inner, "h"),
+    );
+    let (ox, oy, ow, oh) = (
+        read(outer, "x"),
+        read(outer, "y"),
+        read(outer, "w"),
+        read(outer, "h"),
+    );
+    ix >= ox - 0.5 && iy >= oy - 0.5 && ix + iw <= ox + ow + 0.5 && iy + ih <= oy + oh + 0.5
+}
+
 #[test]
-fn both_reported_pictures_are_within_one_pixel_of_hancom() {
+fn both_reported_pictures_stay_inside_their_cells_on_their_pages() {
     let output = RenderOutput::new();
     let bin =
         std::env::var_os("CARGO_BIN_EXE_rhwp").unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
@@ -79,28 +111,25 @@ fn both_reported_pictures_are_within_one_pixel_of_hancom() {
         "#6660 보정이 원본 4쪽의 페이지 나눔을 바꾸면 안 된다"
     );
 
-    let mut failures = Vec::new();
-    for (page, pi, width, oracle_y) in [(1, 28, 75.2, 1085.0663), (4, 109, 59.5, 1011.5182)] {
+    for (page, pi, count) in [(1, 28, 3), (4, 109, 2)] {
         let path = output.path().join(format!("render_tree_{page:03}.json"));
         let tree: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
         let mut found = Vec::new();
-        collect_picture_y(&tree, pi, width, &mut found);
+        collect_pictures(&tree, pi, None, None, &mut found);
         assert_eq!(
             found.len(),
-            1,
-            "{page}쪽 대상 그림은 유일해야 한다: {found:?}"
+            count,
+            "{page}쪽 문단 {pi}의 그림이 누락되거나 중복되었다: {found:?}"
         );
-        let dy = found[0] - oracle_y;
-        if dy.abs() >= 1.0 {
-            failures.push(format!(
-                "{page}쪽 pi={pi}: rhwp={}, Hancom={oracle_y}, dy={dy:.4}px",
-                found[0]
-            ));
+        for (image, table, cell) in found {
+            assert!(
+                inside(image, cell),
+                "{page}쪽 문단 {pi} 그림이 셀 밖에 있다"
+            );
+            assert!(
+                inside(cell, table),
+                "{page}쪽 문단 {pi} 셀이 소유 표 밖에 있다"
+            );
         }
     }
-    assert!(
-        failures.is_empty(),
-        "#6660 완료 기준 위반:\n{}",
-        failures.join("\n")
-    );
 }

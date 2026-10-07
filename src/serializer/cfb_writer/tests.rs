@@ -1564,7 +1564,7 @@ fn write_hwp_with_cfb_crate(orig_data: &[u8]) -> Vec<u8> {
 
     let mut section_data_list = Vec::new();
     for section in &doc.sections {
-        let section_bytes = super::serialize_section(section);
+        let section_bytes = crate::serializer::body_text::serialize_section(section);
         let section_data = if compressed {
             super::compress_stream(&section_bytes).unwrap()
         } else {

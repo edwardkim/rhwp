@@ -1,0 +1,54 @@
+{
+  "producer_head": "4001f5b0c8e3c41707952c7456b509664e4cd2bc",
+  "rust_test_diff_sha256": "ccca0de8ec46961ba9473f98e3e756a7cc25cd4dfbc9273730d285a5832205de",
+  "before": {
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "summary_seconds": 0.162
+  },
+  "after": {
+    "tests": 38,
+    "passed": 38,
+    "failed": 0,
+    "exit_code": 0,
+    "summary_seconds": 3.437
+  },
+  "invalid_first_needle": "not defect evidence; corrected before product edit",
+  "cli_build": {
+    "exit_code": 0,
+    "duration": "2m14s"
+  },
+  "page_count": 215,
+  "reference_page_count": 215,
+  "actual_body_cuts": {
+    "407": {
+      "30": [
+        0,
+        3
+      ],
+      "31": [
+        3,
+        5
+      ]
+    },
+    "421": {
+      "31": [
+        0,
+        4
+      ],
+      "32": [
+        4,
+        5
+      ]
+    }
+  },
+  "native_exit_code": 1,
+  "direct_read_pages": [
+    30,
+    31,
+    32
+  ],
+  "remaining": "p32 separator and following-body origin; image color differences; whole/fresh WASM/final gates pending"
+}

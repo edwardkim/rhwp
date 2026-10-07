@@ -1,0 +1,196 @@
+{
+  "key": "exam-eng",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "fa1c9640e982a2bafc84cd6cbc6b05670874976db7e83261bee100248bea8f3c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-1.png",
+      "pdf_sha256": "6be1841a9de07f40d7afc8ed354244a6ee8d6db28ca95c8a848862486444de84"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "e485b9878b7b1fa414ba0e685e94397fff2c957f9bf66957d2e7cd1a3da71ed5",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-2.png",
+      "pdf_sha256": "ba6125057efd36300ecc1aa0efe203d8d4517f659fe41d51b2ff53c9dd27d646"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "54e16d8ab3e1f56388868ace3cc97685e82fe8617c98f836ebe41466c4232798",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-3.png",
+      "pdf_sha256": "2e1ecf1d21a4dceb79014779f926ca31712c3ef0d6d5e5fdb8c0cbe27837a45a"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "dab1361909aa675c537e17c6cb6f2168aa36dc1f836159f5df20b47b85c47326",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-4.png",
+      "pdf_sha256": "d7cdd86a0c3778fa8dd1aa18ad34eb5d9e1b1166e015ad119654606d8286283a"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "e297cb7bf8fa66e383a6a07e15d437344a719d46632e18175b014aa2f1661218",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-5.png",
+      "pdf_sha256": "f74f7896b8fd0f84aed3b9424b088ac5bc46e66ae48a24858d38cab47fc3f7f9"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "cf50683a95589e27fc1ef5edb2124ace2c3748ceb75b55b5977d6b70a8e0398c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-6.png",
+      "pdf_sha256": "44e3275736cced117bc661c85f7868399c9388032e256f92fdcbf940794dc096"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "1eb6c82f92671463e3953b11dcbac61f58a602a8a4ec8ada562425bc15e36f41",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-7.png",
+      "pdf_sha256": "f63cba9399687f6f01b81eb4d49e82f81551908f0ef5a94b3b9561b982aab769"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "12eefa11040a519278c2c5682c1a11cf7866b2e550a366efcf006c8a693dcc30",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage7-7534-native/exam-eng/pdf_png/pdf-8.png",
+      "pdf_sha256": "b511e3003baea63d042df15e9e0f2c1674c225677d6b892e37897a7e9552b270"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.26559,
+      "silhouette_boundary_reconciled_pixels": 17,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 213940,
+      "tolerant_content_match_percent": 97.27353
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 93.01297,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 245054,
+      "tolerant_content_match_percent": 93.01297
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.40707,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 257506,
+      "tolerant_content_match_percent": 96.40707
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.08866,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 225987,
+      "tolerant_content_match_percent": 95.08866
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.47424,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 246942,
+      "tolerant_content_match_percent": 95.47424
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.68614,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 250356,
+      "tolerant_content_match_percent": 95.68614
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.70449,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 260807,
+      "tolerant_content_match_percent": 95.70449
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.55874,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 255749,
+      "tolerant_content_match_percent": 96.55874
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    "pdf": {
+      "path": "pdf/exam_eng-2022.pdf",
+      "sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844"
+    },
+    "git_head": "3e3db651f67616092b5aa46944d8ff4177301eda",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "351b97126f337ba1bd7a05b8b0354577478b5c6056544e5048bdafdd98510125"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "exported_svg_pages": 8,
+  "exported_render_tree_pages": 8,
+  "exported_pdf_pages": 8
+}

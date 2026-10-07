@@ -1,33 +1,75 @@
-//! Issue #3308 회귀 가드 — 좁은 중첩 표의 선언 폭 유지 + 셀 내 가운데 배치.
+//! Issue #3308 회귀 가드 — 좁은 중첩 표의 선언 폭과 셀 안쪽 가운데 배치.
 //!
-//! 직인 표시는 1×2 중첩 표(|…요구권자(직위)|직인|)의 오른쪽 셀(바깥 4변 주황
-//! 테두리)이다. 종전에는 전면 스트레치 정규화가 이 표(선언 435.1px, 부모 셀 폭
-//! 대비 0.679)를 셀 폭 641.3px 로 늘려 직인 셀이 한컴 대비 +97.5px 밀렸다.
-//!
-//! 한컴 권위: 편집기 크기 판독 115.13mm = 선언 폭 정확 일치, 재저장본 선언 유지,
-//! 정답지 픽셀(직인 x=598.7px). 저장된 h_offset(21.96mm)은 한컴도 조판에 쓰지
-//! 않음을 실측으로 확인(작업지시자 판정) — 셀 내 가운데 모델이 0.6px 정합.
-//!
-//! 수정: ①스트레치에 비율 하한 0.9(#2195 보호 대상 0.956~0.995 는 유지)
-//! ②하한 미만 비-TAC 중첩 표는 선언 폭 + 셀 내 가운데.
+//! 한컴 2020으로 다시 출력한 9쪽 기준 PDF와 같은 원본을 사용한다.
+//! `직인` 글자 원점은 오른쪽 셀의 안쪽 여백 때문에 셀 경계와 다르므로
+//! 절대 x좌표 대신 포함 관계를 검사한다. 현재 head의 전쪽 시각 검증은 별도다.
 
+use std::path::PathBuf;
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
 }
 
 const FIXTURE: &str = "samples/task3307/issue3307_outline_number.hwpx";
-/// 한컴 2020 정답지 p7 실측 (96dpi px).
-const HANCOM_SEAL_X: f64 = 598.7;
-const HANCOM_NESTED_WIDTH: f64 = 435.1;
-const TOLERANCE_PX: f64 = 5.0;
+
+#[derive(Clone, Copy)]
+struct Box2d {
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+}
+
+fn bbox(node: &serde_json::Value) -> Box2d {
+    let b = &node["bbox"];
+    Box2d {
+        x: b["x"].as_f64().expect("bbox.x"),
+        y: b["y"].as_f64().expect("bbox.y"),
+        w: b["w"].as_f64().expect("bbox.w"),
+        h: b["h"].as_f64().expect("bbox.h"),
+    }
+}
+
+fn seal_geometry<'a>(
+    node: &'a serde_json::Value,
+    ancestors: &mut Vec<&'a serde_json::Value>,
+) -> Option<(Box2d, Box2d, Box2d, Box2d)> {
+    if node["type"] == "TextRun" && node["text"].as_str().is_some_and(|s| s.starts_with("직인")) {
+        let nested_index = ancestors.iter().rposition(|a| a["type"] == "Table")?;
+        let outer_cell = ancestors[..nested_index]
+            .iter()
+            .rfind(|a| a["type"] == "Cell")?;
+        let right_cell = ancestors[nested_index + 1..]
+            .iter()
+            .find(|a| a["type"] == "Cell")?;
+        return Some((
+            bbox(outer_cell),
+            bbox(ancestors[nested_index]),
+            bbox(right_cell),
+            bbox(node),
+        ));
+    }
+    ancestors.push(node);
+    let found = node["children"].as_array().and_then(|children| {
+        children
+            .iter()
+            .find_map(|child| seal_geometry(child, ancestors))
+    });
+    ancestors.pop();
+    found
+}
 
 #[test]
 fn narrow_nested_table_keeps_declared_width_and_centers() {
-    let out_dir = std::env::temp_dir().join("issue3308_render_tree");
-    let _ = std::fs::remove_dir_all(&out_dir);
-    std::fs::create_dir_all(&out_dir).unwrap();
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("현재 시각")
+        .as_nanos();
+    let out_dir = PathBuf::from("output/pr-review/tests")
+        .join(format!("issue3308-{}-{unique}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).expect("검사 출력 디렉터리");
 
     let status = Command::new(rhwp_bin())
         .args([
@@ -36,51 +78,50 @@ fn narrow_nested_table_keeps_declared_width_and_centers() {
             "-p",
             "6",
             "-o",
-            out_dir.to_str().unwrap(),
+            out_dir.to_str().expect("UTF-8 경로"),
         ])
         .status()
         .expect("rhwp 실행");
     assert!(status.success(), "export-render-tree 실패");
 
-    let json_path = out_dir.join("render_tree_007.json");
-    let tree: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(&json_path).unwrap()).unwrap();
+    let tree: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(out_dir.join("render_tree_007.json")).expect("7쪽 렌더 트리"),
+    )
+    .expect("렌더 트리 JSON");
+    let (parent, nested, right, seal) =
+        seal_geometry(&tree, &mut Vec::new()).expect("직인 중첩 표 계층");
 
-    let mut seal_x = None;
-    let mut nested_w = None;
-    fn walk(n: &serde_json::Value, seal_x: &mut Option<f64>, nested_w: &mut Option<f64>) {
-        let text = n["text"].as_str().unwrap_or("");
-        if text.starts_with("직인") {
-            *seal_x = n["bbox"]["x"].as_f64();
-        }
-        // 직인을 담은 중첩 표 노드 — Table 이면서 폭이 선언 폭 부근(스트레치 시 641)
-        if n["type"] == "Table" {
-            if let Some(w) = n["bbox"]["w"].as_f64() {
-                let holds_seal = n.to_string().contains("직인");
-                if holds_seal && w < 500.0 {
-                    *nested_w = Some(w);
-                }
-            }
-        }
-        if let Some(children) = n["children"].as_array() {
-            for c in children {
-                walk(c, seal_x, nested_w);
-            }
-        }
-    }
-    walk(&tree, &mut seal_x, &mut nested_w);
-
-    let seal_x = seal_x.expect("직인 TextRun 을 찾지 못했다 — 통짜 스트레치로 회귀?");
+    // 원본의 중첩 표는 부모 셀보다 확실히 좁으며, 셀 안에서 가운데 정렬된다.
+    let width_ratio = nested.w / parent.w;
     assert!(
-        (seal_x - HANCOM_SEAL_X).abs() <= TOLERANCE_PX,
-        "직인 x={seal_x:.1} — 한컴 {HANCOM_SEAL_X} 대비 허용 오차({TOLERANCE_PX}px) 초과. \
-         중첩 표 스트레치/배치 회귀"
+        (0.5..0.8).contains(&width_ratio),
+        "중첩 표가 부모 폭으로 늘어났다: 폭 비율 {width_ratio:.3}"
     );
-    let nested_w = nested_w.expect("선언 폭 중첩 표 노드 부재 — 스트레치(641px)로 회귀한 것");
+    let left_gap = nested.x - parent.x;
+    let right_gap = parent.x + parent.w - nested.x - nested.w;
     assert!(
-        (nested_w - HANCOM_NESTED_WIDTH).abs() <= TOLERANCE_PX,
-        "중첩 표 폭 {nested_w:.1} — 선언 {HANCOM_NESTED_WIDTH} 유지 실패"
+        (left_gap - right_gap).abs() <= parent.w * 0.02,
+        "중첩 표가 셀 가운데를 벗어났다: 좌 {left_gap:.1}, 우 {right_gap:.1}"
+    );
+    assert!(
+        nested.y >= parent.y && nested.y + nested.h <= parent.y + parent.h,
+        "중첩 표가 부모 셀을 벗어났다"
+    );
+    // 렌더 트리의 bbox는 소수 첫째 자리로 반올림되므로 맞닿은 끝점에
+    // 표 폭의 0.1%만 허용한다. 셀 위치를 고정 픽셀로 못박지 않는다.
+    let rounded_edge = nested.w * 0.001;
+    assert!(
+        right.x >= nested.x - rounded_edge
+            && right.x + right.w <= nested.x + nested.w + rounded_edge,
+        "직인 셀이 중첩 표를 벗어났다"
+    );
+    assert!(
+        seal.x >= right.x
+            && seal.x + seal.w <= right.x + right.w
+            && seal.y >= right.y
+            && seal.y + seal.h <= right.y + right.h,
+        "직인 글자가 오른쪽 셀 내부에 있지 않다"
     );
 
-    let _ = std::fs::remove_dir_all(&out_dir);
+    std::fs::remove_dir_all(out_dir).expect("검사 산출물 정리");
 }

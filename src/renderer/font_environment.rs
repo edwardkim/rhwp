@@ -16,6 +16,10 @@ use crate::error::HwpError;
 pub struct FontEnvironment {
     id: String,
     substitutions: BTreeMap<String, String>,
+    /// 호출자가 실제 출력 프로그램을 확인한 TrueType 최종 face.
+    /// 설치 증명은 아니며, 생략하면 기존 HFT 호환 메트릭을 유지한다.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    true_type_faces: Vec<String>,
 }
 
 impl FontEnvironment {
@@ -45,6 +49,14 @@ impl FontEnvironment {
                 })
         };
         if !valid_name(&self.id)
+            || self.true_type_faces.len() > 256
+            || self.true_type_faces.iter().any(|face| !valid_name(face))
+            || self
+                .true_type_faces
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.true_type_faces.len()
             || self.substitutions.len() > 256
             || self
                 .substitutions
@@ -56,6 +68,10 @@ impl FontEnvironment {
             ));
         }
         Ok(())
+    }
+
+    pub(crate) fn selects_true_type(&self, face: &str) -> bool {
+        self.true_type_faces.iter().any(|selected| selected == face)
     }
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {

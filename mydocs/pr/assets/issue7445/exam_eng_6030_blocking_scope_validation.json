@@ -1,0 +1,296 @@
+{
+  "stage": 113,
+  "code_commit": "0d1ca6970444f0b05ea95cd68ce74b0bf398dace",
+  "analysis": {
+    "head": "440d9d9e8fbf87c393dec4cb2c24c4c3b20c8e29",
+    "source_pr": 7382,
+    "analysis": "실제 복원 실패13번만 대조. 기존 기대 셀높이18.5px 이상은 활성 cell padding과 독립 괘선 검증이 필요하나 문서 전체 Native 최저48.54225%,영향6쪽51.55944%로 regression fixture 수용 기준 미달. 이 한 함수만 #7445에 보류하며 같은 문서 정상검사는 유지한다.",
+    "prior_visual_evidence": "mydocs/pr/assets/issue7445/exam_eng_test_removal_validation.json",
+    "visual_reuse": "같은 입력/PDF 해시 및 동일 생산 Native binary ad4f...; 이후 소스 변경은 cfg(test) 내부 복원/경로이고 생산 렌더링 변경 없음. 새 최종 Native/freshWASM 통과 증거가 아닌 동일 후보의 부정 증거 재사용.",
+    "provenance": {
+      "hwp": {
+        "path": "samples/exam_eng.hwp",
+        "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+      },
+      "pdf": {
+        "path": "pdf/exam_eng-hwp-2020.pdf",
+        "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98"
+      },
+      "git_head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+        "full_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage88-exam-eng/visual-native/exam-eng/run_manifest.json"
+      }
+    },
+    "native_metrics": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 96.02165
+      },
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 89.09228
+      },
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 68.69443
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 55.25926
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 60.04261
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 51.55944
+      },
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 48.54225
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 79.13315
+      }
+    ],
+    "direct_inspection": "6쪽 review/standalone overlay 재확인. 오른쪽36~37지시문·상자 및 본문·선택지 위치 차이가 크다. 셀 높이19.07px가 정답이라는 독립 증거 또는 모든 선택지 clipping 개선을 단정하지 않음.",
+    "planned_scope": "issue_6030_exam_eng_choice_last_line_not_clipped 한 함수만 보류. 동일 원문 및PDF, 다른 정상함수/source-unit/corpus/matrix 모두 유지. 새 함수/생산 변경/허용치 완화 없음.",
+    "plan": {
+      "caseName": "issue_6030_subline_row_grow_lastline",
+      "target": "regression_suite_026",
+      "grouped": true
+    },
+    "test_before_sha256": "1e6fb2dde44b235d8a901d029d4bfa3a0a76a65cafc04c59310de0c245ac4bcd"
+  },
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_026",
+      "-E",
+      "test(=issue_6030_subline_row_grow_lastline::issue_6030_exam_eng_choice_last_line_not_clipped)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 8.739987208042294,
+    "summary": [
+      "Summary [   0.058s] 1 test run: 0 passed, 1 failed, 233 skipped"
+    ]
+  },
+  "before_failure": "① 셀 높이15.9px <기존18.5px. 기존19.07px 기대를한컴정답으로단정하지않음.",
+  "production_reuse_check": "git diff b7436944b81d20ad799edcd59ead3b94621902b3 검증전head -- src 는 빈 diff. 같은 생산소스/입력/PDF/Native binary의 부정 증거 재사용.",
+  "removed_functions": [
+    "issue_6030_exam_eng_choice_last_line_not_clipped"
+  ],
+  "removed_source": "tests/cases/issue_6030_subline_row_grow_lastline.rs (유일 함수와 전용 helper만)",
+  "kept_scope": "English 다른 정상 전용함수, source-unit 표여백·총쪽수, HWPX 왕복, 원문/PDF·renderer manifest·text/oracle/matrix·기대값/공차 유지. body의이입력은이전실제실패보류상태유지.",
+  "summaries": {
+    "focused-kept": [
+      "Summary [   0.204s] 8 tests run: 8 passed, 1296 skipped"
+    ],
+    "source-units": [
+      "Summary [   0.132s] 2 tests run: 2 passed, 4066 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "440d9d9e8fbf87c393dec4cb2c24c4c3b20c8e29",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_003",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_024",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=issue_775::issue_775_exam_eng_p4_pi181_table_at_column_top) or test(exam_eng_multicolumn::) or test(issue_6630_cell_first_para_lead::) or test(issue_6646_nbsp_advance_matches_space::) or test(issue_6569_cell_center_lead_in_stack::) or test(=hwpx_roundtrip_integration::total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip)"
+        ],
+        "exit_code": 0,
+        "seconds": 33.555511499755085
+      },
+      {
+        "step": "source-units",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(test_521_tac_table_outer_margin_bottom_p2) or test(test_footer_total_page_field_distinct_from_current_page)"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5619177911430597
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.760516666341573
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3336693341843784
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2603797917254269
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3722459999844432
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.358269624877721
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.971310833003372
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.908929375000298
+      }
+    ]
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/exam_eng_native_review_006.png",
+      "sha256": "f760a0882657ffd3b82c92ea8afc7ec5dd44fd06e1f8b5c0dcfa79b437e355c9"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/exam_eng_native_overlay_006.png",
+      "sha256": "95c5e948fb1157513f4f6904c652977a998b8f380bdf73a298a9c903febba950"
+    }
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870452250",
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "fresh_wasm": "미실행. Native 부정 증거를 최종 Native/freshWASM 통과로 세지 않음.",
+  "remaining": "보정106 실제15미해결 중 이1함수만 좁게 보류해14개 후속 대기. 보정110 다른 corpus 실패도 입력별대기. 최종37개별/전체nextest 및 최종시각/PR준비미완료."
+}

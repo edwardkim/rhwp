@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-09-16
+last_verified: 2026-10-01
 ---
 
 # 명시적 조판 폰트 환경
@@ -36,7 +36,7 @@ rhwp export-pdf input.hwp --font-environment environment.json -o output/result.p
 venv/bin/python scripts/visual_sweep.py \
   --file-target review input.hwp reference.pdf \
   --rhwp-bin target/pr-review/release-test/rhwp \
-  --font-environment environment.json --pages 1 --out /tmp/font-review
+  --font-environment environment.json --pages 1 --out output/font-review
 ```
 
 Visual Sweep은 Native와 `--wasm-pkg` 양쪽에 동일한 환경을 적용하고 JSON 파일 해시를 provenance에
@@ -72,3 +72,26 @@ document.setFontEnvironment(undefined); // 기본 조판 복원
 
 이 설정은 빠진 글꼴 파일을 제공하지 않는다. 출력 backend가 목표 폰트를 사용할 수 있어야 하며,
 최종 시각 판정은 [Visual Sweep](verification/visual_sweep_guide.md)의 직접 비교 절차를 따른다.
+
+## 같은 이름의 TrueType·HFT 프로그램 구분
+
+독립 PDF와 실제 글꼴 파일이 TrueType 프로그램을 사용하는 것으로 확인되었을 때만
+`trueTypeFaces`에 **최종 face 이름**을 지정한다. 생략하면 기존 HFT 호환 폭을 유지한다.
+원본의 TTF 선언·파일 확장자·저장 제품 버전만으로 값을 채우지 않는다. 현재 별도 폭이 검증된
+휴먼명조의 가운뎃점은 HMKMM.TTF와 독립 PDF에서 확인한512/512 전진폭을 사용한다.
+따옴표는 TrueType 파일의 글리프 폭과 한컴 문단의 반각 전진이 다를 수 있어 기존 규칙을 유지한다.
+
+```json
+{
+  "id": "hancom2024-human-truetype",
+  "substitutions": {"휴먼명조": "HumanMyeongJo"},
+  "trueTypeFaces": ["HumanMyeongJo"]
+}
+```
+
+`HumanMyeongJo`는 내장 메트릭의 휴먼명조 별칭이며 SVG 임베더도 HMKMM.TTF를 찾는다.
+이 선택은 실제 PDF의 TrueType 글꼴·설치 파일 해시를 확인한 세션에 한정한다.
+`--embed-fonts full --font-path <실제 글꼴 디렉터리>`로 원 프로그램의 outline을 제공하고
+임베드 검사·Native/fresh WASM PNG를 확인한다. EBDT/EBLC 제거는 임베드 사본에만 적용한다.
+프로필이나 메트릭 지원 자체는 글꼴 설치·출력 일치 인증이 아니며, HFT 기준 PDF에는 적용하지 않는다.
+검증 기록에는 JSON과 글꼴 SHA-256, PDF의 실제 글꼴 형식, 임베드 결과를 남긴다.

@@ -1,0 +1,188 @@
+{
+  "stage": 70,
+  "original38_id": 18,
+  "source_head": "b87c2130ba41aa33b4b92cfa2187eb90f4933c4f",
+  "code_commit": "b7436944b81d20ad799edcd59ead3b94621902b3",
+  "preanalysis": {
+    "stage": 70,
+    "source_head": "b87c2130ba41aa33b4b92cfa2187eb90f4933c4f",
+    "original38_id": 18,
+    "function": "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+    "independent_expected": "동일 원문 한컴2020/2024 PDF 모두7쪽; 기존7 기대 유지",
+    "scope": "보정69와 동일한 원인의 쪽수 검사. 기존18번만 개별 실행. 추가 코드/검사 변경 여부는 결과에서 판단. 보정69의 원문 전7쪽 Native/fresh WASM 검증은 source hash 동일성을 확인하여 연결."
+  },
+  "test": {
+    "path": "tests/cases/issue_7336_table_fragment_cut.rs",
+    "sha256": "30cb5409fe6af5f19350a02795399835be72e62b51a86e35ffb7ddf0e714bd3f",
+    "unchanged_since_baseline": true,
+    "function": "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+    "expected_pages": 7,
+    "test_modified": false,
+    "new_functions": 0
+  },
+  "before": {
+    "scope": "보존된 전체 실행에서 이 함수의 실제 실패 기록. 이번 단계에서 수정 전 nextest를 재실행한 것은 아님.",
+    "head": "f677301d4ec34fa9c21c18e0486b8d4664c44047",
+    "workingtree_provenance": "stage55-zero-origin-cut/full-provenance.json",
+    "provenance_sha256": "7f377c844423965802fc689d9b5228f70292cd674f4764432e990b9bb236fe8f",
+    "log": "stage55-zero-origin-cut/full.log",
+    "log_sha256": "438612c2c712b18cbdb52e4ae14ecc4da4805ab33441ebcc151cb7bb363e02f4",
+    "lines": [
+      7240,
+      7259
+    ],
+    "excerpt": [
+      "        FAIL [   0.038s] ( 5746/10386) rhwp::regression_suite_008 issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "  stdout ───",
+      "",
+      "    running 1 test",
+      "    test issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages ... FAILED",
+      "",
+      "    failures:",
+      "",
+      "    failures:",
+      "        issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "",
+      "    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 229 filtered out; finished in 0.02s",
+      "",
+      "  stderr ───",
+      "",
+      "    thread 'issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages' (307169554) panicked at tests/generated/../cases/issue_7336_table_fragment_cut.rs:273:5:",
+      "    assertion `left == right` failed: #7336: 한/글 2024 는 이 문서를 7쪽으로 조판한다 — 결함 시 4쪽(표를 통째로 얹고 쪽 밖으로 넘침)",
+      "      left: 8",
+      "     right: 7",
+      "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+    ],
+    "whole_run_exit_code": 100,
+    "actual_pages": 8,
+    "expected_pages": 7
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_008",
+      "-E",
+      "test(/(^|::)issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "environment": {
+      "RHWP_FONT_PATH": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts:/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts:/Users/tsjang/Library/Fonts"
+    },
+    "log": "stage70-count7336/individual18-after.log",
+    "log_sha256": "2b48fdc3e3ee7fcea0a3f84ba93251a97db20f1cc168020ed7c80a711e07bf05",
+    "excerpt": "    Finished `release-test` profile [optimized] target(s) in 0.19s\n────────────\n Nextest run ID 052beb69-d872-45af-8c7a-f0e7b1d95ca3 with nextest profile: default\n    Starting 1 test across 1 binary (215 tests skipped)\n        PASS [   0.032s] (1/1) rhwp::regression_suite_008 issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages\n────────────\n     Summary [   0.034s] 1 test run: 1 passed, 215 skipped\n",
+    "exit_code": 0,
+    "passed": 1,
+    "skipped": 215,
+    "test_seconds": 0.034
+  },
+  "independent_references": [
+    {
+      "path": "pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf",
+      "sha256": "5e19bd4c4d0cc3e7b177834e939a8e75df57e4387d43d1a9a1bd8f74840b993e",
+      "bytes": 200393,
+      "pages": 7,
+      "metadata": {
+        "format": "PDF 1.4",
+        "title": "",
+        "author": "SYSTEM",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2020 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260924144149+09'00'",
+        "modDate": "D:20260924144149+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    {
+      "path": "pdf/issue7336/stored_frame_page_larger_rowbreak-2024.pdf",
+      "sha256": "34f07c944eb86d83747432208f66d2c634b85e2c7da1e7e961586da614507423",
+      "bytes": 187224,
+      "pages": 7,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "admin",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hancom PDF 1.3.0.550",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260924144204+09'00'",
+        "modDate": "D:20260924144204+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    }
+  ],
+  "visual_evidence": {
+    "reuse": "stage69_validation.json",
+    "sha256": "9062676e77be3ce432e98d93019d99461d52d4d0e143455076013851e5c34407",
+    "same_input": {
+      "path": "samples/issue7336/stored_frame_page_larger_rowbreak.hwpx",
+      "sha256": "042633046ab469b971aa155417ecd568c8825d586d37f87a76194145edb903dc",
+      "bytes": 83747
+    },
+    "producer_source_hash_matches": true,
+    "changes_between_code_and_test_head": [
+      "mydocs/pr/archives/pr_7382_review.md",
+      "mydocs/pr/assets/pr7382_20260926/remaining38_regression_plan.json",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_overlay_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_overlay_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_001.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_002.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_003.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_native_review_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_overlay_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_overlay_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_001.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_002.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_003.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_nested7336_wasm_review_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_overlay_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_overlay_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_001.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_002.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_003.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_native_review_007.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_overlay_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_overlay_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_001.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_002.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_003.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_004.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_005.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_006.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_stored7336_wasm_review_007.png",
+      "mydocs/pr/assets/pr7382_20260926/stage69_validation.json",
+      "tests/fixtures/stored_float_anchor_control/1351000_policy_indicators-2020.pdf"
+    ],
+    "source_hash": {
+      "src/renderer/typeset/table/scan/runner/row_step.rs": "37f3d87c693be5a3c18ac575cb04c229f203b575a4115b82406c2eb461c2f388"
+    },
+    "full_fixture_pages": 7,
+    "native_minimum_percent": 95.81586,
+    "fresh_wasm_minimum_percent": 95.81586,
+    "gate": "passed",
+    "limits": "같은 원문의 전7쪽 캡처를 생산 코드 변경 없이 연결. 새 캡처·전체 head 검증으로 보고하지 않는다."
+  },
+  "scope": "기존18번은 정상 한컴2020/2024 모두7쪽을 검사하므로 유효. 보정69 렌더러 수정으로 통과. 이번 단계 추가 코드/검사 수정 없음. 전체 PR 승인 아님."
+}

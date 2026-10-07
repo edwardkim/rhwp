@@ -22,6 +22,7 @@ pub(in crate::renderer::typeset) struct WholeRowBudget {
     pub(in crate::renderer::typeset) strict_painted_bottom_fit: bool,
     pub(in crate::renderer::typeset) source_first_fragment_overflow_allowance: f64,
     pub(in crate::renderer::typeset) source_first_fragment_row_end: Option<usize>,
+    pub(in crate::renderer::typeset) ordinary_declared_band_can_split: bool,
 }
 
 pub(in crate::renderer::typeset) struct SourceFrameSelection {
@@ -72,6 +73,7 @@ impl SourceFrameQuery<'_> {
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
             source_first_fragment_row_end,
+            ordinary_declared_band_can_split,
         } = budget;
         // The final visible response is followed by a row without text or
         // controls. Its stored row height is authoritative for whole-row ownership;
@@ -137,17 +139,33 @@ impl SourceFrameQuery<'_> {
         let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
             && r + 1 < row_count
             && consumed + cs_before + row_total <= avail_for_rows + 0.5;
-        let source_frame_whole_row_fits = source_first_fragment_overflow_allowance > 0.0
+        // 전체 행의 선언 프레임 여유가 셀의 명시적인 다음 쪽 꼬리를 흡수하지 않는다.
+        // 실제 예산 안에 들어가는 행은 기존대로 수용하고, 초과 수용만 컷에 맡긴다.
+        let terminal_zero_origin_cut = (profile.hwpx_stored_layout()
+            || profile.hwp5_stored_pagination_layout())
+            && !table_text_reflowed()
+            && layout_engine
+                .row_stored_terminal_zero_origin_cut(table, r, styles)
+                .is_some();
+        let source_frame_whole_row_fits = !terminal_zero_origin_cut
+            // #5585: 일반 선언 행의 초과 밴드는 다음 쪽에 이어져야 한다.
+            // 초과 허용으로 온전한 행을 받으면 paint가 첫 프레임에서 잘라
+            // 버린 빈 밴드와 다음 행의 쪽 소유를 스캐너가 잃는다.
+            && !ordinary_declared_band_can_split
+            && source_first_fragment_overflow_allowance > 0.0
             && source_first_fragment_row_end == Some(r + 1)
             && consumed + cs_before + row_total
                 <= avail_for_rows + source_first_fragment_overflow_allowance;
         // A direct HWPX row with one visible owner and a structural empty
         // partner has an explicit source fragment boundary.  Let the
         // row-cut walk retain it; ordinary and multi-owner rows keep the
-        // measured whole-row fast path.
+        // measured whole-row fast path. The same rule applies to original
+        // Native cells whose two local-zero line boxes close the stored row.
+        // Spare capacity cannot merge their independently owned source frames.
         let declared_source_frame = row_start_cut.is_empty()
             && !table_text_reflowed()
-            && layout_engine.row_has_declared_stored_frame(table, r);
+            && (layout_engine.row_has_declared_stored_frame(table, r)
+                || layout_engine.native_saved_two_line_row_frame(table, r, styles));
         let whole_row_fits = !declared_source_frame
             && ((!single_visible_source_frame
                 && consumed + cs_before + row_total <= avail_for_rows)

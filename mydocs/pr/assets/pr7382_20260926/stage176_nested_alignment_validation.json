@@ -1,0 +1,19 @@
+{
+  "stage": 176,
+  "ledger_item": 18,
+  "original_pr": 7382,
+  "starting_head": "602128ee4",
+  "test": "stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset",
+  "prior_full_nextest": "보정173 전체 nextest에서 PASS",
+  "current_focused_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(=stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset)'",
+    "passed": 1,
+    "failed": 0
+  },
+  "production_change": false,
+  "test_change": false,
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "visual_claim": "합성 앵커 계약의 기존 통과만 확인; 한컴 PDF 전페이지 시각 일치 주장하지 않음",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage176-nested-alignment/"
+}

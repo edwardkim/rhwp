@@ -1733,17 +1733,36 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
 }
 
 export function handleSelectAll(this: any): void {
+  // ⌘A는 선택 범위만 바꾼다. 캐럿이 범위 끝(문서·셀 끝)으로 가더라도 화면을 그쪽으로
+  // 스크롤하지 않는다 — 보던 위치가 문서 맨 아래로 튀는 결함을 막는다.
   if (this.cursor.isInHeaderFooter()) {
     this.cursor.selectAllInHeaderFooter();
-    this.updateCaret();
+    this.updateCaret(true);
     return;
   }
 
+  // 한컴 정합: 셀 블록(F5) 상태의 ⌘A 는 블록을 풀고 캐럿이 있는 셀 내용만 선택한다.
+  // 키 경로는 셀 선택 분기의 fallthrough 가 블록을 먼저 해제하지만, 메뉴 등 다른
+  // 경로로 들어와도 여기서 블록을 풀어 셀 선택이 되도록 방어적으로 처리한다.
+  if (this.cursor.isInCellSelectionMode()) {
+    this.cursor.exitCellSelectionMode();
+    this.cellSelectionRenderer?.clear();
+  }
+  // 셀·글상자 안의 ⌘A 는 그 컨테이너 내용만 선택한다 (본문 전체가 아니다).
+  if (this.cursor.isInCell()) {
+    if (this.cursor.selectAllInCell()) {
+      this.updateCaret(true);
+      return;
+    }
+  }
+
   // anchor를 문서 시작, focus를 문서 끝으로 설정
+  // (기존 부분 선택의 anchor가 남지 않도록 먼저 비운다)
+  this.cursor.clearSelection();
   this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
   this.cursor.setAnchor();
   this.cursor.moveToDocumentEnd();
-  this.updateCaret();
+  this.updateCaret(true);
 }
 
 function copyHeaderFooterSelection(this: any, e: ClipboardEvent): boolean {

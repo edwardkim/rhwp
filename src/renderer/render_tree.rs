@@ -646,6 +646,11 @@ pub struct FormObjectNode {
     pub caption: String,
     /// 텍스트 (ComboBox, Edit)
     pub text: String,
+    /// 편집용 원문과 분리한 폼 표시 문자열(콤보 초기 항목/암호 마스킹).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display_text: Option<String>,
+    /// 문서 글자 속성과 출력 해상도에서 해소한 공통 폼 외형.
+    pub appearance: super::form_appearance::FormAppearance,
     /// 글자 색 (CSS #rrggbb)
     pub fore_color: String,
     /// 배경 색 (CSS #rrggbb)
@@ -665,6 +670,25 @@ pub struct FormObjectNode {
     /// 셀 내부 위치 (표 셀 안에 있는 경우)
     /// (table_para_index, table_control_index, cell_index, cell_para_index)
     pub cell_location: Option<(usize, usize, usize, usize)>,
+}
+
+impl FormObjectNode {
+    pub(crate) fn form_display_text(form: &crate::model::control::FormObject) -> Option<String> {
+        // 한컴 ComboBox의 빈 selectedValue는 첫 목록 값을 표시한다.
+        // HWP serializer의 ComboBox Text 규칙과 동일하며, 모델의 선택값은 유지한다.
+        if form.form_type == crate::model::control::FormType::ComboBox && form.text.is_empty() {
+            return form.properties.get("listItem0").cloned();
+        }
+        if form.form_type != crate::model::control::FormType::Edit {
+            return None;
+        }
+        let mask = form.properties.get("PasswordChar")?.chars().next()?;
+        Some(mask.to_string().repeat(form.text.chars().count()))
+    }
+
+    pub fn display_or_text(&self) -> &str {
+        self.display_text.as_deref().unwrap_or(&self.text)
+    }
 }
 
 /// 바운딩 박스 (위치 + 크기, 픽셀 단위)

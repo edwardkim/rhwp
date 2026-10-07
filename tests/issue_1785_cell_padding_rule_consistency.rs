@@ -29,19 +29,17 @@ fn pad(v: i16) -> Padding {
 
 #[test]
 fn issue_1785_effective_padding_rule() {
-    // aim=false + 표 기본 전축 0(미지정) + 셀 140 → **수직만** 셀 값(stage50), 수평은
-    // 진짜 0. 수평 실측: exam_social p2 머리말을 한글 2020/2022 인쇄 PDF 로 각각
-    // 재면 글리프 좌단 73.9/74.3px 가 셀 pad 적용 원점 77.47px 보다 왼쪽이라 적용이
-    // 물리적으로 불가능하고, 같은 층 전축0 표의 저장 sw 52/52 도 pad 미적용(±3HU).
-    // 상세: mydocs/plans/cell_width_authority.md
+    // aim=false + 표 기본 전축0이면 비활성 셀 보존값은 모든 축에서 제외한다.
+    // #6101 정상 한컴 PDF 3쪽의 표 외곽150.24px를 Native/fresh WASM 전체
+    // 시각 검증으로 확인했다. 이전 수직140 핀은 실제 외곽의 독립 근거가 없었다.
     let mut cell = Cell {
         padding: pad(140),
         ..Default::default()
     };
     cell.apply_inner_margin = false;
     let eff = cell.effective_padding(&pad(0));
-    assert_eq!(eff.top, 140);
-    assert_eq!(eff.bottom, 140);
+    assert_eq!(eff.top, 0);
+    assert_eq!(eff.bottom, 0);
     assert_eq!(eff.left, 0);
     assert_eq!(eff.right, 0);
 
@@ -61,7 +59,7 @@ fn issue_1785_effective_padding_rule() {
     assert_eq!(cell.effective_padding(&pad(200)).top, 200);
 
     // aim=false + 10mm급(>=2500) 보존값 → 한컴은 렌더에 쓰지 않음 → 표 기본값
-    // (전축0 수직 미지정 규칙에서도 제외 — #1785 위생 한도)
+    // (비활성 보존값 선택의 #1785 위생 한도)
     cell.padding = pad(2834);
     assert_eq!(cell.effective_padding(&pad(0)).top, 0);
     assert_eq!(cell.effective_padding(&pad(0)).left, 0);

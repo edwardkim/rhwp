@@ -1,0 +1,1630 @@
+{
+  "stage": 109,
+  "code_commit": "65a5e2d31e703be24e5b8a14a3c53c399dd7a2e3",
+  "analysis": {
+    "head": "89c08644e5c6782218dc5b87e9971cf614d07e0c",
+    "scope": "사용자 #7382 한정 지시에 따른 자체 과잉제외 보정. 두 입력에 한정하고 다른 입력/기대값/공차/생산코드 유지.",
+    "items": [
+      {
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+          "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+          "size": 262144
+        },
+        "failure": {
+          "head": "408d166b7ce7b6a7b4aeb6a2ba440b5faa499da4",
+          "analysis": "기존9번 API 본문초과0→1건. 같은 원문 독립 PDF로 저장 표 앵커/셀 최종 줄/다음 문단과 페이지 내용을 비교한다. 90%미달이면 사용자 지시에 따라 해당 원문 렌더링 회귀만 제외하고 원문/PDF·순수 파서/IR계약 보존. 공차/기대값 완화 없음.",
+          "files": {
+            "samples/hwpctl_API_v2.4.hwp": {
+              "size": 262144,
+              "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+            },
+            "pdf/hwpctl_API_v2.4-hwp-2020.pdf": {
+              "size": 828101,
+              "sha256": "1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74",
+              "pages": 105,
+              "metadata": {
+                "format": "PDF 1.6",
+                "title": "",
+                "author": "112312",
+                "subject": "",
+                "keywords": "",
+                "creator": "Hwp 2022 0.0.0.0",
+                "producer": "Hancom PDF 1.3.0.550",
+                "creationDate": "D:20260830015205+09'00'",
+                "modDate": "D:20260830015205+09'00'",
+                "trapped": "",
+                "encryption": null
+              }
+            }
+          },
+          "info": {
+            "fonts": [
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "한컴바탕",
+              "함초롬바탕",
+              "타이프",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "한컴바탕",
+              "함초롬바탕",
+              "Arial",
+              "타이프",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "바탕",
+              "한컴바탕",
+              "함초롬바탕",
+              "한양신명조",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "바탕",
+              "한컴바탕",
+              "함초롬바탕",
+              "한양신명조",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "바탕",
+              "한컴바탕",
+              "함초롬바탕",
+              "한양신명조",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "바탕",
+              "한컴바탕",
+              "함초롬바탕",
+              "한양신명조",
+              "???",
+              "가는안상수체",
+              "굴림",
+              "맑은 고딕",
+              "바탕",
+              "한컴바탕",
+              "함초롬바탕",
+              "명조",
+              "???"
+            ],
+            "format": "hwp5",
+            "lastSavedWith": {
+              "confidence": "metadata",
+              "product": "hancom-office-2018",
+              "version": "10.0.0.7888"
+            },
+            "pageCount": 105,
+            "paraCount": 2817,
+            "printMethod": null,
+            "printMethodImpliesNup": false,
+            "schemaVersion": "1.0",
+            "sections": 1,
+            "sizeBytes": 262144,
+            "source": "samples/hwpctl_API_v2.4.hwp",
+            "title": "웹한글컨트롤 API",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title",
+              "fonts[]"
+            ],
+            "version": "5.1.0.1",
+            "warnings": []
+          },
+          "anomaly": {
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "mode": "single",
+            "offCanvasCount": 0,
+            "overflowCount": 24,
+            "overflowTolerancePx": 2.0,
+            "overlapCount": 1,
+            "overlapTolerancePx": 2.0,
+            "pageCount": 105,
+            "pageFilter": null,
+            "pages": [
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 146.10666666666665,
+                      "w": 509.7066666666666,
+                      "x": 173.37333333333333,
+                      "y": 417.33333333333337
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 2.746666666666556,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 2.746666666666556,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table14"
+                  }
+                ],
+                "overlap": [],
+                "page": 1,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 183.2,
+                      "w": 509.7066666666667,
+                      "x": 173.37333333333333,
+                      "y": 153.0666666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 2.7466666666666697,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 2.7466666666666697,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table1"
+                  }
+                ],
+                "overlap": [],
+                "page": 2,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 488.9866666666667,
+                      "w": 509.7066666666667,
+                      "x": 173.37333333333333,
+                      "y": 445.8666666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 2.7466666666666697,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 2.7466666666666697,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table15"
+                  }
+                ],
+                "overlap": [],
+                "page": 5,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 94.16,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 154.9466666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table1"
+                  },
+                  {
+                    "bbox": {
+                      "h": 94.16,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 256.8666666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table2"
+                  },
+                  {
+                    "bbox": {
+                      "h": 187.49333333333334,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 400.38666666666666
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table5"
+                  },
+                  {
+                    "bbox": {
+                      "h": 150.16,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 595.64
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table6"
+                  },
+                  {
+                    "bbox": {
+                      "h": 112.82666666666665,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 753.56
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table7"
+                  }
+                ],
+                "overlap": [],
+                "page": 6,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 150.16,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 134.14666666666668
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table0"
+                  },
+                  {
+                    "bbox": {
+                      "h": 131.49333333333334,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 333.6666666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table3"
+                  },
+                  {
+                    "bbox": {
+                      "h": 150.16,
+                      "w": 509.7066666666667,
+                      "x": 175.25333333333333,
+                      "y": 472.92
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 4.626666666666665,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 4.626666666666665,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table4"
+                  }
+                ],
+                "overlap": [],
+                "page": 7,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [],
+                "overlap": [],
+                "page": 22,
+                "storedLineEscape": [],
+                "textOverlap": [
+                  {
+                    "bboxA": {
+                      "h": 13.333333333333336,
+                      "w": 11.786666666666667,
+                      "x": 216.74,
+                      "y": 193.97333333333336
+                    },
+                    "bboxB": {
+                      "h": 13.333333333333336,
+                      "w": 27.813333333333333,
+                      "x": 205.55333333333334,
+                      "y": 198.66666666666666
+                    },
+                    "overlapArea": 101.83680000000047,
+                    "overlapH": 8.640000000000043,
+                    "overlapW": 11.786666666666662,
+                    "pathA": "Page/Body/Column0/Group14/Group0/Rect1/TextBox0/TextLine1/TextRun0",
+                    "pathB": "Page/Body/Column0/Group14/Group0/Rect12/TextBox0/TextLine0/TextRun0",
+                    "typeA": "TextRun",
+                    "typeB": "TextRun"
+                  },
+                  {
+                    "bboxA": {
+                      "h": 13.333333333333336,
+                      "w": 11.786666666666667,
+                      "x": 216.9,
+                      "y": 220.0
+                    },
+                    "bboxB": {
+                      "h": 13.333333333333336,
+                      "w": 27.813333333333333,
+                      "x": 205.55333333333334,
+                      "y": 224.79999999999998
+                    },
+                    "overlapArea": 100.57955555555583,
+                    "overlapH": 8.53333333333336,
+                    "overlapW": 11.786666666666662,
+                    "pathA": "Page/Body/Column0/Group14/Group0/Rect12/TextBox0/TextLine1/TextRun0",
+                    "pathB": "Page/Body/Column0/Group14/Group0/Rect14/TextBox0/TextLine0/TextRun0",
+                    "typeA": "TextRun",
+                    "typeB": "TextRun"
+                  },
+                  {
+                    "bboxA": {
+                      "h": 13.333333333333336,
+                      "w": 11.786666666666667,
+                      "x": 216.9,
+                      "y": 246.13333333333333
+                    },
+                    "bboxB": {
+                      "h": 13.333333333333336,
+                      "w": 27.813333333333333,
+                      "x": 206.4666666666667,
+                      "y": 251.57333333333335
+                    },
+                    "overlapArea": 93.03608888888832,
+                    "overlapH": 7.893333333333288,
+                    "overlapW": 11.786666666666662,
+                    "pathA": "Page/Body/Column0/Group14/Group0/Rect14/TextBox0/TextLine1/TextRun0",
+                    "pathB": "Page/Body/Column0/Group14/Group0/Rect16/TextBox0/TextLine0/TextRun0",
+                    "typeA": "TextRun",
+                    "typeB": "TextRun"
+                  },
+                  {
+                    "bboxA": {
+                      "h": 13.333333333333336,
+                      "w": 11.786666666666667,
+                      "x": 225.92000000000002,
+                      "y": 332.85333333333335
+                    },
+                    "bboxB": {
+                      "h": 13.333333333333336,
+                      "w": 27.813333333333333,
+                      "x": 214.56666666666666,
+                      "y": 338.29333333333335
+                    },
+                    "overlapArea": 93.03608888888866,
+                    "overlapH": 7.893333333333317,
+                    "overlapW": 11.786666666666662,
+                    "pathA": "Page/Body/Column0/Group14/Group0/Rect18/TextBox0/TextLine1/TextRun0",
+                    "pathB": "Page/Body/Column0/Group14/Group0/Rect20/TextBox0/TextLine0/TextRun0",
+                    "typeA": "TextRun",
+                    "typeB": "TextRun"
+                  },
+                  {
+                    "bboxA": {
+                      "h": 13.333333333333336,
+                      "w": 11.786666666666667,
+                      "x": 225.91333333333333,
+                      "y": 359.62666666666667
+                    },
+                    "bboxB": {
+                      "h": 13.333333333333336,
+                      "w": 27.813333333333333,
+                      "x": 214.67333333333335,
+                      "y": 365.33333333333337
+                    },
+                    "overlapArea": 89.89297777777705,
+                    "overlapH": 7.626666666666608,
+                    "overlapW": 11.786666666666662,
+                    "pathA": "Page/Body/Column0/Group14/Group0/Rect20/TextBox0/TextLine1/TextRun0",
+                    "pathB": "Page/Body/Column0/Group14/Group0/Rect22/TextBox0/TextLine0/TextRun0",
+                    "typeA": "TextRun",
+                    "typeB": "TextRun"
+                  }
+                ]
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 251.76000000000005,
+                      "w": 559.7866666666666,
+                      "x": 155.81333333333333,
+                      "y": 559.4799999999999
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 35.26666666666654,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 35.26666666666654,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table16"
+                  }
+                ],
+                "overlap": [],
+                "page": 26,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 614.4266666666666,
+                      "w": 552.24,
+                      "x": 177.14666666666668,
+                      "y": 301.56
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 49.053333333333285,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 49.053333333333285,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table9"
+                  }
+                ],
+                "overlap": [],
+                "page": 31,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 252.0,
+                      "w": 559.7866666666666,
+                      "x": 177.14666666666668,
+                      "y": 731.8399999999999
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 56.59999999999991,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 56.59999999999991,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table30"
+                  }
+                ],
+                "overlap": [],
+                "page": 54,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 145.33333333333337,
+                      "w": 559.7866666666666,
+                      "x": 177.14666666666668,
+                      "y": 136.04000000000002
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 56.59999999999991,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 56.59999999999991,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table0"
+                  },
+                  {
+                    "bbox": {
+                      "h": 187.76000000000005,
+                      "w": 522.0533333333333,
+                      "x": 177.14666666666668,
+                      "y": 738.3466666666667
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 18.86666666666656,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 18.86666666666656,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table21"
+                  }
+                ],
+                "overlap": [],
+                "page": 55,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [],
+                "overlap": [
+                  {
+                    "bboxA": {
+                      "h": 209.09333333333336,
+                      "w": 503.1866666666667,
+                      "x": 177.14666666666668,
+                      "y": 753.9066666666666
+                    },
+                    "bboxB": {
+                      "h": 20.0,
+                      "w": 228.4933333333333,
+                      "x": 140.04,
+                      "y": 953.44
+                    },
+                    "overlapArea": 1829.6565333333226,
+                    "overlapH": 9.559999999999945,
+                    "overlapW": 191.38666666666663,
+                    "pathA": "Page/Body/Column0/Table20",
+                    "pathB": "Page/Body/Column0/TextLine23",
+                    "typeA": "Table",
+                    "typeB": "TextLine"
+                  }
+                ],
+                "page": 68,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 13.333333333333334,
+                      "w": 506.96000000000004,
+                      "x": 173.37333333333333,
+                      "y": 1010.0799999999997
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 14.26666666666631,
+                    "nodeType": "TextLine",
+                    "overBottom": 14.26666666666631,
+                    "overLeft": 0.0,
+                    "overRight": 0.0,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/TextLine7"
+                  }
+                ],
+                "overlap": [],
+                "page": 73,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 318.08,
+                      "w": 532.2933333333333,
+                      "x": 175.25333333333333,
+                      "y": 543.2133333333334
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 27.213333333333253,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 27.213333333333253,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table23"
+                  }
+                ],
+                "overlap": [],
+                "page": 82,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 81.09333333333333,
+                      "w": 525.8266666666667,
+                      "x": 177.14666666666668,
+                      "y": 729.92
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 22.639999999999986,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 22.639999999999986,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table27"
+                  }
+                ],
+                "overlap": [],
+                "page": 83,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 24.893333333333334,
+                      "w": 510.73333333333335,
+                      "x": 177.14666666666668,
+                      "y": 559.3066666666666
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 7.546666666666624,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 7.546666666666624,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table19"
+                  },
+                  {
+                    "bbox": {
+                      "h": 221.65333333333336,
+                      "w": 529.0933333333334,
+                      "x": 175.25333333333333,
+                      "y": 727.0799999999999
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 24.01333333333332,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 24.01333333333332,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table26"
+                  }
+                ],
+                "overlap": [],
+                "page": 86,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 61.733333333333334,
+                      "w": 529.0933333333334,
+                      "x": 175.25333333333333,
+                      "y": 140.81333333333333
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 24.01333333333332,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 24.01333333333332,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table0"
+                  }
+                ],
+                "overlap": [],
+                "page": 87,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 337.0933333333333,
+                      "w": 510.73333333333335,
+                      "x": 177.14666666666668,
+                      "y": 410.12
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 7.546666666666624,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 7.546666666666624,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table9"
+                  }
+                ],
+                "overlap": [],
+                "page": 94,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 337.0933333333333,
+                      "w": 522.0533333333333,
+                      "x": 177.14666666666668,
+                      "y": 442.28
+                    },
+                    "boundary": {
+                      "h": 876.8800000000001,
+                      "w": 566.96,
+                      "x": 113.37333333333333,
+                      "y": 132.26666666666668
+                    },
+                    "maxOver": 18.86666666666656,
+                    "nodeType": "Table",
+                    "overBottom": 0.0,
+                    "overLeft": 0.0,
+                    "overRight": 18.86666666666656,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/Table12"
+                  }
+                ],
+                "overlap": [],
+                "page": 95,
+                "storedLineEscape": [],
+                "textOverlap": []
+              }
+            ],
+            "schemaVersion": "1.0",
+            "source": "samples/hwpctl_API_v2.4.hwp",
+            "storedLineEscapeCount": 0,
+            "storedLineTolerancePx": 0.5,
+            "strict": false,
+            "textOverlapCount": 5,
+            "types": null,
+            "untrustedContent": false,
+            "untrustedFields": []
+          }
+        },
+        "visual_metrics": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 98.99519
+          },
+          {
+            "page": 28,
+            "tolerant_content_match_percent": 98.33864
+          },
+          {
+            "page": 52,
+            "tolerant_content_match_percent": 99.4403
+          },
+          {
+            "page": 60,
+            "tolerant_content_match_percent": 99.67137
+          },
+          {
+            "page": 74,
+            "tolerant_content_match_percent": 60.06836
+          },
+          {
+            "page": 75,
+            "tolerant_content_match_percent": 98.19912
+          },
+          {
+            "page": 105,
+            "tolerant_content_match_percent": 97.85668
+          }
+        ],
+        "restore": "원본 samples 경로, 정상 text/offcanvas/oracle/cell corpus 및 render_page matrix, renderer manifest. 본문 넘침만 명시적으로 보류.",
+        "evidence": "mydocs/pr/assets/issue7445/api24_test_removal_validation.json"
+      },
+      {
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+          "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+          "size": 3486208
+        },
+        "failure": {
+          "head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+          "analysis": "기존9번 영어시험의 본문초과3→5건. 같은 원문 독립 PDF에서 표/지문/문항/쪽번호의 실제 위치와 소유를 비교한다. 페이지 수만으로 승인하지 않는다. 최저90%미달이면 사용자 승인 원문 이관 및 전용 검사만 제거하고 순수 파서·IR계약과 다른 입력/공차는 유지한다.",
+          "files": {
+            "samples/exam_eng.hwp": {
+              "size": 3486208,
+              "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+            },
+            "pdf/exam_eng-2022.pdf": {
+              "size": 935380,
+              "sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844",
+              "pages": 8,
+              "metadata": {
+                "format": "PDF 1.6",
+                "title": "",
+                "author": "입력실-1",
+                "subject": "",
+                "keywords": "",
+                "creator": "Hwp 2022 12.0.0.4426",
+                "producer": "Hancom PDF 1.3.0.550",
+                "creationDate": "D:20260507172937+09'00'",
+                "modDate": "D:20260507172937+09'00'",
+                "trapped": "",
+                "encryption": null
+              }
+            },
+            "pdf/exam_eng-hwp-2020.pdf": {
+              "size": 1047484,
+              "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+              "pages": 8,
+              "metadata": {
+                "format": "PDF 1.6",
+                "title": "",
+                "author": "입력실-1",
+                "subject": "",
+                "keywords": "",
+                "creator": "Hwp 2022 0.0.0.0",
+                "producer": "Hancom PDF 1.3.0.550",
+                "creationDate": "D:20260830011446+09'00'",
+                "modDate": "D:20260830011446+09'00'",
+                "trapped": "",
+                "encryption": null
+              }
+            }
+          },
+          "info": {
+            "fonts": [
+              "함초롬바탕",
+              "#태고딕",
+              "신명 견명조",
+              "신명 디나루",
+              "신명 신그래픽",
+              "신명 중고딕",
+              "신명 중명조",
+              "신명 태고딕",
+              "한양견고딕",
+              "한양견명조",
+              "한양신명조",
+              "Arial Black",
+              "Times New Roman",
+              "#태고딕",
+              "신명 견명조",
+              "신명 디나루",
+              "신명 신그래픽",
+              "신명 중고딕",
+              "신명 태고딕",
+              "한양견고딕",
+              "한양견명조",
+              "한양신명조",
+              "함초롬바탕",
+              "#신디나루",
+              "#태고딕",
+              "신명 견고딕",
+              "신명 견명조",
+              "신명 중고딕",
+              "신명 중명조",
+              "신명 태고딕",
+              "한양신명조",
+              "함초롬바탕",
+              "#태고딕",
+              "신명 견명조",
+              "신명 신명조",
+              "신명 중고딕",
+              "신명 태고딕",
+              "한양신명조",
+              "함초롬바탕",
+              "한양신명조",
+              "함초롬바탕",
+              "#디나루",
+              "#신그래픽",
+              "#태고딕",
+              "신명 견고딕",
+              "신명 견명조",
+              "신명 태그래픽",
+              "한양신명조",
+              "한양중고딕",
+              "함초롬바탕",
+              "명조"
+            ],
+            "format": "hwp5",
+            "lastSavedWith": {
+              "confidence": "metadata",
+              "product": "hancom-office-2022",
+              "version": "12.0.0.3650"
+            },
+            "pageCount": 8,
+            "paraCount": 318,
+            "printMethod": 0,
+            "printMethodImpliesNup": false,
+            "schemaVersion": "1.0",
+            "sections": 1,
+            "sizeBytes": 3486208,
+            "source": "samples/exam_eng.hwp",
+            "title": "1번부터 17번까지는 듣고 답하는 문제입니다. 1번부터",
+            "untrustedContent": true,
+            "untrustedFields": [
+              "title",
+              "fonts[]"
+            ],
+            "version": "5.1.1.0",
+            "warnings": []
+          },
+          "anomaly": {
+            "emptyPageCount": 0,
+            "hasSignal": true,
+            "mode": "single",
+            "offCanvasCount": 0,
+            "overflowCount": 5,
+            "overflowTolerancePx": 2.0,
+            "overlapCount": 0,
+            "overlapTolerancePx": 2.0,
+            "pageCount": 8,
+            "pageFilter": null,
+            "pages": [
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 15.333333333333334,
+                      "w": 408.21333333333337,
+                      "x": 132.24,
+                      "y": 1420.300000000001
+                    },
+                    "boundary": {
+                      "h": 1209.4,
+                      "w": 888.1600000000001,
+                      "x": 117.17333333333335,
+                      "y": 213.53333333333336
+                    },
+                    "maxOver": 12.700000000000955,
+                    "nodeType": "TextLine",
+                    "overBottom": 12.700000000000955,
+                    "overLeft": 0.0,
+                    "overRight": 0.0,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/TextLine38"
+                  }
+                ],
+                "overlap": [],
+                "page": 3,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 13.866666666666667,
+                      "w": 408.21333333333337,
+                      "x": 132.24,
+                      "y": 1417.4200000000008
+                    },
+                    "boundary": {
+                      "h": 1209.4,
+                      "w": 888.1600000000001,
+                      "x": 117.17333333333335,
+                      "y": 213.53333333333336
+                    },
+                    "maxOver": 8.353333333333921,
+                    "nodeType": "TextLine",
+                    "overBottom": 8.353333333333921,
+                    "overLeft": 0.0,
+                    "overRight": 0.0,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/TextLine50"
+                  }
+                ],
+                "overlap": [],
+                "page": 4,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 62.986666666666665,
+                      "w": 347.66666666666674,
+                      "x": 597.1200000000001,
+                      "y": 1371.8026666666674
+                    },
+                    "boundary": {
+                      "h": 1209.4,
+                      "w": 888.1600000000001,
+                      "x": 117.17333333333335,
+                      "y": 213.53333333333336
+                    },
+                    "maxOver": 11.856000000000677,
+                    "nodeType": "Table",
+                    "overBottom": 11.856000000000677,
+                    "overLeft": 0.0,
+                    "overRight": 0.0,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column1/Table44"
+                  }
+                ],
+                "overlap": [],
+                "page": 5,
+                "storedLineEscape": [],
+                "textOverlap": []
+              },
+              {
+                "emptyPage": false,
+                "offCanvas": [],
+                "overflow": [
+                  {
+                    "bbox": {
+                      "h": 13.866666666666667,
+                      "w": 408.21333333333337,
+                      "x": 132.24,
+                      "y": 1416.0360000000007
+                    },
+                    "boundary": {
+                      "h": 1209.4,
+                      "w": 888.1600000000001,
+                      "x": 117.17333333333335,
+                      "y": 213.53333333333336
+                    },
+                    "maxOver": 6.969333333333907,
+                    "nodeType": "TextLine",
+                    "overBottom": 6.969333333333907,
+                    "overLeft": 0.0,
+                    "overRight": 0.0,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column0/TextLine40"
+                  },
+                  {
+                    "bbox": {
+                      "h": 87.45333333333335,
+                      "w": 408.52,
+                      "x": 597.1200000000001,
+                      "y": 1340.983493333334
+                    },
+                    "boundary": {
+                      "h": 1209.4,
+                      "w": 888.1600000000001,
+                      "x": 117.17333333333335,
+                      "y": 213.53333333333336
+                    },
+                    "maxOver": 5.503493333334063,
+                    "nodeType": "Table",
+                    "overBottom": 5.503493333334063,
+                    "overLeft": 0.0,
+                    "overRight": 0.30666666666661513,
+                    "overTop": 0.0,
+                    "path": "Page/Body/Column1/Table26"
+                  }
+                ],
+                "overlap": [],
+                "page": 6,
+                "storedLineEscape": [],
+                "textOverlap": []
+              }
+            ],
+            "schemaVersion": "1.0",
+            "source": "samples/exam_eng.hwp",
+            "storedLineEscapeCount": 0,
+            "storedLineTolerancePx": 0.5,
+            "strict": false,
+            "textOverlapCount": 0,
+            "types": null,
+            "untrustedContent": false,
+            "untrustedFields": []
+          }
+        },
+        "visual_metrics": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.02165
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 89.09228
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 68.69443
+          },
+          {
+            "page": 4,
+            "tolerant_content_match_percent": 55.25926
+          },
+          {
+            "page": 5,
+            "tolerant_content_match_percent": 60.04261
+          },
+          {
+            "page": 6,
+            "tolerant_content_match_percent": 51.55944
+          },
+          {
+            "page": 7,
+            "tolerant_content_match_percent": 48.54225
+          },
+          {
+            "page": 8,
+            "tolerant_content_match_percent": 79.13315
+          }
+        ],
+        "restore": "원본 samples 경로, 정상 text/offcanvas/oracle/cell corpus 및 render_page matrix, renderer manifest. 본문 넘침만 명시적으로 보류.",
+        "evidence": "mydocs/pr/assets/issue7445/exam_eng_test_removal_validation.json"
+      }
+    ]
+  },
+  "restored_scope": "두 원본 samples 입력과 렌더러 manifest 2항목, 원래 쪽수 oracle/matrix 4행 및 API text 원장 1행. 정상 개별 함수는 보정106/108에서 이미 복원.",
+  "deferred_scope": "확인된 본문 넘침 입력만 명시적 목록으로 보류(API 0→1, 영어3→5). 다른 래칫에서 자동수집 유지.",
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "89c08644e5c6782218dc5b87e9971cf614d07e0c",
+    "selection": {
+      "off_canvas_baseline": {
+        "exam_eng.hwp": 9,
+        "hwpctl_API_v2.4.hwp": 9
+      },
+      "text_overlap_baseline": {
+        "exam_eng.hwp": 9,
+        "hwpctl_API_v2.4.hwp": 13
+      },
+      "overflow_cell_baseline": {
+        "exam_eng.hwp": 9,
+        "hwpctl_API_v2.4.hwp": 9
+      },
+      "oracle_page_count_baseline": {
+        "exam_eng.hwp": 8,
+        "hwpctl_API_v2.4.hwp": 8
+      }
+    },
+    "plans": [
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_013",
+        "grouped": true
+      },
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_027",
+        "grouped": true
+      },
+      {
+        "caseName": "overflow_cell_baseline",
+        "target": "overflow_cell_baseline",
+        "grouped": false
+      },
+      {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_026",
+        "grouped": true
+      },
+      {
+        "caseName": "render_page_samples_fixture_contract",
+        "target": "regression_suite_010",
+        "grouped": true
+      }
+    ],
+    "steps": [
+      {
+        "step": "focused-restored",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "overflow_cell_baseline",
+          "--test",
+          "regression_suite_010",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_13) or test(=overflow_cell_lines_do_not_grow_partition_9) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_8) or test(render_page_samples_fixture_contract::)"
+        ],
+        "exit_code": 0,
+        "seconds": 195.8406671672128
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.385819832794368
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4703425420448184
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.25162787502631545
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3829403752461076
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.887887832708657
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.441347375046462
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 7.853349583689123
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [  52.060s] 11 tests run: 11 passed, 917 skipped"
+  ],
+  "renderer_manifest": {
+    "samples": 122,
+    "restored": [
+      {
+        "id": "hwpctl-api",
+        "file": "hwpctl_API_v2.4.hwp",
+        "category": "control",
+        "page": 0,
+        "notes": "HWP control API reference sample for CanvasKit control-document parity.",
+        "browserParityThresholds": {
+          "maxDiffRatio": null,
+          "inkMaskNeighborhoodRadius": 3,
+          "inkMaskMaxDiffRatio": 0.002,
+          "nonInkMaxDiffPixels": 0,
+          "solidInkMaxDiffRatio": 0.015
+        },
+        "diagnosticAxes": [
+          "control"
+        ],
+        "baselineTier": "representative",
+        "documentDigest": "sha256:d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+      },
+      {
+        "id": "exam-eng",
+        "file": "exam_eng.hwp",
+        "category": "exam",
+        "page": 0,
+        "notes": "English exam real-document sample for mixed text and layout parity.",
+        "browserParityThresholds": {
+          "maxDiffRatio": null,
+          "inkMaskNeighborhoodRadius": 3,
+          "inkMaskMaxDiffRatio": 0.002,
+          "nonInkMaxDiffPixels": 0,
+          "solidInkMaxDiffRatio": 0.02
+        },
+        "diagnosticAxes": [
+          "exam"
+        ],
+        "baselineTier": "extended",
+        "documentDigest": "sha256:7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+      }
+    ]
+  },
+  "renderer_capture": "이번 단계에서는 manifest 실제 로드 및 입력 digest 확인만 수행. backend 캡처 완료를 주장하지 않음.",
+  "negative_visual_evidence": [
+    "api24_test_removal_validation.json",
+    "exam_eng_test_removal_validation.json"
+  ],
+  "remaining_corpus_audit": {
+    "tests/fixtures/body_overflow_baseline.tsv": [
+      "exam_eng.hwp\t3",
+      "hwp3-sample16-hwp5-2010.hwp\t1",
+      "hwp3-sample16-hwp5-2022.hwp\t2",
+      "hwp3-sample16-hwp5.hwp\t1",
+      "hwp3-sample16-hwp5.hwpx\t7",
+      "hwpctl_API_v2.4.hwp\t0",
+      "issue1937_rowbreak_footnote_overpagination.hwp\t7",
+      "issue3637/press_release_split_cell_nested_table.hwpx\t2",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t19",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t39",
+      "issue6776/78494-virtual-convergence-industry-decree.hwpx\t1",
+      "issue6782/1480000-201900042-chemical-labeling-standards.hwp\t6",
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t2",
+      "task1749/saved_bounds_cumulative_page_break.hwpx\t1",
+      "task2097/75544_pii_bunseok.hwpx\t1",
+      "한글문서파일형식_5.0_revision1.3.hwp\t8"
+    ],
+    "tests/fixtures/off_canvas_baseline.tsv": [
+      "hwp3-sample16-hwp5.hwpx\t3",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t2",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t5",
+      "rowbreak-problem-pages.hwp\t1",
+      "task2097/75544_pii_bunseok.hwpx\t2",
+      "한글문서파일형식_5.0_revision1.3.hwp\t1"
+    ],
+    "tests/fixtures/text_overlap_baseline.tsv": [
+      "issue1937_rowbreak_footnote_overpagination.hwp\t132",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t10",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7",
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t5",
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ],
+    "tests/fixtures/oracle_page_count_baseline.tsv": [
+      "samples/hwp3-sample16-hwp5-2010.hwp\t64\t64",
+      "samples/hwp3-sample16-hwp5-2022.hwp\t64\t64",
+      "samples/hwp3-sample16-hwp5.hwp\t64\t64",
+      "samples/hwp3-sample16-hwp5.hwpx\t64\t64",
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13",
+      "samples/rowbreak-problem-pages.hwp\t18\t18",
+      "samples/task2097/75544_pii_bunseok.hwpx\t66\t66"
+    ],
+    "tests/fixtures/render_page_samples.tsv": [
+      "samples/hwp3-sample16-hwp5.hwp\t64\t64\t0",
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13\t1",
+      "samples/rowbreak-problem-pages.hwp\t18\t18\t0",
+      "samples/task2097/75544_pii_bunseok.hwpx\t66\t66\t0"
+    ],
+    "tests/fixtures/overflow_cell_baseline.tsv": [
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ]
+  },
+  "source_sha256": {
+    "scripts/renderer_baseline_manifest.json": "d63e398a9811210d744b4229876117ff67609a68538821b3d955747654bb9463",
+    "tests/cases/body_overflow_baseline.rs": "476affae9878e98674bb18dd307bc3e752a9f46057cb57d3c3244f476ff3cd60",
+    "tests/fixtures/oracle_page_count_baseline.tsv": "abb4015393d3b0e9bfff95d5288c83fce7e1bbfdf10f303bef2c27567b0e3713",
+    "tests/fixtures/render_page_samples.tsv": "4e12d8ccc29f1642a2a3a88924b44597920c8a7570e6bc286cd8c42118234c2e",
+    "tests/fixtures/text_overlap_baseline.tsv": "00da3aee17c48b54ad8ef82bb24865c215b85c98c01c3878be623e1a7f2e03be",
+    "samples/exam_eng.hwp": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+    "samples/hwpctl_API_v2.4.hwp": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "notes": "원래 manifest CRLF를 유지했으므로 git -c core.whitespace=cr-at-eol diff --check HEAD^로 확인. 최초 진단 스크립트의 analysis key 오타는 원본 수정 전에 교정했으며 검사 실패로 세지 않음.",
+  "limits": "기존 증적의 문서 90% 미달은 여전히 미해결. 복원 검사 PASS를 전체 피델리티 승인/최종 전체회귀 완료로 세지 않음. 나머지 원문의 정상 corpus 범위 복원과 실제 15실패 함수 개별 처리가 남음."
+}

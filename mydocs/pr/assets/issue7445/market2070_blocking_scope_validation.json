@@ -1,0 +1,401 @@
+{
+  "stage": 142,
+  "head": "80de5d4583cf7a5bbef7866468baba58371ee23f",
+  "analysis": "전체137 동일시장구조 문서 실제4FAIL만 판정. #2070 쪽수고정과 #7147 표소속2함수, #6761의315쪽 선행전제가 차단. 독립315쪽PDF와 현재317쪽의 영향4/5/94~96/315쪽 새Native 비교 뒤90미달이면 렌더함수3/쪽수전제1곳만7445이관. #6761본문되감김과정상교육반례·#7147다른원문대조군은유지하며생산개선/새함수 없음.",
+  "inputs": [
+    {
+      "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "committed_identical": true
+    },
+    {
+      "path": "pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+      "sha256": "89ff2583598e1bb8ab9d95b754fcc0cf42e3409547aec4dbe01ac0f4207b312e",
+      "committed_identical": true
+    }
+  ],
+  "visual": {
+    "exit_code": 1,
+    "run_state": "complete",
+    "completed_pages": [
+      4,
+      5,
+      94,
+      95,
+      96,
+      315
+    ],
+    "missing_pages": [],
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 45.12739
+        },
+        {
+          "page": 94,
+          "tolerant_content_match_percent": 1.83707
+        },
+        {
+          "page": 95,
+          "tolerant_content_match_percent": 34.286
+        },
+        {
+          "page": 96,
+          "tolerant_content_match_percent": 33.34729
+        },
+        {
+          "page": 315,
+          "tolerant_content_match_percent": 67.8791
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "scores": [
+      {
+        "page": 4,
+        "percent": 98.79298
+      },
+      {
+        "page": 5,
+        "percent": 45.12739
+      },
+      {
+        "page": 94,
+        "percent": 1.83707
+      },
+      {
+        "page": 95,
+        "percent": 34.286
+      },
+      {
+        "page": 96,
+        "percent": 33.34729
+      },
+      {
+        "page": 315,
+        "percent": 67.8791
+      }
+    ],
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "market2070",
+      "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+      "--pages",
+      "4-5,94-96,315",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage142-market2070/visual-native"
+    ],
+    "native_pages": 317,
+    "pdf_pages": 315,
+    "native_binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+    "direct_read": [
+      "5쪽 review의 줄간격·목차 마지막 항목 다음쪽 이월",
+      "94쪽 review의 표 본문 소속 차이",
+      "95쪽 standalone overlay 표 조각 내용 차이"
+    ],
+    "exit_meaning": "출력 생성6/6 완료,90% gate 미달에 따른 의도된 exit1. 실행장애/누락 아님.",
+    "current_fresh_wasm": "미실행, Native부정증거"
+  },
+  "code_commit": "39c4042fbfbd16e38eb6c49e388679d91ebc82e1",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_021",
+      "-E",
+      "test(issue_2070_rowbreak_density::) or test(issue_7147_row_declaration_beats_object_height::) or test(issue_6761_stored_vpos_rewind_page_break::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_2070_rowbreak_density",
+        "target": "regression_suite_005",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_7147_row_declaration_beats_object_height",
+        "target": "regression_suite_011",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6761_stored_vpos_rewind_page_break",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 28.593712375033647,
+    "summary": [
+      "Summary [  17.095s] 6 tests run: 2 passed, 4 failed, 612 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(issue_7147_row_declaration_beats_object_height::) or test(issue_6761_stored_vpos_rewind_page_break::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_7147_row_declaration_beats_object_height",
+        "target": "regression_suite_008",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6761_stored_vpos_rewind_page_break",
+        "target": "regression_suite_016",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 18.918083583936095
+  },
+  "removal_validation": {
+    "removed_test_functions": [
+      {
+        "source": "tests/issue_2070_rowbreak_density.rs",
+        "function": "sijang_rowbreak_density_pin",
+        "function_line_start": 31,
+        "function_line_end": 53,
+        "function_sha256": "4a410c0a069abb8ebb122c062713260e04490e50d2ffce02ddc7f3ab0541ac09"
+      },
+      {
+        "source": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "function": "header_row_boxes_match_the_hancom_oracle",
+        "function_line_start": 87,
+        "function_line_end": 107,
+        "function_sha256": "99009b399aa2e81ab923c6223234db737ee97b9030c6b2329a7a6e8e723d3c5d"
+      },
+      {
+        "source": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "function": "the_unshrunk_table_splits_across_the_page_boundary",
+        "function_line_start": 111,
+        "function_line_end": 126,
+        "function_sha256": "7867581ef045aeb8935dff06a39ecf65c23c1e41a3264a3b5622b80cef49f1b6"
+      }
+    ],
+    "removed_page_count_pin": "tests/cases/issue_6761_stored_vpos_rewind_page_break.rs:99",
+    "production_changed": false,
+    "new_test_functions": 0,
+    "preserved_before_pass_functions": [
+      {
+        "source": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "function": "object_height_that_ends_mid_row_still_reconciles",
+        "body_sha256": "707bcdc3d8f77e581b57850465aafcf41872d1916f47f4cc7c474661444f9511"
+      },
+      {
+        "source": "tests/cases/issue_6761_stored_vpos_rewind_page_break.rs",
+        "function": "partial_retreat_inside_a_page_does_not_break",
+        "body_sha256": "dca0d57c47671a4321a330f4942d71c7d8d1b18a7f6761d18df335c336babc04"
+      }
+    ],
+    "commands": [
+      {
+        "step": "prepare-before-fmt",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7650154591538012
+      },
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.600212957710028
+      },
+      {
+        "step": "prepare-final",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6083032093010843
+      },
+      {
+        "step": "focused",
+        "command": [
+          "python3",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage142-market2070/run-focused.py",
+          "after"
+        ],
+        "exit_code": 0,
+        "seconds": 19.28599224984646
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.872081500012428
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3051952077075839
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2525170003063977
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3766474169678986
+      },
+      {
+        "step": "clippy-alltargets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.3675960409455
+      },
+      {
+        "step": "manifest-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.5387339582666755
+      },
+      {
+        "step": "unit-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 7.861728999763727
+      }
+    ],
+    "after_summary": [
+      "Summary [  10.410s] 3 tests run: 3 passed, 432 skipped"
+    ]
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883629635",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "scope": {
+    "removed_test_functions": 3,
+    "removed_page_count_pin": 1,
+    "preserved_before_pass_function_bodies": 2,
+    "preserved_after_test_functions": 3,
+    "kept": [
+      "#6761 본문4/5쪽 되감김 검사",
+      "정상 교육문서 부분후퇴 반례",
+      "#7147 다른원문 행높이 대조군",
+      "원문/PDF/모든다른입력·축"
+    ],
+    "production_changed": false,
+    "new_test_functions": 0,
+    "baseline_relaxation": false
+  }
+}

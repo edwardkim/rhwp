@@ -29,7 +29,7 @@ fn prep_page_33_keeps_complete_final_word_on_saved_sixth_line() {
     assert!(lines[0].trim_end().ends_with("한다는"), "첫 줄: {lines:?}");
     assert_eq!(lines[5].trim(), "왜곡될 수 있음.");
     let last = line_top_containing(&page.root, "왜곡될 수 있음.").expect("마지막 줄");
-    // PDF yMin=430.848pt, 96dpi.
+    // PDF 위 좌표 yMin=430.848pt, 96dpi 기준.
     assert!((last - 574.464).abs() <= 1.5, "마지막 줄 위치: {last:.3}");
 }
 
@@ -168,7 +168,7 @@ fn prep_chart_caption_preserves_following_saved_line_spacing() {
     let following =
         line_top_containing(&page.root, "남성에서는 20대의 성생활 비율").expect("차트 뒤 본문");
     // 한컴 2024 PDF: 캡션 y=426.7px, 뒤 본문 y=476.7px. 저장 chart
-    // LineSeg의 trailing spacing 720HU(9.6px)가 두 글줄 사이에 들어간다.
+    // LineSeg의 뒤 줄 간격 720HU(9.6px)가 두 글줄 사이에 들어간다.
     assert!((caption - 426.7).abs() <= 1.5, "캡션 위치: {caption:.1}");
     assert!(
         (following - 476.7).abs() <= 1.5,
@@ -397,7 +397,7 @@ fn prep_page_92_caption_keeps_saved_negative_empty_line_advance() {
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).expect("PrEP 정식 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("PrEP 로드");
     let page = core.build_page_render_tree(91).expect("물리 92쪽");
-    // 한컴 2024 PDF p92 caption bbox: 742.872pt × 96/72 = 990.496px.
+    // 한컴 2024 PDF 92쪽 캡션 상자: 742.872pt × 96/72 = 990.496px.
     // 저장 빈 문단(66533HU) 뒤 캡션은 67163HU: 1050HU 줄 상자와
     // -420HU 간격의 630HU 전진을 보존한다. 빈 글자와 0 높이는 다르다.
     let caption = line_top_containing(&page.root, "[그림 14] QUANTPrEP을").expect("그림 14 캡션");

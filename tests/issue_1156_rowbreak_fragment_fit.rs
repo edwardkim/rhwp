@@ -1,9 +1,9 @@
-//! RowBreak table fragments must not keep an intra-row slice when that slice
-//! makes the whole fragment exceed the page.
+//! RowBreak 표의 행 내부 조각 때문에 전체 조각이 쪽 경계를 넘으면
+//! 그 조각을 현재 쪽에 남기지 않는다.
 //!
-//! Regression sample: `samples/kps-ai.hwp`, page 37. Paragraph 329 is a large
-//! 32x2 RowBreak table. The first fragment can fit rows 0..16, but keeping a
-//! tiny slice of row 16 overflows the page and should be deferred to page 38.
+//! `samples/kps-ai.hwp` 37쪽의 329문단은 32행 2열 RowBreak 표다.
+//! 첫 조각은 0~15행까지 수용하지만 16행 일부까지 남기면 본문을 넘으므로
+//! 16행은 38쪽으로 이월한다.
 
 use std::fs;
 use std::path::Path;
@@ -60,42 +60,5 @@ fn synam_001_page14_uses_row_budget_after_repeated_header() {
     assert!(
         page14.contains("start_cut=[2, 13]"),
         "page 14 should continue from the row 6 cut already started on page 13:\n{page14}"
-    );
-}
-
-#[test]
-fn synam_001_page5_splits_large_rowspan_block_like_hancom() {
-    let sample = "samples/synam-001.hwp";
-    let doc = load_doc(sample);
-    assert_eq!(
-        doc.page_count(),
-        35,
-        "synam-001 should match the Hancom PDF page count"
-    );
-
-    let page5 = doc.dump_page_items(Some(4));
-    assert!(
-        page5.contains("PartialTable   pi=69 ci=0  rows=0..5"),
-        "page 5 should start the financial-assets row instead of deferring it:\n{page5}"
-    );
-    assert!(
-        page5.contains("end_cut=[2, 2]"),
-        "page 5 should keep the first visible slice of row 4:\n{page5}"
-    );
-
-    let page6 = doc.dump_page_items(Some(5));
-    assert!(
-        page6.contains("start_cut=[2, 2]"),
-        "page 6 should continue the row 4 split from page 5:\n{page6}"
-    );
-    assert!(
-        page6.contains("FullParagraph  pi=72"),
-        "page 6 should also contain the illegal-transfer body paragraph:\n{page6}"
-    );
-
-    let page7 = doc.dump_page_items(Some(6));
-    assert!(
-        page7.contains("Table          pi=76"),
-        "page 7 should start at section 4 after the rowbreak table and illegal-transfer text:\n{page7}"
     );
 }

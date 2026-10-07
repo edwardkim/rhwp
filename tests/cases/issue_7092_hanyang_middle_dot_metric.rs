@@ -26,9 +26,9 @@
 //!     Type3 n=54                        /W 0.381  전진 중앙 0.386
 //! ```
 //!
-//! 같은 문서의 `휴먼명조` 는 정본에서 TrueType(`INPILL+휴먼명조`)으로 나가고 `/W` 가
-//! 1.001 em 이다 — 빌려 온 전각값이 그쪽에는 맞는다. 그래서 이 정정은 **U+00B7 한 글자,
-//! 한양중고딕 한 글꼴**로 한정한다.
+//! 휴먼명조 font dictionary의 U+00B7 폭 1.001em은 그 글리프가 실제 사용됐다는
+//! 증거가 아니다. 80168 p8/p12/p22/p24의 실제 U+00B7은 Palatino 0.25em이다.
+//! HFT 자체 메트릭과 legacy 영문 슬롯 선택은 각각의 실제 glyph face로 검사한다.
 //!
 //! ## 무엇이 걸려 있었나
 //!
@@ -139,26 +139,25 @@ fn hanyang_junggothic_middle_dot_matches_its_own_metric() {
     );
 }
 
-/// 한양중고딕 **말고는** 아무것도 바꾸지 않는다 — 좁힘이 걸리던 글꼴은 그대로다.
-///
-/// 같은 문서의 `휴먼명조` 는 정본에서 TrueType 으로 1.001 em 이지만, 그 축(#7092 본체)은
-/// 별개 판정이 필요해 이 변경의 범위 밖이다. 여기서는 **종전 값(0.300 em)이 유지되는지**만
-/// 잠가, 이 정정이 한 글꼴을 넘지 않았음을 확인한다.
+/// The actual PDF glyphs on p8/p12/p22/p24 use Palatino, not the Human-Myeongjo
+/// resource whose dictionary happens to include a full-width middle dot.
+/// Both the 2022 and 2024 source PDFs give these four glyphs 0.25em advances.
+/// Genuine TrueType dots in the same first 24 pages retain their own metrics.
 #[test]
-fn other_fonts_keep_their_previous_middle_dot_width() {
-    let human = advances_for("휴먼명조", &[(SAMPLE_80168, 24)]);
+fn legacy_latin_middle_dot_uses_the_pdf_glyph_face() {
+    let latin = advances_for("Palatino Linotype", &[(SAMPLE_80168, 24)]);
+    assert_eq!(latin.len(), 4, "four independently observed PDF glyphs");
     assert!(
-        !human.is_empty(),
-        "휴먼명조 `·` 가 하나도 없다 — 표본 전제가 깨졌다"
+        latin.iter().all(|advance| (advance - 0.25).abs() <= 0.01),
+        "legacy Latin dots use their displayed face: {latin:?}"
     );
-    let moved: Vec<_> = human
-        .iter()
-        .filter(|adv| !(0.26..=0.34).contains(*adv))
-        .collect();
-    assert!(
-        moved.is_empty(),
-        "휴먼명조 `·` 는 이 변경의 범위 밖이라 종전 0.300 em 이어야 한다. 움직인 것: {moved:?}"
-    );
+    for (face, expected, minimum) in [("Haansoft Batang", 0.3331, 4), ("맑은 고딕", 0.2181, 3)]
+    {
+        let advances = advances_for(face, &[(SAMPLE_80168, 24)]);
+        assert!(advances.len() >= minimum, "positive control {face}");
+        let median = advances[advances.len() / 2];
+        assert!((median - expected).abs() <= 0.02, "{face}: {advances:?}");
+    }
 }
 
 /// 한양신명조의 `·` 는 자기 메트릭(393/1024 = 0.3838 em)대로 전진한다.

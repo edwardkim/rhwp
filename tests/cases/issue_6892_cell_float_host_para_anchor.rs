@@ -67,12 +67,13 @@ fn issue_6892_cell_square_float_sits_on_its_host_line() {
 
 #[test]
 fn issue_6892_first_para_cell_float_keeps_the_cell_top_anchor() {
-    // **음성 대조** — `#2226` 이 겨냥한 형상은 그대로 둔다. `pic-in-table-01.hwp` 의 그림은
-    // 칸의 **첫 문단**(`cp_idx == 0`)에 매달려 있어 종전 갈래를 계속 타야 한다. 수정 전
-    // 바이너리로 잰 값과 같은 자리다.
+    // 첫 문단 경로 대조 — `#2226`의 칸 첫 문단 그림은 이 앵커 경로를 유지한다.
+    // 독립 한컴 출력 `pdf/pic-in-table-01-2022.pdf` 1쪽의 그림 y는
+    // 28.76899pt와 37.15897pt다. 96DPI로 환산한 위치를 기준으로 검사한다.
+    // 보정127의 Native/fresh WASM 1쪽 비교는 모두 99.95%이며 공차는 그대로다.
     let images = page_images("samples/pic-in-table-01.hwp", 0);
     assert_eq!(images.len(), 2, "1쪽 그림은 두 장이다: {images:?}");
-    for (actual, expected) in images.iter().zip([(39.7, 36.6), (50.9, 18.4)]) {
+    for (actual, expected) in images.iter().zip([(38.36, 36.6), (49.55, 18.4)]) {
         assert!(
             (actual.0 - expected.0).abs() <= 0.5 && (actual.1 - expected.1).abs() <= 0.5,
             "칸 첫 문단 그림은 제자리여야 한다: {actual:?} (기대 {expected:?})"

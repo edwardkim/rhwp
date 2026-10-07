@@ -174,16 +174,20 @@ fn real_hwp5_and_hwpx_emit_complete_read_only_envelopes() {
 #[test]
 fn encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin() {
     for (rel, pages) in [
-        ("samples/HWP3-password-123456.hwp", 24),
-        ("samples/hwp3-sample16-hwp5-2024-password-123456.hwp", 64),
-        ("samples/HWP5-password-123456.hwpx", 23),
+        ("samples/HWP3-password-123456.hwp", Some(24)),
+        (
+            "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
+            Some(64),
+        ),
+        // 쪽수 고정만 #7445로 이관하고 암호·응답 봉투 계약은 유지한다.
+        ("samples/HWP5-password-123456.hwpx", None),
     ] {
         let path = repo(rel);
         let path = path.to_str().expect("암호 문서 경로");
         let args = ["--password-stdin", "armor", path, "--json"];
         let output = run_with_stdin(&args, format!("{PASSWORD}\n").as_bytes());
         let value = parse_success(&args, &output);
-        assert_complete_envelope(&value, Some(pages));
+        assert_complete_envelope(&value, pages);
     }
 }
 

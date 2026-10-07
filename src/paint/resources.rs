@@ -318,7 +318,9 @@ pub fn source_image_key(
     let bakes_watermark = crate::renderer::image_resolver::detect_image_mime_type(data)
         == "image/jpeg"
         && crate::renderer::image_resolver::is_watermark_image(image);
-    let variant = if bakes_watermark {
+    let variant = if crate::renderer::image_resolver::is_baked_blackwhite_image(image) {
+        SourceImageVariant::BakedBlackWhitePng
+    } else if bakes_watermark {
         SourceImageVariant::BakedWatermarkPng
     } else {
         SourceImageVariant::Source
@@ -337,6 +339,8 @@ pub enum SourceImageVariant {
     Source,
     /// JPEG 워터마크를 한컴 규칙으로 bake 한 PNG.
     BakedWatermarkPng,
+    /// 원본 해상도에서 흑백을 확정한 PNG.
+    BakedBlackWhitePng,
 }
 
 impl SourceImageVariant {
@@ -344,6 +348,7 @@ impl SourceImageVariant {
         match self {
             SourceImageVariant::Source => "src",
             SourceImageVariant::BakedWatermarkPng => "wmpng",
+            SourceImageVariant::BakedBlackWhitePng => "bwpng",
         }
     }
 
@@ -367,6 +372,7 @@ pub fn parse_source_image_key(key: &str) -> Option<(u32, u16, SourceImageVariant
     let variant = match parts.next()? {
         "src" => SourceImageVariant::Source,
         "wmpng" => SourceImageVariant::BakedWatermarkPng,
+        "bwpng" => SourceImageVariant::BakedBlackWhitePng,
         _ => return None,
     };
     if parts.next().is_some() {

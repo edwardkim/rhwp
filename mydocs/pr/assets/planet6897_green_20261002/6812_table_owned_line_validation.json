@@ -1,0 +1,242 @@
+{
+  "stage": "#6812 어울림 그림 호스트의 TAC 표 소유 줄 간격 보존",
+  "parent_head": "34eb3b7d2c6422b1d8dfecfaeb65eb9d094ab660",
+  "branch": "review/planet6897-green-20261002",
+  "source": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+  "source_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+  "reference": "pdf/156160455-social-pig-farm-income-2020.pdf",
+  "reference_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+  "production_sha256": "a5a999bccc1dfcd2db9d5f14f2d9f67c3c2500ede662f8574f27abd5108bc80a",
+  "analysis": {
+    "violation": "같은 TAC 표 소유 줄을 renderer는 간격과 함께 소비하지만 측정에서 Square 그림 안내 줄로 제거",
+    "before": "20 tests: 19 PASS / 1 FAIL; pi8 line1 actual bottom 1046.7867 > column bottom 1043.1467",
+    "failed_candidates": [
+      "scan hwp_authoritative dirty guard: unchanged failure; removed",
+      "picture/shape ownership only: unchanged failure; table ownership added"
+    ],
+    "scan_observation": "line1 measured 32+20 <= available 56.493333; failure originates before paragraph scan",
+    "producer": "paragraph/format.rs resolve_line_metrics: Square blank-guide exclusion",
+    "consumer": "typeset.rs table trailing spacing fmt.total_height-fmt.height_for_fit; layout.rs TAC host source spacing",
+    "correction": "현재 composed/source 줄 수 일치, 실제 제어 소속 줄, 양수 TAC 표 높이, 원본 LineSeg의 소유 높이 증거를 사용하여 안내 줄 제외 대상에서 구분",
+    "test_contract": "3줄 누락/중복 부재와 실제 단 하단 포함 관계 유지"
+  },
+  "focused": {
+    "run": 20,
+    "passed": 20,
+    "failed": 0,
+    "exit": 0
+  },
+  "counters": [
+    {
+      "case": "issue_6797_table_item_clears_float_band",
+      "exit": 0,
+      "seconds": 5.84
+    },
+    {
+      "case": "issue_6972_tac_fullpage_picture_page_ownership",
+      "exit": 0,
+      "seconds": 4.88
+    },
+    {
+      "case": "issue_598_footnote_marker_nav",
+      "exit": 0,
+      "seconds": 5.47
+    }
+  ],
+  "new_tests": 0,
+  "new_fixtures": 0,
+  "changed_tests": 0,
+  "golden_updates": 0,
+  "native_build_exit": 0,
+  "fresh_wasm_build_exit": 0,
+  "local_wasm_workflow": "Mac no-opt; Docker 최적화 검증이 아님",
+  "native_previous_output_comparison": [
+    {
+      "document": "social6797",
+      "kind": "svg",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": [
+        2,
+        7
+      ]
+    },
+    {
+      "document": "social6797",
+      "kind": "render_tree",
+      "old_count": 11,
+      "new_count": 11,
+      "changed": [
+        7
+      ]
+    },
+    {
+      "document": "footnote598",
+      "kind": "svg",
+      "old_count": 6,
+      "new_count": 6,
+      "changed": []
+    },
+    {
+      "document": "footnote598",
+      "kind": "render_tree",
+      "old_count": 6,
+      "new_count": 6,
+      "changed": []
+    }
+  ],
+  "fresh_wasm_comparison": [
+    {
+      "document": "social6797",
+      "kind": "svg",
+      "native_count": 11,
+      "wasm_count": 11,
+      "changed": []
+    },
+    {
+      "document": "social6797",
+      "kind": "render_tree",
+      "native_count": 11,
+      "wasm_count": 11,
+      "changed": [
+        2,
+        4
+      ]
+    },
+    {
+      "document": "footnote598",
+      "kind": "svg",
+      "native_count": 6,
+      "wasm_count": 6,
+      "changed": []
+    },
+    {
+      "document": "footnote598",
+      "kind": "render_tree",
+      "native_count": 6,
+      "wasm_count": 6,
+      "changed": [
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "tree_cross_backend_note": "67차이는 모두 가상 문단 pi sentinel의 usize 64/32비트 표현뿐이며 Native pi modulo 2^32 == WASM pi; 나머지 필드/위치 동일",
+  "visual": {
+    "social6797_pages": 11,
+    "below90": [],
+    "minimum_percent": 98.10308,
+    "raster_regenerated_pages": [
+      2,
+      7
+    ],
+    "reuse": "나머지9쪽은 이전 실제 시각 검증 SVG에서 font CSS만 제외한 현재 SVG 바이트 동일. fresh WASM 전11쪽 SVG는 Native와 동일하여 같은 글꼴 정책의 TSV 재사용; WASM raster 재생성으로 표현하지 않음",
+    "footnote598_pages": 6,
+    "unchanged_native_pages": 6,
+    "unchanged_wasm_svg_pages": 6,
+    "residual": "#6797 p7 첫 표 6.667px 상향은 보정 이전 debug 실행 파일에서도 동일; 98.05666→92.15032로 이전 #598 원점 보정 영향 재검토 예정"
+  },
+  "overall_pr_ready": false,
+  "pending": [
+    "잔존 최초 전체 실패 5개 범주 재확인",
+    "form002 10쪽 시각 미달 개선",
+    "#6797 p7 기존 원점 잔차 재검토",
+    "12쪽/215쪽 시각 보류",
+    "최종 전체 회귀·Native Skia 검증"
+  ],
+  "gates": [
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.66
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 24.63
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 14.8
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 32.18
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 51.51
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.49
+    }
+  ],
+  "changed_document_metadata": {
+    "mydocs/orders/20261004.md": [],
+    "mydocs/pr/archives/pr_7476_review.md": []
+  },
+  "doc_links_exit": 0
+}

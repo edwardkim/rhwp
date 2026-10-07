@@ -942,7 +942,7 @@ fn render_bars(
                             Some("ctr") => by + seg / 2.0 + font * 0.35,
                             Some("inEnd") => by + font,
                             Some("inBase") => by + seg - 2.0,
-                            // SVG text y는 글자 위가 아니라 기준선이다. 한컴의 outEnd는
+                            // SVG 텍스트의 y좌표는 기준선이다. 한컴의 outEnd는
                             // 바로 윗 조각을 침범하지 않도록 글자 한 줄을 더 올린다.
                             Some("outEnd") => by - font - 2.0,
                             _ => by - 2.0,

@@ -206,7 +206,7 @@ pub(super) fn reconcile_tac_height(
     measured_tables: &[MeasuredTable],
     tac_count: usize,
     height_before: f64,
-    session_grown_tac_total: Option<f64>,
+    measured_tac_floor: Option<f64>,
     flow: tac_flow::TacFlowQuery<'_>,
 ) {
     let dpi = flow.dpi();
@@ -267,12 +267,21 @@ pub(super) fn reconcile_tac_height(
         st.tac_height_page(),
         dpi,
     );
-    let cap = tac_reconcile::effective_cap(
-        cap,
-        ladder_total,
-        ladder_omits_spacing,
-        session_grown_tac_total,
-    );
+    let cap =
+        tac_reconcile::effective_cap(cap, ladder_total, ladder_omits_spacing, measured_tac_floor);
+    // 현재 조판한 단일 표 줄의 확정 끝점에는 바깥 여백과 후행 간격도 들어 있다.
+    // 셀 실측 본체만으로 다시 상한을 걸면 이미 예약한 물리 공간을 회수하게 된다.
+    let cap = if measured_tac_floor.is_some()
+        && para.controls.iter().any(|control| match control {
+            Control::Table(table) => {
+                flow.single_tac_line_has_unstored_cell_text(para, table, fmt, tac_count)
+            }
+            _ => false,
+        }) {
+        cap.max(st.tac_height_page().current_height - snapped_base)
+    } else {
+        cap
+    };
     if std::env::var("RHWP_DIAG_TACCAP").is_ok() {
         eprintln!(
             "DIAG_TACCAP pi={} tac_seg_total={:.1} cap={:.1} fmt_total={:.1} sb={:.1} cur_h={:.1} snapped_base={:.1} clamp={}",
@@ -331,6 +340,7 @@ pub(super) fn try_place_empty_para_float_table(
     styles: &ResolvedStyleSet,
     para_start_height: f64,
     lanes: &mut FloatLaneSet,
+    table_reflowed: bool,
     dpi: f64,
 ) -> bool {
     let Some(placement) = empty_float::prepare(
@@ -345,6 +355,7 @@ pub(super) fn try_place_empty_para_float_table(
         para_start_height,
         lanes,
         st.empty_float_page(),
+        table_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),
         dpi,
     ) else {
@@ -402,6 +413,7 @@ pub(super) fn prepare_tac_paragraph(
 }
 
 /// 기존 저장 줄 경로가 문단 전체를 수용한 경우에만 일반 컨트롤 경로를 생략한다.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn try_place_stored_tac_paragraph(
     st: &mut TypesetState,
     para_idx: usize,
@@ -409,13 +421,59 @@ pub(super) fn try_place_stored_tac_paragraph(
     fmt: &FormattedParagraph,
     measured_tables: &[MeasuredTable],
     dpi: f64,
+    paragraphs: &[Paragraph],
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
 ) -> bool {
+    if let Some(placement) = stored_tac::prepare_computed(
+        para_idx,
+        para,
+        paragraphs.get(para_idx + 1),
+        fmt,
+        measured_tables,
+        st.stored_tac_page(paragraphs),
+        || st.available_height(),
+        dpi,
+    ) {
+        // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
+        // 연결해 다음 문단의 lazy 역산이 그 간격을 다시 더하지 않게 한다.
+        let rebase_line_origin = placement.rebase_line_origin;
+        let lazy_origin = para.line_segs.first().map(|seg| {
+            seg.vertical_pos
+                .saturating_add(seg.line_height)
+                .saturating_add(seg.line_spacing)
+                .saturating_sub(crate::renderer::px_to_hwpunit(placement.end, dpi))
+        });
+        st.commit_stored_tac_control(para_idx, placement);
+        // 원본 저장 줄의 좌표축은 이미 확립돼 있다. 합성 줄의 확정 끝만
+        // lazy 원점으로 역산하며, 실제 저장 표 뒤 사다리는 유지한다.
+        if rebase_line_origin {
+            st.commit_deferred_table_anchor(para_idx);
+            st.record_vpos_lazy_origin(lazy_origin);
+            st.mark_vpos_ladder_dirty();
+        }
+        return true;
+    }
+    // A closed preceding object frame already owns its successor's leading
+    // spacing. The stored TAC plan must use that same origin for fit and paint.
+    let shared_spacing_before =
+        crate::renderer::float_placement::stored_frame_successor_shared_spacing_px(
+            &st.paragraph_float_placements,
+            para_idx,
+            fmt.spacing_before,
+            st.current_height,
+        );
     let Some(plan) = stored_tac::prepare(
         para_idx,
         para,
         fmt,
         measured_tables,
-        st.stored_tac_page(),
+        st.stored_tac_page(paragraphs),
+        shared_spacing_before,
+        paragraphs.get(para_idx + 1),
+        paragraphs
+            .get(para_idx + 1)
+            .and_then(|next| styles.para_styles.get(next.para_shape_id as usize))
+            .map_or(0.0, |shape| shape.spacing_before),
         || st.available_height(),
         dpi,
     ) else {
@@ -424,6 +482,12 @@ pub(super) fn try_place_stored_tac_paragraph(
     for line in &plan.lines {
         let placement = plan.placement(line, fmt.spacing_after, dpi);
         st.commit_stored_tac_control(para_idx, placement);
+    }
+    if plan.source_origin.is_some() {
+        st.commit_deferred_table_anchor(para_idx);
+        st.record_vpos_page_origin(plan.source_origin);
+        st.record_vpos_origin_provenance(true);
+        st.record_vpos_lazy_origin(None);
     }
     true
 }

@@ -1,0 +1,148 @@
+{
+  "analysis": "h01의 새 단일 TAC 선행 줄 계획이 2024 회수 경로를 생략했다. 선행 줄이 있는 단일 TAC는 2024 모드에서 기존 일반 경로로 보내 회수량 적립과 후속 저장 쪽 경계 재적합을 유지한다.",
+  "producer_consumer_path": [
+    "typeset/controls.rs try_place_stored_tac_paragraph: prepare None이면 일반 컨트롤 경로로 복귀",
+    "typeset.rs typeset_tac_table: 선행 fmt.line_advance 합을 회수하고 표 밴드부터 fit",
+    "typeset/state.rs record_reclaimed_host_spacing 및 paragraph whole_fit/split_entry: 후속 저장 경계의 재적합",
+    "실제 Native export-render-tree의 pi13은 2024 1쪽 y1022.8..1042.8, column60.5..1054.5 안에 포함"
+  ],
+  "focused": {
+    "run": 4,
+    "passed": 4,
+    "failed": 0,
+    "exit": 0,
+    "unchanged_test_expectations": true
+  },
+  "gates": [
+    {
+      "step": "native",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 92.69
+    },
+    {
+      "step": "wasm",
+      "command": [
+        "env",
+        "CARGO_TARGET_DIR=target/pr-review",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 165.31
+    },
+    {
+      "step": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 24.73
+    },
+    {
+      "step": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 14.1
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 30.18
+    },
+    {
+      "step": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 65.73
+    }
+  ],
+  "normal_h01_counter": {
+    "native-svg": {
+      "count": 9,
+      "all_byte_identical": true
+    },
+    "native-tree": {
+      "count": 9,
+      "all_byte_identical": true
+    },
+    "wasm/raw_svg": {
+      "count": 9,
+      "all_byte_identical": true
+    },
+    "wasm/render_tree": {
+      "count": 9,
+      "all_byte_identical": true
+    }
+  },
+  "native_page13": {
+    "compat2022": 2,
+    "compat2024": 1,
+    "disabled_again": 2
+  },
+  "fresh_wasm_2024_target": "JS API에 opt-in setter가 없으므로 목표2024 호출은 비해당. 실제 fresh WASM 기본2022 전9쪽 출력 동일성만 확인",
+  "native_2024_independent_visual_sweep": "미검증: 이 단계는 기존 세대 플래그 회귀 복원이며 독립2024 PDF의 픽셀 일치율로 보고하지 않는다",
+  "new_tests": 0,
+  "new_fixtures": 0,
+  "golden_updated": false,
+  "integration_pr_ready": false,
+  "hashes": {
+    "src/renderer/typeset/controls/stored_tac.rs": "8f68e009c35637cce8a33dbf5547aa319d1e884be1b5051aaf7a5393405a82c1",
+    "target/pr-review/release-test/rhwp": "fe7faaaba71db7b3b8af15fe7dd70e9edd08a1ec034271eacfcc308969220d47",
+    "pkg/rhwp_bg.wasm": "26a1f9fe45d03c272c669f41c6e178f95db08b40ff2ad1061736184c82150c31"
+  }
+}

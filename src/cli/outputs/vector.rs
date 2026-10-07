@@ -256,10 +256,6 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
         return Err(EXIT_USAGE);
     };
 
-    if render_profile.is_some() && font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
-        eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
-        return Err(EXIT_USAGE);
-    }
     if backend == SvgExportBackend::Legacy
         && (render_profile.is_some() || font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None)
     {
@@ -433,10 +429,15 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
     for page_num in &pages {
         let svg_result = if backend == SvgExportBackend::Legacy {
             doc.render_page_svg_legacy_native(*page_num)
+        } else if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
+            doc.render_page_svg_with_fonts_and_profile(
+                *page_num,
+                font_embed_mode,
+                &font_paths,
+                render_profile.unwrap_or(rhwp::paint::RenderProfile::Screen),
+            )
         } else if let Some(profile) = render_profile {
             doc.render_page_svg_layer_with_profile_native(*page_num, profile)
-        } else if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
-            doc.render_page_svg_with_fonts(*page_num, font_embed_mode, &font_paths)
         } else {
             // Production API owns the default screen-profile layer contract. Keeping the CLI
             // on that public entry point prevents a second routing policy from forming here.

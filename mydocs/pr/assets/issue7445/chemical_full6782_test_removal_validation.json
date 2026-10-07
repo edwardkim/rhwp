@@ -1,0 +1,1338 @@
+{
+  "stage": 103,
+  "code_commit": "85bea0d563a3e53fa20eb0f18b25d6227bcee05b",
+  "analysis": {
+    "head": "4153fe748aba9b724c0d3f13a77bfe46a27452c5",
+    "analysis": "기존35번 신규2건.보정93축소본과다른전체원문/독립PDF의해시·출처를확인한뒤 영향페이지Native비교로90%미달과검사유효성부터 판단.다른입력·공차·새검사변경없음.",
+    "files": {
+      "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp": {
+        "size": 6521856,
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+      },
+      "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf": {
+        "size": 2208597,
+        "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79"
+      }
+    },
+    "info": {
+      "fonts": [
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "나눔명조",
+        "-소망B",
+        "Arial",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "Arial",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "Times New Roman",
+        "한양신명조",
+        "한양중고딕",
+        "HCI Poppy",
+        "나눔명조",
+        "-소망B",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "나눔명조",
+        "-소망B",
+        "Arial",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "나눔명조",
+        "-소망B",
+        "Arial",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "Arial",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "나눔명조",
+        "-소망B",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "Arial",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "나눔명조",
+        "-소망B",
+        "궁서",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "바탕체",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "휴먼모음T",
+        "Arial",
+        "HY견고딕",
+        "HY중고딕",
+        "HY헤드라인M",
+        "명조",
+        "나눔명조",
+        "-소망B"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "pageCount": 103,
+      "paraCount": 1047,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 7,
+      "sizeBytes": 6521856,
+      "source": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "title": "최종보고서",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.0.3.4",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 6,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 22,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 4,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 103,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 1,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 363.78666666666663,
+                "w": 638.0266666666666,
+                "x": 98.28,
+                "y": 537.1333333333333
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 37.09333333333325,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 37.09333333333325,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table14"
+            }
+          ],
+          "overlap": [],
+          "page": 2,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 3,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 21,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 829.3333333333335,
+                "w": 695.2266666666667,
+                "x": 98.26666666666668,
+                "y": 157.38666666666668
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 94.27999999999997,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 94.27999999999997,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table1"
+            }
+          ],
+          "overlap": [],
+          "page": 22,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 23,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 28,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 829.3333333333335,
+                "w": 695.2266666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 94.27999999999997,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 94.27999999999997,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 29,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 109.97333333333324,
+                "w": 601.0799999999999,
+                "x": 98.26666666666668,
+                "y": 926.6
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 8.559999999999945,
+              "nodeType": "Table",
+              "overBottom": 8.559999999999945,
+              "overLeft": 0.0,
+              "overRight": 0.13333333333321207,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table24"
+            }
+          ],
+          "overlap": [],
+          "page": 44,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 829.3333333333335,
+                "w": 695.2266666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 94.27999999999997,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 94.27999999999997,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 55,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 829.3333333333335,
+                "w": 695.2266666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 94.27999999999997,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 94.27999999999997,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 74,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 161.2800000000001,
+                "w": 605.6666666666666,
+                "x": 114.36,
+                "y": 807.9599999999999
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 20.813333333333276,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 20.813333333333276,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table21"
+            },
+            {
+              "bbox": {
+                "h": 16.0,
+                "w": 605.6666666666666,
+                "x": 114.36,
+                "y": 780.6266666666666
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 20.813333333333276,
+              "nodeType": "TextLine",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 20.813333333333276,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine22"
+            }
+          ],
+          "overlap": [
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 316.6666666666667,
+                "x": 155.29333333333335,
+                "y": 790.9466666666672
+              },
+              "bboxB": {
+                "h": 16.0,
+                "w": 245.6533333333333,
+                "x": 114.36,
+                "y": 780.6266666666666
+              },
+              "overlapArea": 1162.8095999998732,
+              "overlapH": 5.6799999999993815,
+              "overlapW": 204.71999999999997,
+              "pathA": "Page/Body/Column0/TextLine20",
+              "pathB": "Page/Body/Column0/TextLine22",
+              "typeA": "TextLine",
+              "typeB": "TextLine"
+            }
+          ],
+          "page": 75,
+          "storedLineEscape": [],
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 316.6666666666667,
+                "x": 155.29333333333335,
+                "y": 790.9466666666672
+              },
+              "bboxB": {
+                "h": 16.0,
+                "w": 33.413333333333334,
+                "x": 148.25333333333333,
+                "y": 780.6266666666666
+              },
+              "overlapArea": 149.80053333331688,
+              "overlapH": 5.6799999999993815,
+              "overlapW": 26.373333333333306,
+              "pathA": "Page/Body/Column0/TextLine20/TextRun0",
+              "pathB": "Page/Body/Column0/TextLine22/TextRun2",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 316.6666666666667,
+                "x": 155.29333333333335,
+                "y": 790.9466666666672
+              },
+              "bboxB": {
+                "h": 16.0,
+                "w": 169.76000000000002,
+                "x": 190.25333333333333,
+                "y": 780.6266666666666
+              },
+              "overlapArea": 964.236799999895,
+              "overlapH": 5.6799999999993815,
+              "overlapW": 169.76,
+              "pathA": "Page/Body/Column0/TextLine20/TextRun0",
+              "pathB": "Page/Body/Column0/TextLine22/TextRun3",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 836.6800000000001,
+                "w": 605.6666666666666,
+                "x": 114.36,
+                "y": 134.16
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 20.813333333333276,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 20.813333333333276,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 76,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 455.9200000000001,
+                "w": 605.6666666666666,
+                "x": 114.36,
+                "y": 331.6133333333333
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 20.813333333333276,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 20.813333333333276,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table6"
+            },
+            {
+              "bbox": {
+                "h": 16.0,
+                "w": 605.6666666666666,
+                "x": 114.36,
+                "y": 308.28
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 20.813333333333276,
+              "nodeType": "TextLine",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 20.813333333333276,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine7"
+            },
+            {
+              "bbox": {
+                "h": 32.15999999999997,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 841.9866666666666
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 5.159999999999968,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 5.159999999999968,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table11"
+            }
+          ],
+          "overlap": [
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 229.65333333333336,
+                "x": 94.49333333333334,
+                "y": 838.8666666666667
+              },
+              "bboxB": {
+                "h": 32.15999999999997,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 841.9866666666666
+              },
+              "overlapArea": 2909.3344000000247,
+              "overlapH": 12.88000000000011,
+              "overlapW": 225.88000000000002,
+              "pathA": "Page/Body/Column0/TextLine10",
+              "pathB": "Page/Body/Column0/Table11",
+              "typeA": "TextLine",
+              "typeB": "Table"
+            }
+          ],
+          "page": 77,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 798.1466666666665,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 5.159999999999968,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 5.159999999999968,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            },
+            {
+              "bbox": {
+                "h": 29.98666666666668,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 818.8666666666666
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 5.159999999999968,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 5.159999999999968,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table3"
+            }
+          ],
+          "overlap": [
+            {
+              "bboxA": {
+                "h": 798.1466666666665,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "bboxB": {
+                "h": 16.0,
+                "w": 229.65333333333336,
+                "x": 94.49333333333334,
+                "y": 794.2933333333333
+              },
+              "overlapArea": 3614.0800000000004,
+              "overlapH": 16.0,
+              "overlapW": 225.88000000000002,
+              "pathA": "Page/Body/Column0/Table0",
+              "pathB": "Page/Body/Column0/TextLine2",
+              "typeA": "Table",
+              "typeB": "TextLine"
+            },
+            {
+              "bboxA": {
+                "h": 798.1466666666665,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "bboxB": {
+                "h": 29.98666666666668,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 818.8666666666666
+              },
+              "overlapArea": 18175.118577777786,
+              "overlapH": 29.98666666666668,
+              "overlapW": 606.1066666666667,
+              "pathA": "Page/Body/Column0/Table0",
+              "pathB": "Page/Body/Column0/Table3",
+              "typeA": "Table",
+              "typeB": "Table"
+            }
+          ],
+          "page": 78,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 830.4266666666667,
+                "w": 606.1066666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 5.159999999999968,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 5.159999999999968,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 79,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 266.8,
+                "w": 642.8666666666667,
+                "x": 96.37333333333333,
+                "y": 670.0266666666669
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 40.02666666666664,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 40.02666666666664,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table14"
+            }
+          ],
+          "overlap": [],
+          "page": 80,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 249.81333333333333,
+                "w": 642.8666666666667,
+                "x": 96.37333333333333,
+                "y": 162.06666666666666
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 40.02666666666664,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 40.02666666666664,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            },
+            {
+              "bbox": {
+                "h": 221.13333333333333,
+                "w": 642.8666666666667,
+                "x": 96.37333333333333,
+                "y": 463.62666666666667
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 40.02666666666664,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 40.02666666666664,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table3"
+            },
+            {
+              "bbox": {
+                "h": 212.73333333333335,
+                "w": 635.3200000000003,
+                "x": 96.37333333333333,
+                "y": 740.2266666666667
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 32.480000000000246,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 32.480000000000246,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table6"
+            }
+          ],
+          "overlap": [],
+          "page": 81,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 237.9066666666667,
+                "w": 637.0533333333333,
+                "x": 96.37333333333333,
+                "y": 166.16
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 34.21333333333325,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 34.21333333333325,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table1"
+            }
+          ],
+          "overlap": [],
+          "page": 82,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 478.78666666666663,
+                "w": 619.9066666666666,
+                "x": 96.37333333333333,
+                "y": 494.9600000000002
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 17.066666666666606,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 17.066666666666606,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table10"
+            }
+          ],
+          "overlap": [],
+          "page": 84,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 829.3333333333335,
+                "w": 695.2266666666667,
+                "x": 98.26666666666668,
+                "y": 136.05333333333334
+              },
+              "boundary": {
+                "h": 895.7333333333333,
+                "w": 604.72,
+                "x": 94.49333333333334,
+                "y": 132.28
+              },
+              "maxOver": 94.27999999999997,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 94.27999999999997,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 89,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 99,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 2,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    },
+    "pdf_pages": 103,
+    "pdf_metadata": {
+      "format": "PDF 1.6",
+      "title": "",
+      "author": "환경마크협회",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260907013108+09'00'",
+      "modDate": "D:20260907013108+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "existing_manifest": {
+      "schema": "rhwp/fixture-manifest@1",
+      "issue": 6782,
+      "title": "안전확인대상생활화학제품 표시기준 제정 연구 (최종보고서)",
+      "entries": [
+        {
+          "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "format": "hwp",
+          "role": "regression_fixture",
+          "source": "https://github.com/edwardkim/rhwp/issues/6782",
+          "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+          "bytes": 6521856,
+          "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+          "lastSavedWith": {
+            "product": "hancom-office-2010",
+            "version": "8.5.8.1677"
+          },
+          "referenceEngine": "2020",
+          "referencePdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+          "referencePdfPageCount": 103,
+          "contract": "물리 77쪽 row4/col3의 CCC 그림 복원과 칸 안 그림 11개 보존. 전체 페이지 동일 주장은 하지 않는다."
+        },
+        {
+          "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "format": "hwp",
+          "role": "regression_fixture",
+          "source": "https://github.com/edwardkim/rhwp/issues/6782",
+          "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+          "derivedFrom": {
+            "bytes": 6521856,
+            "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+            "transform": "BinData 204개 스트림을 같은 확장자의 1×1 stub 이미지로 치환한 뒤 rhwp convert 로 재저장했다. 그림 상자 치수·위치는 컨트롤 레코드가 정하므로 조판은 바뀌지 않는다.",
+            "verifiedIdentical": "77쪽(idx 76) render tree 의 image 11개가 원본과 좌표·치수까지 동일하다. 쪽수 104, lastSavedWith·printMethod 도 같다."
+          },
+          "bytes": 193536,
+          "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+          "lastSavedWith": {
+            "product": "hancom-office-2010",
+            "version": "8.5.8.1677"
+          },
+          "referenceEngine": "2020",
+          "referencePdf": "pdf/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "referencePdfSha256": "32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912",
+          "referencePdfPageCount": 103,
+          "contract": "칸 앵커 그림의 음수 세로 오프셋이 그림을 칸 내용 영역 위로 통째로 밀어내면(배치 결과 바닥 <= content_top) 그 오프셋을 버리고 오프셋 0 으로 놓는다. 77쪽(idx 76) 표 pi=118 ci=0 의 row=4 col=3 칸, 그림 w=81.1 h=65.8 이 대상이다. 한/글 2020 정본 y=235.9px."
+        }
+      ]
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+    },
+    "pdf": {
+      "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79"
+    },
+    "git_head": "4153fe748aba9b724c0d3f13a77bfe46a27452c5",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "a30f34c3cf267a84241c984488bc854bc47f053f21e5797c4b1d6ac32d490f43",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage103-chemical-full6782/visual-native/chemical-full6782/run_manifest.json"
+    }
+  },
+  "selected_native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 39,
+        "tolerant_content_match_percent": 50.07638
+      },
+      {
+        "page": 76,
+        "tolerant_content_match_percent": 61.10728
+      },
+      {
+        "page": 78,
+        "tolerant_content_match_percent": 49.36129
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 1,
+      "tolerant_content_match_percent": 90.55805
+    },
+    {
+      "page": 14,
+      "tolerant_content_match_percent": 97.50859
+    },
+    {
+      "page": 39,
+      "tolerant_content_match_percent": 50.07638
+    },
+    {
+      "page": 75,
+      "tolerant_content_match_percent": 99.20416
+    },
+    {
+      "page": 76,
+      "tolerant_content_match_percent": 61.10728
+    },
+    {
+      "page": 77,
+      "tolerant_content_match_percent": 99.41731
+    },
+    {
+      "page": 78,
+      "tolerant_content_match_percent": 49.36129
+    },
+    {
+      "page": 103,
+      "tolerant_content_match_percent": 99.98703
+    }
+  ],
+  "direct_inspection": "39쪽 표 시작·행 높이/내용소유,76쪽 표/캡션 원점 약45px 상향과 본문 겹침,78쪽 행 원점/캡션 차이와 하단 인증마크 그림 누락을 review 직접 확인. 글꼴 면제 없음.",
+  "whole_native": "103쪽 중 선택8쪽 완료; 전체103쪽 비교는 미실행",
+  "fresh_wasm": "미실행",
+  "mutation": {
+    "preserved_input": {
+      "path": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-product-labeling-study.hwp",
+      "size": 6521856,
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+    },
+    "removed_functions": {
+      "issue_6782_cell_float_full_original": [
+        "offset_that_pushes_a_cell_image_out_of_its_cell_is_not_applied",
+        "the_ccc_image_is_restored_in_its_original_fragment_cell"
+      ],
+      "issue_6761_zero_origin_rewind_row_split": [
+        "stored_first_line_split_keeps_row_head_on_table_page",
+        "continuation_page_stays_inside_body",
+        "rewind_without_ladder_continuation_is_not_split_evidence",
+        "later_confirmed_rewind_does_not_authorize_an_earlier_cut"
+      ],
+      "issue_7048_stored_picture_successor": [
+        "issue_7048_full_original_body_baselines_match_hancom",
+        "issue_7048_table_first_fragment_keeps_the_footer_clear",
+        "issue_7048_stored_picture_does_not_rewind_across_measured_picture_flow"
+      ],
+      "issue_6761_side_by_side_objects_do_not_stack": [
+        "horizontally_separated_objects_share_one_band",
+        "equivalent_right_alignment_keeps_the_same_row_height",
+        "horizontally_overlapping_objects_still_stack"
+      ],
+      "issue_6761_rewind_fill_gate_page_break": [
+        "paragraph_boundary_rewind_starts_the_page_hancom_starts",
+        "rewind_whose_flow_position_disagrees_does_not_start_a_page"
+      ],
+      "issue_7359_page_top_table_spacing": [
+        "page_top_stored_spacing_aligns_caption_and_table_with_pdf"
+      ],
+      "issue_6761_band_absorbs_spacing_before": [
+        "next_paragraph_starts_at_table_outer_margin_bottom",
+        "spacing_before_larger_than_band_remainder_keeps_flow_position"
+      ],
+      "issue_6761_object_only_cell_row_keeps_declared_height": [
+        "object_only_cell_row_matches_declared_and_hancom_height",
+        "last_row_is_not_split_into_an_extra_page"
+      ]
+    },
+    "removed_test_functions": 19,
+    "removed_source_files": 8,
+    "baseline_rows_removed": 1,
+    "renderer_manifest_entries_removed": 0,
+    "retained_contracts": "다른 입력의 회귀·정상/음성대조·역사적 same-id IR 목록 유지. 이8파일은 모두 전체 원문 렌더/복제입력 렌더 계약이며 순수IR/독립합성 계약 없음.",
+    "metadata_correction": "전체원문 및 보정93 축소본 manifest path/role를 보존 자산/보류로 수정. 축소본의 과거 조판 불변 주장을 역사적 기록으로 구분. 별개 해시/증거 사용."
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "4153fe748aba9b724c0d3f13a77bfe46a27452c5",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_15)"
+        ],
+        "exit_code": 0,
+        "seconds": 10.13941904110834
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.155379666946828
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.30499770771712065
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.24795004166662693
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38834770815446973
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 8.546596874948591
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.328112208750099
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.491394167300314
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   2.687s] 1 test run: 1 passed, 223 skipped"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5871748601",
+  "limits": "원문 피델리티 해결/PR승인/최종 전체회귀 완료 아님. Native 선택90%미달에 따른 사용자 승인 제외.",
+  "superseded_removal_scope": {
+    "stage": 105,
+    "reason": "사용자 정정: PR을 막지 않는 정상 검사 동반제외 철회",
+    "current_evidence": "chemical_full6782_scope_correction_validation.json",
+    "restored_functions": 19,
+    "retained_deferred_scope": "실제FAIL한 text-overlap corpus 원문 입력만"
+  }
+}

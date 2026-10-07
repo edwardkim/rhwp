@@ -1,0 +1,112 @@
+{
+  "nextest_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_011",
+    "--test",
+    "regression_suite_015",
+    "--test",
+    "regression_suite_016",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_020",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip) | test(issue_6950_paragraph_end_topbottom_anchor)"
+  ],
+  "nextest_exit_code": 100,
+  "cli_build_exit_code": 0,
+  "immutable_cli_sha256": "e7fd293dc127810ea4cdb827397b437e1e6c8a676f11c19a50581418f250354b",
+  "source_sha": "b61705f568513e0f7e33752685022483908cfc1a",
+  "rust_test_diff_sha256": "c2a921b0e41b13d305e7865aa0601b683f21c69b829b2e29ba418135ced38959",
+  "previous_test_diff_sha256": "025baa46cba933eb3b94ae5e5a19ff81177bb960626a256fd706f831dd420feb",
+  "runtime_diff_sha256": "d8ea441b46dfec545b929b494d6fd29f3b64808b8b892d60f147e64b1711ef32",
+  "test_scope_refinement": "근거 없는 수동 양수 IR 좌표 가정을 정식 검사에서 제외; 코드 및 CLI는 불변, 최종 검사 재실행",
+  "final_nextest_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_009",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_019",
+    "--test",
+    "regression_suite_020",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip) | test(issue_6950_paragraph_end_topbottom_anchor)"
+  ],
+  "final_nextest_exit_code": 100,
+  "stage": 25,
+  "final_nextest": {
+    "passed": 128,
+    "failed": 3,
+    "total": 131,
+    "seconds": 5.821,
+    "exit_code": 100
+  },
+  "pre_original": {
+    "passed": 0,
+    "failed": 2,
+    "seconds": 0.198,
+    "exit_code": 100
+  },
+  "baseline_6950": {
+    "head": "b61705f568513e0f7e33752685022483908cfc1a",
+    "passed": 22,
+    "failed": 3,
+    "seconds": 0.174,
+    "exit_code": 100
+  },
+  "fmt_exit_code": 0,
+  "manifest_exit_code": 0,
+  "manifest_static_test_attrs": 6196,
+  "unit_policy": {
+    "exit_code": 0,
+    "tests": 4205,
+    "modules": 298,
+    "base": "eb9142dd7c73297d555383d7d8434a470bdef26e"
+  },
+  "directly_inspected_images": 16,
+  "visual_exit_codes": {
+    "hwp": 1,
+    "hwpx": 1
+  },
+  "remaining_holds": [
+    "#6950 기존 회귀3개",
+    "11·14쪽 시각 차이",
+    "최신 전수·fresh WASM·최종 전체 게이트"
+  ],
+  "unsupported_manual_ir_diagnostic": {
+    "removed_from_formal_tests": true,
+    "reason": "양수 오프셋 수동 변경의 10px 이동 기대값에 독립 근거 부족",
+    "log": "output/pr-review/planet6897-7382-20260926/logs/stage25-positive-diagnostic.log"
+  }
+}

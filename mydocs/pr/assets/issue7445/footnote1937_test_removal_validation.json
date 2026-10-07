@@ -1,0 +1,518 @@
+{
+  "stage": 91,
+  "code_commit": "f2a4dd1e1da26f6ad1b861d8ef5297fb643a54fb",
+  "analysis": {
+    "head": "e1883f5cb4ddd161256b3d6251fc88586dcee3dc",
+    "analysis": "기존28번 text-overlap132→135건. 기존 많은 겹침 자체의 유효성을 같은 원문의 독립 한컴 PDF로 판단한다. 실제 조각의 내용 소유·각주/표/본문 최종 위치를 확인하고 최저90% 미달이면 승인된 원문보존/회귀제외로 이관한다. 증거가90%이상이면 증가 원인부터 메인터너 보정하며 단순기준값 증가는 하지 않는다.",
+    "files": {
+      "samples/issue1937_rowbreak_footnote_overpagination.hwp": {
+        "size": 147456,
+        "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+      },
+      "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf": {
+        "size": 766874,
+        "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+        "pages": 50,
+        "metadata": {
+          "format": "PDF 1.4",
+          "title": "",
+          "author": "SYSTEM",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2020 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260927135502+09'00'",
+          "modDate": "D:20260927135502+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "#중고딕",
+        "한양중고딕",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "#중고딕",
+        "한양중고딕",
+        "HCI Poppy",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "#중고딕",
+        "한양신명조",
+        "한양중고딕",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "#중고딕",
+        "한양신명조",
+        "한양중고딕",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "한양신명조",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "#중고딕",
+        "한양신명조",
+        "한양중고딕",
+        "한컴바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조",
+        "HY견명조",
+        "명조"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "9.1.1.5656"
+      },
+      "pageCount": 51,
+      "paraCount": 415,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 147456,
+      "source": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "title": "소상공인ㆍ취약계층에 대한 금전납부의무",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.0.5.0",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 5,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 51,
+      "pageFilter": null,
+      "schemaVersion": "1.0",
+      "source": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 135,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": [],
+      "page_summary": [
+        {
+          "page": 19,
+          "text_overlap_count": 0,
+          "overflow_count": 1,
+          "representative_text_overlaps": []
+        },
+        {
+          "page": 37,
+          "text_overlap_count": 0,
+          "overflow_count": 1,
+          "representative_text_overlaps": []
+        },
+        {
+          "page": 40,
+          "text_overlap_count": 0,
+          "overflow_count": 1,
+          "representative_text_overlaps": []
+        },
+        {
+          "page": 41,
+          "text_overlap_count": 0,
+          "overflow_count": 1,
+          "representative_text_overlaps": []
+        },
+        {
+          "page": 42,
+          "text_overlap_count": 0,
+          "overflow_count": 1,
+          "representative_text_overlaps": []
+        },
+        {
+          "page": 43,
+          "text_overlap_count": 123,
+          "overflow_count": 0,
+          "representative_text_overlaps": [
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 36.864000000000004,
+                "x": 211.21466666666666,
+                "y": 123.24000000000001
+              },
+              "bboxB": {
+                "h": 12.0,
+                "w": 333.0,
+                "x": 92.58666666666667,
+                "y": 132.75333333333333
+              },
+              "overlapArea": 140.8204800000008,
+              "overlapH": 3.8200000000000216,
+              "overlapW": 36.864000000000004,
+              "pathA": "Page/Body/Column0/Table0/Cell1/TextLine1/TextRun0",
+              "pathB": "Page/FootnoteArea3/TextLine1/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333336,
+                "w": 24.576,
+                "x": 347.7653333333334,
+                "y": 129.90666666666667
+              },
+              "bboxB": {
+                "h": 12.0,
+                "w": 333.0,
+                "x": 92.58666666666667,
+                "y": 132.75333333333333
+              },
+              "overlapArea": 257.7203200000005,
+              "overlapH": 10.486666666666679,
+              "overlapW": 24.576000000000022,
+              "pathA": "Page/Body/Column0/Table0/Cell2/TextLine2/TextRun0",
+              "pathB": "Page/FootnoteArea3/TextLine1/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        },
+        {
+          "page": 45,
+          "text_overlap_count": 12,
+          "overflow_count": 0,
+          "representative_text_overlaps": [
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 619.0933333333332,
+                "x": 99.02666666666667,
+                "y": 766.1600000000001
+              },
+              "bboxB": {
+                "h": 12.0,
+                "w": 487.0,
+                "x": 98.58666666666667,
+                "y": 762.3066666666667
+              },
+              "overlapArea": 3963.842133333324,
+              "overlapH": 8.146666666666647,
+              "overlapW": 486.56000000000006,
+              "pathA": "Page/Body/Column0/TextLine30/TextRun0",
+              "pathB": "Page/FootnoteArea3/TextLine1/TextRun2",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 619.0933333333332,
+                "x": 99.02666666666667,
+                "y": 766.1600000000001
+              },
+              "bboxB": {
+                "h": 12.0,
+                "w": 6.0,
+                "x": 585.5866666666667,
+                "y": 762.3066666666667
+              },
+              "overlapArea": 48.87999999999988,
+              "overlapH": 8.146666666666647,
+              "overlapW": 6.0,
+              "pathA": "Page/Body/Column0/TextLine30/TextRun0",
+              "pathB": "Page/FootnoteArea3/TextLine1/TextRun3",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        }
+      ],
+      "full_output": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage91-footnote1937/anomaly.json",
+        "sha256": "716db667bcf48863bbadcc6bf4b5a91c27d9d2ea0d7359074fe7e5f3227c6936"
+      }
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+    },
+    "pdf": {
+      "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb"
+    },
+    "git_head": "e1883f5cb4ddd161256b3d6251fc88586dcee3dc",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+      "full_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage91-footnote1937/visual-native/footnote1937/run_manifest.json"
+    }
+  },
+  "selected_native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 42,
+        "tolerant_content_match_percent": 53.92934
+      },
+      {
+        "page": 43,
+        "tolerant_content_match_percent": 41.51422
+      },
+      {
+        "page": 44,
+        "tolerant_content_match_percent": 14.87881
+      },
+      {
+        "page": 45,
+        "tolerant_content_match_percent": 38.19829
+      },
+      {
+        "page": 50,
+        "tolerant_content_match_percent": 28.18537
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 24,
+      "tolerant_content_match_percent": 92.59251
+    },
+    {
+      "page": 42,
+      "tolerant_content_match_percent": 53.92934
+    },
+    {
+      "page": 43,
+      "tolerant_content_match_percent": 41.51422
+    },
+    {
+      "page": 44,
+      "tolerant_content_match_percent": 14.87881
+    },
+    {
+      "page": 45,
+      "tolerant_content_match_percent": 38.19829
+    },
+    {
+      "page": 50,
+      "tolerant_content_match_percent": 28.18537
+    }
+  ],
+  "direct_inspection": "43쪽 이전 표/각주18~39 중첩, 독립 PDF는 독일 부담금 본문/각주32~40. 44쪽은 정상43쪽 본문으로 밀리고 각주 소유 차이. 두 review 직접 확인. 글꼴 예외 없음.",
+  "page_mismatch": "현재51/기준50쪽",
+  "whole_native": "미실행, 선택6쪽 완료",
+  "fresh_wasm": "미실행",
+  "mutation": {
+    "removed_functions": [
+      "rowbreak_footnote_table_does_not_over_paginate",
+      "footnote_page_number_keeps_the_same_bottom_margin_anchor"
+    ],
+    "deleted_files": [
+      "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs"
+    ],
+    "baseline_rows": {
+      "tests/fixtures/body_overflow_baseline.tsv": [
+        "issue1937_rowbreak_footnote_overpagination.hwp\t7"
+      ],
+      "tests/fixtures/text_overlap_baseline.tsv": [
+        "issue1937_rowbreak_footnote_overpagination.hwp\t132"
+      ]
+    },
+    "retained_contracts": "#1133 타문서6함수와 IR자료. CLI 원문의90% 위치를 손상한 패닉 방지4입력 유지; 같은 source바이트, 백분율, cmd, 기대값.",
+    "preserved_input": {
+      "path": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "size": 147456
+    }
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "e1883f5cb4ddd161256b3d6251fc88586dcee3dc",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "cli_exit_codes",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0) or test(issue_1133_page_number_bottom_margin::) or test(corrupt_input_does_not_panic_in_renderer)"
+        ],
+        "exit_code": 0,
+        "seconds": 11.165230125188828
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.077038874849677
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3089879173785448
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23870862508192658
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36128108389675617
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.609718250110745
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.404047958087176
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 9.079339124727994
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   1.213s] 8 tests run: 8 passed, 455 skipped"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870699037",
+  "limits": "이관을 원문 피델리티 개선/90% 승인/최종 전체 회귀 통과로 세지 않음.",
+  "test_source_sha256": {
+    "tests/cases/issue_1133_page_number_bottom_margin.rs": "53a27c8f1989a4556d07d1d76f121bf59bcdd03cd7fe9b1dcf526db42c8166b7",
+    "tests/cli_exit_codes.rs": "56b425af846b0c543f46ed8dc46a8da4d5c8ba026a49f196aab72c7bab52aa6c"
+  }
+}

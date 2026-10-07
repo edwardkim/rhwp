@@ -1,59 +1,82 @@
-//! [Issue #6078] HWP3 TAC 표 뒤의 용지 규격 줄
-//! `210㎜×297㎜(신문용지 54g/㎡(재활용품))` 이 용지 밖(y=1863.6, 용지 1122.5)에
-//! 그려져 소실된다.
-//!
-//! 근인: 인라인 표 문단 레이아웃이 `line_segs[0] = 표 줄`, `[1] = 텍스트 줄` 을
-//! **가정**한다. HWP3 국세청 납세담보 확인서는 반대로 저장한다 —
-//! `ls[0] lh=1300`(제목 텍스트 줄), `ls[1] lh=67616`(표 줄). 그래서 `￼` 자리표시
-//! 조각이 **표 줄의 baseline**(57473HU=766.3px)을 텍스트 줄 높이로 받아 문단 바닥을
-//! 표 높이만큼 한 번 더 밀었다.
-//!
-//! 수정: 표가 실제로 속한 seg 를 `control_line_seg_index` 로 **조회**하고, 텍스트 줄
-//! 메트릭은 그 seg 가 아닌 seg 에서 가져온다.
-//!
-//! 저장 사다리가 정답을 말한다 — 뒤 문단 `vpos=68916HU(918.9px)`, 본문 상단 75.6
-//! → **994.5px**. (한글 서식은 이 줄을 표 아래 본문 하단 밴드에 그린다.)
+//! [Issue #6078] HWP3 표의 캡션·본문·후행 용지 규격 문단은 한 쪽에서
+//! 원본 순서대로 보여야 한다. 표가 속한 저장 글줄과 캡션의 원본 점유 높이를
+//! 함께 소비해야 후행 문단이 용지 밖으로 밀리거나 캡션과 표가 겹치지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/hwp3-table-caption.hwp";
-/// 용지 세로 크기(px) — 이 아래로 나가면 소실이다.
-const PAGE_BOTTOM_PX: f64 = 1122.5;
-/// 저장 사다리가 지시하는 자리: 본문 상단 75.6 + vpos 68916HU(918.9px).
-const EXPECTED_TOP_PX: f64 = 994.5;
-/// 용지 규격 줄에만 있는 글자.
-const PAPER_SPEC: &str = "신문용지";
 
 #[test]
-fn issue_6078_paper_spec_line_stays_inside_the_page() {
+fn issue_6078_caption_table_and_paper_spec_keep_reading_order() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
+    assert_eq!(core.page_count(), 1, "원본 한컴 PDF와 같은 한 쪽");
 
-    let page = core.build_page_render_tree(0).expect("page 1 render tree");
-    let top = run_top(&page.root, PAPER_SPEC).expect("용지 규격 줄");
+    let Control::Table(source_table) = &core.document().sections[0].paragraphs[0].controls[2]
+    else {
+        panic!("HWP3 원본의 캡션 표");
+    };
+    let caption = source_table.caption.as_ref().expect("표 위 캡션");
+    assert!(caption.spacing > 0, "원본 캡션의 물리 점유가 보존돼야 함");
+    let recommendation_checks: usize = source_table
+        .cells
+        .iter()
+        .flat_map(|cell| &cell.paragraphs)
+        .filter(|para| para.text.contains("추천기관") || para.text.contains("한국자금"))
+        .map(|para| para.text.chars().filter(|ch| *ch == '□').count())
+        .sum();
+    assert_eq!(recommendation_checks, 3, "세 추천기관의 빈 체크박스");
+
+    let page = core.build_page_render_tree(0).expect("첫 쪽 렌더 트리");
+    let body = find_node(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::Body { .. })
+    })
+    .expect("본문 영역");
+    let table = find_node(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::Table(t)
+            if t.para_index == Some(0) && t.control_index == Some(2))
+    })
+    .expect("캡션을 가진 표");
+    let caption_run = find_node(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains("별지"))
+    })
+    .expect("표 위 캡션 글줄");
+    let paper_spec = find_node(&page.root, &|node| {
+        matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.contains("신문용지"))
+    })
+    .expect("표 뒤 용지 규격 문단");
 
     assert!(
-        top < PAGE_BOTTOM_PX,
-        "용지 규격 줄이 용지 밖으로 나갔다 — 위끝 {top:.1} (용지 {PAGE_BOTTOM_PX})"
+        table.bbox.y > caption_run.bbox.y + caption_run.bbox.height,
+        "캡션 글줄과 표 테두리가 겹치지 않아야 함"
     );
     assert!(
-        (top - EXPECTED_TOP_PX).abs() <= 1.0,
-        "용지 규격 줄은 저장 사다리 자리({EXPECTED_TOP_PX:.1})에 와야 한다 — 실측 {top:.1}"
+        table.bbox.x + table.bbox.width / 2.0 > body.bbox.x + body.bbox.width / 2.0,
+        "두 번째 저장 글줄의 내어쓰기를 반영해 표를 가운데 정렬해야 함"
+    );
+    assert!(
+        paper_spec.bbox.y >= table.bbox.y + table.bbox.height,
+        "용지 규격 문단은 표 뒤에 있어야 함"
+    );
+    assert!(
+        paper_spec.bbox.y + paper_spec.bbox.height <= page.root.bbox.y + page.root.bbox.height,
+        "용지 규격 문단은 같은 쪽 안에 보여야 함"
     );
 }
 
-/// `needle` 을 포함한 첫 텍스트 런의 위끝.
-fn run_top(node: &RenderNode, needle: &str) -> Option<f64> {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return Some(node.bbox.y);
-        }
+fn find_node<'a>(
+    node: &'a RenderNode,
+    predicate: &impl Fn(&RenderNode) -> bool,
+) -> Option<&'a RenderNode> {
+    if predicate(node) {
+        return Some(node);
     }
     node.children
         .iter()
-        .find_map(|child| run_top(child, needle))
+        .find_map(|child| find_node(child, predicate))
 }

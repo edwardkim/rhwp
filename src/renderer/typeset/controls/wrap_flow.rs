@@ -97,6 +97,19 @@ pub(in crate::renderer::typeset) fn place(
                         return true;
                     }
                 }
+                // 흡수되지 않은 혼합 폭 문단도 매칭한 저장 어울림 원점을
+                // 유지한다. 일반 fit과 출력이 같은 cs/sw를 소비해야 한다.
+                if !para.stored_text_partition_is_dirty()
+                    && para.line_segs.iter().all(|line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                    })
+                {
+                    st.register_following_wrap_anchor(
+                        para_idx,
+                        wrap_match::picture_anchor(paragraphs, band),
+                    );
+                }
                 // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                 // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
                 // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.

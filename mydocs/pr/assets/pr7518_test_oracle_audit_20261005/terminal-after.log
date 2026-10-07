@@ -1,0 +1,9 @@
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.32s
+     Running tests/generated/regression_suite_024.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_024-d97177cead53422c)
+
+running 1 test
+test issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 214 filtered out; finished in 0.21s
+

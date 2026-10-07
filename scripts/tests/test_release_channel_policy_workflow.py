@@ -140,7 +140,7 @@ class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
             "Firefox package": package_version("rhwp-firefox/package.json"),
             "Safari extension": package_version("rhwp-safari/src/manifest.json"),
         }
-        self.assertEqual(release_version, "0.8.6")
+        self.assertRegex(release_version, r"^\d+\.\d+\.\d+$")
         self.assertEqual(
             set(visible_versions.values()),
             {release_version},
@@ -174,10 +174,10 @@ class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
         self.assertEqual(rhwp_packages[0]["version"], release_version)
 
         release_document_markers = {
-            "README.md": "**v0.8.6 — v1.0 조판 엔진 체계화**",
-            "README_EN.md": "**v0.8.6 — systematizing the v1.0 typesetting engine**",
-            "THIRD_PARTY_LICENSES.md": "`rhwp` v0.8.6",
-            "rhwp-vscode/CHANGELOG.md": "## 0.8.6 — 2026-09-02",
+            "README.md": f"**v{release_version} — v1.0 조판 엔진 체계화**",
+            "README_EN.md": f"**v{release_version} — systematizing the v1.0 typesetting engine**",
+            "THIRD_PARTY_LICENSES.md": f"`rhwp` v{release_version}",
+            "rhwp-vscode/CHANGELOG.md": f"## {release_version} — ",
         }
         stale_release_documents = [
             path

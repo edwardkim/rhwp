@@ -1,0 +1,857 @@
+{
+  "source_head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+  "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+  "state": "merge held",
+  "hold_reasons": [
+    "supplementary Native p33/p34 visual gate below 90%; no exception",
+    "synthetic new rendering regression candidates lack independent PDFs and mandatory Native/fresh WASM visual evidence"
+  ],
+  "inputs": [
+    {
+      "path": "samples/issue7500/tac_table_host_spaces.hwp",
+      "sha256": "401167ad369e1f15f9ee05ae6a22f36dd36878d0b6da9fa8acf7af24f665b93e",
+      "bytes": 18432,
+      "commit": "b2bb249bcc00b0a8301075b62a8810d500f11de2",
+      "source": "contributor original"
+    },
+    {
+      "path": "samples/issue7500/picture_band_cell_spaces.hwp",
+      "sha256": "70c76b83f86a9d5ee4bd619c32f60c22d16ae406fb7bed452b766e8838d207bb",
+      "bytes": 13312,
+      "commit": "b2bb249bcc00b0a8301075b62a8810d500f11de2",
+      "source": "contributor original"
+    },
+    {
+      "path": "pdf/tac_table_host_spaces-2020.pdf",
+      "sha256": "a5fafb93187518791a346b832037fb38563c3a0d46a89f21cf3367de84d898f0",
+      "bytes": 67881,
+      "commit": "5eb671068d74e2757daf12925017f5f6cdbdd38a",
+      "source": "Hancom 2020 independent PDF"
+    },
+    {
+      "path": "pdf/picture_band_cell_spaces-2020.pdf",
+      "sha256": "06e7eb041bdd3be9fe61f3175dfd9d4ff0c7cf7dfce917ec28d0954199878754",
+      "bytes": 122082,
+      "commit": "5eb671068d74e2757daf12925017f5f6cdbdd38a",
+      "source": "Hancom 2020 independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-1000.hwp",
+      "sha256": "75fa14dd98ae650ca14d945135537e4f4da8e9d2190b12bf0864af2d99337d7a",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-1100.hwp",
+      "sha256": "a77e17f3ba12c5d4d7581321901373b16ea63ce1901399e868ef8d19b4bffde2",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-500.hwp",
+      "sha256": "31c9647f9f8a8fb4a0c24fe1c57a6c5db5716f387aa00db7df7e8bc066adc6a7",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-600.hwp",
+      "sha256": "e0aedb6091a2396ecbcd3e51e7b5fb586cfcd3bcb2e6f726ac5c4f7b8ddd3a7d",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-700.hwp",
+      "sha256": "8a1b43965b5fcb35460c909d338fed8129806e72ed57172c9635749adb693b27",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-800.hwp",
+      "sha256": "95e2d19a92e249d3f1398bf69f6d416da7dc1b6830cbf9ce0448e5fe49f50ac0",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/budget-900.hwp",
+      "sha256": "6daea7ecac1f3b7e6a4cb5c9ff26f926e336c3e87b0a80685543dbd5da0f36da",
+      "bytes": 13312,
+      "commit": "d8b98bd325a8233b40430e36a5c3db10283e9889",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/nested-auto-row.hwp",
+      "sha256": "02866ff714990a310c206652fae2a70a04eddac7725713d7d655ae0d6fad8fc6",
+      "bytes": 13312,
+      "commit": "9078c98bc4281edeb8103173ab697f59b209b450",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/nested-mixed-cell.hwp",
+      "sha256": "401fd3d9c84375fd8dd75a106fdfcd8572b620c94c64b5c0d162283f74eb6e50",
+      "bytes": 13312,
+      "commit": "9078c98bc4281edeb8103173ab697f59b209b450",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/nested-split.hwp",
+      "sha256": "a73288f4a14745179f00ef72464c9b678be4dfc0fc5cae9c916d048c8ea914f7",
+      "bytes": 13312,
+      "commit": "b75336bca9c30c8ae760746a50a71563aafa3ade",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/terminal-follower.hwp",
+      "sha256": "7d46adb0c9dfed885b818d9d5b324bef3525cd6a071230a591b6e25a0ce85830",
+      "bytes": 13312,
+      "commit": "1f43720229e3a8fc8916d2ea86099d9a86e9a513",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/terminal-tail.hwp",
+      "sha256": "86c9f8854356ee6ff792c136d9cb8781eb0bca637d3e2103d5c3004a21015ce9",
+      "bytes": 13312,
+      "commit": "1f43720229e3a8fc8916d2ea86099d9a86e9a513",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/unsplit.hwp",
+      "sha256": "3122a0a9bf2a2050aa98ba9b51c484e5915d2c6c43011a7e9400cfe3e4284837",
+      "bytes": 13312,
+      "commit": "b75336bca9c30c8ae760746a50a71563aafa3ade",
+      "source": "synthetic contract diagnostic; no independent PDF"
+    },
+    {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+      "bytes": 201216,
+      "commit": "1a9131b47ea1b5c23c674a1bf8f0a7ba367e99a0",
+      "source": "existing public geometry control / Hancom 2024 PDF"
+    },
+    {
+      "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+      "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d",
+      "bytes": 776033,
+      "commit": "1a9131b47ea1b5c23c674a1bf8f0a7ba367e99a0",
+      "source": "existing public geometry control / Hancom 2024 PDF"
+    }
+  ],
+  "native": [
+    {
+      "input": "tac-host",
+      "requested_pages": [
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.65641,
+          "ink_match_percent": 72.63563
+        }
+      ],
+      "run_manifest_sha256": "3910910a2e21bf5099ae58cf8f2835e1cbeba68696480a1499532eb844abe99b"
+    },
+    {
+      "input": "picture-band",
+      "requested_pages": [
+        1,
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.12095,
+          "ink_match_percent": 64.03852
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 92.96635,
+          "ink_match_percent": 49.25162
+        }
+      ],
+      "run_manifest_sha256": "b0028c2df5c46cab5b5f6f083ac5beabb57b5510895ae0b4e6d486419ad7a86f"
+    }
+  ],
+  "wasm": [
+    {
+      "input": "tac-host",
+      "requested_pages": [
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.65641,
+          "ink_match_percent": 72.63563
+        }
+      ],
+      "run_manifest_sha256": "827754e4f04204ffe03aa57dda38e0acf629d221eeec02c26a58d887a50f1aa0"
+    },
+    {
+      "input": "picture-band",
+      "requested_pages": [
+        1,
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.12095,
+          "ink_match_percent": 64.03852
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 92.96635,
+          "ink_match_percent": 49.25162
+        }
+      ],
+      "run_manifest_sha256": "4535a240897532bfe83c7b309c44e1b09e7d83bc4e17443fbd371233558dad12"
+    }
+  ],
+  "supplementary_native": [
+    {
+      "input": "saved-control",
+      "requested_pages": [
+        33,
+        34
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 33,
+            "tolerant_content_match_percent": 80.90046
+          },
+          {
+            "page": 34,
+            "tolerant_content_match_percent": 52.62315
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 80.90046,
+          "ink_match_percent": 10.24493
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 52.62315,
+          "ink_match_percent": 12.50318
+        }
+      ],
+      "run_manifest_sha256": "4e920334150d32b287d217405c9d26be960f33f58f4e463924d1887342005bce"
+    }
+  ],
+  "supplementary_wasm": {
+    "state": "incomplete",
+    "reason": "full-document embedded CSS export exceeded disk space; logs preserved; only owned failed embedded SVGs removed"
+  },
+  "cdp": {
+    "sourceHead": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+    "browser": "Chrome/153.0.8010.48",
+    "wasmSha256": "84774a953a4d94614f326869fbd7c71f997eb7e4b665a891f255dad36ea509fc",
+    "servedWasm": [
+      "84774a953a4d94614f326869fbd7c71f997eb7e4b665a891f255dad36ea509fc"
+    ],
+    "checks": [
+      {
+        "name": "browser loaded exact fresh WASM bytes",
+        "passed": true,
+        "details": {
+          "pkgHash": "84774a953a4d94614f326869fbd7c71f997eb7e4b665a891f255dad36ea509fc",
+          "servedWasm": [
+            "84774a953a4d94614f326869fbd7c71f997eb7e4b665a891f255dad36ea509fc"
+          ]
+        }
+      },
+      {
+        "name": "TAC document stays on one page",
+        "passed": true,
+        "details": 1
+      },
+      {
+        "name": "large table follows host on first page",
+        "passed": true,
+        "details": {
+          "host": {
+            "x": 925.5,
+            "y": 90.8,
+            "w": 132.3,
+            "h": 63.9
+          },
+          "big": {
+            "x": 31.7,
+            "y": 193.1,
+            "w": 1055.7,
+            "h": 482.2
+          }
+        }
+      },
+      {
+        "name": "host table sits after spaces at right line end",
+        "passed": true,
+        "details": {
+          "host": {
+            "x": 925.5,
+            "y": 90.8,
+            "w": 132.3,
+            "h": 63.9
+          },
+          "column": {
+            "x": 26.7,
+            "y": 56.7,
+            "w": 1066.7,
+            "h": 680.3
+          }
+        }
+      },
+      {
+        "name": "three pictures belong to first-page table fragment",
+        "passed": true,
+        "details": {
+          "images": [
+            {
+              "x": 541.9,
+              "y": 703.7,
+              "w": 146.4,
+              "h": 240.3
+            },
+            {
+              "x": 372.8,
+              "y": 702.5,
+              "w": 135.1,
+              "h": 243.2
+            },
+            {
+              "x": 210.4,
+              "y": 716.9,
+              "w": 132.9,
+              "h": 241.6
+            }
+          ],
+          "fragment": {
+            "x": 84.2,
+            "y": 231.3,
+            "w": 624.3,
+            "h": 825
+          }
+        }
+      },
+      {
+        "name": "pictures share a vertical band",
+        "passed": true,
+        "details": [
+          {
+            "x": 541.9,
+            "y": 703.7,
+            "w": 146.4,
+            "h": 240.3
+          },
+          {
+            "x": 372.8,
+            "y": 702.5,
+            "w": 135.1,
+            "h": 243.2
+          },
+          {
+            "x": 210.4,
+            "y": 716.9,
+            "w": 132.9,
+            "h": 241.6
+          }
+        ]
+      },
+      {
+        "name": "continued row preserves declared 22194 HU height",
+        "passed": true,
+        "details": {
+          "first": {
+            "x": 205.1,
+            "y": 950,
+            "w": 503.3,
+            "h": 106.2
+          },
+          "tail": {
+            "x": 205.1,
+            "y": 56.7,
+            "w": 503.3,
+            "h": 189.8
+          }
+        }
+      },
+      {
+        "name": "nested Column/LEFT anchor survives continuation",
+        "passed": true,
+        "details": {
+          "x": 215.3,
+          "y": 128.9,
+          "w": 455.6,
+          "h": 87
+        }
+      },
+      {
+        "name": "nested paragraph lead matches independent p2 PDF",
+        "passed": true,
+        "details": {
+          "line": {
+            "x": 207,
+            "y": 83.5,
+            "w": 499.6,
+            "h": 10.7
+          },
+          "nested": {
+            "x": 215.3,
+            "y": 128.9,
+            "w": 455.6,
+            "h": 87
+          }
+        }
+      },
+      {
+        "name": "remaining text and table share centered occupancy",
+        "passed": true,
+        "details": {
+          "above": 24.919999999999998,
+          "below": 24.946666666666665
+        }
+      },
+      {
+        "name": "no browser page errors",
+        "passed": true,
+        "details": []
+      }
+    ],
+    "documents": [
+      {
+        "file": "issue7500/tac_table_host_spaces.hwp",
+        "pages": 1,
+        "loadMs": 711.3000001907349
+      },
+      {
+        "file": "issue7500/picture_band_cell_spaces.hwp",
+        "pages": 2,
+        "loadMs": 362.19999980926514
+      }
+    ],
+    "pageErrors": []
+  },
+  "wasm_sync": {
+    "source_head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+    "files": [
+      {
+        "file": "rhwp.js",
+        "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "bytes": 453222
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "sha256": "84774a953a4d94614f326869fbd7c71f997eb7e4b665a891f255dad36ea509fc",
+        "bytes": 11586151
+      }
+    ]
+  },
+  "native_binary": {
+    "source_head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+    "sha256": "4e774fedad123c9ec6f8f8311f02b4a53262e105d036b8de8f3ca3ad3c93ddbe",
+    "matches_full_regression_binary": true
+  },
+  "negative_controls": [
+    {
+      "source_head": "55a2800aadc32fc85ed4aa3e8e17f6b169f3b0b0",
+      "exit": 101,
+      "test_binary_sha256": "dc64ac3a22cc045de3d315cda7d180ed2e648360046742d9dceba4b7c436cf75",
+      "cli_sha256": "c4ad27b2c428e46bb726ba8b2c55bf97237fabd355952a2bb7bc0f881dd36bc0",
+      "log": "output/pr-review/pr7518-20261004/logs/exact-final9-55a2800aa.log"
+    },
+    {
+      "source_head": "1f43720229e3a8fc8916d2ea86099d9a86e9a513",
+      "exit": 101,
+      "test_binary_sha256": "dc64ac3a22cc045de3d315cda7d180ed2e648360046742d9dceba4b7c436cf75",
+      "cli_sha256": "73af3238108c09dbb7e25b1cbceac098f7c9e7db8ed2d7f0eee917a2b8904e3c",
+      "log": "output/pr-review/pr7518-20261004/logs/exact-final9-1f4372022.log"
+    },
+    {
+      "source_head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "exit": 0,
+      "test_binary_sha256": "dc64ac3a22cc045de3d315cda7d180ed2e648360046742d9dceba4b7c436cf75",
+      "cli_sha256": "4e774fedad123c9ec6f8f8311f02b4a53262e105d036b8de8f3ca3ad3c93ddbe",
+      "log": "output/pr-review/pr7518-20261004/logs/exact-final9-720ebcd60.log"
+    }
+  ],
+  "environment_interruptions": {
+    "source_head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+    "cdp_cache_rerun": "render checks passed; cache response did not provide bytes; cache-disabled rerun 11/11 passed",
+    "supplementary_wasm": "failed during full-document embedded CSS export: ENOSPC; not a rendering gate result",
+    "native_skia_lib": "build interrupted by same ENOSPC; no regression claim; rerun required",
+    "cleanup": "only generated embedded-font SVGs from own failed supplementary WASM run removed; inputs/logs/manifests/shared Cargo cache preserved"
+  },
+  "stages": [
+    {
+      "stage": "prepare-policy",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.94,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "7362721bcae0380574cada4a01a4332e6eb60711fe4696f2cbd3ccd431721897"
+    },
+    {
+      "stage": "fmt-check",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 11.28,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "clippy-native",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 34.8,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "1e5b604048741459829c964469484174db43706073b36153cb81d2524a6da47b"
+    },
+    {
+      "stage": "clippy-wasm",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 61.03,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "044f2117056b3b6d07fcbe5c8bd5cebceca9f5cf7b4a8e93a343d68a7de4945b"
+    },
+    {
+      "stage": "fresh-wasm",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg"
+      ],
+      "exit": 0,
+      "seconds": 446.61,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "5e65ddeecc5f7101755144935262bd25b503789edd592c6f3447b75735a61191"
+    },
+    {
+      "stage": "full-regression-final",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 745.23,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "469d74c75b0056d4d1656d223212c5721331c3f7fca83599a78cdee08f737068"
+    },
+    {
+      "stage": "native-skia-lib",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 352.15,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "e854ba3be92f236d71faf0730d16c26ae3d082daef2604a2c9c6f6eab7f430ca",
+      "test_results": [
+        "test result: ok. 3927 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 145.91s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "stage": "native-skia-picture",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 200.18,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "90d418c7314a5be2706ed9d07624fdca0a4905eaed680721a8f6f15c87444476",
+      "test_results": [
+        "Summary [ 0.155s] 2 tests run: 2 passed, 221 skipped"
+      ]
+    },
+    {
+      "stage": "native-skia-pdf",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 11.53,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "dbce4f2bdefa658f4cb53c95db086fd0af8bf7e610b0b0074ab494badab5ce9c",
+      "test_results": [
+        "Summary [ 0.475s] 4 tests run: 4 passed, 220 skipped"
+      ]
+    },
+    {
+      "stage": "build-workspace",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 93.25,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "2a34a2fb3daec82aab467013bdf4d7287cbf475048f8318c9ab40ba8f5ae4357"
+    },
+    {
+      "stage": "clippy-all-targets",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 86.71,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "cb0bd54cdc6d17c83492a3f465d5e36a23493c033ccf4051e55534f1e7b63605"
+    },
+    {
+      "stage": "manifest-check",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "8497729b4fb0e071c484fc5740f9bb2400bed437"
+      ],
+      "exit": 0,
+      "seconds": 0.52,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "25786447a31d4b63bf52e3f2fe5225305091ac355ea04ed881c0b373c239f5b7"
+    },
+    {
+      "stage": "unit-policy-check",
+      "head": "720ebcd6005f330fa5d7aa22ab7fa9c816965e81",
+      "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "8497729b4fb0e071c484fc5740f9bb2400bed437"
+      ],
+      "exit": 0,
+      "seconds": 8.21,
+      "command_note": "shared Cargo target path normalized for public report",
+      "log_sha256": "bf0c12c04868a08265dbf07367405afbeea4f52e8217655ea20e4fe66122654e"
+    }
+  ],
+  "focus_tests": {
+    "passed": 21,
+    "log_sha256": "ef522d3a5d42bc0ff31247fe02e50b72121e89976dece98438eeee567f41ff1b"
+  },
+  "full_regression": {
+    "passed": 10278,
+    "failed": 0,
+    "skipped": 50
+  },
+  "direct_review": "All original Native and fresh WASM review pages and standalone p2 overlays inspected; same Native/WASM render-tree bytes on all 3 pages. Supplementary Native p33/p34 reviewed; full-page line and following-table height differences remain. CDP p2 screenshot inspected after cache-disabled rerun.",
+  "fonts": {
+    "files": 19,
+    "total_bytes": 233992720,
+    "manifest_sha256": "4d62777957f7bb46d238cd70dc26c87b107896ebd117190f949c344d2d5fa210",
+    "policy": "same validated font bytes; no font files or embedded SVGs included"
+  },
+  "representative_pngs": [
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/cdp_picture_p2.png",
+      "sha256": "d61bab815bbab199d12182c7095b8f6c334570388221f9afcff14f71908eb196"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_control_p33_overlay.png",
+      "sha256": "a1dde64884179ac32dce36570d2256c9fbf93b754fee6650717d73f91a5b7194"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_control_p33_review.png",
+      "sha256": "e5e4c50d1553b084b4ed10401a8daa5e6e6a8a2b02ea25e519dc20d7e50a86c7"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_control_p34_overlay.png",
+      "sha256": "293ac0e5b52852000b64d7be29d6206871ba9d5cd8276524185fb26bb7d81833"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_control_p34_review.png",
+      "sha256": "4f3920fd0d929b97bf7cda69c48ca27a1a85a4cbcbfd397db84cf0af520046b0"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_picture_p1_review.png",
+      "sha256": "7e3fdcbf80daf525964be2342b5ad3e6c12d000564925679526812408f8b3757"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_picture_p2_overlay.png",
+      "sha256": "437e19c5f8c80fb7f4f8fa8cbb517b0cbf96ceb0201d3b24701d290ae63ef5a5"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_picture_p2_review.png",
+      "sha256": "5f23ca582c0135dde58c0fad107dedaff400e7e05f128d9f50284fad59410589"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/native_tac_p1_review.png",
+      "sha256": "1102dae2d12ff3aa3d46e6727479215c003040ee1cc0e976d3bb1ddf9694334e"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/wasm_picture_p1_review.png",
+      "sha256": "d99bf3677e270e9b343bee09b5c70e9625053a96fb9299dfd6a5fd152a4631e6"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/wasm_picture_p2_overlay.png",
+      "sha256": "7d888a2939a880f13c0f90e34f7b56a267a7e1274a4b5e5ccd4167395ab49ca4"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/wasm_picture_p2_review.png",
+      "sha256": "8bf8f1a75d8d78f9a05b9c74334ddfd45b074cfbf0e2c78407ddfe50f2897a14"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7518_maintainer_20261004/wasm_tac_p1_review.png",
+      "sha256": "f5fd232cb14facb3c5224b88029dacd146809a08253932658174b20d830d9c7c"
+    }
+  ]
+}

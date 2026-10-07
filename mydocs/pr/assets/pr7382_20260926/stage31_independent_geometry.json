@@ -1,0 +1,156 @@
+{
+  "input_provenance": {
+    "source": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "source_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "variants": [
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage31-hancom-controls/liver7379-cell-picture-offset-zero.hwpx",
+        "sha256": "3d09c2b9951b60b282cee132cf874c3e3a11c75c4da2082a89f3a1129319ea2b",
+        "changes": [
+          {
+            "picture_id": "1937553659",
+            "old_offset": "4294965117",
+            "new_offset": 0
+          },
+          {
+            "picture_id": "1937553732",
+            "old_offset": "4294965600",
+            "new_offset": 0
+          }
+        ]
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage31-hancom-controls/liver7379-cell-picture-offset-positive.hwpx",
+        "sha256": "44642afd543f8f60c8c68c321b517f9bef70897984910cb440fbd5e2aea995ac",
+        "changes": [
+          {
+            "picture_id": "1937553659",
+            "old_offset": "4294965117",
+            "new_offset": 1000
+          },
+          {
+            "picture_id": "1937553732",
+            "old_offset": "4294965600",
+            "new_offset": 1000
+          }
+        ]
+      }
+    ],
+    "unchanged": "section0.xml의 두 그림 pos.vertOffset 외 모든 ZIP 내용과 section XML 문자열 동일"
+  },
+  "zero": {
+    "original_pages": 215,
+    "control_pages": 215,
+    "text_geometry_changed_pages": [],
+    "image_geometry_changed_pages": []
+  },
+  "positive": {
+    "original_pages": 215,
+    "control_pages": 215,
+    "text_geometry_changed_pages": [
+      23
+    ],
+    "image_geometry_changed_pages": [
+      23
+    ],
+    "affected": {
+      "11": {
+        "original": [
+          [
+            105.06399536132812,
+            88.70399983723958,
+            371.0,
+            263.7119954427083
+          ],
+          [
+            384.5933430989583,
+            95.09602864583333,
+            650.5306803385416,
+            257.4786783854167
+          ],
+          [
+            105.06399536132812,
+            376.2293294270833,
+            650.5306803385416,
+            653.685302734375
+          ]
+        ],
+        "positive1000": [
+          [
+            105.06399536132812,
+            88.70399983723958,
+            371.0,
+            263.7119954427083
+          ],
+          [
+            384.5933430989583,
+            95.09602864583333,
+            650.5306803385416,
+            257.4786783854167
+          ],
+          [
+            105.06399536132812,
+            376.2293294270833,
+            650.5306803385416,
+            653.685302734375
+          ]
+        ]
+      },
+      "23": {
+        "original": [
+          [
+            105.70266723632812,
+            151.99466959635416,
+            371.3199869791667,
+            486.6680094401042
+          ],
+          [
+            384.5933430989583,
+            166.378662109375,
+            648.45068359375,
+            469.566650390625
+          ]
+        ],
+        "positive1000": [
+          [
+            105.70266723632812,
+            151.99466959635416,
+            371.3199869791667,
+            486.6680094401042
+          ],
+          [
+            384.5933430989583,
+            173.0906778971354,
+            648.45068359375,
+            476.2786865234375
+          ]
+        ]
+      }
+    }
+  },
+  "source_sha": "f72725ac240aa6a7d1845313a62df3a9ddc80101",
+  "mcp": {
+    "engine": "2024",
+    "zero_job": "ae71b35a-bd90-4f39-b812-809f44148599",
+    "positive_job": "d9e03025-cba7-425f-8078-4b425785bfa4",
+    "zero_elapsed_seconds": 106,
+    "positive_elapsed_seconds": 119
+  },
+  "pdf_sha256": {
+    "liver7379-cell-picture-offset-positive-2024.pdf": "e079b43ca1d6ff94b736e66870881d4b8eb4253decfaf746bc2b71bc44b60e7e",
+    "liver7379-cell-picture-offset-zero-2024.pdf": "196a0267db826f26709e9a02c7d92de014c9c008811ff18af41bdc50ac166ad1"
+  },
+  "scope": "수동 pos 속성 변화 뒤 한컴에서 PDF 출력한 대조군; HWPX 재저장·LineSeg 재생성 증거는 아님",
+  "original_expected_tops": {
+    "p11": [
+      88.704,
+      95.096029
+    ],
+    "p23": [
+      151.99467,
+      166.378662
+    ]
+  },
+  "positive_control_expected_top_p23": 173.090678,
+  "positive_control_p11": "PDF 전체 위치가 변하지 않음; 이 수동 속성의 저장 위치 재생성/수용 계약은 미검증이며23쪽 양수 증거로 일반화하지 않음"
+}

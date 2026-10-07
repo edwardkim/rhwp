@@ -30,9 +30,23 @@ pub(super) fn plan(
                     end_line: total_lines,
                 },
                 height: fmt.line_advances_sum(0..total_lines),
+                content_height: None,
             });
         }
     } else if decoration_host_text_pending && !flow_table_owns_host_text {
+        // Reflow has no stored ladder to consult. The host still owns its
+        // ordinary empty line; its overlay table has a separate paint owner.
+        if crate::renderer::para_has_no_stored_line_segs(para)
+            && crate::renderer::empty_host_controls_are_flow_neutral(para)
+        {
+            return Some(ParagraphFragment {
+                item: PageItem::FullParagraph {
+                    para_index: para_idx,
+                },
+                height: fmt.total_height,
+                content_height: None,
+            });
+        }
         // [#7047] **글자 없는** 데코레이션 표 host 도 자기 줄을 흐름에 낸다.
         //
         // `#703` 단축은 표만 방출하고 흐름을 0 소비한다. 위 블록이 가시 텍스트를
@@ -55,6 +69,7 @@ pub(super) fn plan(
                     para_index: para_idx,
                 },
                 height: hwpunit_to_px(advance_hu, dpi),
+                content_height: None,
             });
         }
     }

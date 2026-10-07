@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction11; final gates pending",
+  "producer_head": "01598540342748e3dbc30d610b6036c1574b5553",
+  "producer_worktree_rust_diff_sha256": "f723f9479e49553c9375e74d257ec7bf994d27872d6b6a9959fb3c1fa8997cd6",
+  "before": {
+    "physical_caption_budget": {
+      "passed": 0,
+      "failed": 1,
+      "exit_code": 100,
+      "seconds": 1.871,
+      "reserved_px": 100.7733333333,
+      "painted_end_px": 81.48
+    },
+    "feasible_final_rowspan_and_physical_budget": {
+      "passed": 0,
+      "failed": 2,
+      "exit_code": 100,
+      "seconds": 1.99
+    },
+    "one_final_row_bottom_caption": {
+      "passed": 0,
+      "failed": 1,
+      "exit_code": 100,
+      "seconds": 0.481,
+      "table_top_px": 796.92,
+      "body_top_px": 83.16
+    }
+  },
+  "rejected_candidates": [
+    {
+      "name": "R2",
+      "passed": 38,
+      "failed": 4,
+      "exit_code": 100,
+      "seconds": 3.152,
+      "cause": "terminal margin reserved on intermediate fragments; original row ownership changed"
+    },
+    {
+      "name": "R5 with new top caption counter",
+      "passed": 22,
+      "failed": 1,
+      "exit_code": 100,
+      "seconds": 3.327,
+      "cause": "first row forced despite zero opening-caption budget"
+    }
+  ],
+  "focused_and_normal": {
+    "passed": 44,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 3.597,
+    "test_threads": 8
+  },
+  "remaining": [
+    "Body footnote30/240 and full audit page-owner differences",
+    "final whole Native/fresh WASM visual gates",
+    "full Rust/lint/policies/Skia/fresh WASM"
+  ],
+  "notes": [
+    "IR margin/gap/rowspan mutations are algorithm contracts, not Hancom output evidence",
+    "compiler errors and incorrectly authored preliminary tests do not count as defect reproduction",
+    "preexisting native/single-cell physical frame predicates and fallback for fresh-page-larger objects retained"
+  ],
+  "offset_counter_before": {
+    "passed": 2,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.69,
+    "actual_table_top_px": 86.9333333333,
+    "expected_table_top_px": 116.9333333333
+  },
+  "page_count": {
+    "actual": 215,
+    "pdf": 215,
+    "status": "matched; full visual and regression pending"
+  },
+  "native": {
+    "pages": [
+      66,
+      67
+    ],
+    "tolerant_content_match_percent": [
+      98.24785,
+      93.58939
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review66",
+      "overlay66",
+      "review67",
+      "overlay67"
+    ],
+    "font_exception": false,
+    "cli_build_seconds": 140
+  },
+  "same_input_pdf": {
+    "engine": 2024,
+    "job_id": "d146cc30-6eee-4133-a714-1be403862781",
+    "sha256": "515da0d7ce8d61fc8e3c5ee935dd846047bec30b64d889e061103fb8a11d13f9",
+    "bytes": 3790023,
+    "pages": 215,
+    "all_215_text_line_strings_and_coordinates_identical_to_original": true,
+    "original_reference_retained": true,
+    "image4_background_RGB": {
+      "source_bmp": [
+        224,
+        235,
+        255
+      ],
+      "original_and_fresh_Hancom_pdf_jpeg": [
+        234,
+        242,
+        255
+      ]
+    },
+    "conversion_color_cause": "unproven; no gamma or gate threshold change"
+  }
+}

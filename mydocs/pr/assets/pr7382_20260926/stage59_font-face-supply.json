@@ -1,0 +1,108 @@
+[
+  {
+    "source": "/Users/tsjang/Library/Fonts/KoPub Dotum Light.ttf",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Light.ttf",
+    "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+    "operation": "unchanged symlink"
+  },
+  {
+    "source": "/Users/tsjang/Library/Fonts/KoPub Dotum Medium.ttf",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Medium.ttf",
+    "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+    "operation": "unchanged symlink"
+  },
+  {
+    "source": "/Users/tsjang/Library/Fonts/KoPub Dotum Bold.ttf",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/KoPub돋움체 Bold.ttf",
+    "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+    "operation": "unchanged symlink"
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/gulim.ttc",
+    "face": "굴림",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/굴림.ttf",
+    "sha256": "9fb7f3188f37228ad299e533c3b4f5a9f7b56abbaed68f6cae1200e16545a348",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/gulim.ttc",
+    "face": "굴림체",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/굴림체.ttf",
+    "sha256": "4b4d1e7526be52f86701168cce0da85b47596b8649cd4bacb4084e3783396be9",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/gulim.ttc",
+    "face": "돋움",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/돋움.ttf",
+    "sha256": "43d9815b3e4faae9765ba6f16b9de825130cb0ec0e97e2acd2661d3b6a113119",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/gulim.ttc",
+    "face": "돋움체",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/돋움체.ttf",
+    "sha256": "f64feb01ac20ba122feaca4165fc152f2b6d8df3f4c3f0fc064b9505f0167c02",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/batang.ttc",
+    "face": "바탕",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/바탕.ttf",
+    "sha256": "34905236428ba56b7fec6a1e1f69bc33d9d16814868b47904423670be62d138d",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/batang.ttc",
+    "face": "바탕체",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/바탕체.ttf",
+    "sha256": "d774b7a0c2f2053e858021120c9f347f310f910c9aaf65f85df88a412c585650",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/batang.ttc",
+    "face": "궁서",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/궁서.ttf",
+    "sha256": "ffd9d29170dddbcc654f63ca041361097927be0ae7e16b3eb957c2559b7a76ec",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/batang.ttc",
+    "face": "궁서체",
+    "supplied": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/궁서체.ttf",
+    "sha256": "48abe4ccabdb38a8c538b17c93e10475b9c88d2ef2984fc39ebe60d530ea030d",
+    "operation": "TTC face serialized as standalone TTF",
+    "source_outline_and_metrics": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  }
+]

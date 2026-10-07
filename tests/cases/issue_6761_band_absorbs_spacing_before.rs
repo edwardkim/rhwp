@@ -1,33 +1,7 @@
-//! [#6761] 자리차지 표 밴드 뒤 문단의 앞 간격을 밴드 아래에 **한 번 더** 더한다.
-//!
-//! ## 무엇이 문제였나
-//!
-//! 글자 있는 host 문단이 비-TAC 자리차지 표(vert=문단, 양수 offset)를 달면, 다음 문단은
-//! 표 밴드 아래에서 재개한다. 한컴은 그 문단의 **앞 간격을 밴드 안에서 소비**한다 —
-//! 첫 줄 top 은 `max(흐름 + 앞 간격, 표 바깥여백 상자 하단)` 이다. rhwp 의 layout 은
-//! 밴드 하단으로 민 뒤 문단 layout 이 앞 간격을 또 더해, 줄이 앞 간격만큼 아래에 그려졌다.
-//!
-//! ```text
-//!   1480000-201900042 83쪽  <표> pi=152 (vert=문단 3045HU, 높이 14846HU, 바깥여백 141HU)
-//!     host 문단 상단  = vpos 27845 - 앞 간격 1500           = 26345
-//!     표 본체         = 26345 + 3045 + 141 .. + 14846        = 29531 .. 44377
-//!     바깥여백 상자 하단 = 44377 + 141                         = 44518 = pi=153 저장 vpos
-//!     rhwp 수정 전   pi=153 = 표 하단 + 1.9 + 앞 간격 20px     → 뒤 문단 전부 +20px,
-//!                    마지막 표가 본문 바닥을 7.9px 넘는다
-//! ```
-//!
-//! ## 기대값의 독립 근거
-//!
-//! - 저장 사다리: 위 계산(`rhwp dump -s 4 -p 152`, `-p 153`, `-p 154`)
-//! - 한컴 정본 `pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf` 83쪽:
-//!   `□ 일반인 대상 선호도 조사` y=751.1px = 저장 46410HU(+본문 상단 132.28px)
-//! - 코퍼스 HWP5 6,582건에서 같은 형상 141곳 중 다음 문단 vpos 가 상자 하단과 같은 곳 90곳
-//!   (모두 0HU 차), 하단+앞 간격인 곳 0곳
-//!
-//! ## 반례 — 흐름이 밴드 안에서 시작하고 앞 간격이 밴드 남은 높이보다 크면 흐름 + 앞 간격이 이긴다
-//!
-//! 흡수는 `max` 이지 "밴드 하단으로 당기기"가 아니다. 표를 흐름 위로 올리고 앞 간격을 230px 로 키운 변형에서는
-//! 흐름 + 앞 간격이 밴드 하단보다 아래이므로 줄은 그 자리에 있어야 한다.
+//! #6761의 큰 문단 앞 간격이 흐름을 보존하는 기존 반례 검사.
+//! 원본83쪽의 절대 픽셀 간격 검사는 Native64.92223%와 실제 표·본문 침범을
+//! 확인한 뒤 사용자 지시로 #7445에 이관했다. 원본·PDF와 이 통과 검사는 보존한다.
+//! 이 변형 입력은 화면 좌표가 아니라 설정한 앞 간격과 흐름의 상대 관계를 검증한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -44,10 +18,6 @@ const SECTION: usize = 4;
 const HOST_PARA: usize = 152;
 const EMPTY_PARA: usize = 153;
 const NEXT_PARA: usize = 154;
-/// 바깥여백 141HU.
-const OUTER_MARGIN_PX: f64 = 141.0 / 75.0;
-/// 저장 pi=154 vpos 46410 - 표 본체 하단 44377.
-const NEXT_FROM_TABLE_PX: f64 = (46410.0 - 44377.0) / 75.0;
 
 fn open() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -92,28 +62,6 @@ fn column_nodes(root: &RenderNode) -> Vec<&RenderNode> {
     out
 }
 
-fn table_bottom(nodes: &[&RenderNode], para: usize) -> f64 {
-    nodes
-        .iter()
-        .find_map(|n| match &n.node_type {
-            RenderNodeType::Table(t) if t.para_index == Some(para) => {
-                Some(n.bbox.y + n.bbox.height)
-            }
-            _ => None,
-        })
-        .unwrap_or_else(|| {
-            let seen: Vec<String> = nodes
-                .iter()
-                .map(|n| match &n.node_type {
-                    RenderNodeType::Table(t) => format!("Table{:?}", t.para_index),
-                    RenderNodeType::TextLine(l) => format!("Line{:?}", l.para_index),
-                    _ => "기타".to_string(),
-                })
-                .collect();
-            panic!("표 pi={para} 가 없다 — 본문 단 노드: {seen:?}")
-        })
-}
-
 fn line_top(nodes: &[&RenderNode], para: usize) -> f64 {
     nodes
         .iter()
@@ -122,30 +70,6 @@ fn line_top(nodes: &[&RenderNode], para: usize) -> f64 {
             _ => None,
         })
         .unwrap_or_else(|| panic!("pi={para} 첫 줄이 없다"))
-}
-
-/// 밴드 뒤 문단의 첫 줄은 표 바깥여백 상자 하단에서 시작한다(앞 간격 흡수).
-#[test]
-fn next_paragraph_starts_at_table_outer_margin_bottom() {
-    let core = open();
-    let page = host_page(&core);
-    let tree = core.build_page_render_tree(page).expect("render tree");
-    let nodes = column_nodes(&tree.root);
-    let bottom = table_bottom(&nodes, HOST_PARA);
-    let empty_gap = line_top(&nodes, EMPTY_PARA) - bottom;
-    let next_gap = line_top(&nodes, NEXT_PARA) - bottom;
-    assert!(
-        (empty_gap - OUTER_MARGIN_PX).abs() <= 0.6,
-        "{}쪽 pi={EMPTY_PARA} 이 표 하단에서 {empty_gap:.1}px 떨어졌다 — 저장 vpos 대로 바깥여백 \
-         {OUTER_MARGIN_PX:.1}px 여야 한다. 앞 간격(20px)을 밴드 아래에 또 더하면 21.9px 가 된다",
-        page + 1
-    );
-    assert!(
-        (next_gap - NEXT_FROM_TABLE_PX).abs() <= 1.0,
-        "{}쪽 `□ 일반인 대상 선호도 조사` 가 표 하단에서 {next_gap:.1}px — 저장 {NEXT_FROM_TABLE_PX:.1}px \
-         (정본 751.1px 와 같은 자리)여야 한다",
-        page + 1
-    );
 }
 
 /// 반례 — 흐름이 밴드 **안에서** 시작하고 앞 간격이 밴드 남은 높이보다 크면, 줄은

@@ -2,7 +2,8 @@
 
 use super::super::helpers::{
     clipboard_color_to_css, clipboard_escape_html, detect_clipboard_image_mime,
-    get_textbox_from_shape, utf16_pos_to_char_idx,
+    get_textbox_from_shape, logical_paragraph_length, logical_to_text_offset,
+    utf16_pos_to_char_idx,
 };
 use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
@@ -133,6 +134,11 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
     // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
     // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
     para.invalidate_layout_inputs();
+    let leading_defs = para
+        .controls
+        .iter()
+        .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count();
     let old_controls = std::mem::take(&mut para.controls);
     let old_records = std::mem::take(&mut para.ctrl_data_records);
     let mut index_map = vec![None; old_controls.len()];
@@ -159,13 +165,20 @@ pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph)
         .collect();
     para.controls = new_controls;
     para.ctrl_data_records = new_records;
+    // 구역 첫 문단을 0 부터 복사하면 secd/cold 의 선행 자리(16)가 char_offsets 에 남는다.
+    para.release_leading_extended_control_slots(leading_defs);
     para.control_mask = recompute_clipboard_control_mask(para);
     if !para.field_ranges.is_empty() {
         rebuild_char_offsets(para);
     }
 }
 
-fn text_to_split_logical_offset(para: &Paragraph, text_offset: usize) -> usize {
+/// `after_control` 이면 `text_offset` 자리에 놓인 개체 뒤를 가리킨다.
+fn text_to_split_logical_offset(
+    para: &Paragraph,
+    text_offset: usize,
+    after_control: bool,
+) -> usize {
     let control_positions = para.control_text_positions();
     if control_positions.is_empty() {
         return text_offset;
@@ -180,7 +193,7 @@ fn text_to_split_logical_offset(para: &Paragraph, text_offset: usize) -> usize {
         .enumerate()
         .filter(|(_, ctrl)| Paragraph::is_split_movable_control(ctrl))
         .filter_map(|(ci, _)| control_positions.get(ci))
-        .filter(|&&pos| pos < text_offset)
+        .filter(|&&pos| pos < text_offset || (after_control && pos == text_offset))
         .count();
     text_offset + before_count
 }
@@ -190,16 +203,33 @@ pub(super) fn clip_paragraph_text_range_for_clipboard(
     start_char_offset: usize,
     end_char_offset: usize,
 ) -> Paragraph {
+    // 글자 위치 경계는 시작 자리의 개체를 담고, 끝이 문단 끝이면 뒤에 붙은 개체도 담는다.
+    let end_after_control = end_char_offset >= source.text.chars().count();
+    clip_paragraph_caret_range_for_clipboard(
+        source,
+        (start_char_offset, false),
+        (end_char_offset, end_after_control),
+    )
+}
+
+/// [#7444] 캐럿 경계 `(글자 위치, 그 자리 개체 뒤인가)` 로 문단을 자른다.
+/// 시작이 개체 뒤면 그 개체를 빼고, 끝이 개체 뒤면 그 개체를 담는다.
+fn clip_paragraph_caret_range_for_clipboard(
+    source: &Paragraph,
+    (start_char_offset, start_after_control): (usize, bool),
+    (end_char_offset, end_after_control): (usize, bool),
+) -> Paragraph {
     let text_len = source.text.chars().count();
     let start = start_char_offset.min(text_len);
     let end = end_char_offset.min(text_len).max(start);
 
     let mut clipped = source.clone();
-    if end < text_len {
-        let end_logical = text_to_split_logical_offset(&clipped, end);
+    let end_logical = text_to_split_logical_offset(&clipped, end, end_after_control);
+    // 문단 끝 개체까지 담는 끝이면 자를 것이 없다.
+    if end_logical < text_to_split_logical_offset(&clipped, text_len, true) {
         let _ = clipped.split_at(end_logical);
     }
-    if start == 0 {
+    if start == 0 && !start_after_control {
         return clipped;
     }
 
@@ -208,7 +238,7 @@ pub(super) fn clip_paragraph_text_range_for_clipboard(
     let old_records = clipped.ctrl_data_records.clone();
     let old_ranges = clipped.field_ranges.clone();
 
-    let start_logical = text_to_split_logical_offset(&clipped, start);
+    let start_logical = text_to_split_logical_offset(&clipped, start, start_after_control);
     let mut suffix = clipped.split_at(start_logical);
     let mut keep_control = vec![false; old_controls.len()];
 
@@ -229,7 +259,8 @@ pub(super) fn clip_paragraph_text_range_for_clipboard(
             continue;
         }
         let pos = control_positions.get(idx).copied().unwrap_or(text_len);
-        if pos >= start && pos <= end {
+        let after_start = pos > start || (pos == start && !start_after_control);
+        if after_start && pos <= end {
             keep_control[idx] = true;
         }
     }
@@ -300,6 +331,61 @@ impl DocumentCore {
         end_para_idx: usize,
         end_char_offset: usize,
     ) -> Result<String, HwpError> {
+        // 글자 위치 경계는 끝이 문단 끝이면 뒤에 붙은 개체도 담는다.
+        let end_after_control = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(end_para_idx))
+            .is_some_and(|para| end_char_offset >= para.text.chars().count());
+        self.copy_selection_range(
+            section_idx,
+            start_para_idx,
+            (start_char_offset, false),
+            end_para_idx,
+            (end_char_offset, end_after_control),
+        )
+    }
+
+    /// [#7444] 선택 영역을 논리 오프셋(글자와 글자처럼 취급 개체·각주·미주를 한 칸씩
+    /// 센다)으로 받아 내부 클립보드에 복사한다. 개체 바로 뒤에서 시작한 선택은 그 개체를
+    /// 담지 않고, 개체 바로 뒤에서 끝난 선택은 담는다.
+    ///
+    /// 반환값: JSON `{"ok":true,"text":"<plain_text>"}`
+    pub fn copy_selection_logical_native(
+        &mut self,
+        section_idx: usize,
+        start_para_idx: usize,
+        start_logical: usize,
+        end_para_idx: usize,
+        end_logical: usize,
+    ) -> Result<String, HwpError> {
+        let para = |para_idx: usize| {
+            self.document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(para_idx))
+        };
+        let start = para(start_para_idx).map_or((start_logical, false), |p| {
+            logical_to_text_offset(p, start_logical)
+        });
+        let mut end = para(end_para_idx).map_or((end_logical, false), |p| {
+            logical_to_text_offset(p, end_logical)
+        });
+        // 문단 논리 끝에서 끝나면 copySelection 처럼 문단 끝에 붙은 개체(글자처럼 취급하지
+        // 않는 도형·그림·표 등)도 담는다. 이 개체들은 논리 오프셋에 칸이 없다.
+        end.1 |= para(end_para_idx).is_some_and(|p| end_logical >= logical_paragraph_length(p));
+        self.copy_selection_range(section_idx, start_para_idx, start, end_para_idx, end)
+    }
+
+    fn copy_selection_range(
+        &mut self,
+        section_idx: usize,
+        start_para_idx: usize,
+        start: (usize, bool),
+        end_para_idx: usize,
+        end: (usize, bool),
+    ) -> Result<String, HwpError> {
         // 인덱스 범위 검증
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -326,19 +412,19 @@ impl DocumentCore {
 
         if start_para_idx == end_para_idx {
             // 단일 문단 내 선택
-            clip_paragraphs.push(clip_paragraph_text_range_for_clipboard(
+            clip_paragraphs.push(clip_paragraph_caret_range_for_clipboard(
                 &section.paragraphs[start_para_idx],
-                start_char_offset,
-                end_char_offset,
+                start,
+                end,
             ));
         } else {
             // 다중 문단 선택
             // 첫 번째 문단: start_offset부터 끝까지
             let first_text_len = section.paragraphs[start_para_idx].text.chars().count();
-            clip_paragraphs.push(clip_paragraph_text_range_for_clipboard(
+            clip_paragraphs.push(clip_paragraph_caret_range_for_clipboard(
                 &section.paragraphs[start_para_idx],
-                start_char_offset,
-                first_text_len,
+                start,
+                (first_text_len, true),
             ));
 
             // 중간 문단: 전체 복사
@@ -347,10 +433,10 @@ impl DocumentCore {
             }
 
             // 마지막 문단: 처음부터 end_offset까지
-            clip_paragraphs.push(clip_paragraph_text_range_for_clipboard(
+            clip_paragraphs.push(clip_paragraph_caret_range_for_clipboard(
                 &section.paragraphs[end_para_idx],
-                0,
-                end_char_offset,
+                (0, false),
+                end,
             ));
         }
 

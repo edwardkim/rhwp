@@ -1,0 +1,274 @@
+{
+  "git_parent": "8b4493976d6332fa4a505d9df63c27af50cf74b7",
+  "runtime_head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "test_source": "tests/issue_3738_hwp_caption_cell_alignment.rs",
+  "test_sha256": "df9cda36189f4bc9d8c88aaabd39f660dd56f27a563cf97f7e2581337c5ffbfa",
+  "product_source_changed": false,
+  "old_expectation_test_result": {
+    "exit_code": 100,
+    "image_y": 152.1,
+    "cause": "기존148.3±3px 기대에 맞지 않음"
+  },
+  "new_expectation_test_result": {
+    "exit_code": 0,
+    "passed": 1,
+    "skipped": 178,
+    "derived_suite": "regression_suite_001"
+  },
+  "independent_expected": {
+    "pdf_image_top_px": 151.99467,
+    "pdf_caption_top_px": 498.32166,
+    "tolerance_px_unchanged": 3.0
+  },
+  "base_coordinates": [
+    {
+      "kind": "image",
+      "bbox": {
+        "x": 105.7,
+        "y": 148.3,
+        "w": 265.7,
+        "h": 335.0
+      }
+    },
+    {
+      "kind": "caption",
+      "text": "그림 ",
+      "bbox": {
+        "x": 105.7,
+        "y": 494.7,
+        "w": 32.8,
+        "h": 12.0
+      }
+    },
+    {
+      "kind": "caption",
+      "text": "그림 ",
+      "bbox": {
+        "x": 105.7,
+        "y": 494.7,
+        "w": 32.8,
+        "h": 12.0
+      }
+    }
+  ],
+  "base_new_test_executed": false,
+  "gates": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 2.8953479579649866
+    },
+    {
+      "name": "fmt-apply",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 26.53132583387196
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 24.408845291938633
+    },
+    {
+      "name": "focused-derived",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "-E",
+        "test(issue_3738_hwp_caption_cell_alignment)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 31.198943541850895
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.9403013340197504
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.46699720807373524
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8116024169139564
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 12.472054374869913
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 1.6182308751158416
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.060416333843022585
+    }
+  ],
+  "initial_manifest_failure": {
+    "cause": "테스트 변경 후 파생 suite 준비 누락",
+    "preserved_log_sha256": "25a4a41a56b2d66fdfdb5550f03e47484fb15e02f0783c3c4f63d3cba5322b67",
+    "corrected_by": "--prepare 뒤 모든 필수 게이트 재실행"
+  },
+  "input_provenance": {
+    "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+    "inputs": [
+      {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+        "head_blob_matches": true
+      },
+      {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+        "head_blob_matches": true
+      },
+      {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+        "head_blob_matches": true
+      },
+      {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+        "head_blob_matches": true
+      }
+    ]
+  },
+  "wasm_provenance": {
+    "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+    "package_sha256": {
+      "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp_bg.wasm": "65fba8116dc1b727d2eacc150a8b4711e8f01985b97df5f3aecc6b31c66e5bf7"
+    },
+    "root_pkg_studio_and_frozen_copy_identical": true,
+    "local_alternative_build": true,
+    "docker_optimized_build_verified": false,
+    "coverage_per_format": [
+      [
+        1,
+        54
+      ],
+      [
+        55,
+        108
+      ],
+      [
+        109,
+        162
+      ],
+      [
+        163,
+        215
+      ]
+    ]
+  },
+  "visual": {
+    "native_tolerant_content_match_percent": 99.62374,
+    "wasm_tolerant_content_match_percent": 99.62947,
+    "direct_read": [
+      "Native23 review/standalone overlay",
+      "fresh WASM23 review/standalone overlay"
+    ],
+    "whole_pr_status": "보류",
+    "full_nextest_rerun_on_this_test_head": false
+  },
+  "log_hashes": {
+    "stage44-focused-derived": "4a63d69079001c353776c28f0844b093fdc6b2d6d8503fe9c951fd47c72cb74a",
+    "stage44-manifest": "3bb3f323e4ffc151d9d2808d5daaad399fa172cbd871bc9e9c0279372151a7d4",
+    "stage44-clippy-native": "c54bca416b8a09e3c2018b0ada16771065b3b9b5469242539af42bc53077e2cf",
+    "stage44-clippy-wasm": "9a30d54c8b16d7e49510b182028079bca120aeebb7d662e88f8566e6196a49f6",
+    "stage44-clippy-workspace": "fbb6e4844622f830206afc82633cc065eb5612f2a2794ac0e3cf5b111fe5e451"
+  }
+}

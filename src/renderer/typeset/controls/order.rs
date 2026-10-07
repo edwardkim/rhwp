@@ -6,6 +6,64 @@ use super::super::{is_para_topbottom_float, para_has_non_whitespace_text, signed
 use super::tac_flow::TacFlowQuery;
 use crate::model::{control::Control, paragraph::Paragraph};
 
+/// 저장 줄의 분할 불가 흐름 표가 초기 오프셋 상자로 한 단을 넘는지 조회한다.
+/// 한 줄의 공동 앵커를 유지하며, 편집·합성 줄·겹침·절대 배치는 제외한다.
+pub(in crate::renderer::typeset) fn stored_cross_column_flow_line(
+    para: &Paragraph,
+    ctrl_idx: usize,
+    column_height: f64,
+    dpi: f64,
+) -> Option<usize> {
+    if para.stored_text_partition_dirty
+        || para.empty_control_stream_position(0).is_none()
+        || para.line_segs.is_empty()
+        || para
+            .line_segs
+            .iter()
+            .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)?;
+    let Control::Table(current) = para.controls.get(ctrl_idx)? else {
+        return None;
+    };
+    if !is_whole_flow_table(current) {
+        return None;
+    }
+    para.controls
+        .iter()
+        .enumerate()
+        .any(|(ci, ctrl)| {
+            matches!(ctrl, Control::Table(table)
+            if is_whole_flow_table(table)
+                && crate::renderer::layout::control_line_seg_index(para, ci) == Some(line)
+                && whole_flow_offset_frame(table, dpi) > column_height)
+        })
+        .then_some(line)
+}
+
+fn is_whole_flow_table(table: &crate::model::table::Table) -> bool {
+    is_para_topbottom_float(&table.common)
+        && table.common.flow_with_text
+        && !table.common.allow_overlap
+        && table.page_break == crate::model::table::TablePageBreak::None
+        && table.common.vert_align == crate::model::shape::VertAlign::Top
+        && table.caption.is_none()
+        && table.common.height > 0
+        && table.common.height < 0x8000_0000
+        && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+fn whole_flow_offset_frame(table: &crate::model::table::Table, dpi: f64) -> f64 {
+    crate::renderer::hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi)
+        + crate::renderer::hwpunit_to_px(table.common.height as i32, dpi)
+        + crate::renderer::hwpunit_to_px(
+            i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+            dpi,
+        )
+}
+
 pub(in crate::renderer::typeset) struct ControlPlacementOrder {
     pub ctrl_order: Vec<usize>,
     pub first_placed_table: Option<usize>,
@@ -18,6 +76,7 @@ pub(in crate::renderer::typeset) fn for_paragraph(
     para: &Paragraph,
     fmt: &FormattedParagraph,
     flow: TacFlowQuery<'_>,
+    column_height: f64,
 ) -> ControlPlacementOrder {
     // 각 컨트롤에 대해 format → fits → place/split
     // [참고2 순서 역전 fix] 빈 host 문단의 para-relative float 표(비-TAC,
@@ -104,10 +163,36 @@ pub(in crate::renderer::typeset) fn for_paragraph(
                     v_off > 0 && anchor_top.saturating_add(v_off) < tac_host_line_height_hu
                 })
         });
+    // 서로 다른 쪽의 문단 상대 위치는 같은 쪽의 세로 순서가 아니다.
+    // 원본의 분할 불가 흐름 표가 오프셋 프레임으로 한 단을 넘으면,
+    // fit/이월이 원문 소유 순서를 결정해야 한다. 같은 단 안의 float 정렬은 유지한다.
+    let has_cross_column_flow_table = !flow.session_edited()
+        && !para.stored_text_partition_dirty
+        && !para.line_segs.is_empty()
+        && para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+        && para.controls.iter().any(|ctrl| {
+            matches!(ctrl, Control::Table(table)
+                if is_para_topbottom_float(&table.common)
+                    && table.common.flow_with_text
+                    && !table.common.allow_overlap
+                    && table.page_break == crate::model::table::TablePageBreak::None
+                    && table.common.height > 0
+                    && table.common.height < 0x8000_0000
+                    && crate::renderer::hwpunit_to_px(
+                        signed_hwpunit(table.common.vertical_offset).max(0), flow.dpi(),
+                    ) + crate::renderer::hwpunit_to_px(table.common.height as i32, flow.dpi())
+                        + crate::renderer::hwpunit_to_px(
+                            i32::from(table.outer_margin_top)
+                                + i32::from(table.outer_margin_bottom), flow.dpi(),
+                        ) > column_height)
+        });
     let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
         && !has_negative_para_float
         && !has_mid_para_vpos_reset
-        && !has_tac_overlapped_by_positive_float;
+        && !has_tac_overlapped_by_positive_float
+        && !has_cross_column_flow_table;
     let float_table_voffset = |ctrl: &Control| -> i32 {
         match ctrl {
             Control::Table(t)
@@ -126,12 +211,66 @@ pub(in crate::renderer::typeset) fn for_paragraph(
         }
     };
     let mut ctrl_order: Vec<usize> = (0..para.controls.len()).collect();
+    // 원본 빈 carrier의 서로 다른 저장 줄은 같은 앵커가 아니다. TAC 보조 키가
+    // 앞 줄의 표를 뒤 줄 float 뒤로 보내지 않도록 paint와 같은 줄 소속을 먼저 쓴다.
+    // 같은 줄 안의 기존 정렬과 편집·합성 줄의 기존 경로는 유지한다.
+    let stored_control_lines = (!flow.session_edited()
+        && !para.stored_text_partition_dirty
+        && para.empty_control_stream_position(0).is_some()
+        && para.line_segs.iter().all(|seg| {
+            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }))
+    .then(|| {
+        ctrl_order
+            .iter()
+            .map(|&ci| crate::renderer::layout::control_line_seg_index(para, ci))
+            .collect::<Option<Vec<_>>>()
+    })
+    .flatten();
     ctrl_order.sort_by_key(|&i| {
         (
+            stored_control_lines.as_ref().map_or(0, |lines| lines[i]),
             float_table_voffset(&para.controls[i]),
             table_flow_tiebreak(&para.controls[i]),
         )
     });
+    // 공동 앵커의 첫 오프셋 상자에 들어가지 않는 개체는 뒤의 첫 수용 가능한
+    // 형제에게 그 자리를 넘긴다. 이후 형제는 이미 소비한 앵커를 공유하므로
+    // 높이 정렬을 반복하지 않는다. 앞쪽 끝에서 소진된 오프셋에는 적용하지 않는다.
+    if !flow.session_edited() && stored_control_lines.is_some() {
+        let mut opened_lines = std::collections::HashSet::new();
+        for pos in 0..ctrl_order.len() {
+            let ci = ctrl_order[pos];
+            let Some(line) = stored_cross_column_flow_line(para, ci, column_height, flow.dpi())
+            else {
+                continue;
+            };
+            if !opened_lines.insert(line) {
+                continue;
+            }
+            let Control::Table(first) = &para.controls[ci] else {
+                continue;
+            };
+            if crate::renderer::float_placement::para_offset_consumed_by_page_break(
+                para,
+                &first.common,
+                column_height,
+                flow.dpi(),
+            ) || whole_flow_offset_frame(first, flow.dpi()) <= column_height
+            {
+                continue;
+            }
+            if let Some(next) = (pos + 1..ctrl_order.len()).find(|&next| {
+                let ci = ctrl_order[next];
+                stored_cross_column_flow_line(para, ci, column_height, flow.dpi()) == Some(line)
+                    && matches!(&para.controls[ci], Control::Table(table)
+                        if whole_flow_offset_frame(table, flow.dpi()) <= column_height)
+            }) {
+                let fitting = ctrl_order.remove(next);
+                ctrl_order.insert(pos, fitting);
+            }
+        }
+    }
     // is_first_table/is_last_table 는 배열순서가 아닌 "놓이는 순서(ctrl_order)"
     // 기준으로 잡아, pre/post 텍스트와 spacing 이 실제 배치 첫/마지막 표에 붙도록 한다.
     let first_placed_table = ctrl_order

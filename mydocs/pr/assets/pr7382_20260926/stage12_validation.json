@@ -1,0 +1,54 @@
+{
+  "producer_head": "ec8a37a84879ac420265003823b70bc92f891647",
+  "rust_test_diff_sha256": "f3f0d1dc8da845d278f436bec045c5202fbdca8862abe638799ad5227a2544d9",
+  "before": {
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "summary_seconds": 0.247
+  },
+  "after": {
+    "tests": 35,
+    "passed": 35,
+    "failed": 0,
+    "exit_code": 0,
+    "summary_seconds": 4.82
+  },
+  "rejected_counter_r1": {
+    "passed": 34,
+    "failed": 1,
+    "reason": "pop shortened composer too; no actual count mismatch",
+    "not_defect_evidence": true
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "duration": "2m11s"
+  },
+  "page_count": 215,
+  "reference_page_count": 215,
+  "native_selected_pages": [
+    31,
+    32,
+    178,
+    179
+  ],
+  "native_exit_code": 1,
+  "native_partial_pass": [
+    178,
+    179
+  ],
+  "native_remaining_hold": [
+    31,
+    32
+  ],
+  "directly_inspected": [
+    "review031",
+    "review032",
+    "review178",
+    "overlay178",
+    "review179",
+    "overlay179"
+  ],
+  "final_required_gates": "pending"
+}

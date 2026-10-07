@@ -1,0 +1,85 @@
+{
+  "producer_head": "04b4162f2b0fa3dd9e2d2ffa17edc1a7753db570",
+  "source_diff_sha256": "f5f7e03e5be8678e2b3bb3b3bed6891ca8dc62f0968ef709f45a0b0cc9dd087d",
+  "files": {
+    "src/renderer/typeset/notes/footnotes/body.rs": "95f50143b37aef222d25ea3cdec635d59362ba1114fdef864178401ada364bb6",
+    "src/renderer/typeset/state/transition.rs": "37d7bc583c062b3152c62cc7a840eaef92ae97bc105564d9b0c4004f1612d8a8",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "26ff748f4521722d3e1880bf7fc1482bfe4e5a1b6af8162d990ca38deb28e83b"
+  },
+  "date": "2026-09-27",
+  "before": {
+    "exit_code": 100,
+    "passed": 1,
+    "failed": 3,
+    "seconds": 0.652,
+    "native_owner_control_passed": true,
+    "defects": "HWPX 캡션 각주138/142/147의 FootnoteRef 등록 누락"
+  },
+  "initial_test_measurement_error": {
+    "native_assertion": "PDF 가시 글자 상단과 렌더 트리 논리 줄 상단을 동일 값으로 비교",
+    "observed_line_box_top": 918.16,
+    "reference_visible_glyph_top": 920.368571,
+    "classification": "신규 검사 측정값 오류; Native 등록 결함 증거 아님",
+    "correction": "독립 PDF 가시 상단의 실제 줄 상자 소속 및 번호/쪽 유일성으로 검사; 제품 좌표/golden/visual허용치 변경 없음"
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 96,
+    "failed": 0,
+    "seconds": 8.319
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 118,
+    "binary_sha256": "91e0182271032185653d95acd896945948bc0a07563f9bb111bbeb1b8292381b"
+  },
+  "fmt_check_exit_code": 0,
+  "source_unit_policy": {
+    "exit_code": 0,
+    "base_ref": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "tests": 4205,
+    "modules": 298
+  },
+  "visual": {
+    "exit_code": 0,
+    "gate": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "pages": {
+      "86": 97.15232,
+      "87": 98.92215,
+      "90": 94.09514,
+      "91": 96.28253,
+      "94": 98.91562,
+      "95": 97.85246
+    },
+    "page_count": 215,
+    "pdf_page_count": 215,
+    "directly_read_review_and_overlay_pages": [
+      86,
+      87,
+      90,
+      91,
+      94,
+      95
+    ],
+    "semantic_result": "138/142/147 번호와 본문 복원, 원래 쪽 소유와 뒤 본문/표 경계 유지",
+    "command": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 86,87,90,91,94,95 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage23-native-hwpx"
+  },
+  "remaining_holds": [
+    "전체 Native/fresh WASM 최신 head 재검토 미완료",
+    "목록 표식/본문 가로 시작과 잔여 글자 메트릭 차이는 전수 inventory에서 재검토",
+    "편집/재조판/다단 원본 캡션 계약은 이번 일치 증거의 대용으로 판정하지 않음"
+  ],
+  "commands": {
+    "before": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test-threads 8 --no-fail-fast -E 'test(hwpx_caption_note_) | test(native_caption_notes_keep_existing_terminal_table_page_owners)'",
+    "after": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test regression_suite_005 --test regression_suite_010 --test regression_suite_016 --test regression_suite_024 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip)'",
+    "cli_build": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "fmt_check": "cargo fmt --all -- --check",
+    "source_unit_policy": "node scripts/rust-unit-test-tiers.mjs --check --base-ref eb9142dd7c73297d555383d7d8434a470bdef26e"
+  }
+}

@@ -1,16 +1,11 @@
-//! Issue #2097 잔존 백로그: 중간-쪽 RowBreak 표 선언-fit 무시 — 마지막 행 sliver 분할.
+//! #2097 중간 쪽 RowBreak 표의 짧은 저장 셀을 독립 출력으로 재검토한다.
 //!
-//! Regression shape (samples/task2097/rowbreak_midpage_declared_fits.hwpx, 합성 —
-//! task2105 fixture 에 HEAD 문단을 추가해 표를 중간-쪽(cur_h 21.3px)에 배치한 판):
-//! - HEAD 문단 1개 + 3행 RowBreak 표: HEAD(21.3px) + 선언 68000HU(906.7px) ≤ 본문
-//!   933.6px 이지만 r1/r2 내용 실측 팽창으로 측정 합 944.9px 이 본문을 11.3px 초과.
-//! - 수정 전: RowBreak 선언-fit 게이트가 쪽 상단(current_height≤0.5) 한정이라
-//!   중간-쪽에서 측정 fit 실패 → 행 분할 → 마지막 행 sliver 2쪽 조각.
-//!   (실문서: 3080901 지식재산처 별지 2, 17×4 RowBreak 표 — 문단 2개 뒤 cur_h
-//!   49.6px, 선언 816.9px fit, 실측 +13px 팽창 → 2.6px 초과로 rows 16..17
-//!   88.3px sliver, rhwp 2쪽 vs 한글 1쪽.)
-//! - 수정 후: 중간-쪽에서도 실측 초과(overshoot)가 측정 노이즈 수준(≤16px)이면
-//!   선언 높이 신뢰로 통째 배치. overshoot 가 큰 표(한글도 실측 분할)는 불변.
+//! 이 합성 입력의 마지막 셀500HU는 저장 줄1200HU와 위아래 여백282HU를
+//! 담지 못한다. 실측 초과16px 이하를 모두 측정 노이즈로 취급하던 기대는
+//! 유효한 저장 프레임 증거가 아니었다. 동일 입력의 한컴2020 PDF는 큰 행과
+//! 중간 행을1쪽, 마지막 행과 뒤 문단을2쪽에 둔다.
+//! 독립 기준: pdf/issue2097/rowbreak-midpage-original-2020.pdf.
+//! 실제 행·내용의 단일 소유와 물리 끝은 tests/cases의 같은 사례에서 검사한다.
 
 use std::fs;
 use std::path::Path;
@@ -25,20 +20,14 @@ fn load_doc() -> rhwp::wasm_api::HwpDocument {
 }
 
 #[test]
-fn issue_2097_midpage_rowbreak_table_placed_whole_by_declared_height() {
+fn issue_2097_short_terminal_cell_follows_hangul_page_ownership() {
     let doc = load_doc();
-    assert_eq!(doc.page_count(), 2, "HEAD+표 통째 1쪽 + AFTER TABLE 2쪽");
-
-    let page1 = doc.dump_page_items(Some(0));
-    assert!(
-        page1.contains("Table") && !page1.contains("PartialTable"),
-        "중간-쪽(cur_h 21.3px) RowBreak 표도 선언 높이(906.7px)가 fit 하고 실측
-         초과(11.3px)가 노이즈 수준이면 통째 배치 — PartialTable 분할은 #2097 회귀\
-         \n--- page 1 ---\n{}",
-        page1
-    );
-    assert!(
-        !doc.dump_page_items(Some(1)).contains("PartialTable"),
-        "표 조각이 2쪽으로 밀리면 #2097 회귀"
-    );
+    assert_eq!(doc.page_count(), 2, "동일 입력 한컴2020 PDF의 전체2쪽");
+    for page in 0..2 {
+        assert!(
+            doc.dump_page_items(Some(page)).contains("PartialTable"),
+            "한컴처럼 마지막 행을2쪽으로 이월해야 함: p{}",
+            page + 1
+        );
+    }
 }

@@ -62,6 +62,10 @@ fn first_glyph_x(sample: &str, page: u32, needle: &str) -> Vec<f64> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
     let core =
         DocumentCore::from_bytes(&std::fs::read(&path).expect("정식 원본")).expect("문서 로드");
+    first_glyph_x_from_core(&core, page, needle)
+}
+
+fn first_glyph_x_from_core(core: &DocumentCore, page: u32, needle: &str) -> Vec<f64> {
     let raw = core
         .get_page_text_layout_native(page)
         .expect("공개 text-layout");
@@ -91,28 +95,56 @@ fn first_glyph_x(sample: &str, page: u32, needle: &str) -> Vec<f64> {
 /// 가운데 정렬 칸의 꼬리 공백은 정렬 폭에 들어가지 않는다.
 ///
 /// 머리행의 `2024년` 칸 넷 중 **꼬리 공백이 있는 둘**이 수정 전 정본보다 2.8px 왼쪽이었다.
-/// 나머지 둘은 전후 불변이라, 같은 줄에서 **움직일 것과 안 움직일 것을 함께** 잡는다.
+/// 편집 API로 꼬리 공백만 제거해 두 칸과 공백 없는 대조 두 칸의 위치 불변성을 검사한다.
+/// 독립 PDF의 Native/fresh WASM 전쪽100%를 먼저 확인했으며 절대 PDF 좌표는 고정하지 않는다.
 ///
 /// 런은 `"2024"` 와 `"년 "` 으로 나뉘어 있어 숫자 런의 첫 글자로 앵커한다.
 #[test]
 fn center_aligned_cell_excludes_trailing_spaces() {
-    let xs = first_glyph_x(SAMPLE_TABLE_TEXT, 0, "2024");
-    let expected = [210.72_f64, 345.12, 516.16, 650.72];
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE_TABLE_TEXT);
+    let mut core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("원본 읽기")).expect("문서 열기");
+    let before = first_glyph_x_from_core(&core, 0, "2024");
+    assert_eq!(before.len(), 4, "머리행의2024년 네 칸을 보존해야 한다");
+    let mut targets = Vec::new();
+    for (si, section) in core.document().sections.iter().enumerate() {
+        for (pi, para) in section.paragraphs.iter().enumerate() {
+            for (ci, control) in para.controls.iter().enumerate() {
+                let rhwp::model::control::Control::Table(table) = control else {
+                    continue;
+                };
+                for (cell_i, cell) in table.cells.iter().enumerate() {
+                    for (cell_pi, p) in cell.paragraphs.iter().enumerate() {
+                        let trimmed = p.text.trim_end_matches(' ');
+                        if trimmed == "2024년" && trimmed.len() != p.text.len() {
+                            targets.push((
+                                si,
+                                pi,
+                                ci,
+                                cell_i,
+                                cell_pi,
+                                trimmed.chars().count(),
+                                p.text.chars().count() - trimmed.chars().count(),
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
     assert_eq!(
-        xs.len(),
-        expected.len(),
-        "머리행 '2024' 칸을 {}개 봐야 한다 — 표본 전제가 깨졌다. got {xs:?}",
-        expected.len()
+        targets.len(),
+        2,
+        "꼬리 공백이 있는2024년 칸 두 개가 있어야 한다"
     );
-    let off: Vec<_> = xs
-        .iter()
-        .zip(expected)
-        .filter(|(got, want)| (**got - want).abs() > 1.0)
-        .collect();
-    assert!(
-        off.is_empty(),
-        "정본(pdf/hwpx/table-text-2022.pdf) 좌표와 1.0px 안에서 맞아야 한다(수정 전 첫째·셋째가 -2.8px). \
-         어긋난 것 (실측, 정본): {off:?} · 전체 {xs:?}"
+    for (si, pi, ci, cell_i, cell_pi, offset, count) in targets {
+        core.delete_text_in_cell_native(si, pi, ci, cell_i, cell_pi, offset, count)
+            .expect("꼬리 공백 삭제");
+    }
+    let after = first_glyph_x_from_core(&core, 0, "2024");
+    assert_eq!(
+        before, after,
+        "가운데 정렬에서 꼬리 공백만 삭제하면 가시 글자의 정렬 위치와 대조 칸이 변하지 않아야 한다"
     );
 }
 

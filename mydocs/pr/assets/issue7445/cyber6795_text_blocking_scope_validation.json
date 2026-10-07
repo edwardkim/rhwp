@@ -1,0 +1,426 @@
+{
+  "stage": 122,
+  "code_commit": "0572a2d899cc58225d9476386d61225de9193eff",
+  "analysis": {
+    "head": "3473e9516efb4af04154c14ae25f9760a5c7b77e",
+    "analysis": "#7382 text 입력2→3 실제증가만 판단. PDF 정상 한컴 출력/동일원문 대응은 pr6804 및 pr7274 검토 기록에 있다. 현재 생산 Native로 실제겹침페이지/분할표·그림소유를 새로 캡처한 뒤90%미달 여부와 테스트 자체의 의미를 판단한다. 아직 이관/코드 변경하지 않는다. 정상기존동일문서검사/다른축·문서·원문/PDF 유지. 기존문서의 과거점수를 현재head로 쓰지않음.",
+    "files": {
+      "samples/issue6795/1341000-201100013-cyber-university-application.hwp": {
+        "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+        "bytes": 613376
+      },
+      "pdf/1341000-201100013-cyber-university-application-2020.pdf": {
+        "sha256": "3c1d4b0ae00b0f89169a0168b93f27ff4ec975c02743d9655e47bc58c7d289c5",
+        "bytes": 556998
+      },
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp": {
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+        "bytes": 26874272
+      }
+    },
+    "input_pdf_mapping": [
+      "mydocs/pr/archives/pr_6804_review.md",
+      "mydocs/pr/archives/pr_7274_review.md"
+    ],
+    "negative_visual_planned": "현재 실제 text overlap페이지 및 기존분할표28~32쪽 Native 비교. 미달시실제축만7445에등록; 정상시원인보정/기존기대검토.",
+    "production_same_since": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "pdf_info": {
+      "pages": 45,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260907160934+09'00'",
+        "modDate": "D:20260907160934+09'00'",
+        "trapped": "",
+        "encryption": null
+      },
+      "raw_pdf_dimensions_pt": [
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ],
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ],
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ],
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ],
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ],
+        [
+          0.0,
+          0.0,
+          538.0,
+          737.0
+        ]
+      ]
+    },
+    "visual_provenance": {
+      "hwp": {
+        "path": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+        "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8"
+      },
+      "pdf": {
+        "path": "pdf/1341000-201100013-cyber-university-application-2020.pdf",
+        "sha256": "3c1d4b0ae00b0f89169a0168b93f27ff4ec975c02743d9655e47bc58c7d289c5"
+      },
+      "git_head": "3473e9516efb4af04154c14ae25f9760a5c7b77e",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage122-cyber-text/visual-native/cyber6795/run_manifest.json"
+      }
+    },
+    "native_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 62.41009
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 60.6783
+        },
+        {
+          "page": 30,
+          "tolerant_content_match_percent": 72.99154
+        },
+        {
+          "page": 31,
+          "tolerant_content_match_percent": 49.74703
+        },
+        {
+          "page": 32,
+          "tolerant_content_match_percent": 77.21692
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "native_metrics": [
+      {
+        "page": 9,
+        "tolerant_content_match_percent": 98.86518
+      },
+      {
+        "page": 28,
+        "tolerant_content_match_percent": 62.41009
+      },
+      {
+        "page": 29,
+        "tolerant_content_match_percent": 60.6783
+      },
+      {
+        "page": 30,
+        "tolerant_content_match_percent": 72.99154
+      },
+      {
+        "page": 31,
+        "tolerant_content_match_percent": 49.74703
+      },
+      {
+        "page": 32,
+        "tolerant_content_match_percent": 77.21692
+      }
+    ],
+    "actual_anomaly": {
+      "page_count": 45,
+      "text_overlap_count": 3,
+      "pages": [
+        9,
+        29
+      ]
+    },
+    "individual_before": [
+      {
+        "head": "3473e9516efb4af04154c14ae25f9760a5c7b77e",
+        "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 1.8811765420250595,
+        "summary": [
+          "Summary [   0.670s] 1 test run: 0 passed, 1 failed, 233 skipped"
+        ],
+        "observations": [
+          "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+        ]
+      }
+    ],
+    "planned_input": "issue6795/1341000-201100013-cyber-university-application.hwp",
+    "planned_row": "issue6795/1341000-201100013-cyber-university-application.hwp\t2",
+    "decision": "동일원문/독립PDF45쪽이나 선택6쪽 최저31쪽49.74703%,영향29쪽60.6783%.29쪽review 직접판독에서내부표행높이/글줄/뒤행의실제배치차이. text입력/기존2건행만 #7445보류, 기존6795다섯함수/6981정상반례 및모든다른축·문서/원문PDF 유지. 2를3으로완화하지않음. 최저31쪽review에서도첫행소유와표종료위치가다른것을직접확인했다. 9쪽98.86518%는한쪽의보조값으로별도기록하며전체통과로쓰지않는다. 기존좌표핀통과를Hancom정답/전체피델리티증거로승격하지않는다.",
+    "setup_error": "analysis/metrics.json은list인데get을쓴읽기전용진단이실패했다. 최종manifest와overlay/pages에서전체6쪽지표를수집했으며렌더링실패로세지않음.",
+    "limits": "선택6쪽NegativeNative증거. 전수45쪽/freshWASM 미실행, 정상기존검사통과를전체피델리티로승격하지않음."
+  },
+  "individual_before": [
+    {
+      "head": "3473e9516efb4af04154c14ae25f9760a5c7b77e",
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_022",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.8811765420250595,
+      "summary": [
+        "Summary [   0.670s] 1 test run: 0 passed, 1 failed, 233 skipped"
+      ],
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    }
+  ],
+  "mutation": {
+    "deferred_axis_input": "issue6795/1341000-201100013-cyber-university-application.hwp",
+    "removed_row": "issue6795/1341000-201100013-cyber-university-application.hwp\t2",
+    "removed_functions": [],
+    "kept": "6795다섯함수/6981반례 및 모든다른축/문서·원문/PDF·공차 유지"
+  },
+  "focused_summary": [
+    "Summary [  54.974s] 22 tests run: 21 passed, 1 failed, 664 skipped"
+  ],
+  "normal_results": [
+    "PASS [   0.026s] ( 1/22) rhwp::regression_suite_007 issue_6795_split_float_sibling_gets_its_own_page::issue_2813_whole_placement_rescue_still_applies",
+    "PASS [   0.194s] ( 2/22) rhwp::regression_suite_007 issue_6795_split_float_sibling_gets_its_own_page::split_fragment_page_holds_only_the_fragment",
+    "PASS [   0.194s] ( 3/22) rhwp::regression_suite_007 issue_6795_split_float_sibling_gets_its_own_page::split_float_sibling_keeps_document_order",
+    "PASS [   0.198s] ( 4/22) rhwp::regression_suite_007 issue_6795_split_float_sibling_gets_its_own_page::no_page_stacks_two_float_tables_on_top_of_each_other",
+    "PASS [   0.204s] ( 5/22) rhwp::regression_suite_007 issue_6795_split_float_sibling_gets_its_own_page::split_float_sibling_gets_its_own_page_inside_the_body",
+    "PASS [   0.229s] (15/22) rhwp::regression_suite_024 issue_6981_split_straddle_row_height::straddle_cell_whose_last_row_is_cut_again_is_not_grown"
+  ],
+  "text_axis_results": "전체16분할15PASS/1FAIL. 한FAIL에교육37→90/진안신규5의두입력. 해당입력없고다른2입력실패보존. 정상6PASS와합계21PASS/1FAIL/664SKIP.",
+  "actual_remaining_text_failures": [
+    {
+      "test_result": "FAIL [   6.281s] (20/22) rhwp::regression_suite_019 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+      "observations": [
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건",
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "3473e9516efb4af04154c14ae25f9760a5c7b77e",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_024",
+          "-E",
+          "(test(text_overlap_baseline::)) or (test(issue_6795_split_float_sibling_gets_its_own_page::)) or (test(=issue_6981_split_straddle_row_height::straddle_cell_whose_last_row_is_cut_again_is_not_grown))"
+        ],
+        "exit_code": 100,
+        "seconds": 71.63808212475851
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.43930087517947
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.40774041693657637
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2260252912528813
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.365946417208761
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.67587341601029
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2672935002483428
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.23163029178977
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "223f09647b6383a618e1492caba77c1f8aa8d34e6177ee9c665907c7b404e66d",
+    "tests/fixtures/text_overlap_baseline.tsv": "d5c2d491ccf0039b9e8ee73a202c4b753ab18c213d50db48143fdd97f62cdc3d"
+  },
+  "source_after_sha256": {
+    "tests/cases/text_overlap_baseline.rs": "f93ea4c33020768369199f1f269bf65b7d552c6acf69a983d2b4c9f7e2aee80b",
+    "tests/fixtures/text_overlap_baseline.tsv": "11e7c0c1028d102855202d1abc8ea0600cb92e522b281518dbe061b6a98f9908"
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874150745",
+  "representative_assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/cyber6795_native_review_029.png",
+      "sha256": "ade37b70aafe88f3ee3b43fafc16fe10dfc4def8d27f9cc317b1bb3e11a4f759"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/cyber6795_native_overlay_029.png",
+      "sha256": "b1250c2f3172326cadfbee031f92e76486225d998345f35a7cc7a3117518dee2"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/cyber6795_native_review_031.png",
+      "sha256": "e18fadec795ab67cc5ccf2b3f1359becd29d582e7bd183550cf0701e917283d9"
+    }
+  ],
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "remaining": "다른text2입력/off및다른축 실패·최종37개별/전체검증/PR준비 미완료"
+}

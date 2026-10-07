@@ -26,6 +26,7 @@ pub(in crate::renderer::typeset) struct LineScanPage {
     pub footnote_safety_margin: f64,
     pub current_zone_y_offset: f64,
     pub current_bottom_fixed_exclusion: f64,
+    pub next_page_stored_body_origin: Option<f64>,
 }
 
 /// 보정 전 후보와 전체 문단 fit 재확인에 필요한 저장 꼬리 채택 증거.
@@ -161,12 +162,17 @@ pub(in crate::renderer::typeset) fn scan_lines(
             let hwpx_reset_fragment_owner = forced_page_break_line.is_some_and(|break_line| {
                 cursor_line < break_line
                     && li < break_line
-                    && hwpx_saved_reset_fragment_matches_current_flow(
+                    && stored_body_reset_fragment_matches_current_flow(
                         page,
                         para,
                         cursor_line,
                         break_line,
                         current_page_vpos_base.unwrap_or(0),
+                        if cursor_line == 0 {
+                            fmt.spacing_before
+                        } else {
+                            0.0
+                        },
                         dpi,
                     )
             });
@@ -258,21 +264,47 @@ pub(in crate::renderer::typeset) fn scan_lines(
     }
 }
 
-/// HWPX의 문단 내부 `vpos=0` reset은, reset 직전 fragment가 현재 flow 앵커에서
+/// 원본 문단 내부 `vpos=0` reset은, reset 직전 fragment가 현재 flow 앵커에서
 /// 시작할 때에만 다음 물리 쪽의 시작을 뜻한다. 이 경우 reset 전 줄들은 저장된
 /// 현재 쪽 fragment의 owner이므로, 일반 줄 높이 예산만으로 중간 쪽으로 분리하지
 /// 않는다. 표·개체·다단·local cursor rewind는 이 계약 밖에 둔다.
-pub(in crate::renderer::typeset) fn hwpx_saved_reset_fragment_matches_current_flow(
+pub(in crate::renderer::typeset) fn stored_body_reset_fragment_matches_current_flow(
     page: &LineScanPage,
     para: &Paragraph,
     start_line: usize,
     break_line: usize,
     current_page_vpos_base: i32,
+    spacing_before: f64,
     dpi: f64,
 ) -> bool {
-    if !page.profile.hwpx_stored_layout()
+    let only_bodyless_notes = !para.controls.is_empty() && para.controls.iter().all(|control| {
+        matches!(control, crate::model::control::Control::Footnote(note) if crate::renderer::stored_footnote_is_bodyless(note))
+    });
+    // 먼저 검증된 이월 개체 상자의 하단에서 본문이 재개하는 비영 원점이다.
+    // 이 경우 흐름을 밀지 않는 떠 있는 표가 있어도 앞 글줄의 소유는 보존한다.
+    let stored_frame_reset = (page.profile.hwpx_stored_layout()
+        || page.profile.hwp5_stored_pagination_layout())
+        && para.line_segs.get(break_line).is_some_and(|line| {
+            !is_synthetic_line_seg(line)
+                && line.vertical_pos > 0
+                && page.next_page_stored_body_origin.is_some_and(|origin| {
+                    (crate::renderer::hwpunit_to_px(line.vertical_pos, dpi) - origin).abs()
+                        <= dpi / 7200.0
+                })
+        })
+        && para.controls.iter().all(|control| {
+            matches!(control,
+            crate::model::control::Control::Table(table)
+                if !table.common.treat_as_char && table.common.allow_overlap
+                    && matches!(table.common.text_wrap, crate::model::shape::TextWrap::Square
+                        | crate::model::shape::TextWrap::BehindText
+                        | crate::model::shape::TextWrap::InFrontOfText))
+        });
+    if !(page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
         || page.col_count != 1
-        || !para.controls.is_empty()
+        || (!para.controls.is_empty() && !only_bodyless_notes && !stored_frame_reset)
         || start_line >= break_line
         || break_line >= para.line_segs.len()
     {
@@ -287,7 +319,9 @@ pub(in crate::renderer::typeset) fn hwpx_saved_reset_fragment_matches_current_fl
     else {
         return false;
     };
-    if !saved_line_is_anchored_to_current_flow(start_bounds, page.current_height) {
+    // 저장 줄의 top은 문단 앞 간격 뒤의 글줄 원점이다. 실제 분할 배치와
+    // 같은 원점을 비교하며, 이어지는 조각은 앞 간격을 다시 소비하지 않는다.
+    if !saved_line_is_anchored_to_current_flow(start_bounds, page.current_height + spacing_before) {
         return false;
     }
 
@@ -302,7 +336,7 @@ pub(in crate::renderer::typeset) fn hwpx_saved_reset_fragment_matches_current_fl
         previous_vpos = Some(seg.vertical_pos);
     }
 
-    para.line_segs
-        .get(break_line)
-        .is_some_and(|seg| !is_synthetic_line_seg(seg) && seg.vertical_pos == 0)
+    para.line_segs.get(break_line).is_some_and(|seg| {
+        !is_synthetic_line_seg(seg) && (seg.vertical_pos == 0 || stored_frame_reset)
+    })
 }

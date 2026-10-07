@@ -1,0 +1,416 @@
+{
+  "parent_commit": "d7757707b",
+  "analysis": "저장 첫 물리 프레임과 noAdjust 쪽 경계 잔여를 동일 배치 계약으로 소비",
+  "independent_source_remainders": [
+    {
+      "para": 0,
+      "row": 19,
+      "source_cell_hu": 63539,
+      "raw_before_hu": 36452,
+      "first_frame_remainder_hu": 32994,
+      "continuation_remainder_hu": 30545,
+      "continuation_remainder_px": 407.26666666666665
+    },
+    {
+      "para": 2,
+      "row": 22,
+      "source_cell_hu": 48792,
+      "raw_before_hu": 46098,
+      "first_frame_remainder_hu": 23348,
+      "continuation_remainder_hu": 25444,
+      "continuation_remainder_px": 339.25333333333333
+    },
+    {
+      "para": 3,
+      "row": 20,
+      "source_cell_hu": 51542,
+      "raw_before_hu": 40403,
+      "first_frame_remainder_hu": 29043,
+      "continuation_remainder_hu": 22499,
+      "continuation_remainder_px": 299.9866666666667
+    },
+    {
+      "para": 4,
+      "row": 20,
+      "source_cell_hu": 49844,
+      "raw_before_hu": 40403,
+      "first_frame_remainder_hu": 29043,
+      "continuation_remainder_hu": 20801,
+      "continuation_remainder_px": 277.3466666666667
+    },
+    {
+      "para": 5,
+      "row": 20,
+      "source_cell_hu": 57583,
+      "raw_before_hu": 40403,
+      "first_frame_remainder_hu": 29043,
+      "continuation_remainder_hu": 28540,
+      "continuation_remainder_px": 380.53333333333336
+    }
+  ],
+  "diagnostic_log": "output/pr-review/planet6897-green-20261002/form002-source-frame-diag.log",
+  "findings": [
+    "첫 문단의 구역 설정 컨트롤 때문에 object-only 앵커 판정에서 누락된 원본 물리 프레임",
+    "7쪽 선언 프레임과 내용 조각 차이0.36px가0.5px 판정 아래라 저장 프레임 소유가 빠지고 paint의 말미 접기가5.6px를 다시 제거",
+    "기존 다음 조각의 raw 행 잔여는 문단 내부 컷만 허용하여 원본 본문을 닫는 noAdjust 문단 간 쪽 경계가 누락"
+  ],
+  "candidate_status": "validated",
+  "candidate_build_exit_code": 0,
+  "before_table_bbox_file": "form002-frame-tree",
+  "after_table_bbox_file": "form002-frame-band-tree",
+  "status": "stored frame stage verified: Native/fresh WASM all10 above90; old SVG golden still fails; final integration held",
+  "native_pages": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "97.53277",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.53277",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "99.81386",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.81386",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "97.48501",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.48501",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "98.57131",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.57131",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "96.88500",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88500",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "99.99443",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.99443",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "96.86832",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.86832",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "92.96827",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "92.96827",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "96.88839",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88839",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "98.34023",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.34023",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "counterchecks": {
+    "run": 42,
+    "passed": 42,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-counterchecks.log"
+  },
+  "original_golden_before_migration": {
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 1,
+    "reason": "corrected geometry differs from fixed SVG; not a glyph failure",
+    "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-original-golden.log"
+  },
+  "chrome_preview": {
+    "input": "tests/golden_svg/form-002/page-0.actual.svg",
+    "svg_sha256": "18e0ea9c328cea385d7d2c4df612ccea92c8063034cc877ae78d2a4463fcfdf2",
+    "png_sha256": "f02188dd3220b5392efe9a8282ca5d6a071fcca1c29a8f7d57f84981c4e86fe5",
+    "tofu_visually_absent": true,
+    "source_checkboxes_preserved": true
+  },
+  "residual": "8쪽 안내 표의 작은 위치 차이는 남음. 전쪽90 이상과 구분해 기록하며 최종 전수검사는 별도.",
+  "wasm_pages": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "97.53277",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.53277",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "99.81386",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.81386",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "97.48501",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.48501",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "98.57131",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.57131",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "96.88500",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88500",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "99.99443",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.99443",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "96.86832",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.86832",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "92.96827",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "92.96827",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "96.88839",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.88839",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "98.34023",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.34023",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "native_wasm_tsv_equal": true,
+  "fresh_wasm_sha256": "4792539457a5da53ff2d1dd8578b5feca7e8f55045d00529b7ee06385bb3d76c",
+  "studio_wasm_sha256_equal": true,
+  "wasm_build_type": "Mac local no-opt alternative; not Docker optimized",
+  "gates": [
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-prepare.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-workspace-build.log"
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-workspace-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-frame-band-manifest.log"
+    }
+  ],
+  "reference_pdf": "pdf/hwpx/form-002-hwpx-2020.pdf",
+  "reference_pdf_sha256": "b60acefa200945d74a4f6c0d08037125941e128bb5dfe2f63351b9fd30cb69a6",
+  "source_sha256": "39d59ee0c0f0ba440af436c67a1154d39082bcf98a24d95009b1babf3421ca32",
+  "source_file": "src/renderer/typeset/table/continuation/fragment/emit.rs",
+  "new_regression_tests": 0,
+  "golden_updated": false,
+  "semantic_oracle": {
+    "pdf_pages": 10,
+    "boundary_pages": [
+      {
+        "page": 1,
+        "boundary_phrase": "주사제형화기술개발",
+        "present": true
+      },
+      {
+        "page": 2,
+        "boundary_phrase": "PFC나노산소운반체의최적제조공정개발및GMP실증",
+        "present": true
+      }
+    ]
+  },
+  "native_wasm_png_comparison": [
+    {
+      "page": 1,
+      "native_sha256": "f02188dd3220b5392efe9a8282ca5d6a071fcca1c29a8f7d57f84981c4e86fe5",
+      "wasm_sha256": "f02188dd3220b5392efe9a8282ca5d6a071fcca1c29a8f7d57f84981c4e86fe5",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 2,
+      "native_sha256": "6a28e6ff56f6b0d4d87cbb7249a0c3bda5c5e9e5e7cfb4fb8eb75eaf27cea9a7",
+      "wasm_sha256": "6a28e6ff56f6b0d4d87cbb7249a0c3bda5c5e9e5e7cfb4fb8eb75eaf27cea9a7",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 3,
+      "native_sha256": "0c638c26067742308bb6f0ad6e10d90cec1a1d875c5adb1fb297c78160c9195c",
+      "wasm_sha256": "0c638c26067742308bb6f0ad6e10d90cec1a1d875c5adb1fb297c78160c9195c",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 4,
+      "native_sha256": "9e246a5f6cef92afd9d00b04a58a8790fda4a93f80841cd0c0c55d7337a162c5",
+      "wasm_sha256": "9e246a5f6cef92afd9d00b04a58a8790fda4a93f80841cd0c0c55d7337a162c5",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 5,
+      "native_sha256": "2b9a006924e54f97e38f8e353659ce75ba81cd7c5569cfc0b9a8717444b1a6d3",
+      "wasm_sha256": "2b9a006924e54f97e38f8e353659ce75ba81cd7c5569cfc0b9a8717444b1a6d3",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 6,
+      "native_sha256": "2b42b84dc6bdcf51f307e70f17b9f87e0a8076814baaa8c5003510d6cc125cae",
+      "wasm_sha256": "2b42b84dc6bdcf51f307e70f17b9f87e0a8076814baaa8c5003510d6cc125cae",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 7,
+      "native_sha256": "28e1d78ac749d86b608af050bebf14e454980b316c13470a53c57ef385f6abfb",
+      "wasm_sha256": "28e1d78ac749d86b608af050bebf14e454980b316c13470a53c57ef385f6abfb",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 8,
+      "native_sha256": "4bb8c759e9a833e801f574e37cf32da5893808f507daac11955d64e248ed9d06",
+      "wasm_sha256": "4bb8c759e9a833e801f574e37cf32da5893808f507daac11955d64e248ed9d06",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 9,
+      "native_sha256": "872f4ed0881332a20e209720ab473c15bdba9f7d6329b8c87f5c988c80e7d600",
+      "wasm_sha256": "872f4ed0881332a20e209720ab473c15bdba9f7d6329b8c87f5c988c80e7d600",
+      "png_bytes_equal": true
+    },
+    {
+      "page": 10,
+      "native_sha256": "912f938a4bafe832ece4b21ca39e03f57a568c2ed18138870cbc83ab9969e43d",
+      "wasm_sha256": "912f938a4bafe832ece4b21ca39e03f57a568c2ed18138870cbc83ab9969e43d",
+      "png_bytes_equal": true
+    }
+  ],
+  "docs_links_exit_code": 0
+}

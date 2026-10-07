@@ -1,0 +1,111 @@
+[
+  {
+    "path": "pdf/issue2006/1790387_prep_final_report-2022.pdf",
+    "sha256": "226cd9b10e41394da09d96ce09eaa50f1b6c919952cecc9af87f2f18d6ce22d7",
+    "page_count": 146,
+    "metadata": {
+      "format": "PDF 1.4",
+      "title": "",
+      "author": "planet",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 12.0.0.4547",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260709181339+09'00'",
+      "modDate": "D:20260709181339+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "fonts": [
+      "INPILL+Batang",
+      "INPILL+Dotum",
+      "INPILL+H2hdrM",
+      "INPILL+HCRBatang",
+      "INPILL+Haansoft Batang",
+      "INPILL+HancomEQN",
+      "INPILL+MalgunGothic",
+      "INPILL+MalgunGothicBold",
+      "INPILL+SegoeUISymbol"
+    ]
+  },
+  {
+    "path": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "page_count": 140,
+    "metadata": {
+      "format": "PDF 1.6",
+      "title": "",
+      "author": "cdc",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hancom PDF 1.3.0.550",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260925195531+09'00'",
+      "modDate": "D:20260925195531+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "fonts": [
+      "INPILL+Batang",
+      "INPILL+Dotum",
+      "INPILL+H2hdrM",
+      "INPILL+HCRBatangExt",
+      "INPILL+Haansoft Batang",
+      "INPILL+HancomEQN",
+      "INPILL+KoPubDotumBold",
+      "INPILL+KoPubDotumLight",
+      "INPILL+MalgunGothic",
+      "INPILL+MalgunGothicBold"
+    ]
+  },
+  {
+    "path": "pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf",
+    "sha256": "f4b50edce8b519d8e1230657fe3630fec43e44327e27501887facfe632dc0c6a",
+    "page_count": 140,
+    "metadata": {
+      "format": "PDF 1.7",
+      "title": "",
+      "author": "",
+      "subject": "",
+      "keywords": "",
+      "creator": "",
+      "producer": "cairo 1.18.0 (https://cairographics.org)",
+      "creationDate": "D:20260813203827Z",
+      "modDate": "",
+      "trapped": "",
+      "encryption": null
+    },
+    "fonts": [
+      "AEKKZV+KoPubDotumLight",
+      "BLSKVJ+MalgunGothic",
+      "CXFAEM+KoPubDotumLight",
+      "DHYQLF+Dotum",
+      "FZXISB+CairoFont-2-0",
+      "GZZPLJ+H2hdrM",
+      "HALKGC+KoPubDotumBold",
+      "HOYXBK+DejaVuSerif",
+      "IPPIHH+KoPubDotumBold",
+      "JDVTLQ+CairoFont-2-1",
+      "JEOXJL+Dotum",
+      "KDAKGP+CairoFont-11-0",
+      "KXTVWM+H2hdrM",
+      "LJDWDD+HancomEQN",
+      "LOZLOW+MalgunGothicBold",
+      "LWYAKM+HancomEQN",
+      "MULVXT+Batang",
+      "MZXZDX+HCRDotum",
+      "NNXXTJ+MalgunGothicBold",
+      "OMPMXF+HCRDotum",
+      "PADMJC+KoPubDotumBold",
+      "PHMTWO+CairoFont-5-1",
+      "PXMBUE+KoPubDotumLight",
+      "RJLYVZ+HancomEQN",
+      "RUXTXH+MalgunGothic",
+      "UDUHNI+KoPubDotumLight",
+      "VAAEJE+KoPubDotumBold",
+      "WFUYUD+HCRDotum",
+      "WRBRBH+Batang",
+      "YOBKGK+CairoFont-5-0"
+    ]
+  }
+]

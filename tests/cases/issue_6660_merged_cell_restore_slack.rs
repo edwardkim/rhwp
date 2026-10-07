@@ -1,9 +1,11 @@
-//! [#6660] 병합 칸 보호 뒤 남은 단일행 여유가 후속 표를 밀지 않아야 한다.
+//! [#6660] 병합 제목의 물리 하한과 본문 점유량을 함께 보존한다.
 //!
-//! exam_science.hwp 1쪽 문단 23의 표는 선언 131.6px에 맞춰 축소한 뒤
-//! 병합 제목 칸을 복원하면서 135.939px로 다시 커졌다. 본문 행에는 여전히
-//! 2.472px의 여유가 남았다. 여유 회수와 함께, 선언에 딱 맞는 병합 제목에는
-//! 비활성 fallback 하단 여백을 추가하지 않는다. PDF 위치 계약은 별도 테스트다.
+//! exam_science.hwp 1쪽 문단23의 원문 필요량은9870HU(131.6px)다.
+//! 원본 저장 글줄 끝·명시적 본문 여백·두 제목 행으로 독립 계산한다.
+//! 제목에 비활성 하단 여백을 추가하거나 완전 셀 마지막 줄간격을 중복하면
+//! 다음 그림과 표가 밀린다. 일반 측정과 TAC 축소 뒤 복원은 같은 하한을 쓴다.
+//! 정상 PDF 전체4쪽 비교와 그림 위치 계약은 별도 증거이며,
+//! common.height만 수동 변경한 두 대조군은 정상 생성본으로 간주하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::control::Control;
@@ -43,8 +45,9 @@ fn measure_with(para_index: usize, edit: impl FnOnce(&mut Table)) -> MeasuredTab
 
 #[test]
 fn issue_6660_reclaims_slack_without_shrinking_merged_or_body_content() {
-    // 제목 글자와 상단 여백은 보존한다. 비활성 하단 여백은 선언을 늘리지 않는다.
-    let merged_floor = (1150.0 + 141.0) / 75.0;
+    // 제목 글줄1150HU는 원문 두 행의 물리 높이646HU씩 안에 들어간다.
+    // hasMargin=false인 셀의 보존 여백은 상하 모두 선언을 늘리지 않는다.
+    let merged_floor = 2.0 * 646.0 / 75.0;
     for (para_index, body_end, declared) in
         [(23, 4298.0 + 2580.0, 9870.0), (30, 3894.0 + 1148.0, 8032.0)]
     {
@@ -68,8 +71,12 @@ fn issue_6660_reclaims_slack_without_shrinking_merged_or_body_content() {
 #[test]
 fn issue_6660_stops_reclaiming_at_declared_height_when_slack_is_sufficient() {
     let measured = measure(23, Some(10200));
-    assert!((measured.total_height - 136.0).abs() < 0.01);
-    assert!(measured.row_heights[2] > (6878.0 + 1700.0) / 75.0);
+    // common.height만 수동 변경한 합성 대조군이다. 저장 셀·글줄은 원문 그대로다.
+    // 마지막 줄간격을 높이로 가산하거나 비활성 여백으로 키우지 않는다.
+    // 원문 물리 하한: 앞 두 행646HU씩 + 본문 끝6878HU + 명시적 여백1700HU.
+    let stored_required = (2.0 * 646.0 + 6878.0 + 1700.0) / 75.0;
+    assert!((measured.total_height - stored_required).abs() < 0.01);
+    assert!((measured.row_heights[2] - (6878.0 + 1700.0) / 75.0).abs() < 0.01);
     assert!(measured.row_heights[0] + measured.row_heights[1] >= 1291.0 / 75.0 - 0.5);
 }
 
@@ -96,11 +103,25 @@ fn issue_6660_preserves_explicit_padding_and_real_content_overflow() {
                 _ => unreachable!(),
             }
         });
+        // 정상 원문 전체4쪽 Native/fresh WASM의 최저91.87033% 확인 뒤
+        // 잘못된 비활성 여백 핀을 수정한다. 이 변형들은 수동 합성 계약이다.
+        let required_hu = match variant {
+            // 실제 활성 셀 여백 또는 명시적 표 여백:1150+141+141HU.
+            0 | 1 => 1432.0,
+            // 높이·정렬·textheight만 바꿔도 비활성 여백은 활성화되지 않는다.
+            // 나머지 단일 행 셀의 원문 높이646HU씩을 보존한다.
+            2..=4 => 2.0 * 646.0,
+            // 추가한 둘째 줄의 실제 끝은1150+1150HU다. 기존1432HU 검사는
+            // 이 내용이 잘려도 통과할 수 있었으므로 실제 점유량을 요구한다.
+            5 => 2.0 * 1150.0,
+            _ => unreachable!(),
+        };
         assert!(
-            measured.row_heights[0] + measured.row_heights[1] >= 1432.0 / 75.0 - 0.5,
+            measured.row_heights[0] + measured.row_heights[1] >= required_hu / 75.0 - 0.5,
             "변형 {variant}: 명시적 여백/실제 내용 하한을 축소했다: {:?}",
             measured.row_heights
         );
+        assert!(measured.row_heights[2] >= (6878.0 + 1700.0) / 75.0 - 0.01);
     }
 }
 
@@ -109,7 +130,10 @@ fn issue_6660_does_not_force_stale_small_declarations_onto_real_content() {
     // 선언이 내용의 2/3 미만이면 #1835 보호가 우선한다. 축소하지 않은 표는
     // 병합 복원 뒤의 잔여 여유 회수 대상도 아니다.
     let measured = measure(23, Some(4000));
-    assert!((measured.total_height - 10526.0 / 75.0).abs() < 0.01);
+    // 구 기대값10526HU는 마지막 줄간격과 비활성 여백까지 실제 내용으로 셌다.
+    // 저장 글줄·행·명시적 여백으로 독립적으로 얻은 필요량은9870HU다.
+    let stored_required = (2.0 * 646.0 + 6878.0 + 1700.0) / 75.0;
+    assert!((measured.total_height - stored_required).abs() < 0.01);
 }
 
 #[test]

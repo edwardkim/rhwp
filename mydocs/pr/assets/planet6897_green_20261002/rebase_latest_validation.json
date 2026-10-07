@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-03",
+  "old_head": "ee195e4b1",
+  "head": "3aa3140e165d7a8bb718f06991e38ea2122636f0",
+  "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "reapplied_commits": 126,
+  "conflicts": [
+    "mydocs/orders/20261002.md",
+    "mydocs/orders/20261003.md"
+  ],
+  "resolution": "upstream 및 체리픽 검토 작업 기록 모두 보존",
+  "rust_test_script_diff": "",
+  "whole_current_head_validated": false,
+  "current_focused": {
+    "run": 19,
+    "passed": 14,
+    "failed": 5,
+    "skipped": 1506,
+    "exit": 100,
+    "summary": "Summary [0.600s] 19 tests run: 14 passed, 5 failed, 1506 skipped",
+    "log": "output/pr-review/planet6897-green-20261002/rebase-current-suites-nextest.log",
+    "log_sha256": "fcb6222774b1b546c15db6f78e9ecf1008192648d9f7004965cdc1da09bac4d7",
+    "remaining": [
+      "#2470",
+      "#5941",
+      "#7147",
+      "#6797",
+      "#1921"
+    ]
+  },
+  "suite_prepare_exit": 0,
+  "new_base_manifest_exit": 0,
+  "initial_filter_run": {
+    "run": 10,
+    "passed": 8,
+    "failed": 2,
+    "note": "suite 재생성으로 분할 번호가 바뀌어 범위가 누락됨. 현재 generated 소스의 소속을 확인하고 19건 재실행; 이 실행으로 5차단 판단하지 않음"
+  }
+}

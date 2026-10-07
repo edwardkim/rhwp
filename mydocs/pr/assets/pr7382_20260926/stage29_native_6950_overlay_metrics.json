@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 89.7515,
+    "worst_pixel_match_percent": 88.72353,
+    "average_ink_match_percent": 33.65366,
+    "worst_ink_match_percent": 18.15385,
+    "average_visual_accuracy_proxy_percent": 33.65366,
+    "worst_visual_accuracy_proxy_percent": 18.15385,
+    "average_tolerant_content_match_percent": 99.1936,
+    "worst_tolerant_content_match_percent": 98.66178,
+    "worst_pages": [
+      1,
+      2,
+      3
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 100548,
+      "diff_ratio": 0.1127647,
+      "pixel_match_percent": 88.72353,
+      "ink_union_pixels": 122850,
+      "ink_diff_pixels": 100548,
+      "ink_diff_ratio": 0.81846154,
+      "ink_match_percent": 18.15385,
+      "visual_accuracy_proxy_percent": 18.15385,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 98.66178,
+      "mean_abs_channel_delta": 15.442,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        98,
+        718,
+        1026
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/rhwp_png/rhwp_002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/pdf_png/pdf-2.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 87008,
+      "diff_ratio": 0.09757958,
+      "pixel_match_percent": 90.24204,
+      "ink_union_pixels": 108852,
+      "ink_diff_pixels": 87008,
+      "ink_diff_ratio": 0.79932385,
+      "ink_match_percent": 20.06761,
+      "visual_accuracy_proxy_percent": 20.06761,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.1346,
+      "mean_abs_channel_delta": 12.266,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        93,
+        719,
+        1014
+      ]
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/rhwp_png/rhwp_003.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/pdf_png/pdf-3.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage29-6950-native/tables6950/overlay/overlay_003.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 86590,
+      "diff_ratio": 0.09711079,
+      "pixel_match_percent": 90.28892,
+      "ink_union_pixels": 232391,
+      "ink_diff_pixels": 86590,
+      "ink_diff_ratio": 0.37260479,
+      "ink_match_percent": 62.73952,
+      "visual_accuracy_proxy_percent": 62.73952,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.78442,
+      "mean_abs_channel_delta": 10.049,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        77,
+        96,
+        717,
+        1023
+      ]
+    }
+  ]
+}

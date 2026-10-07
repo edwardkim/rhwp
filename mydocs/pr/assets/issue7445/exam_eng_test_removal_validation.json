@@ -1,0 +1,643 @@
+{
+  "stage": 88,
+  "code_commit": "2c39cd3ab5fffffc4fa84997027bed1d08f873a3",
+  "analysis": {
+    "head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+    "analysis": "기존9번 영어시험의 본문초과3→5건. 같은 원문 독립 PDF에서 표/지문/문항/쪽번호의 실제 위치와 소유를 비교한다. 페이지 수만으로 승인하지 않는다. 최저90%미달이면 사용자 승인 원문 이관 및 전용 검사만 제거하고 순수 파서·IR계약과 다른 입력/공차는 유지한다.",
+    "files": {
+      "samples/exam_eng.hwp": {
+        "size": 3486208,
+        "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+      },
+      "pdf/exam_eng-2022.pdf": {
+        "size": 935380,
+        "sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844",
+        "pages": 8,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "입력실-1",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 12.0.0.4426",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260507172937+09'00'",
+          "modDate": "D:20260507172937+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      },
+      "pdf/exam_eng-hwp-2020.pdf": {
+        "size": 1047484,
+        "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+        "pages": 8,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "입력실-1",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260830011446+09'00'",
+          "modDate": "D:20260830011446+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "함초롬바탕",
+        "#태고딕",
+        "신명 견명조",
+        "신명 디나루",
+        "신명 신그래픽",
+        "신명 중고딕",
+        "신명 중명조",
+        "신명 태고딕",
+        "한양견고딕",
+        "한양견명조",
+        "한양신명조",
+        "Arial Black",
+        "Times New Roman",
+        "#태고딕",
+        "신명 견명조",
+        "신명 디나루",
+        "신명 신그래픽",
+        "신명 중고딕",
+        "신명 태고딕",
+        "한양견고딕",
+        "한양견명조",
+        "한양신명조",
+        "함초롬바탕",
+        "#신디나루",
+        "#태고딕",
+        "신명 견고딕",
+        "신명 견명조",
+        "신명 중고딕",
+        "신명 중명조",
+        "신명 태고딕",
+        "한양신명조",
+        "함초롬바탕",
+        "#태고딕",
+        "신명 견명조",
+        "신명 신명조",
+        "신명 중고딕",
+        "신명 태고딕",
+        "한양신명조",
+        "함초롬바탕",
+        "한양신명조",
+        "함초롬바탕",
+        "#디나루",
+        "#신그래픽",
+        "#태고딕",
+        "신명 견고딕",
+        "신명 견명조",
+        "신명 태그래픽",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "명조"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.3650"
+      },
+      "pageCount": 8,
+      "paraCount": 318,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 3486208,
+      "source": "samples/exam_eng.hwp",
+      "title": "1번부터 17번까지는 듣고 답하는 문제입니다. 1번부터",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 5,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 8,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 15.333333333333334,
+                "w": 408.21333333333337,
+                "x": 132.24,
+                "y": 1420.300000000001
+              },
+              "boundary": {
+                "h": 1209.4,
+                "w": 888.1600000000001,
+                "x": 117.17333333333335,
+                "y": 213.53333333333336
+              },
+              "maxOver": 12.700000000000955,
+              "nodeType": "TextLine",
+              "overBottom": 12.700000000000955,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine38"
+            }
+          ],
+          "overlap": [],
+          "page": 3,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 13.866666666666667,
+                "w": 408.21333333333337,
+                "x": 132.24,
+                "y": 1417.4200000000008
+              },
+              "boundary": {
+                "h": 1209.4,
+                "w": 888.1600000000001,
+                "x": 117.17333333333335,
+                "y": 213.53333333333336
+              },
+              "maxOver": 8.353333333333921,
+              "nodeType": "TextLine",
+              "overBottom": 8.353333333333921,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine50"
+            }
+          ],
+          "overlap": [],
+          "page": 4,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 62.986666666666665,
+                "w": 347.66666666666674,
+                "x": 597.1200000000001,
+                "y": 1371.8026666666674
+              },
+              "boundary": {
+                "h": 1209.4,
+                "w": 888.1600000000001,
+                "x": 117.17333333333335,
+                "y": 213.53333333333336
+              },
+              "maxOver": 11.856000000000677,
+              "nodeType": "Table",
+              "overBottom": 11.856000000000677,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column1/Table44"
+            }
+          ],
+          "overlap": [],
+          "page": 5,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 13.866666666666667,
+                "w": 408.21333333333337,
+                "x": 132.24,
+                "y": 1416.0360000000007
+              },
+              "boundary": {
+                "h": 1209.4,
+                "w": 888.1600000000001,
+                "x": 117.17333333333335,
+                "y": 213.53333333333336
+              },
+              "maxOver": 6.969333333333907,
+              "nodeType": "TextLine",
+              "overBottom": 6.969333333333907,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine40"
+            },
+            {
+              "bbox": {
+                "h": 87.45333333333335,
+                "w": 408.52,
+                "x": 597.1200000000001,
+                "y": 1340.983493333334
+              },
+              "boundary": {
+                "h": 1209.4,
+                "w": 888.1600000000001,
+                "x": 117.17333333333335,
+                "y": 213.53333333333336
+              },
+              "maxOver": 5.503493333334063,
+              "nodeType": "Table",
+              "overBottom": 5.503493333334063,
+              "overLeft": 0.0,
+              "overRight": 0.30666666666661513,
+              "overTop": 0.0,
+              "path": "Page/Body/Column1/Table26"
+            }
+          ],
+          "overlap": [],
+          "page": 6,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/exam_eng.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 0,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    "pdf": {
+      "path": "pdf/exam_eng-hwp-2020.pdf",
+      "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98"
+    },
+    "git_head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+      "full_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage88-exam-eng/visual-native/exam-eng/run_manifest.json"
+    }
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 89.09228
+      },
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 68.69443
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 55.25926
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 60.04261
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 51.55944
+      },
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 48.54225
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 79.13315
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 1,
+      "tolerant_content_match_percent": 96.02165
+    },
+    {
+      "page": 2,
+      "tolerant_content_match_percent": 89.09228
+    },
+    {
+      "page": 3,
+      "tolerant_content_match_percent": 68.69443
+    },
+    {
+      "page": 4,
+      "tolerant_content_match_percent": 55.25926
+    },
+    {
+      "page": 5,
+      "tolerant_content_match_percent": 60.04261
+    },
+    {
+      "page": 6,
+      "tolerant_content_match_percent": 51.55944
+    },
+    {
+      "page": 7,
+      "tolerant_content_match_percent": 48.54225
+    },
+    {
+      "page": 8,
+      "tolerant_content_match_percent": 79.13315
+    }
+  ],
+  "direct_inspection": "4쪽 문항27 내부 표·도형 경계/문단 위치 차이. 7쪽 지문·선택지·상자·각주 위치와 머리 쪽번호 모양 차이 직접 확인. 글꼴 예외 없음.",
+  "whole_native": "8쪽 모두 실행, 최저48.54225%, 승인 미달",
+  "fresh_wasm": "미실행",
+  "mutation": {
+    "deleted_files": [
+      "tests/issue_775.rs",
+      "tests/exam_eng_multicolumn.rs",
+      "tests/cases/issue_6646_nbsp_advance_matches_space.rs",
+      "tests/cases/issue_6030_subline_row_grow_lastline.rs"
+    ],
+    "removed_functions": [
+      "issue_775_exam_eng_p4_pi181_table_at_column_top",
+      "exam_eng_page_count_after_359_fix",
+      "issue_6646_nbsp_advance_matches_plain_space",
+      "issue_6030_exam_eng_choice_last_line_not_clipped",
+      "master_page_title_picture_sits_below_the_first_para_lead",
+      "issue_6630_contract_still_holds_when_stack_excludes_lead",
+      "test_521_tac_table_outer_margin_bottom_p2",
+      "test_footer_total_page_field_distinct_from_current_page"
+    ],
+    "baseline_rows": {
+      "tests/fixtures/body_overflow_baseline.tsv": [
+        "exam_eng.hwp\t3"
+      ],
+      "tests/fixtures/oracle_page_count_baseline.tsv": [
+        "samples/exam_eng.hwp\t8\t8"
+      ],
+      "tests/fixtures/render_page_samples.tsv": [
+        "samples/exam_eng.hwp\t8\t8\t0"
+      ]
+    },
+    "matrix_removed": [
+      "samples/exam_eng.hwp p0"
+    ],
+    "retained_contract": "total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip",
+    "preserved_input": {
+      "path": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+      "size": 3486208
+    }
+  },
+  "production_changes": false,
+  "source_unit_test_changes": true,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_018",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9) or test(issue_6630_cell_first_para_lead::) or test(issue_6569_cell_center_lead_in_stack::) or test(issue_7061_stored_line_escape::) or test(=total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip) or test(test_548_cell_inline_shape_first_line_indent_p8) or test(test_574_page_number_not_force_bold_for_hy_kyun_myeongjo) or test(issue_4334_stage1_textbox_under_image_top_object_pin)"
+        ],
+        "exit_code": 100,
+        "seconds": 148.44436041731387
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.713797625154257
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4355766670778394
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2342975828796625
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38565645832568407
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 24.52629491640255
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4488750831224024
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 10.011684707831591
+      },
+      {
+        "step": "roundtrip-retained",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(total_page_auto_num_preserved_on_hwp_to_hwpx_roundtrip)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 1.0537951248697937,
+        "reason": "첫 집중 필터의 exact 이름에 파생 suite module 접두어가 빠져 미선택. 실제 유지 파서·직렬화 함수를 별도로 실행."
+      }
+    ]
+  },
+  "focused_summary": [
+    "        FAIL [   2.427s] (17/17) rhwp::regression_suite_019 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+    "     Summary [   2.456s] 17 tests run: 16 passed, 1 failed, 5156 skipped",
+    "        FAIL [   2.427s] (17/17) rhwp::regression_suite_019 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+    "     Summary [   0.183s] 1 test run: 1 passed, 215 skipped"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870452250",
+  "additional_failure": "재배정된 기존9번은 issue7196/156760012_page_top_spacing_trim.hwpx의 신규2건으로 실패. hwpctl_API 기존0→1건은 별도 미해결.",
+  "limits": "문서 제외는 사용자 승인에 따른 저피델리티 회귀 정리. 원문 결함 해결/전체 회귀 통과/PR준비로 세지 않음. hwpctl_API 별도 판단 대기.",
+  "test_source_sha256": {
+    "src/renderer/layout/integration_tests.rs": "a1fbde4ca612fc1b592ebc0652d2f0e4f8b5014b8e48b3619bc2c4174690b7e6",
+    "tests/cases/issue_6630_cell_first_para_lead.rs": "2e21fe423782e5ae624c4f9ea0c91b6987e47b97f72bf8388dffd9709f3c0c0e",
+    "tests/cases/issue_6569_cell_center_lead_in_stack.rs": "ac1f14fe10927541b465b7f8dbdafd0e7a301fadb27383a921a6a2239068a730",
+    "tests/cases/issue_7061_stored_line_escape.rs": "7dee2d63eb51635fdad93e0c5ce085c28cea012118212dd78f5d3944063b0b7c",
+    "tests/hwpx_roundtrip_integration.rs": "8afa1ed25a0cc3fc9fd4e6199d5a014e592321d8114e4dc6f6215a1a1fde7537"
+  },
+  "manifest_followup_correction": {
+    "reason": "CanvasKit native/browser 비교 manifest의 같은 문서 등록을 앞선 작업에서 놓쳐 별도 수정. 원문 제외 범위의 자체 오류를 정정.",
+    "removed_samples": [
+      {
+        "id": "exam-eng",
+        "file": "exam_eng.hwp",
+        "category": "exam",
+        "page": 0,
+        "notes": "English exam real-document sample for mixed text and layout parity.",
+        "browserParityThresholds": {
+          "maxDiffRatio": null,
+          "inkMaskNeighborhoodRadius": 3,
+          "inkMaskMaxDiffRatio": 0.002,
+          "nonInkMaxDiffPixels": 0,
+          "solidInkMaxDiffRatio": 0.02
+        },
+        "diagnosticAxes": [
+          "exam"
+        ],
+        "baselineTier": "extended"
+      }
+    ],
+    "remaining_samples": 121,
+    "remaining_files_exist": true,
+    "native_browser_manifest_load": "PASS",
+    "independent_hancom_acceptance": "이 검사는 manifest 유효성만 검증하며 피델리티 개선을 입증하지 않음",
+    "code_commit": "ee9b3ce3cbc49439cef0b7b830254befc40e5903"
+  }
+}

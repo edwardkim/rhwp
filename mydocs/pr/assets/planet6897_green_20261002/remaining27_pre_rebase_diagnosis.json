@@ -1,0 +1,104 @@
+{
+  "head": "a5e83c007f55840744e9bdef52be5f3038f2c877",
+  "source": "samples/issue5875/nested_table_text_caption.hwp",
+  "independent_pdf": "pdf/issue5875/nested_table_text_caption-2020.pdf",
+  "last_saved_with": {
+    "product": "hancom-office-2020",
+    "version": "11.0.0.3524"
+  },
+  "conversion_engine": 2020,
+  "pdf_pages": 12,
+  "pdf_caption_ownership": {
+    "7": [
+      "표1",
+      "표2",
+      "표3",
+      "표4"
+    ],
+    "8": [
+      "표5",
+      "표6",
+      "표7",
+      "표8"
+    ]
+  },
+  "current": {
+    "pages": 11,
+    "off_canvas": 1
+  },
+  "diagnostics": {
+    "mixed_reset_only_disabled": {
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/hwpx/exam_social.hwpx": {
+        "pageCount": 5,
+        "offCanvasCount": 0,
+        "overlapCount": 1
+      }
+    },
+    "pre_single_tac": {
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/hwpx/exam_social.hwpx": {
+        "pageCount": 4,
+        "offCanvasCount": 0,
+        "overlapCount": 0
+      }
+    },
+    "closed_inline_frame_disabled": {
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/hwpx/exam_social.hwpx": {
+        "pageCount": 5,
+        "offCanvasCount": 0,
+        "overlapCount": 1
+      }
+    },
+    "old_renderer_with_current_parser": {
+      "renderer_reference": "d2ef8693a",
+      "parser": "current HWP parser; new HWPX provenance field has no HWP source semantics",
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 12,
+        "offCanvasCount": 0,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 12,
+        "offCanvasCount": 0,
+        "overlapCount": 0
+      }
+    }
+  },
+  "conclusion": "중첩 표 문서의 실제 회귀는 d2ef renderer 이후 변경에 있음. mixed 신호와 인라인 여백만의 변경은 제외. 시험지는 단일 TAC 변경 계열을 별도 추적. 90% 시각 선행 검증은 아직 미완료이며 기대값/검사/baseline은 수정하지 않음.",
+  "hashes": {
+    "samples/issue5875/nested_table_text_caption.hwp": "feb7fd1860b5b1b74e1bd75ec28a6d9ed506db41cfb2c789f06955521d183dc6",
+    "pdf/issue5875/nested_table_text_caption-2020.pdf": "6308671fc56b1bfd9e72660edd6edf574a4e16f75e84e0bf35399339d9ce3702"
+  },
+  "implementation_fixed": false,
+  "whole_failed_checks": 27,
+  "integration_pr_ready": false
+}

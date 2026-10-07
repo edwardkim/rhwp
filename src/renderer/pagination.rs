@@ -160,6 +160,8 @@ pub struct PaginationResult {
     pub pre_emitted_host_paras: std::collections::HashSet<usize>,
     /// [#2015] pre-emit 한 host 텍스트 높이(px). layout 이 vert_offset 이중계상을 보정할 때 사용.
     pub pre_emitted_host_heights: std::collections::HashMap<usize, f64>,
+    /// [#7418] pre-emit 한 host 글의 내용 높이(px, 마지막 줄간격 제외).
+    pub pre_emitted_host_content_heights: std::collections::HashMap<usize, f64>,
     /// 섹션별 미주 목록 (문서 끝 또는 섹션 끝에 렌더)
     pub endnotes: Vec<EndnoteRef>,
     /// [Task #836] 미주 paragraphs (endnote_para_base + idx 로 lookup)
@@ -432,7 +434,8 @@ pub enum FootnoteSource {
 /// 한 각주를 물리 페이지 경계에서 나눈 line fragment.
 ///
 /// `start_line..end_line`은 각주 안의 문단을 순서대로 compose한 뒤의 평탄 line index다.
-/// `end_line`은 exclusive다. 첫 fragment만 separator와 번호를 그린다.
+/// `end_line`은 끝 줄을 포함하지 않는다. 번호는 첫 조각에만 표시하며,
+/// 물리 쪽의 각주 구분선 표시는 번호와 별도로 결정한다.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FootnoteFragment {
     pub start_line: usize,
@@ -756,6 +759,29 @@ fn tac_object_owning_line_seg_index(para: &Paragraph, ctrl_idx: usize) -> Option
 /// `PageItem::Shape`는 개체 종류를 함께 담지만, 실제 그림/도형의 인라인 좌표는 문단의
 /// 일부 줄만 렌더한 쪽에 등록된다. 문단 끝에서 일괄 추가하면 모든 TAC 그림이 마지막
 /// 조각으로 몰린다. 표·수식은 별도 조판 경로와 소유 규칙을 가지므로 여기서 넓히지 않는다.
+/// [#5941] 앵커 줄이 앞 쪽에 남은 그림/도형을 그 쪽으로 라우팅할 대상인지.
+///
+/// `is_routable_treat_as_char_picture_or_shape` 는 `treat_as_char` 만 받는다. 그런데
+/// "문단이 쪽 분할되면 개체가 마지막 쪽에 붙는다" 는 문제는 TAC 여부와 무관하다.
+/// 비-TAC 자리차지/어울림 개체도 같은 라우팅이 필요하다 — 목적지 판정은
+/// `find_inline_control_target_page` 가 하고, 제자리 개체에는 `None` 을 돌려준다.
+pub(crate) fn is_routable_anchored_picture_or_shape(control: &Control) -> bool {
+    let common = match control {
+        Control::Picture(picture) => &picture.common,
+        Control::Shape(shape) => shape.common(),
+        _ => return false,
+    };
+    // 종전 대상(글자처럼)은 그대로 두고, **용지 기준** 개체를 더한다.
+    //
+    // 용지 기준 개체는 세로 오프셋이 그 쪽 안의 절대 위치다 — 어느 쪽에 얹히느냐가
+    // 정해져야 그 값이 뜻을 갖는다. 그래서 앵커 줄이 있는 쪽으로 보내야 한다.
+    //
+    // ⚠ **문단 기준까지 넓히면 안 된다.** `#2814` 의 절반쪽 그림 6장은 한 문단에
+    // 공동 앵커돼 쪽마다 2장씩 분배되는데, 문단 기준까지 라우팅하면 5장이 첫 쪽으로
+    // 몰려 `[5, 1]` 이 된다(실측). 그 개체들은 흐름이 자리를 정하는 쪽이다.
+    common.treat_as_char || matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+}
+
 pub(crate) fn is_routable_treat_as_char_picture_or_shape(control: &Control) -> bool {
     match control {
         Control::Picture(picture) => picture.common.treat_as_char,

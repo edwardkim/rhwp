@@ -1,0 +1,41 @@
+{
+  "issue": 1133,
+  "files": [
+    {
+      "path": "page-number-footer15.hwpx",
+      "sha256": "0c935c4dc35145ecb4a225fc39aefe8d2107d9ff6f23a7c525cffc8292b1bee5",
+      "bytes": 64920,
+      "source": "저장소 원본 samples/hwpx/issue_1133.hwpx의 한 속성만 바꾼 생성 대조군",
+      "source_sha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+      "changed_members": [
+        "Contents/section0.xml"
+      ],
+      "changed_attribute": "footer",
+      "from_hu": 2834,
+      "to_hu": 4252,
+      "reference_pdf": "pdf/issue1133/page-number-footer15-2020.pdf",
+      "reference_pdf_sha256": "a1f7e04876bd9e77f2e8b5371a8f6d02d8448411b267b4a7563869aaf52fcf1b",
+      "reference_engine": "2020",
+      "reference_client": "hwp2024-mcp-convert",
+      "purpose": "자동 쪽번호가 아래쪽 여백 선을 기준으로 배치되는지 최종 glyph 기준선으로 검사"
+    },
+    {
+      "path": "page-number-bottom15.hwpx",
+      "sha256": "daf33c69e328f9e6b4ac2442868192da559e3cc9fa2afb01d0385e995b3f0226",
+      "bytes": 64921,
+      "source": "저장소 원본 samples/hwpx/issue_1133.hwpx의 한 속성만 바꾼 생성 대조군",
+      "source_sha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+      "changed_members": [
+        "Contents/section0.xml"
+      ],
+      "changed_attribute": "bottom",
+      "from_hu": 2834,
+      "to_hu": 4252,
+      "reference_pdf": "pdf/issue1133/page-number-bottom15-2020.pdf",
+      "reference_pdf_sha256": "a51fc9de4e6214a38610e9bbd0544787752426810c59d5e309261fc483f6ba10",
+      "reference_engine": "2020",
+      "reference_client": "hwp2024-mcp-convert",
+      "purpose": "자동 쪽번호가 아래쪽 여백 선을 기준으로 배치되는지 최종 glyph 기준선으로 검사"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "analysis": "확정 InlineBoxPlacement의 표 원점 뒤에서 legacy 저장 vpos가 다시 가산되었다. 계획된 TAC만 중복 가산을 생략하고 미계획 기존 경로는 유지한다.",
+  "source": "samples/footnote-01.hwp",
+  "reference": "pdf/footnote-01-hwp-2020.pdf",
+  "producer_consumer": [
+    "StoredTacPlan: 원점1500HU와 소유 줄 top2560HU로 InlineBoxPlacement 생산",
+    "layout.rs flow_placement: col_area.y + placement.y + outer_margin_top 소비",
+    "layout.rs table_y_start: 확정 flow_placement 존재 시 legacy 원점 재가산 생략"
+  ],
+  "native_diagnostic_p1": {
+    "before_percent": 79.66299,
+    "after_percent": 97.9649,
+    "renderer": "debug Native",
+    "pdf_table_top_px": 152.31,
+    "before_table_top_px": 172.4,
+    "after_table_top_px": 152.4
+  },
+  "other_pages": {
+    "unchanged_table_tree_locations": true,
+    "document_pages": 6,
+    "remaining_below90_pages": [
+      3,
+      4,
+      5
+    ]
+  },
+  "tests_added": 0,
+  "tests_removed": 0,
+  "tests_changed": 0,
+  "golden_updated": false,
+  "final_validation": "원점 보정 단계의 Native/fresh WASM 1쪽, 기존54건, 필수 빌드/lint 통과. 전6쪽 승인과 전체 회귀는 보류.",
+  "focused": {
+    "run": 54,
+    "passed": 54,
+    "failed": 0,
+    "exit": 0,
+    "expression": "test(issue_7203) | test(issue_7103) | test(issue_6950)"
+  },
+  "formal_p1": {
+    "native_percent": 97.9649,
+    "fresh_wasm_percent": 97.9649,
+    "pages_compared": [
+      1
+    ],
+    "document_page_count": 6,
+    "not_full_document_approval": true
+  },
+  "gates": [
+    {
+      "step": "native",
+      "exit": 0,
+      "seconds": 100.75
+    },
+    {
+      "step": "wasm",
+      "exit": 0,
+      "seconds": 169.22
+    },
+    {
+      "step": "fmt",
+      "exit": 0,
+      "seconds": 7.64
+    },
+    {
+      "step": "native-clippy",
+      "exit": 0,
+      "seconds": 32.05
+    },
+    {
+      "step": "wasm-clippy",
+      "exit": 0,
+      "seconds": 16.27
+    },
+    {
+      "step": "workspace-build",
+      "exit": 0,
+      "seconds": 26.1
+    },
+    {
+      "step": "workspace-clippy",
+      "exit": 0,
+      "seconds": 54.21
+    }
+  ]
+}

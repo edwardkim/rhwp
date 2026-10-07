@@ -820,6 +820,7 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
         break_latin_word: None,
         // HWP5 원본에는 HWPX 표기 구분이 없다 — switch 형태로 방출한다 (#4898).
         hwpx_plain_para_margin: false,
+        hwpx_plain_para_margin_physical: false,
     })
 }
 

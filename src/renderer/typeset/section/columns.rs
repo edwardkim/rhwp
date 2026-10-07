@@ -79,8 +79,8 @@ impl TypesetEngine {
             })
             .unwrap_or(0.0);
         // [Task #866] 직전 zone 의 마지막 paragraph 가 wrap=위아래 인 글자처럼-취급 표(헤더 띠)를
-        // 보유하고 그 zone 의 1단 ColumnDef 간격이 0 이면, 한컴은 표 band 높이(표 본체 +
-        // outer_margin top/bottom)만큼을 표 아래에 추가로 비워둔다(한컴 PDF 측정:
+        // 보유하고 그 zone 의 1단 ColumnDef 간격이 0 이면, 표의 저장 줄 수에 따라
+        // 저장 줄이 소비한 아래 여백 또는 선행 줄의 몫을 제외한 높이를 예약한다(한컴 PDF 측정:
         // shortcut.hwp 2·3쪽 헤더 띠 하단↔본문 ~28~33px). ColumnDef 간격>0 인 헤더 띠(1쪽
         // 등)는 그 간격이 이미 zone 사이 여백이 되므로 제외.
         // [Task #874 Stage 2] design_spacing 조건을 ≤ 1mm(=3.8px) 까지 인정. 페이지 break 후
@@ -99,11 +99,23 @@ impl TypesetEngine {
                                     crate::model::shape::TextWrap::TopAndBottom
                                 ) =>
                         {
-                            Some(
-                                hwpunit_to_px(t.common.height as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                                    + hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi),
-                            )
+                            if paragraphs[pi].line_segs.len() > 1 {
+                                Some(crate::renderer::partial_tac_header_tail_px(
+                                    t.common.height,
+                                    t.outer_margin_bottom,
+                                    paragraphs[pi]
+                                        .line_segs
+                                        .last()
+                                        .map_or(0, |line| line.line_spacing),
+                                    self.dpi,
+                                ))
+                            } else {
+                                Some(crate::renderer::single_tac_header_tail_px(
+                                    t.common.height,
+                                    t.outer_margin_top,
+                                    self.dpi,
+                                ))
+                            }
                         }
                         _ => None,
                     })
@@ -121,25 +133,65 @@ impl TypesetEngine {
         //     분할에서>`). Stage 1 의 Distribute 마지막 컬럼 라우팅과 정합.
         let entering_solo_zero = paragraphs[para_idx].controls.iter().any(|c| {
             matches!(c,
-            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing == 0)
+            Control::ColumnDef(cd) if cd.column_count.max(1) <= 1 && cd.spacing <= 283)
         });
         let leaving_solo_zero = st.col_count <= 1 && st.current_zone_design_spacing_px < 0.5;
         // [Task #866 v3 Stage 1] 헤더 띠 zone (TAC wrap=TopAndBottom 표) 의 leaving 은
-        // `tac_band_extra` 가 이미 표 band 높이만큼 패딩을 추가하므로 `solo_zone_pad` 를 또
-        // 더하면 한컴 PDF 대비 본문 첫 줄이 ~13pt 더 아래로 밀려 사용자 "넓다" 피드백 발생.
-        // tac_band_extra>0 == 헤더 띠 leaving 케이스 → solo_zone_pad 의 leaving 분기 제외.
+        // `tac_band_extra` 는 표의 저장 줄 수에 맞는 잔여 높이를 이미 예약한다.
+        // 헤더 띠 다음의 명시 단나누기까지 추가 pad 로 세면 같은 물리 간격을
+        // 다시 더하므로, 이 경우에는 진입·이탈 pad 를 모두 제외한다.
         let leaving_is_header_band = leaving_solo_zero && tac_band_extra > 0.5;
         let column_break_new_band = paragraphs[para_idx].column_type == ColumnBreakType::Column;
-        let solo_zone_pad = if entering_solo_zero
-            || (leaving_solo_zero && !leaving_is_header_band)
-            || column_break_new_band
-        {
-            hwpunit_to_px(1200, self.dpi)
+        let new_band_is_multicol = paragraphs[para_idx]
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::ColumnDef(cd) if cd.column_count.max(1) > 1));
+        let title_exit_pad = para_idx.checked_sub(1).and_then(|previous| {
+            crate::renderer::solo_title_exit_pad_px(
+                &paragraphs[previous],
+                &paragraphs[para_idx],
+                st.current_zone_design_spacing_px,
+                new_ds,
+                self.dpi,
+            )
+        });
+        let header_entry_pad = para_idx.checked_sub(1).and_then(|previous| {
+            crate::renderer::solo_header_gap_half_px(
+                &paragraphs[previous],
+                &paragraphs[para_idx],
+                self.dpi,
+            )
+        });
+        let header_exit_pad = para_idx.checked_sub(2).and_then(|title| {
+            crate::renderer::solo_header_gap_half_px(
+                &paragraphs[title],
+                &paragraphs[title + 1],
+                self.dpi,
+            )
+        });
+        let solo_zone_pad = if leaving_is_header_band {
+            0.0
+        } else if let Some(pad) = header_entry_pad.or(header_exit_pad) {
+            pad
+        } else if let Some(title_exit_pad) = title_exit_pad {
+            title_exit_pad
+        } else if column_break_new_band && st.col_count > 1 && new_band_is_multicol {
+            crate::renderer::multicol_band_break_pad_px(self.dpi)
+        } else if entering_solo_zero || leaving_solo_zero || column_break_new_band {
+            crate::renderer::solo_zone_pad_px(entering_solo_zero, st.col_count > 1, self.dpi)
         } else {
             0.0
         };
+        let blank_tail_excess = st.pages.last().map_or(0.0, |page| {
+            crate::renderer::parallel_blank_tail_spacing_excess_px(
+                &page.column_contents,
+                paragraphs,
+                self.dpi,
+            )
+        });
         let candidate_offset = st.current_zone_y_offset
-            + vpos_zone_height
+            + (vpos_zone_height - blank_tail_excess - header_entry_pad.unwrap_or(0.0) * 2.0)
+                .max(0.0)
             + tac_band_extra
             + st.current_zone_design_spacing_px / 2.0
             + new_ds / 2.0
