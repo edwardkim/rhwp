@@ -665,7 +665,6 @@ pub(super) fn try_absorb_empty_paragraph(
     para_idx: usize,
     para: &Paragraph,
     fmt: &FormattedParagraph,
-    paragraphs: &[Paragraph],
     is_last_in_section: bool,
     available: f64,
     layout_drift_safety_px: f64,
@@ -692,19 +691,6 @@ pub(super) fn try_absorb_empty_paragraph(
     // 있으면 미세 drift용 Unadvanced 처리로 그 소유를 없애지 않는다.
     if stored_line_overflows_body(para, st.layout.body_area.height, st.layout.dpi) {
         return false;
-    }
-    if st.current_height + fmt.height_for_fit > available
-        && empty::is_stored_table_closing_guide(
-            para,
-            para_idx,
-            paragraphs,
-            is_last_in_section,
-            st.layout.dpi,
-            &st.paragraph_empty_tail_page(),
-        )
-    {
-        st.place_stored_empty_guide(para_idx, &para.line_segs[0]);
-        return true;
     }
     match empty::trailing_disposition(
         para,

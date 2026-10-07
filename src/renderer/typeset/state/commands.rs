@@ -6,6 +6,12 @@ use crate::renderer::typeset::{
 };
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn discard_terminal_blank_only_page(
+        &mut self,
+        paragraphs: &[Paragraph],
+    ) {
+        super::finalize::discard_terminal_blank_only_page(&mut self.data.pages, paragraphs);
+    }
     pub(in crate::renderer::typeset) fn finalize_pages(
         &mut self,
         entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],

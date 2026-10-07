@@ -2,7 +2,7 @@
 
 use super::super::para_has_visible_text;
 use super::metrics::FormattedParagraph;
-use crate::model::paragraph::{ColumnBreakType, Paragraph};
+use crate::model::paragraph::Paragraph;
 use crate::renderer::pagination::PageItem;
 
 pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
@@ -17,57 +17,6 @@ pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
 pub(super) enum TailDisposition {
     Continue,
     Unadvanced,
-}
-
-/// 분할 표의 배치를 끝내고 바로 만나는 구역 종료 문단은 저장본의 종료 guide일 수 있다.
-/// 저장 줄이 원래 쪽 안에 있고 명시적/저장 쪽 경계가 없을 때만 fit 실패를 흡수한다.
-/// 반복 Enter는 앞 항목이 본문 문단이므로 이 경로에 들어오지 않는다.
-pub(super) fn is_stored_table_closing_guide(
-    para: &Paragraph,
-    para_idx: usize,
-    paragraphs: &[Paragraph],
-    is_last_in_section: bool,
-    dpi: f64,
-    page: &EmptyTailPage<'_>,
-) -> bool {
-    if !is_last_in_section
-        || page.col_count != 1
-        || para_has_visible_text(para)
-        || !para.controls.is_empty()
-        || matches!(
-            para.column_type,
-            ColumnBreakType::Page | ColumnBreakType::Section
-        )
-    {
-        return false;
-    }
-    let Some(PageItem::PartialTable { para_index, .. }) = page.current_items.last() else {
-        return false;
-    };
-    // paragraph flow는 table coordinator가 모든 조각을 소비한 뒤에 호출된다.
-    // 뒤에 다른 문단을 거친 빈 줄 묶음은 표의 종료 guide로 해석하지 않는다.
-    if para_index.checked_add(1) != Some(para_idx) {
-        return false;
-    }
-    let Some(previous) = paragraphs.get(*para_index) else {
-        return false;
-    };
-    if crate::renderer::typeset::stored_vpos_top_collision(previous, para) {
-        return false;
-    }
-    let [line] = para.line_segs.as_slice() else {
-        return false;
-    };
-    if crate::renderer::typeset::is_synthetic_line_seg(line)
-        || line.tag & crate::model::paragraph::LineSeg::TAG_FIRST_SEGMENT == 0
-        || line.segment_width <= 0
-        || line.line_height <= 0
-    {
-        return false;
-    }
-    line.vertical_pos >= crate::renderer::px_to_hwpunit(page.current_zone_y_offset, dpi)
-        && line.vertical_pos.saturating_add(line.line_height)
-            <= crate::renderer::px_to_hwpunit(page.body_height, dpi)
 }
 
 pub(super) fn hide_rowbreak_guide(

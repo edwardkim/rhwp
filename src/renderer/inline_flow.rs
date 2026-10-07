@@ -76,34 +76,6 @@ pub struct InlineFlowPlan {
 }
 
 impl InlineFlowPlan {
-    /// 저장 종료 guide의 줄 원점과 이미 소비한 흐름 끝을 분리한다.
-    /// guide는 표의 끝을 더 전진시키지 않지만 저장 줄 상자와 문단 소속을 보존한다.
-    pub(crate) fn stored_empty_guide(
-        line: &crate::model::paragraph::LineSeg,
-        flow_end: f64,
-        dpi: f64,
-        zone_y_offset: f64,
-    ) -> Self {
-        // LineSeg는 본문 기준, plan과 layout의 col_area는 현재 zone 기준이다.
-        let start = hwpunit_to_px(line.vertical_pos, dpi) - zone_y_offset;
-        let mut row = line.clone();
-        row.vertical_pos = 0;
-        Self {
-            text_rows: Some(vec![row]),
-            square_host_control: None,
-            text_spacing_before: None,
-            square_host_placement: None,
-            square_host_exclusion: None,
-            start,
-            end: flow_end,
-            boxes: Vec::new(),
-            rows: Vec::new(),
-            carved: false,
-            next_row_top: flow_end,
-            fallback_font_size: 12.0,
-        }
-    }
-
     pub(crate) fn relative_to(&mut self, x: f64, y: f64) {
         self.start -= y;
         self.end -= y;

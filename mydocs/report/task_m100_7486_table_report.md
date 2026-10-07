@@ -210,3 +210,23 @@ guide만 제외하고 새 끝 쪽 보존을 유지하면6PASS였으나 Native �
 원래 후보로 복원했고 원격 source push·Approve·merge는 하지 않았다. 이 PR의 저장 guide
 계약 입증 또는 실제 저장본 경로를 유지하는 Enter 범위 분리가 남아 있으며 #7207/#7445
 전체 보정으로 확대하지 않는다. 구체적인 결과는 [검토 기록](../pr/archives/pr_7544_review.md)에 연결한다.
+
+## 2026-10-07 보류 해제 후보 — 저장 guide 추정 분기 제외
+
+원 이슈 #7486은 일반 본문을 거친 반복 Enter의 확정 쪽이 표 꼬리 호환 정리에
+삭제되는 문제다. 이번 보정에서는 새로운 `stored_empty_guide` 계획·0 전진 해석을
+제외하고, 기존 #3637 정리 경로가 바로 앞 완료 표의 단일 종료 문단에만 적용되게
+범위를 제한했다. 단일 종료 문단 자체가 guide라는 새 사양 판정은 하지 않는다.
+그 기존 경로의 의미 재설계는 이번 Enter 보정에 포함하지 않는다.
+
+일반 본문 줄은 `FormattedParagraph`의 fit/advance → `paragraph/flow.rs` 이월 →
+`PageItem::FullParagraph` → `section.rs` 확정 → `state/finalize.rs` → cursor lookup을
+소비한다. 앞 쪽의 마지막 항목이 이미 본문 문단이면 표의 종료 문단이 아니므로
+사후 정리를 실행하지 않는다. 저장본의 완료 `PartialTable` 바로 뒤 단일 종료
+문단은 기존 경로를 그대로 사용한다. 측정·줄 원점·표 컷/예약/배치 값은 바꾸지 않는다.
+
+첫 후보의 기존 Enter 6개는 모두 PASS였고, 최신 devel과 같은 production source인
+선행 후보에 대한 쪽수 대조는 어구21→21, 교육과정413→413, 정상 RowBreak18→18이었다.
+이것은 시각 통과가 아니라 범위 분리 진단이다. 실제 출력 전체 무변경 대조와
+수정 경계의 독립 PDF Native/fresh WASM, 전체 회귀·lint는 이어서 검증한다.
+교육과정의 기존413/415쪽 차이를 해결한 것으로 보고하지 않는다.
