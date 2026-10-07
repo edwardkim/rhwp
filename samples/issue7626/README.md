@@ -45,6 +45,6 @@ HWP로 재저장한 파일이 `end-run-two-lines.hwp`다. 두 형식 각각의 �
 | `end-run-two-lines-hwp-2020.pdf` | `9f11266aa551d8122fd80ab656c70a3ee9ca00507d3a5f466a8d9ecaaca12f5a` |
 
 회귀 보강 전 Native/fresh WASM 전쪽 실루엣 gate를 확인했다. HWPX는 양쪽 최저
-98.85353%, HWP는 Native 98.85353%·fresh WASM 99.10313%다. 각 입력은 2쪽이며
+98.85353%이며 HWP도 양쪽 최저 98.85353%다. 각 입력은 2쪽이며
 누락 쪽과 90% 미만 쪽은 없다. 외부 다운로드 경로의 검증 파일과 위 저장소 파일은
 SHA-256이 같고, 검증 로그와 중간 원장은 ignored `output/pr-review/issue7626/`에 보존한다.
