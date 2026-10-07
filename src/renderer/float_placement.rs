@@ -3429,6 +3429,23 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     {
         return None;
     }
+    // [#7621] 폭 0 host 줄이 오프셋 0 띠의 시작에 있으면 그 줄은 띠에 흡수된다(#7470).
+    // 한글은 그런 줄을 띠와 별도로 전진하지 않으므로(다음 vpos − 현 vpos = 개체 높이),
+    // 사다리 `lh + ls` 는 띠 아래 host 줄의 증거가 될 수 없다.
+    if para.controls.iter().any(|control| match control {
+        Control::Table(table) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, &table.common)
+        }
+        Control::Picture(picture) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, &picture.common)
+        }
+        Control::Shape(shape) => {
+            crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, shape.common())
+        }
+        _ => false,
+    }) {
+        return None;
+    }
     // #6950: 문단 종료는 현재 문단의 마지막 개체에서 한 번 소비한다.
     // 다음 문단에 표가 있더라도 그 문단의 시작과 현재 문단의 종료 계약은
     // 사라지지 않는다. 다음 저장 시작점은 진행량의 증거로만 사용하며,
