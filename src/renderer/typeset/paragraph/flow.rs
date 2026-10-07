@@ -73,7 +73,6 @@ pub(in crate::renderer::typeset) fn place(
         para_idx,
         para,
         fmt,
-        paragraphs,
         is_last_in_section,
         available,
         layout_drift_safety_px,

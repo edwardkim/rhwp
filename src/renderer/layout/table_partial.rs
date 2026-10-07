@@ -1383,11 +1383,12 @@ impl LayoutEngine {
                                             table, cell, &units, start, styles,
                                         ))
                             })));
-            let saved_frame_needs_alignment = (align_saved_opening_frame
-                && cell_row + 1 == end_row
-                || cut_frame_owns_alignment
-                || full_width_frame_owns_alignment)
-                && cell.vertical_align != crate::model::table::VerticalAlign::Top;
+            // 유효한 저장 앞 프레임과 이어받기 프레임은 원본 정렬을 소유한다.
+            // 줄 구성 창과 최종 배치 원점에서 같은 소유 결과를 사용한다.
+            let frame_owns_alignment = full_width_frame_owns_alignment || cut_frame_owns_alignment;
+            let saved_frame_needs_alignment =
+                (align_saved_opening_frame && cell_row + 1 == end_row || frame_owns_alignment)
+                    && cell.vertical_align != crate::model::table::VerticalAlign::Top;
             let composition_window = if saved_frame_needs_alignment {
                 None
             } else if let Some(p) = probe.filter(|p| p.windowed) {
@@ -1812,7 +1813,7 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if cut_frame_owns_alignment {
+            let effective_align = if frame_owns_alignment {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
                 cell.vertical_align
             } else if center_saved_spanning_cell == Some(cell_idx) {
