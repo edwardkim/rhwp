@@ -677,6 +677,81 @@ fn reclassify_floating_pictures_inline(para: &mut Paragraph) {
     }
 }
 
+/// Find widthless source records within an entirely unplaced HWPX section.
+/// Keep the source IR; only its shared render copy takes the no-cache path.
+fn has_widthless_stored_rows(para: &Paragraph) -> bool {
+    (!para.line_segs.is_empty()
+        && para.line_segs.iter().all(|seg| {
+            seg.segment_width <= 0
+                && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        }))
+        || para.controls.iter().any(|control| match control {
+            Control::Table(table) => {
+                table
+                    .cells
+                    .iter()
+                    .any(|cell| cell.paragraphs.iter().any(has_widthless_stored_rows))
+                    || table.caption.as_ref().is_some_and(|caption| {
+                        caption.paragraphs.iter().any(has_widthless_stored_rows)
+                    })
+            }
+            _ => false,
+        })
+}
+
+/// A missing width alone does not invalidate an otherwise placed vertical
+/// ladder. Only an entirely unplaced source snapshot has no geometry to keep.
+fn section_has_unplaced_stored_rows(paragraphs: &[Paragraph]) -> bool {
+    fn unplaced(para: &Paragraph, found: &mut bool) -> bool {
+        para.line_segs.iter().all(|seg| {
+            if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+                return true;
+            }
+            *found = true;
+            seg.segment_width <= 0 && seg.column_start == 0 && seg.vertical_pos == 0
+        }) && para.controls.iter().all(|control| match control {
+            Control::Table(table) => {
+                table
+                    .cells
+                    .iter()
+                    .all(|cell| cell.paragraphs.iter().all(|p| unplaced(p, found)))
+                    && table
+                        .caption
+                        .as_ref()
+                        .is_none_or(|caption| caption.paragraphs.iter().all(|p| unplaced(p, found)))
+            }
+            _ => true,
+        })
+    }
+    let mut found = false;
+    paragraphs.iter().all(|para| unplaced(para, &mut found)) && found
+}
+
+fn discard_widthless_rows_for_render(para: &mut Paragraph) {
+    if !para.line_segs.is_empty()
+        && para.line_segs.iter().all(|seg| {
+            seg.segment_width <= 0
+                && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+    {
+        para.replace_line_segs_with_space_metrics(Vec::new(), Vec::new());
+    }
+    for control in &mut para.controls {
+        if let Control::Table(table) = control {
+            for cell in &mut table.cells {
+                for child in &mut cell.paragraphs {
+                    discard_widthless_rows_for_render(child);
+                }
+            }
+            if let Some(caption) = &mut table.caption {
+                for child in &mut caption.paragraphs {
+                    discard_widthless_rows_for_render(child);
+                }
+            }
+        }
+    }
+}
+
 /// [#2004] 문단이 품은 표의 셀에서 부동 이미지 스택을 "이미지 1장짜리 inline 문단 N개"로
 /// 분할·재분류한다(정규화본 전용, 원본 무손상). 156714340: 1×1 부동 표 셀에 전면 Square
 /// 이미지 5장 스택. 부동 이미지는 셀 앵커 절대배치라 겹치고, flow 에 없어 intra-cell
@@ -5772,10 +5847,13 @@ impl DocumentCore {
         }
     }
 
-    /// [#2004] 부동 전면 이미지 스택 섹션의 정규화본(그림 tac=true 재분류 + 재구성)을 재계산.
+    /// 렌더링 정규화본(미배치 줄 캐시 제외, 부동 전면 이미지 스택 재분류)을 재계산.
     /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
     pub(crate) fn compute_render_normalized(&mut self) {
         let sec_count = self.document.sections.len();
+        let profile = self.effective_layout_profile();
+        let normalize_widthless_rows =
+            profile.hwpx_stored_layout() && !profile.legacy_hwp3_stored_geometry();
         self.render_normalization
             .section_revisions
             .resize(sec_count, 0);
@@ -5818,11 +5896,23 @@ impl DocumentCore {
                     _ => false,
                 })
             });
-            if matches.is_empty() && !has_cell_stack {
+            let unplaced_rows =
+                normalize_widthless_rows && section_has_unplaced_stored_rows(&section.paragraphs);
+            let widthless: Vec<usize> = section
+                .paragraphs
+                .iter()
+                .enumerate()
+                .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
+                .map(|(index, _)| index)
+                .collect();
+            if matches.is_empty() && !has_cell_stack && widthless.is_empty() {
                 out.push(None);
                 continue;
             }
             let mut np = section.paragraphs.clone();
+            for &index in &widthless {
+                discard_widthless_rows_for_render(&mut np[index]);
+            }
             if has_cell_stack {
                 for p in np.iter_mut() {
                     reclassify_cell_floating_stacks(p, min_height_hu);
@@ -5836,7 +5926,7 @@ impl DocumentCore {
                 .iter()
                 .enumerate()
                 .map(|(i, p)| {
-                    if matches.binary_search(&i).is_ok() {
+                    if matches.binary_search(&i).is_ok() || widthless.binary_search(&i).is_ok() {
                         let mut c = crate::renderer::composer::compose_paragraph_in_context(
                             p,
                             &self.styles,
@@ -5924,8 +6014,18 @@ impl DocumentCore {
         section_idx: usize,
         para_idx: usize,
     ) {
-        let source_para = self.document.sections[section_idx].paragraphs[para_idx].clone();
-        let source_composed = self.composed[section_idx][para_idx].clone();
+        let mut source_para = self.document.sections[section_idx].paragraphs[para_idx].clone();
+        let profile = self.effective_layout_profile();
+        let source_composed = if profile.hwpx_stored_layout()
+            && !profile.legacy_hwp3_stored_geometry()
+            && section_has_unplaced_stored_rows(&self.document.sections[section_idx].paragraphs)
+            && has_widthless_stored_rows(&source_para)
+        {
+            discard_widthless_rows_for_render(&mut source_para);
+            crate::renderer::composer::compose_paragraph_in_context(&source_para, &self.styles)
+        } else {
+            self.composed[section_idx][para_idx].clone()
+        };
         let Some(Some(section)) = self.render_normalization.sections.get_mut(section_idx) else {
             return;
         };

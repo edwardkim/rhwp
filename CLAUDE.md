@@ -20,14 +20,15 @@
 
 ## 빌드 산출물 재사용
 
-- 로컬 Native·WASM·테스트 빌드는 `target/pr-review`을 공용 target directory로 쓴다.
-  이슈별·검토별 `target/<name>`을 새로 만들지 않는다. Native `release`와 WASM
+- macOS·Linux·Windows의 로컬 Native·WASM·테스트 빌드는 각 host의 기본 rhwp 작업공간 아래
+  `target/pr-review` 한 곳을 공용 target directory로 쓴다. review worktree에서도 같은 절대 경로를 전달한다.
+  이슈별·검토별 target, `target/pr-review/<name>`, worktree별 target을 새로 만들지 않는다. Native `release`와 WASM
   `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
 - `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
   그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
 - `rhwp-studio` 개발 서버에서 Rust/WASM 변경을 확인할 때는 반드시 **저장소 루트
-  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
-  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
   실행한다. `rhwp-studio/` 안에서 실행하면 wrapper 경로와 출력 `pkg/`가 모두 달라져 실패하거나
   개발 서버가 이전 bundle을 읽는다. 이 wrapper가 루트 기본 `pkg/` web package를 만든 뒤 `rhwp.js`와 `rhwp_bg.wasm`을
   `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치와 브라우저 새로고침 뒤 실제
