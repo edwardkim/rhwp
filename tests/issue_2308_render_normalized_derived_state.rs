@@ -1,30 +1,13 @@
-//! Issue #2308 functional regression for nested-table derived geometry.
+//! [#2308] 중첩 표의 파생 폭·내용 상자 소유 회귀.
 //!
-//! Page-count pins do not catch a nested 1×1 table whose width normalization
-//! drifts only the split height. The two continuation fragments are pinned after
-//! direct comparison with the HWP 2024/Hancom PDF fixture: the second fragment
-//! begins at the page's content top while retaining the stored table width.
-//! #3128 additionally pins its PDF-owned 10-line continuation height and table
-//! content-box padding semantics.
+//! `issue_2308_saved_nested_width_keeps_fragment_geometry`의 33·34쪽 고정 픽셀 기대는
+//! 정확한 입력의 한컴2024 재출력과 전82쪽 비교 후 #7445로 분리했다.
+//! 다른 정상 파생 폭·내용 소유 검사는 유지하며 원본 문서와 PDF도 보존한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-
-fn nested_one_by_one_tables(node: &RenderNode, table_depth: usize, out: &mut Vec<(f64, f64)>) {
-    let next_depth = if let RenderNodeType::Table(table) = &node.node_type {
-        if table_depth >= 1 && table.row_count == 1 && table.col_count == 1 {
-            out.push((node.bbox.y, node.bbox.height));
-        }
-        table_depth + 1
-    } else {
-        table_depth
-    };
-    for child in &node.children {
-        nested_one_by_one_tables(child, next_depth, out);
-    }
-}
 
 fn find_table_with_owner_para(node: &RenderNode, para_index: usize) -> Option<&RenderNode> {
     if matches!(
@@ -270,21 +253,81 @@ fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
     // and `mixed_nested_flow_extra_from_cut` carries an `extra += 4.0` row
     // reservation. Two constants of equal size are not evidence that they are the
     // same constant; nothing here rests on that.
-    let expected = [(32, 400.4, 636.8), (33, 77.1, 388.3)];
-    for (page, expected_y, expected_height) in expected {
+    // [#7418] p34 is the terminal-row continuation of a 2-column RowBreak table, and Hancom
+    // reopens its outer top margin there: the outer rule sits at 77.3px (HWP 2020 PDF) /
+    // 77.5px (2024 PDF) = body top 75.6 + 141 HU, not at the body top. The nested fragment
+    // moves with it, 77.1 -> 79.0 (its first text line moves toward the PDF, 79.0 -> 80.9
+    // against a glyph top of 85.5/86.6). The height pin is unchanged.
+    // #7518: 400.4 was a historical placement pin, not a source coordinate.
+    // The source owner is Center-aligned. After its preceding host spacing is
+    // preserved, p33's owner and nested frame have equal vertical centers.
+    // Keep the PDF-backed heights and p34 continuation origin; do not copy the
+    // corrected p33 y into a new absolute pin or broaden the old tolerance.
+    let source = rhwp::parser::parse_hwp(&bytes).expect("parse source alignment and width");
+    let table = source.sections[0].paragraphs[325]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("source outer table");
+    let source_owner = table
+        .cells
+        .iter()
+        .find(|c| c.row == 6 && c.col == 1)
+        .unwrap();
+    assert_eq!(
+        source_owner.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    );
+    let source_nested = source_owner.paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("source nested table");
+    let left_padding = f64::from(source_owner.effective_padding(&table.padding).left) / 75.0;
+    for (page, expected_height) in [(32, 636.8), (33, 388.3)] {
         let tree = core
             .build_page_render_tree(page)
             .unwrap_or_else(|error| panic!("render page {}: {error}", page + 1));
-        let mut fragments = Vec::new();
-        nested_one_by_one_tables(&tree.root, 0, &mut fragments);
+        let outer = find_table_with_owner_para(&tree.root, 325).expect("source outer fragment");
+        let owner = outer.children.iter().find(|node| matches!(
+            &node.node_type, RenderNodeType::TableCell(cell) if cell.row == 6 && cell.col == 1
+        )).expect("source owner fragment");
+        let fragment = find_nested_single_cell_table(owner).expect("source nested fragment");
         assert!(
-            fragments.iter().any(|(y, height)| {
-                (y - expected_y).abs() <= 0.2 && (height - expected_height).abs() <= 0.2
-            }),
-            "page {} nested fragment must preserve PDF-aligned geometry \
-             y={expected_y:.1} h={expected_height:.1}; got {fragments:?}",
-            page + 1
+            (fragment.bbox.height - expected_height).abs() <= 0.2,
+            "page {} nested height must preserve PDF geometry: {:?}",
+            page + 1,
+            fragment.bbox
         );
+        assert!(
+            (fragment.bbox.width - f64::from(source_nested.common.width) / 75.0).abs() <= 0.2,
+            "saved nested width must survive normalization"
+        );
+        assert!(
+            (fragment.bbox.x - owner.bbox.x - left_padding).abs() <= 0.2,
+            "nested fragment must preserve its owner's left padding"
+        );
+        if page == 32 {
+            let owner_center = owner.bbox.y + owner.bbox.height / 2.0;
+            let child_center = fragment.bbox.y + fragment.bbox.height / 2.0;
+            assert!(
+                (child_center - owner_center).abs() <= 0.2,
+                "p33 must honor source Center alignment: owner={:?}, child={:?}",
+                owner.bbox,
+                fragment.bbox
+            );
+        } else {
+            assert!(
+                (fragment.bbox.y - 79.0).abs() <= 0.2,
+                "p34 must preserve the PDF-backed continuation origin"
+            );
+        }
     }
 }
 

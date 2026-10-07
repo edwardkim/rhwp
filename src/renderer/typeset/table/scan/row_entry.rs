@@ -14,6 +14,7 @@ pub(in crate::renderer::typeset) struct RowEntryQuery<'a> {
 pub(in crate::renderer::typeset) struct TerminalNoteProbe {
     pub(in crate::renderer::typeset) remaining_band: f64,
     pub(in crate::renderer::typeset) source_cut: RowCutResult,
+    pub(in crate::renderer::typeset) visible_height: f64,
 }
 
 pub(in crate::renderer::typeset) struct RowSplitGate {
@@ -86,10 +87,18 @@ impl RowEntryQuery<'_> {
         let remaining_band = (avail_for_rows - consumed - cs_before).max(0.0);
         let source_cut =
             layout_engine.advance_row_cut(table, r, row_start_cut, remaining_band, styles);
+        let visible_height = layout_engine.row_cut_content_height(
+            table,
+            r,
+            row_start_cut,
+            &source_cut.end_cut,
+            styles,
+        );
 
         TerminalNoteProbe {
             remaining_band,
             source_cut,
+            visible_height,
         }
     }
 

@@ -17,9 +17,9 @@ use quick_xml::Writer;
 
 use crate::model::document::{DocInfo, DocProperties, Document};
 use crate::model::style::{
-    border_width_mm_str, Alignment, BorderFill, BorderLine, BorderLineType, CenterLine, CharShape,
-    DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering, ParaShape, Style,
-    SubstFont, TabDef,
+    border_width_mm_str, para_line_wrap_str, Alignment, BorderFill, BorderLine, BorderLineType,
+    CenterLine, CharShape, DiagonalLine, FillType, Font, HeadType, LineSpacingType, Numbering,
+    ParaShape, Style, SubstFont, TabDef,
 };
 use crate::model::ColorRef;
 use crate::parser::tags;
@@ -84,7 +84,14 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
     write_tab_properties(&mut w, &doc.doc_info)?;
     write_numberings(&mut w, &doc.doc_info)?;
     write_bullets(&mut w, &doc.doc_info)?;
-    write_para_properties(&mut w, &doc.doc_info, ctx)?;
+    write_para_properties(
+        &mut w,
+        &doc.doc_info,
+        ctx,
+        doc.hwpx_aux_entry("version.xml")
+            .and_then(|bytes| std::str::from_utf8(bytes).ok())
+            .is_none_or(crate::parser::hwpx::physical_para_margin_units_from_version),
+    )?;
     write_styles(&mut w, &doc.doc_info, ctx)?;
     // memoProperties(메모 모양 정의: 테두리/색상)는 refList 마지막 자식으로,
     // parse_memo_shape가 만드는 extra_records(HWPTAG_MEMO_SHAPE, hwpx→hwp5
@@ -425,6 +432,15 @@ fn numbering_head_align_str(attr: u32) -> &'static str {
         1 => "CENTER",
         2 => "RIGHT",
         _ => "LEFT",
+    }
+}
+
+/// [#7418] 문단 머리 정보 속성 bit4 — 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
+fn para_head_text_offset_type_str(attr: u32) -> &'static str {
+    if (attr >> 4) & 0x01 != 0 {
+        "HWPUNIT"
+    } else {
+        "PERCENT"
     }
 }
 
@@ -842,7 +858,7 @@ fn write_numbering<W: Write>(
             ("useInstWidth", use_inst_width),
             ("autoIndent", auto_indent),
             ("widthAdjust", wa.as_str()),
-            ("textOffsetType", "PERCENT"),
+            ("textOffsetType", para_head_text_offset_type_str(h.attr)),
             ("textOffset", text_offset_s.as_str()),
             ("numFormat", num_format),
             ("charPrIDRef", char_pr_id_ref_s.as_str()),
@@ -919,11 +935,17 @@ fn write_bullet<W: Write>(
             "hh:paraHead",
             &[
                 ("level", "0"),
-                ("align", "LEFT"),
-                ("useInstWidth", "0"),
-                ("autoIndent", "1"),
+                ("align", numbering_head_align_str(b.attr)),
+                (
+                    "useInstWidth",
+                    if (b.attr >> 2) & 0x01 != 0 { "1" } else { "0" },
+                ),
+                (
+                    "autoIndent",
+                    if (b.attr >> 3) & 0x01 != 0 { "1" } else { "0" },
+                ),
                 ("widthAdjust", &b.width_adjust.to_string()),
-                ("textOffsetType", "PERCENT"),
+                ("textOffsetType", para_head_text_offset_type_str(b.attr)),
                 ("textOffset", &b.text_distance.to_string()),
                 ("numFormat", "DIGIT"),
                 ("charPrIDRef", &b.char_shape_id.to_string()),
@@ -942,6 +964,7 @@ fn write_para_properties<W: Write>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
+    physical_margin_units: bool,
 ) -> Result<(), SerializeError> {
     let _ = ctx;
     if doc_info.para_shapes.is_empty() {
@@ -953,7 +976,22 @@ fn write_para_properties<W: Write>(
         &[("itemCnt", &doc_info.para_shapes.len().to_string())],
     )?;
     for (idx, ps) in doc_info.para_shapes.iter().enumerate() {
-        write_para_pr(w, idx as u16, ps)?;
+        if !physical_margin_units && !ps.hwpx_plain_para_margin {
+            // 구판 case는 IR 값, default는 그 두 배다. 기존 switch 작성기의
+            // 반감 규칙에 역단위를 전달해 읽기·재저장 결과를 보존한다.
+            let mut stored = ps.clone();
+            stored.margin_left = stored.margin_left.saturating_mul(2);
+            stored.margin_right = stored.margin_right.saturating_mul(2);
+            stored.indent = stored.indent.saturating_mul(2);
+            stored.spacing_before = stored.spacing_before.saturating_mul(2);
+            stored.spacing_after = stored.spacing_after.saturating_mul(2);
+            if stored.line_spacing_type != LineSpacingType::Percent {
+                stored.line_spacing = stored.line_spacing.saturating_mul(2);
+            }
+            write_para_pr(w, idx as u16, &stored)?;
+        } else {
+            write_para_pr(w, idx as u16, ps)?;
+        }
     }
     end_tag(w, "hh:paraProperties")?;
     Ok(())
@@ -994,7 +1032,7 @@ fn write_para_pr<W: Write>(
     // keepWithNext, keepLines, pageBreakBefore} 를 상수로 하드코딩해, 파서가
     // attr1 비트로 보존한 값을 직렬화에서 모두 잃었다(예: vertical=CENTER →
     // BASELINE, breakNonLatinWord=BREAK_WORD → KEEP_WORD). 이제 보존 비트에서
-    // 역매핑한다. (breakLatinWord/lineWrap 은 파서가 아직 미수집 → 상수 유지.)
+    // 역매핑한다. lineWrap 은 attr2 bits 0-1 에서 역매핑한다(#6875).
     let vertical = vertical_alignment_str((ps.attr1 >> 20) & 0x03);
     // attr1 bit7: KEEP_WORD=1, BREAK_WORD=0 (parse_para_shape_child 와 정합).
     let break_non_latin = if (ps.attr1 >> 7) & 1 == 1 {
@@ -1045,7 +1083,9 @@ fn write_para_pr<W: Write>(
             ("keepWithNext", &keep_with_next),
             ("keepLines", &keep_lines),
             ("pageBreakBefore", &page_break_before),
-            ("lineWrap", "BREAK"),
+            // [#6875] 종전 상수 "BREAK" — "한 줄로 입력" 문단(attr2 bits 0-1 = 1)을
+            // 한/글이 여러 줄로 다시 나눠 h2x 쪽수가 갈렸다.
+            ("lineWrap", para_line_wrap_str(ps.attr2)),
         ],
     )?;
 
@@ -1061,10 +1101,10 @@ fn write_para_pr<W: Write>(
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
     //
     // [#4898] 단, 원본 HWPX 가 switch 없이 평문으로 적었으면 그 표기를 지킨다. 한글은
-    // case(HwpUnitChar) 를 우선 읽는데, 평문 저장값을 case 에 넣으며 절반으로 줄이면
-    // 한글이 보는 여백·고정 줄간격이 절반이 돼 조판이 밀리고 쪽수가 늘어난다.
+    // 패키지 xmlVersion 1.4 이상의 물리 여백만 공통 IR의 절반으로 되쓴다.
+    // 고정 줄간격은 여백과 별도 계약이므로 기존 평문 저장값을 유지한다.
     if ps.hwpx_plain_para_margin {
-        write_para_margin(w, ps, false)?;
+        write_para_margin(w, ps, ps.hwpx_plain_para_margin_physical)?;
         write_para_line_spacing(w, ps, false)?;
     } else {
         write_para_margin_switch(w, ps)?;

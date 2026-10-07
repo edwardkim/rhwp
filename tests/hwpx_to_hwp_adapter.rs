@@ -676,7 +676,66 @@ fn assert_page_count_recovered(name: &str, bytes: &[u8]) {
 
 #[test]
 fn stage4_page_count_recovered_hwpx_h_01() {
-    assert_page_count_recovered("hwpx-h-01", &load_sample("hwpx-h-01.hwpx"));
+    let bytes = load_sample("hwpx-h-01.hwpx");
+    assert_page_count_recovered("hwpx-h-01", &bytes);
+
+    // 독립 PDF와 Native/fresh WASM 전9쪽 최저94.28413%를 확인한 원본이다.
+    // 쪽수만 같아도 표 앞 빈 줄과 제목의 바깥 상자를 버릴 수 있으므로,
+    // 절대px 핀 대신 원본 줄·개체가 소유한 여백과 실제 상자의 관계를 검사한다.
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    fn collect<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
+        nodes.push(node);
+        for child in &node.children {
+            collect(child, nodes);
+        }
+    }
+    let core = DocumentCore::from_bytes(&bytes).expect("HWPX 원본 로드");
+    let page = core.build_page_render_tree(0).expect("첫 쪽 렌더 트리");
+    let mut nodes = Vec::new();
+    collect(&page.root, &mut nodes);
+    let column = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(0)))
+        .expect("첫 쪽 본문 단");
+    let table = |para, control| {
+        nodes
+            .iter()
+            .find(|node| {
+                matches!(&node.node_type, RenderNodeType::Table(t)
+                if t.para_index == Some(para) && t.control_index == Some(control))
+            })
+            .expect("첫 쪽 표 소속")
+    };
+    let paragraphs = &core.document().sections[0].paragraphs;
+    let Control::Table(header_source) = &paragraphs[0].controls[3] else {
+        panic!("로고 표 원본 소속");
+    };
+    let blank = &paragraphs[0].line_segs[0];
+    let blank_end =
+        column.bbox.y + rhwp::renderer::hwpunit_to_px(blank.text_height + blank.line_spacing, 96.0);
+    let header_outer_top = table(0, 3).bbox.y
+        - rhwp::renderer::hwpunit_to_px(header_source.outer_margin_top as i32, 96.0);
+    assert!(
+        header_outer_top + 0.75 >= blank_end,
+        "로고 표가 앞 저장 빈 줄의 점유를 침범했다"
+    );
+    let Control::Table(title_source) = &paragraphs[3].controls[0] else {
+        panic!("제목 표 원본 소속");
+    };
+    let host_top = column.bbox.y
+        + rhwp::renderer::hwpunit_to_px(paragraphs[3].line_segs[0].vertical_pos, 96.0);
+    let title_outer_top = table(3, 0).bbox.y
+        - rhwp::renderer::hwpunit_to_px(title_source.outer_margin_top as i32, 96.0);
+    assert!(
+        title_outer_top + 0.75
+            >= host_top
+                + rhwp::renderer::hwpunit_to_px(title_source.common.vertical_offset as i32, 96.0),
+        "제목의 양수 offset 뒤 바깥 상자가 호스트 공간을 침범했다"
+    );
+    assert!(
+        table(3, 1).bbox.y + table(3, 1).bbox.height <= title_outer_top + 0.75,
+        "날짜 인라인 표와 뒤 제목 상자는 겹치지 않아야 한다"
+    );
 }
 
 #[test]

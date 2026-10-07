@@ -29,7 +29,25 @@ impl TypesetEngine {
                 paragraphs
                     .get(para_idx)
                     .and_then(|p| p.line_segs.first())
-                    .map(|s| s.vertical_pos),
+                    .map(|seg| {
+                        // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
+                        let margin_is_page_relative = (st.profile.hwpx_stored_layout()
+                            || st.profile.hwp5_stored_pagination_layout())
+                            && !st.profile.session_edited()
+                            && paragraphs.get(para_idx).is_some_and(|first| {
+                                crate::renderer::layout::stored_first_margin_is_page_relative(
+                                    first,
+                                    paragraphs.get(para_idx + 1),
+                                    styles,
+                                    self.dpi,
+                                )
+                            });
+                        if margin_is_page_relative {
+                            0
+                        } else {
+                            seg.vertical_pos
+                        }
+                    }),
             );
             st.record_vpos_lazy_origin(None);
             // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
@@ -50,6 +68,7 @@ impl TypesetEngine {
             col_anchor_y: st.vpos_col_anchor,
             vpos_page_base: st.vpos_page_base,
             vpos_lazy_base: st.vpos_lazy_base,
+            stored_column_origin: st.vpos_page_base.map(|base| (base, st.vpos_col_anchor)),
             prev_layout_para: st.vpos_prev_layout_para,
             prev_item_was_partial_table: st.vpos_prev_partial_table,
             skip_spacing_before_prededuct: st.skip_spacing_before_prededuct,
@@ -61,9 +80,11 @@ impl TypesetEngine {
             uniform_filler_ladder: self.uniform_filler_ladder.get(),
             endnote_between_notes_hu: 0,
             prev_item_content_bottom_y: None,
+            prev_item_flow_line_bottom_y: None,
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
+            curr_item_is_table_fragment: false,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
@@ -191,8 +212,10 @@ impl TypesetEngine {
                 st.vpos_col_anchor,
             );
         }
-        // lazy_base 는 지연 산출 시 갱신될 수 있으므로 회수.
+        // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
+        st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
         st.align_flow_to(y);
+        st.record_vpos_snapped_flow_start(para_idx, y);
     }
 }

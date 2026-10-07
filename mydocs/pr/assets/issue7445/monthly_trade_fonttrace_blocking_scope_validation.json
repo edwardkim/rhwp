@@ -1,0 +1,351 @@
+{
+  "stage": 153,
+  "code_commit": "911063c54234e3ad206f17b71cce098ab1afc0cc",
+  "production_source": "c3f748325f9ebe7f1d774d378f4159ae1226ae20",
+  "preanalysis": {
+    "stage": 153,
+    "source_head": "a7e0b91a0",
+    "production_head": "c3f748325",
+    "document_id": "missing-face",
+    "scope": "monthly trade HWP hash pin only, if actual failure remains; keep passed counts/status/profile/API/parity/other five documents",
+    "independent_pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    "post_wmf_visual": "Native/freshWASM1쪽99.82783 /WMF전체그림98.93048%복원. 현재생산후Native4쪽76.04063%, 표/후속본문세로배치차이직접확인. 전체19쪽실행은계속중.",
+    "policy": "문서의다른실제배치결함으로90미만임을확인했으므로원문/PDF보존,#7445등록후실패해시핀만명시적이관. 사용자지정WMF복원을 되돌리거나 다른 정상핀을이관하지않음.",
+    "hash_cause_status": "일반fonttrace는counts/source/document/layoutName/layoutMetric/provenance를hash에포함. XY좌표를직접hash하지않음. source상대크기100%의부동소수계산과px_to_hwpunit절삭경로는가능원인이나baseline실행재현이완료되지않아정확한records차이는미검증으로남김."
+  },
+  "reference": {
+    "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+    "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+    "pdf_pages": 19,
+    "engine": "2020",
+    "saved_product": "hancom-office-2020 11.0.0.8362",
+    "conversion": {
+      "job_id": "af49f68d-a693-4ee1-902d-f52d2bb7c1dd",
+      "status": "succeeded",
+      "terminal": true,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-09-29T05:43:05.474Z",
+      "completed_at": "2026-09-29T05:43:36.063Z"
+    }
+  },
+  "visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-missing-face",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-full-native"
+    ],
+    "exit": {
+      "exit_code": 1
+    },
+    "run_state": "complete",
+    "completed_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "metrics": {
+      "compared_pages": 19,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.28725,
+      "worst_pixel_match_percent": 88.12151,
+      "average_ink_match_percent": 23.7982,
+      "worst_ink_match_percent": 15.58559,
+      "average_visual_accuracy_proxy_percent": 23.7982,
+      "worst_visual_accuracy_proxy_percent": 15.58559,
+      "average_tolerant_content_match_percent": 93.85493,
+      "worst_tolerant_content_match_percent": 73.34034,
+      "worst_pages": [
+        12,
+        13,
+        11,
+        6,
+        15,
+        16,
+        17,
+        3,
+        9,
+        18
+      ]
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 76.04063
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 85.15666
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 73.34034
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 88.94145
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "direct_inspection": "Native4/8쪽 review: 표/뒤본문 세로위치차이와 단위표시위치 차이. 글꼴 예외로 처리하지 않음. 영향1쪽 Native/freshWASM99.82783% 및 WMF98.93048% 복원은 보정152에서 유지. 전체19쪽 freshWASM은 미실행."
+  },
+  "scope": {
+    "id": "missing-face",
+    "pin": "expectedLayoutHash",
+    "old": "5f344c2ff37349395dc2694e2ab02a03904a7eb461e3d86f50089090db6324f8",
+    "reason": "새현재전체Native4쪽76.04063%/표·후속본문세로차이; #7445등록완료",
+    "counts_preserved": true,
+    "other_documents_identical": true,
+    "profiles_options_comparisons_unchanged": true
+  },
+  "focused": {
+    "before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 14.37889758311212
+    },
+    "after": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 14.58281333418563
+    },
+    "summary": "before6PASS/1FAIL(missing-face hash); after6PASS/1FAIL(subst-counterpart-hwp hash). 혼합함수 끝까지 PASS 아님."
+  },
+  "profile_readonly": {
+    "source": "current production c3f748325, debug workspace build exit0",
+    "command": [
+      "target/pr-review/debug/rhwp-q-font-trace",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "--page",
+      "0",
+      "--max-characters",
+      "4096",
+      "--json"
+    ],
+    "record_id": "page:0:run:46:char:1",
+    "expected": {
+      "sourceStatus": "complete",
+      "character": "1",
+      "documentFace": "HCI Poppy",
+      "substFont": null,
+      "normalizedFace": "Palatino Linotype",
+      "layoutStepKind": "styleSubstitution",
+      "metricMatchKind": "exact",
+      "metricCharacterMatch": "hit",
+      "widthSource": "embeddedMetric"
+    },
+    "actual": {
+      "sourceStatus": "complete",
+      "character": "1",
+      "documentFace": "HCI Poppy",
+      "substFont": null,
+      "normalizedFace": "Palatino Linotype",
+      "layoutStepKind": "styleSubstitution",
+      "metricMatchKind": "exact",
+      "metricCharacterMatch": "hit",
+      "widthSource": "embeddedMetric"
+    },
+    "all_fields_equal": true,
+    "scope": "readonly profile only; formal mixed e2e still other document FAIL"
+  },
+  "gates": [
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 12.388373374938965
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4784629591740668
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.38542400021106005
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6600344995968044
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 10.523603749927133
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 4.723326249979436
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 17.877808125223964
+    }
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5884848639",
+  "hash_cause": "layoutHash는XY자체가아닌원문/폰트결정/metric/provenance를소비. 상대크기100% float/절삭은가능원인이나baseline재현미완료. 기대해시를현재해시로갱신하지않음.",
+  "production_changed": false,
+  "test_functions_added": 0,
+  "all_existing_functions_kept": true,
+  "original_stage137_failure_snapshot": {
+    "reviewed": 32,
+    "pending_review": 28,
+    "meaning": "#4961 혼합함수는 다른 문서로 계속 FAIL. 원래 실패수의 해결수는 늘리지 않음."
+  },
+  "logs": "output/pr-review/planet6897-7382-20260926/stage153-fonttrace-monthly-trade",
+  "final_pr_ready": false
+}

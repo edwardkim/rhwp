@@ -1,0 +1,92 @@
+{
+  "parent_head": "30bb77d6a",
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "cause": "단일 TAC 원본 줄의 물리 여백·닫힌 다음 저장 원점을 버리는 경로 및 임시 lazy 축을 확정 배치에 고정하는 문제",
+  "source_geometry_hu": {
+    "body": 2614,
+    "outer_top": 141,
+    "outer_bottom": 141,
+    "line_height": 2896,
+    "line_spacing": 440,
+    "source_origin": 19104,
+    "next_origin": 22440
+  },
+  "native_target_percent": {
+    "19": 99.86666,
+    "20": 92.01064,
+    "21": 88.03303
+  },
+  "fresh_wasm_selected_percent": {
+    "1": 96.95128,
+    "2": 99.76191,
+    "19": 99.86666,
+    "20": 92.01064,
+    "21": 88.03303
+  },
+  "native_changed_pages": {
+    "1": [
+      97.95558,
+      96.95128
+    ],
+    "2": [
+      99.75557,
+      99.76191
+    ],
+    "20": [
+      85.82574,
+      92.01064
+    ]
+  },
+  "native_all_pages": 29,
+  "native_below90_pages": [
+    21,
+    28
+  ],
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm_export": 29
+  },
+  "native_off_canvas_count": 0,
+  "native_table_overlap_count": 0,
+  "focused_integration": {
+    "run": 116,
+    "passed": 116,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 15.333
+  },
+  "counterexample": {
+    "case": "issue_7312_tac_stored_band_no_wrap",
+    "baseline_head": "30bb77d6a",
+    "baseline_passed": 1,
+    "first_candidate_failed": 1,
+    "corrected_passed": 1,
+    "native_percent": 97.51354,
+    "fresh_wasm_percent": 97.51354,
+    "axis_hu": {
+      "temporary_lazy": 283,
+      "first_stored_table": 0
+    }
+  },
+  "fmt_exit": 0,
+  "wasm_build": "Mac local replacement --no-opt; exit0; 3m42s; not Docker validation",
+  "wasm_selected_visual_exit": 1,
+  "wasm_raster_pages": [
+    1,
+    2,
+    19,
+    20,
+    21
+  ],
+  "source_code_sha256": {
+    "src/renderer/typeset/controls.rs": "3e42be9e0a137a865cb26383329bf34f3f222a19d4e5bb507b2a427a7195e3e7",
+    "src/renderer/typeset/controls/stored_tac.rs": "31cb81a9d8cd0c743885156f3f61d18f79fbbfe5d8f4a93d298f9b8aa11af63c"
+  },
+  "native_binary_sha256": "efa1aeca8b6a881380a580a554034ad891d73156d440e019ea62baf36c7ffbc3",
+  "wasm_binary_sha256": "61c3f3dda61edaa4a12df9c47ca3cc651931d35459ed5821ac793657f33e298c",
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "decision": "단일 TAC 제목 원점 보정 수용. 사용자 재검토 요청에 따라20쪽 마지막 행 물리 프레임 추가 개선,21/28쪽·다른 문서·최종 전체 검증은 미완료."
+}

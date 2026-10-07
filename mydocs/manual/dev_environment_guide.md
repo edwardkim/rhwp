@@ -89,7 +89,7 @@ macOS에서 통합 테스트 바이너리별 release LTO 링크가 오래 걸릴
 cargo test --release --lib
 cargo nextest run \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ```
 
@@ -168,11 +168,14 @@ bind mount는 hard-link를 지원하지 않아 Cargo가 실패할 수 있으므�
 `*-opt.wasm-opt.wasm` 실패로 이어질 수 있다. (#4089)
 
 Docker를 사용할 수 없는 호스트에서 원인을 분리하는 **진단용** 네이티브 경로는 아래와 같다.
-`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다.
+`--no-opt` 결과는 최적화된 배포 산출물을 대체하지 않는다. 모든 OS의 native Cargo/WASM 검증은
+[고정 review target 준비](pr_review/local_validation.md#고정-review-target과-실행-환경)를 기본 작업공간에서 먼저
+수행해 공용 절대 target 변수를 유지한다. worktree에서는 상대 target 경로를 다시 지정하지 않는다.
 
 ```powershell
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
 Remove-Item -Force -ErrorAction SilentlyContinue pkg\*-opt.wasm
-$env:CARGO_TARGET_DIR = 'target\pr-review'
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
 .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --no-opt
 Remove-Item Env:CARGO_TARGET_DIR
 ```
@@ -182,14 +185,14 @@ macOS/Linux의 native WASM 검증은 `wasm-pack`을 직접 실행하지 않는�
 갱신하지 못하게 한다.
 
 ```bash
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
 
 반복 실행은 macOS/Linux 셸의 alias로 줄일 수 있습니다. alias는 현재 셸에만 적용하며, 영구 적용이 필요하면
 사용 중인 셸의 초기화 파일에 같은 줄을 넣습니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+alias rhwp-wasm-build='CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 # 예: 최적화를 생략한 진단 빌드
 rhwp-wasm-build --no-opt
@@ -200,7 +203,8 @@ Windows에서는 native PowerShell wrapper를 사용합니다. `cmd.exe`에서�
 
 ```bat
 doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
-set "CARGO_TARGET_DIR=target\pr-review"
+if not defined RHWP_REVIEW_TARGET_DIR exit /b 1
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
 rhwp-wasm-build
 rhwp-wasm-build --no-opt
 set "CARGO_TARGET_DIR="

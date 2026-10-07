@@ -1,0 +1,1337 @@
+{
+  "stage": 112,
+  "code_commit": "f48fa6d88d40fbf8fe39b5f76d795653ce48216b",
+  "analysis": {
+    "head": "a5e5072e2ace077c1992c40ebabb7d48a81c89e0",
+    "scope": "자체과잉이관 보정의 마무리. 보정110에서samples로복원한22원문과보존사본의동일바이트를확인하고 정상Rust검사입력경로를canonical samples로되돌린다.보존사본은기존시각증거로유지.보정69이전명시적거대문서이관경로는변경하지않음.",
+    "mechanism": "exact filename boundary로HWP/HWPX접두치환오류를방지.상위../접두는보존하여기존호출자상대경로기준을유지.생산동작/함수/기대값/공차변경없음.",
+    "files": [
+      {
+        "path": "src/document_core/queries/rendering.rs",
+        "before_sha256": "05e64b5580a3fd8a0100be7672f2c8153a7b6302627b8e9befdd1c847f3dff53",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "34b1cba1180f112e0e33673057008b30f85be72c8adeaaca8a0756b784c474c4"
+      },
+      {
+        "path": "src/document_core/commands/formatting.rs",
+        "before_sha256": "236522b964c84e82701d0612f17ad6ad3aede1202c2013c501a891bd2c63825f",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "cbd037fbcbad45e1cefc55a203fc102e472818ccf17b6a1e6e40b7e4130a7a2e"
+      },
+      {
+        "path": "src/renderer/layout/integration_tests.rs",
+        "before_sha256": "ecf88f9e09f88d2c33c5c36bf0b4b9ab704dce10f61f87a2b773a91ed9008868",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 3
+          }
+        ],
+        "after_sha256": "09ee0c6818a22e6feca03d656b4ccc0b30976a3abe57351a16fc40af790767d6"
+      },
+      {
+        "path": "tests/issue_2099_araea_pua.rs",
+        "before_sha256": "178be84c3b4c1fb2fa9b69eb60db30d22a38d2226c02cd716655fedb709440bc",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+            "to": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "e58763ee60c001b4afcaab5f50b9a6019315a5b2f0c94cf9ac89d004171c2e01"
+      },
+      {
+        "path": "tests/issue_1770_hwpx_origin_marker.rs",
+        "before_sha256": "c34fbb6bfaf7d6c4a48526797be7dfac43bcfad885b964988c01e9baf648ce25",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+            "to": "samples/rowbreak-problem-pages.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "40d238619ba39d628cebc1f2b5a38812175c5727864ab8177c387e06acfe2f69"
+      },
+      {
+        "path": "tests/diag_1042_variant_check.rs",
+        "before_sha256": "be5312992e5f2118dd411f8b7dfcf2cebc7f6df718f6d6d1307e5a8a1f5bdf11",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "a8e3a54f0fac9b0c5713452b17ec7e31a97aefdc97062f13a487f8d939219c9b"
+      },
+      {
+        "path": "tests/issue_4155_hwp3_char_shade_contract.rs",
+        "before_sha256": "20cbd5d106796433a847f35e2c5f53dc40715f00c7897e40110f51cb0b18d103",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "6056d488a58d21baa2b79c5f22424fcc65a441d20e6b75d8a958bf3a651fbdac"
+      },
+      {
+        "path": "tests/issue_1749_saved_bounds_page_break.rs",
+        "before_sha256": "21dbd55d8fd640b0b101f4e673dc265ba485d7b3ea23b8d80ab73013e5d2cd8e",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+            "to": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "cff6b7aa9cdfba8b868742191fd0d785a2ddf9bd50fab8502b55deb55fdcde4f"
+      },
+      {
+        "path": "tests/issue_1105.rs",
+        "before_sha256": "ca1aaa433f0521e739291901ed403bfe69347759f262980d1ace5b46f05d98f1",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 2
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 2
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "ccb8d7adf2ca8926eec798d3f5246b82c86e847f3b0c97cbae4212953feaf9d5"
+      },
+      {
+        "path": "tests/issue_3693_structure_clause_context.rs",
+        "before_sha256": "e5d06888422793bae21b47e8b153707859e5d62231dede225132c47d97288b74",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "ed109e0ba45c427b096e92095e7dd2e6876b1b572f0aa153138f91793a755494"
+      },
+      {
+        "path": "tests/issue_775.rs",
+        "before_sha256": "086cd4d7729980e8c079661ddb36660106fc6ed14f3c24dfe3c9cb22d230f49b",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "a5123a3afc6157cdfb07ff0c56d1462bb1bff2a62fcaf028c9c40592ef8d2019"
+      },
+      {
+        "path": "tests/issue_1086.rs",
+        "before_sha256": "89420f7467262fc5f40f41736b78c2cae1f9fb53a76fbbf4c32601c5664d1125",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "87198a47fac5557820fb285bc2f71664c77a0da7b8b2b1a94479315d3d05d128"
+      },
+      {
+        "path": "tests/cli_exit_codes.rs",
+        "before_sha256": "56b425af846b0c543f46ed8dc46a8da4d5c8ba026a49f196aab72c7bab52aa6c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+            "to": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "e4de54fe646c2c34cfcf646312ffe57dbed5cbd7c93b75c567a02f37d2742425"
+      },
+      {
+        "path": "tests/diag_1042_raw_binary.rs",
+        "before_sha256": "7b2e6dffee2258182d98b206745487f023fb1eaa1b11c24c8c4d6746fc3afc07",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "566ce7799d32e0817939bce9299d16d203d47f2ccb2ff7b920aa619d8c67e3b0"
+      },
+      {
+        "path": "tests/issue_3637_split_cell_nested_table_vpos.rs",
+        "before_sha256": "f30213e19bbd47b39bbe921e1b15fd563f38ba77e413eb0911b36592f7e0e8bb",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+            "to": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "99d8bfa3223cd8b7ff5f34423a457cb2c60c6533f95fd7043ac97c0908f49847"
+      },
+      {
+        "path": "tests/issue_3695_structure_auto_policy.rs",
+        "before_sha256": "7b478067c0917fd59b5f818f79d18c9ad1e3a756d2ada4dddf853df8becd5b9b",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "790d46724cf74e54d247165a4117c8dd776f47e7b7a198d1bbf847dd8d766649"
+      },
+      {
+        "path": "tests/diag_1042_2024_reverse.rs",
+        "before_sha256": "5d6165dc11bd174ac933f5f17038ac80bfbf73773264698b986d18f18ba83762",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "dfb30920465c23341c9502f2d2a8c355bf01e2356e66086b403e4878f929c2cc"
+      },
+      {
+        "path": "tests/issue_2015_saved_bounds_rowbreak.rs",
+        "before_sha256": "d5919a7269f9910043e25291253ed97493cc87ae5c20d75de6d31608a606b3dc",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+            "to": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "84a3b6e3d3a7f0555c4cf5c5088fc4a68b81ab086e28c44ebbdb0d16352f6cf7"
+      },
+      {
+        "path": "tests/diag_1042_trailing.rs",
+        "before_sha256": "78dcbdb4d9e5c27f82987e8f236053032cbbc8335a94a04b75e9797d922ef3cb",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "c7dbb866e70d3e03a06ade30b7666fe3967eda9ddf685697bd988bc39954df48"
+      },
+      {
+        "path": "tests/hwpx_roundtrip_integration.rs",
+        "before_sha256": "8afa1ed25a0cc3fc9fd4e6199d5a014e592321d8114e4dc6f6215a1a1fde7537",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "7661bb1e55eef28c6d7d927fdef2f6cc97f4af7a2c8a64175d69544f629b6822"
+      },
+      {
+        "path": "tests/exam_eng_multicolumn.rs",
+        "before_sha256": "686b9007bd3a817964b0e15db31810336741625653a4bc7206caecc0972ca2cd",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "152cbf8d82080eff5c54081f304f9c218517ba2c47538ffa72ec2699d178e8a9"
+      },
+      {
+        "path": "tests/diag_1042_normal_vs_abnormal.rs",
+        "before_sha256": "33bc6d0eb9fa278352e220313a9da616a6473028916d522d171e96114f81b63c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "53a3949f1a73cc3fa7dea30270969d9ca6f78cf21b6ef0987b280a8682384b46"
+      },
+      {
+        "path": "tests/diag_1042_2022.rs",
+        "before_sha256": "0a88f2c24efef00ad2b0099ac40d1bef689c492978713ce7598819ef5cf53c6e",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 2
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 2
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "d717d1f46b5380a35e7c566953d8c1dd4677cafb10e2f0297135422e46e87495"
+      },
+      {
+        "path": "tests/diag_1042_version_check.rs",
+        "before_sha256": "b41732e118d7e6a7f5a8ae8c5a7594997aaaf324daf210e2fcb8d8b74c52d5dc",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "b851c405cefee011124725d7d5904930280b03e13ac0e973df3bd49dcd3325cb"
+      },
+      {
+        "path": "tests/issue_1139_inline_picture_duplicate.rs",
+        "before_sha256": "77914b542822199041897d4bd455d565f4098606277fcee53dc229e44efc9862",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "ada106ca6ce1ad21d1f56b3afcf04c8ce13b11e3216f8188ba8e172fb9ffb755"
+      },
+      {
+        "path": "tests/issue_1116.rs",
+        "before_sha256": "d7e3cb375e23f41d39e8464b6c0b3a8d17607acd45c7fa316cee02380f3409b2",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 3
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 7
+          }
+        ],
+        "after_sha256": "a01efe767e9b91d2c4ffeb60a31bc7224f87a40db207b59880a83b304f865780"
+      },
+      {
+        "path": "tests/diag_1042_hwp_summary.rs",
+        "before_sha256": "88ebd1653c763f6deb075335cf08e9d6c5f48edb0ba9f4c1cea6e90d29d96859",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "85ae930311c508b38b2f3fa868a9b98ac4173edaf7fb4e4b917f378036beb927"
+      },
+      {
+        "path": "tests/diag_1042_vpos_distribution.rs",
+        "before_sha256": "30a3403033ca00499f439fd39e41503def517710577001b8040b85adcddd5da3",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "77b06daef77e9dd80f786205eb6353383862dac1ee51af48d3422277c4d235c3"
+      },
+      {
+        "path": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+        "before_sha256": "ea85e2c002cce3b807a8be42b6f4ab3e4520a1956312c126a717e90984be446f",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+            "to": "samples/hwp3-sample16-hwp5.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "4445a5bf3868d3d7e6b6b700d67b83dc047235862e863d563f439e89cdc30d36"
+      },
+      {
+        "path": "tests/issue_1008_gradient.rs",
+        "before_sha256": "59c77f56c4cca8eeb54538ca82ab88f77a25390ba2e5c1708e7e1b462c87ef69",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+            "to": "samples/hwp3-sample16-hwp5.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "1b7e49fbb1353d83ff1a5ef654178dd8597808b1976ef8cf573afe1fe3515c49"
+      },
+      {
+        "path": "tests/issue_3744_structure_clause_confidence.rs",
+        "before_sha256": "2f566ee38f5f01862f4e912690d0b8092f2c6f9060543f520aef053c1369c0a2",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "4c1ca2b6e5d46a721b772486f797914757b509077a7dd3532ef17bae02b5ba3b"
+      },
+      {
+        "path": "tests/diag_1042_cfb_check.rs",
+        "before_sha256": "59d078dd69fdc82b9d2078d7a4995520c749d3f148bbcea3921cff9bd0b1b81c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2010.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "9f5b0b5be0119ffb6019356e23a91970ddff1f086bf4bae206f5544237140d3d"
+      },
+      {
+        "path": "tests/issue_rowbreak_chart_overlap.rs",
+        "before_sha256": "9efd9b826c5622f059c3faf81d0bc78d5c500e570528cdf5039ee3fcfb27d1f9",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+            "to": "samples/rowbreak-problem-pages.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "cdf57f8b39da763cb5c7d106cce92a11202dea95ed4ca187a96353050be5a87d"
+      },
+      {
+        "path": "tests/outline_navigation_table_cell_number.rs",
+        "before_sha256": "b08bf6ef2576f13bb0d6181f1f0b316f305179d75c1628075bd7ff7df70021f9",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+            "to": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+            "to": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "fdd5878cc00a684422d54253e45f099e609597735d9c36fbfe6fd91e6ef8d84a"
+      },
+      {
+        "path": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "before_sha256": "35e579944d0b1f5a9397a9001394073e0fe883bd2f3763531299b82d6a5244c7",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+            "to": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "24e6f313f49607adaeb62e67c7cebb0a4aab73cd9e1b2f6c8c8f590c0f9dcf93"
+      },
+      {
+        "path": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+        "before_sha256": "af2b88ea7a2a2bf3774b651fbef522b73a1af1c84b9e53bbed89269b33200178",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "1a81163d3f413ae8039663f0576514ff99c708e1df7e3a7c1d230e95eb20ab65"
+      },
+      {
+        "path": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+        "before_sha256": "039a60a250199e9d9ae94318b1ce288adf9cd4c17e9697370419aa4e272d677e",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+            "to": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "cd3a256371202284c74fcd1b4c941bf6799e231d61767b12a83b821af1f2f73b"
+      },
+      {
+        "path": "tests/cases/issue_6409_table_page_top_vpos.rs",
+        "before_sha256": "d17821b08c9d7f66441aa9b3c11b0c8590737018ba76fe8ba36098c28f899cb5",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+            "to": "samples/issue6031/3249937_asset_management_rules.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "52036f594d5c6ec7f755d3ba1eb243c3caf53a53b677fd7dd9b1e5955e272b1d"
+      },
+      {
+        "path": "tests/cases/issue_6023_halfwidth_corner_bracket.rs",
+        "before_sha256": "d4bfb077b222e90619afdbb7812b00b377138c2aed107a8758d600dd5ec94555",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+            "to": "samples/issue6023/30269_reform_recommendation.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "7e89d90a9047a102a4a39fc253989c9d6a64596ab38f424c4cdd011da88310bd"
+      },
+      {
+        "path": "tests/cases/info_hancom_save_version_contract.rs",
+        "before_sha256": "2c7c5cc0add0b9e8d933af016eba9ef36ba0f0c38b0765f49b5f225851590364",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "08321341b026f0042769dbe5498f1188db255a8aaa6268f31dc14d341d85d3ce"
+      },
+      {
+        "path": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+        "before_sha256": "189f722f6af4e6c4c1c25a11bb0bd9ab43ad533c53b513355342a1cf92597969",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+            "to": "samples/issue6031/3249937_asset_management_rules.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "5b476bb122a43d4600c40f2dd39d3a30818dad73ae57fe031576158d91dc2a85"
+      },
+      {
+        "path": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+        "before_sha256": "06e76e7f739c356d39c5fa5436688212fdf18ab37764f93eeab6213b32e7aee6",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+            "to": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "b0ebc38d7dec936af3b60bd2c906e62eeaf60aad65b2ec1d91dec9e1cc01d5d1"
+      },
+      {
+        "path": "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs",
+        "before_sha256": "8e26430ea996cb606675e74830a0ce239e175c16026a5e5dfcc23ac52b1daf6f",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+            "to": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "4b99085a6fb7768eb9f0c2b41993cc56cf72d009fd56e3ce10e821c5ecb7112c"
+      },
+      {
+        "path": "tests/cases/issue_7048_stored_picture_successor.rs",
+        "before_sha256": "f0b201d4defecdce02f71d1f18e2fbf8756b223b84e5c088e179d82173d59358",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+            "to": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "b08abe91d62fc8920499825bf698c5f3b16c675e2c33c38f8f6f2bc63f42cd52"
+      },
+      {
+        "path": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "before_sha256": "89a30111812335f08b5416ada4b158ed5d4ddaf7633f193877b70d2ba0e7da0c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "f18aec43a6d8cdbaa7c2066fd5df206e72b07c4912b292b4fba2c29c9a2f225e"
+      },
+      {
+        "path": "tests/cases/issue_6646_nbsp_advance_matches_space.rs",
+        "before_sha256": "16073b97edda76274976cb0a602ff81695ee3a636061689e7a9016e00aed08bb",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "ea67e56357da59d61d28de3a9a013fb9d3d6b46842fffcdf7c6fd49db7363279"
+      },
+      {
+        "path": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "before_sha256": "c45d56f940a17bd9c0de37799195fba25fdf9ecb6596251d547cac81075d3de7",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+            "to": "samples/rowbreak-problem-pages.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "aab7ae77e9c2f3ddbf6e733825b93c1b39a12e8076df7fc04d8ea4a1024faff1"
+      },
+      {
+        "path": "tests/cases/issue_4680_hwp3_paragraph_style_reference.rs",
+        "before_sha256": "dd85089d21ab3d8545fb8b1ca5d4f7b1380366cbe642600377c3ab4812a74819",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "d4c1177dd16f5569ff5efbe75a2b7ebad5970fc1822cc097185ba4f3e499e527"
+      },
+      {
+        "path": "tests/cases/issue_6013_empty_para_stored_frame_flag.rs",
+        "before_sha256": "ebaefa596c492f76f7e7ebff241eedc5c3024bbfbd53c79870e28feca921f713",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+            "to": "samples/issue6023/30269_reform_recommendation.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "7fa3024330f26ab7b08bbcb64daa0cfc638863aa86490708a0cfa602022754f2"
+      },
+      {
+        "path": "tests/cases/issue_7287_square_float_outer_top.rs",
+        "before_sha256": "90e395007824a863e7c8b59abc1cc1870f1265fc436dc8d303f09ac5da44ecac",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "64145d6a81c5a2b9c489f3e52ae95b758468c9bad65d3f4b24f58f143501419d"
+      },
+      {
+        "path": "tests/cases/issue_6569_cell_center_lead_in_stack.rs",
+        "before_sha256": "1cc61ab60c2193147182fb0cb0a8936cb54c30dbf31d440ea1e4f5c3cae1566c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "95bc8da6cb0d30cb9fcb9df67d167cac129ecf2a3bc9195f8f015be23fce289f"
+      },
+      {
+        "path": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "before_sha256": "84ae29cc9936561dbd0fa2537300af472d8b3e1d2d9912aa0ceda6a19e8e80dd",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+            "to": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "0c9fe840687dcfa07773d09a259b02e79be8dd64a91bc6447221fa4a3477efa4"
+      },
+      {
+        "path": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "before_sha256": "4c115ee6efc4ded7a9a5dce1e6ebd17b4b65c82b7ad087784cf8476998e8aec9",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "9c410833438f337a42d38c8ad22aa24d6f43f4259ad28b645b892e2f0ddb1eaa"
+      },
+      {
+        "path": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+        "before_sha256": "76b7a51eb2779ba4c60084163f8cc5e344136e0ae1039615996f695b66e2258a",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "1e6fb2dde44b235d8a901d029d4bfa3a0a76a65cafc04c59310de0c245ac4bcd"
+      },
+      {
+        "path": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+        "before_sha256": "038136546a7d33191346eb34d9f31da41f3f0cf7279794870bc8249ecfdd79c5",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+            "to": "samples/issue6023/30269_reform_recommendation.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+            "to": "samples/rowbreak-problem-pages.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "594623f688bfc30f6aa4ad9b7ee22eb36d892e92bf74d5e73169db37983da16c"
+      },
+      {
+        "path": "tests/cases/issue_7023_glyph_band_follows_baseline.rs",
+        "before_sha256": "5053f10e1203f2f36b26827028275af250b72a4d9f2468b7e4627595e668b945",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+            "to": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "c9dfebd18b5b9d55d7bb90cc7a9dd3bf814a113d5c07eb98a405a105dce01632"
+      },
+      {
+        "path": "tests/cases/issue_6527_standalone_equation_text.rs",
+        "before_sha256": "adfc4e0b78f808df013f265be5886aec3d88e136afd3884a3db66c189ef6fec0",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+            "to": "samples/hwp3-sample16-hwp5.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "3ffe30d4ed6a7a3a3050039e5acda97faa7cbf9263e2559285780d7f63c73620"
+      },
+      {
+        "path": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+        "before_sha256": "7509e217525808ec0fedc1ca12acff5d0bcd7dfb4e0e67c1779f03f8f1b587fb",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "b2444af5866fb5246c46315856113baec017d8b2f34c222c9be7959bf0e20ec0"
+      },
+      {
+        "path": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+        "before_sha256": "2b9236d838d8140e59c277e3cdecbb4e855ac27a6de15c62b596cbfba1386f0f",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/75544_pii_bunseok.hwpx",
+            "to": "samples/task2097/75544_pii_bunseok.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "6fbb8fbb0ff2287380528551190fa95995f19212b961fdd1c3a7724c1b2488c2"
+      },
+      {
+        "path": "tests/cases/issue_6060_fullwidth_cjk_quote.rs",
+        "before_sha256": "600073e3201b5324bb7f91563e2e2474924201dd564eb5912828041d0ead8bf8",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+            "to": "samples/hwp3-sample16-hwp5.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "0bee3a96108984fbc59fefbb30b7f74c8c17170d0efc857474e17f7596b15425"
+      },
+      {
+        "path": "tests/cases/issue_6368_row_cut_fp_epsilon.rs",
+        "before_sha256": "ca2db84ad3c4b61e0085a96d2e2dd9055c2b65e11148531ca855718b31b167a3",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "d421eb2793195fff1123cee4e8470719e03d4dc180748c65512b8084544ae188"
+      },
+      {
+        "path": "tests/cases/issue_4961_font_decision_trace.rs",
+        "before_sha256": "19aba64f8aa83af8c2153b17ab594d1b58b5736021a961a22bfeded63dd35258",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+            "to": "samples/rowbreak-problem-pages.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "1b3742c308a06155393c69e8d9782de9cd826e4f9644abefdd312d5b172acd99"
+      },
+      {
+        "path": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+        "before_sha256": "e9b7430cde3cf64110b893766b2d79ba57d9a381d56bd6f5573f1131a1d5e040",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+            "to": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "aa0336777eed00347d5461b1a0e6cd9d201da2a857ef1f311a5814e0f02c500f"
+      },
+      {
+        "path": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+        "before_sha256": "a0663cdd548f83eaeff35272c5d883349ad566d3f24c4bcaa4a45548d84139d7",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "1154ae7fa886a0032f4a68eec2767175fa8b7e21e25f8d05b2bfa05595084fb1"
+      },
+      {
+        "path": "tests/cases/issue_6706_stored_inline_control_rows.rs",
+        "before_sha256": "9d0d7d203480f2ec3ce49d9cf0878e8033897c626d5b0a9bb9381e56159122a5",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+            "to": "samples/hwp3-sample16-hwp5.hwpx",
+            "references": 1
+          }
+        ],
+        "after_sha256": "a3233e1451425f346663ace02af5ff5530c9de608bd47394f7beb3f54b54bd20"
+      },
+      {
+        "path": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+        "before_sha256": "c3f140e5a5038bbbb83a2a74c63fbd859665d69a33eccd4a37fdf64ea48ea36c",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "to": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "36bfad8160cdb7a076fa11b9097b9f9ac682e96fc13d2f83e7f64b7f0841dca0"
+      },
+      {
+        "path": "tests/cases/issue_1133_page_number_bottom_margin.rs",
+        "before_sha256": "0eeba7236c4c3eddb62173144493f06be7bdbeb65fdd2dbc71f62085037df4b6",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+            "to": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "09afc675d6f71d90a11785be395e577b690e9555da450a8b9fbf9c5b2bf6d500"
+      },
+      {
+        "path": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+        "before_sha256": "4f665b95fdcd76123e82737e61f680abf6785c767748035ad68782b2f97e6111",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+            "to": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+            "references": 2
+          }
+        ],
+        "after_sha256": "37ee3f2cc3224b75b65e3d777ff84358f5bade858944050d2ca1435d76d96a39"
+      },
+      {
+        "path": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+        "before_sha256": "a119f63639bd6b11da69452c28e6ec2ab32413f78421b071f24be7875fc0b0ec",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+            "to": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "16b89aad8206edafe055c59663b8c76876955abf0e81b4e767fb2ef3c0c9e7fe"
+      },
+      {
+        "path": "tests/cases/issue_6764_public_table_fragment_presence.rs",
+        "before_sha256": "6ad684f0b3c60ea608e5b48c179303e231f5b6a7c0800b7fed233cbb86eae4b9",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "to": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "6597e118be8c1bba25467e860b05352824032eb61e3f29e02ec42a2c86ed347a"
+      },
+      {
+        "path": "tests/cases/issue_6630_cell_first_para_lead.rs",
+        "before_sha256": "404a83cd6b536a46f074959f12f0da2b92ed5606daac705835edc798ef7cebe6",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+            "to": "samples/exam_eng.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "6996b61cc8467b9a036bbde61112406a7f8940d8dcbc63cec67fea2b0c06338c"
+      },
+      {
+        "path": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "before_sha256": "1acefe30e9de6452bc6b69203fdb77f7d552854dc4c6870b9dde3b348f4d2739",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+            "to": "samples/issue6023/30269_reform_recommendation.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "babc8434094b0c11c9949639e7c364366673cf6c2db23a90404ed0de0b0ee90f"
+      },
+      {
+        "path": "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs",
+        "before_sha256": "cd6ddeb5ccc6eb5ab2211a792fb4c0501b328b6fe8ded05fb4a14d6aafeb634b",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "to": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "ed5d83e762221184f5f5ce78f9c3add72830556d2c3a397fe5d08afdc42f4089"
+      },
+      {
+        "path": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+        "before_sha256": "66e7c36c4551b086953716a626508ae4e4257a0c0dadcb8729d393415a7fbd9e",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+            "to": "samples/hwpctl_API_v2.4.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "8abde304ec89b5f8786fa4c93408b0f8dd6fa5e0fb262cd1070cc952e6b5c43e"
+      },
+      {
+        "path": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "before_sha256": "424852a27d2e97da8c00bcc36f78ed5c33f545bc841114fb9dec81976b1f78dd",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+            "to": "samples/hwp3-sample16-hwp5-2022.hwp",
+            "references": 1
+          },
+          {
+            "from": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+            "to": "samples/hwp3-sample16-hwp5.hwp",
+            "references": 1
+          }
+        ],
+        "after_sha256": "db56ade587546a91e7bd8ce4f59d09261c372d3a35d8ade8679accdc47e1a1b1"
+      },
+      {
+        "path": "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs",
+        "before_sha256": "1207bf2b5402876f30b87e5e4e3bd7be78a71feb8e3539f4f0bdd292dfbc18a1",
+        "replacements": [
+          {
+            "from": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+            "to": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+            "references": 2
+          }
+        ],
+        "after_sha256": "8088c92dece44a92c6a385f08cf78e64fc5bd631b97a46d19837598dd4d05bc1"
+      }
+    ],
+    "inputs": [
+      {
+        "source": "samples/exam_eng.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+        "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+      },
+      {
+        "source": "samples/hwp3-sample16-hwp5-2010.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      {
+        "source": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      {
+        "source": "samples/hwp3-sample16-hwp5.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      {
+        "source": "samples/hwp3-sample16-hwp5.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      {
+        "source": "samples/hwpctl_API_v2.4.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+        "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+      },
+      {
+        "source": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+        "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+      },
+      {
+        "source": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+        "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
+      },
+      {
+        "source": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+        "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a"
+      },
+      {
+        "source": "samples/issue6023/30269_reform_recommendation.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+        "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+      },
+      {
+        "source": "samples/issue6031/3249937_asset_management_rules.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+        "sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77"
+      },
+      {
+        "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      {
+        "source": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+      },
+      {
+        "source": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+      },
+      {
+        "source": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+        "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+      },
+      {
+        "source": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+        "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb"
+      },
+      {
+        "source": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+      },
+      {
+        "source": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+      },
+      {
+        "source": "samples/rowbreak-problem-pages.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+        "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+      },
+      {
+        "source": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+        "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f"
+      },
+      {
+        "source": "samples/task2097/75544_pii_bunseok.hwpx",
+        "preserved": "mydocs/pr/assets/issue7445/75544_pii_bunseok.hwpx",
+        "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1"
+      },
+      {
+        "source": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "preserved": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+      }
+    ]
+  },
+  "files_changed": 76,
+  "path_references_restored": 135,
+  "source_files_scope": "src 3개는 기존 cfg(test) 내부 입력 경로만 변경. 생산 동작 변경 없음.",
+  "dynamic_reader_audit": [
+    {
+      "path": "tests/cli_exit_codes.rs",
+      "source": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "reason": "原 snapshot used a dynamic path or source/helper needs inspection"
+    },
+    {
+      "path": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+      "source": "samples/hwpctl_API_v2.4.hwp",
+      "reason": "原 snapshot used a dynamic path or source/helper needs inspection"
+    },
+    {
+      "path": "tests/cases/issue_6527_standalone_equation_text.rs",
+      "source": "samples/hwp3-sample16-hwp5.hwpx",
+      "reason": "原 snapshot used a dynamic path or source/helper needs inspection"
+    }
+  ],
+  "dynamic_reader_conclusion": "6527/7387은 root.join의 전체 samples 상대 경로로 실제 집중 실행 통과. cli_exit_codes의 write_flipped 역시 root.join(sample)의 전체 상대 경로를 읽음. 원문과 사본 동일 바이트. 이 함수의 전체 실행은 최종 전체 nextest에서 확인할 항목.",
+  "summaries": {
+    "focused-kept": [
+      "Summary [   0.631s] 19 tests run: 19 passed, 1082 skipped"
+    ],
+    "source-units": [
+      "Summary [   0.187s] 4 tests run: 4 passed, 4064 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "a5e5072e2ace077c1992c40ebabb7d48a81c89e0",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_018",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "test(issue_6527_standalone_equation_text::) or test(issue_7387_use_font_space_latin_slot::) or test(issue_5128_spec_page_roundtrip::) or test(issue_2099_araea_pua::) or test(outline_navigation_table_cell_number::) or test(issue_6806_objectprops_getset_identity::)"
+        ],
+        "exit_code": 0,
+        "seconds": 137.0771160000004
+      },
+      {
+        "step": "source-units",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(test_521_tac_table_outer_margin_bottom_p2) or test(test_footer_total_page_field_distinct_from_current_page) or test(paint_only_char_shape_changes_do_not_require_text_reflow) or test(page_border_fill_sample_basis_matches_hancom_ui)"
+        ],
+        "exit_code": 0,
+        "seconds": 121.10568612487987
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.83371266676113
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 18.825996415689588
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 16.070962500292808
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 20.934637958183885
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 46.886736082844436
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.873301708139479
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 9.177495707757771
+      }
+    ]
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "expectation_or_tolerance_changes": false,
+  "preserved_assets": "과거 부정 증거의 immutable 사본과 PDF/PNG는 보존. 보정69 이전 사용자가 명시적으로 제외한 거대 문서는 복원하지 않음.",
+  "limits": "정상 경로 복원 증거이며 미달 원문 피델리티 개선/최종 전체 회귀 통과/PR 준비 완료 아님. 보정106의 실제 개별15실패와 보정110의 다른 corpus 원인을 입력별로 해결해야 함."
+}

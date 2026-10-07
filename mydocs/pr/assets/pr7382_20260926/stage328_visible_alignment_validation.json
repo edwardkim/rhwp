@@ -1,0 +1,103 @@
+{
+  "stage": 328,
+  "native_wasm_png_equal": {
+    "17": true,
+    "24": true,
+    "107": true,
+    "163": true,
+    "164": true,
+    "169": true,
+    "207": true,
+    "208": true,
+    "211": true
+  },
+  "native_metrics": [
+    {
+      "page": "17",
+      "tolerant_content_match_percent": "99.89024",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.75608",
+      "silhouette_boundary_reconciled_pixels": "110"
+    },
+    {
+      "page": "24",
+      "tolerant_content_match_percent": "92.95024",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "92.94896",
+      "silhouette_boundary_reconciled_pixels": "2"
+    },
+    {
+      "page": "88",
+      "tolerant_content_match_percent": "89.99772",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "89.99772",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "107",
+      "tolerant_content_match_percent": "99.05702",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.05702",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "163",
+      "tolerant_content_match_percent": "100.00000",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00000",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "164",
+      "tolerant_content_match_percent": "96.39290",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.39290",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "169",
+      "tolerant_content_match_percent": "99.93183",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.93183",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "207",
+      "tolerant_content_match_percent": "93.37829",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "93.36062",
+      "silhouette_boundary_reconciled_pixels": "12"
+    },
+    {
+      "page": "208",
+      "tolerant_content_match_percent": "96.82326",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.82326",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "211",
+      "tolerant_content_match_percent": "99.46975",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.46975",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "page_count": 215,
+  "native_build_r2_exit": 0,
+  "wasm_build_exit": 0,
+  "nextest": {
+    "passed": 23,
+    "failed": 0,
+    "exit": 0
+  },
+  "initial_candidate": "visible last line only had no effect because opening frame was excluded from alignment; 14 focused tests passed",
+  "initial_test_target_error": "old standalone target and suite names rejected, current suite manifest resolved and corrected 23 tests passed",
+  "source_sha256": {
+    "src/renderer/layout/table_layout.rs": "cd5655b105ecfe12b257ab59193514192fdffa5ab51b513dbf7d9479a5ca318f",
+    "src/renderer/layout/table_partial.rs": "dba1823154b73b3573f7ed80dee235d034a23e74fe2f7a738de2a793440dc932"
+  },
+  "direct_inspection": "163쪽 마지막 표 본문의 가운데 정렬·외곽 높이 PDF 일치.164쪽 내용 소유 유지; 종전 아래 테두리 차이는 잔존.",
+  "remaining": "88쪽 수식·이어받는 글머리 들여쓰기 및 최종 전수 검증",
+  "new_rust_tests": 0
+}

@@ -1326,6 +1326,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         // 소거하게 한다 (한컴 글맵시 OLE WMF 실측: WINDING + 글꼴 관례의 반대 방향
         // 구멍 윤곽).
         let mut subpaths: Vec<String> = Vec::new();
+        let mut bounds = [i32::MAX, i32::MAX, i32::MIN, i32::MIN];
 
         for i in 0..record.poly_polygon.number_of_polygons {
             let Some(points_of_polygon) = record.poly_polygon.a_points_per_polygon.get(i as usize)
@@ -1351,6 +1352,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 };
 
                 points.push(as_point_string(&point));
+                bounds[0] = bounds[0].min(i32::from(point.x));
+                bounds[1] = bounds[1].min(i32::from(point.y));
+                bounds[2] = bounds[2].max(i32::from(point.x));
+                bounds[3] = bounds[3].max(i32::from(point.y));
                 current_point_index += 1;
             }
 
@@ -1370,6 +1375,18 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .set("fill-rule", fill_rule.as_str())
                 .set("d", subpaths.join(" "));
             let path = stroke.set_props(path);
+
+            self.brush_only_rop_sequence.observe_vector_mask(
+                &path,
+                &self.object_selected.brush,
+                self.context_current.draw_mode,
+                bounds,
+                (
+                    self.current_clip_id.as_deref(),
+                    self.context_current.clipping_region.as_ref(),
+                ),
+                self.elements.len(),
+            );
 
             self.push_element(record_number, path);
         }

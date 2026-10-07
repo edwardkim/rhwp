@@ -1,0 +1,96 @@
+{
+  "production_head": "072048a8ae2d19b1140c6b675ebfc234961b84a1",
+  "source_pr": 7554,
+  "source_head": "f67d0882a4373ecba4e8de09a5cd548f204bd05f",
+  "focused_result": "5 PASS / 0 FAIL",
+  "new_test_functions": 0,
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5981264035",
+  "whole_labeling_approved": false,
+  "runs": {
+    "native-labeling": {
+      "pages": 103,
+      "below90": [
+        8,
+        10,
+        15,
+        19,
+        20,
+        21,
+        35,
+        40,
+        41,
+        46,
+        47,
+        50,
+        53,
+        55,
+        65,
+        76,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        86,
+        94
+      ],
+      "minimum": 17.93315,
+      "affected": {
+        "88": 92.67463,
+        "89": 95.97303
+      }
+    },
+    "native-image-stack": {
+      "pages": 8,
+      "below90": [],
+      "minimum": 96.40794,
+      "affected": {
+        "4": 99.95278
+      }
+    },
+    "wasm-labeling": {
+      "pages": 103,
+      "below90": [
+        8,
+        10,
+        15,
+        19,
+        20,
+        21,
+        35,
+        40,
+        41,
+        46,
+        47,
+        50,
+        53,
+        55,
+        65,
+        76,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        86,
+        94
+      ],
+      "minimum": 17.93315,
+      "affected": {
+        "88": 92.67463,
+        "89": 95.97303
+      }
+    },
+    "wasm-image-stack": {
+      "pages": 8,
+      "below90": [],
+      "minimum": 96.40794,
+      "affected": {
+        "4": 99.95278
+      }
+    }
+  },
+  "control_pdf_creator": "Hwp 2022 (파일명 연도와 구분);8쪽의 정상 독립 출력 재사용"
+}

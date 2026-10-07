@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "key": "synthetic",
+  "provenance": {
+    "hwp": {
+      "path": "samples/task2097/rowbreak_midpage_declared_fits.hwpx",
+      "sha256": "bde30c761ad42e3068c330ef3d1fc73d99708c898b04872fe101cff2c15b44ad"
+    },
+    "pdf": {
+      "path": "pdf/issue2097/rowbreak-midpage-original-2020.pdf",
+      "sha256": "b6e9ff4ecc595ead7bf77987f9b57b51b389efea2abe180a7d46d840e23f3e80"
+    },
+    "git_head": "ce5862a3be578298026a4ca128b6517f648021ae",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+      "sha256": "9bbb85583cb1b5f176d94998d551c5d611e03121a8aae1a4e8a71124ef1c84e7"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2
+    ]
+  ],
+  "run_state": "complete"
+}

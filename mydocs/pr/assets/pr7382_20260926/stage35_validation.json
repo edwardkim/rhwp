@@ -1,0 +1,135 @@
+{
+  "source_sha": "69d4c5ddd0d0b705381f9e1631fb068b8847ad0d",
+  "files": {
+    "src/renderer/layout.rs": "7a54b4288f03706a8dac641eb1ef669d431af8292cb23b4238f721cfafc32244",
+    "src/renderer/typeset.rs": "31937bf52becd598ab2f05558eb5026e2223536cb4eede63548981707aeedf4c",
+    "src/renderer/typeset/controls/deferred_picture.rs": "ae4ddc9ea3e5a4c4cb3a368cdc37b5fc7ff38ad1648835f75d36312cfaaf3786",
+    "src/renderer/typeset/section/controls.rs": "b10df70f4224b7bbf2b4690f8588b7156a89ba85bf5116167f4f0e06fffa8875",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "4c47e4d32220912c65a3f978a7c013a9a1d7fb16b1b0bece96515fe7fc462ad9",
+    "tests/issue_3738_rowbreak_table_footnote_fragment.rs": "f1571e83052185a7ae0f6ec80fe65a779bb389f67e2fef4d08e29ebc47e6da05"
+  },
+  "runtime_diff_sha256": "0b5cedbae97bb85c1c882d443fc3557b1e9ee0b7ff9139a016bdc48fed08aeb5",
+  "test_diff_sha256": "5275a24915326a6ae3a724f536b1019135b9e686e0992d18612f4db8011928fb",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "before": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 0.208
+  },
+  "after": {
+    "passed": 191,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 8.35,
+    "threads": 8,
+    "remaining_failure": "native_hwp5_earlier_marker_projects_the_p120_footnote_before_body_reset",
+    "classification": "그림64 원본/단일 소유/폭 불일치 및 관련 그림 경로 충족. 기존120쪽 표 원점 미충족"
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_001",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_004",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_007",
+    "--test",
+    "regression_suite_010",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_013",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_015",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_021",
+    "--test",
+    "regression_suite_022",
+    "--test",
+    "regression_suite_023",
+    "--test",
+    "regression_suite_026",
+    "--test",
+    "regression_suite_028",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5833_cell_multi_para_float_pics) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6313_cell_picture_own_displacement) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6782_cell_float_full_original) | test(issue_5551_caption_owner) | test(issue_6284_picture_top_caption_rendered) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6575_tac_caption_box_baseline) | test(issue_5875_nested_text_caption) | test(issue_5875_nested_table_text_caption) | test(issue_5714_completed_row_tail_band) | test(issue_5906_float_stack_declared_tail) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_6204_object_move_invalidates_linesegs)"
+  ],
+  "after_result": {
+    "exit_code": 100,
+    "elapsed_seconds": 17.8036946663633
+  },
+  "cli": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 94.47553266724572,
+    "cli_sha256": "36ec9c26f40281ebe116c363bc78bfc0e4cb57b1c106f47db274bd1592605c6f"
+  },
+  "policies": {
+    "fmt": 0,
+    "manifest": 0,
+    "manifest_static_attrs": 6222,
+    "unit_tiers": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "independent_expectation": {
+    "figure64_top_px": 89.981363,
+    "figure64_caption_px": 404.101033,
+    "source": "두 원본 한컴2024 PDF156쪽 및 저장 문단1693의 실제 시작 컷"
+  },
+  "attempts": [
+    {
+      "log": "stage35-expanded.log",
+      "exit_code": 101,
+      "classification": "신규 검사에서 지역 탐색 함수 범위를 잘못 참조한 자체 빌드 오류, 결함 재현 아님",
+      "log_sha256": "86f46df26e56f7740c36fbc8d263362293a24b6e39eb6f736fe5e6295df8d891"
+    },
+    {
+      "log": "stage35-expanded-final.log",
+      "exit_code": 100,
+      "passed": 188,
+      "failed": 2,
+      "classification": "120쪽 기존 결함과96.9px의 잘못된 그림64 기대값",
+      "log_sha256": "041c10ff760cbf4b4d77c93abc39f693e6da0f8ba58ca2eb925b6838a1060204"
+    },
+    {
+      "log": "stage35-expanded-final2.log",
+      "exit_code": 100,
+      "passed": 188,
+      "failed": 1,
+      "classification": "prepare 뒤 이동한 suite를 다시 발견하기 전 불완전 범위, 최종 증거 아님",
+      "log_sha256": "c63561ad15a23b536138515fd6ff713470c22da54b5ea73f125e2fa1d0388f1b"
+    }
+  ]
+}

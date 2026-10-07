@@ -149,15 +149,26 @@ impl RowBlockQuery<'_> {
         let mut total = 0.0;
         let mut has_row = false;
         for br in b_start..row_end {
-            let row_h = layout_engine.row_block_cut_row_content_height(
+            let row_h = if layout_engine.row_block_cut_uses_measured_height(
                 table,
-                b_start,
-                b_end,
+                (b_start, b_end),
                 br,
                 block_start_cut,
                 block_end_cut,
                 styles,
-            );
+            ) {
+                self.mt.row_heights[br]
+            } else {
+                layout_engine.row_block_cut_row_content_height(
+                    table,
+                    b_start,
+                    b_end,
+                    br,
+                    block_start_cut,
+                    block_end_cut,
+                    styles,
+                )
+            };
             if row_h > 0.0 {
                 if has_row {
                     total += cs;
@@ -217,14 +228,17 @@ impl RowBlockQuery<'_> {
                 ))
             }
         } else {
-            layout_engine.row_block_content_height(
+            let content_height = layout_engine.row_block_content_height(
                 table,
                 b_start,
                 b_end,
                 blk_start_cut,
                 &[],
                 styles,
-            ) + cs * block_size.saturating_sub(1) as f64
+            ) + cs * block_size.saturating_sub(1) as f64;
+            // 셀 로컬 최대 높이는 행 사이의 물리 빈 공간을 포함하지 않는다.
+            // 같은 컷의 행 합을 하한으로 사용해 실제 배치와 예약을 일치시킨다.
+            content_height.max(self.fragment_height(block, b_end, blk_start_cut, &[]))
         }
     }
 }

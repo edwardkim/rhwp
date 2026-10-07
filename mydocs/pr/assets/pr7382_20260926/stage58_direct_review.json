@@ -1,0 +1,101 @@
+{
+  "automatic_scope": "242쪽×Native/fresh WASM×HWP/HWPX=968개, 모두90이상, 최종4개exit0",
+  "direct_inspection_scope": "대표/영향/최저점17개 review와2개 standalone overlay 직접 판독. 전체968개를 사람이 한 장씩 읽었다고 주장하지 않음.",
+  "views": [
+    {
+      "path": "visual-full-native-hwp/tail1733-hwp/review/review_045.png",
+      "sha256": "ee01505280923eef2ee67246b012b71839a8b1b2d6307146fb71dc28853b8185",
+      "observations": "표/본문 쪽 소유 유지. 수식의 문자 간격/일부 획과 표 선의 잔여 차이 보존."
+    },
+    {
+      "path": "visual-tail-shard-native-hwpx/tail1733-hwpx/review/review_162.png",
+      "sha256": "165798bb06d9ed681855c1b9509df904b587a50675110e8d19102943716c39d7",
+      "observations": "본문/각주 쪽 소유와 하단 유지.14.15.3 일부 줄바꿈과 각주 번호 잔여 차이 보존."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwpx/tail1733-hwpx/review/review_162.png",
+      "sha256": "446a3fa5a5c6266ed92cf8abf9d6d206392d8a7915aaeaa0856401da888af9b3",
+      "observations": "fresh WASM의 같은 본문/각주 경계 직접 확인. 일부 줄바꿈 잔여 차이 보존."
+    },
+    {
+      "path": "visual-footnote-controls-wasm/policy-hwp/review/review_027.png",
+      "sha256": "fab34f9c1257514a3a4c1148614d0443482a4431b972a2931af86dbbeb96413b",
+      "observations": "묶음/캡션/표와 각주26의 위치 직접 확인."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_196.png",
+      "sha256": "4e8ac827372d8942bd22564458c87952307ecc8782487825e643cbce81657bb5",
+      "observations": "첫/둘째 각주 간격과 마지막 줄의 예약 끝 직접 확인. 실제f64 경계 검사로도 검증."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_201.png",
+      "sha256": "f2c43b2ead1b21e454b8ec4e4c7006545280883fd09fc59193ea6d963c811916",
+      "observations": "앞 이월표/그 옆 끝 줄/뒤 전폭 본문/별표2 쪽 내부 표시 확인. 얇은 화살표 획과 작은 글자 잔여 차이 보존."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_206.png",
+      "sha256": "17e68489071fec48163884cc7aa482143259642b5da1ec80f2799b93d1f9c7c0",
+      "observations": "전체 캡처에서 첫 본문 tail, 캡션/표 상하단과 뒤 본문 위치 재확인. 누락 없이 같은 쪽 소유."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_215.png",
+      "sha256": "b3c1659d14fa1efcb33aac8b2cb5519f8be3c7dccea7a2c1ce4856b25a1b7757",
+      "observations": "흑백 지도 그림/프레임 확인. 지도 위 별도 글상자의 위치/줄바꿈과 프레임에 잔여 차이가 있음. 이미지 변환 픽셀의 독립 PDF 일치는 페이지 전체의 위치 일치를 입증하지 않음."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_219.png",
+      "sha256": "6a668147b92ffb6f6c6617eea2d45d49949bfbe6c6ec544e44cf25028057de67",
+      "observations": "앞쪽에서 이월한 본문 첫 줄, 그림/캡션/수식과 뒤 본문 표시 및 마지막 문단 컷 확인. 수식 자간 잔여 차이 유지."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_224.png",
+      "sha256": "0111b1bf55ee5897a882a7b615ae4d2246c47e68cca47d5334f1bf77dcb9d586",
+      "observations": "런 사이의 저장 탭 폭 보존으로 HL2/HTL/아래첨자 뒤 등호와 설명 시작점 확인. 그림/후속 약어 본문 쪽 소유 유지."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwp/tail1733-hwp/review/review_196.png",
+      "sha256": "657a8d0354882cf6047384a0da8d4d65987bc8f098e7d73e8c66e2927554c8c4",
+      "observations": "fresh WASM 각주 앞 간격/마지막 줄 예약 경계를 직접 확인."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwp/tail1733-hwp/review/review_201.png",
+      "sha256": "a0acc32a2f08cc9d696ed17904bedca7911ce7fe4ae581a1a0707091b86997f6",
+      "observations": "fresh WASM 이월 표/본문 tail/후속 표의 같은 쪽 표시 확인. 얇은 화살표 획 잔여 차이는 Native와 같이 유지."
+    },
+    {
+      "path": "visual-tail-shard-native-hwp/tail1733-hwp/review/review_192.png",
+      "sha256": "85f753c8e7ce8e6b690908a155c5b769a4ae4791a2cd4c5887e40dfdf53a4f9a",
+      "observations": "명시적 page-top 표제/첫 조각 상단과 마지막 행 경계 확인. 괘선 두께/미세 좌표 잔여 차이 보존."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwp/tail1733-hwp/review/review_206.png",
+      "sha256": "126d3ba0a2723cf76c1f00e82f61394c1139f9eb827b114aafcedbd1e5ba7eaf",
+      "observations": "fresh WASM에서도 첫 본문 tail/표 캡션/표와 뒤 문단의 동일 쪽 소유 확인."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwpx/tail1733-hwpx/review/review_215.png",
+      "sha256": "0e59110ab9f803d6c66d99a5ea3305a79b125b96a58ad48f06a2b6758ea45052",
+      "observations": "fresh WASM HWPX의 흑백 지도/프레임 확인. 지도 위 별도 글상자의 위치/줄바꿈과 프레임에 잔여 차이를 그대로 기록."
+    },
+    {
+      "path": "visual-tail-shard-native-hwpx/tail1733-hwpx/review/review_196.png",
+      "sha256": "a5fa1fc31b435d25f141faec8f628fd3982eecfcfbf50e4dd62d7f5fb68dd8c4",
+      "observations": "Native HWPX에서도 둘째 각주의 앞 간격과 마지막 줄 예약 경계 직접 확인."
+    },
+    {
+      "path": "visual-tail-shard-wasm-hwpx/tail1733-hwpx/review/review_224.png",
+      "sha256": "ff36e45d49bf4f0ad1068afb591d45b0f1f7987a6bc32492d5e9f0a3cb13dbbf",
+      "observations": "fresh WASM HWPX에서도 전역 탭 순번의 적용으로 HL2/HTL/아래첨자 뒤 등호/설명 시작점 확인."
+    },
+    {
+      "path": "visual-full-native-hwp/tail1733-hwp/overlay/overlay_196.png",
+      "sha256": "7f1c751ff7d17dae4accbf2c3c8efaf80d8402c1a9dfab123ccb206fffd4417d",
+      "observations": "standalone overlay의 각주 간격/하단 경계 확인."
+    },
+    {
+      "path": "visual-full-wasm-hwp/tail1733-hwp/overlay/overlay_206.png",
+      "sha256": "658673dd1b92f0e2b78a7669a1afee1187be955f88c0114f3d9fc84f9c4cb191",
+      "observations": "standalone overlay의 본문 tail/표/후속 본문 위치 확인."
+    }
+  ]
+}

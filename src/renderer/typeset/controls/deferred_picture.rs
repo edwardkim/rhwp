@@ -1,8 +1,8 @@
-//! 다음 physical page의 Square 그림 소유 후보 Query.
+//! 다음 물리 쪽의 자리차지 그림 소유 후보를 조회한다.
 //! 저장 줄·각주 예약·그림/캡션 요구 높이를 조회하며 큐와 페이지 상태는 변경하지 않는다.
 //! 가용 높이는 기존 두 분기의 지연 호출로 읽는다. 페이지 전이와 발행은 R5 소유다.
 
-use super::super::para_has_visible_text;
+use super::super::{is_synthetic_line_seg, para_has_visible_text};
 use crate::model::{
     control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
     shape::CaptionDirection,
@@ -17,7 +17,7 @@ pub(in crate::renderer::typeset) struct DeferredPicturePage<'a> {
     pub current_height: f64,
 }
 
-/// 저장 후보만 반환한다. anchor 본문 배치와 그림 큐 반영은 호출자에 남긴다.
+/// 저장 후보만 반환한다. 앵커 본문 배치와 그림 큐 반영은 호출자에 남긴다.
 #[allow(clippy::too_many_arguments)]
 pub(in crate::renderer::typeset) fn next_page_owner(
     page: DeferredPicturePage<'_>,
@@ -39,7 +39,9 @@ pub(in crate::renderer::typeset) fn next_page_owner(
         .caption
         .as_ref()
         .is_some_and(|caption| matches!(caption.direction, CaptionDirection::Bottom));
-    if !page.profile.hwp5_stored_pagination_layout()
+    if !(page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        || page.profile.session_edited()
+        || para.stored_text_partition_is_dirty()
         || page.col_count != 1
         || page.current_items.is_empty()
         || page.current_footnote_height <= 0.0
@@ -58,13 +60,17 @@ pub(in crate::renderer::typeset) fn next_page_owner(
         return None;
     }
 
-    // 다음 문단의 vpos=0 narrow band는 한컴 저장 흐름에서 그림의 다음
-    // physical-page owner를 직접 가리킨다. 같은 문단의 full-width lines 뒤에
-    // reset하는 경우(p1693)와 다음 문단이 narrow band로 곧바로 시작하는 경우
-    // (p1356)를 모두 수용하되, 이 형상 없이 generic Square float을 옮기지 않는다.
+    // 다음 문단의 vpos=0 좁은 띠는 한컴 저장 흐름에서 그림의 다음 물리 쪽 소유를
+    // 직접 가리킨다. 같은 문단의 전폭 줄 뒤에서 재개하는 경우와 다음 문단이
+    // 좁은 띠로 시작하는 경우를 모두 수용하되, 이 저장 형상이 없는 일반
+    // 자리차지 그림을 옮기지 않는다.
     let next_para = paragraphs.get(para_idx + 1)?;
+    if next_para.stored_text_partition_is_dirty() {
+        return None;
+    }
     let (reset_idx, reset_seg) = next_para.line_segs.iter().enumerate().find(|(_, seg)| {
-        seg.vertical_pos == 0
+        !is_synthetic_line_seg(seg)
+            && seg.vertical_pos == 0
             && seg.column_start == 0
             && seg.segment_width > 0
             && (seg.segment_width as i32 - common.horizontal_offset as i32).abs() <= 200
@@ -73,10 +79,9 @@ pub(in crate::renderer::typeset) fn next_page_owner(
         && next_para.line_segs[..reset_idx]
             .iter()
             .any(|seg| seg.segment_width > reset_seg.segment_width.saturating_add(1000));
-    // p1356처럼 다음 문단이 narrow band로 시작하면, 그 문단 전체의 저장 advance가
-    // 현 각주 예약 뒤에 남은 높이를 초과해야만 next physical page owner라고
-    // 확정한다. 이 guard가 없으면 단순 side-wrap 문단을 나중의 무관한 page break에
-    // 잘못 매달 수 있다.
+    // 다음 문단이 좁은 띠로 시작하면 그 문단 전체의 저장 진행 높이가 현재 각주
+    // 예약 뒤의 가용 높이를 초과해야만 다음 물리 쪽 소유로 확정한다. 이 조건이
+    // 없으면 단순히 그림 옆을 흐르는 문단을 이후의 무관한 쪽 나눔에 묶을 수 있다.
     let next_para_starts_on_next_page = reset_idx == 0 && {
         let stored_flow_height = next_para
             .line_segs
@@ -98,10 +103,10 @@ pub(in crate::renderer::typeset) fn next_page_owner(
     }
 
     // `vertical_offset + height`는 그림 자체가 차지하는 저장 vpos 구간의 끝이다.
-    // 같은 cs/sw인 문단만이라도 이 범위를 넘어가면 다음 일반 본문까지 wrap이
-    // 새어 나간다. 반대로 blank guide 문단은 실제 글자가 없어도 다음 visible
-    // 문단에 wrap contract를 전달하므로 포함해야 한다. #3821의 p156은
-    // p1693..p1697이 이 band에 속하고 p1698은 바로 뒤에서 제외되는 실물 사례다.
+    // 같은 cs/sw인 문단이라도 이 범위를 넘어가면 다음 일반 본문까지 어울림이
+    // 새어 나간다. 반대로 빈 안내 문단은 글자가 없어도 뒤의 보이는 문단에
+    // 어울림 계약을 전달하므로 포함한다. #3821의156쪽은 문단1693–1697이
+    // 이 띠에 속하고 문단1698은 바로 뒤에서 제외되는 실물 사례다.
     let image_wrap_bottom_vpos = common
         .vertical_offset
         .saturating_add(common.height)
@@ -118,10 +123,10 @@ pub(in crate::renderer::typeset) fn next_page_owner(
         return None;
     }
 
-    // Square는 layout cursor를 전진시키지 않지만, 이 저장 contract에서는 다음
-    // page top의 그림+caption을 위해 현재 page tail에 적어도 그림 frame만큼의
-    // 여유가 있어야 한다. image frame만으로도 기존 각주가 있는 p155에 들어가지
-    // 않으므로 current PageItem을 만들지 않고 next-page queue로 보낸다.
+    // 자리차지 그림은 배치 커서를 전진시키지 않지만 이 저장 계약에서는 그림과
+    // 캡션을 담을 물리 공간이 필요하다. 기존 각주를 제외한 현재 쪽 말미에
+    // 그림 프레임조차 들어가지 않으면 현재 PageItem을 만들지 않고 다음 쪽
+    // 대기열로 보낸다.
     let image_frame_height = hwpunit_to_px(
         common.height as i32 + common.margin.top as i32 + common.margin.bottom as i32,
         dpi,
@@ -146,11 +151,11 @@ pub(in crate::renderer::typeset) fn next_page_owner(
     ))
 }
 
-/// 다음 physical page를 소유한 Square 그림의 저장 wrap band에 속하는 연속 문단을 찾는다.
+/// 다음 물리 쪽을 소유한 자리차지 그림의 저장 어울림 띠에 속하는 연속 문단을 찾는다.
 ///
-/// 한 문단에 full-width tail과 `vpos=0` reset band가 공존할 수 있으므로 문단의 첫
-/// LineSeg만 보지 않는다. 그림의 실제 세로 범위를 벗어나거나 cs/sw 계약이 달라지는
-/// 첫 문단에서 즉시 멈춰, 뒤 일반 본문으로 wrap anchor가 전파되지 않게 한다.
+/// 한 문단에 전폭 꼬리 줄과 `vpos=0` 재개 띠가 공존할 수 있으므로 첫 LineSeg만
+/// 보지 않는다. 그림의 실제 세로 범위를 벗어나거나 cs/sw 계약이 달라지는 첫
+/// 문단에서 멈춰, 뒤 일반 본문으로 어울림 앵커가 전파되지 않게 한다.
 pub(in crate::renderer::typeset) fn square_picture_wrap_band_target_paragraphs(
     paragraphs: &[Paragraph],
     first_para_index: usize,

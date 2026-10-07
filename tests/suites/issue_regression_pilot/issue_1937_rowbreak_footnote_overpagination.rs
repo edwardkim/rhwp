@@ -1,7 +1,7 @@
 //! Issue #1937: 각주가 많은 큰 RowBreak 표가 연속(continuation) 페이지에서 과분할되는
 //! 회귀 가드.
 //!
-//! 재현 문서 (tracked 공개 샘플): `samples/issue1937_rowbreak_footnote_overpagination.hwp`
+//! 재현 문서 (저장소에 등록된 공개 샘플): `samples/issue1937_rowbreak_footnote_overpagination.hwp`
 //! (정책연구정보서비스 공개 문서 "소상공인 중간보고서(2)", HWP5). 한글 2022 = 50쪽.
 //!
 //! 결함 본질: `typeset_block_table` 이 표 가용높이 `available = base − total_footnote`

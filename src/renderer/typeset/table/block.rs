@@ -1,4 +1,4 @@
-//! Block-table orchestration: entry/whole placement, split preparation, then continuation.
+//! 블록 표의 통째 배치·분할 준비·이어받기 호출 경로.
 
 use crate::renderer::typeset::{
     row_geometry_table, table, BlockTableContinuationContext, ComposedParagraph,
@@ -31,21 +31,24 @@ struct BlockTableInput<'a> {
     composed_all: &'a [ComposedParagraph],
 }
 
-/// Values that survive whole-placement attempts. No page state is copied here.
+/// 통째 배치 시도 뒤 분할 준비로 넘기는 값과 저장 프레임의 소유 단 식별자.
 struct SplitTableEntry<'a> {
     total_footnote: f64,
     next_starts_new_page: bool,
     next_rewinds_after_table: bool,
     host_spacing_total: f64,
     table_total: f64,
-    native_ordinary_rowbreak_rewind_uses_actual_footnote_boundary: bool,
+    stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary: bool,
     fn_margin: f64,
     available: f64,
     declared_object_total: f64,
     native_hwp5_internal_reset_rewind_needs_anchor_resync: bool,
     placement_para_start_height: f64,
     source_anchor_splits_here: bool,
-    native_hwp5_rewinding_rowbreak_uses_painted_row_footprint: bool,
+    stored_rewinding_rowbreak_uses_painted_row_footprint: bool,
+    closed_source_frame_placement:
+        Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
+    closed_source_frame_key: (usize, u16, u64),
     unconstrained_host_placement: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     constrain_host_placement: HostPlacementConstraint<'a>,
     mt: &'a MeasuredTable,

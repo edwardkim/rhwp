@@ -1,0 +1,98 @@
+{
+  "stage": 325,
+  "analysisCommit": "95c3b120b",
+  "sourceSha256": {
+    "src/renderer/font_environment.rs": "bb7e119b22d5ca82ef2d59d59eebb7613f102a9c230a663795ce5e7e7e0960df",
+    "src/renderer/style_resolver.rs": "0e3f428e33043cdf50a21afa053ad291fdfef33030031399db7e42beaf957591",
+    "src/renderer/layout/text_measurement.rs": "7a394eb29cde54214b983faf27bbf1aeca28e9685ffe6fcbad627f637ae9cd43",
+    "src/renderer/svg.rs": "17abfe0ced03da76ff6ae8df70332cd72d7fd4c9b24a599e65f3f5714aec1c37"
+  },
+  "fontProgramAnalysis": {
+    "font": "/Users/tsjang/Library/Fonts/HMKMM.TTF",
+    "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+    "unitsPerEm": 512,
+    "advances": {
+      "U+00B7": 512,
+      "U+2018": 512,
+      "U+2019": 512
+    },
+    "pdfEvidence": "독립 한컴 2024 PDF는 휴먼명조 TrueType을 사용하며 208쪽 가운뎃점 전진폭은 한글 전각과 같습니다. 기존 2020 Type3/HFT 대조군은 폭이 다릅니다.",
+    "environmentDeclaration": "설치·PDF 글꼴 형식을 확인한 호출자의 명시적 TrueType 선택으로 한정하며 원본 TTF 선언만으로 선택하지 않습니다."
+  },
+  "fontEnvironmentSha256": "838c842ca08a29b196b283ce209a47b7c9c7befea35266c38c8b411cf6c24e06",
+  "nativeBuildR2Exit": 0,
+  "wasmBuildR2Exit": 0,
+  "focusedEnvironmentNextestR2": {
+    "passed": 5,
+    "failed": 0,
+    "exit": 0
+  },
+  "nativeSelectedR2Exit": 1,
+  "wasmSelectedR2Exit": 1,
+  "selectedPages": [
+    {
+      "page": "88",
+      "tolerant_content_match_percent": "89.99772",
+      "below_90": "1"
+    },
+    {
+      "page": "163",
+      "tolerant_content_match_percent": "89.39386",
+      "below_90": "1"
+    },
+    {
+      "page": "207",
+      "tolerant_content_match_percent": "93.36062",
+      "below_90": "0"
+    },
+    {
+      "page": "208",
+      "tolerant_content_match_percent": "96.82326",
+      "below_90": "0"
+    },
+    {
+      "page": "211",
+      "tolerant_content_match_percent": "99.46975",
+      "below_90": "0"
+    }
+  ],
+  "backendPngIdentical": [
+    88,
+    163,
+    207,
+    208,
+    211
+  ],
+  "pageCount": 215,
+  "nativeWholeFirstCandidateExit": 1,
+  "nativeWholeFirstCandidateBelow90": [
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "67.47059",
+      "below_90": "1"
+    },
+    {
+      "page": "88",
+      "tolerant_content_match_percent": "89.99772",
+      "below_90": "1"
+    },
+    {
+      "page": "163",
+      "tolerant_content_match_percent": "89.39386",
+      "below_90": "1"
+    }
+  ],
+  "nativeWholeFinalR2": "pending",
+  "directlyInspected": [
+    207,
+    208,
+    163
+  ],
+  "counterexample": "163쪽은 따옴표 후보를 제거해도 같은89.39386%입니다. 표42 첫 조각의 마지막 줄간격을 제거해 선언 첫 프레임6277HU보다1000HU 작아지는 기존 문제가 드러났습니다. 따옴표가163쪽 원인이라는 중간 추정은 철회합니다.",
+  "remainingOriginalPages": [
+    10,
+    88
+  ],
+  "additionalHoldPage": 163,
+  "finalApproval": "held"
+}

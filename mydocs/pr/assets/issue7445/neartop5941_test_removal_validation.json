@@ -1,0 +1,306 @@
+{
+  "stage": 71,
+  "source_head": "aa7dc390c6e11e98658926513150be8f93695e7b",
+  "issue": "https://github.com/edwardkim/rhwp/issues/7445",
+  "user_authorization": "너무 큰 파일임 #7445에 추가로 등록후 회귀테스트 제거",
+  "move": {
+    "old": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+    "new": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+    "bytes": 61810688,
+    "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue5941-1480000-201900698-2020.pdf",
+    "bytes": 8209545,
+    "sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+    "pages": 205
+  },
+  "removed_functions": [
+    "issue_5941_neartop_reset_only_on_empty_page::stored_neartop_reset_survives_on_a_filled_page",
+    "issue_7147_row_declaration_beats_object_height::object_height_that_ends_mid_row_still_reconciles"
+  ],
+  "kept_function": "issue_5941_neartop_reset_only_on_empty_page::issue_5921_empty_page_relaxation_still_applies",
+  "removed_baseline_rows": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "rows": [
+        "issue5941/1480000-201900698-native-neartop-reset.hwp\t19"
+      ]
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "rows": [
+        "issue5941/1480000-201900698-native-neartop-reset.hwp\t2"
+      ]
+    },
+    {
+      "path": "tests/fixtures/text_overlap_baseline.tsv",
+      "rows": [
+        "issue5941/1480000-201900698-native-neartop-reset.hwp\t10"
+      ]
+    }
+  ],
+  "renderer_candidate_withdrawn": true,
+  "candidate_build_exit": 130,
+  "removal_is_fidelity_resolution": false,
+  "generic_partition_functions_retained": true,
+  "new_tests": false,
+  "issue_comment_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5868460165",
+  "later_user_policy": "다음 실패 회귀도 동일 문서 Visual Sweep90%미만이면 #7445에 추가 등록 후 관련 검사 제거. 원문/기준 PDF 보존. baseline 완화·정상 출력으로 승격 금지.",
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/neartop5941_native_review_039.png",
+      "sha256": "a588e99e9c28546934ee865fcf4fbbe991639a8e320f749bbd8959d2cc7a578d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/neartop5941_native_overlay_039.png",
+      "sha256": "f3b6dc9a297e30ed31dde11084055dcbd8d2303a394c06319dc623a42a400b0d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/neartop5941_native_review_053.png",
+      "sha256": "518e089a62dbd98d87a5ca1038342f96e359e8373fd3cfb2f0eb03099739474c"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/neartop5941_native_overlay_053.png",
+      "sha256": "8f0ac4813cb1346a7df7982db8090c97ad1bcbbe818ce9b0186c8b2531d1d1d4"
+    }
+  ],
+  "visual_observation": {
+    "native_pages_compared": [
+      39,
+      53
+    ],
+    "percent_by_page": {
+      "39": 47.03148,
+      "53": 58.70083
+    },
+    "actual_page_count": 203,
+    "pdf_page_count": 205,
+    "wasm_reexecution": "미실행; Native 미달로 사용자 승인 이관. 전체205쪽 시각 통과 아님.",
+    "source_code": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "source_head": "aa7dc390c6e11e98658926513150be8f93695e7b",
+    "cli_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+    "gate": "re_review_required"
+  },
+  "test_before_removal": {
+    "exit_code": 0,
+    "summary": "1PASS/228SKIP",
+    "body_bottom_nodes": 17,
+    "baseline_count": 19,
+    "log": "individual1-before-resolved.log",
+    "sha256": "9e49a9621a19cd3d8548a95b0c30e11cab4656744ba96537bd55d7107a3f9723"
+  },
+  "test_after_removal": {
+    "exit_code": 100,
+    "summary": "0PASS/1FAIL/231SKIP",
+    "samples": 69,
+    "skipped_inputs": 1,
+    "new_partition_failure": "issue6031/3249937_asset_management_rules.hwpx:1→15건",
+    "reason": "원문 이동에 따른 크기 기반partition 재배정. 제거 문서 외의 기존 실패라 별도로 다음 단계에서 검토. corpus 전체 PASS로 보고하지 않는다.",
+    "log": "focused-body_overflow_baseline.log",
+    "sha256": "5a0d7020ad6b67bb3026e895da878fe0fc7cc3eaf4b95f0ecc31266c29b3a707"
+  },
+  "other_fixture_failures": {
+    "case": "issue_7147_row_declaration_beats_object_height",
+    "unchanged_functions": [
+      "header_row_boxes_match_the_hancom_oracle",
+      "the_unshrunk_table_splits_across_the_page_boundary"
+    ],
+    "input": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "actual_failure": "0-based94/95에서pi934표 없음;2FAIL",
+    "kept_code_identical_to_before": true,
+    "renderer_source_identical": true,
+    "log": "focused-issue_7147_row_declaration_beats_object_height.log",
+    "next_action": "해당 문서는 이 제거 단계에서 제외하지 않음. 다음 개별 검토에서 독립 PDF와90%조건을 판별한다."
+  },
+  "removal_commit": "ca499e732a076009496da9f6b5a90ccdc2442698",
+  "gates": {
+    "source_head": "aa7dc390c6e11e98658926513150be8f93695e7b",
+    "policy_base": "d6cf1605327ced1c276f17a529192a743a766209",
+    "environment": {
+      "RHWP_FONT_PATH": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts:/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts:/Users/tsjang/Library/Fonts"
+    },
+    "steps": [
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.708,
+        "log": "fmt.log"
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.024,
+        "log": "fmt-check.log"
+      },
+      {
+        "step": "focused-body_overflow_baseline",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--test",
+          "regression_suite_011",
+          "-E",
+          "test(/(^|::)body_overflow_baseline::body_overflow_does_not_grow_partition_0$/)",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 125.796,
+        "log": "focused-body_overflow_baseline.log"
+      },
+      {
+        "step": "focused-issue_5941_neartop_reset_only_on_empty_page",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(/(^|::)issue_5941_neartop_reset_only_on_empty_page::/)",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.983,
+        "log": "focused-issue_5941_neartop_reset_only_on_empty_page.log"
+      },
+      {
+        "step": "focused-issue_7147_row_declaration_beats_object_height",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--test",
+          "regression_suite_008",
+          "-E",
+          "test(/(^|::)issue_7147_row_declaration_beats_object_height::/)",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 16.514,
+        "log": "focused-issue_7147_row_declaration_beats_object_height.log"
+      },
+      {
+        "step": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 17.934,
+        "log": "native-clippy.log"
+      },
+      {
+        "step": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 14.782,
+        "log": "wasm-clippy.log"
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 20.291,
+        "log": "workspace-build.log"
+      },
+      {
+        "step": "workspace-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 34.562,
+        "log": "workspace-clippy.log"
+      },
+      {
+        "step": "manifest-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.533,
+        "log": "manifest-check.log"
+      }
+    ]
+  },
+  "test_source_hashes": {
+    "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs": "a96401123c1c53a5fe8601a58ff27ffd2aa7c90c8f7074b5750afc5564615e57",
+    "tests/cases/issue_7147_row_declaration_beats_object_height.rs": "2c118d3f96955c23ead67ac054681d5b8046aabb3466ce7526e410073dae186b"
+  },
+  "validation_summary": "fmt/check·Native/WASM/workspace all-targets Clippy·workspace build·고정base manifest 모두PASS. 작은#5921 1PASS. corpus 재배정의#6031 1FAIL 및별개시장구조조사#7147 2FAIL은후속검토. 전체회귀PASS아님."
+}

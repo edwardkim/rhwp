@@ -1,0 +1,6 @@
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+   Compiling rhwp-contracts v0.1.0 (/tmp/rhwp-pr7518-review-20261004/crates/rhwp-contracts)
+   Compiling svg2pdf v0.13.0 (/tmp/rhwp-pr7518-review-20261004/vendor/svg2pdf)
+   Compiling rhwp-password-crypto v0.1.0 (/tmp/rhwp-pr7518-review-20261004/crates/rhwp-password-crypto)
+   Compiling rhwp-ooxml-chart v0.1.0 (/tmp/rhwp-pr7518-review-20261004/crates/rhwp-ooxml-chart)
+    Finished `release-test` profile [optimized] target(s) in 2m 13s

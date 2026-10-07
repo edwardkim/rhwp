@@ -1,0 +1,72 @@
+{
+  "scope": "stage1 partial correction; PR remains held",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "source_head": "81a402179dc556cce781d844d4b9252be36ba8af",
+  "imported_head": "a57d6430ac90cfd3eedf9a035ab646f9dd9e5b55",
+  "producer": "imported head plus recorded stage1 worktree diff; final-head evidence required before PR",
+  "rust_diff_sha256": "891f7423bdf20532c13ca88c5c80ab703074818422e33d0009c0926fe27d8928",
+  "inputs": {
+    "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+  },
+  "before": {
+    "original_tests": {
+      "pass": 1,
+      "fail": 1,
+      "exit": 100
+    },
+    "source_tests": {
+      "pass": 2,
+      "fail": 0,
+      "exit": 0
+    },
+    "source_owner_test": {
+      "pass": 0,
+      "fail": 1,
+      "exit": 100,
+      "actual_rows": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "expected_rows": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  },
+  "after": {
+    "focused": {
+      "pass": 3,
+      "fail": 0,
+      "exit": 0,
+      "duration_seconds": 0.176
+    },
+    "normal_controls": {
+      "pass": 9,
+      "fail": 0,
+      "exit": 0,
+      "duration_seconds": 0.565
+    },
+    "page_count": 219,
+    "reference_page_count": 215,
+    "native_silhouette_percent": {
+      "66": 88.1603,
+      "67": 73.99603
+    },
+    "visual_exit": 1,
+    "font_exception": false,
+    "pr_review_gate": "re_review_required"
+  },
+  "not_completed": [
+    "remaining physical placement differences",
+    "full page-count match",
+    "final-head Native/fresh WASM",
+    "full regression and lint bundle",
+    "integration PR and CI"
+  ]
+}

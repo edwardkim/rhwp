@@ -26,6 +26,7 @@ pub(in crate::renderer::typeset) struct EmptyFloatPage<'a> {
     pub profile: LayoutCompatibilityProfile,
     pub current_height: f64,
     pub current_items: &'a [PageItem],
+    pub visible_float_exclusions: &'a [super::super::VisibleFloatExclusion],
 }
 
 pub(in crate::renderer::typeset) struct EmptyFloatPlacement {
@@ -33,6 +34,7 @@ pub(in crate::renderer::typeset) struct EmptyFloatPlacement {
     pub x_end: f64,
     pub raw_top: f64,
     pub reserved_height: f64,
+    pub resolved: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
 }
 
 /// 예산 조회는 기존 수평 범위 계산 뒤에만 실행한다. 거절된 후보에는 상태 효과가 없다.
@@ -49,6 +51,7 @@ pub(super) fn prepare(
     para_start_height: f64,
     lanes: &FloatLaneSet,
     page: EmptyFloatPage<'_>,
+    table_reflowed: bool,
     available_height: impl FnOnce() -> f64,
     dpi: f64,
 ) -> Option<EmptyFloatPlacement> {
@@ -122,7 +125,19 @@ pub(super) fn prepare(
         .with_body_area(page.layout.body_area)
         .with_paper_width(page.layout.page_width)
         .with_host_margins(effective_margin, margin_right);
-    let (x_start, x_end) = horizontal_range(&table.common, width_px, placement_ctx, dpi);
+    let (x_start, mut x_end) = horizontal_range(&table.common, width_px, placement_ctx, dpi);
+    let square_outer_frame = !page.profile.session_edited()
+        && (page.profile.native_hwp5_layout() || page.profile.hwpx_stored_layout())
+        && page.layout.column_areas.len() == 1
+        && !table_reflowed
+        && crate::renderer::float_placement::stored_square_sibling_outer_frame(para);
+    if square_outer_frame {
+        // lane은 바깥 상자, 실제 표 원점은 그 안의 왼쪽 여백을 소비한다.
+        x_end += hwpunit_to_px(
+            i32::from(table.outer_margin_left) + i32::from(table.outer_margin_right),
+            dpi,
+        );
+    }
 
     let available = available_height();
 
@@ -149,6 +164,16 @@ pub(super) fn prepare(
     // 그림 11이 다음 쪽으로 이월된다 (#3738).
     let single_rowbreak_declared_height_is_trustworthy =
         is_single_rowbreak_table_with_trustworthy_declared_height(table, ft.effective_height, dpi);
+    let stored_outer_box = !page.profile.session_edited()
+        && (page.profile.hwp5_stored_pagination_layout() || page.profile.hwpx_stored_layout())
+        && !table_reflowed
+        && crate::renderer::stored_float_anchor::stored_empty_topbottom_outer_box_is_valid(
+            para,
+            next_para,
+            table,
+            Some(ft.effective_height),
+            dpi,
+        );
     // HWPX 원본의 일반 1×1 텍스트 표까지 raw anchor로 보내면 뒤의 다행 표
     // fragment가 흔들린다(#1891). 그림 구조는 두 원본에서 같은 저장 계약을
     // 따르지만, 선언 높이 신뢰 특례는 native HWP5에서만 허용한다.
@@ -163,10 +188,40 @@ pub(super) fn prepare(
     // [#7203] 판정과 원점은 `stored_float_anchor` 가 정본이다. 종전에는 이 자리가
     // `need = 높이 + 위여백 + 아래여백`, 윗변 = raw `vpos` 였고 렌더는 각각
     // `높이 + 아래여백 − 위여백`, `vpos − 위여백` 이라 같은 표에서 두 경로가 갈렸다.
-    let stored_single_topbottom_top =
+    let legacy_stored_top =
         (is_topbottom_para_float && topbottom_float_count == 1 && is_stored_anchor_table)
             .then(|| stored_single_topbottom_top_px(para, next_para, table, available, dpi))
             .flatten();
+    // 다음 저장 위치와의 차이는 높이 증거이며 절대 쪽 원점의 증거가 아니다.
+    // 새로 수용하는 바깥 상자는 현재 문단의 흐름 원점에서 배치한다.
+    let mut restored_stored_outer_box = false;
+    let outer_box_flow_top = stored_outer_box.then(|| {
+        let (top_offset, _) = crate::renderer::stored_float_anchor::stored_topbottom_object_span(
+            para, next_para, table,
+        );
+        let flow_top = para_start_height + hwpunit_to_px(top_offset as i32, dpi);
+        // 전체 상자 뒤의 저장 줄이 높이를 증명해도 현재 커서는 앞 float의
+        // 점유 영역 안에 남을 수 있다. 저장 host가 앞 밴드 끝을 벗어나는 경우일
+        // 때만 원점을 복구하고, 예약과 출력에 같은 확정 상자를 전달한다.
+        let saved_top = (page.layout.column_areas.len() == 1)
+            .then(|| stored_single_topbottom_top_px(para, next_para, table, available, dpi))
+            .flatten();
+        saved_top
+            .filter(|top| {
+                let host = *top - hwpunit_to_px(top_offset as i32, dpi);
+                page.visible_float_exclusions.iter().any(|zone| {
+                    zone.para_index < para_idx
+                        && flow_top < zone.bottom
+                        && flow_top + ft.effective_height > zone.top
+                        && host + 0.5 >= zone.bottom
+                })
+            })
+            .inspect(|_| {
+                restored_stored_outer_box = true;
+            })
+            .unwrap_or(flow_top)
+    });
+    let stored_single_topbottom_top = legacy_stored_top.or(outer_box_flow_top);
     if is_topbottom_para_float && topbottom_float_count < 2 && stored_single_topbottom_top.is_none()
     {
         return None;
@@ -193,6 +248,13 @@ pub(super) fn prepare(
     if !stored_single_rowbreak_declared_height_is_trustworthy {
         return None;
     }
+    let saved_page_top = saved_page_top.map(|top| {
+        if square_outer_frame && signed_hwpunit(table.common.vertical_offset) > 0 {
+            top + v_offset_px
+        } else {
+            top
+        }
+    });
     let raw_top = saved_page_top
         .or(stored_single_topbottom_top)
         .unwrap_or_else(|| (para_start_height + v_offset_px).max(para_start_height));
@@ -262,7 +324,75 @@ pub(super) fn prepare(
         ft.effective_height + ft.host_spacing.after_for_fit
     };
     let lane_top = lanes.pushed_top(x_start, x_end, raw_top);
-    let lane_bottom = lane_top + reserved_height;
+    // HWPX의 빈 호스트 형제 표는 각 개체의 바깥 상자를 차례로 점유한다.
+    // 위여백을 누락하고 아래여백을 fit 면제와 함께 버리면 뒤 표가 누적해서
+    // 올라간다. 마지막 아래여백의 적합성 면제와 형제의 실제 예약을 구분한다.
+    let square_resolved = (square_outer_frame && saved_page_top.is_some()).then(|| {
+        let top = lane_top + hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
+        crate::renderer::float_placement::ParagraphFloatPlacement {
+            flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+            anchor_y: saved_page_top.expect("유효 저장 호스트 프레임"),
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: Some(
+                x_start - column_area.x + hwpunit_to_px(i32::from(table.outer_margin_left), dpi),
+            ),
+            table_top: top,
+            occupied_bottom: top
+                + ft.effective_height
+                + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi),
+        }
+    });
+    // 저장 상자는 원점·예약 끝을 한 결과로 전달한다. 뒤의 host 줄간격은
+    // 이미 증명된 전체 여백 상자 높이에 다시 더하지 않는다.
+    let outer_box_resolved =
+        (stored_outer_box && stored_single_topbottom_top.is_some()).then(|| {
+            let (top_offset, occupied_height) =
+                crate::renderer::stored_float_anchor::stored_topbottom_object_span(
+                    para, next_para, table,
+                );
+            let anchor_y = lane_top - hwpunit_to_px(top_offset as i32, dpi);
+            crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y,
+                stored_host_origin: None,
+                // 후속 줄의 앞 간격은 원본의 전체 상자 끝에 이미 포함된다.
+                // 복구한 저장 상자에서는 측정·출력이 이 원점을 함께 소비한다.
+                stored_successor_line_origin: restored_stored_outer_box
+                    .then(|| anchor_y + hwpunit_to_px(occupied_height as i32, dpi)),
+                table_left: None,
+                table_top: lane_top,
+                occupied_bottom: anchor_y + hwpunit_to_px(occupied_height as i32, dpi),
+            }
+        });
+    let resolved = square_resolved.or(outer_box_resolved).or_else(|| {
+        (page.profile.hwpx_stored_layout()
+            && is_topbottom_para_float
+            && topbottom_float_count >= 2
+            && matches!(
+                table.common.vert_align,
+                crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+            ))
+        .then(|| {
+            let top = lane_top + ft.host_spacing.before;
+            crate::renderer::float_placement::ParagraphFloatPlacement {
+                flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                anchor_y: para_start_height,
+                stored_host_origin: None,
+                stored_successor_line_origin: None,
+                table_left: None,
+                table_top: top,
+                occupied_bottom: top + ft.effective_height + ft.host_spacing.after,
+            }
+        })
+    });
+    let lane_bottom = resolved.map_or(lane_top + reserved_height, |p| {
+        if square_resolved.is_some() || outer_box_resolved.is_some() {
+            p.occupied_bottom
+        } else {
+            p.table_top + ft.effective_height + ft.host_spacing.after_for_fit
+        }
+    });
 
     if lane_bottom > available + 0.5 {
         return None;
@@ -272,6 +402,7 @@ pub(super) fn prepare(
         x_start,
         x_end,
         raw_top,
-        reserved_height,
+        reserved_height: resolved.map_or(reserved_height, |p| p.occupied_bottom - lane_top),
+        resolved,
     })
 }

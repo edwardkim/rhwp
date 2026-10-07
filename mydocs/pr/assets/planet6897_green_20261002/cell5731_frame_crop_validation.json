@@ -1,0 +1,656 @@
+{
+  "stage": "#5731 셀 그림의 저장 흐름 프레임과 빈 자르기 보존",
+  "parent_head": "ef64dd0d0",
+  "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "fixture": "samples/issue5731/cell_second_float_flow_anchor.hwpx",
+  "fixture_proof": {
+    "original_sha256": "fbb04be248a2992a20ed4532cb0a75259a0ba9a13f1db61f3292ddadc7ccde32",
+    "changed_entries": [
+      {
+        "path": "BinData/image4.jpg",
+        "original_bytes": 7733,
+        "stub_bytes": 631,
+        "original_sha256": "aa5f9417be56a6d19047e39bbe18e529ad3afa4e312973034065c05d60efd57f"
+      },
+      {
+        "path": "BinData/image5.jpg",
+        "original_bytes": 6522,
+        "stub_bytes": 631,
+        "original_sha256": "a53026de2f811c3a456fd94c560e3a0487a745e7a1af320e9af66e19a41f32ae"
+      },
+      {
+        "path": "BinData/image2.bmp",
+        "original_bytes": 273078,
+        "stub_bytes": 631,
+        "original_sha256": "490e10b3652b08f54f25926457cecfeac274fd81b071db9cd858f94778638eb1"
+      },
+      {
+        "path": "BinData/image3.bmp",
+        "original_bytes": 871938,
+        "stub_bytes": 631,
+        "original_sha256": "e3e9bddbe83452c554d1179b1e5d1f9035b6d73c80a654bfc4069fe701c35291"
+      },
+      {
+        "path": "BinData/image1.bmp",
+        "original_bytes": 1241294,
+        "stub_bytes": 631,
+        "original_sha256": "8ad57900b8a7b5cd6c7a4a22448a8bfefacc4eaca83af59199a29a6c42d2adb2"
+      },
+      {
+        "path": "BinData/image7.jpg",
+        "original_bytes": 10953,
+        "stub_bytes": 631,
+        "original_sha256": "9a348a82f33f06b6255978a8ed02ffa9e235170963551d64e945a7f9c10404d5"
+      }
+    ],
+    "unchanged_document_xml": true,
+    "final_default_native_cli_sha256": "fecb59653d0ddca1535bd47ee2a46e060ca2d179c71369c34dffd8befe1d1707"
+  },
+  "pdf": "pdf/issue5731/cell_second_float_flow_anchor-hwpx-2020.pdf",
+  "pdf_sha256": "c76f641ee4bc641a3e46132c388a052e7c7722e7f321ba0079acbe2159b78c8c",
+  "pdf_routes": [
+    {
+      "path": "pdf/issue5731/cell_second_float_flow_anchor-hwpx-2020.pdf",
+      "pages": 7,
+      "images_per_page": [
+        2,
+        1,
+        1,
+        0,
+        0,
+        2,
+        0
+      ],
+      "raster_sha256": [
+        "95006cf1be41dff3d0d9f12400b69ed0bf4c21d6695dbccbbc991c961deec7a7",
+        "87fad2fbe37453c35643720ede394815fbb4f89ada90fb11c8c77f9a8987de43",
+        "3b2a25c287b7b0da1cdc1f72a838710dac88965191a6e86830bb9350d9ed66b1",
+        "f6deeafcb3498e880cc8ab3ccdf82ecda4e4d392ed0390143d13b5a4316ab7fd",
+        "ec26b801faa177f2f2a57c1ebfe2f5d1ecf7742032c64efa309925d752575161",
+        "246109d7e4bb31c7b7c35a29f4f8213b9bf8e075856e8f1574610901b91aa723",
+        "e68872ffaab4fd62b7902da3cb582cb386746b05f5b1993fb1dfabb3e3dd1f92"
+      ]
+    },
+    {
+      "path": "output/pr-review/planet6897-green-20261002/current5731-pdf/cell5731-hancom-roundtrip-2020.pdf",
+      "pages": 7,
+      "images_per_page": [
+        2,
+        1,
+        1,
+        0,
+        0,
+        2,
+        0
+      ],
+      "raster_sha256": [
+        "95006cf1be41dff3d0d9f12400b69ed0bf4c21d6695dbccbbc991c961deec7a7",
+        "87fad2fbe37453c35643720ede394815fbb4f89ada90fb11c8c77f9a8987de43",
+        "3b2a25c287b7b0da1cdc1f72a838710dac88965191a6e86830bb9350d9ed66b1",
+        "f6deeafcb3498e880cc8ab3ccdf82ecda4e4d392ed0390143d13b5a4316ab7fd",
+        "ec26b801faa177f2f2a57c1ebfe2f5d1ecf7742032c64efa309925d752575161",
+        "246109d7e4bb31c7b7c35a29f4f8213b9bf8e075856e8f1574610901b91aa723",
+        "e68872ffaab4fd62b7902da3cb582cb386746b05f5b1993fb1dfabb3e3dd1f92"
+      ]
+    }
+  ],
+  "pdf_rasters_equal": true,
+  "native_all7": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "96.76139",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.76139",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "98.12780",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.12780",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "97.95844",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.95844",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "99.39796",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.39796",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "95.59735",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "95.59735",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "96.29205",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "96.29084",
+      "silhouette_boundary_reconciled_pixels": "1"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "98.96261",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.96261",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "native_exact_reuse": [
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_001.svg",
+      "sha256": "bd4b1766d11b7ff129de390b1f71cb67f20a2f9772df50ac2fa60463d8594a2e",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_002.svg",
+      "sha256": "0abfb72aabb7efe16ec8c07e69a6f765677f8a6447ed5730590afb74bc6bda6c",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_003.svg",
+      "sha256": "ec56d6df6670ddbb82d1ae1702b9ad867b43f742a741cc21740f386bea7eb82f",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_004.svg",
+      "sha256": "6e710addb34b62cc7504949bbcc86ace2685ca632065e6e5fb0f8c6b8ab85edb",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_005.svg",
+      "sha256": "6266c4907eec2f7b51829ca90a3ae845fa33ee520eef8a6b89e4c58003cc26ae",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_006.svg",
+      "sha256": "fbb91b95700d43bd2dd84de6049fec1e3ec044247d3ce073fe12a4dbc09f3830",
+      "equal": true
+    },
+    {
+      "kind": "svg",
+      "name": "cell_second_float_flow_anchor_007.svg",
+      "sha256": "2919b3ecf2c754b76df83e25eaecea8b2586405ff7735fd4298501fbc07c84b5",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_001.json",
+      "sha256": "e998197fc333600b125cc41a1e123ad5e58303ce259f7bc65af250406628d1b2",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_002.json",
+      "sha256": "8b4e734ebbc247121caab303604292136b65fbc4ce449641421edc72cfbda1df",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_003.json",
+      "sha256": "88c40598413a3519114029421d596fbe359e4861ceaffa8f5af5953a48b6a715",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_004.json",
+      "sha256": "aead5e90e3bcce15c10bf04505ffe96bed0e62b03c301d5c0eca146ed02a6a67",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_005.json",
+      "sha256": "ac8be50103c4e82600ca5b4a05619f12972b4bcf94a496c779c8f7e306a4e7b5",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_006.json",
+      "sha256": "ffd9e0c5dc42d2e9f7e325fe0b040e536c9a67ad53aacfa18f61f4ba39c52ef3",
+      "equal": true
+    },
+    {
+      "kind": "tree",
+      "name": "render_tree_007.json",
+      "sha256": "2a8b887b3d2b73b65b5ddb61fd8b6d75f80f90912ec8b92e9a89253353a9b638",
+      "equal": true
+    }
+  ],
+  "before_existing_test": {
+    "log": "output/pr-review/planet6897-green-20261002/social6797-origin-remaining-blockers.log",
+    "result": "FAIL: 둘째 그림 y647.5, 앵커679.5가 작은 셀에 제한됨",
+    "new_semantic_test_on_before_source": "완료: 같은 기존 관계 검사와 실물 fixture를 보정 전 소스에서 실행, 앞 캡션 뒤 배치 위반으로1 FAIL(exit100). 동일 보정 소스를 SHA 대조 복원한 뒤1 PASS(exit0)."
+  },
+  "native_p3_before_crop_percent": 80.4307,
+  "native_p3_after_crop_percent": 97.95844,
+  "new_test_functions": 0,
+  "semantics": [
+    "쪽수7",
+    "원문 그림2개와 셀 소유 보존",
+    "두 캡션 내용과 순서",
+    "둘째 그림은 앞 캡션 뒤",
+    "그림 프레임은 셀 내부",
+    "빈 자르기는 원본 전체를 복원하지 않음"
+  ],
+  "gates": [
+    {
+      "gate": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.59
+    },
+    {
+      "gate": "counters-final",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "-E",
+        "test(issue_5731_cell_second_float_flow_anchor::) | test(issue_2470_masking_page_pins::) | test(issue_5716_group_level_roundtrip::) | test(issue_7062_tac_object_host_line_height::) | test(issue_6192_cell_overlay_picture_para_anchor::) | test(issue_5755_rewind_overflow_page_break::) | test(issue_7081_cell_trailing_space_alignment::) | test(issue_7015_hwp5_single_axis_crop_scale::) | test(issue_7235_cropped_contain::) | test(issue_7235_none_image_fill_fits_area::) | test(issue_7235_cell_image_fill_contains::)"
+      ],
+      "exit": 0,
+      "seconds": 42.75
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 5.99
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 23.47
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 14.56
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 29.82
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 47.5
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.48
+    },
+    {
+      "gate": "native-final-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 93.56
+    },
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "env",
+        "CARGO_TARGET_DIR=target/pr-review",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 146.37
+    }
+  ],
+  "studio_tests": {
+    "passed": 1814,
+    "failed": 0,
+    "skipped": 2
+  },
+  "studio_tsc_exit": 0,
+  "canvaskit_valid_crop_modes": [
+    "none",
+    "zoom",
+    "fitToSize",
+    "total"
+  ],
+  "canvaskit_empty_selection": {
+    "input": "existing fixture BinData/image3.bmp",
+    "pixels": 87080,
+    "nonWhite": 0,
+    "passed": true
+  },
+  "fresh_wasm_visual": {
+    "all7": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "96.76139",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "96.76139",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "98.12780",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.12780",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "97.95844",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.95844",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "99.39796",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.39796",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "95.59735",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.59735",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "96.29205",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "96.29084",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "98.96261",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.96261",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "tsv_equal_native": true,
+    "minimum_percent": 95.59735,
+    "below90": 0,
+    "pkg_wasm_sha256": "d57fc480a7ca44f09c82d8577e94714c27aa1571655098af1f6208072666f8b7",
+    "environment": "Mac 로컬 no-opt 대체 빌드; Docker 최적화 빌드 검증 아님"
+  },
+  "skia_gates": [
+    {
+      "gate": "skia-lib",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--lib"
+      ],
+      "exit": 0,
+      "seconds": 178.88
+    },
+    {
+      "gate": "issue_2225_missing_picture_placeholder",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(issue_2225_missing_picture_placeholder::)"
+      ],
+      "exit": 0,
+      "seconds": 93.51
+    },
+    {
+      "gate": "render_p37_direct_pdf_export",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_002",
+        "-E",
+        "test(render_p37_direct_pdf_export::)"
+      ],
+      "exit": 0,
+      "seconds": 5.21
+    },
+    {
+      "gate": "skia-cli",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 87.96
+    },
+    {
+      "gate": "skia-p3",
+      "command": [
+        "target/pr-review/release-test/rhwp",
+        "export-png",
+        "samples/issue5731/cell_second_float_flow_anchor.hwpx",
+        "-p",
+        "2",
+        "--profile",
+        "print",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "-o",
+        "output/pr-review/planet6897-green-20261002/current5731-skia-p3"
+      ],
+      "exit": 0,
+      "seconds": 1.96
+    }
+  ],
+  "final_whole_validation": "pending",
+  "approval": "held: 다른 통합 브랜치 차단과 최종 전체 검증 남음",
+  "skia_lib": {
+    "passed": 4109,
+    "failed": 0,
+    "skipped": 13,
+    "result": "PASS"
+  },
+  "skia_remaining": "완료",
+  "skia_direct_p3": [
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "98.07425",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.07425",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "stage_source_commit": "14d205d83",
+  "before_after_same_test": {
+    "rows": [
+      {
+        "phase": "before",
+        "source": "ef64dd0d0 Rust source for correction paths; restored real fixture and same existing semantic test",
+        "exit": 100,
+        "seconds": 89.81
+      },
+      {
+        "phase": "after",
+        "source": "14d205d83 restored exact source",
+        "exit": 0,
+        "seconds": 102.5
+      }
+    ],
+    "production_source_restored": true,
+    "restored_sha256": {
+      "src/model/image.rs": "955e6a573314cbb6ae7c1f20cf9e5bcd340792357a0bc3f2e1f5c5d5aea9eece",
+      "src/renderer/canvas.rs": "644c57e4773e37ffe21249fe6946703a8776ac1e97d7e10cfb8de14e27ffa8c1",
+      "src/renderer/height_measurer.rs": "e73be0a485e5bcac3fa320ee99c7c66421b25b9b93d3360613b8e774ab82f81e",
+      "src/renderer/html.rs": "0ddf0e02af1922d35363c2c379edacf212bcc243729b9a974a758d0baebfdecb",
+      "src/renderer/layout.rs": "ac4f6cfc4b33d3c34f49decd67a6a21cf5c10b8b04b5dd0eb62660aa95c3ed21",
+      "src/renderer/layout/paragraph_layout.rs": "7f91ae341fab0121d9c69e0ffe4c19ea9bd06b60b1f62e2ce085a5eab8fdde06",
+      "src/renderer/layout/picture_footnote.rs": "01fbb4381eb088dc1d8dd0ec066163632792c3b59ed4713eb7b3fc07085bbaa5",
+      "src/renderer/layout/shape_layout.rs": "fcb3e326846cf2f7cf879c64f1ecc96a5be3be5efcbf2a337646e91f2d9978b9",
+      "src/renderer/layout/table_cell_content.rs": "b010e95b82db8b5666c20a394ec1153477de274fb3529d1ba88e765399444e42",
+      "src/renderer/layout/table_layout.rs": "c8c725e81e49d9a586add5c5be783226bf7b41a4da549e6accf8bf5d99ad355c",
+      "src/renderer/skia/image_conv.rs": "53213c785bd07008ed410ede92d7499e251264a99cd08e34c315cd318730ede4",
+      "src/renderer/svg.rs": "b6ab85e0332788304435b4d452919ae05b13490387fe05c2c2a1ed220b5b36a5",
+      "src/renderer/typeset/table.rs": "761bf077629d9b02fc9d40ce7d83a3d816b6c96f3f95f59e7a4bf466c3e51bf8"
+    }
+  },
+  "stage_status": "완료: Native/fresh WASM 전7쪽, 공식 Skia3종, 같은 기존 회귀의 보정 전 FAIL/보정 후 PASS. 최종 전체 통합 검증은 별도 진행."
+}

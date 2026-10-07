@@ -55,28 +55,38 @@ impl BlockCutQuery<'_> {
         // hard break는 이 계약에 포함하지 않는다. 그런 형상은 선언 높이가
         // 실제 content frame을 대표하지 않을 수 있으므로 기존 split/이월
         // 경로가 계속 소유한다.
-        // label cell 하나가 block 전체 행을 덮고, 각 행에는 그 label의
-        // 오른쪽 폭 전체를 차지하는 response cell 하나만 있는 form 구조다.
-        // 일반 평가 grid처럼 label 오른쪽에 여러 독립 열이 있으면 선언
-        // blank도 각 열의 frame 일부이므로 이 경로로 압축하지 않는다.
-        let block_is_label_response_form = table
-            .cells
-            .iter()
-            .find(|cell| cell.row as usize == b_start && cell.row_span as usize == block_size)
-            .is_some_and(|label| {
-                (b_start..b_end).all(|row| {
-                    let mut row_cells = table.cells.iter().filter(|cell| {
-                        cell.row as usize == row && !(row == b_start && cell.col == label.col)
-                    });
-                    row_cells.next().is_some_and(|response| {
-                        row_cells.next().is_none()
-                            && response.row_span == 1
-                            && response.col == label.col + label.col_span
-                            && response.col_span + label.col_span == table.col_count
-                    })
+        // [#7418] 종전에는 label 칸 하나 + 오른쪽 응답 칸 하나인 서식으로만 좁혔다("일반 격자는
+        // 선언 blank 도 각 열의 frame 일부"라는 추론). 한/글 2020 정본은 그 서식만 압축하는 게
+        // 아니다 — `22037757` 1쪽의 59×5 표 rowspan 묶음(행 11~12, 칸 선언 170.3px)은 선언으로
+        // 본문을 5.8px 넘지만 내용이 들어가, 한/글이 1쪽에 싣고 행 12 를 본문 바닥(1010.8px)에서
+        // 자른다(선언 94.6 → 88.4px). 다음 쪽에 이어지는 조각은 없다.
+        //
+        // 다만 **묶음 안에서 행으로 나뉘는 열이 하나일 때**로 좁힌다. 그 형상에서만 잘리는 것이
+        // 한 열의 선언 빈 꼬리이고, 옛 label-응답 서식은 그 2열 특수형이다. 22037757 은 다섯 열
+        // 중 넷이 묶음 전체를 span 하고 col 1 만 행으로 나뉜다(자르는 양 94.6 → 93.6 = 1.0px).
+        //
+        // ⚠ 열 여럿이 독립이면 선언 blank 는 각 열 frame 의 일부라 잘라선 안 된다. 실측:
+        // `task2097/3248363_upmu_bunjang.hwpx` 는 네 열 중 셋이 행마다 독립인데(묶음 행 6~7)
+        // 이 경로가 행 7 을 270.2 → **149.1px** 로 121px 잘라, 칸 글자가 용지 바닥 1122.5 아래
+        // 1124.4·1147.1·1169.8px 에 그려졌다(off-canvas 1 · overflow_cell 3줄 신규).
+        let block_subdivided_column_count = {
+            let mut cols: Vec<u16> = table
+                .cells
+                .iter()
+                .filter(|cell| {
+                    let cell_start = cell.row as usize;
+                    let cell_end = cell_start + cell.row_span as usize;
+                    cell_start < b_end
+                        && cell_end > b_start
+                        && (cell.row_span as usize) < block_size
                 })
-            });
-        let source_complete_rowspan_block = block_is_label_response_form
+                .map(|cell| cell.col)
+                .collect();
+            cols.sort_unstable();
+            cols.dedup();
+            cols.len()
+        };
+        let source_complete_rowspan_block = block_subdivided_column_count <= 1
             && mt.allows_row_break_split()
             && r > cursor_row
             && blk_start_cut.is_empty()
@@ -132,7 +142,22 @@ impl BlockCutQuery<'_> {
         } = *self;
         let rowbreak_rowspan_block = block.rowbreak_rowspan_block;
         if rowbreak_rowspan_block {
-            r == cursor_row || (res.hit_hard_break && res.consumed_height >= MIN_TOP_KEEP_PX)
+            // 원본 여러 셀의 첫 프레임이 완결되면 한 줄 높이여도 물리 경계다.
+            // 일반 고아 방지 최소 높이 때문에 유효한 저장 컷을 다음 쪽으로 보내지 않는다.
+            let complete_source_frame = res.consumed_height > 0.0
+                && self
+                    .rows
+                    .layout_engine
+                    .row_block_cut_ends_at_saved_first_line_restart(
+                        self.rows.table,
+                        (block.b_start, block.b_end),
+                        self.blk_start_cut,
+                        &res.end_cut,
+                        self.rows.styles,
+                    );
+            r == cursor_row
+                || (res.hit_hard_break
+                    && (res.consumed_height >= MIN_TOP_KEEP_PX || complete_source_frame))
         } else {
             r == cursor_row || (genuinely_page_larger && res.consumed_height >= MIN_TOP_KEEP_PX)
         }
@@ -155,7 +180,9 @@ impl BlockCutQuery<'_> {
         } = *self;
         let mt = rows.mt;
         let rowbreak_use_row_offsets = block.rowbreak_use_row_offsets;
-        (res.fully_consumed || !allow_block_split)
+        let painted_cut_exceeds_budget = !res.hit_hard_break
+            && rows.fragment_height(block, block.b_end, blk_start_cut, &res.end_cut) > budget + 0.5;
+        (res.fully_consumed || !allow_block_split || painted_cut_exceeds_budget)
             && mt.allows_row_break_split()
             && can_intra_split
             && !rowbreak_use_row_offsets

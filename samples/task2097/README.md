@@ -21,21 +21,15 @@
 - 검증: `rhwp dump-pages samples/task2097/none_table_declared_fits.hwpx` /
   `cargo test --test issue_2097_none_table_declared_fits`
 
-## rowbreak_midpage_declared_fits.hwpx (합성 — 중간-쪽 RowBreak 선언-fit 핀)
-- 출처: `samples/task2105/rowbreak_table_declared_fits.hwpx` 에 HEAD 문단을 추가해
-  표를 중간-쪽(cur_h 21.3px)에 배치하고 선언을 68000HU 로 축소한 판. 실문서
-  재현원은 `3080901_pii_ledger.hwp` (아래, rhwp 2쪽 → 1쪽 = 한글 1쪽).
-- 형상: HEAD 문단 + 3행 RowBreak 표 — HEAD(21.3px)+선언 68000HU(906.7px) ≤ 본문
-  933.6px, r1/r2 내용 실측 팽창으로 측정 합 944.9px 이 본문을 11.3px 초과.
-- 결함(수정 전): RowBreak 선언-fit 게이트가 쪽 상단(current_height≤0.5) 한정이라
-  중간-쪽에서 행 분할 → 마지막 행 sliver 2쪽 조각.
-- 기대(rhwp): 중간-쪽에서도 실측 초과(overshoot)가 측정 노이즈 수준(≤16px)이면
-  선언 신뢰로 통째 1쪽, AFTER TABLE 2쪽, 전체 **2쪽**.
-- **oracle 주의**: none_table_declared_fits.hwpx 와 동일 — 수작업 저장값이라 한글
-  재조판 PDF 는 정답지가 아니며, rhwp 시맨틱 회귀 핀으로만 사용한다. 한글 정합의
-  권위 검증은 아래 실문서(3080901)로 수행한다.
-- 검증: `rhwp dump-pages samples/task2097/rowbreak_midpage_declared_fits.hwpx` /
-  `cargo test --test issue_2097_rowbreak_midpage_declared_fits`
+## rowbreak_midpage_declared_fits.hwpx (합성 — 짧은 마지막 셀의 실제 점유 반례)
+
+- 출처: `samples/task2105/rowbreak_table_declared_fits.hwpx`에 HEAD 문단을 추가하고 표 선언을68000HU로 줄인 수동 입력이다. 원본은 보존한다.
+- 마지막 셀500HU와 앞 셀1200HU는 저장 줄1200HU·위아래 안여백282HU보다 짧다. 실측 초과16px 이하를 모두 노이즈로 보고 통째 배치하던 이전 기대에는 유효한 저장 프레임 근거가 없었다.
+- 동일 입력·저장 제품 메타데이터에 맞춰 한컴2020으로 변환한 [독립 PDF](../../pdf/issue2097/rowbreak-midpage-original-2020.pdf)는2쪽이다.1쪽은 HEAD/BIG/MID ROW,2쪽은 TAIL ROW EXPANDING/AFTER TABLE이다. 마지막 행을1쪽에 강제 소비하면 실제 표 하단이 본문을 넘는다.
+- [독립 재저장 HWPX](../issue2097/rowbreak-midpage-resaved-2020.hwpx)와 [그 입력의 PDF](../../pdf/issue2097/rowbreak-midpage-resaved-2020.pdf)를 별도로 보존한다. 한컴2020 HWP를 거쳐 다시 HWPX로 저장했으며 셀 줄높이1200→1000HU/vpos141→0, 표67582HU로 바뀐다. 이 대조군 통과를 수동 원본의 전체 일치로 대체하지 않는다.
+- 새 기대는 마지막 행과 뒤 문단을2쪽에 한 번만 보존하고,1쪽의 실제 표 끝을 본문 경계 안에 두는 것이다. PDF 재조판과 수동 저장 IR의 글자/셀 높이 차이는 별도이며 쪽 소유 일치를 전체 시각 일치로 보고하지 않는다.
+- 정상 저장 실문서 `3080901_pii_ledger.hwp`는1쪽의17개 행과 마지막 내용을 보존한다. 실제 내용이 큰 수동 셀에 이 정상 원본의 선언 높이 계약을 적용하지 않는다.
+- 검증: `tests/issue_2097_rowbreak_midpage_declared_fits.rs`, `tests/cases/issue_2097_terminal_row_physical_ownership.rs`. 전후 증거·잘못된 이전 기대의 이유는 [PR7382 개별 기록](../../mydocs/pr/archives/pr_7382_review.md)의 보정37에 연결한다.
 
 ## 1730000_selection_report.hwp (실문서 — 한글 정합 권위 검증)
 - 출처: hwpdocs 코퍼스 `prism_downloads/새만금개발청/1730000-201800001_D0150013-1-000_

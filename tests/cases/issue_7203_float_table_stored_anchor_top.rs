@@ -265,15 +265,26 @@ fn downstream_table_split_and_body_follow_the_oracle_pages() {
     assert!(example.bbox.y + example.bbox.height <= body.bbox.y + body.bbox.height);
 }
 
-/// 저장 사다리 pi186→187은 2432HU = 높이1300 + 위/아래여백566씩이다.
-/// 앞 float가 앵커보다 아래로 밀어도 실제 점유 끝에 전역 cursor를 다시 더하지 않는다.
+/// 저장 사다리 pi186→187은2432HU = 앞 개체 높이1300 + 위/아래여백566씩이다.
+/// 뒤 표의 가시 윗변은 자기 앵커에 위여백141HU를 한 번 더한 위치다.
+/// 두 표의 가시 상자 간격을 원시 앵커 간격과 혼동하지 않고 독립 PDF 괘선도 대조한다.
 #[test]
 fn stored_anchor_after_a_taller_float_consumes_its_span_once() {
     let root = page_root("samples/issue6111/56345_regulatory_impact_analysis.hwp", 10);
-    let advance = table_top(&root, 187) - table_top(&root, 186);
+    let following_top = table_top(&root, 187);
+    let advance = following_top - table_top(&root, 186);
     let stored_advance = (26992.0 - 24560.0) / HWPUNIT_PER_PX;
+    // 원본 dump의 뒤 표 바깥 위여백141HU는 앞 개체가 닫는2432HU 밖에 있다.
+    let following_outer_top = 141.0 / HWPUNIT_PER_PX;
+    let visible_advance = stored_advance + following_outer_top;
     assert!(
-        (advance - stored_advance).abs() <= 0.2,
-        "저장 사다리 {stored_advance:.2}px 대신 {advance:.2}px를 소비했다"
+        (advance - visible_advance).abs() <= 0.2,
+        "저장 간격과 뒤 표 위여백 {visible_advance:.2}px 대신 {advance:.2}px를 소비했다"
+    );
+    // 독립 정본 PDF11쪽의 가로 괘선327.721008pt를96DPI로 변환한 좌표다.
+    let pdf_following_top = 436.961_344;
+    assert!(
+        (following_top - pdf_following_top).abs() <= 1.5,
+        "뒤 표 윗변이 독립 PDF와 다르다: 실제{following_top:.2}px, 기준{pdf_following_top:.6}px"
     );
 }

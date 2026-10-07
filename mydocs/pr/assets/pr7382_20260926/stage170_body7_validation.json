@@ -1,0 +1,121 @@
+{
+  "stage": 170,
+  "item": 12,
+  "tested_head": "b3e97d46700063ac4ece6c1aa8331924353a5cad",
+  "preanalysis": {
+    "stage": 170,
+    "item": 12,
+    "head": "b3e97d46700063ac4ece6c1aa8331924353a5cad",
+    "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+    "original_blocker": "hwpx/issue2019_floating_form_74312.hwpx 2→3건",
+    "analysis": "보정169 전본문16함수 현재 재실행에서 이 입력의 증가는 없음. 분할번호는 input소유식별자가 아니므로 실제현재anomaly와기존과분할함수/partition7을 재실행. 18쪽으로 정상PDF와 같음은 큰 위치문제해결의증거아님. 실패가없으면 정상검사/원문/현재baseline2 유지하고새회귀/생산/7445이관0.",
+    "visual_policy": "이 단계는 생산/기대값/회귀행동을 바꾸지 않는 현재 실패 여부 재검증. 독립PDF전18쪽≥90 통과나 #2019 전체피델리티 해결로 주장하지 않는다."
+  },
+  "focused": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_7)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.97460712492466
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(/^issue_2019_floating_form_overpagination::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.40843900013715
+    }
+  ],
+  "current_body": {
+    "pages": 18,
+    "nodes": [
+      {
+        "page": 4,
+        "nodes": [
+          {
+            "bbox": {
+              "h": 13.253333333333334,
+              "w": 325.80000000000007,
+              "x": 390.20000000000005,
+              "y": 1100.2
+            },
+            "boundary": {
+              "h": 1027.0666666666668,
+              "w": 614.6666666666667,
+              "x": 101.33333333333334,
+              "y": 55.13333333333334
+            },
+            "maxOver": 31.253333333333103,
+            "nodeType": "TextLine",
+            "overBottom": 31.253333333333103,
+            "overLeft": 0.0,
+            "overRight": 0.0,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/TextLine22"
+          }
+        ]
+      },
+      {
+        "page": 5,
+        "nodes": [
+          {
+            "bbox": {
+              "h": 13.253333333333334,
+              "w": 325.86666666666673,
+              "x": 390.1333333333333,
+              "y": 1778.3333333333335
+            },
+            "boundary": {
+              "h": 1027.0666666666668,
+              "w": 614.6666666666667,
+              "x": 101.33333333333334,
+              "y": 55.13333333333334
+            },
+            "maxOver": 709.3866666666665,
+            "nodeType": "TextLine",
+            "overBottom": 709.3866666666665,
+            "overLeft": 0.0,
+            "overRight": 0.0,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/TextLine7"
+          }
+        ]
+      }
+    ]
+  },
+  "all_body_scan": "../issue7445/caption1853_blocking_scope_validation.json: current16 scan has no growth for issue2019; four other inputs still fail",
+  "source": {
+    "path": "samples/hwpx/issue2019_floating_form_74312.hwpx",
+    "sha256": "092651a9cd41b9ece41abf0b4431a0e5c0a07d811ebb88375d208a1c92ba3d54"
+  },
+  "scope": "현재 원래 증가가 재현되지 않음. baseline2/기존함수/원문/PDF 유지. 생산/회귀동작/새검사/이관 변경0. 전체18쪽 시각≥90%와전체피델리티 해결은 미검증."
+}

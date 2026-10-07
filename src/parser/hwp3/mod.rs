@@ -30,6 +30,8 @@ pub enum Hwp3Error {
     IoError { source: io::Error },
     #[snafu(display("파싱 오류가 발생했습니다: {}", message))]
     ParseError { message: String },
+    #[snafu(display("HWP3 paragraph nesting exceeds {} levels", max_depth))]
+    NestingLimitExceeded { max_depth: u32 },
     #[snafu(display("비밀번호가 필요한 암호 문서입니다"))]
     PasswordRequired,
     #[snafu(display("HWP3 암호 오류: {}", source))]
@@ -66,6 +68,38 @@ pub(crate) const HWP3_MAX_RECORD_SIZE: usize = 256 * 1024 * 1024;
 
 /// `parse_hwp3*` 완전 문서 열기가 선택하는 기본 압축 본문 출력 상한.
 pub(crate) const DEFAULT_HWP3_DOCUMENT_OPEN_BODY_OUTPUT_BYTES: usize = 256 * 1024 * 1024;
+
+// A parser resource policy, not a format-validity claim. Match the conservative
+// HWPX paragraph budget: mutual recursion includes large control/parser frames
+// and must also fit the WASM/default worker stack.
+const MAX_HWP3_PARAGRAPH_DEPTH: u32 = 16;
+
+thread_local! {
+    static HWP3_PARAGRAPH_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+}
+
+struct ParagraphDepthGuard(u32);
+
+impl ParagraphDepthGuard {
+    fn enter() -> Result<Self, Hwp3Error> {
+        HWP3_PARAGRAPH_DEPTH.with(|depth| {
+            let previous = depth.get();
+            if previous >= MAX_HWP3_PARAGRAPH_DEPTH {
+                return Err(Hwp3Error::NestingLimitExceeded {
+                    max_depth: MAX_HWP3_PARAGRAPH_DEPTH,
+                });
+            }
+            depth.set(previous + 1);
+            Ok(Self(previous))
+        })
+    }
+}
+
+impl Drop for ParagraphDepthGuard {
+    fn drop(&mut self) {
+        HWP3_PARAGRAPH_DEPTH.with(|depth| depth.set(self.0));
+    }
+}
 
 fn decompress_hwp3_body_limited(data: &[u8], max_bytes: usize) -> Result<Vec<u8>, Hwp3Error> {
     let mut output = Vec::new();
@@ -1298,6 +1332,7 @@ fn parse_hwp3_object_dispatch(
         table.padding.bottom = cell_padding_bottom;
 
         let caption_width = (&info_buf[46..48]).read_u16::<LittleEndian>().unwrap_or(0) as u32 * 4;
+        let caption_height = (&info_buf[48..50]).read_u16::<LittleEndian>().unwrap_or(0) as i32 * 4;
         let caption_pos = (&info_buf[70..72]).read_u16::<LittleEndian>().unwrap_or(0);
 
         let mut cells = Vec::new();
@@ -1638,9 +1673,41 @@ fn parse_hwp3_object_dispatch(
             _ => crate::model::shape::CaptionDirection::Bottom,
         };
         if hwp3_paragraphs_have_renderable_content(&caption_paras) {
+            // HWP3 표 정보에는 캡션의 실제 세로 점유가 따로 저장된다. 텍스트
+            // 줄높이만 예약하면 위 캡션과 표가 겹친다. 남는 물리 높이와 마지막
+            // 저장 줄간격을 캡션-표 간격으로 옮겨 측정과 실제 배치가 함께 소비한다.
+            let text_height = caption_paras
+                .iter()
+                .filter_map(|para| {
+                    para.line_segs
+                        .last()
+                        .map(|last| last.vertical_pos + last.line_height)
+                })
+                .max()
+                .unwrap_or(0);
+            let trailing_spacing = caption_paras
+                .last()
+                .and_then(|para| para.line_segs.last())
+                .map(|seg| seg.line_spacing.max(0))
+                .unwrap_or(0);
+            let caption_gap = if caption_height > 0
+                && matches!(
+                    caption_direction,
+                    crate::model::shape::CaptionDirection::Top
+                        | crate::model::shape::CaptionDirection::Bottom
+                ) {
+                caption_height
+                    .saturating_sub(text_height)
+                    .max(0)
+                    .saturating_add(trailing_spacing)
+                    .min(i16::MAX as i32) as i16
+            } else {
+                0
+            };
             table.caption = Some(crate::model::shape::Caption {
                 direction: caption_direction,
                 width: caption_width as _,
+                spacing: caption_gap,
                 paragraphs: caption_paras,
                 ..Default::default()
             });
@@ -1803,6 +1870,7 @@ fn parse_hwp3_object_dispatch(
                 Ok(drawing_obj) => {
                     **parsed_drawing_object = Some(drawing_obj);
                 }
+                Err(error @ Hwp3Error::NestingLimitExceeded { .. }) => return Err(error),
                 Err(e) => {
                     eprintln!("Failed to parse drawing object tree: {:?}", e);
                 }
@@ -2951,7 +3019,37 @@ fn parse_simple_control_char(
     Ok((i, utf16_len, false))
 }
 
+// Keep the depth check in a small frame before entering the large parser body.
+#[inline(never)]
 pub(crate) fn parse_paragraph_list(
+    body_cursor: &mut Cursor<&[u8]>,
+    doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
+    doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,
+    doc_border_fills: &mut Vec<crate::model::style::BorderFill>,
+    doc_tab_defs: &mut Vec<crate::model::style::TabDef>,
+    pic_name_to_id: &mut std::collections::HashMap<String, u16>,
+    body_left_hu: i32,
+    column_width_hu: i32,
+    body_height_hu: i32,
+    use_password_layout_contract: bool,
+) -> Result<Vec<crate::model::paragraph::Paragraph>, Hwp3Error> {
+    let _depth_guard = ParagraphDepthGuard::enter()?;
+    parse_paragraph_list_inner(
+        body_cursor,
+        doc_char_shapes,
+        doc_para_shapes,
+        doc_border_fills,
+        doc_tab_defs,
+        pic_name_to_id,
+        body_left_hu,
+        column_width_hu,
+        body_height_hu,
+        use_password_layout_contract,
+    )
+}
+
+#[inline(never)]
+fn parse_paragraph_list_inner(
     body_cursor: &mut Cursor<&[u8]>,
     doc_char_shapes: &mut Vec<crate::model::style::CharShape>,
     doc_para_shapes: &mut Vec<crate::model::style::ParaShape>,

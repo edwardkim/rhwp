@@ -1051,6 +1051,7 @@ impl LayoutEngine {
                 pad_left,
                 pad_right,
                 cell_w,
+                (cell_h - pad_top - pad_bottom).max(0.0),
                 &composed_paras,
                 &cell.paragraphs,
                 styles,
@@ -1222,17 +1223,7 @@ impl LayoutEngine {
                             // 동일하게 싣는다 — 빠뜨리면 원본 전체가 대상 상자에
                             // 압착된다(비율 파괴). 렌더러 crop 분기는 이 두 필드만
                             // 소비한다.
-                            let crop = {
-                                let c = &pic.crop;
-                                if c.right > c.left
-                                    && c.bottom > c.top
-                                    && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
-                                {
-                                    Some((c.left, c.top, c.right, c.bottom))
-                                } else {
-                                    None
-                                }
-                            };
+                            let crop = pic.render_crop_rect();
                             let original_size_hu = pic.crop_reference_size();
                             let img_node_id = tree.next_id();
                             // [Task #1151 v4] 셀 안 inline picture 의 cell context + outer

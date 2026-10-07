@@ -1,0 +1,323 @@
+{
+  "source_sha": "5196ee4791b1b5e0f387cf084ed1561f92bd161d",
+  "files": {
+    "src/renderer/float_placement.rs": "6cf7ded91f1916fb3e01948449ec12e63f2d42cf9e5a83266aeeadb3bf4915b1",
+    "src/renderer/height_measurer.rs": "cc798f405afd511d5c8d7533c1b9e2964c5cacb19e1aa281806e73ae27035ff9",
+    "src/renderer/layout/table_layout.rs": "7ac81bb05122d77f52dbaef4098dc9d293f32c324a9d4e1f3725ae19a15004d2",
+    "src/renderer/layout/table_partial.rs": "50b1ad930704e3560344cc5d9a1cc0222a11a5e46a23bd78082be8a560995508",
+    "tests/cases/issue_6782_cell_float_offset_outside_cell.rs": "0c9fe840687dcfa07773d09a259b02e79be8dd64a91bc6447221fa4a3477efa4"
+  },
+  "runtime_diff_sha256": "52742c2d684ba4673ee48646bf9b879d2dae026edb505298e68f419fa4ebf8a4",
+  "test_diff_sha256": "cfc821a4130827a60d297badfe7a01cce0c57719d69c336ba58f1260d2096f45",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "before_original": {
+    "passed": 0,
+    "failed": 1,
+    "seconds": 0.13,
+    "exit_code": 100,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_022",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom)"
+    ],
+    "cause": "첫 그림320.2px vs 독립 PDF318.2px"
+  },
+  "initial_after_original_module": {
+    "passed": 7,
+    "failed": 0,
+    "seconds": 0.54,
+    "exit_code": 0
+  },
+  "final_expanded": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_004",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_027",
+      "--test",
+      "regression_suite_028",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5833_cell_multi_para_float_pics) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6313_cell_picture_own_displacement) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6782_cell_float_full_original) | test(issue_5551_caption_owner) | test(issue_6284_picture_top_caption_rendered) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6575_tac_caption_box_baseline) | test(issue_5875_nested_text_caption) | test(issue_5875_nested_table_text_caption)"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 46.802,
+    "passed": 145,
+    "failed": 0,
+    "summary_seconds": 4.89,
+    "threads": 8,
+    "meaning": "원본/축소103쪽·그림12개·독립 위치·빈 마지막 줄·0 대조·온전한 셀·실제 부분 셀/이월·뒤 문단/본문 점유·이전 정상 경로"
+  },
+  "new_formal_tests_before_status": "추가3개는 수정 후 경계 검사; 신규 검사의 수정 전 실행으로 보고하지 않음",
+  "corrected_attempts": [
+    {
+      "log": "logs/stage33-after-initial.log",
+      "exit_code": 101,
+      "reason": "메인터너 구현의 bool에 is_none 호출한 빌드 오류, 결함 재현 아님"
+    },
+    {
+      "log": "logs/stage33-after-frame-initial.log",
+      "exit_code": 4,
+      "reason": "이전 suite 번호,0 tests; 성공으로 세지 않음"
+    },
+    {
+      "log": "logs/stage33-after-frame.log",
+      "exit_code": 100,
+      "passed": 8,
+      "failed": 1,
+      "reason": "set_document 대조군의 page_fragment 표식 가정 수정; 실제 부분 셀 대조를 별도로 실행"
+    },
+    {
+      "log": "logs/stage33-after-boundary.log",
+      "exit_code": 101,
+      "reason": "수동 IR의 존재하지 않는 LineSeg 필드, 빌드 오류"
+    },
+    {
+      "log": "logs/stage33-expanded.log",
+      "exit_code": 100,
+      "passed": 144,
+      "failed": 1,
+      "reason": "본문 예산의 머리말/꼬리말 여백을 빠뜨려25.5px 예산에80.1px 개체를 넣은 잘못된 대조군 수정"
+    },
+    {
+      "log": "logs/stage33-after-body-budget.log",
+      "exit_code": 100,
+      "passed": 9,
+      "failed": 1,
+      "reason": "복제 문단의 문자 메타데이터/전체 TextRun 가정 수정; 새 빈 문단에 공식 insert_text_at으로 입력하고 실제 글줄 전체를 검사"
+    }
+  ],
+  "policies": {
+    "fmt": 0,
+    "manifest": 0,
+    "static_test_attrs": 6215,
+    "source_unit": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "cli_build": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 79.103,
+    "immutable_cli_sha256": "9bbb85583cb1b5f176d94998d551c5d611e03121a8aae1a4e8a71124ef1c84e7"
+  },
+  "visual": {
+    "original": {
+      "pages": [
+        76,
+        77,
+        78
+      ],
+      "scores": [
+        [
+          76,
+          60.83855
+        ],
+        [
+          77,
+          99.16303
+        ],
+        [
+          78,
+          49.22912
+        ]
+      ],
+      "directly_read_review_and_standalone_overlay_pages": [
+        76,
+        77,
+        78
+      ],
+      "execution": {
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "--pdf",
+          "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+          "--key",
+          "japan6782",
+          "--rhwp-bin",
+          "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+          "--out",
+          "output/pr-review/planet6897-7382-20260926/visual/stage33-after-original-native",
+          "--dpi",
+          "96",
+          "--pages",
+          "76,77,78"
+        ],
+        "exit_code": 1,
+        "wall_seconds": 14.644
+      },
+      "gate": "re_review_required",
+      "page_count": [
+        103,
+        103
+      ]
+    },
+    "zero": {
+      "pages": [
+        77
+      ],
+      "scores": [
+        [
+          77,
+          99.15771
+        ]
+      ],
+      "directly_read_review_and_standalone_overlay_pages": [
+        77
+      ],
+      "execution": {
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "output/pr-review/planet6897-7382-20260926/controls/stage33/japan-cell-zero.hwp",
+          "--pdf",
+          "pdf/issue6782/japan-cell-zero-2020.pdf",
+          "--key",
+          "japan6782",
+          "--rhwp-bin",
+          "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+          "--out",
+          "output/pr-review/planet6897-7382-20260926/visual/stage33-after-zero-native",
+          "--dpi",
+          "96",
+          "--pages",
+          "77"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 4.661
+      },
+      "gate": "passed",
+      "page_count": [
+        103,
+        103
+      ]
+    },
+    "normal-hwp": {
+      "pages": [
+        11,
+        14,
+        23
+      ],
+      "scores": [
+        [
+          11,
+          98.39093
+        ],
+        [
+          14,
+          91.00235
+        ],
+        [
+          23,
+          99.62374
+        ]
+      ],
+      "directly_read_review_and_standalone_overlay_pages": [
+        11,
+        14,
+        23
+      ],
+      "execution": {
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+          "--pdf",
+          "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+          "--key",
+          "liver7379",
+          "--rhwp-bin",
+          "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+          "--out",
+          "output/pr-review/planet6897-7382-20260926/visual/stage33-after-normal-hwp-native",
+          "--dpi",
+          "96",
+          "--pages",
+          "11,14,23"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 15.069
+      },
+      "gate": "passed",
+      "page_count": [
+        215,
+        215
+      ]
+    }
+  },
+  "english_added_explanatory_comments": 0,
+  "remaining": [
+    "#6782 76쪽 표/캡션 앵커와78쪽 표 위치/그림 누락: 보정 전후 tree 동일해도 보류 해소 아님",
+    "#7382 14쪽 그림11 위치",
+    "보정16 실제 TABLE 편집 경계",
+    "보정27 보존 래퍼 실제 분할/이월",
+    "최신215쪽 전수/fresh WASM/전체 Rust/lint/Skia"
+  ],
+  "acceptance": "개별 일본 마크 결함 수정; 원본76/78쪽 selected gate 미충족으로 전체 시각 통과/PR 생성·승인으로 보고하지 않음",
+  "before_native_original": {
+    "page": 77,
+    "tolerant_content_match_percent": 99.16488,
+    "directly_read_review_and_standalone_overlay": true,
+    "binary_source_record": "stage32_validation.json의 불변 CLI",
+    "limitation": "2px 관용 점수는 이 위치 결함을 검출하지 않음; 독립 최종 좌표·공통 원점/빈 줄 검사와 직접 판독으로 판단"
+  }
+}

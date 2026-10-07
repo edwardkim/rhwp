@@ -1,0 +1,130 @@
+{
+  "before_head": "172ba0952",
+  "source": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+  "source_sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f",
+  "canonical_pdf": "pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf",
+  "pdf_sha256": "798e06db6946edcbb05e7399d3aec08d847a57afc375d9d9e67b435e9e1f40d8",
+  "pdf_provenance": {
+    "engine": "2020",
+    "job_id": "d8b8659f-76ec-4ab7-b889-2f9eb044a4c8",
+    "pages": 5
+  },
+  "diagnosis": "마지막 줄 뒤 간격을 다음 줄의 거리로 측정하면서 조각 끝에 포함하여 실제 가시 줄이 다음 쪽으로 밀림. 첫 다섯 셀 문단은 원본 XML에 LineSeg가 없으므로 저장 프레임 판정 완화는 적용하지 않음.",
+  "implementation": "재조판된 일반 텍스트 줄에 한해 마지막 간격을 공통 컷 계산에서 제외. 기존 저장 줄·개체·중첩 표 경로는 기존 판정 유지.",
+  "call_paths": [
+    "advance_row_cut → native_saved_reset_cut_trailing_trim → reflow_cut_trailing_spacing",
+    "row_cut_content_height / row_block_content_height → 같은 trailing trim → 조각 예약 및 table_partial 행 높이"
+  ],
+  "independent_page_ownership": {
+    "4": [
+      50,
+      67,
+      10
+    ],
+    "5": [
+      67,
+      22,
+      67,
+      16,
+      67,
+      4
+    ]
+  },
+  "before_focused": {
+    "tests": 3,
+    "passed": 2,
+    "failed": 1,
+    "exit_code": 100,
+    "log": "output/pr-review/planet6897-green-20261002/current1749-frame-focused.log"
+  },
+  "after_focused": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-focused.log"
+  },
+  "counterchecks": {
+    "tests": 26,
+    "passed": 26,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-counterchecks.log"
+  },
+  "native_all5": {
+    "pages": 5,
+    "minimum": 91.10644,
+    "below90": 0,
+    "exit_code": 0,
+    "tsv": "mydocs/pr/assets/planet6897_green_20261002/savedbounds1749_reflow_native_all5.tsv"
+  },
+  "fresh_wasm": {
+    "build": "Mac 로컬 no-opt, Docker 최적화 빌드 아님",
+    "pages": 5,
+    "minimum": 91.10644,
+    "below90": 0,
+    "exit_code": 0,
+    "tsv": "mydocs/pr/assets/planet6897_green_20261002/savedbounds1749_reflow_wasm_all5.tsv",
+    "pkg_sha256": "226310c000174b5c24d55dc72bd201077362e261434299672ae6e8b630c249d7",
+    "studio_synced": true,
+    "native_tsv_identical": true
+  },
+  "rust_gates": [
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "seconds": 6.13,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "seconds": 21.96,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 14.63,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "seconds": 23.19,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-workspace-build.log"
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "seconds": 52.31,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-workspace-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "seconds": 0.52,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-manifest.log"
+    },
+    {
+      "gate": "fresh-wasm",
+      "exit_code": 0,
+      "seconds": 152.3,
+      "log": "output/pr-review/planet6897-green-20261002/current1749-reflow-fresh-wasm.log"
+    }
+  ],
+  "remaining": "p4·p5 표 내부 문단 앞 간격과 괘선 표현 차이는 남음. Native 문단/쪽 소유 검사는 통과. 전체 브랜치 최종 검증과 다른 시각 보류는 미완료.",
+  "new_regression_functions": 0,
+  "source_code_sha256": "52d1e69394495cb8929fb2119b6245df78334af59d960531e88f132865335994",
+  "remaining_known_regressions": {
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "log": "output/pr-review/planet6897-green-20261002/remaining-after1749-reflow.log",
+    "names": [
+      "svg_snapshot::form_002_page_0",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_13"
+    ]
+  }
+}

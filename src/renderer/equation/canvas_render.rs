@@ -57,14 +57,25 @@ fn render_box(
             let fi = fs;
             // CJK 문자는 italic 미적용. FontStyle::Roman(`rm`)으로 italic=false 가
             // 전달된 경우에도 italic 미적용 (svg_render.rs Text arm 과 동일 정책).
-            let has_cjk = text.chars().any(|c| {
-                matches!(c,
-                    '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-                )
-            });
-            set_font(ctx, fi, !has_cjk && italic, bold);
+            let has_cjk = super::text_has_cjk(text);
+            if has_cjk {
+                ctx.set_font(&format!(
+                    "{}{:.1}px {}",
+                    if bold { "bold " } else { "" },
+                    fi,
+                    super::CJK_EQUATION_FONT_FAMILY
+                ));
+            } else {
+                set_font(ctx, fi, italic, bold);
+            }
             ctx.set_fill_style_str(color);
-            let _ = ctx.fill_text(text, x, y + lb.baseline);
+            if has_cjk && (lb.width - estimate_text_width(text, fi, false)).abs() > 0.01 {
+                for (ch, offset) in super::positioned_cjk_text(text, fi, lb.width) {
+                    let _ = ctx.fill_text(&ch.to_string(), x + offset, y + lb.baseline);
+                }
+            } else {
+                let _ = ctx.fill_text(text, x, y + lb.baseline);
+            }
         }
         LayoutKind::Number(text) => {
             // [Issue #900] svg_render.rs Number arm 과 동기화 — fs 사용.
@@ -463,7 +474,7 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, y + fs * 0.05);
             ctx.stroke();
         }
-        DecoKind::Vec => {
+        DecoKind::Vec | DecoKind::Dyad => {
             let arrow_y = y + fs * 0.05;
             ctx.begin_path();
             ctx.move_to(mid_x - half_w, arrow_y);
@@ -474,6 +485,13 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, arrow_y);
             ctx.line_to(mid_x + half_w - fs * 0.1, arrow_y + fs * 0.06);
             ctx.stroke();
+            if kind == DecoKind::Dyad {
+                ctx.begin_path();
+                ctx.move_to(mid_x - half_w + fs * 0.1, arrow_y - fs * 0.06);
+                ctx.line_to(mid_x - half_w, arrow_y);
+                ctx.line_to(mid_x - half_w + fs * 0.1, arrow_y + fs * 0.06);
+                ctx.stroke();
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;

@@ -118,6 +118,10 @@ pub(crate) struct MetricLookupDecision<'a> {
 fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
     match find_font_rule_layout_metric(name) {
         Some(rule) => (rule.target_face_or_policy, Some(rule.rule_id)),
+        // 단축키 원본의 영문 글꼴명은 한국어 family 이름으로 저장되지만,
+        // 같은 설치 글꼴의 내장 폭 표는 영문 family 이름으로 수록돼 있다.
+        // YNCH05.TTF의 숫자 1은 530/1000em이며 한컴 PDF도 이 폭을 쓴다.
+        None if name == "양재난초체M" => ("Yj NANCHO Medium", None),
         None => (name, None),
     }
 }
@@ -362,6 +366,7 @@ mod tests {
             ("HY신명조", "HYSinMyeongJo-Medium"),
             ("HY그래픽", "HYGraphic-Medium"),
             ("HY궁서", "HYGungSo-Bold"),
+            ("한컴 윤고딕 230", "Haan YGodic 230"),
         ] {
             let m = find_metric(korean, false, false);
             assert!(m.is_some(), "{} 매핑 실패", korean);

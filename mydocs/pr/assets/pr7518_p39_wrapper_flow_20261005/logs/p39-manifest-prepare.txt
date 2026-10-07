@@ -1,0 +1,4 @@
+Excerpt: final preparation summary. Raw SHA256 9d0e43654bc433926f70544378f455139ae71829947aa3535e68132ec68f6409
+[RustTestSuite] 새 test source 없음
+[RustTestSuite] 생성: 28 harnesses, 20 exceptions
+[RustTestSuite] 확인 완료: 1433 sources / 6185 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6559 cases / weight 1247082..1251506

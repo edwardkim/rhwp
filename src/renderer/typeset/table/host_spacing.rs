@@ -69,11 +69,31 @@ pub(super) fn resolve(
 
     // [#2195 stage50 실험] 자리차지(TopAndBottom) 표도 outer_margin_top 계상 —
     // 86712 구분선 표(566HU) 한글 PDF 괘선 실측: 상단 마진 7.55px 포함.
-    let outer_top = if is_tac || is_para_topbottom_float(&table.common) {
-        hwpunit_to_px(table.outer_margin_top as i32, dpi)
-    } else {
-        0.0
-    };
+    // 절대 위치 표의 뒤 본문은 별도 PartialParagraph가 줄간격을 소비한다.
+    // 표 예약에는 host 줄간격 대신 실제 바깥 여백을 사용한다.
+    let absolute_table_with_post_text = !is_tac
+        && matches!(
+            table.common.text_wrap,
+            crate::model::shape::TextWrap::TopAndBottom
+        )
+        && matches!(
+            table.common.vert_rel_to,
+            crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper
+        )
+        && para_has_non_whitespace_text(para)
+        && signed_hwpunit(table.common.vertical_offset) <= 0
+        && para
+            .controls
+            .iter()
+            .filter(|control| matches!(control, crate::model::control::Control::Table(_)))
+            .count()
+            == 1;
+    let outer_top =
+        if is_tac || is_para_topbottom_float(&table.common) || absolute_table_with_post_text {
+            hwpunit_to_px(table.outer_margin_top as i32, dpi)
+        } else {
+            0.0
+        };
     // [Task #1841] visible-host 자리차지(TopAndBottom) 표는 outer_margin_bottom 을
     // 후속 재개 간격에 포함한다 (layout 재개 y 가산과 대칭 — 렌더/pagination 정합).
     // 한글 실측: 표 하단→첫 줄 gap 한글 18.7pt = rhwp 10.2pt + outer_bottom 8.5pt
@@ -87,7 +107,7 @@ pub(super) fn resolve(
     // 페이지 적합 판정에서는 제외(trailing 간격 면제 — hwpspec 178쪽 핀 #1086).
     let is_empty_host_float =
         is_para_topbottom_float(&table.common) && !para_has_non_whitespace_text(para);
-    let outer_bottom = if is_tac || is_visible_host_float {
+    let outer_bottom = if is_tac || is_visible_host_float || absolute_table_with_post_text {
         hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
     } else if is_empty_host_float {
         hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
@@ -168,11 +188,37 @@ pub(super) fn resolve(
         )
         && para.text.is_empty();
     let next_is_empty_table_anchor = next_para
-        .map(|p| para_is_empty_topbottom_table_anchor(p) || para_is_empty_tac_table_anchor(p))
+        .map(|p| {
+            let is_table_anchor =
+                para_is_empty_topbottom_table_anchor(p) || para_is_empty_tac_table_anchor(p);
+            // A source page reset is not a same-frame table stack. Its next
+            // empty anchor belongs after this table's continuation, so it
+            // cannot authenticate leading/trailing host spacing on this page.
+            // Preserve the stack rule for edited/reflowed or synthetic input.
+            let source_frame_reset = profile().hwp5_stored_pagination_layout()
+                && !profile().session_edited()
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+                && !p.stored_text_partition_is_dirty()
+                && !p.cell_format_vpos_dirty
+                && para.line_segs.len() == 1
+                && p.line_segs.len() == 1
+                && [&para.line_segs[0], &p.line_segs[0]].iter().all(|line| {
+                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && line.vertical_pos >= 0
+                        && line.line_height > 0
+                })
+                && p.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos;
+            is_table_anchor && !source_frame_reset
+        })
         .unwrap_or(false);
     let suppress_empty_anchor_spacing = is_topbottom_empty_anchor && !next_is_empty_table_anchor;
 
-    let host_line_spacing = if suppress_empty_anchor_spacing {
+    let host_line_spacing = if suppress_empty_anchor_spacing || absolute_table_with_post_text {
         0.0
     } else if !is_tac && !is_single_cell_placeholder {
         para.line_segs

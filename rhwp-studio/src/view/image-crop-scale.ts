@@ -4,22 +4,21 @@
  * rust `compute_image_crop_src`(`src/renderer/svg.rs`) 와 같은 폴백 사슬을 쓴다.
  *
  *   ① `cropReferenceSize`(paint op 의 `originalSizeHu` = `imgDim`) 가 있으면 그것
- *   ② 없으면 crop 의 `right`/`bottom` 이 원본 전체 범위를 가리킨다고 본다 (#3239)
+ *   ② 없으면 crop 의 `right`/`bottom` 이 원본 전체 범위를 가리킨다고 본다 (#3239) —
+ *      단 **그 축의 crop 이 0 에서 시작할 때만**이다(#7015). 한 축만 확인되면 그 배율을
+ *      두 축에 쓴다.
  *   ③ 둘 다 못 쓰면 96dpi 가정(75 HU/px)
  *
  * ②가 빠지면 `imgDim` 을 보존하지 않는 구형 HWP5 의 비-96dpi 스캔 그림에서 곧장 ③으로
  * 떨어져 원본에서 **다른 창**을 잘라 온다 — 좁게 잘린 만큼 같은 자리에 늘어난다(#3239·#6954).
  *
- * 판정은 rust 와 같이 **두 축을 함께** 한다. 한 축만 유효한 reference 로 다른 축을 섞으면
- * 원본에 없는 사영이 된다.
+ * ①은 rust 와 같이 **두 축을 함께** 판정한다. 한 축만 유효한 reference 로 다른 축을 섞으면
+ * 원본에 없는 사영이 된다. ②의 축별 판정은 그와 다르다 — 거기서 갈리는 것은 "이 축의
+ * `right`/`bottom` 이 전체 범위인가" 이고, 확인된 배율 하나를 두 축에 쓰는 것은 HWP5 crop
+ * 좌표가 등방이기 때문이다(#7525: studio 가 #7015 를 따라가지 않아 30442 3쪽 로고가 절반만,
+ * 14쪽 사진이 엉뚱한 창으로 그려졌다).
  */
 export const HWPUNIT_PER_PIXEL = 75;
-
-/** crop 의 전체 범위 축(오른쪽·아래). 폴백 ②가 이 둘을 원본 크기로 읽는다. */
-export interface ImageCropExtent {
-  right: number;
-  bottom: number;
-}
 
 export interface ImageCropScale {
   scaleX: number;
@@ -32,6 +31,11 @@ export interface ImageCrop {
   top: number;
   right: number;
   bottom: number;
+}
+
+/** 저장된 자르기 선택의 빈 영역은 자르기 없음과 다르다. */
+export function imageCropSelectionIsEmpty(crop?: ImageCrop | null): boolean {
+  return !!crop && (crop.right <= crop.left || crop.bottom <= crop.top);
 }
 
 /** 원본 픽셀 좌표로 환산한, 실제로 잘라 올 창. */
@@ -57,13 +61,13 @@ function positive(value: number | undefined): boolean {
 
 /**
  * @param cropReferenceSize paint op 의 `originalSizeHu`(HWPUNIT). 없으면 `null`/`undefined`.
- * @param crop crop 의 `right`/`bottom`(HWPUNIT).
+ * @param crop crop 네 변(HWPUNIT). 폴백 ②는 시작이 0 인 축의 `right`/`bottom` 만 원본 크기로 읽는다.
  * @param imageWidth 디코딩된 원본 픽셀 폭.
  * @param imageHeight 디코딩된 원본 픽셀 높이.
  */
 export function imageCropScale(
   cropReferenceSize: readonly [number, number] | null | undefined,
-  crop: ImageCropExtent,
+  crop: ImageCrop,
   imageWidth: number,
   imageHeight: number,
 ): ImageCropScale {
@@ -79,11 +83,20 @@ export function imageCropScale(
     if (usableScale(scaleX, scaleY)) return { scaleX, scaleY };
   }
 
-  if (crop.right > 0 && crop.bottom > 0) {
-    const scaleX = crop.right / imageWidth;
-    const scaleY = crop.bottom / imageHeight;
-    if (usableScale(scaleX, scaleY)) return { scaleX, scaleY };
-  }
+  // [#7015·#7525] `right`/`bottom` 이 전체 좌표 범위라는 가정은 그 축을 자르지 않았을
+  // 때(시작이 0)만 성립한다. 30442 3쪽 로고는 crop `(0, 20745, 88560, 45453)` · 1181×945 —
+  // x 축은 `88560 / 1181 = 75.0` 으로 전체 범위지만 y 축을 같은 식으로 읽으면 48.1 이 되어
+  // 자르기 창이 `y 431.3..945` 로 밀린다. 두 축 다 자른 그림은 ③으로 떨어진다.
+  const axisScale = (start: number, end: number, pixels: number): number | null => {
+    if (start !== 0 || !(end > 0)) return null;
+    const scale = end / pixels;
+    return Number.isFinite(scale) && scale > 0 ? scale : null;
+  };
+  const adaptiveX = axisScale(crop.left, crop.right, imageWidth);
+  const adaptiveY = axisScale(crop.top, crop.bottom, imageHeight);
+  if (adaptiveX !== null && adaptiveY !== null) return { scaleX: adaptiveX, scaleY: adaptiveY };
+  const confirmed = adaptiveX ?? adaptiveY;
+  if (confirmed !== null) return { scaleX: confirmed, scaleY: confirmed };
 
   return { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL };
 }

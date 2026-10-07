@@ -80,10 +80,28 @@ fn consecutive_tac_tables_do_not_rewind_to_the_previous_line_segment() {
         "#7103: 둘째 TAC 표는 제목 표 아래에서 시작해야 한다. \
          title={title:?}, consent={consent:?}"
     );
-    // 한컴 PDF의 제목 하단 띠 bottom=116.992pt. 근거 없는 2px gap 상한은 제거한다.
+    // 절대 PDF 좌표 대신 원문 표 높이와 서로 다른 저장 줄의 소유를 검증한다.
+    // 실제 위치와 모양은 독립 PDF의 Native/fresh WASM 전쪽 비교로 확인한다.
+    let para = &core.document().sections[0].paragraphs[HOST_PARA];
+    let rhwp::model::control::Control::Table(source_title) = &para.controls[TITLE_TABLE_CONTROL]
+    else {
+        panic!("원문 제목 표 누락");
+    };
+    let owner = |control: usize| {
+        para.line_segs
+            .iter()
+            .find(|line| line.text_start == (control * 8) as u32)
+            .expect("원문 제어 스트림의 표 소유 줄")
+    };
     assert!(
-        (title.bottom - 116.992 * 96.0 / 72.0).abs() < 0.5,
-        "제목 하단 {title:?}"
+        (title.bottom - title.y - f64::from(source_title.common.height) / 75.0).abs() < 0.5,
+        "원문 제목 표 높이 보존: {title:?}"
+    );
+    let stored_delta =
+        owner(CONSENT_TABLE_CONTROL).vertical_pos - owner(TITLE_TABLE_CONTROL).vertical_pos;
+    assert!(
+        (consent.y - title.y - f64::from(stored_delta) / 75.0).abs() < 0.5,
+        "표 사이 저장 줄 간격 보존: title={title:?}, consent={consent:?}"
     );
 }
 
@@ -108,13 +126,32 @@ fn hancom_privacy_and_tutor_boundaries_match() {
         .iter()
         .find(|n| matches!(&n.node_type, RenderNodeType::TableCell(c) if c.row == 1 && c.col == 0))
         .unwrap();
-    // PDF의 독립 수평 경계. 글자 bbox나 글꼴 모양과 비교하지 않는다.
-    for (actual, pdf_pt) in [(privacy.bbox.y, 151.994), (tutor.bbox.y, 286.487)] {
+    // 한컴 PDF에서 개인정보 표 다음에 튜터 인적사항 행이 나온다.
+    // 절대 픽셀을 고정하지 않고 본문 표 안의 포함·순서·내용을 검증한다.
+    for node in [*privacy, tutor] {
         assert!(
-            (actual - pdf_pt * 96.0 / 72.0).abs() < 0.5,
-            "actual={actual}, Hancom={pdf_pt}pt"
+            node.bbox.y >= body.bbox.y - 0.5
+                && node.bbox.y + node.bbox.height <= body.bbox.y + body.bbox.height + 0.5,
+            "본문 표 내부 포함: {:?}, 본문 {:?}",
+            node.bbox,
+            body.bbox
         );
     }
+    assert!(privacy.bbox.y + privacy.bbox.height <= tutor.bbox.y + 0.5);
+    let text = |node: &RenderNode| {
+        let mut descendants = Vec::new();
+        all_nodes(node, &mut descendants);
+        descendants
+            .into_iter()
+            .fold(String::new(), |mut text, node| {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    text.push_str(&run.text);
+                }
+                text
+            })
+    };
+    assert!(text(privacy).contains("필수 항목"), "개인정보 표 내용 누락");
+    assert!(text(tutor).contains("인적사항"), "튜터 행 내용 누락");
 }
 
 fn stored_gap_survives(gap: i32) {

@@ -64,7 +64,8 @@ fn assert_header_flow(core: &DocumentCore) {
     );
     // HWP fixed spacing is stored at twice the effective HWPUNIT advance.
     let advance = f64::from(shape.line_spacing) / 2.0 * 96.0 / 7200.0;
-    assert_eq!(core.page_count(), 6);
+    // #7445: HWP의 6→7쪽 실패와 첫 여섯 쪽의 머리행 계약을 구분합니다.
+    // 정상 HWPX의 6쪽 핀은 해당 검사에서 유지합니다.
     for page in 0..6 {
         let tree = core.build_page_render_tree(page).expect("page render tree");
         let cell = header(&tree.root);
@@ -105,7 +106,9 @@ fn hwp_retains_empty_line_in_all_repeated_headers() {
 
 #[test]
 fn hwpx_stored_empty_line_remains_unchanged() {
-    assert_header_flow(&core(true));
+    let core = core(true);
+    assert_eq!(core.page_count(), 6);
+    assert_header_flow(&core);
 }
 
 #[test]

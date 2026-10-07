@@ -1526,6 +1526,12 @@ export class WasmBridge {
     } catch { return []; }
   }
 
+  /** 본문 텍스트 오프셋을 글자처럼 취급한 개체까지 한 칸씩 센 논리 오프셋으로 바꾼다. */
+  textToLogicalOffset(sec: number, para: number, textOffset: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.textToLogicalOffset(sec, para, textOffset);
+  }
+
   /** 문서 트리 DFS 기반 다음/이전 편집 가능 위치 반환 */
   navigateNextEditable(
     sec: number, para: number, charOffset: number, delta: number,

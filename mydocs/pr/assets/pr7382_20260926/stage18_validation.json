@@ -1,0 +1,155 @@
+{
+  "producer_head": "1216114cb7d90ed047354b08f6dc7893d077f7c6",
+  "final_rust_test_diff_sha256": "93502ea7a03e1dd4a3dbf9f6052074cfa2f17da90cb602818a914fd9d54f967c",
+  "before": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "summary_seconds": 0.167,
+    "observed": "44쪽 첫 꼬리 글줄 누락; 앞쪽 전체 문단에 소비"
+  },
+  "controls": {
+    "tests": 87,
+    "passed": 87,
+    "exit_code": 0,
+    "summary_seconds": 12.902,
+    "threads": 8,
+    "profile": "release-test",
+    "target_dir": "target/pr-review",
+    "rust_test_diff_sha256": "276ade9e75b5d13c638f9699d86b3f65fc607a53e8b7cb9509da297ba5478974",
+    "current_source_identity": {
+      "path": "src/renderer/typeset/paragraph.rs",
+      "controls_source_reconstructed_from_actual_recorded_diff_sha256": "276ade9e75b5d13c638f9699d86b3f65fc607a53e8b7cb9509da297ba5478974",
+      "current_source_non_comment_sha256": "613e85d8c0d36a0290e1b5cbd0dbf3caf09561d7cda64c192c506953431c2b18",
+      "source_non_comment_bytes_identical_for_87_control_execution": true,
+      "change": "편집 대조 후 설명 두 줄만 정정. 기록된 실제 diff를 적용해87검사 당시 소스를 복원하고 현재 함수와 주석 외 바이트 동일 확인."
+    }
+  },
+  "own_counter_assumption_failure": {
+    "exit_code": 100,
+    "summary_seconds": 0.319,
+    "reason": "일반 본문 재조판이 모든 줄에 구현 태그를 새로 부여한다는 내 가정이 틀림. orig_tag 보존 계약 확인 후 실제 연속 위치/원본 컷 무재사용/꼬리 무중복 검사로 수정. 구현 결함 검출로 세지 않음."
+  },
+  "edited_counter": {
+    "tests": 1,
+    "passed": 1,
+    "exit_code": 0,
+    "summary_seconds": 0.215,
+    "command": "DocumentCore::insert_text_native(0,512,0,\" \")",
+    "contract": "원본 내부0 reset 제거, 재조판 줄 단조 위치, 실제 꼬리 앞쪽 소비와 다음 쪽 무중복. 편집 후 한컴 출력 일치 증거로 확대하지 않음."
+  },
+  "unit_controls": {
+    "tests": 6,
+    "passed": 6,
+    "exit_code": 0,
+    "summary_seconds": 0.196
+  },
+  "build_commands": [
+    {
+      "name": "unit-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(page_bottom_empty_paragraph_before_vpos_reset_does_not_create_blank_page) | test(page_bottom_empty_run_before_vpos_reset_does_not_create_blank_page) | test(issue2424_block_table_context_owns_step_lifecycle) | test(issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary) | test(issue_3738_picture_caption_float_clears_caption_before_next_body_text)"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 122.575
+    },
+    {
+      "name": "cli-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 109.498
+    }
+  ],
+  "fmt_check_exit_code": 0,
+  "page_count": 215,
+  "reference_page_count": 215,
+  "native_run": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--rhwp-bin",
+      "target/pr-review/release-test/rhwp",
+      "--pages",
+      "43,44,45,46,106,107,121,122",
+      "--dpi",
+      "96",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage18-native"
+    ],
+    "exit_code": 1,
+    "elapsed_seconds": 39.419
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 44,
+        "tolerant_content_match_percent": 71.92862
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "page_metrics": {
+    "43": 91.32182,
+    "44": 71.92862,
+    "45": 98.61863,
+    "46": 97.24002,
+    "106": 99.94111,
+    "107": 99.02564,
+    "121": 98.1143,
+    "122": 98.01917
+  },
+  "direct_read_review_and_overlay_pages": [
+    43,
+    44,
+    45,
+    46,
+    106,
+    107,
+    121,
+    122
+  ],
+  "semantic_holds": [
+    {
+      "pages": [
+        121,
+        122
+      ],
+      "reason": "각주160은 PDF121의159/160과122의161 소유와 달리122로 잘못 이월되어 남음.98% 자동 수치로 해소하지 않음."
+    }
+  ],
+  "remaining": "44 표 위치 잔여,121/122 각주160 소유.43 각주 줄바꿈/간격 일부 차이. 전체/fresh WASM/lint 등 최종 필수 검증 미완료. PR 생성·승인 보류.",
+  "added_english_explanation_comment_count": 0
+}

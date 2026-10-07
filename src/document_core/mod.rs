@@ -354,14 +354,13 @@ const _: () = {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ActiveFieldInfo {
     pub section_idx: usize,
+    /// 본문 문단 번호. 셀 내부이면 최상위 표/글상자를 담은 본문 부모 문단이다.
     pub para_idx: usize,
     /// field_ranges의 control_idx (controls[] 내 Field 컨트롤 인덱스)
     pub control_idx: usize,
-    /// 셀 내부 필드인 경우의 전체 경로
-    /// 단일 표: vec![(parent_para_idx, ctrl, cell)]
-    /// 중첩 표: vec![(outer_ctrl, outer_cell, ..), (inner_ctrl, inner_cell, ..)]
-    /// parent_para_idx는 별도 필드에 포함하지 않고 첫 번째 요소의 context로 사용
-    pub cell_path: Option<Vec<(usize, usize, usize)>>, // Vec<(parent_para_idx_or_ctrl, ctrl_or_cell, cell_or_para)>
+    /// 셀 내부 필드이면 (컨트롤, 셀, 셀 문단) 번호로 이루어진 전체 경로.
+    /// 본문 부모 문단은 para_idx, 마지막 셀 문단은 경로의 마지막 요소가 구분한다.
+    pub cell_path: Option<Vec<(usize, usize, usize)>>,
 }
 
 impl DocumentCore {
@@ -480,6 +479,12 @@ impl DocumentCore {
             .canvas_metrics
             .as_ref()
             .and_then(canvas_metrics::CanvasMetricSession::active_snapshot);
+        // [#7436] 번호 문자열은 문단 모양·번호 정의에서 정해지므로 스타일과 함께 다시 계산한다.
+        // 문서를 열 때의 재조판(저장 줄 없는 문단)도 번호 폭을 알고 줄을 나눈다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.

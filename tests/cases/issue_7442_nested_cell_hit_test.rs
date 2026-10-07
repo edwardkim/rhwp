@@ -159,19 +159,49 @@ fn plain_outer_cell_stays_depth_one() {
     assert_eq!(path[0].1, 0, "hit={hit}");
 }
 
-/// (d) 대조군: 중첩 칸의 글자 run 위 hitTest 결과는 수정 전과 동일해야 한다.
+/// (d) 대조군: 현재 가시 글자 경계의 커서→hitTest 왕복이 중첩 경로·offset을 보존한다.
 #[test]
 fn nested_text_hit_keeps_same_offset() {
     let doc = load_fixture();
-    let hit = hit_json(&doc, 64.5, 406.0);
-    let path = path_tuples(&hit);
-    assert_eq!(path.len(), 2, "text-run hit must keep depth-2, hit={hit}");
-    assert_eq!(path[0], (0, 10, 0), "hit={hit}");
-    assert_eq!(
-        hit["charOffset"].as_u64(),
-        Some(2),
-        "text-run charOffset must be unchanged, hit={hit}"
-    );
+    let model_path = [(0, 10, 0), (0, 0, 0)];
+    let text = doc
+        .get_text_in_cell_by_path(0, PARENT_PARA as usize, &model_path, 0, 2)
+        .expect("중첩 첫 칸의 모델 글자");
+    assert_eq!(text, "* ", "가시 별표 뒤의 공백이 있는 원본 칸");
+
+    // 뒤 공백의 offset 2는 좁은 칸 밖으로 나가 커서가 칸 끝으로 제한된다.
+    // 과거 절대 클릭 좌표를 그 offset으로 고정하지 않고, 가시 별표의 앞뒤
+    // 현재 커서 경계에서 편집 경로와 문자 소유를 검증한다.
+    for offset in 0..=1 {
+        let raw = doc
+            .get_cursor_rect_by_path(0, PARENT_PARA, NESTED_TABLE_PATH, offset)
+            .expect("중첩 글자 경계의 커서");
+        let rect: Value = serde_json::from_str(&raw).expect("커서 JSON");
+        let height = rect["height"].as_f64().expect("커서 높이");
+        assert!(height > 0.0, "가시 커서 높이: {rect}");
+        let hit = hit_json_on_page(
+            &doc,
+            rect["pageIndex"].as_u64().expect("커서 쪽") as u32,
+            rect["x"].as_f64().expect("커서 x"),
+            rect["y"].as_f64().expect("커서 y") + height / 2.0,
+        );
+        assert_eq!(hit["sectionIndex"].as_u64(), Some(0), "hit={hit}");
+        assert_eq!(
+            hit["parentParaIndex"].as_u64(),
+            Some(PARENT_PARA as u64),
+            "hit={hit}"
+        );
+        assert_eq!(
+            path_tuples(&hit),
+            vec![(0, 10, 0), (0, 0, 0)],
+            "글자 커서의 전체 중첩 경로: offset={offset}, hit={hit}"
+        );
+        assert_eq!(
+            hit["charOffset"].as_u64(),
+            Some(offset as u64),
+            "가시 문자 경계의 offset 왕복: offset={offset}, rect={rect}, hit={hit}"
+        );
+    }
 }
 
 /// (e) getTableCellBboxesByPath 의 cellIdx 가 모델 셀 인덱스와 일치하는지 검증.

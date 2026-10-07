@@ -1,0 +1,121 @@
+{
+  "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "cases": [
+    {
+      "test": "issue_3738_hwp_caption_cell_alignment::hwp_page23_bottom_caption_is_centered_as_one_visual_block",
+      "status": "기존 기대값 부적절",
+      "independent_pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "page": 23,
+      "test_image_y": 148.3,
+      "test_tolerance_px": 3.0,
+      "pdf_image_y_96dpi": 151.99466959635416,
+      "actual_image_y": 152.1,
+      "native_tolerant_content_match_percent": 99.62374,
+      "direct_review": "visual/native-hwp/liver7379/review/review_023.png",
+      "finding": "독립 PDF 그림 본체 y151.995px·캡션498.322px는 기존148.3±3/495.2±3 기대 자체를 벗어난다. 동일 원본은 한컴2024 저장본이며 해당2024 PDF와 입력 해시 대응을 확인했다. 현재152.1/498.4px는 PDF에 근접하며 그림21/22·캡션·후속 본문은 review/standalone overlay 직접 비교에서 대응한다. 기존 테스트는2024 기준 x와 과거2020 설명의 y를 섞어 사용하므로 y 기대를 독립 좌표로 보정하고±3px 공차를 유지한다.",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3901"
+      },
+      "test_caption_y": 495.2,
+      "pdf_caption_y_96dpi": 498.3216552734375,
+      "actual_caption_y": 498.4,
+      "caption_tolerance_px": 3.0,
+      "direct_overlay": "visual/native-hwp/liver7379/overlay/overlay_023.png"
+    },
+    {
+      "test": "issue_6535_low_slack_absorb_keeps_page::low_slack_anchor_block_is_absorbed_into_the_same_page",
+      "status": "독립 출력으로 실제 회귀 확인",
+      "pdf": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+      "page": 1,
+      "base_pages": 1,
+      "head_pages": 2,
+      "base_score": 97.81319,
+      "head_score": 72.12389,
+      "direct_reviews": [
+        "visual/regression-base/low6535/review/review_001.png",
+        "visual/regression-head/low6535/review/review_001.png"
+      ],
+      "finding": "기준 PDF와 devel의1쪽에 발신명의/결재선/주소 꼬리가 있고 현재1쪽에는 없다. 기본 본문은 같은 위치에 남는다. 기존1쪽 기대를 유지하며, 보정27의 블록 요구 높이351.37→464.09px 증가를 별도로 수정한다. 마진50px가 현재 실패 원인은 아니다."
+    },
+    {
+      "test": "issue_1133_nested_table_valign::issue_1133_hwpx_preserves_gap_between_consecutive_block_tables",
+      "status": "상대 비교 검사는 유효하나 독립 기대값 보강 필요",
+      "pdfs": [
+        "pdf/hwpx/issue_1133.pdf",
+        "pdf/issue7382-regression-review/issue_1133-2020.pdf"
+      ],
+      "page": 2,
+      "independent_gap_px": 113.476,
+      "current_hwp_gap_px": 111.60000000000002,
+      "current_hwpx_gap_px": 113.39999999999998,
+      "current_hwpx_direct_review": "visual/regression-head/nested1133/review/review_002.png",
+      "finding": "HWP/HWPX의 독립 PDF는 모두 같은327.003→440.479px 괘선 간격113.476px다. 현재HWPX113.4px는 대응하고 HWP111.6px는1.876px 짧다. HWPX를 HWP의111.6px로 되돌릴 근거가 없다. 기존 상대 일치만으로는 양쪽이 같이 틀린 경우를 검출하지 못하므로 독립 간격/실제 괘선 위치 검사를 보강하고 HWP의 잔여 차이를 검토한다. HWP2쪽 review PNG도 직접 읽었다. 바깥 괘선 간격의 잔여 차이와 안쪽 안내 상자의 가로 폭 차이를 유지해 기록하며 전체 일치로 보고하지 않는다.",
+      "current_hwp_direct_review": "visual/baseline-head/nested1133-hwp/review/review_002.png"
+    },
+    {
+      "test": "issue_6102_section_first_line_overflow::issue_6102_first_line_breaks_inside_margin_36310257",
+      "status": "독립 출력으로 실제 회귀 확인",
+      "pdf": "pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_overtime_report-local2020.pdf",
+      "page": 1,
+      "direct_reviews": [
+        "visual/regression-base/overtime6102/review/review_001.png",
+        "visual/regression-head/overtime6102/review/review_001.png"
+      ],
+      "finding": "독립 PDF의 1쪽에 있는 결재선·협조자·주소 블록이 현재1쪽에서 사라진다. 수정 전에는 같은1쪽에 있다. 1쪽 기대를 유지하고 실제 이월 회귀를 수정한다."
+    },
+    {
+      "test": "issue_6535_page_anchored_block_keeps_page::issue_6535_page_anchored_block_stays_on_its_page",
+      "status": "독립 출력으로 실제 회귀 확인",
+      "pdf": "pdf/issue7382-regression-review/36404612_page_anchored_footer_block-2020.pdf",
+      "page": 1,
+      "direct_reviews": [
+        "visual/regression-base/page6535/review/review_001.png",
+        "visual/regression-head/page6535/review/review_001.png"
+      ],
+      "finding": "독립 PDF의 1쪽에 있는 현장대응단장·수신자·결재선·주소 블록이 현재1쪽에서 사라진다. 수정 전에는 같은1쪽에 있다. 기존1쪽 기대를 유지한다. 세부 좌표 기대는 별도로 PDF와 대조한다."
+    },
+    {
+      "test": "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "status": "독립 출력으로 실제 회귀 확인",
+      "pdf": "pdf/issue7336/stored_frame_page_larger_rowbreak-2024.pdf",
+      "page": 6,
+      "direct_reviews": [
+        "visual/regression-base/rowbreak7336/review/review_006.png",
+        "visual/regression-head/rowbreak7336/review/review_006.png"
+      ],
+      "finding": "독립 PDF6쪽의 동의서 본문 대신 현재6쪽에는 이전 쪽의 사업계획 꼬리와 동의서 제목만 있다. 수정 전6쪽은 동의서 전체를 표시한다. 7쪽 기대와 동의서 소유 검사에 실제 배치 회귀 근거가 있다. 선행 표 분할 원인은 추가 추적한다."
+    },
+    {
+      "test": "issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "status": "기존 저장 사다리 기대와 실제 괘선의 계약 추가 검토",
+      "page": 11,
+      "pdf": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+      "pdf_following_table_top_px": 436.961344,
+      "base_following_table_top_px": 435.5,
+      "head_following_table_top_px": 437.4,
+      "stored_advance_px": 32.4266666667,
+      "head_advance_px": 34.31,
+      "direct_reviews": [
+        "visual/regression-base/anchor7203/review/review_011.png",
+        "visual/regression-head/anchor7203/review/review_011.png"
+      ],
+      "finding": "현재 뒤 표 윗변은 독립 PDF와0.439px 차이며 수정 전1.461px 차보다 가깝다. 두 표의 raw 저장 vpos 차만 기대하는 검사가 바깥여백과 실제 괘선 원점을 혼합했는지 추적한다. 점수 통과만으로 기대값을 바꾸지 않으며 앞 앵커/표 소유와 여백 소비 근거 확인 전에는 미검증이다."
+    },
+    {
+      "test": "issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow",
+      "status": "304쪽 잠정 핀은 한컴 정답이 아님; 의도된 동작 재검토 필요",
+      "pdf": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+      "pdf_pages": 302,
+      "base_pages": 304,
+      "head_pages": 303,
+      "direct_tail_images": [
+        "tail-qa/roadmap-base-304.png",
+        "tail-qa/roadmap-head-303.png",
+        "tail-qa/roadmap-pdf-302.png"
+      ],
+      "finding": "같은 마지막 내용의 수정 전304쪽/현재303쪽을 직접 읽었다. 두 rhwp 꼬리 배치는 쪽번호 외 동일하며 Slovenia부터 마지막 출처까지 보존한다. 기준 PDF302쪽은 Portugal/Slovak Republic부터 시작하므로 아직 행 소유와 분할이 다르다. 304라는 과거 핀 실패만으로 새 꼬리 결함이라고 판단하거나 현재303을 정답으로 바꾸지 않는다. 중간 페이지 이동 원인·전체 내용 보존과 테스트의 저장 꼬리 예산 계약은 추가 검증한다."
+    }
+  ]
+}

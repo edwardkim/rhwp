@@ -1,0 +1,88 @@
+{
+  "key": "hy-ladder3",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage22-nextest/native/hy-ladder3/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage22-nextest/native/hy-ladder3/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "dcc513903df19f29404ef49ace42a516ffa98eae133a38b5a5145b8a1e21c620",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage22-nextest/native/hy-ladder3/pdf_png/pdf-1.png",
+      "pdf_sha256": "d7be2d4bb685bf1a8672d3bfe80ff1e749708e0780a6601a37c0bf56bf1079ce"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage22-nextest/native/hy-ladder3/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "4e6b706e2ae92833c32a5b524214453462a94dfdfde551a478e60d91ebd0b640",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage22-nextest/native/hy-ladder3/pdf_png/pdf-2.png",
+      "pdf_sha256": "6cc0bd79faadeab8763fffd8198c3f5efa0256667ac0c250e0b4a5b3b8e41f42"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 93.1128,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91779,
+      "tolerant_content_match_percent": 93.1128
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 732,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/task2070/hy_ladder3.hwpx",
+      "sha256": "42b120273f3f8836157617500103a852003e41c65647568354d536c0eef9da50"
+    },
+    "pdf": {
+      "path": "pdf/task2070/hy-ladder3-2020.pdf",
+      "sha256": "8ae8ea959dd342a2b2240d781706ba2a72e93474c8d0d7394d0da9bf819e23db"
+    },
+    "git_head": "4f151f870c4019cae89381e2087323acbcf03dd4",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "b8c491de461cff4751a3d41cbf940b54ff8d434681bfb042c528bd3a70f20802"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "exported_svg_pages": 2,
+  "exported_render_tree_pages": 2,
+  "exported_pdf_pages": 2
+}

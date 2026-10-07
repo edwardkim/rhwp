@@ -1,0 +1,28 @@
+{
+  "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "package_sha256": {
+    "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "rhwp_bg.wasm": "65fba8116dc1b727d2eacc150a8b4711e8f01985b97df5f3aecc6b31c66e5bf7"
+  },
+  "root_pkg_studio_and_frozen_copy_identical": true,
+  "local_alternative_build": true,
+  "docker_optimized_build_verified": false,
+  "coverage_per_format": [
+    [
+      1,
+      54
+    ],
+    [
+      55,
+      108
+    ],
+    [
+      109,
+      162
+    ],
+    [
+      163,
+      215
+    ]
+  ]
+}

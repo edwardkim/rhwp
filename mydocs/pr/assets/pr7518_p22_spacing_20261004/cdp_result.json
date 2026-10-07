@@ -1,0 +1,95 @@
+{
+  "sourceHead": "28f4cbbe5799f76a28e3c22ada96b6ee54cea218",
+  "input": "samples/76076_regulatory_analysis.hwp",
+  "inputSha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "wasmSha256": "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+  "checks": [
+    {
+      "name": "fresh compiled WASM served with cache disabled",
+      "passed": true,
+      "detail": {
+        "pkgHash": "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+        "publicHash": "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+        "served": [
+          "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+          "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77"
+        ]
+      }
+    },
+    {
+      "name": "title and intentional blank paragraph preserved",
+      "passed": true,
+      "detail": {
+        "title": {
+          "x": 75.6,
+          "y": 745.2,
+          "w": 642.5,
+          "h": 20
+        },
+        "spacer": {
+          "x": 75.6,
+          "y": 775.2,
+          "w": 642.5,
+          "h": 5.3
+        }
+      }
+    },
+    {
+      "name": "table follows intentional blank line",
+      "passed": true,
+      "detail": {
+        "spacer": {
+          "x": 75.6,
+          "y": 775.2,
+          "w": 642.5,
+          "h": 5.3
+        },
+        "table": {
+          "x": 77.5,
+          "y": 785.1,
+          "w": 638.8,
+          "h": 231.9
+        }
+      }
+    },
+    {
+      "name": "following paragraph follows table",
+      "passed": true,
+      "detail": {
+        "tail": {
+          "x": 75.6,
+          "y": 1018.9,
+          "w": 642.5,
+          "h": 5.3
+        },
+        "table": {
+          "x": 77.5,
+          "y": 785.1,
+          "w": 638.8,
+          "h": 231.9
+        }
+      }
+    },
+    {
+      "name": "original 82 pages preserved",
+      "passed": true,
+      "detail": {
+        "pageCount": 82
+      }
+    },
+    {
+      "name": "p22 Native and portable WASM final geometry agrees",
+      "passed": true,
+      "detail": {
+        "nativeCount": 48,
+        "wasmCount": 48
+      }
+    },
+    {
+      "name": "no browser errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

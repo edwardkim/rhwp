@@ -1,0 +1,240 @@
+[
+  {
+    "backend": "native",
+    "code_sha": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "private_manifest_sha256": "b5d6a2b996b3aaded4218216031e57138f7d844dca267bdf58e483c1c2b1b4dc",
+    "private_silhouette_manifest_sha256": "dc1253829c85f5eda012d721e6bca900c8e568acda248e23adf497d49bac42c3",
+    "published_tsv_sha256": "558f3c4a640c47a8936fe1dbebd15d80401d4ac6845ec0b195cae225c9d30b5c",
+    "gate": {
+      "status": "passed",
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": []
+    },
+    "flagged_pages": [],
+    "pages": [
+      {
+        "page": 2,
+        "pixel_match_percent": 90.49999,
+        "visual_accuracy_proxy_percent": 36.40397,
+        "tolerant_content_match_percent": 90.53132,
+        "silhouette_raw_match_percent": 90.52231,
+        "silhouette_boundary_reconciled_pixels": 12
+      },
+      {
+        "page": 3,
+        "pixel_match_percent": 92.19323,
+        "visual_accuracy_proxy_percent": 65.78369,
+        "tolerant_content_match_percent": 97.86818,
+        "silhouette_raw_match_percent": 97.47396,
+        "silhouette_boundary_reconciled_pixels": 802
+      },
+      {
+        "page": 4,
+        "pixel_match_percent": 93.78688,
+        "visual_accuracy_proxy_percent": 63.7247,
+        "tolerant_content_match_percent": 94.73877,
+        "silhouette_raw_match_percent": 93.85677,
+        "silhouette_boundary_reconciled_pixels": 1347
+      },
+      {
+        "page": 5,
+        "pixel_match_percent": 92.74288,
+        "visual_accuracy_proxy_percent": 57.64785,
+        "tolerant_content_match_percent": 96.90224,
+        "silhouette_raw_match_percent": 96.29159,
+        "silhouette_boundary_reconciled_pixels": 933
+      },
+      {
+        "page": 6,
+        "pixel_match_percent": 90.2758,
+        "visual_accuracy_proxy_percent": 16.70957,
+        "tolerant_content_match_percent": 93.20186,
+        "silhouette_raw_match_percent": 93.13366,
+        "silhouette_boundary_reconciled_pixels": 71
+      },
+      {
+        "page": 7,
+        "pixel_match_percent": 88.68035,
+        "visual_accuracy_proxy_percent": 16.94603,
+        "tolerant_content_match_percent": 93.17436,
+        "silhouette_raw_match_percent": 93.12416,
+        "silhouette_boundary_reconciled_pixels": 61
+      },
+      {
+        "page": 8,
+        "pixel_match_percent": 90.18765,
+        "visual_accuracy_proxy_percent": 20.2957,
+        "tolerant_content_match_percent": 98.18442,
+        "silhouette_raw_match_percent": 98.15345,
+        "silhouette_boundary_reconciled_pixels": 34
+      },
+      {
+        "page": 11,
+        "pixel_match_percent": 88.41074,
+        "visual_accuracy_proxy_percent": 30.56476,
+        "tolerant_content_match_percent": 95.49336,
+        "silhouette_raw_match_percent": 95.45238,
+        "silhouette_boundary_reconciled_pixels": 61
+      },
+      {
+        "page": 12,
+        "pixel_match_percent": 89.55344,
+        "visual_accuracy_proxy_percent": 24.77934,
+        "tolerant_content_match_percent": 92.63201,
+        "silhouette_raw_match_percent": 92.63201,
+        "silhouette_boundary_reconciled_pixels": 0
+      },
+      {
+        "page": 13,
+        "pixel_match_percent": 90.05251,
+        "visual_accuracy_proxy_percent": 62.30477,
+        "tolerant_content_match_percent": 97.89633,
+        "silhouette_raw_match_percent": 97.88145,
+        "silhouette_boundary_reconciled_pixels": 35
+      },
+      {
+        "page": 14,
+        "pixel_match_percent": 89.55512,
+        "visual_accuracy_proxy_percent": 49.25628,
+        "tolerant_content_match_percent": 94.91816,
+        "silhouette_raw_match_percent": 94.12486,
+        "silhouette_boundary_reconciled_pixels": 1456
+      },
+      {
+        "page": 15,
+        "pixel_match_percent": 90.97169,
+        "visual_accuracy_proxy_percent": 42.49118,
+        "tolerant_content_match_percent": 97.3118,
+        "silhouette_raw_match_percent": 96.92603,
+        "silhouette_boundary_reconciled_pixels": 540
+      },
+      {
+        "page": 16,
+        "pixel_match_percent": 90.54103,
+        "visual_accuracy_proxy_percent": 15.75488,
+        "tolerant_content_match_percent": 97.34505,
+        "silhouette_raw_match_percent": 97.23418,
+        "silhouette_boundary_reconciled_pixels": 111
+      }
+    ]
+  },
+  {
+    "backend": "wasm",
+    "code_sha": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "private_manifest_sha256": "506172202a716fddacbda0d2debd41a7d2a4eb56b92b75e908947aa745ee68a5",
+    "private_silhouette_manifest_sha256": "68d46730b29c5359fe4faa77805df9c0477c516a6592d85fe5e648589889a106",
+    "published_tsv_sha256": "558f3c4a640c47a8936fe1dbebd15d80401d4ac6845ec0b195cae225c9d30b5c",
+    "gate": {
+      "status": "passed",
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": []
+    },
+    "flagged_pages": [],
+    "pages": [
+      {
+        "page": 2,
+        "pixel_match_percent": 90.49999,
+        "visual_accuracy_proxy_percent": 36.40397,
+        "tolerant_content_match_percent": 90.53132,
+        "silhouette_raw_match_percent": 90.52231,
+        "silhouette_boundary_reconciled_pixels": 12
+      },
+      {
+        "page": 3,
+        "pixel_match_percent": 92.19323,
+        "visual_accuracy_proxy_percent": 65.78369,
+        "tolerant_content_match_percent": 97.86818,
+        "silhouette_raw_match_percent": 97.47396,
+        "silhouette_boundary_reconciled_pixels": 802
+      },
+      {
+        "page": 4,
+        "pixel_match_percent": 93.78688,
+        "visual_accuracy_proxy_percent": 63.7247,
+        "tolerant_content_match_percent": 94.73877,
+        "silhouette_raw_match_percent": 93.85677,
+        "silhouette_boundary_reconciled_pixels": 1347
+      },
+      {
+        "page": 5,
+        "pixel_match_percent": 92.74288,
+        "visual_accuracy_proxy_percent": 57.64785,
+        "tolerant_content_match_percent": 96.90224,
+        "silhouette_raw_match_percent": 96.29159,
+        "silhouette_boundary_reconciled_pixels": 933
+      },
+      {
+        "page": 6,
+        "pixel_match_percent": 90.2758,
+        "visual_accuracy_proxy_percent": 16.70957,
+        "tolerant_content_match_percent": 93.20186,
+        "silhouette_raw_match_percent": 93.13366,
+        "silhouette_boundary_reconciled_pixels": 71
+      },
+      {
+        "page": 7,
+        "pixel_match_percent": 88.68035,
+        "visual_accuracy_proxy_percent": 16.94603,
+        "tolerant_content_match_percent": 93.17436,
+        "silhouette_raw_match_percent": 93.12416,
+        "silhouette_boundary_reconciled_pixels": 61
+      },
+      {
+        "page": 8,
+        "pixel_match_percent": 90.18765,
+        "visual_accuracy_proxy_percent": 20.2957,
+        "tolerant_content_match_percent": 98.18442,
+        "silhouette_raw_match_percent": 98.15345,
+        "silhouette_boundary_reconciled_pixels": 34
+      },
+      {
+        "page": 11,
+        "pixel_match_percent": 88.41074,
+        "visual_accuracy_proxy_percent": 30.56476,
+        "tolerant_content_match_percent": 95.49336,
+        "silhouette_raw_match_percent": 95.45238,
+        "silhouette_boundary_reconciled_pixels": 61
+      },
+      {
+        "page": 12,
+        "pixel_match_percent": 89.55344,
+        "visual_accuracy_proxy_percent": 24.77934,
+        "tolerant_content_match_percent": 92.63201,
+        "silhouette_raw_match_percent": 92.63201,
+        "silhouette_boundary_reconciled_pixels": 0
+      },
+      {
+        "page": 13,
+        "pixel_match_percent": 90.05251,
+        "visual_accuracy_proxy_percent": 62.30477,
+        "tolerant_content_match_percent": 97.89633,
+        "silhouette_raw_match_percent": 97.88145,
+        "silhouette_boundary_reconciled_pixels": 35
+      },
+      {
+        "page": 14,
+        "pixel_match_percent": 89.55512,
+        "visual_accuracy_proxy_percent": 49.25628,
+        "tolerant_content_match_percent": 94.91816,
+        "silhouette_raw_match_percent": 94.12486,
+        "silhouette_boundary_reconciled_pixels": 1456
+      },
+      {
+        "page": 15,
+        "pixel_match_percent": 90.97169,
+        "visual_accuracy_proxy_percent": 42.49118,
+        "tolerant_content_match_percent": 97.3118,
+        "silhouette_raw_match_percent": 96.92603,
+        "silhouette_boundary_reconciled_pixels": 540
+      },
+      {
+        "page": 16,
+        "pixel_match_percent": 90.54103,
+        "visual_accuracy_proxy_percent": 15.75488,
+        "tolerant_content_match_percent": 97.34505,
+        "silhouette_raw_match_percent": 97.23418,
+        "silhouette_boundary_reconciled_pixels": 111
+      }
+    ]
+  }
+]

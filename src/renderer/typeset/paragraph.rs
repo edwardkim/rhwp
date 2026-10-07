@@ -28,12 +28,13 @@ pub(super) mod stored_lines;
 pub(super) mod whole_fit;
 
 use super::{
-    hwpx_saved_reset_fragment_matches_current_flow, missing_lineseg_trailing_line_break,
+    is_synthetic_line_seg, missing_lineseg_trailing_line_break,
     native_hwp5_existing_footnote_reset_overlap_break_line,
     native_hwp5_first_footnote_overlap_break_line,
     native_hwp5_text_reset_before_large_tac_topbottom_picture_break_line, page_item_vpos_base,
-    para_has_visible_text, para_is_treat_as_char_picture_only, preceding_stored_vpos,
-    stored_vpos_rewinds, TypesetState,
+    para_has_non_whitespace_text, para_has_visible_text, para_is_treat_as_char_picture_only,
+    preceding_stored_vpos, stored_body_reset_fragment_matches_current_flow, stored_vpos_rewinds,
+    TypesetState,
 };
 use crate::model::paragraph::Paragraph;
 use crate::renderer::hwpunit_to_px;
@@ -61,9 +62,10 @@ pub(super) fn place_split_paragraph(
     dpi: f64,
 ) {
     // 줄 단위 분할 루프
-    let mut cursor_line: usize = 0;
+    let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
+    let mut on_entry_page = true;
     while cursor_line < line_count {
-        let page_avail = if cursor_line == 0 {
+        let page_avail = if cursor_line == 0 || on_entry_page {
             // 저장 HWPX의 실제 FootnoteArea 경계를 진입 fit과 공유한다.
             // 여기서 별도 각주 높이와 40px 여백을 다시 빼면 물리적으로
             // 들어가는 본문 줄이 다음 쪽으로 밀린다. 다른 profile은 기존
@@ -152,6 +154,7 @@ pub(super) fn place_split_paragraph(
             &st.current_items,
         ) else {
             st.advance_column_or_new_page();
+            on_entry_page = false;
             continue;
         };
         st.commit_split_paragraph_fragment(fragment);
@@ -163,7 +166,68 @@ pub(super) fn place_split_paragraph(
         // move: 나머지 줄 → 다음 단/페이지
         st.advance_column_or_new_page();
         cursor_line = end_line;
+        on_entry_page = false;
     }
+}
+
+/// 저장된 다음 문단의 쪽 되감김 앞 줄만 떠 있는 표 위 공간에 선행 배치한다.
+/// 줄 끝 컷과 실제 문단 조각을 함께 생산해 다음 쪽에서 이미 소비한 줄을 다시 그리지 않는다.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn plan_stored_float_text_prefix(
+    host: &Paragraph,
+    next: &Paragraph,
+    fmt: &FormattedParagraph,
+    next_idx: usize,
+    float: crate::renderer::float_placement::ParagraphFloatPlacement,
+    current_height: f64,
+    dpi: f64,
+) -> Option<placement::ParagraphFragment> {
+    if !next.controls.is_empty()
+        || next.column_type != crate::model::paragraph::ColumnBreakType::None
+        || next.stored_text_partition_is_dirty()
+        || next.cell_format_vpos_dirty
+        || next.line_segs.len() != fmt.line_count()
+        || next.line_segs.iter().any(|line| {
+            is_synthetic_line_seg(line) || line.line_height <= 0 || line.vertical_pos < 0
+        })
+    {
+        return None;
+    }
+    let base = host.line_segs.first()?.vertical_pos;
+    let end_line = next
+        .line_segs
+        .windows(2)
+        .position(|pair| pair[1].vertical_pos < pair[0].vertical_pos)?
+        + 1;
+    let first_top = float.anchor_y
+        + hwpunit_to_px(next.line_segs.first()?.vertical_pos.checked_sub(base)?, dpi);
+    // 현재 줄 구성의 원점과 저장 프레임이 같은 원본 정수 단위에 있어야 한다.
+    // 실제 글줄 높이까지만 fit하며 마지막 줄 뒤 간격은 개체 위 빈 띠와 겹칠 수 있다.
+    if (first_top - current_height - fmt.spacing_before).abs() > dpi / 7200.0 {
+        return None;
+    }
+    let mut top = current_height + fmt.spacing_before;
+    for (idx, line) in next.line_segs[..end_line].iter().enumerate() {
+        let saved_top = float.anchor_y + hwpunit_to_px(line.vertical_pos.checked_sub(base)?, dpi);
+        if (saved_top - top).abs() > dpi / 7200.0 || top + fmt.line_heights[idx] > float.table_top {
+            return None;
+        }
+        top += fmt.line_advance(idx);
+    }
+    placement::plan_fragment(
+        fmt,
+        next_idx,
+        0,
+        fmt.line_count(),
+        fmt.spacing_before,
+        (float.table_top - current_height - fmt.spacing_before).max(0.0),
+        split::SplitBoundary {
+            end_line,
+            cumulative: fmt.line_advances_sum(0..end_line),
+        },
+        false,
+        &[],
+    )
 }
 
 /// 진입 fit을 통과한 전체 문단을 배치한다. 항목 순서 확정 뒤 흐름 메트릭을 계산한다.
@@ -231,16 +295,24 @@ pub(super) fn place_fitted_paragraph(
                 ),
             st.vpos_page_base.is_none() && st.vpos_lazy_base.is_some(),
         );
+    // 다음 저장 표가 이 문단의 후행 간격을 사용할 수는 있어도
+    // 실제 글줄 안으로 들어오면 안 된다. 수용에 쓴 구성 높이를 공유한다.
+    if para.controls.is_empty() && para_has_non_whitespace_text(para) && fmt.line_count() > 0 {
+        st.record_paragraph_content_bottom(
+            (para_idx, fmt.line_count()),
+            (fmt.height_for_fit - fmt.spacing_after - trimmed_spacing_before).max(0.0),
+        );
+    }
     st.apply_full_paragraph_flow(
         advance,
         fmt.total_height,
         trimmed_spacing_before,
         body_bottom_vpos,
     );
-    // Only the KoPub justified reflow above deliberately invalidates a saved
-    // row ladder. Other documents (including HWP3-origin HWPX) can have fewer
-    // composed rows for unrelated reasons; subtracting their saved height
-    // from every later vpos would pull content past the physical page edge.
+    // 위의 KoPub 양쪽 정렬 재조판만 의도적으로 저장 줄 위치 관계를 무효화한다.
+    // HWP3에서 변환한 HWPX를 포함한 다른 문서는 별도 이유로 조판 줄 수가 줄 수 있다.
+    // 그 저장 높이를 모든 뒤 vpos에서 빼면
+    // 내용이 물리 쪽 경계를 넘어 당겨진다.
     let compacted_kopub_justified = st.profile.hwpx_stored_layout()
         && para.controls.iter().any(|control| {
             matches!(control, crate::model::control::Control::Picture(picture)
@@ -316,7 +388,7 @@ pub(super) fn try_place_overflow_paragraph(
         st.advance_atomic_overflow_paragraph(advance, fmt.total_height, body_bottom_vpos);
         return true;
     }
-    if overflow::tail_overflow_candidate(
+    let tail_allowance = overflow::tail_overflow_candidate(
         para,
         fmt,
         paragraphs,
@@ -324,7 +396,8 @@ pub(super) fn try_place_overflow_paragraph(
         &page,
         forced_page_break_line,
         dpi,
-    ) {
+    );
+    if tail_allowance.allowed {
         let first_line_advance = fmt.line_advance(0);
         // 다음 문단이 어차피 쪽나누기로 페이지를 끝내므로, 다음 페이지 layout clamp 를
         // 막으려던 LAYOUT_DRIFT_SAFETY_PX(현재 페이지 한정) 여유는 이 경우 의미가 없다.
@@ -335,7 +408,16 @@ pub(super) fn try_place_overflow_paragraph(
         // (full-place 체크를 이미 통과 못 했으므로 overflow > -safety. 진짜 본문 하단
         //  기준으로 한 줄 미만 초과면 마지막 줄 spill 대신 통째 배치.)
         let overflow = st.current_height + fmt.height_for_fit - true_available;
-        if overflow < first_line_advance {
+        // [#7429] 문서 근거 없는 잉크 없는 꼬리는 줄이 **온전히** 들어가야 한다 — 한/글은
+        // +100 HWPUNIT(1.3px)만 넘쳐도 다음 쪽으로 넘긴다. drift 안전마진을 뺀 `available`
+        // 대신 진짜 본문 하단으로 재는 것은 그대로 두어, 줄이 들어가는 빈 꼬리는 마진 때문에
+        // 밀리지 않는다.
+        let within_limit = if tail_allowance.requires_whole_line {
+            overflow <= 0.0
+        } else {
+            overflow < first_line_advance
+        };
+        if within_limit {
             st.commit_tail_overflow_paragraph(para_idx, fmt.total_height, body_bottom_vpos);
             return true;
         }
@@ -567,6 +649,15 @@ pub(super) fn try_absorb_rowbreak_guide(
     false
 }
 
+/// 저장 줄 상자가 본문 높이를 넘으면 빈 꼬리 흡수에서 보존한다.
+/// Enter 재조판은 쪽 경계에서 vpos를 되감지 않으므로 이 줄은 실제 흐름을 점유한다.
+pub(super) fn stored_line_overflows_body(para: &Paragraph, body_height: f64, dpi: f64) -> bool {
+    let body_height_hu = crate::renderer::px_to_hwpunit(body_height, dpi);
+    para.line_segs
+        .first()
+        .is_some_and(|ls| ls.vertical_pos.saturating_add(ls.line_height) > body_height_hu)
+}
+
 /// 다단 조판의 조기 반환 뒤에서만 실행한다. 숨김 옵션의 페이지 수명과 구역 끝 처리를 구분한다.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn try_absorb_empty_paragraph(
@@ -574,7 +665,6 @@ pub(super) fn try_absorb_empty_paragraph(
     para_idx: usize,
     para: &Paragraph,
     fmt: &FormattedParagraph,
-    paragraphs: &[Paragraph],
     is_last_in_section: bool,
     available: f64,
     layout_drift_safety_px: f64,
@@ -597,20 +687,20 @@ pub(super) fn try_absorb_empty_paragraph(
             return true;
         }
     }
+    // 마지막 빈 문단도 유효한 줄 상자를 소유한다. 저장 줄이 이미 본문 밖에
+    // 있으면 미세 drift용 Unadvanced 처리로 그 소유를 없애지 않는다.
+    if stored_line_overflows_body(para, st.layout.body_area.height, st.layout.dpi) {
+        return false;
+    }
     match empty::trailing_disposition(
         para,
         fmt,
-        paragraphs,
         is_last_in_section,
         available,
         layout_drift_safety_px,
         &st.paragraph_empty_tail_page(),
     ) {
         empty::TailDisposition::Continue => false,
-        empty::TailDisposition::Hidden => {
-            st.hide_empty_paragraph(para_idx);
-            true
-        }
         empty::TailDisposition::Unadvanced => {
             st.place_unadvanced_empty_paragraph(para_idx);
             true
@@ -723,11 +813,37 @@ pub(super) fn prepare_forced_page_boundary(
     // 실제 FootnoteArea 경계와 source/flow가 함께 맞을 때만 강제 경계로 쓴다.
     let native_hwp5_existing_footnote_reset_line =
         native_hwp5_existing_footnote_reset_overlap_break_line(st, para, fmt, paragraphs, dpi);
-    let current_page_vpos_base = st.vpos_page_base.or_else(|| {
+    // 흐름 스냅이 이미 확정한 지연 기준은 마지막 줄·내부 쪽 경계도 함께 소비한다.
+    // 첫 빈 개체 호스트의 저장 위치는 표 밴드 뒤의 줄일 수 있어 쪽 원점으로 다시 쓰지 않는다.
+    let current_page_vpos_base = st.vpos_page_base.or(st.vpos_lazy_base).or_else(|| {
         st.current_items
             .first()
             .and_then(|item| page_item_vpos_base(item, paragraphs))
     });
+    // 쪽 소유가 저장 앵커와 현재 흐름으로 입증된 일반 본문은 시작 높이의
+    // 비율로 다시 거절하지 않는다. 기존 세션 편집 플래그와 구성 줄 수,
+    // 유효 저장 앵커를 확인하고 실제 재조판으로 사라진 reset은 재사용하지 않는다.
+    // 같은 원본 줄 사다리와 실제 흐름은 컨테이너 형식과 무관하게 같은 쪽을 소유한다.
+    let anchored_stored_body_reset_line = ((st.profile.hwpx_stored_layout()
+        || st.profile.hwp5_stored_pagination_layout())
+        && !st.profile.session_edited()
+        && para_has_visible_text(para)
+        && fmt.line_heights.len() == para.line_segs.len())
+    .then(|| {
+        (1..para.line_segs.len()).find(|&break_line| {
+            para.line_segs[break_line].vertical_pos < para.line_segs[break_line - 1].vertical_pos
+                && stored_body_reset_fragment_matches_current_flow(
+                    st,
+                    para,
+                    0,
+                    break_line,
+                    current_page_vpos_base.unwrap_or(0),
+                    fmt.spacing_before,
+                    dpi,
+                )
+        })
+    })
+    .flatten();
     let hwp3_converted_hwp5 = st.profile.hwp3_layout()
         && !st.profile.hwp3_native_layout()
         && !st.profile.hwpx_container();
@@ -745,16 +861,18 @@ pub(super) fn prepare_forced_page_boundary(
         // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
         !st.profile.hwpx_stored_layout()
             || st.current_items.is_empty()
-            || hwpx_saved_reset_fragment_matches_current_flow(
+            || stored_body_reset_fragment_matches_current_flow(
                 st,
                 para,
                 0,
                 *break_line,
                 current_page_vpos_base.unwrap_or(0),
+                fmt.spacing_before,
                 dpi,
             )
     });
-    let forced_page_break_line = internal_forced_page_break_line
+    let forced_page_break_line = anchored_stored_body_reset_line
+        .or(internal_forced_page_break_line)
         .or_else(|| {
             st.profile.hwpx_stored_layout().then(|| {
                 boundary::hwpx_explicit_page_break_tail_line(

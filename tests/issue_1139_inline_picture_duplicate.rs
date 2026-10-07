@@ -3390,10 +3390,26 @@ fn issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf() {
             .find("</g>")
             .expect("배수 수식 group end");
     let group = &svg[group_start..group_end];
-    assert!(
-        group.contains(",1.0000)"),
-        "수식 bbox 높이로 Y축을 확대하면 12쪽 하단 주석 수식이 찌그러짐\n{group}"
-    );
+    // 배율을 생략한 SVG는 단위 배율이다. 표현 문자열 대신 실제 세로 배율을 검사한다.
+    for scale in group.split("scale(").skip(1) {
+        let values: Vec<f64> = scale
+            .split_once(')')
+            .expect("수식 배율의 닫는 괄호")
+            .0
+            .split(|c: char| c == ',' || c.is_whitespace())
+            .filter(|value| !value.is_empty())
+            .map(|value| value.parse().expect("수식 배율의 숫자"))
+            .collect();
+        let y_scale = match values.as_slice() {
+            [uniform] => *uniform,
+            [_, vertical] => *vertical,
+            _ => panic!("수식 배율은 한 개 또는 두 개의 숫자여야 한다: {values:?}"),
+        };
+        assert!(
+            (y_scale - 1.0).abs() < 1e-6,
+            "수식 bbox 높이로 Y축을 변경하면 12쪽 하단 주석 수식이 찌그러짐\n{group}"
+        );
+    }
 }
 
 #[test]

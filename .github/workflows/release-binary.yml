@@ -37,15 +37,15 @@ jobs:
             archive_suffix: linux-aarch64
             binary_name: rhwp
           - target: x86_64-apple-darwin
-            # macos-13 (Intel) runner 큐 적체 영역 회피 — Apple Silicon (macos-14)
+            # Apple Silicon (macos-15)에서 Intel target을 교차 빌드한다.
             # 에서 x86_64-apple-darwin 으로 cross-compile (Rust 표준 cross-compile).
             # Intel binary 산출물 보존 + 큐 가용성 영역 정합.
-            runner: macos-14
+            runner: macos-15
             archive: tar.gz
             archive_suffix: macos-x86_64
             binary_name: rhwp
           - target: aarch64-apple-darwin
-            runner: macos-14
+            runner: macos-15
             archive: tar.gz
             archive_suffix: macos-aarch64
             binary_name: rhwp
@@ -84,9 +84,10 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          # runner 전환 시 이전 SDK로 만든 target/ cache를 재사용하지 않는다.
+          key: ${{ matrix.target }}-${{ matrix.runner }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ matrix.target }}-cargo-
+            ${{ matrix.target }}-${{ matrix.runner }}-cargo-
 
       - name: Build release binary
         run: cargo build --release --bin rhwp --target ${{ matrix.target }}

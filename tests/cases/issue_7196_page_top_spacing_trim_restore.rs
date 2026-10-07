@@ -6,21 +6,23 @@
 //! 영영 복원되지 않는다. 렌더는 순차 흐름을 쓰므로 조판(쪽 끊기)과 렌더(그리기)가 갈라진다.
 //!
 //! 재현 문서 `samples/issue7196/156760012_page_top_spacing_trim.hwpx` (한/글 2022 저장본):
-//! - 10쪽 첫 문단 pi=66(쪽나누기, sb 26.7px) 이 조판에서 52.3px(sb 26.7 + 끝 줄 ls 25.6) 짧게
-//!   계상되고, pi=67 경계(`sb 33.3px`, 저장 gap 1920HU = 줄 간격뿐)에서 `#6031` 이 철회한다.
-//! - 결과: 조판은 pi=72 `붙임 3` 표(40.2px)가 10쪽에 들어간다고 보지만 렌더는 표를
-//!   본문 바닥 +18.3px, 뒤 제목 줄을 +55.2px 넘겨 그렸다.
+//! - 첫 NO_LS 호스트 합성 뒤 원본 프레임 경계를 지우면 10쪽이 11쪽으로 밀린다.
+//! - pi66은 정상 PDF8쪽 첫 문단이며 pi67 앞 저장 빈 밴드4420HU는 앞 줄간격1920과
+//!   다음 문단 위 간격2500HU를 담는다. pi72의 저장 TAC 원점0은 다음 쪽의 경계다.
+//! - 저장 줄 전체를 소유한 TAC 제목 줄은 실제 호스트 줄 원점을 사용해야 한다.
 //!
-//! 정답지 — 한/글 2024 MCP PDF(`…-2024.pdf`; 저장 제품 2022 는 규약상 `engine 2020` 이지만
-//! 그 profile 이 이 문서에서 EOF 없는 불완전 PDF 로 2회 실패해 2024 로 받았다):
-//! - `□ 아울러 …` 로 시작하는 쪽의 본문 줄 기준선이 rhwp 렌더와 줄마다 +18.0px 로 일치
-//!   (렌더 흐름이 옳다), 그 쪽 마지막 줄은 `감사합니다.`
-//! - `붙임 3` 표는 **다음 쪽 맨 위**에서 시작한다.
+//! 정답지는 동일 원문의 정상 한컴 2024 MCP PDF다. 저장 제품2022의 engine2020은
+//! EOF 없는 PDF로 두 번 실패하여 engine2024의 정상10쪽 출력을 보존했다.
+//! - 8쪽은 `□ 아울러 …`로 시작하여 `감사합니다.`로 끝난다.
+//! - `붙임 3` 표는 9쪽 첫 흐름 항목이며 저장 줄 원점과 바깥여백을 보존한다.
+//! - 전10쪽 Native/fresh WASM 비교의 최저91.53858%를 보정166에서 확인했다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::hwpunit_to_px;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue7196/156760012_page_top_spacing_trim.hwpx";
@@ -68,6 +70,25 @@ fn issue_7196_attachment_table_starts_next_page_without_body_overflow() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
 
+    assert_eq!(
+        core.page_count(),
+        10,
+        "정상 한컴 PDF와 전체 쪽수가 같아야 한다"
+    );
+    let host = &core.document().sections[0].paragraphs[72];
+    let attachment = host
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("붙임3 원문 표");
+    assert_eq!(
+        host.line_segs[0].vertical_pos, 0,
+        "원문XML의 다음 프레임 원점"
+    );
+
     let mut attachment_page = None;
     let mut pages = Vec::new();
     for page_num in 0..core.page_count() {
@@ -85,7 +106,7 @@ fn issue_7196_attachment_table_starts_next_page_without_body_overflow() {
         pages.push((body.bbox, items));
     }
     let at = attachment_page.expect("`붙임 3` 표가 있는 쪽");
-    assert!(at > 0, "`붙임 3` 표가 첫 쪽에 있을 수 없다");
+    assert_eq!(at, 8, "정상 한컴 PDF에서 붙임3은 9쪽 첫 항목이다");
 
     // 한/글: `붙임 3` 표는 쪽 맨 위에서 시작한다.
     let (body_box, items) = &pages[at];
@@ -95,28 +116,38 @@ fn issue_7196_attachment_table_starts_next_page_without_body_overflow() {
         "`붙임 3` 표가 {}쪽의 첫 흐름 항목이어야 한다(한/글 PDF), got {kind} {first_text:?}",
         at + 1
     );
+    let source_top_margin = hwpunit_to_px(attachment.outer_margin_top as i32, 96.0);
     assert!(
-        first_box.y - body_box.y < 5.0,
-        "`붙임 3` 표가 쪽 맨 위에 있어야 한다: body_top={:.1} table_y={:.1}",
-        body_box.y,
-        first_box.y
+        (first_box.y - body_box.y - source_top_margin).abs() < 1e-6,
+        "첨부 표는 저장 프레임 원점에 원문 위 바깥여백만 더한다: {first_box:?} {body_box:?}"
     );
 
     // 한/글: 앞 쪽은 `감사합니다.` 로 끝나고, 어떤 흐름 항목도 본문 바닥을 넘지 않는다.
-    let (prev_body, prev_items) = &pages[at - 1];
-    let body_bottom = prev_body.y + prev_body.height;
+    let (_, prev_items) = &pages[at - 1];
+    let (_, _, first_text) = prev_items
+        .iter()
+        .find(|(kind, _, text)| *kind == "TextLine" && !squash(text).is_empty())
+        .expect("앞 쪽의 첫 본문 줄");
+    assert!(
+        squash(first_text).starts_with("□아울러"),
+        "정상 PDF8쪽 첫 문단"
+    );
     let (_, _, last_text) = prev_items.last().expect("앞 쪽 흐름 항목");
     assert_eq!(
         squash(last_text),
         "감사합니다.",
         "앞 쪽은 `감사합니다.` 로 끝나야 한다(한/글 PDF)"
     );
-    for (kind, bbox, text) in prev_items {
-        assert!(
-            bbox.y + bbox.height <= body_bottom + 0.5,
-            "앞 쪽 {kind} {text:?} 바닥 {:.1} 이 본문 바닥 {body_bottom:.1} 을 넘었다",
-            bbox.y + bbox.height
-        );
+    // 일부 첨부 쪽만 확인해 다른 프레임의 본문 넘침을 숨기지 않는다.
+    for (page_body, flow) in &pages {
+        let body_bottom = page_body.y + page_body.height;
+        for (kind, bbox, text) in flow {
+            assert!(
+                bbox.y + bbox.height <= body_bottom + 0.5,
+                "{kind} {text:?} 바닥 {:.1} 이 본문 바닥 {body_bottom:.1} 을 넘었다",
+                bbox.y + bbox.height
+            );
+        }
     }
 }
 

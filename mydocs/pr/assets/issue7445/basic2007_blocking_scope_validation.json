@@ -1,0 +1,341 @@
+{
+  "stage": 129,
+  "code_commit": "6288398853c9cf0ca945ac285baddd7c17cb6fd8",
+  "analysis": {
+    "head": "d7b736e17e83e0fcf41fb4c4d8e28a18e28bb573",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "pdf": "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+    "pdf_sha256": "450aae3be8ea99721d3af1fb8772b7771c7a7b818e015c18d16e07fe4348702c",
+    "pdf_pages": 17,
+    "pdf_metadata": {
+      "format": "PDF 1.6",
+      "title": "",
+      "author": "garam68",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260830004555+09'00'",
+      "modDate": "D:20260830004555+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "source_mapping": "pr_4227의동일원문SHA 및pr_6992의같은원문/정상한컴2022PDF17쪽",
+    "current_pages": 21,
+    "off_pages": [
+      12,
+      14
+    ],
+    "oracle_bucket": 14,
+    "analysis": "#7382 실제off신규2건 및oracle17/21만각각재현. 동일원문/독립PDF17쪽/현재21쪽. 실제off12/14쪽·정상대조11쪽 및종결16/17쪽을새Native비교해90미만이면실제2축만 #7445보류. 정상세로정렬5함수 및모든다른축/문서/원문PDF유지. 17을21로완화하거나새회귀추가안함.",
+    "selected_pages": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      17
+    ]
+  },
+  "before": [
+    {
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 3.4073670827783644,
+      "summary": [
+        "Summary [   2.456s] 1 test run: 0 passed, 1 failed, 233 skipped"
+      ],
+      "observations": [
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_009",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.468749292194843,
+      "summary": [
+        "Summary [   1.185s] 1 test run: 0 passed, 1 failed, 244 skipped"
+      ],
+      "observations": [
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp: 정답지 [17] 대비 격차가 커졌다 — 기준 17쪽(차 0) → 현재 21쪽(차 4)"
+      ]
+    }
+  ],
+  "scope": "실제 실패한 basic2007 off-canvas 입력과 oracle 17/17행만 보류. 정상 세로정렬5함수·모든 다른 검사 축/문서·원문/PDF 유지.",
+  "independent_devel_scope_audit": {
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "off_canvas": 0,
+    "page_count": 17,
+    "candidate_off_canvas": 2,
+    "candidate_page_count": 21,
+    "evidence": "output/pr-review/planet6897-7382-20260926/stage130-scope-audit/devel-results.json"
+  },
+  "visual": {
+    "native_page_count": 21,
+    "pdf_page_count": 17,
+    "selected_pages": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      17
+    ],
+    "metrics": {
+      "analyzed_pages": 7,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage129-basic2007/visual-native/basic2007/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage129-basic2007/visual-native/basic2007/analysis/question_flow.json"
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 62.50548
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 60.79677
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 1.04782
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 49.05945
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 3.45708
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 28.06232
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 13.81874
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "direct_reading": "12쪽 review의 Native가 거의 비어 있고 PDF의 선거관리위원회 본문이 누락됩니다. 14쪽 overlay의 본문도 Native에서 대부분 누락됩니다.",
+    "limits": "선택7쪽의 부정 증거. 전수21쪽/fresh WASM 미실행이며 피델리티 개선·승인 증거가 아닙니다."
+  },
+  "removed_baseline_row": {
+    "path": "tests/fixtures/oracle_page_count_baseline.tsv",
+    "removed": "samples/basic/issue2007_nested_cell_pagination_42065.hwp\t17\t17",
+    "before_sha256": "452ff487cfb730e5bba4bdc686f066d21ba72b1fff9b9cc9139303508ed83668",
+    "after_sha256": "5c2d0a5b2bc05a66adc3d88a76a6ecf35a66d4c9003efeac3cde952a1940492b",
+    "other_bytes_preserved": true
+  },
+  "summary": [
+    "     Summary [  56.349s] 37 tests run: 32 passed, 5 failed, 655 skipped"
+  ],
+  "remaining_failed_functions": [
+    "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+    "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0",
+    "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+    "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1",
+    "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5"
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "d7b736e17e83e0fcf41fb4c4d8e28a18e28bb573",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "(test(off_canvas_baseline::)) or (test(oracle_page_count_baseline::)) or (test(issue_4068_unclipped_cell_honors_valign::))"
+        ],
+        "exit_code": 100,
+        "seconds": 71.43639079062268
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.37652545934543
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.41477295802906156
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2263550842180848
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3680758750997484
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.761963541153818
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4872502922080457
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.291271542198956
+      }
+    ]
+  },
+  "new_test_functions": 0,
+  "production_changes": false,
+  "limits": "32PASS/5FAIL이며 남은5개 oracle 실패는 동반 제외하지 않았습니다. 전체 회귀·최종 시각 검증·PR 준비는 미완료입니다."
+}

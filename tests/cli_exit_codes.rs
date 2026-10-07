@@ -51,6 +51,7 @@ fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {
 fn corrupt_input_does_not_panic_in_renderer() {
     // 초인적 규모 퍼징이 잡은 렌더러 오버플로 사이트들의 재현자 — info(레이아웃) 와
     // export-text(전체 렌더) 두 경로 모두.
+    // #7445의 원문 피델리티 검사와 구분한다. 원문90% 위치를 손상한 입력의 패닉 방지다.
     for (sample, pct, cmd, label) in [
         ("hwp3-sample11.hwp", 45, "info", "typeset-vpos"),
         (

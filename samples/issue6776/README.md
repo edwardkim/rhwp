@@ -6,7 +6,7 @@
 
 ## 양성 — (규제영향분석서) 가상융합산업 진흥법 시행령 제정령(안)
 
-- 파일: [78494-virtual-convergence-industry-decree.hwpx](78494-virtual-convergence-industry-decree.hwpx)
+- 파일: [78494-virtual-convergence-industry-decree.hwpx](../../mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx)
 - 저장 제품: `hancom-office-2018`, `10.90.0.983` → 기준 엔진 **`2020`**
 - 기준 PDF: `pdf/78494-virtual-convergence-industry-decree-2020.pdf` — engine 2020 으로
   직접 산출, **74쪽**
@@ -82,3 +82,7 @@
 
 새 sample이 기존 코퍼스 래칫에 주는 영향은 통합 검증에서 실측한다. 알려지지 않은
 회귀를 숨기려고 기존 문서 기준선을 올리거나 보안 탐지 신호를 포괄적으로 무시하지 않는다.
+
+## 양성 문서 렌더링 회귀 이관
+
+사용자 지시에 따라 가상융합 시행령 원문을 [#7445 보존 자산](../../mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx)으로 바이트 동일 이관했습니다. 선택 Native8쪽의90% 미달과63쪽 참고상자/쪽번호 충돌,19쪽 그림·표/뒤본문 차이를 확인했습니다. [시각·제외·유지 근거](../../mydocs/pr/assets/issue7445/decree6776_test_removal_validation.json). 이 입력의 렌더링2함수/body1행은 제외하고 다른 비-TAC 문서의 음성대조와PDF는 유지합니다. 위 양성 문서의 렌더링 기대치는 당시 기록이며 현재 승인의 근거로 사용하지 않습니다.

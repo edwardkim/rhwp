@@ -1,0 +1,18 @@
+{
+  "candidate_head": "afcb5dcea",
+  "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+  "run": 10229,
+  "pass": 10229,
+  "fail": 0,
+  "skip": 50,
+  "slow": 9,
+  "seconds": 523.871,
+  "exit_code": 0,
+  "log": "output/pr-review/planet6897-7382-20260926/stage301-full-nextest.log",
+  "log_sha256": "db49f8aa8fc8daa02dbef5129cdf47d21baa25aed339a8b07cf12a9eea5370b9",
+  "remaining_gates": [
+    "Native Skia lib and two integration paths",
+    "required lint and builds",
+    "final original PR whole-page Native/fresh WASM evidence"
+  ]
+}

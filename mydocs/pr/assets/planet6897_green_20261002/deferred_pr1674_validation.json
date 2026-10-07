@@ -1,0 +1,72 @@
+{
+  "input": "samples/pr-1674.hwp",
+  "pdf": "pdf/pr-1674-hwp-2020.pdf",
+  "pages": 35,
+  "minimum_percent": 54.09067,
+  "below90_pages": [
+    3,
+    5,
+    6,
+    11,
+    15,
+    19,
+    23,
+    24,
+    27
+  ],
+  "removed_functions": [
+    "issue_1686_hwp_page3_keeps_reward_section_before_following_coanchored_table",
+    "issue_1686_hwp_matches_pdf_page_count_and_page5_boundary",
+    "hwp5_to_hwpx_preserves_pages",
+    "stored_black_underline_survives_a_blue_text_run",
+    "punctuation_keeps_hangul_slot_width_without_a_legacy_latin_slot"
+  ],
+  "mixed_sample_items_removed": 1,
+  "baseline_rows_removed": 3,
+  "scope": "전쪽 Native 미달 HWP만; 미검증 HWPX 및 다른 문서의 검사 유지",
+  "source_preserved": true,
+  "pdf_preserved": true,
+  "wasm": "미실행; Native 미달 근거",
+  "new_tests": 0,
+  "validation": {
+    "nextest": {
+      "run": 89,
+      "passed": 85,
+      "failed": 4,
+      "seconds": 150.809,
+      "exit_code": 100
+    },
+    "gates": [
+      {
+        "gate": "nextest",
+        "exit_code": 100,
+        "elapsed_seconds": 208.585
+      },
+      {
+        "gate": "native-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.697
+      },
+      {
+        "gate": "wasm-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.299
+      },
+      {
+        "gate": "workspace-build",
+        "exit_code": 0,
+        "elapsed_seconds": 0.487
+      },
+      {
+        "gate": "workspace-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 18.63
+      }
+    ],
+    "fmt_exit_code": 0,
+    "manifest_exit_code": 0,
+    "diff_exit_code": 0
+  },
+  "representative": "23쪽 PNG: 지원요건 제목과 표 겹침, 후속 표 줄 위치 차이",
+  "status": "HWP 회귀 제거 완료; 다른 문서 텍스트4 partition 실패 잔존"
+}

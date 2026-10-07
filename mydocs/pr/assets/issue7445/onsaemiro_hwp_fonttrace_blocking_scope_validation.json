@@ -1,0 +1,1077 @@
+{
+  "stage": 154,
+  "code_commit": "2bbbdc6a733d85b0f09b538a1f4693a47982d038",
+  "preanalysis": {
+    "stage": 154,
+    "source_head": "0e7a35743c98f0774ceb926ddb0250bfbbab7de4",
+    "production_head": "c3f748325",
+    "actual_failed_document_id": "subst-counterpart-hwp",
+    "actual_failed_pin": "expectedLayoutHash",
+    "counts_previously_passed": {
+      "runsSeen": 46,
+      "charactersSeen": 41
+    },
+    "input": "samples/[2027] 온새미로 1 본교재.hwp",
+    "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+    "pdf": "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+    "pdf_sha256": "450c793f33a134198936504b38d3b21c01a343a11c09c13e5a7a00e39e2d58c7",
+    "reference_provenance": "기존 oracle_public fixtures/pairs/by_year/2020.json 원문 대응행 및 f48506d13 rename100% 동일바이트. Creator Hwp2022이며2020은engine bucket. 직접PNG로같은내용/정상출력확인뒤판정.",
+    "plan": "현재Native/freshWASM영향1쪽직접비교;정상46/현재47쪽도기록.90미만이면#7445등록후이실패해시만명시적이관.정상counts/status/모든profiles/다른5입력/HWPX/기존함수/feature detection보존.90이상이면독립근거와원인확인후교정.새검사함수0."
+  },
+  "production_source": "c3f748325f9ebe7f1d774d378f4159ae1226ae20",
+  "source_info": {
+    "fonts": [
+      "함초롬돋움",
+      "함초롬바탕",
+      "신명 중고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양견명조",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "#중고딕",
+      "#태고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양견명조",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "Dinbla",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "신명 중고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "신명 신명조",
+      "신명 중고딕",
+      "신명 태고딕",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중고딕",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "신명 태그래픽",
+      "한양신명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "함초롬돋움",
+      "함초롬바탕",
+      "명조",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중고딕",
+      "한양신명조",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF"
+    ],
+    "format": "hwp5",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.9083"
+    },
+    "pageCount": 47,
+    "paraCount": 786,
+    "printMethod": 0,
+    "printMethodImpliesNup": false,
+    "schemaVersion": "1.0",
+    "sections": 5,
+    "sizeBytes": 734720,
+    "source": "samples/[2027] 온새미로 1 본교재.hwp",
+    "title": "2027 온새미로 Ⅱ",
+    "untrustedContent": true,
+    "untrustedFields": [
+      "title",
+      "fonts[]"
+    ],
+    "version": "5.1.0.1",
+    "warnings": []
+  },
+  "full_native_attempt": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-onsaemiro-hwp",
+      "samples/[2027] 온새미로 1 본교재.hwp",
+      "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage154-fonttrace-onsaemiro-hwp/visual-full-native"
+    ],
+    "exit": {
+      "exit_code": 1,
+      "seconds": 50.2451696251519
+    },
+    "svg_pages": 47,
+    "render_tree_pages": 47,
+    "pdf_pages": 46,
+    "compare_pages": 0,
+    "run_state": "blocked_before_compare_by_page_count_mismatch",
+    "summary_json_emitted": false,
+    "scope": "전체 비교 요청의 사전 쪽수 불일치이며 전체 PNG 비교 통과/완료로 기록하지 않음."
+  },
+  "visual": {
+    "native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "fonttrace4961-onsaemiro-hwp",
+        "samples/[2027] 온새미로 1 본교재.hwp",
+        "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "--pages",
+        "1,2,6,46",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage154-fonttrace-onsaemiro-hwp/visual-selected-native"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 32.08960454072803
+      },
+      "completed_pages": [
+        1,
+        2,
+        6,
+        46
+      ],
+      "metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 97.04723,
+        "worst_pixel_match_percent": 90.83307,
+        "average_ink_match_percent": 52.90473,
+        "worst_ink_match_percent": 9.08909,
+        "average_visual_accuracy_proxy_percent": 52.90473,
+        "worst_visual_accuracy_proxy_percent": 9.08909,
+        "average_tolerant_content_match_percent": 68.1596,
+        "worst_tolerant_content_match_percent": 37.41779,
+        "worst_pages": [
+          6,
+          46,
+          1,
+          2
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 92.25199
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.55965
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 43.40896
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 37.41779
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 6,
+            "tolerant_content_match_percent": 43.40896
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 37.41779
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "fonttrace4961-onsaemiro-hwp",
+        "samples/[2027] 온새미로 1 본교재.hwp",
+        "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "--pages",
+        "1,2,6,46",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage154-fonttrace-onsaemiro-hwp/visual-selected-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 58.0249804998748
+      },
+      "completed_pages": [
+        1,
+        2,
+        6,
+        46
+      ],
+      "metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 97.04723,
+        "worst_pixel_match_percent": 90.83307,
+        "average_ink_match_percent": 52.90473,
+        "worst_ink_match_percent": 9.08909,
+        "average_visual_accuracy_proxy_percent": 52.90473,
+        "worst_visual_accuracy_proxy_percent": 9.08909,
+        "average_tolerant_content_match_percent": 68.1596,
+        "worst_tolerant_content_match_percent": 37.41779,
+        "worst_pages": [
+          6,
+          46,
+          1,
+          2
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 92.25199
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.55965
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 43.40896
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 37.41779
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 6,
+            "tolerant_content_match_percent": 43.40896
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 37.41779
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    }
+  },
+  "direct_inspection": "Native1/6/46쪽 review 및 freshWASM6쪽 standalone overlay. 6쪽 같은 문제/보기 내용과 정상 PDF 출력 확인. 줄바꿈/보기상자 높이와 뒤본문 위치 차이. 46쪽은 현재 NOTE03/정상 다음단원04로 물리쪽 소속 차이. 글꼴 예외 없음.",
+  "hash_cause": {
+    "original_source_shape_ids": [
+      89,
+      90,
+      124,
+      125
+    ],
+    "all_relative_sizes_100": true,
+    "independent_rule": "원본base_size*96/7200; 상대100%=원래크기. 실제heuristicHalf/fullwidth·자간·px_to_hwpunit절삭규칙으로계산, 현재생산을그대로기대값으로복제하지않음.",
+    "records": [
+      {
+        "id": "page:0:run:3:char:0",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:1",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:2",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:3",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:4",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:4:char:0",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 1100,
+        "expected_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:1",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 1100,
+        "expected_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:2",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 1100,
+        "expected_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:3",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 1100,
+        "expected_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:4",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 550,
+        "expected_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:4:char:5",
+        "old_size": 14.666666666666664,
+        "base_size_px": 14.666666666666666,
+        "expected_base": 1100,
+        "expected_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:5:char:0",
+        "old_size": 29.33333333333333,
+        "base_size_px": 29.333333333333332,
+        "expected_base": 2200,
+        "expected_final": 2376,
+        "actual_base": 2199,
+        "actual_final": 2375
+      },
+      {
+        "id": "page:0:run:5:char:1",
+        "old_size": 29.33333333333333,
+        "base_size_px": 29.333333333333332,
+        "expected_base": 2200,
+        "expected_final": 2376,
+        "actual_base": 2199,
+        "actual_final": 2375
+      },
+      {
+        "id": "page:0:run:16:char:0",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:1",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:2",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:3",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:0",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:1",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:2",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:3",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:4",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:5",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:6",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:7",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:8",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:18:char:0",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 7000,
+        "expected_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:1",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 7000,
+        "expected_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:2",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 7000,
+        "expected_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:3",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 7000,
+        "expected_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:4",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 3500,
+        "expected_final": 3500,
+        "actual_base": 3499,
+        "actual_final": 3499
+      },
+      {
+        "id": "page:0:run:19:char:0",
+        "old_size": 93.33333333333331,
+        "base_size_px": 93.33333333333333,
+        "expected_base": 3500,
+        "expected_final": 3500,
+        "actual_base": 3499,
+        "actual_final": 3499
+      },
+      {
+        "id": "page:0:run:20:char:0",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:20:char:1",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:20:char:2",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:0",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:1",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:2",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:3",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 649,
+        "expected_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:22:char:4",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:5",
+        "old_size": 17.333333333333332,
+        "base_size_px": 17.333333333333332,
+        "expected_base": 1299,
+        "expected_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      }
+    ],
+    "reconstructed_layout_hash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b",
+    "old_expected_hash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b",
+    "matches_old_expected_hash": true,
+    "execution": "readonly source IR and current trace; unmodified base binary not executed"
+  },
+  "scope": {
+    "document_id": "subst-counterpart-hwp",
+    "removed_expectedLayoutHash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b",
+    "counts_preserved": true,
+    "other_five_documents_identical": true,
+    "profiles_options_comparisons_identical": true,
+    "production_changed": false,
+    "new_test_functions": 0
+  },
+  "focused": {
+    "before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 9.053871375042945
+    },
+    "after": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 7.740586124826223
+    },
+    "summary": "before6PASS/1FAIL(subst-counterpart-hwp hash); after6PASS/1FAIL(document-substitute-hwpx hash)"
+  },
+  "gates": [
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.052167208865285
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.30189229222014546
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22750050015747547
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3582954169251025
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 5.154945457819849
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.7067433330230415
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 7.9694299581460655
+    }
+  ],
+  "fresh_wasm_source": "보정152 root fresh no-opt WASM/Studio 동기화 SHA 53a7efe38225b8c25b1c14dc5173d52dc1c96f27fe473b3877ee8667417196b0; 생산 변경 없이 같은 패키지로 새 캡처. Docker 최적화 아님.",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5885044173",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage154-fonttrace-onsaemiro-hwp",
+  "original_stage137_reviewed": 32,
+  "original_stage137_pending_review": 28,
+  "final_pr_ready": false
+}

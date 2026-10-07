@@ -267,6 +267,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/clipboard.rs",
+        "copy_selection_logical_native",
+        Exempt::SessionState,
+        "[#7444] 논리 오프셋 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
         "copy_selection_in_cell_native",
         Exempt::SessionState,
         "복사 — 읽기 후 `self.clipboard` 에만 기록.",
@@ -542,6 +548,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/text_editing.rs",
+        "insert_text_native",
+        Exempt::DelegatesTo("insert_text_at_caret_native"),
+        "[#7444] 얇은 래퍼 — 개체 뒤 여부만 false 로 넘기고 삽입·무효화는 위임 대상이 한다.",
+    ),
+    (
+        "commands/text_editing.rs",
         "insert_text_in_cell_native",
         Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
         "얇은 래퍼 — 실제 삽입·무효화는 `_impl` 이 수행.",
@@ -720,7 +732,9 @@ const INVALIDATION_LEDGER: &[(&str, usize)] = &[
     ("commands/footnote_ops.rs", 6),
     ("commands/formatting.rs", 16),
     ("commands/header_footer_ops.rs", 9),
-    ("commands/html_import.rs", 5),
+    // 인라인 변환을 자식 모듈로 옮긴 두 사이트까지 합계 5곳의 방어를 유지한다.
+    ("commands/html_import.rs", 3),
+    ("commands/html_import/inline_content.rs", 2),
     ("commands/object_ops/common.rs", 2),
     ("commands/object_ops/connector.rs", 4),
     ("commands/object_ops/equation.rs", 3),

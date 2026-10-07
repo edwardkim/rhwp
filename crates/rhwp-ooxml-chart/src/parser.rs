@@ -78,9 +78,9 @@ struct ParseState {
     in_chart_title: bool,
     in_v: bool,
     in_a_t: bool,
-    in_sp_pr: bool,                       // c:spPr — 시리즈/figure의 shape properties
-    in_solid_fill: bool,                  // a:solidFill
-    in_ln: bool,                          // a:ln (stroke)
+    in_sp_pr: bool,                       // c:spPr — 계열/그림의 도형 속성
+    in_solid_fill: bool,                  // a:solidFill 채우기 영역
+    in_ln: bool,                          // a:ln 테두리 영역
     scheme_fill: Option<(u32, f64, f64)>, // a:schemeClr 와 lumMod/lumOff
     in_num_cache: bool,                   // c:numCache — formatCode 파싱
     // c:dPt(점별 속성) 블록 내부 — 점별 explosion 을 계열로 승격하지 않기 위한

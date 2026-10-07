@@ -127,7 +127,7 @@ impl DocumentCore {
         paragraph.restore_char_shape_runs(start, end, &runs);
         reflow_line_segs(paragraph, available, &styles, self.dpi);
         self.document.sections[sec].raw_stream = None;
-        self.rebuild_section_deferred_in_batch(sec);
+        self.rebuild_paragraph_deferred_in_batch(sec, para);
         self.event_log.push(DocumentEvent::CharFormatChanged {
             section: sec,
             para,

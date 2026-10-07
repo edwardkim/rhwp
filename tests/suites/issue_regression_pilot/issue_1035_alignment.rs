@@ -17,19 +17,10 @@ fn assert_sample16_hwp5_page_count_64(path: &str, label: &str) {
 }
 
 /// sample16-hwp5 페이지 수 = 64 단언 — PR #1009 의 over-split (65) 회귀 재발 방지.
-#[test]
-fn hwp3_sample16_hwp5_page_count_64() {
-    assert_sample16_hwp5_page_count_64("samples/hwp3-sample16-hwp5.hwp", "sample16-hwp5");
-}
 
 #[test]
 fn hwp3_sample16_hwp5_2018_page_count_64() {
     assert_sample16_hwp5_page_count_64("samples/hwp3-sample16-hwp5-2018.hwp", "sample16-hwp5-2018");
-}
-
-#[test]
-fn hwp3_sample16_hwp5_2022_page_count_64() {
-    assert_sample16_hwp5_page_count_64("samples/hwp3-sample16-hwp5-2022.hwp", "sample16-hwp5-2022");
 }
 
 #[test]

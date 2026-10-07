@@ -59,20 +59,36 @@ fn render_box(
             let fi = fs;
             // CJK/한글 텍스트는 이탤릭 없이 렌더링 (수학 변수명만 이탤릭).
             // FontStyle::Roman(`rm` 적용)으로 italic=false 가 전달된 경우에도 이탤릭을 적용하지 않는다.
-            let has_cjk = text.chars().any(|c| {
-                matches!(c,
-                    '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-                )
-            });
+            let has_cjk = super::text_has_cjk(text);
             let italic_attr = if !has_cjk && italic {
                 " font-style=\"italic\""
             } else {
                 ""
             };
             let weight_attr = if bold { " font-weight=\"bold\"" } else { "" };
+            if has_cjk && (lb.width - estimate_text_width(text, fi, false)).abs() > 0.01 {
+                for (ch, offset) in super::positioned_cjk_text(text, fi, lb.width) {
+                    svg.push_str(&format!(
+                        "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{} font-family=\"'Haansoft Batang', '한컴바탕', 'Batang', '바탕', serif\">{}</text>\n",
+                        text_x + offset, text_y, fi, color, weight_attr, escape_xml(&ch.to_string()),
+                    ));
+                }
+                return;
+            }
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-size=\"{:.2}\" fill=\"{}\"{}{}{}>{}</text>\n",
-                text_x, text_y, fi, color, italic_attr, weight_attr, EQ_FONT_FAMILY, esc,
+                text_x,
+                text_y,
+                fi,
+                color,
+                italic_attr,
+                weight_attr,
+                if has_cjk {
+                    " font-family=\"'Haansoft Batang', '한컴바탕', 'Batang', '바탕', serif\""
+                } else {
+                    EQ_FONT_FAMILY
+                },
+                esc,
             ));
         }
         LayoutKind::Number(text) => {
@@ -580,8 +596,8 @@ fn draw_decoration(
                 color, stroke_w,
             ));
         }
-        DecoKind::Vec => {
-            // 오른쪽 화살표
+        DecoKind::Vec | DecoKind::Dyad => {
+            // 오른쪽 화살표 (dyad 는 왼쪽 화살촉도 그린다)
             let arrow_y = y + fs * 0.05;
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
@@ -596,6 +612,15 @@ fn draw_decoration(
                 mid_x + half_w - fs * 0.1, arrow_y + fs * 0.06,
                 color, stroke_w,
             ));
+            if kind == DecoKind::Dyad {
+                svg.push_str(&format!(
+                    "<path d=\"M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+                    mid_x - half_w + fs * 0.1, arrow_y - fs * 0.06,
+                    mid_x - half_w, arrow_y,
+                    mid_x - half_w + fs * 0.1, arrow_y + fs * 0.06,
+                    color, stroke_w,
+                ));
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;
@@ -645,7 +670,7 @@ fn draw_decoration(
             ));
         }
         _ => {
-            // Check, Acute, Grave, Dyad, Arch, StrikeThrough 등 간략 처리
+            // Check, Acute, Grave, Arch, StrikeThrough 등 간략 처리
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
                 mid_x - half_w * 0.5, y + fs * 0.1,
