@@ -1570,9 +1570,10 @@ impl LayoutEngine {
                     }
                     consumed_h +=
                         self.row_cut_content_height(table, boundary_row, &[], end_cut, styles);
-                    eu = self
+                    let fit = self
                         .cell_units_fitting_height(cell, table, styles, consumed_h - pad_top)
                         .max(su);
+                    eu = self.snap_units_to_stored_cell_reset(cell, table, styles, su, fit);
                 }
                 Some((su, eu))
             } else if is_rowbreak_straddle {

@@ -14729,6 +14729,7 @@ impl LayoutEngine {
             end_cut,
             units[..end_cut - 1].iter().map(|u| u.height).sum(),
             units[end_cut - 1].height,
+            styles,
         )
     }
 
@@ -14872,6 +14873,65 @@ impl LayoutEngine {
         (hwpunit_to_px(line.line_spacing.max(0), self.dpi) + after).min(closing.height)
     }
 
+    /// [#7552] 같은 행의 다른 칸이 문단 중간 저장 되감김으로 첫 물리 조각 상자를 증명하는가.
+    /// 판정식은 `native_intra_para_saved_reset_trailing_trim` 의 선언 상자 등식과 같다.
+    fn row_sibling_proves_intra_para_frame(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        preceding_rows_px: f64,
+        declared_box: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        table
+            .cells
+            .iter()
+            .filter(|other| other.row == cell.row && other.col != cell.col && other.row_span == 1)
+            .any(|other| {
+                let units = self.cell_units(other, table, styles);
+                (1..units.len()).any(|k| {
+                    let previous = &units[k - 1];
+                    let next = &units[k];
+                    if !next.hard_break_before
+                        || next.para_idx != previous.para_idx
+                        || previous.vis_end != next.vis_start
+                        || previous.vis_start >= previous.vis_end
+                    {
+                        return false;
+                    }
+                    let Some(para) = other.paragraphs.get(previous.para_idx) else {
+                        return false;
+                    };
+                    let (Some(before), Some(after)) = (
+                        para.line_segs.get(previous.vis_end - 1),
+                        para.line_segs.get(next.vis_start),
+                    ) else {
+                        return false;
+                    };
+                    if !para.controls.is_empty()
+                        || before.tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                        || after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                        || before.vertical_pos <= 0
+                        || after.vertical_pos > 0
+                    {
+                        return false;
+                    }
+                    let trim = hwpunit_to_px(before.line_spacing.max(0), self.dpi)
+                        .min(previous.height.max(0.0));
+                    let padding = hwpunit_to_px(i32::from(other.padding.top), self.dpi)
+                        + hwpunit_to_px(i32::from(other.padding.bottom), self.dpi);
+                    let untrimmed = preceding_rows_px
+                        + units[..k].iter().map(|unit| unit.height).sum::<f64>()
+                        + padding;
+                    let excess = untrimmed - declared_box;
+                    trim > 0.0 && excess > 0.0 && excess <= trim + 0.5
+                })
+            })
+    }
+
     fn native_intra_para_saved_reset_trailing_trim(
         &self,
         table: &crate::model::table::Table,
@@ -14880,8 +14940,13 @@ impl LayoutEngine {
         end_cut: usize,
         consumed_before_px: f64,
         last_unit_height_px: f64,
+        styles: &ResolvedStyleSet,
     ) -> f64 {
-        if !self.profile.get().hwp5_stored_pagination_layout()
+        // [#7552] 미편집 원본 HWPX 도 같은 저장 사다리를 갖는다 — 칸 문단 중간의
+        // `vpos > 0 → 0` 되감김은 한/글이 그 줄 뒤에서 쪽을 넘겼다는 같은 증언이다.
+        let stored_ladder = self.profile.get().hwp5_stored_pagination_layout()
+            || (self.profile.get().hwpx_stored_layout() && !self.profile.get().session_edited());
+        if !stored_ladder
             || table.common.treat_as_char
             || !matches!(
                 table.page_break,
@@ -14972,8 +15037,44 @@ impl LayoutEngine {
         // 저절로 적용되지 않는다.
         let padding = hwpunit_to_px(i32::from(cell.padding.top), self.dpi)
             + hwpunit_to_px(i32::from(cell.padding.bottom), self.dpi);
-        let untrimmed_box = consumed_before_px + last_unit_height_px + padding;
+        // [#7552] 선언 높이는 첫 물리 조각 **표 상자**다. 둘째 행 이후 칸의 컷이면 그 앞 행들이
+        // 같은 상자를 먼저 차지한다(issue1853 13쪽 2×2 표: 앞 행 1782HU + 칸 내용 = 선언
+        // 12980HU 안, 정본 첫 조각 상자도 선언 높이와 같다).
+        let preceding_rows_px = if cell.row > 0 {
+            let raw_heights = table.get_raw_row_heights();
+            let Some(heights) = raw_heights
+                .get(..usize::from(cell.row))
+                .filter(|heights| heights.iter().all(|&height| height < 0x8000_0000))
+            else {
+                return 0.0;
+            };
+            heights
+                .iter()
+                .map(|&height| hwpunit_to_px(height as i32, self.dpi))
+                .sum::<f64>()
+                + hwpunit_to_px(i32::from(table.cell_spacing), self.dpi) * f64::from(cell.row)
+        } else {
+            0.0
+        };
+        let untrimmed_box = preceding_rows_px + consumed_before_px + last_unit_height_px + padding;
         let excess = untrimmed_box - declared_box;
+        // [#7552] 같은 행의 칸들은 하나의 물리 조각을 공유한다. 칸 안 여백이 작아 이 칸의
+        // 상자가 선언 하단 안에서 끝나도, 형제 칸이 **같은 행에서** 같은 되감김으로 그 상자를
+        // 증명하면 이 칸의 되감김도 쪽 프레임이다(issue1853 37쪽 2×2 표: 왼쪽 칸 121.39px 이
+        // 선언 118.67px 을 줄간격 안에서 넘고, 여백 0 인 오른쪽 칸은 117.63px). 잉크가 선언
+        // 상자를 넘는 칸은 여기 오지 않는다.
+        if excess <= 0.0
+            && untrimmed_box - trim <= declared_box + 0.5
+            && self.row_sibling_proves_intra_para_frame(
+                table,
+                cell,
+                preceding_rows_px,
+                declared_box,
+                styles,
+            )
+        {
+            return trim;
+        }
         // 선언 하단이 마지막 줄의 잉크 뒤 간격 안에 있어야 한다. 마지막 간격
         // 전부를 버리는 경우뿐 아니라 그 일부를 상자 안에 남기는 저장본도 있다
         // (hwpctl pi176: 7879 HU, PDF 105.01px). 선언값이 잉크를 자르거나
@@ -18696,6 +18797,69 @@ impl LayoutEngine {
         n
     }
 
+    /// [#7552] 높이로 구한 병합 칸 유닛 경계를 칸 자신의 저장 쪽 되감김에 맞춘다.
+    ///
+    /// 쪽을 넘는 병합 칸은 끝 컷 부기를 받지 못해 조각 높이에 드는 만큼 유닛을 채운다.
+    /// 그런데 저장 사다리는 그 칸의 문단 줄이 `vpos` 를 되감는 자리에서 한/글이 쪽을
+    /// 넘겼다고 증언한다(1376496 3쪽 r=8 칸: p2..p35, p36 앞 되감김). 높이 채움이
+    /// 그 되감김 경계를 한 유닛 넘으면 경계로 맞춘다. 이 조각의 끝과 다음
+    /// 조각의 시작이 같은 함수를 거치므로 `eu == 다음 su` 계약은 유지된다.
+    /// 편집·재조판한 칸이나 합성 줄은 증거로 쓰지 않는다.
+    pub(crate) fn snap_units_to_stored_cell_reset(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+        lower: usize,
+        fit: usize,
+    ) -> usize {
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || profile.session_edited()
+            || cell.dirty_flag
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
+        {
+            return fit;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let stored_line = |unit: &CellUnit, first: bool| {
+            let para = cell.paragraphs.get(unit.para_idx)?;
+            if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
+                return None;
+            }
+            let index = if first {
+                unit.vis_start
+            } else {
+                unit.vis_end.checked_sub(1)?
+            };
+            let seg = para.line_segs.get(index)?;
+            (seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                .then_some(seg.vertical_pos)
+        };
+        // 높이 추정은 선언 행높이와 실제 조판의 차이로 경계에서 한 유닛 넘친다(#6803:
+        // 3쪽 끝 37 vs 되감김 36). 한 유닛 **아래**의 되감김만 경계로 채택한다. 위로 맞추면
+        // 이 조각의 상자에 들지 않는 줄을 그리게 되고(4쪽 69 → 70 시험에서 두 줄이 칸 밖),
+        // 더 먼 되감김은 이 조각의 경계가 아니다.
+        let is_reset = |k: usize| {
+            k > lower
+                && k < units.len()
+                && matches!(
+                    (stored_line(&units[k - 1], false), stored_line(&units[k], true)),
+                    (Some(before), Some(after)) if after < before
+                )
+        };
+        if is_reset(fit) {
+            fit
+        } else if fit > 0 && is_reset(fit - 1) {
+            fit - 1
+        } else {
+            fit
+        }
+    }
+
     /// HWP5 저장 pagination 계약의 `RowBreak` 표에서 정확히 두 행을 덮는 병합 셀의
     /// 두 저장 문단이 각각 한 줄 유닛이면, 행 경계의 문단 owner를 그대로 유지할 수
     /// 있는지 판정한다.
@@ -20151,13 +20315,16 @@ impl LayoutEngine {
             }
         }
         let su = if prior_h > 0.0 {
-            self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top)
+            let fit = self.cell_units_fitting_height(cell, table, styles, prior_h - pad_top);
+            self.snap_units_to_stored_cell_reset(cell, table, styles, 0, fit)
         } else {
             0
         };
         let eu = if straddles_end {
-            self.cell_units_fitting_height(cell, table, styles, prior_h + cell_height - pad_top)
-                .max(su)
+            let fit = self
+                .cell_units_fitting_height(cell, table, styles, prior_h + cell_height - pad_top)
+                .max(su);
+            self.snap_units_to_stored_cell_reset(cell, table, styles, su, fit)
         } else {
             usize::MAX
         };

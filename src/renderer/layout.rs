@@ -1566,6 +1566,7 @@ fn empty_float_vpos_snap_flow_top(
     table: &crate::model::table::Table,
     para_y: f64,
     flow_snap_context: Option<(f64, f64)>,
+    host_spacing_before_px: f64,
     col_area: &LayoutRect,
     dpi: f64,
 ) -> Option<f64> {
@@ -1590,7 +1591,15 @@ fn empty_float_vpos_snap_flow_top(
     // 된다). 스냅이 표를 끌어올려도 앞 줄 아래에 남는 자리는 종전 좌표가 맞는다
     // (`hwpspec.hwp` 30쪽 `pi=179`: 앞 줄 바닥 699.70 · 표 701.10 — 여기서 흐름으로
     // 되돌리면 +10.4px 밀려 뒤 내용과 겹친다).
-    if para_y >= prev_content_bottom_y - 0.05 {
+    //
+    // [#7552] 관측 형태와 별개로, 스냅이 흐름을 끌어올린 양이 **정확히 host 의 앞 간격**이면
+    // 그 이동 전체가 위 사전 차감이다 — 저장 사다리의 문단 상단은 흐름 커서와 같다. 재가산
+    // 경로가 없는 이 갈래에서는 같은 이유로 흐름 커서 + 바깥여백이 표 윗변이다
+    // (issue1853 8쪽 pi=67: 흐름 599.09, 스냅 592.43 = 흐름 − 앞 간격 6.67, 정본 괘선 600.3).
+    // 쪽 원점을 바로잡아(#7552) 종전에 기각되던 이 차감 스냅이 수용된 경우가 여기에 든다.
+    let snap_is_prededuction_only = host_spacing_before_px > 0.5
+        && ((flow_y_before_vpos_snap - para_y) - host_spacing_before_px).abs() <= 0.5;
+    if para_y >= prev_content_bottom_y - 0.05 && !snap_is_prededuction_only {
         return None;
     }
     Some(flow_y_before_vpos_snap + hwpunit_to_px(table.outer_margin_top as i32, dpi).max(0.0))
@@ -3321,9 +3330,6 @@ pub(crate) fn stored_first_margin_is_page_relative(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> bool {
-    if first.column_type == crate::model::paragraph::ColumnBreakType::Page {
-        return false;
-    }
     let Some(first_seg) = first.line_segs.first() else {
         return false;
     };
@@ -11922,6 +11928,7 @@ impl LayoutEngine {
                         stored_topbottom_flow_advance_hu(para, paragraphs.get(para_index + 1), t)
                             .map(|height| hwpunit_to_px(height as i32, self.dpi))
                     });
+                    let mut flow_snap_flow_base: Option<f64> = None;
                     let raw_top = if let Some(placement) = ctx
                         .paragraph_float_placements
                         .get(&(para_index, control_index))
@@ -11946,9 +11953,18 @@ impl LayoutEngine {
                         t,
                         para_y_for_table,
                         self.item_flow_snap_context.get(),
+                        styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_before.max(0.0)),
                         col_area,
                         self.dpi,
                     ) {
+                        // [#7552] 표를 흐름 커서 기준으로 되돌렸으면 표 뒤 흐름도 같은 커서에서
+                        // 잇는다. 스냅된 문단 y 를 기준으로 남기면 되돌린 양(앞 간격 + 바깥 위
+                        // 여백)만큼 뒤 내용이 표 쪽으로 당겨진다(hwpspec 28쪽 pi=167 → 168).
+                        flow_snap_flow_base =
+                            self.item_flow_snap_context.get().map(|(flow, _)| flow);
                         flow_top
                     } else {
                         // [#4068] 문단 기준 자리차지 표의 세로 오프셋은 바깥 여백 상자의 윗변을
@@ -12007,7 +12023,7 @@ impl LayoutEngine {
                         x_end,
                         raw_top,
                         lane_top,
-                        y_offset,
+                        flow_snap_flow_base.unwrap_or(y_offset),
                         stored_flow_advance,
                     ));
                 }
