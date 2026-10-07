@@ -9,20 +9,6 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
 
-fn nested_one_by_one_tables(node: &RenderNode, table_depth: usize, out: &mut Vec<(f64, f64)>) {
-    let next_depth = if let RenderNodeType::Table(table) = &node.node_type {
-        if table_depth >= 1 && table.row_count == 1 && table.col_count == 1 {
-            out.push((node.bbox.y, node.bbox.height));
-        }
-        table_depth + 1
-    } else {
-        table_depth
-    };
-    for child in &node.children {
-        nested_one_by_one_tables(child, next_depth, out);
-    }
-}
-
 fn find_table_with_owner_para(node: &RenderNode, para_index: usize) -> Option<&RenderNode> {
     if matches!(
         &node.node_type,
@@ -187,6 +173,162 @@ fn text_run_is_partially_painted(node: &RenderNode, needle: &str, clip: Option<C
     node.children
         .iter()
         .any(|child| text_run_is_partially_painted(child, needle, clip))
+}
+
+#[test]
+fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
+    let bytes = fs::read(path).expect("read #2195 authority fixture");
+    let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
+
+    // p33's first fragment begins at the row-6 boundary in the HWP 2024 PDF;
+    // its old 351.1px pin predated the empty RowBreak host flow correction and
+    // incorrectly described a point inside the preceding row.
+    //
+    // [#5193] p34's 1×1 rationale fragment was pinned at 426.9px. That number
+    // was the retired width-based cell rebuild's, and the authority PDF
+    // (`samples/issue1891/76076_regulatory_analysis-2024.pdf`) contradicts it:
+    // 426.9 − 388.3 = 38.667px = exactly two 19.333px rows, and the two rows are
+    // rows Hancom does not print. Traced per paragraph of the 직접비용 근거설명
+    // cell, only two of its thirteen paragraphs change, and the PDF adjudicates
+    // both against the retired path:
+    //
+    //   paragraph                     box 35552HU   box 36572HU   PDF p33
+    //   `↳ 한편, 작업환경실태조사 …`   4 → 3 rows    3 / 3         3 rows
+    //   `↳ 상기 댓수는 2019년 …`      7 / 7         7 → 6 rows    6 rows
+    //
+    // The p34 page also carries a *second* nested 1×1 table (직접편익 근거설명,
+    // h=124.7px). It is not a split of the first — it is unchanged in height and
+    // merely lifted by the same 38.667px, on both paths. Any reading of this
+    // failure as "the p34 fragment splits in two" is that second table.
+    //
+    // [#5704] p33's fragment height moved 649.3 → 636.8 when upstream/devel
+    // merged, and the pin follows the frame rather than the other way round.
+    // The 12.5px is one row of `↳ 상기 댓수는 2019년 …`, and **the evidence was
+    // already in the table above** — at `box 36572HU` that paragraph goes
+    // `7 → 6 rows` and the authority PDF prints 6. 36572 HWPUNIT is the box both
+    // trees actually fold it at: 487.6px × 75 = 36,570.
+    //
+    // Measured by building `upstream/devel` from `git archive` and running the
+    // same instrument on both trees, same page, same paragraph:
+    //
+    // ```text
+    // ours      track=false box_px=487.6 lines_after=6  "  ↳ 상기 댓수는 2019년 작"
+    // upstream  track=false box_px=487.6 lines_after=7  "  ↳ 상기 댓수는 2019년 작"
+    // ```
+    //
+    // `track=false` — this is not the #3128 indented-tracking class, and the
+    // tracking class itself shows zero row-count differences between the trees
+    // (5 shared paragraphs, 0 diffs). So 649.3 is not a capability we dropped;
+    // it is the retired width-based rebuild's row count, kept alive in a pin.
+    // 636.8 is the frame's, and it is the one the PDF backs.
+    //
+    // Confirmed independently of the row-count argument by rasterising the
+    // authority PDF at 96dpi (`gs -sDEVICE=pgmraw -r96`) and reading the drawn
+    // rules, which land 1:1 on our px grid. PDF page 33 carries a full-width
+    // rule at the fragment top (y=400) and its bottom rule at **y=1034**:
+    //
+    // ```text
+    //   636.8  ->  bottom 1037.2   delta 3.2px from the rule    accepted
+    //   649.3  ->  bottom 1049.7   delta 15.7px                 rejected
+    // ```
+    //
+    // The 1–4px band is the same allowance `issue_3128_terminal_nested_table_geometry`
+    // states: the render-tree bbox spans the stroke/clip outer edge, so it reads
+    // slightly larger than the raster centre line.
+    //
+    // **p34's 388.3 stays, and it is not a stale pin — it is PDF-correct.** The
+    // same raster on PDF page 34 gives the fragment top at y=77 and its bottom
+    // rule at y=463, so the printed height is 386.0px and 388.3 sits 2.3px above
+    // it, inside the same band. This path currently produces 374.9 (11.1px short)
+    // and upstream/devel produces 370.9 (15.1px short) — **both are wrong against
+    // the PDF**, so there is no value here worth moving the pin to.
+    //
+    // That 11.1px is the same shortfall `#5703` pins from the other side: the p34
+    // continuation bottom reads 452.0 against the PDF's rule at exactly y=463.
+    // This assertion therefore stays red until #5703 closes, and it is red for a
+    // real defect rather than a disagreeing oracle.
+    //
+    // Recorded but not concluded: our 374.9 sits 4.0px above upstream's 370.9,
+    // and `mixed_nested_flow_extra_from_cut` carries an `extra += 4.0` row
+    // reservation. Two constants of equal size are not evidence that they are the
+    // same constant; nothing here rests on that.
+    // [#7418] p34 is the terminal-row continuation of a 2-column RowBreak table, and Hancom
+    // reopens its outer top margin there: the outer rule sits at 77.3px (HWP 2020 PDF) /
+    // 77.5px (2024 PDF) = body top 75.6 + 141 HU, not at the body top. The nested fragment
+    // moves with it, 77.1 -> 79.0 (its first text line moves toward the PDF, 79.0 -> 80.9
+    // against a glyph top of 85.5/86.6). The height pin is unchanged.
+    // #7518: 400.4 was a historical placement pin, not a source coordinate.
+    // The source owner is Center-aligned. After its preceding host spacing is
+    // preserved, p33's owner and nested frame have equal vertical centers.
+    // Keep the PDF-backed heights and p34 continuation origin; do not copy the
+    // corrected p33 y into a new absolute pin or broaden the old tolerance.
+    let source = rhwp::parser::parse_hwp(&bytes).expect("parse source alignment and width");
+    let table = source.sections[0].paragraphs[325]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("source outer table");
+    let source_owner = table
+        .cells
+        .iter()
+        .find(|c| c.row == 6 && c.col == 1)
+        .unwrap();
+    assert_eq!(
+        source_owner.vertical_align,
+        rhwp::model::table::VerticalAlign::Center
+    );
+    let source_nested = source_owner.paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            rhwp::model::control::Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .expect("source nested table");
+    let left_padding = f64::from(source_owner.effective_padding(&table.padding).left) / 75.0;
+    for (page, expected_height) in [(32, 636.8), (33, 388.3)] {
+        let tree = core
+            .build_page_render_tree(page)
+            .unwrap_or_else(|error| panic!("render page {}: {error}", page + 1));
+        let outer = find_table_with_owner_para(&tree.root, 325).expect("source outer fragment");
+        let owner = outer.children.iter().find(|node| matches!(
+            &node.node_type, RenderNodeType::TableCell(cell) if cell.row == 6 && cell.col == 1
+        )).expect("source owner fragment");
+        let fragment = find_nested_single_cell_table(owner).expect("source nested fragment");
+        assert!(
+            (fragment.bbox.height - expected_height).abs() <= 0.2,
+            "page {} nested height must preserve PDF geometry: {:?}",
+            page + 1,
+            fragment.bbox
+        );
+        assert!(
+            (fragment.bbox.width - f64::from(source_nested.common.width) / 75.0).abs() <= 0.2,
+            "saved nested width must survive normalization"
+        );
+        assert!(
+            (fragment.bbox.x - owner.bbox.x - left_padding).abs() <= 0.2,
+            "nested fragment must preserve its owner's left padding"
+        );
+        if page == 32 {
+            let owner_center = owner.bbox.y + owner.bbox.height / 2.0;
+            let child_center = fragment.bbox.y + fragment.bbox.height / 2.0;
+            assert!(
+                (child_center - owner_center).abs() <= 0.2,
+                "p33 must honor source Center alignment: owner={:?}, child={:?}",
+                owner.bbox,
+                fragment.bbox
+            );
+        } else {
+            assert!(
+                (fragment.bbox.y - 79.0).abs() <= 0.2,
+                "p34 must preserve the PDF-backed continuation origin"
+            );
+        }
+    }
 }
 
 /// 한컴 PDF p33의 마지막 "현황 추이(p.270)" 줄은 p33의 셀 안에 온전히 남고,

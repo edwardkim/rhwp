@@ -129,11 +129,14 @@ CLI·MCP 계약과 현재 공식 배포 대상의 개선은 rhwp 업스트림에
 
 외부 기여자의 제출 절차는 이 문서의 **코드 기여**, **PR 전 체크리스트**, **회귀 테스트 가이드**가
 전부입니다. 저장소에 함께 있는 다음 문서는 메인터너가 접수·보정·병합 후속 처리를 할 때 쓰는 내부
-운영 기록이므로, 외부 기여 PR에 해석하거나 첨부하지 마세요.
+운영 기록이므로 외부 기여자가 같은 기록을 새로 작성·첨부할 의무는 없습니다.
+다만 이 문서가 연결하는 조판·시각 검증 규칙은 작성자와 reviewer에게 공통 적용됩니다.
 
 - `AGENTS.md` 및 AI 도구별 부트스트랩 파일
 - `mydocs/manual/pr_review_workflow.md`와 `mydocs/manual/pr_review/` 하위 문서
-- `mydocs/pr/`, `mydocs/pr/archives/`, `mydocs/pr/assets/`, `mydocs/orders/` 하위 파일
+- `mydocs/pr/`의 review 기록, `mydocs/pr/archives/`, `mydocs/orders/` 하위 파일
+
+`mydocs/pr/assets/`의 원 PR 시각 증적은 아래 제출 의무에 따라 기여자가 직접 포함합니다.
 
 특히 `pr_N_review.md`, `pr_N_review_impl.md`, 오늘할일, 메인터너 검토용 비교 이미지와 병합·후속처리
 기록은 **메인터너 또는 승인된 collaborator**가 역할별 절차에 따라 작성합니다. 기여자는 재현 명령, 테스트 결과, 공개 가능한 fixture와 필요한
@@ -147,11 +150,49 @@ PR 화면에 표시되는지 확인하세요. 이미지가 빠졌으면 PR을 �
 보완하세요. 이는 메인터너 review 기록 작성 의무가 아니라 기여자의 제출 의무입니다.
 메인터너가 특정 기록 파일의 추가를 명시적으로 요청한 경우에만 그 요청 범위에서 예외로 합니다.
 
-페이지별 일치율은 [TSV 전용 절차](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)로 먼저 산출하세요.
+**기여자 PR 본문의 증적 배치:** [PR #7551의 Native/fresh WASM 증적](https://github.com/edwardkim/rhwp/pull/7551)처럼
+먼저 검증 환경과 입력별 Native/fresh WASM 전체 TSV 요약을 적고, 대표 쪽마다
+`### 입력명 · 기준 PDF pN ↔ rhwp pN` 소제목을 만드세요. 각 소제목 아래 한 표에
+Native/fresh WASM 두 행과 review/standalone overlay 두 열의 실제 Markdown 이미지를 나란히 표시하세요.
+쪽별 일치율, 직접 확인한 표·문단·그림 경계와 남은 차이는 해당 표 바로 아래에 적습니다.
+첨부할 대표 입력·쪽이 여러 개면 이 묶음을 반복하며, 이미지 설명에 입력명·쪽·출력 경로를 표시하세요.
+**전체 페이지의 PNG 생성·커밋·본문 첨부는 필요하지 않습니다.** 변경 효과와 주요 경계를 보여주는
+대표 페이지만 첨부하고, 검증 대상 전체 페이지의 **Native TSV 원본만** 함께 제출하세요.
+WASM TSV는 첨부할 필요가 없습니다.
+같은 쪽의 두 출력 경로와 두 이미지 종류를 본문에서 바로 대조할 수 있어야 합니다.
+작성 예시는 [PR 본문 직접 증적 정본](mydocs/manual/verification/visual_sweep_guide.md#pr-body-visual-evidence)과
+[PR 템플릿](.github/pull_request_template.md)을 따릅니다.
+기여자는 **PR 생성 전에 PR 번호를 알 필요가 없습니다.** PNG를
+`mydocs/pr/assets/issue_<이슈번호>_<주제>/<입력명>-p<쪽>-<native|wasm>-<review|overlay>.png`에
+커밋하세요. 연결된 이슈가 없으면 주제 이름을 안정 경로로 사용합니다. PNG를 포함한 제출 head의
+SHA를 `git rev-parse HEAD`로 확인해 실제 head 저장소에 push한 뒤, 그 저장소와 SHA의 raw URL을
+PR 생성 시 본문의 `![설명](URL)`에 넣습니다. PR 번호가 나온 뒤 파일명을 바꾸거나 증적 경로를
+다시 만드는 단계는 필요하지 않습니다.
+아래의 `OWNER/REPOSITORY/HEAD_SHA/ISSUE_OR_TOPIC/INPUT/pNNN`을 자신의 실제 값으로 치환하세요.
+외부 기여자는 자신의 fork 저장소를 사용하며 `ISSUE_OR_TOPIC`에는 이슈 번호·주제 또는 주제 이름을 넣습니다.
+
+```markdown
+![문서명 pN fresh WASM review](https://raw.githubusercontent.com/OWNER/REPOSITORY/HEAD_SHA/mydocs/pr/assets/ISSUE_OR_TOPIC/INPUT-pNNN-wasm-review.png)
+```
+
+대표 이미지의 통과와 전체 검증 범위의 통과를 구분하세요. 입력별·출력 경로별 최저값과
+90% 미만/누락/측정 불가 쪽을 확인합니다. **검증 범위의 한 페이지라도 90% 미만이거나 누락·측정 불가,
+필수 Native/fresh WASM 경로 미실행이면 PR 생성·제출 갱신·검토 요청을 하지 않습니다.**
+시간 제약·기존 차이·부분 개선·추후 검증 등의 사유를 적어도 제출 조건을 충족하지 못합니다.
+그 사유와 실패 결과는 제출 전 로컬 작업 기록에 남기고, 자기 branch에서 수정·재실행해 통과한 뒤
+본문을 완성합니다. 이미 열린 PR도 해당 상태에서는 승인·통합하지 않습니다.
+해결 불가능한 실제 글꼴 문제는 아래의 정식 예외 계약으로만 판정하며 일반적인 사유 기재와 구분합니다.
+
+**페이지별 TSV 산출 명령과 저장 위치:** [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)의 Native/fresh WASM 예제를 각각 실행하세요.
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
-전쪽 overlay PNG를 일률 생성할 필요는 없지만 대표 이미지 제출 의무는 유지합니다.
-TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
+전체 페이지의 review/overlay PNG를 일률 생성하거나 첨부할 필요는 없습니다.
+**PR 본문에는 대표 페이지의 이미지와 전체 검증 범위의 TSV 원본 다운로드 링크를 첨부하세요.**
+제출용 TSV는 **Native만 필수**이며 WASM TSV 첨부는 요구하지 않습니다. Native TSV를
+ZIP으로 묶어 PR 본문에 업로드하거나, 검토자가 내려받을 수 있는
+동일 파일의 첨부 링크를 넣습니다. 요약 표·최저값·로컬 output 경로만으로 TSV 원본을 대신하지 않습니다.
+첨부 파일이 어느 입력·출력 경로·검증 head에 대응하는지 명시하며, TSV는 ignored output에 보존하고
+Git에 커밋하지 않습니다. TSV·입력/출력 provenance와 최저값·미달 페이지를 PR 증거에 연결하세요.
 실루엣 계산 방법, 이진화 원값과 색상 경계 대조 픽셀 수도 함께 기록하세요.
 색상 경계 대조는 실제 흰 배경의 그림 누락·위치 차이를 제외하는 근거가 아닙니다.
 기존 PNG 재사용은 원 실행의 코드·빌드·글꼴 조건을 확인하며 새 head 검증으로 표시하지 않습니다.
@@ -161,10 +202,13 @@ TSV 산출 exit0 또는 `not_evaluated`는 승인 판정이 아닙니다. 90% �
 이 Visual Sweep에서 검증 대상 전체 페이지의 TSV와 대표 review PNG의 2px 이웃 관용 내용
 실루엣 일치율은 모두 90% 이상이어야 합니다. `scripts/visual_sweep.py`가 `re_review_required`를 기록하거나 non-zero로 끝나면
 PR을 제출하지 말고 본인 branch에서 PDF·overlay 원인을 재검토·수정한 뒤 새 head에서 gate를 통과할 때만
-PR을 생성·갱신합니다. reviewer가 메인터너 보정으로 대신하지 않습니다. 한컴 PDF와 rhwp에 실제로 적용된 글꼴이 완전히
-다른 경우에만 양쪽 font family와 확인 방법을 적은 UTF-8 증거 파일을
-`--font-mismatch-evidence`로 지정할 수 있습니다. 글꼴 이름의 추정, anti-aliasing, CI 녹색은 예외가
-아닙니다. 예외 제출 전에 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
+PR을 생성·갱신합니다. **90% 미만**이 보류 기준이며 **정확히 90%는 통과**합니다.
+TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않습니다.
+사용자가 승인한 메인터너 보정도 같은 기준을 충족해야 합니다. 한컴 PDF와 rhwp의 실제 글꼴 차이는
+양쪽 font family와 확인 방법을 적은 UTF-8 증거를 `--font-mismatch-evidence`로 기록할 수 있지만
+확인한 해결 불가능한 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+UTF-8 JSON 증거로 `font_mismatch_exception`을 받아 **90% 미만이어도 제출할 수 있습니다**.
+측정 불가·쪽수 불일치·배치 차이는 면제하지 않습니다. 표 괘선·문단 시작·그림 경계의 PDF 대비 좌표를 확인합니다. 위치가
 다르면 글꼴 차이가 있더라도 배치를 수정해 다시 캡처합니다(#7359 p14). 기준 PDF 재산출처럼 renderer 출력을 주장하지 않는 변경은 Visual Sweep PNG 대신 fixture의
 원본성·소비 경로를 검증합니다.
 PDF와 비교하는 캡처에는 [인쇄 프로필](mydocs/manual/verification/visual_sweep_guide.md#pdf와-같은-인쇄-프로필)을
@@ -211,6 +255,7 @@ collaborator 자신의 PR은 작업지시자의 push·PR 생성 승인 후 번�
 
 | 변경 범위 | 제출 전 필수 검증 |
 | --- | --- |
+| 조판·렌더링 영향 (파일 경로와 무관) | 아래 소스별 검증에 **Native/fresh WASM Visual Sweep·전체 검증 범위의 TSV·대표 review/overlay 직접 판독**을 추가. 한 페이지라도 90% 미만·측정 불가이면 자기 branch에서 재검토·수정 후 재실행 |
 | Rust parser/model/CLI source | 아래 Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration |
 | Rust test/baseline helper | Rust lint 묶음, 관련 focused 회귀와 해당 snapshot 결정성 확인. 테스트만 바꿔도 fmt·세 Clippy를 생략하지 않음 |
 | Rust renderer/layout/typeset/WASM source | Rust lint 묶음, 관련 focused 회귀, `release-test` 전체 integration, Native Skia 3종(lib·누락 이미지·직접 PDF 회귀), fresh WASM build와 [시각 검증](#렌더링-pr-자가-검증-도구-한컴-없이-가능) |
@@ -772,8 +817,14 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 
 일반 기여자는 메인터너 전용 HWP 변환 MCP를 사용할 수 없습니다. MCP 접근이나 호출을
 기여자의 검증 전제로 요구하지 않습니다. 기준 PDF가 필요한 렌더링 변경은 기여자가 직접
-검증 대상 한컴 오피스에서 원본 HWP/HWPX를 열어 PDF를 출력하고 PR 또는 관련 issue에
+원본 저장 버전에 맞는 검증 대상 한컴 오피스에서 원본 HWP/HWPX를 열어 **Print 인쇄 경로로 PDF를 출력**하고 PR 또는 관련 issue에
 원본과 함께 첨부해주세요. 파서 구조만을 검증하는 변경에 이 요구를 일괄 적용하지는 않습니다.
+
+[기준 PDF 인쇄 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따릅니다.
+PDF로 저장/내보내기 대신 파일 → 인쇄 → PDF 출력을 사용하고 원본 용지·100%·1-up·전체 문서를
+기본으로 기록합니다. MCP 보완은 저장 제품이 2024이면 engine 2024, 그 외/미상이면 engine 2020을
+명시합니다. 직접 출력본은 실제 제품 버전으로 이름 붙입니다. 편집 동작도 같은 편집 저장본을
+Print 출력해 비교하며, 기준 PDF 부족을 Visual Sweep 비해당 사유로 쓰지 않습니다.
 
 - 여러 한컴 버전의 동작을 주장하거나 비교한다면 그 대상 버전별 PDF를 각각 첨부합니다.
   예를 들어 2020/2022/2024 비교에는 실제 각 제품에서 출력한 PDF가 필요합니다.
@@ -803,8 +854,10 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
      `node scripts/run-rust-test.mjs svg_snapshot -- --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?}"`로 선택 실행
    - Studio 렌더링 UI 변경은 해당 frontend·E2E 회귀와 fresh WASM 검증
 
-2. **주장한 렌더링 동작의 직접 시각 검증** (해당 범위 필수):
-   - 한컴 PDF / 한컴 화면 캡처 + rhwp SVG 비교 — **본인 환경 명시 필수** (한컴 버전, OS, 폰트 등)
+2. **실제 조판 영향의 직접 시각 검증** (필수):
+   - 한컴 Print PDF와 Native/fresh WASM Visual Sweep·TSV 비교 — **본인 환경 명시 필수** (한컴 버전/빌드, OS, 폰트, Print 설정 등)
+   - 편집 command·parser·model·serializer가 조판 속성/저장 정보를 바꾸면 renderer 파일을 바꾸지 않아도 적용
+   - 화면 전용 UI는 별도 화면 검증도 수행. 화면 캡처·Skia·OVR·SVG 자기 비교는 Print PDF Sweep을 대체하지 않음
    - 유효한 기존 PDF를 재사용하고, 내용으로 대응시킨 변경 전후 페이지·영역을 직접 확인
    - 자동 검사 통과는 직접 비교를 대체하지 않으며, 메인터너 재검증 예정이라는 이유로 작성자 검증을 생략하지 않음
 
@@ -826,6 +879,10 @@ generated suite의 `does not exist` 오류는 준비 부족에 의한 검사 실
 내부 review 문서 작성을 요구하지 않으며, 기존 입력·PDF를 이름만 바꿔 다시 커밋하지 않습니다.
 
 ### 렌더링 PR 자가 검증 도구 (한컴 없이 가능)
+
+아래 도구는 보조 진단입니다. 조판 영향 변경의 필수 Native/fresh WASM Visual Sweep·TSV와
+독립 한컴 Print PDF 대조는 위 제출 절차대로 수행합니다. 한컴 없이 이 도구들만 실행한 결과를
+한컴 일치 검증 완료로 표시하지 않습니다.
 
 렌더링·레이아웃을 수정하는 PR 은 제출 전 아래 도구로 자가 검증하면 리뷰 왕복이 크게
 줄어듭니다. 모두 **한컴 설치 없이** (macOS/Linux 포함) 실행할 수 있습니다.
@@ -860,7 +917,8 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   `ovr_diff.md` 표를 그대로 붙여넣으면 됩니다 (git 상태 전환·baseline 관리 불필요).
 - 어떤 PR 에 어떤 시각 증거가 필요한지는
   [시각 검증 거버넌스](mydocs/manual/verification/visual_verification_governance.md)를 참고하세요 —
-  시각 검증은 전수 절차가 아니라 **PR 의 수정 목적과 사용자에게 보이는 동작 기준으로 선택**합니다.
+  조판 영향 변경은 반드시 Visual Sweep·TSV를 실행합니다. 실제 소비 경로로 적용 여부를 판단하고,
+  수정 목적에 맞춰 입력·페이지 범위를 정합니다. 쪽수·페이지 분할 변경은 전체 페이지를 비교합니다.
 - 전체 CLI 도구는 [cli_commands.md](mydocs/manual/cli_commands.md) 참조.
 - 자가 검증 통과는 실행한 입력·경로·검사 범위에서의 결과입니다. 검사하지 않은 컷 경계나 본문
   점유까지 안전하다는 증명이 아니며, 전체 회귀가 통과해도 직접 시각 비교의 결함을 해소해야 합니다.

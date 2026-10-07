@@ -20,8 +20,8 @@ use super::border_rendering::{
 use super::table_layout::{
     border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
     expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
-    native_terminal_child_host_line_spacing, translate_render_subtree_y, NestedTableSplit,
-    INLINE_WRAP_WIDTH_EPSILON_PX,
+    native_terminal_child_host_line_spacing, para_relative_float_table_lead,
+    translate_render_subtree_y, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::{
@@ -1344,30 +1344,49 @@ impl LayoutEngine {
                         self.current_body_area.get().3,
                     )
                     .is_some();
-            let stored_cut_frame_owns_alignment = full_width_frame_owns_alignment
-                || (is_continuation
-                    && start_row_height_override.is_some()
-                    && cell_row == start_row
-                    && cell.row_span == 1
+            let cut_frame_owns_alignment = is_continuation
+                && start_row_height_override.is_some()
+                && cell_row == start_row
+                && cell.row_span == 1
+                && ((start_cut_is_block
                     && end_cut.is_empty()
-                    && ((start_cut_is_block
-                        && self
-                            .saved_block_reset_opening_frame_height(
-                                table, start_row, start_cut, styles,
-                            )
-                            .is_some())
-                        || (!start_cut_is_block
-                            && start_cut
-                                .get(single_row_cut_index(table, cell))
-                                .is_some_and(|&start| {
-                                    let units = self.cell_units(cell, table, styles);
-                                    self.stored_paragraph_allows_orphan_split(
-                                        table, cell, &units, start, styles,
-                                    )
-                                }))));
+                    && self
+                        .saved_block_reset_opening_frame_height(table, start_row, start_cut, styles)
+                        .is_some())
+                    || (!start_cut_is_block
+                        && start_cut
+                            .get(single_row_cut_index(table, cell))
+                            .is_some_and(|&start| {
+                                let units = self.cell_units(cell, table, styles);
+                                let (_, end) = cell_cut_window(
+                                    table,
+                                    cell,
+                                    start_cut_is_block,
+                                    is_block_split,
+                                    is_split_start_row,
+                                    split_start_block,
+                                    is_split_end_row,
+                                    split_end_block,
+                                    start_cut,
+                                    end_cut,
+                                    None,
+                                    start_row,
+                                    end_row.saturating_sub(1),
+                                );
+                                // A nonempty end ledger may already own every content unit
+                                // while the declared physical row still continues. Align the
+                                // complete remaining content in this frame; an actual content
+                                // cut must keep its top origin.
+                                end >= units.len()
+                                    && (self.row_uses_reflow_physical_frame(table, cell_row)
+                                        || self.stored_paragraph_allows_orphan_split(
+                                            table, cell, &units, start, styles,
+                                        ))
+                            })));
             let saved_frame_needs_alignment = (align_saved_opening_frame
                 && cell_row + 1 == end_row
-                || stored_cut_frame_owns_alignment)
+                || cut_frame_owns_alignment
+                || full_width_frame_owns_alignment)
                 && cell.vertical_align != crate::model::table::VerticalAlign::Top;
             let composition_window = if saved_frame_needs_alignment {
                 None
@@ -1792,7 +1811,7 @@ impl LayoutEngine {
             });
             let cell_content_cut_by_slice = has_multicol_nested
                 && self.cell_units_content_height(cell, table, styles) > inner_height + 0.5;
-            let effective_align = if stored_cut_frame_owns_alignment {
+            let effective_align = if cut_frame_owns_alignment {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
                 cell.vertical_align
             } else if center_saved_spanning_cell == Some(cell_idx) {
@@ -1837,7 +1856,10 @@ impl LayoutEngine {
                 // Capacity accounting owns that advance as physical space;
                 // it is not ink at the bottom of this fragment.
                 total_content_height
-            } else if center_saved_spanning_cell == Some(cell_idx) {
+            } else if center_saved_spanning_cell == Some(cell_idx)
+                || (cut_frame_owns_alignment
+                    && self.row_uses_reflow_physical_frame(table, cell_row))
+            {
                 let units = self.cell_units(cell, table, styles);
                 cut_units
                     .map(|(start, end)| {
@@ -2534,11 +2556,17 @@ impl LayoutEngine {
                     // 1×1 linear 셀(page-spanning 컨테이너, preserve_linear_single_cell_vpos
                     // 계열)의 continuation 은 자연 흐름으로 이미 정합하며 textbox/shape 를 품을 수
                     // 있어 spacing 추가 시 프레임 밖으로 밀린다(#issue_rowbreak_chart_overlap p17).
-                    // 다행/다열 표의 거대 셀 intra-cell continuation 만 대상으로 한정한다.
-                    let keep_spacing = cut_units.is_some_and(|(su, _)| su > 0)
-                        && !has_preceding_text
-                        && start_line == 0
-                        && !(table.row_count == 1 && table.col_count == 1);
+                    // 저장 프레임 경로의 기존 다행/다열 판정은 유지한다. 재조판 경로는
+                    // 표 차원이 아니라 같은 컷의 첫 source unit이 앞 간격을 소유하는지 읽는다.
+                    let keep_spacing = cut_units.is_some_and(|(su, _)| {
+                        self.cell_cut_owns_reflow_paragraph_start(cell, table, styles, su, cp_idx)
+                            || (su > 0
+                                && !has_preceding_text
+                                && start_line == 0
+                                && !(table.row_count == 1 && table.col_count == 1))
+                    });
+                    let previous_keep_spacing =
+                        self.keep_continuation_column_top_spacing_before.get();
                     self.keep_continuation_column_top_spacing_before
                         .set(keep_spacing);
                     let wrap_anchor = stored_square_picture_wrap_anchor_for_para(cell, cp_idx);
@@ -2569,7 +2597,8 @@ impl LayoutEngine {
                             para_y += hwpunit_to_px(step, self.dpi);
                         }
                     }
-                    self.keep_continuation_column_top_spacing_before.set(false);
+                    self.keep_continuation_column_top_spacing_before
+                        .set(previous_keep_spacing);
 
                     let has_visible_text = composed
                         .lines
@@ -2949,9 +2978,18 @@ impl LayoutEngine {
                                                 Control::Picture(sibling) if sibling.common.treat_as_char
                                             )
                                         });
-                                    let anchor_y = if empty_top_anchored_square_with_inline_sibling
+                                    let parallel_picture_owner = fragment_owned_square_flow
+                                        && crate::renderer::float_placement::parallel_cell_picture_band_height(
+                                            para, self.dpi,
+                                        ).is_some();
+                                    let anchor_y = if parallel_picture_owner
+                                        || empty_top_anchored_square_with_inline_sibling
                                     {
-                                        cell_y + pad_top
+                                        if parallel_picture_owner {
+                                            para_y_before_compose
+                                        } else {
+                                            cell_y + pad_top
+                                        }
                                     } else if stored_square_picture_has_adjacent_text(
                                         cell, cp_idx, ctrl_idx,
                                     ) {
@@ -3496,6 +3534,32 @@ impl LayoutEngine {
                                     } else {
                                         inner_area.y
                                     };
+                                    let owns_nested_start =
+                                        !crate::renderer::para_has_no_stored_line_segs(para)
+                                            || cut_units.is_none_or(|(start, end)| {
+                                                let units = self.cell_units(cell, table, styles);
+                                                units
+                                                    .iter()
+                                                    .position(|unit| unit.para_idx == cp_idx)
+                                                    .is_some_and(|first| {
+                                                        start <= first && first < end
+                                                    })
+                                            });
+                                    let nested_y = nested_y
+                                        + if stored_float_frame.is_some()
+                                            || !crate::renderer::para_has_no_stored_line_segs(para)
+                                        {
+                                            0.0
+                                        } else {
+                                            if owns_nested_start {
+                                                para_relative_float_table_lead(
+                                                    nested_table,
+                                                    self.dpi,
+                                                )
+                                            } else {
+                                                0.0
+                                            }
+                                        };
                                     let available_h =
                                         (inner_area.height - (nested_y - inner_area.y)).max(0.0);
                                     // TAC(글자처럼 취급) 표: 앞 텍스트 너비만큼 x 오프셋 적용.
@@ -3740,7 +3804,18 @@ impl LayoutEngine {
                                                 pre_emitted_host_content_height: 0.0,
                                                 host_line_spacing: 0.0,
                                                 resolved_table_top: stored_float_frame
-                                                    .map(|f| f.table_top),
+                                                    .map(|f| f.table_top)
+                                                    .or_else(|| {
+                                                        self.reflow_nested_table_origin(
+                                                            para,
+                                                            nested_table,
+                                                            &ctrl_area,
+                                                            nested_w,
+                                                            nested_y,
+                                                            true,
+                                                        )
+                                                        .map(|(_, y)| y)
+                                                    }),
                                             },
                                             section_index,
                                             styles,
@@ -3806,7 +3881,19 @@ impl LayoutEngine {
                                             false,
                                             clamp_header_negative_para_offset,
                                             0.0,
-                                            stored_float_frame.map(|f| (None, f.table_top)),
+                                            stored_float_frame
+                                                .map(|f| (None, f.table_top))
+                                                .or_else(|| {
+                                                    self.reflow_nested_table_origin(
+                                                        para,
+                                                        nested_table,
+                                                        &ctrl_area,
+                                                        nested_w,
+                                                        nested_y,
+                                                        owns_nested_start,
+                                                    )
+                                                    .map(|(x, y)| (Some(x), y))
+                                                }),
                                             Self::standalone_table_char_border_fill(
                                                 Some(para),
                                                 nested_table,
@@ -4429,8 +4516,13 @@ impl LayoutEngine {
         } else {
             None
         };
+        let recursive_overlay_frame = self.reflow_recursive_overlay_frame(table, styles);
         let y_start = if let Some(top) = resolved_table_top {
             top
+        } else if recursive_overlay_frame {
+            y_start
+                + effective_vertical_offset
+                + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else if is_para_flow_table {
             let prev_table_end = col_node
                 .children
@@ -4537,6 +4629,18 @@ impl LayoutEngine {
                     )
                 })
                 .is_some_and(|frame| end_row_height_override == Some(frame.opening_height));
+        // The blank host and the picture band are different fragment owners.
+        // Reopen the outer frame on the page owning the band, then apply the
+        // cell's existing inner padding. Budget consumes the same owner cut.
+        let parallel_picture_opening_continuation = enclosing_cell_ctx.is_none()
+            && is_continuation
+            && !start_cut_is_block
+            && col_node.children.is_empty()
+            && (y_start - col_area.y).abs() <= 0.5
+            && start_row_height_override.is_some()
+            && self
+                .parallel_picture_row_opening_height(table, start_row, &[], start_cut, styles)
+                .is_some();
         // 처음과 이어받기 조각은 예산이 이미 예약한 같은 바깥 위 여백을 연다.
         let terminal_multirow_reopens_outer_top = enclosing_cell_ctx.is_none()
             && crate::renderer::float_placement::native_terminal_multirow_rowbreak_reopens_outer_top(
@@ -4623,9 +4727,11 @@ impl LayoutEngine {
             || source_cut_reopens_outer_top
             || native_repeated_header_reopens_outer_top
             || empty_opening_continuation
+            || parallel_picture_opening_continuation
             || empty_opening_first_fragment)
             && stored_reset_paint_geometry.is_none()
             && resolved_table_top.is_none()
+            && !recursive_overlay_frame
         {
             y_start + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
         } else {

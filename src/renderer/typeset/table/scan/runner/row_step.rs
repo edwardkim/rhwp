@@ -126,6 +126,24 @@ impl TypesetEngine {
                         r, h, rest, visible_height, probe.fully_consumed, row_has_nested
                     );
                     }
+                    if let Some(opening) = layout_engine
+                        .parallel_picture_row_opening_height(
+                            table,
+                            r,
+                            row_start_cut,
+                            &probe.end_cut,
+                            styles,
+                        )
+                        .filter(|height| *height <= rest)
+                    {
+                        consumed += cs_before + opening;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(opening);
+                        split_end_cut = probe.end_cut;
+                        split_end_limit = opening;
+                        return false;
+                    }
                     // Stage 76의 긴 declared-row tail은 내용 뒤에 충분한 물리 blank
                     // band가 남을 때만 현재 fragment에 보존한다. content가 남은
                     // 공간을 거의 전부 쓰는 경우까지 이 경로를 열면 76076 p18의
@@ -582,6 +600,28 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // A reflowed row can exhaust its content before its declared physical
+                // minimum fits. Cut the blank tail at the accepted page budget and
+                // carry it with the exhausted content cursor; never force the full
+                // carried height past the page or replay the already consumed units.
+                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if layout_engine.row_uses_reflow_physical_frame(table, r)
+                    && (r == cursor_row && start_row_height_override.is_some()
+                        || layout_engine
+                            .reflow_row_physical_minimum(table, r, styles)
+                            .is_some())
+                    && mt.allows_row_break_split()
+                    && row_total > rest + 0.5
+                    && res.consumed_height + padding <= rest + 0.5
+                    && rest > 0.5
+                {
+                    consumed += cs_before + rest;
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut;
+                    split_end_limit = rest;
+                    end_row_height_override = Some(rest);
+                    return false;
+                }
                 // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
                 // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
                 // 압축해 쪽을 완결한다(1741000 r14: 선언 80.3 → 밴드 69.7, 한글
@@ -1181,6 +1221,15 @@ impl TypesetEngine {
             }
             false
         })();
+        if start_row_height_override.is_some()
+            && split_end_limit > 0.0
+            && end_row == cursor_row + 1
+            && layout_engine.row_uses_reflow_physical_frame(table, cursor_row)
+        {
+            // The carried minimum belongs to the entire remainder. A new content
+            // cut owns only the accepted footprint, shared by reservation and paint.
+            end_row_height_override = Some(consumed);
+        }
         let scan = BlockTableRowScan {
             consumed,
             end_row,

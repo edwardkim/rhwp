@@ -1,0 +1,32 @@
+== terminal-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp
++ node /tmp/rhwp-pr7518-review-20261004/scripts/export-wasm-for-sweep.mjs --pkg /tmp/rhwp-pr7518-review-20261004/pkg --input /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp --out /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/terminal-audit/wasm
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/terminal-audit/font_policy
+SVG export pages: 3
++ pdftoppm -r 96 -png /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_generated/terminal-follower-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/terminal-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_generated/terminal-follower-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/terminal-audit/pdf_bbox.html
+Raster PNG pages: rhwp=3, pdf=3
+== auto-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-auto-row.hwp
++ node /tmp/rhwp-pr7518-review-20261004/scripts/export-wasm-for-sweep.mjs --pkg /tmp/rhwp-pr7518-review-20261004/pkg --input /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-auto-row.hwp --out /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/auto-audit/wasm
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-auto-row.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/auto-audit/font_policy
+SVG export pages: 8
++ pdftoppm -r 96 -png /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_orientation/nested-auto-row-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/auto-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_orientation/nested-auto-row-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/auto-audit/pdf_bbox.html
+Raster PNG pages: rhwp=8, pdf=8
+== mixed-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp
++ node /tmp/rhwp-pr7518-review-20261004/scripts/export-wasm-for-sweep.mjs --pkg /tmp/rhwp-pr7518-review-20261004/pkg --input /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp --out /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/mixed-audit/wasm
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/mixed-audit/font_policy
+SVG export pages: 8
++ pdftoppm -r 96 -png /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_orientation/nested-mixed-cell-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/mixed-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_orientation/nested-mixed-cell-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/mixed-audit/pdf_bbox.html
+Raster PNG pages: rhwp=8, pdf=8
+== generated-auto-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/nested-auto-row.hwp
++ node /tmp/rhwp-pr7518-review-20261004/scripts/export-wasm-for-sweep.mjs --pkg /tmp/rhwp-pr7518-review-20261004/pkg --input /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/nested-auto-row.hwp --out /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/generated-auto-audit/wasm
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/tests/fixtures/pr7518_review_page_budget/valid_generated/nested-auto-row.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/generated-auto-audit/font_policy
+SVG export pages: 7
++ pdftoppm -r 96 -png /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_generated/nested-auto-row-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/generated-auto-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/pdf/pr7518_review/valid_generated/nested-auto-row-2020.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/wasm/generated-auto-audit/pdf_bbox.html
+SVG, render tree, PDF raster의 선택 페이지 수가 일치하지 않습니다: svg=7, tree=7, pdf=8

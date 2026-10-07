@@ -1,0 +1,64 @@
+[RustTestSuite] issue_7518_reflow_row_physical_frame -> regression_suite_025::issue_7518_reflow_row_physical_frame
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_025 issue_7518_reflow_row_physical_frame::
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 32.56s
+     Running tests/generated/regression_suite_025.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_025-fbc877801755bf10)
+
+running 17 tests
+test issue_7518_reflow_row_physical_frame::a_complete_content_cut_keeps_center_alignment_before_the_physical_tail ... ok
+test issue_7518_reflow_row_physical_frame::reflow_nested_table_keeps_its_column_anchor_and_paragraph_offset ... ok
+test issue_7518_reflow_row_physical_frame::physical_tail_exceeding_page_budget_finishes_without_replaying_content ... ok
+test issue_7518_reflow_row_physical_frame::continuation_preserves_declared_row_minimum_and_following_rows ... ok
+test issue_7518_reflow_row_physical_frame::remaining_text_and_nested_table_share_the_centered_occupancy ... ok
+test issue_7518_reflow_row_physical_frame::trailing_empty_paragraphs_keep_their_continued_cell_outline ... ok
+test issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit ... FAILED
+test issue_7518_reflow_row_physical_frame::split_nested_rows_reserve_the_lead_once_and_stay_inside_each_page ... ok
+test issue_7518_reflow_row_physical_frame::unsplit_reflow_uses_the_same_nested_anchor_and_flow_lead ... ok
+test issue_7518_reflow_row_physical_frame::a_deferred_picture_band_keeps_the_blank_cell_and_the_next_row_on_its_page ... ok
+test issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut ... FAILED
+test issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger ... FAILED
+test issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows ... FAILED
+test issue_7518_reflow_row_physical_frame::a_reflow_cell_start_consumes_the_source_paragraph_before_space ... ok
+test issue_7518_reflow_row_physical_frame::a_block_table_host_does_not_duplicate_its_line_but_keeps_the_following_empty_paragraph ... ok
+test issue_7518_reflow_row_physical_frame::continuation_at_a_reflow_paragraph_start_consumes_its_reserved_spacing ... ok
+test issue_7518_reflow_row_physical_frame::empty_reflow_table_hosts_consume_the_source_margins_once ... ok
+
+failures:
+
+---- issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit' (23689) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:636:5:
+assertion `left == right` failed: no content replay in the physical tail
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut' (23676) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:816:5:
+assertion `left == right` failed: the final outer row must survive once
+  left: 2
+ right: 1
+
+---- issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger' (23681) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:748:65:
+called `Option::unwrap()` on a `None` value
+
+---- issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows' (23680) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:675:9:
+assertion `left == right` failed: nested-auto-row: page budget
+  left: 7
+ right: 8
+
+
+failures:
+    issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut
+    issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows
+    issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger
+    issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit
+
+test result: FAILED. 13 passed; 4 failed; 0 ignored; 0 measured; 185 filtered out; finished in 4.52s
+
+error: test failed, to rerun pass `-p rhwp --test regression_suite_025`

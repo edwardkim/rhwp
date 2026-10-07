@@ -620,6 +620,10 @@ impl TypesetEngine {
 
         if end_row >= row_count && split_end_limit == 0.0 {
             let skip_terminal_empty_sliver = is_continuation
+                // A reflowed declared tail owns real physical space even after its
+                // final content unit. Do not erase that frame as an empty sliver.
+                && !(start_row_height_override.is_some()
+                    && layout_engine.row_uses_reflow_physical_frame(table, cursor_row))
                 && !start_cut.is_empty()
                 && !start_cut_is_block
                 && mt.allows_row_break_split()
@@ -996,6 +1000,43 @@ impl TypesetEngine {
             .or(complete_block_next_height)
             .or(saved_closing_frame.filter(|_| first_fragment_blank_band))
             .or_else(|| {
+                let row = end_row.checked_sub(1)?;
+                if split_end_limit <= 0.0 {
+                    return None;
+                }
+                let opening = layout_engine.parallel_picture_row_opening_height(
+                    table, row, &[], &next_cut, styles,
+                )?;
+                if end_row_height_override != Some(opening) {
+                    return None;
+                }
+                // The blank opening consumed physical space, not picture units.
+                // Carry the remaining owners' full height rather than subtracting
+                // the opening from the overlapping complete-row content box.
+                Some(layout_engine.row_cut_content_height(table, row, &next_cut, &[], styles))
+            })
+            .or_else(|| {
+                let row = end_row.checked_sub(1)?;
+                if split_end_limit <= 0.0 || !layout_engine.row_uses_reflow_physical_frame(table, row) {
+                    return None;
+                }
+                let carried = (row == cursor_row).then_some(start_row_height_override).flatten();
+                let full = if let Some(height) = carried {
+                    height
+                } else {
+                    // A minimum creates a physical tail only when it exceeds the
+                    // complete content occupancy. Content-driven height is already
+                    // represented by the remaining units and must not be carried twice.
+                    layout_engine.reflow_row_physical_minimum(table, row, styles)?
+                };
+                let start = if row == cursor_row { start_cut.as_slice() } else { &[] };
+                let used = end_row_height_override.unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(table, row, start, &next_cut, styles)
+                });
+                let tail = (full - used).max(0.0);
+                (tail > 0.5).then_some(tail)
+            })
+            .or_else(|| {
                 // 원시 행 잔여는 병합 공간을 보존한 문단 내부 저장 컷만 소유한다.
                 // 본문을 닫는 noAdjust 원본은 문단 간 저장 쪽 경계도 같은
                 // 첫 프레임에서 뺀 물리 잔여를 소유한다. 일반 내용 컷은 제외한다.
@@ -1055,7 +1096,8 @@ impl TypesetEngine {
                 })
             })
             .or_else(|| end_row_height_override
-            .filter(|_| !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none())
+            .filter(|_| !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()
+                && !layout_engine.row_uses_reflow_physical_frame(table, end_row.saturating_sub(1)))
             .and_then(|limit| {
             let full = cut_row_h.get(end_row.saturating_sub(1)).copied()?;
             let tail = (full - limit).max(0.0);

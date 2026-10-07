@@ -107,6 +107,18 @@ impl TypesetEngine {
                 ),
                 self.dpi,
             );
+        let recursive_overlay_frame = prepared
+            .layout_engine
+            .reflow_recursive_overlay_frame(table, input.source.styles);
+        let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
+            (
+                host_before_overhead + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
+                fragment_outer_bottom_overhead
+                    + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi),
+            )
+        } else {
+            (host_before_overhead, fragment_outer_bottom_overhead)
+        };
         let fragment_outer_bottom_overhead = closed_source_frame_placement
             .map_or(fragment_outer_bottom_overhead, |placement| {
                 placement.occupied_bottom - placement.table_top - total_rows_h
@@ -163,6 +175,7 @@ impl TypesetEngine {
                     || source_cut_opens_outer_top)
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment
+                && !recursive_overlay_frame
             {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
@@ -181,9 +194,33 @@ impl TypesetEngine {
                     && start_cut.iter().copied().eq([0])
                     && input.start.start_row_height_override == Some(frame.continuation_height)
             });
+        // A blank physical opening can belong to a later row too. Its deferred
+        // picture band starts in a new outer frame, before the cell top padding.
+        // Use the same owner cut as paint, and reserve the outer margin once.
+        let parallel_picture_opening_continuation = is_continuation
+            && !input.start.start_cut_is_block
+            && st.current_height <= 0.5
+            && input.start.start_row_height_override.is_some()
+            && prepared
+                .layout_engine
+                .parallel_picture_row_opening_height(
+                    table,
+                    cursor_row,
+                    &[],
+                    start_cut,
+                    input.source.styles,
+                )
+                .is_some();
         // 빈 시작 조각 뒤에서는 두 포맷 모두 같은 바깥 상자를 다시 연다.
         let host_before_overhead = host_before_overhead
-            + if empty_opening_continuation && !fragment_opens_outer_top {
+            + if (empty_opening_continuation
+                || (parallel_picture_opening_continuation
+                    && !terminal_fragment_opens_outer_top
+                    && !single_cell_page_fragment
+                    && !strict_following_plain_text_fit))
+                && !fragment_opens_outer_top
+                && !recursive_overlay_frame
+            {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
                 0.0
@@ -455,6 +492,7 @@ impl TypesetEngine {
         let fragment_placement = fragment_placement.map(|mut p| {
             if single_cell_fragment_shape
                 && !is_continuation
+                && !crate::renderer::float_placement::reflow_empty_table_host(para, table)
                 && prepared.host_frame
                     == (
                         st.pages.len(),

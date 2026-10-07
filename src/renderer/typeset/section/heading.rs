@@ -38,10 +38,25 @@ impl TypesetEngine {
             let page_top_vpos_opt = page_first_para_idx
                 .and_then(|pi| paragraphs.get(pi))
                 .and_then(|p| p.line_segs.first())
+                .filter(|seg| !super::super::is_synthetic_line_seg(seg))
                 .map(|s| s.vertical_pos);
-            if let (Some(first_seg), Some(page_top_vpos)) =
-                (para.line_segs.first(), page_top_vpos_opt)
-            {
+            if let (Some(first_seg), Some(page_top_vpos)) = (
+                para.line_segs
+                    .first()
+                    .filter(|seg| !super::super::is_synthetic_line_seg(seg)),
+                page_top_vpos_opt,
+            ) {
+                // 재조판이 생성한 누적 좌표는 저장된 쪽의 소유 근거가 아니다.
+                // 앞 쪽에서 일부 줄을 이미 소비한 문단의 첫 좌표로 쪽 원점을
+                // 추측하면, 실제로 들어가는 목록 항목까지 다음 쪽으로 밀린다.
+                // 혼합 사다리도 전체 경계의 저장 근거가 없으면 흐름 fit에 맡긴다.
+                if para
+                    .line_segs
+                    .iter()
+                    .any(super::super::is_synthetic_line_seg)
+                {
+                    return;
+                }
                 let body_h_hu =
                     crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
                 let para_h_px: f64 = para

@@ -60,6 +60,25 @@ impl DocumentCore {
                 .iter()
                 .all(|ctrl| matches!(ctrl, Control::SectionDef(_) | Control::ColumnDef(_)))
     }
+    /// 본문 문단 `controls[control_idx]` 에 컨트롤을 넣었을 때 같은 문단의 활성 누름틀 번호를 민다.
+    ///
+    /// 셀 활성 주소에는 본문 부모 문단 번호가 없어 같은 문단인지 가릴 수 없으므로 그대로 둔다.
+    pub(crate) fn shift_active_field_for_control_insert(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) {
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == section_idx
+                && active.para_idx == para_idx
+                && active.cell_path.is_none()
+                && active.control_idx >= control_idx
+            {
+                active.control_idx += 1;
+            }
+        }
+    }
     /// 컨트롤 삭제 후 문단의 line_segs를 재계산한다.
     ///
     /// 그림/도형 삭제 시 문단의 line_segs에 컨트롤 높이가 그대로 남아,
@@ -429,10 +448,11 @@ impl crate::document_core::DocumentCore {
             .insert(insert_idx, Control::NewNumber(new_number));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0012;
         paragraph.has_para_text = true;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
         self.reflow_paragraph(section_idx, para_idx);
         self.recompose_section(section_idx);

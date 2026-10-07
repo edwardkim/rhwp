@@ -1377,6 +1377,21 @@ impl DocumentCore {
         if control_idx < para.ctrl_data_records.len() {
             para.ctrl_data_records.remove(control_idx);
         }
+        // 컨트롤 배열이 줄어도 뒤 누름틀의 범위는 같은 필드를 가리켜야 한다.
+        for range in &mut para.field_ranges {
+            if range.control_idx > control_idx {
+                range.control_idx -= 1;
+            }
+        }
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
+                && active.cell_path.is_none()
+                && active.control_idx > control_idx
+            {
+                active.control_idx -= 1;
+            }
+        }
 
         // char_count 갱신
         if para.char_count >= 8 {
@@ -1557,9 +1572,10 @@ impl DocumentCore {
     /// 이던 것이 그 탓이다. 수식·각주 경로가 이미 이 꼴이다.
     fn leave_coordinate_trace(
         paragraph: &mut crate::model::paragraph::Paragraph,
+        control_idx: usize,
         char_offset: usize,
     ) {
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(control_idx, char_offset);
         paragraph.char_count += 8;
     }
 
@@ -1724,7 +1740,7 @@ impl DocumentCore {
                         .controls
                         .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
                     target_para.ctrl_data_records.insert(new_ctrl_idx, None);
-                    target_para.shift_for_inline_control_insert(char_offset);
+                    target_para.shift_for_inline_control_insert(new_ctrl_idx, char_offset);
                     target_para.control_mask |= 0x00000800;
                     let logical_positions =
                         crate::document_core::helpers::find_logical_control_positions(target_para);
@@ -1884,7 +1900,7 @@ impl DocumentCore {
             .controls
             .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
         parent.ctrl_data_records.insert(new_ctrl_idx, None);
-        Self::leave_coordinate_trace(parent, char_offset);
+        Self::leave_coordinate_trace(parent, new_ctrl_idx, char_offset);
         let logical_positions =
             crate::document_core::helpers::find_logical_control_positions(parent);
         let logical_after = logical_positions
@@ -1892,6 +1908,7 @@ impl DocumentCore {
             .copied()
             .unwrap_or_else(|| parent.text.chars().count())
             + 1;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, new_ctrl_idx);
 
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();

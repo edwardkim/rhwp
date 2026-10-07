@@ -17,6 +17,117 @@ use super::layout::picture_flow_frame_size_hu;
 use super::layout_frame::{FrameExclusion, FrameExclusionPolicy, LayoutFrame};
 use super::page_layout::LayoutRect;
 
+/// Paragraph-relative floats whose signed vertical intervals overlap occupy
+/// one band. Negative offsets do not remove the object's flow height: when
+/// its owner moves to another fragment the paragraph origin moves with it.
+pub(crate) fn parallel_cell_float_band_height(controls: &[Control], dpi: f64) -> Option<f64> {
+    if controls.len() < 2 {
+        return None;
+    }
+    let mut latest_start = f64::NEG_INFINITY;
+    let mut earliest_end = f64::INFINITY;
+    let mut bottom = 0.0f64;
+    for control in controls {
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => return None,
+        };
+        if common.treat_as_char
+            || !matches!(
+                common.text_wrap,
+                TextWrap::Square | TextWrap::Tight | TextWrap::Through
+            )
+            || common.vert_rel_to != VertRelTo::Para
+        {
+            return None;
+        }
+        let start = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+        let height = hwpunit_to_px(signed_hwpunit(common.height), dpi)
+            + hwpunit_to_px(i32::from(common.margin.top), dpi)
+            + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+        if height <= 0.5 {
+            return None;
+        }
+        latest_start = latest_start.max(start);
+        earliest_end = earliest_end.min(start + height);
+        bottom = bottom.max(start.max(0.0) + height);
+    }
+    (latest_start + 0.5 < earliest_end).then_some(bottom)
+}
+
+/// A single whitespace host line and its parallel flow pictures share an
+/// origin, but the line and the picture band have separate fragment owners.
+/// Explicit newlines, visible text, inline objects and distinct bands keep
+/// their own line/anchor contracts.
+pub(crate) fn parallel_cell_picture_band_height(para: &Paragraph, dpi: f64) -> Option<f64> {
+    if !para.text.trim().is_empty()
+        || para.text.contains(['\r', '\n'])
+        || para.line_segs.len() > 1
+        || !para.controls.iter().all(|control| {
+            matches!(control,
+                Control::Picture(picture) if picture.common.flow_with_text
+                    && picture.common.text_wrap == TextWrap::Square
+                    && picture.common.vert_align == VertAlign::Top
+            )
+        })
+    {
+        return None;
+    }
+    parallel_cell_float_band_height(&para.controls, dpi)
+}
+
+/// A reflowed empty block-table host shares its line origin with its tables.
+/// Column definitions configure that flow; they do not create an extra line.
+/// A following empty paragraph remains a separate line, as do text, fields,
+/// TAC objects and stored line boxes.
+pub(crate) fn reflow_block_table_host_occupied_height(
+    para: &Paragraph,
+    line_height: f64,
+    table_height: f64,
+) -> Option<f64> {
+    if !crate::renderer::para_has_no_stored_line_segs(para) || !para.text.is_empty() {
+        return None;
+    }
+    let mut has_table = false;
+    for control in &para.controls {
+        match control {
+            Control::Table(table)
+                if !table.common.treat_as_char
+                    && table.common.flow_with_text
+                    && table.common.text_wrap == TextWrap::TopAndBottom
+                    && table.common.vert_rel_to == VertRelTo::Para
+                    && table.common.vert_align == VertAlign::Top
+                    && signed_hwpunit(table.common.vertical_offset) == 0 =>
+            {
+                has_table = true;
+            }
+            Control::ColumnDef(_) => {}
+            _ => return None,
+        }
+    }
+    has_table.then_some(line_height.max(table_height))
+}
+
+/// On reflow, an adjustable multi-row table is constrained by its physical
+/// row declarations and content, rather than by scaling every row to a cached
+/// object bounding height. A single row can consume the object-height minimum
+/// directly; protected/noAdjust and stored-line tables retain their frame.
+pub(crate) fn reflow_table_uses_row_height_constraints(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && !table.common.size_protect
+        && table.raw_table_record_attr & 0x08 == 0
+        && table.row_count > 1
+        && !table.cells.is_empty()
+        && table.cells.iter().all(|cell| {
+            !cell.paragraphs.is_empty()
+                && cell
+                    .paragraphs
+                    .iter()
+                    .all(crate::renderer::para_has_no_stored_line_segs)
+        })
+}
+
 /// 자리차지 개체가 흐름에 추가하는 문단 기준 앞 공간.
 /// 음수 오프셋은 앞 공간을 만들지 않는다. 셀의 가운데 정렬도 이 점유 프레임을
 /// 소비하므로 음수 저장값을 별도의 정렬 이동으로 다시 적용하지 않는다.
@@ -413,6 +524,18 @@ fn rowspan_straddles_row(table: &Table, row: usize) -> bool {
         let top = cell.row as usize;
         top < row && top + (cell.row_span as usize).max(1) > row
     })
+}
+
+/// A paragraph-following front overlay still owns a physical RowBreak frame.
+/// Its text wrapping policy does not remove the frame margins when its source
+/// cells continue on another page. Fixed overlays and behind-text backgrounds
+/// keep their separate placement contract.
+pub(crate) fn paragraph_following_overlay_rowbreak_frame(table: &Table) -> bool {
+    !table.common.treat_as_char
+        && table.common.flow_with_text
+        && table.common.vert_rel_to == VertRelTo::Para
+        && table.common.text_wrap == TextWrap::InFrontOfText
+        && table.page_break == TablePageBreak::RowBreak
 }
 
 pub(crate) fn column_rowbreak_caption_outer_spacing_px(
@@ -2186,6 +2309,46 @@ impl ParagraphFloatPlacement {
         .then_some(position)
     }
 
+    /// Preserve the same formatted before/body/after box in whole fit and paint.
+    /// No text line is inferred from an empty control-only host.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn from_empty_reflow_host(
+        para: &Paragraph,
+        table: &Table,
+        origin: f64,
+        stored_origin: Option<f64>,
+        table_height: f64,
+        before: f64,
+        after: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        // 동일 단의 실제 원점0·연속 저장 사다리를 확인한 경우만 저장 원점을 쓴다.
+        // 폭0 자체는 현재 흐름과 저장/paint 원점이 같다는 증거가 아니다.
+        let stored_origin = stored_origin.filter(|_| saved_whole_empty_table_anchor(para, table));
+        let origin = stored_origin.unwrap_or(origin);
+        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some())
+            || ![origin, table_height, before, after]
+                .iter()
+                .all(|value| value.is_finite())
+            || table_height < 0.0
+        {
+            return None;
+        }
+        // A positive paragraph offset is physical space before the flow
+        // object even though it has no content unit or saved host line.
+        let table_top =
+            origin + before + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+        Some(Self {
+            flow: ParagraphFloatFlow::Exclusion,
+            anchor_y: origin,
+            stored_host_origin: stored_origin,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top,
+            occupied_bottom: table_top + table_height + after,
+        })
+    }
+
     /// 저장 LineSeg 대신 현재 frame에서 계산된 줄로 앵커를 결정한다.
     /// 모든 호스트 줄이 표보다 앞서는 계약만 소유하며, 혼합 배치를 임의로
     /// 본문 뒤 배치로 바꾸지 않는다. source의 UTF-16 위치/높이는 읽지 않는다.
@@ -2998,6 +3161,71 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
     !common.treat_as_char
         && matches!(common.text_wrap, TextWrap::TopAndBottom)
         && matches!(common.vert_rel_to, VertRelTo::Para)
+}
+
+/// With no line box, an empty block host places its sole flow table
+/// inside the before/after space already reserved by table formatting. Text and
+/// whitespace hosts retain their own line boxes; negative/absolute positions
+/// and saved frames have different origins.
+pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
+    para.text.is_empty()
+        // An implementation-tagged LineSeg still describes a computed line.
+        // Lack of a trustworthy saved anchor does not erase that line box.
+        && para.line_segs.is_empty()
+        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && is_para_topbottom_float(&table.common)
+        && matches!(table.common.vert_align, VertAlign::Top)
+        && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+/// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.
+/// 폭 0 저장 줄의 vpos는 이전 흐름 위치일 수 있으므로 새 단의 원점을 덮지 않는다.
+/// 이 전환은 명시적 쪽·단 나누기로 새 프레임을 여는 통째 표에 적용한다.
+/// 같은 프레임 안의 저장 표는 폭 0이어도 원본 줄 원점을 계속 소유한다.
+/// 분할 표의 저장 앵커는 원본 조각의 컷·높이·단을 소유하므로 통째 표 상자로
+/// 치환하지 않는다. 일반 저장 글줄·음수 오프셋·절대 좌표도 기존 계약을 유지한다.
+pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Table) -> bool {
+    reflow_empty_table_host(para, table)
+        || (table.page_break == TablePageBreak::None
+            && matches!(
+                para.column_type,
+                crate::model::paragraph::ColumnBreakType::Page
+                    | crate::model::paragraph::ColumnBreakType::Column
+            )
+            && object_only_saved_table_anchor(para, table)
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para.line_segs.iter().all(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            && table.common.vert_align == VertAlign::Top
+            && signed_hwpunit(table.common.vertical_offset) >= 0)
+}
+
+/// 저장 원점이 별도로 입증되어야 하는 통째 빈 개체 앵커의 속성 계약.
+fn saved_whole_empty_table_anchor(para: &Paragraph, table: &Table) -> bool {
+    table.page_break == TablePageBreak::None
+        && object_only_saved_table_anchor(para, table)
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && para.line_segs.iter().all(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+        && table.common.vert_align == VertAlign::Top
+        && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+/// 실제 예약에서 선택한 저장 원점 증거를 첫 조각도 그대로 소비한다.
+pub(crate) fn empty_table_host_uses_shared_formatted_box(
+    para: &Paragraph,
+    table: &Table,
+    placement: Option<&ParagraphFloatPlacement>,
+) -> bool {
+    empty_table_host_uses_formatted_box(para, table)
+        || (saved_whole_empty_table_anchor(para, table)
+            && placement.is_some_and(|plan| {
+                plan.flow == ParagraphFloatFlow::Exclusion && plan.stored_host_origin.is_some()
+            }))
 }
 
 /// 쪽·종이 기준 표의 외곽 여백을 포함한 가시 원점과 흐름 하단.

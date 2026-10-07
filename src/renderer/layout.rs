@@ -2208,6 +2208,7 @@ fn tac_paragraph_tail_stored_line_top(
     para: &Paragraph,
     table: &crate::model::table::Table,
     col_area: &LayoutRect,
+    rendered_host_origin: Option<f64>,
     flow_y: f64,
     dpi: f64,
 ) -> Option<f64> {
@@ -2216,7 +2217,7 @@ fn tac_paragraph_tail_stored_line_top(
     if !stored_layout
         || has_receipt_filler
         || !table.common.treat_as_char
-        || !para_has_visible_text(para)
+        || (!para_has_visible_text(para) && rendered_host_origin.is_none())
     {
         return None;
     }
@@ -2255,9 +2256,19 @@ fn tac_paragraph_tail_stored_line_top(
     if text_line_max <= 0 || (last.line_height as i64) * 2 < text_line_max * 3 {
         return None;
     }
-    let top = col_area.y
-        + hwpunit_to_px(last.vertical_pos, dpi)
-        + hwpunit_to_px(table.outer_margin_top as i32, dpi);
+    // A prefix already laid out in this column establishes the paragraph's
+    // local origin. Preserve the saved distance between its rows, rather than
+    // reintroducing an absolute section vpos after editing or flow placement.
+    let line_top = rendered_host_origin
+        .map(|origin| {
+            origin
+                + hwpunit_to_px(
+                    last.vertical_pos.saturating_sub(stored[0].vertical_pos),
+                    dpi,
+                )
+        })
+        .unwrap_or_else(|| col_area.y + hwpunit_to_px(last.vertical_pos, dpi));
+    let top = line_top + hwpunit_to_px(table.outer_margin_top as i32, dpi);
     // ④ 흐름보다 위로 올리지 않는다. ⑤ 단을 넘지 않는다.
     if top < flow_y - 0.5
         || top + hwpunit_to_px(table.common.height as i32, dpi) > col_area.y + col_area.height + 1.0
@@ -3564,7 +3575,7 @@ pub struct LayoutEngine {
     /// 현재 섹션 미주의 정규화된 "구분선 아래" 마진(HWPUNIT).
     endnote_separator_below_hu: std::cell::Cell<i32>,
     /// 현재 활성 필드 위치 — 안내문 렌더링 스킵용
-    /// (section_idx, para_idx, control_idx, cell_path)
+    /// (section_idx, 본문 부모 para_idx, control_idx, cell_path)
     /// cell_path: 셀 내 필드일 경우 Some(Vec<(ctrl, cell, para)>)
     active_field:
         std::cell::RefCell<Option<(usize, usize, usize, Option<Vec<(usize, usize, usize)>>)>>,
@@ -12333,16 +12344,26 @@ impl LayoutEngine {
                                 + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
                         } else if tac_detached_line_shift > 0.0 {
                             y_offset + tac_detached_line_shift
-                        } else if let Some(tail_top) = tac_paragraph_tail_stored_line_top(
-                            self.profile.get().hwpx_stored_layout()
-                                || self.profile.get().hwp5_stored_pagination_layout(),
-                            tac_receipt_seal_line.is_some(),
-                            para,
-                            t,
-                            col_area,
-                            y_offset,
-                            self.dpi,
-                        ) {
+                        // The typesetter's inline placement already includes the
+                        // local row origin. A saved section vpos must not replace
+                        // it after the prefix has been positioned in that row.
+                        } else if let Some(tail_top) = flow_placement
+                            .is_none()
+                            .then(|| {
+                                tac_paragraph_tail_stored_line_top(
+                                    self.profile.get().hwpx_stored_layout()
+                                        || self.profile.get().hwp5_stored_pagination_layout(),
+                                    tac_receipt_seal_line.is_some(),
+                                    para,
+                                    t,
+                                    col_area,
+                                    self.table_push_floor.get().map(|_| para_y_for_table),
+                                    y_offset,
+                                    self.dpi,
+                                )
+                            })
+                            .flatten()
+                        {
                             tail_top
                         } else if let Some(om_top) = square_float_outer_margin_top_hu(t)
                             .filter(|_| !para_has_visible_text(para))
@@ -12676,7 +12697,19 @@ impl LayoutEngine {
                 // this source contract deliberately narrower than generic
                 // empty floats: Square sibling lanes and stored HWPX layout
                 // have separate coordinate contracts.
-                let empty_rowbreak_flow_end = if self.profile.get().hwp5_stored_pagination_layout()
+                let empty_reflow_flow_end =
+                    crate::renderer::float_placement::reflow_empty_table_host(para, t)
+                        .then(|| {
+                            ctx.paragraph_float_placements
+                                .get(&(para_index, control_index))
+                                .map(|placement| col_area.y + placement.occupied_bottom)
+                        })
+                        .flatten();
+                let empty_rowbreak_flow_end = if let Some(end) = empty_reflow_flow_end {
+                    // The resolved box has already consumed its outer top.
+                    // Its accepted bottom also owns the host's after-space.
+                    Some(end)
+                } else if self.profile.get().hwp5_stored_pagination_layout()
                     && is_current_empty_para_float
                     && !is_current_empty_square_sibling_float
                     && is_para_topbottom_float(&t.common)
@@ -13399,8 +13432,11 @@ impl LayoutEngine {
             // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
             para_start_y.insert(para_index, anchor_y);
         } else if let Some(existing_y) = para_start_y.get(&para_index) {
+            // A preceding host fragment owns the paragraph origin; advancing
+            // the table cursor does not create a new origin for its later row.
             if tac_in_front_decoration_line_shift.is_none()
                 && is_current_tac
+                && self.table_push_floor.get().is_none()
                 && y_offset > *existing_y + 1.0
                 && !tac_line_fits_above_offset_float
             {

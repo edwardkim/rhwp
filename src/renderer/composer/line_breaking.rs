@@ -7,13 +7,13 @@ use super::supplemental_clusters::ParagraphMetricScope;
 use super::{char_lang_slot, find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph, SpaceMetric};
-use crate::model::style::{Alignment, LineSpacingType};
+use crate::model::style::{Alignment, HeadType, LineSpacingType};
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
     is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
-use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
+use crate::renderer::style_resolver::{detect_lang_category, ResolvedParaStyle, ResolvedStyleSet};
 use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
@@ -395,8 +395,9 @@ fn tokenize_paragraph_with_regenerated_space_metric(
 
     let mut tokens = Vec::new();
     let mut i = 0;
-    let metric_scope =
-        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_reflow_slots(text_chars)
+        .with_space_metric(space_metric);
     let mut current_lang: usize = 0;
 
     while i < text_len {
@@ -887,14 +888,23 @@ fn prepare_paragraph_projection(
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
+    composed: Option<&ComposedParagraph>,
 ) -> Option<PreparedParagraphProjection> {
     if text_chars.is_empty() {
         return None;
     }
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let metric_scope =
-        ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric);
+    let metric_scope = ParagraphMetricScope::new(text_chars, styles)
+        .with_reflow_slots(text_chars)
+        .with_space_metric(space_metric);
+    let metric_scope = if let Some(composed) = composed {
+        ParagraphMetricScope::new(text_chars, styles)
+            .with_composed_slots(text_chars, composed)
+            .with_space_metric(space_metric)
+    } else {
+        metric_scope
+    };
     let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
@@ -931,6 +941,7 @@ fn prepare_paragraph_projection(
         } else {
             1.0
         };
+        let language_index = metric_scope.scalar_slot(styles, char_shape_id, language_index, index);
         let slot = crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index);
         kerning_scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
             slot,
@@ -1000,8 +1011,14 @@ fn prepare_paragraph_kerning(
         return None;
     }
     let context = styles.kerning_measurement_context.as_ref()?.clone();
-    let projection =
-        prepare_paragraph_projection(para, text_chars, styles, space_metric, inline_controls)?;
+    let projection = prepare_paragraph_projection(
+        para,
+        text_chars,
+        styles,
+        space_metric,
+        inline_controls,
+        None,
+    )?;
     if !projection
         .kerning_scalar_styles
         .iter()
@@ -1074,6 +1091,7 @@ pub(super) fn compose_horizontal_shaping_handoff(
         styles,
         SpaceMetric::Stored,
         &inline_controls,
+        Some(composed),
     )?;
     let kerning_measurement = kerning_context.paragraph_measurement(
         &para.text,
@@ -2661,6 +2679,34 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
     }
 }
 
+/// 줄의 점유 상자는 표 본체와 바깥 여백을 함께 포함한다.
+/// 별도 줄의 너비 판정과 같은 줄의 높이 발행이 동일한 메트릭을 소비한다.
+fn inline_control_occupied_size_hwp(
+    control: &Control,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(i32, i32)> {
+    let (mut width, mut height) = inline_control_size_hwp(control)?;
+    if let Control::Table(table) = control {
+        // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
+        // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
+        let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
+            .with_session_edited(true)
+            .measure_table(table, 0, 0, styles);
+        height = height.max(px_to_hwpunit(
+            measured.total_height - measured.caption_height,
+            dpi,
+        ));
+        width = width
+            .saturating_add(i32::from(table.outer_margin_left))
+            .saturating_add(i32::from(table.outer_margin_right));
+        height = height
+            .saturating_add(i32::from(table.outer_margin_top))
+            .saturating_add(i32::from(table.outer_margin_bottom));
+    }
+    Some((width, height))
+}
+
 /// [#7160] 프레임 채움 전용 — **글자처럼 취급 표**도 인라인 토큰으로 싣는다.
 ///
 /// 일반 경로는 표를 `control 배치 경로`에 두려고 제외하지만(#3211), 저장 줄이 없는 host 는
@@ -2902,6 +2948,7 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
 /// 같은 줄에 들어가는 작은 object와 복수 control 문단의 기존 reflow는 건드리지 않는다.
 fn inline_control_requires_own_line(
     para: &Paragraph,
+    occupied_controls: &[(usize, i32, i32)],
     text_chars: &[char],
     line_breaks: &[LineBreakResult],
     available_width_px: f64,
@@ -2911,15 +2958,10 @@ fn inline_control_requires_own_line(
     space_metric: SpaceMetric,
 ) -> Option<(usize, i32)> {
     let text_len = para.text.chars().count();
-    let positions = para.control_text_positions();
-    let mut candidates = para
-        .controls
+    let mut candidates = occupied_controls
         .iter()
-        .zip(positions)
-        .filter_map(|(control, position)| {
-            let (width, height) = inline_control_size_hwp(control)?;
-            (position > 0 && position <= text_len).then_some((position, width, height))
-        });
+        .copied()
+        .filter(|(position, _, _)| *position > 0 && *position <= text_len);
     let (position, control_width, height) = candidates.next()?;
     // 여러 inline control은 일반 placement가 순서를 보존해야 하므로 이 좁은
     // single-control 계약 밖이다.
@@ -2950,7 +2992,9 @@ fn inline_control_requires_own_line(
     };
     let prefix: String = text_chars[line.start_idx..position].iter().collect();
     let prefix_width = to_hwp(measure_token_width(
-        &ParagraphMetricScope::new(text_chars, styles).with_space_metric(space_metric),
+        &ParagraphMetricScope::new(text_chars, styles)
+            .with_reflow_slots(text_chars)
+            .with_space_metric(space_metric),
         &prefix,
         line.start_idx,
         &para.char_offsets,
@@ -3045,6 +3089,78 @@ pub(crate) fn frame_metrics_for_line(
     }
 }
 
+/// [#7490] 새로 조판한 줄에 한글처럼 `TAG_INDENTATION`(bit 20)을 단다.
+///
+/// 들여쓰기는 첫 줄에, 내어쓰기는 둘째 줄부터 적용된다(한글 저장본의 줄별 기록과
+/// 같다). 렌더러는 이 비트가 꺼진 저장 줄에 들여쓰기를 얹지 않으므로(#6190), 비운 채
+/// 발행하면 편집한 문단의 들여쓰기·내어쓰기가 그려지지 않는다.
+///
+/// 기준은 문단 모양의 `indent` 다. 렌더러가 비트를 보고 얹는 값이 이것이므로, 조판용
+/// 지역 `indent_px` 를 넘겨받지 않는다. 한글 기록(`stored`, 조판 전 저장 줄)이 이 규칙과
+/// 다르면 기록을 따른다.
+/// - 들여쓰기가 있는데 저장 줄의 비트가 모두 꺼져 있으면, 한글이 이 문단에 들여쓰기를
+///   적용하지 않은 것이다(#6190 표본). 새 줄도 끈다. 내어쓰기는 둘째 줄이 있어야 이
+///   기록을 읽는다. 들여쓰기를 바꾼 문단은 [`restamp_indentation`] 이 기록을 먼저 고친다.
+/// - 들여쓰기가 0 인 문단 머리(글머리표·번호·개요) 문단은 한글이 둘째 줄부터 비트를
+///   켠다. 저장 줄의 둘째 줄 이후 비트를 잇는다.
+fn mark_indented_lines(
+    lines: &mut [LineSeg],
+    first_line_index: usize,
+    para_style: Option<&ResolvedParaStyle>,
+    stored: &[LineSeg],
+) {
+    stamp_indentation(
+        lines,
+        first_line_index,
+        reflow_indentation_pattern(para_style, stored),
+    );
+}
+
+/// 재조판이 발행할 줄별 들여쓰기 기록. 개체의 줄 폭 판정도 같은 기록을 소비한다.
+fn reflow_indentation_pattern(
+    para_style: Option<&ResolvedParaStyle>,
+    stored: &[LineSeg],
+) -> (bool, bool) {
+    let indent = para_style.map_or(0.0, |style| style.indent);
+    let indented = |line: &LineSeg| line.tag & LineSeg::TAG_INDENTATION != 0;
+    let hancom_record = !stored.is_empty()
+        && stored
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+    if hancom_record
+        && (indent > 0.0 || (indent < 0.0 && stored.len() > 1))
+        && !stored.iter().any(indented)
+    {
+        (false, false)
+    } else if indent == 0.0 && para_style.is_some_and(|style| style.head_type != HeadType::None) {
+        (false, hancom_record && stored.iter().skip(1).any(indented))
+    } else {
+        (indent > 0.0, indent < 0.0)
+    }
+}
+
+/// [#7490] 문단 모양이 바뀌어 들여쓰기가 달라졌으면 저장 줄의 bit 20 을 새 들여쓰기로
+/// 다시 단다.
+///
+/// 저장 줄의 비트는 그 줄을 조판할 때의 들여쓰기 기록이다. 옛 기록(모두 꺼짐)을 두면
+/// 다음 재조판이 이를 "들여쓰기를 적용하지 않은 문단"으로 읽어 새 들여쓰기를 버린다.
+pub(crate) fn restamp_indentation(lines: &mut [LineSeg], old_indent: i32, new_indent: i32) {
+    if old_indent != new_indent {
+        stamp_indentation(lines, 0, (new_indent > 0, new_indent < 0));
+    }
+}
+
+/// 첫 줄과 둘째 줄 이후에 각각 bit 20 을 켜거나 끈다.
+fn stamp_indentation(lines: &mut [LineSeg], first_line_index: usize, (first, rest): (bool, bool)) {
+    for (line_index, line) in (first_line_index..).zip(lines.iter_mut()) {
+        if (line_index == 0 && first) || (line_index > 0 && rest) {
+            line.tag |= LineSeg::TAG_INDENTATION;
+        } else {
+            line.tag &= !LineSeg::TAG_INDENTATION;
+        }
+    }
+}
+
 /// Lay out the small scalar/Picture-band paragraph subset through a
 /// caller-owned physical frame.
 ///
@@ -3084,11 +3200,13 @@ fn layout_paragraph_in_frame_impl(
     // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
     // (`ListMarkerGeometry::breaker_box`). 게시하는 행 기하(구간)는 마커를 포함한 그대로다 —
     // 한/글 저장 행도 마커 자리부터 시작한다.
-    let (marker_hang_px, indent_px) = list_marker_breaker_box(
-        para,
-        styles,
-        para_style.map(|style| style.indent).unwrap_or(0.0),
-    );
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+        0.0
+    } else {
+        para_style.map_or(0.0, |style| style.indent)
+    };
+    // 저장 기록이 끄는 것은 문단 들여쓰기뿐이다. 마커의 첫/후속 줄 차이는 유지한다.
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -3454,7 +3572,9 @@ fn layout_paragraph_in_frame_impl(
         if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
             frame.absorb_whitespace_only_rows(&para.text, first_row);
         }
-        Some(frame.project_line_segs_since(first_row))
+        let mut lines = frame.project_line_segs_since(first_row);
+        mark_indented_lines(&mut lines, 0, para_style, &para.line_segs);
+        Some(lines)
     })();
 
     let kerning_failed = kerning_break_session
@@ -4154,15 +4274,13 @@ fn reflow_line_segs_impl(
     let seg_width_hwp = paragraph_box.width_hwp();
     // [#7418·#7436] 판정 폭에서만 목록 마커 폭을 뺀다 — 프레임 채움
     // (`layout_paragraph_in_frame`)과 같은 계약이다. 게시 폭(`seg_width_hwp`)은 마커 자리를 포함한다.
-    let (marker_hang_px, indent_px) = list_marker_breaker_box(
-        para,
-        styles,
-        styles
-            .para_styles
-            .get(para.para_shape_id as usize)
-            .map(|s| s.indent)
-            .unwrap_or(0.0),
-    );
+    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+    let indent_px = if reflow_indentation_pattern(para_style, &para.line_segs) == (false, false) {
+        0.0
+    } else {
+        para_style.map_or(0.0, |style| style.indent)
+    };
+    let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
 
     // ParaPr의 줄간격 설정 (합성 LineSeg에서 line_spacing 계산에 사용)
@@ -4309,10 +4427,25 @@ fn reflow_line_segs_impl(
             let mut seg = make_line_seg(0, font_size);
             if let Some(template) = orig.as_ref() {
                 seg.vertical_pos = template.vertical_pos;
+                // 폭0인 빈 floating table 호스트는 개체 앵커다. 본문 글줄의
+                // 가용 폭으로 바꾸면 저장 후 바깥 여백의 소유가 사라진다.
+                // TAC와 글자가 있는 호스트는 위의 실제 글줄 경로를 따른다.
+                if template.segment_width == 0
+                    && matches!(para.controls.as_slice(), [Control::Table(table)]
+                        if !table.common.treat_as_char)
+                {
+                    seg.segment_width = 0;
+                }
             }
             if let Some(height_hwp) = inline_control_line_height_hwp(para) {
                 apply_inline_control_line_height(&mut seg, height_hwp);
             }
+            mark_indented_lines(
+                std::slice::from_mut(&mut seg),
+                0,
+                para_style,
+                &para.line_segs,
+            );
             para.replace_line_segs(vec![seg]);
         }
         return false;
@@ -4497,14 +4630,42 @@ fn reflow_line_segs_impl(
             None,
         );
     }
-    let forced_inline_line = split_stale_cell_reflow
+    // TAC 표의 호스트를 편집하면 이전 줄 경계는 더 이상 권위가 없다.
+    // 표 앞의 실제 텍스트와 표가 남은 폭에 함께 들어가는지 판정하고, 실패하면
+    // 표 앵커에서 물리 줄을 발행한다. 배치도 그 줄을 소유 줄로 사용한다 (#7491).
+    // 기존 셀 분할 경로와 달리 저장본에서 들여쓰지 않은 본문 표 호스트는 새로
+    // 발행할 bit20 기록과 같은 폭을 사용한다 (#6190 편집 후 한컴 PDF).
+    let edited_tac_table = supports_tac_table_band_frame_controls(para);
+    let table_indent_px = if edited_tac_table
+        && reflow_indentation_pattern(para_style, &original_line_segs) == (false, false)
+    {
+        0.0
+    } else {
+        indent_px
+    };
+    // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
+    let occupied_controls: Vec<_> =
+        if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
+            para.controls
+                .iter()
+                .zip(para.control_text_positions())
+                .filter_map(|(control, position)| {
+                    let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+                    Some((position, width, height))
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
+    let forced_inline_line = (split_stale_cell_reflow || edited_tac_table)
         .then(|| {
             inline_control_requires_own_line(
                 para,
+                &occupied_controls,
                 &text_chars,
                 &line_breaks,
                 available_width_px,
-                indent_px,
+                table_indent_px,
                 reflow_is_first_line,
                 styles,
                 reflow_space_metric,
@@ -4574,10 +4735,7 @@ fn reflow_line_segs_impl(
     }
 
     if forced_inline_line.is_none() && inline_controls.is_empty() {
-        for (control, position) in para.controls.iter().zip(para.control_text_positions()) {
-            let Some((_, height_hwp)) = inline_control_size_hwp(control) else {
-                continue;
-            };
+        for &(position, _, height_hwp) in &occupied_controls {
             // 명시적 개행으로 정해진 개체 줄에 높이를 싣는다. 최초 줄에 일괄
             // 적용하면 표 앞 제목이 표 줄로 오인되어 표 뒤로 재배치된다.
             let line_index = line_breaks
@@ -4605,6 +4763,12 @@ fn reflow_line_segs_impl(
         new_line_segs[i].vertical_pos = vpos;
         vpos += new_line_segs[i].line_height + new_line_segs[i].line_spacing;
     }
+    mark_indented_lines(
+        &mut new_line_segs[preserved_prefix_len..],
+        preserved_prefix_len,
+        para_style,
+        &original_line_segs,
+    );
 
     let space_metrics = new_line_segs
         .iter()

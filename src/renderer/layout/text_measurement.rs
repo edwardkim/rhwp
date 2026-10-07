@@ -1371,7 +1371,8 @@ pub(crate) fn char_width_decision<'a>(
     let (font_size, ratio, _) = style_params(style);
     let c = chars[i];
     // [#7418] 영문 슬롯으로 재는 구두점 — 글꼴·폭 표·자간·장평만 영문 슬롯 값이고, 배치가
-    // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다.
+    // 얹는 여분(양쪽 정렬 등)은 run 의 값 그대로다. 비ASCII 구두점은 재조판
+    // composer가 결정한 run 슬롯을 따른다. 저장 run의 표시 글꼴과 다른 폭을 덮어쓰지 않는다.
     let latin = c
         .is_ascii_punctuation()
         .then_some(style.ascii_punct_latin.as_deref())
