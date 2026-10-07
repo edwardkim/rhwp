@@ -6848,6 +6848,14 @@ impl LayoutEngine {
                                     let mut c = pic.common.clone();
                                     c.vertical_offset = 0;
                                     c
+                                })
+                                // 문단 위에서 시작하는 Square 흐름 개체는 측정 프레임 위로
+                                // 올라가지 않는다 — 쪽 넘김 조각 경로와 같은 계약.
+                                .or_else(|| {
+                                    crate::renderer::float_placement::cell_square_flow_placement_common(
+                                        para,
+                                        &pic.common,
+                                    )
                                 });
                             let (pic_x, pic_y) = self.compute_object_position(
                                 grouped_common.as_ref().unwrap_or(&pic.common),
@@ -17956,6 +17964,25 @@ impl LayoutEngine {
                     && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             })
             && self.row_cut_starts_intra_paragraph_stored_frame(table, row, cut, styles)
+    }
+
+    /// 저장 조판 원본에서 이어받는 조각의 시작 행 상자(`start_row_height_override`)는
+    /// 앞 조각이 쓰고 남은 **저장 행 높이**다. 그 상자가 칸의 남은 내용을 모두 담으면
+    /// 그 조각이 칸의 마지막 조각이므로, 한/글은 남는 여유를 칸 `valign` 으로 나눈다
+    /// (36308670 2쪽: 행 선언 35618HU = 앞 조각 394.6 + 끝 조각 80.3px, 끝 조각의 세 줄이
+    /// 상자 위에서 7.5px 아래 = (80.3 − 65.3)/2). 편집·재조판한 표는 저장 높이가 내용과
+    /// 무관해질 수 있어 제외한다.
+    pub(super) fn stored_row_frame_owns_complete_tail(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        (self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
+            && !self.profile.get().session_edited()
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
     }
 
     /// 고아 줄 방지가 꺼진 원본 문단의 새 프레임 첫 슬롯에서 쪽 경계를 유지한다.

@@ -135,6 +135,41 @@ pub(crate) fn topbottom_flow_vertical_offset_hu(common: &CommonObjAttr) -> i32 {
     signed_hwpunit(common.vertical_offset).max(0)
 }
 
+/// 글자 없는 칸 문단을 기준으로 흐름을 미는 Square·Tight·Through 개체의 배치용 속성.
+///
+/// 그런 문단은 개체 하나가 내용의 전부라, 칸 측정(`cell_non_inline_control_flow_height`)은
+/// 개체가 **문단 위에서 시작해 개체 높이만큼** 점유한다고 계상하고 칸 `valign` 도 그
+/// 프레임으로 문단 위를 정한다. 음수 저장 오프셋은 그 프레임 위에 공간을 만들지 않으므로
+/// 배치에서도 개체를 문단 위보다 끌어올리지 않는다 — `topbottom_flow_vertical_offset_hu`
+/// 와 같은 계약이다. 한/글 PDF 근거:
+/// - 2024, 36308670 2쪽: 가운데 정렬 칸 Square 그림 다섯(오프셋 −71·−663·0·0·−561HU)이
+///   모두 칸 가운데에 0.2px 안에서 놓인다.
+/// - 2020, pr7518 nested-split 3쪽: 공백 문단의 그림 셋(−992·−1078·0HU)이 같은 y.
+/// - 2024, 36296324 2쪽 중첩 표: 같은 행의 −455HU 그림과 0HU 그림 위 차가 0.5px.
+///
+/// 글자가 있는 문단은 개체가 글줄을 밀어 낸 저장 흐름 안에서 오프셋을 쓴다(보도자료
+/// 머리 표 로고 −80HU: 한/글 PDF 와 0.13px) — 그대로 둔다. 양수 오프셋·문단 기준이
+/// 아닌 개체도 그대로다.
+pub(crate) fn cell_square_flow_placement_common(
+    para: &Paragraph,
+    common: &CommonObjAttr,
+) -> Option<CommonObjAttr> {
+    (para.text.trim().is_empty()
+        && !common.treat_as_char
+        && common.flow_with_text
+        && matches!(common.vert_rel_to, VertRelTo::Para)
+        && matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        )
+        && signed_hwpunit(common.vertical_offset) < 0)
+        .then(|| {
+            let mut placed = common.clone();
+            placed.vertical_offset = 0;
+            placed
+        })
+}
+
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
 /// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
 /// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.
