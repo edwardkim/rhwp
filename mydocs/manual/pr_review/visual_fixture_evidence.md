@@ -366,4 +366,5 @@ PR 검증 과정에서 생성됐다는 이유만으로 output 디렉터리 전�
    archive review·asset·오늘할일과 신규 기준 자료만 포함한 후속 PR로 반영한다.
 
 option 2에서도 asset이 devel에 존재하기 전에는 issue/PR comment를 게시하지 않는다. 후속 PR의
-branch, worktree, review 전용 target은 merge 뒤 [merge 후속 처리](post_merge.md)에서 정리한다.
+branch, worktree, review 소유 임시 산출물은 merge 뒤 [merge 후속 처리](post_merge.md)에서 정리한다.
+모든 OS에서 기본 작업공간의 공유 `target/pr-review`는 다음 review의 cache로 보존한다.
