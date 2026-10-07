@@ -133,7 +133,8 @@ git rev-parse HEAD
 
 위 예시의 `git merge --ff-only`가 실패하면 마지막 두 `switch`/`merge`를 억지로 재시도하거나 history를
 재작성하지 않는다. 새 PR head가 force-push된 경우에는 최초 검토 branch를 보존하고, 새 head에서 만든
-별도 visibility review branch와 전용 target으로 검증을 다시 시작한다.
+별도 visibility review branch에서 검증을 다시 시작한다. target은 모든 OS에서 기존 기본 작업공간의
+공용 `target/pr-review` 절대 경로를 그대로 사용하며, branch·worktree별 cache를 만들지 않는다.
 
 ### 2.6.1 외부 PR review 기록의 source head 정렬
 
