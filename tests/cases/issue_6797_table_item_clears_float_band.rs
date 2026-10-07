@@ -51,8 +51,9 @@
 //! 남는 `overflow` 8건은 이 축과 무관하다(수정 전후 동일).
 //!
 //! ⚠ 이 문서는 `hancom-office-2010` 저장본이라 저장소 정책상 기준 엔진은 **2020**
-//! 이다. 그 기준 PDF 는 아직 없다(작업 PC 에 MCP `.env.local` 부재) — fixture README
-//! 참조. 다만 이 축의 판정은 **저장 사다리**가 주므로 버전과 무관하다.
+//! 이다. 그림을 포함해 재산출한 독립 기준은
+//! `pdf/156160455-social-pig-farm-income-2020.pdf` 전11쪽이다.
+//! 저장 사다리와 앞 표·두 그래프·후속 제목의 소속 및 순서를 함께 검증한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -85,20 +86,32 @@ fn maintainer_float_variant(
         panic!("pi=71 ci=0 표가 필요하다");
     };
     table.common.vertical_offset = vertical_offset;
+    // 원문 페이지 계획을 재사용하지 않고 변형 IR로 측정·배치 파생 상태를 재구성한다.
+    let document = core.document().clone();
+    core.set_document(document);
     page_column(&core, 6)
 }
 
 /// [#6798] 이미 밴드 아래에 놓인 offset 표를 저장 앵커로 다시 이동하지 않는다.
 #[test]
 fn maintainer_an_already_clear_offset_table_is_not_snapped_again() {
-    let column = maintainer_float_variant(Some(45_000), 30_000, false);
-    let owner = top_level_table(&column, 70, 0).expect("밴드 소유 표");
-    let follower = top_level_table(&column, 71, 0).expect("후속 표");
+    let smaller_offset = 15_000;
+    let larger_offset = 30_000;
+    let before = maintainer_float_variant(Some(45_000), smaller_offset, false);
+    let after = maintainer_float_variant(Some(45_000), larger_offset, false);
+    let owner = top_level_table(&after, 70, 0).expect("밴드 소유 표");
+    let earlier = top_level_table(&before, 71, 0).expect("작은 offset 후속 표");
+    let follower = top_level_table(&after, 71, 0).expect("큰 offset 후속 표");
+    assert!(earlier.bbox.y >= owner.bbox.y + owner.bbox.height);
     assert!(follower.bbox.y >= owner.bbox.y + owner.bbox.height);
-    // 기존 owner의 hunk-off 공개 IR 대조가 확인한 위치다. 877.4px 추가 스냅은 실패한다.
+    // 이미 앞 표를 벗어난 두 배치는 원본 offset 차이만큼 이동한다.
+    // 문서의 절대 위치를 바꿔도 별도 밴드 스냅을 더하면 실패한다.
+    let expected_advance =
+        rhwp::renderer::hwpunit_to_px((larger_offset - smaller_offset) as i32, 96.0);
     assert!(
-        (follower.bbox.y - 574.8).abs() <= 0.5,
-        "기존 offset 배치를 유지해야 한다: y={}",
+        (follower.bbox.y - earlier.bbox.y - expected_advance).abs() <= 0.5,
+        "원본 offset 차이만 소비해야 한다: 전={}, 후={}, 기대 이동={expected_advance}",
+        earlier.bbox.y,
         follower.bbox.y
     );
 }
@@ -123,13 +136,30 @@ fn maintainer_out_of_column_stored_coordinates_do_not_force_a_bottom_clamp() {
 #[test]
 fn maintainer_synthetic_and_missing_stored_anchors_do_not_supply_a_jump() {
     let missing = maintainer_float_variant(None, 0, false);
+    // A computed line box and a host with no line box are different flow inputs.
+    // Vary only the untrusted coordinate while retaining the same line box.
+    let synthetic_source = maintainer_float_variant(Some(16_306), 0, true);
     let synthetic = maintainer_float_variant(Some(1_000_000), 0, true);
     let missing_table = top_level_table(&missing, 71, 0).expect("사다리 없는 후속 표");
     let synthetic_table = top_level_table(&synthetic, 71, 0).expect("합성 사다리 후속 표");
+    let synthetic_source_table =
+        top_level_table(&synthetic_source, 71, 0).expect("같은 줄 상자의 대조 표");
     assert!(
-        (missing_table.bbox.y - synthetic_table.bbox.y).abs() <= 0.5,
+        (synthetic_source_table.bbox.y - synthetic_table.bbox.y).abs() <= 0.5,
         "합성 사다리의 큰 좌표를 배제 밴드 스냅에 쓰면 안 된다"
     );
+    let owner = top_level_table(&missing, 70, 0).expect("사다리 없는 경로의 앞 float");
+    assert!(
+        missing_table.bbox.y + 0.5 >= owner.bbox.y + owner.bbox.height,
+        "줄 상자가 없는 flow 표도 앞 float의 실제 배제 밴드 뒤에 놓인다"
+    );
+    for (column, table) in [(&missing, missing_table), (&synthetic, synthetic_table)] {
+        assert!(table.bbox.y.is_finite());
+        assert!(
+            table.bbox.y + table.bbox.height < column.bbox.y + column.bbox.height - 0.5,
+            "누락·합성 좌표로 페이지 바닥에 스냅되면 안 된다"
+        );
+    }
 }
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의
@@ -211,6 +241,37 @@ fn table_item_clears_the_previous_float_band() {
         follower.bbox.y,
         follower.bbox.y + follower.bbox.height
     );
+    let following_heading = top_level_table(&column, 73, 0).expect("같은 7쪽의 참고3 제목 표");
+    let follower_bottom = follower.bbox.y + follower.bbox.height;
+    assert!(
+        following_heading.bbox.y + 0.5 >= follower_bottom,
+        "참고3 제목은 그래프 표 뒤에 있어야 한다"
+    );
+    assert!(
+        follower_bottom <= column.bbox.y + column.bbox.height + 0.5,
+        "그래프 표는 같은 쪽의 본문 안에 있어야 한다"
+    );
+    fn collect_images<'a>(node: &'a RenderNode, images: &mut Vec<&'a RenderNode>) {
+        if matches!(node.node_type, RenderNodeType::Image(_)) {
+            images.push(node);
+        }
+        for child in &node.children {
+            collect_images(child, images);
+        }
+    }
+    let mut images = Vec::new();
+    collect_images(follower, &mut images);
+    assert_eq!(images.len(), 2, "원본의 두 분포 그래프를 보존해야 한다");
+    for image in images {
+        assert!(
+            image.bbox.x + 0.5 >= follower.bbox.x
+                && image.bbox.y + 0.5 >= follower.bbox.y
+                && image.bbox.x + image.bbox.width <= follower.bbox.x + follower.bbox.width + 0.5
+                && image.bbox.y + image.bbox.height <= follower_bottom + 0.5,
+            "분포 그래프는 소유 표의 프레임 안에 있어야 한다: {:?}",
+            image.bbox
+        );
+    }
 }
 
 /// 반대 방향 — **host 에 글이 있는 문단은 옮기지 않는다**.

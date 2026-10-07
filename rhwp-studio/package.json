@@ -1,6 +1,6 @@
 {
   "name": "rhwp-studio",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -40,6 +40,7 @@
     "e2e:issue-7333-line": "node e2e/run-with-vite.mjs -- node e2e/issue-7333-line-selection.test.mjs --mode=headless",
     "e2e:page-key-scroll": "node e2e/page-key-scroll.test.mjs --mode=headless",
     "e2e:page-break-caret": "node e2e/run-with-vite.mjs -- node e2e/page-break-caret-reveal.test.mjs --mode=headless",
+    "e2e:enter-caret": "node e2e/run-with-vite.mjs -- node e2e/enter-caret-reveal-issue7486.test.mjs --mode=headless",
     "e2e:home-end-key": "node e2e/home-end-key.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
@@ -85,10 +86,10 @@
     "e2e:select-all-cmd-a": "node e2e/run-with-vite.mjs -- node e2e/select-all-cmd-a.test.mjs --mode=headless"
   },
   "devDependencies": {
-    "@types/chrome": "^0.3.0",
+    "@types/chrome": "^0.3.4",
     "puppeteer-core": "^25.12.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1",
+    "vite": "^8.3.2",
     "vite-plugin-pwa": "^1.3.0",
     "workbox-window": "^7.4.1"
   },

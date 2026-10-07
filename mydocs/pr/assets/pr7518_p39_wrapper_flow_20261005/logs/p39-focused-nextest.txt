@@ -1,0 +1,163 @@
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.88s
+────────────
+ Nextest run ID 18ed8fc6-58cf-4a6c-a117-aabbd406bcfb with nextest profile: default
+    Starting 68 tests across 9 binaries (1916 tests skipped)
+        PASS [   0.067s] ( 1/68) rhwp::regression_suite_005 issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::a_cell_that_wraps_within_its_height_keeps_its_declared_padding
+        PASS [   0.115s] ( 2/68) rhwp::regression_suite_002 issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text
+        PASS [   0.115s] ( 3/68) rhwp::regression_suite_002 issue_6267_para_float_table_overlap::host_paragraph_spacing_before_is_not_double_charged
+        PASS [   0.185s] ( 4/68) rhwp::regression_suite_005 issue_7413_cell_padding_shrinks_only_when_wrapping_overflows::b_cell_that_cannot_wrap_within_its_height_still_shrinks
+        PASS [   0.149s] ( 5/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::anchor_origin_translation_is_applied_once
+        PASS [   0.160s] ( 6/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::a_control_after_a_hard_break_is_not_a_width_wrapped_text_tail
+        PASS [   0.211s] ( 7/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::centered_wrapper_preserves_its_cell_frame_and_nested_table_origin
+        PASS [   0.146s] ( 8/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::computed_anchor_uses_scalar_positions_and_not_stored_geometry
+        PASS [   0.163s] ( 9/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::computed_host_rejects_invalid_rows_and_other_wrap_owners
+        PASS [   0.420s] (10/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::computed_frame_placement_reaches_paint_and_following_flow
+        PASS [   0.166s] (11/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::first_fragment_uses_paragraph_reference_not_text_or_outer_box
+        PASS [   0.332s] (12/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::first_fragment_real_fixture_matches_paragraph_offset_without_extra_margins
+        PASS [   0.009s] (13/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::occupied_bands_move_the_box_not_the_anchor_and_are_order_independent
+        PASS [   0.145s] (14/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space
+        PASS [   0.009s] (15/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::paragraph_completion_uses_occupied_end_once_in_either_emission_order
+        PASS [   0.177s] (16/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::object_only_paragraph_preserves_outer_frames_and_finishes_once
+        PASS [   0.185s] (17/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::page_last_line_consumes_the_resolved_source_frame
+        PASS [   0.217s] (18/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::paragraph_text_table_and_following_text_do_not_overlap
+        PASS [   0.216s] (19/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::preceding_tables_and_page_count_are_preserved
+        PASS [   0.247s] (20/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::reflowed_host_does_not_use_stale_stored_line_coordinates
+        PASS [   1.015s] (21/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text
+        PASS [   0.869s] (22/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame
+        PASS [   0.205s] (23/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::split_computed_host_publishes_fragment_local_placements
+        PASS [   2.087s] (24/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::paragraph_start_controls_are_not_reclassified_as_text_tail_anchors
+        PASS [   0.202s] (25/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::tail_table_closes_its_paragraph_before_successor_line_advance
+        PASS [   0.417s] (26/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::top_caption_is_inside_the_reserved_box_before_the_table_body
+        PASS [   0.203s] (27/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::typeset_publishes_a_computed_placement_for_the_current_frame
+        PASS [   0.178s] (28/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::unproven_source_coordinates_do_not_supply_a_stored_plan
+        PASS [   1.762s] (29/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::stored_band_origin_requires_measured_successor_agreement_and_valid_source
+        PASS [   0.159s] (30/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::wrap_semantics_are_not_reclassified_as_topbottom
+        PASS [   1.953s] (31/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::stored_tail_table_paints_border_and_cell_content_from_the_same_origin
+        PASS [   0.958s] (32/68) rhwp::regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::wrapper_alignment_variants_consume_the_cell_space_once
+        PASS [   1.145s] (33/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::cell_padding_is_kept_when_wrapped_lines_fit_without_the_last_line_spacing
+        PASS [   0.160s] (34/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::host_line_spacing_is_not_added_again_over_a_synthesized_host_line
+        PASS [   1.132s] (35/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::continued_list_paragraph_lines_keep_the_marker_area
+        PASS [   1.100s] (36/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::nested_table_row_keeps_its_content_height_and_host_line_spacing
+        PASS [   2.348s] (37/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::hangul_char_mode_breaks_between_a_number_and_the_following_hangul
+        PASS [   0.023s] (38/68) rhwp::regression_suite_019 issue_2308_render_normalized_guard::issue_2308_uses_revision_overlay_without_clone_mirror
+        PASS [   1.999s] (39/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::para_float_after_host_text_measures_offset_from_the_paragraph_top
+        PASS [   0.152s] (40/68) rhwp::regression_suite_023 issue_7196_page_top_spacing_trim_restore::negative_percent_tac_hosts_preserve_the_three_page_physical_layout
+        PASS [   0.417s] (41/68) rhwp::regression_suite_023 issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow
+        PASS [   0.179s] (42/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::a_complete_content_cut_keeps_center_alignment_before_the_physical_tail
+        PASS [   0.448s] (43/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::a_deferred_picture_band_keeps_the_blank_cell_and_the_next_row_on_its_page
+        PASS [   4.406s] (44/68) rhwp::regression_suite_017 issue_7418_host_text_and_split_row_geometry::two_column_terminal_row_continuation_reopens_the_outer_top_margin
+        FAIL [   0.524s] (45/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut
+  stdout ───
+
+    running 1 test
+    test issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut ... FAILED
+
+    failures:
+
+    failures:
+        issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.51s
+
+  stderr ───
+
+    thread 'issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut' (63737) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:976:5:
+    assertion `left == right` failed: the final outer row must survive once
+      left: 2
+     right: 1
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   3.978s] (46/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::a_block_table_host_does_not_duplicate_its_line_but_keeps_the_following_empty_paragraph
+        PASS [   0.184s] (47/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::continuation_preserves_declared_row_minimum_and_following_rows
+        PASS [   4.104s] (48/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::a_reflow_cell_start_consumes_the_source_paragraph_before_space
+        FAIL [   0.733s] (49/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows
+  stdout ───
+
+    running 1 test
+    test issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows ... FAILED
+
+    failures:
+
+    failures:
+        issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.73s
+
+  stderr ───
+
+    thread 'issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows' (63755) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:835:9:
+    assertion `left == right` failed: nested-auto-row: page budget
+      left: 7
+     right: 8
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.591s] (50/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger
+  stdout ───
+
+    running 1 test
+    test issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger ... FAILED
+
+    failures:
+
+    failures:
+        issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.58s
+
+  stderr ───
+
+    thread 'issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger' (63759) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:908:65:
+    called `Option::unwrap()` on a `None` value
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.222s] (51/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::physical_tail_exceeding_page_budget_finishes_without_replaying_content
+        PASS [   0.204s] (52/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::reflow_nested_table_keeps_its_column_anchor_and_paragraph_offset
+        PASS [   3.964s] (53/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::continuation_at_a_reflow_paragraph_start_consumes_its_reserved_spacing
+        PASS [   4.086s] (54/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::empty_reflow_table_hosts_consume_the_source_margins_once
+        PASS [   4.137s] (55/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines
+        PASS [   0.193s] (56/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::remaining_text_and_nested_table_share_the_centered_occupancy
+        PASS [   0.270s] (57/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::split_nested_rows_reserve_the_lead_once_and_stay_inside_each_page
+        FAIL [   0.201s] (58/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit
+  stdout ───
+
+    running 1 test
+    test issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit ... FAILED
+
+    failures:
+
+    failures:
+        issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit' (63803) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:796:5:
+    assertion `left == right` failed: no content replay in the physical tail
+      left: 2
+     right: 1
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.206s] (59/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::trailing_empty_paragraphs_keep_their_continued_cell_outline
+        PASS [   3.939s] (60/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph
+        PASS [   0.195s] (61/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::unsplit_reflow_uses_the_same_nested_anchor_and_flow_lead
+        PASS [   4.058s] (62/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow
+        PASS [   0.605s] (63/68) rhwp::regression_suite_028 issue_6621_wrapper_cell_padding::nested_table_pictures_sit_inside_the_wrapper_cell_padding
+        PASS [   0.553s] (64/68) rhwp::regression_suite_028 issue_6621_wrapper_cell_padding::wrapper_border_box_preserves_declared_height_after_padding
+        PASS [   1.059s] (65/68) rhwp::regression_suite_028 issue_7063_float_outer_margin_box::column_relative_float_table_keeps_its_outer_margin_even_with_a_stored_offset
+        PASS [   1.125s] (66/68) rhwp::regression_suite_028 issue_7063_float_outer_margin_box::para_relative_float_table_left_includes_its_outer_margin
+        PASS [   2.780s] (67/68) rhwp::regression_suite_028 issue_7063_float_outer_margin_box::block_wrapper_keeps_its_pdf_left_edge_when_margin_is_already_owned
+        SLOW [> 60.000s] (─────) rhwp::regression_suite_010 text_overlap_baseline::text_overlaps_do_not_grow_partition_9
+        PASS [  62.577s] (68/68) rhwp::regression_suite_010 text_overlap_baseline::text_overlaps_do_not_grow_partition_9
+────────────
+     Summary [  62.658s] 68 tests run: 64 passed (1 slow), 4 failed, 1916 skipped
+        FAIL [   0.524s] (45/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::auto_height_nested_row_shares_its_reserved_origin_and_child_cut
+        FAIL [   0.733s] (49/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::independently_regenerated_reflow_context_preserves_units_and_following_rows
+        FAIL [   0.591s] (50/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::one_cell_nested_fragments_reuse_the_child_unit_ledger
+        FAIL [   0.201s] (58/68) rhwp::regression_suite_024 issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check
+error: test run failed

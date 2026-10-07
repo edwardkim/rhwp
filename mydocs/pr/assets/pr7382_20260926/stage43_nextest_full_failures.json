@@ -1,0 +1,569 @@
+{
+  "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "exit_code": 100,
+  "summary": [
+    "     Summary [ 831.172s] 10370 tests run: 10327 passed (10 slow), 43 failed, 50 skipped"
+  ],
+  "pass": 10327,
+  "fail": 43,
+  "skipped": 50,
+  "failure_categories": {
+    "individual_regression": 21,
+    "body_overflow_baseline": 6,
+    "off_canvas_baseline": 2,
+    "oracle_page_count_baseline": 3,
+    "text_overlap_baseline": 11
+  },
+  "failures": [
+    {
+      "test": "rhwp::regression_suite_004 issue_6535_low_slack_absorb_keeps_page::low_slack_anchor_block_is_absorbed_into_the_same_page",
+      "panic": [
+        "    thread 'issue_6535_low_slack_absorb_keeps_page::low_slack_anchor_block_is_absorbed_into_the_same_page' (303667945) panicked at tests/generated/../cases/issue_6535_low_slack_absorb_keeps_page.rs:49:5:",
+        "    assertion `left == right` failed: 저슬랙(31.60) · underrun 0 인 앵커 블록은 같은 쪽에 흡수돼야 한다 — 실측 2쪽. 회귀 시 마진 50px 이 흐름 좌표 기준 fit 을 깎아 블록을 다음 쪽으로 민다",
+        "      left: 2",
+        "     right: 1",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_004 issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px",
+      "panic": [
+        "    thread 'issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px' (303668151) panicked at tests/generated/../cases/issue_7390_kopub_latin_metrics.rs:89:61:",
+        "    94쪽의 `MSM,menwhohavesexwithmen;TGW/TGM,transwo` 줄",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_004 issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+      "panic": [
+        "    thread 'issue_7390_kopub_latin_metrics::kopub_space_stays_half_width' (303668153) panicked at tests/generated/../cases/issue_7390_kopub_latin_metrics.rs:115:74:",
+        "    108쪽 대상 줄",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_005 issue_6102_section_first_line_overflow::issue_6102_first_line_breaks_inside_margin_36310257",
+      "panic": [
+        "    thread 'issue_6102_section_first_line_overflow::issue_6102_first_line_breaks_inside_margin_36310257' (303671017) panicked at tests/generated/../cases/issue_6102_section_first_line_overflow.rs:51:5:",
+        "    assertion `left == right` failed: samples/issue6102/36310257_overtime_report.hwpx: 한글 2020 쪽수와 같아야 한다",
+        "      left: 2",
+        "     right: 1",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_007 issue_6101_block_tac_table_text_order::issue_6101_table_after_control_text_renders_and_table_stays_left",
+      "panic": [
+        "    thread 'issue_6101_block_tac_table_text_order::issue_6101_table_after_control_text_renders_and_table_stays_left' (303675973) panicked at tests/generated/../cases/issue_6101_block_tac_table_text_order.rs:32:5:",
+        "    assertion `left == right` failed: 쪽수 핀(한글 11, 잔여 +1 은 별도 축)",
+        "      left: 13",
+        "     right: 12",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_008 issue_1733::issue_1733_hwpx_matches_hancom_pdf_page_count",
+      "panic": [
+        "    thread 'issue_1733::issue_1733_hwpx_matches_hancom_pdf_page_count' (303677909) panicked at tests/generated/../issue_1733.rs:23:5:",
+        "    assertion `left == right` failed: samples/task1725/text_footnote_tail_overpagination.hwpx should match the HWP 2020 MCP PDF page-count oracle",
+        "      left: 243",
+        "     right: 242",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_008 issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing",
+      "panic": [
+        "    thread 'issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing' (303678303) panicked at tests/generated/../cases/issue_7336_table_fragment_cut.rs:328:58:",
+        "    6쪽 동의서 표",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_008 issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "panic": [
+        "    thread 'issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages' (303678334) panicked at tests/generated/../cases/issue_7336_table_fragment_cut.rs:273:5:",
+        "    assertion `left == right` failed: #7336: 한/글 2024 는 이 문서를 7쪽으로 조판한다 — 결함 시 4쪽(표를 통째로 얹고 쪽 밖으로 넘침)",
+        "      left: 8",
+        "     right: 7",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_009 issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "panic": [
+        "    thread 'issue_2243::issue_2243_gyeoljae_sliver_page_pins' (303679206) panicked at tests/generated/../issue_2243.rs:34:9:",
+        "    assertion `left == right` failed: samples/task2243/36382819_gyeoljae_pm_traffic.hwpx: 한글 COM 실측 쪽수와 불일치",
+        "      left: 4",
+        "     right: 3",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_009 issue_5585_sibling_table_anchor_offset::sibling_tables_do_not_recharge_the_paragraph_anchor_offset",
+      "panic": [
+        "    thread 'issue_5585_sibling_table_anchor_offset::sibling_tables_do_not_recharge_the_paragraph_anchor_offset' (303680521) panicked at tests/generated/../cases/issue_5585_sibling_table_anchor_offset.rs:49:5:",
+        "    assertion `left == right` failed: 쪽수는 한/글 2024 와 같은 86쪽이어야 한다 — #5585 회귀. 형제 표마다 앵커 오프셋(11.3px)을 다시 물면 91쪽이 된다 (got 85)",
+        "      left: 85",
+        "     right: 86",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_10' (303682110) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: task1725/text_footnote_tail_overpagination.hwp — 13 → 17건",
+        "    증가: task2097/75544_pii_bunseok.hwpx — 1 → 2건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: task1725/text_footnote_tail_overpagination.hwp — 13 → 17건",
+        "증가: task2097/75544_pii_bunseok.hwpx — 1 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_1' (303682056) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6844/30269-anticorruption-recommendation-toc.hwp — 3건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_3' (303683561) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 39 → 40건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 39 → 40건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_8' (303684214) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue1853_caption_precedes_body_split.hwpx — 0 → 2건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue1853_caption_precedes_body_split.hwpx — 0 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_2' (303683429) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_010 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "panic": [
+        "    thread 'body_overflow_baseline::body_overflow_does_not_grow_partition_15' (303683427) panicked at tests/generated/../cases/body_overflow_baseline.rs:262:5:",
+        "    본문 바닥 아래에 그려지는 요소가 늘었다(layout-anomaly overflow 의 over_bottom, 공차 2px).",
+        "    본문 밖으로 나간 내용은 꼬리말·쪽번호와 겹치거나 용지 밖으로 잘려 나간다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6023/30269_reform_recommendation.hwp — 3건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_010 issue_3738_hwp_caption_cell_alignment::hwp_page23_bottom_caption_is_centered_as_one_visual_block",
+      "panic": [
+        "    thread 'issue_3738_hwp_caption_cell_alignment::hwp_page23_bottom_caption_is_centered_as_one_visual_block' (303685446) panicked at tests/generated/../issue_3738_hwp_caption_cell_alignment.rs:62:5:",
+        "    그림 21 본체가 Bottom caption을 제외하고 다시 중앙 정렬됨: image_y=152.1 (회귀 전 198.4, 한컴 PDF 정합값 약 148.3)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_013 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "panic": [
+        "    thread 'off_canvas_baseline::off_canvas_does_not_grow_partition_10' (303692523) panicked at tests/generated/../cases/off_canvas_baseline.rs:242:5:",
+        "    용지 밖에 그려지는 요소(layout-anomaly off-canvas)가 늘었다.",
+        "    페이지 상자 밖이나 y<0 에 놓인 내용은 사용자에게 아예 보이지 않는다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: task1725/text_footnote_tail_overpagination.hwp — 17 → 18건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: task1725/text_footnote_tail_overpagination.hwp — 17 → 18건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_013 off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "panic": [
+        "    thread 'off_canvas_baseline::off_canvas_does_not_grow_partition_14' (303693155) panicked at tests/generated/../cases/off_canvas_baseline.rs:242:5:",
+        "    용지 밖에 그려지는 요소(layout-anomaly off-canvas)가 늘었다.",
+        "    페이지 상자 밖이나 y<0 에 놓인 내용은 사용자에게 아예 보이지 않는다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_015 issue_6797_table_item_clears_float_band::maintainer_an_already_clear_offset_table_is_not_snapped_again",
+      "panic": [
+        "    thread 'issue_6797_table_item_clears_float_band::maintainer_an_already_clear_offset_table_is_not_snapped_again' (303698544) panicked at tests/generated/../cases/issue_6797_table_item_clears_float_band.rs:97:5:",
+        "    assertion failed: follower.bbox.y >= owner.bbox.y + owner.bbox.height",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_015 issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+      "panic": [
+        "    thread 'issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band' (303698586) panicked at tests/generated/../cases/issue_6797_table_item_clears_float_band.rs:206:5:",
+        "    pi=71 표는 pi=70 자리차지 표 바닥 아래에서 시작해야 한다 — #6797 회귀          (순서 부족분 2.9px; pi=70 181.5..294.9, pi=71 292.0..457.7;           수정 전 부족분 120.1px · 실제 상자 교집합 113.4px)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+      "panic": [
+        "    thread 'issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries' (303702592) panicked at tests/generated/../cases/issue_7390_prep_table_rowbreak.rs:438:42:",
+        "    연구비 사용 내역 표",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance",
+      "panic": [
+        "    thread 'issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance' (303702635) panicked at tests/generated/../cases/issue_7390_prep_table_rowbreak.rs:403:76:",
+        "    그림 14 캡션",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom",
+      "panic": [
+        "    thread 'issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom' (303702648) panicked at tests/generated/../cases/issue_7390_prep_table_rowbreak.rs:415:76:",
+        "    그림 15 캡션",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+      "panic": [
+        "    thread 'oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13' (303704348) panicked at tests/generated/../cases/oracle_page_count_baseline.rs:228:5:",
+        "    한글이 뽑은 쪽수와의 격차가 커졌다.",
+        "    쪽수는 v1.0 \"한컴과 같은 조판\"의 1차 지표다(#5585 와 같은 축).",
+        "    의도된 변화만 기준선에 반영한다 — 재생성:",
+        "      python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe",
+        "    samples/task1725/text_footnote_tail_overpagination.hwpx: 정답지 [242] 대비 격차가 커졌다 — 기준 242쪽(차 0) → 현재 243쪽(차 1)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+      "panic": [
+        "    thread 'oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15' (303704584) panicked at tests/generated/../cases/oracle_page_count_baseline.rs:228:5:",
+        "    한글이 뽑은 쪽수와의 격차가 커졌다.",
+        "    쪽수는 v1.0 \"한컴과 같은 조판\"의 1차 지표다(#5585 와 같은 축).",
+        "    의도된 변화만 기준선에 반영한다 — 재생성:",
+        "      python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe",
+        "    samples/task2243/36382819_gyeoljae_pm_traffic.hwpx: 정답지 [3] 대비 격차가 커졌다 — 기준 3쪽(차 0) → 현재 4쪽(차 1)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_016 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "panic": [
+        "    thread 'oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11' (303704163) panicked at tests/generated/../cases/oracle_page_count_baseline.rs:228:5:",
+        "    한글이 뽑은 쪽수와의 격차가 커졌다.",
+        "    쪽수는 v1.0 \"한컴과 같은 조판\"의 1차 지표다(#5585 와 같은 축).",
+        "    의도된 변화만 기준선에 반영한다 — 재생성:",
+        "      python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe",
+        "    samples/hwpx/issue1948_cross_para_fieldend.hwpx: 정답지 [1] 대비 격차가 커졌다 — 기준 1쪽(차 0) → 현재 2쪽(차 1)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_022 issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow",
+      "panic": [
+        "    thread 'issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow' (303722575) panicked at tests/generated/../cases/issue_5941_tail_overflow_drift_gate.rs:32:5:",
+        "    assertion `left == right` failed: 1490000-201600081 은 이 게이트로 304쪽이다 (r37 과 같고 한글 302, 게이트 사각 시 311~312 — `cur > body` 만 요구하던 판은 305)",
+        "      left: 303",
+        "     right: 304",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_024 issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_pin",
+      "panic": [
+        "    thread 'issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_pin' (303741877) panicked at tests/generated/../suites/issue_regression_pilot/issue_2006_1790387_prep_pagination_pin.rs:53:5:",
+        "    assertion `left == right` failed: issue2006 1790387 HWP 2020 MCP 정본 140쪽과 달라짐: 실제 141쪽",
+        "      left: 141",
+        "     right: 140",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_026 issue_6535_page_anchored_block_keeps_page::issue_6535_page_anchored_block_stays_on_its_page",
+      "panic": [
+        "    thread 'issue_6535_page_anchored_block_keeps_page::issue_6535_page_anchored_block_stays_on_its_page' (303747025) panicked at tests/generated/../cases/issue_6535_page_anchored_block_keeps_page.rs:70:5:",
+        "    assertion `left == right` failed: 쪽-앵커 블록이 1쪽에 들어가는데도 새 쪽으로 밀렸다 — 실측 2쪽 (한/글 1쪽, 회귀 시 2쪽이고 2쪽에는 본문이 하나도 없다)",
+        "      left: 2",
+        "     right: 1",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 issue_1133_nested_table_valign::issue_1133_hwpx_preserves_gap_between_consecutive_block_tables",
+      "panic": [
+        "    thread 'issue_1133_nested_table_valign::issue_1133_hwpx_preserves_gap_between_consecutive_block_tables' (303748175) panicked at tests/generated/../issue_1133_nested_table_valign.rs:115:5:",
+        "    HWPX must preserve the same pi=28 -> pi=29 table gap as HWP: hwp=111.6, hwpx=113.4",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once",
+      "panic": [
+        "    thread 'issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once' (303748928) panicked at tests/generated/../cases/issue_7203_float_table_stored_anchor_top.rs:275:5:",
+        "    저장 사다리 32.43px 대신 34.31px를 소비했다",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_11' (303749410) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6782/1480000-201900042-chemical-labeling-standards.hwp — 2건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_10' (303749370) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue6697/80550-agricultural-machinery-act-amendment.hwpx — 14 → 20건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue6697/80550-agricultural-machinery-act-amendment.hwpx — 14 → 20건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_14' (303749859) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: issue6782/1480000-201900042-chemical-product-labeling-study.hwp — 2건 (baseline 없음)",
+        "    신규 발생: 한글문서파일형식_5.0_revision1.3.hwp — 1건 (baseline 없음)"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_0' (303749368) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 22건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 22건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_1' (303749369) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue1937_rowbreak_footnote_overpagination.hwp — 132 → 133건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue1937_rowbreak_footnote_overpagination.hwp — 132 → 133건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_4",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_4' (303750318) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: pr4093/outline_navigation_table_cell_number.hwpx — 2건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_12' (303749643) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: pr4093/outline_navigation_panel_demo.hwpx — 2건 (baseline 없음)",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": []
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_3' (303750298) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue5941/1490000-201600081_roadmap_research.hwp — 134 → 137건",
+        "    증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 10건"
+      ],
+      "baseline_increases": [
+        "증가: issue5941/1490000-201600081_roadmap_research.hwp — 134 → 137건",
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 10건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_8' (303750783) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue1891_external_bindata_link.hwpx — 3 → 12건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue1891_external_bindata_link.hwpx — 3 → 12건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_9' (303750800) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    증가: issue3637/regulatory_impact_nested_table_escape.hwpx — 14 → 20건",
+        "    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace"
+      ],
+      "baseline_increases": [
+        "증가: issue3637/regulatory_impact_nested_table_escape.hwpx — 14 → 20건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "panic": [
+        "    thread 'text_overlap_baseline::text_overlaps_do_not_grow_partition_13' (303749760) panicked at tests/generated/../cases/text_overlap_baseline.rs:226:5:",
+        "    보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.",
+        "    한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.",
+        "    원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).",
+        "    현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.",
+        "    로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.",
+        "    쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json",
+        "    신규 발생: hwpctl_ParameterSetID_Item_v1.2.hwp — 1건 (baseline 없음)",
+        "    증가: task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp — 48 → 54건"
+      ],
+      "baseline_increases": [
+        "증가: task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp — 48 → 54건"
+      ]
+    }
+  ]
+}

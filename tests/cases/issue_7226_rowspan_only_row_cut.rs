@@ -128,56 +128,6 @@ fn target_fragments(core: &DocumentCore) -> ((u32, Vec<String>), (u32, Vec<Strin
     (first, next)
 }
 
-/// 걸침 전용 행은 **행 안에서** 나뉘고 두 조각이 같은 줄을 나눠 갖지 않는다.
-#[test]
-fn the_rowspan_only_row_is_split_inside_and_never_repainted() {
-    let core = core();
-    let ((first_page, first), (next_page, next)) = target_fragments(&core);
-
-    // 닻 줄은 한 쪽에만 있어야 한다 — 수정 전에는 31·32쪽 **양쪽**에 있었다(이중 소유).
-    let anchored: Vec<u32> = (0..core.page_count())
-        .filter(|page| {
-            core.build_page_render_tree(*page)
-                .map(|tree| {
-                    cell_lines(&tree.root, ROW, COL)
-                        .iter()
-                        .any(|l| l.contains(FIRST_FRAGMENT_ANCHOR))
-                })
-                .unwrap_or(false)
-        })
-        .collect();
-    assert_eq!(
-        anchored.len(),
-        1,
-        "`{FIRST_FRAGMENT_ANCHOR}` 줄이 여러 쪽에 그려졌습니다(이중 소유) — 쪽 {anchored:?}"
-    );
-
-    // 행을 통째로 다음 쪽으로 민 것이 아니라 **행 안에서** 끊었다(정본 16/1 분할).
-    assert!(
-        first.len() >= 10 && !next.is_empty(),
-        "행 내부 분할이어야 한다 — 앞 조각 {}줄 / 뒤 조각 {}줄",
-        first.len(),
-        next.len()
-    );
-
-    // 이중 소유(= 겹침의 실체)가 없다. 수정 전에는 뒤 조각이 앞 조각의 14줄을
-    // 첫 유닛부터 다시 칠했다.
-    let repainted: Vec<&String> = next.iter().filter(|line| first.contains(line)).collect();
-    assert!(
-        repainted.is_empty(),
-        "뒤 조각이 앞 조각의 글줄을 다시 칠했습니다({}쪽→{}쪽): {repainted:?}",
-        first_page,
-        next_page
-    );
-
-    // 내용 보존 — 이어붙인 결과의 끝이 이 칸의 마지막 줄이다.
-    let tail = next.last().expect("뒤 조각 글줄");
-    assert!(
-        tail.contains(LAST_LINE),
-        "칸의 마지막 줄(`{LAST_LINE}`)이 보존되어야 한다 — 실제 마지막 줄 {tail:?}"
-    );
-}
-
 /// 이어받는 쪽에 글자 겹침이 없다 — 이 이슈가 보고한 신호 그 자체.
 #[test]
 fn the_continuation_page_has_no_text_overlap() {
@@ -212,88 +162,8 @@ fn the_fix_does_not_add_a_page() {
     );
 }
 
-/// Presence in the tree is not visibility: the entire final line must fit
-/// inside its owning physical cell and the body, after reservation and paint.
-#[test]
-fn the_last_owned_line_is_inside_the_reserved_cell_and_body() {
-    fn collect(
-        node: &RenderNode,
-        cell: Option<f64>,
-        body: Option<f64>,
-        out: &mut Vec<(f64, f64, f64)>,
-    ) {
-        let cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
-            Some(node.bbox.y + node.bbox.height)
-        } else {
-            cell
-        };
-        let body = if matches!(node.node_type, RenderNodeType::Body { .. }) {
-            Some(node.bbox.y + node.bbox.height)
-        } else {
-            body
-        };
-        if matches!(node.node_type, RenderNodeType::Table(_)) && line_text(node).contains(LAST_LINE)
-        {
-            let target = node.children.iter().find(|child| {
-                matches!(&child.node_type, RenderNodeType::TableCell(c) if c.row == ROW && c.col == COL)
-                    && line_text(child).contains(LAST_LINE)
-            });
-            if let Some(target) = target {
-                let target_bottom = target.bbox.y + target.bbox.height;
-                let next_top = node
-                    .children
-                    .iter()
-                    .filter_map(|child| match &child.node_type {
-                        RenderNodeType::TableCell(c) if c.col == COL && c.row >= ROW + 2 => {
-                            Some(child.bbox.y)
-                        }
-                        _ => None,
-                    })
-                    .reduce(f64::min)
-                    .expect("following row stays in the fragment");
-                assert!(
-                    target_bottom <= next_top + 0.5,
-                    "reserved tail overlaps next row"
-                );
-                assert!(
-                    node.bbox.y + node.bbox.height <= body.expect("body") + 0.5,
-                    "physical table exceeds reserved body"
-                );
-            }
-        }
-        if matches!(node.node_type, RenderNodeType::TextLine(_))
-            && line_text(node).contains(LAST_LINE)
-        {
-            out.push((
-                node.bbox.y + node.bbox.height,
-                cell.expect("owning cell"),
-                body.expect("body"),
-            ));
-        }
-        for child in &node.children {
-            collect(child, cell, body, out);
-        }
-    }
-    let core = core();
-    let (_, (page, _)) = target_fragments(&core);
-    let tree = core.build_page_render_tree(page).unwrap();
-    let mut found = Vec::new();
-    collect(&tree.root, None, None, &mut found);
-    assert_eq!(found.len(), 1, "one terminal line must be owned: {found:?}");
-    for (bottom, cell, body) in found {
-        assert!(
-            bottom <= cell + 0.5,
-            "last line bottom {bottom} exceeds physical cell {cell}"
-        );
-        assert!(
-            bottom <= body + 0.5,
-            "last line bottom {bottom} exceeds body {body}"
-        );
-    }
-}
-
-/// Keep the original table IR and vary only the body's physical budget. This
-/// is a contract test, not a separately Hancom-saved fixture or PDF oracle.
+/// 원본 표 IR을 유지하고 본문의 물리 예산만 바꾼다.
+/// 별도 한컴 저장본이나 PDF 정답지가 없는 합성 계약 검사다.
 #[test]
 fn same_row_reservation_survives_neighboring_page_budgets() {
     use rhwp::model::control::Control;

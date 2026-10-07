@@ -1,0 +1,500 @@
+{
+  "state": "stage_complete_PR_still_on_hold",
+  "head_before_changes": "9f9845afec0ac92af7f183acf141dab4c7f69156",
+  "working_tree_sources_hash_fixed_before_stage_commit": {
+    "samples/task1789/exclusion_probe_line_spacing.hwpx": {
+      "bytes": 39551,
+      "sha256": "9112c029359d74589508cbd781b49005227ce3cd9595648a7d74323f2228f477"
+    },
+    "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf": {
+      "bytes": 77438,
+      "sha256": "33299ee0f7ba327e639134ecb581d2993795c9e2fa46244d09dc6ea04445ae5d"
+    },
+    "tests/issue_1789_exclusion_probe_line_spacing.rs": {
+      "bytes": 4970,
+      "sha256": "caf8124f05cba540888d02d92f50694338f3fed96eeca00c603a6c590e3d4a07"
+    },
+    "src/renderer/layout.rs": {
+      "bytes": 846713,
+      "sha256": "7246ab95fdf4e0c144d0703c62428b028318f92698e7158eec3815dc37f1369e"
+    },
+    "src/renderer/float_placement.rs": {
+      "bytes": 177786,
+      "sha256": "91e661ffed4a700371971e06e7b08fab0cc1133387ec14bac844a4d1abba7fe4"
+    },
+    "src/renderer/typeset/paragraph/fit.rs": {
+      "bytes": 5316,
+      "sha256": "fbca4af50d9fbd08de4986bc911e532da708740a8020742cf87ec79c84c621fe"
+    },
+    "pkg/rhwp_bg.wasm": {
+      "bytes": 13546583,
+      "sha256": "1add70a97363ee2fae670154262bb4b8c2bb5977da13b892dd08dc66c66eadbc"
+    },
+    "rhwp-studio/public/rhwp_bg.wasm": {
+      "bytes": 13546583,
+      "sha256": "1add70a97363ee2fae670154262bb4b8c2bb5977da13b892dd08dc66c66eadbc"
+    }
+  },
+  "source_and_reference_unchanged": true,
+  "reference_pages": 2,
+  "before_pages": 3,
+  "after_pages": 2,
+  "page_percent": {
+    "native": [
+      96.54137,
+      94.44785
+    ],
+    "wasm": [
+      96.54137,
+      94.44785
+    ]
+  },
+  "native_wasm_png_and_tree_identical_all2": true,
+  "new_test_functions": 0,
+  "new_fixtures": 0,
+  "removed_test_functions": 0,
+  "existing_case_modified": 1,
+  "before_counter": {
+    "head": "9f9845afec0ac92af7f183acf141dab4c7f69156",
+    "same_case_sha256": "caf8124f05cba540888d02d92f50694338f3fed96eeca00c603a6c590e3d4a07",
+    "exit_code": 100,
+    "log": "output/pr-review/planet6897-green-20261002/probe1789-before-semantic.log",
+    "failure": "3쪽 != 독립 한컴 PDF 2쪽"
+  },
+  "after_counter": {
+    "summary": "65 tests run: 65 passed, 1660 skipped",
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-focused.log"
+  },
+  "analysis": {
+    "exclusion_probe": "첫 글줄의 잉크 높이로 배제 영역을 판정하고 뒤 줄간격은 순차 흐름에서 소비한다. lh+gap 프로브는 표 위 글줄을 아래로 밀어 명시적 쪽 나눔 앞 추가 쪽을 만들었다.",
+    "page_origin": "첫 Table의 LINE_SEG는 표 뒤 호스트 글줄 위치이다. 이를 단 원점으로 빼지 않고 HeightCursor의 실제 본문 흐름 역산을 측정과 출력에서 사용한다. 이전 출력 base17645HU가 표 뒤 빈 줄을 표 안에 놓았다. 현재 측정/출력 base0, 빈 줄60808HU와 회의내용62008HU의 차이1200HU를 보존한다.",
+    "reflow_origin": "재조판 경로의 text_origin 생산 → ParagraphFloatPlacement.stored_host_origin → layout의 글줄 생성 원점으로 연결한다. 표 예약과 실제 앵커 글줄이 같은 원점을 소비한다.",
+    "first_candidate_counter_failure": "최초 표 원점 보정에서 #6950 재조판 호스트 1FAIL(표626.4, 앵커 속성 기준634.6133)이 드러났다. 재조판 공통 원점 전달 후 같은65검사 모두PASS. 문서/수치 예외·clamp를 추가하지 않았다."
+  },
+  "gates": {
+    "head_before_changes": "9f9845afec0ac92af7f183acf141dab4c7f69156",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.577,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-prepare.log"
+      },
+      {
+        "gate": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.813,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-format.log"
+      },
+      {
+        "gate": "prepare-formatted",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.583,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-prepare-formatted.log"
+      },
+      {
+        "gate": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_002",
+          "--test",
+          "regression_suite_006",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_024",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 113.575,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-focused.log"
+      },
+      {
+        "gate": "restore-current-cli",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--bin",
+          "rhwp"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 81.91,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-restore-current-cli.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.148,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 29.125,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 15.311,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 29.258,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 56.43,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.49,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-origin-manifest.log"
+      }
+    ]
+  },
+  "visual": {
+    "state": "complete",
+    "commands": [
+      {
+        "name": "native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "probe1789-final-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-native"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 7.701,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-native.log"
+      },
+      {
+        "name": "form002-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/hwpx/form-002.hwpx",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-form002-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.07,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-form002-native.log"
+      },
+      {
+        "name": "social6797-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-social6797-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.028,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-social6797-native.log"
+      },
+      {
+        "name": "slice5701-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-slice5701-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.009,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-slice5701-native.log"
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 147.129,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-fresh-wasm.log"
+      },
+      {
+        "name": "wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "probe1789-final-wasm",
+          "--wasm-pkg",
+          "pkg",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 7.973,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-wasm.log"
+      },
+      {
+        "name": "form002-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/hwpx/form-002.hwpx",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-form002-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.329,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-form002-wasm.log"
+      },
+      {
+        "name": "social6797-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-social6797-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.17,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-social6797-wasm.log"
+      },
+      {
+        "name": "slice5701-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/probe1789-final-slice5701-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.999,
+        "log": "output/pr-review/planet6897-green-20261002/probe1789-final-slice5701-wasm.log"
+      }
+    ],
+    "counter": {
+      "form002-native": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-native": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-native": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      },
+      "form002-wasm": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-wasm": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-wasm": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      }
+    },
+    "code_files": {
+      "src/renderer/layout.rs": "7246ab95fdf4e0c144d0703c62428b028318f92698e7158eec3815dc37f1369e",
+      "src/renderer/float_placement.rs": "91e661ffed4a700371971e06e7b08fab0cc1133387ec14bac844a4d1abba7fe4",
+      "src/renderer/typeset/paragraph/fit.rs": "fbca4af50d9fbd08de4986bc911e532da708740a8020742cf87ec79c84c621fe"
+    }
+  },
+  "normal_counter_previous_validated_all_pages_unchanged": {
+    "form002-native": {
+      "pages": 10,
+      "prior_pages": 10,
+      "different": []
+    },
+    "social6797-native": {
+      "pages": 11,
+      "prior_pages": 11,
+      "different": []
+    },
+    "slice5701-native": {
+      "pages": 3,
+      "prior_pages": 3,
+      "different": []
+    },
+    "form002-wasm": {
+      "pages": 10,
+      "prior_pages": 10,
+      "different": []
+    },
+    "social6797-wasm": {
+      "pages": 11,
+      "prior_pages": 11,
+      "different": []
+    },
+    "slice5701-wasm": {
+      "pages": 3,
+      "prior_pages": 3,
+      "different": []
+    }
+  },
+  "mac_local_no_opt": true,
+  "docker_optimized_build": false,
+  "excluded_operational_runs": [
+    "CLI 빌드 완료 전 probe1789-origin-native 출력은 구 실행파일이어서 제외; final-native로 재산출",
+    "임시 worktree checkout 완료 전 module-not-found exit102는 검사 결과에서 제외; 완료 후 실제1FAIL 확인",
+    "공유 target 구 코드 비교 후 구 CLI 진단은 제외; src/lib.rs 내용 변경 없이 mtime 갱신/현재 CLI 명시적 빌드 후 final-vpos로 재산출"
+  ],
+  "not_completed": [
+    "최종 전체 nextest/Skia",
+    "다른 시각 보류와 전체 문서 검증",
+    "PR 생성/CI/merge/후속처리"
+  ]
+}

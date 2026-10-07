@@ -33,6 +33,18 @@ use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::pagination::PageItem;
 
 impl TypesetState {
+    /// 빈 단은 배경 개체가 있는 단이 아니다. 통째 표의 별도 여유 경로는
+    /// 실제 Shape가 있고 흐름을 점유한 다른 항목이 없을 때만 사용한다.
+    pub(super) fn current_column_has_only_overlay_shapes(&self) -> bool {
+        self.data.current_height <= 0.5
+            && !self.data.current_items.is_empty()
+            && self
+                .data
+                .current_items
+                .iter()
+                .all(|item| matches!(item, PageItem::Shape { .. }))
+    }
+
     /// 지연 그림 조회의 불변 관측값. 가용 높이는 이 snapshot에 넣지 않는다.
     pub(super) fn deferred_picture_page(
         &self,
@@ -412,6 +424,7 @@ impl TypesetState {
             profile: self.data.profile,
             current_height: self.data.current_height,
             current_items: &self.data.current_items,
+            visible_float_exclusions: &self.data.visible_float_exclusions,
         }
     }
 
@@ -447,7 +460,11 @@ impl TypesetState {
             x_end,
             raw_top,
             reserved_height,
+            resolved,
         } = placement;
+        if let Some(resolved) = resolved {
+            self.record_paragraph_float_placement((para_idx, ctrl_idx), resolved);
+        }
         self.data.current_items.push(PageItem::Table {
             para_index: para_idx,
             control_index: ctrl_idx,
@@ -502,7 +519,10 @@ impl TypesetState {
     }
 
     /// 저장 TAC 줄 수용에 필요한 읽기 전용 페이지 관측값.
-    pub(super) fn stored_tac_page(&self) -> StoredTacPage {
+    pub(super) fn stored_tac_page(
+        &self,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> StoredTacPage {
         StoredTacPage {
             profile: self.data.profile,
             current_height: self.data.current_height,
@@ -510,6 +530,21 @@ impl TypesetState {
             vpos_page_base: self.data.vpos_page_base,
             vpos_lazy_base: self.data.vpos_lazy_base,
             side_wrap_empty: self.data.side_wrap_exclusions.is_empty(),
+            // layout의 단 초기 base와 같은 첫 완전한 표의 저장 줄을 읽는다.
+            // PartialTable에는 소비된 컷이 있고, 문단 시작의 들여쓰기·앞 간격은
+            // 별도 계약이므로 이 표 원점 조회에 섞지 않는다.
+            stored_table_column_base: self.data.current_items.first().and_then(|item| {
+                let PageItem::Table { para_index, .. } = item else {
+                    return None;
+                };
+                paragraphs
+                    .get(*para_index)
+                    .and_then(|para| para.line_segs.first())
+                    .filter(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    })
+                    .map(|seg| seg.vertical_pos)
+            }),
         }
     }
 
@@ -714,6 +749,19 @@ impl TypesetState {
     /// 확정된 조각을 항목 추가 → trim 초기화 → 높이 전진 순서로 반영한다.
     /// 페이지 전환과 다음 컷 선택은 조정자의 책임이다.
     pub(super) fn commit_split_paragraph_fragment(&mut self, fragment: ParagraphFragment) {
+        if let (
+            PageItem::PartialParagraph {
+                para_index,
+                end_line,
+                ..
+            },
+            Some(height),
+        ) = (&fragment.item, fragment.content_height)
+        {
+            self.data
+                .paragraph_fragment_content_bottoms
+                .insert((*para_index, *end_line), self.data.current_height + height);
+        }
         self.data.current_items.push(fragment.item);
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.current_height += fragment.height;
@@ -750,6 +798,13 @@ impl TypesetState {
             footnote_safety_margin: self.data.footnote_safety_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
             current_bottom_fixed_exclusion: self.data.current_bottom_fixed_exclusion,
+            next_page_stored_body_origin: self
+                .data
+                .deferred_next_page_stored_frames
+                .iter()
+                .filter(|frame| matches!(frame.kind, super::DeferredStoredFrameKind::Table))
+                .map(|frame| frame.placement.occupied_bottom)
+                .reduce(f64::max),
         }
     }
 
@@ -777,6 +832,7 @@ impl TypesetState {
             page_height: self.data.layout.page_height,
             start,
             exclusions: preceding.then_some(&self.data.side_wrap_exclusions),
+            visible_float_exclusions: preceding.then_some(&self.data.visible_float_exclusions),
         }
     }
 
@@ -787,6 +843,33 @@ impl TypesetState {
             .push(PageItem::FullParagraph { para_index });
         self.data.current_height = plan.end;
         self.data.inline_box_flow_bottom = self.data.inline_box_flow_bottom.max(plan.end);
+        self.data.inline_flow_plans.insert(para_index, plan);
+        self.data.vpos_ladder_dirty = true;
+    }
+
+    /// Preserve host-only rows; the table item owns the object and flow advance.
+    pub(super) fn record_square_host_flow(&mut self, para_index: usize, plan: InlineFlowPlan) {
+        if let (Some(control), Some(mut exclusion)) =
+            (plan.square_host_control, plan.square_host_exclusion.clone())
+        {
+            let column = self.inline_flow_column();
+            let dx = crate::renderer::px_to_hwpunit(column.x, self.data.layout.dpi);
+            let dy = crate::renderer::px_to_hwpunit(column.y + plan.start, self.data.layout.dpi);
+            exclusion.horizontal.start += dx;
+            exclusion.horizontal.end += dx;
+            exclusion.vertical.start += dy;
+            exclusion.vertical.end += dy;
+            self.data
+                .side_wrap_exclusions
+                .insert((para_index, control), exclusion);
+        }
+        if let Some(placement) = plan.square_host_placement {
+            if let Some(control) = plan.square_host_control {
+                self.data
+                    .paragraph_float_placements
+                    .insert((para_index, control), placement);
+            }
+        }
         self.data.inline_flow_plans.insert(para_index, plan);
         self.data.vpos_ladder_dirty = true;
     }

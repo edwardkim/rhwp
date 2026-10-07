@@ -1,0 +1,167 @@
+{
+  "stage": 108,
+  "code_commit": "3e965ae01ce3c1e323b80342d93d76bb96063bd2",
+  "analysis": {
+    "head": "ee0f42a6dbc320c44ca095bc4ed9bd2b780b3a68",
+    "analysis": "PR차단과무관한정상회귀동반제외를소스 내부까지대조.기존2함수와기존혼합함수2개의assertion/helper만복원.생산코드변경/새검사/기대값완화없음.실제실행결과로유지/보류판단.",
+    "source_snapshot": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "files": [
+      "src/document_core/commands/formatting.rs",
+      "src/document_core/queries/rendering.rs",
+      "src/renderer/layout/integration_tests.rs"
+    ],
+    "test_functions": [
+      "test_521_tac_table_outer_margin_bottom_p2",
+      "test_footer_total_page_field_distinct_from_current_page",
+      "paint_only_char_shape_changes_do_not_require_text_reflow",
+      "page_border_fill_sample_basis_matches_hancom_ui"
+    ]
+  },
+  "restored_functions": 2,
+  "restored_mixed_contracts": 2,
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "input_sha256": {
+    "mydocs/pr/assets/issue7445/exam_eng.hwp": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+    "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+  },
+  "source_sha256": {
+    "src/document_core/commands/formatting.rs": "236522b964c84e82701d0612f17ad6ad3aede1202c2013c501a891bd2c63825f",
+    "src/document_core/queries/rendering.rs": "05e64b5580a3fd8a0100be7672f2c8153a7b6302627b8e9befdd1c847f3dff53",
+    "src/renderer/layout/integration_tests.rs": "ecf88f9e09f88d2c33c5c36bf0b4b9ab704dce10f61f87a2b773a91ed9008868"
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "ee0f42a6dbc320c44ca095bc4ed9bd2b780b3a68",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(test_521_tac_table_outer_margin_bottom_p2) or test(test_footer_total_page_field_distinct_from_current_page) or test(paint_only_char_shape_changes_do_not_require_text_reflow) or test(page_border_fill_sample_basis_matches_hancom_ui)"
+        ],
+        "exit_code": 0,
+        "seconds": 119.94712295895442
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.364315124694258
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 18.015017125289887
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 14.84516912465915
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 21.399365041870624
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 28.59867929108441
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.7313924999907613
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.341805167030543
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   0.175s] 4 tests run: 4 passed, 4064 skipped"
+  ],
+  "scope": "기존 영어시험2개 함수와 기존 sample16 혼합함수2개의 계약을 복원하고 전부 PASS. 테스트영역만수정. 통과를문서전체피델리티승인으로세지않음.",
+  "limits": "복원대조 실제실패15개/공통원장·renderer manifest 동반제외/기존38번 및최종37개·전체회귀 점검 미완료."
+}

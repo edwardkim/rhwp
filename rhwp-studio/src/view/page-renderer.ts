@@ -22,7 +22,7 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
-import { imageCropSourceRect } from './image-crop-scale.ts';
+import { imageCropSelectionIsEmpty, imageCropSourceRect } from './image-crop-scale.ts';
 import {
   drawPageMarginGuides,
   type PageMarginGuideEdges,
@@ -1582,6 +1582,9 @@ function applyFlowImageCrop(
   frameWidth: number = image.bbox.width,
   frameHeight: number = image.bbox.height,
 ): void {
+  // 빈 선택은 프레임을 유지하고 선택 안에 원본 픽셀이 없음을 반영한다.
+  element.style.visibility = imageCropSelectionIsEmpty(image.crop) ? 'hidden' : '';
+  if (imageCropSelectionIsEmpty(image.crop)) return;
   // [#6954] 잘라 올 창은 CanvasKit 백엔드와 **같은 함수**가 정한다 — 축척 폴백(rust
   // `compute_image_crop_src` 와 같은 사슬)도, "자를 것이 있나" 판정도 그 안에 있다.
   // 종전에는 둘 다 여기 따로 있어서 갈렸다: `originalSizeHu` 가 없으면 96dpi 상수로

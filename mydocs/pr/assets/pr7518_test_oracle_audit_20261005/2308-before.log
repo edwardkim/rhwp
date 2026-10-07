@@ -1,0 +1,10 @@
+[RustTestSuite] issue_2308_render_normalized_derived_state -> regression_suite_022::issue_2308_render_normalized_derived_state
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_022 issue_2308_render_normalized_derived_state::
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.59s
+     Running tests/generated/regression_suite_022.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_022-f4bad9bb9aaf7afd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 216 filtered out; finished in 0.00s
+

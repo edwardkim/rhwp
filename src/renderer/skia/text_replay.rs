@@ -392,10 +392,8 @@ impl SkiaTextReplay<'_> {
                         _ => draw_styled_line(x1, y, x2, color, 1.0, &[], false),
                     };
 
-                // [#5804] 3+ 연속 '-' 를 단일 가로선으로 대체하던 처리(Task #352)를 걷어냈다.
-                // 한글 2022 정본은 하이픈을 낱글자 글리프로 그리고, 그 탄력 분배는 이미
-                // 레이아웃이 `extra_dash_advance` 로 만들어 `char_positions` 에 담는다.
-                // svg.rs 와 같은 결정이다.
+                // 연속 하이픈은 낱글자로 그리되 원 획이 저장 간격보다 넓어
+                // 겹치는 경우에는 낱글자별 짧은 획을 사용한다.
                 let cluster_advance = |char_idx: usize, cluster: &str| -> f32 {
                     let end = char_idx + cluster.chars().count();
                     if end < char_positions.len() {
@@ -416,12 +414,54 @@ impl SkiaTextReplay<'_> {
                         text_paint.set_style(paint::Style::Fill);
                     }
                     for (char_idx, cluster) in clusters.iter() {
-                        if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
+                        // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                        if cluster.chars().all(char::is_whitespace) {
                             continue;
+                        }
+                        if cluster == "-" {
+                            if let Some((start, end, y_offset, stroke)) =
+                                crate::renderer::overlapping_dash_leader_segment(
+                                    text,
+                                    style,
+                                    *char_idx,
+                                    &char_positions,
+                                    f64::from(font_size),
+                                )
+                            {
+                                let char_x = bbox.x as f32 + char_positions[*char_idx] as f32 + dx;
+                                let line_y = y as f32 + y_offset as f32 + dy;
+                                let mut line_paint = Paint::default();
+                                line_paint.set_anti_alias(true);
+                                line_paint.set_color(color);
+                                line_paint.set_style(paint::Style::Stroke);
+                                line_paint.set_stroke_width(stroke as f32);
+                                canvas.draw_line(
+                                    (char_x + start as f32, line_y),
+                                    (char_x + end as f32, line_y),
+                                    &line_paint,
+                                );
+                                continue;
+                            }
                         }
                         if cluster.starts_with(|ch: char| {
                             ch < '\u{0020}' && !matches!(ch, '\t' | '\n' | '\r')
                         }) {
+                            continue;
+                        }
+                        if let Some((cx, cy, rx, ry)) =
+                            crate::renderer::legacy_hft_bullet_geometry(cluster, style)
+                        {
+                            let left = bbox.x + char_positions[*char_idx] + cx + f64::from(dx);
+                            let top = y + cy + f64::from(dy);
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (left - rx) as f32,
+                                    (top - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
                             continue;
                         }
                         if is_middle_dot(cluster) {

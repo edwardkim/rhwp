@@ -1,0 +1,41 @@
+{
+  "stage": 335,
+  "beforeWhole": {
+    "passed": 10227,
+    "failed": 2,
+    "skipped": 50,
+    "exit": 100
+  },
+  "test": "issue_1189_2022_nov_pages10_12_rewind_tail_and_equation_scale_match_pdf",
+  "productionCodeChanged": false,
+  "testFunctionsAdded": 0,
+  "expectedContract": "Explicit vertical scale must equal 1; omitted SVG scale is identity. Single-argument scale changes both axes.",
+  "focused": {
+    "passed": 1,
+    "failed": 0,
+    "exit": 0
+  },
+  "inputPages": 21,
+  "comparedPage": 12,
+  "nativeMatch": 92.02527,
+  "freshWasmMatch": 92.02527,
+  "pngHashIdentical": true,
+  "inputs": [
+    {
+      "path": "samples/3-11월_실전_통합_2022.hwp",
+      "sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd"
+    },
+    {
+      "path": "pdf/3-11월_실전_통합_2022.pdf",
+      "sha256": "f06bf088ec7fda3cc6873f6158ca4103503039acbb1c608eafcf62ae16c052a7"
+    }
+  ],
+  "sourceSha256": "a9bbd6b469eaa2e73469ec45ec9135447fc6f6243040575e93582d6129d347c1",
+  "scopeLimit": "Whole 21-page fidelity is not claimed. Original PDF p10/p11 are 82.91577/79.17615; existing passing page ownership checks retained.",
+  "reprintedPdfSelectedMatches": [
+    83.4098,
+    59.90851,
+    47.46626
+  ],
+  "wholeRerun": "pending"
+}

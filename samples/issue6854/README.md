@@ -1,5 +1,9 @@
 # #6854 정식 회귀 입력
 
+> 2026-09-28: 70833 HWP는 독립 PDF와의 실제 비교에서90%미만이므로 #7445로 이관하고
+> HWP 전용 회귀2개를 제거했습니다. 원문과 PDF·아래 역사적 수정 근거는 보존합니다.
+> 현재 정식 회귀는 춘천 인사 규칙 HWPX를 유지합니다. 이관을 피델리티 해결로 세지 않습니다.
+
 [이슈 #6854](https://github.com/edwardkim/rhwp/issues/6854)의 공개 문서 두 건을 원본
 바이트로 등록했다. 비공개 PC 경로 또는 환경 변수가 없어 검사를 건너뛰는 방식은
 사용하지 않는다.
@@ -23,7 +27,7 @@
 
 ## 양성 ① — 전기안전관리법 시행규칙 규제영향분석서
 
-- 파일: [70833-electrical-safety-rule-regulatory-analysis.hwp](70833-electrical-safety-rule-regulatory-analysis.hwp) (69 KB)
+- 파일: [70833-electrical-safety-rule-regulatory-analysis.hwp](../../mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp) (69 KB)
 - 저장 제품: `hancom-office-2020`, `11.0.0.6402` → 기준 엔진 **`2020`**
 - 기준 PDF: `pdf/70833-electrical-safety-rule-regulatory-analysis-2020.pdf` — **18쪽**
 

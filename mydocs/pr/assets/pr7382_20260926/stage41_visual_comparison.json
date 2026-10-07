@@ -1,0 +1,46 @@
+{
+  "hwpx": {
+    "scores": {
+      "before": {
+        "66": 98.94767,
+        "67": 96.21756,
+        "68": 96.59031
+      },
+      "after": {
+        "66": 98.94767,
+        "67": 96.21756,
+        "68": 96.59031
+      }
+    },
+    "png_identical": [
+      "review/review_066.png",
+      "overlay/overlay_066.png",
+      "review/review_067.png",
+      "overlay/overlay_067.png",
+      "review/review_068.png",
+      "overlay/overlay_068.png"
+    ]
+  },
+  "hwp": {
+    "scores": {
+      "before": {
+        "66": 88.72983,
+        "67": 74.6401,
+        "68": 96.59031
+      },
+      "after": {
+        "66": 98.94767,
+        "67": 96.21756,
+        "68": 96.59031
+      }
+    },
+    "png_identical": [
+      "review/review_068.png",
+      "overlay/overlay_068.png"
+    ]
+  },
+  "hwp_extra_77": {
+    "before": 43.20381,
+    "after": 98.35157
+  }
+}

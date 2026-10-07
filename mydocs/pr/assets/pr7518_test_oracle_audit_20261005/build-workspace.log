@@ -1,0 +1,4 @@
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+   Compiling rhwp-subsecond v0.0.0 (/tmp/rhwp-pr7518-review-20261004/tools/rhwp-subsecond)
+   Compiling rhwp-native-ffi v0.1.0 (/tmp/rhwp-pr7518-review-20261004/bindings/Native)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.55s

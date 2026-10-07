@@ -1,0 +1,16 @@
+{
+  "source_sha": "af3a8574e8e1b10258589be781a6510022a44b43",
+  "files": {
+    "src/renderer/float_placement.rs": "8514fa1f0f5085ded29fd7056af7382462465b114b0a33de0d4ac3528d16adfa",
+    "src/renderer/layout.rs": "ad796fe5ae0897edeb2a5c31cdb22323e6554e92b57df5377b7b54af1f69bb98",
+    "src/renderer/typeset/controls/empty_float.rs": "2d8072036d27bc64782304d7b947dab14688b0b95873b13bdb4d4483f546c14b",
+    "src/renderer/typeset/paragraph/flow.rs": "631c266d6d6f126c2608b5deda2158b4b47041fce602239491e5848ab793212e",
+    "src/renderer/typeset/table/block/whole_fit.rs": "b1653410450d7a4efdb4080fecd3f72cf35beff163da2e04847fa9072f5b3f90",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "40defd49d8091d172268b74dc37e38f2d65c5cb2de5c9a3c1f848e20fa4c793a",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "b56d6a0675d34a06b2ffb18b842aff01f75ae27b4cb8eedc4e8f8431bef82cde",
+    "tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs": "c49fa0908e396c97505115c1990f9ede5d756d6cfd85ce1a1b4315c23741c0ec",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "d8253f16f8da17968f3e09dc2cb4b20934208b20ba325dbcc351ceb4db4d0043"
+  },
+  "runtime_diff_sha256": "1683b586e8094aba62315008ba8f172b043925cb7c77d38ec157f59f2ed434f4",
+  "test_diff_sha256": "7965342657725f097e75275988574f0e049c929c67a8fa880d0114e4c2528ba4"
+}

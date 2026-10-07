@@ -15,7 +15,7 @@ use crate::model::bin_data::{BinData, BinDataType, MAX_BIN_DATA_BYTES};
 use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
-use super::body_text::serialize_section;
+use super::body_text::serialize_section_for_version;
 use super::content_loss::{
     ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
 };
@@ -107,6 +107,9 @@ fn serialize_hwp_inner(
         serialize_file_header(&doc.header)
     };
 
+    // raw FileHeader가 보존되면 모델의 version과 다를 수 있으므로 실제 출력값을 쓴다.
+    let output_version = u32::from_le_bytes(header_bytes[32..36].try_into().unwrap());
+
     // 3. BodyText 섹션별 직렬화
     //
     // [#5142] HWPX 는 한 section 파일 안에 `<hp:secPr>` 를 여러 개 둘 수 있고,
@@ -142,7 +145,7 @@ fn serialize_hwp_inner(
         if split_starts.is_empty() {
             let prepared =
                 super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
-            section_bytes_list.push(serialize_section(&prepared));
+            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
             continue;
         }
         let mut starts = Vec::with_capacity(split_starts.len() + 1);
@@ -171,7 +174,7 @@ fn serialize_hwp_inner(
             };
             let prepared =
                 super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
-            section_bytes_list.push(serialize_section(&prepared));
+            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
         }
     }
 

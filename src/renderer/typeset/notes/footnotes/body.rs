@@ -25,11 +25,56 @@ impl TypesetEngine {
         has_table: bool,
         native_hwp5_footnote_break: Option<super::boundary::NativeHwp5FootnoteBreak>,
     ) {
+        // 본문 내 참조는 그대로 배치하며, 원본에 없는 각주 번호/구분선을 만들지 않는다.
+        if (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+            && !st.profile.session_edited()
+            && crate::renderer::stored_footnote_is_bodyless(fn_ctrl)
+        {
+            // 같은 호스트의 실제 각주 영역 뒤 빈 줄은 참조 번호와 별개로
+            // 물리 공간을 소유한다. 단독 빈 참조는 새 영역을 만들지 않는다.
+            let follows_same_host_note = st
+                .pages
+                .last()
+                .and_then(|page| page.footnotes.last())
+                .is_some_and(|note| {
+                    matches!(note.source,
+                    FootnoteSource::Body { para_index, control_index }
+                        if para_index == para_idx && control_index < ctrl_idx)
+                });
+            if follows_same_host_note {
+                let line = &fn_ctrl.paragraphs[0].line_segs[0];
+                st.record_current_footnote(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: FootnoteSource::Body {
+                        para_index: para_idx,
+                        control_index: ctrl_idx,
+                    },
+                    fragment: Some(crate::renderer::pagination::FootnoteFragment {
+                        start_line: 0,
+                        end_line: 1,
+                        draw_separator: false,
+                        draw_number: false,
+                    }),
+                });
+                st.add_footnote_fragment_height(hwpunit_to_px(line.line_height, self.dpi), false);
+            }
+            return;
+        }
         let source = FootnoteSource::Body {
             para_index: para_idx,
             control_index: ctrl_idx,
         };
-        let native_table_host_footnote = if st.profile.hwp5_stored_pagination_layout()
+        // 원본 HWPX의 표 뒤 형제 각주도 실제 끝 조각 소유를 따른다.
+        // 편집·무효 텍스트 분할·합성 줄은 원본 저장 캡션의 근거로 사용하지 않는다.
+        let original_hwpx_table_host = st.profile.hwpx_stored_layout()
+            && !st.profile.session_edited()
+            && !para.stored_text_partition_is_dirty()
+            && !para.line_segs.is_empty()
+            && para.line_segs.iter().all(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            });
+        let stored_table_host_footnote = if (st.profile.hwp5_stored_pagination_layout()
+            || original_hwpx_table_host)
             && st.col_count == 1
             && para
                 .controls
@@ -52,10 +97,12 @@ impl TypesetEngine {
             match (top_level_tables.next(), top_level_tables.next()) {
                 (Some((table_control_index, table)), None)
                     if table_control_index + 1 == ctrl_idx
-                        && native_hwp5_rowbreak_host_precedes_first_fragment(para, table) =>
+                        && native_hwp5_rowbreak_host_precedes_first_fragment(para, table)
+                        && (!original_hwpx_table_host
+                            || !self.render_normalization.table_text_reflowed(table)) =>
                 {
                     let full_content_height = composed_footnote_content_height(fn_ctrl, self.dpi);
-                    st.native_table_host_terminal_fragment_placement(
+                    st.table_host_terminal_fragment_placement(
                         para_idx,
                         table_control_index,
                         table.row_count,
@@ -84,7 +131,7 @@ impl TypesetEngine {
             content_height,
             draw_separator,
             full_content_height,
-        )) = native_table_host_footnote
+        )) = stored_table_host_footnote
         {
             let overlap_guard = if terminal_fragment_is_current {
                 32.0
@@ -160,10 +207,15 @@ impl TypesetEngine {
             // 든 PartialParagraph의 owner를 따라야 한다. 그렇지 않으면 p52의
             // note 60처럼 marker는 p52에 남고 각주는 tail page p53에 등록된다.
             // 첫 각주가 없는 page까지 일반화하면 p62 note 74처럼 기존 흐름에서
-            // reserve하던 각주가 빠져 후속 page break를 바꾼다. native HWP5의
-            // multi-note stored LINE_SEG ownership만 대상으로 하여 다른 profile과
-            // first-note 흐름은 바꾸지 않는다.
-            let multi_note_routed = if st.profile.hwp5_stored_pagination_layout() {
+            // 예약하던 각주가 빠져 후속 쪽 나눔을 바꾼다. Native 경로와 함께
+            // 유효한 본문 reset을 입증한 HWPX도 같은 표시 쪽 소유를 사용한다.
+            // HWPX의 소급 예약은 이미 수용한 본문 점유 끝과 실제 각주 예산이
+            // 양립할 때만 허용하며 첫 각주가 없는 쪽은 기존 흐름을 유지한다.
+            let saved_hwpx_tail = !st.profile.hwp5_stored_pagination_layout()
+                && st.profile.hwpx_stored_layout()
+                && body_tail_reset.is_some();
+            let multi_note_routed = if st.profile.hwp5_stored_pagination_layout() || saved_hwpx_tail
+            {
                 crate::renderer::pagination::find_inline_control_target_page(
                     &st.pages,
                     &st.current_items,
@@ -171,10 +223,14 @@ impl TypesetEngine {
                     ctrl_idx,
                     para,
                 )
-                .filter(|(page_idx, _)| {
+                .filter(|(page_idx, col_idx)| {
                     st.pages
                         .get(*page_idx)
                         .is_some_and(|page| !page.footnotes.is_empty())
+                        && (!saved_hwpx_tail
+                            || st.completed_body_fragment_note_fits(
+                                *page_idx, *col_idx, para_idx, fn_height,
+                            ))
                 })
             } else {
                 None
@@ -184,13 +240,23 @@ impl TypesetEngine {
             // tail page가 소유한다(p129 note 176). 표 셀용으로 검증된 같은
             // 보수적 판정을 재사용하되 Body tail과 기존 marker-page 각주를
             // 모두 확인해 일반 각주를 임의 capacity로 나누지 않는다.
-            let source_reset_fragments = st
-                .profile
-                .hwp5_stored_pagination_layout()
+            // 편집하지 않은 HWPX 본문 각주도 표 각주와 같은 저장 줄의 일대일
+            // 대응 및 각주 영역 재시작 계약을 사용한다. 조회에서 합성·재구성 줄을
+            // 거절하며, 편집한 HWPX는 기존 통째 각주 소유를 유지한다.
+            let saved_note_layout = st.profile.hwp5_stored_pagination_layout()
+                || (st.profile.hwpx_stored_layout() && !st.profile.session_edited());
+            let source_reset_fragments = saved_note_layout
                 .then(|| native_hwp5_footnote_reset_fragments(fn_ctrl, self.dpi))
                 .flatten();
             let stored_reset_fragments = body_tail_reset
-                .filter(|_| multi_note_routed.is_some())
+                .filter(|_| {
+                    multi_note_routed.is_some()
+                        // 첫 각주 충돌 경로도 표시가 완료된 앞 조각 쪽에 속함을
+                        // 입증한다. 독립적으로 유효성을 확인한 각주 재시작은
+                        // 이에 대응하는 꼬리를 소유한다. 이 계약에는
+                        // 기존 각주가 있을 필요가 없다.
+                        || collision_routed.flatten().is_some()
+                })
                 .and(source_reset_fragments);
             // body marker와 문단은 현재 page에 끝났지만 각주 stored line이
             // `0 -> 0`으로 다시 시작하면 suffix의 물리 owner만 다음 page다

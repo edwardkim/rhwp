@@ -1,0 +1,48 @@
+[
+  {
+    "format": "hwpx",
+    "command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage35-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage36-before-hwpx-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "120,121"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 24.88736562523991
+  },
+  {
+    "format": "hwp",
+    "command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage35-after-rhwp",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage36-before-hwp-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "120,121"
+    ],
+    "exit_code": 1,
+    "elapsed_seconds": 26.9448509584181
+  }
+]

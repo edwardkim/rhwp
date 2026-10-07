@@ -1,0 +1,520 @@
+{
+  "source_proof": {
+    "source_sha": "461de86b49e826fabb9c4b26021441b108a3fd6a",
+    "files": {
+      "src/renderer/equation_tac_flow.rs": "5d7fd6ff125183a5643aad96d7db95bacb2290b733413e83b51bbea75e3894a2",
+      "src/renderer/layout/paragraph_layout.rs": "1ceb6ca7f5cc23afa4d3f2dd56b4067f88f086b998bfcca25f289a01c1cebb3f",
+      "src/renderer/layout/picture_footnote.rs": "fc4ca4d7b08281e10bd198b34b213a0cf5908c4485009be28423c2b20d2e8b2c",
+      "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "13e3df09bfb817e9e418b4362b05ca0ac97fdc641f458aa378f8d8c2bc1bf20d"
+    },
+    "runtime_diff_sha256": "d7eb915cdad73beb850ea13a1a64f587008102a9b1f2866944aa50c53fdcb0f8",
+    "test_diff_sha256": "7e46327f411b0a1edd0540bc1ac27f99a112534ec22a9f80d79ab7d49241b3b0"
+  },
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "checks": {
+    "before": {
+      "result": {
+        "exit_code": 100,
+        "elapsed_seconds": 6.5950542078353465
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(numbered_footnote_continuation_lines_keep_the_original_hanging_indent)"
+      ],
+      "summary": [
+        "Summary [   0.208s] 2 tests run: 0 passed, 2 failed, 214 skipped"
+      ]
+    },
+    "after-boundary": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 92.95193699980155
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(numbered_footnote_continuation_lines_keep_the_original_hanging_indent)"
+      ],
+      "summary": [
+        "Summary [   0.251s] 2 tests run: 2 passed, 214 skipped"
+      ]
+    },
+    "after-final-boundary": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 6.390704500023276
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(numbered_footnote)"
+      ],
+      "summary": [
+        "Summary [   1.029s] 3 tests run: 3 passed, 212 skipped"
+      ]
+    },
+    "expanded": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 83.69067525025457
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_028",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6190_stored_lineseg_indentation_flag) | test(issue_6034_footnote_area_reflow_width) | test(issue_5708_footnote_line_height) | test(issue_7174_hwp3) | test(issue_7172_hwp3_hanging_indent_margin) | test(issue_5598_cell_hanging_indent_clamp)"
+      ],
+      "summary": [
+        "Summary [   8.465s] 243 tests run: 243 passed, 4331 skipped"
+      ]
+    },
+    "cli-build": {
+      "result": {
+        "exit_code": 0,
+        "elapsed_seconds": 89.87315933313221,
+        "cli_sha256": "236ce125d1a8f82fcfa29af0c935345049a78d6309f4dd598289c02c556b9c3d"
+      },
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "summary": []
+    }
+  },
+  "policies": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "visual": [
+    {
+      "phase": "before",
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 93.58939
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 92.75732
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 97.53225
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "kind": "hwpx",
+      "pages": [
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 96.21756
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 94.99385
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 97.93535
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 72.73184
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 92.75732
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 97.53225
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "kind": "hwp",
+      "pages": [
+        {
+          "page": 67,
+          "tolerant_content_match_percent": 74.6401
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 94.99385
+        },
+        {
+          "page": 179,
+          "tolerant_content_match_percent": 97.93535
+        }
+      ]
+    }
+  ],
+  "tree_difference": {
+    "hwpx": {
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        18,
+        20,
+        21,
+        22,
+        30,
+        38,
+        40,
+        41,
+        42,
+        43,
+        45,
+        46,
+        48,
+        49,
+        50,
+        52,
+        53,
+        54,
+        55,
+        63,
+        66,
+        67,
+        68,
+        69,
+        70,
+        72,
+        74,
+        75,
+        76,
+        78,
+        79,
+        80,
+        91,
+        101,
+        114,
+        115,
+        117,
+        123,
+        124,
+        125,
+        126,
+        128,
+        130,
+        131,
+        132,
+        133,
+        135,
+        137,
+        138,
+        139,
+        141,
+        142,
+        143,
+        144,
+        145,
+        148,
+        149,
+        151,
+        156,
+        171,
+        172,
+        173,
+        175,
+        176,
+        177,
+        178,
+        179,
+        190,
+        191,
+        204,
+        207,
+        215
+      ],
+      "changed_pages_outside_footnote_area": []
+    },
+    "hwp": {
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        18,
+        20,
+        21,
+        22,
+        30,
+        38,
+        40,
+        41,
+        42,
+        43,
+        45,
+        46,
+        48,
+        49,
+        50,
+        52,
+        53,
+        54,
+        55,
+        63,
+        66,
+        67,
+        68,
+        69,
+        70,
+        72,
+        74,
+        75,
+        76,
+        78,
+        79,
+        80,
+        91,
+        101,
+        114,
+        115,
+        117,
+        123,
+        124,
+        125,
+        126,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        135,
+        137,
+        138,
+        139,
+        141,
+        142,
+        143,
+        144,
+        145,
+        148,
+        149,
+        151,
+        156,
+        171,
+        172,
+        173,
+        175,
+        176,
+        177,
+        178,
+        179,
+        190,
+        191,
+        204,
+        207,
+        215
+      ],
+      "changed_pages_outside_footnote_area": []
+    }
+  },
+  "directly_inspected_png_count": 24,
+  "assets": [
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_review_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_review_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_overlay_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_overlay_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_review_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_review_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_overlay_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_overlay_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwpx_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_review_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_review_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_overlay_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_overlay_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_review_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_review_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_review_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_overlay_067.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_overlay_126.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_overlay_179.png",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_run_manifest.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_hwp_overlay_metrics.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_source_proof.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_source_proof.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_independent_geometry.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_note_source.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_english_comment_scan.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_all_language_comment_scan.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_original_tree_difference.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_before_visual_results.json",
+    "mydocs/pr/assets/pr7382_20260926/stage40_after_visual_results.json"
+  ],
+  "remaining": "HWP67쪽 표/본문 위쪽 배치, #6782 76/78쪽, 실제 TABLE 편집/래퍼 분할, 최신 전수 Native/fresh WASM 및 전체 nextest/lint/Skia",
+  "log_sha256": {
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-after-boundary.log": "b3148e9980106a80c6f51e45e44a0736ca769f626e4fdd6163d5fccb820e2ab8",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-after-final-boundary.log": "43949d7c9cf38eaba3841b35b85752b4bcf6c9cedf4cbd8bc43f54cc74379cf0",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-after-hwp-visual.log": "bffc6c506fbfa20115b1eafdc696defef75128f4ed2f4f708b6cabae9d7aa480",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-after-hwpx-visual.log": "61f689622d479b616aadd678244ec9b2659cd74f191bea6afbf103d1d6966133",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-before-hwp-visual.log": "c166d2b9b28c29e54f9b42ed668ab1766d8918754d5309a297276492b496a76c",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-before-hwpx-visual.log": "18b3d76b1a1daa3658e24d3dd8a1f73b82c1c2feec9b1378b3ff6d03a50663a6",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-before.log": "9f6aef0027ba43859c40bef2334c5e2312c0e775421c8cd3b4b564aba2c0eee6",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-cli-build.log": "c259bc6c9929e98b298de6c61fe6ebaf0c691cab385b004c41a520cd63aed375",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-expanded.log": "b3ca02c546f4eaa83f2c85a39baa63aabe1a135955a8f406d23211c2ff6e29b5",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-policy-0.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-policy-1.log": "9a99c194d8574ed45257d6229fd88f75f7c2b6f5dce0880a6236d12e661efe73",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-policy-2.log": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-prepare-after.log": "077bef1186017eee2493f5a78f6bd7133395c89a8c6308a0bab41547a790ae4f",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-prepare-final.log": "5e623d3ea8e25787f8082c6c7dd4b47ae42c74323bdbc3625bca4ee8b72105fb",
+    "output/pr-review/planet6897-7382-20260926/logs/stage40-prepare.log": "077bef1186017eee2493f5a78f6bd7133395c89a8c6308a0bab41547a790ae4f"
+  }
+}

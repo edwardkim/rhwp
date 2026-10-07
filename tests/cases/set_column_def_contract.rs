@@ -65,11 +65,10 @@ fn column_definition_command_writes_a_parseable_document() {
     assert_eq!(envelope["sameWidth"], false);
     assert_eq!(envelope["spacing"], 1200);
 
-    // C4는 CLI 라우팅 추출의 경계를 보호한다. 저장본이 다시 열리고 단 정의가
-    // 남는지 확인하되, 구조화 필드보다 raw_attr를 우선하는 기존 코어 직렬화의
-    // 값 보존 결함은 이 리팩터링 계약에 고정하지 않는다.
+    // [#7523] 저장본을 다시 열면 바꾼 단 정의가 나와야 한다.
     let saved = column_def(&out);
-    assert!(saved["columnCount"].is_number());
+    assert_eq!(saved["columnCount"], 2);
+    assert_eq!(saved["columnType"], 2);
     let _ = std::fs::remove_file(&out);
 }
 

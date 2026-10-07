@@ -51,6 +51,92 @@ impl<'a> SelectedBlockCut<'a> {
         }
     }
 
+    /// 내용이 완전 행에서 닫힐 때만 남은 쪽 밴드를 마지막 행의 물리 높이로 쓴다.
+    /// 실제 내용은 밴드 안에 들어가야 하며 남는 빈 공간은 다음 행으로 이어진다.
+    pub(in crate::renderer::typeset) fn complete_row_boundary_band(
+        &self,
+        rows: &RowBlockQuery<'_>,
+        block: &RowBlockCandidate,
+        start: &[usize],
+        end_row: usize,
+        frame: (f64, f64, bool, f64),
+    ) -> Option<f64> {
+        let (budget, fresh_budget, first_fragment, dpi) = frame;
+        if !self.use_offsets
+            || !start.is_empty()
+            || self.cut_res.hit_hard_break
+            || !rows.layout_engine.row_block_cut_is_complete_row_boundary(
+                rows.table,
+                (block.b_start, block.b_end),
+                end_row,
+                &self.cut_res.end_cut,
+                rows.styles,
+            )
+        {
+            return None;
+        }
+        // 완전 블록을 덮는 병합 셀의 저장 높이가 물리 프레임을 소유한다.
+        // 끝의 한 행만 남았을 때 내용과 빈 공간을 각각 보존할 수 있다.
+        if end_row + 1 != block.b_end {
+            return None;
+        }
+        let source_frame = rows.table.cells.iter().find(|cell| {
+            cell.row as usize == block.b_start
+                && cell.row_span as usize == block.block_size
+                && cell.height > 0
+                && cell.height <= i32::MAX as u32
+        })?;
+        let source_height = crate::renderer::hwpunit_to_px(source_frame.height as i32, dpi);
+        let mut boundary_budget = budget;
+        if first_fragment {
+            let declared_row = |row: usize| {
+                rows.table
+                    .cells
+                    .iter()
+                    .filter(|cell| cell.row as usize == row && cell.row_span == 1)
+                    .map(|cell| cell.height)
+                    .max()
+            };
+            let prefix_hu = (0..block.b_start)
+                .try_fold(0_u64, |sum, row| Some(sum + u64::from(declared_row(row)?)))?;
+            let next_hu = u64::from(declared_row(end_row)?);
+            let opening_hu = (prefix_hu + u64::from(source_frame.height)).checked_sub(next_hu)?;
+            // 선언 첫 상자와 병합 셀의 잔여 행이 HU 단위로 닫힐 때만
+            // 첫 쪽 프레임을 사용한다. 화면 점수나 문서 이름은 조건이 아니다.
+            if opening_hu.abs_diff(u64::from(rows.table.common.height)) <= 2 {
+                let prefix_px = rows.mt.row_heights[..block.b_start].iter().sum::<f64>()
+                    + rows.cs * block.b_start as f64;
+                boundary_budget =
+                    (crate::renderer::hwpunit_to_px(rows.table.common.height as i32, dpi)
+                        - prefix_px)
+                        .min(budget);
+            }
+        }
+        let physical = rows.fragment_height(block, end_row, start, &self.cut_res.end_cut);
+        let before_last = rows.fragment_height(block, end_row - 1, start, &self.cut_res.end_cut)
+            + if end_row > block.b_start + 1 {
+                rows.cs
+            } else {
+                0.0
+            };
+        let band = boundary_budget - before_last;
+        let visible = rows.layout_engine.row_complete_cut_content_height(
+            rows.table,
+            end_row - 1,
+            rows.styles,
+        );
+        let next_height = source_height - boundary_budget;
+        let next_visible =
+            rows.layout_engine
+                .row_complete_cut_content_height(rows.table, end_row, rows.styles);
+        ((physical - boundary_budget).abs() > 0.5
+            && visible <= band
+            && band > 0.0
+            && next_height >= next_visible
+            && next_height <= fresh_budget)
+            .then_some(band)
+    }
+
     /// 부모가 끝 컷을 기록한 뒤 원래 시점에 호출한다. 측정을 select 시점으로 앞당기지 않는다.
     pub(in crate::renderer::typeset) fn occupied_height(
         &self,
@@ -91,14 +177,20 @@ impl<'a> SelectedBlockCut<'a> {
                 cut_res.consumed_height
             }
         } else {
-            layout_engine.row_block_content_height(
+            let content_height = layout_engine.row_block_content_height(
                 table,
                 b_start,
                 b_end,
                 blk_start_cut,
                 &cut_res.end_cut,
                 styles,
-            )
+            );
+            content_height.max(rows.fragment_height(
+                block,
+                end_row,
+                blk_start_cut,
+                &cut_res.end_cut,
+            ))
         }
     }
 }

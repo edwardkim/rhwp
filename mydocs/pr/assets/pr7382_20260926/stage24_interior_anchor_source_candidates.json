@@ -1,0 +1,12 @@
+{
+  "meaning": "원본 XML의 닫힘 후보. 실제 측정 높이/profile/normalization/capacity 수용은 별도 런타임 조건이며 후보를 실행 통과로 승격하지 않음",
+  "candidates": [
+    {
+      "paragraph": 246,
+      "control_raw_utf16": 207,
+      "stored_line": 3,
+      "table_top_hu": 15901,
+      "source_closed_bottom_hu": 34718
+    }
+  ]
+}

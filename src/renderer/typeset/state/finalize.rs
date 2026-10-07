@@ -1,4 +1,5 @@
 //! 확정 페이지의 빈 꼬리·머리말·꼬리말·쪽 번호를 마무리한다.
+use crate::renderer::typeset::paragraph::stored_line_overflows_body;
 use crate::renderer::typeset::{
     stored_vpos_top_collision, ColumnBreakType, Control, HeaderFooterApply, HeaderFooterRef,
     PageContent, PageItem, Paragraph,
@@ -14,6 +15,11 @@ use crate::renderer::typeset::{
 /// [#5907] 앞뒤 문단이 둘 다 stored vpos 0 을 주장해 열린 쪽도 보존한다 —
 /// 넘침 잔재가 아니라 한/글이 저장한 쪽 경계 그 자체이므로, 한/글도 그 빈 쪽을
 /// 인쇄한다 (`samples/p122.hwp` 3쪽, 정본 `pdf/p122-2022.pdf`).
+///
+/// 저장 줄이 본문 높이를 넘는 빈 문단의 쪽도 보존한다. 편집기는 Enter 로 만든
+/// 문단의 vpos 를 쪽 경계에서 되감지 않고 이어 쓰므로, 저장 조판으로도 앞 쪽에
+/// 들어가지 않는다 — 흐름이 넘쳐 연 정당한 쪽이다. 버리면 그 문단이 어느 쪽에도
+/// 속하지 않아 캐럿이 갈 곳이 없다.
 pub(super) fn discard_terminal_blank_only_page(
     pages: &mut Vec<PageContent>,
     paragraphs: &[Paragraph],
@@ -24,6 +30,31 @@ pub(super) fn discard_terminal_blank_only_page(
     let Some(last_page) = pages.last() else {
         return;
     };
+    // #3637의 저장 표 꼬리 호환 처리는 표 바로 뒤의 종료 문단에만 적용한다.
+    // 일반 본문 줄을 거친 반복 Enter의 새 쪽은 그 표의 꼬리가 아니다.
+    let Some(PageItem::PartialTable {
+        para_index: table_para,
+        ..
+    }) = pages
+        .get(pages.len() - 2)
+        .and_then(|page| page.column_contents.last())
+        .and_then(|column| column.items.last())
+    else {
+        return;
+    };
+    let mut tail_items = last_page
+        .column_contents
+        .iter()
+        .flat_map(|column| &column.items);
+    let Some(PageItem::FullParagraph {
+        para_index: tail_para,
+    }) = tail_items.next()
+    else {
+        return;
+    };
+    if tail_items.next().is_some() || table_para.checked_add(1) != Some(*tail_para) {
+        return;
+    }
     let mut has_item = false;
     let blank_only = last_page.column_contents.iter().all(|column| {
         if !column.wrap_around_paras.is_empty() {
@@ -46,9 +77,15 @@ pub(super) fn discard_terminal_blank_only_page(
                 && paragraphs
                     .get(*para_index - 1)
                     .is_some_and(|prev| stored_vpos_top_collision(prev, para));
+            let stored_line_overflows_body = stored_line_overflows_body(
+                para,
+                last_page.layout.body_area.height,
+                last_page.layout.dpi,
+            );
             no_visible_text
                 && para.controls.is_empty()
                 && !opened_by_stored_vpos_reset
+                && !stored_line_overflows_body
                 && !matches!(
                     para.column_type,
                     ColumnBreakType::Page | ColumnBreakType::Section

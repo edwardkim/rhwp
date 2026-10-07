@@ -1,0 +1,31 @@
+{
+  "status": "asset_provenance_scope_pass_integration_pending",
+  "inputs": [
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "verified": true
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "verified": true
+    }
+  ],
+  "outputs": [
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "pdfinfo": "Author:          정상봉\nCreator:         Hancom PDF 1.3.0.550\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Fri Oct  2 23:13:24 2026 KST\nModDate:         Fri Oct  2 23:13:24 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           383\nEncrypted:       no\nPage size:       555 x 754 pts\nPage rot:        0\nFile size:       4692840 bytes\nOptimized:       no\nPDF version:     1.6\n",
+      "pdffonts": "name                                 type              encoding         emb sub uni object ID\n------------------------------------ ----------------- ---------------- --- --- --- ---------\nINPILL+KoPubBatangBold               CID TrueType      Identity-H       yes yes yes     23  0\nINPILL+KoPubDotumLight               CID TrueType      Identity-H       yes yes yes     25  0\nINPILL+Haansoft Batang               CID TrueType      Identity-H       yes yes yes     27  0\nINPILL+KoPubDotumBold                CID TrueType      Identity-H       yes yes yes     34  0\nINPILL+KoPubBatangLight              CID TrueType      Identity-H       yes yes yes     36  0\nINPILL+KoPubDotumMedium              CID TrueType      Identity-H       yes yes yes     38  0\nINPILL+KoPubBatangMedium             CID TrueType      Identity-H       yes yes yes     84  0\nINPILL+Wingdings-Regular             CID TrueType      Identity-H       yes yes yes   1070  0\nINPILL+HCRBatang                     CID TrueType      Identity-H       yes yes yes   1356  0\n",
+      "verified": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "pdfinfo": "Author:          정상봉\nCreator:         Hancom PDF 1.3.0.550\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Fri Oct  2 23:27:27 2026 KST\nModDate:         Fri Oct  2 23:27:27 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           383\nEncrypted:       no\nPage size:       555 x 754 pts\nPage rot:        0\nFile size:       4692840 bytes\nOptimized:       no\nPDF version:     1.6\n",
+      "pdffonts": "name                                 type              encoding         emb sub uni object ID\n------------------------------------ ----------------- ---------------- --- --- --- ---------\nINPILL+KoPubBatangBold               CID TrueType      Identity-H       yes yes yes     23  0\nINPILL+KoPubDotumLight               CID TrueType      Identity-H       yes yes yes     25  0\nINPILL+Haansoft Batang               CID TrueType      Identity-H       yes yes yes     27  0\nINPILL+KoPubDotumBold                CID TrueType      Identity-H       yes yes yes     34  0\nINPILL+KoPubBatangLight              CID TrueType      Identity-H       yes yes yes     36  0\nINPILL+KoPubDotumMedium              CID TrueType      Identity-H       yes yes yes     38  0\nINPILL+KoPubBatangMedium             CID TrueType      Identity-H       yes yes yes     84  0\nINPILL+Wingdings-Regular             CID TrueType      Identity-H       yes yes yes   1070  0\nINPILL+HCRBatang                     CID TrueType      Identity-H       yes yes yes   1356  0\n",
+      "verified": true
+    }
+  ]
+}

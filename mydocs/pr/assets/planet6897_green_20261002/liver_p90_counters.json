@@ -1,0 +1,52 @@
+[
+  {
+    "key": "rowbreak",
+    "pages": 18,
+    "native_changed": [],
+    "wasm_changed": [],
+    "source": {
+      "path": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    }
+  },
+  {
+    "key": "h01",
+    "pages": 9,
+    "native_changed": [],
+    "wasm_changed": [],
+    "source": {
+      "path": "samples/hwpx/hwpx-h-01.hwpx",
+      "sha256": "87b386ade71aa4c5a3e78f17c25e9efb91cf180f264fde17b2b9b6305a3c90b5"
+    }
+  },
+  {
+    "key": "social6797",
+    "pages": 11,
+    "native_changed": [],
+    "wasm_changed": [],
+    "source": {
+      "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+      "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8"
+    }
+  },
+  {
+    "key": "stale1835",
+    "pages": 3,
+    "native_changed": [],
+    "wasm_changed": [],
+    "source": {
+      "path": "samples/issue1835_tac_stale_height.hwp",
+      "sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7"
+    }
+  },
+  {
+    "key": "para6267",
+    "pages": 1,
+    "native_changed": [],
+    "wasm_changed": [],
+    "source": {
+      "path": "samples/issue6267/kdt_result_para_float_table.hwpx",
+      "sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33"
+    }
+  }
+]

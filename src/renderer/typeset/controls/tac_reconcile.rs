@@ -1,5 +1,5 @@
 //! TAC 표 문단의 배치 후 높이 상한과 저장 사다리 보정 조회.
-//! 기존 산식과 선택 순서를 보존한다. 진단 callback 외에는 외부 효과를 갖지 않는다.
+//! 양의 후행 간격은 실제 배치와 공유한다. 진단 callback 외에는 외부 효과를 갖지 않는다.
 use super::super::paragraph::metrics::FormattedParagraph;
 use super::tac_flow::TacFlowQuery;
 use crate::model::{
@@ -40,13 +40,20 @@ pub(super) fn measure(
     mut trace_sibling: impl FnMut(usize, usize, f64, f64),
 ) -> TacHeightCap {
     let dpi = flow.dpi();
-    // tac_seg_total 계산: 각 TAC 표의 max(seg.lh, 실측높이) + ls/2
+    // 분할 예산에는 TAC 표의 물리 점유분을 센다. 다음 저장 줄의 배치 원점은
+    // layout에서 따로 맞추며, 그 간격 전량을 분할 예산에 또 더하지 않는다.
     let mut tac_seg_total = 0.0;
     let mut tac_idx = 0;
     for (ci, c) in para.controls.iter().enumerate() {
         if let Control::Table(t) = c {
             if flow.is_effective_tac_table(para, t, fmt) {
-                if let Some(seg) = para.line_segs.get(tac_idx) {
+                let seg_index =
+                    if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+                        crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(tac_idx)
+                    } else {
+                        tac_idx
+                    };
+                if let Some(seg) = para.line_segs.get(seg_index) {
                     let seg_lh = hwpunit_to_px(seg.line_height, dpi);
                     let mt_h = measured_tables
                         .iter()
@@ -54,8 +61,20 @@ pub(super) fn measure(
                         .map(|mt| mt.total_height)
                         .unwrap_or(0.0);
                     let effective_h = crate::renderer::tac_table_effective_height(seg_lh, mt_h);
-                    let ls_half = hwpunit_to_px(seg.line_spacing, dpi) / 2.0;
-                    tac_seg_total += effective_h + ls_half;
+                    let trailing = if seg.line_spacing > 0 {
+                        crate::renderer::composer::tac_host_trailing_spacing(
+                            para,
+                            ci,
+                            seg,
+                            profile.hwpx_stored_layout(),
+                            profile.hwp5_stored_pagination_layout() && !profile.session_edited(),
+                            dpi,
+                        )
+                    } else {
+                        // 음수 Fixed 간격의 기존 상한 계약은 별도 경로에서 유지한다.
+                        hwpunit_to_px(seg.line_spacing, dpi) / 2.0
+                    };
+                    tac_seg_total += effective_h + trailing;
                 }
                 tac_idx += 1;
             }
@@ -226,7 +245,7 @@ pub(super) fn effective_cap(
     cap: f64,
     ladder_total: f64,
     ladder_omits_spacing: bool,
-    session_grown_tac_total: Option<f64>,
+    measured_tac_floor: Option<f64>,
 ) -> f64 {
     let cap = if ladder_omits_spacing {
         ladder_total
@@ -236,7 +255,7 @@ pub(super) fn effective_cap(
     // [편집 세션] 셀 편집으로 자란 TAC 표는 실측 소비가 저장 줄 기반
     // cap 을 정당하게 넘는다 — cap 으로 되감으면 후행 문단이 성장분만큼
     // 안 밀려 쪽 하단을 넘긴다(셀 Enter 재현: 후행 안내 문단 잘림).
-    session_grown_tac_total.map_or(cap, |grown| cap.max(grown))
+    measured_tac_floor.map_or(cap, |grown| cap.max(grown))
 }
 
 pub(super) fn capped_bottom(

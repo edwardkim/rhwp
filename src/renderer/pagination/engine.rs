@@ -1161,6 +1161,7 @@ impl Paginator {
             hidden_empty_paras,
             pre_emitted_host_paras: std::collections::HashSet::new(),
             pre_emitted_host_heights: std::collections::HashMap::new(),
+            pre_emitted_host_content_heights: std::collections::HashMap::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),

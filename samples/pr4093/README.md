@@ -72,3 +72,11 @@ VS Code 에서 열었을 때 `개요` 탭에 나와야 하는 목록:
 
 여기 두 fixture 는 쪽 밖 소실 줄이 0 이라 원장에 행이 생기지 않는다 — 게이트 통과, 원장
 갱신 불필요(2026-08-07 확인).
+
+## 데모 렌더링 회귀 이관
+
+전체 Native3쪽51.51148%와표셀번호/뒤개요겹침이확인되어데모를[#7445 보존자산](../../mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx)으로이관했습니다.[출처·시각·제외·유지증거](../../mydocs/pr/assets/issue7445/outline4093_test_removal_validation.json).생성기의데모출력도보존경로입니다.위쪽수/렌더링수동기대치는당시기록이며최종출력승인기준으로사용하지않습니다.번호·제목·수준질의계약및다른최소입력검사는유지합니다.
+
+## 최소 입력 렌더링 검사 이관
+
+최소 개요 입력도 전체 Native1쪽85.44776%와표셀번호/뒤개요겹침이 확인되어 [#7445 보존자산](../../mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx)으로 바이트동일 이관했습니다. [출처·시각·제외·유지 증거](../../mydocs/pr/assets/issue7445/outline_minimal4093_test_removal_validation.json). 생성기의두입력은모두보존경로에출력되며테스트는3개/15개번호·제목·수준질의계약만확인합니다. 기존함수이름과위수동렌더링기대치는당시기록이며시각승인의근거가아닙니다.

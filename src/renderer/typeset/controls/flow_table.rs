@@ -92,6 +92,20 @@ pub(in crate::renderer::typeset) fn place(
     let is_first_placed = first_placed_table == Some(ctrl_idx);
     let is_last_placed = last_placed_table == Some(ctrl_idx);
     if engine.is_effective_tac_table(para, table, fmt) {
+        if !engine.render_normalization.table_text_reflowed(table) {
+            if let Some(placement) = super::stored_tac::prepare_coanchored_first_line(
+                ctrl_idx,
+                para,
+                fmt,
+                ft.effective_height,
+                st.stored_tac_page(paragraphs_all),
+                st.available_height(),
+                engine.dpi,
+            ) {
+                st.commit_stored_tac_control(para_idx, placement);
+                return false;
+            }
+        }
         engine.typeset_tac_table(
             st,
             para_idx,

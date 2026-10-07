@@ -1,0 +1,46 @@
+{
+  "production_head": "072048a8ae2d19b1140c6b675ebfc234961b84a1",
+  "source_pr": 7550,
+  "source_head": "51b4a150cd6959866e13f8b9822a94ab4e6d4fef",
+  "scope": "HWPX에서 기존 off-canvas가 있던 29쪽; 현대 HWPX 반례6쪽",
+  "whole_document_visual_approval": false,
+  "hwp5_deferred_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5981169881",
+  "runs": {
+    "native": {
+      "pages": 29,
+      "min": 92.22769,
+      "below90": 0
+    },
+    "wasm": {
+      "pages": 29,
+      "min": 92.22769,
+      "below90": 0
+    },
+    "modern-native": {
+      "pages": 1,
+      "min": 98.44675,
+      "below90": 0
+    },
+    "modern-wasm": {
+      "pages": 1,
+      "min": 98.44675,
+      "below90": 0
+    },
+    "twin-native": {
+      "pages": 1,
+      "min": 37.61557,
+      "below90": 1
+    },
+    "twin-wasm": {
+      "pages": 1,
+      "min": 37.61557,
+      "below90": 1
+    }
+  },
+  "retained_tests": "반각은 소유 글줄 안에 포함 및 장평 반영 em/2; 현대 비례폭은 장평 반영 em 대비 비례값 유지",
+  "removed_test": "hwpx_twin_measures_like_the_hwp5_twin",
+  "new_test_functions": 0,
+  "focused_result": "2 PASS / 0 FAIL",
+  "focused_log": "output/pr-review/planet6897-20261004/stage19-7550/focused-final-ratio.log",
+  "test_normalization": "런 폭 / (글자수 × 원본 font_size × 장평 비율), 현대 숫자도 원본 장평 90% 반영"
+}

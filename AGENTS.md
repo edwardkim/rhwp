@@ -81,10 +81,12 @@
 - 측정에서 기존 배치의 제한을 흉내 내는 예외를 덧붙이지 않는다. 해당 범위의 실제 줄·개체 원점과
   점유 끝점을 공통 결과로 만들고, 측정과 배치가 이를 소비하게 한다. 남는 좌표 보정은 적용 경로와
   이유를 명시하고 같은 경계에서 최종 출력이 계약을 지키는지 확인한다.
-- 제출 전 해당 반례를 `tests/cases/`의 정식 회귀 검사에 포함하고 실제 최종 좌표·점유 높이를
-  검사한다. 진단 스크립트·문서 표·helper 단위 assertion만으로 끝내지 않는다. 수정 전 FAIL / 수정 후
-  PASS와 정상 대조군 결과를 기존 검증 기록에 연결한다. 예상값은 구현이 계산한 높이만 재인용하지
-  말고 저장 줄 메트릭·독립 출력·적용 가능한 정렬 불변식으로 설명한다.
+- 제출 전 해당 반례를 `tests/cases/`의 정식 회귀 검사에 포함하고 최종 출력의 쪽·문단·개체 소속,
+  내용 순서·누락·중복을 검사한다. 배치 결함은 셀 내부 포함·앞뒤 순서·겹침 같은 관계로 검사하며
+  실물 문서의 절대 픽셀 위치나 전체 SVG 해시로 잠정 배치를 고정하지 않는다. 실제 위치·모양은
+  독립 PDF와 Visual Sweep으로 확인한다. 진단 스크립트·문서 표·helper 단위 assertion만으로 끝내지
+  않는다. 수정 전 FAIL / 수정 후 PASS와 정상 대조군 결과를 기존 기록에 연결한다. 별도의 줄·높이
+  계약 검사도 구현의 계산값을 재인용하지 말고 저장 줄 메트릭·독립 출력·정렬 불변식으로 설명한다.
 
 ### 분할·이어받기 변경의 입증
 
@@ -119,6 +121,13 @@
 
 ### 증거와 기준값
 
+- 렌더링·조판·페이지 배치 변경의 새 회귀 테스트나 fixture/golden은 같은 원본·독립 한컴 PDF의
+  Native/fresh WASM Visual Sweep에서 검증 범위의 **최저 일치율이 90% 이상**일 때만 추가한다.
+  관련 모든 페이지·fixture·출력 경로 중 하나라도 90% 미만이거나 측정 불가이면 추가를 보류하고
+  실제 출력을 먼저 개선한다. 쪽수 검사는 전체 페이지를 비교한다. 평균값·글꼴 예외·CI 통과로
+  대신하지 않으며, 이미 존재하는 검사는 자동 삭제하지 않는다. 세부 증거는
+  [회귀 추가 선행 조건](mydocs/manual/pr_review/visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 따른다.
+
 - 기대값은 수정 구현과 독립적인 근거에서 정한다. 중첩 표의 줄 구성 수정은 원본 사례와 함께 같은 줄의
   여러 표, 명시적 개행, 너비 부족에 따른 줄바꿈, 앞뒤 텍스트·여백 혼재를 검증한다.
   관련 없는 변경에는 이 사례들을 기계적으로 요구하지 않는다.
@@ -127,21 +136,31 @@
 - 동일 입력의 기준 출력과 변경 전후 실제 출력을 같은 페이지·영역에서 직접 비교한다.
   표 외곽·뒤 문단 위치·겹침·누락·줄바꿈 등 주장한 의미를 확인하며, 페이지 수·텍스트 추출·해시·
   픽셀 점수 또는 빈 줄에 보이는 글자가 없다는 이유만으로 시각 통과를 선언하지 않는다.
-- 렌더링 변경은 [Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)을 실행한다.
+- 페이지별 TSV 명령·저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)에 있다. Native/fresh WASM 예제를 각각 실행해 먼저 확인한다.
+  검증 대상 전체 페이지의 Native/fresh WASM 최저값·90% 미만·누락 쪽을 기록하고, 해당 쪽과
+  구조 차이·대표 경계의 PNG를 추가 생성해 직접 판독한다. 전쪽 overlay 합성을 기본 요구로 삼지 않는다.
+  기존 PNG 재사용은 최신 head 재출력과 구분한다. TSV 성공·`not_evaluated`는 승인 판정이 아니며,
+  각주 수량·문단 소속·누락·중복·전체 쪽수 차이를 점수로 면제하지 않는다.
+- 조판·렌더링 영향 변경은 파일 경로와 관계없이 [Visual Sweep](mydocs/manual/verification/visual_sweep_guide.md)을 반드시 실행한다.
+  편집 command·parser·model·serializer의 속성/저장 정보 변경도 실제 조판 소비 경로에 영향을 주면 적용한다.
+  버전에 맞는 한컴 [Print PDF 출력 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
+  편집 동작은 동일하게 편집한 저장본을 Print 출력한다. 기준 PDF 부족은 미검증이며 비해당이 아니다.
+  TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
   영향 페이지의 Native/fresh WASM compare·standalone overlay·review를 산출해 직접 확인하고,
   source SHA·입력/기준 PDF·페이지·명령·대표 PNG·남은 차이를 결과보고에 연결한다. PR review를
   요청하기 전에는 대표 review·overlay PNG를 **PR 본문에서 실제 Markdown 이미지로 표시**한다.
   경로·임시 output·review 문서 링크만으로 대체하지 않으며, PR head repository와 정확한 head SHA로
   고정한 raw URL을 쓴다. code head가 바뀌면 시각 증적과 본문 URL도 다시 만든다. merge 뒤에는
   같은 asset을 merge SHA로 고정한 URL로 contributor comment에 다시 남긴다.
-  대표 review PNG의 2px 이웃 관용 내용 실루엣 일치율이 하나라도 90% 미만이거나 측정 불가이면
+  검증 범위의 전체 TSV와 대표 review PNG 중 2px 이웃 관용 내용 실루엣 일치율이 하나라도 **90% 미만**이거나 측정 불가이면
   `scripts/visual_sweep.py`의 `pr_review_gate`가 `re_review_required`가 된다. 이 상태에서는 새 PR을 만들지 않고,
   이미 열린 PR은 승인·통합하지 않는다. 기여자는 PDF/overlay 원인을 자기 branch에서 재검토·수정하고 새 head에서
   재실행한 뒤 gate를 통과할 때만 PR을 생성·갱신한다. reviewer는 보류를 기록하며 기여자 변경을 메인터너 보정으로
-  대신하지 않는다. 한컴 PDF와 rhwp에 실제
-  적용된 글꼴이 완전히 다르다는 검증 증거 파일을 `--font-mismatch-evidence`로 해시 고정한 경우만
-  `font_mismatch_exception`을 쓸 수 있다. 글꼴 이름 추정·anti-aliasing·CI 녹색은 예외가 아니다.
-  예외 판정 전 PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 비교한다. 이 위치가
+  대신하지 않는다. **정확히 90%는 통과**한다. 사용자가 승인한 메인터너 보정도 같은 검증 기준을 따른다.
+  올바른 글꼴 공급으로 해결 불가능한 실제 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+  UTF-8 JSON 증거를 `--font-mismatch-evidence`로 해시 고정해 `font_mismatch_exception`으로
+  90% 미만이어도 PR을 제출할 수 있다. 측정 불가·쪽수 불일치·배치 차이는 면제하지 않는다.
+  PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 비교한다. 이 위치가
   어긋나면 글꼴이 달라도 배치 결함을 먼저 수정하고 다시 캡처한다(#7359 p14).
   `RHWP_FONT_PATH`를 쓰면 각 디렉터리가 존재하고 입력 문서의 face를 실제 공급하는지 먼저 확인한다.
   존재하지 않는 과거 font 경로로 생긴 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
@@ -196,16 +215,19 @@
 ## 문서와 검증
 
 - **로컬 Rust·WASM 산출물 재사용**: 일반 개발·이슈 수정·PR review의 기본
-  `CARGO_TARGET_DIR`/`--target-dir`는 항상 `target/pr-review`다. 이 경로의
+  `CARGO_TARGET_DIR`/`--target-dir`는 모든 운영체제에서 **각 host의 기본 rhwp 작업공간 아래
+  `target/pr-review` 한 곳**이다. worktree 검증에서도 그 동일한 절대 경로를 전달한다. 이 경로의
   `release`, `release-test`, `debug`, `wasm32-unknown-unknown`을 Native와 WASM이 함께
-  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`을 새로 만들지 않는다.
+  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`, `target/pr-review/<name>` 또는
+  worktree별 `target/pr-review`를 새로 만들지 않는다. 준비 방법은
+  [고정 review target](mydocs/manual/pr_review/local_validation.md#고정-review-target과-실행-환경)을 따른다.
   다른 실행 중인 Cargo 작업의 산출물과 충돌할 우려가 있으면 새 경로를 만드는 대신
   실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
   `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
 - **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
   같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시 **저장소 루트
-  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
-  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
   실행한다. `rhwp-studio/` 안에서는 `scripts/wasm-pack-locked.sh`가 없고 그곳의 `pkg/`는
   개발 서버 입력이 아니므로 사용하지 않는다. 이 wrapper는 성공한 루트 기본 `pkg/` web package의 `rhwp.js`·`rhwp_bg.wasm`을
   `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치 및 브라우저 새로고침 뒤 실제
@@ -222,11 +244,11 @@
   node scripts/rust-test-suite-manifest.mjs --prepare
   cargo fmt --all
   cargo fmt --all -- --check
-  cargo clippy --locked --target-dir target/pr-review -- -D warnings
+  cargo clippy --locked --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
   cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
-    --target-dir target/pr-review -- -D warnings
-  cargo build --locked --workspace --target-dir target/pr-review
-  cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+    --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+  cargo build --locked --workspace --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+  cargo clippy --locked --workspace --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
   node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
   ```
   새 integration test source를 추가한 경우 `--prepare`가 만든 파생 파일은 검증 뒤 review

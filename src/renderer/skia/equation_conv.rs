@@ -71,6 +71,36 @@ fn render_box(
             }
         }
         LayoutKind::Text(text) => {
+            if crate::renderer::equation::text_has_cjk(text)
+                && (lb.width
+                    - crate::renderer::equation::layout::estimate_text_width(
+                        text,
+                        font_size_from_box(lb, fs),
+                        false,
+                    ))
+                .abs()
+                    > 0.01
+            {
+                let font_size = font_size_from_box(lb, fs);
+                for (ch, offset) in
+                    crate::renderer::equation::positioned_cjk_text(text, font_size, lb.width)
+                {
+                    draw_text(
+                        canvas,
+                        font_mgr,
+                        system_families,
+                        &ch.to_string(),
+                        x + offset,
+                        y + lb.baseline,
+                        font_size,
+                        false,
+                        bold,
+                        color,
+                        false,
+                    );
+                }
+                return;
+            }
             draw_text(
                 canvas,
                 font_mgr,
@@ -690,13 +720,20 @@ fn draw_text(
     if text.is_empty() {
         return;
     }
-    let font_style = match (bold, italic) {
+    // 수식의 한글은 SVG/Canvas와 같은 명조 대체 글꼴과 정체 스타일을 쓴다.
+    let has_cjk = crate::renderer::equation::text_has_cjk(text);
+    let family = if has_cjk {
+        crate::renderer::equation::CJK_EQUATION_FONT_FAMILY
+    } else {
+        EQ_FONT_FAMILY
+    };
+    let font_style = match (bold, italic && !has_cjk) {
         (true, true) => FontStyle::bold_italic(),
         (true, false) => FontStyle::bold(),
         (false, true) => FontStyle::italic(),
         (false, false) => FontStyle::normal(),
     };
-    let typeface = EQ_FONT_FAMILY
+    let typeface = family
         .split(',')
         .map(str::trim)
         .filter(|family| !family.is_empty())
@@ -871,7 +908,7 @@ fn draw_decoration(
                 &paint,
             );
         }
-        DecoKind::Vec => {
+        DecoKind::Vec | DecoKind::Dyad => {
             let arrow_y = y + fs * 0.05;
             canvas.draw_line(
                 ((mid_x - half_w) as f32, arrow_y as f32),
@@ -889,6 +926,19 @@ fn draw_decoration(
                 (arrow_y + fs * 0.06) as f32,
             ));
             canvas.draw_path(&head.detach(), &paint);
+            if kind == DecoKind::Dyad {
+                let mut head = PathBuilder::new();
+                head.move_to((
+                    (mid_x - half_w + fs * 0.1) as f32,
+                    (arrow_y - fs * 0.06) as f32,
+                ));
+                head.line_to(((mid_x - half_w) as f32, arrow_y as f32));
+                head.line_to((
+                    (mid_x - half_w + fs * 0.1) as f32,
+                    (arrow_y + fs * 0.06) as f32,
+                ));
+                canvas.draw_path(&head.detach(), &paint);
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;

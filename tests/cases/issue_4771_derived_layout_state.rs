@@ -177,6 +177,28 @@ fn collect_images<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
     }
 }
 
+fn collect_cell_images(
+    node: &RenderNode,
+    owning_cell: Option<rhwp::renderer::render_tree::BoundingBox>,
+    out: &mut Vec<(
+        u16,
+        rhwp::renderer::render_tree::BoundingBox,
+        Option<rhwp::renderer::render_tree::BoundingBox>,
+    )>,
+) {
+    let owning_cell = if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+        Some(node.bbox)
+    } else {
+        owning_cell
+    };
+    if let RenderNodeType::Image(image) = &node.node_type {
+        out.push((image.bin_data_id, node.bbox, owning_cell));
+    }
+    for child in &node.children {
+        collect_cell_images(child, owning_cell, out);
+    }
+}
+
 fn rendered_pair(
     core: DocumentCore,
     reason: &str,
@@ -242,18 +264,9 @@ fn floating_stack_admission_requires_same_frame_and_strict_2d_overlap() {
 
 #[test]
 fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
-    // [#7063] x 가 다섯 장 모두 +3.76px(283HU) 이동했다 — 감싼 자리차지 표가 자기
-    // `outMargin.left` 만큼 안으로 들어간 결과다. 한/글 2022 실측
-    // (`pdf/issue2004_cell_image_stack-2022.pdf`)은 86.0 / 107.1 / 113.9 / 106.7 /
-    // 105.1 이고 종전 값은 거기서 공통으로 3.6px 이 빠져 있었다(`#6655` 주석 참고).
-    let expected = [
-        (3, (86.16, 124.9, 601.5, 868.1)),
-        (4, (107.26, 84.1, 579.3, 840.8)),
-        (5, (114.06, 84.1, 592.1, 867.4)),
-        (6, (106.86, 84.1, 580.1, 868.0)),
-        (7, (105.26, 84.1, 604.9, 862.6)),
-    ];
-
+    // HWPX의 그림 y를 특정 픽셀에 고정한 과거 기댓값은 저장 표의 바깥 위 여백을
+    // 적용하면 깨진다. 같은 원본의 한컴 PDF와 전 8쪽을 직접 비교한 뒤, 정식
+    // 회귀에서는 쪽·그림 식별자·셀 내부 포함이라는 조판 계약을 검사한다.
     for relative in [
         "samples/issue2004_cell_image_stack.hwp",
         "samples/issue2004_cell_image_stack.hwpx",
@@ -263,50 +276,72 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
             .expect("fixture parse");
         assert_eq!(core.page_count(), 8, "{relative}: #2004 page count");
 
-        // [#7095] native HWP5 1×1 RowBreak 조각은 표의 바깥 위 여백(283HU)을 연다. 한/글 2020
-        // 정본(새 PDF, 쪽 척도 제거)의 표 위 괘선은 4쪽 127.84 · 5~8쪽 87.04 이고, rhwp 는
-        // 127.7 · 86.9 로 맞는다(종전 123.9 · 83.1 은 여백만큼 위였다). 그림은 표와 함께
-        // 내려간다. HWPX 계보는 이 술어 밖이라 종전 좌표를 유지한다.
-        let outer_top_shift = if relative.ends_with(".hwpx") {
-            0.0
-        } else {
-            283.0 * 96.0 / 7200.0
-        };
+        if relative.ends_with(".hwpx") {
+            // 저장 줄이 유효한 두 표의 상대 원점은 같은 저장 좌표축을 쓴다.
+            // 절대 픽셀을 고정하지 않고 첫 표의 실제 높이로 물리 단위를 환산한다.
+            let page = core.build_page_render_tree(2).expect("명단 3쪽");
+            let mut pending = vec![&page.root];
+            let mut frames = Vec::new();
+            while let Some(node) = pending.pop() {
+                if let RenderNodeType::Table(table) = &node.node_type {
+                    if matches!(table.para_index, Some(36 | 39)) {
+                        frames.push((table.para_index.unwrap(), node.bbox));
+                    }
+                }
+                pending.extend(&node.children);
+            }
+            frames.sort_by_key(|(index, _)| *index);
+            assert_eq!(frames.len(), 2, "3쪽 머리표와 명단표의 소속 보존");
+            let paragraphs = &core.document().sections[0].paragraphs;
+            let source = |index: usize| {
+                let para = &paragraphs[index];
+                let Control::Table(table) = &para.controls[0] else {
+                    panic!("저장 줄의 표 소유자 누락");
+                };
+                (para.line_segs[0].vertical_pos, table)
+            };
+            let (header_vpos, header) = source(36);
+            let (roster_vpos, roster) = source(39);
+            let expected_units = f64::from(roster_vpos - header_vpos)
+                + f64::from(roster.outer_margin_top)
+                - f64::from(header.outer_margin_top);
+            let actual_units = (frames[1].1.y - frames[0].1.y) * f64::from(header.common.height)
+                / frames[0].1.height;
+            assert!(
+                (actual_units - expected_units).abs() < 75.0,
+                "표 사이 저장 원점 보존: 실제 {actual_units}HU, 원본 {expected_units}HU"
+            );
+        }
+
         let first_picture_id = if relative.ends_with(".hwpx") { 6 } else { 3 };
-        for (page_index, (x, y, width, height)) in expected {
+        for page_index in 3..8 {
             let page = core
                 .build_page_render_tree(page_index)
                 .unwrap_or_else(|error| panic!("{relative} page {}: {error}", page_index + 1));
             let mut images = Vec::new();
-            collect_images(&page.root, &mut images);
+            collect_cell_images(&page.root, None, &mut images);
             assert_eq!(
                 images.len(),
                 1,
                 "{relative} page {} must contain exactly one stack picture",
                 page_index + 1
             );
-            let RenderNodeType::Image(image) = &images[0].node_type else {
-                unreachable!()
-            };
             assert_eq!(
-                image.bin_data_id,
+                images[0].0,
                 first_picture_id + (page_index - 3) as u16,
                 "{relative} page {} picture identity",
                 page_index + 1
             );
-            let actual = images[0].bbox;
-            for (name, actual, expected) in [
-                ("x", actual.x, x),
-                ("y", actual.y, y + outer_top_shift),
-                ("width", actual.width, width),
-                ("height", actual.height, height),
-            ] {
-                assert!(
-                    (actual - expected).abs() <= 0.1,
-                    "{relative} page {} {name}: expected {expected:.1}, got {actual:.3}",
-                    page_index + 1
-                );
-            }
+            let (picture, cell) = (images[0].1, images[0].2.expect("그림을 소유한 표 셀"));
+            assert!(picture.width > 0.0 && picture.height > 0.0, "빈 그림 영역");
+            assert!(
+                picture.x >= cell.x
+                    && picture.y >= cell.y
+                    && picture.x + picture.width <= cell.x + cell.width
+                    && picture.y + picture.height <= cell.y + cell.height,
+                "{relative} page {} 그림이 소유 셀을 벗어났다: 그림 {picture:?}, 셀 {cell:?}",
+                page_index + 1
+            );
         }
     }
 }

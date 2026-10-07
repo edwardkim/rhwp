@@ -485,6 +485,12 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/release-binary.yml",
         ".github/workflows/npm-publish.yml",
         ".github/workflows/render-diff.yml",
+        ".github/workflows/build-nextest-archives.yml",
+        ".github/workflows/run-nextest-archives.yml",
+        ".github/workflows/issue-form-labels.yml",
+        ".github/workflows/refresh-nextest-duration.yml",
+        ".github/workflows/trusted-postmerge-ci-reuse.yml",
+        ".github/workflows/release-operations-contracts.yml",
     }
 
     @classmethod

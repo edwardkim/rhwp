@@ -1,0 +1,99 @@
+{
+  "head": "14058e212abdb9cb25396924aafb2f8b3686e7c2",
+  "policy": "고정38 대기 함수를 한 개씩 실행. 첫 실패에서 중단하여 원인·동일 입력 시각 검증을 먼저 수행. 새 검사나 기준값 완화 없음.",
+  "individual": [
+    {
+      "id": 31,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_11)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.832860707771033,
+      "summary": [
+        "     Summary [   0.766s] 1 test run: 1 passed, 237 skipped"
+      ]
+    },
+    {
+      "id": 32,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_12)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 2.9726005839183927,
+      "summary": [
+        "     Summary [   2.587s] 1 test run: 1 passed, 237 skipped"
+      ]
+    },
+    {
+      "id": 33,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 3.0105629158206284,
+      "summary": [
+        "     Summary [   2.633s] 1 test run: 0 passed, 1 failed, 237 skipped"
+      ]
+    }
+  ]
+}

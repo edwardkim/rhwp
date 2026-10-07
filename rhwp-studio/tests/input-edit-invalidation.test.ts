@@ -156,7 +156,17 @@ test('depth-1 셀 IME replacement는 body fallback보다 먼저 atomic helper를
   );
   const replaceStart = textSource.indexOf('export function replaceTextAtRaw(');
   const deleteStart = textSource.indexOf('export function deleteTextAt(', replaceStart);
-  const replaceSource = textSource.slice(replaceStart, deleteStart);
+  assert.match(
+    textSource.slice(replaceStart, deleteStart),
+    /return replaceTextWithMutationEffects\(this\.wasm, pos, deleteCount, text\);/,
+    'raw IME replace는 수정 모드 입력과 같은 command helper를 써야 한다',
+  );
+
+  // [#7489] 본문·셀 replace 경로는 command.ts 한 곳에서 고른다.
+  const commandSource = readFileSync(new URL('../src/engine/command.ts', import.meta.url), 'utf8');
+  const helperStart = commandSource.indexOf('export function replaceTextWithMutationEffects(');
+  const helperEnd = commandSource.indexOf('\n}\n', helperStart);
+  const replaceSource = commandSource.slice(helperStart, helperEnd);
 
   assert.match(
     replaceSource,
@@ -164,7 +174,7 @@ test('depth-1 셀 IME replacement는 body fallback보다 먼저 atomic helper를
   );
   assert.match(
     replaceSource,
-    /return replaceCellTextWithMutationEffects\(this\.wasm, pos, deleteCount, text\);/,
+    /return replaceCellTextWithMutationEffects\(wasm, pos, deleteCount, text\);/,
   );
   assert.ok(
     replaceSource.indexOf('canUseDeferredCellTextReplace') <

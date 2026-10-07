@@ -1,0 +1,149 @@
+{
+  "source_sha": "432e05f6d7b63eb07619efdde7a8b69d5145ef11",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "files": {
+    "src/renderer/height_measurer.rs": "a34bea8104deb933808413c9ab7e5357a6183097dce77e959195656580faf7fd",
+    "tests/cases/issue_6312_float_anchor_line_uses_source_vpos.rs": "6cd0e66cb3bfa9bf5c02406c40cbd445b39684a5b36f3a6e64efb1a42a2b3ffb"
+  },
+  "runtime_diff_sha256": "f23d82286f8f553cd9a7dd0fd42d7ba5dcf5933bd9345e52cb29f712da55c54b",
+  "rust_test_diff_sha256": "2da582a84c413b16c5dad2859254e7e6c7f3041c42311f1a96a27c01a88e278e",
+  "immutable_cli_sha256": "7ae079f6b80e3cdaa6ff507cd2f6bc76941d3a99da4f934a3532f1e358d54931",
+  "before": {
+    "passed": 1,
+    "failed": 2,
+    "seconds": 0.03,
+    "exit_code": 100,
+    "meaning": "독립 머리 표 높이·본문 시작 결함; 표 간격 검사는 정상 대조"
+  },
+  "after": {
+    "passed": 44,
+    "failed": 0,
+    "seconds": 0.692,
+    "exit_code": 0,
+    "threads": 8
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_004",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_008",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_021",
+    "--test",
+    "regression_suite_024",
+    "--test",
+    "regression_suite_027",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6761_side_by_side_objects_do_not_stack) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6147_empty_anchor_band_host_line) | test(issue_6660_empty_para_line_not_added_to_object_height) | test(issue_6660_picture_position_oracle) | test(issue_6194_header_row_picture_height) | test(issue_6280_cell_ladder_line_covers_object)"
+  ],
+  "cli_build": {
+    "command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "exit_code": 0,
+    "duration": "1m35s"
+  },
+  "policies": {
+    "manifest_exit_code": 0,
+    "static_test_attrs": 6202,
+    "source_unit_exit_code": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "visual": {
+    "6312_before": {
+      "pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "scores": [
+        65.74324,
+        92.79928,
+        71.83139,
+        99.88721
+      ]
+    },
+    "6312_after": {
+      "pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "scores": [
+        96.76471,
+        92.79928,
+        71.83139,
+        99.88721
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "page_count": [
+        4,
+        4
+      ],
+      "directly_read_review_overlay_pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "7382_hwpx": {
+      "pages": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "scores": [
+        66.828,
+        99.76685,
+        94.95824,
+        81.51575
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "page_count": [
+        215,
+        215
+      ],
+      "directly_read_review_overlay_pages": [
+        11,
+        12,
+        13,
+        14
+      ]
+    }
+  },
+  "remaining": [
+    "#6312 3쪽 표·뒤 본문 차이",
+    "#7382 11/14쪽·최신 전수/fresh WASM",
+    "보정16 실제 TABLE 편집 반례",
+    "보정27 보존 셀 분할·이월 물리 경계",
+    "최종 전체 nextest/lint/Skia"
+  ],
+  "normal_controls": {
+    "serialization_order": "수동 IR 알고리즘 반례; 한컴 생성 출력 아님",
+    "liver_picture_frame": "독립 PDF/HU 기반 수정 후 검사; 정식 수정 전 미실행"
+  },
+  "english_added_explanatory_comments": 0,
+  "fmt_exit_code": 0
+}

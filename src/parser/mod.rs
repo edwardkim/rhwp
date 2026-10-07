@@ -531,6 +531,7 @@ fn parse_hwp_with_cfb(
             format: crate::model::provenance::SourceFormat::Hwp5,
             hwp3_lineage: false,
             hwpx_lineage: is_hwpx_variant,
+            hft_ascii_halfwidth_witnessed: false,
         },
     };
 
@@ -1046,6 +1047,7 @@ fn parse_hwp_with_lenient(
             format: crate::model::provenance::SourceFormat::Hwp5,
             hwp3_lineage: false,
             hwpx_lineage: false,
+            hft_ascii_halfwidth_witnessed: false,
         },
     };
 

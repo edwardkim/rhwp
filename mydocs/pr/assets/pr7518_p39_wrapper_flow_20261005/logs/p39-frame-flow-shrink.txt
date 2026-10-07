@@ -1,0 +1,64 @@
+Excerpt: p39 flow, whole table placement and padding diagnosis. Raw SHA256 30b61ecadb7752d9d6df03da33448ac857bcd4d4754d5a184f467560066f855b
+DIAG_ROUTE pi=369 has_table=false
+DIAG_FLOW pi=369 cur_h=956.7 page=38 items=19 ct=None
+DIAG_ROUTE pi=370 has_table=true
+TABLE_DRIFT: pi=370 sec=0 eff_h=120.8 host_sp=3.8 table_total=124.6 mt_sum=76.3 mt_rows=3 cs=0.0 cur_h=30.0 tac=false rows=1 avail=971.3 base=971.3 fn=0.0 zone=0.0 declared=124.6 pb=RowBreak mt_row_heights=[24.866666666666667, 25.706666666666667, 25.706666666666667]
+TABLE_PAINT_FOOTPRINT pi=370 native=true rewind=false measured=76.3 effective=120.8 whole_fit=false
+DIAG_ROUTE pi=371 has_table=false
+DIAG_FLOW pi=371 cur_h=160.6 page=39 items=2 ct=None
+DIAG_ROUTE pi=372 has_table=false
+DIAG_FLOW pi=372 cur_h=168.6 page=39 items=3 ct=None
+DIAG_ROUTE pi=373 has_table=false
+DIAG_FLOW pi=373 cur_h=184.6 page=39 items=4 ct=None
+DIAG_ROUTE pi=374 has_table=false
+DIAG_FLOW pi=374 cur_h=214.6 page=39 items=5 ct=None
+DIAG_ROUTE pi=375 has_table=true
+TABLE_DRIFT: pi=375 sec=0 eff_h=116.7 host_sp=3.8 table_total=120.4 mt_sum=100.6 mt_rows=2 cs=0.0 cur_h=222.6 tac=false rows=1 avail=971.3 base=971.3 fn=0.0 zone=0.0 declared=120.4 pb=RowBreak mt_row_heights=[24.866666666666667, 75.70666666666668]
+TABLE_PAINT_FOOTPRINT pi=375 native=true rewind=false measured=100.6 effective=116.7 whole_fit=false
+DIAG_ROUTE pi=376 has_table=false
+DIAG_FLOW pi=376 cur_h=343.0 page=39 items=7 ct=None
+DIAG_ROUTE pi=377 has_table=false
+DIAG_FLOW pi=377 cur_h=359.0 page=39 items=8 ct=None
+DIAG_ROUTE pi=378 has_table=false
+DIAG_FLOW pi=378 cur_h=389.0 page=39 items=9 ct=None
+DIAG_ROUTE pi=379 has_table=false
+DIAG_FLOW pi=379 cur_h=419.1 page=39 items=10 ct=None
+DIAG_ROUTE pi=380 has_table=true
+TABLE_DRIFT: pi=380 sec=0 eff_h=113.8 host_sp=3.8 table_total=117.6 mt_sum=113.8 mt_rows=1 cs=0.0 cur_h=427.1 tac=false rows=1 avail=971.3 base=971.3 fn=0.0 zone=0.0 declared=117.6 pb=RowBreak mt_row_heights=[113.84]
+TABLE_PAINT_FOOTPRINT pi=380 native=true rewind=false measured=113.8 effective=113.8 whole_fit=false
+DIAG_ROUTE pi=381 has_table=false
+DIAG_FLOW pi=381 cur_h=544.7 page=39 items=12 ct=None
+DIAG_ROUTE pi=382 has_table=false
+DIAG_FLOW pi=382 cur_h=564.7 page=39 items=13 ct=None
+DIAG_ROUTE pi=383 has_table=false
+DIAG_FLOW pi=383 cur_h=594.7 page=39 items=14 ct=None
+DIAG_ROUTE pi=384 has_table=true
+TABLE_DRIFT: pi=384 sec=0 eff_h=53.8 host_sp=3.8 table_total=57.5 mt_sum=53.8 mt_rows=1 cs=0.0 cur_h=602.7 tac=false rows=1 avail=971.3 base=971.3 fn=0.0 zone=0.0 declared=57.5 pb=RowBreak mt_row_heights=[53.78666666666667]
+TABLE_PAINT_FOOTPRINT pi=384 native=true rewind=false measured=53.8 effective=53.8 whole_fit=false
+DIAG_ROUTE pi=385 has_table=false
+DIAG_FLOW pi=385 cur_h=660.2 page=39 items=16 ct=None
+LAYOUT_Y: page=38 sec=0 ord=0 pi=369 y_after=105.6 (body_top=75.6)
+WHOLE_TABLE_Y: pi=370 sec=0 tac=false table_y_start=105.6 table_y_end=234.3 table_h=128.7 para_y=105.6 table_y_before=105.6
+LAYOUT_Y: page=38 sec=0 ord=1 pi=370 y_after=236.2 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=2 pi=371 y_after=244.2 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=3 pi=372 y_after=260.2 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=4 pi=373 y_after=290.2 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=5 pi=374 y_after=298.2 (body_top=75.6)
+D_SHRINK cell_w=170.3 avail=156.7 inner_h=71.946666666666658 wrapped_h=39.893333333333331 max_line_w=251.0
+D_SHRINK cell_w=228.4 avail=214.8 inner_h=71.946666666666658 wrapped_h=52.853333333333332 max_line_w=397.0
+D_SHRINK cell_w=115.2 avail=101.6 inner_h=71.946666666666658 wrapped_h=71.946666666666673 max_line_w=286.0
+WHOLE_TABLE_Y: pi=375 sec=0 tac=false table_y_start=298.2 table_y_end=416.8 table_h=118.5 para_y=298.2 table_y_before=298.2
+LAYOUT_Y: page=38 sec=0 ord=6 pi=375 y_after=418.6 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=7 pi=376 y_after=434.6 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=8 pi=377 y_after=464.6 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=9 pi=378 y_after=494.7 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=10 pi=379 y_after=502.7 (body_top=75.6)
+WHOLE_TABLE_Y: pi=380 sec=0 tac=false table_y_start=502.7 table_y_end=618.4 table_h=115.7 para_y=502.7 table_y_before=502.7
+LAYOUT_Y: page=38 sec=0 ord=11 pi=380 y_after=620.3 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=12 pi=381 y_after=640.3 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=13 pi=382 y_after=670.3 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=14 pi=383 y_after=678.3 (body_top=75.6)
+D_SHRINK cell_w=638.2 avail=638.2 inner_h=50.026666666666664 wrapped_h=50.026666666666671 max_line_w=790.0
+WHOLE_TABLE_Y: pi=384 sec=0 tac=false table_y_start=678.3 table_y_end=734.0 table_h=55.7 para_y=678.3 table_y_before=678.3
+LAYOUT_Y: page=38 sec=0 ord=15 pi=384 y_after=735.8 (body_top=75.6)
+LAYOUT_Y: page=38 sec=0 ord=16 pi=385 y_after=765.8 (body_top=75.6)

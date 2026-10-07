@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 92.70806,
+    "worst_pixel_match_percent": 91.12579,
+    "average_ink_match_percent": 20.75503,
+    "worst_ink_match_percent": 18.8131,
+    "average_visual_accuracy_proxy_percent": 20.75503,
+    "worst_visual_accuracy_proxy_percent": 18.8131,
+    "average_tolerant_content_match_percent": 87.85922,
+    "worst_tolerant_content_match_percent": 85.24789,
+    "worst_pages": [
+      176,
+      177
+    ]
+  },
+  "pages": [
+    {
+      "page": 176,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/rhwp_png/rhwp_176.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/pdf_png/pdf-176.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/overlay/overlay_176.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 79128,
+      "diff_ratio": 0.08874215,
+      "pixel_match_percent": 91.12579,
+      "ink_union_pixels": 97464,
+      "ink_diff_pixels": 79128,
+      "ink_diff_ratio": 0.811869,
+      "ink_match_percent": 18.8131,
+      "visual_accuracy_proxy_percent": 18.8131,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 85.24789,
+      "mean_abs_channel_delta": 10.23,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        83,
+        698,
+        1082
+      ]
+    },
+    {
+      "page": 177,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/rhwp_png/rhwp_177.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/pdf_png/pdf-177.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage8-native/liver7379/overlay/overlay_177.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 50911,
+      "diff_ratio": 0.05709675,
+      "pixel_match_percent": 94.29033,
+      "ink_union_pixels": 65859,
+      "ink_diff_pixels": 50911,
+      "ink_diff_ratio": 0.77303026,
+      "ink_match_percent": 22.69697,
+      "visual_accuracy_proxy_percent": 22.69697,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 90.47055,
+      "mean_abs_channel_delta": 6.14,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        95,
+        109,
+        698,
+        1081
+      ]
+    }
+  ]
+}

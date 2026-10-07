@@ -18,11 +18,11 @@ use rhwp::document_core::DocumentCore;
 /// 셀 안에만 있는 단어(`셀전용단어`)와 본문에만 있는 단어(`본문전용단어`)를 함께 둔다.
 /// 두 단어를 나눠 두어야 "셀을 켜서 찾은 것"과 "원래 본문에서 찾히던 것"이 구별된다.
 const TABLE_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
-  <P><TEXT><CHAR>본문전용단어</CHAR></TEXT></P>
+  <P><TEXT><CHAR>본문전용단어 공통단어</CHAR></TEXT></P>
   <P><TEXT><TABLE RowCount="1" ColCount="1">
     <SHAPEOBJECT><SIZE Width="4000" Height="1200"/></SHAPEOBJECT>
     <ROW><CELL ColAddr="0" RowAddr="0" Width="4000" Height="1200"><PARALIST>
-      <P><TEXT><CHAR>셀전용단어</CHAR></TEXT></P>
+      <P><TEXT><CHAR>셀전용단어 공통단어</CHAR></TEXT></P>
     </PARALIST></CELL></ROW>
   </TABLE></TEXT></P>
 </SECTION></BODY><TAIL/></HWPML>"#;
@@ -41,6 +41,8 @@ const TEXTBOX_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
   </RECTANGLE></TEXT></P>
 </SECTION></BODY><TAIL/></HWPML>"#;
 
+const EQUATION_SAMPLE: &str = "samples/exam_math.hwp";
+
 fn core() -> DocumentCore {
     DocumentCore::from_bytes(TABLE_HML.as_bytes()).expect("표 픽스처가 열려야 한다")
 }
@@ -49,13 +51,18 @@ fn core() -> DocumentCore {
 fn opting_in_keeps_textbox_matches_out_of_table_cell_navigation() {
     let core =
         DocumentCore::from_bytes(TEXTBOX_HML.as_bytes()).expect("글상자 픽스처가 열려야 한다");
+    let all = core
+        .search_all_text_native("글상자전용단어", true, true)
+        .expect("전체 검색 실패");
+    assert_ne!(all, "[]", "대조군: 전체 검색은 글상자 매치를 포함해야 한다");
 
     let found = core
         .search_text_native("글상자전용단어", 0, 0, 0, true, true, true)
         .expect("검색 실패");
 
-    assert!(
-        found.contains("\"found\":false"),
+    assert_eq!(
+        found,
+        r#"{"found":false}"#,
         "표 셀 전용 opt-in이 글상자 매치를 Find/F3로 넘기면 부모 문단을 이동·치환할 수 있다: {found}"
     );
 }
@@ -72,6 +79,7 @@ fn body_only_search_still_ignores_table_cells() {
         body.contains("\"found\":true"),
         "본문 단어는 종전대로 찾혀야 한다: {body}"
     );
+    assert!(body.contains(r#""totalMatchCount":1"#), "{body}");
 
     let cell = core
         .search_text_native("셀전용단어", 0, 0, 0, true, true, false)
@@ -99,12 +107,52 @@ fn opting_in_finds_text_inside_table_cells_with_navigable_context() {
         found.contains("\"cellContext\""),
         "셀 매치인데 cellContext 가 없으면 호출자가 커서를 옮길 수 없다: {found}"
     );
+    assert!(found.contains(r#""totalMatchCount":1"#), "{found}");
     for key in ["parentPara", "ctrlIdx", "cellIdx", "cellPara"] {
         assert!(
             found.contains(key),
             "cellContext 에 {key} 가 없다 — 셀 좌표가 불완전하다: {found}"
         );
     }
+}
+
+/// 같은 검색어가 본문과 직접 표 셀에 있을 때 Find가 순회 가능한 집합만 센다.
+#[test]
+fn total_match_count_tracks_the_include_cells_navigation_set() {
+    let core = core();
+
+    let body_only = core
+        .search_text_native("공통단어", 0, 0, 0, true, true, false)
+        .expect("검색 실패");
+    assert!(body_only.contains(r#""totalMatchCount":1"#), "{body_only}");
+
+    let with_cells = core
+        .search_text_native("공통단어", 0, 0, 0, true, true, true)
+        .expect("검색 실패");
+    assert!(
+        with_cells.contains(r#""totalMatchCount":2"#),
+        "{with_cells}"
+    );
+}
+
+#[test]
+fn find_navigation_count_excludes_equation_script_matches() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(EQUATION_SAMPLE);
+    let data = std::fs::read(path).expect("샘플 파일 읽기 실패");
+    let core = DocumentCore::from_bytes(&data).expect("샘플 파일 파싱 실패");
+
+    assert_ne!(
+        core.search_all_text_native("lim", true, true)
+            .expect("전체 검색 실패"),
+        "[]",
+        "대조군: 전체 검색은 수식 스크립트를 포함해야 한다"
+    );
+    assert_eq!(
+        core.search_text_native("lim", 0, 0, 0, true, true, true)
+            .expect("Find 검색 실패"),
+        r#"{"found":false}"#,
+        "Find/F3가 이동할 수 없는 수식 매치는 카운트와 탐색에서 제외해야 한다"
+    );
 }
 
 /// 켜도 본문 매치는 그대로여야 한다 — 옵션이 본문 검색을 바꾸면 안 된다.

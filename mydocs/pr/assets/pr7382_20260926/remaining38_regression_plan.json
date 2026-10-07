@@ -1,0 +1,2505 @@
+{
+  "baseline_full_head": "f677301d4+stage55 workingtree snapshot",
+  "baseline_full_provenance": "full-provenance.json",
+  "baseline_fail_function_count": 38,
+  "new_test_policy": "이미 작성한 검사는 유지. 이후 새 검사 추가 없음.",
+  "sequence": "고정38 중 사용자 승인 이관 검사는 제외 사유 보존. 나머지 개별 분석/수정/검증/기록/커밋 → 유지된37함수 각각 재실행 → 전체 nextest",
+  "items": [
+    {
+      "id": 1,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_0",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 71,
+          "before_move": "1PASS,17/19건:문서피델리티승인아님",
+          "after_move": "1FAIL,#6031 1→15건",
+          "test_snapshot_commit": "ca499e732a076009496da9f6b5a90ccdc2442698",
+          "fixture_deferred": "issue5941/1480000-201900698-native-neartop-reset.hwp",
+          "fixture_removal_evidence": "../issue7445/neartop5941_test_removal_validation.json",
+          "status": "pending",
+          "reason": "corpus 재배정의다른문서실패를다음개별검토"
+        },
+        {
+          "stage": 72,
+          "after_move": "#7080 5PASS; body partition0 1FAIL task2097/75544_pii_bunseok.hwpx 1→2건",
+          "test_snapshot_commit": "5a0d2d48ead8f5595f55ce673b7e4957b157c3ef",
+          "fixture_deferred": "issue6031/3249937_asset_management_rules.hwpx",
+          "fixture_removal_evidence": "../issue7445/assets6031_test_removal_validation.json",
+          "status": "pending",
+          "reason": "corpus 재배정 후 다른 실패 문서 개별 검토"
+        },
+        {
+          "stage": 73,
+          "test_snapshot_commit": "63a6e9eadb9ef190142f6eeeb1f0394e9b7fdc8b",
+          "fixture_deferred": "task2097/75544_pii_bunseok.hwpx",
+          "fixture_removal_evidence": "../issue7445/pii75544_test_removal_validation.json",
+          "after_move": "body partition0 1PASS; render-page contract6PASS; aggregate7PASS/442SKIP",
+          "status": "resolved",
+          "resolution_scope": "승인된미달문서이관후남은corpus개별검사통과. 원문피델리티해결아님."
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      },
+      "resolution_scope": "실패문서의사용자승인이관후유지된partition0검사의통과; 이관원문피델리티해결아님"
+    },
+    {
+      "id": 2,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 74,
+          "before": "body partition1 1FAIL: sample16-HWP5 1→3건/issue3637 2→3건/rowbreak HWP신규1건",
+          "after": "body partition1 PASS; 확대검사45PASS/다른HWPX1FAIL; source-side2PASS",
+          "test_snapshot_commit": "bd2c2be0f891a13cc2b239301392e3670d9ae143",
+          "fixture_deferred": "hwp3-sample16-hwp5.hwp",
+          "fixture_removal_evidence": "../issue7445/sample16_test_removal_validation.json",
+          "status": "resolved",
+          "scope": "사용자승인미달HWP5이관뒤현재partition1검사의PASS; 재배정된다른실패문서의해결아님."
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      },
+      "resolution_scope": "사용자승인미달HWP5이관뒤현재partition1검사의PASS; 재배정된다른실패문서의해결아님."
+    },
+    {
+      "id": 3,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 76,
+          "id": 3,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_015",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_015",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_10)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 10.097216708119959,
+          "summary": [
+            "     Summary [   2.431s] 1 test run: 1 passed, 233 skipped"
+          ],
+          "head": "24d83f3a487a200c821b85c713c32fa93006d9d3"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      }
+    },
+    {
+      "id": 4,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 76,
+          "id": 4,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_015",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_015",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 0.9144678330048919,
+          "summary": [
+            "     Summary [   0.532s] 1 test run: 0 passed, 1 failed, 233 skipped"
+          ],
+          "head": "24d83f3a487a200c821b85c713c32fa93006d9d3"
+        },
+        {
+          "stage": 77,
+          "after": "body partition15 개별PASS; 유지 집중8PASS/0FAIL/865SKIP",
+          "code_commit": "123e7260c107e4f45f04521b395b1906d8d40256",
+          "evidence": "../issue7445/sample16_2010_test_removal_validation.json",
+          "scope": "승인된 문서 이관 뒤 남은 corpus 검사의 통과. 재배정된 보도자료/rowbreak 해결 아님."
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      }
+    },
+    {
+      "id": 5,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 78,
+          "before": "개별1FAIL,2022입력2→4 및 관제교육39→40",
+          "head": "d75eb265538cea0c26b39c9faf1a6170eee491a2",
+          "log": "stage78-individual-pending/individual5.log"
+        },
+        {
+          "stage": 79,
+          "after": "body partition2 FAIL. 유지8PASS/다른3문서1FAIL/853SKIP",
+          "code_commit": "ced1d9ef299af17850c9f43ec3c4d91f914baa6c",
+          "evidence": "../issue7445/sample16_2022_test_removal_validation.json",
+          "scope": "사용자 승인2022입력만이관; 다른3문서는미해결"
+        },
+        {
+          "stage": 80,
+          "after": "유지5PASS/다른입력2FAIL/849SKIP",
+          "code_commit": "521cee34a1d62ae144e2db28ab015f95bb39fd99",
+          "evidence": "../issue7445/press3637_test_removal_validation.json",
+          "scope": "미달보도자료 전용4검사 제외; 관제교육/rowbreak 및 별도규제영향HWPX 미해결"
+        },
+        {
+          "stage": 81,
+          "head": "66510d325d7c085e684a914f4176d953bf9eef38",
+          "after": "body partition2 단독 선택1FAIL: 관제교육39→40건; 최신 집중37PASS/다른4FAIL",
+          "evidence": "../issue7445/rowbreak_hwp_test_removal_validation.json",
+          "scope": "rowbreak HWP 이관. body generic 유지; 다른 실패 해결 아님."
+        },
+        {
+          "stage": 82,
+          "after": "개별1PASS/239SKIP,exit0",
+          "code_head": "1d91421c4d0b885e3fec99d549d490758876de1c",
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test-threads",
+            "8",
+            "--no-fail-fast",
+            "--test",
+            "regression_suite_019",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_2)"
+          ],
+          "resolved_plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_019",
+            "grouped": true
+          }
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_019",
+        "grouped": true
+      },
+      "code_commit": "1d91421c4d0b885e3fec99d549d490758876de1c",
+      "evidence": "../issue7445/air6764_test_removal_validation.json",
+      "resolution_scope": "사용자 승인 미달 원문 이관 뒤 현재 generic body partition2 개별PASS. 원문의 피델리티 개선이나 다른 입력 해결 아님."
+    },
+    {
+      "id": 6,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 6,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_019",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_019",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_3)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 45.78649737499654,
+          "summary": [
+            "     Summary [  44.776s] 1 test run: 0 passed, 1 failed, 239 skipped"
+          ],
+          "stage": 83,
+          "head": "1fddec84c4d05919323e190d0068046be624d373"
+        },
+        {
+          "stage": 84,
+          "after": "기존6번1PASS/유지대조군2PASS,exit0",
+          "code_head": "5dcf8eb2c96da81b4b8054c888d0892ae25d8a2d",
+          "evidence": "../issue7445/electrical6854_test_removal_validation.json",
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test-threads",
+            "8",
+            "--no-fail-fast",
+            "--test",
+            "regression_suite_017",
+            "--test",
+            "regression_suite_022",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_3) or test(/(^|::)issue_6854_empty_para_orphan_page::/)"
+          ]
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_017",
+        "grouped": true
+      },
+      "code_commit": "5dcf8eb2c96da81b4b8054c888d0892ae25d8a2d",
+      "evidence": "../issue7445/electrical6854_test_removal_validation.json",
+      "resolution_scope": "사용자 승인 미달 HWP 이관 뒤 현재 body partition3 단독PASS. 원문 피델리티와 다른 입력 해결 아님."
+    },
+    {
+      "id": 7,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 7,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_017",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_017",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 1.541432250291109,
+          "summary": [
+            "     Summary [   0.540s] 1 test run: 0 passed, 1 failed, 232 skipped"
+          ],
+          "stage": 85,
+          "head": "88dea0a3a0ddec32cf59a9280c7bf297cc776672"
+        },
+        {
+          "stage": 86,
+          "after": "기존7번1PASS/유지속성2PASS,exit0",
+          "code_head": "6c8a6c8e5e83a992fab14a0d90e3fc31e3e7ad4c",
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test-threads",
+            "8",
+            "--no-fail-fast",
+            "--test",
+            "regression_suite_009",
+            "--test",
+            "regression_suite_012",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4) or test(=issue_6806_objectprops_getset_identity::shape_feedback_keeps_stored_zero_size) or test(=issue_6806_objectprops_getset_identity::shape_resize_undo_restores_stored_zero_height)"
+          ],
+          "evidence": "../issue7445/anticorruption6844_test_removal_validation.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      "code_commit": "6c8a6c8e5e83a992fab14a0d90e3fc31e3e7ad4c",
+      "evidence": "../issue7445/anticorruption6844_test_removal_validation.json",
+      "resolution_scope": "바이트 동일 미달 원문 두 경로를 승인 이관한 뒤 현재 body partition4 단독PASS. 원문 피델리티와 다른 입력 해결 아님."
+    },
+    {
+      "id": 8,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 8,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_012",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_012",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_8)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 1.5571164172142744,
+          "summary": [
+            "     Summary [   0.600s] 1 test run: 1 passed, 244 skipped"
+          ],
+          "stage": 87,
+          "head": "2b6780510c986a27292925f7cac176fda4c97bb7"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      "evidence": "stage87_individual_validation.json",
+      "resolution_scope": "현재 head에서 기존8번 generic 단독PASS. 이미 이관한 원문의 피델리티 해결 아님."
+    },
+    {
+      "id": 9,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+      "case": "body_overflow_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 9,
+          "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+          "plan": {
+            "caseName": "body_overflow_baseline",
+            "target": "regression_suite_012",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_012",
+            "-E",
+            "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 0.8881983337923884,
+          "summary": [
+            "     Summary [   0.528s] 1 test run: 0 passed, 1 failed, 244 skipped"
+          ],
+          "stage": 87,
+          "head": "2b6780510c986a27292925f7cac176fda4c97bb7"
+        },
+        {
+          "stage": 88,
+          "head": "535b3aba287e7444be079a714f4f2376c81a9b05",
+          "code_commit": "2c39cd3ab5fffffc4fa84997027bed1d08f873a3",
+          "focused_summary": [
+            "        FAIL [   2.427s] (17/17) rhwp::regression_suite_019 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+            "     Summary [   2.456s] 17 tests run: 16 passed, 1 failed, 5156 skipped",
+            "        FAIL [   2.427s] (17/17) rhwp::regression_suite_019 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+            "     Summary [   0.183s] 1 test run: 1 passed, 215 skipped"
+          ],
+          "focused_exit": 100,
+          "evidence": "../issue7445/exam_eng_test_removal_validation.json"
+        },
+        {
+          "stage": 89,
+          "head": "408d166b7ce7b6a7b4aeb6a2ba440b5faa499da4",
+          "code_commit": "09c4395e84b7edd23d9f819c52ec6c00d635f582",
+          "focused_summary": [
+            "     Summary [   0.913s] 18 tests run: 18 passed, 1078 skipped"
+          ],
+          "focused_exit": 0,
+          "evidence": "../issue7445/api24_test_removal_validation.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      },
+      "resolution": "API 문서 이관 뒤 최신 corpus 소속의 개별 함수 PASS. 이관 원문 및 다른 corpus 실패 해결로 세지 않음."
+    },
+    {
+      "id": 10,
+      "function": "issue_1658_page_bottom_fixed_exclusion::gwanak_bottom_fixed_frame_renders_at_page_bottom",
+      "case": "issue_1658_page_bottom_fixed_exclusion",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "0PASS/1FAIL",
+          "after": "1PASS",
+          "code_head": "0c841eb4b",
+          "visual_native": 97.46031,
+          "visual_wasm": 97.46031,
+          "test_changed": false
+        },
+        {
+          "before": "0PASS/1FAIL (본문 뒤 기준선 검사 보완)",
+          "after": "1PASS",
+          "code_head": "1c82df86f3fe8db6837b23d3e28b890723c617bf",
+          "visual_native": 97.60662,
+          "visual_wasm": 97.60662,
+          "test_changed": true
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_1658_page_bottom_fixed_exclusion",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "correction_commit": "0c841eb4b",
+      "evidence": "stage56_fixed_frame_validation.json"
+    },
+    {
+      "id": 11,
+      "function": "issue_1733::issue_1733_hwpx_matches_hancom_pdf_page_count",
+      "case": "issue_1733",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "0PASS/2FAIL (기존 HWP 거짓 양성 포함)",
+          "after": "2PASS (기존 두 함수)",
+          "visual_min_native": 91.19751,
+          "visual_min_wasm": 91.19751,
+          "visual_page_count": 968,
+          "test_changed": true,
+          "new_test_functions": 0,
+          "candidate": 28,
+          "before_head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+          "candidate_source_evidence": "stage58_tail1733_validation.json",
+          "code_head": "d6992abefb46744defce93b9333aff82d699cb97"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_1733",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      "evidence": "stage58_tail1733_validation.json",
+      "correction_commit": "d6992abefb46744defce93b9333aff82d699cb97"
+    },
+    {
+      "id": 12,
+      "function": "issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_pin",
+      "case": "issue_2006_1790387_prep_pagination_pin",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "0PASS/1FAIL (141/140쪽),exit100",
+          "after": "1PASS,exit0",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "visual_page_count": 280,
+          "test_changed": "기준 PDF 설명/메시지만 갱신;140쪽 기대값 유지",
+          "new_test_functions": 0,
+          "candidate": 3,
+          "candidate_source_evidence": "stage59_prep2006_validation.json",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_2006_1790387_prep_pagination_pin",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "evidence": "stage59_prep2006_validation.json",
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197"
+    },
+    {
+      "id": 13,
+      "function": "issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "case": "issue_2243",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "0PASS/1FAIL",
+          "after": "1PASS",
+          "code_head": "1c82df86f3fe8db6837b23d3e28b890723c617bf",
+          "visual_min_native": 91.73884,
+          "visual_min_wasm": 91.73884,
+          "test_changed": true,
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_2243",
+        "target": "regression_suite_004",
+        "grouped": true
+      },
+      "correction_commit": "1c82df86f3fe8db6837b23d3e28b890723c617bf",
+      "evidence": "stage57_sliver_validation.json"
+    },
+    {
+      "id": 14,
+      "function": "issue_5585_sibling_table_anchor_offset::sibling_tables_do_not_recharge_the_paragraph_anchor_offset",
+      "case": "issue_5585_sibling_table_anchor_offset",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "85/86 FAIL; 후보7 실제91/86 FAIL",
+          "after": "1PASS; 기존 대조군34PASS",
+          "code_head": "3f2951b6b0ff522b4f702ed8aa895f8195a43a4a",
+          "visual_native": 92.57413,
+          "visual_wasm": 92.57413,
+          "test_changed": true,
+          "existing_function_count": 2,
+          "body_guard_before": "봉인 후보7 CLI에서1FAIL:60/62/65/67/71쪽72.2px",
+          "body_guard_after": "현재 CLI1PASS (34개 기존 검사에 포함)",
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_5585_sibling_table_anchor_offset",
+        "target": "regression_suite_019",
+        "grouped": true
+      },
+      "correction_commit": "3f2951b6b0ff522b4f702ed8aa895f8195a43a4a",
+      "evidence": "stage65_validation.json"
+    },
+    {
+      "id": 15,
+      "function": "issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow",
+      "case": "issue_5941_tail_overflow_drift_gate",
+      "status": "deferred_to_issue",
+      "individual_results": [
+        {
+          "exit_code": 100,
+          "actual_page_count": 299,
+          "expected_page_count": 304,
+          "log": "stage66-tail5941/individual-before.log",
+          "result": "stage66-tail5941/individual-before-result.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_5941_tail_overflow_drift_gate",
+        "target": "regression_suite_013",
+        "grouped": true
+      },
+      "issue": "https://github.com/edwardkim/rhwp/issues/7445",
+      "reason": "사용자 지시로 검사 제거. 독립 PDF302쪽/현재299쪽 및 Native90%미만. 피델리티 해결 아님.",
+      "evidence": "../issue7445/roadmap5941_test_removal_validation.json"
+    },
+    {
+      "id": 16,
+      "function": "issue_6101_block_tac_table_text_order::issue_6101_table_after_control_text_renders_and_table_stays_left",
+      "case": "issue_6101_block_tac_table_text_order",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 67,
+          "case_result": "기존2함수 PASS. 12쪽 기대는 정상11쪽과 달라 정확성 판정 보류.",
+          "font_result": "3·7쪽 두부문자 보정. 전체 피델리티 해결 아님.",
+          "evidence": "stage67_validation.json",
+          "status": "pending"
+        },
+        {
+          "stage": 68,
+          "before": "기존 보강2함수 0PASS/2FAIL:3쪽 표 하단877px/결재문서 좌단81.2px",
+          "after": "기존2함수2PASS 및 대조39PASS/단위161PASS",
+          "code_head": "1005da62eecb20b7bfd7972f0797d01f1b0aa0fe",
+          "visual_min_native": 92.26525,
+          "visual_min_wasm": 92.26525,
+          "approval_min_native_wasm": 95.7966,
+          "full_fixture_pages": {
+            "firefighter": 11,
+            "approval": 2
+          },
+          "test_changed": true,
+          "existing_function_count": 2,
+          "new_test_functions": 0,
+          "evidence": "stage68_validation.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_6101_block_tac_table_text_order",
+        "target": "regression_suite_004",
+        "grouped": true
+      },
+      "correction_commit": "1005da62eecb20b7bfd7972f0797d01f1b0aa0fe",
+      "evidence": "stage68_validation.json"
+    },
+    {
+      "id": 17,
+      "function": "issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing",
+      "case": "issue_7336_table_fragment_cut",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 69,
+          "before_exit_code": 100,
+          "after_exit_code": 0,
+          "function": "issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing",
+          "native_minimum_percent": 95.81586,
+          "wasm_minimum_percent": 95.81586,
+          "pages": 7,
+          "expected_value_change": false,
+          "new_function": false
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7336_table_fragment_cut",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "code_commit": "b7436944b81d20ad799edcd59ead3b94621902b3",
+      "evidence": "stage69_validation.json"
+    },
+    {
+      "id": 18,
+      "function": "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "case": "issue_7336_table_fragment_cut",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 70,
+          "before": "보존된 전체 실행에서8/7 FAIL",
+          "after": "개별1PASS/215SKIP,exit0",
+          "test_head": "b87c2130ba41aa33b4b92cfa2187eb90f4933c4f",
+          "expected_value_change": false,
+          "new_function": false,
+          "visual_evidence_reuse": "stage69_validation.json",
+          "native_minimum_percent": 95.81586,
+          "wasm_minimum_percent": 95.81586
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7336_table_fragment_cut",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "code_commit": "b7436944b81d20ad799edcd59ead3b94621902b3",
+      "evidence": "stage70_validation.json"
+    },
+    {
+      "id": 19,
+      "function": "issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px",
+      "case": "issue_7390_kopub_latin_metrics",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "함수FAIL:94쪽 줄 없음,exit100",
+          "after": "1PASS,exit0",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+          "evidence_reuse": "stage59_prep2006_validation.json",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "test_changed": false,
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7390_kopub_latin_metrics",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+      "evidence": "stage63_kopubwidth_validation.json"
+    },
+    {
+      "id": 20,
+      "function": "issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+      "case": "issue_7390_kopub_latin_metrics",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "함수FAIL:108쪽 대상 줄 없음,exit100",
+          "after": "1PASS,exit0",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+          "evidence_reuse": "stage59_prep2006_validation.json",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "test_changed": "주석만 수정;555px 하한 유지",
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7390_kopub_latin_metrics",
+        "target": "regression_suite_012",
+        "grouped": true
+      },
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+      "evidence": "stage64_kopubspace_validation.json"
+    },
+    {
+      "id": 21,
+      "function": "issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+      "case": "issue_7390_prep_table_rowbreak",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "함수FAIL:105쪽 표 없음/106쪽 지연,exit100",
+          "after": "1PASS,exit0",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+          "evidence_reuse": "stage59_prep2006_validation.json",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "test_changed": false,
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7390_prep_table_rowbreak",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+      "evidence": "stage60_budget105_validation.json"
+    },
+    {
+      "id": 22,
+      "function": "issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance",
+      "case": "issue_7390_prep_table_rowbreak",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "함수FAIL:92쪽 캡션 없음/93쪽 단독 이월,exit100",
+          "after": "1PASS,exit0",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+          "evidence_reuse": "stage59_prep2006_validation.json",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "test_changed": false,
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7390_prep_table_rowbreak",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+      "evidence": "stage61_caption92_validation.json"
+    },
+    {
+      "id": 23,
+      "function": "issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom",
+      "case": "issue_7390_prep_table_rowbreak",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "before": "함수FAIL:93쪽 그림15/문단 없음,94쪽 지연,exit100",
+          "after": "1PASS,exit0",
+          "code_head": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+          "evidence_reuse": "stage59_prep2006_validation.json",
+          "visual_min_native": 91.82221,
+          "visual_min_wasm": 91.82221,
+          "test_changed": false,
+          "new_test_functions": 0
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "issue_7390_prep_table_rowbreak",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "correction_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+      "evidence": "stage62_caption93_validation.json"
+    },
+    {
+      "id": 24,
+      "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "case": "off_canvas_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 24,
+          "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+          "plan": {
+            "caseName": "off_canvas_baseline",
+            "target": "regression_suite_016",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_016",
+            "-E",
+            "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_10)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 1.6388623751699924,
+          "summary": [
+            "     Summary [   0.636s] 1 test run: 1 passed, 223 skipped"
+          ],
+          "stage": 90,
+          "head": "a82cee49561109052553907231bcd7f2806f165d"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_022",
+        "grouped": true
+      },
+      "resolution": "보정90의 최신 corpus 배정으로 개별 nextest PASS. 이전 이관 원문 피델리티 해결로 세지 않음."
+    },
+    {
+      "id": 25,
+      "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "case": "off_canvas_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 25,
+          "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+          "plan": {
+            "caseName": "off_canvas_baseline",
+            "target": "regression_suite_016",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_016",
+            "-E",
+            "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_14)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 1.1981875840574503,
+          "summary": [
+            "     Summary [   0.741s] 1 test run: 1 passed, 223 skipped"
+          ],
+          "stage": 90,
+          "head": "a82cee49561109052553907231bcd7f2806f165d"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_022",
+        "grouped": true
+      },
+      "resolution": "보정90의 최신 corpus 배정으로 개별 nextest PASS. 이전 이관 원문 피델리티 해결로 세지 않음."
+    },
+    {
+      "id": 26,
+      "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+      "case": "oracle_page_count_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 26,
+          "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+          "plan": {
+            "caseName": "oracle_page_count_baseline",
+            "target": "regression_suite_025",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_025",
+            "-E",
+            "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 10.550961249973625,
+          "summary": [
+            "     Summary [   1.053s] 1 test run: 1 passed, 221 skipped"
+          ],
+          "stage": 90,
+          "head": "a82cee49561109052553907231bcd7f2806f165d"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_023",
+        "grouped": true
+      },
+      "resolution": "보정90의 최신 corpus 배정으로 개별 nextest PASS. 이전 이관 원문 피델리티 해결로 세지 않음."
+    },
+    {
+      "id": 27,
+      "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+      "case": "oracle_page_count_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 27,
+          "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+          "plan": {
+            "caseName": "oracle_page_count_baseline",
+            "target": "regression_suite_025",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_025",
+            "-E",
+            "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 0.7641082089394331,
+          "summary": [
+            "     Summary [   0.402s] 1 test run: 1 passed, 221 skipped"
+          ],
+          "stage": 90,
+          "head": "a82cee49561109052553907231bcd7f2806f165d"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_023",
+        "grouped": true
+      },
+      "resolution": "보정90의 최신 corpus 배정으로 개별 nextest PASS. 이전 이관 원문 피델리티 해결로 세지 않음."
+    },
+    {
+      "id": 28,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 28,
+          "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+          "plan": {
+            "caseName": "text_overlap_baseline",
+            "target": "regression_suite_013",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_013",
+            "-E",
+            "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 8.818517499603331,
+          "summary": [
+            "     Summary [   2.507s] 1 test run: 0 passed, 1 failed, 225 skipped"
+          ],
+          "stage": 90,
+          "head": "a82cee49561109052553907231bcd7f2806f165d"
+        },
+        {
+          "stage": 91,
+          "head": "e1883f5cb4ddd161256b3d6251fc88586dcee3dc",
+          "code_commit": "f2a4dd1e1da26f6ad1b861d8ef5297fb643a54fb",
+          "focused_summary": [
+            "     Summary [   1.213s] 8 tests run: 8 passed, 455 skipped"
+          ],
+          "focused_exit": 0,
+          "evidence": "../issue7445/footnote1937_test_removal_validation.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "resolution": "각주1937 이관 뒤 최신 corpus 소속의 개별 함수 PASS. 원문 피델리티 해결로 세지 않음."
+    },
+    {
+      "id": 29,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 29,
+          "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+          "plan": {
+            "caseName": "text_overlap_baseline",
+            "target": "regression_suite_014",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_014",
+            "-E",
+            "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_1)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 2.527914541773498,
+          "summary": [
+            "     Summary [   1.497s] 1 test run: 0 passed, 1 failed, 227 skipped"
+          ],
+          "stage": 92,
+          "head": "f56788498d63d21e6cafd9c563fab52c4e0cb133"
+        },
+        {
+          "stage": 93,
+          "head": "a4ba0551415ab41c9acd7aa0578bd6946a79adf0",
+          "code_commit": "26777a527892cf17ef3b7e7ffcd5715024506ea7",
+          "focused_summary": [
+            "     Summary [   1.328s] 4 tests run: 4 passed, 450 skipped"
+          ],
+          "focused_exit": 0,
+          "evidence": "../issue7445/chemical6782_test_removal_validation.json"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "resolution": "축소본 이관 뒤 최신 corpus 소속의 개별 함수 PASS. 별도 saved_bounds 원문은 추가 미해결 기록으로 유지."
+    },
+    {
+      "id": 30,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "id": 30,
+          "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+          "plan": {
+            "caseName": "text_overlap_baseline",
+            "target": "regression_suite_002",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_002",
+            "-E",
+            "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_10)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 100,
+          "seconds": 1.7118184589780867,
+          "summary": [
+            "     Summary [   0.615s] 1 test run: 0 passed, 1 failed, 227 skipped"
+          ],
+          "stage": 95,
+          "head": "f90b2d3592dbd239f00e4bb5ce5777756da05e48"
+        },
+        {
+          "stage": 96,
+          "test_snapshot_commit": "eb94eba73dfcaa147392ee7b87ab1a58b88f65d6",
+          "fixture_deferred": "한글문서파일형식_5.0_revision1.3.hwp",
+          "fixture_removal_evidence": "../issue7445/format_spec13_test_removal_validation.json",
+          "after": "집중5PASS/기존30번1FAIL,corpus재배정 pr4093/outline_navigation_panel_demo.hwpx 신규2건",
+          "status": "pending",
+          "scope": "미달문서보존이관;다른입력실패해결 아님"
+        },
+        {
+          "stage": 97,
+          "test_snapshot_commit": "93f62ee4fd4b9b626ba59ae03e782e866d8e9604",
+          "fixture_deferred": "pr4093/outline_navigation_panel_demo.hwpx",
+          "fixture_removal_evidence": "../issue7445/outline4093_test_removal_validation.json",
+          "after": "집중3PASS:현재기존30번/데모getter/다른최소입력SVG",
+          "status": "resolved",
+          "scope": "미달문서사용자승인이관후현재partition10통과;이관원문피델리티개선아님"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "resolution_scope": "미달문서사용자승인이관후현재partition10통과;이관원문피델리티개선아님"
+    },
+    {
+      "id": 31,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 98,
+          "test_snapshot_commit": "14058e212abdb9cb25396924aafb2f8b3686e7c2",
+          "validation": "stage98_individual_validation.json",
+          "exit_code": 0,
+          "summary": [
+            "     Summary [   0.766s] 1 test run: 1 passed, 237 skipped"
+          ],
+          "status": "resolved"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "resolution_scope": "현재 corpus 개별 검사 통과. 최종37함수/전체 회귀는 미완료."
+    },
+    {
+      "id": 32,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 98,
+          "test_snapshot_commit": "14058e212abdb9cb25396924aafb2f8b3686e7c2",
+          "validation": "stage98_individual_validation.json",
+          "exit_code": 0,
+          "summary": [
+            "     Summary [   2.587s] 1 test run: 1 passed, 237 skipped"
+          ],
+          "status": "resolved"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      },
+      "resolution_scope": "현재 corpus 개별 검사 통과. 최종37함수/전체 회귀는 미완료."
+    },
+    {
+      "id": 33,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 98,
+          "test_snapshot_commit": "14058e212abdb9cb25396924aafb2f8b3686e7c2",
+          "validation": "stage98_individual_validation.json",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   2.633s] 1 test run: 0 passed, 1 failed, 237 skipped"
+          ],
+          "status": "pending"
+        },
+        {
+          "stage": 99,
+          "test_snapshot_commit": "7336af268e721bf57934be0800c98bbda338fc29",
+          "fixture_deferred": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "fixture_removal_evidence": "../issue7445/decree6776_test_removal_validation.json",
+          "after": "집중2PASS: 현재기존33번/다른비TAC입력 음성대조",
+          "status": "resolved",
+          "scope": "사용자 승인 미달문서이관 후 현재partition13 통과; 원문 피델리티 개선 아님"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "resolution_scope": "사용자 승인 미달문서이관 후 현재partition13 통과; 원문 피델리티 개선 아님"
+    },
+    {
+      "id": 34,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 100,
+          "test_snapshot_commit": "2cd02b417d5830858aadb74e9546a99d8cb90967",
+          "validation": "stage100_individual_validation.json",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.957s] 1 test run: 0 passed, 1 failed, 223 skipped"
+          ],
+          "status": "pending",
+          "reason": "pr4093/outline_navigation_table_cell_number.hwpx 신규2건"
+        },
+        {
+          "stage": 101,
+          "test_snapshot_commit": "d01ab7eb21f908a2939df889954b8a0f766a175f",
+          "fixture_deferred": "pr4093/outline_navigation_table_cell_number.hwpx",
+          "fixture_removal_evidence": "../issue7445/outline_minimal4093_test_removal_validation.json",
+          "after": "집중3PASS:현재기존34번/최소3항목getter/데모15항목getter",
+          "status": "resolved",
+          "scope": "미달문서 사용자승인이관후 현재partition14 통과; 원문피델리티 개선 아님"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "resolution_scope": "미달문서 사용자승인이관후 현재partition14 통과; 원문피델리티 개선 아님"
+    },
+    {
+      "id": 35,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 102,
+          "test_snapshot_commit": "f9a154de16df07f957368d29416e081ea335c158",
+          "validation": "stage102_individual_validation.json",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.887s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ],
+          "status": "pending",
+          "reason": "issue6782/1480000-201900042-chemical-product-labeling-study.hwp 신규2건;보정93축소본과다른해시"
+        },
+        {
+          "stage": 103,
+          "test_snapshot_commit": "85bea0d563a3e53fa20eb0f18b25d6227bcee05b",
+          "fixture_deferred": "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "fixture_removal_evidence": "../issue7445/chemical_full6782_test_removal_validation.json",
+          "after": [
+            "     Summary [   2.687s] 1 test run: 1 passed, 223 skipped"
+          ],
+          "status": "resolved",
+          "scope": "사용자 승인 미달원문 제외 후 현재partition15통과. 원문 피델리티 개선 아님."
+        },
+        {
+          "stage": 105,
+          "test_snapshot_commit": "9efd1823c57b9e9417ef15cf7492269c27f2c8cb",
+          "after": [
+            "     Summary [   3.632s] 20 tests run: 20 passed, 1920 skipped"
+          ],
+          "scope": "19정상함수/body원장 복원. 실제 text-overlap FAIL 입력만 보류.",
+          "status": "resolved"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      }
+    },
+    {
+      "id": 36,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 104,
+          "test_snapshot_commit": "a643e0e6b8bdb40172dbc55386d747b2ea49fd3f",
+          "validation": "stage104_individual_validation.json",
+          "exit_code": 0,
+          "summary": [
+            "     Summary [   0.935s] 1 test run: 1 passed, 223 skipped"
+          ],
+          "status": "resolved"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_025",
+        "grouped": true
+      }
+    },
+    {
+      "id": 37,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 104,
+          "test_snapshot_commit": "a643e0e6b8bdb40172dbc55386d747b2ea49fd3f",
+          "validation": "stage104_individual_validation.json",
+          "exit_code": 0,
+          "summary": [
+            "     Summary [   0.654s] 1 test run: 1 passed, 223 skipped"
+          ],
+          "status": "resolved"
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_025",
+        "grouped": true
+      }
+    },
+    {
+      "id": 38,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "case": "text_overlap_baseline",
+      "status": "resolved",
+      "individual_results": [
+        {
+          "stage": 104,
+          "test_snapshot_commit": "a643e0e6b8bdb40172dbc55386d747b2ea49fd3f",
+          "validation": "stage104_individual_validation.json",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.868s] 1 test run: 0 passed, 1 failed, 223 skipped"
+          ],
+          "status": "pending"
+        },
+        {
+          "stage": 111,
+          "code_commit": "83402f03e3ce700149dd6099a078dabdc3859b06",
+          "evidence": "../issue7445/rowbreak_hwpx_blocking_scope_validation.json",
+          "source_input_deferred": "rowbreak-problem-pages.hwpx의text축만보류;다른18함수/모든다른축유지",
+          "original_function_run": {
+            "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+            "command": [
+              "cargo",
+              "nextest",
+              "run",
+              "--locked",
+              "--cargo-profile",
+              "release-test",
+              "--target-dir",
+              "target/pr-review",
+              "--test",
+              "regression_suite_017",
+              "--test-threads",
+              "8",
+              "--no-fail-fast",
+              "-E",
+              "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_9)"
+            ],
+            "exit_code": 0,
+            "seconds": 8.46451716683805,
+            "summary": [
+              "Summary [   1.417s] 1 test run: 1 passed, 234 skipped"
+            ]
+          },
+          "resolution_scope": "현재후보의개별1PASS snapshot. 최종37함수재실행/전체회귀대체아님."
+        }
+      ],
+      "resolved_plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_025",
+        "grouped": true
+      }
+    }
+  ],
+  "next_candidate": "정책연구 중간진도 HWP oracle215→216",
+  "next_candidate_reason": "원PR의HWPX와구분하여실제차단oracle만개별검증",
+  "current_status_counts": {
+    "resolved": 37,
+    "deferred": 1,
+    "pending": 0
+  },
+  "fixture_removal_policy": {
+    "user_instruction": "실패한 회귀의 동일 문서 Visual Sweep90%미만이면 #7445 추가 등록 후 해당 문서의 회귀 검사 제거",
+    "source_date": "2026-09-28",
+    "preserve": "원본 HWP/HWPX와 독립 PDF 및 실패 증거를 보존. 다른 문서/검사/공차 유지.",
+    "not_resolution": "원본 피델리티 개선 또는90%승인으로 세지 않는다.",
+    "scope": "현재 PR 검증을 실제로 막는 실패 함수/assertion/corpus 입력만 판단한다. 문서90%미만을 이유로 같은 문서의 정상 검사까지 일괄 제거하지 않는다. 이미 제외한 정상 검사는 로그 대조 후 복원·재검증한다.",
+    "confirmed_pr": 7382
+  },
+  "additional_unresolved_findings": [
+    {
+      "document": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "observed_stage": 74,
+      "failure": "body bottom2→3건",
+      "status": "deferred_to_issue",
+      "note": "90%미달의실제Native출력을 #7445에등록하고원문보존/전용4검사제외. 피델리티해결아님.",
+      "stage": 80,
+      "evidence": "../issue7445/press3637_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/rowbreak-problem-pages.hwp",
+      "observed_stage": 74,
+      "failure": "body bottom신규1건",
+      "status": "deferred_to_issue",
+      "note": "선택6쪽 sweep 90%미달. #7445 등록/원문 보존/전용5검사와matrix4입력제외. 피델리티 개선 아님.",
+      "stage": 81,
+      "evidence": "../issue7445/rowbreak_hwp_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/hwp3-sample16-hwp5.hwpx",
+      "observed_stage": 74,
+      "function": "issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+      "failure": "실제65/기대64쪽",
+      "status": "deferred_to_issue",
+      "note": "선택7쪽 모두90%미만. 원문 보존 및 사용자 승인 전용4검사 제외. 피델리티 해결 아님.",
+      "stage": 75,
+      "evidence": "../issue7445/sample16hwpx_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "observed_stage": 71,
+      "case": "issue_7147_row_declaration_beats_object_height",
+      "failure": "기존2함수FAIL,pi934표의쪽위치",
+      "status": "pending",
+      "note": "다른생물독문서의함수제거로해결되지않음"
+    },
+    {
+      "document": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "observed_stage": 78,
+      "status": "deferred_to_issue",
+      "failure": "body bottom39→40건",
+      "note": "원문201/정상204쪽, 선택4쪽90%미달. #7445 등록/원문보존/전용4함수와corpus3행제외; 피델리티 해결 아님.",
+      "stage": 82,
+      "evidence": "../issue7445/air6764_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "observed_stage": 80,
+      "status": "pending",
+      "failure": "nested_table_starts_inside_its_parent_cell 기존 함수FAIL",
+      "note": "다른보도자료이관과별도입력. 독립Visual Sweep미실행."
+    },
+    {
+      "document": "samples/rowbreak-problem-pages.hwpx",
+      "functions": [
+        "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+        "rowbreak_page7_starts_article_26_like_hancom_pdf"
+      ],
+      "status": "deferred_to_issue",
+      "observed_stage": 81,
+      "stage": 111,
+      "evidence": "../issue7445/rowbreak_hwpx_blocking_scope_validation.json",
+      "note": "전체18쪽Native최저20.18283%.실패2함수/text입력만보류.다른18함수/모든다른축/원문PDF유지.원문피델리티해결아님."
+    },
+    {
+      "document": "samples/143E433F503322BD33.hwp",
+      "function": "stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected",
+      "observation": "exact-face: charactersSeen/recordsEmitted 1334, 기대1336. 같은 runsSeen194. 원인과 독립 근거 판단 미완료.",
+      "observed_stage": 81,
+      "status": "pending"
+    },
+    {
+      "document": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "observed_stage": 83,
+      "failure": "body bottom2→3건",
+      "status": "deferred_to_issue",
+      "stage": 84,
+      "evidence": "../issue7445/electrical6854_test_removal_validation.json",
+      "note": "선택4쪽90%미달. #7445등록/원문보존/해당 회귀2함수·원장2행제외. 피델리티 개선 아님.",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "byte_identical_alias": "samples/issue6023/30269_reform_recommendation.hwp",
+      "observed_stage": 85,
+      "failure": "body bottom 신규3건",
+      "status": "deferred_to_issue",
+      "stage": 86,
+      "evidence": "../issue7445/anticorruption6844_test_removal_validation.json",
+      "note": "Native5·6쪽90%미달. #7445등록/두 원문보존/렌더링5함수제외. IR속성복원유지, 피델리티 개선 아님.",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/exam_eng.hwp",
+      "observed_stage": 87,
+      "status": "deferred_to_issue",
+      "stage": 88,
+      "note": "전체 Native 최저48.54225%. 원문 보존/렌더링 회귀 제외; 피델리티 해결 아님.",
+      "evidence": "../issue7445/exam_eng_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/hwpctl_API_v2.4.hwp",
+      "observed_stage": 87,
+      "status": "deferred_to_issue",
+      "failure": "body overflow0→1건",
+      "note": "74쪽60.06836%로 원문보존/렌더링회귀 제외. 피델리티 해결 아님.",
+      "stage": 89,
+      "evidence": "../issue7445/api24_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+      "observed_stage": 88,
+      "status": "pending",
+      "failure": "body overflow 신규2건",
+      "note": "영어시험 이관 뒤 재배정된 기존9번에서 검출. 독립 시각 검증 미실행."
+    },
+    {
+      "document": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "observed_stage": 90,
+      "status": "deferred_to_issue",
+      "stage": 91,
+      "note": "현재51/정상50쪽, 선택최저14.87881%. 원문보존/렌더링2함수·원장2행 제외. 피델리티 해결 아님.",
+      "evidence": "../issue7445/footnote1937_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "observed_stage": 92,
+      "status": "deferred_to_issue",
+      "stage": 93,
+      "note": "선택 최저53.67396%. 원문보존/회귀제외. 피델리티 해결 아님.",
+      "evidence": "../issue7445/chemical6782_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+      "observed_stage": 92,
+      "status": "deferred_to_issue",
+      "failure": "text-overlap 신규9건",
+      "note": "전체 Native 최저30.44845%. HWPX보존/렌더링회귀제외, IR/HWP대조군 유지. 피델리티 해결 아님.",
+      "stage": 94,
+      "evidence": "../issue7445/savedbounds1749_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "observed_stage": 95,
+      "status": "deferred_to_issue",
+      "stage": 96,
+      "evidence": "../issue7445/format_spec13_test_removal_validation.json",
+      "note": "공식같은원문/PDF 선택Native90%미달/69대71쪽.바이트보존/렌더링4함수제외/IR2유지.피델리티 해결 아님.",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "observed_stage": 96,
+      "status": "deferred_to_issue",
+      "failure": "text-overlap 신규2건",
+      "note": "전체Native최저51.51148%;원문보존/데모렌더·페이지assertion제외/getter및다른입력유지.피델리티개선아님.",
+      "stage": 97,
+      "evidence": "../issue7445/outline4093_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "observed_stage": 98,
+      "status": "deferred_to_issue",
+      "stage": 99,
+      "evidence": "../issue7445/decree6776_test_removal_validation.json",
+      "note": "선택Native8쪽90%미달.원문보존/렌더링2함수/body1행제외;음성대조유지.피델리티개선아님.",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "observed_stage": 100,
+      "status": "deferred_to_issue",
+      "failure": "text-overlap 신규2건",
+      "note": "전체Native85.44776%;원문보존/혼합함수SVG부분제외/3개·15개getter유지.피델리티개선아님.",
+      "stage": 101,
+      "evidence": "../issue7445/outline_minimal4093_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    },
+    {
+      "document": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "observed_stage": 102,
+      "status": "deferred_to_issue",
+      "failure": "text-overlap 신규2건",
+      "note": "별도 전체원문 선택Native90%미달.원문보존/19함수제외.피델리티개선아님.",
+      "stage": 103,
+      "evidence": "../issue7445/chemical_full6782_test_removal_validation.json",
+      "scope_after_user_correction": "기존 note는해당보정당시역사적처리이며현재삭제범위를뜻하지않음. 보정105~110에서정상함수/corpus범위를복원.현재범위는scope_correction및corpus_scope_restore_validation.json을따름."
+    }
+  ],
+  "scope_correction": {
+    "stage": 106,
+    "evidence": "../issue7445/scope_restore_validation.json",
+    "restored_test_functions": 102,
+    "effective_individual_pass": 94,
+    "effective_individual_fail": 16,
+    "pending_actual_failures": [
+      {
+        "file": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+        "case": "issue_5846_mixed_nested_partial_row_duplicate",
+        "function": "issue_5846_cut_fragment_defers_partial_nested_tail_row"
+      },
+      {
+        "file": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+        "case": "issue_6030_subline_row_grow_lastline",
+        "function": "issue_6030_exam_eng_choice_last_line_not_clipped"
+      },
+      {
+        "file": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+        "case": "issue_6031_ladder_sb_omitted_tail_overrun",
+        "function": "issue_6031_page_tail_lines_stay_inside_body_bottom"
+      },
+      {
+        "file": "tests/cases/issue_6409_table_page_top_vpos.rs",
+        "case": "issue_6409_table_page_top_vpos",
+        "function": "issue_6409_form_table_starts_on_next_page_not_leftover"
+      },
+      {
+        "file": "tests/cases/issue_6706_stored_inline_control_rows.rs",
+        "case": "issue_6706_stored_inline_control_rows",
+        "function": "stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership"
+      },
+      {
+        "file": "tests/issue_1086.rs",
+        "case": "issue_1086",
+        "function": "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office"
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom"
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom"
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom"
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom"
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom"
+      },
+      {
+        "file": "tests/issue_1749_saved_bounds_page_break.rs",
+        "case": "issue_1749_saved_bounds_page_break",
+        "function": "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference"
+      },
+      {
+        "file": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+        "case": "issue_2158_hwpx_vpos_reset_preserve",
+        "function": "hwp3_sample16_hwpx_matches_hwp5_and_hangul"
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "case": "issue_1035_alignment",
+        "function": "hwp3_sample16_hwp5_page_count_64"
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "case": "issue_1035_alignment",
+        "function": "hwp3_sample16_hwp5_2022_page_count_64"
+      }
+    ],
+    "corpus_manifest_scope": "정상입력 동반제외 대조/복원 대기",
+    "not_new_tests": true,
+    "corrections_after_snapshot": [
+      {
+        "stage": 107,
+        "function": "footnote_page_number_keeps_the_same_bottom_margin_anchor",
+        "result": "검사 전제 오류 교정으로PASS.같은입력의 실제각주25쪽 Native/freshWASM97.33607%.기대값/공차/함수유지.",
+        "evidence": "stage107_footnote_anchor_validation.json"
+      }
+    ],
+    "source_unit_restore": {
+      "stage": 108,
+      "restored_functions": 2,
+      "restored_mixed_contracts": 2,
+      "focused_pass": 4,
+      "evidence": "../issue7445/source_unit_scope_restore_validation.json"
+    },
+    "corpus_api_eng_restore": {
+      "stage": 109,
+      "code_commit": "65a5e2d31e703be24e5b8a14a3c53c399dd7a2e3",
+      "evidence": "../issue7445/corpus_api_eng_scope_restore_validation.json",
+      "result": "11PASS, 필수8단계exit0",
+      "remaining": "그 외 원문의 정상 corpus 제외 범위 대조와15실패함수 개별처리"
+    },
+    "corpus_restore": {
+      "stage": 110,
+      "code_commit": "501888148359749aef460291e3282a65ebe1eb96",
+      "evidence": "../issue7445/corpus_scope_restore_validation.json",
+      "original_inputs_restored": 22,
+      "normal_baseline_rows_restored_stage110": 24,
+      "diagnostic_result": "86기존검사=63PASS/23FAIL/1086SKIP",
+      "actual_failures": [
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+          "observations": [
+            "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+          ]
+        },
+        {
+          "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_9",
+          "observations": [
+            "신규 발생: issue6035/cgmp_evaluation_table.hwpx — 7줄 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+          "observations": [
+            "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+          "observations": [
+            "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 19건"
+          ]
+        },
+        {
+          "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_8",
+          "observations": [
+            "증가: task2097/21217935_simsa_jipyo.hwp — 24 → 26줄"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+          "observations": [
+            "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+          "observations": [
+            "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+            "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+          "observations": [
+            "증가: rowbreak-problem-pages.hwpx — 1 → 2건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+          "observations": [
+            "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0",
+          "observations": [
+            "samples/issue3637/regulatory_impact_nested_table_escape.hwpx: 정답지 [31] 대비 격차가 커졌다 — 기준 31쪽(차 0) → 현재 32쪽(차 1)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+          "observations": [
+            "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1",
+          "observations": [
+            "samples/2025 행정업무운영 편람(최종).hwp: 정답지 [384] 대비 격차가 커졌다 — 기준 384쪽(차 0) → 현재 383쪽(차 1)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+          "observations": [
+            "samples/hwpctl_ParameterSetID_Item_v1.2.hwp: 정답지 [74] 대비 격차가 커졌다 — 기준 74쪽(차 0) → 현재 75쪽(차 1)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14",
+          "observations": [
+            "samples/basic/issue2007_nested_cell_pagination_42065.hwp: 정답지 [17] 대비 격차가 커졌다 — 기준 17쪽(차 0) → 현재 21쪽(차 4)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+          "observations": [
+            "신규 발생: issue7196/156760012_page_top_spacing_trim.hwpx — 2건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5",
+          "observations": [
+            "samples/task2146/21761835_jeonjik_exemption_table.hwp: 정답지 [6] 대비 격차가 커졌다 — 기준 6쪽(차 0) → 현재 7쪽(차 1)",
+            "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp: 정답지 [215] 대비 격차가 커졌다 — 기준 215쪽(차 0) → 현재 216쪽(차 1)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+          "observations": [
+            "증가: issue1853_caption_precedes_body_split.hwpx — 0 → 2건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+          "observations": [
+            "증가: hwpx/issue2019_floating_form_74312.hwpx — 2 → 3건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_11",
+          "observations": [
+            "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+          "observations": [
+            "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+          "observations": [
+            "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)",
+            "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+            "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+            "증가: issue6031/3249937_asset_management_rules.hwpx — 1 → 12건"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+          "observations": [
+            "신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)"
+          ]
+        },
+        {
+          "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+          "observations": [
+            "신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)"
+          ]
+        }
+      ],
+      "remaining": "개별15실패 및 corpus23실패의 입력/축 대조 후 개별 해결. 고정38의 resolved는 과거 snapshot이며 현재 통과로 세지 않음. 최종37개별 실행 후 전체 nextest 필요."
+    },
+    "rowbreak_hwpx_blocking_scope": {
+      "stage": 111,
+      "code_commit": "83402f03e3ce700149dd6099a078dabdc3859b06",
+      "evidence": "../issue7445/rowbreak_hwpx_blocking_scope_validation.json",
+      "actual_failed_functions_removed": 2,
+      "normal_functions_kept": 18,
+      "normal_functions_result": "18PASS",
+      "corpus_snapshot": "보정110의23실패중이입력원인만처리.현재총FAIL함수수는전체재실행전추정하지않음."
+    },
+    "normal_reader_paths": {
+      "stage": 112,
+      "code_commit": "f48fa6d88d40fbf8fe39b5f76d795653ce48216b",
+      "files": 76,
+      "path_references": 135,
+      "inputs_with_identical_preserved_bytes": 22,
+      "focused": "19PASS",
+      "source_units": "4PASS",
+      "evidence": "../issue7445/normal_reader_scope_restore_validation.json",
+      "limits": "생산/함수/기대값 변경 없음. 실제 실패 개별 처리와 최종 재실행은 별도."
+    },
+    "exam_eng_6030": {
+      "stage": 113,
+      "code_commit": "0d1ca6970444f0b05ea95cd68ce74b0bf398dace",
+      "actual_failed_function_only": "issue_6030_exam_eng_choice_last_line_not_clipped",
+      "evidence": "../issue7445/exam_eng_6030_blocking_scope_validation.json",
+      "kept": "다른정상함수/source-unit/왕복/원문PDF/corpus 유지",
+      "remaining_restored_dedicated": 14
+    },
+    "pii5846": {
+      "stage": 114,
+      "code_commit": "71610682efde6fa4c0681228caf1f981f78e5d9b",
+      "evidence": "../issue7445/pii5846_blocking_scope_validation.json",
+      "scope": "5846 실제 한 함수 +2097 혼합함수의 PII 한 pin 보류; 함수 및 다른5pin/#3595 두 함수 유지",
+      "focused": "3PASS",
+      "remaining_restored_dedicated": 13
+    },
+    "assets6031": {
+      "stage": 115,
+      "code_commit": "e6a4590f23f00c7756eede591feb0800508d4474",
+      "evidence": "../issue7445/assets6031_blocking_scope_validation.json",
+      "scope": "실제2함수/off-canvas한입력만;원문PDF/cell/text/다른모든문서유지",
+      "focused": "1PASS/1FAIL;다른2022변환본실패",
+      "remaining_restored_dedicated": 11
+    },
+    "sample16_2022": {
+      "stage": 116,
+      "code_commit": "3c01d2ebbc03388ac01dc4eff5d60caeb0af3f95",
+      "evidence": "../issue7445/sample16_2022_blocking_scope_validation.json",
+      "scope": "실제3함수/text·off의한입력씩만.정상IR/다른버전/모든다른축·문서유지",
+      "focused": "35PASS/8FAIL; 정상11PASS+text/off24PASS/8FAIL",
+      "remaining_restored_dedicated": 8
+    },
+    "sample16_aliases": {
+      "stage": 117,
+      "code_commit": "7d64760ec7ad4ba78d35eebac00fe934326cc7ef",
+      "evidence": "../issue7445/sample16_aliases_blocking_scope_validation.json",
+      "scope": "같은바이트 두이름의실제5함수/text·off입력만.정상그림/목차/IR/source-unit/다른버전·축·문서유지",
+      "focused": "38PASS/8FAIL; 정상14PASS+text/off24PASS/8FAIL",
+      "remaining_restored_dedicated": 3
+    },
+    "sample16_hwpx": {
+      "stage": 118,
+      "code_commit": "838c6387bf3e988d2fdd5bd6e5f88b85c48b59b8",
+      "evidence": "../issue7445/sample16_hwpx_blocking_scope_validation.json",
+      "scope": "#6706 쪽수 assertion 하나만/#2158 쪽수 한함수만. #6706 위치/소유 및 정상 온새미로·수식/따옴표/IR·모든 다른 축·원문 유지",
+      "focused": "10PASS; 필수8단계exit0",
+      "remaining_restored_dedicated": 1
+    },
+    "savedbounds1749": {
+      "stage": 119,
+      "code_commit": "f1083037faac517f7dde23bba4a1f97e5eb8ed64",
+      "evidence": "../issue7445/savedbounds1749_blocking_scope_validation.json",
+      "scope": "실패 HWPX 컷 assertion 하나만. 정상쪽수/순서·HWP/IR 및모든다른축·원문 유지",
+      "focused": "3PASS; 필수8단계exit0",
+      "remaining_restored_dedicated": 0
+    },
+    "neartop5941_text": {
+      "stage": 120,
+      "code_commit": "9d1b255c4759b02c29545bfa8b9d5f7dcdde9602",
+      "evidence": "../issue7445/neartop5941_text_blocking_scope_validation.json",
+      "scope": "실제증가 text축 입력/10건행만. 정상3함수/모든다른축·문서·원문유지"
+    },
+    "air6764_text": {
+      "stage": 121,
+      "code_commit": "4979472991320a35a622d580245d676d12498b1c",
+      "evidence": "../issue7445/air6764_text_blocking_scope_validation.json",
+      "scope": "실제증가 text축 입력/7건행만. 정상4함수/모든다른축·문서·원문유지"
+    },
+    "cyber6795_text": {
+      "stage": 122,
+      "code_commit": "0572a2d899cc58225d9476386d61225de9193eff",
+      "evidence": "../issue7445/cyber6795_text_blocking_scope_validation.json",
+      "scope": "실제증가 text축 입력/2건행만. 정상6함수/모든다른축·문서·원문유지"
+    },
+    "curriculum2287_text": {
+      "stage": 123,
+      "code_commit": "5117536ee0e1cee0b9ac23547fd3ce0bebeb9e02",
+      "evidence": "../issue7445/curriculum2287_text_blocking_scope_validation.json",
+      "scope": "실제증가 text축 입력/37건행만. 모든기존함수/다른축·문서·원문유지; 시장6761의다른입력실패도보존"
+    },
+    "jinan2319_text": {
+      "stage": 125,
+      "code_commit": "45edbe87fcde65296760f7d79e4907dfcc73e97d",
+      "scope": "진안 신규5건 text 입력 하나만 #7445에 보류. 정상2함수/모든다른축/원문/새PDF 유지",
+      "evidence": "../issue7445/jinan2319_text_blocking_scope_validation.json",
+      "result": "text16 PASS +정상2 PASS; 필수lint/정책7 PASS",
+      "remaining": "다른축·시장6761/7147·최종37개별/전체회귀/원PR Native freshWASM 대기"
+    },
+    "recycling6892_off": {
+      "stage": 126,
+      "code_commit": "ab0fe1cb4e68b09258615147632beaaef3293dd5",
+      "scope": "재활용 off 입력 하나만 보류. 앵커2함수/다른축/원문PDF 유지",
+      "evidence": "../issue7445/recycling6892_off_blocking_scope_validation.json",
+      "result": "off14PASS/2FAIL, 기존앵커1PASS/다른입력대조1FAIL =>15PASS/3FAIL; lint정책7 exit0",
+      "remaining": "다른실패2입력 및pic-in-table-01·다른축·최종개별/전체회귀 미완료"
+    },
+    "first_cell_float_expectation": {
+      "stage": 127,
+      "code_commit": "ecbaeff9afcecbe50ed97248ad6ac2bd44b892dc",
+      "scope": "pic-in-table-01 기존 대조 함수의 두 y기대값을 독립한컴PDF좌표로 교정. 함수/공차0.5/높이/개수/모든축 유지; #7445 보류없음.",
+      "evidence": "first_cell_float_expectation_validation.json",
+      "result": "Native/fresh WASM p1 각99.95104%, 기존2PASS/216SKIP 및lint정책7 exit0",
+      "remaining": "다른두off실패 및다른축·최종37개별/전체회귀/원PR Native freshWASM 미완료"
+    },
+    "hwp5_off": {
+      "stage": 128,
+      "code_commit": "6961bd48748e2c65895272cc9cb413add71e515b",
+      "scope": "HWPX off 입력 하나만 보류. 밝기/대비·왕복2함수·다른정상함수/HWP대조군/모든다른축/원문 유지;새PDF커밋",
+      "evidence": "../issue7445/hwp5_off_blocking_scope_validation.json",
+      "result": "off15PASS/1FAIL + 정상2PASS =>17PASS/1FAIL; lint정책7 exit0",
+      "remaining": "basic off 및다른축·시장실패·최종개별/전체/원PR Native freshWASM 미완료"
+    },
+    "basic2007": {
+      "stage": 129,
+      "code_commit": "6288398853c9cf0ca945ac285baddd7c17cb6fd8",
+      "evidence": "../issue7445/basic2007_blocking_scope_validation.json",
+      "scope": "실제 실패한 basic2007 off-canvas 입력과 oracle 17/17행만 보류. 정상 세로정렬5함수·모든 다른 검사 축/문서·원문/PDF 유지.",
+      "summary": [
+        "     Summary [  56.349s] 37 tests run: 32 passed, 5 failed, 655 skipped"
+      ]
+    },
+    "blocking_scope_audit": {
+      "stage": 130,
+      "code_commit": "b20c22377e0ca1ab9b5f49f176534812505ef226",
+      "evidence": "blocking_scope_audit_validation.json",
+      "devel_passed": 306,
+      "devel_failed": 0,
+      "verified_deferred_axes": 37,
+      "verified_oracle_rows": 6,
+      "verified_individual_failure_pairs": 15,
+      "restored_normal_helpers": 3,
+      "restored_normal_fixture_rows": 2,
+      "restoration_passed": 23,
+      "restoration_failed": 0
+    },
+    "jeonjik2146": {
+      "stage": 131,
+      "code_commit": "dcbdf1a8762a1ad064443f68804332928eb8ac01",
+      "evidence": "../issue7445/jeonjik2146_blocking_scope_validation.json",
+      "scope": [
+        "oracle 이입력6/6행만",
+        "#2097 PINS 이입력만",
+        "#7028 선행쪽수 assertion 하나만",
+        "#7032 HWP 선행쪽수 assertion 하나만"
+      ],
+      "preserved": [
+        "모든기존함수 및머리행/대각선/SVG/빈문단/소유/좌표검사",
+        "#7032 HWPX6쪽 핀",
+        "#2097 다른두입력",
+        "원문/PDF/render_page_samples행/IR/다른축/문서"
+      ],
+      "passed": 30,
+      "failed": 4
+    },
+    "regulatory3637": {
+      "stage": 132,
+      "code_commit": "467b2835f47a58f596af9b281c166c5bf06c55f1",
+      "evidence": "../issue7445/regulatory3637_blocking_scope_validation.json",
+      "scope": [
+        "oracle 이입력31/31행",
+        "기존함수의위쪽수/소유assertion4개만"
+      ],
+      "preserved": [
+        "기존중첩표함수자체",
+        "p26 다음사업체조사줄부재",
+        "p28 숨은셀줄없음",
+        "전체페이지중첩표넘침상한1100px",
+        "다른정상입력/모든다른축/원문/PDF"
+      ],
+      "passed": 17,
+      "failed": 3
+    },
+    "parameter_control": {
+      "stage": 133,
+      "code_commit": "59c1aa39f943bd5c89060c4e3b4afe3f0dc54b77",
+      "evidence": "../issue7445/parameter_control_blocking_scope_validation.json",
+      "scope": "실제실패oracle이입력74/74행한개만",
+      "preserved": [
+        "#6307 행분할/본문하한",
+        "#6656 아이콘줄/저장사다리측정 기존두함수",
+        "모든다른함수/입력/축/원문/PDF"
+      ],
+      "passed": 17,
+      "failed": 2
+    },
+    "handbook_hwp": {
+      "stage": 134,
+      "code_commit": "4a5e66b91101909d120349a0da1345493d549561",
+      "evidence": "../issue7445/handbook_hwp_blocking_scope_validation.json",
+      "scope": [
+        "oracle HWP 이입력384/384행",
+        "#3931 HWP 쪽수전용한함수",
+        "#7009 HWP 실제총쪽수/간지·본문소속assertion3곳만"
+      ],
+      "preserved": [
+        "#7009 HWP 기존함수/부록구간71쪽(독립기준74쪽대비-3)/랜드마크존재",
+        "#3931 다른HWP저장줄/분할계약",
+        "HWPX 및포맷비대칭검사3실패는별도검증대기",
+        "#6389 기존두정상함수",
+        "모든다른입력/축/원문/PDF"
+      ],
+      "passed": 21,
+      "failed": 4
+    },
+    "handbook_hwpx": {
+      "stage": 135,
+      "code_commit": "2085dfdce823ef7eaf2b122b599a2c82705db4e4",
+      "evidence": "../issue7445/handbook_hwpx_blocking_scope_validation.json",
+      "scope": [
+        "#7009 HWPX 총쪽수/간지assertion2곳",
+        "#3931 HWPX쪽수assertion1곳",
+        "두포맷비대칭전용한함수만"
+      ],
+      "preserved": [
+        "#7009 기존HWP/HWPX 함수와부록구간71/74쪽/랜드마크존재",
+        "#3931 문답같은물리쪽PASS·다른저장줄/분할계약",
+        "#6389 정상2함수",
+        "HWPX oracle 원장384/382행(현재385쪽은차1로기준차2보다개선)",
+        "모든다른입력/축/원문/PDF"
+      ],
+      "passed": 23,
+      "failed": 1
+    }
+  },
+  "latest_axis_snapshot": {
+    "stage": 117,
+    "code_commit": "7d64760ec7ad4ba78d35eebac00fe934326cc7ef",
+    "axis_tests": 32,
+    "passed": 24,
+    "failed": 8,
+    "evidence": "../issue7445/sample16_aliases_blocking_scope_validation.json",
+    "meaning": "text/off만현재32분할진단.다른축또는최종37개별/전체회귀를대체하지않음."
+  },
+  "current_status_counts_scope": "고정38의과거처리snapshot만.최종37개별은다시실행해야하며전체head통과아님.",
+  "final_validation_status": "원래60중33곳처리/남은27개검토대기. e13abf3b1 head에서남은27개각각단독실행을완료했고0PASS/27FAIL. #1100은기준PDF용지/배율을재산출해재판정중이며회귀제거/수정하지않음. 최종전체/PR준비미완료.",
+  "latest_text_axis_snapshot": {
+    "stage": 125,
+    "code_commit": "45edbe87fcde65296760f7d79e4907dfcc73e97d",
+    "axis_tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "failed_inputs": 0,
+    "evidence": "../issue7445/jinan2319_text_blocking_scope_validation.json",
+    "meaning": "text16분할만 현재통과. 다른off/body/cell/oracle축·시장6761·최종37개별/전체회귀를 대체하지 않음."
+  },
+  "latest_off_axis_snapshot": {
+    "stage": 129,
+    "passed": 16,
+    "failed": 0,
+    "scope": "off16분할만. 원문피델리티 해결/전체검증 완료가 아닙니다.",
+    "evidence": "../issue7445/basic2007_blocking_scope_validation.json"
+  },
+  "latest_policy_report_scope": {
+    "stage": 136,
+    "code_commit": "2e76743a7ef2899428da359806827da4f86f080e",
+    "evidence": "../issue7445/policy_report_blocking_scope_validation.json",
+    "removed_failing_functions": 118,
+    "removed_other_scope": [
+      "HWP oracle 한행",
+      "#4882 215쪽전제한곳"
+    ],
+    "preserved": [
+      "원문HWP/HWPX/정상한컴PDF",
+      "기존통과20검사",
+      "원본==왕복쪽수등식과IR",
+      "차단하지않는HWPX oracle",
+      "다른입력/축"
+    ],
+    "passed": 37,
+    "failed": 0,
+    "renderer_changed": false
+  },
+  "latest_full_validation": {
+    "stage": 137,
+    "tested_head": "0a069b1f1c1b0541f52f281e2d4f3a316616f982",
+    "passed": 10190,
+    "failed": 60,
+    "evidence": "stage137_full_regression.json"
+  },
+  "latest_policy_report_source_unit_scope": {
+    "stage": 138,
+    "code_commit": "76e6834b1037f8ef37e6e7fef5a746ccf9a157ae",
+    "evidence": "../issue7445/policy_report_source_unit_validation.json",
+    "removed_failing_functions": 3,
+    "preserved_functions": 55,
+    "passed": 54,
+    "failed": 0,
+    "kept_ignored_functions": 1,
+    "production_changes": false
+  },
+  "latest_password_page_pin_scope": {
+    "stage": 139,
+    "code_commit": "a4ecead9ed345f48337acfbbbffab968a23c3b98",
+    "evidence": "../issue7445/password_page_pin_blocking_scope_validation.json",
+    "removed_page_pins": 4,
+    "preserved_test_functions": 11,
+    "passed": 11,
+    "failed": 0,
+    "production_changes": false
+  },
+  "latest_padding_contract_scope": {
+    "stage": 140,
+    "code_commit": "82c28e524ee3536753f829c4888b79cfa41be1f2",
+    "evidence": "stage140_padding_contract_validation.json",
+    "corrected_fixture_flags": 2,
+    "expectations_unchanged": true,
+    "passed": 6,
+    "failed": 0,
+    "current_native_pages": 11,
+    "minimum_native_percent": 92.26525,
+    "production_changes": false
+  },
+  "latest_basic2007_render_scope": {
+    "stage": 141,
+    "code_commit": "2d90e389f6c9cca6b178195526a6dbe14b8db4ea",
+    "evidence": "../issue7445/basic2007_render_tests_blocking_scope_validation.json",
+    "removed_render_functions": 6,
+    "removed_page_pins": 2,
+    "preserved_before_pass_function_bodies": 14,
+    "passed": 16,
+    "failed": 0,
+    "production_changes": false
+  },
+  "latest_market2070_scope": {
+    "stage": 142,
+    "code_commit": "39c4042fbfbd16e38eb6c49e388679d91ebc82e1",
+    "evidence": "../issue7445/market2070_blocking_scope_validation.json",
+    "removed_functions": 3,
+    "removed_page_count_pin": 1,
+    "passed": 3,
+    "failed": 0,
+    "kept_before_pass_function_bodies": 2,
+    "minimum_selected_native_percent": 1.83707,
+    "production_changed": false
+  },
+  "latest_bokhak938_scope": {
+    "stage": 143,
+    "code_commit": "2234af963e60f7cc855592be0493e6282858314c",
+    "evidence": "../issue7445/bokhak938_blocking_scope_validation.json",
+    "removed_failed_functions": 2,
+    "passed": 2,
+    "failed": 0,
+    "minimum_whole_native_percent": 77.85291,
+    "production_changes": false,
+    "golden_changed": false
+  },
+  "latest_policy_caption_page_pin_scope": {
+    "stage": 144,
+    "code_commit": "00f0aa74ebca0e04a8c59de4b9469c3fb7666a87",
+    "evidence": "../issue7445/policy_caption_page_pin_blocking_scope_validation.json",
+    "removed_page_count_pins": 1,
+    "preserved_functions": 6,
+    "passed": 6,
+    "failed": 0,
+    "production_changed": false
+  },
+  "latest_handbook_hwp_page_pin_scope": {
+    "stage": 145,
+    "code_commit": "b7551d228c36d6fdef4b3287bfb1edf4af6c6e2c",
+    "evidence": "../issue7445/handbook_hwp_page_pin_blocking_scope_validation.json",
+    "removed_page_pins": 1,
+    "passed": 1,
+    "failed": 0,
+    "production_changed": false
+  },
+  "latest_handbook_hwpx_owner_scope": {
+    "stage": 146,
+    "code_commit": "2b6355bf430510e9bde6064f80a4efbea6fbe10e",
+    "evidence": "../issue7445/handbook_hwpx_owner_blocking_scope_validation.json",
+    "removed_functions": 1,
+    "removed_assertions": 6,
+    "preserved_normal_functions": 3,
+    "mixed_function_preserved": true,
+    "passed": 4,
+    "failed": 0,
+    "production_changed": false
+  },
+  "latest_distribution7160_scope": {
+    "stage": 147,
+    "code_commit": "c13a8021a5b411184aff76a9eca28dfd07f6e9f9",
+    "evidence": "../issue7445/distribution7160_blocking_scope_validation.json",
+    "removed_failed_functions": 2,
+    "preserved_normal_functions": 4,
+    "passed": 4,
+    "failed": 0,
+    "minimum_whole_native_percent": 60.66529,
+    "production_changed": false
+  },
+  "latest_low_slack6535_scope": {
+    "stage": 148,
+    "code_commit": "6fd829478a0e11a93113006a08ddc38b724aefe6",
+    "evidence": "../issue7445/low_slack6535_blocking_scope_validation.json",
+    "removed_actual_failed_functions": 2,
+    "preserved_normal_functions": 2,
+    "passed": 2,
+    "failed": 0,
+    "native_page1_percent": 69.33089,
+    "production_changed": false
+  },
+  "latest_stale_frame7288_scope": {
+    "stage": 149,
+    "code_commit": "38830266cfa0206bcd1b8ca55630076cb7a4a07a",
+    "evidence": "stage149_stale_frame_validation.json",
+    "corrected_page_index": {
+      "before": 63,
+      "after": 62,
+      "independent_pdf_physical_page": 63
+    },
+    "existing_functions": 2,
+    "passed": 2,
+    "failed": 0,
+    "minimum_native_percent": 99.8046,
+    "minimum_fresh_wasm_percent": 99.8046,
+    "production_changed": false,
+    "issue7445_deferral": false
+  },
+  "latest_fonttrace_exact_face_scope": {
+    "stage": 150,
+    "code_commit": "d2dd864b68efc7bba55e59a2a20483e7e9a36733",
+    "evidence": "../issue7445/fonttrace4961_blocking_scope_validation.json",
+    "removed_actual_render_pins": 2,
+    "all_existing_functions_kept": true,
+    "other_documents_kept": 5,
+    "passed": 6,
+    "failed": 1,
+    "actual_focused_exit": 100,
+    "next_failed_document": "missing-face layoutHash",
+    "minimum_native_percent": 88.61634,
+    "production_changed": false
+  },
+  "latest_wmf_vector_mask_scope": {
+    "stage": 152,
+    "code_commit": "c3f748325f9ebe7f1d774d378f4159ae1226ae20",
+    "evidence": "stage152_wmf_vector_mask_validation.json",
+    "production_changed": true,
+    "new_test_functions": 0,
+    "focused_passed": 18,
+    "focused_failed": 0,
+    "native_wasm_page1": 99.82783,
+    "whole_chart_region": 98.93048,
+    "current_full_native": "complete19/19;minimum73.34034%;gate re_review_required",
+    "original_stage137_reviewed": 32,
+    "original_stage137_pending_review": 28
+  },
+  "latest_monthly_trade_fonttrace_scope": {
+    "stage": 153,
+    "code_commit": "911063c54234e3ad206f17b71cce098ab1afc0cc",
+    "evidence": "../issue7445/monthly_trade_fonttrace_blocking_scope_validation.json",
+    "removed_actual_hash_pins": 1,
+    "all_existing_functions_kept": true,
+    "counts_profiles_other_documents_kept": true,
+    "passed": 6,
+    "failed": 1,
+    "actual_focused_exit": 100,
+    "next_failed_document": "subst-counterpart-hwp layoutHash",
+    "minimum_whole_native_percent": 73.34034,
+    "production_changed": false
+  },
+  "latest_onsaemiro_hwp_fonttrace_scope": {
+    "stage": 154,
+    "code_commit": "2bbbdc6a733d85b0f09b538a1f4693a47982d038",
+    "evidence": "../issue7445/onsaemiro_hwp_fonttrace_blocking_scope_validation.json",
+    "removed_actual_hash_pins": 1,
+    "normal_counts_and_other_five_documents_kept": true,
+    "existing_functions_kept": true,
+    "passed": 6,
+    "failed": 1,
+    "actual_focused_exit": 100,
+    "next_failed_document": "document-substitute-hwpx layoutHash",
+    "minimum_selected_native_wasm_percent": 37.41779,
+    "production_changed": false
+  },
+  "latest_onsaemiro_hwpx_fonttrace_scope": {
+    "stage": 155,
+    "code_commit": "8d4233f0f9ed89b997d91f6a1ee0c5f782141fa0",
+    "evidence": "../issue7445/onsaemiro_hwpx_fonttrace_blocking_scope_validation.json",
+    "removed_actual_hash_pins": 1,
+    "normal_counts_and_other_five_documents_kept": true,
+    "existing_functions_kept": true,
+    "profiles_and_feature_detection_passed": true,
+    "passed": 7,
+    "failed": 0,
+    "actual_focused_exit": 0,
+    "minimum_selected_native_wasm_percent": 37.74556,
+    "production_changed": false
+  },
+  "latest_remaining_individual_validation": {
+    "stage": 156,
+    "tested_head": "e13abf3b19329a282d05f60e2a96bc6889855de2",
+    "total": 27,
+    "passed": 0,
+    "failed": 27,
+    "individual_commands": 27,
+    "evidence": "stage156_remaining_individual.json",
+    "scope": "남은27개current head단독실패재현. 다음보정에서한문서씩처리. 최종전체대체아님."
+  }
+}

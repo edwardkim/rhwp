@@ -1,0 +1,103 @@
+{
+  "status": "individual_maintainer_correction_and_visual_pass_integration_pending",
+  "unit_passed": 51,
+  "unit_failed": 0,
+  "log_path": "output/pr-review/planet6897-20261004/stage8-whitespace-nextest.log",
+  "log_sha256": "342a8d40ba6d1190a31f6278325f3e7dfd58be80e70a65b0d6e5b06f7deadbac",
+  "source_sha256": {
+    "src/renderer/svg.rs": "ad78d196f1e13bee38a78847ddbd3336da7cec9a0d23e736070726ccc9df8092",
+    "src/renderer/web_canvas.rs": "46425ff30c15e1f0aab0fa6d06badf9a96dfba67137cca4f49bc72bef8e2f76b",
+    "src/renderer/skia/text_replay.rs": "ea620ac9fcfec14909e6ca694e1bd85276e74d299b5b1ba38960a042c4f31cf7"
+  },
+  "font_evidence": {
+    "path": "/Users/tsjang/Library/Fonts/H2MJSM.TTF",
+    "sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+    "U+00A0_glyph": "uni0080",
+    "contours": 2
+  },
+  "remaining": [
+    "other contributor PR reviews and final integrated full gates"
+  ],
+  "code_candidate": "4cfe96e5273cb82f434c885915586e660389200e",
+  "execution_head": "4de143ddb0d6dabb7908bfe9182a9c5556543354",
+  "production_delta_from_code_candidate": [],
+  "visual": {
+    "exam-eng_native": {
+      "pages": 8,
+      "minimum_percent": 95.2965,
+      "below_90": 0,
+      "tsv_sha256": "70cc4e88bcea666929ed1b866dc9e6dfc56b5530dceefe6293646115c28f2169"
+    },
+    "exam-eng_wasm": {
+      "pages": 8,
+      "minimum_percent": 95.2965,
+      "below_90": 0,
+      "tsv_sha256": "70cc4e88bcea666929ed1b866dc9e6dfc56b5530dceefe6293646115c28f2169"
+    },
+    "issue6929_native": {
+      "pages": 17,
+      "minimum_percent": 95.23424,
+      "below_90": 0,
+      "tsv_sha256": "36fb6fa935771b00aa697e097f30dd0590ec97466409523771065dc5dcd25497"
+    },
+    "issue6929_wasm": {
+      "pages": 17,
+      "minimum_percent": 95.23424,
+      "below_90": 0,
+      "tsv_sha256": "36fb6fa935771b00aa697e097f30dd0590ec97466409523771065dc5dcd25497"
+    },
+    "issue1133-hwp_native": {
+      "pages": 3,
+      "minimum_percent": 97.99734,
+      "below_90": 0,
+      "tsv_sha256": "cf56f789a1e3ea79e0ff9096d07cfe6f6ec66f59540cba4dd62cb8c54f187ca2"
+    },
+    "issue1133-hwp_wasm": {
+      "pages": 3,
+      "minimum_percent": 97.99734,
+      "below_90": 0,
+      "tsv_sha256": "cf56f789a1e3ea79e0ff9096d07cfe6f6ec66f59540cba4dd62cb8c54f187ca2"
+    },
+    "issue1133-hwpx_native": {
+      "pages": 3,
+      "minimum_percent": 98.00366,
+      "below_90": 0,
+      "tsv_sha256": "15d54fe27444a60a8105cf87aaaa86bd2d12188c9182234d855523e3e13f0a69"
+    },
+    "issue1133-hwpx_wasm": {
+      "pages": 3,
+      "minimum_percent": 98.00366,
+      "below_90": 0,
+      "tsv_sha256": "15d54fe27444a60a8105cf87aaaa86bd2d12188c9182234d855523e3e13f0a69"
+    },
+    "issue4599-min_native": {
+      "pages": 1,
+      "minimum_percent": 99.41288,
+      "below_90": 0,
+      "tsv_sha256": "b3dcb46e62ac577f2ace1289194022fea5871a83c2e493973497aed7c6f6c3cf"
+    },
+    "issue4599-min_wasm": {
+      "pages": 1,
+      "minimum_percent": 99.41288,
+      "below_90": 0,
+      "tsv_sha256": "b3dcb46e62ac577f2ace1289194022fea5871a83c2e493973497aed7c6f6c3cf"
+    }
+  },
+  "skia_enabled_nextest": {
+    "passed": 100,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "50f6313208a27fac7521adb74658d9239eca45454441e492d2d35303adbd20f8"
+  },
+  "wasm_build": {
+    "exit_code": 0,
+    "duration_seconds": 200,
+    "kind": "Mac local --no-opt alternative; not Docker optimized",
+    "log_sha256": "72c82a96921c85952605b734288c6edb7ef302dfe5b5e10fa90bba22c22e3d41"
+  },
+  "skia_png": {
+    "page": 2,
+    "inspected": true,
+    "purpose": "NBSP ink absence and underline preservation; not full8-page Skia silhouette proof"
+  }
+}

@@ -1,0 +1,76 @@
+[
+  {
+    "pdf": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+    "page": 122,
+    "text": "여사회적편익이더클것으로판단됨",
+    "word_gaps": [
+      {
+        "before": "사회적",
+        "previous_char": "여",
+        "space_em_after_fullwidth_char": 0.5
+      },
+      {
+        "before": "편익이",
+        "previous_char": "적",
+        "space_em_after_fullwidth_char": 0.489161
+      },
+      {
+        "before": "더",
+        "previous_char": "이",
+        "space_em_after_fullwidth_char": 0.489131
+      },
+      {
+        "before": "클",
+        "previous_char": "더",
+        "space_em_after_fullwidth_char": 0.489131
+      },
+      {
+        "before": "것으로",
+        "previous_char": "클",
+        "space_em_after_fullwidth_char": 0.5
+      },
+      {
+        "before": "판단됨",
+        "previous_char": "로",
+        "space_em_after_fullwidth_char": 0.489158
+      }
+    ]
+  },
+  {
+    "pdf": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+    "page": 121,
+    "text": "여사회적편익이더클것으로판단됨",
+    "word_gaps": [
+      {
+        "before": "사회적",
+        "previous_char": "여",
+        "space_em_after_fullwidth_char": 0.500413
+      },
+      {
+        "before": "편익이",
+        "previous_char": "적",
+        "space_em_after_fullwidth_char": 0.489571
+      },
+      {
+        "before": "더",
+        "previous_char": "이",
+        "space_em_after_fullwidth_char": 0.48954
+      },
+      {
+        "before": "클",
+        "previous_char": "더",
+        "space_em_after_fullwidth_char": 0.48954
+      },
+      {
+        "before": "것으로",
+        "previous_char": "클",
+        "space_em_after_fullwidth_char": 0.500413
+      },
+      {
+        "before": "판단됨",
+        "previous_char": "로",
+        "space_em_after_fullwidth_char": 0.489571
+      }
+    ]
+  }
+]

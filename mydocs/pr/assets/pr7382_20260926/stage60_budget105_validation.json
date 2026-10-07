@@ -1,0 +1,157 @@
+{
+  "scope": "고정38의21번 기존105쪽 함수 개별 완료. 전체 PR 준비 완료가 아님.",
+  "preanalysis": {
+    "pdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "pdf_sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "page": 105,
+    "pdf_horizontal_edges_96dpi": [
+      243.2533,
+      279.0547,
+      318.532,
+      358.168,
+      397.6453,
+      437.1213,
+      476.5987,
+      516.076,
+      555.552,
+      595.0293,
+      634.5053,
+      673.9827,
+      713.46,
+      752.936,
+      792.4133,
+      832.0493,
+      871.5267,
+      906.0493,
+      940.7306,
+      975.4133,
+      1019.2053
+    ],
+    "independent_targets": {
+      "243": 243.2533,
+      "279": 279.0547,
+      "634": 634.5053,
+      "975": 975.4133,
+      "1019": 1019.2053
+    },
+    "render_tree_observations": {
+      "before105": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_105.json",
+        "sha256": "f691bd681de150caf7b07186f89c9b6723b0d77fc513b08117e3f37592030486",
+        "table_count": 0,
+        "tables": []
+      },
+      "before106": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_106.json",
+        "sha256": "419c867a997980ba164164f96f3540dab05d28b88e05c35ba624adb21d63b191",
+        "table_count": 1,
+        "tables": [
+          {
+            "bbox": {
+              "x": 75.6,
+              "y": 243.5,
+              "w": 642.5,
+              "h": 776.9
+            },
+            "row_tops": {
+              "1": [
+                279.5
+              ],
+              "10": [
+                635.3
+              ],
+              "19": [
+                976.5
+              ]
+            }
+          }
+        ]
+      },
+      "after105": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-final-native/prep2006/render_tree/render_tree_105.json",
+        "sha256": "eaaa147a48d87e00693dfbf462f89925058620fac3404c8f8b6b9d56076f308b",
+        "table_count": 1,
+        "tables": [
+          {
+            "bbox": {
+              "x": 75.6,
+              "y": 243.5,
+              "w": 642.5,
+              "h": 776.9
+            },
+            "row_tops": {
+              "1": [
+                279.5
+              ],
+              "10": [
+                635.3
+              ],
+              "19": [
+                976.5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "test_policy": "기존140쪽/행좌표/2px 공차/검사 함수 수 모두 유지. 동일 소스 전체280쪽 증적 재사용."
+  },
+  "before": {
+    "head": "6a727833438c0082ed88031d24a0a1412a640e06",
+    "observed": "105쪽에 연구비 표 없음/106쪽에 동일20×6 표 존재; 기존 함수FAIL",
+    "exit_code": 100,
+    "evidence": "stage59_prep2006_validation.json before_related 및 원본13PASS/4FAIL 로그",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "individual": {
+    "function": "issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(/(^|::)issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7390_prep_table_rowbreak",
+      "target": "regression_suite_016",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 7.54275616677478,
+    "head": "d4d16ca1f662e0e3a107a27ca81724884d8fe558",
+    "code_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+    "reused_evidence": "stage59_prep2006_validation.json",
+    "source_sha_comparison": "all_equal",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "visual_reuse": {
+    "evidence": "stage59_prep2006_validation.json",
+    "evidence_sha256": "abcb40df200bcf766a755974f5f306809fccf1c8757ddb2200ec2825f65fb958",
+    "source_comparison": "all_equal",
+    "count": 280,
+    "native_min": 91.82221,
+    "wasm_min": 91.82221,
+    "page105_native": 99.89982,
+    "page105_wasm": 99.89982,
+    "direct_assets": [
+      "stage59_after_native_prep2006_review_105.png",
+      "stage59_after_wasm_prep2006_review_105.png"
+    ]
+  },
+  "code_change": "추가 수정 없이 보정59의 공통 successor 흐름 수정으로 해결",
+  "test_changed": false,
+  "baseline_changed": false,
+  "new_test_functions": 0,
+  "residual": "표끝의 PDF1019.2053/실제1020.4px 약1.2px와Σ/원문자 자간. 기존2px 검사 유지."
+}

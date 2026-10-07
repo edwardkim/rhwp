@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "exam-kor",
+  "provenance": {
+    "hwp": {
+      "path": "samples/exam_kor.hwp",
+      "sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69"
+    },
+    "pdf": {
+      "path": "pdf/exam_kor-2022.pdf",
+      "sha256": "80fa2a520dcbd15a15c04eb6284f83bba9c8ff33a535445c5fcd5df1b9e12197"
+    },
+    "git_head": "4de143ddb0d6dabb7908bfe9182a9c5556543354",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "519ef2b53a3fafe0a47a28089b2a596bf924d20eae1e39b04d449365d33724d1"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

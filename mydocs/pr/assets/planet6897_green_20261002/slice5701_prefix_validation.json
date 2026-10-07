@@ -1,0 +1,310 @@
+{
+  "head_before_changes": "519127d09654eeb7873357de40df0b382a15c6b5",
+  "status": "정상 한컴 재저장 진단 사본 전3쪽 Native/fresh WASM90 이상; 원본 수동IR 픽스처와 기존 회귀 교정 및 최종 PR 검증은 다음 단계",
+  "source": "mydocs/pr/assets/planet6897_green_20261002/slice5701_hancom_resaved_diagnostic.hwp",
+  "source_sha256": "86dcf229e8593fdf58cfc15edd39fdbf9ccaf46c0eb1861ae6a6e44682dd7b58",
+  "reference": "pdf/issue5701/1270000-202200012-slice-p76-hancom-resaved-2020.pdf",
+  "reference_sha256": "92f8caa754f3a3e619931dcc3375d49f09130b7cb46174b31fe6ec3b3cfe0c82",
+  "original_ir_fixture_unchanged": true,
+  "original_ir_fixture_sha256": "345efb17a50396bdbeb102d09042ceeb409e8a5244d0fbb36a6b4d75ed966ac9",
+  "contract": {
+    "producer": "paragraph::plan_stored_float_text_prefix: 독립 저장 되감김 전의 줄 끝을 같은 실제 줄 구성/단 너비와 float.table_top으로 확정",
+    "state": "ParagraphFragment를 그대로 적용하고 prefilled_line_prefixes에 실제 end_line을 기록",
+    "resume": "paragraph/flow whole-fit 우회 → place_split_paragraph 시작 컷 및 현재 쪽 잔여 예산 → 실제 PartialParagraph",
+    "closing_margin": "동일 실제 시작 컷의 저장 첫 줄과 현재 남은 행 높이로 아래 여백을 검증 → fragment/budget 마지막 행 수용 여백 → scan 재스캔 → emit occupied_bottom/NextLine → layout terminal 흐름",
+    "scope": "유효 저장 HWP5 글 앞 호스트, 현재 단 너비의 뒤 제어 없는 문단, 원본 되감김 앞에서 실제로 들어가는 글줄. 재조판/무효 저장 호스트는 기존 경로"
+  },
+  "native_percent": [
+    98.97935,
+    97.81243,
+    100.0
+  ],
+  "fresh_wasm_percent": [
+    98.97935,
+    97.81243,
+    100.0
+  ],
+  "native_exit_code": 0,
+  "fresh_wasm_exit_code": 0,
+  "native_wasm_all3_png_byte_identical": true,
+  "page_count_native_wasm_pdf": 3,
+  "rows_first_continuation": [
+    14,
+    2
+  ],
+  "follower_lines_before_by_page": [
+    0,
+    5,
+    0
+  ],
+  "follower_lines_after_by_page": [
+    1,
+    4,
+    0
+  ],
+  "host_lines_after_by_page": [
+    4,
+    0,
+    0
+  ],
+  "last_paragraph_lines_after_by_page": [
+    0,
+    1,
+    1
+  ],
+  "intermediate_prefix_without_bottom_margin_percent": [
+    98.97935,
+    87.24739,
+    100.0
+  ],
+  "intermediate_cause": "실제 후속 시작 컷 대신 문단 첫 줄로 종료 아래 여백을 판단하여 이어받기 본문이 위로 이동",
+  "mandatory_gates": {
+    "head_before_changes": "519127d09654eeb7873357de40df0b382a15c6b5",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "focused40",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_028",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 102.908,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-focused40.log"
+      },
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.586,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-prepare.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.896,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 19.525,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 13.402,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 21.7,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 45.276,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.475,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-manifest.log"
+      },
+      {
+        "gate": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 145.46,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-prefix-column-fresh-wasm.log"
+      }
+    ]
+  },
+  "native_cli_build_exit_code": 0,
+  "native_cli_sha256": "05da55982d12600a979590c9dae1fa7a468cf6c0a85b108d9dfbe952c55899ce",
+  "wasm_sha256": "d23cc9bee193ac0113e8c698513485e5c9ec39594e1f5b77027ab5475ddbd14a",
+  "studio_wasm_sha256": "d23cc9bee193ac0113e8c698513485e5c9ec39594e1f5b77027ab5475ddbd14a",
+  "source_files_sha256": {
+    "src/renderer/float_placement.rs": "3af9e299e8358815d778691bb02b66f987b1316e4336890ec5b4ed8773c7de62",
+    "src/renderer/layout.rs": "5ed9cf1bb97d821df68ca63330d71c1a67f4d03b14effac46a4bbfba39cdb3aa",
+    "src/renderer/typeset/paragraph.rs": "a16e05ad5ea08d1392c6fb0ae9fd6cc6a27c33f980956153bca254722cbcec6f",
+    "src/renderer/typeset/paragraph/flow.rs": "a91de5667b7dcd053505175e4792fe204384932e1e4b1025ddf9b42342e2652d",
+    "src/renderer/typeset/state/commands.rs": "cba6af069e79dcb5c80dd511a9eb748885db18e6df33bfa20a2946cf76443c2b",
+    "src/renderer/typeset/state/data.rs": "a4123ab0e10b12cc00aeaaad2573a00d4000e7c25e88dd95ed3f934bc7512af2",
+    "src/renderer/typeset/state/transition.rs": "f86d854b18c016b88fdea80d16df487fae03618b2f5b7dd6aa409492fd04b53e",
+    "src/renderer/typeset/table/block/prepare.rs": "50c12d87e5c2ba5be92668c52a238e01f382fb349025b75592e91da3dc95f846",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "5d392f227f72a5a3a139b8cf1e4f39c746334b15731646b2d7699ec002930b78",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "3639d3229251522841b987f0f9a2d4d105261109024cfafb794cdc0e76dd92e4",
+    "src/renderer/typeset/table/continuation/fragment/scan.rs": "d3a95d425055419098d9608af961991541d891546df3327e55a6d62c43bf9603"
+  },
+  "direct_review_pages": [
+    1,
+    2,
+    3
+  ],
+  "new_test_functions": 0,
+  "changed_test_functions": 0,
+  "test_removals": 0,
+  "normal_counter": {
+    "social6797_native_all11_tree_unchanged": true,
+    "form002_native_first9_tree_unchanged": true,
+    "form002_native_p10_changed_only_four_empty_line_run_nodes": true,
+    "form002_p10_native_wasm_png_same_as_prior_verified": true,
+    "form002_p10_native_wasm_percent": 98.34023,
+    "empty_line_physical_flow_is_not_zeroed": true,
+    "form002_remaining_whole_flow_validation_required": true,
+    "social6797_native_equal_tree_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "form002_native_equal_tree_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "social6797_wasm_equal_tree_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "form002_wasm_equal_tree_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "mac_local_no_opt": true,
+  "docker_optimized_build": false,
+  "logs_stay_under_output": true,
+  "not_completed": [
+    "원본 수동IR 픽스처의 정상화 및 기존 잘못된2쪽/본문 순서 회귀 교정",
+    "최종 전체 nextest 및 Skia",
+    "다른 시각 보류, PR/CI/merge/후속처리"
+  ]
+}

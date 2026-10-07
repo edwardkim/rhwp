@@ -1,0 +1,47 @@
+{
+  "additionalContributors": [],
+  "handleAliases": {
+    "dependabot": "dependabot[bot]",
+    "app/dependabot": "dependabot[bot]"
+  },
+  "identityDispositions": {
+    "882bfb45e29f2077f6b56531b00d578c3b3336729efa268f8cfec2a189d0a6a2": "ai-assistant-coauthor-not-human-release-credit"
+  },
+  "identityHashToHandle": {
+    "5dbc6f314daa91e8f0419e234c8acde966b64857cd3e0887dbff953c2deecbb8": "postmelee",
+    "6d1ee105260f27de3f9a768971a7699ec2b0947736a70574da6b3f5408163aed": "johndoekim",
+    "8ed0e30eef80eb34643691ca321c566e7173c060bf73bdba8f1d1368e7b541e1": "dkh0324",
+    "a7abf832852250737ed56fd761ae508ca9fa832306b771090912691be88e38ff": "jangster77",
+    "bf9c8db09cb9648b733f0174465a9ba507c18c9e0fdc87c5463a132c59702f94": "planet6897",
+    "c4c3b39f7db193b65135d1a56de9e1c758100a941d792523201282f0b7b39f56": "kevin9327",
+    "d5757cc59110ed570cc90c814c73f0f54230f57548ba02b76d574e947b54396a": "kevin9327",
+    "4553b47cae605142751435b672f943719099e1d4ff314ec6cf0eadb250f9e91b": "planet6897",
+    "a537e04d5a2cd199776519d1de34af5b4887045ace80f9f7897343e98156b1d0": "lpaiu-cs",
+    "f85a776f83a8d7d163ba5c8e31662d57d6477454f6a110cbff1727241657898c": "emptinessform",
+    "bb8273b945dae80e5ef4d65a8c8d2612dbbddd0ade038b6a8ff834be3d0f6a8c": "lidge-jun",
+    "56075d2fc0e166ed5ed4fc2349623e43df6638d2063e872a39ac8340187e648d": "zer0bi9"
+  },
+  "numberDispositions": {},
+  "resolutionEvidence": {
+    "4553b47cae605142751435b672f943719099e1d4ff314ec6cf0eadb250f9e91b": {
+      "reference": "https://github.com/edwardkim/rhwp/commit/731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+      "reason": "기존 planet6897 identity와 같은 commit에서 동일 이름의 두 co-author 주소로 보존됐다. 기존 v0.8.6 hash 매핑과 함께 대사했다."
+    },
+    "a537e04d5a2cd199776519d1de34af5b4887045ace80f9f7897343e98156b1d0": {
+      "reference": "https://github.com/edwardkim/rhwp/pull/7099",
+      "sourceSha": "465534ececc6a57702005aef50821f6e871f50eb"
+    },
+    "f85a776f83a8d7d163ba5c8e31662d57d6477454f6a110cbff1727241657898c": {
+      "reference": "https://github.com/edwardkim/rhwp/pull/6750",
+      "sourceSha": "14e8a94891444750f2c6d61ac78d2922bd15a0e7"
+    },
+    "bb8273b945dae80e5ef4d65a8c8d2612dbbddd0ade038b6a8ff834be3d0f6a8c": {
+      "reference": "https://github.com/edwardkim/rhwp/pull/7465",
+      "sourceSha": "942cb8db3fff381ca99caa2f654f7e54cdbf2311"
+    },
+    "56075d2fc0e166ed5ed4fc2349623e43df6638d2063e872a39ac8340187e648d": {
+      "reference": "https://github.com/edwardkim/rhwp/pull/6811",
+      "sourceSha": "3a02b30046a7b6413d17ef50286befb8033b4a9a"
+    }
+  }
+}

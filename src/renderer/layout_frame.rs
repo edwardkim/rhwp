@@ -2,7 +2,7 @@
 
 use std::ops::Range;
 
-use crate::model::paragraph::LineSeg;
+use crate::model::paragraph::{LineSeg, SpaceMetric};
 
 const SEGMENT_BOUNDARY_TAGS: u32 = LineSeg::TAG_FIRST_SEGMENT | LineSeg::TAG_LAST_SEGMENT;
 const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
@@ -183,6 +183,31 @@ impl ParagraphBox {
         }
     }
 
+    /// 원본의 가시 목록 줄이 실제 문단 여백 원점을 사용하면 그 물리 상자를 복원한다.
+    /// 빈 목록과 편집 줄의 원점 발행 차단은 유지하며, 저장 폭·모든 행의 원점·
+    /// 텍스트 유효성은 이후 공통 프레임 수용 검사가 그대로 검증한다.
+    pub(crate) fn for_stored_body_rows(self, para: &crate::model::paragraph::Paragraph) -> Self {
+        let has_original_origin = !self.origin_is_derivable
+            && para.text.chars().any(|ch| !ch.is_whitespace())
+            && !para.stored_text_partition_is_dirty()
+            && para
+                .line_segs
+                .first()
+                .is_some_and(|line| line.column_start == self.horizontal.start)
+            && para
+                .line_segs
+                .iter()
+                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
+        if has_original_origin {
+            Self {
+                origin_is_derivable: true,
+                ..self
+            }
+        } else {
+            self
+        }
+    }
+
     /// A box in a nested flow's own coordinates. Pass the real inset when the
     /// caller has one; `0..width` when the flow's left edge *is* the origin.
     pub(crate) fn content(horizontal: Range<i32>) -> Self {
@@ -197,8 +222,59 @@ impl ParagraphBox {
     /// Public because the cell rebuild it feeds
     /// (`composer::recompose_cell_lines_in_frame`) is public, and a caller that
     /// cannot name its own coordinate system cannot use that entry at all.
+    ///
+    /// [#7412] 한/글은 셀 안 줄 폭도 본문 단과 같은 4 HWPUNIT 격자에 내려서 저장한다.
+    /// `samples/**/*.hwpx` 56문서의 `hp:lineseg/@horzsize` 19,837개 중 19,766개(99.64%)가
+    /// 4의 배수이고, 예외는 단일 차트 합성 fixture 뿐이다. 그래서 내용 상자의 오른쪽 끝을
+    /// 같은 격자로 내린다(원점 0 은 이미 격자 위). `80168_regulatory_analysis` p121
+    /// 「7.규제내용」 셀(내용 폭 34626 HU)은 34624 HU 로 줄을 나눠야 한/글 2022·2024 PDF 와
+    /// 같이 「…시ㆍ도조 / 례로…」에서 끊긴다.
     pub fn content_width_px(width_px: f64, dpi: f64) -> Self {
-        Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
+        Self::content(
+            0..snap_base_right(
+                crate::renderer::px_to_hwpunit(width_px, dpi),
+                COLUMN_WIDTH_QUANTUM_HWP,
+            ),
+        )
+    }
+
+    /// [#7407] 중첩 흐름의 내용 상자에 문단 자체의 양쪽 여백을 반영한다.
+    ///
+    /// `content_width_px`는 원점 0에서 흐름의 전체 안쪽 폭을 준다. 이는 문단에
+    /// 양쪽 여백이 없을 때만 맞는다. 셀 문단에도 본문과 같은 `margin_left`와
+    /// `margin_right`가 있으므로 이를 빼먹으면 같은 문단이 호출 경로에 따라
+    /// 다른 상자를 갖게 된다. [`ParagraphBox::body`]와 같은 상자 계약을 쓴다.
+    ///
+    /// `samples/issue6639/issue6639-hancom-160.hwpx`의 셀 31에서 확인했다.
+    /// 문단 10개는 `paraPr 18`을 공유한다. IR의 2배 단위에서 양쪽 여백은
+    /// 각각 1600이며 실제로는 각각 800 HWPUNIT이다.
+    ///
+    /// | | 줄 폭 | 줄 원점 |
+    /// | --- | ---: | ---: |
+    /// | 한/글 저장 `hp:lineseg` | `39208` | `800` |
+    /// | `content_width_px` | `40808` | `0` |
+    /// | 이 함수 | `39206` | `800` |
+    ///
+    /// 여분 1600 HWPUNIT에 줄마다 글자가 하나 더 들어가면서 같은 셀의
+    /// 줄 수가 기준 출력보다 세 줄 줄어들었다.
+    ///
+    /// 셀 안쪽 폭에는 단 계산의 양자화가 적용되지 않았으므로
+    /// [`ParagraphBox::body`]의 폭 스냅을 적용하지 않는다. 여기서 단 양자화를
+    /// 적용하면 원래 없던 셀 경계를 만들게 된다.
+    pub(crate) fn content_for_style(
+        content_width_px: f64,
+        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+        dpi: f64,
+    ) -> Self {
+        use crate::model::style::HeadType;
+        let margin_left = style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = style.map(|s| s.margin_right).unwrap_or(0.0);
+        let head_type = style.map(|s| s.head_type).unwrap_or(HeadType::None);
+        let width_hwp = crate::renderer::px_to_hwpunit(content_width_px, dpi);
+        let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left, dpi);
+        let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right, dpi);
+        Self::content(margin_left_hwp..width_hwp.saturating_sub(margin_right_hwp))
+            .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
     }
 
     /// The box after the geometry pitch — the single source for both the
@@ -253,7 +329,11 @@ impl ParagraphBox {
     /// deriving another horizontal range: two expressions for one quantity are
     /// what previously let the band and body disagree.
     pub(crate) fn frame_with(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
-        LayoutFrame::new(self.effective(), top, exclusions)
+        let mut frame = LayoutFrame::new(self.effective(), top, exclusions);
+        // [#7408] `effective()` 가 원점을 접었으면 그 사실을 프레임이 알아야 한다.
+        // 모르면 저장 행의 **참 원점**을 접힌 0 과 그대로 견주어 반드시 어긋난다.
+        frame.origin_is_authoritative = self.origin_is_derivable;
+        frame
     }
 
     /// [`ParagraphBox::frame_with`] for a flow that models no wrap geometry.
@@ -284,6 +364,8 @@ pub(crate) struct RowSegment {
     /// The source tag retains provenance and line properties. Projection owns
     /// the FIRST/LAST boundary bits because they describe this row's group.
     pub(crate) source_tag: u32,
+    /// Metric selected when this interval was filled; not a serialized tag.
+    pub(crate) space_metric: SpaceMetric,
 }
 
 impl RowSegment {
@@ -292,6 +374,7 @@ impl RowSegment {
             text_range,
             horizontal,
             source_tag: source_tag & !SEGMENT_BOUNDARY_TAGS,
+            space_metric: SpaceMetric::Stored,
         }
     }
 }
@@ -320,12 +403,26 @@ pub(crate) struct PhysicalRow {
 /// - Glyph shaping and kerning line-boundary differences → #4439.
 /// - Column-solver quantization belongs in `ParagraphBox::body`, before
 ///   paragraph margins. This predicate must not absorb it a second time.
-fn stored_row_matches_frame_expectation(expected: &Range<i32>, stored: &LineSeg) -> bool {
-    expected.start == stored.column_start
+///
+/// 원점을 보류한 경우를 제외하면 프레임의 원점이 확정되므로 `origin_shift`는
+/// `0`이다. [`LayoutFrame::origin_is_authoritative`]를 참조한다. 이동량이 0이면
+/// 위 규칙대로 `column_start`와 `segment_width`가 허용 오차 없이 같아야 한다.
+fn stored_row_matches_frame_expectation(
+    expected: &Range<i32>,
+    stored: &LineSeg,
+    origin_shift: i32,
+) -> bool {
+    let Some(start) = expected.start.checked_add(origin_shift) else {
+        return false;
+    };
+    let Some(end) = expected.end.checked_add(origin_shift) else {
+        return false;
+    };
+    start == stored.column_start
         && stored
             .column_start
             .checked_add(stored.segment_width)
-            .is_some_and(|end| expected.end == end)
+            .is_some_and(|stored_end| end == stored_end)
 }
 
 /// The side-wrap choices represented by this physical-row frame. This is
@@ -357,15 +454,17 @@ pub(crate) struct LayoutFrame {
     pub(crate) current_intervals: Vec<Range<i32>>,
     pub(crate) next_geometry_event: Option<i32>,
     pub(crate) minimum_width: i32,
-    /// Stored HWPX KoPub justified rows may compress spaces to the font advance.
+    /// 저장 HWPX의 KoPub 양쪽 정렬 줄은 공백을 글꼴 전진폭까지 줄일 수 있다.
     pub(crate) kopub_justified_space: bool,
-    /// Whether `horizontal` is a column edge pair.
-    ///
-    /// The geometry pitch snaps the column's edge pair. A table cell's content
-    /// width and `reflow_line_segs`'
-    /// width-only box are not column edges, so snapping them has no native
-    /// basis — and doing so moves cell frame widths that the table owner
-    /// already resolved.
+    /// [#7408] horizontal.start가 이 문단의 실제 원점인지 나타낸다.
+    /// ParagraphBox가 목록 문단 원점을 보류하면 effective()는 0..width로 접지만,
+    /// 저장 LineSeg는 실제 column_start를 유지한다. 같은 폭을 원점 차이로 기각하면
+    /// 한컴 저장 줄 대신 새 줄바꿈을 사용하게 된다.
+    /// 원점을 보류한 프레임은 폭과 슬롯 간격으로 비교하고 실제 원점을 새로 공표하지 않는다.
+    origin_is_authoritative: bool,
+    /// 이 프레임에 확정된 물리 줄. 가로 범위는 생성자가 이미 격자를 적용한 값이다 —
+    /// 본문은 [`ParagraphBox::body`]가 단 폭을, 셀 등 내용 흐름은
+    /// [`ParagraphBox::content_width_px`]가 내용 폭을 4 HWPUNIT 격자로 내린다(#7412).
     rows: Vec<PhysicalRow>,
 }
 
@@ -380,6 +479,7 @@ impl LayoutFrame {
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
             kopub_justified_space: false,
+            origin_is_authoritative: true,
             rows: Vec::new(),
         }
     }
@@ -645,9 +745,23 @@ impl LayoutFrame {
 
             // §1.4.1's three quantities: interval COUNT, then horzpos and
             // horzsize per slot, all by exact equality.
+            //
+            // [#7408] 원점을 보류한 경우 첫 슬롯에서 이동량을 정한다.
+            // 폭과 슬롯 사이 간격은 여전히 정확히 비교한다. 알 수 없다고 선언한
+            // 원점을 문서의 저장 기록을 기각하는 근거로 사용하지 않는다.
+            let origin_shift = if self.origin_is_authoritative {
+                0
+            } else {
+                match (intervals.first(), stored_row.first()) {
+                    (Some(expected), Some(stored)) => {
+                        stored.column_start.saturating_sub(expected.start)
+                    }
+                    _ => 0,
+                }
+            };
             if intervals.len() != count
                 || intervals.iter().zip(stored_row).any(|(expected, stored)| {
-                    !stored_row_matches_frame_expectation(expected, stored)
+                    !stored_row_matches_frame_expectation(expected, stored, origin_shift)
                 })
             {
                 return None;
@@ -843,6 +957,23 @@ impl LayoutFrame {
         projected
     }
 
+    /// Metric provenance follows exactly the same row/segment order as LineSeg.
+    pub(crate) fn project_space_metrics(&self) -> Vec<(u32, SpaceMetric)> {
+        self.project_space_metrics_since(0)
+    }
+
+    pub(crate) fn project_space_metrics_since(&self, first_row: usize) -> Vec<(u32, SpaceMetric)> {
+        self.rows
+            .iter()
+            .skip(first_row)
+            .flat_map(|row| {
+                row.segments
+                    .iter()
+                    .map(|segment| (segment.text_range.start, segment.space_metric))
+            })
+            .collect()
+    }
+
     /// Flatten only rows appended after a paragraph-local checkpoint.
     pub(crate) fn project_line_segs_since(&self, first_row: usize) -> Vec<LineSeg> {
         let first_segment = self.rows[..first_row.min(self.rows.len())]
@@ -892,6 +1023,7 @@ mod tests {
             next_geometry_event: None,
             minimum_width: 1,
             kopub_justified_space: false,
+            origin_is_authoritative: true,
             rows: Vec::new(),
         }
     }
@@ -973,8 +1105,10 @@ mod tests {
     /// The contrast is one misaligned full column width with a one-unit left
     /// paragraph margin. Native first truncates the full width `1002 → 1000`,
     /// then applies the margin, producing `1..1000`. It does not independently
-    /// snap those post-margin edges to `4..1000`. A content box is already
-    /// resolved by its owner and is unchanged.
+    /// snap those post-margin edges to `4..1000`. An explicit `content()` range
+    /// is published exactly as stated; a cell width handed over in pixels
+    /// (`content_width_px`) takes the same full-width truncation `1002 → 1000`
+    /// that Hancom applies to stored cell rows (#7412).
     fn the_column_solver_quantizes_before_paragraph_margins() {
         let misaligned = 1..1_002;
         let column = ParagraphBox::column(misaligned.clone());
@@ -1002,9 +1136,10 @@ mod tests {
         let cell = ParagraphBox::content_width_px(1_002.0, crate::renderer::HWPUNIT_PER_INCH);
         assert_eq!(
             cell.effective(),
-            0..1_002,
-            "content_width_px() is not, so a resolved cell width stays put"
+            0..1_000,
+            "content_width_px() truncates the full cell width to the 4-unit grid (#7412)"
         );
+        assert_eq!(carved(&cell), vec![0..1_000]);
 
         // Withholding the origin still changes only the origin.
         let width_only = ParagraphBox::column(misaligned).with_derivable_origin(false);
@@ -1134,7 +1269,7 @@ mod tests {
                 ..Default::default()
             }];
             assert!(
-                stored_row_matches_frame_expectation(&horizontal, &stored[0]),
+                stored_row_matches_frame_expectation(&horizontal, &stored[0], 0),
                 "{what}: precondition — the predicate alone would admit this"
             );
             assert!(

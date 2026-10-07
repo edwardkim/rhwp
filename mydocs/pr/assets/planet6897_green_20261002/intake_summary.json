@@ -1,0 +1,111 @@
+[
+  {
+    "number": 7479,
+    "title": "fix(layout): 빈 host 줄을 문단 기준 그림 띠에 흡수하고 넘치는 그림을 사다리대로 넘긴다 (#7470 1단계)",
+    "head": "1d894b4a05c4e5cf82b428e71ef0ab22de59c1ae",
+    "green": true,
+    "bad": [],
+    "checks": 34
+  },
+  {
+    "number": 7476,
+    "title": "수정: #7418 재조판 줄 채움(condense·목록 마커·구두점 폭)과 host 글·칸 조각 기하를 한/글에 맞춤",
+    "head": "d0c18feef2e9a13403482d7b8663a66a422bfaa4",
+    "green": true,
+    "bad": [],
+    "checks": 36
+  },
+  {
+    "number": 7471,
+    "title": "수정(각주): 번호 문단도 문단 모양의 내어쓰기·정렬을 받는다 (#7469)",
+    "head": "492aef1eefd06240a6a49d52f6b10c4a15acc657",
+    "green": true,
+    "bad": [],
+    "checks": 34
+  },
+  {
+    "number": 7435,
+    "title": "수정(조판): 칸 안 여백 축소를 줄바꿈으로 안 되는 칸에만 건다 (#7413, #7424 위)",
+    "head": "9fec87078119877809d0bf1ea4ed3c07aa0f13e6",
+    "green": false,
+    "bad": [
+      [
+        "Lint (fmt, clippy, WASM check)",
+        "FAILURE"
+      ],
+      [
+        "Build & Test",
+        "FAILURE"
+      ],
+      [
+        "CI Impact Policy",
+        "FAILURE"
+      ]
+    ],
+    "checks": 33
+  },
+  {
+    "number": 7434,
+    "title": "수정(조판): 조각 상자의 쪽 상한을 다행 표에도 적용한다 (#7095 확장, #7063)",
+    "head": "1fd09e538bf340a8fcf905d225d3fc74f5262e1b",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7424,
+    "title": "수정(조판): 칸 문단을 다시 조합하는 경로도 문단 좌우 여백을 뺀다 (#7422, #7414 위)",
+    "head": "7c2c1c05226731342e9b11b038d883adf3c0bab5",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7423,
+    "title": "수정(조판): 쪽을 끝내는 조각의 마지막 행 상자를 배치 뒤에 접는다 (#6976, #7063)",
+    "head": "07ec370f2c035d81007efffd415e3b740e752e55",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7414,
+    "title": "수정(조판): 한 줄에 안 들어가는 토큰을 잰 폭으로 자른다 — 폴백의 상수 12.0px 제거 (#7407, #7410 위)",
+    "head": "ed53392e9f575492f5cd7192f378490cc8c4b6d9",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7411,
+    "title": "fix(layout): 원점이 접힌 프레임과 저장 행의 좌표계를 맞춘다 (#7408)",
+    "head": "e116877a532eb02370fd7af35c982f407315d3b3",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7410,
+    "title": "수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407)",
+    "head": "665079cbd53bc2b8c76b54b21da52d96a252b4ed",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7404,
+    "title": "수정(저장): 재래핑된 표의 저장 프레임을 실제 조판 컷으로 되쓴다 (#7114)",
+    "head": "13cf22339f5125df51e78b361656293876313846",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  },
+  {
+    "number": 7385,
+    "title": "수정(layout): 용지 기준 개체를 앵커 줄이 있는 쪽에 등록한다 (#5941)",
+    "head": "a20cf583c76fdb038ccea6b87429a8f67b5bc832",
+    "green": true,
+    "bad": [],
+    "checks": 33
+  }
+]

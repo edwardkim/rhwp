@@ -318,20 +318,22 @@ fn stored_text_tail_follows_the_measured_table_and_preserves_the_line_gap() {
     }
 }
 
-/// 수동 줄 정보의 기하 검사와 별도로 한컴 정상 저장본의 PDF 좌표를 검사한다.
+/// 정상 한컴 저장 줄의 소속과 표 뒤 본문 흐름을 검사한다.
 #[test]
 fn hancom_saved_tail_preserves_pdf_baseline_after_the_table() {
     let mut core = DocumentCore::from_bytes(FIXTURE).expect("Hancom saved public fixture");
     let host = &core.document().sections[0].paragraphs[1];
-    assert_eq!(host.line_segs.len(), 4, "Hancom's actual text partition");
+    assert_eq!(host.line_segs.len(), 4, "한컴이 저장한 실제 줄 소속");
     assert_eq!(host.line_segs[3].text_start, 83);
+    let object_line = host.line_segs[1].clone();
+    let footer_line = host.line_segs[3].clone();
     assert_eq!(core.page_count(), 1);
     let tree = core.build_page_render_tree(0).expect("render");
     let mut nodes = Vec::new();
     collect(&tree.root, &mut nodes);
-    let (footer, baseline) = nodes
+    let footers: Vec<_> = nodes
         .iter()
-        .find_map(|node| match &node.node_type {
+        .filter_map(|node| match &node.node_type {
             RenderNodeType::TextRun(run)
                 if run.para_index == Some(1)
                     && run.cell_context.is_none()
@@ -341,27 +343,53 @@ fn hancom_saved_tail_preserves_pdf_baseline_after_the_table() {
             }
             _ => None,
         })
-        .expect("Footer text run");
-    // Hancom PDF: Footer baseline y=265.866821pt, run x=36.24pt (10 leading spaces).
-    // Half a pixel covers 600-dpi PDF quantization and font metric rounding.
-    assert!(
-        (baseline - 265.866821 * 96.0 / 72.0).abs() < 0.5,
-        "Footer baseline {baseline} must not add the preceding blank row"
+        .collect();
+    assert_eq!(
+        footers.len(),
+        1,
+        "뒤 문장은 원래 문단의 본문에 한 번만 표시"
     );
-    assert!((footer.x - 36.24 * 96.0 / 72.0).abs() < 0.5);
+    let (footer, baseline) = footers[0];
     let tables: Vec<_> = nodes
         .iter()
         .filter(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
         .collect();
     assert_eq!(tables.len(), 1);
     let table = tables[0].bbox;
-    // PDF table perimeter, separate from the surrounding paragraph border.
-    assert!((table.y - 140.77).abs() < 0.5, "table top {table:?}");
+    // 한컴 PDF로 확인한 저장 줄 관계를 사용한다. 용지의 절대 좌표는 고정하지 않는다.
+    let stored_baseline_delta = rhwp::renderer::hwpunit_to_px(
+        footer_line.vertical_pos - object_line.vertical_pos + footer_line.baseline_distance,
+        96.0,
+    );
     assert!(
-        (table.y + table.height - 312.42).abs() < 0.5,
-        "table bottom {table:?}"
+        (baseline - table.y - stored_baseline_delta).abs() < 0.5,
+        "뒤 문장은 표 앞 공백 줄을 다시 예약하지 않고 원래 저장 줄을 이어받아야 함"
     );
     assert!(footer.y > table.y + table.height);
+    assert!(footer.x >= table.x && footer.x + footer.width <= table.x + table.width);
+    let mut previous_bottom = table.y;
+    for index in 1..=8 {
+        let value = format!("Cell {index}");
+        let cell_runs: Vec<_> = nodes
+            .iter()
+            .filter_map(|node| match &node.node_type {
+                RenderNodeType::TextRun(run) if run.cell_context.is_some() && run.text == value => {
+                    Some((node.bbox, node.bbox.y + run.baseline))
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            cell_runs.len(),
+            1,
+            "셀 문장은 중복·누락 없이 한 번만 표시: {value}"
+        );
+        let (bbox, cell_baseline) = cell_runs[0];
+        assert!(bbox.y >= previous_bottom);
+        // 글꼴의 여유 상자 끝과 실제 글줄 기준선을 혼동하지 않는다.
+        assert!(cell_baseline <= table.y + table.height);
+        previous_bottom = bbox.y + bbox.height;
+    }
 }
 
 #[test]
@@ -374,17 +402,42 @@ fn hancom_saved_object_row_keeps_its_character_border() {
         .iter()
         .find(|n| matches!(n.node_type, RenderNodeType::Table { .. }))
         .unwrap();
-    // Hancom PDF stroke center: x=36..334.56pt, bottom=248.35pt.
-    // The row contains the table and two spaces, not the later Footer.
-    // One pixel covers the two 0.32px decoration edges and PDF quantization.
+    let footer = text(&nodes, "          Footer");
+    let outlines: Vec<_> = nodes
+        .iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::Rectangle(_))
+                && node.bbox.y < table.bbox.y
+                && node.bbox.y + node.bbox.height >= footer.y + footer.height
+                && node.bbox.height > table.bbox.height
+        })
+        .collect();
+    assert_eq!(outlines.len(), 1, "표와 뒤 문장을 소유하는 문단 외곽");
+    // 정상 한컴 저장본의 첫 공백 줄은 높이를 점유하고 0 간격을 남긴다.
+    // 표 원점은 해당 저장 줄 끝을 따르며 글꼴 상대 크기100%로 재조판하지 않는다.
+    let source = &core.document().sections[0].paragraphs[1];
+    let first = &source.line_segs[0];
+    let object = &source.line_segs[1];
+    assert_eq!(first.line_spacing, 0);
+    let prefix = rhwp::renderer::hwpunit_to_px(object.vertical_pos - first.vertical_pos, 96.0);
     assert!(
-        table
-            .children
-            .iter()
-            .any(|n| matches!(n.node_type, RenderNodeType::Line(_))
-                && (n.bbox.y - 248.35 * 4.0 / 3.0).abs() < 1.0
-                && (n.bbox.width - (334.56 - 36.0) * 4.0 / 3.0).abs() < 1.0),
-        "missing object-row character border with its two trailing spaces"
+        (table.bbox.y - outlines[0].bbox.y - prefix).abs() < 0.5,
+        "저장 공백 줄의 0 간격이 표 앞 흐름에서 보존되어야 함"
+    );
+    let row_borders: Vec<_> = table
+        .children
+        .iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::Line(_))
+                && node.bbox.width > table.bbox.width
+                && node.bbox.y > table.bbox.y + table.bbox.height
+                && node.bbox.y < footer.y
+        })
+        .collect();
+    assert_eq!(
+        row_borders.len(),
+        1,
+        "개체 줄은 두 뒤 공백까지 문자 테두리를 소유하며 Footer를 포함하지 않아야 함"
     );
 }
 
@@ -399,33 +452,87 @@ fn saved_fixture_nodes() -> Vec<RenderNode> {
 #[test]
 fn empty_saved_paragraph_keeps_its_physical_border() {
     let nodes = saved_fixture_nodes();
-    // The empty section paragraph still owns a full physical line and border.
+    let empty = nodes
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)))
+        .expect("빈 선행 문단의 물리 글줄");
+    let following = nodes
+        .iter()
+        .filter(|node| matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(1)))
+        .min_by(|a, b| a.bbox.y.total_cmp(&b.bbox.y))
+        .expect("표를 소유한 뒤 문단의 첫 글줄");
+    assert!(empty.bbox.height > 0.0, "빈 문단도 물리 줄을 소유한다");
+    let borders: Vec<_> = nodes
+        .iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::Rectangle(_))
+                && node.bbox.y <= empty.bbox.y
+                && node.bbox.y + node.bbox.height >= empty.bbox.y + empty.bbox.height
+                && node.bbox.x <= empty.bbox.x
+                && node.bbox.x + node.bbox.width >= empty.bbox.x + empty.bbox.width
+        })
+        .collect();
+    assert_eq!(borders.len(), 1, "빈 선행 문단 테두리의 단일 소유");
+    // 독립 PDF에서 앞 빈 문단의 아래 선은 뒤 문단 첫 줄의 위 선과 맞닿는다.
+    // 용지 좌표·폭·줄 높이를 고정하지 않고 두 문단 사이의 물리 줄 소유를 검사한다.
+    let bottom = borders[0].bbox.y + borders[0].bbox.height;
     assert!(
-        nodes
-            .iter()
-            .any(|n| matches!(n.node_type, RenderNodeType::Rectangle(_))
-                && (n.bbox.x - 48.0).abs() < 0.5
-                && (n.bbox.width - 384.0).abs() < 0.5
-                && (n.bbox.y - 104.619).abs() < 0.5
-                && (n.bbox.height - 22.556).abs() < 0.5),
-        "empty leading paragraph border must follow its fallback line height"
+        (bottom - following.bbox.y).abs() < 1e-9,
+        "빈 줄의 후행 간격까지 테두리가 감싸고 뒤 문단은 그 아래에서 시작해야 한다"
     );
 }
 
 #[test]
 fn one_paragraph_keeps_one_border_across_table_and_text_items() {
-    let nodes = saved_fixture_nodes();
-    // One paragraph split into text/table/text page items remains one outline,
-    // even with border_connect=false (that flag connects different paragraphs).
-    assert!(
-        nodes
-            .iter()
-            .any(|n| matches!(n.node_type, RenderNodeType::Rectangle(_))
-                && (n.bbox.x - 48.0).abs() < 0.5
-                && (n.bbox.width - 384.0).abs() < 0.5
-                && (n.bbox.y - 127.175).abs() < 0.5
-                && (n.bbox.y + n.bbox.height - 365.687).abs() < 0.5),
-        "same-paragraph fragments must keep one paragraph outline"
+    let mut core = DocumentCore::from_bytes(FIXTURE).expect("한컴 저장본");
+    let host = &core.document().sections[0].paragraphs[1];
+    let shape = &core.document().doc_info.para_shapes[host.para_shape_id as usize];
+    assert_eq!(
+        shape.attr1 & (1 << 28),
+        0,
+        "문단 간 테두리 연결이 꺼진 입력"
+    );
+    assert_eq!(core.page_count(), 1);
+    let pages = core.dump_page_items_json(Some(0));
+    let items = pages[0]["columns"][0]["items"]
+        .as_array()
+        .expect("본문 항목");
+    let kinds: Vec<_> = items
+        .iter()
+        .filter(|item| item["paraIndex"] == 1)
+        .map(|item| item["kind"].as_str().expect("항목 종류"))
+        .collect();
+    assert_eq!(
+        kinds,
+        ["partialParagraph", "table", "partialParagraph"],
+        "같은 문단의 실제 텍스트/표/뒤 텍스트 경로를 실행해야 함"
+    );
+    let tree = core.build_page_render_tree(0).expect("render");
+    let mut nodes = Vec::new();
+    collect(&tree.root, &mut nodes);
+    let tables: Vec<_> = nodes
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Table { .. }))
+        .collect();
+    assert_eq!(tables.len(), 1);
+    let table = tables[0].bbox;
+    let footer = text(&nodes, "          Footer");
+    // 연결 속성은 서로 다른 문단의 경계를 잇는다. 같은 문단의 항목 분할은
+    // 테두리를 복제하지 않으며 앞 공백 줄·표·뒤 문장을 한 외곽이 소유한다.
+    let outlines: Vec<_> = nodes
+        .iter()
+        .filter(|node| {
+            matches!(node.node_type, RenderNodeType::Rectangle(_))
+                && node.bbox.x <= table.x
+                && node.bbox.x + node.bbox.width >= table.x + table.width
+                && node.bbox.y < table.y
+                && node.bbox.y + node.bbox.height >= footer.y + footer.height
+        })
+        .collect();
+    assert_eq!(
+        outlines.len(),
+        1,
+        "같은 문단의 표와 뒤 문장을 소유하는 외곽은 하나"
     );
 }
 

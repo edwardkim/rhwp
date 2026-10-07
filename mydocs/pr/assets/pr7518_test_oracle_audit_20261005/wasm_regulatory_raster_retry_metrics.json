@@ -1,0 +1,88 @@
+{
+  "raster_timeout_ms": 120000,
+  "method": "same canonical SVGs, canonical raster/compare/overlay/review helpers; timeout retry only",
+  "metrics": [
+    {
+      "page": 33,
+      "rhwp_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/rhwp_png/rhwp_033.png",
+      "pdf_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/pdf_png/pdf-33.png",
+      "overlay_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/overlay/overlay_033.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 112946,
+      "diff_ratio": 0.12666907,
+      "pixel_match_percent": 87.33309,
+      "ink_union_pixels": 127101,
+      "ink_diff_pixels": 112946,
+      "ink_diff_ratio": 0.88863188,
+      "ink_match_percent": 11.13681,
+      "visual_accuracy_proxy_percent": 11.13681,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 85.78689,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127101,
+      "tolerant_content_match_percent": 85.78689,
+      "mean_abs_channel_delta": 16.524,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        76,
+        76,
+        712,
+        1081
+      ]
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/rhwp_png/rhwp_034.png",
+      "pdf_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/pdf_png/pdf-34.png",
+      "overlay_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/overlay/overlay_034.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 80488,
+      "diff_ratio": 0.09026739,
+      "pixel_match_percent": 90.97326,
+      "ink_union_pixels": 93188,
+      "ink_diff_pixels": 80488,
+      "ink_diff_ratio": 0.86371636,
+      "ink_match_percent": 13.62836,
+      "visual_accuracy_proxy_percent": 13.62836,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 86.67962,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93188,
+      "tolerant_content_match_percent": 86.67962,
+      "mean_abs_channel_delta": 12.721,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        76,
+        77,
+        712,
+        1081
+      ]
+    }
+  ],
+  "gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 33,
+        "tolerant_content_match_percent": 85.78689
+      },
+      {
+        "page": 34,
+        "tolerant_content_match_percent": 86.67962
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  }
+}

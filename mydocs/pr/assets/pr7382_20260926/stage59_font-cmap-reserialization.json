@@ -1,0 +1,65 @@
+{
+  "source": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts-original/H2HDRM.TTF",
+  "source_sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+  "browser_copy": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts/H2HDRM.TTF",
+  "browser_sha256": "06074546ec4aaab621e5045228751ebe7ea20307cba4c6f5968af798d7a9740d",
+  "operation": "fontTools TTFont cmap decompile then save; invalid format4 range is rebuilt from the same Unicode glyph mappings",
+  "unicode_mapping_count": 12480,
+  "unicode_mappings_equal": true,
+  "unchanged_tables": {
+    "glyf": "116acb21b0ba6092bb7bd1b66be409827829f9294a6148080f183555099006f8",
+    "hmtx": "263e9e0c42c066aecafb5cca6a1b14d86b09e111ff4c649a3888c70c8130c930",
+    "vmtx": "d469defb3b4b1abf4260405b86b8e80cfcf5719926b55486039853d3462577c6",
+    "name": "96e8493cab2459d7c2b9d2c1d958ab52b06bda306d54c0eb9a92a87516c90c62",
+    "GSUB": "afd6bee37c1114b21c79127c1cf13ef5ca04abf3e1461e7fe5f7bb9a28781dce"
+  },
+  "direct_browser_validation": {
+    "proof": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/font-chrome-proof.json",
+    "sha256": "194066bb8ef11131793ef1326792def8e1ba8b8e6d774f58ed57552e5222f261",
+    "actual_fonts": [
+      {
+        "fonts": [
+          {
+            "familyName": "HYHeadLine-Medium",
+            "postScriptName": "H2hdrM",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      {
+        "fonts": [
+          {
+            "familyName": "HYHeadLine-Medium",
+            "postScriptName": "H2hdrM",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      {
+        "fonts": [
+          {
+            "familyName": "HYHeadLine-Medium",
+            "postScriptName": "H2hdrM",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      }
+    ],
+    "console_errors": [],
+    "loaded_faces": [
+      {
+        "family": "HY헤드라인M",
+        "weight": "normal",
+        "status": "loaded"
+      },
+      {
+        "family": "돋움",
+        "weight": "normal",
+        "status": "loaded"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "stage": 337,
+  "kind": "mechanical_clippy_expression_correction",
+  "nativeClippyExit": 0,
+  "nativeClippySeconds": 47.07,
+  "behaviorChanged": false,
+  "sourceSha256": {
+    "src/renderer/layout/table_layout.rs": "3814f72393f7e5e58952c40d885e441936d5726b0f027ced4cd9422c6bf6f4a7",
+    "src/renderer/typeset/table/scan/runner/row_step.rs": "33c73fb85ef12b8df4f40248d82bb75a21509c61ec7fedeac22f319bb5edd2c9"
+  },
+  "remaining": "other lint/policy gates and final current-source whole regression"
+}

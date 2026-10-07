@@ -59,6 +59,13 @@ impl TypesetState {
     ) {
         self.data.deferred_next_page_square_pictures.push(picture);
     }
+    /// 저장 프레임의 다음 쪽 소유를 현재 호스트 흐름과 분리해 보관한다.
+    pub(in crate::renderer::typeset) fn defer_stored_frame(
+        &mut self,
+        picture: crate::renderer::typeset::DeferredStoredFrameControl,
+    ) {
+        self.data.deferred_next_page_stored_frames.push(picture);
+    }
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
     }
@@ -66,11 +73,31 @@ impl TypesetState {
         &mut self,
         index: usize,
         height: f64,
+        content_height: f64,
     ) {
         self.data.pre_emitted_host_heights.insert(index, height);
+        self.data
+            .pre_emitted_host_content_heights
+            .insert(index, content_height);
     }
     pub(in crate::renderer::typeset) fn mark_prefilled_paragraph(&mut self, index: usize) {
         self.data.prefilled_paras.insert(index);
+    }
+    pub(in crate::renderer::typeset) fn record_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+        end_line: usize,
+    ) {
+        self.data.prefilled_line_prefixes.insert(index, end_line);
+    }
+    pub(in crate::renderer::typeset) fn take_prefilled_line_prefix(
+        &mut self,
+        index: usize,
+    ) -> usize {
+        self.data
+            .prefilled_line_prefixes
+            .remove(&index)
+            .unwrap_or(0)
     }
     pub(in crate::renderer::typeset) fn add_visible_float_exclusion(
         &mut self,
@@ -131,6 +158,13 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn record_previous_partial_table(&mut self, value: bool) {
         self.data.vpos_prev_partial_table = value;
+    }
+    pub(in crate::renderer::typeset) fn record_vpos_snapped_flow_start(
+        &mut self,
+        para_idx: usize,
+        y: f64,
+    ) {
+        self.data.vpos_snapped_flow_start = Some((para_idx, y));
     }
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
@@ -217,6 +251,16 @@ impl TypesetState {
     ) {
         self.data.paragraph_float_placements.insert(key, placement);
     }
+    /// 뒤 줄간격과 문단 아래 여백을 제외한 확정 본문 하단을 보존한다.
+    pub(in crate::renderer::typeset) fn record_paragraph_content_bottom(
+        &mut self,
+        key: (usize, usize),
+        content_height: f64,
+    ) {
+        self.data
+            .paragraph_fragment_content_bottoms
+            .insert(key, self.data.current_height + content_height);
+    }
     pub(in crate::renderer::typeset) fn append_endnote_paragraph(
         &mut self,
         paragraph: crate::model::paragraph::Paragraph,
@@ -267,8 +311,10 @@ impl TypesetState {
         vpos: Option<i32>,
         empty_float: bool,
         plain_text: bool,
+        lane_probe: Option<crate::renderer::float_placement::StoredLineLaneProbe>,
     ) {
         self.data.next_para_first_stored_vpos = vpos;
+        self.data.next_para_lane_probe = lane_probe;
         self.data.next_para_is_empty_float_table_anchor = empty_float;
         self.data.next_para_is_plain_text = plain_text;
     }
@@ -387,6 +433,7 @@ impl TypesetState {
             hidden_empty_paras: self.data.hidden_empty_paras,
             pre_emitted_host_paras: self.data.pre_emitted_host_paras,
             pre_emitted_host_heights: self.data.pre_emitted_host_heights,
+            pre_emitted_host_content_heights: self.data.pre_emitted_host_content_heights,
             endnotes: self.data.endnotes,
             endnote_paragraphs: self.data.endnote_paragraphs,
             endnote_para_sources: self.data.endnote_para_sources,
