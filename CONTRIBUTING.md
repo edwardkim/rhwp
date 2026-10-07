@@ -344,7 +344,9 @@ merge/rebase는 하지 않습니다.
 PASS로 바꾸지 말고 준비된 worktree에서 같은 검사를 다시 실행하세요. 실제 포맷 diff가 나오면 아래
 [포맷 정책](#포맷-정책)에 따라 원본을 보정하고 새 commit을 다시 검증합니다.
 
-target은 source checkout의 공용 절대 경로 `target/pr-review`에 둡니다. worktree 이름을 바꾸는
+target은 macOS·Linux·Windows 모두 기본 rhwp 작업공간의 공용 절대 경로 `target/pr-review` 한 곳에 둡니다.
+위 준비 블록은 그 기본 작업공간에서 실행하며, 이미 다른 worktree에 있으면 기본 작업공간으로 돌아가
+준비하세요. `target/pr-review/<issue>`나 `target/pr-<번호>`, worktree별 target을 만들지 않습니다. worktree 이름을 바꾸는
 재검증에서도 `rhwp_review_target_dir`가 같은 공용 cache를 가리키도록 하며, issue별·검토별 target
 디렉터리를 새로 만들지 않습니다. 모든 Cargo `--target-dir`과 host WASM의 `CARGO_TARGET_DIR`가 같은
 경로를 가리켜야 합니다. 환경변수만 바꿔도 명시된 `--target-dir`은 바뀌지 않습니다. 캐시는 이전 검증
@@ -602,7 +604,7 @@ macOS/Linux에서는 raw `wasm-pack build` 대신 아래 wrapper를 사용합니
 호출까지 `--locked`로 고정하므로, 검증 과정에서 루트 `Cargo.lock`이 갱신되는 것을 막습니다.
 
 ```bash
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg --dev
 ```
 
 이 wrapper는 성공한 기본 web package의 `pkg/rhwp.js`와 `pkg/rhwp_bg.wasm`을
@@ -611,20 +613,22 @@ CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out
 브라우저를 새로고침한 뒤 실제 변경 흐름을 검사합니다. Rust target만 만들거나 wrapper 밖에서 `pkg/`만
 갱신한 결과는 Studio 반영 검증이 아닙니다.
 
-혼합 변경에서도 `rhwp_review_target_dir`는 source checkout의 같은 `target/pr-review`를 가리킵니다.
+위 native WASM 예제도 [고정 review target 준비](mydocs/manual/pr_review/local_validation.md#고정-review-target과-실행-환경)를
+먼저 수행합니다. 혼합 변경에서도 `rhwp_review_target_dir`는 기본 작업공간의 같은 `target/pr-review`를 가리킵니다.
 worktree에서 명령을 실행할 때는 상대 경로 대신 `CARGO_TARGET_DIR="${rhwp_review_target_dir:?}"`를
 지정합니다. 반복 실행용 alias도 **저장소 루트에서만** 사용하세요. 최적화된 엔진을 Studio 개발 서버에서
 직접 확인할 때는 `--dev` 없이 아래 표준 alias를 사용합니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+alias rhwp-wasm-build='CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
 Windows에서는 native wrapper를 사용합니다.
 
 ```powershell
-$env:CARGO_TARGET_DIR = 'target\pr-review'
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
 .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg --dev
 Remove-Item Env:CARGO_TARGET_DIR
 ```
@@ -633,7 +637,8 @@ Remove-Item Env:CARGO_TARGET_DIR
 
 ```bat
 doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg --dev $*
-set "CARGO_TARGET_DIR=target\pr-review"
+if not defined RHWP_REVIEW_TARGET_DIR exit /b 1
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
 rhwp-wasm-build
 set "CARGO_TARGET_DIR="
 ```
