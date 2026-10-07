@@ -2609,9 +2609,19 @@ impl LayoutEngine {
         &self,
         para: &Paragraph,
         tbl: &crate::model::table::Table,
+        measured_height_px: f64,
         current_y: f64,
     ) -> Option<f64> {
-        if !Self::tac_stored_band_is_outer_box(para, tbl) {
+        // 편집으로 실제 셀 높이가 선언보다 커지면 재발행한 줄은 측정한 표의
+        // 외곽 상자를 담는다. 선언 높이만 비교하면 공유 기준선에 불필요한
+        // 아래 여백이 다시 더해져 표가 그 줄의 상단에서 내려앉는다.
+        if !Self::tac_stored_band_is_outer_box(para, tbl)
+            && !Self::tac_band_covers_height(
+                para,
+                tbl,
+                i64::from(px_to_hwpunit(measured_height_px, self.dpi)),
+            )
+        {
             return None;
         }
         Some(current_y + hwpunit_to_px(tbl.outer_margin_top as i32, self.dpi))
@@ -2623,6 +2633,14 @@ impl LayoutEngine {
         para: &Paragraph,
         tbl: &crate::model::table::Table,
     ) -> bool {
+        Self::tac_band_covers_height(para, tbl, i64::from(tbl.common.height.min(i32::MAX as u32)))
+    }
+
+    fn tac_band_covers_height(
+        para: &Paragraph,
+        tbl: &crate::model::table::Table,
+        body_height_hu: i64,
+    ) -> bool {
         let om_top_hu = i64::from(tbl.outer_margin_top);
         let om_bottom_hu = i64::from(tbl.outer_margin_bottom);
         // 저장 밴드의 등식은 한쪽 여백이 0이어도 유효하다.
@@ -2630,8 +2648,7 @@ impl LayoutEngine {
         if om_top_hu < 0 || om_bottom_hu < 0 || om_top_hu + om_bottom_hu == 0 {
             return false;
         }
-        let declared = i64::from(tbl.common.height.min(i32::MAX as u32));
-        if declared <= 0 {
+        if body_height_hu <= 0 {
             return false;
         }
         // 이 헬퍼에는 control 위치가 전달되지 않는다. 저장 밴드가 첫 줄이라는 사실만으로
@@ -2648,7 +2665,7 @@ impl LayoutEngine {
         if ls.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
             return false;
         }
-        (i64::from(ls.line_height) - (om_top_hu + declared + om_bottom_hu)).abs() <= 8
+        (i64::from(ls.line_height) - (om_top_hu + body_height_hu + om_bottom_hu)).abs() <= 8
     }
 
     /// #6812: 측정/fit 소유자가 확정한 줄 결과를 그린다. 여기서 회피·줄바꿈을 재판정하지 않는다.
@@ -3715,7 +3732,7 @@ impl LayoutEngine {
                 let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
                 let tbl_y = self
-                    .tac_table_stored_outer_band_top(para, tbl, current_y)
+                    .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
                     .unwrap_or_else(|| {
                         let raw = current_y + baseline_dist + om_bottom - tbl_h;
                         if raw < current_y {
@@ -3818,7 +3835,7 @@ impl LayoutEngine {
                 .unwrap_or_else(|| hwpunit_to_px(tbl.common.height as i32, self.dpi));
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
             let tbl_y = self
-                .tac_table_stored_outer_band_top(para, tbl, current_y)
+                .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
                 .unwrap_or_else(|| (current_y + baseline_dist + om_bottom - tbl_h).max(current_y));
 
             let table_bottom = self.layout_table(
@@ -4231,6 +4248,7 @@ impl LayoutEngine {
         line_node: &mut RenderNode,
         comp_line: &ComposedLine,
         para: Option<&Paragraph>,
+        styles: &ResolvedStyleSet,
         tac_offsets_px: &[(usize, f64, usize)],
         cell_ctx: Option<&CellContext>,
         mut x: f64,
@@ -4261,6 +4279,20 @@ impl LayoutEngine {
                                 form_type: f.form_type,
                                 caption: f.caption.clone(),
                                 text: f.text.clone(),
+                                display_text: FormObjectNode::form_display_text(f),
+                                appearance:
+                                    crate::renderer::form_appearance::FormAppearance::resolve(
+                                        f,
+                                        styles,
+                                        p.char_shape_id_at(
+                                            p.logical_control_positions()
+                                                .get(tac_ci)
+                                                .copied()
+                                                .unwrap_or(comp_line.char_start),
+                                        )
+                                        .unwrap_or(0),
+                                        self.dpi,
+                                    ),
                                 fore_color: form_color_to_css(f.fore_color),
                                 back_color: form_color_to_css(f.back_color),
                                 value: f.value,
@@ -6710,6 +6742,7 @@ impl LayoutEngine {
                 &mut line_node,
                 comp_line,
                 para,
+                styles,
                 tac_offsets_px,
                 cell_ctx.as_ref(),
                 x,
@@ -8739,6 +8772,14 @@ impl LayoutEngine {
                                     form_type: f.form_type,
                                     caption: f.caption.clone(),
                                     text: f.text.clone(),
+                                    display_text: FormObjectNode::form_display_text(f),
+                                    appearance:
+                                        crate::renderer::form_appearance::FormAppearance::resolve(
+                                            f,
+                                            styles,
+                                            run.char_style_id,
+                                            self.dpi,
+                                        ),
                                     fore_color: form_color_to_css(f.fore_color),
                                     back_color: form_color_to_css(f.back_color),
                                     value: f.value,
@@ -8955,7 +8996,10 @@ impl LayoutEngine {
                 }
 
                 let is_active = if let Some((af_sec, af_para, af_ctrl, ref af_cell)) = *active {
-                    if af_sec != section_index || af_para != para_index || af_ctrl != fr.control_idx
+                    let host_para = cell_ctx
+                        .as_ref()
+                        .map_or(para_index, |ctx| ctx.parent_para_index);
+                    if af_sec != section_index || af_para != host_para || af_ctrl != fr.control_idx
                     {
                         false
                     } else {
@@ -8963,11 +9007,13 @@ impl LayoutEngine {
                         match (af_cell, cell_ctx) {
                             (None, None) => true,
                             (Some(af_path), Some(ctx)) => {
-                                // af_path와 ctx.path의 (control_index, cell_index) 쌍이 모두 일치해야 함
+                                // 중간 셀 문단까지 같아야 같은 위치의 중첩 표를 구분한다.
                                 af_path.len() == ctx.path.len()
                                     && af_path.iter().zip(ctx.path.iter()).all(
-                                        |(&(ac, ax, _ap), entry)| {
-                                            ac == entry.control_index && ax == entry.cell_index
+                                        |(&(ac, ax, ap), entry)| {
+                                            ac == entry.control_index
+                                                && ax == entry.cell_index
+                                                && ap == entry.cell_para_index
                                         },
                                     )
                             }

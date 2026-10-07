@@ -66,6 +66,7 @@ jobs:
           sparse-checkout: |
             src
             crates
+            vendor
             tests
             samples
             saved/blank2010.hwp

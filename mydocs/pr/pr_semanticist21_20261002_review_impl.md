@@ -119,7 +119,7 @@ baseline 빌드는 `cargo build --locked --lib --profile release-test --target-d
 
 - 수용 후보: [#7497](archives/pr_7497_review.md), [#7498](archives/pr_7498_review.md), [#7508](archives/pr_7508_review.md).
   기능 검토는 통과했으나 보류 건을 제외한 최종 통합 후보와 CI를 아직 만들지 않았다.
-- 보류(최초 판정): [#7487](pr_7487_review.md), [#7491](pr_7491_review.md), [#7493](archives/pr_7493_review.md), [#7504](pr_7504_review.md). #7493의 대응 재검증·병합은 아래 후속 절에 기록합니다.
+- 보류(최초 판정): [#7487](pr_7487_review.md), [#7491](archives/pr_7491_review.md), [#7493](archives/pr_7493_review.md), [#7504](pr_7504_review.md). #7493의 대응 재검증·병합은 아래 후속 절에 기록합니다.
   실행 결함과 독립 시각 증거 부족을 PR별로 구분했다.
 - 검토 중 신규 등록된 #7509(head `435f04507ba1cc5b43a12c39d73158ea9f01a872`)는
   입력/복사 논리 오프셋의 부분 수정으로 별도 접수했다. source/test diff를 읽었고 e509와

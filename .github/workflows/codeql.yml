@@ -811,13 +811,13 @@ jobs:
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
       - name: Initialize CodeQL (non-Rust)
         if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4 (2026-10-06)
         with:
           languages: ${{ matrix.language }}
 
       - name: Initialize CodeQL (Rust)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4 (2026-10-06)
         with:
           languages: rust
           build-mode: none
@@ -827,7 +827,7 @@ jobs:
       # #6877에서 제외한 내부 metric 3개만 생략한다. PR의 paths는 가져오지 않는다.
       - name: Initialize CodeQL (Rust post-merge)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4 (2026-10-06)
         with:
           languages: rust
           build-mode: none
@@ -836,7 +836,7 @@ jobs:
       # main push, schedule, workflow_dispatch retain all paths and all queries.
       - name: Initialize CodeQL (Rust full scan)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4 (2026-10-06)
         with:
           languages: rust
           build-mode: none
@@ -849,4 +849,4 @@ jobs:
       # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
         if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4 (2026-10-06)

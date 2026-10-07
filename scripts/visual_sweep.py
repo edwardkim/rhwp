@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Task 1274 PDF/SVG visual sweep helper."""
+"""작업 1274: PDF/SVG 시각 비교를 돕는 Visual Sweep 도구."""
 
 from __future__ import annotations
 
@@ -60,13 +60,13 @@ FRAME_OVERFLOW_TOLERATED_BLEED_PX = 12
 FRAME_BOTTOM_GLYPH_BLEED_TOLERANCE_PX = 6
 FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX = 16
 DEFAULT_RHWP_BIN = "target/pr-review/debug/rhwp"
-# A centered endnote separator can span almost half of a Chrome-size page
-# raster.  It is not a page boundary, so use a stronger coverage requirement
-# only when selecting the *bottom* frame line.
+# 가운데 정렬 미주 구분선은 Chrome 페이지 래스터 폭의 거의 절반을 차지할 수 있다.
+# 페이지 경계선이 아니므로 더 엄격한 선 길이 기준은
+# 아래쪽 테두리 선을 선택할 때만 적용한다.
 FRAME_BOTTOM_RULE_MIN_COVERAGE = 0.60
-# A rule inside the content area (for example, a bottom table border) cannot
-# define the paper boundary.  Actual page-frame rules, if present, are at the
-# physical footer edge; otherwise the known page-raster fallback is safer.
+# 표의 아래 괘선처럼 내용 영역 안의 선은 용지 경계가 될 수 없다.
+# 실제 페이지 테두리는 물리적인 꼬리말 가장자리에 있다.
+# 그런 선이 없으면 알려진 페이지 래스터 경계를 쓰는 대체 경로가 더 안전하다.
 FRAME_BOTTOM_CANDIDATE_MIN_PAGE_FRACTION = 0.94
 FRAME_PAGE_NUMBER_FOOTER_BLEED_DELTA_TOLERANCE_PX = 4
 CONTENT_BOTTOM_DELTA_LIMIT_PX = 36.0
@@ -86,9 +86,9 @@ LINE_BAND_DRIFT_MEAN_LIMIT_PX = 60.0
 LINE_BAND_DRIFT_P90_LIMIT_PX = 120.0
 COLUMN_LINE_DRIFT_MEAN_LIMIT_PX = 42.0
 COLUMN_LINE_DRIFT_P90_LIMIT_PX = 70.0
-# 본문이 그림 주변에서 세로 열로 붕괴하는 경우처럼, 한 column의 line-band 수와
-# y 흐름이 PDF와 함께 크게 달라진 형상은 일반 column drift보다 강한 검토 신호다.
-# 폰트 차이만으로 생기는 소폭 baseline shift는 이 조합을 만족하지 않는다.
+# 본문이 그림 주변에서 세로 열로 붕괴하는 경우처럼 한 단의 줄 띠 개수와
+# 세로 흐름이 PDF와 크게 다른 형상은 일반 단 위치 차이보다 강한 검토 신호다.
+# 글꼴 차이만으로 생기는 작은 기준선 이동은 이 조합을 만족하지 않는다.
 COLUMN_TEXT_FLOW_COLLAPSE_MIN_BAND_COUNT_DELTA = 3
 COLUMN_TEXT_FLOW_COLLAPSE_MEAN_DRIFT_LIMIT_PX = 80.0
 COLUMN_TEXT_FLOW_COLLAPSE_P90_DRIFT_LIMIT_PX = 120.0
@@ -318,13 +318,11 @@ def filter_paths_by_pages(paths: list[Path], selected_pages: list[int] | None) -
 def raster_paths_for_selected_pages(
     paths: list[Path], selected_pages: list[int] | None
 ) -> list[Path]:
-    """Return only requested inputs before an expensive raster conversion.
+    """비용이 큰 래스터 변환 전에 요청한 입력만 반환한다.
 
-    A one-page HWP can expose its internal document number in its SVG filename
-    rather than page 1. Keep that existing singleton fallback usable by
-    rasterizing the sole SVG when an otherwise unmatched single page was
-    requested; the complete cross-group validation still happens below.
-    """
+    한 쪽짜리 HWP는 SVG 파일명에 쪽 번호 1 대신 내부 문서번호를 사용할 수 있다.
+    한 쪽을 요청했는데 번호가 맞지 않으면 유일한 SVG를 변환하는 기존 대체 경로를 유지한다.
+    입력 그룹 사이의 전체 대응 검증은 아래에서 계속 수행한다."""
     selected_paths = filter_paths_by_pages(paths, selected_pages)
     if selected_paths or not selected_pages:
         return selected_paths
@@ -336,7 +334,7 @@ def raster_paths_for_selected_pages(
 def pdf_raster_commands(
     pdf: Path, dpi: int, pdf_prefix: Path, selected_pages: list[int] | None
 ) -> list[list[str]]:
-    """Build pdftoppm invocations, limiting raster work to requested pages."""
+    """요청한 페이지만 래스터로 변환하도록 pdftoppm 실행 명령을 만든다."""
     if not selected_pages:
         return [["pdftoppm", "-r", str(dpi), "-png", str(pdf), str(pdf_prefix)]]
     return [
@@ -378,7 +376,7 @@ def use_singleton_page_fallback(
     all_groups: dict[str, list[Path]],
     selected_groups: dict[str, list[Path]],
 ) -> bool:
-    """단일 페이지 문서의 파일명 숫자가 문서번호일 때 선택 페이지 매칭을 보정한다."""
+    """한 쪽 문서의 파일명 숫자가 문서번호일 때 선택 쪽의 대응을 보정한다."""
     if not selected_pages or len(selected_pages) != 1:
         return False
     if all(selected_groups.values()):
@@ -503,7 +501,7 @@ def first_endnote_shape(compact_shapes: list[dict[str, object]]) -> dict[str, ob
 
 
 def write_json_atomic(path: Path, value: object) -> None:
-    """Write JSON without exposing a partial checkpoint to --resume."""
+    """--resume이 부분 저장된 체크포인트를 읽지 않도록 JSON을 기록한다."""
     path.parent.mkdir(parents=True, exist_ok=True)
     serialized = json.dumps(value, ensure_ascii=False, indent=2) + "\n"
     file_descriptor, temp_name = tempfile.mkstemp(
@@ -588,12 +586,11 @@ def git_head_commit_timestamp(root: Path) -> float:
 
 
 def ensure_default_rhwp_binary_is_current(root: Path, rhwp_bin: str) -> None:
-    """Reject an implicit debug binary built before the checked-out HEAD.
+    """현재 체크아웃의 HEAD보다 먼저 빌드된 기본 디버그 실행 파일을 거부한다.
 
-    An explicit --rhwp-bin is caller-owned: it may intentionally point at a
-    separately built artifact.  The default is different because silently
-    reusing target/debug/rhwp makes visual evidence describe an older tree.
-    """
+    명시적인 --rhwp-bin은 호출자가 관리하므로 별도로 빌드한 산출물을 가리킬 수 있다.
+    기본 target/debug/rhwp를 확인 없이 재사용하면 과거 코드의 출력을 시각 증거로 삼게 되므로
+    기본 실행 파일에는 최신 빌드 확인을 적용한다."""
     if Path(rhwp_bin) != Path(DEFAULT_RHWP_BIN):
         return
     binary = root / rhwp_bin
@@ -643,7 +640,7 @@ def wasm_package_provenance(root: Path, package: Path) -> dict[str, object]:
 
 
 def svg_font_face_rules(svg_path: Path) -> list[str]:
-    """Read only the leading CSS; embedded SVG page content can be gigabytes."""
+    """앞부분의 CSS만 읽는다. 본문을 포함한 SVG는 수 GB에 이를 수 있다."""
     chunks: list[bytes] = []
     tail = b""
     with svg_path.open("rb") as source:
@@ -694,7 +691,7 @@ def apply_svg_font_policy(svg: str, policy_rules: list[str]) -> str:
 
 
 def default_sweep_font_paths() -> list[Path]:
-    """Find the installed fonts used by the local renderer when no path was given."""
+    """경로가 지정되지 않았을 때 로컬 렌더러가 사용하는 설치 글꼴을 찾는다."""
     configured = os.environ.get("RHWP_FONT_PATH", "")
     if configured:
         return [Path(value) for value in configured.split(os.pathsep) if value]
@@ -706,7 +703,7 @@ def default_sweep_font_paths() -> list[Path]:
 
 
 def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
-    """명시적 검증 폰트 공급과 hash를 고정한다. 폰트 파일은 scratch SVG에만 포함한다."""
+    """검증에 공급할 글꼴과 해시를 고정한다. 글꼴 파일은 진단용 SVG에만 포함한다."""
     if mode == "subset":
         raise SystemExit(
             "SVG 서브셋 임베딩은 Unicode cmap을 보존하지 않아 검증에 사용할 수 없습니다. "
@@ -735,12 +732,11 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
 
 
 def inspect_svg_embedded_fonts(svg_path: Path) -> list[dict[str, object]]:
-    """픽셀 점수 전에 임베딩 폰트의 Unicode 매핑을 검사한다.
+    """픽셀 점수를 계산하기 전에 임베딩한 글꼴의 유니코드 매핑을 검사한다.
 
-    cmap이 없는 PDF용 subset은 glyph가 있어도 SVG text를 표시할 수 없다.
+    cmap이 없는 PDF용 부분 글꼴은 글리프가 있어도 SVG 텍스트를 표시할 수 없다.
     이 검사는 실제 글꼴 선택이나 모든 글자의 표시를 입증하지 않는다.
-    local()/외부 URL 폰트는 이 검사 밖이며 직접 PNG 판독이 계속 필요하다.
-    """
+    local()/외부 URL 글꼴은 검사 대상이 아니며 PNG 직접 판독은 계속 필요하다."""
     records: list[dict[str, object]] = []
     svg = svg_path.read_text(encoding="utf-8")
     for rule in re.findall(r"@font-face\s*\{[^{}]*\}", svg, re.IGNORECASE):
@@ -791,7 +787,7 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
     environment_args = ["--font-environment", str(font_environment)] if font_environment else []
     wasm_dir = base / "wasm"
     policy_dir = base / "font_policy"
-    # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 성공한 export로 사용하지 않는다.
+    # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 내보내기 성공 결과로 사용하지 않는다.
     (base / "wasm-export-complete.json").unlink(missing_ok=True)
     for folder in (wasm_dir, policy_dir, base / "svg", base / "render_tree"):
         clean_dir(folder)
@@ -813,7 +809,7 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
     expected = set(range(1, count + 1)) if isinstance(count, int) and count > 0 else set()
     if not expected or set(raw) != expected or set(trees) != expected or not policies:
         raise SystemExit("WASM SVG/render tree 페이지가 누락됐거나 글꼴 정책이 없습니다.")
-    # 별칭은 문서의 폰트 공급 계약이다. Native의 페이지 소속을 WASM에 강제하지 않는다.
+    # 별칭은 문서의 글꼴 공급 계약이다. 네이티브의 페이지 소속을 WASM에 강제하지 않는다.
     # 전체 글꼴 SVG에는 본문도 있다. CSS만 읽어 긴 문서의 반복 스캔을 피한다.
     policy_rules = list(dict.fromkeys(
         rule for path in policies.values() for rule in svg_font_face_rules(path)
@@ -822,7 +818,7 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
         svg = apply_svg_font_policy(raw[page].read_text(encoding="utf-8"), policy_rules)
         (base / "svg" / raw[page].name).write_text(svg, encoding="utf-8")
         shutil.copyfile(trees[page], base / "render_tree" / trees[page].name)
-    # output 복사까지 끝난 경우에만 export 완료를 표시한다.
+    # 출력 복사까지 끝난 경우에만 내보내기 완료를 표시한다.
     write_json_atomic(base / "wasm-export-complete.json", manifest)
 
 
@@ -830,7 +826,7 @@ def export_native_target(
     root: Path, hwp: Path, rhwp_bin: str, base: Path,
     selected_pages: list[int] | None, font_args: list[str], environment_args: list[str],
 ) -> None:
-    """선택 쪽만 내보내고, 전체 문서 쪽수와 실제 산출물 개수를 구분한다."""
+    """선택한 쪽만 내보내고 전체 문서 쪽수와 실제 산출물 개수를 구분한다."""
     svg_dir = base / "svg"
     tree_dir = base / "render_tree"
     metadata_path = base / "native-export.json"
@@ -850,7 +846,7 @@ def export_native_target(
         missing_svg = [page for page in selected_pages if page not in svg_pages]
         missing_tree = [page for page in selected_pages if page not in tree_pages]
     else:
-        # 부분 export를 resume하면서 전체 쪽을 요청하면 전체를 다시 내보낸다.
+        # 부분 내보내기를 이어받으면서 전체 쪽을 요청하면 전체를 다시 내보낸다.
         partial = bool(metadata) and not metadata.get("all_pages_exported", False)
         expected_pages = set(range(1, page_count + 1)) if isinstance(page_count, int) else None
         missing_svg = [None] if (
@@ -913,7 +909,7 @@ def run_manifest_for_target(
     provenance: dict[str, object],
     dpi: int,
     pixel_diff_threshold: int,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
     *,
     resume: bool,
 ) -> dict[str, object]:
@@ -1103,17 +1099,14 @@ def pr_review_gate(
     metrics: list[dict[str, object]],
     *,
     expected_pages: list[int] | None = None,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    """Return the PR-review disposition for the rendered review PNGs.
+    """생성한 검토 PNG의 PR 검토 판정을 반환한다.
 
-    A 2px tolerant silhouette result below 90% is not an approval signal.  The
-    caller still receives all raster artifacts so the maintainer can diagnose
-    the mismatch, but the output manifest records that another review is
-    required and ``main`` returns failure.  Font mismatch is deliberately an
-    explicit, hashed evidence exception: automatic raster heuristics cannot
-    tell a substituted face from a layout regression.
-    """
+    2px 관용 실루엣 일치율이 90% 미만이면 승인 근거가 되지 않는다.
+    원인 진단용 래스터 산출물은 모두 보존하되 결과 명세에 재검토 필요를 기록하고
+    main은 실패로 끝난다. 근거를 갖춘 해결 불가능한 글꼴 차이는 직접 검토한 쪽의
+    낮은 점수만 예외로 인정하며 측정 누락은 면제하지 않는다."""
     below_threshold: list[dict[str, object]] = []
     unavailable: list[object] = []
     measured_pages: set[int] = set()
@@ -1137,10 +1130,19 @@ def pr_review_gate(
             page for page in sorted(set(expected_pages)) if page not in measured_pages
         )
 
-    if font_mismatch_evidence is not None:
-        status = "font_mismatch_exception"
-    elif below_threshold or unavailable:
+    evidence = font_mismatch_evidence or {}
+    reviewed_pages = evidence.get("affected_pages", [])
+    font_exception = (
+        evidence.get("font_issue_unresolvable") is True
+        and evidence.get("layout_geometry_matched") is True
+        and evidence.get("page_count_matched") is True
+        and isinstance(reviewed_pages, list)
+        and all(item["page"] in reviewed_pages for item in below_threshold)
+    )
+    if unavailable:
         status = "re_review_required"
+    elif below_threshold:
+        status = "font_mismatch_exception" if font_exception else "re_review_required"
     else:
         status = "passed"
     return {
@@ -1152,18 +1154,45 @@ def pr_review_gate(
     }
 
 
-def font_mismatch_evidence_record(root: Path, evidence: Path | None) -> dict[str, str] | None:
-    """Record the only permitted automatic-score exception without trusting a label."""
+def font_mismatch_evidence_record(
+    root: Path, evidence: Path | None, *, hwp: Path | None = None, pdf: Path | None = None
+) -> dict[str, object] | None:
+    """해결 불가능한 글꼴 문제의 쪽별 근거를 검증하고 해시로 고정한다."""
     if evidence is None:
         return None
     resolved = resolve_input_path(root, evidence)
     if not resolved.is_file():
         raise SystemExit(f"--font-mismatch-evidence 파일이 없습니다: {resolved}")
-    if not resolved.read_text(encoding="utf-8").strip():
-        raise SystemExit("--font-mismatch-evidence는 양쪽 실제 글꼴을 설명하는 비어 있지 않은 UTF-8 파일이어야 합니다.")
+    try:
+        details = json.loads(resolved.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeError) as exc:
+        raise SystemExit("--font-mismatch-evidence는 글꼴 예외 계약의 UTF-8 JSON이어야 합니다.") from exc
+    if not isinstance(details, dict):
+        raise SystemExit("글꼴 예외 증거는 JSON object여야 합니다.")
+    for field in ("font_issue_unresolvable", "layout_geometry_matched", "page_count_matched"):
+        if details.get(field) is not True:
+            raise SystemExit(f"글꼴 예외 증거의 {field}: true가 필요합니다.")
+    for field in ("unresolvable_reason", "geometry_review_evidence"):
+        if not isinstance(details.get(field), str) or not details[field].strip():
+            raise SystemExit(f"글꼴 예외 증거의 {field} 근거가 필요합니다.")
+    for field in ("pdf_fonts", "rhwp_fonts", "font_supply_attempts"):
+        values = details.get(field)
+        if not isinstance(values, list) or not values or not all(isinstance(v, str) and v.strip() for v in values):
+            raise SystemExit(f"글꼴 예외 증거의 {field} 목록이 필요합니다.")
+    pages = details.get("affected_pages")
+    if not isinstance(pages, list) or not pages or not all(type(page) is int and page > 0 for page in pages):
+        raise SystemExit("글꼴 예외 증거에는 1-based affected_pages가 필요합니다.")
+    if details.get("source_sha") != git_head_identifier(root):
+        raise SystemExit("글꼴 예외 증거의 source_sha가 현재 head와 다릅니다.")
+    for field, path in (("hwp_sha256", hwp), ("pdf_sha256", pdf)):
+        if path is not None and details.get(field) != sha256_file(path):
+            raise SystemExit(f"글꼴 예외 증거의 {field}가 실제 비교 입력과 다릅니다.")
     return {
         "path": safe_rel_str(root, resolved),
         "sha256": sha256_file(resolved),
+        **{field: details[field] for field in (
+            "font_issue_unresolvable", "layout_geometry_matched", "page_count_matched", "affected_pages"
+        )},
     }
 
 
@@ -1344,7 +1373,7 @@ def write_target_status(
     compact_shapes: list[dict[str, object]],
     pdf_question_markers: list[dict[str, object]],
     pixel_diff_threshold: int,
-    font_mismatch_evidence: dict[str, str] | None = None,
+    font_mismatch_evidence: dict[str, object] | None = None,
 ) -> dict[str, object]:
     completed = valid_page_manifests(base)
     completed_pages = sorted(completed)
@@ -1486,7 +1515,7 @@ def render_target(
         raise SystemExit(f"HWP 파일이 없습니다: {hwp}")
     if not pdf.exists():
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
-    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence)
+    font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence, hwp=hwp, pdf=pdf)
 
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
@@ -1501,7 +1530,7 @@ def render_target(
     if resume:
         base.mkdir(parents=True, exist_ok=True)
     else:
-        # 기본 실행은 이 target의 이전 산출물을 새 실행과 섞지 않는다. 기존과 달리
+        # 기본 실행은 이 대상의 이전 산출물을 새 실행과 섞지 않는다.
         # --resume일 때만 이 디렉터리를 보존한다.
         clean_dir(base)
     directories = [svg_dir, rhwp_png_dir, pdf_png_dir, tree_dir, analysis_dir]
@@ -1554,8 +1583,8 @@ def render_target(
     if not all_svg_paths or not all_tree_paths:
         raise SystemExit("SVG 또는 render tree export 산출물이 없습니다.")
 
-    # Native와 WASM, 새 실행과 resume 모두 raster/checkpoint 재사용 전에 검사한다.
-    # font-mismatch 예외도 손상된 폰트 데이터의 검사를 우회하지 못한다.
+    # 네이티브·WASM과 새 실행·이어받기 모두 래스터·체크포인트 재사용 전에 검사한다.
+    # 글꼴 불일치 예외도 손상된 글꼴 데이터의 검사를 우회하지 못한다.
     font_check_path = analysis_dir / "embedded_font_check.json"
     try:
         check_sweep_embedded_fonts(
@@ -1563,7 +1592,7 @@ def render_target(
             font_check_path,
         )
     except SystemExit:
-        # resume 중 손상된 SVG를 발견했을 때도 과거 passed 요약을 남기지 않는다.
+        # 이어받기 중 손상된 SVG를 발견했을 때도 과거 passed 판정의 요약을 남기지 않는다.
         run_manifest["run_state"] = "failed"
         write_json_atomic(run_manifest_path(base), run_manifest)
         failure = {
@@ -1607,10 +1636,10 @@ def render_target(
         update_root_summary(out_root, manifest)
         return manifest
 
-    # PDF text layer is a candidate-only input for question-marker drift. Some
-    # legacy HWP PDFs contain PUA strings that make Poppler's pdftotext abort,
-    # while their raster pages remain valid visual oracles. Keep the raster
-    # compare/overlay path available and omit only marker analysis in that case.
+    # PDF 텍스트 계층은 문항 표식 위치 차이의 후보 검출에만 사용한다.
+    # 일부 구형 HWP의 PDF는 PUA 문자열 때문에 Poppler의 pdftotext가 중단되지만
+    # 래스터 페이지는 유효한 시각 기준으로 남는다. 이런 경우에도 래스터의
+    # 비교·겹침 경로는 유지하고 표식 분석만 생략한다.
     if pdf_bbox_html.exists():
         pdf_bbox_html.unlink()
     pdf_bbox_proc = run(
@@ -1641,8 +1670,8 @@ def render_target(
         print(f"Selected pages: {selected_pages}", flush=True)
     run_manifest = record_requested_page_shard(base, run_manifest, requested_page_numbers)
     pdf_question_markers = extract_pdf_question_markers(pdf_bbox_html, all_pdf_pngs)
-    # 첫 checkpoint 전에 incomplete summary를 남긴다. 이후 SIGTERM으로 종료돼도
-    # 요청·완료·누락 상태가 함께 남아 완료 sweep처럼 보이지 않는다.
+    # 첫 체크포인트 전에 미완료 요약을 남긴다. 이후 SIGTERM으로 종료돼도
+    # 요청·완료·누락 상태가 함께 남아 시각 비교를 완료한 것처럼 보이지 않는다.
     write_target_status(
         root,
         out_root,
@@ -1665,8 +1694,8 @@ def render_target(
             print(f"resume: p{page:03d} checkpoint를 재사용합니다.", flush=True)
             continue
         png = rhwp_png_dir / f"rhwp_{page:03d}.png"
-        # export-svg의 unitless width/height는 CSS px(96dpi)다. webfont browser와
-        # rsvg-convert 모두 PDF 목표 DPI에 맞춰 같은 zoom을 적용한다.
+        # export-svg의 단위 없는 width/height는 CSS px(96dpi)다. 웹 글꼴 브라우저와
+        # rsvg-convert 모두 PDF 목표 DPI에 맞춰 같은 확대율을 적용한다.
         run(
             svg_raster_command(root, svg_path, png, svg_zoom, svg_rasterizer),
             cwd=root,
@@ -1727,7 +1756,7 @@ def render_target(
             "overlay_metrics": overlay_metrics,
             "visual_metrics": visual_metrics,
         }
-        # 위 산출물이 모두 성공한 뒤에만 이 page를 완료로 공개한다.
+        # 위 산출물이 모두 성공한 뒤에만 이 쪽을 완료로 공개한다.
         write_json_atomic(page_manifest_dir(base) / f"page-{page:03d}.json", page_manifest)
         completed[page] = page_manifest
         write_target_status(
@@ -1776,16 +1805,15 @@ def is_content_pixel(pixel: tuple[int, int, int]) -> bool:
 def subpixel_tolerant_content_match_details(
     rhwp: Image.Image, pdf: Image.Image, *, radius_px: int = 2
 ) -> dict[str, object]:
-    """작은 rasterization 오프셋을 허용해 내용 실루엣을 비교한다.
+    """작은 래스터 변환 오프셋을 허용해 내용 실루엣을 비교한다.
 
-    엄격 ink 지표는 색상·픽셀 차이의 검토 기준으로 남기고, 이 값은
-    anti-aliasing·sub-pixel 차이를 구분해 보여 주는 보조 지표다.
-    """
+    엄격한 잉크 지표는 색상·픽셀 차이의 검토 기준으로 남긴다. 이 값은
+    안티앨리어싱·서브픽셀 차이를 구분해 보여 주는 보조 지표다."""
     if radius_px < 0:
         raise ValueError("radius_px must be non-negative")
     rhwp, pdf = padded_pair(rhwp.convert("RGB"), pdf.convert("RGB"))
     # 8비트 RGB에서 채널차>24이면 최소 채널은230 이하이므로,
-    # 기존 is_content_pixel 판정은 최소 채널<232와 정확히 같다.
+    # 기존 is_content_pixel의 내용 픽셀 판정은 최소 채널<232와 정확히 같다.
     # PIL 연산으로 같은 마스크를 만들며 임계값이나 비교 영역은 바꾸지 않는다.
     def content_mask(image: Image.Image) -> Image.Image:
         r, g, b = image.split()
@@ -1858,7 +1886,7 @@ def is_dark_pixel(pixel: tuple[int, int, int]) -> bool:
 
 def is_frame_line_pixel(pixel: tuple[int, int, int]) -> bool:
     r, g, b = pixel
-    # rsvg-convert가 0.5px frame 선을 회색 antialias 픽셀로 내보내는 경우가 있다.
+    # rsvg-convert가 0.5px 테두리 선을 회색 안티앨리어싱 픽셀로 내보내는 경우가 있다.
     return max(r, g, b) < 210 and max(r, g, b) - min(r, g, b) <= 12
 
 
@@ -1937,13 +1965,11 @@ def frames_are_interior_decorations(
     pdf: Image.Image,
     pdf_frame: tuple[int, int, int, int],
 ) -> bool:
-    """Whether both detected bottom lines sit inside their physical pages.
+    """감지한 양쪽 아래 선이 각각 물리 페이지 내부에 있는지 확인한다.
 
-    detect_frame finds prominent drawn rules.  Such a rule can be a content or
-    decorative frame rather than the paper edge, so text below it is not page
-    overflow by itself.  Keep the raw measurements, but do not turn them into
-    a frame-overflow failure when both sides have a material paper margin.
-    """
+    detect_frame은 두드러진 선을 찾으므로 용지 가장자리 대신 본문이나 장식 테두리를
+    찾을 수 있다. 선 아래 텍스트가 있다는 사실만으로 페이지 넘침이 되지는 않는다.
+    원 측정값은 보존하되 양쪽에 충분한 용지 여백이 있으면 테두리 넘침 실패로 분류하지 않는다."""
     rhwp_bottom_margin = rhwp.height - 1 - rhwp_frame[3]
     pdf_bottom_margin = pdf.height - 1 - pdf_frame[3]
     return (
@@ -2084,7 +2110,7 @@ def endnote_separator_gap_measure(
             continue
         note_top_y = marker["y0"] if marker is not None else content["y0"]
         content_gap = note_top_y - candidate["y1"]
-        # 첫 미주 marker 바로 위의 선을 우선한다. 같은 거리라면 더 아래쪽 후보가 separator일 가능성이 높다.
+        # 첫 미주 표식 바로 위의 선을 우선한다. 같은 거리라면 더 아래쪽 후보가 구분선일 가능성이 높다.
         length_score = 0.0
         if expected_length_px is not None and expected_length_px > 0.0:
             length_score = abs(candidate["length"] - expected_length_px) * 0.05
@@ -2333,14 +2359,11 @@ def mask_content_regions(
     image: Image.Image,
     rectangles: list[tuple[int, int, int, int]],
 ) -> Image.Image:
-    """Return an image with known non-body regions blanked for text-flow bands.
+    """텍스트 흐름의 줄 띠 분석을 위해 확인된 비본문 영역을 지운 이미지를 반환한다.
 
-    The column-flow signal intentionally measures raster line bands because it
-    also catches text reflowed around a floating drawing.  A centered table,
-    however, contributes dense rules and cell text that are not paragraph
-    baselines.  Mask only such render-tree-owned regions for this one signal;
-    raw raster and table geometry checks remain available to the caller.
-    """
+    단 흐름 신호는 떠 있는 그림 주위의 재조판도 검출하도록 래스터의 줄 띠를 측정한다.
+    가운데 정렬 표의 빽빽한 괘선과 셀 텍스트는 문단의 기준선이 아니다.
+    이 신호에서만 렌더 트리의 해당 소유 영역을 가린다. 원 래스터와 표 배치 검사는 유지한다."""
     if not rectangles:
         return image
     masked = image.copy()
@@ -2417,16 +2440,13 @@ def column_text_flow_collapse_candidates(
     *,
     has_reflowing_float: bool = True,
 ) -> list[dict[str, object]]:
-    """Return high-confidence one-column text-flow collapse candidates.
+    """신뢰도가 높은 단별 텍스트 흐름 붕괴 후보를 반환한다.
 
-    A regular font/raster difference can move many baselines by a small amount.
-    This rule additionally requires a material line-band count change in the same
-    column, so it is aimed at failures such as text being reflowed into narrow
-    vertical strips beside a Square/Tight/Through drawing.  A single-column
-    table of contents has a visually similar right-side page-number rail, but
-    has no reflowing float and must not be promoted to this stronger candidate.
-    It is still a review candidate, not an automatic pass/fail decision.
-    """
+    일반적인 글꼴·래스터 차이는 여러 기준선을 조금씩 옮길 수 있다.
+    이 규칙은 같은 단의 줄 띠 개수도 크게 달라져야 발동한다. Square/Tight/Through 그림
+    옆에서 텍스트가 좁은 세로 띠로 재조판되는 실패 등을 검출한다. 한 단짜리 목차의
+    오른쪽 쪽 번호 열은 비슷해 보이지만 흐름을 바꾸는 떠 있는 객체가 없으므로 이 강한
+    후보로 분류하지 않는다. 검토 후보이며 자동 통과·실패 판정은 아니다."""
     if not has_reflowing_float:
         return []
 
@@ -2455,15 +2475,12 @@ def column_text_flow_collapse_candidates(
 
 
 def render_tree_has_reflowing_text_flow_float(tree: dict[str, object]) -> bool:
-    """Whether a page has a float capable of narrowing adjacent body text.
+    """인접 본문의 가용 폭을 줄일 수 있는 떠 있는 객체가 해당 쪽에 있는지 확인한다.
 
-    ``column_line_band_drifts`` always splits a raster into two halves.  That
-    makes it sensitive to a real narrow flow beside a float even on a
-    single-column page, but it also sees a table-of-contents page-number rail
-    as a fake second column.  The render tree carries the authoritative
-    ``textWrap`` mode, so only arm the collapse heuristic when the page owns an
-    image whose mode can actually reflow body text.
-    """
+    column_line_band_drifts는 래스터를 항상 두 절반으로 나눈다. 한 단짜리 페이지에서도
+    떠 있는 객체 옆의 좁은 흐름을 감지하지만 목차의 쪽 번호 열을 가짜 둘째 단으로 볼 수 있다.
+    렌더 트리의 textWrap 값이 실제 배치 모드를 나타내므로 본문을 재조판할 수 있는
+    모드의 그림이 해당 쪽에 있을 때만 흐름 붕괴 검출을 활성화한다."""
     reflowing_wraps = {"Square", "Tight", "Through"}
 
     def walk(node: object) -> bool:
@@ -2559,10 +2576,10 @@ def is_question_marker_flow_drift(
     *,
     has_question_marker_drift: bool = True,
 ) -> bool:
-    """문항 marker가 page/column 흐름 자체를 다르게 타는 강한 후보인지 판정한다."""
-    # Coloured charts and SmartArt can satisfy the raster-only red/ink rule.
-    # Keep this detector semantic: there must also be a render-tree/PDF
-    # ``문N`` marker drift on the page.
+    """문항 표식이 쪽·단의 흐름 자체를 다르게 따르는 강한 후보인지 판정한다."""
+    # 유색 차트와 SmartArt도 래스터만 보는 빨강·잉크 규칙을 만족할 수 있다.
+    # 의미를 확인하려면 렌더 트리와 PDF 사이에서도
+    # 해당 쪽의 ``문N`` 표식 위치 차이가 있어야 한다.
     if not has_question_marker_drift:
         return False
 
@@ -2930,15 +2947,12 @@ def render_tree_bbox(node: dict[str, object]) -> tuple[float, float, float, floa
 
 
 def legacy_glyph_codepoints(text: str) -> list[str]:
-    """Return visible legacy-Jamo/PUA code points in stable display order.
+    """화면에 표시되는 옛자모·PUA 코드포인트를 일정한 표시 순서로 반환한다.
 
-    A render-tree TextRun keeps source text for model offsets but may also carry
-    ``displayText`` for its actual paint projection. The caller must pass that
-    visual value when present: an already-projected legacy product name is not
-    a remaining legacy-glyph candidate. Restrict the detector to legacy ranges
-    so normal font raster variance does not turn every text run into a review
-    candidate.
-    """
+    렌더 트리의 TextRun은 모델 오프셋용 원문과 실제 표시용 displayText를 함께 가질 수 있다.
+    실제 표시값이 있으면 호출자가 이를 전달해야 한다. 이미 표시용으로 변환한 옛 제품명은
+    남은 옛 글리프 후보가 아니다. 일반 글꼴의 래스터 차이 때문에 모든 텍스트가 후보가
+    되지 않도록 검출 범위를 옛 문자 영역으로 제한한다."""
 
     codepoints: list[str] = []
     for char in text:
@@ -2955,13 +2969,10 @@ def legacy_glyph_codepoints(text: str) -> list[str]:
 
 
 def render_tree_visual_text(node: dict[str, object]) -> str | None:
-    """Return the text actually painted by a render-tree TextRun.
+    """렌더 트리의 TextRun이 실제로 그리는 텍스트를 반환한다.
 
-    ``text`` remains the model/offset source. ``displayText`` is an explicitly
-    projected visual value (for example, field markers, PUA expansion, or a
-    legacy product-name glyph convention) and therefore takes precedence for
-    visual-sweep semantic checks.
-    """
+    text는 모델·오프셋의 원문이다. displayText는 필드 표식, PUA 확장, 옛 제품명 글리프
+    관례 등 명시적인 표시 변환 결과이므로 시각 비교의 의미 검사에서 우선 사용한다."""
 
     display_text = node.get("displayText")
     if isinstance(display_text, str):
@@ -2997,12 +3008,10 @@ def render_tree_body_table_masks(
     page_tree: dict[str, object] | None,
     image: Image.Image,
 ) -> list[tuple[int, int, int, int]]:
-    """Project Body table boxes to an image for the paragraph-flow signal.
+    """문단 흐름 신호를 위해 본문 표의 상자를 이미지 좌표로 투영한다.
 
-    A table's own cells/rules must not be mistaken for left/right paragraph
-    columns.  Header/footer/footnote tables are deliberately excluded because
-    the column-flow detector only reasons about the Body region.
-    """
+    표 자체의 셀과 괘선을 좌우 문단의 단으로 오인하지 않아야 한다.
+    단 흐름 검출은 Body 영역만 검사하므로 머리말·꼬리말·각주 표는 의도적으로 제외한다."""
     if page_tree is None:
         return []
     masks: list[tuple[int, int, int, int]] = []
@@ -3018,7 +3027,7 @@ def render_tree_body_table_masks(
                 if raster is not None:
                     left, top, width, height = raster
                     masks.append((left, top, left + width, top + height))
-            # Child cell text belongs to this same table; do not add duplicates.
+            # 자식 셀 텍스트는 같은 표에 속하므로 중복 추가하지 않는다.
             return
         children = node.get("children")
         if isinstance(children, list):
@@ -3035,19 +3044,15 @@ def render_tree_right_table_left_strip_text_deficit_candidates(
     rhwp_image: Image.Image,
     pdf_image: Image.Image,
 ) -> list[dict[str, object]]:
-    """Find a PDF-text-filled strip that rhwp leaves empty beside a right table.
+    """오른쪽 표 옆에서 PDF에는 글자가 있지만 rhwp에서는 빈 띠를 찾는다.
 
-    A non-inline HWPX Square table does not expose its wrap mode in the render
-    tree.  When its successor paragraph prefix is dropped, however, the tree
-    still gives an authoritative table rectangle: the strip from the Body's
-    left edge to that right-side table is nearly blank in rhwp while the Hancom
-    PDF contains several lines of ink.  This complements the overlap detector:
-    nothing overlaps in this failure, so line/overflow-only rules stay quiet.
+    글자취급이 아닌 HWPX Square 표의 감싸기 모드는 렌더 트리에 드러나지 않는다.
+    뒤 문단의 앞부분이 누락돼도 트리는 표의 실제 사각형을 제공한다. 본문 왼쪽 끝부터
+    오른쪽 표까지의 띠가 rhwp에서는 거의 비어 있지만 한컴 PDF에는 여러 줄의 잉크가 남는다.
+    이 실패는 겹침이 없어서 줄 겹침·넘침 검사로 검출하지 못하므로 이를 보완한다.
 
-    The signal is deliberately raster-backed and candidate-only.  A standalone
-    right-aligned table leaves both peers blank and is ignored; a font baseline
-    difference cannot reduce a text-filled strip to 15% of the PDF ink.
-    """
+    래스터를 근거로 한 후보 신호만 반환한다. 단독 오른쪽 정렬 표는 양쪽 띠가 모두 비어
+    있으므로 제외한다. 글꼴 기준선 차이만으로 글자 띠의 잉크가 PDF 대비 15%까지 줄지는 않는다."""
     if page_tree is None:
         return []
 
@@ -3062,8 +3067,8 @@ def render_tree_right_table_left_strip_text_deficit_candidates(
         if node_type == "Body" and body is None:
             body = node
         if region == "Body" and node_type == "Table":
-            # Nested table cells are part of their owning top-level table and
-            # must not generate a second, artificial left strip.
+            # 중첩 표의 셀은 소유자인 최상위 표에 속하므로
+            # 별도의 가짜 왼쪽 띠를 만들지 않아야 한다.
             tables.append(node)
             return
         children = node.get("children")
@@ -3153,13 +3158,11 @@ def render_tree_body_raster_frame(
     page_tree: dict[str, object] | None,
     image: Image.Image,
 ) -> tuple[int, int, int, int] | None:
-    """Return the Body frame in raster coordinates when the tree exposes it.
+    """트리에 본문 경계가 있으면 래스터 좌표로 반환한다.
 
-    A page without an explicit paper border can contain a wide table rule.  The
-    generic raster frame finder may then mistake that rule for the page top.
-    The Body bbox is authoritative for the text-flow comparison and is still
-    optional so existing documents without it retain the generic fallback.
-    """
+    명시적인 용지 테두리가 없는 쪽의 넓은 표 괘선을 일반 래스터 감지기가 페이지 위쪽으로
+    오인할 수 있다. 텍스트 흐름 대조는 실제 Body 경계 상자를 우선한다.
+    이 정보가 없는 기존 문서는 일반 대체 경로를 계속 사용한다."""
     if page_tree is None:
         return None
 
@@ -3192,7 +3195,7 @@ def ink_match_in_bbox(
     *,
     pixel_diff_threshold: int,
 ) -> dict[str, object]:
-    """Measure visual ink agreement in one render-tree TextRun bbox."""
+    """렌더 트리의 TextRun 경계 상자 하나에서 시각 잉크 일치율을 측정한다."""
 
     left, top, width, height = bbox
     right = min(rhwp.width, left + width)
@@ -3229,13 +3232,11 @@ def render_tree_legacy_glyph_visual_candidates(
     *,
     pixel_diff_threshold: int,
 ) -> list[dict[str, object]]:
-    """Find legacy glyph TextRuns whose local PDF/SVG ink differs materially.
+    """국소 PDF/SVG 잉크가 크게 다른 옛 글리프의 TextRun을 찾는다.
 
-    This is a review candidate, not a pass/fail assertion: a reference can use
-    a proprietary glyph or product-name convention while the source IR must
-    remain intact. It closes the gap where structural drift is zero but the
-    user-visible glyph is plainly different.
-    """
+    통과·실패 단정이 아닌 검토 후보를 반환한다. 기준 출력은 전용 글리프나 제품명 관례를
+    사용할 수 있지만 원본 중간 표현은 보존해야 한다. 구조 차이가 없어도 실제 글리프가
+    뚜렷하게 다른 경우를 추가로 검출한다."""
 
     if page_tree is None:
         return []
@@ -3308,13 +3309,11 @@ def load_render_tree(tree_path: Path) -> dict[str, object] | None:
 
 @lru_cache(maxsize=1)
 def fidelity_compare_layout_module() -> object:
-    """Load the canonical fidelity layout detector without duplicating its rules.
+    """규칙을 복제하지 않고 정본 조판 검출기를 불러온다.
 
-    `visual_sweep.py` already has the render tree required by
-    `fidelity_compare --layout-ledger`. Reusing that detector means a
-    `flagged=0` visual sweep cannot silently override a Square/Tight/Through
-    image-to-Body-text overlap candidate found by the fast fidelity pass.
-    """
+    visual_sweep.py는 fidelity_compare --layout-ledger에 필요한 렌더 트리를 이미 갖고 있다.
+    같은 검출기를 재사용하여 빠른 충실도 검사에서 찾은 Square/Tight/Through 그림과 본문
+    겹침 후보가 Visual Sweep의 flagged=0 결과로 묻히지 않도록 한다."""
     module_path = (
         Path(__file__).resolve().parents[1]
         / "tools"
@@ -3337,15 +3336,15 @@ def fidelity_compare_layout_module() -> object:
 def render_tree_square_wrap_text_overlap_candidates(
     tree: dict[str, object] | None,
 ) -> list[dict[str, object]]:
-    """Return canonical Square/Tight/Through overlap and edge-clearance candidates."""
+    """정본의 Square/Tight/Through 겹침·가장자리 간격 후보를 반환한다."""
     if (
         tree is None
         or tree.get("type") != "Page"
         or not isinstance(tree.get("children"), list)
     ):
-        # The fidelity bridge must fail closed. Treating a missing/corrupt
-        # render tree as an empty candidate list would turn a broken export
-        # into an unjustified ``flagged=0`` result.
+        # 충실도 연계 검사는 실패를 감추지 않아야 한다. 누락·손상된 렌더 트리를
+        # 빈 후보 목록으로 취급하면 잘못 내보낸 결과가 근거 없는
+        # ``flagged=0`` 판정으로 바뀐다.
         raise RuntimeError("fidelity Square-wrap 검출에 유효한 render tree가 필요합니다")
     module = fidelity_compare_layout_module()
     detector = getattr(module, "square_wrap_text_overlap_candidates", None)
@@ -3362,11 +3361,10 @@ def render_tree_square_wrap_text_overlap_candidates(
 def render_tree_deferred_square_picture_top_drift_candidates(
     tree: dict[str, object] | None,
 ) -> list[dict[str, object]]:
-    """Return native deferred Square picture page-top offset candidates.
+    """네이티브에서 이월한 Square 그림의 페이지 상단 오프셋 후보를 반환한다.
 
-    The detector lives in ``fidelity_compare`` so both the fast layout ledger
-    and the raster review path classify the same HWP5 ownership geometry.
-    """
+    검출기는 fidelity_compare에 두어 빠른 조판 기록과 래스터 검토가
+    같은 HWP5 소유·배치 정보를 기준으로 분류하도록 한다."""
     if (
         tree is None
         or tree.get("type") != "Page"
@@ -3796,7 +3794,7 @@ def render_tree_equation_overlap_candidates(
             if equation.get("line_path") == text_run.get("line_path"):
                 continue
             # TextRun bbox는 줄 높이를 포함하므로, 바로 위 텍스트 줄의
-            # 아래쪽 line box와 다음 수식 줄이 겹치는 정상 배치를 제외한다.
+            # 아래쪽 줄 상자와 다음 수식 줄이 겹치는 정상 배치를 제외한다.
             if text_box[1] < eq_box[1] and (text_box[1] + text_box[3]) > eq_box[1]:
                 continue
             adjusted_text_box = text_run_ink_bbox(text_box)
@@ -3918,10 +3916,10 @@ def render_tree_line_order_overlap_candidates(tree_path: Path) -> list[dict[str,
     candidates: list[dict[str, object]] = []
     for index, prev_line in enumerate(lines[:-1]):
         next_line = lines[index + 1]
-        # ``collect_render_tree_text_lines`` is document-order flattened.  Two
-        # adjacent entries may therefore be the last body line and the first
-        # FootnoteArea line.  Those top-level siblings do not form one text
-        # flow, even if their logical bboxes touch or overlap.
+        # ``collect_render_tree_text_lines``는 문서 순서로 펼친 목록이다.
+        # 인접한 두 항목이 본문의 마지막 줄과 FootnoteArea의 첫 줄일 수 있다.
+        # 이 최상위 형제 노드는 논리적인 경계 상자가 닿거나 겹치더라도
+        # 하나의 텍스트 흐름을 이루지 않는다.
         prev_root_child = str(prev_line["path"]).split("/", 2)[:2]
         next_root_child = str(next_line["path"]).split("/", 2)[:2]
         if prev_root_child != next_root_child:
@@ -3999,22 +3997,22 @@ def render_tree_frame_tail_candidates(
     for line in collect_render_tree_text_lines(tree):
         tree_box = line["bbox"]
         assert isinstance(tree_box, tuple)
-        # Render-tree coordinates are CSS-pixel page coordinates, whereas the
-        # frame belongs to the selected raster DPI.  Comparing them directly
-        # works accidentally at 96dpi but turns off-page, ancestor-clipped
-        # continuation nodes into false tail overflows at 144dpi and above.
-        # Project first; a box wholly outside the raster has no visible paint
-        # on this physical page and cannot be a frame-tail defect.
+        # 렌더 트리는 CSS 픽셀의 페이지 좌표를 쓰지만 테두리는 선택한 래스터 DPI를 따른다.
+        # 좌표를 그대로 비교하면 96dpi에서는 우연히 맞지만
+        # 144dpi 이상에서는 페이지 밖에 있거나 조상의 잘라내기로 가려진
+        # 이어받기 노드를 하단 넘침으로 오인한다.
+        # 먼저 좌표를 투영한다. 래스터 밖에 완전히 놓인 상자는 이 물리 페이지에서
+        # 그려지지 않으므로 테두리 하단 결함이 아니다.
         if raster_image is not None:
             raster_box = raster_bbox_for_render_tree_bbox(tree, tree_box, raster_image)
             if raster_box is None:
                 continue
             raster_left, raster_top, raster_width, raster_height = raster_box
-            # The render tree intentionally retains some continuation nodes
-            # beyond an ancestor Cell clip. Their projected box can still
-            # intersect the paper, but there is no actual paint at that box.
-            # Such a node must not turn a clean high-DPI page into a tail
-            # overflow candidate.
+            # 렌더 트리는 조상 Cell의 잘라내기 영역 밖에 일부 이어받기 노드를
+            # 의도적으로 보존한다. 투영한 상자가 용지와 교차하더라도
+            # 그 상자에서 실제로 그려지는 내용은 없다.
+            # 이런 노드 때문에 정상적인 높은 DPI 페이지를
+            # 하단 넘침 후보로 바꾸지 않아야 한다.
             assert raster_pixels is not None
             has_visible_ink = any(
                 is_content_pixel(raster_pixels[px, py])
@@ -4114,8 +4112,8 @@ def suppress_tolerated_frame_tail_candidates(
             PAGE_NUMBER_FOOTER_RE.match(text) is not None
             and line_height > 0.0
             and overflow <= 64.0
-            # Same footer ink may cross the independently detected PDF/RHWP
-            # frame by a few antialiased pixels in either direction.
+            # 같은 꼬리말 잉크가 독립적으로 감지한 PDF/RHWP 테두리를
+            # 안티앨리어싱 픽셀 몇 개만큼 양쪽 방향으로 넘을 수 있다.
             and abs(rhwp_outside_frame_bleed_px - pdf_outside_frame_bleed_px)
             <= FRAME_PAGE_NUMBER_FOOTER_BLEED_DELTA_TOLERANCE_PX
             and (content_bottom_delta is None or abs(content_bottom_delta) < 16.0)
@@ -4983,7 +4981,7 @@ def label_font() -> ImageFont.ImageFont:
 
 
 def label_line_height(font: ImageFont.ImageFont) -> int:
-    """라벨 한 줄의 높이(px). 글꼴이 비어 있어도 최소 높이를 보장한다."""
+    """라벨 한 줄의 높이(px)를 반환한다. 글꼴이 비어 있어도 최소 높이를 보장한다."""
     bbox = font.getbbox("Ag가")
     return max(12, bbox[3] - bbox[1] + 4)
 
@@ -4991,11 +4989,10 @@ def label_line_height(font: ImageFont.ImageFont) -> int:
 def wrap_label_lines(
     text: str, font: ImageFont.ImageFont, max_width: int
 ) -> list[str]:
-    """[#7349] 라벨을 canvas 폭 안에서 접는다.
+    """[#7349] 라벨을 캔버스 폭 안에서 접는다.
 
-    긴 key 와 metric 조합이 한 줄로 그려져 오른쪽에서 잘렸다. 문서 이미지는 그대로 두고
-    라벨만 여러 줄로 나눈다. 공백 기준으로 접되, 한 낱말이 폭보다 길면 문자 단위로 자른다.
-    """
+    긴 대상 키와 지표 조합을 한 줄로 그리면 오른쪽에서 잘렸다. 문서 이미지는 보존하고
+    라벨만 여러 줄로 나눈다. 공백 기준으로 접되 한 낱말이 폭보다 길면 문자 단위로 자른다."""
     if max_width <= 0:
         return [text]
 
@@ -5150,7 +5147,7 @@ def make_overlay_page(
         font,
         width - 16,
     )
-    # [#7349] 긴 target key와 한국어 검토 코멘트를 모두 canvas 폭 안에서 접는다.
+    # [#7349] 긴 대상 키와 한국어 검토 설명을 모두 캔버스 폭 안에서 접는다.
     label_h = max(30, 10 + len(title_lines) * label_line_height(font))
     footer_h = max(30, 10 + len(comment_lines) * label_line_height(font))
     canvas = Image.new("RGB", (width, height + label_h + footer_h), "white")
@@ -5256,8 +5253,8 @@ def make_review_panels(
         compare = Image.open(compare_path).convert("RGB")
         overlay = Image.open(overlay_path).convert("RGB")
         width = compare.width + gutter + overlay.width
-        # overlay 자체가 상단 key와 하단 한국어 지표를 이미 포함한다. review에서 같은
-        # footer를 다시 만들면 지표가 두 번 출력되므로, 두 패널의 최대 높이만 사용한다.
+        # 겹침 이미지 자체가 상단 대상 키와 하단 한국어 지표를 이미 포함한다. 검토 이미지에서 같은
+        # 하단 설명을 다시 만들면 지표가 두 번 출력되므로 두 패널의 최대 높이만 사용한다.
         height = max(compare.height, overlay.height)
         canvas = Image.new("RGB", (width, height), "white")
         canvas.paste(compare, (0, 0))
@@ -5375,7 +5372,7 @@ def write_silhouette_tsv(
 def silhouette_png_pairs(
     rhwp_dir: Path, pdf_dir: Path, selected_pages: list[int] | None
 ) -> list[tuple[int, Path, Path]]:
-    """기존 raster를 읽을 때 번호 누락·중복을 묵인하거나 작은 쪽수에 맞춰 자르지 않는다."""
+    """기존 래스터의 쪽 번호 누락·중복을 묵인하거나 작은 쪽수에 맞춰 자르지 않는다."""
     def indexed(directory: Path) -> dict[int, Path]:
         result = {}
         for path in sorted(directory.glob("*.png")):
@@ -5456,8 +5453,8 @@ def main() -> None:
         "--font-mismatch-evidence",
         type=Path,
         help=(
-            "한컴 PDF와 rhwp 출력의 실제 글꼴이 완전히 다르다는 검토 증거 UTF-8 파일입니다. "
-            "지정하면 90%% 실루엣 gate를 예외 처리하되, 경로와 SHA-256을 manifest에 남깁니다."
+            "글꼴 공급으로 해결 불가능하고 배치·쪽수가 일치한다는 검토 증거 UTF-8 JSON입니다. "
+            "확인한 페이지의 90%% 실루엣 gate만 예외 처리하며, 경로와 SHA-256을 manifest에 남깁니다."
         ),
     )
     parser.add_argument(
@@ -5518,6 +5515,8 @@ def main() -> None:
 
     if args.silhouette_only and args.resume:
         parser.error("실루엣 전용 모드는 일반 PNG checkpoint의 --resume을 사용하지 않습니다.")
+    if args.silhouette_only and args.font_mismatch_evidence:
+        parser.error("TSV는 원 점수를 유지합니다. 글꼴 예외 증거는 재검토 후 일반 PNG 모드에 지정하세요.")
     if args.png_pair:
         if not args.silhouette_only:
             parser.error("--png-pair는 --silhouette-only와 함께 사용합니다.")
@@ -5581,7 +5580,7 @@ def main() -> None:
     if re_review_targets:
         raise SystemExit(
             "PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. "
-            "메인터너 보정 후 새 review PNG로 재검토하세요: " + "; ".join(re_review_targets)
+            "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
 
 

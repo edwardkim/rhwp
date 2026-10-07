@@ -4,6 +4,12 @@ use super::shape::{CommonObjAttr, ShapeComponentAttr};
 use super::style::ShapeBorderLine;
 use super::*;
 
+/// The document keeps the full link for editing/round-trip; a missing-picture
+/// label in exported/displayed content only needs its filename.
+pub(crate) fn external_picture_basename(path: &str) -> &str {
+    path.rsplit(['/', '\\']).next().unwrap_or("")
+}
+
 /// 그림 개체 (HWPTAG_SHAPE_COMPONENT_PICTURE)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Picture {

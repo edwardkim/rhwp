@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "key": "form-password",
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/form-password/edit-password.hwpx",
+      "sha256": "e8161c8dfac0aaef054da0a4d5e704e3a54b3c5cfbbbf47955c6650ab74dd0ae"
+    },
+    "pdf": {
+      "path": "tests/fixtures/form-password/edit-password-2024.pdf",
+      "sha256": "84d6582ebc3e99d25008c39d42eb8a974cd2efa2952fdd6e8ede5c8ad9a05d2a"
+    },
+    "git_head": "7ca40721fd09f0fcfeb4573167dde193d9d74235",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "c831e06eebcea364ca8be267a7bb93d93a52f2c1ba4fa2673329320eb8a49aa4"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}

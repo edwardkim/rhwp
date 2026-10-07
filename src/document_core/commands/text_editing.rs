@@ -3,6 +3,7 @@
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::field_query::rebuild_char_offsets;
 use super::super::queries::rendering::FocusedPageTreePatch;
+use super::formatting::restore_para_meta;
 use crate::document_core::{
     ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
 };
@@ -329,6 +330,22 @@ fn focused_cursor_local_geometry(
         // Justify underflow의 음수 자간 보정은 line origin/spacing을 별도로 움직인다.
         // cached page run과 같은 위치임을 증명할 수 없으므로 보수적으로 제외한다.
         if alignment == Alignment::Justify && style.letter_spacing < -0.01 {
+            return None;
+        }
+        // 등록 글꼴로 커닝하는 run은 커닝 전 폭과 그린 자리가 다르다. exact 경로에 맡긴다.
+        let kerning_slot =
+            crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index);
+        if style.kerning
+            && styles
+                .kerning_measurement_context
+                .as_ref()
+                .is_some_and(|context| {
+                    context
+                        .layout_session()
+                        .source_handle(kerning_slot)
+                        .is_some()
+                })
+        {
             return None;
         }
         let positions = compute_char_positions(&run.text, &style);
@@ -1889,7 +1906,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -1897,7 +1914,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(&cell_path),
             char_offset,
         );
@@ -3565,7 +3582,7 @@ impl DocumentCore {
                 &self.document.sections[section_idx].paragraphs[para_idx],
             );
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             self.document.sections[section_idx]
                 .paragraphs
@@ -3671,7 +3688,7 @@ impl DocumentCore {
             // 기본 상속은 유지하되, merge undo가 준 원래 문단 메타는 모든 생성 분기에서
             // 동일하게 적용해야 한다 (Task #2342 review).
             if let Some(meta) = restore_meta {
-                new_para.apply_meta(meta);
+                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
             }
             self.document.sections[section_idx]
                 .paragraphs
@@ -3711,7 +3728,7 @@ impl DocumentCore {
         let mut new_para =
             self.document.sections[section_idx].paragraphs[para_idx].split_at(char_offset);
         if let Some(meta) = restore_meta {
-            new_para.apply_meta(meta);
+            restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
         }
 
         // 새 문단을 현재 문단 뒤에 삽입
@@ -4107,7 +4124,10 @@ impl DocumentCore {
                     cd.column_type = col_type;
                     cd.same_width = same_width;
                     cd.spacing = spacing_hu;
-                    if same_width {
+                    // [#7523] HWP 저장은 raw_attr 가 있으면 그 값을 쓴다 — 비워서 바꾼 필드로
+                    // 속성을 다시 만들게 한다. 옛 단 수의 단별 너비도 새 단에 맞지 않는다.
+                    cd.raw_attr = 0;
+                    if same_width || cd.widths.len() != column_count as usize {
                         cd.widths.clear();
                         cd.gaps.clear();
                     }
@@ -4541,7 +4561,7 @@ impl DocumentCore {
         let original_vpos = cell_para.line_segs.first().map(|seg| seg.vertical_pos);
         let mut new_para = cell_para.split_at(char_offset);
         if let Some(meta) = restore_meta {
-            new_para.apply_meta(meta);
+            restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
         }
 
         // 새 문단을 셀/글상자에 삽입
@@ -5807,12 +5827,11 @@ impl DocumentCore {
         let new_chars_count = text.chars().count();
         let active_field = self.active_field.clone();
         let cell_para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
-        let cell_para_idx = path.last().map(|entry| entry.2).unwrap_or(0);
         let outside_insertions = inactive_field_end_insertions(
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );
@@ -5820,7 +5839,7 @@ impl DocumentCore {
             cell_para,
             active_field.as_ref(),
             section_idx,
-            cell_para_idx,
+            parent_para_idx,
             Some(path),
             char_offset,
         );
@@ -6051,7 +6070,7 @@ impl DocumentCore {
                     .map(|seg| seg.vertical_pos);
                 let mut new_para = cell.paragraphs[cell_para_idx].split_at(char_offset);
                 if let Some(meta) = restore_meta {
-                    new_para.apply_meta(meta);
+                    restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
                 }
                 cell.paragraphs.insert(cell_para_idx + 1, new_para);
                 break;
