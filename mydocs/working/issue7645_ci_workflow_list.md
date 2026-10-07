@@ -1,5 +1,5 @@
 ---
-kind: working
+kind: investigation
 status: active
 canonical: mydocs/working/issue7645_ci_workflow_list.md
 last_verified: 2026-10-07
@@ -17,7 +17,7 @@ O3 실행 계약 변경이다. 완료 이벤트의 audit에서 필요한 workflo
 
 수정 전/후에 다음 경계를 검증한다: 목록 누락 뒤 수렴, 계속 누락, 오류 후 수렴/지속 오류, 잘못된 head/PR/base/repository/path, 이미 존재하는 진행 중/실패 실행, 선택 후 run/job 재수집, 실제 YAML inline script의 helper 연결. 관련 Node 및 Python workflow 계약·YAML·actionlint를 실행한다. 제품 소스·Rust/WASM·조판에는 비해당이며 고비용 제품 회귀를 반복하지 않는다.
 
-권한·trigger·concurrency·required context·privileged checkout의 trusted base 경계를 바꾸지 않는다. `devel` 반영과 default branch `main`의 workflow 활성화를 구분한다. 이 작업의 사용자 지시는 이슈 게시와 로컬 개선을 승인했으며, 별도 PR 생성·원격 push·main 승격·merge는 아직 실행하지 않는다. 정상 승격 후 실제 완료 이벤트의 status 수렴을 운영 확인해야 한다. rollback은 해당 개선 commit의 revert다.
+권한·trigger·concurrency·required context·privileged checkout의 trusted base 경계를 바꾸지 않는다. `devel` 반영과 default branch `main`의 workflow 활성화를 구분한다. 사용자가 이슈 게시·개선 뒤 PR 생성까지 승인했다. main 승격·merge는 아직 실행하지 않는다. 정상 승격 후 실제 완료 이벤트의 status 수렴을 운영 확인해야 한다. rollback은 해당 개선 commit의 revert다.
 
 ## 실행 결과
 
@@ -37,4 +37,14 @@ O3 실행 계약 변경이다. 완료 이벤트의 audit에서 필요한 workflo
 
 계약 검사에는 전체/부분 목록 누락 뒤 수렴, 지속 누락·API 오류·잘못된 응답, 이전 부분 목록 폐기, 잘못된 repo/head/branch/path/PR/base, 정상 진행 중/실패 반환, 정책상 미실행 경로, 최대 횟수·경과 예산이 포함된다. 실제 controller 스크립트에서 수렴 뒤 세 workflow의 개별 run/job 조회까지 이어지는지 확인했다. 감사의 success를 합성하거나 필수 worker·실패를 면제하지 않는다.
 
-검사 로그와 재현 도구는 사용자 다운로드의 `ci-policy-completed-event` 폴더에 보관한다. 첫 감사의 raw API 목록은 없으므로 모의 empty/partial/mismatched 목록의 통과를 GitHub 내부 지연 원인의 확정으로 바꾸지 않는다. 현재는 로컬 개선·검증 완료이며 PR Actions와 main 활성화 뒤 실제 이벤트 수렴은 미검증이다. 이슈는 운영 확인까지 열린 상태로 유지한다. 다음 단계는 별도 승인된 원격 push와 `devel` 대상 PR, 정상 main 승격 후 동일 이벤트 관찰이다.
+검사 로그와 재현 도구는 사용자 다운로드의 `ci-policy-completed-event` 폴더에 보관한다. 첫 감사의 raw API 목록은 없으므로 모의 empty/partial/mismatched 목록의 통과를 GitHub 내부 지연 원인의 확정으로 바꾸지 않는다. 현재는 로컬 개선·검증 완료이며 PR Actions와 main 활성화 뒤 실제 이벤트 수렴은 미검증이다. 이슈는 운영 확인까지 열린 상태로 유지한다. 다음 단계는 승인된 원격 push와 `devel` 대상 PR, 정상 main 승격 후 동일 이벤트 관찰이다.
+
+## 공용 cache 지침과 기록 시점 추가 지시
+
+사용자는 CI 개선과 함께 PR review 빌드 cache 지침을 **모든 OS 공통**으로 수정하도록 지시했다. 각 host의 기본 rhwp 작업공간 아래 `target/pr-review` 한 곳을 Native/WASM/lint/회귀에 재사용하고, 별도 review worktree에서도 같은 절대 경로를 전달한다. 이슈·PR별 하위 target 및 worktree별 target 생성 예시를 제거하고, POSIX·PowerShell·cmd 준비 변수와 Cargo의 명시 target 옵션을 맞춘다. 같은 cache의 실행은 순차로 유지하고 종료 뒤에도 cache를 보존한다. 경로·feature·toolchain 변경에 필요한 재컴파일은 Cargo가 판별하므로 전부 cache hit가 된다고 주장하지 않는다.
+
+루트 AGENTS·CLAUDE·CONTRIBUTING, canonical review/local_validation/post_merge, 다중 PR/시각 증적/dev 환경의 지침을 함께 정렬했다. 현재 PC의 글로벌 Codex AGENTS도 상충하던 review별 target 생성·삭제 규칙을 공통 규칙과 연결했다. 로컬 글로벌 파일은 Git 변경에 포함하지 않는다.
+
+사용자 명시 지시로 오늘할일·정식 PR review는 이번 code PR에 작성하지 않는다. CI에서 실제 개선 여부를 확인한 뒤 **옵션 2의 별도 기록 PR**로 처리한다. 제품/계약 CI 성공과 default-branch controller의 실제 신규 helper 소비·status 수렴을 구분하고, 아직 실행하지 않은 운영 확인을 통과로 기록하지 않는다.
+
+cache 지침 검증: 변경 Markdown 10개를 기존 링크 검사 함수와 metadata 검사 함수로 확인해 오류 0건을 확인했다. PowerShell·POSIX Bash(Cygwin)·cmd의 문서 준비 예제를 실행하고 review worktree로 이동한 뒤에도 기본 작업공간의 동일 target을 가리키는지 확인했다. 이 확인은 Windows에서 실행했으며 macOS/Linux 원격 실행을 의미하지 않는다. 새 cache 생성·삭제 또는 Cargo 빌드는 수행하지 않았다. 문서의 명시 target 옵션과 WASM 환경변수를 같은 절대 경로로 정렬하고 diff 공백 검사를 통과했다.
