@@ -3089,8 +3089,14 @@ impl LayoutEngine {
 
         let mut seg_start = 0;
         for i in 1..offsets.len() {
-            let prev_char_utf16_len = if text_chars[i - 1] >= '\u{10000}' {
-                2u32
+            // [#7344] 탭은 가시 글자이면서 원시 스트림 8유닛을 차지한다(HWP5 `0x09`,
+            // HWPX `'\t'` 폭 8 — `control_text_positions` 와 같은 축). 그 stride 를 컨트롤
+            // 갭으로 읽으면 탭마다 세그먼트가 갈리고, 표가 **첫 탭 바로 뒤**에 놓인다
+            // (36494836 pi=2: 탭 4개 → 표 → 공백 6개 가 탭 1개 → 표 → 탭 3개+공백 이 됨).
+            let prev_char_utf16_len = if text_chars[i - 1] == '\t' {
+                8u32
+            } else if text_chars[i - 1] >= '\u{10000}' {
+                2
             } else {
                 1
             };
@@ -3145,6 +3151,31 @@ impl LayoutEngine {
             })
             .collect();
 
+        // [#7344] 저장 탭 폭. 일반 문단 경로(`text_style.inline_tabs = composed.tab_extended`)
+        // 와 같이 탭마다 한/글이 저장한 전진폭(`tab_extended[k][0]`)을 쓴다. 이 경로는 문단
+        // 탭 정의·줄 원점을 싣지 않은 스타일로 재므로, 저장값이 없으면 탭이 줄 원점과 무관한
+        // 폴백 정지로 늘어난다(36494836 pi=2: 탭 4개가 저장 4000HU=53.3px 대신 58.8px).
+        // 자리표 탭(`tab_ext_is_placeholder`)부터는 저장 폭이 없으므로 종전 계산에 맡긴다.
+        let tabs_before: Vec<usize> = std::iter::once(0)
+            .chain(text_chars.iter().scan(0usize, |n, &c| {
+                if c == '\t' {
+                    *n += 1;
+                }
+                Some(*n)
+            }))
+            .collect();
+        let with_stored_tabs = |mut ts: TextStyle, start_char: usize| -> TextStyle {
+            let first = tabs_before.get(start_char).copied().unwrap_or(0);
+            ts.inline_tabs = para
+                .tab_extended
+                .iter()
+                .skip(first)
+                .take_while(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext))
+                .copied()
+                .collect();
+            ts
+        };
+
         // 4b. 텍스트 세그먼트 폭 계산
         let char_style_id = para
             .char_shapes
@@ -3173,7 +3204,8 @@ impl LayoutEngine {
                         .unwrap_or(char_style_id);
                     let ch = map_pua_bullet_char(text_chars[ch_idx]);
                     let lang = super::super::style_resolver::detect_lang_category(ch);
-                    let ts = metric_scope.style(styles, cs_id, lang, ch_idx);
+                    let ts =
+                        with_stored_tabs(metric_scope.style(styles, cs_id, lang, ch_idx), ch_idx);
                     total += estimate_text_width(&ch.to_string(), &ts);
                 }
                 total
@@ -3208,7 +3240,39 @@ impl LayoutEngine {
                 }
             })
             .collect();
-        let total_width: f64 = seg_widths.iter().sum::<f64>()
+        // [#7344] 마지막 표 **뒤** 말미 공백은 정렬 폭이 아니다 — 일반 문단 경로의
+        // `trailing_space_width_after_last_inline_object`(#6173) 와 같은 규칙이다. 표 앞·사이
+        // 공백은 콘텐츠로 남긴다. 세그먼트 배치 순서는 seg[0]·표[0]·seg[1]·…이므로 표 개수와
+        // 같은 번호의 세그먼트가 마지막 표 뒤 꼬리다.
+        let trailing_space_after_last_table = segments
+            .get(inline_tables.len())
+            .filter(|_| !inline_tables.is_empty() && segments.len() == inline_tables.len() + 1)
+            .map(|&(s, e)| {
+                let n = text_chars[s..e]
+                    .iter()
+                    .rev()
+                    .take_while(|c| **c == ' ')
+                    .count();
+                if n == 0 {
+                    return 0.0;
+                }
+                (e - n..e)
+                    .map(|ch_idx| {
+                        let utf16_pos = offsets[ch_idx];
+                        let cs_id = para
+                            .char_shapes
+                            .iter()
+                            .rev()
+                            .find(|cs| cs.start_pos <= utf16_pos)
+                            .map(|cs| cs.char_shape_id as u32)
+                            .unwrap_or(char_style_id);
+                        let lang = super::super::style_resolver::detect_lang_category(' ');
+                        estimate_text_width(" ", &metric_scope.style(styles, cs_id, lang, ch_idx))
+                    })
+                    .sum::<f64>()
+            })
+            .unwrap_or(0.0);
+        let total_width: f64 = seg_widths.iter().sum::<f64>() - trailing_space_after_last_table
             + table_declared_widths.iter().sum::<f64>()
             + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
@@ -3410,10 +3474,13 @@ impl LayoutEngine {
                                 let first_lang = super::super::style_resolver::detect_lang_category(
                                     text_chars[line_run_start],
                                 );
-                                let run_ts = metric_scope.style(
-                                    styles,
-                                    current_cs_id,
-                                    first_lang,
+                                let run_ts = with_stored_tabs(
+                                    metric_scope.style(
+                                        styles,
+                                        current_cs_id,
+                                        first_lang,
+                                        line_run_start,
+                                    ),
                                     line_run_start,
                                 );
                                 let run_width = estimate_text_width(&run_text, &run_ts);
@@ -3508,7 +3575,10 @@ impl LayoutEngine {
 
                         let ch = text_chars[ch_idx];
                         let lang = super::super::style_resolver::detect_lang_category(ch);
-                        let ts = metric_scope.style(styles, cs_id, lang, ch_idx);
+                        let ts = with_stored_tabs(
+                            metric_scope.style(styles, cs_id, lang, ch_idx),
+                            ch_idx,
+                        );
                         let ch_w = estimate_text_width(&ch.to_string(), &ts);
 
                         // char_shape 변경 또는 줄바꿈 시 누적된 run을 출력
@@ -3556,10 +3626,13 @@ impl LayoutEngine {
                             let first_lang = super::super::style_resolver::detect_lang_category(
                                 text_chars[line_run_start],
                             );
-                            let run_ts = metric_scope.style(
-                                styles,
-                                current_cs_id,
-                                first_lang,
+                            let run_ts = with_stored_tabs(
+                                metric_scope.style(
+                                    styles,
+                                    current_cs_id,
+                                    first_lang,
+                                    line_run_start,
+                                ),
                                 line_run_start,
                             );
                             let run_width = estimate_text_width(&run_text, &run_ts);
@@ -3646,8 +3719,10 @@ impl LayoutEngine {
                         let first_lang = super::super::style_resolver::detect_lang_category(
                             text_chars[line_run_start],
                         );
-                        let run_ts =
-                            metric_scope.style(styles, current_cs_id, first_lang, line_run_start);
+                        let run_ts = with_stored_tabs(
+                            metric_scope.style(styles, current_cs_id, first_lang, line_run_start),
+                            line_run_start,
+                        );
                         let run_width = estimate_text_width(&run_text, &run_ts);
 
                         let run_id = tree.next_id();
