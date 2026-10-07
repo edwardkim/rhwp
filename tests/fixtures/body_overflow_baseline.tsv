@@ -232,3 +232,9 @@ issue7216/tall_table_after.hwpx	0
 # off-canvas 1 -> 0, overlap 1 -> 0, LAYOUT_OVERFLOW_CELL 40여건 -> 0 이다. 노드 수만 1 로 같다.
 issue7336/nested_table_fragment_cut.hwp	1
 issue7336/stored_frame_page_larger_rowbreak.hwpx	1
+# #7620 기존 결손 1행 — 이 PR 이 위치를 한컴과 맞추면서 드러났다. 11쪽 표(구역 1 문단 1,
+# RowBreak, 빈 앵커 sw=0)의 시작이 122.9px -> 126.7px 로 내려가 한컴 저장 위치와 같아졌다
+# (저장 vpos 3548 + 바깥 위 283 + 표 68736 + 바깥 아래 283 = 72850HU, 본문 높이 72852HU 안 — 한컴은 쪽을 꽉 채운다).
+# 남는 초과 4.5px 은 rhwp 가 이 표를 선언 높이 916.5px(68736HU)보다 8.3px 큰 924.8px 로
+# 그리는 기존 결손이다. 수정 전에는 초과가 0.8px 이라 공차 2.0px 아래에 숨어 있었다.
+issue6465/press_release_footer_logos.hwpx	1
