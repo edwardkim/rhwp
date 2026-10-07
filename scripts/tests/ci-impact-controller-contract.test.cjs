@@ -251,3 +251,80 @@ test('reporter distinguishes inactive/stale scope from actual controller failure
     assert.equal(helperLoads, env.OUTCOME_RESOLVE === 'failure' ? 1 : 0);
   }
 });
+
+async function executeCollection({ missingLists = 1, files = [{ filename: 'src/lib.rs', status: 'modified' }],
+  runChanges = {}, listError = false } = {}) {
+  const collected = {}, calls = { lists: 0, sleeps: 0, runs: 0, jobs: 0 };
+  const paths = { CI: 'ci.yml', CodeQL: 'codeql.yml', 'Render Diff': 'render-diff.yml' };
+  const runs = Object.entries(paths).map(([name, file], index) => ({ id: 100 + index,
+    name, path: '.github/workflows/' + file, event: 'pull_request', head_sha: HEAD,
+    head_branch: 'topic', head_repository: repository, run_attempt: 1, workflow_id: 200 + index,
+    status: 'completed', conclusion: 'success', ...runChanges, pull_requests: [{ number: 123,
+      base: { ref: 'devel', sha: BASE }, head: { ref: 'topic', sha: HEAD } }] }));
+  const api = { files() {}, commits() {}, lists() {}, jobs() {} };
+  const github = { rest: { pulls: { listFiles: api.files, listCommits: api.commits },
+    actions: { listWorkflowRunsForRepo: api.lists, listJobsForWorkflowRun: api.jobs,
+      getWorkflowRun: async ({ run_id }) => { calls.runs++; return { data: clone(runs.find((r) => r.id === run_id)) }; } } },
+    paginate: async (method, args) => {
+      if (method === api.files) return files;
+      if (method === api.commits) return [];
+      if (method === api.lists) {
+        calls.lists++;
+        if (listError) throw Error('mock list unavailable');
+        return calls.lists <= missingLists ? [] : clone(runs);
+      }
+      if (method === api.jobs) { calls.jobs++; return [{ id: args.run_id + 10, run_id: args.run_id,
+        run_attempt: 1, head_sha: HEAD, name: 'job', status: 'completed', conclusion: 'success', steps: [] }]; }
+      throw Error('unexpected API');
+    } };
+  const evidence = require('../ci-workflow-evidence.cjs');
+  const helper = Object.fromEntries(Object.entries(evidence).map(([key, fn]) => [key,
+    (options) => fn({ ...options, sleep: async () => { calls.sleeps++; } })]));
+  await vm.runInNewContext('(async () => {\n' + scriptAt('      - name: Collect policy and same-head workflow evidence') + '\n})()', {
+    context: auditContext(), github,
+    core: { setOutput() {}, warning() {} },
+    process: { env: { GITHUB_WORKSPACE: '/mock', GITHUB_REPOSITORY: REPO, MODE: 'audit',
+      PULL_NUMBER: '123', BASE_REF: 'devel', BASE_SHA: BASE, HEAD_SHA: HEAD,
+      HEAD_BRANCH: 'topic', HEAD_REPOSITORY: REPO, PULL_COMMITS: '2' } },
+    require: (name) => {
+      if (name === 'node:fs') return { writeFileSync: (file, body) => { collected[path.basename(file)] = JSON.parse(body); } };
+      if (name === 'node:path') return path;
+      if (name.endsWith('ci-impact-policy.cjs')) return require('../ci-impact-policy.cjs');
+      if (name.endsWith('ci-workflow-evidence.cjs')) return helper;
+      throw Error('unexpected executable dependency');
+    },
+  });
+  return { collected, calls, paths };
+}
+
+test('actual completion audit recollects missing lists before checking exact run/job evidence', async () => {
+  const { collected, calls, paths } = await executeCollection();
+  assert.deepEqual(Object.keys(collected['.ci-impact-workflows.json']).sort(), Object.keys(paths).sort());
+  assert.equal(calls.lists, 2); assert.equal(calls.sleeps, 1);
+  assert.equal(calls.runs, 6); assert.equal(calls.jobs, 3);
+});
+
+test('actual completion audit keeps unresolved listing absent without fabricating evidence', async () => {
+  for (const options of [{ missingLists: 10 }, { listError: true }]) {
+    const { collected, calls } = await executeCollection(options);
+    assert.deepEqual(collected['.ci-impact-workflows.json'], {});
+    assert.equal(calls.lists, 4); assert.equal(calls.sleeps, 3);
+    assert.equal(calls.runs, 0); assert.equal(calls.jobs, 0);
+  }
+});
+
+test('actual completion audit does not poll workflows excluded by path policy', async () => {
+  const { calls } = await executeCollection({ files: [{ filename: 'README.md', status: 'modified' }], missingLists: 10 });
+  assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
+});
+
+test('actual completion audit returns present running or failed workflows without list delay', async () => {
+  for (const runChanges of [{ status: 'in_progress', conclusion: null }, { conclusion: 'failure' }]) {
+    const { collected, calls } = await executeCollection({ missingLists: 0, runChanges });
+    const workflow = collected['.ci-impact-workflows.json'].CI.run;
+    assert.equal(workflow.status, runChanges.status || 'completed');
+    assert.equal(workflow.conclusion, runChanges.conclusion || '');
+    assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
+    assert.equal(calls.runs, 6); assert.equal(calls.jobs, 3);
+  }
+});

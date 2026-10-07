@@ -2,6 +2,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { collectWorkflowEvidence } = require('../ci-workflow-evidence.cjs');
+const { collectWorkflowRunList } = require('../ci-workflow-evidence.cjs');
+const { selectLatestWorkflowRun } = require('../ci-impact-policy.cjs');
 const run = { id: 12, run_attempt: 1, status: 'completed', conclusion: 'success', head_sha: 'a'.repeat(40), head_branch: 'topic', event: 'pull_request', path: '.github/workflows/ci.yml', workflow_id: 2, head_repository: { full_name: 'owner/repo' } };
 const job = { run_id: 12, run_attempt: 1, head_sha: run.head_sha, status: 'completed', conclusion: 'success', steps: [] };
 function fixture(overrides = {}) {
@@ -65,4 +67,104 @@ test('elapsed retry budget stops additional waits', async () => {
   let clock = 0;
   const { calls, options } = fixture({ now: () => clock, listJobs: async () => { clock += 45000; return [{ ...job, status: 'queued', conclusion: null }]; } });
   const result = await collectWorkflowEvidence(options); assert.equal(calls.sleeps, 0); assert.equal(result.collectionAttempts, 1);
+});
+
+const identity = { name: 'CI', path: run.path, pullNumber: 123, baseRef: 'devel',
+  baseSha: 'c'.repeat(40), headSha: run.head_sha, headBranch: run.head_branch,
+  headRepository: run.head_repository.full_name };
+const listedRun = { ...run, name: 'CI', pull_requests: [{ number: 123,
+  base: { ref: 'devel', sha: identity.baseSha }, head: { ref: run.head_branch, sha: run.head_sha } }] };
+function listFixture(snapshots, overrides = {}) {
+  const calls = { lists: 0, sleeps: 0 };
+  return { calls, options: { listRuns: async () => {
+    const next = snapshots[Math.min(calls.lists++, snapshots.length - 1)];
+    if (next instanceof Error) throw next;
+    return structuredClone(next);
+  }, missingWorkflows: (runs) => selectLatestWorkflowRun(runs, identity) ? [] : ['CI'],
+  sleep: async () => { calls.sleeps++; }, ...overrides } };
+}
+
+test('missing workflow list converges without a new completion event', async () => {
+  const { calls, options } = listFixture([[], [], [listedRun]]);
+  const result = await collectWorkflowRunList(options);
+  assert.equal(selectLatestWorkflowRun(result, identity).id, run.id);
+  assert.equal(calls.lists, 3); assert.equal(calls.sleeps, 2);
+});
+
+test('present running or failed workflows do not wait or become successful', async () => {
+  for (const change of [{ status: 'in_progress', conclusion: null }, { conclusion: 'failure' }]) {
+    const { calls, options } = listFixture([[{ ...listedRun, ...change }]]);
+    const result = await collectWorkflowRunList(options);
+    assert.equal(result[0].status, change.status || 'completed');
+    assert.equal(result[0].conclusion, change.conclusion);
+    assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
+  }
+});
+
+test('persistent missing workflow stays missing after bounded list retries', async () => {
+  const { calls, options } = listFixture([[]]);
+  assert.deepEqual(await collectWorkflowRunList(options), []);
+  assert.equal(calls.lists, 4); assert.equal(calls.sleeps, 3);
+});
+
+test('partial listing retries only until every required workflow is selectable', async () => {
+  const second = { ...listedRun, id: 13, name: 'CodeQL', path: '.github/workflows/codeql.yml' };
+  const secondIdentity = { ...identity, name: second.name, path: second.path };
+  const { calls, options } = listFixture([[listedRun], [listedRun, second]], {
+    missingWorkflows: (runs) => [identity, secondIdentity]
+      .filter((expected) => !selectLatestWorkflowRun(runs, expected)).map((expected) => expected.name),
+  });
+  const result = await collectWorkflowRunList(options);
+  assert.equal(result.length, 2); assert.equal(calls.lists, 2); assert.equal(calls.sleeps, 1);
+});
+
+test('a failed newest listing never retains an older partial evidence snapshot', async () => {
+  const { options } = listFixture([[{ ...listedRun, name: 'other' }], new Error('unavailable')]);
+  assert.deepEqual(await collectWorkflowRunList(options), []);
+});
+
+test('list transport errors and malformed payloads retry without retaining old snapshots', async () => {
+  for (const missing of [new Error('API unavailable'), null, {}]) {
+    const { calls, options } = listFixture([missing, [listedRun]]);
+    assert.equal((await collectWorkflowRunList(options))[0].id, run.id);
+    assert.equal(calls.lists, 2); assert.equal(calls.sleeps, 1);
+  }
+  const { calls, options } = listFixture([new Error('API unavailable')]);
+  assert.deepEqual(await collectWorkflowRunList(options), []);
+  assert.equal(calls.lists, 4);
+});
+
+test('foreign run identities remain missing until exact selection converges', async () => {
+  for (const change of [{ name: 'other' }, { path: '.github/workflows/other.yml' },
+    { head_sha: 'd'.repeat(40) }, { head_branch: 'other' }, { event: 'push' },
+    { head_repository: { full_name: 'other/repo' } },
+    { pull_requests: [{ ...listedRun.pull_requests[0], number: 124 }] },
+    { pull_requests: [{ ...listedRun.pull_requests[0], base: { ref: 'devel', sha: 'd'.repeat(40) } }] }]) {
+    const { calls, options } = listFixture([[{ ...listedRun, ...change }], [listedRun]]);
+    assert.equal((await collectWorkflowRunList(options))[0].id, run.id);
+    assert.equal(calls.sleeps, 1);
+  }
+});
+
+test('zero retry budget supports publish mode without audit polling', async () => {
+  const { calls, options } = listFixture([[], [listedRun]], { maxAttempts: 1 });
+  assert.deepEqual(await collectWorkflowRunList(options), []);
+  assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
+});
+
+test('list retry elapsed budget never starts an additional sleep after exhaustion', async () => {
+  let clock = 0;
+  const { calls, options } = listFixture([[]], { now: () => clock,
+    missingWorkflows: () => { clock += 45000; return ['CI']; } });
+  assert.deepEqual(await collectWorkflowRunList(options), []);
+  assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
+});
+
+test('invalid list retry budgets are rejected before any API request', async () => {
+  for (const change of [{ maxAttempts: 0 }, { maxAttempts: 5 }, { delayMs: 5001 },
+    { delayMs: -1 }, { maxElapsedMs: 45001 }, { maxElapsedMs: NaN }]) {
+    const { calls, options } = listFixture([[]], change);
+    await assert.rejects(collectWorkflowRunList(options), /invalid evidence retry budget/);
+    assert.equal(calls.lists, 0);
+  }
 });
