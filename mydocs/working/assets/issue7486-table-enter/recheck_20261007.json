@@ -1,0 +1,345 @@
+{
+  "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+  "base_sha": "48ff4bb9353bf8d29b7e1c0ac44df9bc5800dce8",
+  "unmerged_dependency": "cf2b0508fc",
+  "original_remote_head": "e22b099a28e7f85a937ef20d0d7e61bc484c8584",
+  "status": "merge_held",
+  "scope": "Local candidate after separate 7207 alignment correction; guide semantics and full gates remain incomplete. Remote PR unchanged.",
+  "runs": [
+    {
+      "case": "pr7544-eogu",
+      "backend": "Native",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "missing_pages": [],
+      "minimum_percent": 93.22327,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "samples/task2097/18095317_eogu_geumji.hwp",
+        "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+      },
+      "reference_pdf": {
+        "path": "pdf/18095317_eogu_geumji-2020.pdf",
+        "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_32",
+      "backend": "Native",
+      "pages": [
+        1
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+        "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_32-2020.pdf",
+        "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_33",
+      "backend": "Native",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+        "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_33-2020.pdf",
+        "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_40",
+      "backend": "Native",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+        "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_40-2020.pdf",
+        "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table30_spacing300_enter9",
+      "backend": "Native",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+        "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+        "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "eogu",
+      "backend": "fresh WASM",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "missing_pages": [],
+      "minimum_percent": 93.22327,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "samples/task2097/18095317_eogu_geumji.hwp",
+        "sha256": "956ad319f493aa8edfd26bb318c97b82a187a5860fc6ce3c19e55a4ae8429ed9"
+      },
+      "reference_pdf": {
+        "path": "pdf/18095317_eogu_geumji-2020.pdf",
+        "sha256": "98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_32",
+      "backend": "fresh WASM",
+      "pages": [
+        1
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_32.hwpx",
+        "sha256": "79d6412a6744ec332978f77d3c09fd3859075dabde7c3613ea04a435beeec517"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_32-2020.pdf",
+        "sha256": "3b08c1988ef0ef0ad9485181171ddbacb335dc08e23eb33828012400142e26d8"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_33",
+      "backend": "fresh WASM",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_33.hwpx",
+        "sha256": "d49761580c9acce5338d17277395791ae63ce8a8d5546ff1a4efe3a77dceba45"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_33-2020.pdf",
+        "sha256": "909928debd7823ebd7713db0a96b59ba8559326b83d7844af6b77f754c50fff3"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table_enter_40",
+      "backend": "fresh WASM",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx",
+        "sha256": "9d60a17e20ba6f8cbc28508fde139454fca8cff9856a3fc6d1d4eef9acb9609a"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table_enter_40-2020.pdf",
+        "sha256": "562bd355ac70352dddbb889550d2960b03bbf052302dca0e3529d718e7a95a71"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "table30_spacing300_enter9",
+      "backend": "fresh WASM",
+      "pages": [
+        1,
+        2
+      ],
+      "missing_pages": [],
+      "minimum_percent": 100.0,
+      "below_90": [],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "tests/fixtures/issue7486_table_enter/table30_spacing300_enter9.hwpx",
+        "sha256": "79c350473cd54de687d66b0e53357b57b889f0ed368d57a49ceafad18e848c4c"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7486_table30_spacing300_enter9-2020.pdf",
+        "sha256": "fe360e6095b4ccd7a1f0b98ba4af22583b7d4f0c2cf63eb995d841fe6a7e665d"
+      },
+      "radius_px": 2
+    },
+    {
+      "case": "pr7544-guide-boundary",
+      "backend": "Native",
+      "pages": [
+        171,
+        172
+      ],
+      "missing_pages": [],
+      "minimum_percent": 24.14817,
+      "below_90": [
+        {
+          "page": 171,
+          "percent": 66.38064
+        },
+        {
+          "page": 172,
+          "percent": 24.14817
+        }
+      ],
+      "source_sha": "2b034275a53ae7d65c9a4670982d9a23fddc60fa",
+      "input": {
+        "path": "samples/task2287/1342000_edu_curriculum_map.hwp",
+        "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+      },
+      "reference_pdf": {
+        "path": "pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf",
+        "sha256": "bc16ee92640644307fd1ce92ab8ffe663088210caa7740bef620daaa0187e197"
+      },
+      "radius_px": 2
+    }
+  ],
+  "images": [
+    {
+      "file": "recheck_20261007_native-eogu17_review.png",
+      "sha256": "9a0b35919b66128602d30d63f46aa9273927119507deabb939dd70d8f59f74f7",
+      "bytes": 628359
+    },
+    {
+      "file": "recheck_20261007_native-eogu17_overlay.png",
+      "sha256": "70458d6999ea8b67f1ec0c1b7893a7d3edfff24dfa0a6e83f57af751f0d110c7",
+      "bytes": 206280
+    },
+    {
+      "file": "recheck_20261007_wasm-eogu17_review.png",
+      "sha256": "98bda9ec11690016b224d09fc840eb2e5e5d615082855b36f175a689cb4a3082",
+      "bytes": 628113
+    },
+    {
+      "file": "recheck_20261007_wasm-eogu17_overlay.png",
+      "sha256": "ab563bcf48a49b755bedbd557bc5e6fa41772aa2b813bdc3352191cd2f565d20",
+      "bytes": 206280
+    },
+    {
+      "file": "recheck_20261007_native-enter33_review.png",
+      "sha256": "11d4c0eec13ec21fcca63982e6429b162728c29616a553bf47c3e1a55b602e70",
+      "bytes": 30230
+    },
+    {
+      "file": "recheck_20261007_native-enter33_overlay.png",
+      "sha256": "877c0ad1406df1a1862dbb465ed53e6d2364ae094f66cfc3b29aa50609317028",
+      "bytes": 22133
+    },
+    {
+      "file": "recheck_20261007_wasm-enter33_review.png",
+      "sha256": "ab05cc5319d325c9e1421d53942c49086d29d3cf766c743ef72ee9443187546e",
+      "bytes": 30093
+    },
+    {
+      "file": "recheck_20261007_wasm-enter33_overlay.png",
+      "sha256": "7e9c9f5bfb4f1fb713a5ab8db1537b26ec47251ace95f70dff07c95cf9debf7c",
+      "bytes": 22297
+    },
+    {
+      "file": "recheck_20261007_native-guide171_review.png",
+      "sha256": "5edaf0aa8ab70656133f6bc3d12d4916a6fceec548cdb5860519e3ecb1198f29",
+      "bytes": 917432
+    },
+    {
+      "file": "recheck_20261007_native-guide171_overlay.png",
+      "sha256": "6d0cdbdee7d364c886f66c52da4918065f1a16b43972606921a470c1e865d7cf",
+      "bytes": 274356
+    }
+  ],
+  "unverified": [
+    "fresh WASM curriculum guide boundary at this source",
+    "curriculum whole-page correspondence",
+    "full Rust regression, three Clippy stages and workspace build",
+    "remote CI on this local candidate"
+  ],
+  "note": "Font files, local font paths and font metadata are excluded from this record."
+}
