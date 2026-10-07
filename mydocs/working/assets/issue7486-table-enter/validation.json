@@ -4,7 +4,6 @@
   "productionSourceSha": "97772d5d40787e77c3238debc2b2576b11713476",
   "inputGeneration": "fresh WASM createBlankDocument -> applyParaFormat -> createTable -> repeated body splitParagraph -> exportHwpx; no hand-written XML or LineSeg edits",
   "hancom": {
-    "client": "npx file:tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
     "engine": "2020",
     "profile": "HOffice120 compatibility",
     "jobs": [
@@ -273,7 +272,7 @@
     "table_enter_40-2020.pdf": "pdf/issue7486_table_enter_40-2020.pdf",
     "table_enter_40.hwpx": "tests/fixtures/issue7486_table_enter/table_enter_40.hwpx"
   },
-  "inputCommitNote": "Moved byte-identical generated HWPX to tests/fixtures/issue7486_table_enter and MCP PDF to pdf/issue7486_*.pdf before PR; no XML or PDF contents modified.",
+  "inputCommitNote": "Moved byte-identical generated HWPX to tests/fixtures/issue7486_table_enter and independent Hancom Print PDF to pdf/issue7486_*.pdf before PR; no XML or PDF contents modified.",
   "historicalPreRegressionEvidence": {
     "productionSourceSha": "75b433ccbe58ccf297a4f0ddbc6db83a1b850910",
     "build": {

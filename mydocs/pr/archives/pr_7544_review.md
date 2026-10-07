@@ -9,15 +9,103 @@ last_verified: 2026-10-07
 
 ## 최종 판정
 
-**머지 보류 — 저장 종료 guide의 독립 출력 근거와 최종 검증이 남아 있다.**
-최신 base `48ff4bb935`에서 #7207 정렬 보정을 먼저 분리하고, 그 후보에 원 PR을
-로컬 병합한 code head `2b034275a53ae7d65c9a4670982d9a23fddc60fa`를 재검증했다.
-#7207의 최소 선행 정렬 보정은 [#7627](https://github.com/edwardkim/rhwp/pull/7627)로
-`7076f836e2300f7d760d74b58c468cc0f73098a2`에 병합됐다. 원격 #7544의 source head
-`e22b099a28`는 유지했다. 병합된 devel을 로컬 후보에 정렬한 head는
-`4d9889a7f4f35b287ec5a62579409fab1ce77478`이며 production/test는 기존 검증 source
-`2b034275a53ae7d65c9a4670982d9a23fddc60fa`와 바이트 동일하다.
-교육과정 전체 보정을 이 PR에 포함하거나 #7445 담당 작업을 인수하지 않는다.
+**기술 검토 승인 — 로컬 필수 게이트 충족, 최신 원격 head의 CI·mergeability 확인 대기.**
+검증 source는 `5308d4087d5e7ebdc38e14ff715f6b2621d0e108`, 비교 base는
+`7076f836e2300f7d760d74b58c468cc0f73098a2`다. 본인 PR의 self-review이며
+GitHub self-Approve나 branch protection 우회를 사용하지 않는다.
+
+## 2026-10-07 보류 해제 보정과 최종 로컬 검증
+
+보류 원인이었던 새로운 저장 종료 guide의 0 전진 계획을 제외했다.
+기존 표 꼬리 정리의 적용을 **바로 앞 완료 PartialTable의 단일 종료 문단**으로
+제한해, 일반 본문 줄을 거친 반복 Enter의 확정 쪽·문단 소속을 보존한다.
+기존 종료 문단의 의미 자체를 재설계하거나 시각 일치를 새로 주장하지 않는다.
+앞 빈 줄의 누적 drift로 다음 줄을 Hidden 처리하던 분기는 제거했다.
+문서 ID·표 크기·쪽 번호 조건, 좌표 clamp, 기준값·허용치 변경은 없다.
+
+생산 `FormattedParagraph` → `paragraph/flow.rs` fit/이월 → `PageItem::FullParagraph`
+→ `section.rs` 확정 → `state/finalize.rs` → 실제 layout·cursor lookup을 확인했다.
+표의 컷/유닛·요구/예약 높이와 줄 원점은 바꾸지 않는다. 직전 항목이 본문 문단이면
+표의 직접 종료 문단이 아니므로 기존 사후 정리가 그 확정 쪽을 지우지 않는다.
+완료 표의 직접 종료 문단, 명시적 쪽/구역 나눔, 저장 reset 경로는 기존 처리를 유지한다.
+
+| 독립 PDF 경계 | 수정 전 devel Native | 보정 Native / fresh WASM | 전쪽 최저 실루엣 |
+| --- | --- | --- | --- |
+| 10행·160%·Enter32 | 1쪽 | 1 / 1쪽 | 양쪽100% |
+| 10행·160%·Enter33 | 1쪽(기준2쪽) | 2 / 2쪽 | 양쪽100% |
+| 10행·160%·Enter40 | 2쪽 | 2 / 2쪽 | 양쪽100% |
+| 30행·300%·Enter9 | 1쪽(기준2쪽) | 2 / 2쪽 | 양쪽100% |
+
+같은 기존 회귀 source의 정리 범위 보정 전4PASS/2FAIL, 보정 후6PASS를 확인했다.
+실제 저장 입력의 위1→2쪽 대조도 같은 원문·PDF로 실행했다. 환경/빌드 실패는 RED로 세지 않았다.
+Native/fresh WASM 각각 전체7쪽의 미달·누락0, 대표 두 경계의 일반 gate는 `passed`다.
+표 외곽·행/열 경계·처음/끝 위치와 빈2쪽을 직접 판독했고 표 중복이 없다.
+표 선이 PDF보다 밝은 차이는 남으며 엄격 내용 픽셀은 약0.02%/7.46%다.
+실루엣은 보조값이며 전체 피델리티100% 판정이 아니다. 96dpi print·고정2px 관용으로
+비교했고 글꼴 예외·마스킹·DPI/기준값 완화는 없다.
+
+| 필수 실행 | source `5308d4087d` 결과 |
+| --- | --- |
+| fmt, Native/WASM32/workspace all-target Clippy, workspace build | 모두 PASS |
+| suite prepare·manifest check, 고정 base `7076f836e2` | PASS; 파생 파일 미제출 |
+| 전체 `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast` | 10,511 PASS / 0 FAIL / 50 skipped,208.594초 |
+| Native Skia `--features native-skia --lib` | workspace 합4,109 PASS / 0 FAIL / 13 ignored |
+| Native Skia 누락 그림·직접 PDF | 2 PASS / 4 PASS |
+| root locked wrapper fresh web WASM | 최적화까지 PASS; Docker daemon 불가로 host 경로 사용 |
+
+workspace Clippy 첫 실행은 디스크 소진으로 실패했고 컴파일 동시성1의 재실행은 통과했다.
+공유 target을 보존했다. source-side cfg(test), Studio/npm source는 변경하지 않아 해당
+unit-tier·npm 게이트는 비해당이다. 이번 source의 Studio DOM 재촬영은 하지 않았으며
+기존 Chrome 이미지는 당시 source의 이력으로만 보존한다.
+
+### 저장본 범위 분리 대조
+
+어구21쪽·교육과정413쪽·정상 RowBreak18쪽, **448쪽 전체**를 devel과 새 후보의
+Native끼리 및 WASM끼리 각각 비교했다. 쪽수·내용·geometry를 포함한 모든 render tree가
+동일했다. 기준 source `cf2b0508fc`의 production/test는 병합 devel `7076f836e2`와 동일하다.
+이것은 새 guide의 의미·기존 교육과정413/415쪽 차이를 통과시킨 증거가 아니다.
+미검증 의미를 추가하던 guide 계획이 이번 diff에서 제외됐고, 이 저장본들의 실제 출력은
+변하지 않았다. #7207 잔여·#7445 전체 보정은 이번 PR에 포함하지 않는다.
+
+### 입력·증적과 판정 범위
+
+입력 커밋 확인은 **충족**이다. `tests/fixtures/issue7486_table_enter/` 4개 원문과
+`pdf/issue7486_*-2020.pdf` 4개 기준은 검증 source의 Git blob과 실행 파일이 동일하다.
+파일별 전체 SHA-256은 [Native 전체7쪽 TSV ZIP의 README](https://github.com/user-attachments/files/33141202/pr7544-native-enter-silhouettes.zip)와
+[기존 입력 manifest](../../working/assets/issue7486-table-enter/validation.json)에 있다.
+ZIP SHA-256은 `b7952364fe1a9e4d7f088ed0f81c1b942f1a90eb2c9a13de5bb3df71054f053d`이며
+공개 다운로드의 동일 바이트를 확인했다. 새 TSV·로그·진단 JSON은 ignored output에 보존한다.
+
+| 조판 검토 | 판정·증거 |
+| --- | --- |
+| 근거·일반성 | 충족: 독립 PDF의1/2/2/2쪽, 수정 전1/1/2/1쪽과 소속 누락; cleanup의 원래 표 종료 범위 밖인 본문 흐름 보호 |
+| 측정·배치·점유 | 충족: 기존 fmt/fit/advance와 배치 결과 보존; guide 원점·0 전진 계획 제거 |
+| 분할·이어받기 | 컷/높이 변경 비해당; 최종 조각 뒤 일반 문단의 쪽 소속·표 단일 표시·뒤 빈 쪽은 실행 확인 |
+| 독립성·새 회귀 | 충족: API 생성본·독립 Print PDF 전7쪽×2backend, 같은 회귀의 RED/GREEN, 정상 Enter32/40 |
+| 기준값 변경 | 비해당: baseline/golden/래칫·허용치 변경 없음 |
+| 미검증 | 성능 정량 benchmark·현재 source Studio DOM 직접 촬영; 기존 저장 guide의 일반 사양 재해석·교육과정 전체 개선은 구현/완료 주장 밖 |
+
+대표 최신 이미지: [Native Enter33 review](../assets/pr7544-enter-20261007/native-table33-review-p1.png)·
+[overlay](../assets/pr7544-enter-20261007/native-table33-overlay-p1.png),
+[fresh WASM Enter33 review](../assets/pr7544-enter-20261007/wasm-table33-review-p1.png)·
+[overlay](../assets/pr7544-enter-20261007/wasm-table33-overlay-p1.png),
+[Native Enter9 review](../assets/pr7544-enter-20261007/native-table30-review-p1.png),
+[fresh WASM Enter9 review](../assets/pr7544-enter-20261007/wasm-table30-review-p1.png),
+[Native 빈2쪽](../assets/pr7544-enter-20261007/native-table33-review-p2.png)·
+[fresh WASM 빈2쪽](../assets/pr7544-enter-20261007/wasm-table33-review-p2.png).
+[Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)의 절차를 따랐다.
+이미지는 위 source를 새로 출력했다. 작업지시자의 본문 보존 요청에 따라 최신 구현·수치·
+head 고정 이미지는 PR 댓글에 게시하고 원 본문은 제출 당시 기록으로 유지한다.
+
+### Merge 후 comment 계획
+
+최신 head의 성공 CI·mergeability 확인과 별도 병합 지시를 만족하면 merge SHA로 고정한
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-sha>/mydocs/pr/assets/pr7544-enter-20261007/wasm-table33-review-p1.png`
+및 Native/overlay를 댓글에 다시 남긴다. 표 선 밝기와 현재 source Studio 미촬영 범위를 명시하고,
+API로 한글·실제 줄바꿈·이미지 URL을 재조회한다. #7486의 기재된 잔여 Enter 경로만 해결하며
+#7207/#7445의 전체 종료 표현은 사용하지 않는다. 실제 merge·issue close는 아직 수행하지 않았다.
+
+## 이력 — 아래 기록은 각각 당시 source의 결과
 
 ## 2026-10-07 최소 선행 병합 후 범위 분리 진단
 

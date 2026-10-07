@@ -10,17 +10,20 @@ last_verified: 2026-10-07
 Issue: [#7486](https://github.com/edwardkim/rhwp/issues/7486). 앞서 병합된 Studio 보고서와 구분하기 위해
 이번 표 경로의 보고서는 `_table_report.md` 이름으로 유지한다.
 
-## 최신 판정 — 범위 분리 후에도 저장 guide 검증으로 병합 보류
+## 최신 판정 — Enter 범위로 보정, 로컬 검증 충족
 
-2026-10-07 최신 base `48ff4bb935`에서 #7207 정렬 보정을 분리한 뒤 원 PR을
-로컬 병합한 code head `2b034275a5`를 재검증했다. 최소 선행 후보는
-[#7627](https://github.com/edwardkim/rhwp/pull/7627)로 `7076f836e2`에 병합됐다.
-그 devel을 정렬한 로컬 head `4d9889a7f4`의 source/test는 위 검증 source와 동일하다.
-원격 #7544의 source와 초기 본문은 유지하고 [최신 검토 댓글](https://github.com/edwardkim/rhwp/pull/7544#issuecomment-6031830291)을 게시했다. Native/fresh WASM의 어구 전21쪽
-최저93.22327%, Enter4개 원문 전7쪽 최저100%이며 관련 기존 검사9개는 통과했다.
-교육과정 guide171/172쪽의 Native 실패 및 전체413/415쪽 차이는 남고, 이 source의
-fresh WASM guide·전체 Rust/lint/CI는 미검증이다. 교육과정 전체 보정을 인수하지 않는다.
-정확한 source·입력·대표 PNG와 판정은 [최신 self-review](../pr/archives/pr_7544_review.md#2026-10-07-범위-분리-후-로컬-후보-재검증)에 연결한다.
+검증 source `5308d4087d5e7ebdc38e14ff715f6b2621d0e108`에서 저장 guide의 새0 전진 계획을
+제외하고 기존 표 꼬리 정리를 직접 종료 문단으로 제한했다. 앞 빈 줄 drift의 Hidden 분기도 제거했다.
+Native/fresh WASM 독립 PDF 전7쪽 최저100%, 미달·누락0이고 대표 review·overlay를 직접 확인했다.
+전체 회귀10,511 PASS·필수 lint·정책·Native Skia3종·최적화 fresh WASM을 통과했다.
+현재 남은 병합 전 조건은 최신 원격 head CI와 mergeability 확인이다.
+
+어구21쪽·교육과정413쪽·정상 RowBreak18쪽 전체448쪽의 render tree는 Native 및 WASM 각각
+최신 devel과 동일했다. 교육과정413/415쪽의 기존 문제나 #7207 잔여를 완료로 판정하지 않는다.
+최소 선행 [#7627](https://github.com/edwardkim/rhwp/pull/7627)은 이미 `7076f836e2`에 병합됐다.
+정확한 입력 해시·명령·실패/재실행·최신 이미지·미검증은
+[최신 self-review](../pr/archives/pr_7544_review.md#2026-10-07-보류-해제-보정과-최종-로컬-검증)에 연결한다.
+이하 구현·실험은 각 당시 source의 이력이며 현재 guide 구현으로 읽지 않는다.
 
 ## 2026-10-03 실제 저장본 재검증 — 당시 이력
 

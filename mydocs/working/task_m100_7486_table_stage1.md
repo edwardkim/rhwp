@@ -7,6 +7,15 @@ last_verified: 2026-10-07
 
 # #7486 — 표 뒤 Enter의 확정 쪽 소유 보존
 
+## 현재 단계 — 2026-10-07
+
+source `5308d4087d`에서 새 저장 guide 해석을 제외하고 Enter 쪽 소속 보호로 범위를 고정했다.
+독립 PDF Native/fresh WASM 전7쪽 최저100%, 전체10,511 PASS·필수 lint·Skia3종·fresh WASM 통과다.
+저장본448쪽은 각 backend에서 devel과 모든 tree가 동일하다. 최신 원격 CI·mergeability는 확인 전이다.
+[최신 self-review](../pr/archives/pr_7544_review.md#2026-10-07-보류-해제-보정과-최종-로컬-검증)를 정본으로 사용한다.
+
+## 이전 단계 이력 — 2026-10-03 제출과 저장 guide 실험
+
 기준: `upstream/devel` `e1ecaa248ecf7f667d8fccab4d9938e70a253392`.
 Branch: `codex/table-enter-page-ownership`. 최초 범위는 로컬 보정·검증 후 직접 재검증이었다.
 사용자가 수정 결과를 확인했고 2026-10-03 PR 제출 준비를 승인했다. 원격 제출은 필수 검증 뒤 진행한다.

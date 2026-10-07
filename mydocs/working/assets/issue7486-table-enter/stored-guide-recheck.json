@@ -15,7 +15,6 @@
   "hancomEogu": {
     "jobId": "6023e41e-d10c-4ef4-b6ef-49c08d8a100b",
     "userExplicitTransferApproval": true,
-    "client": "npx local hwp2024-mcp-convert tarball",
     "result": {
       "job_id": "6023e41e-d10c-4ef4-b6ef-49c08d8a100b",
       "status": "success",
