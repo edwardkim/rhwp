@@ -1,0 +1,47 @@
+# #7387 KoPub useFontSpace 공백. 2px 관용 실루엣 일치율(%), 96dpi. base=devel 48ff4bb93 Native, fix=이 PR Native, wasm=이 PR fresh WASM.
+# 1382000: 전 39쪽(rhwp 39 = PDF 39). 편람: 수정 전후 SVG 가 바뀐 쪽만. 편람 hwp 는 rhwp 381쪽 / PDF 383쪽이라 내용(문서관리카드)으로 rhwp 375·376 = PDF 377·378 을 짝지었다.
+# 편람 hwpx 는 hwpx 원본의 유효한 한컴 PDF 가 없어(-hwpx-kopub-2020.pdf 는 cairo 산출) 같은 문서 hwp 원본의 PDF 로 잰 참고값이다.
+source	pdf	rhwp_page	pdf_page	base_native	fix_native	fix_wasm
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	1	1	90.83391	90.83391	90.83391
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	2	2	99.73684	99.73684	99.73684
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	3	3	99.12097	99.12097	99.12097
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	4	4	99.14908	99.14908	99.14908
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	5	5	99.88376	99.88376	99.88376
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	6	6	97.36199	97.60763	97.60763
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	7	7	99.63251	99.63251	99.63251
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	8	8	99.68556	99.68556	99.68556
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	9	9	99.66790	99.66790	99.66790
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	10	10	99.82693	99.82693	99.82693
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	11	11	99.29950	99.29950	99.29950
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	12	12	99.11710	99.11710	99.11710
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	13	13	96.00618	96.00618	96.00618
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	14	14	99.81625	99.81625	99.81625
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	15	15	98.87806	98.87806	98.87806
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	16	16	99.96098	99.96098	99.96098
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	17	17	99.98550	99.98550	99.98550
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	18	18	98.02977	98.02977	98.02977
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	19	19	94.61198	94.61198	94.61198
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	20	20	78.27465	97.78888	97.78888
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	21	21	91.02501	98.60993	98.60993
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	22	22	76.15916	81.51348	81.51348
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	23	23	39.18501	39.18501	39.18501
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	24	24	41.38915	41.54656	41.54656
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	25	25	11.95600	12.08336	12.08336
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	26	26	78.82327	96.28323	96.28323
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	27	27	91.66173	99.57647	99.57647
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	28	28	87.17813	99.13555	99.13555
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	29	29	88.18455	97.81268	97.81268
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	30	30	89.02323	98.35433	98.35433
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	31	31	81.13606	95.22163	95.22163
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	32	32	88.28857	99.46410	99.46410
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	33	33	92.45411	99.48875	99.48875
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	34	34	90.77856	99.39612	99.39612
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	35	35	82.18828	94.92360	94.92360
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	36	36	95.05540	99.97226	99.97226
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	37	37	99.39655	99.39655	99.39655
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	38	38	99.44493	99.44493	99.44493
+samples/task2430/1382000_domestic_violence_survey.hwp	pdf/issue2430/1382000_domestic_violence_survey-hwp2020-kopub.pdf	39	39	99.91010	99.91010	99.91010
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf	375	377	95.03338	94.26374	94.26374
+samples/2025 행정업무운영 편람(최종).hwp	pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf	376	378	95.46440	99.51932	99.51932
+samples/2025 행정업무운영 편람(최종).hwpx	pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf	377	377	94.97700	94.20822	94.20822
+samples/2025 행정업무운영 편람(최종).hwpx	pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf	378	378	95.46605	99.52293	99.52293
