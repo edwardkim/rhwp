@@ -1,18 +1,23 @@
-# #7207 어구 잔여 및 #7544 재검증 범위
+# #7207 저장 앞 프레임 정렬의 최소 보정 — #7544 재검토의 선행 작업
 
 Issue: #7207. 관련 PR: #7544 (원 이슈 #7486).
 기준: `upstream/devel` `48ff4bb9353bf8d29b7e1c0ac44df9bc5800dce8`.
 
 ## 범위
 
-사용자 지시로 교육과정 전체 개선을 인수하지 않고 어구 문서의 남은 표 경계·
-글줄/지도 소속과 #7544의 Enter·저장 guide 동작에 집중한다. #7445 후보는
-별도 로컬 브랜치에 보존했으며 이전 실험 중간 출력 13.66GiB를 정리했다.
+원래 사용자 요청은 #7544의 리뷰·병합이다. 그 재검증에서 최신 devel에도 어구
+문서의 저장 앞 프레임 정렬이 사라지는 기존 결함을 확인했다. 사용자 승인에 따라
+이미 분리한 이 작은 보정만 선행 PR로 준비하며 #7207 전체 또는 #7445 교육과정
+전체 개선을 인수하지 않는다. 소스 변경은 `table_partial.rs`의 기존 정렬 소유
+조건을 줄 구성과 최종 원점 선택에서 함께 소비하게 하는 13줄이다.
+기존 검사를 보강하며 컷·높이·guide·Enter·Studio source는 변경하지 않는다.
+이 선행 PR은 #7207 또는 #7486을 닫지 않는다.
 
 #7207은 postmelee에 할당돼 있다. #7574의 기존 병합 증거를 역사적 결과로
 유지하며 최신 devel의 Native/fresh WASM 전21쪽을 같은 한컴 PDF와 다시 비교한다.
-7쪽 표 하단, 9쪽 다열 셀 문구, 닫는 선과 19쪽 범례선은 직접 판독한다.
-90% 점수나 기존 세 회귀 통과만으로 이 잔여 의미 차이를 해결됐다고 쓰지 않는다.
+7쪽 표 하단, 9쪽 다열 셀 문구, 닫는 선과 19쪽 범례선의 기존 차이는 이번
+최소 보정의 범위 밖이다. 90% 점수나 기존 세 회귀 통과로 이를 해결됐다고 쓰지 않는다.
+다른 두 문서의 #7207 판정도 이 선행 PR에 포함하지 않는다.
 
 #7544는 원격 head `e22b099a28`를 유지한다. 최신 base와의 병합 시뮬레이션은
 `mydocs/orders/20261003.md`의 add/add 한 건이며 Rust source는 자동 병합된다.
@@ -29,8 +34,10 @@ Issue: #7207. 관련 PR: #7544 (원 이슈 #7486).
    후보를 통째로 합치거나 문서 ID·수치 예외, baseline 완화로 통과시키지 않는다.
 5. 실제 실행 결과·소스/입력/바이너리 해시·남은 범위는 이 기록에 연결한다.
 
-현재 최신 devel Native build는 exit0이다. 그 밖의 항목은 아직 실행 결과를
-확인 중이며 제출·병합 준비 완료로 판정하지 않는다.
+아래 1회차 결과는 이미 실행한 정렬 보정의 결과다. #7544 로컬 후보 재검증은
+별도 branch에 보존했으며 이 선행 PR에는 포함하지 않는다. 선행 code head
+`cf2b0508fc13812b51b345eacf16a47baa6db6ec`의 필수 로컬 검증을 완료했다.
+원격 CI와 mergeability는 PR 생성 후 정확한 최종 head에서 확인한다.
 
 ## 1회차 결과 — 저장 프레임의 정렬 소비 복원
 
@@ -60,7 +67,12 @@ Issue: #7207. 관련 PR: #7544 (원 이슈 #7486).
 | 어구21/정상18쪽 Native/fresh WASM tree | 구조·내용·좌표 차이0(좌표1e-5·아키텍처별pi sentinel 동등화) |
 | 강화한 #7207 기존 지도 검사 | 같은 검사/원문에서 수정 전FAIL(exit101) → 후PASS(exit0); 빈 밴드 관계로 검출 |
 | #7207 기존3개 + #7518 기존23개 | 실제26PASS |
-| fmt·scoped diff | PASS |
+| fmt·fmt check·PR 범위 공백 검사 | PASS |
+| Native/WASM lib/workspace all-target Clippy (`-D warnings`) | 세 단계 모두 PASS |
+| locked workspace build·manifest base 비교 | PASS; base `48ff4bb9353bf8d29b7e1c0ac44df9bc5800dce8` 고정 |
+| release-test 전체 integration | 10,509 PASS / 0 FAIL / 50 skipped |
+| Native Skia lib | 4,109 PASS / 0 FAIL / 13 ignored (workspace 네 lib 합계) |
+| Native Skia 누락 그림·직접 PDF | 2 PASS + 4 PASS |
 
 테스트 강화는 양쪽 출력39쪽의90% 이상과 대표 이미지 직접 판독 뒤 수행했다.
 원본의 Center 속성과 독립 PDF17쪽의 빈 밴드를 기대 근거로 사용하며
@@ -81,8 +93,22 @@ Native17/19/7쪽과 fresh WASM17쪽 review를 직접 판독했다. 지도 위치
 정확한 source/patch/binary/package hash·전후/Native-WASM tree 대조·TSV·
 RED/GREEN 로그는 ignored `output/pr-review/issue7207-7544-focus-20261007`과
 해당 임시 sweep 디렉터리에 보존한다. 새 fixture·baseline 변경은 없다.
-전체 Rust 회귀·세 Clippy/workspace build와 원격 CI·push·PR·승인·병합은
-이번 회차 완료 항목이 아니다. #7544는 별도 로컬 후보에서 재검증한다.
+필수 lint는 `cargo fmt --all -- --check`, Native Clippy, WASM32 lib Clippy,
+`cargo build --locked --workspace`, workspace all-target Clippy를 순차 실행했다.
+모든 Cargo 실행은 공유 `target/pr-review`를 사용했다. manifest 검사는
+`node scripts/rust-test-suite-manifest.mjs --check --base-ref 48ff4bb9353bf8d29b7e1c0ac44df9bc5800dce8`이다.
+전체 integration은 `cargo nextest run --locked --cargo-profile release-test
+--target-dir target/pr-review --tests --test-threads 4 --no-fail-fast`, Native lib는
+`cargo test --locked --profile release-test --target-dir target/pr-review
+--features native-skia --lib`로 실행했다. Native focused 두 모듈은
+`issue_2225_missing_picture_placeholder`, `render_p37_direct_pdf_export`다.
+
+첫 workspace build의 저장공간 부족과 앞선 전체 회귀의 sparse worktree fixture
+누락은 환경 실패로 기록하고 성공 증거에서 제외했다. 동일 commit의 누락 파일을
+복원하고 다시 실행한 최종 결과가 위 표다. 제품 source·기대값·baseline은 바꾸지
+않았다. source-side cfg(test) 변경은 없어서 unit-tier 검사는 비해당이다.
+원격 CI·push·PR·승인·병합은 로컬 검증과 구분한다. #7544는 별도 로컬 후보에서
+재검증하며 이 선행 보정을 #7544 완료로 보고하지 않는다.
 
 대표 증적: [변경 전17쪽](../working/assets/issue7207-center-frame-20261007/before-native-map17-review.png),
 [변경 후Native17쪽](../working/assets/issue7207-center-frame-20261007/after-native-map17-review.png),
