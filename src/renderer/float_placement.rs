@@ -2311,16 +2311,22 @@ impl ParagraphFloatPlacement {
 
     /// Preserve the same formatted before/body/after box in whole fit and paint.
     /// No text line is inferred from an empty control-only host.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn from_empty_reflow_host(
         para: &Paragraph,
         table: &Table,
         origin: f64,
+        stored_origin: Option<f64>,
         table_height: f64,
         before: f64,
         after: f64,
         dpi: f64,
     ) -> Option<Self> {
-        if !reflow_empty_table_host(para, table)
+        // 동일 단의 실제 원점0·연속 저장 사다리를 확인한 경우만 저장 원점을 쓴다.
+        // 폭0 자체는 현재 흐름과 저장/paint 원점이 같다는 증거가 아니다.
+        let stored_origin = stored_origin.filter(|_| saved_whole_empty_table_anchor(para, table));
+        let origin = stored_origin.unwrap_or(origin);
+        if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some())
             || ![origin, table_height, before, after]
                 .iter()
                 .all(|value| value.is_finite())
@@ -2335,7 +2341,7 @@ impl ParagraphFloatPlacement {
         Some(Self {
             flow: ParagraphFloatFlow::Exclusion,
             anchor_y: origin,
-            stored_host_origin: None,
+            stored_host_origin: stored_origin,
             stored_successor_line_origin: None,
             table_left: None,
             table_top,
@@ -3170,6 +3176,56 @@ pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
         && is_para_topbottom_float(&table.common)
         && matches!(table.common.vert_align, VertAlign::Top)
         && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+/// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.
+/// 폭 0 저장 줄의 vpos는 이전 흐름 위치일 수 있으므로 새 단의 원점을 덮지 않는다.
+/// 이 전환은 명시적 쪽·단 나누기로 새 프레임을 여는 통째 표에 적용한다.
+/// 같은 프레임 안의 저장 표는 폭 0이어도 원본 줄 원점을 계속 소유한다.
+/// 분할 표의 저장 앵커는 원본 조각의 컷·높이·단을 소유하므로 통째 표 상자로
+/// 치환하지 않는다. 일반 저장 글줄·음수 오프셋·절대 좌표도 기존 계약을 유지한다.
+pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Table) -> bool {
+    reflow_empty_table_host(para, table)
+        || (table.page_break == TablePageBreak::None
+            && matches!(
+                para.column_type,
+                crate::model::paragraph::ColumnBreakType::Page
+                    | crate::model::paragraph::ColumnBreakType::Column
+            )
+            && object_only_saved_table_anchor(para, table)
+            && !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para.line_segs.iter().all(|line| {
+                line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            && table.common.vert_align == VertAlign::Top
+            && signed_hwpunit(table.common.vertical_offset) >= 0)
+}
+
+/// 저장 원점이 별도로 입증되어야 하는 통째 빈 개체 앵커의 속성 계약.
+fn saved_whole_empty_table_anchor(para: &Paragraph, table: &Table) -> bool {
+    table.page_break == TablePageBreak::None
+        && object_only_saved_table_anchor(para, table)
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && para.line_segs.iter().all(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+        && table.common.vert_align == VertAlign::Top
+        && signed_hwpunit(table.common.vertical_offset) >= 0
+}
+
+/// 실제 예약에서 선택한 저장 원점 증거를 첫 조각도 그대로 소비한다.
+pub(crate) fn empty_table_host_uses_shared_formatted_box(
+    para: &Paragraph,
+    table: &Table,
+    placement: Option<&ParagraphFloatPlacement>,
+) -> bool {
+    empty_table_host_uses_formatted_box(para, table)
+        || (saved_whole_empty_table_anchor(para, table)
+            && placement.is_some_and(|plan| {
+                plan.flow == ParagraphFloatFlow::Exclusion && plan.stored_host_origin.is_some()
+            }))
 }
 
 /// 쪽·종이 기준 표의 외곽 여백을 포함한 가시 원점과 흐름 하단.

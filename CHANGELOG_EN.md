@@ -6,6 +6,96 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.7] — 2026-10-06
+
+> Cumulative PATCH release measured from 2,395 commits and provenance for 230 PRs after v0.8.6 through
+> feature baseline `17a69fa4e`. Later main-history reconciliation, versioning and distribution evidence are
+> tracked separately from that measured range.
+
+### Typesetting, rendering, and fonts
+
+- Preserve stored line membership, available width and outer margins for consecutive inline TAC tables.
+  Reflow without stored LineSegs distinguishes tables sharing a line from width-driven line breaks (#7482, #7585).
+- Preserve empty physical bands, cell padding and content ownership across rowspan/nested-table page splits,
+  including the preceding fragment border, continued pictures and following paragraphs (#7368, #7567, #7570).
+- Correct edited-paragraph indentation and line placement before TAC tables (#7599).
+- Connect host font providers and explicit font environments to measurement, CanvasKit and Canvas2D output,
+  and strengthen atomic fallback for native exact glyph replay (#6881, #7179, #7405).
+
+### Opening, saving, and editing
+
+- Fix Hancom opening of HWP5 documents with empty headers/footers, preserve repeating table headers and
+  page-boundary options, and normalize fallback HWPX layoutCompatibility output (#7338, #7460, #7478).
+- Add English Studio UI, editable web hyperlinks preserved in HWP/HWPX/PDF, overwrite mode and search
+  result counts (#6984, #7318, #7485, #7493).
+- Correct Enter after tables, empty-paragraph/page ownership, caret/scroll behavior, and nested-table
+  selection, deletion and clipboard boundaries (#7487, #7539, #7601).
+- Add CLI table column-width/alignment/field-placement options, safe block copy/fill/cross-document import,
+  and caption/header/footer address metadata (#7038, #7068, #7101).
+
+### Input safety and browser extensions
+
+- Harden SVG font CSS/XML boundaries, IPv4-mapped IPv6 classification, HWP3 paragraph depth, linked-image
+  file types and cumulative XML read budgets. Restore normal raw-DEFLATE thumbnails using the browser's
+  standard format label (#7602).
+- Harden WMF integer-extreme arithmetic and bitmap bounds. The release includes the defense against the
+  text-spacing subtraction panic still reported by scheduled fuzzing on the older main tree (#7263).
+- Fix Chrome download-completion events during initial state persistence, Firefox duplicate/reopened
+  download tabs and path exposure in automatically opened document filenames (#6965, #6966, #7279).
+
+### macOS, packages, and distribution
+
+- Move macOS CLI builds to `macos-15`: native ARM64 and cross-compiled Intel builds on Apple Silicon,
+  with target/runner-specific cache keys that avoid reusing older SDK artifacts (#7556).
+- Stable-tag Release Binary directly calls npm, VS Code Marketplace and Open VSX publishing from the same
+  commit, with independent exact-version checks and aggregate evidence (#6799).
+- Align Rust, npm core/editor, Studio, VS Code and Chrome/Edge/Firefox/Safari at 0.8.7.
+  Chrome, Edge and Firefox packages are submitted through their respective stores.
+
+### Compatibility and remaining scope
+
+- Keep the existing JSON envelope major and explicit font/compatibility opt-ins.
+- Harden implementation input boundaries without claiming to resolve every vulnerability in the HWP/HWPX
+  formats. Separate investigations and private advisory/CVE work continue on their own tracks.
+- Safari's manifest version is aligned; this store-distribution cycle covers Chrome, Edge and Firefox.
+
+### Contributors
+
+The measured feature baseline includes 29 human contributors, sorted without changing handle case.
+Bots and AI co-authors are counted separately.
+
+<!-- release-contributors:0.8.7:start -->
+- @aodtjddms
+- @baba9811
+- @davindev
+- @edwardkim
+- @emptinessform
+- @humdrum00001010
+- @jangster77
+- @jeong-sik
+- @kyunghwan-AITeam
+- @lidge-jun
+- @LJYeon12
+- @lpaiu-cs
+- @moongioh
+- @nishantpurohit04
+- @planet6897
+- @postmelee
+- @rubidus-api
+- @salgum1114
+- @semanticist21
+- @semo-git
+- @seo-rii
+- @seongeun82
+- @spamcam1207-stack
+- @winchoose
+- @yoonkhsc
+- @z0rimo
+- @zer0bi9
+- @zlzlzlmo
+- @zunstudio
+<!-- release-contributors:0.8.7:end -->
+
 ## [0.8.6] — 2026-09-02
 
 > Cumulative PATCH release prepared from provenance for 262 PRs found in the 2,214-commit feature baseline

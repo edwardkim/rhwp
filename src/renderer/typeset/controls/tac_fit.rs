@@ -200,11 +200,25 @@ pub(super) fn prepare(
     let height_for_fit = pre_reset_height_for_fit.unwrap_or(height_for_fit);
 
     // 넘치면 flush (단일 TAC 표만)
+    // Ordinary prefix rows can remain in this column while the following TAC
+    // row moves as a whole. Let typeset_tac_table consume those rows before
+    // advancing, rather than moving the whole paragraph during pre-fit.
+    let prefix_fits_separately = para.controls.iter().any(|ctrl| {
+        let Control::Table(table) = ctrl else {
+            return false;
+        };
+        flow.tac_table_line_index(para, table, fmt)
+            .filter(|&owner| crate::renderer::composer::ordinary_tac_prefix_rows(para, owner))
+            .is_some_and(|owner| {
+                page.current_height + fmt.line_advances_sum(0..owner) <= available_height()
+            })
+    });
     let advance_before_place = page.current_height + height_for_fit > available_height()
         && !page.current_items.is_empty()
         && has_tac
         && tac_count <= 1
-        && !saved_single_tac_bottom_fits;
+        && !saved_single_tac_bottom_fits
+        && !prefix_fits_separately;
     TacFitPlan {
         tac_count,
         has_tac,

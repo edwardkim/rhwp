@@ -537,6 +537,11 @@ fn serialize_page_border_fill(pbf: &PageBorderFill) -> Vec<u8> {
 fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
 
+    // [#7523] 파서는 bit 12 가 꺼져 있으면 단 수만큼 너비·간격 쌍을 읽는다. 단별 너비가
+    // 모자라면(너비 동일을 끈 채 단 수만 정한 편집) 렌더러처럼 같은 너비로 기록한다.
+    let count = cd.column_count as usize;
+    let same_width = cd.same_width || (count > 1 && cd.widths.len() < count);
+
     // 표 141: 속성 bit 0-15 (원본이 있으면 그대로, 없으면 재구성)
     let attr: u16 = if cd.raw_attr != 0 {
         cd.raw_attr
@@ -555,7 +560,7 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
             ColumnDirection::Mirror => 2 << 10,
         };
         // bit 12: 단 너비 동일
-        if cd.same_width {
+        if same_width {
             a |= 1 << 12;
         }
         a
@@ -564,10 +569,10 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
     w.write_u16(attr).unwrap();
 
     // hwplib 기준: same_width 여부에 따라 바이트 순서가 다름
-    if !cd.same_width && cd.column_count > 1 {
+    if !same_width && count > 1 {
         // same_width=false: [attr2(2)] [col0_width(2) col0_gap(2)] ...
         w.write_u16(0).unwrap(); // attr2
-        for i in 0..cd.widths.len() {
+        for i in 0..count {
             w.write_i16(cd.widths[i]).unwrap();
             let gap = cd.gaps.get(i).copied().unwrap_or(0);
             w.write_i16(gap).unwrap();

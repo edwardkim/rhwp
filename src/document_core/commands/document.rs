@@ -2032,6 +2032,11 @@ impl DocumentCore {
         let mut snapshot = self.document.clone();
         self.writeback_reflowed_table_frames(&mut snapshot);
         let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        super::header_footer_ops::lower_header_footer_field_markers(
+            &mut snapshot,
+            &self.file_name,
+            false,
+        );
         Self::refresh_doc_info_raw_cache(&mut snapshot);
         HwpExportSnapshot { document: snapshot }
     }
@@ -2185,16 +2190,21 @@ impl DocumentCore {
     ) -> Result<T, HwpError> {
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
+        let lower_markers = |doc: &mut Document| {
+            super::header_footer_ops::lower_header_footer_field_markers(doc, &self.file_name, true)
+        };
         let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
             let mut doc = self.document.clone();
-            if !doc
+            if let Some((_, value)) = doc
                 .hwpx_aux_entries
-                .iter()
-                .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
             {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            } else {
                 doc.hwpx_aux_entries.push((
                     crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH.to_string(),
-                    b"1".to_vec(),
+                    crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec(),
                 ));
             }
             // HWP3→HWP5 변환본의 HWPX export 도 hwp3 계보를 이어 준다.
@@ -2202,10 +2212,27 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
+            lower_markers(&mut doc);
             serialize(&doc)
-        } else if hwp3_origin {
+        } else if hwp3_origin
+            || self
+                .document
+                .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .is_some()
+            || super::header_footer_ops::has_header_footer_field_markers(&self.document)
+        {
             let mut doc = self.document.clone();
-            Self::push_hwp3_origin_marker(&mut doc);
+            if let Some((_, value)) = doc
+                .hwpx_aux_entries
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            }
+            if hwp3_origin {
+                Self::push_hwp3_origin_marker(&mut doc);
+            }
+            lower_markers(&mut doc);
             serialize(&doc)
         } else {
             serialize(&self.document)

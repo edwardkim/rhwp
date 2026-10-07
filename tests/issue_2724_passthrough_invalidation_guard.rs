@@ -732,7 +732,9 @@ const INVALIDATION_LEDGER: &[(&str, usize)] = &[
     ("commands/footnote_ops.rs", 6),
     ("commands/formatting.rs", 16),
     ("commands/header_footer_ops.rs", 9),
-    ("commands/html_import.rs", 5),
+    // 인라인 변환을 자식 모듈로 옮긴 두 사이트까지 합계 5곳의 방어를 유지한다.
+    ("commands/html_import.rs", 3),
+    ("commands/html_import/inline_content.rs", 2),
     ("commands/object_ops/common.rs", 2),
     ("commands/object_ops/connector.rs", 4),
     ("commands/object_ops/equation.rs", 3),

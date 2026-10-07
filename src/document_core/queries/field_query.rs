@@ -1239,7 +1239,29 @@ impl DocumentCore {
             .get_mut(section_idx)
             .and_then(|s| s.paragraphs.get_mut(para_idx))
             .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?;
-        remove_field_in_para(para, char_offset)?;
+        let removed = remove_field_in_para(para, char_offset)?;
+        // 활성 주소의 para_idx는 셀에서도 본문 부모다. 같은 부모의 컨트롤 번호만
+        // 비교해야 다른 표나 문단의 활성 누름틀을 해제하지 않는다.
+        let mut clear_active = false;
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == section_idx && active.para_idx == para_idx {
+                match &active.cell_path {
+                    None if active.para_idx == para_idx => {
+                        clear_active = active.control_idx == removed;
+                        if active.control_idx > removed {
+                            active.control_idx -= 1;
+                        }
+                    }
+                    Some(path) => {
+                        clear_active = path.first().is_some_and(|&(table, _, _)| table > removed)
+                    }
+                    None => {}
+                }
+            }
+        }
+        if clear_active {
+            self.clear_active_field();
+        }
         // 필드 제거는 섹션 본문을 바꾸므로 raw_stream 을 무효화해야 저장에 반영된다
         // (삽입 짝 insert_click_here_field_at 과 동형). 누락 시 recompose 로 화면만
         // 갱신되고 저장은 원본 바이트를 재방출해 지운 필드가 되살아난다.
@@ -1313,7 +1335,22 @@ impl DocumentCore {
                 }
             }
         };
-        remove_field_in_para(para, char_offset)?;
+        let removed = remove_field_in_para(para, char_offset)?;
+        // 이 셀 문단의 활성 누름틀(또는 안쪽 표)이 지운 누름틀 자리나 그 뒤면 주소가 맞지 않는다.
+        // 본문 부모까지 일치할 때만 로컬 셀 경로의 영향을 판단한다.
+        if self.active_field.as_ref().is_some_and(|active| {
+            active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
+                && active.cell_path.as_deref().is_some_and(|path| {
+                    path.first() == Some(&(control_idx, cell_idx, cell_para_idx))
+                        && path
+                            .get(1)
+                            .map_or(active.control_idx, |&(table, _, _)| table)
+                            >= removed
+                })
+        }) {
+            self.clear_active_field();
+        }
         // 셀/글상자 내 필드 제거도 섹션 본문 스트림을 바꾸므로 raw_stream 무효화 필요
         // (삽입 짝 insert_click_here_field_at_in_cell 과 동형).
         if let Some(section) = self.document.sections.get_mut(section_idx) {
@@ -1385,7 +1422,7 @@ impl DocumentCore {
         if let Some(ci) = ctrl_idx {
             let new_info = ActiveFieldInfo {
                 section_idx,
-                para_idx: cell_para_idx,
+                para_idx: parent_para_idx,
                 control_idx: ci,
                 cell_path,
             };
@@ -1495,13 +1532,11 @@ impl DocumentCore {
         };
         let ctrl_idx = find_field_ctrl_idx_in_para(para, char_offset);
         if let Some(ci) = ctrl_idx {
-            let last = path.last().unwrap();
-            let cell_para_idx = last.2;
             // cell_path: 전체 path를 저장 (중첩 표 구분용)
             let cell_path = Some(path.to_vec());
             let new_info = ActiveFieldInfo {
                 section_idx,
-                para_idx: cell_para_idx,
+                para_idx: parent_para_idx,
                 control_idx: ci,
                 cell_path,
             };
@@ -2457,11 +2492,19 @@ fn insert_click_here_field_in_para(
 ) -> Result<usize, HwpError> {
     let text_len = para.text.chars().count();
     let start = char_offset.min(text_len);
-    let positions = para.control_text_positions();
-    let insert_idx = positions
+    let gaps = raw_slot_gaps(para)?;
+    // 새 BEGIN·END는 시작 글자 바로 앞, 그 갭의 끝에 놓인다. 거기까지의 슬롯에서
+    // 거기까지 끝난 누름틀의 END를 빼면 앞에 남는 컨트롤 수다.
+    let insert_pos = gaps[start].1;
+    let insert_idx = gaps[..=start]
         .iter()
-        .position(|&pos| pos > start)
-        .unwrap_or(para.controls.len());
+        .map(|&(gap_start, gap_end)| ((gap_end - gap_start) / 8) as usize)
+        .sum::<usize>()
+        - para
+            .field_ranges
+            .iter()
+            .filter(|range| range.end_char_idx <= start)
+            .count();
 
     for range in &mut para.field_ranges {
         if range.control_idx >= insert_idx {
@@ -2515,7 +2558,13 @@ fn insert_click_here_field_in_para(
         })
         .unwrap_or(para.field_ranges.len());
     para.field_ranges.insert(range_idx, new_range);
-    rebuild_char_offsets(para);
+    for offset in &mut para.char_offsets[start..] {
+        *offset += 16;
+    }
+    para.shift_position_metadata_for_stream_insertion(insert_pos, 16);
+    // 문단 끝 표시 앞까지의 슬롯과 글자에 새 슬롯 16유닛, 끝 표시 1유닛을 더한다.
+    para.char_count = gaps[text_len].1 + 16 + 1;
+    para.invalidate_layout_inputs();
 
     Ok(start)
 }
@@ -2548,45 +2597,161 @@ fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<u
     None
 }
 
-/// 문단 내 커서 위치의 누름틀 필드를 제거한다.
-fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<(), HwpError> {
-    let idx = para.field_ranges.iter().position(|fr| {
-        if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-            if field.field_type != FieldType::ClickHere {
-                return false;
-            }
-            char_offset >= fr.start_char_idx && char_offset <= fr.end_char_idx
-        } else {
-            false
-        }
-    });
-    match idx {
-        Some(i) => {
-            let start = para.field_ranges[i].start_char_idx;
-            let end = para.field_ranges[i].end_char_idx;
-            let removed_control_idx = para.field_ranges[i].control_idx;
-            para.field_ranges.remove(i);
-            if end > start {
-                para.delete_text_at(start, end - start);
-            }
-            if removed_control_idx < para.controls.len() {
-                para.controls.remove(removed_control_idx);
-            }
-            if removed_control_idx < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(removed_control_idx);
-            }
-            for range in &mut para.field_ranges {
-                if range.control_idx > removed_control_idx {
-                    range.control_idx -= 1;
-                }
-            }
-            rebuild_char_offsets(para);
-            Ok(())
-        }
-        None => Err(HwpError::InvalidField(
-            "커서 위치에 누름틀 필드 없음".into(),
-        )),
+/// 문단 내 커서 위치의 누름틀 필드를 제거하고 지운 컨트롤 번호를 돌려준다.
+///
+/// 대상은 `getFieldInfoAt` 과 같은 규칙으로 고른다. 누름틀의 BEGIN·END 슬롯과 내용 글자만
+/// 지우고 다른 컨트롤의 슬롯은 제자리에 둔다.
+fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<usize, HwpError> {
+    let control_idx = find_field_ctrl_idx_in_para(para, char_offset)
+        .ok_or_else(|| HwpError::InvalidField("커서 위치에 누름틀 필드 없음".into()))?;
+    let gaps = raw_slot_gaps(para)?;
+    let range_idx = para
+        .field_ranges
+        .iter()
+        .position(|range| range.control_idx == control_idx)
+        .ok_or_else(invalid_raw_slots)?;
+    let (start, end) = (
+        para.field_ranges[range_idx].start_char_idx,
+        para.field_ranges[range_idx].end_char_idx,
+    );
+    // 내용 글자를 지우면 BEGIN이 있는 시작 갭과 END가 있는 끝 갭이 하나로 합쳐진다. 갭 안의
+    // 순서는 원본이 남기지 않으므로 삽입과 같이 합친 갭의 끝에서 두 슬롯을 뺀다.
+    let content: u32 = para
+        .text
+        .chars()
+        .skip(start)
+        .take(end - start)
+        .map(|ch| if ch == '\t' { 8 } else { ch.len_utf16() as u32 })
+        .sum();
+    let merged = gaps[end].1 - gaps[start].0 - content;
+    let para_end = gaps[gaps.len() - 1].1 - content - 16;
+
+    para.field_ranges.remove(range_idx);
+    if end > start {
+        para.delete_text_at(start, end - start);
     }
+    let slots = gaps[start].0 + merged - 16;
+    let shift = |position: &mut u32| {
+        if *position > slots {
+            *position = position.saturating_sub(16).max(slots);
+        }
+    };
+    for position in &mut para.char_offsets {
+        shift(position);
+    }
+    for shape in &mut para.char_shapes {
+        shift(&mut shape.start_pos);
+    }
+    for range in &mut para.range_tags {
+        shift(&mut range.start);
+        shift(&mut range.end);
+    }
+    for mark in &mut para.markpen_marks {
+        if let Some(position) = &mut mark.utf16_pos {
+            shift(position);
+        }
+    }
+    para.char_count = para_end + 1;
+    // 슬롯 자리에서 시작하던 글자모양이 뒤 글자 경계와 겹치면 뒤 글자에 쓰이던 것을 남긴다.
+    let shapes = std::mem::take(&mut para.char_shapes);
+    for shape in shapes {
+        if para
+            .char_shapes
+            .last()
+            .is_some_and(|last| last.start_pos == shape.start_pos)
+        {
+            para.char_shapes.pop();
+        }
+        para.char_shapes.push(shape);
+    }
+    para.invalidate_layout_inputs();
+
+    para.controls.remove(control_idx);
+    if control_idx < para.ctrl_data_records.len() {
+        para.ctrl_data_records.remove(control_idx);
+    }
+    for range in &mut para.field_ranges {
+        if range.control_idx > control_idx {
+            range.control_idx -= 1;
+        }
+    }
+    Ok(control_idx)
+}
+
+fn invalid_raw_slots() -> HwpError {
+    HwpError::InvalidField("누름틀의 원시 슬롯 위치를 확인할 수 없습니다.".into())
+}
+
+/// 글자 앞 갭마다 원시 `(시작, 끝)` 위치를 돌려준다. 마지막 갭은 문단 끝 표시 앞이다.
+///
+/// 갭은 8유닛 슬롯(컨트롤과 FIELD_END)으로만 채워지고, 누름틀 BEGIN은 시작 갭에, END는 끝
+/// 갭에 있어야 한다. 숨은 슬롯이 있거나 갭마다 거기까지의 슬롯 수가 이 배치와 맞지 않으면
+/// 위치를 추정하지 않고 오류를 낸다.
+fn raw_slot_gaps(para: &Paragraph) -> Result<Vec<(u32, u32)>, HwpError> {
+    if !para.title_marks.is_empty()
+        || !para.orphan_field_ends.is_empty()
+        || para.text.contains('\u{fffc}')
+        || para.char_offsets.len() != para.text.chars().count()
+        || para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::Hyperlink(_)
+                    | Control::AutoNumber(_)
+                    | Control::NewNumber(_)
+                    | Control::Ruby(_)
+                    | Control::CharOverlap(_)
+                    | Control::Unknown(_)
+            )
+        })
+    {
+        return Err(invalid_raw_slots());
+    }
+    let mut gaps = Vec::with_capacity(para.char_offsets.len() + 1);
+    let mut end = 0u32;
+    let mut inner = 0;
+    for (&offset, ch) in para.char_offsets.iter().zip(para.text.chars()) {
+        let units = offset
+            .checked_sub(end)
+            .filter(|units| units % 8 == 0)
+            .ok_or_else(invalid_raw_slots)?;
+        inner += (units / 8) as usize;
+        gaps.push((end, offset));
+        end = offset + if ch == '\t' { 8 } else { ch.len_utf16() as u32 };
+    }
+    // 문단 끝 갭에는 남은 슬롯이 온다. 합성 문단은 char_count가 어긋나 있기도 해서 쓰지 않는다.
+    let ranges = &para.field_ranges;
+    let tail = (para.controls.len() + ranges.len())
+        .checked_sub(inner)
+        .ok_or_else(invalid_raw_slots)?;
+    gaps.push((end, end + 8 * tail as u32));
+    let mut slots = 0;
+    let mut placed = 0;
+    for (gap, &(start, end)) in gaps.iter().enumerate() {
+        slots += ((end - start) / 8) as usize;
+        // 여기까지 온 슬롯에서 끝난 누름틀의 END를 뺀 컨트롤 수는 줄지 않고, 시작한 누름틀의
+        // BEGIN을 모두 포함하며, 아직 시작하지 않은 누름틀의 BEGIN은 포함하지 않아야 한다.
+        let ends = ranges
+            .iter()
+            .filter(|range| range.end_char_idx <= gap)
+            .count();
+        let begun = ranges
+            .iter()
+            .filter(|range| range.start_char_idx <= gap)
+            .map(|range| range.control_idx + 1)
+            .max()
+            .unwrap_or(0);
+        let before_next = ranges
+            .iter()
+            .filter(|range| range.start_char_idx > gap)
+            .map(|range| range.control_idx)
+            .min()
+            .unwrap_or(para.controls.len());
+        placed = slots
+            .checked_sub(ends)
+            .filter(|&controls| controls >= placed && (begun..=before_next).contains(&controls))
+            .ok_or_else(invalid_raw_slots)?;
+    }
+    Ok(gaps)
 }
 
 /// 문자열을 JSON 이스케이프한다.

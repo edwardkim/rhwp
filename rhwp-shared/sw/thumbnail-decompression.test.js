@@ -1,6 +1,8 @@
 import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
+import { deflateRawSync } from 'node:zlib';
+import vm from 'node:vm';
 
 await import('./thumbnail-decompression.js');
 
@@ -74,13 +76,13 @@ function pushU32(bytes, value) {
   );
 }
 
-function storedPreviewZip(payload, declaredSize = payload.byteLength) {
+function storedPreviewZip(payload, declaredSize = payload.byteLength, method = 0) {
   const name = new TextEncoder().encode('Preview/PrvImage.png');
   const local = [];
   pushU32(local, 0x04034b50);
   pushU16(local, 20);
   pushU16(local, 0);
-  pushU16(local, 0);
+  pushU16(local, method);
   pushU16(local, 0);
   pushU16(local, 0);
   pushU32(local, 0);
@@ -96,7 +98,7 @@ function storedPreviewZip(payload, declaredSize = payload.byteLength) {
   pushU16(central, 20);
   pushU16(central, 20);
   pushU16(central, 0);
-  pushU16(central, 0);
+  pushU16(central, method);
   pushU16(central, 0);
   pushU16(central, 0);
   pushU32(central, 0);
@@ -131,8 +133,9 @@ function pngPreview() {
   return png;
 }
 
-test('Chrome public thumbnail consumer preserves a valid preview and rejects oversized metadata', { concurrency: false }, async () => {
-  const { extractThumbnailFromUrl } = await import('../../rhwp-chrome/sw/thumbnail-extractor.js');
+for (const extension of ['rhwp-chrome', 'rhwp-firefox']) {
+test(`${extension} public thumbnail consumer preserves a valid preview and rejects oversized metadata`, { concurrency: false }, async () => {
+  const { extractThumbnailFromUrl } = await import(`../../${extension}/sw/thumbnail-extractor.js`);
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url) => new Response(
     String(url).endsWith('oversized.hwpx')
@@ -154,6 +157,45 @@ test('Chrome public thumbnail consumer preserves a valid preview and rejects ove
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+}
+
+test('all three consumers accept raw DEFLATE and bound actual output before caching', { concurrency: false }, async () => {
+  const listener = {addListener() {}};
+  const safari = vm.createContext({URL, Map, console: {log() {}}, Response, TextDecoder,
+    DecompressionStream, btoa, rhwpBoundedStream: globalThis.rhwpBoundedStream,
+    browser: {
+      runtime: {getURL: () => 'safari-web-extension://test/', onMessage: listener, onInstalled: listener},
+      contextMenus: {onClicked: listener}, action: {onClicked: listener},
+      storage: {local: {async get(defaults) {return defaults;}}},
+    },
+  });
+  vm.runInContext(await readFile(new URL('../../rhwp-safari/src/background.js', import.meta.url), 'utf8'), safari);
+  const consumers = [
+    (await import('../../rhwp-chrome/sw/thumbnail-extractor.js')).extractThumbnailFromUrl,
+    (await import('../../rhwp-firefox/sw/thumbnail-extractor.js')).extractThumbnailFromUrl,
+    url => {safari.inputUrl = url; return vm.runInContext('extractThumbnailFromUrl(inputUrl)', safari);},
+  ];
+  const originalFetch = globalThis.fetch;
+  try {
+    for (const [index, consume] of consumers.entries()) {
+      let payload = storedPreviewZip(deflateRawSync(pngPreview()), 24, 8);
+      let fetches = 0;
+      const fetch = async () => {fetches++; return new Response(payload);};
+      globalThis.fetch = safari.fetch = fetch;
+      const valid = await consume(`https://example.test/deflate-valid-${index}.hwpx`);
+      assert.equal(valid?.mime, 'image/png', `consumer ${index} must decode a normal deflate preview`);
+      assert.equal(valid?.width, 1);
+      assert.equal(valid?.height, 1);
+
+      payload = storedPreviewZip(deflateRawSync(new Uint8Array(32 * 1024)), 24, 8);
+      const retryUrl = `https://example.test/deflate-mismatch-${index}.hwpx`;
+      assert.equal(await consume(retryUrl), null, 'streamed output must match declared bytes');
+      payload = storedPreviewZip(deflateRawSync(pngPreview()), 24, 8);
+      assert.equal((await consume(retryUrl))?.mime, 'image/png', 'rejection cannot poison thumbnail cache');
+      assert.equal(fetches, 3);
+    }
+  } finally {globalThis.fetch = originalFetch;}
 });
 
 test('thumbnail consumers choose their output policy at the public boundary', async () => {
