@@ -588,3 +588,9 @@ samples/issue7482/tac-after-plain-paragraphs.hwpx	2	2
 
 # PR #7337: samples/pr7337/nested_tac_table_wrap-2020.pdf; 전 6쪽 Native/fresh WASM 비교 통과.
 samples/nested_tac_table_wrap.hwp	6	6
+
+# #7626: 원본 HWPX와 한컴 재저장 HWP 각각의 2020 1-up Print 전 2쪽.
+samples/issue7626/sample-document.hwpx	2	2
+samples/issue7626/hancom-resaved.hwp	2	2
+samples/issue7626/end-run-two-lines.hwpx	2	2
+samples/issue7626/end-run-two-lines.hwp	2	2
