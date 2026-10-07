@@ -130,3 +130,81 @@ fn spacing_before_without_float_and_host_without_spacing_are_unchanged() {
         y6 - table_bottom
     );
 }
+
+// ── 단 맨 위 반례 ─────────────────────────────────────────────────────────────
+//
+// 공개 합성 입력 `samples/float_push_spacing_before/float_push_spacing_before_column_top.hwp`
+// (생성기 `make_float_push_spacing_before_column_top.py` → 한/글 2020 HWP 저장, 정본
+// `pdf/float_push_spacing_before/float_push_spacing_before_column_top-2020.pdf`). 대상 문단을
+// pageBreak 로 쪽 맨 위에 둔다.
+//
+// - 2쪽 pi=2: 앞 간격 2800HU host + 자리차지 표. 한/글 저장 vpos 6992 는 앞 간격 없는 4쪽
+//   host(pi=6)의 6992 와 같다 — 쪽 맨 위에서도 앞 간격을 표 아래에 더하지 않는다.
+// - 3쪽 pi=4(대조): 같은 앞 간격, 표 없음. 저장 vpos 1400 — 쪽 나눔 뒤 맨 위 문단의 앞 간격은 남는다.
+
+const COLUMN_TOP_SAMPLE: &str =
+    "samples/float_push_spacing_before/float_push_spacing_before_column_top.hwp";
+/// 표 바깥 위 여백(HU) — 생성기 값.
+const OUTER_TOP_HU: f64 = 140.0;
+
+fn column_top_pages() -> Vec<Page> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(COLUMN_TOP_SAMPLE);
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {COLUMN_TOP_SAMPLE}: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
+    assert_eq!(core.page_count(), 4, "정본은 4쪽");
+    (0..4)
+        .map(|i| {
+            let tree = core
+                .build_page_render_tree(i)
+                .unwrap_or_else(|e| panic!("render {}쪽: {e:?}", i + 1));
+            let mut page = Page::default();
+            collect(&tree.root, false, &mut page);
+            page
+        })
+        .collect()
+}
+
+#[test]
+fn column_top_pushed_first_line_does_not_add_spacing_before_again() {
+    let pages = column_top_pages();
+    let (p2, p4) = (&pages[1], &pages[3]);
+    assert_eq!(p2.tables.len(), 1, "2쪽 본문 표 1개");
+    assert_eq!(p4.tables.len(), 1, "4쪽 본문 표 1개");
+    let (y2, v2) = line(p2, 2);
+    let (y6, v6) = line(p4, 6);
+    assert_eq!(
+        v2, v6,
+        "입력 전제: 한/글은 두 host 첫 줄을 같은 vpos 에 저장한다"
+    );
+    let expected = OUTER_BOTTOM_HU / HU_PER_PX;
+    let gap2 = y2 - p2.tables[0].1;
+    assert!(
+        (gap2 - expected).abs() < 1.0,
+        "2쪽 맨 위 host 첫 글줄은 표 아래 바깥 여백 바로 밑이다(앞 간격 재가산 금지): \
+         gap={gap2:.1}px, expected={expected:.1}px"
+    );
+    assert!(
+        ((y2 - p2.tables[0].0) - (y6 - p4.tables[0].0)).abs() < 1.0,
+        "앞 간격 유무와 무관하게 표 상단 대비 첫 글줄 위치가 같다: pi=2 {:.1} / pi=6 {:.1}",
+        y2 - p2.tables[0].0,
+        y6 - p4.tables[0].0
+    );
+}
+
+#[test]
+fn column_top_spacing_before_without_float_is_kept() {
+    let pages = column_top_pages();
+    let (p3, p4) = (&pages[2], &pages[3]);
+    // 같은 쪽 설정이므로 4쪽 표 상단에서 바깥 위 여백을 뺀 값이 본문 상단이다.
+    let body_top = p4.tables[0].0 - OUTER_TOP_HU / HU_PER_PX;
+    let (y4, v4) = line(p3, 4);
+    assert!(
+        v4 > 0,
+        "입력 전제: 한/글은 쪽 맨 위 대조 문단의 앞 간격을 저장 vpos 에 담는다: {v4}"
+    );
+    let expected = body_top + f64::from(v4) / HU_PER_PX;
+    assert!(
+        (y4 - expected).abs() < 1.0,
+        "3쪽 맨 위 대조 문단은 앞 간격을 유지한다: y={y4:.1}, 저장 vpos 기준 {expected:.1}"
+    );
+}
