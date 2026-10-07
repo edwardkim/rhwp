@@ -1,0 +1,329 @@
+{
+  "stage": "6쪽 단일 TAC 확정 계획의 연속 빈 줄 간격 보존",
+  "parent_head": "f2b830590",
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_027",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(group_shapes_contract) | test(ungroup_shape_contract) | test(issue_5716) | test(page_31_signed_line_transform) | test(owned_rowbreak_tac_height) | test(issue_7062) | test(issue_6192) | test(issue_5755) | test(issue_7081)"
+      ],
+      "exit": 0,
+      "seconds": 299.002
+    },
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 231.371
+    },
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 1.233
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 26.675
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 22.677
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 35.257
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 72.037
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 1,
+      "seconds": 10.843
+    },
+    {
+      "gate": "fmt-recheck",
+      "exit": 0,
+      "reason": "rustfmt 줄바꿈 보정만 적용"
+    },
+    {
+      "gate": "manifest",
+      "exit": 0,
+      "base": "6b3faf77d8085441f9f26d88d65a49791e910352"
+    }
+  ],
+  "visual": {
+    "native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.73402",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.73402",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "98.66489",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.65592",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.78726",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.78726",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "99.84525",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.84525",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "97.99040",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.98986",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "99.91741",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.91741",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "99.09872",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.09872",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.03672",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.03672",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.73402",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.73402",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "98.66489",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.65592",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.78726",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.78726",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "99.84525",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.84525",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "97.99040",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.98986",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "99.91741",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.91741",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "99.09872",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.09872",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.03672",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.03672",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter5755_native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "99.32105",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.32014",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.13619",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13619",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.76615",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.76615",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter5755_wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "99.32105",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.32014",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.13619",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13619",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.76615",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.76615",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter2470_native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.68570",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.68570",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "54.42807",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "54.42807",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ]
+  },
+  "status": "8쪽 전쪽 Native/fresh WASM 통과, 추가2쪽 보류",
+  "hashes": {
+    "src/renderer/typeset/controls/stored_tac.rs": "b9ed3e9418e72834853acff134ff6a27ee4fa9e2249f99f35b71feefb2649f0b",
+    "pkg/rhwp_bg.wasm": "538a03ffda5c2a486a72e7d0c9ca85c360ce70f675bc9d38af5726233780ab9f"
+  },
+  "format_note": "비교·컴파일 뒤 rustfmt 줄바꿈만 정리하고 fmt/manifest 재검증 exit0; 동작 수정 없음"
+}

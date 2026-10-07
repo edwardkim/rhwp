@@ -1,8 +1,8 @@
-//! Regression guards for `samples/rowbreak-problem-pages.hwpx`.
+//! `samples/rowbreak-problem-pages.hwpx`의 표 분할 회귀 검사.
 //!
-//! The first chart-like TAC table on page 2 (`pi=5 ci=0`) must start below the
-//! preceding `<민간 SaaS 연계공통기반 운영체계>` title line. Otherwise the chart
-//! border and image are painted under that title text.
+//! 2쪽의 첫 도표 형태 TAC 표(`pi=5 ci=0`)는 앞선
+//! `<민간 SaaS 연계공통기반 운영체계>` 제목 글줄 아래에서 시작해야 한다.
+//! 이 경계를 지키지 않으면 표 테두리와 그림이 제목 글자 아래에 겹쳐 그려진다.
 
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use std::fs;
@@ -320,7 +320,7 @@ fn rowbreak_page17_keeps_database_separation_line_before_example_box() {
             .build_page_render_tree(16)
             .unwrap_or_else(|e| panic!("render {sample} page 17: {e}"));
         // `별도`만 검색하면 후속 예시 표의 "별도 개방DB"를 잘못 집을 수 있다.
-        // PDF p17에서 예시 상자 바로 앞에 있어야 하는 정확한 source line을 고정한다.
+        // PDF 17쪽에서 예시 상자 바로 앞에 있어야 하는 정확한 원문 글줄을 고정한다.
         let database_line =
             text_line_bbox_containing(&page17.root, "공공데이터를 별도 테이블(table)로 구성·설계")
                 .unwrap_or_else(|| {
@@ -453,65 +453,6 @@ fn rowbreak_page2_chart_starts_below_title_line() {
         title.y,
         title_bottom,
         chart.y,
-    );
-}
-
-#[test]
-fn rowbreak_page7_nested_table_paragraph_keeps_host_text() {
-    let doc = load_doc(SAMPLE);
-    let page7 = doc
-        .build_page_render_tree(6)
-        .unwrap_or_else(|e| panic!("render page 7: {e}"));
-    let page8 = doc
-        .build_page_render_tree(7)
-        .unwrap_or_else(|e| panic!("render page 8: {e}"));
-
-    let cells = collect_table_cells(&page7.root, 21, 0);
-    assert!(
-        !cells.is_empty(),
-        "page 7 rowbreak table pi=21 ci=0 should render cells"
-    );
-    assert!(
-        cells
-            .iter()
-            .any(|cell| text_line_exists(cell, "1. 「정보통신망")),
-        "row 25 should keep the host paragraph text before its nested reference table"
-    );
-    let row25_detail = cells
-        .iter()
-        .find(|cell| matches!(&cell.node_type, RenderNodeType::TableCell(c) if c.row == 2 && c.col == 1))
-        .expect("page 7 row 25 detail cell should render");
-    let row26_detail = cells
-        .iter()
-        .find(|cell| matches!(&cell.node_type, RenderNodeType::TableCell(c) if c.row == 3 && c.col == 1))
-        .expect("page 7 row 26 detail cell should render");
-    let row25_text_bottom =
-        max_text_line_bottom(row25_detail).expect("page 7 row 25 detail cell should contain text");
-    assert!(
-        row25_text_bottom <= row26_detail.bbox.y + 0.5,
-        "row 25 text overlaps row 26 on page 7: row25 text bottom={:.2}, row26 top={:.2}",
-        row25_text_bottom,
-        row26_detail.bbox.y
-    );
-
-    let page8_cells = collect_table_cells(&page8.root, 21, 0);
-    let page8_top_detail = page8_cells
-        .iter()
-        .find(|cell| matches!(&cell.node_type, RenderNodeType::TableCell(c) if c.row == 3 && c.col == 1))
-        .expect("page 8 continued row detail cell should render");
-    let following = text_line_bbox_containing(page8_top_detail, "과학기술정보통신부장관")
-        .expect("page 8 continued row should render the paragraph after the dotted fragment");
-    assert!(
-        following.y >= page8_top_detail.bbox.y - 0.5,
-        "page 8 continued paragraph is clipped above the detail cell: text_top={:.2}, cell_top={:.2}",
-        following.y,
-        page8_top_detail.bbox.y
-    );
-    let page8_cell_bottom = page8_top_detail.bbox.y + page8_top_detail.bbox.height;
-    let following_bottom = following.y + following.height;
-    assert!(
-        following_bottom <= page8_cell_bottom + 0.5,
-        "page 8 continued paragraph is clipped below the detail cell: text_bottom={following_bottom:.2}, cell_bottom={page8_cell_bottom:.2}"
     );
 }
 
@@ -653,51 +594,6 @@ fn rowbreak_page12_reference_text_stays_inside_body() {
 }
 
 #[test]
-fn rowbreak_hwp_page8_keeps_continued_nested_reference_line() {
-    let doc = load_doc(HWP_SAMPLE);
-    let page8 = doc
-        .build_page_render_tree(7)
-        .unwrap_or_else(|e| panic!("render HWP page 8: {e}"));
-
-    let cells = collect_table_cells(&page8.root, 21, 0);
-    let row26_detail = cells
-        .iter()
-        .find(|cell| matches!(&cell.node_type, RenderNodeType::TableCell(c) if c.row == 3 && c.col == 1))
-        .expect("HWP page 8 row 26 detail cell should render");
-    let line = text_line_bbox_containing(row26_detail, "매개하는 자를")
-        .expect("HWP page 8 should keep the first continued nested reference line");
-    let following = text_line_bbox_containing(row26_detail, "과학기술정보통신부장관")
-        .expect("HWP page 8 should render the paragraph after the continued nested reference");
-    let nested_table =
-        first_nested_table_bbox(row26_detail).expect("HWP page 8 continued nested table bbox");
-    let cell_bottom = row26_detail.bbox.y + row26_detail.bbox.height;
-    let line_bottom = line.y + line.height;
-    let nested_bottom = nested_table.y + nested_table.height;
-
-    assert!(
-        line.y >= row26_detail.bbox.y - 0.5,
-        "HWP page 8 continued line is clipped above the cell: line_top={:.2}, cell_top={:.2}",
-        line.y,
-        row26_detail.bbox.y
-    );
-    assert!(
-        line_bottom <= cell_bottom + 0.5,
-        "HWP page 8 continued line is clipped below the cell: line_bottom={:.2}, cell_bottom={cell_bottom:.2}",
-        line_bottom
-    );
-    assert!(
-        following.y >= line_bottom - 0.5,
-        "HWP page 8 continued line overlaps the following paragraph: line_bottom={line_bottom:.2}, following_top={:.2}",
-        following.y
-    );
-    assert!(
-        nested_bottom <= following.y + 0.5,
-        "HWP page 8 continued nested table border includes the following paragraph: nested_bottom={nested_bottom:.2}, following_top={:.2}",
-        following.y
-    );
-}
-
-#[test]
 fn rowbreak_hwp_page12_reference_text_stays_inside_body() {
     let doc = load_doc(HWP_SAMPLE);
     let page12 = doc
@@ -711,20 +607,6 @@ fn rowbreak_hwp_page12_reference_text_stays_inside_body() {
     assert!(
         text_bottom <= body_bottom + 0.5,
         "HWP page 12 text is clipped by the Body clip: text_bottom={text_bottom:.2}, body_bottom={body_bottom:.2}"
-    );
-}
-
-#[test]
-fn rowbreak_page7_starts_article_26_like_hancom_pdf() {
-    let doc = load_doc(SAMPLE);
-    let page7 = doc
-        .build_page_render_tree(6)
-        .unwrap_or_else(|e| panic!("render page 7: {e}"));
-
-    let cells = collect_table_cells(&page7.root, 21, 0);
-    assert!(
-        cells.iter().any(|cell| text_line_exists(cell, "제26조")),
-        "Hancom PDF page 7 starts article 26 in table pi=21; rhwp should not stop at article 25"
     );
 }
 

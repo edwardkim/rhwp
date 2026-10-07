@@ -50,6 +50,8 @@ const HWPX_PBKDF2_NAME: &str = "urn:oasis:names:tc:opendocument:xmlns:manifest:1
 const HWPX_MAX_PBKDF2_ITERATIONS: u32 = 1_000_000;
 const HWPX_MAX_XML_SIZE: usize = 256 * 1024 * 1024;
 const HWPX_MAX_BINDATA_SIZE: usize = 512 * 1024 * 1024;
+// Bound XML inflation in the password prepass before the parser gets a reader.
+const HWPX_TOTAL_XML_READ_BYTES: usize = 512 * 1024 * 1024;
 
 type HmacSha1 = Hmac<Sha1>;
 type HmacSha256 = Hmac<Sha256>;
@@ -69,6 +71,7 @@ pub enum PasswordCryptoError {
     HwpxXml(String),
     HwpxMissingEntry(String),
     HwpxEntryLimitExceeded { path: String, max_bytes: usize },
+    HwpxXmlReadBudgetExceeded { path: String, max_bytes: usize },
     Random(String),
 }
 
@@ -103,6 +106,10 @@ impl std::fmt::Display for PasswordCryptoError {
                     "{path}의 복호화 결과가 {max_bytes} 바이트 상한을 초과했습니다"
                 )
             }
+            Self::HwpxXmlReadBudgetExceeded { path, max_bytes } => write!(
+                formatter,
+                "HWPX XML read budget ({max_bytes} bytes) exceeded at '{path}'"
+            ),
             Self::Random(message) => write!(formatter, "안전한 난수 생성 실패: {message}"),
         }
     }
@@ -586,7 +593,49 @@ fn hwpx_plaintext_limit(path: &str) -> usize {
     }
 }
 
-fn inflate_hwpx_raw_deflate(data: &[u8], path: &str) -> Result<Vec<u8>, PasswordCryptoError> {
+fn is_hwpx_xml_budget_path(path: &str) -> bool {
+    let lower = path.to_ascii_lowercase();
+    lower.ends_with(".xml") || lower.ends_with(".hpf") || lower == "preview/prvtext.txt"
+}
+
+fn read_hwpx_xml_limited<R: Read>(
+    reader: &mut R,
+    path: &str,
+    remaining: &mut usize,
+) -> Result<Vec<u8>, PasswordCryptoError> {
+    let allowance = HWPX_MAX_XML_SIZE.min(*remaining);
+    let mut bytes = Vec::new();
+    let result = reader.take(allowance as u64 + 1).read_to_end(&mut bytes);
+    *remaining = remaining.saturating_sub(bytes.len());
+    if bytes.len() > allowance {
+        return Err(if allowance < HWPX_MAX_XML_SIZE {
+            PasswordCryptoError::HwpxXmlReadBudgetExceeded {
+                path: path.into(),
+                max_bytes: HWPX_TOTAL_XML_READ_BYTES,
+            }
+        } else {
+            PasswordCryptoError::HwpxEntryLimitExceeded {
+                path: path.into(),
+                max_bytes: HWPX_MAX_XML_SIZE,
+            }
+        });
+    }
+    result.map_err(|error| PasswordCryptoError::HwpxZip(format!("{path} 읽기 실패: {error}")))?;
+    Ok(bytes)
+}
+
+fn inflate_hwpx_raw_deflate(
+    data: &[u8],
+    path: &str,
+    xml_remaining: &mut usize,
+) -> Result<Vec<u8>, PasswordCryptoError> {
+    if is_hwpx_xml_budget_path(path) {
+        return read_hwpx_xml_limited(
+            &mut DeflateDecoder::new(Cursor::new(data)),
+            path,
+            xml_remaining,
+        );
+    }
     let max_bytes = hwpx_plaintext_limit(path);
     let mut plaintext = Vec::new();
     DeflateDecoder::new(Cursor::new(data))
@@ -606,6 +655,7 @@ fn decrypt_hwpx_entry(
     password: &[u8],
     entry: &HwpxEntryCrypto,
     ciphertext: &[u8],
+    xml_remaining: &mut usize,
 ) -> Result<Vec<u8>, PasswordCryptoError> {
     if ciphertext.is_empty() || !ciphertext.len().is_multiple_of(16) {
         return Err(PasswordCryptoError::WrongPasswordOrCorruptPayload);
@@ -619,9 +669,12 @@ fn decrypt_hwpx_entry(
         let Ok(decrypted) = cipher.decrypt_padded::<NoPadding>(&mut blocks) else {
             continue;
         };
-        let plaintext = match inflate_hwpx_raw_deflate(decrypted, &entry.path) {
+        let plaintext = match inflate_hwpx_raw_deflate(decrypted, &entry.path, xml_remaining) {
             Ok(plaintext) => plaintext,
             Err(error @ PasswordCryptoError::HwpxEntryLimitExceeded { .. }) => return Err(error),
+            Err(error @ PasswordCryptoError::HwpxXmlReadBudgetExceeded { .. }) => {
+                return Err(error)
+            }
             Err(_) => continue,
         };
         let checksum = Sha256::digest(&plaintext[..plaintext.len().min(1024)]);
@@ -702,8 +755,9 @@ pub fn decrypt_hwpx_package(
 ) -> Result<Option<Vec<u8>>, PasswordCryptoError> {
     let mut source = ZipArchive::new(Cursor::new(data.to_vec()))
         .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?;
+    let mut xml_remaining = HWPX_TOTAL_XML_READ_BYTES;
     let manifest = match source.by_name(HWPX_MANIFEST_PATH) {
-        Ok(mut file) => read_zip_entry_limited(&mut file, HWPX_MANIFEST_PATH, HWPX_MAX_XML_SIZE)?,
+        Ok(mut file) => read_hwpx_xml_limited(&mut file, HWPX_MANIFEST_PATH, &mut xml_remaining)?,
         Err(zip::result::ZipError::FileNotFound) => return Ok(None),
         Err(error) => return Err(PasswordCryptoError::HwpxZip(error.to_string())),
     };
@@ -730,18 +784,24 @@ pub fn decrypt_hwpx_package(
                 .map_err(|error| PasswordCryptoError::HwpxZip(error.to_string()))?;
             continue;
         }
-        let bytes = read_zip_entry_limited(&mut input, &name, HWPX_MAX_BINDATA_SIZE)?;
         let source_method = input.compression();
         let (payload, method) = if name == HWPX_MANIFEST_PATH {
             (plain_manifest.clone(), CompressionMethod::Deflated)
-        } else if let Some(entry) = protected_by_path.get(name.as_str()) {
-            selected.insert(entry.path.as_str());
-            (
-                decrypt_hwpx_entry(password, entry, &bytes)?,
-                CompressionMethod::Deflated,
-            )
         } else {
-            (bytes, source_method)
+            let bytes = if is_hwpx_xml_budget_path(&name) {
+                read_hwpx_xml_limited(&mut input, &name, &mut xml_remaining)?
+            } else {
+                read_zip_entry_limited(&mut input, &name, HWPX_MAX_BINDATA_SIZE)?
+            };
+            if let Some(entry) = protected_by_path.get(name.as_str()) {
+                selected.insert(entry.path.as_str());
+                (
+                    decrypt_hwpx_entry(password, entry, &bytes, &mut xml_remaining)?,
+                    CompressionMethod::Deflated,
+                )
+            } else {
+                (bytes, source_method)
+            }
         };
         destination
             .start_file(

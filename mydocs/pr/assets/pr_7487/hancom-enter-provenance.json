@@ -1,0 +1,404 @@
+{
+  "source": {
+    "head": "c741f24135d03470588440d1bb67dff3defd3024",
+    "base": "4a7cf61c8652586ffe86158344771029714f3681",
+    "purpose": "same edited Enter input independent Hancom oracle; current exact PR head; source not changed"
+  },
+  "build": {
+    "native_profile": "release-test",
+    "wasm_profile": "host diagnostic --no-opt",
+    "js_sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "wasm_sha256": "3c4854430292e17c4b9943203dacfa59865eef60bb6b9207b4f172f11861d855"
+  },
+  "oracle": {
+    "client": "npx MCP client 0.9.0",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "input_preprocessing": "none",
+    "output_mode": "hancom2020_pdf_driver_one_up",
+    "input_and_pdf_server_client_local_hashes_verified": true
+  },
+  "cases": [
+    {
+      "input": "samples/issue7486/pr7487-spacing200-enter33.hwpx",
+      "input_sha256": "c19c69528d77c06aa81fb706f7189940cd4b26f86a73cc95863ba2069eddc241",
+      "input_bytes": 7597,
+      "pdf": "pdf/pr7487-spacing200-enter33-2020.pdf",
+      "pdf_sha256": "184b1168457aab9a21bc7ef3240346bceaa4d1f5188ce2974f835e9cc1bcb528",
+      "pdf_bytes": 6271,
+      "mcp_job": "f4e478b2-65f1-4dff-9238-e7c4cad4f945",
+      "semantic_validation": {
+        "input": "pr7487-spacing200-enter33.hwpx",
+        "hancom_pdf_pages": 2,
+        "native_pages": 2,
+        "fresh_wasm_pages": 2,
+        "paragraph_count": 34,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 33,
+          "page": 1
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing300-enter22.hwpx",
+      "input_sha256": "187d7defb216b6cef021b38be08a7030cd988dfdb79593e6d09567dea41da8da",
+      "input_bytes": 7527,
+      "pdf": "pdf/pr7487-spacing300-enter22-2020.pdf",
+      "pdf_sha256": "a357da66ac9ff12cdb5570394af218b8fed8c81cb1039b9108c81323c811b93f",
+      "pdf_bytes": 6271,
+      "mcp_job": "51cdccb0-eff2-4081-907e-6914cd8cc9d9",
+      "semantic_validation": {
+        "input": "pr7487-spacing300-enter22.hwpx",
+        "hancom_pdf_pages": 2,
+        "native_pages": 2,
+        "fresh_wasm_pages": 2,
+        "paragraph_count": 23,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 22,
+          "page": 1
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing160-enter60.hwpx",
+      "input_sha256": "7bae5da2da29a64d18d9101a5d9ffe25b1782c33186316123b38719529cdb4f8",
+      "input_bytes": 7807,
+      "pdf": "pdf/pr7487-spacing160-enter60-2020.pdf",
+      "pdf_sha256": "59b8654fdf68335ccfa8f69437208566b32359946467266de0e065b48cb22b5f",
+      "pdf_bytes": 6271,
+      "mcp_job": "986f458c-2bba-4a21-a5d8-6149de08cf6f",
+      "semantic_validation": {
+        "input": "pr7487-spacing160-enter60.hwpx",
+        "hancom_pdf_pages": 2,
+        "native_pages": 2,
+        "fresh_wasm_pages": 2,
+        "paragraph_count": 61,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 60,
+          "page": 1
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing100-enter90.hwpx",
+      "input_sha256": "c82a23d3cada522dd49d1448fac84432fdec033bcc9a814e8611109179f8877a",
+      "input_bytes": 8022,
+      "pdf": "pdf/pr7487-spacing100-enter90-2020.pdf",
+      "pdf_sha256": "61a467c5e98edf358c282c8fc48e8fde36f677894cf4ebfa1c801f224abc0085",
+      "pdf_bytes": 6271,
+      "mcp_job": "8308f463-e870-4627-a47a-f57642155b22",
+      "semantic_validation": {
+        "input": "pr7487-spacing100-enter90.hwpx",
+        "hancom_pdf_pages": 2,
+        "native_pages": 2,
+        "fresh_wasm_pages": 2,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 1
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing130-enter90.hwpx",
+      "input_sha256": "60cbc3be3a8480af47c08d1ea0ccf0537953bd1dbc448a57a1c823e1e8fd99a8",
+      "input_bytes": 8083,
+      "pdf": "pdf/pr7487-spacing130-enter90-2020.pdf",
+      "pdf_sha256": "773d463e032e661c131449540ade4854b941ba599e561234ef192cf3839ddbf6",
+      "pdf_bytes": 6271,
+      "mcp_job": "64b537a2-c365-498a-8f1d-5c4f6530e725",
+      "semantic_validation": {
+        "input": "pr7487-spacing130-enter90.hwpx",
+        "hancom_pdf_pages": 2,
+        "native_pages": 2,
+        "fresh_wasm_pages": 2,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 1
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing160-enter90.hwpx",
+      "input_sha256": "1df0719bd0b97915761865d7e0bbc16ca724c767eb6f09aa75a42600ddeccc89",
+      "input_bytes": 8039,
+      "pdf": "pdf/pr7487-spacing160-enter90-2020.pdf",
+      "pdf_sha256": "966b5612d930ce46dbbf79d8c7c86f40adca11a39b12b2662eaa28f5f9931138",
+      "pdf_bytes": 6698,
+      "mcp_job": "ebee4347-5ba3-47c5-9589-ab2200545517",
+      "semantic_validation": {
+        "input": "pr7487-spacing160-enter90.hwpx",
+        "hancom_pdf_pages": 3,
+        "native_pages": 3,
+        "fresh_wasm_pages": 3,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 2
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing180-enter90.hwpx",
+      "input_sha256": "92cf4229b3dfa6dc2ee35a098b4b3d18b1c659d84012fee6badf53c89b688b53",
+      "input_bytes": 8069,
+      "pdf": "pdf/pr7487-spacing180-enter90-2020.pdf",
+      "pdf_sha256": "a6aca7dd85e060e7e9f9c1010e6aad6ef7845d7ecc09343d466f1d4c9649dec5",
+      "pdf_bytes": 6698,
+      "mcp_job": "261da9b9-954d-406f-86eb-ffca98837712",
+      "semantic_validation": {
+        "input": "pr7487-spacing180-enter90.hwpx",
+        "hancom_pdf_pages": 3,
+        "native_pages": 3,
+        "fresh_wasm_pages": 3,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 2
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing200-enter90.hwpx",
+      "input_sha256": "651fbb0a708aca8e1641307072ffd8bb246943c8cd0c409c8f9ae5946f58af71",
+      "input_bytes": 8010,
+      "pdf": "pdf/pr7487-spacing200-enter90-2020.pdf",
+      "pdf_sha256": "4a9e620b72b111647414bf20559921452bb5d04a497dea201d156fefbf4de02a",
+      "pdf_bytes": 6698,
+      "mcp_job": "a71eb364-8138-4c3e-8bc0-c77ae904a788",
+      "semantic_validation": {
+        "input": "pr7487-spacing200-enter90.hwpx",
+        "hancom_pdf_pages": 3,
+        "native_pages": 3,
+        "fresh_wasm_pages": 3,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 2
+        }
+      }
+    },
+    {
+      "input": "samples/issue7486/pr7487-spacing300-enter90.hwpx",
+      "input_sha256": "611aa65699c75a8024de6203b632e78132bfceea339beff7ea9676fc497469b9",
+      "input_bytes": 8044,
+      "pdf": "pdf/pr7487-spacing300-enter90-2020.pdf",
+      "pdf_sha256": "e5b3f953bd82bcdf8db8b9570fe8d3e8ec08c9cb4d257dccd852d8167dbb628d",
+      "pdf_bytes": 7570,
+      "mcp_job": "7c7cd374-3661-4668-a014-e652736cc4bd",
+      "semantic_validation": {
+        "input": "pr7487-spacing300-enter90.hwpx",
+        "hancom_pdf_pages": 5,
+        "native_pages": 5,
+        "fresh_wasm_pages": 5,
+        "paragraph_count": 91,
+        "paragraphs_in_order_exactly_once": true,
+        "native_wasm_owner_agreement": true,
+        "last_owner": {
+          "para": 90,
+          "page": 4
+        }
+      }
+    }
+  ],
+  "pages_per_backend": 24,
+  "content_union_pixels": 0,
+  "blank_output_limitation": "Blank output silhouette 100% does not independently measure caret coordinates or Studio scroll. Hancom page count and rhwp paragraph ownership are separate checks.",
+  "sweep_manifest_hashes": [
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing100-enter90/silhouette_manifest.json",
+      "sha256": "a1e70a186f36ba1b5e5f627d5aba6ec5aa13b8e619ec4446de4e4ef556bc32b2"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing130-enter90/silhouette_manifest.json",
+      "sha256": "06ecea6f0979c8bc109744d82907534de81e1058bf7e1bd5d5eb7b9428709e0e"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing160-enter60/silhouette_manifest.json",
+      "sha256": "4832fcafa72e0755b520d330f7d2403a750bb704bc4fef004cc2964046528e5e"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing160-enter90/silhouette_manifest.json",
+      "sha256": "eac4f7fd687e64329467063b1ac64c62231c960dfbf1491baa5622805c0ca229"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing180-enter90/silhouette_manifest.json",
+      "sha256": "e79f00967d64af4f97023700c3f51180f95d0f2282084e2181f652441db692c5"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing200-enter90/silhouette_manifest.json",
+      "sha256": "acbe84cf5e76053001679bd0e1c9914365365adc983b1b276ec58dd4eb6d9a17"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-range-scores/spacing300-enter90/silhouette_manifest.json",
+      "sha256": "97fdfa1b45eb4a55dcba5d1fede3e281d56dce60ae4a6d70eb0709ffc63dc0f6"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-scores/spacing200-enter33/silhouette_manifest.json",
+      "sha256": "785ad168d20d0500f91a0bc8c4c8bdc6b18f6a0d20985d9301dee02c25db6bff"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/native-scores/spacing300-enter22/silhouette_manifest.json",
+      "sha256": "83f64b8b26d30fcc02d27a59ef91cc4c2ce93536bfc59c22b6dae4471a764148"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing100-enter90/silhouette_manifest.json",
+      "sha256": "644afc6655d76697da3209aa908fb515cdf82cfd843b8da01b8465d01c01da35"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing130-enter90/silhouette_manifest.json",
+      "sha256": "4912601f627d2f551ef23a0f75546c8a77ebed48e53e429ca82b1205ddec6235"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing160-enter60/silhouette_manifest.json",
+      "sha256": "81d6311ee522b38edfb2f8195e2b27fecefef386a6e23ab8775db681d4adebcd"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing160-enter90/silhouette_manifest.json",
+      "sha256": "f26519b37dcabef3bc6b07e62756dd9337359acbfe544fa42b69ac6c6d929252"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing180-enter90/silhouette_manifest.json",
+      "sha256": "d7875f6013fc941d89d9d3dc83fadc230c750ad8846e0b7027ddc0547985f8d1"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing200-enter90/silhouette_manifest.json",
+      "sha256": "70ebc82b8c6d048c007563b91ce104fc9ee55bdd4099b2a578a90aa9d24f2449"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-range-scores/spacing300-enter90/silhouette_manifest.json",
+      "sha256": "1946b7fedd332185b98420b588402cc956fa9bf69aef033a9bedd693ddb915d1"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-scores/spacing200-enter33/silhouette_manifest.json",
+      "sha256": "d2a26ba7a55cf842de906c6ab0f5f497cd75b56961c6d51aeb67d22622cdf6b5"
+    },
+    {
+      "path": "output/pr-review/pr7487-hancom-20261002/wasm-scores/spacing300-enter22/silhouette_manifest.json",
+      "sha256": "668569cf03085f5d6e9e056a4efc251313022dd8a2345fabf6d85dc7ed5f65ae"
+    }
+  ],
+  "asset_hashes": [
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-p122-control-native-overlay-p002.png",
+      "sha256": "83eb6ccfb2933f203d307c8f25a40ac87eacd14bccf2102ffe79e055ff9ef957"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-p122-control-native-review-p002.png",
+      "sha256": "6c34867041cf3cb90a7d3b46fea035f537407d71dda467dab419c46a08e1e058"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-p122-control-wasm-overlay-p002.png",
+      "sha256": "78152a07ea4eae3f28c510741de9b2d3d08be18f908d47d0e1b8ac27b9a67954"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-p122-control-wasm-review-p002.png",
+      "sha256": "96ea75996b0d3cf32ec354f7bc442d7ba9ff2a0d0a5d8832c06f5b673e23a944"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing200-enter33-native-overlay-p002.png",
+      "sha256": "708054e3facd8f1cd110aad5e7fec01731233cb6f9a5fff8ac8037f6e0d33a51"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing200-enter33-native-review-p002.png",
+      "sha256": "ea86a18b8777173972123b52bd7c8f9e9046854b8ece1d9d68d458940c8b478d"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing200-enter33-wasm-overlay-p002.png",
+      "sha256": "19e9ff84d5ef2c600fc4d686637df6b5a7d80afe7e1faabe70f1af27e29590cb"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing200-enter33-wasm-review-p002.png",
+      "sha256": "2ef483248456fdd45a50e701782b981f34152c5769a605e7c418bd6e038a5309"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing300-enter22-native-overlay-p002.png",
+      "sha256": "f2dc81869b892ddf8b473210b8df4d09c24377e63ee58632d4e80dbb9b2141dd"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing300-enter22-native-review-p002.png",
+      "sha256": "03e031466ff2c4200fffa53b7a266fb9f1ba9750c0d2fe289c0e4caa5823e978"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing300-enter22-wasm-overlay-p002.png",
+      "sha256": "8aa5a72af2284d9fbd6e2a6ccd1ba94df96184e7f11a366d3da025d44ed486b6"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-spacing300-enter22-wasm-review-p002.png",
+      "sha256": "ad90b00d9446cb3037868bb1a96327b1a57a25fc2a5f833f8cb9491a316425cb"
+    },
+    {
+      "path": "mydocs/pr/assets/pr_7487/hancom-enter-silhouette.tsv",
+      "sha256": "5978d8e5fcc08e16865b52fd89d5a9db95a9991eed4f90c2b8f4bbb3b294105d"
+    }
+  ],
+  "p122_current_source": [
+    {
+      "backend": "native",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 99.62261,
+        "worst_pixel_match_percent": 99.62261,
+        "average_ink_match_percent": 99.50139,
+        "worst_ink_match_percent": 99.50139,
+        "average_visual_accuracy_proxy_percent": 99.50139,
+        "worst_visual_accuracy_proxy_percent": 99.50139,
+        "average_tolerant_content_match_percent": 100.0,
+        "worst_tolerant_content_match_percent": 100.0,
+        "worst_pages": [
+          2
+        ]
+      }
+    },
+    {
+      "backend": "wasm",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 99.62261,
+        "worst_pixel_match_percent": 99.62261,
+        "average_ink_match_percent": 99.50139,
+        "worst_ink_match_percent": 99.50139,
+        "average_visual_accuracy_proxy_percent": 99.50139,
+        "worst_visual_accuracy_proxy_percent": 99.50139,
+        "average_tolerant_content_match_percent": 100.0,
+        "worst_tolerant_content_match_percent": 100.0,
+        "worst_pages": [
+          2
+        ]
+      }
+    }
+  ]
+}

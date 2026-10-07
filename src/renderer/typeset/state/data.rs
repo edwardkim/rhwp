@@ -8,6 +8,9 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,
     /// 현재 단에 쌓이는 항목
     pub(in crate::renderer::typeset) current_items: Vec<PageItem>,
+    /// 수용한 일반 전체/분할 본문의 (문단, 끝 줄)별 단 상대 점유 하단.
+    pub(in crate::renderer::typeset) paragraph_fragment_content_bottoms:
+        std::collections::HashMap<(usize, usize), f64>,
     /// 현재 단에서 소비된 높이 (px)
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
@@ -66,7 +69,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 옮겨 밴드 바닥을 확장할 때만 사용한다.
     pub(in crate::renderer::typeset) square_band_top: Option<f64>,
     pub(in crate::renderer::typeset) current_footnote_height: f64,
-    /// Current page owns a HWPX note body deferred from a picture marker page.
+    /// 현재 큐 예약은 실제 배치와 같은 본문 하단 앵커를 사용한다.
+    pub(in crate::renderer::typeset) current_footnote_body_bottom_reserved: bool,
+    /// 현재 쪽은 그림 표시가 있는 앞쪽에서 이월된 HWPX 각주 본문을 소유한다.
     pub(in crate::renderer::typeset) deferred_hwpx_note_body: bool,
     /// [Task #1658 v3] 페이지 하단 고정 표(vert=쪽·valign=Bottom, 결재/서명 틀)의
     /// 하단 배타 영역 높이 — 겹침 허용이므로 합이 아닌 max(union). 본문 텍스트는
@@ -135,6 +140,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 단일 컬럼·caption 보유 picture 형상으로 한정한다.
     pub(in crate::renderer::typeset) deferred_next_page_square_pictures:
         Vec<DeferredSquarePictureControl>,
+    /// 현재 호스트를 남기고 다음 쪽의 저장 상단 프레임만 이월한다.
+    pub(in crate::renderer::typeset) deferred_next_page_stored_frames:
+        Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
+    /// 저장 그림 상단 예약은 흐름에 반영하고 그림 항목은 단 확정 시 앞에 붙인다.
+    pub(in crate::renderer::typeset) page_start_stored_frames:
+        Vec<crate::renderer::typeset::DeferredStoredFrameControl>,
     /// 다음 physical page의 flush 시점에만 앞에 붙일 Square picture.
     /// `current_items`에 즉시 넣으면 out-of-flow 그림이 문단 fit/vpos 상태를 바꾸어
     /// p1356 뒤 본문을 한 쪽 더 분할한다. layout 순서에는 앞에 있어야 하지만,
@@ -151,6 +162,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #1753] 지연 이월되는 visible-host 자리차지 표 직전에 현재 쪽 잔여 공간으로
     /// 선행 배치(prefill)된 후속 문단들 — 메인 루프에서 스킵.
     pub(in crate::renderer::typeset) prefilled_paras: std::collections::HashSet<usize>,
+    /// 떠 있는 표 앞에서 이미 소비한 후속 문단의 줄 끝. 다음 조각은 여기서 재개한다.
+    pub(in crate::renderer::typeset) prefilled_line_prefixes:
+        std::collections::HashMap<usize, usize>,
     /// [Task #1755] 이월 전 쪽에 host 텍스트 줄을 PartialParagraph 로 pre-emit 한 문단 —
     /// layout 의 마지막 fragment 뒤 host 렌더 억제 신호(PaginationResult 로 전달).
     pub(in crate::renderer::typeset) pre_emitted_host_paras: std::collections::HashSet<usize>,
@@ -158,6 +172,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// current_height(=para_start+host_h) 기준으로 환산할 때 감액분으로 쓴다. typeset 예산과
     /// layout(table_partial.rs) 배치가 동일 감액을 적용해 정합한다.
     pub(in crate::renderer::typeset) pre_emitted_host_heights:
+        std::collections::HashMap<usize, f64>,
+    /// [#7418] 같은 host 글의 **내용** 높이(px) — 마지막 줄의 줄간격을 뺀 값. 표는 그
+    /// 줄간격 띠 안까지 올라올 수 있다(문단 상단 + max(오프셋, 이 값)).
+    pub(in crate::renderer::typeset) pre_emitted_host_content_heights:
         std::collections::HashMap<usize, f64>,
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
@@ -233,6 +251,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_first_stored_vpos: Option<i32>,
+    /// [#7548] 다음 문단 저장 첫 줄의 차선 증거(어울림 표 옆 시작 판정).
+    pub(in crate::renderer::typeset) next_para_lane_probe:
+        Option<crate::renderer::float_placement::StoredLineLaneProbe>,
     /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
     /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_is_empty_float_table_anchor: bool,
@@ -297,6 +318,9 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) vpos_ladder_dirty: bool,
     /// 저장 행을 재조판해 줄인 높이. 같은 쪽의 뒤 저장 vpos도 이만큼 이동한다.
     pub(in crate::renderer::typeset) vpos_compacted_stored_delta: f64,
+    /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
+    /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
+    pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

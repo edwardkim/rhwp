@@ -899,7 +899,7 @@ fn map_to_shape_object(
     if parsed_paragraphs.is_empty() {
         if let Some(data) = header.textbox_paragraph_list.as_deref() {
             let mut text_cursor = std::io::Cursor::new(data);
-            if let Ok(paras) = crate::parser::hwp3::parse_paragraph_list(
+            match crate::parser::hwp3::parse_paragraph_list(
                 &mut text_cursor,
                 doc_char_shapes,
                 doc_para_shapes,
@@ -911,7 +911,9 @@ fn map_to_shape_object(
                 0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
                 false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
             ) {
-                parsed_paragraphs = paras;
+                Ok(paras) => parsed_paragraphs = paras,
+                Err(error @ Hwp3Error::NestingLimitExceeded { .. }) => return Err(error),
+                Err(_) => {} // Preserve recovery for ordinary damaged textbox data.
             }
         }
     }

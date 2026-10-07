@@ -1,0 +1,12 @@
+{
+  "original_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "control_sha256": "ee4f3a03d04d83fee9819722b39e0f2b5b54fafc65acfb9ad4918c485e0069cd",
+  "changes": {
+    "paragraph": 259,
+    "control": 1,
+    "property": "vertOffset",
+    "before_signed": -21453,
+    "after": 0
+  },
+  "purpose": "음수 오프셋 무시 가정을 한컴 출력으로 반증하는 단일 속성 대조군; 원본 일치 대용 아님"
+}

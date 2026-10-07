@@ -24,6 +24,7 @@ pub struct BrushOnlyRopSequence {
     state: Option<BrushOnlyRopSequenceState>,
     suppressed_elements: Vec<usize>,
     suppressed_definitions: Vec<usize>,
+    vector_masks: Vec<(usize, Node, String, [i32; 4])>,
 }
 
 enum BrushOnlyRopSequenceState {
@@ -35,6 +36,11 @@ enum BrushOnlyRopSequenceState {
         key: BrushOnlyRopKey,
         expected_element_count: usize,
         mask_definition_index: Option<usize>,
+    },
+    AwaitFinalVectorInvert {
+        key: BrushOnlyRopKey,
+        expected_element_count: usize,
+        mask: Node,
     },
 }
 
@@ -53,6 +59,25 @@ impl BrushOnlyRopSequence {
     ) -> bool {
         let state = std::mem::take(&mut self.state);
         match (state, operation) {
+            (
+                Some(BrushOnlyRopSequenceState::AwaitFinalVectorInvert {
+                    key: previous_key,
+                    expected_element_count,
+                    mask,
+                }),
+                TernaryRasterOperation::PATINVERT,
+            ) if key == previous_key && element_count == expected_element_count => {
+                // (D ⊕ P) ∧ M ⊕ P는 흰 마스크에서 D, 검은 마스크에서 P다.
+                // 두 바깥 XOR 사각형 대신 같은 윤곽의 역흑백 마스크만 표시한다.
+                self.suppressed_elements.push(element_count - 2);
+                self.vector_masks.push((
+                    element_count - 1,
+                    mask,
+                    previous_key.fill,
+                    previous_key.rect,
+                ));
+                true
+            }
             (
                 Some(BrushOnlyRopSequenceState::AwaitDpa {
                     key: previous_key,
@@ -99,6 +124,55 @@ impl BrushOnlyRopSequence {
             }
             _ => false,
         }
+    }
+
+    pub fn observe_vector_mask(
+        &mut self,
+        mask: &Node,
+        brush: &Brush,
+        draw_mode: Option<BinaryRasterOperation>,
+        bounds: [i32; 4],
+        clip: (Option<&str>, Option<&Rect>),
+        element_count: usize,
+    ) {
+        let Some(BrushOnlyRopSequenceState::AwaitDpa {
+            key,
+            expected_element_count,
+        }) = self.state.take()
+        else {
+            return;
+        };
+        let (clip_id, clip_rect) = clip;
+        let clip_rect = clip_rect.map(|r| {
+            [
+                i32::from(r.left),
+                i32::from(r.top),
+                i32::from(r.right),
+                i32::from(r.bottom),
+            ]
+        });
+        let [x, y, width, height] = key.rect;
+        if expected_element_count != element_count
+            || draw_mode != Some(BinaryRasterOperation::R2_MASKPEN)
+            || !Self::brush_is_monochrome_mask(Some(brush))
+            || mask.attr("stroke") != Some("none")
+            || !key.fill.starts_with('#')
+            || key.clip_id.as_deref() != clip_id
+            || key.clip_rect != clip_rect
+            || width <= 0
+            || height <= 0
+            || bounds[0] < x
+            || bounds[1] < y
+            || i64::from(bounds[2]) > i64::from(x) + i64::from(width)
+            || i64::from(bounds[3]) > i64::from(y) + i64::from(height)
+        {
+            return;
+        }
+        self.state = Some(BrushOnlyRopSequenceState::AwaitFinalVectorInvert {
+            key,
+            expected_element_count: element_count + 1,
+            mask: mask.clone(),
+        });
     }
 
     fn mask_rect_matches(mask: [i32; 4], paint: [i32; 4], allow_edge_delta: bool) -> bool {
@@ -151,7 +225,52 @@ impl BrushOnlyRopSequence {
             .all(|(row, bytes)| bytes[0] == if row % 2 == 0 { data[0] } else { !data[0] })
     }
 
-    pub fn finish(self, definitions: Vec<Node>, elements: Vec<Node>) -> (Vec<Node>, Vec<Node>) {
+    pub fn finish(
+        self,
+        mut definitions: Vec<Node>,
+        mut elements: Vec<Node>,
+    ) -> (Vec<Node>, Vec<Node>) {
+        for (index, mask, color, [x, y, width, height]) in self.vector_masks {
+            let filter_id = format!("rop_vector_inverse{}", definitions.len());
+            let mask_id = format!("rop_vector_mask{}", definitions.len());
+            let transfer = Node::new("feComponentTransfer")
+                .add(
+                    Node::new("feFuncR")
+                        .set("type", "table")
+                        .set("tableValues", "1 0"),
+                )
+                .add(
+                    Node::new("feFuncG")
+                        .set("type", "table")
+                        .set("tableValues", "1 0"),
+                )
+                .add(
+                    Node::new("feFuncB")
+                        .set("type", "table")
+                        .set("tableValues", "1 0"),
+                );
+            definitions.push(
+                Node::new("filter")
+                    .set("id", &filter_id)
+                    .set("color-interpolation-filters", "sRGB")
+                    .add(transfer),
+            );
+            definitions.push(
+                Node::new("mask")
+                    .set("id", &mask_id)
+                    .set("maskUnits", "userSpaceOnUse")
+                    .set("mask-type", "luminance")
+                    .set("x", x)
+                    .set("y", y)
+                    .set("width", width)
+                    .set("height", height)
+                    .add(mask.set("filter", url_string(format!("#{filter_id}").as_str()))),
+            );
+            elements[index] = elements[index]
+                .clone()
+                .set("fill", color)
+                .set("mask", url_string(format!("#{mask_id}").as_str()));
+        }
         // Indices are recorded in emission order. Do not remove nodes while
         // collecting: doing so would change IDs or invalidate later indices.
         let definitions = definitions

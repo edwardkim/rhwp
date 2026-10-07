@@ -27,7 +27,7 @@ use crate::model::path::{path_from_flat, DocumentPath, PathSegment};
 use crate::model::shape::ShapeObject;
 use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::composer::{
-    compose_paragraph, compose_section, reflow_line_segs, ComposedParagraph,
+    compose_paragraph, compose_section, reflow_line_segs, restamp_indentation, ComposedParagraph,
 };
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
@@ -1348,11 +1348,11 @@ impl HwpDocument {
         {
             return Err(JsValue::from_str("인덱스 범위 초과"));
         }
-        let (text_offset, _) = crate::document_core::helpers::logical_to_text_offset(
+        let (text_offset, after_control) = crate::document_core::helpers::logical_to_text_offset(
             &self.document.sections[sec].paragraphs[pi],
             logical_offset as usize,
         );
-        let result = self.insert_text_native(sec, pi, text_offset, text)?;
+        self.insert_text_at_caret_native(sec, pi, text_offset, after_control, text)?;
         // 삽입 후 논리적 오프셋 반환
         let new_text_offset = text_offset + text.chars().count();
         let new_logical = crate::document_core::helpers::text_to_logical_offset(
@@ -7443,6 +7443,9 @@ impl HwpDocument {
         let updated_style = self.core.document.doc_info.styles[style_id as usize].clone();
         let new_csid = updated_style.char_shape_id as u32;
         let new_psid = updated_style.para_shape_id;
+        // [#7490] 셀 문단은 저장 줄 기록을 두고 재조판하므로 bit 20 도 새 들여쓰기로 단다.
+        // 본문 문단은 `reflow_body_paragraph` 가 줄을 비우고 다시 짠다.
+        let (old_indent, new_indent) = self.core.para_shape_indents(old_psid, new_psid);
 
         for (sec_idx, para_idx) in body_targets {
             if let Some(para) = self
@@ -7473,6 +7476,7 @@ impl HwpDocument {
             ) {
                 if style_type == 0 && cpara.para_shape_id == old_psid {
                     cpara.para_shape_id = new_psid;
+                    restamp_indentation(&mut cpara.line_segs, old_indent, new_indent);
                 }
                 cpara.replace_style_char_shape_preserving_overrides(old_csid, new_csid);
             }
@@ -7670,32 +7674,40 @@ impl HwpDocument {
         n.start_number = 1;
         n.level_start_numbers = [1; 7];
         // 수준별 번호 형식 코드 설정
+        // [#7418] 한/글 기본 머리 모양은 자동 내어쓰기(속성 bit3)다 — 둘째 줄부터 본문 시작에 맞춘다.
         n.heads[0] = NumberingHead {
             number_format: 0,
+            attr: 1 << 3,
             ..Default::default()
         }; // 1,2,3
         n.heads[1] = NumberingHead {
             number_format: 8,
+            attr: 1 << 3,
             ..Default::default()
         }; // 가,나,다
         n.heads[2] = NumberingHead {
             number_format: 0,
+            attr: 1 << 3,
             ..Default::default()
         }; // 1,2,3
         n.heads[3] = NumberingHead {
             number_format: 8,
+            attr: 1 << 3,
             ..Default::default()
         }; // 가,나,다
         n.heads[4] = NumberingHead {
             number_format: 1,
+            attr: 1 << 3,
             ..Default::default()
         }; // ①②③
         n.heads[5] = NumberingHead {
             number_format: 10,
+            attr: 1 << 3,
             ..Default::default()
         }; // ㄱ,ㄴ,ㄷ
         n.heads[6] = NumberingHead {
             number_format: 5,
+            attr: 1 << 3,
             ..Default::default()
         }; // a,b,c
         self.core.document.doc_info.numberings.push(n);
@@ -7748,6 +7760,7 @@ impl HwpDocument {
                         if let Ok(code) = part.trim().parse::<u8>() {
                             n.heads[level] = NumberingHead {
                                 number_format: code,
+                                attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
                                 ..Default::default()
                             };
                             level += 1;
@@ -7781,6 +7794,7 @@ impl HwpDocument {
         use crate::model::style::Bullet;
         let b = Bullet {
             bullet_char: bullet_ch,
+            attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
             text_distance: 50,
             ..Default::default()
         };
@@ -8362,6 +8376,29 @@ impl HwpDocument {
             start_char_offset as usize,
             end_para_idx as usize,
             end_char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 선택 영역을 논리적 오프셋(`insertTextLogical` 과 같은 축)으로 받아 내부 클립보드에 복사한다.
+    ///
+    /// 각주·글자처럼 취급 개체 바로 뒤에서 시작한 선택은 그 개체를 담지 않는다 (#7444).
+    /// 반환값: JSON `{"ok":true,"text":"<plain_text>"}`
+    #[wasm_bindgen(js_name = copySelectionLogical)]
+    pub fn copy_selection_logical(
+        &mut self,
+        section_idx: u32,
+        start_para_idx: u32,
+        start_logical_offset: u32,
+        end_para_idx: u32,
+        end_logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.copy_selection_logical_native(
+            section_idx as usize,
+            start_para_idx as usize,
+            start_logical_offset as usize,
+            end_para_idx as usize,
+            end_logical_offset as usize,
         )
         .map_err(|e| e.into())
     }

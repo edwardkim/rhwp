@@ -1,0 +1,69 @@
+{
+  "basis": "same report original HWP and HWPX independent Hancom2024 outputs",
+  "pages": [
+    {
+      "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "reference_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+      "page": 31,
+      "separator_lines": [
+        {
+          "bbox_px96": [
+            94.509338,
+            1018.725342,
+            283.527995,
+            1018.725342
+          ],
+          "width_pt": 0.36000001430511475
+        }
+      ]
+    },
+    {
+      "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "reference_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+      "page": 32,
+      "separator_lines": [
+        {
+          "bbox_px96": [
+            94.509338,
+            1018.725342,
+            283.527995,
+            1018.725342
+          ],
+          "width_pt": 0.36000001430511475
+        }
+      ]
+    },
+    {
+      "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "reference_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "page": 31,
+      "separator_lines": [
+        {
+          "bbox_px96": [
+            94.509338,
+            1018.725342,
+            283.527995,
+            1018.725342
+          ],
+          "width_pt": 0.36000001430511475
+        }
+      ]
+    },
+    {
+      "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "reference_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "page": 32,
+      "separator_lines": [
+        {
+          "bbox_px96": [
+            94.509338,
+            1018.725342,
+            283.527995,
+            1018.725342
+          ],
+          "width_pt": 0.36000001430511475
+        }
+      ]
+    }
+  ]
+}

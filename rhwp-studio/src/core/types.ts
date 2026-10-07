@@ -804,6 +804,8 @@ export interface FormObjectInfoResult {
 /** 텍스트 검색 결과 */
 export interface SearchResult {
   found: boolean;
+  /** Find/F3가 실제로 순회할 수 있는 전체 매치 수. 이전 WASM에서는 없을 수 있다. */
+  totalMatchCount?: number;
   wrapped?: boolean;
   sec?: number;
   para?: number;
@@ -1419,6 +1421,17 @@ export interface LayerFormObjectOp {
   backColor?: string;
   value?: boolean;
   enabled?: boolean;
+  drawing?: {
+    primitives: Array<
+      | { kind: 'rect'; bbox: LayerBounds; color: string }
+      | { kind: 'circle'; x: number; y: number; radius: number; color: string }
+      | { kind: 'polyline'; points: [number, number][]; color: string; width: number; closed: boolean }
+    >;
+    label?: {
+      text: string; x: number; baseline: number; fontFamily: string; fontSize: number;
+      bold: boolean; italic: boolean; color: string;
+    } | null;
+  };
 }
 
 export interface LayerPlaceholderOp {

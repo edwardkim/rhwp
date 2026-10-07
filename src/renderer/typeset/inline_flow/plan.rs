@@ -6,7 +6,7 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::float_placement::ObjectPlacementFrame;
 use crate::renderer::height_measurer::MeasuredTable;
 use crate::renderer::inline_flow::{self, InlineFlowPlan};
-use crate::renderer::layout_frame::FrameExclusion;
+use crate::renderer::layout_frame::{FrameExclusion, FrameExclusionPolicy};
 use crate::renderer::page_layout::LayoutRect;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -18,9 +18,10 @@ pub(in crate::renderer::typeset) struct InlineFlowInput<'a> {
     pub page_height: f64,
     pub start: f64,
     pub exclusions: Option<&'a BTreeMap<(usize, usize), FrameExclusion>>,
+    pub visible_float_exclusions: Option<&'a [super::super::VisibleFloatExclusion]>,
 }
 
-pub(super) fn build_plan(
+pub(in crate::renderer::typeset) fn build_plan(
     input: InlineFlowInput<'_>,
     para: &Paragraph,
     para_index: usize,
@@ -41,11 +42,25 @@ pub(super) fn build_plan(
         width: input.page_width,
         height: input.page_height,
     };
-    let exclusions: Vec<_> = if let Some(exclusions) = input.exclusions {
+    let mut exclusions: Vec<_> = if let Some(exclusions) = input.exclusions {
         exclusions.values().cloned().collect()
     } else {
         Vec::new()
     };
+    if let Some(zones) = input.visible_float_exclusions {
+        exclusions.extend(
+            zones
+                .iter()
+                .filter(|zone| zone.para_index != para_index)
+                .map(|zone| FrameExclusion {
+                    horizontal: crate::renderer::px_to_hwpunit(column.x, dpi)
+                        ..crate::renderer::px_to_hwpunit(column.x + column.width, dpi),
+                    vertical: crate::renderer::px_to_hwpunit(column.y + zone.top, dpi)
+                        ..crate::renderer::px_to_hwpunit(column.y + zone.bottom, dpi),
+                    policy: FrameExclusionPolicy::BothSides,
+                }),
+        );
+    }
     let frame = ObjectPlacementFrame {
         container: &container,
         column: &column,

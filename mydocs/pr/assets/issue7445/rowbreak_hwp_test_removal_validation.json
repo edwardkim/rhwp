@@ -1,0 +1,568 @@
+{
+  "stage": 81,
+  "analysis": {
+    "head": "8f8f0ae489581adf307dd0c53ba8895dae830b03",
+    "analysis": "고정5번 본문초과 실패의 rowbreak HWP 신규1건을 같은 원문과 독립 한컴 PDF로 비교한다. HWPX는 별도 입력으로 유지하며 낮은 피델리티면 사용자 승인 범위의 HWP 렌더링 검사만 #7445로 이관한다. 먼저 실패 위치와 전체 페이지 수를 확인한다.",
+    "files": {
+      "samples/rowbreak-problem-pages.hwp": {
+        "size": 553984,
+        "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+      },
+      "pdf/rowbreak-problem-pages-hwp-2024.pdf": {
+        "size": 1056768,
+        "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+        "pages": 18,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "user",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2024 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260830175120+09'00'",
+          "modDate": "D:20260830175120+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      },
+      "pdf/rowbreak-problem-pages-2024.pdf": {
+        "size": 1123001,
+        "sha256": "9bfe742e084152eb5e204ba66873bffb0af742adc9d4ca89012dc3ce8434b7a2",
+        "pages": 18,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "user",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2024 13.0.0.3622",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260623193746+09'00'",
+          "modDate": "D:20260623193746+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "Batang",
+        "Gulim",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "Arial",
+        "-윤명조130",
+        "한양신명조",
+        "Arial",
+        "Batang",
+        "Calibri",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "HCI Poppy",
+        "산세리프",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "-윤명조130",
+        "한양신명조",
+        "Batang",
+        "Gulim",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "Arial",
+        "-윤명조130",
+        "한양신명조",
+        "Batang",
+        "Gulim",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "Arial",
+        "-윤명조130",
+        "한양신명조",
+        "Arial",
+        "Batang",
+        "Calibri",
+        "Haansoft Batang",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "한양신명조",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "-윤명조130",
+        "한양신명조",
+        "Arial",
+        "Batang",
+        "Calibri",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "-윤명조130",
+        "한양신명조",
+        "Arial",
+        "Batang",
+        "Gulim",
+        "Haansoft Dotum",
+        "HCR Dotum",
+        "HYHeadLine-Medium",
+        "Malgun Gothic",
+        "휴먼명조",
+        "명조",
+        "함초롬바탕",
+        "KoPub바탕체 Bold",
+        "-윤명조130"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3622"
+      },
+      "pageCount": 18,
+      "paraCount": 64,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 2,
+      "sizeBytes": 553984,
+      "source": "samples/rowbreak-problem-pages.hwp",
+      "title": "○ (정의) 행정기관등이 민간 SaaS를 이용할 때 필요한 정부 공통",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 3,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 18,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 362.14666666666665,
+                "w": 653.8533333333334,
+                "x": 77.45333333333333,
+                "y": 263.6666666666667
+              },
+              "boundary": {
+                "h": 933.5333333333334,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.46666666666667
+              },
+              "maxOver": 13.18666666666661,
+              "nodeType": "Table",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 13.18666666666661,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table4"
+            },
+            {
+              "bbox": {
+                "h": 18.666666666666668,
+                "w": 653.8533333333334,
+                "x": 77.45333333333333,
+                "y": 233.66666666666669
+              },
+              "boundary": {
+                "h": 933.5333333333334,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.46666666666667
+              },
+              "maxOver": 13.18666666666661,
+              "nodeType": "TextLine",
+              "overBottom": 0.0,
+              "overLeft": 0.0,
+              "overRight": 13.18666666666661,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine5"
+            }
+          ],
+          "overlap": [],
+          "page": 0,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 658.4266666666666,
+                "w": 628.5066666666667,
+                "x": 77.46666666666667,
+                "y": 371.84000000000003
+              },
+              "boundary": {
+                "h": 933.5333333333334,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.46666666666667
+              },
+              "maxOver": 2.2666666666666515,
+              "nodeType": "Table",
+              "overBottom": 2.2666666666666515,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table4"
+            }
+          ],
+          "overlap": [],
+          "page": 2,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/rowbreak-problem-pages.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 0,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    },
+    "pdf": {
+      "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+      "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c"
+    },
+    "git_head": "8f8f0ae489581adf307dd0c53ba8895dae830b03",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+      "verified_directories": [
+        "output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "/Users/tsjang/Library/Fonts"
+      ],
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage81-rowbreak-hwp/visual-native/rowbreak-hwp/run_manifest.json",
+      "purpose": "선택 Native 음성 증거. 최종 head 전체 시각 승인이나 글꼴 예외로 사용하지 않음."
+    }
+  },
+  "selected_native": {
+    "state": "complete",
+    "pages": [
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 96.83411
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 49.39444
+      },
+      {
+        "page": 12,
+        "tolerant_content_match_percent": 80.05503
+      },
+      {
+        "page": 13,
+        "tolerant_content_match_percent": 71.99775
+      },
+      {
+        "page": 17,
+        "tolerant_content_match_percent": 99.82183
+      },
+      {
+        "page": 18,
+        "tolerant_content_match_percent": 88.25163
+      }
+    ],
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 49.39444
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 80.05503
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 71.99775
+        },
+        {
+          "page": 18,
+          "tolerant_content_match_percent": 88.25163
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "exit_code": 1,
+    "whole_native": "미실행",
+    "fresh_wasm": "미실행",
+    "direct_inspection": "3쪽 표 하단과8쪽의 내용 소유·셀 경계 이동을 review에서 직접 확인. 쪽수18/18만으로 배치 승인하지 않음."
+  },
+  "removal": {
+    "source": "samples/rowbreak-problem-pages.hwp",
+    "preserved_source": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+    "removed_functions": [
+      "issue_rowbreak_chart_overlap::rowbreak_hwp_page8_keeps_continued_nested_reference_line",
+      "issue_rowbreak_chart_overlap::rowbreak_hwp_page12_reference_text_stays_inside_body",
+      "issue_7203_float_table_stored_anchor_top::an_offset_anchored_float_table_keeps_flow_placement",
+      "issue_7095_page_spanning_fragment_box::issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top",
+      "issue_4961_font_decision_trace::issue4967_combined_evidence_reports_actual_cache_key_rejection"
+    ],
+    "matrix_input_removed_from": [
+      "rowbreak_page13_preserves_linear_empty_spacer_in_excerpt_table",
+      "rowbreak_final_pages_match_hancom_pdf_page_count",
+      "rowbreak_page17_keeps_database_separation_line_before_example_box",
+      "stored_midpage_cut_keeps_its_last_source_unit"
+    ],
+    "removed_baseline_rows": {
+      "off_canvas_baseline.tsv": [
+        "rowbreak-problem-pages.hwp\t1\n"
+      ],
+      "render_page_samples.tsv": [
+        "samples/rowbreak-problem-pages.hwp\t18\t18\t0\n"
+      ],
+      "oracle_page_count_baseline.tsv": [
+        "samples/rowbreak-problem-pages.hwp\t18\t18\n"
+      ]
+    },
+    "parser_contract_retained": "issue_1770_hwpx_origin_marker::native_hwp_is_not_marked, 입력 경로만 보존 자산으로 수정",
+    "new_test_functions": 0,
+    "production_changes": false,
+    "threshold_relaxation": false
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869840624",
+  "validation_status": "완료: 유지 검사37PASS/다른 문서4FAIL; 필수 lint·정책 통과",
+  "setup_error": "지원하지 않는 --embed-fonts-mode/--font-dir 옵션으로 첫 CLI 호출이 capture 전 exit2. --embed-fonts=full/--font-path로 수정하여 선택6쪽 sweep 완주; 이를 렌더링 결함이나 회귀 검출로 세지 않음. 초기 제거 후 단일 입력 loop/잔여 주석 Clippy 오류 수정. 재생성 뒤 suite 배정이 변경돼 중간33함수 실행은 누락 범위가 있으며 최종 배정을 다시 조회해 전 범위를 재실행; 중간 실행으로 전체 집중 검증을 선언하지 않음.",
+  "code_commit": "66510d325d7c085e684a914f4176d953bf9eef38",
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "8f8f0ae489581adf307dd0c53ba8895dae830b03",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(/(^|::)issue_(rowbreak_chart_overlap|7203_float_table_stored_anchor_top|7095_page_spanning_fragment_box|4961_font_decision_trace|1770_hwpx_origin_marker)::/) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_2)"
+        ],
+        "exit_code": 100,
+        "seconds": 18.02385254064575
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.522614500019699
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36193845933303237
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2169936248101294
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3372959173284471
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.40086637483909726
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2734159170649946
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.011968292295933
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   2.547s] 41 tests run: 37 passed, 4 failed, 1265 skipped"
+  ],
+  "remaining_failures": [
+    {
+      "document": "samples/rowbreak-problem-pages.hwpx",
+      "functions": [
+        "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+        "rowbreak_page7_starts_article_26_like_hancom_pdf"
+      ],
+      "status": "동일 HWPX의 독립 sweep 미실행. HWP 제외로 해결하지 않음."
+    },
+    {
+      "document": "samples/143E433F503322BD33.hwp",
+      "function": "stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected",
+      "observation": "exact-face: charactersSeen/recordsEmitted 1334, 기대1336. 같은 runsSeen194. 원인과 독립 근거 판단 미완료."
+    },
+    {
+      "document": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "function": "body_overflow_does_not_grow_partition_2",
+      "observation": "본문 하단39→40건. 원문 독립 sweep 미실행."
+    }
+  ]
+}

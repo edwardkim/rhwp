@@ -28,6 +28,33 @@ impl<'a> TacFlowQuery<'a> {
         self.profile.get().session_edited()
     }
 
+    /// 저장 셀 글줄이 없는 텍스트 표는 현재 줄 구성으로 높이를 정한다.
+    /// host의 옛 저장 줄이 그 새 높이를 제한하는 근거가 될 수는 없다.
+    pub(in crate::renderer::typeset) fn single_tac_line_has_unstored_cell_text(
+        &self,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        fmt: &FormattedParagraph,
+        tac_count: usize,
+    ) -> bool {
+        if tac_count != 1
+            || fmt.line_heights.len() != 1
+            || super::super::para_has_non_whitespace_text(para)
+        {
+            return false;
+        }
+        table
+            .cells
+            .iter()
+            .flat_map(|cell| &cell.paragraphs)
+            .any(super::super::para_has_non_whitespace_text)
+            && table
+                .cells
+                .iter()
+                .flat_map(|cell| &cell.paragraphs)
+                .all(crate::renderer::para_has_no_stored_line_segs)
+    }
+
     pub(in crate::renderer::typeset) fn tac_table_line_index(
         &self,
         para: &Paragraph,
@@ -40,7 +67,15 @@ impl<'a> TacFlowQuery<'a> {
 
         let om_top = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
         let om_bot = hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
-        let table_line_h = hwpunit_to_px(table.common.height as i32, self.dpi) + om_top + om_bot;
+        let table_body_h = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let table_line_h = table_body_h + om_top + om_bot;
+        // 재구성한 개체 줄은 본체 높이를 갖고 바깥 여백은 배치에서 소비한다.
+        // 실제 저장 줄의 소유 판정에는 기존 외곽 높이 계약을 유지한다.
+        let matches_height = |height: f64| {
+            (height - table_line_h).abs() < 1.0
+                || (crate::renderer::para_has_no_stored_line_segs(para)
+                    && (height - table_body_h).abs() < 1.0)
+        };
 
         // [#2287 후속/1.hwpx p58] text_height(th) 매칭 우선 — 한컴은 문단의
         // 모든 줄에 최대 줄높이를 lh 로 저장하는 관례가 있어(1.hwpx pi=322:
@@ -50,20 +85,34 @@ impl<'a> TacFlowQuery<'a> {
         // 있으면 그 줄이 표 줄의 확정 증거이고, 없으면 종전 lh 매칭 유지.
         let th_match = para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
             let th = hwpunit_to_px(seg.text_height, self.dpi);
-            ((th - table_line_h).abs() < 1.0).then_some(idx)
+            matches_height(th).then_some(idx)
         });
         if th_match.is_some() {
             return th_match;
         }
 
-        para.line_segs.iter().enumerate().find_map(|(idx, seg)| {
-            let line_h = hwpunit_to_px(seg.line_height, self.dpi);
-            if (line_h - table_line_h).abs() < 1.0 {
-                Some(idx)
-            } else {
-                None
-            }
-        })
+        para.line_segs
+            .iter()
+            .enumerate()
+            .find_map(|(idx, seg)| {
+                let line_h = hwpunit_to_px(seg.line_height, self.dpi);
+                if matches_height(line_h) {
+                    Some(idx)
+                } else {
+                    None
+                }
+            })
+            .or_else(|| {
+                para.line_segs
+                    .is_empty()
+                    .then(|| {
+                        fmt.line_heights.iter().position(|height| {
+                            (height - table_line_h).abs() < 1.0
+                                || (height - table_body_h).abs() < 1.0
+                        })
+                    })
+                    .flatten()
+            })
     }
 
     pub(in crate::renderer::typeset) fn is_effective_tac_table(

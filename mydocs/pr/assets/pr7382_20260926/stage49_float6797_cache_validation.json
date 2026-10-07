@@ -1,0 +1,167 @@
+{
+  "product_runtime_head": "c4ce9ff96436d94468557f09794ee0fa84b35ce6",
+  "parent_head": "4369383a8",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "scope": "수동 IR 변형 helper의 파생 상태 재구성; 제품/기대값/공차 불변",
+  "test": "tests/cases/issue_6797_table_item_clears_float_band.rs",
+  "test_sha256": "63ffbc90da346c975d3c5588e5ef7ab663dd38cf956aa568447b23bb4b267187",
+  "diagnostic_rust_sha256": "bd33d7f27db0e441e414bf6cc1d979b74991954d31a63bbe4292ba7ed9da1569",
+  "diagnostic_build_exit": 0,
+  "diagnostic_run_exit": 0,
+  "diagnostic_output": "v=Some(45000) off=30000 synthetic=false rebuild=false pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=291.9866666666667 h=165.73333333333332\nv=Some(45000) off=30000 synthetic=false rebuild=true pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=574.7733333333333 h=165.73333333333332\nv=None off=0 synthetic=false rebuild=false pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=291.9866666666667 h=165.73333333333332\nv=None off=0 synthetic=false rebuild=true pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=174.77333333333334 h=165.73333333333332\nv=Some(1000000) off=0 synthetic=true rebuild=false pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=291.9866666666667 h=165.73333333333332\nv=Some(1000000) off=0 synthetic=true rebuild=true pages=11\npi=Some(70) y=181.45333333333335 h=113.44\npi=Some(71) y=174.77333333333334 h=165.73333333333332\n",
+  "cache_effect_verified": true,
+  "original_pdf_is_manual_variant_oracle": false,
+  "original_table_order_regression_fixed": false,
+  "full_after_helper_fix_rerun": false,
+  "pr_ready": false,
+  "gates": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6783151663839817
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 6.22465950017795
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.058887875173241
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6078848750330508
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_6797_table_item_clears_float_band::maintainer_)"
+      ],
+      "exit_code": 0,
+      "seconds": 201.302990374621
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7213081670925021
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6594003750942647
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7899209172464907
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 11.870717084035277
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6386224166490138
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.048429000191390514
+    }
+  ],
+  "focused_summary": [
+    "     Summary [   0.148s] 3 tests run: 3 passed, 10420 skipped"
+  ],
+  "focused_pass": 3,
+  "focused_exit_code": 0,
+  "previous_full_clear_offset_result": "FAIL: 원문 캐시의 y291.98667이 밴드 소유 표의 끝294.89333보다 위라 첫 순서 assertion에서 실패",
+  "previous_missing_synthetic_pass_is_valid_variant_evidence": false,
+  "new_missing_synthetic_variants_are_rebuilt": true,
+  "reused_product_visual_evidence": "stage48_float6797_reassessment.json; 제품 소스 불변, 변형 입력의 한컴 출력 일치 증거로 사용하지 않음"
+}

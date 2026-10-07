@@ -1,0 +1,625 @@
+{
+  "stage": 152,
+  "code_commit": "c3f748325f9ebe7f1d774d378f4159ae1226ae20",
+  "preanalysis": {
+    "stage": 152,
+    "head": "25d6c3f74",
+    "user_scope": "CLP000030900001.wmf 541x311 붉은 면 오류를 정상 그림으로 수정",
+    "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    "source_wmf": "BinData/BIN0003.wmf",
+    "wmf_sha256": "11c89d411b2451fdc05584484086fd4e3ec3115aeb8f4ba87b248efd7caf1449",
+    "records": [
+      510,
+      517,
+      523
+    ],
+    "cause": "PATINVERT 두 blit를 PATCOPY로 근사하고 사이 R2_MASKPEN의 흑백 PolyPolygon 마스크 의미를 소비하지 않음",
+    "rule": "(D xor P) and M xor P: M=white이면 D 유지, black이면 P 표시. 중간 벡터 윤곽을 역흑백 SVG 마스크로 바꾸며 두 outer rect 제거",
+    "guards": "인접 paint / 동일 rect·brush·clip / R2_MASKPEN / 무테두리 / 실제 흑백 1bit brush / 마스크 윤곽이 rect 내부. 불완전·다색·다른 clip·다른 ROP는 현행 경로 유지",
+    "new_test_functions": false,
+    "test_plan": "기존 #6865 검사에 해당 WMF 입력축을 연결; 기존 ROP 정상·음성 검사 실행. Native/freshWASM 영향1쪽과 기존 전체19쪽 비교; 전후 그림 영역 직접 확인"
+  },
+  "production_changed": true,
+  "source_producer": {
+    "source_head": "25d6c3f74bb0bc7e3efca9c428009ec0b7a2882f",
+    "source_diff_sha256": "2f324a06495980bb13fbccb2c7dc7ec5db92fc6cff6c7181ee0c2ce9f2c0f0c5",
+    "binary_sha256": "68d98411332ece9dfacd9c03b9bf167d740166db12548a5f85e76de7788a1497",
+    "producer": "focused nextest compiles current CARGO_BIN_EXE_rhwp; after-result.json exit0 /18PASS"
+  },
+  "committed_rust_diff_matches_tested_source": true,
+  "reference": {
+    "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+    "pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+    "pdf_pages": 19,
+    "engine": "2020",
+    "saved_product": "hancom-office-2020 11.0.0.8362",
+    "conversion": {
+      "job_id": "af49f68d-a693-4ee1-902d-f52d2bb7c1dd",
+      "status": "succeeded",
+      "terminal": true,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-09-29T05:43:05.474Z",
+      "completed_at": "2026-09-29T05:43:36.063Z"
+    }
+  },
+  "path": "META_DIBBITBLT/PATINVERT → BrushOnlyRopSequence::AwaitDpa → SVGPlayer::poly_polygon/R2_MASKPEN → observe_vector_mask/동일 clip·범위·흑백팔레트 → 마지막 동일 PATINVERT → finish/역마스크와원래색으로윤곽만출력",
+  "independent_rule_sources": [
+    "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/1605dd68-a635-4639-ab81-99ff3e3fc5a3",
+    "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/781a06bd-af9b-48b7-8e7d-d922de0f9c26"
+  ],
+  "cause": "WMF의 XOR 두 레코드를 PATCOPY로 근사해 꺾은선 윤곽 위에 붉은 사각형을 겹쳐그림. 그림 리소스이며 OLE 차트 변경이 아님. 본체 HWP BinData/BIN0003.wmf를 원본 바이트로 추출했다.",
+  "focused": {
+    "before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(issue_6865_wmf_monochrome_mask_rop::) or test(issue_6469_wmf_brush_only_raster_ops::) or test(wmf_emf_goldens::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_6865_wmf_monochrome_mask_rop",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6469_wmf_brush_only_raster_ops",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        {
+          "caseName": "wmf_emf_goldens",
+          "target": "regression_suite_021",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 249.83416320895776
+    },
+    "after": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_6865_wmf_monochrome_mask_rop::) or test(issue_6469_wmf_brush_only_raster_ops::) or test(wmf_emf_goldens::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_6865_wmf_monochrome_mask_rop",
+          "target": "regression_suite_022",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6469_wmf_brush_only_raster_ops",
+          "target": "regression_suite_024",
+          "grouped": true
+        },
+        {
+          "caseName": "wmf_emf_goldens",
+          "target": "regression_suite_028",
+          "grouped": true
+        }
+      ],
+      "exit_code": 0,
+      "seconds": 188.3432922498323
+    },
+    "before_summary": "18 run:17PASS/1FAIL, 실제 원본 그림의 마스크 누락으로 실패",
+    "after_summary": "18 run:18PASS/0FAIL",
+    "test_functions_added": 0,
+    "existing_case_functions": 15,
+    "updated_functions": [
+      "issue_6865_monochrome_mask_blit_is_not_painted",
+      "issue_6865_colored_one_bit_pattern_is_preserved",
+      "issue_6865_incomplete_idiom_keeps_middle_draw"
+    ],
+    "negative_axes": "원본 팔레트의 흑→적 변경 및 마지막 XOR→DSTINVERT 변경도 기존 두 함수에 연결해 적용 제외를 확인",
+    "golden_updated": false
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8250872907228768
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 9.217150249984115
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.9781463332474232
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 190.212899541948
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.542286250274628
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 21.939131500199437
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 17.729993416927755
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 45.39152154233307
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 58.5220324578695
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 3.704939750023186
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 8.955709541682154
+    }
+  ],
+  "wasm_build": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exit_code": 0,
+    "seconds": 200.23440704122186,
+    "hashes": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "53a7efe38225b8c25b1c14dc5173d52dc1c96f27fe473b3877ee8667417196b0",
+      "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp-studio/public/rhwp_bg.wasm": "53a7efe38225b8c25b1c14dc5173d52dc1c96f27fe473b3877ee8667417196b0"
+    }
+  },
+  "visual": {
+    "metrics": {
+      "native": {
+        "summary": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.49054,
+          "worst_pixel_match_percent": 92.49054,
+          "average_ink_match_percent": 54.96678,
+          "worst_ink_match_percent": 54.96678,
+          "average_visual_accuracy_proxy_percent": 54.96678,
+          "worst_visual_accuracy_proxy_percent": 54.96678,
+          "average_tolerant_content_match_percent": 99.82783,
+          "worst_tolerant_content_match_percent": 99.82783,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-native/fonttrace4961-missing-face/rhwp_png/rhwp_001.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-native/fonttrace4961-missing-face/pdf_png/pdf-01.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-native/fonttrace4961-missing-face/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 66959,
+            "diff_ratio": 0.0750946,
+            "pixel_match_percent": 92.49054,
+            "ink_union_pixels": 148688,
+            "ink_diff_pixels": 66959,
+            "ink_diff_ratio": 0.45033224,
+            "ink_match_percent": 54.96678,
+            "visual_accuracy_proxy_percent": 54.96678,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 99.82783,
+            "mean_abs_channel_delta": 10.023,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              75,
+              79,
+              717,
+              1080
+            ]
+          }
+        ]
+      },
+      "wasm": {
+        "summary": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.49054,
+          "worst_pixel_match_percent": 92.49054,
+          "average_ink_match_percent": 54.96678,
+          "worst_ink_match_percent": 54.96678,
+          "average_visual_accuracy_proxy_percent": 54.96678,
+          "worst_visual_accuracy_proxy_percent": 54.96678,
+          "average_tolerant_content_match_percent": 99.82783,
+          "worst_tolerant_content_match_percent": 99.82783,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-wasm/fonttrace4961-missing-face/rhwp_png/rhwp_001.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-wasm/fonttrace4961-missing-face/pdf_png/pdf-01.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-wasm/fonttrace4961-missing-face/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 66959,
+            "diff_ratio": 0.0750946,
+            "pixel_match_percent": 92.49054,
+            "ink_union_pixels": 148688,
+            "ink_diff_pixels": 66959,
+            "ink_diff_ratio": 0.45033224,
+            "ink_match_percent": 54.96678,
+            "visual_accuracy_proxy_percent": 54.96678,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 99.82783,
+            "mean_abs_channel_delta": 10.023,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              75,
+              79,
+              717,
+              1080
+            ]
+          }
+        ]
+      }
+    },
+    "native_command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-missing-face",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "--pages",
+      "1",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-native"
+    ],
+    "wasm_command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-missing-face",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "--pages",
+      "1",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-wasm",
+      "--wasm-pkg",
+      "pkg"
+    ],
+    "environment": {
+      "RHWP_VISUAL_RASTER_TIMEOUT_MS": "180000"
+    },
+    "chart_region": [
+      {
+        "backend": "before",
+        "crop_box_px": [
+          127,
+          854,
+          420,
+          1042
+        ],
+        "tolerant_content_match_percent": 43.17549
+      },
+      {
+        "backend": "native",
+        "crop_box_px": [
+          127,
+          854,
+          420,
+          1042
+        ],
+        "tolerant_content_match_percent": 98.93048
+      },
+      {
+        "backend": "wasm",
+        "crop_box_px": [
+          127,
+          854,
+          420,
+          1042
+        ],
+        "tolerant_content_match_percent": 98.93048
+      }
+    ],
+    "direct_inspection": [
+      "Native1쪽review",
+      "freshWASM1쪽standaloneoverlay",
+      "원본WMF변환단독PNG"
+    ],
+    "residual": "글꼴/잉크 굵기와 작은 래스터 차이는 남음. 붉은 면과 선/범례 누락은 복원됨.",
+    "scope": "그림 영향1쪽과 전체 WMF그림영역 검증. 전체 HWP19쪽 최종 판정 아님."
+  },
+  "capture_error": {
+    "attempts": 2,
+    "cause": "380MB 전체 글꼴 SVG에서 기본 navigation30초 초과, 비교PNG0장",
+    "recovery": "대기한도만 환경변수로180초 설정. DOM load/document.fonts.ready/screenshot/font/geometry/viewport 조건 유지. 진단 정상73.85초 및 canonical Native/freshWASM재실행exit0",
+    "diagnostic": {
+      "command": [
+        "node",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/rasterize-long.mjs",
+        "--input",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-native/fonttrace4961-missing-face/svg/156636617_240617 2024년 5월 월간 수출입 현황(확정치)_001.svg",
+        "--output",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/long-raster-page1.png",
+        "--zoom",
+        "1"
+      ],
+      "exit_code": 0,
+      "seconds": 73.8492951663211,
+      "difference": "diagnostic timeout 180s only; same webfont/projection/font/geometry/screenshot code"
+    },
+    "node_syntax": "node --check scripts/rasterize-svg-webfonts.mjs exit0"
+  },
+  "full_native_current": {
+    "status": "complete",
+    "output": "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-full-native",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-missing-face",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/visual-full-native"
+    ],
+    "prior_snapshot": "stage151 전체19쪽 Native최저73.34034%; 수정후전체통과로재사용하지않음",
+    "exit_code": 1,
+    "completed_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 76.04063
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 85.15666
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 73.34034
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 88.94145
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "metrics": {
+      "compared_pages": 19,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.28725,
+      "worst_pixel_match_percent": 88.12151,
+      "average_ink_match_percent": 23.7982,
+      "worst_ink_match_percent": 15.58559,
+      "average_visual_accuracy_proxy_percent": 23.7982,
+      "worst_visual_accuracy_proxy_percent": 15.58559,
+      "average_tolerant_content_match_percent": 93.85493,
+      "worst_tolerant_content_match_percent": 73.34034,
+      "worst_pages": [
+        12,
+        13,
+        11,
+        6,
+        15,
+        16,
+        17,
+        3,
+        9,
+        18
+      ]
+    },
+    "updated_in_stage": 153
+  },
+  "original_stage137_failure_snapshot": {
+    "reviewed": 32,
+    "pending_review": 28,
+    "meaning": "이번 직접 요청 WMF 보정은 original60개 처리수 증가로 세지 않음. #4961 hash/기타27개는 별도 후속."
+  },
+  "logs": "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask",
+  "final_pr_ready": false
+}

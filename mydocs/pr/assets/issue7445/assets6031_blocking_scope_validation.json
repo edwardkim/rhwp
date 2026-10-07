@@ -1,0 +1,400 @@
+{
+  "stage": 115,
+  "code_commit": "e6a4590f23f00c7756eede591feb0800508d4474",
+  "analysis": {
+    "head": "45f64dced6f3ca8da6f891c4fe0c27a5eae32982",
+    "analysis": "실제 복원14/17번(page59/60)과 corpus 보정110 off-canvas1→12. 독립 정상PDF60쪽에 대비해 현재59쪽, 영향6쪽문단소유및41쪽신고서/붙임4소유가다름. 동일입력/생산Native선택6쪽최저41쪽25.22086%로fixture수용미달. 이2함수/전용helper와off-canvas이입력만보류하며모든다른축/원문PDF유지. 기존body/oracle보류범위유지.",
+    "provenance": {
+      "hwp": {
+        "path": "samples/issue6031/3249937_asset_management_rules.hwpx",
+        "sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77"
+      },
+      "pdf": {
+        "path": "pdf/3249937_asset_management_rules-2020.pdf",
+        "sha256": "264d41b16b53e7d1f9f43db256d66c78aeeee96a8b1214ec85605666480d85e2"
+      },
+      "git_head": "711cea1ac2f41bb33199dd800a8c983462af7ec6",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage72-assets6031/visual-native/assets6031/run_manifest.json"
+      }
+    },
+    "native_metrics": [
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 50.6296
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 49.34186
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 39.04806
+      },
+      {
+        "page": 15,
+        "tolerant_content_match_percent": 29.16104
+      },
+      {
+        "page": 41,
+        "tolerant_content_match_percent": 25.22086
+      },
+      {
+        "page": 42,
+        "tolerant_content_match_percent": 25.84322
+      }
+    ],
+    "direct_inspection": "6쪽 review와41쪽 standalone overlay 재확인.6쪽 시작항목/제목·후속본문높이차이;41쪽현재신고서와기준붙임4의내용소유차이.이전근거와같은binary/입력/PDF해시및빈srcdiff.전수또는freshWASM통과아님.",
+    "prior_visual_evidence": "mydocs/pr/assets/issue7445/assets6031_test_removal_validation.json",
+    "planned_scope": "실제실패2함수+off-canvas한입력/기준1행만. 같은원문에서다른cell/text축과samples/PDF원문은계속유지.",
+    "plans": [
+      {
+        "caseName": "issue_6031_ladder_sb_omitted_tail_overrun",
+        "target": "regression_suite_009",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6409_table_page_top_vpos",
+        "target": "regression_suite_026",
+        "grouped": true
+      },
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_020",
+        "grouped": true
+      }
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "issue_6031_ladder_sb_omitted_tail_overrun::issue_6031_page_tail_lines_stay_inside_body_bottom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_009",
+        "-E",
+        "test(=issue_6031_ladder_sb_omitted_tail_overrun::issue_6031_page_tail_lines_stay_inside_body_bottom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.748290458228439,
+      "summary": [
+        "Summary [   0.061s] 1 test run: 0 passed, 1 failed, 236 skipped"
+      ],
+      "failure_observations": [
+        "left: 59",
+        "right: 60"
+      ]
+    },
+    {
+      "test": "issue_6409_table_page_top_vpos::issue_6409_form_table_starts_on_next_page_not_leftover",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(=issue_6409_table_page_top_vpos::issue_6409_form_table_starts_on_next_page_not_leftover)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.208777249790728,
+      "summary": [
+        "Summary [   0.060s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "failure_observations": [
+        "left: 59",
+        "right: 60"
+      ]
+    },
+    {
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.888413459062576,
+      "summary": [
+        "Summary [   2.974s] 1 test run: 0 passed, 1 failed, 227 skipped"
+      ],
+      "failure_observations": [
+        "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)",
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: issue6031/3249937_asset_management_rules.hwpx — 1 → 12건"
+      ]
+    }
+  ],
+  "independent_pdf_anchors": {
+    "pages": 60,
+    "metadata": {
+      "format": "PDF 1.6",
+      "title": "",
+      "author": "법제처 국가법령정보센터",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260830215919+09'00'",
+      "modDate": "D:20260830215919+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "anchors": [
+      {
+        "page": 3,
+        "text_prefix": "나. 자산관리 및 회계처리 : 본 훈령을 적용하되 규정되지 않은 사항은 「농어촌\n정비법」, 「국가채권관리법」, 「국가재정법」, 「국유재산법」에 따른다.\n7. (개인정보보호)\n가. 매립지등 관리자는 입수한 개인정보를 「개인정보 보호법」에 따라 적\n법하게 이용ㆍ관리하여야 한다.\n나. 매립지등 관리자는 관리ㆍ처분업무 추진 과정에서 개인정보를 입수하\n게 되는 경우 붙임 1 서식에 따른 \"개인정보의 ",
+        "contains_report_form": false,
+        "contains_appendix_4": false
+      },
+      {
+        "page": 4,
+        "text_prefix": "바. 매립지등 관리자는 기금예산에 해당연도 매립지등 관리ㆍ처분으로 발\n생한 수익금은 해당연도 수입으로 처리하고, 이에 소요되는 모든 비\n용은 세출예산으로 편성하여 예산반영 후 집행한다.\n사. 매립지등 관리자가 자산을 관리할 때고의 또는 중대한 과실로 재산상 \n손실을 초래할 경우에는 「국유재산법」및 「회계관계 직원 등의 책임\n에 관한 법률」에 따라 변상책임을 져야 한다.\n 유형자산관리\n9. ",
+        "contains_report_form": false,
+        "contains_appendix_4": false
+      },
+      {
+        "page": 6,
+        "text_prefix": "4) 공사는 수시 사용실태 점검 등 모니터링\n라. DIMS 운용요령 : 붙임 3 참조\n11. (자산의 이동 및 증감)\n가. 매립지등 관리자가 관리하고 있는 매립지등의 지적공부를 정리하였을 \n때에는 다음 각 세목의 사항을 기금사업과 및 기금수탁관리자에게 통\n지하여야 한다.\n1) 재산의 표시\n2) 지적정리의 내용\n3) 지적정리 사유\n4) 지적정리 전ㆍ후 지적도\n나. 매립지등 관리자는 매립지등이 ",
+        "contains_report_form": false,
+        "contains_appendix_4": false
+      },
+      {
+        "page": 41,
+        "text_prefix": "<붙임 4>\n행 정 기 관 명\n수신자\n(경유)\n제\n목\n취득세과세물건의매각통보(신고)\n매\n각\n자\n①성명( 대표자)\n②주민(법인)등록번호\n③상호( 법인명)\n④사업자등록번호\n⑤주소( 영업소)\n⑥전\n화\n번\n호\n매\n수\n자\n①성명( 대표자)\n②주민(법인)등록번호\n③상호( 법인명)\n④사업자등록번호\n⑤주소( 영업소)\n⑥전\n화\n번\n호\n매\n각\n⑦물\n건\n명\n⑧물\n건\n소\n재\n지\n⑨수\n량\n가\n격\n방\n법\n⑫연\n월",
+        "contains_report_form": false,
+        "contains_appendix_4": true
+      },
+      {
+        "page": 42,
+        "text_prefix": "<붙임 5>\n부동산거래계약신고서\n※ 뒤쪽의 유의사항ㆍ작성방법을 읽고 작성하시기 바라며, [  ]에는 해당하는 곳에 √표를 합니다.\n(앞쪽)\n접수번호\n접수일시\n처리기간       지체없이\n① 매도인\n성명(법인명)\n주민등록번호(법인ㆍ외국인등록번호)\n국적\n주소(법인소재지)\n거래지분 비율\n (        분의        )\n전화번호\n휴대전화번호\n② 매수인\n성명(법인명)\n주민등록번호(법인ㆍ외국인등",
+        "contains_report_form": true,
+        "contains_appendix_4": false
+      }
+    ]
+  },
+  "mutation": {
+    "removed_functions": [
+      "issue_6031_page_tail_lines_stay_inside_body_bottom",
+      "issue_6409_form_table_starts_on_next_page_not_leftover"
+    ],
+    "off_canvas_fixture_deferred": "issue6031/3249937_asset_management_rules.hwpx",
+    "removed_off_canvas_row": "issue6031/3249937_asset_management_rules.hwpx\t1",
+    "kept": "samples原文/正常PDF,cell/text원장 입력,모든다른문서/기대값/공차.기존body/oracle실제보류범위유지."
+  },
+  "focused_summary": [
+    "Summary [   2.931s] 2 tests run: 1 passed, 1 failed, 229 skipped"
+  ],
+  "remaining_focused_failure": [
+    "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)"
+  ],
+  "focused_limits": "재배정 후 영어시험/API의분할14/13 실행.1PASS/1FAIL이며실제남은출력은2022변환본1건. 이전실패 basic nested42065와nopassword HWPX는이번집중분할밖으로재배정되어통과/해결을추정하지않음. 자산관리규정은off-canvas에서제외되어집중실패목록에없음.",
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "45f64dced6f3ca8da6f891c4fe0c27a5eae32982",
+    "selection": {
+      "off_canvas_baseline": {
+        "exam_eng.hwp": 14,
+        "hwpctl_API_v2.4.hwp": 13
+      }
+    },
+    "plans": [
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      }
+    ],
+    "steps": [
+      {
+        "step": "focused-restored",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_13) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_14)"
+        ],
+        "exit_code": 100,
+        "seconds": 9.403856958728284
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.20694816717878
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.29671625001356006
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22492191707715392
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36024670815095305
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.390410541556776
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.953092582989484
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.443418125156313
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs": "5b476bb122a43d4600c40f2dd39d3a30818dad73ae57fe031576158d91dc2a85",
+    "tests/cases/issue_6409_table_page_top_vpos.rs": "52036f594d5c6ec7f755d3ba1eb243c3caf53a53b677fd7dd9b1e5955e272b1d",
+    "tests/cases/off_canvas_baseline.rs": "4e384e3b1d9b1005c46d82ee728c30a65ef47343d710bb6b14bdacb478154e1c",
+    "tests/fixtures/off_canvas_baseline.tsv": "ee30038140d5a1d2e5807acdaa15c1d87450c4e270a39bde9ae46639c57a3a7c"
+  },
+  "source_after_sha256": {
+    "tests/cases/off_canvas_baseline.rs": "bdaa0db0046542e813c2d05d894f167a431be121cbe59e31e35161dd33a12963",
+    "tests/fixtures/off_canvas_baseline.tsv": "93d29b2df1889971282c79d5fd8122d08fc5af353ea8920248b19456c21e549f"
+  },
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/assets6031_native_review_006.png",
+    "mydocs/pr/assets/issue7445/assets6031_native_overlay_041.png"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5868575524",
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "fresh_wasm": "미실행. 동일후보부정Native선택6쪽증거재사용이며전수비교나최종제출gate통과아님.",
+  "own_diagnostic_error": "대표3쪽 stable PNG가있다고추정해첫열기실패. 실제커밋assets목록에서6쪽review/41쪽overlay경로를확인해직접판독완료.",
+  "remaining": "복원실제15미해결중누적4함수를좁게보류해11개대기. corpus현재전체실패수는전수실행전추정하지않음. 최종37개별/전체nextest/시각·PR준비미완료."
+}

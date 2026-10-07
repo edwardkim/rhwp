@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-03",
+  "branch": "review/planet6897-green-20261002",
+  "parent_head": "78b2d32f9",
+  "base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "input": "samples/issue5755/rewind_overflow_page_break.hwpx",
+  "reference": "pdf/issue5755/rewind_overflow_page_break-2020.pdf",
+  "rule": "첫 저장 줄과 후속 사다리가 앞 간격을 계상하는 경우 측정과 paint의 쪽 원점을 공유",
+  "before_p2": 94.36369,
+  "native_wasm_pages": [
+    95.6336,
+    99.13619,
+    99.7054
+  ],
+  "text_overlap_before_after": [
+    1,
+    0
+  ],
+  "table_overlap_before_after": [
+    1,
+    0
+  ],
+  "body_right_overflow": 2,
+  "off_canvas": 0,
+  "new_tests": 0,
+  "existing_test_updated": "고정 본문 바닥 px 대신 렌더 트리 본문 경계와 글자 기준선 관계",
+  "focused_run": {
+    "run": 56,
+    "pass": 53,
+    "fail": 3,
+    "seconds": 98.361,
+    "remaining_documents": [
+      "issue1853_caption_precedes_body_split.hwpx",
+      "issue5699/37787_regulatory_impact.hwp",
+      "hwpx/opengov/36398366 overtime"
+    ]
+  },
+  "gates": [
+    {
+      "gate": "nextest",
+      "exit_code": 100,
+      "elapsed_seconds": 306.232
+    },
+    {
+      "gate": "wasm-build",
+      "exit_code": 0,
+      "elapsed_seconds": 333.729
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 37.961
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 19.612
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 44.113
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 63.123
+    }
+  ],
+  "test_update_gates": [
+    {
+      "gate": "nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 9.415
+    },
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 8.145
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.305
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.261
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 0.377
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 11.518
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 0.583
+    }
+  ],
+  "sample2_native": {
+    "pages": 29,
+    "minimum": 92.22927,
+    "below90": 0
+  },
+  "sample2_wasm": {
+    "pages": 29,
+    "minimum": 92.22927,
+    "below90": 0,
+    "exit_code": 0
+  },
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "wasm_environment": "Mac no-opt 대체 빌드",
+  "sha256": {
+    "samples/issue5755/rewind_overflow_page_break.hwpx": "a2596ee49587ece1887a1cfe819d87853f41607ff1a3cc762438e552e26573b2",
+    "pdf/issue5755/rewind_overflow_page_break-2020.pdf": "532442cb83af6756ff2ab3a558a542763d1100d5d6144d55167cbfb0f564e456",
+    "target/pr-review/release-test/rhwp": "eb00f79062f920bf91f6e28b70010df814e220bd6af4c5590b068a4e77f64f9d",
+    "pkg/rhwp_bg.wasm": "703118bc3a896e701884630793cb24ae35caa39a9970f71a8018c7474b1746dd",
+    "scripts/visual_sweep.py": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+  }
+}

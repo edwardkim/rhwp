@@ -56,7 +56,7 @@ async function main() {
     const pages = [];
     for (let index = 0; index < info.pageCount; index++) {
       const result = await page.evaluate(index => ({
-        svg: globalThis.sweepDocument.renderPageSvg(index),
+        svg: globalThis.sweepDocument.renderPageSvgWithProfile(index, 'print'),
         tree: globalThis.sweepDocument.getPageRenderTree(index),
       }), index);
       const tree = JSON.parse(result.tree);
@@ -67,7 +67,7 @@ async function main() {
       pages.push({ page: index + 1, svgSha256: createHash('sha256').update(result.svg).digest('hex') });
     }
     await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
-    const manifest = { ...info, browser: await browser.version(), pages };
+    const manifest = { ...info, comparisonProfile: 'print', browser: await browser.version(), pages };
     writeFileSync(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2));
     console.log(JSON.stringify({ ...info, browser: manifest.browser }));
   } finally {

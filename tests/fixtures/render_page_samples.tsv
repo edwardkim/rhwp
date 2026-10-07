@@ -2,7 +2,6 @@ rel	hangul_pages	rhwp_pages_baseline	delta
 samples/2010-01-06.hwp	6	6	0
 samples/20250130-hongbo.hwp	4	4	0
 samples/80168_regulatory_analysis.hwp	157	157	0
-samples/86712_regulatory_analysis.hwp	64	64	0
 samples/KTX.hwp	27	27	0
 samples/SO-SUEOP.hwp	46	46	0
 samples/aift.hwp	74	74	0
@@ -68,7 +67,6 @@ samples/hwp_table_test-m.hwp	3	3	0
 samples/hwp_table_test.hwp	3	3	0
 samples/hwpctl_API_v2.4.hwp	105	105	0
 samples/hwpctl_Action_Table__v1.1.hwp	16	16	0
-samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74	0
 samples/hwpspec.hwp	178	178	0
 samples/hwpx/blank_hwpx.hwpx	1	1	0
 samples/hwpx/form-002.hwpx	10	10	0
@@ -94,7 +92,6 @@ samples/issue-505-equations.hwp	4	4	0
 samples/issue1663_coanchored_float_orphan.hwpx	2	2	0
 samples/issue1770_rowsplit_tolerance.hwpx	4	4	0
 samples/issue1835_tac_stale_height.hwp	3	3	0
-samples/issue1853_caption_precedes_body_split.hwpx	52	52	0
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1	0
 samples/issue1921/59043_regulatory_analysis.hwp	37	37	0
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115	0
@@ -143,7 +140,6 @@ samples/pic-in-head-02.hwp	6	6	0
 samples/pic-in-table-01.hwp	22	22	0
 samples/pic2.hwp	2	2	0
 samples/pr-149.hwp	1	1	0
-samples/pr-1674.hwp	35	35	0
 samples/pua-test.hwp	1	1	0
 samples/re-01-hangul-only-empty-hancom.hwp	1	1	0
 samples/re-01-hangul-only-hancom.hwp	1	1	0

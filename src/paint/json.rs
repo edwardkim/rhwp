@@ -1013,12 +1013,17 @@ impl PaintOp {
                 if let Some((width, height)) = image.original_size_hu {
                     let _ = write!(buf, ",\"originalSizeHu\":[{},{}]", width, height);
                 }
+                let (effect, brightness, contrast) =
+                    crate::renderer::image_resolver::resolved_image_effects(
+                        image,
+                        resolved.as_deref(),
+                    );
                 let _ = write!(
                     buf,
                     ",\"effect\":{},\"brightness\":{},\"contrast\":{}",
-                    json_escape(image_effect_str(image.effect)),
-                    image.brightness,
-                    image.contrast
+                    json_escape(image_effect_str(effect)),
+                    brightness,
+                    contrast
                 );
                 let opacity = image.opacity.clamp(0.0, 1.0);
                 if opacity < 1.0 {
@@ -1068,11 +1073,18 @@ impl PaintOp {
                     ",\"formType\":{},\"caption\":{},\"text\":{},\"foreColor\":{},\"backColor\":{},\"value\":{},\"enabled\":{}",
                     json_escape(form_type_str(form.form_type)),
                     json_escape(&form.caption),
-                    json_escape(&form.text),
+                    json_escape(form.display_or_text()),
                     json_escape(&form.fore_color),
                     json_escape(&form.back_color),
                     form.value,
                     form.enabled,
+                );
+                // CanvasKit는 backend 자체에서 크기/여백을 다시 추측하지 않는다.
+                let drawing = crate::renderer::form_appearance::form_drawing(form, *bbox);
+                let _ = write!(
+                    buf,
+                    ",\"drawing\":{}",
+                    serde_json::to_string(&drawing).expect("finite form drawing")
                 );
                 buf.push('}');
             }

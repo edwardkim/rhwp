@@ -332,7 +332,7 @@ impl DocumentCore {
     /// case_sensitive: 대소문자 구분
     /// cell_context_json: 표 셀 내부에서 시작할 경우 JSON
     ///
-    /// 반환: JSON `{"found":true,"sec":0,"para":1,"charOffset":5,"length":3,"cellContext":...}`
+    /// 반환: JSON `{"found":true,"sec":0,"para":1,"charOffset":5,"length":3,"totalMatchCount":7,"cellContext":...}`
     pub fn search_text_native(
         &self,
         query: &str,
@@ -389,6 +389,7 @@ impl DocumentCore {
         if body_hits.is_empty() {
             return Ok(r#"{"found":false}"#.to_string());
         }
+        let total_match_count = body_hits.len();
 
         if forward {
             let after = body_hits.iter().find(|h| {
@@ -397,8 +398,8 @@ impl DocumentCore {
                     || (h.sec == from_sec && h.para == from_para && h.char_offset > from_char)
             });
             match after {
-                Some(h) => Ok(format_search_hit(h, false)),
-                None => Ok(format_search_hit(body_hits[0], true)),
+                Some(h) => Ok(format_search_hit(h, false, total_match_count)),
+                None => Ok(format_search_hit(body_hits[0], true, total_match_count)),
             }
         } else {
             let before = body_hits.iter().rev().find(|h| {
@@ -407,8 +408,12 @@ impl DocumentCore {
                     || (h.sec == from_sec && h.para == from_para && h.char_offset < from_char)
             });
             match before {
-                Some(h) => Ok(format_search_hit(h, false)),
-                None => Ok(format_search_hit(body_hits[body_hits.len() - 1], true)),
+                Some(h) => Ok(format_search_hit(h, false, total_match_count)),
+                None => Ok(format_search_hit(
+                    body_hits[body_hits.len() - 1],
+                    true,
+                    total_match_count,
+                )),
             }
         }
     }
@@ -818,7 +823,7 @@ fn format_cell_context(cell: &CellHit) -> String {
     format!(",\"cellPath\":[{}]", entries.join(","))
 }
 
-fn format_search_hit(hit: &SearchHit, wrapped: bool) -> String {
+fn format_search_hit(hit: &SearchHit, wrapped: bool, total_match_count: usize) -> String {
     let cell_ctx = match &hit.cell_context {
         Some(cell) => format_cell_context(cell),
         None => String::new(),
@@ -828,8 +833,15 @@ fn format_search_hit(hit: &SearchHit, wrapped: bool) -> String {
         .map(|control| format!(",\"equationControl\":{}", control))
         .unwrap_or_default();
     format!(
-        "{{\"found\":true,\"wrapped\":{},\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{}{}{}}}",
-        wrapped, hit.sec, hit.para, hit.char_offset, hit.length, cell_ctx, equation_ctx
+        "{{\"found\":true,\"wrapped\":{},\"sec\":{},\"para\":{},\"charOffset\":{},\"length\":{},\"totalMatchCount\":{}{}{}}}",
+        wrapped,
+        hit.sec,
+        hit.para,
+        hit.char_offset,
+        hit.length,
+        total_match_count,
+        cell_ctx,
+        equation_ctx
     )
 }
 

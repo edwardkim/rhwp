@@ -1,0 +1,32 @@
+{
+  "pr": 7599,
+  "merge_sha": "bdda980b7e266d821171ed08b7604e21e6f3b7fa",
+  "pr_head": "6f7cfcc50c94baf196095e9e3d968d055374c84c",
+  "original_pr": 7491,
+  "original_state": "closed",
+  "original_merged": false,
+  "issue": 7490,
+  "issue_state": "closed",
+  "comments": {
+    "7490": "https://github.com/edwardkim/rhwp/issues/7490#issuecomment-5994747591",
+    "7491": "https://github.com/edwardkim/rhwp/pull/7491#issuecomment-5994750934"
+  },
+  "duration_run": 37311340327,
+  "duration_result": "success; ready=true; successful-pr-worker-measurements; metrics published",
+  "cache_device": 2128,
+  "cache_inode": 3095582,
+  "cache_path": "/home/edward/mygithub/rhwp/target/pr-review",
+  "cleanup": "completed",
+  "removed_worktrees": [
+    "/tmp/rhwp-pr7491-review-20261005",
+    "/tmp/rhwp-pr7491-before-20261005"
+  ],
+  "removed_local_branch": "integration/pr7491-maintainer-20261005",
+  "removed_remote_branch": "edwardkim/rhwp:integration/pr7491-maintainer-20261005",
+  "original_contributor_branch": "preserved; no fork branch deletion attempted",
+  "shared_cache_inode_preserved": true,
+  "other_worktrees_preserved": true,
+  "main_workspace_branch": "devel",
+  "main_workspace_head_before_final_record": "1acd94d52d55b17580e5736f9aa0cf02513a3caa",
+  "archive_record_commit": "1acd94d52d55b17580e5736f9aa0cf02513a3caa"
+}

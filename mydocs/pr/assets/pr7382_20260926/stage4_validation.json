@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 4; held",
+  "producer_head": "cd2203a0733c560872725954106036cd557f870b",
+  "producer_worktree_rust_diff_sha256": "aa9f75053e96c8c8deeca87e17bfc9e734a63c9100a66827a2292ff9a001bfda",
+  "before_table885": {
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.176,
+    "failure": "table885 absent on physical78"
+  },
+  "before_future_row_owner": {
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.253,
+    "failure": "note82 published before row6 marker"
+  },
+  "before_intra_row_owner": {
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.257,
+    "failure": "note116 published before accepted marker unit; row-only guard"
+  },
+  "focused_and_normal_final": {
+    "passed": 78,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 2.008
+  },
+  "page_count": {
+    "actual": 217,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      78,
+      79,
+      80
+    ],
+    "tolerant_content_match_percent": [
+      87.97988,
+      96.21953,
+      95.66118
+    ],
+    "selected_gate": "re_review_required",
+    "exit_code": 1,
+    "direct_inspection": [
+      "review78",
+      "overlay78",
+      "review79",
+      "overlay79",
+      "review80",
+      "overlay80"
+    ],
+    "font_exception": false
+  },
+  "rejected_capacity_candidate": {
+    "passed": 8,
+    "failed": 1,
+    "exit_code": 100,
+    "failure": "notes107/108 on78 and physical table/footer overlap; footer band reclaimed only in fit",
+    "table_bottom_px": 960.947,
+    "footer_top_px": 945.007,
+    "top_caption_extra_for_table885_px": 0
+  },
+  "remaining": [
+    "p78 table885 first fragment lower border960.947 vs PDF970.937 and cell line positions",
+    "inherited count-based deferral/guard on expanded HWPX path; not accepted as general proof",
+    "footnote fit footer-band/paint anchoring and existing Body note line-spacing metric mismatch",
+    "table1822 and later whole pagination",
+    "terminal caption budget failure boundary",
+    "final head full Rust/Skia/lint/fresh WASM"
+  ]
+}

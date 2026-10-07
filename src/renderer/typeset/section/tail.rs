@@ -81,8 +81,8 @@ impl TypesetEngine {
 
         // [Task #1733] 페이지 하단 빈 줄이 다음 vpos-reset 흐름 앞에 1개 이상 끼는 경우.
         // 기존 가드는 "현재 빈 문단 바로 다음이 reset" 인 경우만 흡수한다. 국제고속선기준은
-        // 빈 줄 2개 뒤 본문이 새 쪽 상단으로 reset 되거나, 빈 줄 뒤 하단 제목 1줄이 있고
-        // 그 다음 본문이 reset 되는 형태가 있어 near-empty 페이지가 남는다. 현재 빈 문단이
+        // 빈 줄 2개 뒤 본문이 새 쪽 상단으로 reset 되는 형태가 있어 단독 꼬리 쪽이 남는다.
+        // 빈 줄 뒤 첫 본문이 소유한 경계만 확인한다. 현재 빈 문단이
         // 이미 페이지 하단 vpos 를 가지고 있고, 뒤쪽 저장 flow 가 reset 을 명확히 보일 때만
         // 0-높이로 흡수한다.
         let empty_tail_bridge_to_reset = !next_will_vpos_reset
@@ -115,27 +115,9 @@ impl TypesetEngine {
                         st.col_count,
                         st.profile.hwp3_layout(),
                     );
-                    let high_tail_heading_then_reset = para_has_visible_text(next_para)
-                        && next_para.controls.is_empty()
-                        && next_para.line_segs.first().is_some_and(|seg| {
-                            let body_h_hu = crate::renderer::px_to_hwpunit(
-                                st.layout.body_area.height,
-                                self.dpi,
-                            );
-                            seg.vertical_pos > body_h_hu * 70 / 100
-                        })
-                        && paragraphs.get(idx + 1).is_some_and(|after| {
-                            after.column_type != ColumnBreakType::Page
-                                && after.column_type != ColumnBreakType::Section
-                                && paragraph_saved_vpos_reset_starts_new_page_after(
-                                    next_para,
-                                    after,
-                                    st.col_count,
-                                    st.profile.hwp3_layout(),
-                                )
-                        });
-
-                    found = reset_after_empty_run || high_tail_heading_then_reset;
+                    // 글이 있는 문단은 앞 빈 줄의 뒤쪽 경계다. 그 문단 다음의
+                    // reset을 앞당겨 적용하면 실제 본문 앞 빈 줄의 점유가 사라진다.
+                    found = reset_after_empty_run;
                     break;
                 }
                 found
@@ -333,7 +315,24 @@ impl TypesetEngine {
             let next_force_break = next_para.column_type == ColumnBreakType::Page
                 || next_para.column_type == ColumnBreakType::Section;
             let is_curr_empty = para.text.is_empty() && para.controls.is_empty();
-            if next_force_break && is_curr_empty {
+            // [#7429] 흡수는 **문서가 적어 둔 배치**일 때만 한다.
+            //
+            // 이 가드(#967)는 빈 문단이 잔여에 안 들어가면 쪽을 넘기지 않고 현재 쪽 하단에
+            // 0-높이로 거둔다. 그런데 한/글은 그러지 않는다 — 합성 실험
+            // (`samples/issue7429/inkless_tail_synthetic`, 한 줄 문단 39개 + 빈 문단 + 쪽 나누기를
+            // 블록 14개로 두고 첫 문단 글자 크기로 넘침을 100 HWPUNIT 씩 조절)에서 한/글은 빈
+            // 문단 줄이 **온전히** 들어갈 때만(넘침 −0.4 HWPUNIT) 그 쪽에 두고, +100 HWPUNIT
+            // (1.3px)만 넘쳐도 다음 쪽으로 넘겨 쪽번호만 남은 빈 쪽을 만든다. 80168 152쪽도
+            // 같다(넘침 +7.9px → 한/글 빈 쪽 153).
+            //
+            // `#967` 의 근거 문서(sample18.hwp pi=27·164)는 저장 사다리가 있는 native HWP5 다 —
+            // 그 문서에서는 빈 문단의 자리를 파일이 적어 두었고, 흡수는 그 기록을 따르는 일이다.
+            // 사다리가 없어 우리가 합성한 줄에는 그 근거가 없으므로, 추정으로 쪽 경계를 옮기지
+            // 않는다. `4859b3b0f`(#7429)가 고친 `tail_overflow_candidate` 는 이 가드가 먼저
+            // 결론을 내려 닿지 못했다.
+            let empty_tail_placement_is_stored =
+                para.line_segs.iter().any(|seg| !is_synthetic_line_seg(seg));
+            if next_force_break && is_curr_empty && empty_tail_placement_is_stored {
                 // empty paragraph 의 예상 height = first line_seg 의 lh + ls
                 let empty_h_px = para
                     .line_segs

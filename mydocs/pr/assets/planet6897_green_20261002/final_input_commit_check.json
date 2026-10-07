@@ -1,0 +1,98 @@
+[
+  {
+    "path": "pdf/hwpx/hwpx-h-01-hwpx-2020.pdf",
+    "sha256": "85a06a4bf939a0ccb247ee68431cc2acffd0249a999ea3333dcb11ee15a510f6",
+    "commit_sha256": "85a06a4bf939a0ccb247ee68431cc2acffd0249a999ea3333dcb11ee15a510f6",
+    "matches_commit": true
+  },
+  {
+    "path": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "sha256": "d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc",
+    "commit_sha256": "d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc",
+    "matches_commit": true
+  },
+  {
+    "path": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+    "sha256": "ed5fea4e1fa6e21134088f905c717eb51396d398d6398636754b49d8ff83477b",
+    "commit_sha256": "ed5fea4e1fa6e21134088f905c717eb51396d398d6398636754b49d8ff83477b",
+    "matches_commit": true
+  },
+  {
+    "path": "pdf/issue5723/coanchored_square_pair_center_slack-2020.pdf",
+    "sha256": "ef296fcb5e7c99176eb095e9482f7cf533d2de7a5ecd13c547e89652f3e64cf8",
+    "commit_sha256": "ef296fcb5e7c99176eb095e9482f7cf533d2de7a5ecd13c547e89652f3e64cf8",
+    "matches_commit": true
+  },
+  {
+    "path": "pdf/task2137/156637323_unification_lecture-2020.pdf",
+    "sha256": "d7470c5ea4bb9b6181c31309e9df6a6e8e0cae183334ed89ef4b5ff04beec18d",
+    "commit_sha256": "d7470c5ea4bb9b6181c31309e9df6a6e8e0cae183334ed89ef4b5ff04beec18d",
+    "matches_commit": true
+  },
+  {
+    "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+    "commit_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/hwpx/hwpx-h-01.hwpx",
+    "sha256": "87b386ade71aa4c5a3e78f17c25e9efb91cf180f264fde17b2b9b6305a3c90b5",
+    "commit_sha256": "87b386ade71aa4c5a3e78f17c25e9efb91cf180f264fde17b2b9b6305a3c90b5",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/hwpx_sample2.hwpx",
+    "sha256": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+    "commit_sha256": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/issue1835_tac_stale_height.hwp",
+    "sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7",
+    "commit_sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/issue2004_cell_image_stack.hwpx",
+    "sha256": "e91cf067de71c6c567e27974415bc67462f3e777997d41853db949fea4265fa7",
+    "commit_sha256": "e91cf067de71c6c567e27974415bc67462f3e777997d41853db949fea4265fa7",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/issue5723/coanchored_square_pair_center_slack.hwpx",
+    "sha256": "a15ef3aa092febb9540e68f9bae206a8a2b7f7a613b8b13eca65e3fa67126aea",
+    "commit_sha256": "a15ef3aa092febb9540e68f9bae206a8a2b7f7a613b8b13eca65e3fa67126aea",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/issue6267/kdt_result_para_float_table.hwpx",
+    "sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33",
+    "commit_sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+    "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+    "commit_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/rowbreak-problem-pages.hwp",
+    "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "commit_sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/task2137/156637323_unification_lecture.hwpx",
+    "sha256": "9223dd4b3499d0e640fd2c2aea980fd7eaade5aae63feefa234f4841422a4afd",
+    "commit_sha256": "9223dd4b3499d0e640fd2c2aea980fd7eaade5aae63feefa234f4841422a4afd",
+    "matches_commit": true
+  },
+  {
+    "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "commit_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+    "matches_commit": true
+  }
+]

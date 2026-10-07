@@ -1,0 +1,126 @@
+{
+  "producer_head": "00e210b069336a46d9a39c58656fb0356bb43de9",
+  "rust_test_diff_sha256": "bc7038e0bb950733809b6a8f63109dce27fd792f847fbec299a4c1bfc80ff9d8",
+  "before": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "summary_seconds": 0.173,
+    "actual_first_body_y": 807.6933333333333,
+    "independent_pdf_y": 821.061
+  },
+  "after": {
+    "tests": 43,
+    "passed": 43,
+    "failed": 0,
+    "exit_code": 0,
+    "summary_seconds": 3.912
+  },
+  "unit_control": {
+    "tests": 4,
+    "passed": 4,
+    "exit_code": 0,
+    "summary_seconds": 0.012
+  },
+  "corrected_own_build_error": "앞선 prepared-state 필드 변경을 반영하지 못한 기존 cfg(test) initializer; 테스트 실행 전 exit101을 결함 재현으로 세지 않음. 같은0.0 값을 terminal_host_spacing으로 수정한 뒤4PASS.",
+  "unit_policy": {
+    "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "exit_code": 0
+  },
+  "fmt_check_exit_code": 0,
+  "build_commands": [
+    {
+      "name": "final-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_003",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_4882_policy_report_page_roundtrip) | test(issue_6545_endnote_page_reset_ladder) | test(issue_6495_hwpx_note_vpos_reset_preserved) | test(issue_1733)"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 148.662
+    },
+    {
+      "name": "cli-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 116.652
+    }
+  ],
+  "cli_sha256": "bc41cd82b11023c91fe2c4e8d86522d106012e1e7c0acd43f9dd6c65e1bfb818",
+  "page_count": 215,
+  "reference_page_count": 215,
+  "native_run": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--rhwp-bin",
+      "target/pr-review/release-test/rhwp",
+      "--pages",
+      "31,32,178,179",
+      "--dpi",
+      "96",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage15-native"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 22.15
+  },
+  "native_gate": {
+    "status": "passed",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "page_metrics": {
+    "31": 97.3383,
+    "32": 94.52341,
+    "178": 94.31041,
+    "179": 97.53225
+  },
+  "direct_read_review_and_overlay_pages": [
+    31,
+    32,
+    178,
+    179
+  ],
+  "added_english_explanation_comment_count": 0,
+  "remaining": "그림 색·얇은 선·일부 글리프 잔차. 선택 네 쪽 통과이며 전체/fresh WASM/최종 필수 검사 미완료, 다른 보류 페이지 해결 전 PR 생성 보류."
+}

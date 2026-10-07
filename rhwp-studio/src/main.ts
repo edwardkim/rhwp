@@ -29,6 +29,7 @@ import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
+import { handleDocumentSelectAllShortcut, isTextEditingTarget } from '@/command/document-shortcut-guard';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
 import { syncClipMenu, syncTextMarkMenu, syncToolboxMenu, viewCommands } from '@/command/commands/view';
@@ -873,16 +874,15 @@ const GLOBAL_VIEW_SHORTCUTS = new Set([
  */
 function setupGlobalShortcuts(): void {
   document.addEventListener('keydown', (e) => {
-    // input/textarea 등 편집 가능 요소 내부에서는 무시
-    const target = e.target as HTMLElement;
-    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+    // 네이티브 입력 및 contentEditable 내부의 키는 해당 요소가 소유한다.
+    if (isTextEditingTarget(e.target)) return;
 
     // PgUp/PgDn·Home/End 는 문서를 보며 움직이는 키다. 툴바 버튼·서식 콤보를 한 번
     // 누르면 포커스가 편집기 textarea 를 떠나 InputHandler 가 키를 받지 못하고, 스크롤
     // 컨테이너도 포커스 대상이 아니라 브라우저 기본 동작조차 없어 통째로 무동작이 된다.
     // 편집기가 활성이면 keydown 을 그대로 편집기 경로에 넘겨, 포커스가 어디에 있든 같은
     // 분기·같은 결과(캐럿 이동 + 화면 이동)를 준다 — 여기에 로직을 복제하지 않는다.
-    // (textarea/input 이 target 이면 위에서 이미 return 하므로 이중 실행되지 않고,
+    // (글자 편집 요소가 target 이면 위에서 이미 return 하므로 이중 실행되지 않고,
     //  모달이 떠 있으면 Dialog 의 capture 핸들러가 먼저 전파를 끊는다.)
     // select 등 이 키를 자체 소비하는 위젯보다 문서 이동을 우선한다 — studio 에서
     // chrome 위젯은 스쳐 가는 대상이고 사용자가 보고 있는 것은 문서다.
@@ -914,6 +914,13 @@ function setupGlobalShortcuts(): void {
       if (commandId === 'edit:undo' || commandId === 'edit:redo') {
         const result = dispatcher.dispatchWithResult(commandId);
         if (result.ok || result.reason === 'threw') e.preventDefault();
+      } else if (commandId === 'edit:select-all') {
+        handleDocumentSelectAllShortcut(
+          e,
+          document.querySelector('.modal-overlay'),
+          () => { dispatcher.dispatchWithResult(commandId); },
+          () => { inputHandler?.focus(); },
+        );
       }
       return;
     }

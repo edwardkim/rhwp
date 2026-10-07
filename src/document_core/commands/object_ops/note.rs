@@ -521,10 +521,11 @@ impl DocumentCore {
         // char_offsets[i]는 텍스트 i번째 문자의 UTF-16 오프셋 (컨트롤은 갭으로 표현)
         // 주의: char_offset은 텍스트 기준 인덱스이지만, char_offsets 배열 길이는 text.chars().count()
         // text에 포함되지 않는 제어 문자(cc - text_len 차이)가 있을 수 있으므로 범위 확인
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
         paragraph.has_para_text = true;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
         // 전체 각주 순서 번호 재계산 (1부터 순차)
         // 본문 문단 + 표 셀 + 글상자 내부의 각주를 모두 포함
@@ -754,10 +755,11 @@ impl DocumentCore {
             .insert(insert_idx, Control::Endnote(Box::new(endnote)));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0011;
         paragraph.has_para_text = true;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
         let mut next_number = start_number;
         Self::renumber_paragraph_endnotes_with_shape(

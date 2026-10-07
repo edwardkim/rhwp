@@ -1,0 +1,120 @@
+{
+  "producer_head": "c34c15bbd69ff7bc55419600f9ffd8d56aaba1d7",
+  "source_diff_sha256": "8ac3def6592910224db5c6445c7871333f6d7d328a35dd95109759394710337f",
+  "files": {
+    "src/renderer/typeset/table/block/whole_fit.rs": "5a3411b6baddd33c6da0267211ca654df6f42527305151acc8b07a37cc205f66",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "3960c7d0245f3df7ef55c16f1c391b6de68afafba441c85149850f263fb8c4cf",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "29d7cfa8f9a9cb404fb57b0a2f018ebb4a7fae1e7be318536a24d307cef1ca5a"
+  },
+  "before": {
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 2,
+    "seconds": 0.498,
+    "observed_table_top": 700.2666666666665,
+    "pdf_table_top": 718.094727
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 89,
+    "failed": 0,
+    "seconds": 6.583,
+    "target_tests": 47,
+    "normal_controls": 42,
+    "previous_native_caption_failure_now_passed": true
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 115,
+    "binary_sha256": "c368b41a2867ed048df0bd4febf75c5535dc871f3ba4215e6379afd375b59bc6"
+  },
+  "fmt_check_exit_code": 0,
+  "source_unit_policy": {
+    "exit_code": 0,
+    "base_ref": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "tests": 4205,
+    "modules": 298
+  },
+  "visual": {
+    "native_hwp": {
+      "exit_code": 1,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 90,
+            "tolerant_content_match_percent": 83.32319
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": {
+        "90": 83.32319,
+        "91": 96.28253
+      },
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_inspected_review_and_overlay": [
+        90,
+        91
+      ],
+      "font_mismatch_exception": false
+    },
+    "native_hwpx": {
+      "exit_code": 0,
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": {
+        "106": 99.94111,
+        "107": 99.02564
+      },
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_inspected_review_and_overlay": [
+        106,
+        107
+      ],
+      "font_mismatch_exception": false
+    },
+    "before_native_hwp": {
+      "exit_code": 1,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 90,
+            "tolerant_content_match_percent": 68.56281
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": {
+        "90": 68.56281,
+        "91": 96.28253
+      },
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_inspected_review_and_overlay": [
+        90,
+        91
+      ],
+      "font_mismatch_exception": false
+    }
+  },
+  "remaining": "Native HWP90의 본문 줄바꿈 차이로 re_review_required. 글꼴 예외 없음. 전체 최종/fresh WASM/lint 미완료로 통합 PR 보류.",
+  "commands": {
+    "regression": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test regression_suite_005 --test regression_suite_008 --test regression_suite_026 --test regression_suite_024 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip)'",
+    "cli": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "visual_native_hwp": "venv/bin/python scripts/visual_sweep.py --key liver7379hwp --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 90,91 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage21-native-hwp",
+    "visual_native_hwpx": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 106,107 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage21-native-hwpx"
+  }
+}

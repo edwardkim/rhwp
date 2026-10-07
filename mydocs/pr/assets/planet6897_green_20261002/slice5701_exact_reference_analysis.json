@@ -1,0 +1,145 @@
+{
+  "head": "6521fe466164bbff0e79104d6a82ba2295cfab67",
+  "status": "분석 완료, 보정 및 회귀 변경은 아직 미완료",
+  "source": "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+  "source_sha256": "345efb17a50396bdbeb102d09042ceeb409e8a5244d0fbb36a6b4d75ed966ac9",
+  "generation": "원본 문단 478..496의 기존 IR 슬라이스; 원본 전체 문서의 PDF와 구분",
+  "pdf": "pdf/issue5701/1270000-202200012-slice-p76-rewound-host-2020.pdf",
+  "pdf_sha256": "4b3080637132e813e24a1d5b24320527b37a9ebcd6576ef5daf891546ed7fdab",
+  "reference": {
+    "engine": "2020",
+    "job_id": "a49327ba-9db6-49d4-bcb6-0d0ff3a6a7f3",
+    "pages": 3,
+    "bytes": 74414,
+    "creator": "Hwp2020 0.0.0.0",
+    "producer": "HancomPDF 1.3.0.550",
+    "input_alias_byte_identical": true
+  },
+  "native_pages": 3,
+  "wasm_pages": 3,
+  "match_percent_native": [
+    74.5252,
+    16.00393,
+    1.68954
+  ],
+  "match_percent_wasm": [
+    74.5252,
+    16.00393,
+    1.68954
+  ],
+  "observed": "현재 표는 첫쪽 16행을 모두 출력하지만 정본은 마지막 두 행을 이월한다. host pi7의 첫 글줄과 되감긴 나머지 줄을 같은 PartialParagraph에 유지하여 본문/후속 문단 소유도 다르다.",
+  "diagnosis": {
+    "producer": "src/renderer/typeset/table/block/entry.rs 및 paragraph/split.rs: 표 호스트의 내부 되감김을 표 조각과 함께 나누는 경로 확인 필요",
+    "consumer": "src/renderer/layout.rs: Table pi7 다음 PartialParagraph pi7 전체 0..4, FullParagraph pi8을 같은쪽에 배치",
+    "final_override": "layout_table_control_block 종료 #5701에서 실제 paint 하단으로 y를 올리지만 잘못된 쪽 소유는 복원하지 못한다"
+  },
+  "test_action": "기존 2쪽 assertion만 3쪽으로 변경하지 않음. 3쪽 문서는 현 브랜치에서 90% 이상 보정 후 기존 함수의 의미 검사로 변경.",
+  "new_test_functions": 0,
+  "test_removals": 0,
+  "production_changes": 0,
+  "chemical7359": {
+    "pages": 103,
+    "below_90": [
+      10,
+      14,
+      15,
+      16,
+      35,
+      40,
+      41,
+      46,
+      47,
+      50,
+      53,
+      55,
+      60,
+      65,
+      76,
+      78,
+      79,
+      80,
+      83,
+      86,
+      88,
+      89,
+      92,
+      94
+    ],
+    "minimum": 17.93029,
+    "status": "전체103쪽 Native 음성 증거 확보; 별도 보정/이관 미결정, fresh WASM 미실행"
+  },
+  "skia": {
+    "head": "6521fe466164bbff0e79104d6a82ba2295cfab67",
+    "state": "complete",
+    "results": [
+      {
+        "gate": "lib",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "log": "output/pr-review/planet6897-green-20261002/skia-6521fe466-lib.log"
+      },
+      {
+        "gate": "missing-picture",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "log": "output/pr-review/planet6897-green-20261002/skia-6521fe466-missing-picture.log"
+      },
+      {
+        "gate": "direct-pdf",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "log": "output/pr-review/planet6897-green-20261002/skia-6521fe466-direct-pdf.log"
+      }
+    ],
+    "started_unix": 1791068743.112764,
+    "finished_unix": 1791069062.2487738
+  },
+  "tsv": {
+    "native": "mydocs/pr/assets/planet6897_green_20261002/slice5701_before_native_all3.tsv",
+    "wasm": "mydocs/pr/assets/planet6897_green_20261002/slice5701_before_wasm_all3.tsv",
+    "provenance": "현재 head의 전체 sweep PNG 쌍을 재계산; 원문 재출력 없이 같은 PNG hash로 고정"
+  }
+}

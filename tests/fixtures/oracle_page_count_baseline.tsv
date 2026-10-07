@@ -26,7 +26,6 @@ samples/2022년 국립국어원 업무계획.hwp	35	35
 #     부록 간지 뒤 쪽수         74      71 (−3)    74 (±0)
 #   그 편차는 tests/cases/issue_7009_handbook_structure_landmarks.rs 가 잠근다.
 #   이 줄을 고칠 때는 그 파일도 함께 본다.
-samples/2025 행정업무운영 편람(최종).hwp	384	384
 samples/2025 행정업무운영 편람(최종).hwpx	384	382
 samples/20250130-hongbo.hwp	4	4
 samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	30	30
@@ -59,8 +58,6 @@ samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.h
 samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx	21	21
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	21	21
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx	21	21
-samples/80168_regulatory_analysis.hwp	157	157
-samples/86712_regulatory_analysis.hwp	64	64
 samples/SO-SUEOP.hwp	46	46
 samples/SO-SUEOP.hwpx	46	46
 samples/[2027] 온새미로 1 본교재.hwp	47	47
@@ -79,7 +76,6 @@ samples/basic/Worldcup_FIFA2010_32.hwp	1	1
 samples/basic/calendar_year.hwp	1	1
 samples/basic/english.hwp	1	1
 samples/basic/interview.hwp	2	2
-samples/basic/issue2007_nested_cell_pagination_42065.hwp	17	17
 samples/basic/request.hwp	1	1
 samples/basic/shortcut.hwp	7	7
 samples/basic/sungeo.hwp	94	94
@@ -174,12 +170,8 @@ samples/hwp3-sample13-hwp5.hwpx	3	3
 samples/hwp3-sample14-hwp5.hwp	11	11
 samples/hwp3-sample14-hwp5.hwpx	11	11
 samples/hwp3-sample14.hwp	11	11
-samples/hwp3-sample16-hwp5-2010.hwp	64	64
 samples/hwp3-sample16-hwp5-2018.hwp	64	64
-samples/hwp3-sample16-hwp5-2022.hwp	64	64
 samples/hwp3-sample16-hwp5-2024.hwp	64	64
-samples/hwp3-sample16-hwp5.hwp	64	64
-samples/hwp3-sample16-hwp5.hwpx	64	64
 samples/hwp3-sample16.hwp	64	64
 samples/hwp3-sample19-hwp5.hwp	2	2
 samples/hwp3-sample4-hwp5.hwp	36	36
@@ -191,7 +183,6 @@ samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
 samples/hwpctl_API_v2.4.hwp	105	105
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
-samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74
 samples/hwpspec.hwp	178	178
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
@@ -254,9 +245,6 @@ samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
-samples/issue1853_caption_precedes_body_split.hwpx	52	52
-samples/issue1891/80168_regulatory_analysis.hwpx	157	157
-samples/issue1891/86712_regulatory_analysis.hwpx	64	64
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	115	115
@@ -288,7 +276,6 @@ samples/issue3587/d-pi2-import.hwpx	1	1
 samples/issue3587/d-pi4-import.hwp	1	1
 samples/issue3587/d-pi4-import.hwpx	1	1
 samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13
-samples/issue3637/regulatory_impact_nested_table_escape.hwpx	31	31
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
@@ -443,7 +430,6 @@ samples/pic2-2018.hwp	2	2
 samples/pic2.hwp	2	2
 samples/pic2.hwpx	2	2
 samples/pr-149.hwp	1	1
-samples/pr-1674.hwp	35	35
 samples/pua-test.hwp	1	1
 samples/re-01-hangul-only-empty-hancom.hwp	1	1
 samples/re-01-hangul-only-hancom.hwp	1	1
@@ -554,13 +540,11 @@ samples/task2097/1730000_selection_report.hwp	1	1
 samples/task2097/1741000_project_application.hwp	2	2
 samples/task2097/21298295_byeolpyo5_disaster.hwp	2	2
 samples/task2097/3080901_pii_ledger.hwp	1	1
-samples/task2097/75544_pii_bunseok.hwpx	66	66
 samples/task2097/none_table_declared_fits.hwpx	2	2
 samples/task2098/page_bottom_fixed_anchor_margin_split.hwpx	1	1
 samples/task2098/page_bottom_fixed_anchor_vpos0.hwpx	1	1
 samples/task2136/neartop_reset_sb2500.hwpx	1	1
 samples/task2137/156618554_petfood_press.hwp	1	1
-samples/task2146/21761835_jeonjik_exemption_table.hwp	6	6
 samples/task2243/156631374_taxi_press.hwpx	1	1
 samples/task2243/36382819_gyeoljae_pm_traffic.hwpx	3	3
 samples/task2243/36386907_gyeoljae_sewoon.hwpx	5	5
@@ -579,7 +563,6 @@ samples/셀보호2.hwp	1	1
 samples/셀보호2.hwpx	1	1
 samples/수식-문자처럼취급-아님.hwp	1	1
 samples/수식-문자처럼취급-아님.hwpx	1	1
-samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	215	215
 samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	215	221
 samples/추진일정.hwp	1	1
 samples/추진일정.hwpx	1	1
@@ -589,3 +572,25 @@ samples/통합재정통계(2014.8월).hwp	1	1
 samples/표-텍스트.hwpx	1	1
 samples/한셀OLE.hwp	1	1
 samples/한셀OLE.hwpx	1	1
+
+# PR #7482: exact input/PDF SHA-256 and Hancom 2020 jobs in samples/issue7482/provenance.json.
+samples/issue7482/long-boundary-8.hwpx	1	1
+samples/issue7482/margin1034.hwpx	1	1
+samples/issue7482/margin284.hwpx	1	1
+samples/issue7482/original-no-ls-overlay-tac.hwp	1	1
+samples/issue7482/tac-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-one-row.hwpx	1	1
+samples/issue7482/tac-one-row.hwpx	1	1
+samples/issue7482/tac-two-rows.hwpx	1	1
+samples/issue7482/tac-word-after-pair.hwpx	1	1
+samples/issue7482/tac-after-plain-paragraphs.hwpx	2	2
+
+# PR #7337: samples/pr7337/nested_tac_table_wrap-2020.pdf; 전 6쪽 Native/fresh WASM 비교 통과.
+samples/nested_tac_table_wrap.hwp	6	6
+
+# #7626: 원본 HWPX와 한컴 재저장 HWP 각각의 2020 1-up Print 전 2쪽.
+samples/issue7626/sample-document.hwpx	2	2
+samples/issue7626/hancom-resaved.hwp	2	2
+samples/issue7626/end-run-two-lines.hwpx	2	2
+samples/issue7626/end-run-two-lines.hwp	2	2

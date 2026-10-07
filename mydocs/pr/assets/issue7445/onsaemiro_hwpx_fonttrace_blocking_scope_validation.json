@@ -1,0 +1,1084 @@
+{
+  "stage": 155,
+  "code_commit": "8d4233f0f9ed89b997d91f6a1ee0c5f782141fa0",
+  "production_source": "c3f748325f9ebe7f1d774d378f4159ae1226ae20",
+  "preanalysis": {
+    "stage": 155,
+    "source_head": "ba4ab4a3702c86908b8b7bea6f5a405d99cd08e7",
+    "production_head": "c3f748325",
+    "actual_failed_document": "document-substitute-hwpx",
+    "actual_failed_pin": "expectedLayoutHash",
+    "input": "samples/[2027] 온새미로 1 본교재.hwpx",
+    "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+    "reference": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+    "reference_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab",
+    "source_last_saved_with": {
+      "confidence": "metadata",
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3622"
+    },
+    "current_pages": 47,
+    "reference_pdfinfo": "Author:          yoons\nCreator:         Hwp 2024 0.0.0.0\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Sat Aug 29 23:27:37 2026 KST\nModDate:         Sat Aug 29 23:27:37 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           46\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       717189 bytes\nOptimized:       no\nPDF version:     1.6\n",
+    "reference_provenance": "oracle_public fixtures/pairs/by_year/2024.json의동일HWPX대응행;f48506d13에서원본PDF를바이트100%유지한rename. HWP의PDF/시각판정을HWPX증거로재사용하지않음.",
+    "plan": "현재Native/freshWASM1/2/6/46쪽직접비교. 전체요청과쪽수일치도별도확인. 90미만이면#7445등록후실패한이HWPX해시한핀만명시적이관;counts/status/모든프로필/형식비대칭기능탐지/다른입력/기존함수보존. 새검사/생산보정없음."
+  },
+  "source_info": {
+    "fonts": [
+      "HCR Dotum",
+      "신명 중고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양견명조",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "#중고딕",
+      "#태고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양견명조",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "Dinbla",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "신명 중고딕",
+      "신명 중명조",
+      "신명 태고딕",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "신명 신명조",
+      "신명 중고딕",
+      "신명 태고딕",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중고딕",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "신명 태그래픽",
+      "한양신명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "YoonV YoonMyungjo300Std_OTF",
+      "HCR Dotum",
+      "명조",
+      "함초롬바탕",
+      "-윤고딕310",
+      "강원교육모두 Bold",
+      "경기천년바탕 Bold",
+      "경기천년바탕 Regular",
+      "경기천년제목OTF Bold",
+      "경기천년제목OTF Light",
+      "나눔고딕",
+      "나눔스퀘어 Bold",
+      "배달의민족 도현",
+      "페이북 OTF ExtraBold",
+      "학교안심 포스터 B",
+      "a로케트",
+      "DX스피드Bold",
+      "G마켓 산스 Medium",
+      "IM혜민 Bold",
+      "KBL 점프체 B TTF",
+      "KBL 점프체 R TTF",
+      "KoPubWorld돋움체 Bold",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld돋움체 Medium",
+      "KoPubWorld돋움체_Pro Bold",
+      "KoPubWorld돋움체_Pro Light",
+      "KoPubWorld돋움체_Pro Medium",
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld바탕체_Pro Light",
+      "KoPubWorld바탕체_Pro Medium",
+      "KoPub돋움체 Medium",
+      "KoPub바탕체 Light",
+      "Pretendard",
+      "신명 중고딕",
+      "한양신명조",
+      "신명 중명조",
+      "YoonV YoonMyungjo300Std_OTF"
+    ],
+    "format": "hwpx",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3622"
+    },
+    "pageCount": 47,
+    "paraCount": 786,
+    "printMethod": 0,
+    "printMethodImpliesNup": false,
+    "schemaVersion": "1.0",
+    "sections": 5,
+    "sizeBytes": 862784,
+    "source": "samples/[2027] 온새미로 1 본교재.hwpx",
+    "title": "2027 온새미로 Ⅱ",
+    "untrustedContent": true,
+    "untrustedFields": [
+      "title",
+      "fonts[]"
+    ],
+    "version": "5.1.0.0",
+    "warnings": []
+  },
+  "reference_pages": 46,
+  "current_pages": 47,
+  "full_visual_executed": false,
+  "full_visual_scope": "전체쪽수는 CLI info/한컴 PDF info로 대조. 새 전체47쪽 SVG export/전체 raster compare는 반복하지 않았으며 선택4쪽 비교만 수행. HWP 전체비교 실패를 이HWPX 실행 증거로재사용하지않음.",
+  "visual": {
+    "native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "fonttrace4961-onsaemiro-hwpx",
+        "samples/[2027] 온새미로 1 본교재.hwpx",
+        "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+        "--pages",
+        "1,2,6,46",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage155-fonttrace-onsaemiro-hwpx/visual-selected-native"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 23.332984291017056
+      },
+      "completed_pages": [
+        1,
+        2,
+        6,
+        46
+      ],
+      "metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 97.03747,
+        "worst_pixel_match_percent": 90.84462,
+        "average_ink_match_percent": 52.81956,
+        "worst_ink_match_percent": 9.15414,
+        "average_visual_accuracy_proxy_percent": 52.81956,
+        "worst_visual_accuracy_proxy_percent": 9.15414,
+        "average_tolerant_content_match_percent": 68.25186,
+        "worst_tolerant_content_match_percent": 37.74556,
+        "worst_pages": [
+          6,
+          46,
+          1,
+          2
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 92.24401
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.55965
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 43.45823
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 37.74556
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 6,
+            "tolerant_content_match_percent": 43.45823
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 37.74556
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "fonttrace4961-onsaemiro-hwpx",
+        "samples/[2027] 온새미로 1 본교재.hwpx",
+        "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+        "--pages",
+        "1,2,6,46",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage155-fonttrace-onsaemiro-hwpx/visual-selected-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 27.053542541805655
+      },
+      "completed_pages": [
+        1,
+        2,
+        6,
+        46
+      ],
+      "metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 97.03747,
+        "worst_pixel_match_percent": 90.84462,
+        "average_ink_match_percent": 52.81956,
+        "worst_ink_match_percent": 9.15414,
+        "average_visual_accuracy_proxy_percent": 52.81956,
+        "worst_visual_accuracy_proxy_percent": 9.15414,
+        "average_tolerant_content_match_percent": 68.25186,
+        "worst_tolerant_content_match_percent": 37.74556,
+        "worst_pages": [
+          6,
+          46,
+          1,
+          2
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 92.24401
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.55965
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 43.45823
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 37.74556
+        }
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 6,
+            "tolerant_content_match_percent": 43.45823
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 37.74556
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    }
+  },
+  "direct_inspection": "이HWPX의 Native6쪽 review 및 freshWASM6쪽 standalone overlay를 직접 판독. 같은문제/보기내용/정상기준출력, 보기상자 높이/줄바꿈/뒤본문 위치차이. 글꼴예외없음.",
+  "hash_cause": {
+    "records": [
+      {
+        "id": "page:0:run:3:char:0",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:1",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:2",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:3",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:3:char:4",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:4:char:0",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 1100,
+        "independent_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:1",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 1100,
+        "independent_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:2",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 1100,
+        "independent_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:3",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 1100,
+        "independent_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:4:char:4",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 550,
+        "independent_final": 550,
+        "actual_base": 549,
+        "actual_final": 549
+      },
+      {
+        "id": "page:0:run:4:char:5",
+        "shape_id": 89,
+        "relative_size": 100,
+        "independent_base": 1100,
+        "independent_final": 1100,
+        "actual_base": 1099,
+        "actual_final": 1099
+      },
+      {
+        "id": "page:0:run:5:char:0",
+        "shape_id": 90,
+        "relative_size": 100,
+        "independent_base": 2200,
+        "independent_final": 2376,
+        "actual_base": 2199,
+        "actual_final": 2375
+      },
+      {
+        "id": "page:0:run:5:char:1",
+        "shape_id": 90,
+        "relative_size": 100,
+        "independent_base": 2200,
+        "independent_final": 2376,
+        "actual_base": 2199,
+        "actual_final": 2375
+      },
+      {
+        "id": "page:0:run:16:char:0",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:1",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:2",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:16:char:3",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:0",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:1",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:2",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:3",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:4",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:5",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:6",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:17:char:7",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:17:char:8",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:18:char:0",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 7000,
+        "independent_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:1",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 7000,
+        "independent_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:2",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 7000,
+        "independent_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:3",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 7000,
+        "independent_final": 7000,
+        "actual_base": 6999,
+        "actual_final": 6999
+      },
+      {
+        "id": "page:0:run:18:char:4",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 3500,
+        "independent_final": 3500,
+        "actual_base": 3499,
+        "actual_final": 3499
+      },
+      {
+        "id": "page:0:run:19:char:0",
+        "shape_id": 125,
+        "relative_size": 100,
+        "independent_base": 3500,
+        "independent_final": 3500,
+        "actual_base": 3499,
+        "actual_final": 3499
+      },
+      {
+        "id": "page:0:run:20:char:0",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:20:char:1",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:20:char:2",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:0",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:1",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:2",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:3",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 649,
+        "independent_final": 649,
+        "actual_base": 649,
+        "actual_final": 649
+      },
+      {
+        "id": "page:0:run:22:char:4",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      },
+      {
+        "id": "page:0:run:22:char:5",
+        "shape_id": 124,
+        "relative_size": 100,
+        "independent_base": 1299,
+        "independent_final": 1299,
+        "actual_base": 1299,
+        "actual_final": 1299
+      }
+    ],
+    "all_relative_sizes_100": true,
+    "reconstructed_layout_hash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004",
+    "old_expected_hash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004",
+    "matches_old_expected_hash": true,
+    "method": "원본HWPX charPr height/relSz 및 원래크기100% 계약과기존heuristic/자간/절삭규칙의독립재구성. baseline 실행아님.",
+    "diagnostic_error_recovered": "최초 HWP용 필드 base_size를 HWPX에 적용해KeyError. 원본HWPX height/lang.relSz를 확인한 뒤 readonly계산을정정. workspace변경없음."
+  },
+  "scope": {
+    "document_id": "document-substitute-hwpx",
+    "removed_expectedLayoutHash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004",
+    "counts_preserved": true,
+    "other_five_documents_identical": true,
+    "profiles_options_comparisons_identical": true,
+    "production_changed": false,
+    "new_test_functions": 0
+  },
+  "focused": {
+    "before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 8.153106791898608
+    },
+    "after": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 0,
+      "seconds": 7.086823167279363
+    },
+    "summary": "before6PASS/1FAIL(document-substitute-hwpx hash); after7PASS/0FAIL. 혼합함수도프로필/패리티/기능탐지까지통과."
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7932363748550415
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 7.360570040997118
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6295312088914216
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage155-fonttrace-onsaemiro-hwpx/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 7.974238915834576
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.175122374668717
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.30013970797881484
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.24787366669625044
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3741097501479089
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 5.205924833193421
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.882042624987662
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 8.93692404218018
+    }
+  ],
+  "fresh_wasm_source": "보정152 root fresh no-opt WASM/Studio 동기화 SHA 53a7efe38225b8c25b1c14dc5173d52dc1c96f27fe473b3877ee8667417196b0; 생산 변경 없이 같은 패키지로 새 캡처. Docker 최적화 아님.",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5885116951",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage155-fonttrace-onsaemiro-hwpx",
+  "original_stage137_reviewed": 33,
+  "original_stage137_pending_review": 27,
+  "final_pr_ready": false
+}

@@ -1,0 +1,39 @@
+{
+  "stage": 181,
+  "scope": "#1772 기존 회귀 검사의 절대 픽셀 좌표를 원본 표 바깥여백 계약으로 수정",
+  "head_before": "5f1929ebf",
+  "input": "samples/task1772/table_outer_margin_common_sync.hwpx",
+  "input_sha256": "cfcfa54bbcd251ec23f2ab69545222ac16b59962126c7d72dd9d45508edea2b4",
+  "hancom_pdf": "pdf/task1772/table_outer_margin_common_sync-hwpx-2020.pdf",
+  "pdf_sha256": "07691579a9245be90dfe0fb8eee382dd9321da0eb04409596f50c720403a6642",
+  "pdf_pages": 1,
+  "before_failure": "첫 본문 TextLine y 308.60px; 기존 306.7±1px 검사 실패",
+  "independent_evidence": "한컴 PDF 1쪽에서 결재 헤더 표 아래 바깥여백 뒤에 본문 1. 관련 문단이 시작함. review/overlay 직접 확인",
+  "visual": {
+    "backend": "Native",
+    "page": 1,
+    "tolerant_content_match_percent": 100.0,
+    "gate": "passed",
+    "font_mismatch_exception": false,
+    "summary": "output/pr-review/planet6897-7382-20260926/stage181-task1772/visual-native/summary.json",
+    "review_png": "mydocs/pr/assets/pr7382_20260926/stage181_task1772_native_review_001.png"
+  },
+  "test_change": "원본 헤더 표의 outer_margin_bottom을 읽고, 가장 위 표 하단과 `관련: 총무과` 본문 글줄 시작의 간격이 원본 바깥여백과 비례하는지 검사. 쪽 절대 x/y 좌표를 사용하지 않음.",
+  "focused_nextest": "2 passed, 0 failed; 이 단계에서 전체 nextest는 실행하지 않음",
+  "lint": {
+    "fmt": "pass",
+    "clippy_default": "pass",
+    "clippy_wasm": "pass",
+    "workspace_build": "pass",
+    "clippy_all_targets": "pass",
+    "manifest_base_check": "pass"
+  },
+  "logs": "output/pr-review/planet6897-7382-20260926/stage181-task1772*",
+  "observed": {
+    "header_table_bottom_px": 297.2,
+    "body_first_line_y_px": 308.6,
+    "source_margin_hwpunit": 852,
+    "source_margin_px_at_96dpi": 11.36,
+    "gap_to_source_margin_ratio": 1.0035
+  }
+}

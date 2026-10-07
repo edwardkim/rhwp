@@ -1,0 +1,164 @@
+{
+  "before": {
+    "pageCount": 82,
+    "emptyPageCount": 0,
+    "offCanvasCount": 0,
+    "overflowCount": 12,
+    "overlapCount": 3,
+    "textOverlapCount": 4,
+    "text_overlap_pages": [
+      {
+        "page": 22,
+        "count": 1
+      },
+      {
+        "page": 38,
+        "count": 1
+      },
+      {
+        "page": 39,
+        "count": 2
+      }
+    ]
+  },
+  "after": {
+    "pageCount": 82,
+    "emptyPageCount": 0,
+    "offCanvasCount": 0,
+    "overflowCount": 12,
+    "overlapCount": 1,
+    "textOverlapCount": 2,
+    "text_overlap_pages": [
+      {
+        "page": 39,
+        "count": 2
+      }
+    ]
+  },
+  "accepted_p33_p34_geometry_controls": [
+    {
+      "page": 33,
+      "before_tables": [
+        {
+          "pi": 323,
+          "bbox": {
+            "x": 75.6,
+            "y": 181.2,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 324,
+          "bbox": {
+            "x": 75.6,
+            "y": 213.6,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 325,
+          "bbox": {
+            "x": 77.5,
+            "y": 240.4,
+            "w": 635.0,
+            "h": 800.7
+          }
+        }
+      ],
+      "after_tables": [
+        {
+          "pi": 323,
+          "bbox": {
+            "x": 75.6,
+            "y": 181.2,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 324,
+          "bbox": {
+            "x": 75.6,
+            "y": 213.6,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 325,
+          "bbox": {
+            "x": 77.5,
+            "y": 240.4,
+            "w": 635.0,
+            "h": 800.7
+          }
+        }
+      ],
+      "unchanged": true
+    },
+    {
+      "page": 34,
+      "before_tables": [
+        {
+          "pi": 325,
+          "bbox": {
+            "x": 77.5,
+            "y": 77.5,
+            "w": 635.0,
+            "h": 386.2
+          }
+        },
+        {
+          "pi": 335,
+          "bbox": {
+            "x": 75.6,
+            "y": 482.9,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 336,
+          "bbox": {
+            "x": 77.5,
+            "y": 509.7,
+            "w": 635.0,
+            "h": 241.1
+          }
+        }
+      ],
+      "after_tables": [
+        {
+          "pi": 325,
+          "bbox": {
+            "x": 77.5,
+            "y": 77.5,
+            "w": 635.0,
+            "h": 386.2
+          }
+        },
+        {
+          "pi": 335,
+          "bbox": {
+            "x": 75.6,
+            "y": 482.9,
+            "w": 635.0,
+            "h": 17.3
+          }
+        },
+        {
+          "pi": 336,
+          "bbox": {
+            "x": 77.5,
+            "y": 509.7,
+            "w": 635.0,
+            "h": 241.1
+          }
+        }
+      ],
+      "unchanged": true
+    }
+  ]
+}

@@ -57,6 +57,7 @@ pub(super) fn plan_fragment(
     Some(ParagraphFragment {
         item,
         height: part_height,
+        content_height: None,
     })
 }
 

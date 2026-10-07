@@ -1,0 +1,133 @@
+{
+  "source_head": "e1a5d5cc0c09779d87115806010cf6dca94d594b",
+  "files": [
+    {
+      "path": "src/parser/hwpx/section.rs",
+      "english_comment_lines": 6,
+      "non_comment_content_sha256": "8f96f72a203980fb38f6418247f25d7afe053894410a5b7124c26c8ef0479ff3",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/float_placement.rs",
+      "english_comment_lines": 8,
+      "non_comment_content_sha256": "49dbc05bce22d4845f5ce1276964513081211d21d973e5bbcc930af75c627d17",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/layout.rs",
+      "english_comment_lines": 4,
+      "non_comment_content_sha256": "01fd4d87bd2506de339af5d2e94bcff553a4a9f1e2e8412ff90dc9a64fab4b8c",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/layout/picture_footnote.rs",
+      "english_comment_lines": 1,
+      "non_comment_content_sha256": "bf24dababb0bf96238497ae2b35456dd72571551f16d645548ab489dd17af203",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/layout/table_layout.rs",
+      "english_comment_lines": 14,
+      "non_comment_content_sha256": "961524bfa6d331b61c263dfa924e7a0d13fc9a0fc84d5118f7e3f259c28e8047",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/layout/table_partial.rs",
+      "english_comment_lines": 4,
+      "non_comment_content_sha256": "b8ed3265d57aed27fe6a3332316fa06d8c5a5e24b235d781554045a1deb973f5",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset.rs",
+      "english_comment_lines": 2,
+      "non_comment_content_sha256": "186975aa7a01ffa221bec3ca61f1577e648b8772a782c090f3a70b22dc66cf2d",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/notes/footnotes/body.rs",
+      "english_comment_lines": 7,
+      "non_comment_content_sha256": "5765dfdf65057dd8d278decf141e69571fdfe02c290837f32fc1a13c4d7f9522",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/notes/footnotes/boundary.rs",
+      "english_comment_lines": 4,
+      "non_comment_content_sha256": "336ac4ab74d1eec18cb84461936fbe48b2d5a52be7a2b801cd7ab463bdc8f4af",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/section/entry.rs",
+      "english_comment_lines": 2,
+      "non_comment_content_sha256": "4e163bb57138cbd91803406aeeb44e0fe08d79180fba4afedd038ef927cee899",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/state/data.rs",
+      "english_comment_lines": 1,
+      "non_comment_content_sha256": "6958c800a6fd5ebf120e464cca7e0f98a25390eb395d21f70d8f7fb37a6b6500",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table.rs",
+      "english_comment_lines": 3,
+      "non_comment_content_sha256": "4f8b546ea65c6e89e6d33ae1c5e3667be5d92fff54392d760fda73ed6e79d2a9",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/block/entry.rs",
+      "english_comment_lines": 3,
+      "non_comment_content_sha256": "9d5836e3e252fd4eae116034af134d34579b8b3bd4bfce769d9e531bf6406fdf",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/block/prepare.rs",
+      "english_comment_lines": 7,
+      "non_comment_content_sha256": "69ae952c1a556678eb266da4da6c0a912019e79ebb70e53ab6450b21f9f432ba",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/block/whole_fit.rs",
+      "english_comment_lines": 7,
+      "non_comment_content_sha256": "d9bf47b96466c2b82e8beac373fded31821cde60e821a981c6fb93c02f41dca7",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/continuation/fragment.rs",
+      "english_comment_lines": 2,
+      "non_comment_content_sha256": "fba8ddeb82f77ae3be0d0a18b2b2cd891f3b6228539f588dcbafadf10801f42b",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+      "english_comment_lines": 8,
+      "non_comment_content_sha256": "cd61fed06d8d06677ffcc9e4d43e8d6586b798dfdb5180dfd7a8f2230189be60",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/continuation/fragment/scan.rs",
+      "english_comment_lines": 8,
+      "non_comment_content_sha256": "ac11eb494641a4e39600176dc36b7e591836229545b9a4c188cd87b90c05b861",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "src/renderer/typeset/table/footnotes.rs",
+      "english_comment_lines": 7,
+      "non_comment_content_sha256": "6135d8e97a573553e15e4a6b121c24cb3448d2e98fc3d0f4119b3f3607c03e7c",
+      "non_comment_content_unchanged": true
+    },
+    {
+      "path": "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs",
+      "english_comment_lines": 10,
+      "non_comment_content_sha256": "d96486825a030f718cd57a06a8604e98b35a0452e6a488b908062053aee00df9",
+      "non_comment_content_unchanged": true
+    }
+  ],
+  "file_count": 20,
+  "translated_comment_lines": 108,
+  "all_non_comment_content_unchanged": true,
+  "remaining_added_english_comment_lines": 0,
+  "cargo_fmt_check_exit_code": 0,
+  "git_diff_check_exit_code": 0,
+  "scope": "English explanation comments introduced in this integration since base; identifiers unchanged",
+  "new_renderer_validation_claim": false
+}

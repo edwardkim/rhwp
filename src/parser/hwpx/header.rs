@@ -116,6 +116,14 @@ pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
 
 /// header.xml을 파싱하여 DocInfo와 DocProperties를 생성한다.
 pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxError> {
+    parse_hwpx_header_with_plain_margin_units(xml, true)
+}
+
+/// 패키지 버전이 정한 평문 여백 단위를 헤더 소비자까지 전달한다.
+pub(super) fn parse_hwpx_header_with_plain_margin_units(
+    xml: &str,
+    physical_plain_margin: bool,
+) -> Result<(DocInfo, DocProperties), HwpxError> {
     let mut doc_info = DocInfo::default();
     let mut doc_props = DocProperties::default();
 
@@ -160,7 +168,7 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                         parse_char_shape(e, &mut reader, &mut doc_info)?;
                     }
                     b"paraPr" => {
-                        parse_para_shape(e, &mut reader, &mut doc_info)?;
+                        parse_para_shape(e, &mut reader, &mut doc_info, physical_plain_margin)?;
                     }
                     b"style" => parse_style(e, &mut doc_info),
                     b"borderFill" => {
@@ -883,6 +891,7 @@ fn parse_para_shape(
     e: &quick_xml::events::BytesStart,
     reader: &mut Reader<&[u8]>,
     doc_info: &mut DocInfo,
+    physical_plain_margin: bool,
 ) -> Result<(), HwpxError> {
     // `lineSpacing` 요소가 없는 paraPr 은 종전 0 이 그대로 남았다.
     // 0% 를 실값으로 존중하도록 고친 뒤(`compute_line_spacing_hwp`)로는 그 0 이
@@ -936,13 +945,14 @@ fn parse_para_shape(
                         ParaShapeChildKind::Margin => {
                             // [#4898] switch 밖 평문 여백 — 원본 표기를 보존한다.
                             ps.hwpx_plain_para_margin = true;
+                            ps.hwpx_plain_para_margin_physical = physical_plain_margin;
                             parse_para_shape_margin_children(reader, &mut ps)?;
                         }
                         ParaShapeChildKind::Switch => {
                             ps.hwpx_plain_para_margin = false;
                             // <switch>/<case>/<default> 네임스페이스 분기 처리
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
-                            parse_para_shape_switch(reader, &mut ps)?;
+                            parse_para_shape_switch(reader, &mut ps, physical_plain_margin)?;
                         }
                         ParaShapeChildKind::Other => {}
                     }
@@ -1136,6 +1146,13 @@ fn parse_para_shape_child(
                             ps.attr1 &= !(1 << 19);
                         }
                     }
+                    b"lineWrap" => {
+                        // [#6875] 문단 "한 줄로 입력" — HWP5 ParaShape attr2 bits 0-1.
+                        // 종전엔 읽지 않아 x2h·x2x 왕복에서 SQUEEZE 문단이 BREAK 로
+                        // 굳고, 한/글이 그 문단을 여러 줄로 다시 나눠 쪽수가 갈렸다.
+                        ps.attr2 = (ps.attr2 & !PARA_ATTR2_LINE_WRAP_MASK)
+                            | para_line_wrap_bits(&attr_str(&attr));
+                    }
                     _ => {}
                 }
             }
@@ -1191,11 +1208,26 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
         return;
     }
 
+    // 패키지 xmlVersion 1.4 이상에서만 평문 HWPUNIT은 물리 단위다.
+    // 이전 버전은 한컴 HWP 저장본과 같은 IR 값이므로 확대하지 않는다.
+    // 단위가 없는 이전 표기는 그대로 읽고, switch/default는 별도 왕복 계약을 따른다.
+    let unit = ce
+        .attributes()
+        .flatten()
+        .find_map(|attr| (attr.key.as_ref().as_bytes() == b"unit").then(|| attr_str(&attr)));
     for attr in ce.attributes().flatten() {
         if attr.key.as_ref().as_bytes() != b"value" {
             continue;
         }
-        let value = parse_i32(&attr);
+        let raw = parse_i32(&attr);
+        let value = match unit.as_deref() {
+            Some("HWPUNIT") if ps.hwpx_plain_para_margin_physical => raw.saturating_mul(2),
+            // CHAR는 반 단위가 남는 홀수 IR 값의 보존 표기다.
+            Some("CHAR") if ps.hwpx_plain_para_margin_physical => {
+                raw.saturating_mul(2).saturating_add(1)
+            }
+            _ => raw,
+        };
         match local {
             b"intent" => ps.indent = value,
             b"left" => ps.margin_left = value,
@@ -1237,6 +1269,7 @@ fn parse_para_shape_margin_children(
 fn parse_para_shape_switch(
     reader: &mut Reader<&[u8]>,
     ps: &mut ParaShape,
+    physical_margin_units: bool,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     let mut in_hwpunitchar_case = false;
@@ -1462,6 +1495,20 @@ fn parse_para_shape_switch(
         };
         if let Some(v) = ls_exact {
             ps.line_spacing = v;
+        }
+    }
+
+    // [#7545] xmlVersion 1.2의 case 여백은 이미 바이너리 ParaShape 단위다.
+    // 1.4 이후의 물리 HWPUNIT 해석을 적용하면 내어쓰기와 문단 간격이 두 배가 된다.
+    // 한컴 2020의 동일 원본 HWP 저장 결과로 확인한 단위이며, 줄간격 비율은 그대로 둔다.
+    if !physical_margin_units && found_case {
+        ps.margin_left /= 2;
+        ps.margin_right /= 2;
+        ps.indent /= 2;
+        ps.spacing_before /= 2;
+        ps.spacing_after /= 2;
+        if ps.line_spacing_type != LineSpacingType::Percent {
+            ps.line_spacing /= 2;
         }
     }
 
@@ -2088,14 +2135,37 @@ fn parse_bullet_hwpx(
 
 /// `<hh:bullet>` 자식 `<hh:paraHead>` 의 widthAdjust/textOffset/charPrIDRef 를
 /// Bullet 필드(HWP5 BULLET record 의 문단 머리 정보 12바이트와 동일 의미)로 흡수한다.
+/// align/useInstWidth/autoIndent/textOffsetType 은 같은 정보의 속성 비트로 옮긴다.
 fn apply_bullet_para_head_attrs(bullet: &mut Bullet, e: &quick_xml::events::BytesStart) {
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"charPrIDRef" => bullet.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => bullet.width_adjust = parse_i16(&attr),
             b"textOffset" => bullet.text_distance = parse_i16(&attr),
-            _ => {}
+            key => bullet.attr = apply_para_head_attr_bit(bullet.attr, key, &attr_str(&attr)),
         }
+    }
+}
+
+/// [#7418] `hh:paraHead` 의 배치 속성을 HWP5 문단 머리 정보(표 41) 속성 비트로 옮긴다:
+/// bit0-1 정렬(LEFT 0 · CENTER 1 · RIGHT 2), bit2 useInstWidth, bit3 autoIndent,
+/// bit4 textOffsetType(PERCENT 0 · HWPUNIT 1). 직렬화기(`numbering_head_align_str` 등)의
+/// 역방향이다. 줄 배치가 마커 영역(본문과의 거리 단위·자동 내어쓰기)을 이 비트로 정한다.
+fn apply_para_head_attr_bit(attr: u32, key: &[u8], value: &str) -> u32 {
+    let set = |attr: u32, bit: u32, on: bool| if on { attr | bit } else { attr & !bit };
+    match key {
+        b"align" => {
+            let code = match value {
+                "CENTER" => 1,
+                "RIGHT" => 2,
+                _ => 0,
+            };
+            (attr & !0x03) | code
+        }
+        b"useInstWidth" => set(attr, 1 << 2, value == "1" || value == "true"),
+        b"autoIndent" => set(attr, 1 << 3, value == "1" || value == "true"),
+        b"textOffsetType" => set(attr, 1 << 4, value == "HWPUNIT"),
+        _ => attr,
     }
 }
 
@@ -2190,7 +2260,7 @@ fn parse_numbering_para_head_attrs(
             b"charPrIDRef" => head.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => head.width_adjust = parse_i16(&attr),
             b"textOffset" => head.text_distance = parse_i16(&attr),
-            _ => {}
+            key => head.attr = apply_para_head_attr_bit(head.attr, key, &attr_str(&attr)),
         }
     }
 
@@ -2681,6 +2751,9 @@ mod tests {
         assert_eq!(ps.head_type, HeadType::Number);
         assert_eq!(ps.numbering_id, 3);
         assert_eq!(ps.para_level, 0);
+        // 분기 없는 HWPUNIT도 한컴 HWP 저장본과 같은 2배 IR 단위다.
+        assert_eq!(ps.indent, -4520);
+        assert_eq!(ps.spacing_after, 680);
     }
 
     #[test]

@@ -342,3 +342,307 @@ fn the_reduced_fixture_preserves_original_cell_image_geometry() {
         }
     }
 }
+
+/// 수동 IR 반례: 실제 3..14행 이어받기 조각의 가운데 정렬을 흐름 상자로 검사한다.
+/// 재저장한 한컴 문서의 출력 증거와 구분하며 원본 그림 유닛은 그대로 보존한다.
+#[test]
+fn continued_centered_image_uses_the_reserved_forward_space() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    let bytes =
+        std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    for offset in [-187i32, 0, 187] {
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut doc = core.document().clone();
+        let Control::Table(table) = &mut doc.sections[4].paragraphs[118].controls[0] else {
+            panic!("원본 이어받는 표");
+        };
+        let cell = table
+            .cells
+            .iter_mut()
+            .find(|cell| (cell.row, cell.col) == (4, 3))
+            .unwrap();
+        let picture = cell
+            .paragraphs
+            .iter_mut()
+            .flat_map(|p| &mut p.controls)
+            .find_map(|c| {
+                if let Control::Picture(picture) = c {
+                    Some(picture)
+                } else {
+                    None
+                }
+            })
+            .unwrap();
+        picture.common.vertical_offset = offset as u32;
+        core.set_document(doc);
+        let tree = core.build_page_render_tree(PAGE_INDEX).unwrap();
+        let mut images = Vec::new();
+        collect_cell_images(&tree.root, None, &mut images);
+        assert_eq!(images.len(), 12, "이어받는 조각의 그림 누락·중복 없음");
+        let (_, _, (cell_y, cell_h), (_, image_y, _, image_h)) = images
+            .iter()
+            .find(|image| (image.0, image.1) == (4, 3))
+            .unwrap();
+        // 대칭 셀 여백의 중앙 정렬 불변식: 앞 공간은 흐름 상자에 포함되며 음수는 앞 공간이 아니다.
+        let expected = cell_y + (cell_h - image_h + f64::from(offset.max(0)) / 75.0) / 2.0;
+        assert!(
+            (image_y - expected).abs() < 0.1,
+            "이어받는 그림 오프셋{offset}의 물리 중심: {image_y}, 독립 정렬 불변식{expected}"
+        );
+        assert_eq!(core.page_count(), 103);
+    }
+}
+
+fn japan_cell(node: &RenderNode, row: u16) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::TableCell(cell)
+        if cell.row == row && cell.col == 3)
+    {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| japan_cell(child, row))
+}
+
+fn descendants<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+    out.push(node);
+    for child in &node.children {
+        descendants(child, out);
+    }
+}
+
+fn assert_japan_frame(cell: &RenderNode, offsets: [i32; 2]) {
+    let mut nodes = Vec::new();
+    descendants(cell, &mut nodes);
+    let mut images: Vec<_> = nodes
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Image(_)))
+        .copied()
+        .collect();
+    images.sort_by(|a, b| a.bbox.x.total_cmp(&b.bbox.x));
+    assert_eq!(images.len(), 2, "그림 묶음의 소유 누락·중복 없음");
+    let lines: Vec<_> = nodes
+        .iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+        .collect();
+    assert_eq!(lines.len(), 1, "원본 마지막 빈 줄 하나 보존");
+    // 원본 저장 줄과 행 선언: 4728 + 1000 + 위/아래 141씩 = 6010HU.
+    let line_y = cell.bbox.y + cell.bbox.height - (141.0 + 1000.0) / 75.0;
+    assert!(
+        (lines[0].bbox.y - line_y).abs() < 0.1,
+        "마지막 빈 줄 위치: {:?}, {line_y}",
+        lines[0].bbox
+    );
+    assert!((lines[0].bbox.height - 1000.0 / 75.0).abs() < 0.1);
+    // 두 그림은 저장 마지막 줄 앞의 같은 띠 원점을 공유한다. 높이가 다른 그림의
+    // 오프셋을 0으로 만든 한컴 대조군에서도 상단이 같다는 독립 결과를 검사한다.
+    let band_end = (offsets[0] + 3806).max(offsets[1] + 3866);
+    let band_origin = line_y - f64::from(band_end) / 75.0;
+    for (image, offset) in images.iter().zip(offsets) {
+        let expected = band_origin + f64::from(offset) / 75.0;
+        assert!(
+            (image.bbox.y - expected).abs() < 0.1,
+            "같은 띠 원점: {:?}, {expected}",
+            image.bbox
+        );
+        assert!(image.bbox.y >= cell.bbox.y - 0.1);
+        assert!(image.bbox.y + image.bbox.height <= line_y + 0.1);
+    }
+}
+
+/// 원본 77쪽의 마지막 빈 줄과 두 그림이 같은 프레임을 소비한다.
+/// 0 오프셋은 원본 레코드 두 값만 바꾼 독립 한컴 PDF 대조와 연결한 수동 IR 검사다.
+#[test]
+fn japan_picture_band_and_final_empty_line_share_the_stored_frame() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    let bytes =
+        std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    for offsets in [[780, 862], [0, 0]] {
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut doc = core.document().clone();
+        let Control::Table(table) = &mut doc.sections[4].paragraphs[118].controls[0] else {
+            panic!("표");
+        };
+        let cell = table
+            .cells
+            .iter_mut()
+            .find(|cell| (cell.row, cell.col) == (5, 3))
+            .unwrap();
+        for (control, offset) in cell.paragraphs[0].controls.iter_mut().zip(offsets) {
+            let Control::Picture(picture) = control else {
+                panic!("그림");
+            };
+            picture.common.vertical_offset = offset as u32;
+        }
+        core.set_document(doc);
+        assert_eq!(core.page_count(), 103);
+        let tree = core.build_page_render_tree(PAGE_INDEX).unwrap();
+        let cell = japan_cell(&tree.root, 5).unwrap();
+        assert_japan_frame(cell, offsets);
+        let mut images = Vec::new();
+        collect_cell_images(&tree.root, None, &mut images);
+        assert_eq!(images.len(), 12);
+        if offsets == [0, 0] {
+            for image in images.iter().filter(|image| (image.0, image.1) == (5, 3)) {
+                assert!((image.3 .1 - 319.011).abs() < 1.0, "독립 0 대조 PDF 상단");
+            }
+        }
+    }
+}
+
+/// 원본 한 행만 분리한 수동 IR에서 온전한 셀 경로도 같은 저장 상대 좌표를 사용한다.
+#[test]
+fn whole_japan_cell_uses_the_same_picture_and_empty_line_frame() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    use rhwp::model::table::TablePageBreak;
+    let bytes =
+        std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    let mut doc = core.document().clone();
+    let mut section = doc.sections[4].clone();
+    let mut host = section.paragraphs[118].clone();
+    host.line_segs[0].vertical_pos = 0;
+    let Control::Table(table) = &mut host.controls[0] else {
+        panic!("표");
+    };
+    table.cells.retain(|cell| cell.row == 5);
+    for cell in &mut table.cells {
+        cell.row = 0;
+    }
+    table.row_count = 1;
+    table.page_break = TablePageBreak::None;
+    table.common.height = 6010;
+    table.common.vertical_offset = 0;
+    section.paragraphs = vec![host];
+    doc.sections = vec![section];
+    core.set_document(doc);
+    assert_eq!(core.page_count(), 1);
+    let tree = core.build_page_render_tree(0).unwrap();
+    let cell = japan_cell(&tree.root, 0).unwrap();
+    assert!(matches!(&cell.node_type, RenderNodeType::TableCell(data) if !data.page_fragment));
+    assert_japan_frame(cell, [780, 862]);
+}
+
+/// 수동 IR의 좁은 본문 예산으로 실제 행 분할·이월 경로를 실행한다.
+/// 마지막 줄만 먼저 담지 않고 두 그림과 같은 유닛으로 한 번씩 보존해야 한다.
+#[test]
+fn deferred_japan_picture_band_keeps_both_marks_and_final_line() {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    use rhwp::model::table::TablePageBreak;
+    let bytes =
+        std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    for body_height in [9000, 11000] {
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut doc = core.document().clone();
+        let mut section = doc.sections[4].clone();
+        let mut host = section.paragraphs[118].clone();
+        host.line_segs[0].vertical_pos = 4500;
+        let mut prefix = host.clone();
+        prefix.controls.clear();
+        prefix.line_segs[0].vertical_pos = 0;
+        prefix.line_segs[0].line_height = 4500;
+        prefix.line_segs[0].text_height = 4500;
+        prefix.line_segs[0].baseline_distance = 3500;
+        prefix.line_segs[0].line_spacing = 0;
+        let Control::Table(table) = &mut host.controls[0] else {
+            panic!("표");
+        };
+        table.cells.retain(|cell| cell.row == 5);
+        for cell in &mut table.cells {
+            cell.row = 0;
+        }
+        table.row_count = 1;
+        table.page_break = TablePageBreak::RowBreak;
+        table.common.height = 6010;
+        table.common.vertical_offset = 0;
+        let mut tail = rhwp::model::paragraph::Paragraph::new_empty_like(&host);
+        tail.insert_text_at(0, "보정33 뒤 문단");
+        tail.invalidate_layout_inputs();
+        section.paragraphs = vec![prefix, host, tail];
+        let page = &mut section.section_def.page_def;
+        // 본문 예산은 용지에서 위/아래 및 머리말/꼬리말 여백을 모두 뺀 공간이다.
+        page.height = page.margin_top
+            + page.margin_bottom
+            + page.margin_header
+            + page.margin_footer
+            + body_height;
+        doc.sections = vec![section];
+        core.set_document(doc);
+        let mut group_owners = 0;
+        let mut partial_owners = 0;
+        let mut tail_count = 0;
+        let mut last_group_end = None;
+        let mut tail_position = None;
+        for page in 0..core.page_count() {
+            let tree = core.build_page_render_tree(page).unwrap();
+            let mut all_nodes = Vec::new();
+            descendants(&tree.root, &mut all_nodes);
+            for node in &all_nodes {
+                if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+                    let mut leaves = Vec::new();
+                    descendants(node, &mut leaves);
+                    let text: String = leaves
+                        .iter()
+                        .filter_map(|leaf| {
+                            if let RenderNodeType::TextRun(run) = &leaf.node_type {
+                                Some(run.text.as_str())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+                    if text.contains("보정33 뒤 문단") {
+                        tail_count += 1;
+                        tail_position = Some((page, node.bbox.y));
+                    }
+                }
+            }
+            if let Some(cell) = japan_cell(&tree.root, 0) {
+                let mut nodes = Vec::new();
+                descendants(cell, &mut nodes);
+                if nodes
+                    .iter()
+                    .any(|node| matches!(node.node_type, RenderNodeType::Image(_)))
+                {
+                    group_owners += 1;
+                    partial_owners += usize::from(
+                        matches!(&cell.node_type, RenderNodeType::TableCell(data) if data.page_fragment),
+                    );
+                    assert_japan_frame(cell, [780, 862]);
+                    last_group_end = Some((page, cell.bbox.y + cell.bbox.height));
+                    let body = all_nodes
+                        .iter()
+                        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+                        .unwrap();
+                    assert!(
+                        (body.bbox.height - f64::from(body_height) / 75.0).abs() < 0.1,
+                        "지정한 실제 본문 예산: {:?}",
+                        body.bbox
+                    );
+                    assert!(cell.bbox.y >= body.bbox.y - 0.5);
+                    assert!(
+                        cell.bbox.y + cell.bbox.height <= body.bbox.y + body.bbox.height + 0.5,
+                        "본문 점유 하단 준수: {:?}, {:?}",
+                        cell.bbox,
+                        body.bbox
+                    );
+                }
+            }
+        }
+        assert_eq!(tail_count, 1, "뒤 문단 누락·중복 없음");
+        let (group_page, group_bottom) = last_group_end.unwrap();
+        let (tail_page, tail_y) = tail_position.unwrap();
+        assert!(tail_page > group_page || (tail_page == group_page && tail_y >= group_bottom - 0.5),
+            "뒤 문단과의 점유 겹침 없음: 묶음({group_page}, {group_bottom}), 뒤 문단({tail_page}, {tail_y})");
+        assert_eq!(
+            group_owners, 1,
+            "본문{body_height} 그림 묶음의 유일한 소유 쪽"
+        );
+        assert!(core.page_count() >= 2, "실제 이월 경계 실행");
+        assert!(partial_owners > 0, "실제 부분 셀 경로 실행");
+    }
+}

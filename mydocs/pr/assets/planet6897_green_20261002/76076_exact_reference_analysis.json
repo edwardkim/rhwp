@@ -1,0 +1,268 @@
+{
+  "status": "narrow #7445 text-overlap input deferral verified; actual document fidelity unresolved",
+  "head": "16b047b10",
+  "source": "samples/issue1891/76076_regulatory_analysis.hwpx",
+  "source_sha256": "49bbcc491b75eb18fea7cd1453de8e261749e2ff9b20793b54aa202e015192d7",
+  "actual_format": "hwp5",
+  "saved_with": {
+    "confidence": "metadata",
+    "product": "hancom-office-2018",
+    "version": "10.90.0.983"
+  },
+  "native_pages": 82,
+  "converter_input": {
+    "original": "samples/issue1891/76076_regulatory_analysis.hwpx",
+    "converter_alias": "output/pr-review/planet6897-green-20261002/76076-reference/76076_exact_input.hwp",
+    "bytes_equal": true,
+    "sha256": "49bbcc491b75eb18fea7cd1453de8e261749e2ff9b20793b54aa202e015192d7",
+    "actual_format": "HWP5 OLE CFB",
+    "saved_product": "hancom-office-2018",
+    "engine": "2020",
+    "expected_source_pages": 82
+  },
+  "conversion": {
+    "job_id": "fc7c5c7b-5997-43d1-8759-f0f8e642a29b",
+    "status": "succeeded",
+    "phase": "completed",
+    "target": "pdf",
+    "engine": "2020",
+    "created_at": "2026-10-03T22:19:10.127Z",
+    "started_at": "2026-10-03T22:19:10.128Z",
+    "completed_at": "2026-10-03T22:19:48.234Z",
+    "elapsed_seconds": 38,
+    "queue_position": null,
+    "output_bytes": 638575,
+    "client_exit_code": 0,
+    "result": {}
+  },
+  "reference_pdf": "pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf",
+  "reference_pdf_pages": 82,
+  "reference_pdf_bytes": 638575,
+  "reference_pdf_sha256": "9e0c6a21a509e2f89c21bf80bc22cf9e23150718f6468665ea749fbec4d819a7",
+  "reference_creator": "Hwp 2020 0.0.0.0",
+  "reference_producer": "Hancom PDF 1.3.0.550",
+  "old_reference_source_mapping_issue": "https://github.com/edwardkim/rhwp/issues/4764",
+  "old_reference_input": "samples/76076_regulatory_analysis.hwp",
+  "old_reference_input_sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "current_blocker": {
+    "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "suite": "regression_suite_004",
+    "exit_code": 100,
+    "new_overlap_count": 1,
+    "log": "output/pr-review/planet6897-green-20261002/76076-current-blocker.log",
+    "physical_page": 6,
+    "diagnostic_page_zero_based": 5
+  },
+  "text_overlap_events": [
+    {
+      "emptyPage": false,
+      "offCanvas": [],
+      "overflow": [
+        {
+          "bbox": {
+            "h": 99.90666666666667,
+            "w": 634.9733333333334,
+            "x": 79.34666666666666,
+            "y": 983.9466666666666
+          },
+          "boundary": {
+            "h": 971.3066666666667,
+            "w": 642.5333333333334,
+            "x": 75.58666666666667,
+            "y": 75.60000000000001
+          },
+          "maxOver": 36.94666666666649,
+          "nodeType": "Table",
+          "overBottom": 36.94666666666649,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table28"
+        }
+      ],
+      "overlap": [],
+      "page": 5,
+      "storedLineEscape": [],
+      "textOverlap": [
+        {
+          "bboxA": {
+            "h": 14.666666666666666,
+            "w": 197.99999999999997,
+            "x": 212.76,
+            "y": 1067.3066666666666
+          },
+          "bboxB": {
+            "h": 13.333333333333334,
+            "w": 33.0,
+            "x": 380.35333333333335,
+            "y": 1066.928888888889
+          },
+          "overlapArea": 393.93525925926474,
+          "overlapH": 12.955555555555748,
+          "overlapW": 30.406666666666638,
+          "pathA": "Page/Body/Column0/Table28/Cell7/TextLine1/TextRun0",
+          "pathB": "Page/Footer3/TextLine0/TextRun0",
+          "typeA": "TextRun",
+          "typeB": "TextRun"
+        }
+      ]
+    }
+  ],
+  "whole_native_visual_log": "output/pr-review/planet6897-green-20261002/76076-current-native.log",
+  "source_deletion": false,
+  "test_exclusion": true,
+  "native_visual": {
+    "pages": 82,
+    "missing_pages": [],
+    "below_90_pages": [
+      4,
+      5,
+      6,
+      7,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      29,
+      31,
+      32,
+      33,
+      34,
+      36,
+      39,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      55,
+      56,
+      62,
+      64,
+      65,
+      66,
+      69,
+      70,
+      71,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82
+    ],
+    "below_90_count": 43,
+    "minimum_page": 7,
+    "minimum_percent": 14.15054,
+    "tsv": "mydocs/pr/assets/planet6897_green_20261002/76076_exact_native_all82.tsv",
+    "sweep_exit_code": 1,
+    "physical_page6_percent": 89.26879
+  },
+  "fresh_wasm_visual": "not run for this deferral; Native already fails minimum threshold",
+  "test_exclusion_scope": "only text_overlap_baseline automatic corpus input issue1891/76076_regulatory_analysis.hwpx; other tests/baselines unchanged",
+  "issue_comment_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974222442",
+  "focused_validation": {
+    "suite": "regression_suite_025",
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/76076-defer-text-overlap.log"
+  },
+  "rust_gates": {
+    "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "results": [
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "all-targets-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0
+      }
+    ]
+  }
+}

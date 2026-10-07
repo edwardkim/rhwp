@@ -258,6 +258,9 @@ impl TypesetEngine {
                 paragraphs
                     .get(para_idx + 1)
                     .is_some_and(|p| para_has_non_whitespace_text(p) && p.controls.is_empty()),
+                paragraphs
+                    .get(para_idx + 1)
+                    .and_then(crate::renderer::float_placement::stored_line_lane_probe),
             );
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(

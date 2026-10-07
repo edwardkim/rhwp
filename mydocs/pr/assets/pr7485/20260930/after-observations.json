@@ -1,0 +1,363 @@
+{
+  "baseHead": "7da9c6ca3ee48f26c16e6b882e7cc9353bf541f6",
+  "patchSha256": "199f078b7b6e91d27e36e7604383571e969e1f44b6428e8cedd2cc1c030c8341",
+  "method": "actual isolated headless Chrome Studio UI; synthetic foo foo; 1280x900; default skin; Vite DEV with optimized WASM",
+  "rows": [
+    {
+      "id": "after-light-two",
+      "theme": "light",
+      "count": "검색 결과 2개",
+      "hidden": false,
+      "status": "",
+      "background": "rgb(250, 250, 250)",
+      "countMetric": {
+        "fg": "rgb(102, 102, 102)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.390625,
+          "y": 152,
+          "width": 60.609375,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.390625
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(85, 85, 85)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1243,
+          "y": 175,
+          "width": 0,
+          "height": 0,
+          "top": 175,
+          "right": 1243,
+          "bottom": 175,
+          "left": 1243
+        }
+      },
+      "selection": {
+        "start": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0
+        },
+        "end": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 3
+        }
+      },
+      "countContrast": 5.5,
+      "statusContrast": null
+    },
+    {
+      "id": "after-dark-two",
+      "theme": "dark",
+      "count": "검색 결과 2개",
+      "hidden": false,
+      "status": "",
+      "background": "rgb(54, 60, 69)",
+      "countMetric": {
+        "fg": "rgb(182, 192, 204)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.390625,
+          "y": 152,
+          "width": 60.609375,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.390625
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(213, 219, 227)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1243,
+          "y": 175,
+          "width": 0,
+          "height": 0,
+          "top": 175,
+          "right": 1243,
+          "bottom": 175,
+          "left": 1243
+        }
+      },
+      "selection": {
+        "start": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0
+        },
+        "end": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 3
+        }
+      },
+      "countContrast": 6.03,
+      "statusContrast": null
+    },
+    {
+      "id": "after-dark-wrapped",
+      "theme": "dark",
+      "count": "검색 결과 2개",
+      "hidden": false,
+      "status": "처음으로 돌아왔습니다.",
+      "background": "rgb(54, 60, 69)",
+      "countMetric": {
+        "fg": "rgb(182, 192, 204)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.390625,
+          "y": 152,
+          "width": 60.609375,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.390625
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(169, 195, 255)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1141.359375,
+          "y": 177,
+          "width": 101.640625,
+          "height": 13,
+          "top": 177,
+          "right": 1243,
+          "bottom": 190,
+          "left": 1141.359375
+        }
+      },
+      "selection": {
+        "start": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0
+        },
+        "end": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 3
+        }
+      },
+      "countContrast": 6.03,
+      "statusContrast": 6.32
+    },
+    {
+      "id": "after-light-wrapped",
+      "theme": "light",
+      "count": "검색 결과 2개",
+      "hidden": false,
+      "status": "처음으로 돌아왔습니다.",
+      "background": "rgb(250, 250, 250)",
+      "countMetric": {
+        "fg": "rgb(102, 102, 102)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.390625,
+          "y": 152,
+          "width": 60.609375,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.390625
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(51, 80, 149)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1141.359375,
+          "y": 177,
+          "width": 101.640625,
+          "height": 13,
+          "top": 177,
+          "right": 1243,
+          "bottom": 190,
+          "left": 1141.359375
+        }
+      },
+      "selection": {
+        "start": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 0
+        },
+        "end": {
+          "sectionIndex": 0,
+          "paragraphIndex": 0,
+          "charOffset": 3
+        }
+      },
+      "countContrast": 5.5,
+      "statusContrast": 7.39
+    },
+    {
+      "id": "after-light-delete-one",
+      "theme": "light",
+      "count": "검색 결과 1개",
+      "hidden": false,
+      "status": "",
+      "background": "rgb(250, 250, 250)",
+      "countMetric": {
+        "fg": "rgb(102, 102, 102)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1183.9375,
+          "y": 152,
+          "width": 59.0625,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1183.9375
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(51, 80, 149)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1243,
+          "y": 175,
+          "width": 0,
+          "height": 0,
+          "top": 175,
+          "right": 1243,
+          "bottom": 175,
+          "left": 1243
+        }
+      },
+      "selection": null,
+      "countContrast": 5.5,
+      "statusContrast": null
+    },
+    {
+      "id": "after-dark-delete-one",
+      "theme": "dark",
+      "count": "검색 결과 1개",
+      "hidden": false,
+      "status": "",
+      "background": "rgb(54, 60, 69)",
+      "countMetric": {
+        "fg": "rgb(182, 192, 204)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1183.9375,
+          "y": 152,
+          "width": 59.0625,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1183.9375
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(169, 195, 255)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1243,
+          "y": 175,
+          "width": 0,
+          "height": 0,
+          "top": 175,
+          "right": 1243,
+          "bottom": 175,
+          "left": 1243
+        }
+      },
+      "selection": null,
+      "countContrast": 6.03,
+      "statusContrast": null
+    },
+    {
+      "id": "after-dark-zero",
+      "theme": "dark",
+      "count": "검색 결과 0개",
+      "hidden": false,
+      "status": "검색 결과 없음",
+      "background": "rgb(54, 60, 69)",
+      "countMetric": {
+        "fg": "rgb(182, 192, 204)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.109375,
+          "y": 152,
+          "width": 60.890625,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.109375
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(213, 219, 227)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1179.578125,
+          "y": 177,
+          "width": 63.421875,
+          "height": 13,
+          "top": 177,
+          "right": 1243,
+          "bottom": 190,
+          "left": 1179.578125
+        }
+      },
+      "selection": null,
+      "countContrast": 6.03,
+      "statusContrast": 7.98
+    },
+    {
+      "id": "after-light-zero",
+      "theme": "light",
+      "count": "검색 결과 0개",
+      "hidden": false,
+      "status": "검색 결과 없음",
+      "background": "rgb(250, 250, 250)",
+      "countMetric": {
+        "fg": "rgb(102, 102, 102)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1182.109375,
+          "y": 152,
+          "width": 60.890625,
+          "height": 14,
+          "top": 152,
+          "right": 1243,
+          "bottom": 166,
+          "left": 1182.109375
+        }
+      },
+      "statusMetric": {
+        "fg": "rgb(85, 85, 85)",
+        "fontSize": "11px",
+        "rect": {
+          "x": 1179.578125,
+          "y": 177,
+          "width": 63.421875,
+          "height": 13,
+          "top": 177,
+          "right": 1243,
+          "bottom": 190,
+          "left": 1179.578125
+        }
+      },
+      "selection": null,
+      "countContrast": 5.5,
+      "statusContrast": 7.14
+    }
+  ]
+}

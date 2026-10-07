@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 94.20386,
+    "worst_pixel_match_percent": 89.43602,
+    "average_ink_match_percent": 8.47676,
+    "worst_ink_match_percent": 3.55528,
+    "average_visual_accuracy_proxy_percent": 8.47676,
+    "worst_visual_accuracy_proxy_percent": 3.55528,
+    "average_tolerant_content_match_percent": 96.38316,
+    "worst_tolerant_content_match_percent": 92.95565,
+    "worst_pages": [
+      13,
+      12
+    ]
+  },
+  "pages": [
+    {
+      "page": 12,
+      "rhwp_png": "rhwp_012.png",
+      "pdf_png": "pdf-12.png",
+      "overlay_png": "overlay_012.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 94195,
+      "diff_ratio": 0.10563981,
+      "pixel_match_percent": 89.43602,
+      "ink_union_pixels": 108768,
+      "ink_diff_pixels": 94195,
+      "ink_diff_ratio": 0.86601758,
+      "ink_match_percent": 13.39824,
+      "visual_accuracy_proxy_percent": 13.39824,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 92.95565,
+      "mean_abs_channel_delta": 14.207,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        76,
+        723,
+        1083
+      ]
+    },
+    {
+      "page": 13,
+      "rhwp_png": "rhwp_013.png",
+      "pdf_png": "pdf-13.png",
+      "overlay_png": "overlay_013.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 9169,
+      "diff_ratio": 0.01028304,
+      "pixel_match_percent": 98.9717,
+      "ink_union_pixels": 9507,
+      "ink_diff_pixels": 9169,
+      "ink_diff_ratio": 0.96444725,
+      "ink_match_percent": 3.55528,
+      "visual_accuracy_proxy_percent": 3.55528,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 99.81067,
+      "mean_abs_channel_delta": 1.542,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        97,
+        75,
+        698,
+        1083
+      ]
+    }
+  ]
+}

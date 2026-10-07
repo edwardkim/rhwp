@@ -1,0 +1,4468 @@
+{
+  "stage": 106,
+  "code_commit": "37ec7fa3722ab2c9ae42daa63c8803c628666df5",
+  "analysis": {
+    "head": "026ea384339d6eba3d8c7fc21d7ec340365fb34c",
+    "source_snapshot": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "reason": "사용자 정정에 따른 이전 정상 회귀 동반제외 범위 보정. 기존 함수/독립기대값 복원 후 각함수 실행해 실제 PR차단 FAIL만 판단. 원문 보존자산 경로만 조정. 새 테스트 함수/생산변경/공차 완화 없음.",
+    "files": [
+      {
+        "file": "tests/cases/issue_1133_page_number_bottom_margin.rs",
+        "functions": [
+          "footnote_page_number_keeps_the_same_bottom_margin_anchor"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_4961_font_decision_trace.rs",
+        "functions": [
+          "issue4967_combined_evidence_reports_actual_cache_key_rejection"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+        "functions": [
+          "spec_revision13_original_is_69_pages",
+          "spec_revision13_export_hwpx_preserves_page_count",
+          "spec_revision13_p015_table73_split_and_p016_keeps_para84"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+        "functions": [
+          "issue_5846_cut_fragment_defers_partial_nested_tail_row"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+        "functions": [
+          "issue_5920_page8_holds_both_nested_boxes",
+          "issue_5920_page9_does_not_restart_with_the_conclusion_box",
+          "issue_7206_page4_fragment_does_not_exceed_the_body"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs",
+        "functions": [
+          "stored_neartop_reset_survives_on_a_filled_page"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6013_empty_para_stored_frame_flag.rs",
+        "functions": [
+          "issue_6013_stored_chunk_last_line_stays_on_page_10"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6023_halfwidth_corner_bracket.rs",
+        "functions": [
+          "issue_6023_halfwidth_corner_bracket_advances_half_em"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+        "functions": [
+          "issue_6030_exam_eng_choice_last_line_not_clipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+        "functions": [
+          "issue_6031_page_tail_lines_stay_inside_body_bottom"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6060_fullwidth_cjk_quote.rs",
+        "functions": [
+          "issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6368_row_cut_fp_epsilon.rs",
+        "functions": [
+          "issue_6368_hwpctl_api_example_last_line_stays_on_page_12"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6409_table_page_top_vpos.rs",
+        "functions": [
+          "issue_6409_form_table_starts_on_next_page_not_leftover"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6527_standalone_equation_text.rs",
+        "functions": [
+          "inline_equations_are_extracted_once_in_reading_order"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6569_cell_center_lead_in_stack.rs",
+        "functions": [
+          "issue_6630_contract_still_holds_when_stack_excludes_lead"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6630_cell_first_para_lead.rs",
+        "functions": [
+          "master_page_title_picture_sits_below_the_first_para_lead"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6646_nbsp_advance_matches_space.rs",
+        "functions": [
+          "issue_6646_nbsp_advance_matches_plain_space"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6706_stored_inline_control_rows.rs",
+        "functions": [
+          "stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs",
+        "functions": [
+          "para_float_band_keeps_the_next_table_fragment_on_paper"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6764_public_table_fragment_presence.rs",
+        "functions": [
+          "repaired_public_table_keeps_its_leading_rows_inside_the_paper"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+        "functions": [
+          "issue_6776_host_page_paints_no_picture_past_the_paper",
+          "issue_6776_big_picture_is_placed_whole_on_exactly_one_page"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "functions": [
+          "the_page_still_holds_all_twelve_cell_images",
+          "the_target_image_sits_inside_its_own_cell_at_the_hangul_position",
+          "the_other_eleven_images_keep_their_offsets",
+          "japan_mixed_wrap_marks_stay_inside_their_cell",
+          "japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom",
+          "the_reduced_fixture_preserves_original_cell_image_geometry",
+          "continued_centered_image_uses_the_reserved_forward_space",
+          "japan_picture_band_and_final_empty_line_share_the_stored_frame",
+          "whole_japan_cell_uses_the_same_picture_and_empty_line_frame",
+          "deferred_japan_picture_band_keeps_both_marks_and_final_line"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+        "functions": [
+          "issue_6844_intra_run_right_tab_bbox_reaches_the_glyphs",
+          "issue_6844_toc_page_numbers_share_one_right_edge"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+        "functions": [
+          "issue_6854_hwp_sample_has_no_body_less_page",
+          "issue_6854_hwp_sample_matches_the_2020_oracle_page_count"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+        "functions": [
+          "issue_6855_band_page_paints_nothing_below_the_paper",
+          "issue_6855_rewound_line_starts_the_next_page"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7023_glyph_band_follows_baseline.rs",
+        "functions": [
+          "issue_7023_corrected_body_footer_does_not_overlap"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+        "functions": [
+          "issue_7048_reduced_body_baselines_match_hancom",
+          "issue_7048_saved_picture_boundary_requires_independent_source_agreement",
+          "issue_7048_cellbreak_boundary_closes_both_saved_fragments"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "functions": [
+          "issue_7063_empty_float_host_table_starts_below_previous_line_box",
+          "issue_7063_second_empty_float_host_table_matches_oracle",
+          "issue_7063_stored_ladder_witness_table_is_untouched",
+          "issue_7063_following_flow_and_page_boundary_match_hancom"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+        "functions": [
+          "issue_7095_first_fragment_starting_at_page_top_is_pinned_too",
+          "issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "functions": [
+          "object_height_that_ends_mid_row_still_reconciles"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "functions": [
+          "a_float_table_top_sits_on_its_stored_anchor",
+          "treat_as_char_tables_are_untouched",
+          "an_offset_anchored_float_table_keeps_flow_placement",
+          "downstream_table_split_and_body_follow_the_oracle_pages"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+        "functions": [
+          "para_float_table_top_sits_at_the_stored_anchor_not_a_line_above",
+          "saved_anchor_subtracts_only_top_margin_with_asymmetric_margins"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+        "functions": [
+          "split_fragment_ignores_the_anchor_leading_gap",
+          "split_fragment_without_a_gap_is_unchanged",
+          "the_correction_does_not_move_the_page_count"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "functions": [
+          "stored_rewind_keeps_its_last_line_in_the_fragment",
+          "the_continuation_neither_repeats_nor_drops_the_moved_unit",
+          "neither_the_fragment_nor_the_following_table_overflows_the_body",
+          "an_already_selected_boundary_uses_the_same_trimmed_box",
+          "the_page_count_matches_the_oracle",
+          "reserved_bottom_matches_painted_bottom_and_continuation_cuts"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+        "functions": [
+          "column_top_tac_table_keeps_stored_vertical_pos",
+          "column_top_tac_table_without_stored_vertical_pos_does_not_move"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7287_square_float_outer_top.rs",
+        "functions": [
+          "empty_host_square_float_top_includes_its_outer_margin"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+        "functions": [
+          "use_font_space_line_width_matches_hancom_in_absolute_px"
+        ]
+      },
+      {
+        "file": "tests/exam_eng_multicolumn.rs",
+        "functions": [
+          "exam_eng_page_count_after_359_fix"
+        ]
+      },
+      {
+        "file": "tests/issue_1086.rs",
+        "functions": [
+          "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "functions": [
+          "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+          "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+          "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+          "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+          "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "functions": [
+          "sample16_hwp5_toc_leaders_stop_before_page_numbers",
+          "sample16_hwp5_toc_page_numbers_share_right_edge",
+          "sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width",
+          "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping",
+          "sample16_hwp5_page3_heading_positions_follow_lineseg_vpos",
+          "sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height",
+          "sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing",
+          "sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle",
+          "sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg",
+          "sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line"
+        ]
+      },
+      {
+        "file": "tests/issue_1139_inline_picture_duplicate.rs",
+        "functions": [
+          "issue_1139_sample16_page3_page_number_stays_below_bottom_border"
+        ]
+      },
+      {
+        "file": "tests/issue_1749_saved_bounds_page_break.rs",
+        "functions": [
+          "issue_1749_v2_pi26_stays_on_page_2"
+        ]
+      },
+      {
+        "file": "tests/issue_2015_saved_bounds_rowbreak.rs",
+        "functions": [
+          "issue_2015_stage1_documents_current_overflow",
+          "issue_2015_page4_rowbreak_table_stays_in_body"
+        ]
+      },
+      {
+        "file": "tests/issue_2099_araea_pua.rs",
+        "functions": [
+          "issue_2099_revision13_page1_prioritizes_old_hangul_font"
+        ]
+      },
+      {
+        "file": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+        "functions": [
+          "hwp3_sample16_hwpx_matches_hwp5_and_hangul"
+        ]
+      },
+      {
+        "file": "tests/issue_3637_split_cell_nested_table_vpos.rs",
+        "functions": [
+          "nested_table_snap_stays_inside_the_split_cell"
+        ]
+      },
+      {
+        "file": "tests/issue_775.rs",
+        "functions": [
+          "issue_775_exam_eng_p4_pi181_table_at_column_top"
+        ]
+      },
+      {
+        "file": "tests/issue_rowbreak_chart_overlap.rs",
+        "functions": [
+          "rowbreak_hwp_page8_keeps_continued_nested_reference_line",
+          "rowbreak_hwp_page12_reference_text_stays_inside_body"
+        ]
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "functions": [
+          "hwp3_sample16_hwp5_page_count_64",
+          "hwp3_sample16_hwp5_2022_page_count_64"
+        ]
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs",
+        "functions": [
+          "rowbreak_footnote_table_does_not_over_paginate"
+        ]
+      },
+      {
+        "file": "tests/outline_navigation_table_cell_number.rs",
+        "functions": [],
+        "mixed_assertion_audit": true
+      },
+      {
+        "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "functions": [],
+        "mixed_assertion_audit": true
+      }
+    ],
+    "fixture_path_mapping": {
+      "samples/exam_eng.hwp": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+      "samples/hwp3-sample16-hwp5-2010.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+      "samples/hwp3-sample16-hwp5-2022.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+      "samples/hwp3-sample16-hwp5.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+      "samples/hwp3-sample16-hwp5.hwpx": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+      "samples/hwpctl_API_v2.4.hwp": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+      "samples/issue1937_rowbreak_footnote_overpagination.hwp": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+      "samples/issue5941/1480000-201900698-native-neartop-reset.hwp": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+      "samples/issue6023/30269_reform_recommendation.hwp": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+      "samples/issue6031/3249937_asset_management_rules.hwpx": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+      "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx": "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+      "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+      "samples/issue6844/30269-anticorruption-recommendation-toc.hwp": "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+      "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "samples/pr4093/outline_navigation_panel_demo.hwpx": "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+      "samples/pr4093/outline_navigation_table_cell_number.hwpx": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+      "samples/rowbreak-problem-pages.hwp": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+      "samples/task1749/saved_bounds_cumulative_page_break.hwpx": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+      "samples/task2097/75544_pii_bunseok.hwpx": "mydocs/pr/assets/issue7445/75544_pii_bunseok.hwpx"
+    }
+  },
+  "effective_results": {
+    "head": "026ea384339d6eba3d8c7fc21d7ec340365fb34c",
+    "scope": "기존검사 복원후 각함수 단독 실행. PASS 유지/FAIL은 별도 원인판정. 새함수 없음.",
+    "individual": [
+      {
+        "file": "tests/cases/issue_1133_page_number_bottom_margin.rs",
+        "case": "issue_1133_page_number_bottom_margin",
+        "function": "footnote_page_number_keeps_the_same_bottom_margin_anchor",
+        "id": 1,
+        "plan": {
+          "caseName": "issue_1133_page_number_bottom_margin",
+          "target": "regression_suite_022",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "test(=issue_1133_page_number_bottom_margin::footnote_page_number_keeps_the_same_bottom_margin_anchor)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 8.616510750260204,
+        "summary": [
+          "     Summary [   0.119s] 1 test run: 0 passed, 1 failed, 234 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_4961_font_decision_trace.rs",
+        "case": "issue_4961_font_decision_trace",
+        "function": "issue4967_combined_evidence_reports_actual_cache_key_rejection",
+        "id": 2,
+        "plan": {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "test(=issue_4961_font_decision_trace::issue4967_combined_evidence_reports_actual_cache_key_rejection)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.152616791892797,
+        "summary": [
+          "     Summary [   0.078s] 1 test run: 1 passed, 224 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+        "case": "issue_5128_spec_page_roundtrip",
+        "function": "spec_revision13_original_is_69_pages",
+        "id": 3,
+        "plan": {
+          "caseName": "issue_5128_spec_page_roundtrip",
+          "target": "regression_suite_011",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_011",
+          "-E",
+          "test(=issue_5128_spec_page_roundtrip::spec_revision13_original_is_69_pages)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.2801671251654625,
+        "summary": [
+          "     Summary [   0.016s] 1 test run: 0 passed, 1 failed, 221 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+          "case": "issue_5128_spec_page_roundtrip",
+          "function": "spec_revision13_original_is_69_pages",
+          "id": 1,
+          "plan": {
+            "caseName": "issue_5128_spec_page_roundtrip",
+            "target": "regression_suite_011",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_011",
+            "-E",
+            "test(=issue_5128_spec_page_roundtrip::spec_revision13_original_is_69_pages)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 9.037213082890958,
+          "summary": [
+            "     Summary [   0.158s] 1 test run: 1 passed, 218 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+        "case": "issue_5128_spec_page_roundtrip",
+        "function": "spec_revision13_export_hwpx_preserves_page_count",
+        "id": 4,
+        "plan": {
+          "caseName": "issue_5128_spec_page_roundtrip",
+          "target": "regression_suite_011",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_011",
+          "-E",
+          "test(=issue_5128_spec_page_roundtrip::spec_revision13_export_hwpx_preserves_page_count)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4022142910398543,
+        "summary": [
+          "     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 221 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+          "case": "issue_5128_spec_page_roundtrip",
+          "function": "spec_revision13_export_hwpx_preserves_page_count",
+          "id": 2,
+          "plan": {
+            "caseName": "issue_5128_spec_page_roundtrip",
+            "target": "regression_suite_011",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_011",
+            "-E",
+            "test(=issue_5128_spec_page_roundtrip::spec_revision13_export_hwpx_preserves_page_count)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 0.8572302497923374,
+          "summary": [
+            "     Summary [   0.381s] 1 test run: 1 passed, 218 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+        "case": "issue_5128_spec_page_roundtrip",
+        "function": "spec_revision13_p015_table73_split_and_p016_keeps_para84",
+        "id": 5,
+        "plan": {
+          "caseName": "issue_5128_spec_page_roundtrip",
+          "target": "regression_suite_011",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_011",
+          "-E",
+          "test(=issue_5128_spec_page_roundtrip::spec_revision13_p015_table73_split_and_p016_keeps_para84)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3580234586261213,
+        "summary": [
+          "     Summary [   0.009s] 1 test run: 0 passed, 1 failed, 221 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+          "case": "issue_5128_spec_page_roundtrip",
+          "function": "spec_revision13_p015_table73_split_and_p016_keeps_para84",
+          "id": 3,
+          "plan": {
+            "caseName": "issue_5128_spec_page_roundtrip",
+            "target": "regression_suite_011",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_011",
+            "-E",
+            "test(=issue_5128_spec_page_roundtrip::spec_revision13_p015_table73_split_and_p016_keeps_para84)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 0.6813925839960575,
+          "summary": [
+            "     Summary [   0.294s] 1 test run: 1 passed, 218 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+        "case": "issue_5846_mixed_nested_partial_row_duplicate",
+        "function": "issue_5846_cut_fragment_defers_partial_nested_tail_row",
+        "id": 6,
+        "plan": {
+          "caseName": "issue_5846_mixed_nested_partial_row_duplicate",
+          "target": "regression_suite_001",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_001",
+          "-E",
+          "test(=issue_5846_mixed_nested_partial_row_duplicate::issue_5846_cut_fragment_defers_partial_nested_tail_row)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 7.269486916717142,
+        "summary": [
+          "     Summary [   0.087s] 1 test run: 0 passed, 1 failed, 184 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+        "case": "issue_5920_nested_atom_tail_page_fit",
+        "function": "issue_5920_page8_holds_both_nested_boxes",
+        "id": 7,
+        "plan": {
+          "caseName": "issue_5920_nested_atom_tail_page_fit",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_5920_nested_atom_tail_page_fit::issue_5920_page8_holds_both_nested_boxes)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 7.0610067918896675,
+        "summary": [
+          "     Summary [   0.083s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+        "case": "issue_5920_nested_atom_tail_page_fit",
+        "function": "issue_5920_page9_does_not_restart_with_the_conclusion_box",
+        "id": 8,
+        "plan": {
+          "caseName": "issue_5920_nested_atom_tail_page_fit",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_5920_nested_atom_tail_page_fit::issue_5920_page9_does_not_restart_with_the_conclusion_box)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.44123979192227125,
+        "summary": [
+          "     Summary [   0.075s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+        "case": "issue_5920_nested_atom_tail_page_fit",
+        "function": "issue_7206_page4_fragment_does_not_exceed_the_body",
+        "id": 9,
+        "plan": {
+          "caseName": "issue_5920_nested_atom_tail_page_fit",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_5920_nested_atom_tail_page_fit::issue_7206_page4_fragment_does_not_exceed_the_body)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4369270419701934,
+        "summary": [
+          "     Summary [   0.079s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs",
+        "case": "issue_5941_neartop_reset_only_on_empty_page",
+        "function": "stored_neartop_reset_survives_on_a_filled_page",
+        "id": 10,
+        "plan": {
+          "caseName": "issue_5941_neartop_reset_only_on_empty_page",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=issue_5941_neartop_reset_only_on_empty_page::stored_neartop_reset_survives_on_a_filled_page)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.630462582688779,
+        "summary": [
+          "     Summary [   0.465s] 1 test run: 1 passed, 220 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6013_empty_para_stored_frame_flag.rs",
+        "case": "issue_6013_empty_para_stored_frame_flag",
+        "function": "issue_6013_stored_chunk_last_line_stays_on_page_10",
+        "id": 11,
+        "plan": {
+          "caseName": "issue_6013_empty_para_stored_frame_flag",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "test(=issue_6013_empty_para_stored_frame_flag::issue_6013_stored_chunk_last_line_stays_on_page_10)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4075235421769321,
+        "summary": [
+          "     Summary [   0.042s] 1 test run: 1 passed, 224 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6023_halfwidth_corner_bracket.rs",
+        "case": "issue_6023_halfwidth_corner_bracket",
+        "function": "issue_6023_halfwidth_corner_bracket_advances_half_em",
+        "id": 12,
+        "plan": {
+          "caseName": "issue_6023_halfwidth_corner_bracket",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6023_halfwidth_corner_bracket::issue_6023_halfwidth_corner_bracket_advances_half_em)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.961534790694714,
+        "summary": [
+          "     Summary [   0.770s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+        "case": "issue_6030_subline_row_grow_lastline",
+        "function": "issue_6030_exam_eng_choice_last_line_not_clipped",
+        "id": 13,
+        "plan": {
+          "caseName": "issue_6030_subline_row_grow_lastline",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_6030_subline_row_grow_lastline::issue_6030_exam_eng_choice_last_line_not_clipped)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4206897499971092,
+        "summary": [
+          "     Summary [   0.050s] 1 test run: 0 passed, 1 failed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+        "case": "issue_6031_ladder_sb_omitted_tail_overrun",
+        "function": "issue_6031_page_tail_lines_stay_inside_body_bottom",
+        "id": 14,
+        "plan": {
+          "caseName": "issue_6031_ladder_sb_omitted_tail_overrun",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "test(=issue_6031_ladder_sb_omitted_tail_overrun::issue_6031_page_tail_lines_stay_inside_body_bottom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.40055508306249976,
+        "summary": [
+          "     Summary [   0.054s] 1 test run: 0 passed, 1 failed, 224 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6060_fullwidth_cjk_quote.rs",
+        "case": "issue_6060_fullwidth_cjk_quote",
+        "function": "issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap",
+        "id": 15,
+        "plan": {
+          "caseName": "issue_6060_fullwidth_cjk_quote",
+          "target": "regression_suite_017",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_017",
+          "-E",
+          "test(=issue_6060_fullwidth_cjk_quote::issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.196652167011052,
+        "summary": [
+          "     Summary [   0.091s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6368_row_cut_fp_epsilon.rs",
+        "case": "issue_6368_row_cut_fp_epsilon",
+        "function": "issue_6368_hwpctl_api_example_last_line_stays_on_page_12",
+        "id": 16,
+        "plan": {
+          "caseName": "issue_6368_row_cut_fp_epsilon",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_6368_row_cut_fp_epsilon::issue_6368_hwpctl_api_example_last_line_stays_on_page_12)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 7.047929250169545,
+        "summary": [
+          "     Summary [   0.129s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6409_table_page_top_vpos.rs",
+        "case": "issue_6409_table_page_top_vpos",
+        "function": "issue_6409_form_table_starts_on_next_page_not_leftover",
+        "id": 17,
+        "plan": {
+          "caseName": "issue_6409_table_page_top_vpos",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "test(=issue_6409_table_page_top_vpos::issue_6409_form_table_starts_on_next_page_not_leftover)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 6.818480832967907,
+        "summary": [
+          "     Summary [   0.062s] 1 test run: 0 passed, 1 failed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6527_standalone_equation_text.rs",
+        "case": "issue_6527_standalone_equation_text",
+        "function": "inline_equations_are_extracted_once_in_reading_order",
+        "id": 18,
+        "plan": {
+          "caseName": "issue_6527_standalone_equation_text",
+          "target": "regression_suite_017",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_017",
+          "-E",
+          "test(=issue_6527_standalone_equation_text::inline_equations_are_extracted_once_in_reading_order)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38392612524330616,
+        "summary": [
+          "     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 213 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/cases/issue_6527_standalone_equation_text.rs",
+          "case": "issue_6527_standalone_equation_text",
+          "function": "inline_equations_are_extracted_once_in_reading_order",
+          "id": 4,
+          "plan": {
+            "caseName": "issue_6527_standalone_equation_text",
+            "target": "regression_suite_008",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_008",
+            "-E",
+            "test(=issue_6527_standalone_equation_text::inline_equations_are_extracted_once_in_reading_order)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 6.045967542100698,
+          "summary": [
+            "     Summary [   0.094s] 1 test run: 1 passed, 235 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/cases/issue_6569_cell_center_lead_in_stack.rs",
+        "case": "issue_6569_cell_center_lead_in_stack",
+        "function": "issue_6630_contract_still_holds_when_stack_excludes_lead",
+        "id": 19,
+        "plan": {
+          "caseName": "issue_6569_cell_center_lead_in_stack",
+          "target": "regression_suite_021",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_021",
+          "-E",
+          "test(=issue_6569_cell_center_lead_in_stack::issue_6630_contract_still_holds_when_stack_excludes_lead)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.502389749977738,
+        "summary": [
+          "     Summary [   0.080s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6630_cell_first_para_lead.rs",
+        "case": "issue_6630_cell_first_para_lead",
+        "function": "master_page_title_picture_sits_below_the_first_para_lead",
+        "id": 20,
+        "plan": {
+          "caseName": "issue_6630_cell_first_para_lead",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_6630_cell_first_para_lead::master_page_title_picture_sits_below_the_first_para_lead)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 5.025903750211,
+        "summary": [
+          "     Summary [   0.089s] 1 test run: 1 passed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6646_nbsp_advance_matches_space.rs",
+        "case": "issue_6646_nbsp_advance_matches_space",
+        "function": "issue_6646_nbsp_advance_matches_plain_space",
+        "id": 21,
+        "plan": {
+          "caseName": "issue_6646_nbsp_advance_matches_space",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=issue_6646_nbsp_advance_matches_space::issue_6646_nbsp_advance_matches_plain_space)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4878557501360774,
+        "summary": [
+          "     Summary [   0.124s] 1 test run: 1 passed, 220 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6706_stored_inline_control_rows.rs",
+        "case": "issue_6706_stored_inline_control_rows",
+        "function": "stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership",
+        "id": 22,
+        "plan": {
+          "caseName": "issue_6706_stored_inline_control_rows",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "test(=issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4333423753269017,
+        "summary": [
+          "     Summary [   0.083s] 1 test run: 0 passed, 1 failed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs",
+        "case": "issue_6764_para_float_band_starts_at_anchor",
+        "function": "para_float_band_keeps_the_next_table_fragment_on_paper",
+        "id": 23,
+        "plan": {
+          "caseName": "issue_6764_para_float_band_starts_at_anchor",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "test(=issue_6764_para_float_band_starts_at_anchor::para_float_band_keeps_the_next_table_fragment_on_paper)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 1.1427124589681625,
+        "summary": [
+          "     Summary [   0.749s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6764_public_table_fragment_presence.rs",
+        "case": "issue_6764_public_table_fragment_presence",
+        "function": "repaired_public_table_keeps_its_leading_rows_inside_the_paper",
+        "id": 24,
+        "plan": {
+          "caseName": "issue_6764_public_table_fragment_presence",
+          "target": "regression_suite_020",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_020",
+          "-E",
+          "test(=issue_6764_public_table_fragment_presence::repaired_public_table_keeps_its_leading_rows_inside_the_paper)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 7.494635791052133,
+        "summary": [
+          "     Summary [   0.754s] 1 test run: 1 passed, 215 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+        "case": "issue_6776_cell_tac_picture_accounting",
+        "function": "issue_6776_host_page_paints_no_picture_past_the_paper",
+        "id": 25,
+        "plan": {
+          "caseName": "issue_6776_cell_tac_picture_accounting",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6776_cell_tac_picture_accounting::issue_6776_host_page_paints_no_picture_past_the_paper)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.888278167229146,
+        "summary": [
+          "     Summary [   0.362s] 1 test run: 1 passed, 233 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+        "case": "issue_6776_cell_tac_picture_accounting",
+        "function": "issue_6776_big_picture_is_placed_whole_on_exactly_one_page",
+        "id": 26,
+        "plan": {
+          "caseName": "issue_6776_cell_tac_picture_accounting",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6776_cell_tac_picture_accounting::issue_6776_big_picture_is_placed_whole_on_exactly_one_page)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6693803328089416,
+        "summary": [
+          "     Summary [   0.311s] 1 test run: 1 passed, 233 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "the_page_still_holds_all_twelve_cell_images",
+        "id": 27,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::the_page_still_holds_all_twelve_cell_images)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.47210762510076165,
+        "summary": [
+          "     Summary [   0.118s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "the_target_image_sits_inside_its_own_cell_at_the_hangul_position",
+        "id": 28,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::the_target_image_sits_inside_its_own_cell_at_the_hangul_position)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5136093329638243,
+        "summary": [
+          "     Summary [   0.113s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "the_other_eleven_images_keep_their_offsets",
+        "id": 29,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::the_other_eleven_images_keep_their_offsets)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.44634837517514825,
+        "summary": [
+          "     Summary [   0.102s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "japan_mixed_wrap_marks_stay_inside_their_cell",
+        "id": 30,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::japan_mixed_wrap_marks_stay_inside_their_cell)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4690044578164816,
+        "summary": [
+          "     Summary [   0.115s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom",
+        "id": 31,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.48762074997648597,
+        "summary": [
+          "     Summary [   0.103s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "the_reduced_fixture_preserves_original_cell_image_geometry",
+        "id": 32,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::the_reduced_fixture_preserves_original_cell_image_geometry)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6118478327989578,
+        "summary": [
+          "     Summary [   0.205s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "continued_centered_image_uses_the_reserved_forward_space",
+        "id": 33,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::continued_centered_image_uses_the_reserved_forward_space)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.8164728749543428,
+        "summary": [
+          "     Summary [   0.454s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "japan_picture_band_and_final_empty_line_share_the_stored_frame",
+        "id": 34,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::japan_picture_band_and_final_empty_line_share_the_stored_frame)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6352000827901065,
+        "summary": [
+          "     Summary [   0.291s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "whole_japan_cell_uses_the_same_picture_and_empty_line_frame",
+        "id": 35,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::whole_japan_cell_uses_the_same_picture_and_empty_line_frame)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4517231248319149,
+        "summary": [
+          "     Summary [   0.104s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+        "case": "issue_6782_cell_float_offset_outside_cell",
+        "function": "deferred_japan_picture_band_keeps_both_marks_and_final_line",
+        "id": 36,
+        "plan": {
+          "caseName": "issue_6782_cell_float_offset_outside_cell",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_6782_cell_float_offset_outside_cell::deferred_japan_picture_band_keeps_both_marks_and_final_line)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5896520409733057,
+        "summary": [
+          "     Summary [   0.238s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+        "case": "issue_6844_intra_run_right_tab_bbox",
+        "function": "issue_6844_intra_run_right_tab_bbox_reaches_the_glyphs",
+        "id": 37,
+        "plan": {
+          "caseName": "issue_6844_intra_run_right_tab_bbox",
+          "target": "regression_suite_001",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_001",
+          "-E",
+          "test(=issue_6844_intra_run_right_tab_bbox::issue_6844_intra_run_right_tab_bbox_reaches_the_glyphs)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4475297499448061,
+        "summary": [
+          "     Summary [   0.054s] 1 test run: 1 passed, 184 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+        "case": "issue_6844_intra_run_right_tab_bbox",
+        "function": "issue_6844_toc_page_numbers_share_one_right_edge",
+        "id": 38,
+        "plan": {
+          "caseName": "issue_6844_intra_run_right_tab_bbox",
+          "target": "regression_suite_001",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_001",
+          "-E",
+          "test(=issue_6844_intra_run_right_tab_bbox::issue_6844_toc_page_numbers_share_one_right_edge)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4120381660759449,
+        "summary": [
+          "     Summary [   0.038s] 1 test run: 1 passed, 184 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+        "case": "issue_6854_empty_para_orphan_page",
+        "function": "issue_6854_hwp_sample_has_no_body_less_page",
+        "id": 39,
+        "plan": {
+          "caseName": "issue_6854_empty_para_orphan_page",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_6854_empty_para_orphan_page::issue_6854_hwp_sample_has_no_body_less_page)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 8.989543791860342,
+        "summary": [
+          "     Summary [   0.224s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+        "case": "issue_6854_empty_para_orphan_page",
+        "function": "issue_6854_hwp_sample_matches_the_2020_oracle_page_count",
+        "id": 40,
+        "plan": {
+          "caseName": "issue_6854_empty_para_orphan_page",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_6854_empty_para_orphan_page::issue_6854_hwp_sample_matches_the_2020_oracle_page_count)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.44046854181215167,
+        "summary": [
+          "     Summary [   0.062s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+        "case": "issue_6855_float_band_page_fill_rewind",
+        "function": "issue_6855_band_page_paints_nothing_below_the_paper",
+        "id": 41,
+        "plan": {
+          "caseName": "issue_6855_float_band_page_fill_rewind",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_6855_float_band_page_fill_rewind::issue_6855_band_page_paints_nothing_below_the_paper)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7784195826388896,
+        "summary": [
+          "     Summary [   0.318s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+        "case": "issue_6855_float_band_page_fill_rewind",
+        "function": "issue_6855_rewound_line_starts_the_next_page",
+        "id": 42,
+        "plan": {
+          "caseName": "issue_6855_float_band_page_fill_rewind",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_6855_float_band_page_fill_rewind::issue_6855_rewound_line_starts_the_next_page)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7913542077876627,
+        "summary": [
+          "     Summary [   0.374s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7023_glyph_band_follows_baseline.rs",
+        "case": "issue_7023_glyph_band_follows_baseline",
+        "function": "issue_7023_corrected_body_footer_does_not_overlap",
+        "id": 43,
+        "plan": {
+          "caseName": "issue_7023_glyph_band_follows_baseline",
+          "target": "regression_suite_026",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "test(=issue_7023_glyph_band_follows_baseline::issue_7023_corrected_body_footer_does_not_overlap)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 8.14247245900333,
+        "summary": [
+          "     Summary [   0.217s] 1 test run: 1 passed, 215 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+        "case": "issue_7048_stored_picture_successor",
+        "function": "issue_7048_reduced_body_baselines_match_hancom",
+        "id": 44,
+        "plan": {
+          "caseName": "issue_7048_stored_picture_successor",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_018",
+          "-E",
+          "test(=issue_7048_stored_picture_successor::issue_7048_reduced_body_baselines_match_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.7894937908276916,
+        "summary": [
+          "     Summary [   0.182s] 1 test run: 1 passed, 210 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+        "case": "issue_7048_stored_picture_successor",
+        "function": "issue_7048_saved_picture_boundary_requires_independent_source_agreement",
+        "id": 45,
+        "plan": {
+          "caseName": "issue_7048_stored_picture_successor",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_018",
+          "-E",
+          "test(=issue_7048_stored_picture_successor::issue_7048_saved_picture_boundary_requires_independent_source_agreement)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.49222887493669987,
+        "summary": [
+          "     Summary [   0.038s] 1 test run: 1 passed, 210 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+        "case": "issue_7048_stored_picture_successor",
+        "function": "issue_7048_cellbreak_boundary_closes_both_saved_fragments",
+        "id": 46,
+        "plan": {
+          "caseName": "issue_7048_stored_picture_successor",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_018",
+          "-E",
+          "test(=issue_7048_stored_picture_successor::issue_7048_cellbreak_boundary_closes_both_saved_fragments)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.42641229182481766,
+        "summary": [
+          "     Summary [   0.040s] 1 test run: 1 passed, 210 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "case": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+        "function": "issue_7063_empty_float_host_table_starts_below_previous_line_box",
+        "id": 47,
+        "plan": {
+          "caseName": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_7063_empty_float_host_snap_intrudes_prev_line::issue_7063_empty_float_host_table_starts_below_previous_line_box)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 7.158627083990723,
+        "summary": [
+          "     Summary [   0.162s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "case": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+        "function": "issue_7063_second_empty_float_host_table_matches_oracle",
+        "id": 48,
+        "plan": {
+          "caseName": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_7063_empty_float_host_snap_intrudes_prev_line::issue_7063_second_empty_float_host_table_matches_oracle)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5826891670003533,
+        "summary": [
+          "     Summary [   0.148s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "case": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+        "function": "issue_7063_stored_ladder_witness_table_is_untouched",
+        "id": 49,
+        "plan": {
+          "caseName": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_7063_empty_float_host_snap_intrudes_prev_line::issue_7063_stored_ladder_witness_table_is_untouched)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.49931037472561,
+        "summary": [
+          "     Summary [   0.128s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+        "case": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+        "function": "issue_7063_following_flow_and_page_boundary_match_hancom",
+        "id": 50,
+        "plan": {
+          "caseName": "issue_7063_empty_float_host_snap_intrudes_prev_line",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_7063_empty_float_host_snap_intrudes_prev_line::issue_7063_following_flow_and_page_boundary_match_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5399512914009392,
+        "summary": [
+          "     Summary [   0.165s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+        "case": "issue_7095_page_spanning_fragment_box",
+        "function": "issue_7095_first_fragment_starting_at_page_top_is_pinned_too",
+        "id": 51,
+        "plan": {
+          "caseName": "issue_7095_page_spanning_fragment_box",
+          "target": "regression_suite_005",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_005",
+          "-E",
+          "test(=issue_7095_page_spanning_fragment_box::issue_7095_first_fragment_starting_at_page_top_is_pinned_too)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.46976895770058,
+        "summary": [
+          "     Summary [   0.044s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+        "case": "issue_7095_page_spanning_fragment_box",
+        "function": "issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top",
+        "id": 52,
+        "plan": {
+          "caseName": "issue_7095_page_spanning_fragment_box",
+          "target": "regression_suite_005",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_005",
+          "-E",
+          "test(=issue_7095_page_spanning_fragment_box::issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4619581252336502,
+        "summary": [
+          "     Summary [   0.045s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+        "case": "issue_7147_row_declaration_beats_object_height",
+        "function": "object_height_that_ends_mid_row_still_reconciles",
+        "id": 53,
+        "plan": {
+          "caseName": "issue_7147_row_declaration_beats_object_height",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_7147_row_declaration_beats_object_height::object_height_that_ends_mid_row_still_reconciles)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.8636762499809265,
+        "summary": [
+          "     Summary [   0.498s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "case": "issue_7203_float_table_stored_anchor_top",
+        "function": "a_float_table_top_sits_on_its_stored_anchor",
+        "id": 54,
+        "plan": {
+          "caseName": "issue_7203_float_table_stored_anchor_top",
+          "target": "regression_suite_007",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_007",
+          "-E",
+          "test(=issue_7203_float_table_stored_anchor_top::a_float_table_top_sits_on_its_stored_anchor)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.956362291239202,
+        "summary": [
+          "     Summary [   0.876s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "case": "issue_7203_float_table_stored_anchor_top",
+        "function": "treat_as_char_tables_are_untouched",
+        "id": 55,
+        "plan": {
+          "caseName": "issue_7203_float_table_stored_anchor_top",
+          "target": "regression_suite_007",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_007",
+          "-E",
+          "test(=issue_7203_float_table_stored_anchor_top::treat_as_char_tables_are_untouched)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.8901252499781549,
+        "summary": [
+          "     Summary [   0.489s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "case": "issue_7203_float_table_stored_anchor_top",
+        "function": "an_offset_anchored_float_table_keeps_flow_placement",
+        "id": 56,
+        "plan": {
+          "caseName": "issue_7203_float_table_stored_anchor_top",
+          "target": "regression_suite_007",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_007",
+          "-E",
+          "test(=issue_7203_float_table_stored_anchor_top::an_offset_anchored_float_table_keeps_flow_placement)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.42693695798516273,
+        "summary": [
+          "     Summary [   0.061s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+        "case": "issue_7203_float_table_stored_anchor_top",
+        "function": "downstream_table_split_and_body_follow_the_oracle_pages",
+        "id": 57,
+        "plan": {
+          "caseName": "issue_7203_float_table_stored_anchor_top",
+          "target": "regression_suite_007",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_007",
+          "-E",
+          "test(=issue_7203_float_table_stored_anchor_top::downstream_table_split_and_body_follow_the_oracle_pages)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6972016668878496,
+        "summary": [
+          "     Summary [   0.349s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+        "case": "issue_7203_float_table_top_uses_stored_anchor",
+        "function": "para_float_table_top_sits_at_the_stored_anchor_not_a_line_above",
+        "id": 58,
+        "plan": {
+          "caseName": "issue_7203_float_table_top_uses_stored_anchor",
+          "target": "regression_suite_003",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_003",
+          "-E",
+          "test(=issue_7203_float_table_top_uses_stored_anchor::para_float_table_top_sits_at_the_stored_anchor_not_a_line_above)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 5.44690787512809,
+        "summary": [
+          "     Summary [   0.128s] 1 test run: 1 passed, 209 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+        "case": "issue_7203_float_table_top_uses_stored_anchor",
+        "function": "saved_anchor_subtracts_only_top_margin_with_asymmetric_margins",
+        "id": 59,
+        "plan": {
+          "caseName": "issue_7203_float_table_top_uses_stored_anchor",
+          "target": "regression_suite_003",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_003",
+          "-E",
+          "test(=issue_7203_float_table_top_uses_stored_anchor::saved_anchor_subtracts_only_top_margin_with_asymmetric_margins)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.9856672906316817,
+        "summary": [
+          "     Summary [   0.580s] 1 test run: 1 passed, 209 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+        "case": "issue_7203_split_float_anchors_to_paragraph_top",
+        "function": "split_fragment_ignores_the_anchor_leading_gap",
+        "id": 60,
+        "plan": {
+          "caseName": "issue_7203_split_float_anchors_to_paragraph_top",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_split_float_anchors_to_paragraph_top::split_fragment_ignores_the_anchor_leading_gap)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.49411137541756034,
+        "summary": [
+          "     Summary [   0.138s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+        "case": "issue_7203_split_float_anchors_to_paragraph_top",
+        "function": "split_fragment_without_a_gap_is_unchanged",
+        "id": 61,
+        "plan": {
+          "caseName": "issue_7203_split_float_anchors_to_paragraph_top",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_split_float_anchors_to_paragraph_top::split_fragment_without_a_gap_is_unchanged)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5299672079272568,
+        "summary": [
+          "     Summary [   0.143s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+        "case": "issue_7203_split_float_anchors_to_paragraph_top",
+        "function": "the_correction_does_not_move_the_page_count",
+        "id": 62,
+        "plan": {
+          "caseName": "issue_7203_split_float_anchors_to_paragraph_top",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_split_float_anchors_to_paragraph_top::the_correction_does_not_move_the_page_count)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4667502921074629,
+        "summary": [
+          "     Summary [   0.122s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "stored_rewind_keeps_its_last_line_in_the_fragment",
+        "id": 63,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::stored_rewind_keeps_its_last_line_in_the_fragment)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4699399173259735,
+        "summary": [
+          "     Summary [   0.122s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "the_continuation_neither_repeats_nor_drops_the_moved_unit",
+        "id": 64,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::the_continuation_neither_repeats_nor_drops_the_moved_unit)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4741510828025639,
+        "summary": [
+          "     Summary [   0.125s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "neither_the_fragment_nor_the_following_table_overflows_the_body",
+        "id": 65,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::neither_the_fragment_nor_the_following_table_overflows_the_body)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4735115421935916,
+        "summary": [
+          "     Summary [   0.124s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "an_already_selected_boundary_uses_the_same_trimmed_box",
+        "id": 66,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::an_already_selected_boundary_uses_the_same_trimmed_box)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.47110008308663964,
+        "summary": [
+          "     Summary [   0.123s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "the_page_count_matches_the_oracle",
+        "id": 67,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::the_page_count_matches_the_oracle)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.47071695839986205,
+        "summary": [
+          "     Summary [   0.122s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+        "case": "issue_7203_stored_rewind_fragment_trailing_trim",
+        "function": "reserved_bottom_matches_painted_bottom_and_continuation_cuts",
+        "id": 68,
+        "plan": {
+          "caseName": "issue_7203_stored_rewind_fragment_trailing_trim",
+          "target": "regression_suite_016",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_016",
+          "-E",
+          "test(=issue_7203_stored_rewind_fragment_trailing_trim::reserved_bottom_matches_painted_bottom_and_continuation_cuts)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.48664004215970635,
+        "summary": [
+          "     Summary [   0.138s] 1 test run: 1 passed, 202 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+        "case": "issue_7203_tac_column_top_stored_vpos",
+        "function": "column_top_tac_table_keeps_stored_vertical_pos",
+        "id": 69,
+        "plan": {
+          "caseName": "issue_7203_tac_column_top_stored_vpos",
+          "target": "regression_suite_012",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(=issue_7203_tac_column_top_stored_vpos::column_top_tac_table_keeps_stored_vertical_pos)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 5.732720375061035,
+        "summary": [
+          "     Summary [   0.134s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+        "case": "issue_7203_tac_column_top_stored_vpos",
+        "function": "column_top_tac_table_without_stored_vertical_pos_does_not_move",
+        "id": 70,
+        "plan": {
+          "caseName": "issue_7203_tac_column_top_stored_vpos",
+          "target": "regression_suite_012",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(=issue_7203_tac_column_top_stored_vpos::column_top_tac_table_without_stored_vertical_pos_does_not_move)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.48135958425700665,
+        "summary": [
+          "     Summary [   0.122s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7287_square_float_outer_top.rs",
+        "case": "issue_7287_square_float_outer_top",
+        "function": "empty_host_square_float_top_includes_its_outer_margin",
+        "id": 71,
+        "plan": {
+          "caseName": "issue_7287_square_float_outer_top",
+          "target": "regression_suite_012",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(=issue_7287_square_float_outer_top::empty_host_square_float_top_includes_its_outer_margin)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.47452512523159385,
+        "summary": [
+          "     Summary [   0.126s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+        "case": "issue_7387_use_font_space_latin_slot",
+        "function": "use_font_space_line_width_matches_hancom_in_absolute_px",
+        "id": 72,
+        "plan": {
+          "caseName": "issue_7387_use_font_space_latin_slot",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_7387_use_font_space_latin_slot::use_font_space_line_width_matches_hancom_in_absolute_px)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3666044999845326,
+        "summary": [
+          "     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 216 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+          "case": "issue_7387_use_font_space_latin_slot",
+          "function": "use_font_space_line_width_matches_hancom_in_absolute_px",
+          "id": 5,
+          "plan": {
+            "caseName": "issue_7387_use_font_space_latin_slot",
+            "target": "regression_suite_027",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_027",
+            "-E",
+            "test(=issue_7387_use_font_space_latin_slot::use_font_space_line_width_matches_hancom_in_absolute_px)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 6.983845958951861,
+          "summary": [
+            "     Summary [   0.130s] 1 test run: 1 passed, 212 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/exam_eng_multicolumn.rs",
+        "case": "exam_eng_multicolumn",
+        "function": "exam_eng_page_count_after_359_fix",
+        "id": 73,
+        "plan": {
+          "caseName": "exam_eng_multicolumn",
+          "target": "regression_suite_012",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(=exam_eng_multicolumn::exam_eng_page_count_after_359_fix)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.39155287481844425,
+        "summary": [
+          "     Summary [   0.043s] 1 test run: 1 passed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1086.rs",
+        "case": "issue_1086",
+        "function": "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+        "id": 74,
+        "plan": {
+          "caseName": "issue_1086",
+          "target": "regression_suite_007",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_007",
+          "-E",
+          "test(=issue_1086::task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4774327087216079,
+        "summary": [
+          "     Summary [   0.117s] 1 test run: 0 passed, 1 failed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+        "id": 75,
+        "plan": {
+          "caseName": "issue_1105",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1105::task1105_sample16_hwp5_page_break_before_section_4_matches_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.784620541613549,
+        "summary": [
+          "     Summary [   0.156s] 1 test run: 0 passed, 1 failed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+        "id": 76,
+        "plan": {
+          "caseName": "issue_1105",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1105::task1105_sample16_hwp5_2010_business_selection_break_matches_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.46197195816785097,
+        "summary": [
+          "     Summary [   0.102s] 1 test run: 0 passed, 1 failed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+        "id": 77,
+        "plan": {
+          "caseName": "issue_1105",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1105::task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4788672076538205,
+        "summary": [
+          "     Summary [   0.101s] 1 test run: 0 passed, 1 failed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+        "id": 78,
+        "plan": {
+          "caseName": "issue_1105",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1105::task1105_sample16_hwp5_2022_business_selection_break_matches_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.46678699972108006,
+        "summary": [
+          "     Summary [   0.100s] 1 test run: 0 passed, 1 failed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1105.rs",
+        "case": "issue_1105",
+        "function": "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+        "id": 79,
+        "plan": {
+          "caseName": "issue_1105",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1105::task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.46463337494060397,
+        "summary": [
+          "     Summary [   0.113s] 1 test run: 0 passed, 1 failed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_toc_leaders_stop_before_page_numbers",
+        "id": 80,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_toc_leaders_stop_before_page_numbers)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.47024325001984835,
+        "summary": [
+          "     Summary [   0.118s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_toc_page_numbers_share_right_edge",
+        "id": 81,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_toc_page_numbers_share_right_edge)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.45232499996200204,
+        "summary": [
+          "     Summary [   0.102s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width",
+        "id": 82,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.45342666702345014,
+        "summary": [
+          "     Summary [   0.103s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping",
+        "id": 83,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.494656624738127,
+        "summary": [
+          "     Summary [   0.108s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_page3_heading_positions_follow_lineseg_vpos",
+        "id": 84,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_page3_heading_positions_follow_lineseg_vpos)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4493214166723192,
+        "summary": [
+          "     Summary [   0.102s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height",
+        "id": 85,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.46438383404165506,
+        "summary": [
+          "     Summary [   0.099s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing",
+        "id": 86,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4457500418648124,
+        "summary": [
+          "     Summary [   0.100s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle",
+        "id": 87,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4734611250460148,
+        "summary": [
+          "     Summary [   0.099s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg",
+        "id": 88,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.45189820835366845,
+        "summary": [
+          "     Summary [   0.099s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1116.rs",
+        "case": "issue_1116",
+        "function": "sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line",
+        "id": 89,
+        "plan": {
+          "caseName": "issue_1116",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_1116::sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4627554169856012,
+        "summary": [
+          "     Summary [   0.109s] 1 test run: 1 passed, 216 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1139_inline_picture_duplicate.rs",
+        "case": "issue_1139_inline_picture_duplicate",
+        "function": "issue_1139_sample16_page3_page_number_stays_below_bottom_border",
+        "id": 90,
+        "plan": {
+          "caseName": "issue_1139_inline_picture_duplicate",
+          "target": "regression_suite_003",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_003",
+          "-E",
+          "test(=issue_1139_inline_picture_duplicate::issue_1139_sample16_page3_page_number_stays_below_bottom_border)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5071265827864408,
+        "summary": [
+          "     Summary [   0.118s] 1 test run: 1 passed, 209 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1749_saved_bounds_page_break.rs",
+        "case": "issue_1749_saved_bounds_page_break",
+        "function": "issue_1749_v2_pi26_stays_on_page_2",
+        "id": 91,
+        "plan": {
+          "caseName": "issue_1749_saved_bounds_page_break",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_1749_saved_bounds_page_break::issue_1749_v2_pi26_stays_on_page_2)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.455420957878232,
+        "summary": [
+          "     Summary [   0.030s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1749_saved_bounds_page_break.rs",
+        "case": "issue_1749_saved_bounds_page_break",
+        "function": "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+        "id": 92,
+        "plan": {
+          "caseName": "issue_1749_saved_bounds_page_break",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.45738808438181877,
+        "summary": [
+          "     Summary [   0.027s] 1 test run: 0 passed, 1 failed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_1749_saved_bounds_page_break.rs",
+        "case": "issue_1749_saved_bounds_page_break",
+        "function": "issue_1811_hwpx_pi57_tac_rowbreak_cell_uses_saved_height",
+        "id": 93,
+        "plan": {
+          "caseName": "issue_1749_saved_bounds_page_break",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(=issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi57_tac_rowbreak_cell_uses_saved_height)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3612732500769198,
+        "summary": [
+          "     Summary [   0.013s] 1 test run: 1 passed, 204 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_2015_saved_bounds_rowbreak.rs",
+        "case": "issue_2015_saved_bounds_rowbreak",
+        "function": "issue_2015_stage1_documents_current_overflow",
+        "id": 94,
+        "plan": {
+          "caseName": "issue_2015_saved_bounds_rowbreak",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=issue_2015_saved_bounds_rowbreak::issue_2015_stage1_documents_current_overflow)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3998150830157101,
+        "summary": [
+          "     Summary [   0.031s] 1 test run: 1 passed, 220 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_2015_saved_bounds_rowbreak.rs",
+        "case": "issue_2015_saved_bounds_rowbreak",
+        "function": "issue_2015_page4_rowbreak_table_stays_in_body",
+        "id": 95,
+        "plan": {
+          "caseName": "issue_2015_saved_bounds_rowbreak",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_019",
+          "-E",
+          "test(=issue_2015_saved_bounds_rowbreak::issue_2015_page4_rowbreak_table_stays_in_body)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3684865408577025,
+        "summary": [
+          "     Summary [   0.018s] 1 test run: 1 passed, 220 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_2099_araea_pua.rs",
+        "case": "issue_2099_araea_pua",
+        "function": "issue_2099_revision13_page1_prioritizes_old_hangul_font",
+        "id": 96,
+        "plan": {
+          "caseName": "issue_2099_araea_pua",
+          "target": "regression_suite_013",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_013",
+          "-E",
+          "test(=issue_2099_araea_pua::issue_2099_revision13_page1_prioritizes_old_hangul_font)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3715522079728544,
+        "summary": [
+          "     Summary [   0.009s] 1 test run: 0 passed, 1 failed, 216 skipped"
+        ],
+        "initial_path_error": true,
+        "recheck": {
+          "file": "tests/issue_2099_araea_pua.rs",
+          "case": "issue_2099_araea_pua",
+          "function": "issue_2099_revision13_page1_prioritizes_old_hangul_font",
+          "id": 6,
+          "plan": {
+            "caseName": "issue_2099_araea_pua",
+            "target": "regression_suite_014",
+            "grouped": true
+          },
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test",
+            "regression_suite_014",
+            "-E",
+            "test(=issue_2099_araea_pua::issue_2099_revision13_page1_prioritizes_old_hangul_font)",
+            "--test-threads",
+            "8",
+            "--no-fail-fast"
+          ],
+          "exit_code": 0,
+          "seconds": 5.872503124643117,
+          "summary": [
+            "     Summary [   0.177s] 1 test run: 1 passed, 222 skipped"
+          ]
+        }
+      },
+      {
+        "file": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+        "case": "issue_2158_hwpx_vpos_reset_preserve",
+        "function": "hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+        "id": 97,
+        "plan": {
+          "caseName": "issue_2158_hwpx_vpos_reset_preserve",
+          "target": "regression_suite_026",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "test(=issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.6365787917748094,
+        "summary": [
+          "     Summary [   0.193s] 1 test run: 0 passed, 1 failed, 215 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_3637_split_cell_nested_table_vpos.rs",
+        "case": "issue_3637_split_cell_nested_table_vpos",
+        "function": "nested_table_snap_stays_inside_the_split_cell",
+        "id": 98,
+        "plan": {
+          "caseName": "issue_3637_split_cell_nested_table_vpos",
+          "target": "regression_suite_025",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=issue_3637_split_cell_nested_table_vpos::nested_table_snap_stays_inside_the_split_cell)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.282646832987666,
+        "summary": [
+          "     Summary [   0.158s] 1 test run: 1 passed, 211 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_775.rs",
+        "case": "issue_775",
+        "function": "issue_775_exam_eng_p4_pi181_table_at_column_top",
+        "id": 99,
+        "plan": {
+          "caseName": "issue_775",
+          "target": "regression_suite_023",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(=issue_775::issue_775_exam_eng_p4_pi181_table_at_column_top)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.49167554220184684,
+        "summary": [
+          "     Summary [   0.078s] 1 test run: 1 passed, 212 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_rowbreak_chart_overlap.rs",
+        "case": "issue_rowbreak_chart_overlap",
+        "function": "rowbreak_hwp_page8_keeps_continued_nested_reference_line",
+        "id": 100,
+        "plan": {
+          "caseName": "issue_rowbreak_chart_overlap",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_rowbreak_chart_overlap::rowbreak_hwp_page8_keeps_continued_nested_reference_line)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5014516660012305,
+        "summary": [
+          "     Summary [   0.140s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/issue_rowbreak_chart_overlap.rs",
+        "case": "issue_rowbreak_chart_overlap",
+        "function": "rowbreak_hwp_page12_reference_text_stays_inside_body",
+        "id": 101,
+        "plan": {
+          "caseName": "issue_rowbreak_chart_overlap",
+          "target": "regression_suite_027",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(=issue_rowbreak_chart_overlap::rowbreak_hwp_page12_reference_text_stays_inside_body)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.418656500056386,
+        "summary": [
+          "     Summary [   0.045s] 1 test run: 1 passed, 213 skipped"
+        ]
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "case": "issue_1035_alignment",
+        "function": "hwp3_sample16_hwp5_page_count_64",
+        "id": 102,
+        "plan": {
+          "caseName": "issue_1035_alignment",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "test(=issue_1035_alignment::hwp3_sample16_hwp5_page_count_64)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.5008685002103448,
+        "summary": [
+          "     Summary [   0.115s] 1 test run: 0 passed, 1 failed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+        "case": "issue_1035_alignment",
+        "function": "hwp3_sample16_hwp5_2022_page_count_64",
+        "id": 103,
+        "plan": {
+          "caseName": "issue_1035_alignment",
+          "target": "regression_suite_010",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_010",
+          "-E",
+          "test(=issue_1035_alignment::hwp3_sample16_hwp5_2022_page_count_64)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4530385830439627,
+        "summary": [
+          "     Summary [   0.101s] 1 test run: 0 passed, 1 failed, 229 skipped"
+        ]
+      },
+      {
+        "file": "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs",
+        "case": "issue_1937_rowbreak_footnote_overpagination",
+        "function": "rowbreak_footnote_table_does_not_over_paginate",
+        "id": 104,
+        "plan": {
+          "caseName": "issue_1937_rowbreak_footnote_overpagination",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(=issue_1937_rowbreak_footnote_overpagination::rowbreak_footnote_table_does_not_over_paginate)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5572424582205713,
+        "summary": [
+          "     Summary [   0.203s] 1 test run: 1 passed, 222 skipped"
+        ]
+      },
+      {
+        "file": "tests/outline_navigation_table_cell_number.rs",
+        "case": "outline_navigation_table_cell_number",
+        "function": "outline_numbers_match_rendered_numbers_across_table_cell_number",
+        "id": 105,
+        "plan": {
+          "caseName": "outline_navigation_table_cell_number",
+          "target": "regression_suite_025",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=outline_navigation_table_cell_number::outline_numbers_match_rendered_numbers_across_table_cell_number)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36727650044485927,
+        "summary": [
+          "     Summary [   0.010s] 1 test run: 1 passed, 211 skipped"
+        ]
+      },
+      {
+        "file": "tests/outline_navigation_table_cell_number.rs",
+        "case": "outline_navigation_table_cell_number",
+        "function": "panel_demo_outline_matches_rendered_document",
+        "id": 106,
+        "plan": {
+          "caseName": "outline_navigation_table_cell_number",
+          "target": "regression_suite_025",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(=outline_navigation_table_cell_number::panel_demo_outline_matches_rendered_document)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36443354189395905,
+        "summary": [
+          "     Summary [   0.011s] 1 test run: 1 passed, 211 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "case": "issue_6806_objectprops_getset_identity",
+        "function": "picture_feedback_keeps_allow_overlap_under_restrict_in_page",
+        "id": 107,
+        "plan": {
+          "caseName": "issue_6806_objectprops_getset_identity",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6806_objectprops_getset_identity::picture_feedback_keeps_allow_overlap_under_restrict_in_page)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3828146252781153,
+        "summary": [
+          "     Summary [   0.027s] 1 test run: 1 passed, 233 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "case": "issue_6806_objectprops_getset_identity",
+        "function": "shape_feedback_keeps_stored_zero_size",
+        "id": 108,
+        "plan": {
+          "caseName": "issue_6806_objectprops_getset_identity",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6806_objectprops_getset_identity::shape_feedback_keeps_stored_zero_size)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.40148312505334616,
+        "summary": [
+          "     Summary [   0.051s] 1 test run: 1 passed, 233 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "case": "issue_6806_objectprops_getset_identity",
+        "function": "shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps",
+        "id": 109,
+        "plan": {
+          "caseName": "issue_6806_objectprops_getset_identity",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6806_objectprops_getset_identity::shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3987456248141825,
+        "summary": [
+          "     Summary [   0.047s] 1 test run: 1 passed, 233 skipped"
+        ]
+      },
+      {
+        "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+        "case": "issue_6806_objectprops_getset_identity",
+        "function": "shape_resize_undo_restores_stored_zero_height",
+        "id": 110,
+        "plan": {
+          "caseName": "issue_6806_objectprops_getset_identity",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_014",
+          "-E",
+          "test(=issue_6806_objectprops_getset_identity::shape_resize_undo_restores_stored_zero_height)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4154569157399237,
+        "summary": [
+          "     Summary [   0.069s] 1 test run: 1 passed, 233 skipped"
+        ]
+      }
+    ],
+    "pass_count": 94,
+    "failure_count": 16
+  },
+  "path_errors": "초기 Git quoted Unicode 경로와 동적 samples join 6FAIL은 결함증거에서 제외. 보존입력 해시 일치 경로로 수정 후6단독PASS.",
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "026ea384339d6eba3d8c7fc21d7ec340365fb34c",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_004",
+          "--test",
+          "regression_suite_008",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(issue_6527_standalone_equation_text::) or test(issue_7387_use_font_space_latin_slot::) or test(issue_5128_spec_page_roundtrip::) or test(issue_2099_araea_pua::) or test(outline_navigation_table_cell_number::) or test(issue_6806_objectprops_getset_identity::)"
+        ],
+        "exit_code": 0,
+        "seconds": 8.096012499649078
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.244517375249416
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3005752912722528
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2294498747214675
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3500124579295516
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 9.088300250004977
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.36461383337155
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.009476500097662
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   0.552s] 19 tests run: 19 passed, 1096 skipped"
+  ],
+  "fixture_path_mapping": {
+    "samples/exam_eng.hwp": "mydocs/pr/assets/issue7445/exam_eng.hwp",
+    "samples/hwp3-sample16-hwp5-2010.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+    "samples/hwp3-sample16-hwp5-2022.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+    "samples/hwp3-sample16-hwp5.hwp": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwp",
+    "samples/hwp3-sample16-hwp5.hwpx": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+    "samples/hwpctl_API_v2.4.hwp": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+    "samples/issue1937_rowbreak_footnote_overpagination.hwp": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+    "samples/issue3637/press_release_split_cell_nested_table.hwpx": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+    "samples/issue5941/1480000-201900698-native-neartop-reset.hwp": "mydocs/pr/assets/issue7445/1480000-201900698-native-neartop-reset.hwp",
+    "samples/issue6023/30269_reform_recommendation.hwp": "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp",
+    "samples/issue6031/3249937_asset_management_rules.hwpx": "mydocs/pr/assets/issue7445/3249937_asset_management_rules.hwpx",
+    "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx": "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+    "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+    "samples/issue6844/30269-anticorruption-recommendation-toc.hwp": "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+    "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp": "mydocs/pr/assets/issue7445/70833-electrical-safety-rule-regulatory-analysis.hwp",
+    "samples/pr4093/outline_navigation_panel_demo.hwpx": "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+    "samples/pr4093/outline_navigation_table_cell_number.hwpx": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+    "samples/rowbreak-problem-pages.hwp": "mydocs/pr/assets/issue7445/rowbreak-problem-pages.hwp",
+    "samples/task1749/saved_bounds_cumulative_page_break.hwpx": "mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx",
+    "samples/task2097/75544_pii_bunseok.hwpx": "mydocs/pr/assets/issue7445/75544_pii_bunseok.hwpx",
+    "samples/한글문서파일형식_5.0_revision1.3.hwp": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp"
+  },
+  "source_sha256": {
+    "tests/cases/issue_1133_page_number_bottom_margin.rs": "06c12a38bcdb5723621d225a6d8a721544e74b23a17b0552ad5449de8d80454f",
+    "tests/cases/issue_4961_font_decision_trace.rs": "19aba64f8aa83af8c2153b17ab594d1b58b5736021a961a22bfeded63dd35258",
+    "tests/cases/issue_5128_spec_page_roundtrip.rs": "a119f63639bd6b11da69452c28e6ec2ab32413f78421b071f24be7875fc0b0ec",
+    "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs": "2b9236d838d8140e59c277e3cdecbb4e855ac27a6de15c62b596cbfba1386f0f",
+    "tests/cases/issue_5920_nested_atom_tail_page_fit.rs": "06e76e7f739c356d39c5fa5436688212fdf18ab37764f93eeab6213b32e7aee6",
+    "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs": "8e26430ea996cb606675e74830a0ce239e175c16026a5e5dfcc23ac52b1daf6f",
+    "tests/cases/issue_6013_empty_para_stored_frame_flag.rs": "ebaefa596c492f76f7e7ebff241eedc5c3024bbfbd53c79870e28feca921f713",
+    "tests/cases/issue_6023_halfwidth_corner_bracket.rs": "d4bfb077b222e90619afdbb7812b00b377138c2aed107a8758d600dd5ec94555",
+    "tests/cases/issue_6030_subline_row_grow_lastline.rs": "76b7a51eb2779ba4c60084163f8cc5e344136e0ae1039615996f695b66e2258a",
+    "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs": "189f722f6af4e6c4c1c25a11bb0bd9ab43ad533c53b513355342a1cf92597969",
+    "tests/cases/issue_6060_fullwidth_cjk_quote.rs": "600073e3201b5324bb7f91563e2e2474924201dd564eb5912828041d0ead8bf8",
+    "tests/cases/issue_6368_row_cut_fp_epsilon.rs": "ca2db84ad3c4b61e0085a96d2e2dd9055c2b65e11148531ca855718b31b167a3",
+    "tests/cases/issue_6409_table_page_top_vpos.rs": "d17821b08c9d7f66441aa9b3c11b0c8590737018ba76fe8ba36098c28f899cb5",
+    "tests/cases/issue_6527_standalone_equation_text.rs": "adfc4e0b78f808df013f265be5886aec3d88e136afd3884a3db66c189ef6fec0",
+    "tests/cases/issue_6569_cell_center_lead_in_stack.rs": "1cc61ab60c2193147182fb0cb0a8936cb54c30dbf31d440ea1e4f5c3cae1566c",
+    "tests/cases/issue_6630_cell_first_para_lead.rs": "404a83cd6b536a46f074959f12f0da2b92ed5606daac705835edc798ef7cebe6",
+    "tests/cases/issue_6646_nbsp_advance_matches_space.rs": "16073b97edda76274976cb0a602ff81695ee3a636061689e7a9016e00aed08bb",
+    "tests/cases/issue_6706_stored_inline_control_rows.rs": "9d0d7d203480f2ec3ce49d9cf0878e8033897c626d5b0a9bb9381e56159122a5",
+    "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs": "cd6ddeb5ccc6eb5ab2211a792fb4c0501b328b6fe8ded05fb4a14d6aafeb634b",
+    "tests/cases/issue_6764_public_table_fragment_presence.rs": "6ad684f0b3c60ea608e5b48c179303e231f5b6a7c0800b7fed233cbb86eae4b9",
+    "tests/cases/issue_6776_cell_tac_picture_accounting.rs": "4f665b95fdcd76123e82737e61f680abf6785c767748035ad68782b2f97e6111",
+    "tests/cases/issue_6782_cell_float_offset_outside_cell.rs": "84ae29cc9936561dbd0fa2537300af472d8b3e1d2d9912aa0ceda6a19e8e80dd",
+    "tests/cases/issue_6844_intra_run_right_tab_bbox.rs": "e9b7430cde3cf64110b893766b2d79ba57d9a381d56bd6f5573f1131a1d5e040",
+    "tests/cases/issue_6854_empty_para_orphan_page.rs": "039a60a250199e9d9ae94318b1ce288adf9cd4c17e9697370419aa4e272d677e",
+    "tests/cases/issue_6855_float_band_page_fill_rewind.rs": "c3f140e5a5038bbbb83a2a74c63fbd859665d69a33eccd4a37fdf64ea48ea36c",
+    "tests/cases/issue_7023_glyph_band_follows_baseline.rs": "5053f10e1203f2f36b26827028275af250b72a4d9f2468b7e4627595e668b945",
+    "tests/cases/issue_7048_stored_picture_successor.rs": "f0b201d4defecdce02f71d1f18e2fbf8756b223b84e5c088e179d82173d59358",
+    "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs": "4c115ee6efc4ded7a9a5dce1e6ebd17b4b65c82b7ad087784cf8476998e8aec9",
+    "tests/cases/issue_7095_page_spanning_fragment_box.rs": "038136546a7d33191346eb34d9f31da41f3f0cf7279794870bc8249ecfdd79c5",
+    "tests/cases/issue_7147_row_declaration_beats_object_height.rs": "35e579944d0b1f5a9397a9001394073e0fe883bd2f3763531299b82d6a5244c7",
+    "tests/cases/issue_7203_float_table_stored_anchor_top.rs": "c45d56f940a17bd9c0de37799195fba25fdf9ecb6596251d547cac81075d3de7",
+    "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs": "7509e217525808ec0fedc1ca12acff5d0bcd7dfb4e0e67c1779f03f8f1b587fb",
+    "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs": "a0663cdd548f83eaeff35272c5d883349ad566d3f24c4bcaa4a45548d84139d7",
+    "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs": "89a30111812335f08b5416ada4b158ed5d4ddaf7633f193877b70d2ba0e7da0c",
+    "tests/cases/issue_7203_tac_column_top_stored_vpos.rs": "66e7c36c4551b086953716a626508ae4e4257a0c0dadcb8729d393415a7fbd9e",
+    "tests/cases/issue_7287_square_float_outer_top.rs": "90e395007824a863e7c8b59abc1cc1870f1265fc436dc8d303f09ac5da44ecac",
+    "tests/cases/issue_7387_use_font_space_latin_slot.rs": "af2b88ea7a2a2bf3774b651fbef522b73a1af1c84b9e53bbed89269b33200178",
+    "tests/exam_eng_multicolumn.rs": "686b9007bd3a817964b0e15db31810336741625653a4bc7206caecc0972ca2cd",
+    "tests/issue_1086.rs": "89420f7467262fc5f40f41736b78c2cae1f9fb53a76fbbf4c32601c5664d1125",
+    "tests/issue_1105.rs": "ca1aaa433f0521e739291901ed403bfe69347759f262980d1ace5b46f05d98f1",
+    "tests/issue_1116.rs": "d7e3cb375e23f41d39e8464b6c0b3a8d17607acd45c7fa316cee02380f3409b2",
+    "tests/issue_1139_inline_picture_duplicate.rs": "77914b542822199041897d4bd455d565f4098606277fcee53dc229e44efc9862",
+    "tests/issue_1749_saved_bounds_page_break.rs": "21dbd55d8fd640b0b101f4e673dc265ba485d7b3ea23b8d80ab73013e5d2cd8e",
+    "tests/issue_2015_saved_bounds_rowbreak.rs": "d5919a7269f9910043e25291253ed97493cc87ae5c20d75de6d31608a606b3dc",
+    "tests/issue_2099_araea_pua.rs": "178be84c3b4c1fb2fa9b69eb60db30d22a38d2226c02cd716655fedb709440bc",
+    "tests/issue_2158_hwpx_vpos_reset_preserve.rs": "ea85e2c002cce3b807a8be42b6f4ab3e4520a1956312c126a717e90984be446f",
+    "tests/issue_3637_split_cell_nested_table_vpos.rs": "f30213e19bbd47b39bbe921e1b15fd563f38ba77e413eb0911b36592f7e0e8bb",
+    "tests/issue_775.rs": "086cd4d7729980e8c079661ddb36660106fc6ed14f3c24dfe3c9cb22d230f49b",
+    "tests/issue_rowbreak_chart_overlap.rs": "272719049e7a9f7bfd559d9cea83a24fab969343869150de96692334776ee907",
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": "424852a27d2e97da8c00bcc36f78ed5c33f545bc841114fb9dec81976b1f78dd",
+    "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs": "1207bf2b5402876f30b87e5e4e3bd7be78a71feb8e3539f4f0bdd292dfbc18a1",
+    "tests/outline_navigation_table_cell_number.rs": "b08bf6ef2576f13bb0d6181f1f0b316f305179d75c1628075bd7ff7df70021f9",
+    "tests/cases/issue_6806_objectprops_getset_identity.rs": "1acefe30e9de6452bc6b69203fdb77f7d552854dc4c6870b9dde3b348f4d2739"
+  },
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "limits": "102기존 함수 및혼합검사/기대값 복원.110개 기존함수 각각 실행94PASS/16실제FAIL. PASS유지/FAIL16개문서별 보정대기. 공통원장/renderer manifest 동반제외 범위 추가검토대기. Native피델리티 승인/전체회귀 완료 아님.",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5872059905"
+}

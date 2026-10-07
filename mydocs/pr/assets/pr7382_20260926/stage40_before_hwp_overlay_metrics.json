@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.0785,
+    "worst_pixel_match_percent": 86.14015,
+    "average_ink_match_percent": 19.01622,
+    "worst_ink_match_percent": 11.27456,
+    "average_visual_accuracy_proxy_percent": 19.01622,
+    "worst_visual_accuracy_proxy_percent": 11.27456,
+    "average_tolerant_content_match_percent": 87.6738,
+    "worst_tolerant_content_match_percent": 72.73184,
+    "worst_pages": [
+      67,
+      126,
+      179
+    ]
+  },
+  "pages": [
+    {
+      "page": 67,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/rhwp_png/rhwp_067.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/pdf_png/pdf-067.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/overlay/overlay_067.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 123583,
+      "diff_ratio": 0.13859848,
+      "pixel_match_percent": 86.14015,
+      "ink_union_pixels": 139287,
+      "ink_diff_pixels": 123583,
+      "ink_diff_ratio": 0.88725437,
+      "ink_match_percent": 11.27456,
+      "visual_accuracy_proxy_percent": 11.27456,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 72.73184,
+      "mean_abs_channel_delta": 17.298,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        83,
+        718,
+        1082
+      ]
+    },
+    {
+      "page": 126,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/rhwp_png/rhwp_126.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/pdf_png/pdf-126.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/overlay/overlay_126.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 65904,
+      "diff_ratio": 0.07391141,
+      "pixel_match_percent": 92.60886,
+      "ink_union_pixels": 80785,
+      "ink_diff_pixels": 65904,
+      "ink_diff_ratio": 0.81579501,
+      "ink_match_percent": 18.4205,
+      "visual_accuracy_proxy_percent": 18.4205,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 92.75732,
+      "mean_abs_channel_delta": 8.13,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        109,
+        699,
+        1082
+      ]
+    },
+    {
+      "page": 179,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/rhwp_png/rhwp_179.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/pdf_png/pdf-179.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage40-before-hwp-native/liver7379/overlay/overlay_179.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 49162,
+      "diff_ratio": 0.05513524,
+      "pixel_match_percent": 94.48648,
+      "ink_union_pixels": 67673,
+      "ink_diff_pixels": 49162,
+      "ink_diff_ratio": 0.72646403,
+      "ink_match_percent": 27.3536,
+      "visual_accuracy_proxy_percent": 27.3536,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 97.53225,
+      "mean_abs_channel_delta": 5.208,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        83,
+        699,
+        1082
+      ]
+    }
+  ]
+}

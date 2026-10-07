@@ -83,6 +83,14 @@ pub(in crate::renderer::typeset) fn atomic_overflow_fits(
     false
 }
 
+/// 꼬리 넘침 통째 배치의 허용 여부와 그 문턱.
+pub(in crate::renderer::typeset) struct TailOverflowAllowance {
+    pub allowed: bool,
+    /// `true` 면 초과량이 **0 이하**(줄이 온전히 들어감)여야 한다. `false` 면 종전의
+    /// "한 줄 미만" 문턱을 쓴다.
+    pub requires_whole_line: bool,
+}
+
 pub(in crate::renderer::typeset) fn tail_overflow_candidate(
     para: &Paragraph,
     fmt: &FormattedParagraph,
@@ -91,7 +99,7 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
     page: &OverflowPage,
     forced_page_break_line: Option<usize>,
     dpi: f64,
-) -> bool {
+) -> TailOverflowAllowance {
     // [Task #1537] 폰트 치환 drift 로 인한 "tail 1줄 spill 후 강제 쪽나누기 고아 페이지" 차단.
     //
     // 증상: 본문 문단 N 이 페이지 하단을 ~한 줄 미만으로 미세 초과(폰트 치환으로 부피가
@@ -194,16 +202,38 @@ pub(in crate::renderer::typeset) fn tail_overflow_candidate(
     //
     // ⚠ 여기서는 **선언된** 쪽나누기만 인정한다 — 사다리에서 추론한 경계까지 받으면
     // 쪽 이득 없이 넘침만 는다.
+    //
+    // [#7429] 쪽 나누기 **선언만으로는** 한 줄 미만 넘침을 흡수하지 않는다. 한/글 2024 합성
+    // 실험(`samples/issue7429/inkless_tail_synthetic`: 한 줄 문단 39개 + 빈 문단 + 쪽 나누기,
+    // 첫 문단 글자 크기만 바꿔 넘침량을 100 HWPUNIT 씩 조절)에서 한/글은 빈 문단의 줄 높이가
+    // 본문 안에 **온전히** 들어갈 때만(넘침 −0.4 HWPUNIT) 그 쪽에 두고, +100 HWPUNIT(1.3px)만
+    // 넘쳐도 다음 쪽으로 넘겨 쪽번호만 남은 빈 쪽을 만든다. 80168 152쪽도 같다(넘침 +7.9px →
+    // 한/글 빈 쪽 153).
+    //
+    // 그러므로 **후보에서 빼는 것이 아니라 문턱을 조인다**(`requires_whole_line`). 빼 버리면
+    // 이 갈래가 하던 다른 일까지 사라진다 — 빈 문단은 넘쳐도 잉크가 없으므로 drift 안전마진
+    // (`LAYOUT_DRIFT_SAFETY_PX`)이 걸릴 자리가 아닌데, 후보가 아니면 그 마진 때문에 **줄이
+    // 온전히 들어가는** 빈 꼬리까지 다음 쪽으로 밀린다(위 fixture B1·B2: 잔여 14.67·13.36 에
+    // 잉크 높이 13.33 → 한/글은 같은 쪽).
+    // 후보 집합은 `#7429` **이전과 같다** — 바깥 관문을 넓히면 다음 문단이 쪽나누기가 아닌
+    // 꼬리까지 들어와 근거(fixture 형상: 빈 문단 바로 뒤 **선언된** 쪽 나누기) 밖으로 나간다.
     let inkless_tail = para.text.trim().is_empty()
         && fmt.line_heights.len() == 1
         && (next_para_declares_page_break || next_para_stored_vpos_exceeds_body);
+    // 문서가 다음 문단의 저장 vpos 로 그 쪽 끝을 적어 둔 경우(#7288)만 종전의 "한 줄 미만"
+    // 흡수를 남긴다. 그 밖의 잉크 없는 꼬리는 줄이 온전히 들어가야 한다.
+    let requires_whole_line = inkless_tail && !next_para_stored_vpos_exceeds_body;
     // ⚠ 새 사실은 **잉크 없는 갈래만** 연다. 바깥 관문까지 넓히면 글자 있는
     // `font_drift_tail` 도 함께 열려 다른 문서의 쪽 귀속이 바뀐다 — 실측으로
     // `issue_1749`·`issue_2470` 핀과 본문 넘침 래칫 3구획이 깨졌다.
-    page.col_count == 1
+    let allowed = page.col_count == 1
         && forced_page_break_line.is_none()
         && (next_para_forces_break || inkless_tail)
         && only_note_controls
         && page.has_items
-        && (font_drift_tail || inkless_tail)
+        && (font_drift_tail || inkless_tail);
+    TailOverflowAllowance {
+        allowed,
+        requires_whole_line: allowed && requires_whole_line,
+    }
 }

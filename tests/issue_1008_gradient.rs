@@ -58,7 +58,7 @@ fn hwp3_sample16_business_box_has_gradient() {
 }
 
 /// HWPX shape-local fillBrush 의 `<hc:gradation><hc:color .../>` stop 파싱 회귀 가드.
-/// `samples/hwp3-sample16-hwp5.hwpx` page 3 사업개요 TAC 글상자는 gradient fill 을 가지며,
+/// `samples/hwp3-sample16-hwp5.hwpx` 3쪽 사업개요 TAC 글상자는 그라데이션 채우기를 가지며,
 /// color stop 이 누락되면 SVG/WebCanvas 쪽에서 빈 gradient 가 생성되어 검정색으로 칠해진다.
 #[test]
 fn hwpx_sample16_business_box_gradient_colors_materialized() {

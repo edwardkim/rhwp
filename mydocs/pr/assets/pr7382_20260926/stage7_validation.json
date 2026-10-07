@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 7; held",
+  "producer_head": "8786be62b6408f675beb7d57049de61d49504868",
+  "producer_worktree_rust_diff_sha256": "f5ad6c6571b9a4959d1fe059eaf9098146021dcc2b62ea147d83c8993b4be2ec",
+  "before_owner": {
+    "failed": 1,
+    "exit_code": 100,
+    "cause": "picture66 absent from p174"
+  },
+  "before_geometry": {
+    "failed": 1,
+    "exit_code": 100,
+    "cause": "table first top 429.8267 vs PDF433.127"
+  },
+  "intermediate_geometry": {
+    "passed": 14,
+    "failed": 1,
+    "exit_code": 100,
+    "cause": "following heading624.0267 vs PDF641.061 after four table corners passed"
+  },
+  "rejected_terminal_spacing": {
+    "passed": 86,
+    "failed": 1,
+    "exit_code": 100,
+    "cause": "PrEP p40 zero-width object-only host wrongly adds spacing; following body238.6 vs PDF220.864"
+  },
+  "focused_and_normal_final": {
+    "passed": 87,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 3.257
+  },
+  "page_count": {
+    "actual": 216,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      174,
+      175,
+      176
+    ],
+    "tolerant_content_match_percent": [
+      99.85942,
+      92.46177,
+      79.50902
+    ],
+    "selected_gate": "re_review_required",
+    "exit_code": 1,
+    "direct_inspection": [
+      "review174",
+      "overlay174",
+      "review175",
+      "overlay175",
+      "review176",
+      "overlay176"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "p176 table/footnote234 physical boundary",
+    "later extra page first at1913",
+    "terminal caption budget failure boundary",
+    "final full Rust/Skia/lint/fresh WASM"
+  ]
+}

@@ -1,0 +1,503 @@
+{
+  "stage": 116,
+  "code_commit": "3c01d2ebbc03388ac01dc4eff5d60caeb0af3f95",
+  "analysis": {
+    "head": "be2c6907763622e83e1d11808c9a857674842cf0",
+    "analysis": "실제 복원78/79/103번과 corpus text/off 신규각1건. 같은2022원문/정상PDF64쪽에 current65쪽. 영향5쪽 Native최저24쪽7.09794%이고본문/표소유가크게다름.현재같은production 부정증거를재사용해실제3함수와text/off이입력만보류하고다른버전/정상검사/원문PDF/모든다른축은유지.",
+    "provenance": {
+      "hwp": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      "pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "79e316c697717b3280745d48868a7cc530dab53b28f35bc839b5e0d593e2dd1c"
+      },
+      "git_head": "d75eb265538cea0c26b39c9faf1a6170eee491a2",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage79-sample16-2022/visual-native/sample16-2022/run_manifest.json"
+      }
+    },
+    "native_metrics": [
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 38.04778
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 33.70787
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.53989
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 7.09794
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 15.52702
+      }
+    ],
+    "direct_inspection": "24쪽review에서현재한줄만남고기준본문/표를같은쪽에보존하지않음.3쪽standalone overlay에서문단시작/줄간격/도형위치차이. 전수/freshWASM미완료.",
+    "planned_functions": [
+      "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+      "hwp3_sample16_hwp5_2022_page_count_64"
+    ],
+    "planned_corpus_inputs": "text/off의hwp3-sample16-hwp5-2022.hwp만추가보류.기존body/oracle보류유지.다른문서/값은변경없음.",
+    "prior_evidence": "mydocs/pr/assets/issue7445/sample16_2022_test_removal_validation.json",
+    "plans": [
+      {
+        "caseName": "issue_1105",
+        "target": "regression_suite_022",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1035_alignment",
+        "target": "regression_suite_025",
+        "grouped": true
+      },
+      {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_026",
+        "grouped": true
+      },
+      {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_015",
+        "grouped": true
+      }
+    ],
+    "checks": [
+      [
+        "issue_1105",
+        "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom"
+      ],
+      [
+        "issue_1105",
+        "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom"
+      ],
+      [
+        "issue_1035_alignment",
+        "hwp3_sample16_hwp5_2022_page_count_64"
+      ],
+      [
+        "text_overlap_baseline",
+        "text_overlaps_do_not_grow_partition_15"
+      ],
+      [
+        "off_canvas_baseline",
+        "off_canvas_does_not_grow_partition_13"
+      ]
+    ]
+  },
+  "individual_before": [
+    {
+      "test": "issue_1105::task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_022",
+        "-E",
+        "test(=issue_1105::task1105_sample16_hwp5_2022_business_selection_break_matches_hancom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.083958332892507,
+      "summary": [
+        "Summary [   0.122s] 1 test run: 0 passed, 1 failed, 226 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1105::task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_022",
+        "-E",
+        "test(=issue_1105::task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.5546353342942894,
+      "summary": [
+        "Summary [   0.103s] 1 test run: 0 passed, 1 failed, 226 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "issue_1035_alignment::hwp3_sample16_hwp5_2022_page_count_64",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(=issue_1035_alignment::hwp3_sample16_hwp5_2022_page_count_64)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.950813542120159,
+      "summary": [
+        "Summary [   0.104s] 1 test run: 0 passed, 1 failed, 235 skipped"
+      ],
+      "observations": [
+        "left: 65",
+        "right: 64"
+      ]
+    },
+    {
+      "test": "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_15)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.282075374852866,
+      "summary": [
+        "Summary [   2.666s] 1 test run: 0 passed, 1 failed, 232 skipped"
+      ],
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test": "off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 2.918531000148505,
+      "summary": [
+        "Summary [   2.556s] 1 test run: 0 passed, 1 failed, 230 skipped"
+      ],
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)"
+      ]
+    }
+  ],
+  "mutation": {
+    "removed_functions": [
+      "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+      "hwp3_sample16_hwp5_2022_page_count_64"
+    ],
+    "corpus_inputs_deferred": [
+      "text: hwp3-sample16-hwp5-2022.hwp",
+      "off-canvas: hwp3-sample16-hwp5-2022.hwp"
+    ],
+    "removed_baseline_rows": [],
+    "kept": "같은 원문의 IR/저장버전 계약,2018/2024 정상 함수,samples/PDF,모든 다른 축/문서·기대값/공차 유지. 기존 body/oracle 실제 보류 범위 유지."
+  },
+  "normal_kept_results": [
+    "PASS [   0.072s] ( 1/43) rhwp::regression_suite_015 issue_1105::task1105_k_water_rfp_2024_page_count_matches_hancom_pdf",
+    "PASS [   0.078s] ( 2/43) rhwp::regression_suite_015 issue_1105::task1105_k_water_rfp_2024_cover_hides_first_page_footer",
+    "PASS [   0.083s] ( 3/43) rhwp::regression_suite_015 issue_1105::task1105_k_water_rfp_2024_first_rowspan_table_keeps_line_reset_split",
+    "PASS [   0.123s] ( 4/43) rhwp::regression_suite_015 issue_1105::task1105_hwp3_sample16_page23_square_bullet_matches_hancom",
+    "PASS [   0.147s] ( 5/43) rhwp::regression_suite_015 issue_1105::task1105_sample16_hwp5_2024_clean_linesegs_reflow_is_noop",
+    "PASS [   0.167s] ( 6/43) rhwp::regression_suite_015 issue_1105::task1105_sample16_hwp5_2018_server_requirements_page_matches_hancom",
+    "PASS [   0.168s] ( 7/43) rhwp::regression_suite_015 issue_1105::task1105_sample16_hwp5_2024_business_selection_break_matches_hancom",
+    "PASS [   0.176s] ( 8/43) rhwp::regression_suite_015 issue_1105::task1105_sample16_hwp5_2018_business_selection_break_matches_hancom",
+    "PASS [   0.330s] ( 9/43) rhwp::regression_suite_015 issue_1105::task1105_sample16_hwp5_2024_server_requirements_page_matches_hancom",
+    "PASS [   0.150s] (20/43) rhwp::regression_suite_026 issue_1035_alignment::hwp3_sample16_hwp5_2024_page_count_64",
+    "PASS [   0.189s] (21/43) rhwp::regression_suite_026 issue_1035_alignment::hwp3_sample16_hwp5_2018_page_count_64"
+  ],
+  "focused_summary": [
+    "Summary [  68.907s] 43 tests run: 35 passed (1 slow), 8 failed, 851 skipped"
+  ],
+  "axis_results": "text/off 전체32분할은24PASS/8FAIL, 기존 정상11함수PASS로 합계35PASS/8FAIL/851SKIP. 다른8분할 실패는 자동제외하지 않음.",
+  "actual_failed_axis_tests": [
+    {
+      "test_result": "FAIL [   3.830s] (11/43) rhwp::regression_suite_021 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [  10.307s] (22/43) rhwp::regression_suite_021 off_canvas_baseline::off_canvas_does_not_grow_partition_12",
+      "observations": [
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   1.976s] (24/43) rhwp::regression_suite_028 text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   8.833s] (25/43) rhwp::regression_suite_021 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "observations": [
+        "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)",
+        "신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   2.225s] (29/43) rhwp::regression_suite_028 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)",
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test_result": "FAIL [   6.195s] (30/43) rhwp::regression_suite_028 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "observations": [
+        "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 19건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   8.621s] (32/43) rhwp::regression_suite_028 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건",
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test_result": "FAIL [   7.931s] (37/43) rhwp::regression_suite_028 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "observations": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+      ]
+    }
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "be2c6907763622e83e1d11808c9a857674842cf0",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "(test(issue_1105::) and not test(task1105_sample16_hwp5_page_break_before_section_4_matches_hancom) and not test(task1105_sample16_hwp5_2010_)) or (test(=issue_1035_alignment::hwp3_sample16_hwp5_2018_page_count_64)) or (test(=issue_1035_alignment::hwp3_sample16_hwp5_2024_page_count_64)) or (test(text_overlap_baseline::)) or (test(off_canvas_baseline::))"
+        ],
+        "exit_code": 100,
+        "seconds": 87.28281091712415
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.44612691598013
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38219429133459926
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2335027912631631
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.356608625035733
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.686570916790515
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.432525834068656
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.965046333149076
+      }
+    ]
+  },
+  "source_before_sha256": {
+    "tests/issue_1105.rs": "ccb8d7adf2ca8926eec798d3f5246b82c86e847f3b0c97cbae4212953feaf9d5",
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": "db56ade587546a91e7bd8ce4f59d09261c372d3a35d8ade8679accdc47e1a1b1",
+    "tests/cases/text_overlap_baseline.rs": "0e072344743f395e5fa6a8d292276d391f635ec6b9139f1bb963b5b33bfe27c0",
+    "tests/cases/off_canvas_baseline.rs": "bdaa0db0046542e813c2d05d894f167a431be121cbe59e31e35161dd33a12963"
+  },
+  "source_after_sha256": {
+    "tests/issue_1105.rs": "517278a74289e6465f0755ed7207fcb0afc5cb10134b3c6de4759b8f9a9e7f62",
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": "6b3a51d1b9d0aa14a50a44d35de411d27bbbcb4c3074656ff519ce48615d329a",
+    "tests/cases/text_overlap_baseline.rs": "a51bff9f96c6faa66b8fb76a92e747e4717969cd46c4e8607aa6161d43e6f661",
+    "tests/cases/off_canvas_baseline.rs": "6b8064d5a46c5e210f9ce97f2437ac3302b67077f40026f287abb9ff72cfd865"
+  },
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/sample16_2022_native_review_024.png",
+    "mydocs/pr/assets/issue7445/sample16_2022_native_overlay_003.png"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869647971",
+  "comment_changes": "#1105 영어 소개 주석을 한글로 변경. 다른 함수 이름/기대값/공차 유지.",
+  "own_setup_correction": {
+    "error": "단일 원소 배열이 fmt로 trailing comma 없이 축약되어 append 시 쉼표 누락. 초기 fmt parse 실패로 Cargo 검사는 아직 시작하지 않았음.",
+    "correction": "off-canvas 보류 배열의 기존 원소와 추가 원소 사이에 쉼표 복원. 사전prepare/fmt부터 필수검사 전체 재실행.",
+    "is_renderer_regression": false
+  },
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "fresh_wasm": "미실행. 선택5쪽 부정Native증거재사용이며전체/freshWASM gate통과아님.",
+  "remaining": "복원15미해결 중 누적7함수만좁게보류해8개대기. 최신text/off corpus는8함수실패이며다른body/cell/oracle축현재전체실패수는미추정.최종37개별/전체nextest/시각·PR준비미완료."
+}

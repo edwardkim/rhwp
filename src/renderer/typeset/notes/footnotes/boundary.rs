@@ -10,7 +10,8 @@ use crate::renderer::typeset::{
 /// native HWP5의 두 줄짜리 단일 각주를 물리 페이지 경계에서 연속 fragment로 나눈다.
 ///
 /// 한컴은 본문 `LINE_SEG` reset 앞의 첫 줄은 해당 page의 separator 아래에 두고,
-/// 둘째 줄만 다음 page의 bottom footnote lane에 둔다. 일반 각주는 원자적으로 유지한다.
+/// 둘째 줄만 다음 쪽의 하단 각주 영역에 둔다. 각 물리 쪽은 구분선을
+/// 표시하되 번호는 첫 조각에만 둔다. 일반 각주는 원자적으로 유지한다.
 pub(in crate::renderer::typeset) fn native_hwp5_two_line_footnote_fragments(
     footnote: &Footnote,
 ) -> Option<(FootnoteFragment, FootnoteFragment)> {
@@ -28,7 +29,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_two_line_footnote_fragments(
         FootnoteFragment {
             start_line: 1,
             end_line: 2,
-            draw_separator: false,
+            draw_separator: true,
             draw_number: false,
         },
     ))
@@ -66,6 +67,51 @@ pub(in crate::renderer::typeset) fn native_hwp5_footnote_reset_fragments(
     let mut flat_lines = Vec::new();
     let mut split_line = None;
     let mut force_next_page = false;
+    // 여러 문단이 하나의 각주 좌표 사다리를 이어갈 때는 문단 사이의 원점
+    // 재시작도 같은 물리 컷이다. 문단마다 0을 적는 writer-local 입력과 구분해
+    // 전체 사다리의 정확한 줄 높이/간격 전진과 한 번의 재시작을 먼저 확인한다.
+    let source_lines: Vec<_> = footnote
+        .paragraphs
+        .iter()
+        .flat_map(|para| &para.line_segs)
+        .collect();
+    let cross_paragraph_reset = (|| {
+        if source_lines.first()?.vertical_pos != 0
+            || source_lines
+                .iter()
+                .any(|line| is_synthetic_line_seg(line) || line.line_height <= 0)
+        {
+            return None;
+        }
+        let mut restart = None;
+        let mut paragraph_boundary = 0;
+        let boundaries: Vec<_> = footnote
+            .paragraphs
+            .iter()
+            .map(|para| {
+                paragraph_boundary += para.line_segs.len();
+                paragraph_boundary
+            })
+            .collect();
+        for (index, pair) in source_lines.windows(2).enumerate() {
+            let expected = i64::from(pair[0].vertical_pos)
+                + i64::from(pair[0].line_height)
+                + i64::from(pair[0].line_spacing.max(0));
+            if i64::from(pair[1].vertical_pos) == expected {
+                continue;
+            }
+            if pair[0].vertical_pos > 0
+                && pair[1].vertical_pos == 0
+                && boundaries.contains(&(index + 1))
+                && restart.is_none()
+            {
+                restart = Some(index + 1);
+            } else {
+                return None;
+            }
+        }
+        restart
+    })();
     for paragraph in &footnote.paragraphs {
         let composed = crate::renderer::composer::compose_paragraph(paragraph);
         // source LINE_SEG가 composer line과 일대일로 남아 있는 경우만 reset을
@@ -80,6 +126,12 @@ pub(in crate::renderer::typeset) fn native_hwp5_footnote_reset_fragments(
                 hwpunit_to_px(line.line_height, dpi),
                 hwpunit_to_px(line.line_spacing, dpi),
             ));
+            if index == 0 && cross_paragraph_reset == Some(base) {
+                if split_line.replace(base).is_some() {
+                    return None;
+                }
+                force_next_page = true;
+            }
             if index == 0 {
                 continue;
             }
@@ -114,7 +166,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_footnote_reset_fragments(
     let suffix = FootnoteFragment {
         start_line: split_line,
         end_line: line_count,
-        draw_separator: false,
+        draw_separator: true,
         draw_number: false,
     };
     let fragment_height = |fragment: FootnoteFragment| {
@@ -140,6 +192,15 @@ pub(in crate::renderer::typeset) fn native_hwp5_footnote_reset_fragments(
     })
 }
 
+/// 저장된 본문·각주 경계는 같은 물리 소유 계약을 사용한다.
+/// 미편집 단일 단 입력 외에는 HWPX의 문단 내부 작성 좌표를 제외한다.
+/// 각 조회는 실제 비합성 줄 경계와 해당 표시 위치·각주 가용 공간을
+/// 추가로 확인한다.
+fn stored_body_note_pagination(st: &TypesetState) -> bool {
+    st.profile.hwp5_stored_pagination_layout()
+        || (st.profile.hwpx_stored_layout() && !st.profile.session_edited() && st.col_count == 1)
+}
+
 /// native HWP5 본문 각주 marker 뒤에서 현재 쪽의 `PartialParagraph`가 시작하는
 /// stored reset을 찾는다.
 ///
@@ -153,9 +214,11 @@ pub(in crate::renderer::typeset) fn native_hwp5_body_footnote_tail_reset(
     para: &Paragraph,
     ctrl_idx: usize,
 ) -> Option<(usize, usize)> {
-    if !st.profile.hwp5_stored_pagination_layout()
+    if !stored_body_note_pagination(st)
         || st.col_count != 1
-        || para.controls.len() != 1
+        // 여러 각주가 있는 문단도 각 표시가 든 저장 글줄로 소유를 결정한다.
+        // 표·그림 등 다른 흐름 개체가 섞인 문단은 이 본문 경로에서 제외한다.
+        || para.controls.iter().any(|control| !matches!(control, Control::Footnote(_)))
         || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
         || !para_has_visible_text(para)
     {
@@ -194,7 +257,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_first_footnote_overlap_break_lin
     dpi: f64,
 ) -> Option<NativeHwp5FootnoteBreak> {
     let line_count = fmt.line_heights.len();
-    if !st.profile.hwp5_stored_pagination_layout()
+    if !stored_body_note_pagination(st)
         || !st.is_first_footnote_on_page
         || st.current_footnote_height > 0.0
         || line_count < 2
@@ -322,7 +385,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
     footnote: &Footnote,
     footnote_height: f64,
 ) -> bool {
-    if !st.profile.hwp5_stored_pagination_layout()
+    if !stored_body_note_pagination(st)
         || st.col_count != 1
         || para.controls.len() != 1
         || !matches!(para.controls.get(ctrl_idx), Some(Control::Footnote(_)))
@@ -403,15 +466,15 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
 /// 일반 pagination의 `current_footnote_height`는 빠른 stored-LineSeg 추정이다. 긴 URL이나
 /// 여러 각주가 있는 HWP5 page에서는 실제 FootnoteArea보다 작을 수 있다. 그 차이를 전역 예약값으로
 /// 바꾸면 과페이지화 회귀가 생기므로, reset tail의 physical collision 판정에만 이 exact metric을 쓴다.
-/// table/text-box source 또는 이미 fragment된 각주는 각자 별도 owner 계약이 있으므로 이 좁은 경로에서
-/// 재측정하지 않는다.
+/// 본문 각주의 저장 분할 계획과 일치하는 조각은 예약 때 확정한 같은 높이를 사용한다.
+/// 셀·글상자 출처와 알 수 없는 조각은 별도 소유 계약이므로 이 경로에서 재측정하지 않는다.
 pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_height(
     st: &TypesetState,
     paragraphs: &[Paragraph],
     dpi: f64,
 ) -> Option<f64> {
     let footnotes = &st.pages.last()?.footnotes;
-    if footnotes.is_empty() || footnotes.iter().any(|footnote| footnote.fragment.is_some()) {
+    if footnotes.is_empty() {
         return None;
     }
 
@@ -431,7 +494,27 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_heig
             return None;
         };
 
-        total += composed_footnote_content_height(footnote, dpi);
+        total += if let Some(fragment) = footnote_ref.fragment {
+            // 저장 reset으로 확정한 조각의 줄 범위·번호·구분선까지 일치해야
+            // 예약과 충돌 판정이 같은 각주 공간을 소비한다.
+            if let Some(split) = native_hwp5_footnote_reset_fragments(footnote, dpi) {
+                if fragment == split.prefix {
+                    split.prefix_height
+                } else if fragment == split.suffix {
+                    split.suffix_height
+                } else {
+                    return None;
+                }
+            } else if native_hwp5_two_line_footnote_fragments(footnote)
+                .is_some_and(|(prefix, suffix)| fragment == prefix || fragment == suffix)
+            {
+                native_hwp5_footnote_fragment_height(footnote, fragment, dpi)
+            } else {
+                return None;
+            }
+        } else {
+            composed_footnote_content_height(footnote, dpi)
+        };
         if footnote_idx + 1 < footnotes.len() {
             total += st.footnote_between_notes_margin;
         }
@@ -439,9 +522,9 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_body_footnote_area_heig
     Some(total)
 }
 
-/// 이미 예약된 각주 영역을 침범하는 native HWP5 본문 reset tail을 찾는다.
+/// 이미 예약된 각주 영역을 침범하는 안정된 저장 본문의 reset 꼬리를 찾는다.
 ///
-/// HWP5는 한 문단의 뒤쪽 줄을 다음 physical page에 두면서 `vpos=0`으로 저장한다.
+/// HWP/HWPX는 한 문단의 뒤쪽 줄을 다음 물리 쪽에 두면서 `vpos=0`으로 저장한다.
 /// 기존 각주가 있는 page에서 이 신호를 전역으로 따르면 과분할될 수 있으므로, source 좌표가
 /// 현재 flow와 맞고 reset 직전 줄은 FootnoteArea 위에 끝나며 다음 줄만 실제 각주 경계를
 /// 침범하는 경우에만 허용한다. 이 조건은 p43의 pi=512처럼 body tail이 separator/첫 각주를
@@ -453,7 +536,7 @@ pub(in crate::renderer::typeset) fn native_hwp5_existing_footnote_reset_overlap_
     paragraphs: &[Paragraph],
     dpi: f64,
 ) -> Option<usize> {
-    if !st.profile.hwp5_stored_pagination_layout()
+    if !stored_body_note_pagination(st)
         || st.col_count != 1
         || st.current_footnote_height <= 0.0
         || !para_has_visible_text(para)

@@ -1,0 +1,145 @@
+{
+  "stage": "#2470 기존2검사를 독립2/8쪽 의미 관계로 갱신",
+  "parent_head": "ffb65bd53",
+  "production_changed": false,
+  "tests_added": 0,
+  "existing_tests": 2,
+  "gates_initial": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_011",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2470_masking_page_pins)"
+      ],
+      "exit": 0,
+      "seconds": 7.271
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 9.814
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.957
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 1,
+      "seconds": 0.375
+    }
+  ],
+  "gates_rechecked": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_2470_masking_page_pins)"
+      ],
+      "exit": 0,
+      "seconds": 6.764
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 12.377
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 7.523
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.525
+    },
+    {
+      "gate": "docs-links",
+      "command": [
+        "python3",
+        "scripts/check_markdown_links.py",
+        "mydocs/pr/archives/pr_7423_review.md",
+        "mydocs/orders/20261003.md"
+      ],
+      "exit": 0,
+      "seconds": 9.36
+    }
+  ],
+  "recheck_reason": "rustfmt 후 suite weight/생성 메타데이터를 다시 준비하고 새 suite18에서2PASS 및 게이트 재실행",
+  "visual_proof": "masked2470_paint_validation.json",
+  "status": "2PASS, Native/fresh WASM 생산코드 동일 증적 재사용; 새 WASM 빌드로 보고하지 않음"
+}

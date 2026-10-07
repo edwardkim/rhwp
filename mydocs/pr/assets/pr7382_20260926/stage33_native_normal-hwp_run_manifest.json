@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "key": "liver7379",
+  "provenance": {
+    "hwp": {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+    },
+    "pdf": {
+      "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916"
+    },
+    "git_head": "5196ee4791b1b5e0f387cf084ed1561f92bd161d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/bin/stage33-after-rhwp",
+      "sha256": "9bbb85583cb1b5f176d94998d551c5d611e03121a8aae1a4e8a71124ef1c84e7"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    11,
+    14,
+    23
+  ],
+  "requested_page_shards": [
+    [
+      11,
+      14,
+      23
+    ]
+  ],
+  "run_state": "complete"
+}

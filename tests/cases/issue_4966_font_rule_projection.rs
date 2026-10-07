@@ -144,7 +144,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 830);
+    assert_eq!(v2["summary"]["activeRuleCount"], 831);
     assert_eq!(v2["summary"]["retiredRuleCount"], 2);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
@@ -157,8 +157,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
             (rule_id.to_owned(), semantic_rule(rule, source_boundary_id))
         })
         .collect();
-    // Keep the v1 seal immutable. Only these independently recorded replacements
-    // may change active semantics; an unrecorded or cross-plane mutation still fails.
+    // v1 봉인은 변경하지 않는다. 독립적으로 기록된 교체와 추가만 활성 의미에 반영한다.
     let changes: [serde_json::Value; 2] = [
         serde_json::from_str(include_str!(
             "../../assets/font-rules/changes/issue-7023-batangche-serif-supply.json"
@@ -200,6 +199,29 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
             .insert(retired_id.to_owned(), replacement_id.to_owned())
             .is_none());
     }
+    let addition: serde_json::Value = serde_json::from_str(include_str!(
+        "../../assets/font-rules/changes/issue-7196-ygodic230-metric-name.json"
+    ))
+    .expect("기록된 #7196 폰트 규칙 추가");
+    assert_eq!(addition["expectedDelta"]["activeRuleDelta"], 1);
+    assert_eq!(
+        addition["expectedDelta"]["projectionId"],
+        "rust-layout-metric"
+    );
+    let operations = addition["operations"].as_array().expect("추가 작업");
+    assert_eq!(operations.len(), 1);
+    let operation = &operations[0];
+    assert_eq!(operation["type"], "add-rule");
+    let mut added = operation["rule"].clone();
+    added["status"] = "active".into();
+    added["projections"] = serde_json::json!([added["projection"]]);
+    let added_id = added["ruleId"].as_str().expect("추가 규칙 ID").to_owned();
+    assert!(expected_semantics
+        .insert(
+            added_id.clone(),
+            semantic_rule(&added, source_boundary(&added))
+        )
+        .is_none());
     let v2_semantics: BTreeMap<_, _> = v2_rules
         .iter()
         .filter(|rule| rule["status"] == "active")
@@ -220,7 +242,7 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
         "canvas2d-webfont",
         "canvaskit-sfnt",
     ] {
-        let v1_rule_ids: Vec<_> = v1_rules
+        let mut v1_rule_ids: Vec<_> = v1_rules
             .iter()
             .filter(|rule| {
                 rule["projections"]
@@ -234,6 +256,9 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
                 replacements.get(id).map(String::as_str).unwrap_or(id)
             })
             .collect();
+        if projection == "rust-layout-metric" {
+            v1_rule_ids.push(added_id.as_str());
+        }
         let v2_rule_ids: Vec<_> = projection_rules(&v2, projection)
             .into_iter()
             .map(|rule| rule["ruleId"].as_str().expect("current v2 ruleId"))
@@ -311,7 +336,7 @@ fn canonical_layout_name_projection_reaches_public_trace() {
 fn canonical_layout_metric_projection_reaches_public_lookup() {
     let registry = registry();
     let rules = projection_rules(&registry, "rust-layout-metric");
-    assert_eq!(rules.len(), 67);
+    assert_eq!(rules.len(), 68);
 
     for rule in rules {
         let source = source_face(rule);

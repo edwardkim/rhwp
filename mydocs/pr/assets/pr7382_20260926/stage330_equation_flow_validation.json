@@ -1,0 +1,117 @@
+{
+  "baseHead": "e08deffd747af6015ae9793a56de78fafbeb3d1f",
+  "sourceFiles": {
+    "src/renderer/composer.rs": "ff74a7c81f280d60e3610302a86cba58e9aff13c6d8be8090d6b0181f1b4617d",
+    "src/renderer/composer/line_breaking.rs": "fc944b4ee477454712449d7fba9e6cda194f7eaf6c08d7ebd0c6a765a69ef5ff",
+    "src/renderer/equation/README.md": "09df62ce12ca3a2f43327040aedf723f0c279ea4583fa2216471948eba5e60fc",
+    "src/renderer/equation/canvas_render.rs": "a52a8a44be46be083c14a681c98a6cac3af78bcbfa6bad42b2eb1b5da8f9d4b9",
+    "src/renderer/equation/mod.rs": "bd3ef33f3d501bfdc3126ee6ed3383ff5496fdd3c9bc8554a30efd92aecb6610",
+    "src/renderer/equation/svg_render.rs": "d0d51a96df1571a036fde3a8baf6bb5f56a61ca5c6722226fcb7c9c6a435329d",
+    "src/renderer/layout/paragraph_layout.rs": "b72e550093470f85c50fd94aac00096afdc48c400416c8fabd799d43bfff214b",
+    "src/renderer/layout/shape_layout.rs": "e4362ce0039325d61ca7ea823bf5a3d2f79835dd10ad9a4c3126232d40eb51ba",
+    "src/renderer/layout/table_layout.rs": "ed2e6fb06986488775c75c98ef0e80ea1066138795132ab3539fe828fb5a7f48",
+    "src/renderer/layout/table_partial.rs": "1969910ce4f70bb87766653b04d59678691fd340c09a5b5f3cb0291ff6cff025",
+    "src/renderer/skia/equation_conv.rs": "14e9ded8967e4756f95fae9cfe79004f5792fcc4360a5d2de012b34cec328cb2",
+    "src/renderer/svg.rs": "b8fcb12c833ec64e62e93dde6b2002fec34c998bcfc83f391cd567f3c5a19eea"
+  },
+  "input": {
+    "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+  },
+  "pdf": {
+    "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+  },
+  "fontEnvironment": "mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+  "printProfile": "print",
+  "dpi": 96,
+  "nativeBuildExit": 0,
+  "freshWasmBuildExit": 0,
+  "nativeSweepExit": 0,
+  "wasmSweepExit": 0,
+  "nativePageCount": 215,
+  "wasmPageCount": 215,
+  "pdfPageCount": 215,
+  "pages": {
+    "stage330-native-review-final": [
+      {
+        "page": 87,
+        "silhouette": 99.83337,
+        "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+      },
+      {
+        "page": 88,
+        "silhouette": 95.34594,
+        "pngSha256": "604a5033acba827b593174f439b92c6dff99617e8195b61ee7e3ded46769df2b"
+      },
+      {
+        "page": 89,
+        "silhouette": 98.72103,
+        "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+      }
+    ],
+    "stage330-wasm-review-final": [
+      {
+        "page": 87,
+        "silhouette": 99.83337,
+        "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+      },
+      {
+        "page": 88,
+        "silhouette": 95.34594,
+        "pngSha256": "604a5033acba827b593174f439b92c6dff99617e8195b61ee7e3ded46769df2b"
+      },
+      {
+        "page": 89,
+        "silhouette": 98.72103,
+        "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+      }
+    ]
+  },
+  "existingTests": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --features native-skia --test regression_suite_001 --test regression_suite_020 --test regression_suite_022 --test regression_suite_024 -E 'test(/equation_command_goldens::/) | test(/issue_5583_body_equation_alignment::/) | test(/issue_6527_standalone_equation_text::/) | test(/issue_6807_equation_partial_bag_size::/) | test(/issue_7379_rowbreak_table_footnote_reservation::/)' --test-threads 8 --no-fail-fast",
+    "passed": 27,
+    "failed": 0,
+    "exit": 0
+  },
+  "rustTestFunctionsAdded": 0,
+  "diagnosticCandidates": [
+    {
+      "candidate": "폭만 변경+첫 행0 초기화",
+      "page88": 88.96475,
+      "decision": "중복 발생, 기각"
+    },
+    {
+      "candidate": "부분 시작 보존+폭 변경",
+      "page88": 91.48576,
+      "decision": "높이·기준선 차이, 보완"
+    },
+    {
+      "candidate": "공통 폭·높이·기준선+출력 글꼴 일치",
+      "page88": 95.34594,
+      "decision": "부분 개선, 전체 PR 검증 전"
+    }
+  ],
+  "semanticChecks": {
+    "normalizedParagraphTextSamePages": [
+      87,
+      88,
+      89
+    ],
+    "unchangedNativeRasterPages": [
+      87,
+      89
+    ],
+    "footnote139Visible": true
+  },
+  "remaining": [
+    "한컴 수식 글리프의 실제 폭과 AST 추정 폭 차이 및 뒤 문장의 일부 줄바꿈",
+    "최신 head 전체215쪽 Native/fresh WASM 비교",
+    "최종 전체 회귀·lint·PR 제출 게이트"
+  ],
+  "documentationMetadata": {
+    "changedManualErrors": 0,
+    "wholeTreeKnownUnchangedErrors": 16
+  },
+  "nativeSkiaDirectVisual": "미실행, feature를 포함한 기존27개 검사는 통과"
+}

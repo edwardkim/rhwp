@@ -40,20 +40,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         known_square_band,
     );
     let composed = recomposed.as_ref().or(composed);
-    let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+    // Reflow has no saved vertical ladder which could restore omitted spacing.
+    // Reserve the same paragraph before-space consumed by the composed paint
+    // path; otherwise the next object's shared origin rewinds into prior text.
+    let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
     let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
-
-    // [Task #998 실험] spacing_before=0 으로 강제 — 효과 측정용
-    // [#2279 실험 전용] RHWP_EXP_BODY_FRESH 시 NO_LS 문단도 sb 를 보존한다
-    // (한글 fresh 는 sb 를 가산 — 생성기 사다리 sb-누락 모사 우회 계측).
-    let spacing_before = if para.line_segs.is_empty()
-        && !para.text.is_empty()
-        && std::env::var("RHWP_EXP_BODY_FRESH").is_err()
-    {
-        0.0
-    } else {
-        raw_spacing_before
-    };
     // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
     // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
     // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)
@@ -199,6 +190,7 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     FormattedParagraph {
         tail_line_remaining_width,
         computed_host_lines,
+        square_host_plan: None,
         total_height,
         line_heights,
         line_spacings,
@@ -440,9 +432,24 @@ fn resolve_line_metrics(
                 prev_line_reserved_tac_picture_height = None;
                 continue;
             }
+            let line_owns_tac_table = comp.lines.len() == para.line_segs.len()
+                && para.controls.iter().enumerate().any(|(ci, control)| {
+                    matches!(control, Control::Table(table)
+                        if table.common.treat_as_char && table.common.height > 0
+                            && crate::renderer::layout::control_line_seg_index(para, ci) == Some(line_idx)
+                            && para.line_segs.get(line_idx).is_some_and(|seg|
+                                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                    && i64::from(seg.line_height) >= i64::from(table.common.height)))
+                });
             // Square wrap host 의 빈 wrap guide 줄은 높이를 제외하되, 같은 줄에
             // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 정상 advance 를 보존한다.
-            if has_picture_shape_square_wrap && runs_all_whitespace && !line_has_tac_control {
+            if has_picture_shape_square_wrap
+                && runs_all_whitespace
+                && !line_has_tac_control
+                // 같은 문자 위치 때문에 귀속 범위가 비어도 개체 소유 줄은 안내 줄이 아니다.
+                && !line_owns_tac_object
+                && !line_owns_tac_table
+            {
                 pairs.push((0.0, 0.0));
                 prev_line_reserved_tac_picture_height = None;
                 continue;
@@ -562,6 +569,14 @@ fn resolve_line_metrics(
                 para_style,
             ) {
                 pairs.extend(metrics);
+            }
+        }
+        // [#7418] 저장 줄 없는 글자처럼 취급 표 host — 표 줄의 줄간격을 잃지 않는다.
+        if pairs.is_empty() {
+            if let Some(metric) =
+                crate::renderer::tac_table_host_line_metrics(para, ctx.dpi(), styles, para_style)
+            {
+                pairs.push(metric);
             }
         }
         // 저장 LINE_SEG가 전혀 없는 빈 문단도 composer는 placeholder line 하나를

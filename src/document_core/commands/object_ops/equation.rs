@@ -619,10 +619,11 @@ impl DocumentCore {
             .insert(insert_idx, Control::Equation(Box::new(equation)));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 11;
         paragraph.has_para_text = true;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
         // 본문 문단 리플로우
         // 본문 문단의 상자는 쪽 폭이 아니라 **열** 폭에서 나온다. 직접 계산하면

@@ -44,6 +44,10 @@ pub(crate) fn has_required_package_entries(data: &[u8]) -> bool {
 /// 목적은 유지된다.
 pub const MAX_XML_SIZE: usize = 256 * 1024 * 1024; // 256 MB
 
+/// Total XML text output per reader/document-open, matching HWP5's default.
+/// This is a decompression policy, not a bound on all IR/renderer allocations.
+pub const MAX_TOTAL_XML_BYTES: usize = 512 * 1024 * 1024;
+
 /// BinData(이미지·폰트 등) 엔트리당 압축 해제 상한.
 ///
 /// [#1917] 종전 64MB 는 실문서를 거부했다 — 정부 보도자료 계열에 비압축
@@ -58,9 +62,19 @@ pub const MAX_BINDATA_SIZE: usize = 512 * 1024 * 1024; // 512 MB
 /// `Read::take(max + 1)`을 사용해 오버플로를 감지하되, 버퍼는 실제 읽은
 /// 크기 + 1 이상으로 자라지 않는다.
 fn read_limited<R: Read>(reader: &mut R, max: usize) -> io::Result<Vec<u8>> {
+    read_limited_accounted(reader, max, &mut 0)
+}
+
+fn read_limited_accounted<R: Read>(
+    reader: &mut R,
+    max: usize,
+    consumed: &mut usize,
+) -> io::Result<Vec<u8>> {
     let mut buf = Vec::new();
     let cap = (max as u64).saturating_add(1);
-    reader.take(cap).read_to_end(&mut buf)?;
+    let result = reader.take(cap).read_to_end(&mut buf);
+    *consumed = buf.len();
+    result?;
     if buf.len() > max {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -76,6 +90,7 @@ fn read_limited<R: Read>(reader: &mut R, max: usize) -> io::Result<Vec<u8>> {
 /// HWPX ZIP 컨테이너 리더
 pub struct HwpxReader {
     archive: ZipArchive<Cursor<Vec<u8>>>,
+    xml_read_remaining: usize,
 }
 
 impl HwpxReader {
@@ -83,7 +98,10 @@ impl HwpxReader {
     pub fn open(data: &[u8]) -> Result<Self, HwpxError> {
         let cursor = Cursor::new(data.to_vec());
         let archive = ZipArchive::new(cursor)?;
-        Ok(HwpxReader { archive })
+        Ok(HwpxReader {
+            archive,
+            xml_read_remaining: MAX_TOTAL_XML_BYTES,
+        })
     }
 
     /// 지정한 경로의 파일을 UTF-8 문자열로 읽는다.
@@ -95,12 +113,7 @@ impl HwpxReader {
     /// 실패 시 관용(lossy) 디코딩으로 폴백한다 (손상 바이트는 U+FFFD 치환,
     /// 경고 로그). 문서 전체를 버리는 종전 동작은 한글 대비 과잉 거부였다.
     pub fn read_file(&mut self, path: &str) -> Result<String, HwpxError> {
-        let mut file = self
-            .archive
-            .by_name(path)
-            .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
-        let bytes = read_limited(&mut file, MAX_XML_SIZE)
-            .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))?;
+        let bytes = self.read_xml_bytes_limited(path, MAX_XML_SIZE)?;
         match String::from_utf8(bytes) {
             Ok(s) => Ok(s),
             Err(e) => {
@@ -127,19 +140,64 @@ impl HwpxReader {
         path: &str,
         max_bytes: usize,
     ) -> Result<Vec<u8>, HwpxError> {
+        self.read_bytes_with_policy(path, max_bytes, false)
+    }
+
+    /// Eager package XML metadata shares the text reader's cumulative budget.
+    /// Lazy binary resources keep their caller-owned per-item policy.
+    pub(super) fn read_xml_bytes_limited(
+        &mut self,
+        path: &str,
+        max_bytes: usize,
+    ) -> Result<Vec<u8>, HwpxError> {
+        self.read_bytes_with_policy(path, max_bytes, true)
+    }
+
+    fn read_bytes_with_policy(
+        &mut self,
+        path: &str,
+        max_bytes: usize,
+        charge_xml: bool,
+    ) -> Result<Vec<u8>, HwpxError> {
         let mut file = self
             .archive
             .by_name(path)
             .map_err(|e| HwpxError::MissingFile(format!("{}: {}", path, e)))?;
-        let max_bytes = max_bytes.min(MAX_BINDATA_SIZE);
-        if file.size() > max_bytes as u64 {
+        let entry_limit = max_bytes.min(if charge_xml {
+            MAX_XML_SIZE
+        } else {
+            MAX_BINDATA_SIZE
+        });
+        if file.size() > entry_limit as u64 {
             return Err(HwpxError::ZipError(format!(
                 "{} 읽기 실패: HWPX entry exceeds {} byte limit (possible decompression bomb)",
-                path, max_bytes
+                path, entry_limit,
             )));
         }
-        read_limited(&mut file, max_bytes)
-            .map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))
+        let allowance = if charge_xml {
+            entry_limit.min(self.xml_read_remaining)
+        } else {
+            entry_limit
+        };
+        if charge_xml && file.size() > self.xml_read_remaining as u64 {
+            return Err(HwpxError::XmlReadBudgetExceeded {
+                path: path.into(),
+                max_bytes: MAX_TOTAL_XML_BYTES,
+            });
+        }
+        let mut consumed = 0;
+        let result = read_limited_accounted(&mut file, allowance, &mut consumed);
+        if charge_xml {
+            // Account actual output even when CRC/truncation makes the read fail.
+            self.xml_read_remaining = self.xml_read_remaining.saturating_sub(consumed);
+            if consumed > allowance && allowance < entry_limit {
+                return Err(HwpxError::XmlReadBudgetExceeded {
+                    path: path.into(),
+                    max_bytes: MAX_TOTAL_XML_BYTES,
+                });
+            }
+        }
+        result.map_err(|e| HwpxError::ZipError(format!("{} 읽기 실패: {}", path, e)))
     }
 
     /// ZIP central directory의 비압축 크기만 상한과 비교한다.

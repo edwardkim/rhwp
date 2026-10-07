@@ -1,0 +1,268 @@
+{
+  "state": "complete",
+  "code_head": "518d9900921c826e46884b8eb39a58adcfe0cbab",
+  "before_code_head": "519127d09654eeb7873357de40df0b382a15c6b5",
+  "inputs": {
+    "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp": {
+      "bytes": 71680,
+      "sha256": "86dcf229e8593fdf58cfc15edd39fdbf9ccaf46c0eb1861ae6a6e44682dd7b58"
+    },
+    "mydocs/pr/assets/planet6897_green_20261002/slice5701_original_ir_before_hancom_resave.hwp": {
+      "bytes": 26624,
+      "sha256": "345efb17a50396bdbeb102d09042ceeb409e8a5244d0fbb36a6b4d75ed966ac9"
+    },
+    "tests/cases/issue_5701_rewound_float_host_double_paint.rs": {
+      "bytes": 6810,
+      "sha256": "cdb5c833f8a255f73dbc6ba42ef171088945b75c014020823252b1c3e565bbb1"
+    }
+  },
+  "scope": {
+    "existing_test_functions_before": 1,
+    "existing_test_functions_after": 1,
+    "new_test_functions": 0,
+    "removed_test_functions": 0,
+    "new_regression_fixtures": 0,
+    "existing_fixture_normalized": true,
+    "original_preserved": true
+  },
+  "visual_evidence": "mydocs/pr/assets/planet6897_green_20261002/slice5701_prefix_validation.json",
+  "independent_pages": 3,
+  "native_and_fresh_wasm_all_pages": [
+    98.97935,
+    97.81243,
+    100.0
+  ],
+  "original_manual_ir_not_resolved": true,
+  "gates": {
+    "head_before_changes": "518d9900921c826e46884b8eb39a58adcfe0cbab",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.701,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-prepare.log"
+      },
+      {
+        "gate": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.885,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-format.log"
+      },
+      {
+        "gate": "prepare-formatted",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.581,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-prepare-formatted.log"
+      },
+      {
+        "gate": "focused41",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_024",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_028",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 20.019,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-focused41.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.883,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 22.33,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 15.015,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 20.856,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 57.725,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.566,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-regression-manifest.log"
+      }
+    ]
+  },
+  "counterexample": {
+    "case_sha256_identical": "cdb5c833f8a255f73dbc6ba42ef171088945b75c014020823252b1c3e565bbb1",
+    "before": {
+      "cwd": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/slice5701-before-regression-worktree",
+      "source_head": "519127d09654eeb7873357de40df0b382a15c6b5",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_024",
+        "-E",
+        "test(/issue_5701_float_preserves_host_and_split_follower_ownership/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "elapsed_seconds": 115.99
+    },
+    "after": {
+      "source_head": "518d9900921c826e46884b8eb39a58adcfe0cbab",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_028",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 135.283
+    },
+    "before_failure": "후속 첫 줄은 1쪽 표 위 공간을 소유한다: 0 != 1",
+    "after_summary": "Summary [   0.226s] 41 tests run: 41 passed, 1283 skipped"
+  },
+  "operational_corrections": [
+    "포맷 후 파생 suite를 다시 prepare해 최초 0 tests 실행을 결함 재현에서 제외함",
+    "동일 공유 target의 구 코드 비교 후 src/lib.rs mtime을 갱신해 현재 소스를 명시적으로 재컴파일함; 소스 내용과 캐시는 삭제/변경하지 않음",
+    "자동 불릿은 원문 본문 문자열에 없으므로 원본 문단 스타일의 bullet_char를 포함해 내용 순서를 검사함"
+  ]
+}

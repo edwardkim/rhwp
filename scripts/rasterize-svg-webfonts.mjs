@@ -252,6 +252,12 @@ export async function recoverUnavailableLocalBoldFaces(page) {
 }
 
 async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, profileDir }) {
+  // 전체 글꼴을 포함한 대형 SVG는 로딩 시간이 기본 30초를 넘을 수 있다.
+  // 대기 한도만 조절하며 글꼴·좌표·캡처 완료 조건은 그대로 유지한다.
+  const timeoutMs = Number(process.env.RHWP_VISUAL_RASTER_TIMEOUT_MS ?? '30000');
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error('RHWP_VISUAL_RASTER_TIMEOUT_MS는 양의 정수여야 합니다.');
+  }
   const studioRequire = createRequire(resolve(ROOT, 'rhwp-studio/package.json'));
   let puppeteerPath;
   try {
@@ -264,8 +270,8 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
     executablePath: chrome,
     headless: true,
     userDataDir: profileDir,
-    timeout: 30000,
-    protocolTimeout: 30000,
+    timeout: timeoutMs,
+    protocolTimeout: timeoutMs,
     args: ['--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files'],
   });
   try {
@@ -277,13 +283,18 @@ async function renderWithChrome({ chrome, htmlPath, outputPath, viewport, zoom, 
       height: Math.ceil(viewport.height),
       deviceScaleFactor: zoom,
     });
-    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: 30000 });
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load', timeout: timeoutMs });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const recoveredFontFaces = await recoverUnavailableLocalBoldFaces(page);
     await page.screenshot({ path: outputPath, type: 'png' });
     return recoveredFontFaces;
   } finally {
     await browser.close();
+    // 브라우저 종료 뒤 자식의 출력 파이프가 남으면 Node가 캡처 완료 후에도
+    // 대기한다. 이 실행이 소유한 스트림만 닫고 화면·글꼴 완료 조건은 유지한다.
+    for (const stream of browser.process()?.stdio ?? []) {
+      stream?.destroy();
+    }
   }
 }
 

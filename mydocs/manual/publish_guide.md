@@ -96,9 +96,13 @@ Gym은 AI 에이전트가 rhwp CLI/API를 조합해 과제를 수행하는 기�
 | --- | --- | --- | --- |
 | Linux x86_64 | `x86_64-unknown-linux-gnu` | `ubuntu-latest` | `linux-x86_64` |
 | Linux AArch64 | `aarch64-unknown-linux-gnu` | `ubuntu-24.04-arm` | `linux-aarch64` |
-| macOS x86_64 | `x86_64-apple-darwin` | `macos-14` | `macos-x86_64` |
-| macOS AArch64 | `aarch64-apple-darwin` | `macos-14` | `macos-aarch64` |
+| macOS x86_64 | `x86_64-apple-darwin` | `macos-15` | `macos-x86_64` |
+| macOS AArch64 | `aarch64-apple-darwin` | `macos-15` | `macos-aarch64` |
 | Windows x86_64 | `x86_64-pc-windows-msvc` | `windows-latest` | `windows-x86_64` |
+
+macOS 두 target은 Apple Silicon `macos-15`에서 빌드한다. Intel target은 교차 빌드하고,
+두 target 모두 같은 runner에서 `rhwp --version`을 확인한다. Cargo cache key와 restore prefix는
+Rust target과 runner label을 함께 포함해 이전 macOS SDK의 `target/`를 복원하지 않는다.
 
 Linux AArch64는 cross compile이나 self-hosted runner가 아니라 GitHub 표준 native ARM64 runner에서
 빌드하고 같은 runner에서 `rhwp --version`을 실행한다. runner label의 현재 지원 여부는
@@ -236,8 +240,12 @@ cd dist
 zip -r ../rhwp-firefox-{version}.zip .
 
 cd ../..
-git archive --format=zip --prefix=rhwp-source/ --output=rhwp-firefox/rhwp-source-{version}-amo.zip HEAD Cargo.toml Cargo.lock rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src rhwp-studio rhwp-firefox rhwp-shared assets/fonts assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf scripts npm/README.md npm/editor bindings/Native tools/rhwp-subsecond tools/batch-convert mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes
-zip -d rhwp-firefox/rhwp-source-{version}-amo.zip "rhwp-source/rhwp-studio/public/samples/*"
+git archive --format=zip --prefix=rhwp-source/ --output=rhwp-firefox/rhwp-source-{version}-amo.zip HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared assets/fonts assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md
+zip -d rhwp-firefox/rhwp-source-{version}-amo.zip \
+  "rhwp-source/rhwp-studio/public/samples/*" \
+  "rhwp-source/tools/llm_verifier/*/fixtures/*" \
+  "rhwp-source/scripts/tests/*"
+# 압축 해제한 별도 폴더에서 locked WASM → Firefox build를 실행해 재빌드 범위를 확인한다.
 ```
 
 Firefox AMO 제출 시에는 확장 패키지와 함께 검토용 source zip을 업로드한다.

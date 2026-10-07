@@ -1,6 +1,6 @@
 //! #7390: KoPub 계열의 라틴 전진폭을 **글꼴 실측 표**로 잰다.
 //!
-//! `kopub_char_width` 는 KoPub face 를 전용 표로 처리하면서 한글 전각만 실측값이었고
+//! `kopub_char_width` 는 KoPub 글꼴을 전용 표로 처리하면서 한글 전각만 실측값이었고
 //! **ASCII 는 전부 `font_size * 0.5`** 였다. KoPub 은 비례 글꼴이라 `i` 232 · `N`/`H` 718
 //! 처럼 3배 넘게 갈린다(1000em 기준). 그래서 영문이 섞인 줄이 계통적으로 좁게 잡혔다.
 //!
@@ -113,7 +113,7 @@ fn kopub_space_stays_half_width() {
         DocumentCore::from_bytes(&std::fs::read(path).expect("공개 회귀 문서")).expect("문서 파싱");
     let (span, _) =
         line_span(&doc, 108, "withmenthroughthenetworkscale-upmethodin").expect("108쪽 대상 줄");
-    // 이 줄의 공백은 9개다. 글꼴 값 0.290 을 쓰면 9 × 0.21 em ≈ 25px 가 빠진다.
+    // 이 줄의 공백은 11개다. 글꼴 값 0.290 을 쓰면 11 × 0.21 em ≈ 33px 가 빠진다.
     assert!(
         span > 555.0,
         "108쪽 줄 점유폭 {span:.2}px 이 555px 이하다. 공백에 글꼴 표값(0.290 em)을 쓰면 \
