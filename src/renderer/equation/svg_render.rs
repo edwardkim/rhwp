@@ -596,8 +596,8 @@ fn draw_decoration(
                 color, stroke_w,
             ));
         }
-        DecoKind::Vec => {
-            // 오른쪽 화살표
+        DecoKind::Vec | DecoKind::Dyad => {
+            // 오른쪽 화살표 (dyad 는 왼쪽 화살촉도 그린다)
             let arrow_y = y + fs * 0.05;
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
@@ -612,6 +612,15 @@ fn draw_decoration(
                 mid_x + half_w - fs * 0.1, arrow_y + fs * 0.06,
                 color, stroke_w,
             ));
+            if kind == DecoKind::Dyad {
+                svg.push_str(&format!(
+                    "<path d=\"M{:.2},{:.2} L{:.2},{:.2} L{:.2},{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+                    mid_x - half_w + fs * 0.1, arrow_y - fs * 0.06,
+                    mid_x - half_w, arrow_y,
+                    mid_x - half_w + fs * 0.1, arrow_y + fs * 0.06,
+                    color, stroke_w,
+                ));
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;
@@ -661,7 +670,7 @@ fn draw_decoration(
             ));
         }
         _ => {
-            // Check, Acute, Grave, Dyad, Arch, StrikeThrough 등 간략 처리
+            // Check, Acute, Grave, Arch, StrikeThrough 등 간략 처리
             svg.push_str(&format!(
                 "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
                 mid_x - half_w * 0.5, y + fs * 0.1,

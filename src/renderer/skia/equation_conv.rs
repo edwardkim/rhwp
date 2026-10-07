@@ -908,7 +908,7 @@ fn draw_decoration(
                 &paint,
             );
         }
-        DecoKind::Vec => {
+        DecoKind::Vec | DecoKind::Dyad => {
             let arrow_y = y + fs * 0.05;
             canvas.draw_line(
                 ((mid_x - half_w) as f32, arrow_y as f32),
@@ -926,6 +926,19 @@ fn draw_decoration(
                 (arrow_y + fs * 0.06) as f32,
             ));
             canvas.draw_path(&head.detach(), &paint);
+            if kind == DecoKind::Dyad {
+                let mut head = PathBuilder::new();
+                head.move_to((
+                    (mid_x - half_w + fs * 0.1) as f32,
+                    (arrow_y - fs * 0.06) as f32,
+                ));
+                head.line_to(((mid_x - half_w) as f32, arrow_y as f32));
+                head.line_to((
+                    (mid_x - half_w + fs * 0.1) as f32,
+                    (arrow_y + fs * 0.06) as f32,
+                ));
+                canvas.draw_path(&head.detach(), &paint);
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;
