@@ -797,13 +797,17 @@ pub(crate) fn stored_tac_lines(para: &Paragraph) -> Option<Vec<StoredTacLine>> {
     for (ci, control) in para.controls.iter().enumerate() {
         let table = match control {
             Control::Table(table) if table.common.treat_as_char => table,
+            // [#7344] 누름틀 시작 마커는 원시 스트림의 8유닛 칸만 차지하고 줄 상자를
+            // 만들지 않는다(결재문서 `본문` 누름틀이 표 문단 첫머리에 놓인다). 같은 문단에서
+            // 닫히는 필드는 위 `empty_control_stream_position`이 이미 거른다.
             Control::SectionDef(_)
             | Control::ColumnDef(_)
             | Control::Header(_)
             | Control::Footer(_)
             | Control::PageNumberPos(_)
             // 감추기는 쪽 표시 설정이며 본문 글줄을 점유하지 않는다.
-            | Control::PageHide(_) => continue,
+            | Control::PageHide(_)
+            | Control::Field(_) => continue,
             _ => return None,
         };
         let owner = control_line_seg_index(para, ci)?;
