@@ -1579,15 +1579,9 @@ pub(crate) fn border_fills_equal(
             return false;
         }
     }
-    // fill 비교 (fill_type + solid color)
-    if a.fill.fill_type != b.fill.fill_type {
-        return false;
-    }
-    match (&a.fill.solid, &b.fill.solid) {
-        (Some(sa), Some(sb)) => sa.background_color == sb.background_color,
-        (None, None) => true,
-        _ => false,
-    }
+    // 채우기는 면 색뿐 아니라 무늬 종류·무늬 색, 그러데이션, 그림, 투명도까지 모두 같아야 한다.
+    // 면 색만 비교하면 무늬만 바꾼 정의가 옛 정의로 재사용되어 칸 배경 무늬가 바뀌지 않는다.
+    a.fill == b.fill
 }
 
 #[cfg(test)]
