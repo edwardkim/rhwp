@@ -18,7 +18,10 @@ fn pages(sample: &str) -> Vec<Value> {
         SEQUENCE.fetch_add(1, Ordering::Relaxed)
     ));
     std::fs::create_dir(&out).unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+    // nextest archive에서는 실행 호스트가 주입한 바이너리를 우선 사용한다.
+    let binary =
+        std::env::var_os("CARGO_BIN_EXE_rhwp").unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
+    let output = Command::new(binary)
         .args(["export-render-tree", sample, "-o"])
         .arg(&out)
         .current_dir(root)
