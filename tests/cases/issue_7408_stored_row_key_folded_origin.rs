@@ -70,6 +70,13 @@ fn sample_path(name: &str) -> PathBuf {
 ///
 /// 구현 속성(`TAG_IMPLEMENTATION_PROPERTY`) 줄은 저장본의 컷이 아니므로 뺀다.
 fn stored_cuts(para: &Paragraph) -> Option<Vec<usize>> {
+    // This contract compares visible text cuts through TextRun.char_start.
+    // Whitespace carriers can now publish their real prefix line box, but
+    // their following object row is a Table node, not a second TextRun.
+    // Their physical occupancy is covered by the edited-prefix contracts.
+    if para.text.chars().all(char::is_whitespace) {
+        return None;
+    }
     let units: Vec<u32> = para
         .line_segs
         .iter()

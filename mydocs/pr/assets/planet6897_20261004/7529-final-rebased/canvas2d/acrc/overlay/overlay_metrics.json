@@ -1,0 +1,86 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 96.46245,
+    "worst_pixel_match_percent": 94.39844,
+    "average_ink_match_percent": 69.43456,
+    "worst_ink_match_percent": 68.84426,
+    "average_visual_accuracy_proxy_percent": 69.43456,
+    "worst_visual_accuracy_proxy_percent": 68.84426,
+    "average_tolerant_content_match_percent": 99.16799,
+    "worst_tolerant_content_match_percent": 99.11316,
+    "worst_pages": [
+      3,
+      14
+    ]
+  },
+  "pages": [
+    {
+      "page": 3,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/rhwp_png/rhwp_003.png",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/acrc/pdf_003.png",
+      "overlay_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/overlay/overlay_003.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 13139,
+      "diff_ratio": 0.0147354,
+      "pixel_match_percent": 98.52646,
+      "ink_union_pixels": 42172,
+      "ink_diff_pixels": 13139,
+      "ink_diff_ratio": 0.31155743,
+      "ink_match_percent": 68.84426,
+      "visual_accuracy_proxy_percent": 68.84426,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.0847,
+      "silhouette_boundary_reconciled_pixels": 12,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42172,
+      "tolerant_content_match_percent": 99.11316,
+      "mean_abs_channel_delta": 1.548,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        54,
+        92,
+        739,
+        1049
+      ]
+    },
+    {
+      "page": 14,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/rhwp_png/rhwp_014.png",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/acrc/pdf_014.png",
+      "overlay_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/overlay/overlay_014.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 49947,
+      "diff_ratio": 0.05601562,
+      "pixel_match_percent": 94.39844,
+      "ink_union_pixels": 166628,
+      "ink_diff_pixels": 49947,
+      "ink_diff_ratio": 0.29975154,
+      "ink_match_percent": 70.02485,
+      "visual_accuracy_proxy_percent": 70.02485,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.22162,
+      "silhouette_boundary_reconciled_pixels": 2,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 166628,
+      "tolerant_content_match_percent": 99.22282,
+      "mean_abs_channel_delta": 6.665,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        54,
+        92,
+        739,
+        1065
+      ]
+    }
+  ]
+}

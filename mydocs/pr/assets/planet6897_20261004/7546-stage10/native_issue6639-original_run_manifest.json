@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "issue6639-original",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6639/rhwp-table-cell-minimal-repro.hwp",
+      "sha256": "983df661a2316881457ee4604c3084895bd4f6b350df4953c6c53cca8c162801"
+    },
+    "pdf": {
+      "path": "pdf/issue6639/issue6639-original-160-2020.pdf",
+      "sha256": "ebd1cd8ef64741c648211db9174cae7118e59fcbc49fba39b57ab5c63b2e9bc0"
+    },
+    "git_head": "d78fdc0e0745f10b57e928b50716d298861c7559",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "6b591e4fa3e4bded1e8ea4a18107bb60dd5c2fd692014fbbece45c8770e52151"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

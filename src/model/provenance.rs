@@ -36,6 +36,11 @@ pub struct SourceProvenance {
     /// rhwp HWPX→HWP 변환본 (`/RhwpHwpxOrigin` 마커, Issue #1770) —
     /// `is_hwpx_variant` 동치.
     pub hwpx_lineage: bool,
+    /// [#7051] 저장 줄 사다리가 HFT 한글 전용 face 의 ASCII 반각 조판을 증언한다.
+    /// 계보 신호(`hwp3_lineage`)가 없는 저장본 — HWP3 변환 HWP5 를 한컴이 HWPX 로 다시
+    /// 저장한 파일 등 — 을 위해 `DocumentCore` 가 로드 시 한 번 판정한다
+    /// (`renderer::hft_ascii_evidence`). 파서는 `false` 로 둔다.
+    pub hft_ascii_halfwidth_witnessed: bool,
 }
 
 /// 레이아웃 호환 정책 질의 표면.

@@ -1,0 +1,358 @@
+{
+  "status": "local_and_code_candidate_ci_complete_trailing_head_pending",
+  "base": "1e488ac370ec715a5b97c765542e16fc9bf65714",
+  "source_pr": 7538,
+  "source_head": "e4abc99f2de1da071964bb3a86c22e4b3d0a4d64",
+  "local_validation_head": "cc59be7146142614f9a1f2ca74c2b078668a6f79",
+  "native_and_wasm_source_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+  "production_source_unchanged_after_build": true,
+  "nextest": {
+    "passed": 10324,
+    "failed": 0,
+    "skipped": 50,
+    "seconds": 509.897,
+    "threads": 8,
+    "log_sha256": "c64c9661ffe484503b24af2f8913812fa240643d61152c71a5260e1554c76d6e"
+  },
+  "first_nextest": {
+    "passed": 10323,
+    "failed": 1,
+    "skipped": 50,
+    "seconds": 652.786,
+    "cause": "HFT U+2024 width classification golden; 3 fields updated; focused8 passed"
+  },
+  "native_skia": {
+    "library_passed": 4109,
+    "library_failed": 0,
+    "library_ignored": 13,
+    "focused_passed": 6,
+    "focused_failed": 0
+  },
+  "scoped_visual": {
+    "whole_documents": [
+      "toggle:1",
+      "petition:2",
+      "tac7062:10",
+      "float-stack:2"
+    ],
+    "additional_accepted_pages": [
+      "liver:24",
+      "rowbreak:13"
+    ],
+    "accepted_pages_per_backend": 17,
+    "minimum_percent": 95.07329,
+    "below_90": 0,
+    "native_wasm_comparison_pages_per_backend": 236,
+    "diagnostic_below_90_per_backend": 12,
+    "large_residuals": "liver7 unchanged from exact devel; hwpspec4 selected; CBTA58; global fidelity held for #7445",
+    "full_document_acceptance_claimed_for_large_diagnostics": false
+  },
+  "gates": [
+    {
+      "gate": "unit-tiers",
+      "cmd": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1e488ac370ec715a5b97c765542e16fc9bf65714"
+      ],
+      "exit": 0,
+      "seconds": 16.098
+    },
+    {
+      "gate": "prepare",
+      "cmd": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.78
+    },
+    {
+      "gate": "fmt",
+      "cmd": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit": 0,
+      "seconds": 6.499
+    },
+    {
+      "gate": "focused4068",
+      "cmd": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_4068_column_top_table_outer_margin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 119.165
+    },
+    {
+      "gate": "focused7062",
+      "cmd": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7062_tac_object_host_line_height",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 10.375
+    },
+    {
+      "gate": "focused6598",
+      "cmd": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6598_para_anchor_vert_origin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 8.203
+    },
+    {
+      "gate": "fmt-check",
+      "cmd": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.528
+    },
+    {
+      "gate": "native-clippy",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 30.838
+    },
+    {
+      "gate": "wasm-clippy",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 18.671
+    },
+    {
+      "gate": "workspace-build",
+      "cmd": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 63.084
+    },
+    {
+      "gate": "all-target-clippy",
+      "cmd": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 77.233
+    },
+    {
+      "gate": "manifest",
+      "cmd": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1e488ac370ec715a5b97c765542e16fc9bf65714"
+      ],
+      "exit": 0,
+      "seconds": 0.53
+    },
+    {
+      "gate": "native-build",
+      "cmd": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 106.662
+    },
+    {
+      "gate": "wasm-build",
+      "cmd": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 282.292
+    },
+    {
+      "gate": "nextest-full",
+      "cmd": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 624.919
+    },
+    {
+      "gate": "skia-lib",
+      "cmd": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 198.937
+    },
+    {
+      "gate": "skia-picture",
+      "cmd": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 128.388
+    },
+    {
+      "gate": "skia-direct-pdf",
+      "cmd": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 8.864
+    }
+  ],
+  "input_provenance": "final/input-provenance.json",
+  "visual_summary": "final/visual-summary.json",
+  "native_wasm_note": "Mac local wasm-pack --no-opt, not Docker optimized; actual Chrome WASM SVG compared at96DPI",
+  "integration_ci": {
+    "pull_number": 7576,
+    "code_candidate": "04c4a1c0ccdf3159d6e934c06540c2dc2afcf28e",
+    "mode": "Full configured CI",
+    "preflight_reason": "no-green-build-candidate",
+    "status": "success",
+    "primary_ci_run": 37231838199,
+    "codeql_run": 37231838202,
+    "render_diff_run": 37231837993,
+    "adapter_run": 37231838244,
+    "proptest_run": 37231838309,
+    "policy_controller_run": 37231838032,
+    "archive_workers_passed": 10131,
+    "provenance": "final/ci-code-candidate.json",
+    "trailing_head_status": "pending exact-head checks",
+    "merge_status": "not yet merged",
+    "global_fidelity_deferred_issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5984016636"
+  }
+}

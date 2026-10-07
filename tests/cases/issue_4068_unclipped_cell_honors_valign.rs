@@ -50,7 +50,6 @@ const CLIP_SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.
 
 /// `walk` 은 자기 자신을 세므로 최상위 표의 칸이 1, 그 안의 중첩 표 칸이 2 다.
 /// 중첩 단계는 문서마다 다르다 — `hwpx_sample2` 는 2, `42065` 는 3 이다.
-const NESTED_DEPTH_SAMPLE2: usize = 2;
 const NESTED_DEPTH_42065: usize = 3;
 
 fn sample(rel: &str) -> PathBuf {
@@ -306,10 +305,23 @@ fn page_tree(rel: &str, page_num: u32) -> (RenderNode, f64) {
 /// `hwpx_sample2` 19쪽(0-based 18)의 중첩 표 한 행 — 왼쪽 그림 칸, 오른쪽 글자 칸.
 fn nested_row() -> (CellContent, CellContent, f64) {
     let (root, page_bottom) = page_tree(NESTED_SAMPLE, 18);
-    let cells: Vec<CellContent> = nested_cell_contents(&root, NESTED_DEPTH_SAMPLE2)
-        .into_iter()
-        .filter(|c| (955.0..975.0).contains(&c.cell_y))
-        .collect();
+    fn has_picture(node: &RenderNode) -> bool {
+        matches!(node.node_type, RenderNodeType::Image(_)) || node.children.iter().any(has_picture)
+    }
+    fn picture_table(node: &RenderNode) -> Option<&RenderNode> {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.row_count == 1
+                && table.col_count == 2
+                && table.cell_context.is_some()
+                && has_picture(node)
+            {
+                return Some(node);
+            }
+        }
+        node.children.iter().find_map(picture_table)
+    }
+    let table = picture_table(&root).expect("그림을 소유한 중첩 1×2 표");
+    let cells = nested_cell_contents(table, 1);
     assert_eq!(
         cells.len(),
         2,
@@ -318,10 +330,82 @@ fn nested_row() -> (CellContent, CellContent, f64) {
     (cells[0], cells[1], page_bottom)
 }
 
+/// 저장 그림과 글줄을 가진 1×2 행의 안 여백·글자 내용 높이. 렌더 좌표와 독립이다.
+fn source_row_metrics() -> (f64, f64, f64) {
+    fn find(paragraphs: &[Paragraph]) -> Option<&Table> {
+        for para in paragraphs {
+            for ctrl in &para.controls {
+                if let Control::Table(table) = ctrl {
+                    let has_picture = table.cells.iter().any(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .any(|p| p.controls.iter().any(|c| matches!(c, Control::Picture(_))))
+                    });
+                    if table.row_count == 1 && table.col_count == 2 && has_picture {
+                        return Some(table);
+                    }
+                    for cell in &table.cells {
+                        if let Some(nested) = find(&cell.paragraphs) {
+                            return Some(nested);
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
+    let bytes = std::fs::read(sample(NESTED_SAMPLE)).expect("독립 저장 기하 입력");
+    let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    let table = find(std::slice::from_ref(
+        &core.document().sections[0].paragraphs[182],
+    ))
+    .expect("그림을 소유한 중첩 행");
+    let text_cell = table
+        .cells
+        .iter()
+        .find(|cell| {
+            !cell
+                .paragraphs
+                .iter()
+                .any(|p| p.controls.iter().any(|c| matches!(c, Control::Picture(_))))
+        })
+        .expect("그림 옆 글자 칸");
+    assert_eq!(text_cell.vertical_align, VerticalAlign::Center);
+    let padding = |value: i16, fallback: i16| {
+        f64::from(if text_cell.apply_inner_margin && value >= 0 {
+            value
+        } else {
+            fallback
+        }) / 75.0
+    };
+    let content = text_cell
+        .paragraphs
+        .iter()
+        .map(|para| {
+            let first = para.line_segs.first().expect("글자 칸 첫 저장 줄");
+            let last = para.line_segs.last().expect("글자 칸 마지막 저장 줄");
+            f64::from(last.vertical_pos + last.line_height - first.vertical_pos) / 75.0
+        })
+        .sum();
+    (
+        padding(text_cell.padding.top, table.padding.top),
+        padding(text_cell.padding.bottom, table.padding.bottom),
+        content,
+    )
+}
+
 /// ① 안 잘린 칸은 선언된 `Center` 를 받는다.
 ///
 /// 수정 전에는 두 칸이 **같은** 오프셋(0.90px = 여백만)이었다. 오른쪽 글자 칸은
-/// 내용(96.00px)이 안높이(99.76px)보다 짧아 정렬 몫 1.90px 을 받아야 한다.
+/// 내용(96.00px)이 안높이보다 짧아 정렬 몫을 받아야 한다.
+///
+/// [Refs #7387] 기대 구간을 한/글 정본으로 다시 맞췄다. 이 행의 높이는 왼쪽 그림 칸
+/// (그림 7689HU + 세로 오프셋 107HU + 안 여백 141+141HU = 8078HU = 107.7px)이 정한다 —
+/// `pdf/hwpx_sample2-2020.pdf` 19쪽 표 세로 괘선 965.8~1073.4 = 107.6px. 종전 기대
+/// (몫 1.90px)는 rhwp 가 이 행을 글자 칸 높이(101.6px)로 자르던 상태의 값이었다.
+/// 정본의 글자 칸 첫 베이스라인은 표 위에서 14.9px(980.7 − 965.8), 즉 줄 위
+/// 14.9 − 9.07(베이스라인 680HU) = 5.83px 이고, 안 여백 1.88 + 정렬 몫
+/// (103.95 − 96.00)/2 = 3.97 과 맞는다. 그림 칸 첫 줄은 안 여백 1.88px 이다.
 #[test]
 fn an_unclipped_nested_cell_keeps_its_declared_center_alignment() {
     let (picture_cell, text_cell, page_bottom) = nested_row();
@@ -334,26 +418,36 @@ fn an_unclipped_nested_cell_keeps_its_declared_center_alignment() {
         );
     }
 
-    let slack = text_cell.offset() - picture_cell.offset();
+    let (top, bottom, content_height) = source_row_metrics();
+    let expected_slack = ((text_cell.cell_h - top - bottom - content_height) / 2.0).max(0.0);
     assert!(
-        (1.0..=3.0).contains(&slack),
-        "여유 있는 Center 칸이 정렬 몫을 받아야 한다 — 수정 전에는 0.00 이었다. \
-         실측 {slack:.2}px (그림칸 {:.2} · 글자칸 {:.2})",
-        picture_cell.offset(),
-        text_cell.offset()
+        expected_slack > 0.0,
+        "저장 글자 내용보다 행 안높이가 커야 한다"
+    );
+    let slack = text_cell.offset() - picture_cell.offset();
+    assert!((slack - expected_slack).abs() <= 1.0,
+        "Center 정렬 몫은 저장 글자 내용과 유효 안높이 차이의 절반이어야 한다: {slack} vs {expected_slack}");
+    assert!(
+        (text_cell.offset() - (top + expected_slack)).abs() <= 1.0,
+        "글자 칸 첫 줄은 저장 안 여백과 Center 정렬 몫을 합한 위치여야 한다: {} vs {}",
+        text_cell.offset(),
+        top + expected_slack
     );
 }
 
 /// ② 정렬 여유가 없는 칸은 **움직이지 않는다**.
 ///
-/// 왼쪽 그림 칸은 내용(103.95px)이 안높이(99.76px)보다 커서 정렬 몫이 0 이다.
-/// 이 수정이 모든 중첩 칸을 무조건 밀어내는 게 아님을 잠근다.
+/// 왼쪽 그림 칸은 내용(103.95px)이 곧 행의 안높이라 정렬 몫이 0 이다.
+/// 이 수정이 모든 중첩 칸을 무조건 밀어내는 게 아님을 잠근다. 여백은 저장 안 여백
+/// 141HU = 1.88px 이다([Refs #7387] 행이 그림 높이를 담은 뒤의 값, 종전 상한 1.5 는
+/// 잘린 행에서 줄어든 여백 0.90px 을 잰 값이었다).
 #[test]
 fn the_cell_without_alignment_slack_stays_put() {
     let (picture_cell, _text_cell, _) = nested_row();
+    let (top, _, _) = source_row_metrics();
     assert!(
-        picture_cell.offset() < 1.5,
-        "여유 없는 칸은 여백만큼만 내려가야 한다 — 실측 {:.2}px",
+        (picture_cell.offset() - top).abs() <= 0.5,
+        "여유 없는 그림 칸은 저장 안 여백만 적용되어야 한다: {} vs {top}",
         picture_cell.offset()
     );
 }

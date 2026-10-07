@@ -952,7 +952,7 @@ fn parse_para_shape(
                             ps.hwpx_plain_para_margin = false;
                             // <switch>/<case>/<default> 네임스페이스 분기 처리
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
-                            parse_para_shape_switch(reader, &mut ps)?;
+                            parse_para_shape_switch(reader, &mut ps, physical_plain_margin)?;
                         }
                         ParaShapeChildKind::Other => {}
                     }
@@ -1146,6 +1146,13 @@ fn parse_para_shape_child(
                             ps.attr1 &= !(1 << 19);
                         }
                     }
+                    b"lineWrap" => {
+                        // [#6875] 문단 "한 줄로 입력" — HWP5 ParaShape attr2 bits 0-1.
+                        // 종전엔 읽지 않아 x2h·x2x 왕복에서 SQUEEZE 문단이 BREAK 로
+                        // 굳고, 한/글이 그 문단을 여러 줄로 다시 나눠 쪽수가 갈렸다.
+                        ps.attr2 = (ps.attr2 & !PARA_ATTR2_LINE_WRAP_MASK)
+                            | para_line_wrap_bits(&attr_str(&attr));
+                    }
                     _ => {}
                 }
             }
@@ -1262,6 +1269,7 @@ fn parse_para_shape_margin_children(
 fn parse_para_shape_switch(
     reader: &mut Reader<&[u8]>,
     ps: &mut ParaShape,
+    physical_margin_units: bool,
 ) -> Result<(), HwpxError> {
     let mut buf = Vec::new();
     let mut in_hwpunitchar_case = false;
@@ -1487,6 +1495,20 @@ fn parse_para_shape_switch(
         };
         if let Some(v) = ls_exact {
             ps.line_spacing = v;
+        }
+    }
+
+    // [#7545] xmlVersion 1.2의 case 여백은 이미 바이너리 ParaShape 단위다.
+    // 1.4 이후의 물리 HWPUNIT 해석을 적용하면 내어쓰기와 문단 간격이 두 배가 된다.
+    // 한컴 2020의 동일 원본 HWP 저장 결과로 확인한 단위이며, 줄간격 비율은 그대로 둔다.
+    if !physical_margin_units && found_case {
+        ps.margin_left /= 2;
+        ps.margin_right /= 2;
+        ps.indent /= 2;
+        ps.spacing_before /= 2;
+        ps.spacing_after /= 2;
+        if ps.line_spacing_type != LineSpacingType::Percent {
+            ps.line_spacing /= 2;
         }
     }
 

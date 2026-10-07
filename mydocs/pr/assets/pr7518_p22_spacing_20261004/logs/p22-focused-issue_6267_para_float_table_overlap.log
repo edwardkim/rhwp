@@ -1,0 +1,13 @@
+[RustTestSuite] issue_6267_para_float_table_overlap -> regression_suite_006::issue_6267_para_float_table_overlap
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_006 issue_6267_para_float_table_overlap::
+   Compiling svg2pdf v0.13.0 (/tmp/rhwp-pr7518-review-20261004/vendor/svg2pdf)
+   Compiling rhwp-contracts v0.1.0 (/tmp/rhwp-pr7518-review-20261004/crates/rhwp-contracts)
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.39s
+     Running tests/generated/regression_suite_006.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_006-98a4743532aaca57)
+
+running 2 tests
+test issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text ... ok
+test issue_6267_para_float_table_overlap::host_paragraph_spacing_before_is_not_double_charged ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 218 filtered out; finished in 0.07s

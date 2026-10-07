@@ -7,7 +7,6 @@ use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
-use super::form_caption::display_form_caption;
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
     real_picture_watermark_bytes_to_hancom_tone_png_bytes,
@@ -43,7 +42,6 @@ fn expand_pua_old_hangul(text: &str) -> String {
     out
 }
 use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
-use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
 
@@ -2042,10 +2040,7 @@ impl SvgRenderer {
                 if let Some(ref path) = img.external_path {
                     let cx = bbox.x + bbox.width / 2.0;
                     let cy = bbox.y + bbox.height / 2.0;
-                    let escaped = path
-                        .replace('&', "&amp;")
-                        .replace('<', "&lt;")
-                        .replace('>', "&gt;");
+                    let escaped = escape_xml(crate::model::image::external_picture_basename(path));
                     self.output.push_str(&format!(
                         "<text x=\"{}\" y=\"{}\" text-anchor=\"middle\" fill=\"#666666\" font-size=\"10\">[외부: {}]</text>\n",
                         cx, cy, escaped,
@@ -2879,125 +2874,34 @@ impl SvgRenderer {
 
     /// 양식 개체 SVG 렌더링
     fn render_form_object(&mut self, form: &FormObjectNode, bbox: &BoundingBox) {
-        let x = bbox.x;
-        let y = bbox.y;
-        let w = bbox.width;
-        let h = bbox.height;
-
-        match form.form_type {
-            FormType::PushButton => {
-                // 3D 버튼 (웹 환경 비활성 — 회색 스타일)
-                self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#d0d0d0\" stroke=\"#a0a0a0\" stroke-width=\"0.5\"/>\n",
-                    x, y, w, h));
-                // 캡션 텍스트 (회색, 중앙)
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.55).min(12.0).max(7.0);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"#808080\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + w / 2.0, y + h / 2.0, font_size, escape_xml(caption.as_ref())));
+        use super::form_appearance::{form_drawing, FormPrimitive};
+        let drawing = form_drawing(form, *bbox);
+        for primitive in drawing.primitives {
+            match primitive {
+                FormPrimitive::Rect { bbox: b, color } => self.output.push_str(&format!(
+                    "<rect x=\"{:.3}\" y=\"{:.3}\" width=\"{:.3}\" height=\"{:.3}\" fill=\"{}\"/>\n",
+                    b.x, b.y, b.width, b.height, escape_xml(&color))),
+                FormPrimitive::Circle { x, y, radius, color } => self.output.push_str(&format!(
+                    "<circle cx=\"{x:.3}\" cy=\"{y:.3}\" r=\"{radius:.3}\" fill=\"{}\"/>\n", escape_xml(&color))),
+                FormPrimitive::Polyline { points, color, width, closed } => {
+                    let points = points.iter().map(|p| format!("{:.3},{:.3}",p[0],p[1])).collect::<Vec<_>>().join(" ");
+                    if closed { self.output.push_str(&format!("<polygon points=\"{points}\" fill=\"{}\"/>\n",escape_xml(&color))); }
+                    else { self.output.push_str(&format!("<polyline points=\"{points}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{width:.3}\"/>\n",escape_xml(&color))); }
                 }
             }
-            FormType::CheckBox => {
-                // 체크박스: □/☑ + 캡션
-                let box_size = (h * 0.7).min(13.0);
-                let box_y = y + (h - box_size) / 2.0;
-                let box_x = x + 2.0;
-                self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"#606060\" stroke-width=\"0.8\"/>\n",
-                    box_x, box_y, box_size, box_size));
-                if form.value != 0 {
-                    // 체크 마크 (✓)
-                    let cx = box_x + box_size * 0.2;
-                    let cy = box_y + box_size * 0.55;
-                    let mx = box_x + box_size * 0.45;
-                    let my = box_y + box_size * 0.8;
-                    let ex = box_x + box_size * 0.85;
-                    let ey = box_y + box_size * 0.2;
-                    self.output.push_str(&format!(
-                        "<polyline points=\"{},{} {},{} {},{}\" fill=\"none\" stroke=\"#000000\" stroke-width=\"1.5\"/>\n",
-                        cx, cy, mx, my, ex, ey));
-                }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let text_x = box_x + box_size + 3.0;
-                    let font_size = (h * 0.55).min(12.0).max(7.0);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(caption.as_ref())));
-                }
+        }
+        if let Some(label) = drawing.label {
+            if self.font_embed_mode != FontEmbedMode::None {
+                self.font_codepoints
+                    .entry(label.font_family.clone())
+                    .or_default()
+                    .extend(label.text.chars());
             }
-            FormType::RadioButton => {
-                // 라디오: ○/◉ + 캡션
-                let r = (h * 0.3).min(6.5);
-                let cx = x + 2.0 + r;
-                let cy = y + h / 2.0;
-                self.output.push_str(&format!(
-                    "<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill=\"white\" stroke=\"#606060\" stroke-width=\"0.8\"/>\n",
-                    cx, cy, r));
-                if form.value != 0 {
-                    self.output.push_str(&format!(
-                        "<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill=\"#000000\"/>\n",
-                        cx,
-                        cy,
-                        r * 0.5
-                    ));
-                }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let text_x = cx + r + 3.0;
-                    let font_size = (h * 0.55).min(12.0).max(7.0);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        text_x, y + h / 2.0, font_size, form.fore_color, escape_xml(caption.as_ref())));
-                }
-            }
-            FormType::ComboBox => {
-                // 콤보박스: 입력 영역 + 드롭다운 버튼(▼)
-                let btn_w = (h * 0.8).min(16.0);
-                self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"#a0a0a0\" stroke-width=\"0.8\"/>\n",
-                    x, y, w, h));
-                // 드롭다운 버튼
-                self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"#e0e0e0\" stroke=\"#a0a0a0\" stroke-width=\"0.5\"/>\n",
-                    x + w - btn_w, y, btn_w, h));
-                // ▼ 화살표
-                let arrow_cx = x + w - btn_w / 2.0;
-                let arrow_cy = y + h / 2.0;
-                let arrow_size = (h * 0.2).min(4.0);
-                self.output.push_str(&format!(
-                    "<polygon points=\"{},{} {},{} {},{}\" fill=\"#404040\"/>\n",
-                    arrow_cx - arrow_size,
-                    arrow_cy - arrow_size * 0.5,
-                    arrow_cx + arrow_size,
-                    arrow_cy - arrow_size * 0.5,
-                    arrow_cx,
-                    arrow_cy + arrow_size * 0.5
-                ));
-                // 텍스트
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.55).min(12.0).max(7.0);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.text)));
-                }
-            }
-            FormType::Edit => {
-                // 입력 상자: 테두리 사각형 + 내부 텍스트
-                self.output.push_str(&format!(
-                    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"white\" stroke=\"#a0a0a0\" stroke-width=\"0.8\"/>\n",
-                    x, y, w, h));
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.55).min(12.0).max(7.0);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{:.1}\" fill=\"{}\" dominant-baseline=\"central\" font-family=\"'맑은 고딕',sans-serif\">{}</text>\n",
-                        x + 3.0, y + h / 2.0, font_size, form.fore_color, escape_xml(&form.text)));
-                }
-            }
+            self.output.push_str(&format!(
+                "<text x=\"{:.3}\" y=\"{:.3}\" font-size=\"{:.3}\" fill=\"{}\" font-family=\"{}\" font-weight=\"{}\" font-style=\"{}\">{}</text>\n",
+                label.x, label.baseline, label.font_size, escape_xml(&label.color),
+                escape_xml(&label.font_family), if label.bold { "bold" } else { "normal" },
+                if label.italic { "italic" } else { "normal" }, escape_xml(&label.text)));
         }
     }
 
@@ -3480,15 +3384,22 @@ impl Renderer for SvgRenderer {
         //   cx = advance box 수평 중앙
         //   cy = baseline(y) − font_size × MIDDLE_DOT_CY_OFFSET_EM  (CJK x-height 중앙)
         //   r  = font_size × MIDDLE_DOT_RADIUS_EM  (한글 COM PDF 실측, #2999)
-        let cluster_advance = |char_idx: usize, cluster_str: &str| -> f64 {
+        let advance_in = |positions: &[f64], char_idx: usize, cluster_str: &str| -> f64 {
             let n = cluster_str.chars().count();
             let end = char_idx + n;
-            if end < char_positions.len() {
-                char_positions[end] - char_positions[char_idx]
+            if end < positions.len() {
+                positions[end] - positions[char_idx]
             } else {
                 0.0
             }
         };
+        let cluster_advance =
+            |char_idx: usize, cluster_str: &str| advance_in(&char_positions, char_idx, cluster_str);
+        // 글리프 폭(`textLength`)은 커닝 전 advance에 맞춘다. 자리와 `·` 중앙은 char_positions를 따른다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
+        let glyph_advance =
+            |char_idx: usize, cluster_str: &str| advance_in(&fit_positions, char_idx, cluster_str);
         let is_middle_dot = |cluster_str: &str| cluster_str == "\u{00B7}";
         let dot_radius = font_size * super::render_tree::MIDDLE_DOT_RADIUS_EM;
         let dot_cy_offset = -font_size * super::render_tree::MIDDLE_DOT_CY_OFFSET_EM;
@@ -3503,7 +3414,8 @@ impl Renderer for SvgRenderer {
             let dx = style.shadow_offset_x;
             let dy = style.shadow_offset_y;
             for (char_idx, cluster_str) in clusters.iter() {
-                if cluster_str == " " || cluster_str == "\t" {
+                // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                if cluster_str.chars().all(char::is_whitespace) {
                     continue;
                 }
                 if is_middle_dot(cluster_str) {
@@ -3520,7 +3432,7 @@ impl Renderer for SvgRenderer {
                 let char_y = y + dy;
                 let length_attrs = svg_cluster_text_length_attrs(
                     cluster_str,
-                    cluster_advance(*char_idx, cluster_str),
+                    glyph_advance(*char_idx, cluster_str),
                     style,
                     script_advance_scale,
                     ratio,
@@ -3553,7 +3465,8 @@ impl Renderer for SvgRenderer {
         // positioning calculation below without repainting their TextRun mirror.
         if !self.suppress_text_glyphs {
             for (char_idx, cluster_str) in clusters.iter() {
-                if cluster_str == " " || cluster_str == "\t" {
+                // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                if cluster_str.chars().all(char::is_whitespace) {
                     continue;
                 }
                 if cluster_str == "-" {
@@ -3646,7 +3559,7 @@ impl Renderer for SvgRenderer {
                 let char_x = x + char_positions[*char_idx];
                 let length_attrs = svg_cluster_text_length_attrs(
                     cluster_str,
-                    cluster_advance(*char_idx, cluster_str),
+                    glyph_advance(*char_idx, cluster_str),
                     style,
                     script_advance_scale,
                     ratio,
@@ -4864,6 +4777,38 @@ fn svg_outline_font_data<'a>(
     std::borrow::Cow::Owned(result)
 }
 
+/// Encode a document face as the contents of a double-quoted CSS string.
+/// Keep the original name for lookup; only serialize at the output boundary.
+/// Hex escapes also keep SVG/HTML style delimiters and XML-invalid controls out
+/// of the source. The trailing space terminates the escape before hex digits.
+fn escape_css_font_name(name: &str) -> String {
+    use std::fmt::Write;
+
+    let mut escaped = String::with_capacity(name.len());
+    for character in name.chars() {
+        if matches!(
+            character,
+            '"' | '\\' | '<' | '>' | '&' | '\u{fffe}' | '\u{ffff}'
+        ) || character.is_control()
+        {
+            write!(escaped, "\\{:x} ", character as u32).expect("writing to String");
+        } else {
+            escaped.push(character);
+        }
+    }
+    escaped
+}
+
+/// CSS is text in an XML style element, not markup. Both public SVG export
+/// routes use this wrapper, including the WASM print/profile route.
+pub(crate) fn svg_font_style_element(css: &str) -> String {
+    let text = css
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;");
+    format!("\n<style>\n{text}</style>\n")
+}
+
 /// [#2524] 문서 임베디드(BinData) 폰트를 @font-face 로 직접 임베딩한다.
 ///
 /// 미설치 임베디드 폰트(bitmap 등)는 `find_font_file`(디스크) 조회에 실패해
@@ -4884,7 +4829,10 @@ fn embedded_font_face_css(
     let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
     Some(format!(
         "@font-face {{ font-family: \"{}\"; src: url(\"data:{};base64,{}\") format(\"{}\"); }}\n",
-        font_name, mime, b64, format,
+        escape_css_font_name(font_name),
+        mime,
+        b64,
+        format,
     ))
 }
 
@@ -4907,12 +4855,13 @@ fn append_local_bold_font_face_css(css: &mut String, font_name: &str) {
     }
     let src = aliases
         .iter()
-        .map(|alias| format!("local(\"{}\")", alias))
+        .map(|alias| format!("local(\"{}\")", escape_css_font_name(alias)))
         .collect::<Vec<_>>()
         .join(", ");
     css.push_str(&format!(
         "@font-face {{ font-family: \"{}\"; src: {}; font-weight: bold; }}\n",
-        font_name, src,
+        escape_css_font_name(font_name),
+        src,
     ));
 }
 
@@ -4932,7 +4881,7 @@ fn append_embedded_bold_font_face_css(
             let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
             css.push_str(&format!(
                 "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); font-weight: bold; }}\n",
-                font_name, b64,
+                escape_css_font_name(font_name), b64,
             ));
             eprintln!(
                 "  [font-embed] {} Bold → 전체 {:.1}KB",
@@ -5000,17 +4949,18 @@ pub fn generate_font_style(
                 }
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);
@@ -5037,7 +4987,7 @@ pub fn generate_font_style(
                                 base64::engine::general_purpose::STANDARD.encode(&outline_data);
                             css.push_str(&format!(
                                 "@font-face {{ font-family: \"{}\"; src: url(\"data:font/ttf;base64,{}\") format(\"truetype\"); }}\n",
-                                font_name, b64,
+                                escape_css_font_name(font_name), b64,
                             ));
                             if renderer.font_bold_families().contains(font_name) {
                                 let bold_lookup =
@@ -5070,7 +5020,7 @@ pub fn generate_font_style(
                                     base64::engine::general_purpose::STANDARD.encode(&subset_data);
                                 css.push_str(&format!(
                                     "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                                    font_name, b64,
+                                    escape_css_font_name(font_name), b64,
                                 ));
                                 if renderer.font_bold_families().contains(font_name) {
                                     let bold_lookup =
@@ -5102,17 +5052,18 @@ pub fn generate_font_style(
                 // 폰트 파일 없거나 서브셋 실패 → local() 폴백
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);
@@ -5136,7 +5087,7 @@ pub fn generate_font_style(
                         let b64 = base64::engine::general_purpose::STANDARD.encode(&font_data);
                         css.push_str(&format!(
                             "@font-face {{ font-family: \"{}\"; src: url(\"data:font/opentype;base64,{}\") format(\"opentype\"); }}\n",
-                            font_name, b64,
+                            escape_css_font_name(font_name), b64,
                         ));
                         if renderer.font_bold_families().contains(font_name) {
                             let bold_lookup =
@@ -5154,17 +5105,18 @@ pub fn generate_font_style(
                 // 폰트 파일 없음 → local() 폴백
                 let aliases = font_local_aliases(font_name);
                 let src = if aliases.is_empty() {
-                    format!("local(\"{}\")", font_name)
+                    format!("local(\"{}\")", escape_css_font_name(font_name))
                 } else {
                     aliases
                         .iter()
-                        .map(|a| format!("local(\"{}\")", a))
+                        .map(|a| format!("local(\"{}\")", escape_css_font_name(a)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 };
                 css.push_str(&format!(
                     "@font-face {{ font-family: \"{}\"; src: {}; }}\n",
-                    font_name, src,
+                    escape_css_font_name(font_name),
+                    src,
                 ));
                 if renderer.font_bold_families().contains(font_name) {
                     append_local_bold_font_face_css(&mut css, font_name);

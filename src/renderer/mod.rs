@@ -25,6 +25,7 @@ pub mod font_paths;
 pub(crate) mod font_rule_layout_metric_projection;
 #[path = "font_rule_projections/layout_name.rs"]
 pub(crate) mod font_rule_layout_name_projection;
+pub mod form_appearance;
 pub(crate) mod form_caption;
 pub mod hyperlinks;
 // [gym_gpu_raster] GPU 가속 SVG 래스터화(vello/wgpu). 네이티브 + gpu feature 전용 —
@@ -34,6 +35,7 @@ pub mod gpu;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
 pub mod height_measurer;
+pub(crate) mod hft_ascii_evidence;
 pub mod html;
 pub(crate) mod image_header;
 pub mod image_resolver;
@@ -243,6 +245,24 @@ pub(crate) fn replay_positions_or_compute<'a>(
         })
 }
 
+/// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
+///
+/// 커닝은 글자 사이만 좁힌다. 커닝한 경계로 폭을 맞추면 쌍의 앞 글자가 커닝만큼
+/// 눌린다. 커닝을 요청한 run이 layout positions로 그려지면 커닝 전 경계로 폭을
+/// 맞추고, 그리는 자리는 호출자의 layout positions를 그대로 쓴다.
+pub(crate) fn glyph_fit_positions<'a>(
+    replay_text: &str,
+    style: &TextStyle,
+    layout_positions: Option<&[f64]>,
+    char_positions: &'a [f64],
+) -> std::borrow::Cow<'a, [f64]> {
+    if style.kerning && validated_replay_positions(replay_text, layout_positions).is_some() {
+        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+    } else {
+        std::borrow::Cow::Borrowed(char_positions)
+    }
+}
+
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TextStyle {
@@ -392,6 +412,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub hft_hangul_face: bool,
+    /// 원본 한글 HFT 기호 슬롯의 전각 폭 보존 여부. ASCII 반각 판정과 별개다.
+    #[serde(skip_serializing)]
+    pub hft_fullwidth_dot: bool,
     /// [#7418] 이 run 이 한글 슬롯이고 글자 모양이 `ascii_punct_latin_slot` 이면, ASCII
     /// 구두점을 잴 때 쓸 **영문 슬롯**의 기본 메트릭. run 을 쪼개지 않고 글자 단위로 폭만
     /// 영문 슬롯으로 잰다(#7051 HFT 반각 ASCII 와 같은 자리). 양쪽 정렬 여분 등 배치가 얹는
@@ -592,6 +615,7 @@ impl Default for TextStyle {
             font_space_em: None,
             layout_half_space: false,
             hft_hangul_face: false,
+            hft_fullwidth_dot: false,
             ascii_punct_latin: None,
         }
     }
@@ -1547,6 +1571,21 @@ pub(crate) fn cell_first_para_stored_lead(
         return 0.0;
     }
     spacing_before_px.min(vpos)
+}
+
+/// Stored cell starts already express their lead in the saved frame. Reflow
+/// starts have no such frame and own the paragraph's declared before-space.
+/// Later paragraphs own that space in both paths.
+pub(crate) fn cell_paragraph_spacing_before(
+    para: &crate::model::paragraph::Paragraph,
+    para_index: usize,
+    spacing_before: f64,
+) -> f64 {
+    if para_index > 0 || para_has_no_stored_line_segs(para) {
+        spacing_before
+    } else {
+        0.0
+    }
 }
 
 /// [#2169] 저장 LINE_SEG 부재 판별 — 원본 NO_LS 와 자기-export HWPX 재파싱본

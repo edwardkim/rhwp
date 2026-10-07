@@ -153,6 +153,10 @@ pub(crate) struct HeightCursor {
     /// 편집으로 앞 내용이 밀린 뒤의 저장 좌표는 이 쪽의 물리 상태와 무관해,
     /// 점프하면 후속 분할 조각이 쪽 밖으로 밀린다(셀 Enter 재현).
     pub session_edited: bool,
+    /// [#7351] 이번 항목이 **표 조각**(`PageItem::PartialTable`)인가. 조각은 host 문단의 앞
+    /// 간격을 그리는 문단 경로를 타지 않으므로 `vpos_corrected_end_y` 의 `sb_N` 사전 차감
+    /// 대상이 아니다. layout 만 세운다.
+    pub curr_item_is_table_fragment: bool,
 }
 
 #[path = "height_cursor_lazy_base.rs"]
@@ -194,6 +198,7 @@ impl HeightCursor {
             min_flow_floor: f64::MIN,
             trimmed_prev_spacing_before_px: 0.0,
             session_edited: false,
+            curr_item_is_table_fragment: false,
         }
     }
 
@@ -631,11 +636,18 @@ impl HeightCursor {
                 })
             })
             .unwrap_or(false);
-        let curr_sb = paragraphs
-            .get(item_para)
-            .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
-            .map(|ps| ps.spacing_before)
-            .unwrap_or(0.0);
+        // [#7351] 표 조각은 host 문단의 앞 간격을 그리지 않는다 — 사전 차감하면 조각이 그 앞
+        // 간격만큼 위로 붙는다(issue2004_cell_image_stack 4쪽: 정본 표 위 괘선 127.84,
+        // 쪽 저장 기준점(#7345)을 고친 뒤 차감 스냅이 수용되면 121.1).
+        let curr_sb = if self.curr_item_is_table_fragment {
+            0.0
+        } else {
+            paragraphs
+                .get(item_para)
+                .and_then(|p| styles.para_styles.get(p.para_shape_id as usize))
+                .map(|ps| ps.spacing_before)
+                .unwrap_or(0.0)
+        };
         // 단일 셀 그림 프레임의 호스트 vpos는 앞 글줄 끝에서 정확히
         // 문단 앞 간격만큼 전진한 값으로 저장될 수 있다. 여기에는 표 높이가 없다.
         // 앞 글줄 끝을 기준으로 잡고 간격을 다시 빼면 첫 조각이
@@ -755,6 +767,32 @@ impl HeightCursor {
             }
             _ => prev_vpos_end,
         };
+        // [#7351] 자리차지 표 호스트는 첫 줄 vpos 대신 앞 줄 끝(`prev_vpos_end`)을 쓴다 — 저장
+        // 사다리에서 그 값은 이미 현재 문단의 앞 간격 **앞**(문단 상단)이다. 글자 있는 호스트의
+        // 표는 문단 상단 + 세로 오프셋에 놓이고 앞 간격을 다시 더하는 경로가 없으므로, 스냅이
+        // 수용된 목표에서 앞 간격을 사전 차감하면 표가 그만큼 위로 간다(쪽 저장 기준점(#7345)을
+        // 쪽 원점으로 고치면 종전에 기각되던 차감 스냅이 수용된다 — `issue_6797` 의 오프셋 표가
+        // 574.8 → 568.1). 수용 여부(≤8px 후방 클램프 등)는 종전
+        // 목표로 판정해 바꾸지 않고, 수용된 목표만 문단 상단으로 되돌린다 — 이미 흐름이 밴드
+        // 아래에 둔 표를 저장 앵커로 다시 끌어올리지 않는다(#6798).
+        //
+        // 글자 없고 세로 오프셋도 없는 호스트는 `#7063`(`layout.rs`
+        // `empty_float_vpos_snap_flow_top`)이 흐름 커서 + 바깥여백으로 맞추는 계약을 이미
+        // 갖고 있어 그 갈래를 바꾸지 않는다. 오프셋이 있는 표는 그 계약 밖이고 문단 상단 +
+        // 오프셋이 기준이다.
+        let vpos_end_is_table_host_top = vpos_end == prev_vpos_end
+            && curr_first_vpos != Some(prev_vpos_end)
+            && curr_has_topbottom_para_table
+            && paragraphs.get(item_para).is_some_and(|para| {
+                para_has_visible_text(para)
+                    || para.controls.iter().any(|c| {
+                        matches!(c, Control::Table(t)
+                            if !t.common.treat_as_char
+                                && matches!(t.common.text_wrap, TextWrap::TopAndBottom)
+                                && matches!(t.common.vert_rel_to, VertRelTo::Para)
+                                && t.common.vertical_offset != 0)
+                    })
+            });
         // [Task #643] sb_N 사전 차감 대상 (vpos_corrected_end_y 내부에서 차감).
         // [Task #1027 Stage A] 공유 클램프 함수.
         let allow_large_backward = (self.allow_vpos_rewind && vpos_rewind)
@@ -762,6 +800,14 @@ impl HeightCursor {
                 && y_offset > self.col_area_y + self.col_area_height * 0.75)
             || compact_endnote_bottom_rewind
             || compact_endnote_tac_picture_rewind;
+        // 재구성한 두 줄 사이의 vpos는 저장된 문단 앞 간격의 증거가 아니다.
+        // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
+        let skip_prededuct = self.skip_spacing_before_prededuct
+            || inline_host_without_stored_anchor
+            || (synthetic_prev_seg
+                && paragraphs
+                    .get(item_para)
+                    .is_some_and(|para| crate::renderer::para_has_no_stored_line_segs(para)));
         let (end_y, applied) = vpos_corrected_end_y(
             is_page_path,
             self.col_anchor_y,
@@ -772,17 +818,35 @@ impl HeightCursor {
             curr_sb,
             y_offset,
             curr_has_topbottom_para_table,
-            // 재구성한 두 줄 사이의 vpos는 저장된 문단 앞 간격의 증거가 아니다.
-            // 앞 줄의 실제 끝에서 현재 문단을 시작하고, 앞 간격은 배치가 한 번 더한다.
-            self.skip_spacing_before_prededuct
-                || inline_host_without_stored_anchor
-                || (synthetic_prev_seg
-                    && paragraphs
-                        .get(item_para)
-                        .is_some_and(|para| crate::renderer::para_has_no_stored_line_segs(para))),
+            skip_prededuct,
             allow_large_backward,
             self.dpi,
         );
+        // 수용된 목표만 앞 간격 차감 없는 문단 상단으로 바꾼다(차감 뒤 단 상단 clamp 가 걸린
+        // 목표에 앞 간격을 더하면 문단 상단을 넘으므로 같은 공용 함수로 다시 구한다).
+        let end_y = if applied && vpos_end_is_table_host_top && !skip_prededuct {
+            let (paragraph_top_y, _) = vpos_corrected_end_y(
+                is_page_path,
+                self.col_anchor_y,
+                self.col_area_y,
+                self.col_area_height,
+                vpos_end,
+                base,
+                curr_sb,
+                y_offset,
+                curr_has_topbottom_para_table,
+                true,
+                allow_large_backward,
+                self.dpi,
+            );
+            if paragraph_top_y <= self.col_area_y + self.col_area_height {
+                paragraph_top_y
+            } else {
+                end_y
+            }
+        } else {
+            end_y
+        };
         let prev_line_spacing_px = (seg.line_spacing.max(0) as f64) / 7200.0 * self.dpi;
         let prev_content_bottom_y = y_offset - prev_line_spacing_px;
         let measured_prev_content_bottom_y =
@@ -1876,6 +1940,7 @@ mod tests {
     fn styles(spacing_before: f64) -> ResolvedStyleSet {
         ResolvedStyleSet {
             hwp3_variant: false,
+            hft_ascii_halfwidth: false,
             para_styles: vec![ResolvedParaStyle {
                 spacing_before,
                 ..Default::default()

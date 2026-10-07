@@ -21,12 +21,10 @@ use rhwp::serializer::hwpx::serialize_hwpx;
 
 const SAMPLE: &str = "samples/issue1891_external_bindata_link.hwpx";
 // 시각 기준을 유지하는 원본과 대응 PDF의 쪽수.
-// 86712 HWP/HWPX의 전체 피델리티와 쪽수 회귀는 #7445로 이관했다.
+// 86712 및 80168 HWP/HWPX의 전체 피델리티·쪽수 회귀는 #7445로 이관했다.
 const HWP5_ORIGIN_SAMPLES: &[(&str, u32)] = &[
     ("samples/76076_regulatory_analysis.hwp", 82),
-    ("samples/80168_regulatory_analysis.hwp", 157),
     ("samples/issue1891/76076_regulatory_analysis.hwpx", 82),
-    ("samples/issue1891/80168_regulatory_analysis.hwpx", 157),
 ];
 
 /// 정상 원본의 저장 줄을 테스트 입력 교체 과정에서 다시 잃지 않게 한다.

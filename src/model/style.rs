@@ -371,6 +371,31 @@ pub struct ParaShape {
     pub break_latin_word: Option<String>,
 }
 
+/// [#6875] 문단 줄바꿈 방식("한 줄로 입력") — HWP5 ParaShape `attr2` bits 0-1 ↔
+/// OWPML `hh:breakSetting@lineWrap`.
+///
+/// 값 대응은 셀 줄바꿈(#4898, LIST_HEADER bit 19-20)과 같은 열거 순서다:
+/// `0`=BREAK · `1`=SQUEEZE · `2`=KEEP. 한컴 변환본으로 1↔SQUEEZE 를 확인했다.
+pub const PARA_ATTR2_LINE_WRAP_MASK: u32 = 0x03;
+
+/// OWPML `lineWrap` 문자열 → `attr2` bits 0-1 값. 모르는 값은 BREAK(0).
+pub fn para_line_wrap_bits(value: &str) -> u32 {
+    match value {
+        "SQUEEZE" => 1,
+        "KEEP" => 2,
+        _ => 0,
+    }
+}
+
+/// `attr2` bits 0-1 → OWPML `lineWrap` 문자열. 3(정의되지 않음)은 BREAK.
+pub fn para_line_wrap_str(attr2: u32) -> &'static str {
+    match attr2 & PARA_ATTR2_LINE_WRAP_MASK {
+        1 => "SQUEEZE",
+        2 => "KEEP",
+        _ => "BREAK",
+    }
+}
+
 /// ParaShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
 impl PartialEq for ParaShape {
     fn eq(&self, other: &Self) -> bool {

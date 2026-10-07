@@ -78,10 +78,8 @@ use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
-use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
 use super::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
-use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
 // WASM 단일 스레드이므로 thread_local 안전
@@ -1064,7 +1062,11 @@ impl WebCanvasRenderer {
                 self.ctx.set_text_align("center");
                 let cx = eff_bbox.x + eff_bbox.width / 2.0;
                 let cy = eff_bbox.y + eff_bbox.height / 2.0;
-                let _ = self.ctx.fill_text(&format!("[외부: {}]", path), cx, cy);
+                let label = format!(
+                    "[외부: {}]",
+                    crate::model::image::external_picture_basename(path)
+                );
+                let _ = self.ctx.fill_text(&label, cx, cy);
                 self.ctx.set_text_align("start");
             }
         }
@@ -2031,152 +2033,67 @@ impl WebCanvasRenderer {
     }
 
     fn render_form_object(&self, form: &FormObjectNode, bbox: &super::render_tree::BoundingBox) {
-        let x = bbox.x;
-        let y = bbox.y;
-        let w = bbox.width;
-        let h = bbox.height;
-
-        match form.form_type {
-            FormType::PushButton => {
-                // 명령 단추 (웹 환경 비활성 — 회색 스타일)
-                self.ctx.set_fill_style_str("#d0d0d0");
-                self.ctx.fill_rect(x, y, w, h);
-                self.ctx.set_stroke_style_str("#a0a0a0");
-                self.ctx.set_line_width(0.5);
-                self.ctx.stroke_rect(x, y, w, h);
-                // 캡션 텍스트 (회색)
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.5).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str("#808080");
-                    self.ctx.set_text_align("center");
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + w / 2.0, y + h / 2.0);
-                    self.ctx.set_text_align("left");
-                    self.ctx.set_text_baseline("alphabetic");
+        use super::form_appearance::{form_drawing, FormPrimitive};
+        let drawing = form_drawing(form, *bbox);
+        self.ctx.save();
+        for primitive in drawing.primitives {
+            match primitive {
+                FormPrimitive::Rect { bbox: b, color } => {
+                    self.ctx.set_fill_style_str(&color);
+                    self.ctx.fill_rect(b.x, b.y, b.width, b.height);
                 }
-            }
-            FormType::CheckBox => {
-                let box_size = h.min(14.0);
-                let box_y = y + (h - box_size) / 2.0;
-                // 체크박스 사각형
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill_rect(x, box_y, box_size, box_size);
-                self.ctx.set_stroke_style_str("#000000");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, box_y, box_size, box_size);
-                // 체크 표시
-                if form.value != 0 {
-                    self.ctx.set_stroke_style_str("#000000");
-                    self.ctx.set_line_width(2.0);
+                FormPrimitive::Circle {
+                    x,
+                    y,
+                    radius,
+                    color,
+                } => {
                     self.ctx.begin_path();
-                    self.ctx.move_to(x + 2.0, box_y + box_size / 2.0);
-                    self.ctx.line_to(x + box_size / 3.0, box_y + box_size - 3.0);
-                    self.ctx.line_to(x + box_size - 2.0, box_y + 2.0);
-                    self.ctx.stroke();
-                    self.ctx.set_line_width(1.0);
-                }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.7).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + box_size + 4.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-            }
-            FormType::RadioButton => {
-                let r = h.min(14.0) / 2.0;
-                let cx = x + r;
-                let cy = y + h / 2.0;
-                // 원형 배경
-                self.ctx.begin_path();
-                let _ = self.ctx.arc(cx, cy, r, 0.0, std::f64::consts::TAU);
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill();
-                self.ctx.set_stroke_style_str("#000000");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke();
-                // 선택 표시
-                if form.value != 0 {
-                    self.ctx.begin_path();
-                    let _ = self.ctx.arc(cx, cy, r * 0.5, 0.0, std::f64::consts::TAU);
-                    self.ctx.set_fill_style_str("#000000");
+                    let _ = self.ctx.arc(x, y, radius, 0.0, std::f64::consts::TAU);
+                    self.ctx.set_fill_style_str(&color);
                     self.ctx.fill();
                 }
-                // 캡션
-                if !form.caption.is_empty() {
-                    let caption = display_form_caption(&form.caption);
-                    let font_size = (h * 0.7).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self
-                        .ctx
-                        .fill_text(caption.as_ref(), x + r * 2.0 + 4.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-            }
-            FormType::ComboBox => {
-                let btn_w = h.min(20.0);
-                // 입력 영역
-                self.ctx.set_fill_style_str("#ffffff");
-                self.ctx.fill_rect(x, y, w - btn_w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, y, w - btn_w, h);
-                // 텍스트
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.6).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
-                }
-                // 드롭다운 버튼
-                let bx = x + w - btn_w;
-                self.ctx.set_fill_style_str("#c0c0c0");
-                self.ctx.fill_rect(bx, y, btn_w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.stroke_rect(bx, y, btn_w, h);
-                // ▼ 삼각형
-                self.ctx.begin_path();
-                let tri_cx = bx + btn_w / 2.0;
-                let tri_cy = y + h / 2.0;
-                let tri_s = btn_w * 0.3;
-                self.ctx.move_to(tri_cx - tri_s, tri_cy - tri_s / 2.0);
-                self.ctx.line_to(tri_cx + tri_s, tri_cy - tri_s / 2.0);
-                self.ctx.line_to(tri_cx, tri_cy + tri_s / 2.0);
-                self.ctx.close_path();
-                self.ctx.set_fill_style_str("#000000");
-                self.ctx.fill();
-            }
-            FormType::Edit => {
-                // 입력 영역
-                self.ctx.set_fill_style_str(&form.back_color);
-                self.ctx.fill_rect(x, y, w, h);
-                self.ctx.set_stroke_style_str("#808080");
-                self.ctx.set_line_width(1.0);
-                self.ctx.stroke_rect(x, y, w, h);
-                // 텍스트
-                if !form.text.is_empty() {
-                    let font_size = (h * 0.6).min(12.0).max(8.0);
-                    self.ctx.set_font(&format!("{}px sans-serif", font_size));
-                    self.ctx.set_fill_style_str(&form.fore_color);
-                    self.ctx.set_text_baseline("middle");
-                    let _ = self.ctx.fill_text(&form.text, x + 2.0, y + h / 2.0);
-                    self.ctx.set_text_baseline("alphabetic");
+                FormPrimitive::Polyline {
+                    points,
+                    color,
+                    width,
+                    closed,
+                } => {
+                    self.ctx.begin_path();
+                    for (i, p) in points.iter().enumerate() {
+                        if i == 0 {
+                            self.ctx.move_to(p[0], p[1]);
+                        } else {
+                            self.ctx.line_to(p[0], p[1]);
+                        }
+                    }
+                    if closed {
+                        self.ctx.close_path();
+                        self.ctx.set_fill_style_str(&color);
+                        self.ctx.fill();
+                    } else {
+                        self.ctx.set_stroke_style_str(&color);
+                        self.ctx.set_line_width(width);
+                        self.ctx.stroke();
+                    }
                 }
             }
         }
+        if let Some(label) = drawing.label {
+            let family = label.font_family.replace('\\', "\\\\").replace('\'', "\\'");
+            self.ctx.set_font(&format!(
+                "{} {} {}px '{}'",
+                if label.italic { "italic" } else { "normal" },
+                if label.bold { "bold" } else { "normal" },
+                label.font_size,
+                family
+            ));
+            self.ctx.set_fill_style_str(&label.color);
+            self.ctx.set_text_align("left");
+            self.ctx.set_text_baseline("alphabetic");
+            let _ = self.ctx.fill_text(&label.text, label.x, label.baseline);
+        }
+        self.ctx.restore();
     }
 }
 
@@ -2270,6 +2187,9 @@ impl Renderer for WebCanvasRenderer {
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
         let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
+        // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
+        let fit_positions =
+            super::glyph_fit_positions(text, style, layout_positions, &char_positions);
 
         if !self.suppress_text_glyphs {
             // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
@@ -2324,7 +2244,8 @@ impl Renderer for WebCanvasRenderer {
                 // 기본 렌더링 (효과 없음)
                 self.ctx.set_fill_style_str(&color_to_css(style.color));
                 for (char_idx, cluster_str) in clusters.iter() {
-                    if cluster_str == " " || cluster_str == "\t" || cluster_str == "\u{2007}" {
+                    // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                    if cluster_str.chars().all(char::is_whitespace) {
                         continue;
                     }
                     if let Some((cx, cy, rx, ry)) =
@@ -2435,8 +2356,8 @@ impl Renderer for WebCanvasRenderer {
                     } else {
                         let cluster_advance = {
                             let end = *char_idx + cluster_str.chars().count();
-                            if end < char_positions.len() {
-                                char_positions[end] - char_positions[*char_idx]
+                            if end < fit_positions.len() {
+                                fit_positions[end] - fit_positions[*char_idx]
                             } else {
                                 0.0
                             }

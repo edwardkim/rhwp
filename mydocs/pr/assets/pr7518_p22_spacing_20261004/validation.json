@@ -1,0 +1,285 @@
+{
+  "source_sha": "28f4cbbe5799f76a28e3c22ada96b6ee54cea218",
+  "validation_base_sha": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+  "before_renderer_source_sha": "d76cd8075c5e98f10da1b48f3af72155d9f3d40d",
+  "input": {
+    "path": "samples/76076_regulatory_analysis.hwp",
+    "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+  },
+  "reference_pdf": {
+    "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+    "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d"
+  },
+  "native_before_sha256": "200ada66a6f0e582d58d4f28fd41acb308bd94716db78c98eea195a63b38d33d",
+  "native_after_sha256": "c72aae3d00392f63781e7a2adbea48f129bbef0c7f80932ff36a48c8a466791c",
+  "fresh_wasm_sha256": "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+  "system_recovery": "/tmp lost; worktree recreated from surviving branch; fonts recovered; before and after recaptured in the same recovered environment",
+  "selected_visual_page": 22,
+  "before_tolerant_content_match_percent": 79.94394,
+  "native_after_tolerant_content_match_percent": 86.84069,
+  "wasm_after_tolerant_content_match_percent": 86.84069,
+  "native_wasm_png_identical": true,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 86.84069
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "user_visual_acceptance_for_p22": "not_recorded; previous acceptance remains scoped to p33/p34",
+  "pdf_table_top_px": 788.257,
+  "after_table_top_px_approx": 785.13,
+  "residual_table_top_difference_px_approx": 3.13,
+  "paragraph_order_diagnostic": "before FAIL / after PASS; actual final bboxes; not a newly added formal regression",
+  "formal_regression_change": "none; new rendering regression requires >=90 per canonical policy",
+  "cdp_result": "7/7 PASS, actual served fresh WASM hash verified",
+  "native_wasm_geometry": "48 TextLine/Table nodes agree within 0.2 px",
+  "existing_controls": {
+    "6267": {
+      "pass": 2,
+      "fail": 0
+    },
+    "6950": {
+      "pass": 28,
+      "fail": 0
+    },
+    "7196": {
+      "pass": 2,
+      "fail": 0
+    },
+    "7518": {
+      "pass": 13,
+      "fail": 4
+    },
+    "2308": {
+      "pass": 4,
+      "fail": 1,
+      "ignored": 1
+    },
+    "overlap_partition9": {
+      "pass": 0,
+      "fail": 1,
+      "remaining_new_text_overlaps": 2
+    }
+  },
+  "rust_required_checks": "all PASS; see rust_checks.json; no source-side test was changed, unit-tier check also executed",
+  "full_page_native_diagnostic": {
+    "before": {
+      "pageCount": 82,
+      "emptyPageCount": 0,
+      "offCanvasCount": 0,
+      "overflowCount": 12,
+      "overlapCount": 3,
+      "textOverlapCount": 4,
+      "text_overlap_pages": [
+        {
+          "page": 22,
+          "count": 1
+        },
+        {
+          "page": 38,
+          "count": 1
+        },
+        {
+          "page": 39,
+          "count": 2
+        }
+      ]
+    },
+    "after": {
+      "pageCount": 82,
+      "emptyPageCount": 0,
+      "offCanvasCount": 0,
+      "overflowCount": 12,
+      "overlapCount": 1,
+      "textOverlapCount": 2,
+      "text_overlap_pages": [
+        {
+          "page": 39,
+          "count": 2
+        }
+      ]
+    },
+    "accepted_p33_p34_geometry_controls": [
+      {
+        "page": 33,
+        "before_tables": [
+          {
+            "pi": 323,
+            "bbox": {
+              "x": 75.6,
+              "y": 181.2,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 324,
+            "bbox": {
+              "x": 75.6,
+              "y": 213.6,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 325,
+            "bbox": {
+              "x": 77.5,
+              "y": 240.4,
+              "w": 635.0,
+              "h": 800.7
+            }
+          }
+        ],
+        "after_tables": [
+          {
+            "pi": 323,
+            "bbox": {
+              "x": 75.6,
+              "y": 181.2,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 324,
+            "bbox": {
+              "x": 75.6,
+              "y": 213.6,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 325,
+            "bbox": {
+              "x": 77.5,
+              "y": 240.4,
+              "w": 635.0,
+              "h": 800.7
+            }
+          }
+        ],
+        "unchanged": true
+      },
+      {
+        "page": 34,
+        "before_tables": [
+          {
+            "pi": 325,
+            "bbox": {
+              "x": 77.5,
+              "y": 77.5,
+              "w": 635.0,
+              "h": 386.2
+            }
+          },
+          {
+            "pi": 335,
+            "bbox": {
+              "x": 75.6,
+              "y": 482.9,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 336,
+            "bbox": {
+              "x": 77.5,
+              "y": 509.7,
+              "w": 635.0,
+              "h": 241.1
+            }
+          }
+        ],
+        "after_tables": [
+          {
+            "pi": 325,
+            "bbox": {
+              "x": 77.5,
+              "y": 77.5,
+              "w": 635.0,
+              "h": 386.2
+            }
+          },
+          {
+            "pi": 335,
+            "bbox": {
+              "x": 75.6,
+              "y": 482.9,
+              "w": 635.0,
+              "h": 17.3
+            }
+          },
+          {
+            "pi": 336,
+            "bbox": {
+              "x": 77.5,
+              "y": 509.7,
+              "w": 635.0,
+              "h": 241.1
+            }
+          }
+        ],
+        "unchanged": true
+      }
+    ]
+  },
+  "limits": [
+    "p22 retains ~3.13 px table origin residual and raw gate requires re-review",
+    "p38 text overlap removed by common cause, no new p38 WASM visual verdict",
+    "p39 two text overlaps remain",
+    "existing p33 absolute-origin regression and four 7518 tests still fail",
+    "full Rust regression suite and Native Skia not rerun on this source",
+    "no remote push, PR update, CI rerun or merge performed for this source"
+  ],
+  "commands": {
+    "native_build": "cargo build --locked --bin rhwp --target-dir /home/edward/mygithub/rhwp/target/pr-review",
+    "wasm_build": "CARGO_TARGET_DIR=/home/edward/mygithub/rhwp/target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg",
+    "native_sweep": "VISUAL_SWEEP_CHROME=/home/edward/.cache/puppeteer/chrome/linux-152.0.7977.54/chrome-linux64/chrome /home/edward/mygithub/rhwp/venv/bin/python scripts/visual_sweep.py --hwp samples/76076_regulatory_analysis.hwp --pdf samples/issue1891/76076_regulatory_analysis-2024.pdf --key regulatory-p22-spacing --pages 22 --rhwp-bin output/pr-review/pr7518-20261004/rhwp-p22-spacing-28f4cbbe5 --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --out output/pr-review/pr7518-20261004/p22-spacing-native",
+    "cdp": "VITE_URL=http://localhost:7718 CHROME_CDP=http://localhost:19222 node output/pr-review/pr7518-20261004/cdp-p22-spacing.mjs",
+    "selected_wasm_sweep": "/home/edward/mygithub/rhwp/venv/bin/python output/pr-review/pr7518-20261004/p22-selected-wasm-sweep.py",
+    "diagnostic": "RHWP_FONT_PATH=/tmp/rhwp-pr7518-font-cache <immutable CLI> layout-anomaly samples/76076_regulatory_analysis.hwp --json"
+  },
+  "capture_script_archive": {
+    "capture-cdp.mjs": "exact script executed; restore to output/pr-review/pr7518-20261004/cdp-p22-spacing.mjs",
+    "selected-wasm-sweep.py": "exact script executed; restore to output/pr-review/pr7518-20261004/p22-selected-wasm-sweep.py"
+  },
+  "artifact_sha256": {
+    "before_native_review_022.png": "b5e0f69a98c9b84d227a76b4c63f9201aa94280af29838327e23d42067106697",
+    "before_native_run_manifest.json": "05ac9362bb4c6e10087e637b49f8e1734cf83012d516137a2d79b367539f9cf5",
+    "capture-cdp.mjs": "5b0741d05e91414c927b96706002e324b7cc4ce02a430adfed10f22d478ff0d3",
+    "cdp_result.json": "f6502d0c2944c90bb0070d8940eb74dae834eb757060b886d78e5bbc56e2dee7",
+    "controls.json": "b32ca71771322e215eada5b63bad8f034feda64a700c043550dec48860b6c7d8",
+    "existing_failure_controls.json": "7f8d4a8a7d70541a45bc2ef1a74d76a9f86c4980ed1b2ed0c32ba88fbe8c2198",
+    "focused_results.json": "c951aed81e1f85fc5b0451f978caad0dd3354f6ef954d10b667862ee4dc53996",
+    "font_cache_recovery.json": "d52f9c88eb04da3d82f0fa851730baf74582590d58aca5ca2c4d6b1542762acf",
+    "logs/p22-existing-2308.log": "6170281eaf9fe7611c852c43e6812ca4a6f779c5b6f75fbe583aab0f5ff959bf",
+    "logs/p22-existing-7518.log": "2b60fc2ebb4e691649bc33b9e65685e453af46eda86ab808ca11973f162e6319",
+    "logs/p22-existing-overlap-partition9.log": "007b959170b3243fc255fb0c45024fb94b54101281454e8e54e995b368d65185",
+    "logs/p22-focused-issue_6267_para_float_table_overlap.log": "fc8be4cc0d0045d7dd72ae0f4463b69028833ea62173560d502ad19dde255c91",
+    "logs/p22-focused-issue_6950_paragraph_end_topbottom_anchor.log": "cef1da25547d4143a22364d7b0b8acc405f01fa35f3f885b9203b4ed23c184ba",
+    "logs/p22-focused-issue_7196_page_top_spacing_trim_restore.log": "bc913291ab1072858a22d66d2205dfad5efebdcb47e9b819e2935bed13f57a41",
+    "logs/p22-selected-wasm-sweep.log": "fc6dff876df44aaac915572d227374583f8dc6fe3b95cfcd504374494321239f",
+    "logs/p22-spacing-cdp.log": "94e393212dcc34818b91bf91c906be91f390c356dc18e533db6e3780930ecdff",
+    "native_overlay_022.png": "2da15200814d7aa90405d30a9e0a1ef6c5d6549b9b9b29572c2da26eb98ca922",
+    "native_review_022.png": "37674b98f54f2fd31917836a6d3295c48b142847fdeb2a3e926a74c13e5d8fa4",
+    "native_run_manifest.json": "a80bfba55eba2bfedaf10745d8ae1976c7d116f0a50c2fe84532786d42b27c7d",
+    "paragraph_order.json": "2147e567dcb91780520d0b60229cc224447fa743e7edcb6c10bfc8543e2c35f1",
+    "rhwp_022.png": "e4b8192d8223d4480bb558da1922f2dda93decfda5f44fb435fdb8dda48b6323",
+    "rust_checks.json": "3aeea8d67465b65bbee852f715452899af91ba0193f95e9a7ed785a7cbb3080b",
+    "selected-wasm-sweep.py": "d03acb3b0ca2594ae1ed46cd3868504f84313286e02603686878572d6ef46a6e",
+    "studio_page_022.png": "3715bdf0a7d9268a5a578bde436f8522048ae2331cad4dec96e1ecdb3fcba179",
+    "wasm_overlay_022.png": "8bd873934b0e1be585007dade7f39cdf90a6a537a9f73580878de2a7ba171acc",
+    "wasm_review_022.png": "afe53e617d0097549e2e3e8d667553a628205c78e8011cacf648a4cdd58f7677",
+    "wasm_run_manifest.json": "3339c6c5c804e1574ab124f36cb54e45d67ca4b80f03372ae4938b833a6be950"
+  },
+  "archived_log_normalization": "terminal empty lines removed; stdout content preserved; original output logs unchanged"
+}

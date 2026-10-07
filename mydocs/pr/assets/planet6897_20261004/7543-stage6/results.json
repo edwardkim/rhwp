@@ -1,0 +1,28 @@
+{
+  "status": "individual_scope_pass_integration_pending",
+  "code_candidate": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+  "nextest_current_head": "3e3db651f67616092b5aa46944d8ff4177301eda",
+  "nextest": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "log_path": "output/pr-review/planet6897-20261004/stage6-7543-nextest.log",
+    "log_sha256": "45b1e2eca6c0d5502eb22dd1f643c85e55c869f74bcad937c5d7d0e83ffe2230"
+  },
+  "input_sha256": {
+    "samples/issue4599/156714641_wrap_tail_min.hwpx": "5140fff9f15078ead1cde8b341dba07822542b0ed980254f6e09fc3c73d03df5",
+    "pdf/issue4599/156714641_wrap_tail_min-2020.pdf": "d6fff0fcf4c1aa2d72b71f10f5996781e8fda077e3c608f4d4f52b3a647bd0b1"
+  },
+  "visual": {
+    "native_minimum": 99.41288,
+    "wasm_minimum": 99.41288,
+    "pages": 1,
+    "below_90": 0,
+    "missing_pages": 0,
+    "raw_match_percent": 97.5062,
+    "source_scope": "contributor minimal fixture; not full private original"
+  },
+  "remaining": [
+    "final integration gates and other individual PR reviews"
+  ]
+}

@@ -993,6 +993,7 @@ fn make_styles_with_font_size(font_size: f64) -> ResolvedStyleSet {
     use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet};
     ResolvedStyleSet {
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size,
             ratio: 1.0,
@@ -1316,6 +1317,7 @@ fn test_reflow_lang_aware_mixed() {
 
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_families: vec![

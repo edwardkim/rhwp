@@ -414,7 +414,8 @@ impl SkiaTextReplay<'_> {
                         text_paint.set_style(paint::Style::Fill);
                     }
                     for (char_idx, cluster) in clusters.iter() {
-                        if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
+                        // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                        if cluster.chars().all(char::is_whitespace) {
                             continue;
                         }
                         if cluster == "-" {

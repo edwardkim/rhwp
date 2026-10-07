@@ -112,14 +112,33 @@ class PrReviewGateTests(unittest.TestCase):
         self.assertEqual(gate["status"], "re_review_required")
         self.assertEqual(gate["unavailable_metric_pages"], [8])
 
-    def test_hashed_font_mismatch_evidence_is_the_only_exception(self) -> None:
+    def test_hashed_font_mismatch_evidence_does_not_waive_low_metric(self) -> None:
         evidence = {"path": "scratch/font-mismatch.md", "sha256": "a" * 64}
         gate = SWEEP.pr_review_gate(
             [{"page": 3, "tolerant_content_match_percent": 28.4}],
             font_mismatch_evidence=evidence,
         )
-        self.assertEqual(gate["status"], "font_mismatch_exception")
+        self.assertEqual(gate["status"], "re_review_required")
         self.assertEqual(gate["font_mismatch_evidence"], evidence)
+
+    def test_hashed_font_evidence_does_not_waive_missing_page(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [{"page": 3, "tolerant_content_match_percent": 90.0}],
+            expected_pages=[3, 4],
+            font_mismatch_evidence={"path": "scratch/font.md", "sha256": "a" * 64},
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(gate["unavailable_metric_pages"], [4])
+
+    def test_one_low_page_cannot_be_offset_by_high_pages(self) -> None:
+        gate = SWEEP.pr_review_gate(
+            [
+                {"page": 1, "tolerant_content_match_percent": 100.0},
+                {"page": 2, "tolerant_content_match_percent": 89.99},
+            ],
+        )
+        self.assertEqual(gate["status"], "re_review_required")
+        self.assertEqual(gate["below_threshold_pages"][0]["page"], 2)
 
 
 class LabelWrapTests(unittest.TestCase):

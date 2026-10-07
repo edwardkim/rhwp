@@ -1164,6 +1164,36 @@ export class HwpDocument {
         }
     }
     /**
+     * 선택 영역을 논리적 오프셋(`insertTextLogical` 과 같은 축)으로 받아 내부 클립보드에 복사한다.
+     *
+     * 각주·글자처럼 취급 개체 바로 뒤에서 시작한 선택은 그 개체를 담지 않는다 (#7444).
+     * 반환값: JSON `{"ok":true,"text":"<plain_text>"}`
+     * @param {number} section_idx
+     * @param {number} start_para_idx
+     * @param {number} start_logical_offset
+     * @param {number} end_para_idx
+     * @param {number} end_logical_offset
+     * @returns {string}
+     */
+    copySelectionLogical(section_idx, start_para_idx, start_logical_offset, end_para_idx, end_logical_offset) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_copySelectionLogical(this.__wbg_ptr, section_idx, start_para_idx, start_logical_offset, end_para_idx, end_logical_offset);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 선택된 표 셀 범위를 행/열 바꿈 복사용 내부 버퍼에 저장한다.
      *
      * 반환값: JSON `{"ok":true,"sourceRows":N,"sourceCols":N,"targetRows":N,"targetCols":N}`

@@ -146,3 +146,17 @@ test('토글 뒤 초점을 같은 항목의 버튼으로 되돌린다', () => {
     assert.match(sliceBlock(viewerSource, fn), /\.focus\(\)/, `${fn} 이 초점을 주지 않는다`);
   }
 });
+
+test('표 셀 개요는 셀 경로로 구별하고 셀 경로로 이동한다', () => {
+  // 셀 개요의 `paragraph` 는 표를 품은 본문 문단이다. 구역·문단만으로 키를 만들면 한 표의
+  // 셀 개요끼리 같은 키가 되어 접기·초점 복원이 엉킨다.
+  const key = withoutLineComments(sliceBlock(viewerSource, 'function outlineKey'));
+  assert.match(key, /entry\.cellPath/, 'outlineKey 가 셀 경로를 보지 않는다');
+
+  const navigate = withoutLineComments(sliceBlock(viewerSource, 'function navigateToOutline'));
+  assert.match(
+    navigate,
+    /getCursorRectByPath\(\s*entry\.section,\s*entry\.paragraph,\s*JSON\.stringify\(entry\.cellPath\)/,
+    '셀 개요를 셀 경로 좌표로 이동하지 않는다',
+  );
+});

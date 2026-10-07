@@ -195,7 +195,28 @@ impl DocumentCore {
         }
 
         // [Task #1001] HWP3 변환본의 ParaShape 단위 1/2 추가 보정
-        let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        let mut styles = resolve_styles_for_document(&document, DEFAULT_DPI);
+        // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
+        // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
+        if !styles.hft_ascii_halfwidth {
+            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+                &document,
+                &styles,
+                DEFAULT_DPI,
+            );
+            if std::env::var_os("RHWP_DIAG_HFT_EVIDENCE").is_some() {
+                eprintln!(
+                    "[HFT_EVIDENCE] halfwidth={} proportional={} proves={}",
+                    witnesses.halfwidth,
+                    witnesses.proportional,
+                    witnesses.proves_halfwidth()
+                );
+            }
+            if witnesses.proves_halfwidth() {
+                document.provenance.hft_ascii_halfwidth_witnessed = true;
+                styles.hft_ascii_halfwidth = true;
+            }
+        }
 
         let hwp5_origin_hwpx = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && document
@@ -2011,6 +2032,11 @@ impl DocumentCore {
         let mut snapshot = self.document.clone();
         self.writeback_reflowed_table_frames(&mut snapshot);
         let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        super::header_footer_ops::lower_header_footer_field_markers(
+            &mut snapshot,
+            &self.file_name,
+            false,
+        );
         Self::refresh_doc_info_raw_cache(&mut snapshot);
         HwpExportSnapshot { document: snapshot }
     }
@@ -2164,16 +2190,21 @@ impl DocumentCore {
     ) -> Result<T, HwpError> {
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
+        let lower_markers = |doc: &mut Document| {
+            super::header_footer_ops::lower_header_footer_field_markers(doc, &self.file_name, true)
+        };
         let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
             let mut doc = self.document.clone();
-            if !doc
+            if let Some((_, value)) = doc
                 .hwpx_aux_entries
-                .iter()
-                .any(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
             {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            } else {
                 doc.hwpx_aux_entries.push((
                     crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH.to_string(),
-                    b"1".to_vec(),
+                    crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec(),
                 ));
             }
             // HWP3→HWP5 변환본의 HWPX export 도 hwp3 계보를 이어 준다.
@@ -2181,10 +2212,27 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
+            lower_markers(&mut doc);
             serialize(&doc)
-        } else if hwp3_origin {
+        } else if hwp3_origin
+            || self
+                .document
+                .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                .is_some()
+            || super::header_footer_ops::has_header_footer_field_markers(&self.document)
+        {
             let mut doc = self.document.clone();
-            Self::push_hwp3_origin_marker(&mut doc);
+            if let Some((_, value)) = doc
+                .hwpx_aux_entries
+                .iter_mut()
+                .find(|(path, _)| path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+            {
+                *value = crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS.to_vec();
+            }
+            if hwp3_origin {
+                Self::push_hwp3_origin_marker(&mut doc);
+            }
+            lower_markers(&mut doc);
             serialize(&doc)
         } else {
             serialize(&self.document)
@@ -3400,8 +3448,8 @@ mod validate_linesegs_tests {
                     row_span: 1,
                     col_span: 1,
                     width: RAW_TRACK_WIDTH,
-                    // The saved cell padding remains a paint fallback only when
-                    // the table's stored padding is all zero.
+                    // 저장 칸 안 여백은 표의 저장 안 여백이 모두 0일 때만
+                    // 페인트 fallback으로 남으며 재조판 폭에서는 중복 차감하지 않는다.
                     padding: Padding {
                         left: 141,
                         right: 141,
@@ -3419,8 +3467,8 @@ mod validate_linesegs_tests {
             cells,
             ..Default::default()
         };
-        // Each raw row is 4 HWPUNIT short. The frame owner is the resolved
-        // table track, so the residual belongs to the last column.
+        // 원시 행의 합은 표 폭보다 4 HWPUNIT 작다. 마지막 열은
+        // 표의 나머지 폭을 소유하므로 원시 칸 폭만 사용해서는 안 된다.
         table.common.width = 10_000;
 
         Document {
@@ -3439,6 +3487,14 @@ mod validate_linesegs_tests {
         }
     }
 
+    /// 표 선언 폭에서 앞 열 원시 폭을 뺀 나머지가 마지막 칸 문단의 독립 폭이다.
+    fn short_table_frame_target_width(document: &Document) -> i32 {
+        let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+            panic!("표 제어");
+        };
+        i32::try_from(table.common.width - table.cells[0].width).expect("표 폭 범위")
+    }
+
     fn short_table_frame_target_line(document: &Document) -> &LineSeg {
         let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
             panic!("table control");
@@ -3448,8 +3504,8 @@ mod validate_linesegs_tests {
 
     #[test]
     fn eager_reflow_uses_table_frame_owner_width_and_padding() {
-        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
         let mut document = short_table_frame_document();
+        let owner_width = short_table_frame_target_width(&document);
         let styles = resolve_styles_for_document(&document, DEFAULT_DPI);
 
         DocumentCore::reflow_zero_height_paragraphs(
@@ -3461,40 +3517,35 @@ mod validate_linesegs_tests {
         );
 
         let line = short_table_frame_target_line(&document);
-        assert_eq!(
-            line.segment_width,
-            crate::renderer::px_to_hwpunit(
-                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, DEFAULT_DPI),
-                DEFAULT_DPI,
-            ),
-            "eager reflow must use the table-owned frame width and the table's zero padding"
+        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
+        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
+        assert!(
+            (line.segment_width - owner_width).abs() <= 1,
+            "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
+            line.segment_width
         );
     }
 
     #[test]
     fn on_demand_reflow_uses_table_frame_owner_width_and_padding() {
-        const RESOLVED_LAST_TRACK_WIDTH: i32 = 5_002;
         let document = short_table_frame_document();
+        let owner_width = short_table_frame_target_width(&document);
         let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
             panic!("table control");
         };
-        assert_eq!(
-            table.paragraph_frame_owner_widths()[1],
-            RESOLVED_LAST_TRACK_WIDTH
-        );
+        assert_eq!(table.paragraph_frame_owner_widths()[1], owner_width);
         let mut core = DocumentCore::new_empty();
         core.set_document(document);
         core.validation_report = DocumentCore::validate_linesegs(core.document(), false);
 
         assert_eq!(core.reflow_linesegs_on_demand(), 1);
         let line = short_table_frame_target_line(core.document());
-        assert_eq!(
-            line.segment_width,
-            crate::renderer::px_to_hwpunit(
-                crate::renderer::hwpunit_to_px(RESOLVED_LAST_TRACK_WIDTH, core.dpi),
-                core.dpi,
-            ),
-            "on-demand reflow must use the table-owned frame width and the table's zero padding"
+        // HWPUNIT↔실수 변환의 정수 절삭 한 단위만 허용한다. 원시 칸 폭이나
+        // 칸 안 여백을 중복 차감한 폭은 이 관계를 만족하지 못한다.
+        assert!(
+            (line.segment_width - owner_width).abs() <= 1,
+            "표가 소유한 폭과 저장 안 여백을 보존해야 한다: 줄 폭 {}, 원본 폭 {owner_width}",
+            line.segment_width
         );
     }
 

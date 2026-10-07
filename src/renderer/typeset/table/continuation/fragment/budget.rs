@@ -107,6 +107,18 @@ impl TypesetEngine {
                 ),
                 self.dpi,
             );
+        let recursive_overlay_frame = prepared
+            .layout_engine
+            .reflow_recursive_overlay_frame(table, input.source.styles);
+        let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
+            (
+                host_before_overhead + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
+                fragment_outer_bottom_overhead
+                    + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi),
+            )
+        } else {
+            (host_before_overhead, fragment_outer_bottom_overhead)
+        };
         let fragment_outer_bottom_overhead = closed_source_frame_placement
             .map_or(fragment_outer_bottom_overhead, |placement| {
                 placement.occupied_bottom - placement.table_top - total_rows_h
@@ -163,6 +175,7 @@ impl TypesetEngine {
                     || source_cut_opens_outer_top)
                 && !strict_following_plain_text_fit
                 && !single_cell_page_fragment
+                && !recursive_overlay_frame
             {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
@@ -181,9 +194,33 @@ impl TypesetEngine {
                     && start_cut.iter().copied().eq([0])
                     && input.start.start_row_height_override == Some(frame.continuation_height)
             });
+        // A blank physical opening can belong to a later row too. Its deferred
+        // picture band starts in a new outer frame, before the cell top padding.
+        // Use the same owner cut as paint, and reserve the outer margin once.
+        let parallel_picture_opening_continuation = is_continuation
+            && !input.start.start_cut_is_block
+            && st.current_height <= 0.5
+            && input.start.start_row_height_override.is_some()
+            && prepared
+                .layout_engine
+                .parallel_picture_row_opening_height(
+                    table,
+                    cursor_row,
+                    &[],
+                    start_cut,
+                    input.source.styles,
+                )
+                .is_some();
         // 빈 시작 조각 뒤에서는 두 포맷 모두 같은 바깥 상자를 다시 연다.
         let host_before_overhead = host_before_overhead
-            + if empty_opening_continuation && !fragment_opens_outer_top {
+            + if (empty_opening_continuation
+                || (parallel_picture_opening_continuation
+                    && !terminal_fragment_opens_outer_top
+                    && !single_cell_page_fragment
+                    && !strict_following_plain_text_fit))
+                && !fragment_opens_outer_top
+                && !recursive_overlay_frame
+            {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
                 0.0
@@ -455,6 +492,7 @@ impl TypesetEngine {
         let fragment_placement = fragment_placement.map(|mut p| {
             if single_cell_fragment_shape
                 && !is_continuation
+                && !crate::renderer::float_placement::reflow_empty_table_host(para, table)
                 && prepared.host_frame
                     == (
                         st.pages.len(),
@@ -635,6 +673,32 @@ impl TypesetEngine {
                         occupied_bottom: top,
                     }
                 })
+        });
+        // 저장 줄 없는 표 전용 호스트는 계산 흐름 원점을 소유한다.
+        // 첫 조각 예산이 예약한 앞 여백과 오프셋을 paint에도 같은 원점으로 전달한다.
+        // 그렇지 않으면 컷은 여백을 빼고 정해지지만 괘선은 여백만큼 위에 그려진다.
+        fragment_placement = fragment_placement.or_else(|| {
+            (!is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && para.line_segs.is_empty()
+                && !para_has_non_whitespace_text(para)
+                && para.controls.len() == 1
+                && !table.common.treat_as_char
+                && crate::renderer::typeset::is_para_topbottom_float(&table.common)
+                && table.caption.is_none())
+            .then(|| {
+                let top = st.current_height + host_before_overhead + vert_offset_overhead;
+                crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                    anchor_y: st.current_height,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: top,
+                    occupied_bottom: top,
+                }
+            })
         });
         // 이미 소비한 후속 첫 조각 뒤의 줄이 종료 표의 아래 바깥여백을 소유한다.
         // 현재 실제 행 높이로 닫히는 경우만 마지막 행 수용 예산에 포함한다.

@@ -3,7 +3,12 @@ use super::{ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::renderer::supplemental_metrics::scalar_eligibility;
 
 /// Logical scalar eligibility prepared once, before token/style subdivision.
-pub(crate) struct ParagraphMetricScope(Option<Vec<bool>>, SpaceMetric);
+pub(crate) struct ParagraphMetricScope(
+    Option<Vec<bool>>,
+    SpaceMetric,
+    Option<Vec<char>>,
+    Option<Vec<Option<usize>>>,
+);
 
 impl ParagraphMetricScope {
     pub(crate) fn allows(&self, index: usize) -> bool {
@@ -18,12 +23,75 @@ impl ParagraphMetricScope {
                 scalar_eligibility(&text)
             }),
             SpaceMetric::Stored,
+            None,
+            None,
         )
     }
 
     pub(crate) fn with_space_metric(mut self, metric: SpaceMetric) -> Self {
         self.1 = metric;
         self
+    }
+
+    pub(crate) fn with_reflow_slots(mut self, chars: &[char]) -> Self {
+        self.2 = Some(chars.to_vec());
+        self
+    }
+
+    pub(crate) fn with_composed_slots(
+        mut self,
+        chars: &[char],
+        composed: &ComposedParagraph,
+    ) -> Self {
+        let mut slots = vec![None; chars.len()];
+        for line in &composed.lines {
+            let mut index = line.char_start;
+            for run in &line.runs {
+                if run.inserted_control_text || run.footnote_marker.is_some() {
+                    continue;
+                }
+                for ch in run.text.chars() {
+                    if chars.get(index) == Some(&ch)
+                        && !ch.is_ascii()
+                        && super::is_latin_slot_punct(ch)
+                    {
+                        slots[index] = Some(run.lang_index);
+                    }
+                    index += 1;
+                }
+            }
+        }
+        self.3 = Some(slots);
+        self
+    }
+
+    pub(crate) fn scalar_slot(
+        &self,
+        styles: &super::ResolvedStyleSet,
+        id: u32,
+        lang: usize,
+        index: usize,
+    ) -> usize {
+        let punct_latin = styles
+            .char_styles
+            .get(id as usize)
+            .is_some_and(|style| style.ascii_punct_latin_slot);
+        if !punct_latin {
+            return lang;
+        }
+        self.3
+            .as_ref()
+            .and_then(|slots| slots.get(index))
+            .copied()
+            .flatten()
+            .unwrap_or_else(|| {
+                self.2
+                    .as_ref()
+                    .and_then(|chars| chars.get(index))
+                    .map_or(lang, |ch| {
+                        super::reflow_punctuation_slot(*ch, lang, punct_latin)
+                    })
+            })
     }
 
     pub(crate) fn style(
@@ -33,6 +101,7 @@ impl ParagraphMetricScope {
         lang: usize,
         index: usize,
     ) -> super::TextStyle {
+        let lang = self.scalar_slot(styles, id, lang, index);
         let mut style = super::resolved_to_text_style(styles, id, lang);
         if !self.allows(index) {
             style.supplemental_metrics = None;

@@ -22,6 +22,7 @@ pub(in crate::renderer::typeset) struct WholeRowBudget {
     pub(in crate::renderer::typeset) strict_painted_bottom_fit: bool,
     pub(in crate::renderer::typeset) source_first_fragment_overflow_allowance: f64,
     pub(in crate::renderer::typeset) source_first_fragment_row_end: Option<usize>,
+    pub(in crate::renderer::typeset) ordinary_declared_band_can_split: bool,
 }
 
 pub(in crate::renderer::typeset) struct SourceFrameSelection {
@@ -72,6 +73,7 @@ impl SourceFrameQuery<'_> {
             strict_painted_bottom_fit,
             source_first_fragment_overflow_allowance,
             source_first_fragment_row_end,
+            ordinary_declared_band_can_split,
         } = budget;
         // The final visible response is followed by a row without text or
         // controls. Its stored row height is authoritative for whole-row ownership;
@@ -146,6 +148,10 @@ impl SourceFrameQuery<'_> {
                 .row_stored_terminal_zero_origin_cut(table, r, styles)
                 .is_some();
         let source_frame_whole_row_fits = !terminal_zero_origin_cut
+            // #5585: 일반 선언 행의 초과 밴드는 다음 쪽에 이어져야 한다.
+            // 초과 허용으로 온전한 행을 받으면 paint가 첫 프레임에서 잘라
+            // 버린 빈 밴드와 다음 행의 쪽 소유를 스캐너가 잃는다.
+            && !ordinary_declared_band_can_split
             && source_first_fragment_overflow_allowance > 0.0
             && source_first_fragment_row_end == Some(r + 1)
             && consumed + cs_before + row_total

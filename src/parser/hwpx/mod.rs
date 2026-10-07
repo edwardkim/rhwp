@@ -173,6 +173,8 @@ pub enum HwpxError {
     WrongPasswordOrCorruptPayload,
     /// 복호화 뒤 raw-deflate payload가 HWPX 기존 엔트리 상한을 넘었다.
     DecryptedEntryLimitExceeded { path: String, max_bytes: usize },
+    /// Cumulative XML text decompression policy (including failed reads).
+    XmlReadBudgetExceeded { path: String, max_bytes: usize },
 }
 
 impl HwpxError {
@@ -204,6 +206,11 @@ impl std::fmt::Display for HwpxError {
                 f,
                 "HWPX 암호화 엔트리 '{}'의 복호화 결과가 {} byte 제한을 넘었습니다",
                 path, max_bytes
+            ),
+            HwpxError::XmlReadBudgetExceeded { path, max_bytes } => write!(
+                f,
+                "HWPX XML read budget ({} bytes) exceeded at '{}'",
+                max_bytes, path
             ),
         }
     }
@@ -344,6 +351,7 @@ fn attach_hwpx_master_page(
                 Ok(false)
             }
         },
+        Err(e @ HwpxError::XmlReadBudgetExceeded { .. }) => Err(e),
         Err(e) => {
             eprintln!("경고: {} 읽기 실패: {}", master_page_href, e);
             Ok(false)
@@ -375,10 +383,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 평문이며, 암호화된 엔트리마다 <odf:encryption-data> 블록을 갖는다. 감지하면
     // 암호문(Contents/*.xml)을 UTF-8 로 오독하기 전에 명확한 Encrypted 에러로 반환한다
     // (종전엔 "UTF-8 변환 실패" 오진단). manifest 부재/평문 문서는 종전 경로 유지.
-    if let Ok(manifest) = reader.read_file_bytes("META-INF/manifest.xml") {
-        if let Some(detail) = detect_odf_encryption(&manifest) {
-            return Err(HwpxError::Encrypted(detail));
+    match reader.read_xml_bytes_limited("META-INF/manifest.xml", reader::MAX_XML_SIZE) {
+        Ok(manifest) => {
+            if let Some(detail) = detect_odf_encryption(&manifest) {
+                return Err(HwpxError::Encrypted(detail));
+            }
         }
+        Err(e @ HwpxError::XmlReadBudgetExceeded { .. }) => return Err(e),
+        Err(_) => {}
     }
 
     // 1-1. 보조 엔트리 원본 보존 (라운드트립 무손실).
@@ -395,13 +407,17 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {
-        let entry = if *path == "Preview/PrvImage.png" {
+        let entry = if matches!(*path, "version.xml" | "settings.xml") {
+            reader.read_xml_bytes_limited(path, reader::MAX_XML_SIZE)
+        } else if *path == "Preview/PrvImage.png" {
             reader.read_file_bytes_limited(path, super::MAX_THUMBNAIL_BYTES)
         } else {
             reader.read_file_bytes(path)
         };
-        if let Ok(bytes) = entry {
-            hwpx_aux_entries.push((path.to_string(), bytes));
+        match entry {
+            Ok(bytes) => hwpx_aux_entries.push((path.to_string(), bytes)),
+            Err(e @ HwpxError::XmlReadBudgetExceeded { .. }) => return Err(e),
+            Err(_) => {}
         }
     }
     // [#3557] Scripts/* — IR 로 모델링되지 않는 패키지 스크립트를 원본 그대로
@@ -415,8 +431,15 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .filter(|n| n.starts_with("Scripts/"))
         .collect();
     for path in script_paths {
-        if let Ok(bytes) = reader.read_file_bytes(&path) {
-            hwpx_aux_entries.push((path, bytes));
+        let entry = if path.to_ascii_lowercase().ends_with(".xml") {
+            reader.read_xml_bytes_limited(&path, reader::MAX_XML_SIZE)
+        } else {
+            reader.read_file_bytes(&path)
+        };
+        match entry {
+            Ok(bytes) => hwpx_aux_entries.push((path, bytes)),
+            Err(e @ HwpxError::XmlReadBudgetExceeded { .. }) => return Err(e),
+            Err(_) => {}
         }
     }
 
@@ -438,26 +461,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .iter()
         .find(|(path, _)| path == "version.xml")
         .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
-        .and_then(|xml| {
-            let mut version_reader = quick_xml::Reader::from_str(xml);
-            loop {
-                match version_reader.read_event() {
-                    Ok(quick_xml::events::Event::Start(e) | quick_xml::events::Event::Empty(e)) => {
-                        if let Some(value) = e.attributes().flatten().find_map(|attr| {
-                            (attr.key.as_ref() == "xmlVersion").then(|| attr.value.to_string())
-                        }) {
-                            let (major, minor) = value.split_once('.')?;
-                            return Some(
-                                (major.parse::<u32>().ok()?, minor.parse::<u32>().ok()?) >= (1, 4),
-                            );
-                        }
-                    }
-                    Ok(quick_xml::events::Event::Eof) | Err(_) => return None,
-                    _ => {}
-                }
-            }
-        })
-        .unwrap_or(false);
+        .is_some_and(physical_para_margin_units_from_version);
     let (mut doc_info, doc_properties) =
         header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
     resolve_embedded_font_references(&mut doc_info, &package_info.bin_data_items);
@@ -514,7 +518,11 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let has_hwp3_origin = hwpx_aux_entries
         .iter()
         .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH);
-    let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin);
+    let paragraph_axis = hwpx_aux_entries.iter().any(|(path, value)| {
+        path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+            && value == crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS
+    });
+    let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin, paragraph_axis);
     // 원본 HWP3→HWPX 만 — 변환본 HWPX(hwp5-origin)는 8유닛 슬롯과 기존 HWP5
     // TAC 계약을 쓴다.
     let _hwp3_origin_guard =
@@ -685,6 +693,7 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
             format: crate::model::provenance::SourceFormat::Hwpx,
             hwp3_lineage: false,
             hwpx_lineage: false,
+            hft_ascii_halfwidth_witnessed: false,
         },
     };
     // HWP3-origin 마커가 있으면 계보를 복원한다 — 직파싱 HWP3 와 같은
@@ -745,6 +754,30 @@ fn resolve_embedded_font_references(
                 .is_embedded
                 .then(|| item_ids.get(substitute.bin_item_id_ref.as_str()).copied())
                 .flatten();
+        }
+    }
+}
+
+/// 패키지 판본이 문단 여백의 물리 단위를 사용하는지 판별한다.
+/// 구버전 입력의 저장 단위와 직렬화의 역변환이 같은 판본 규칙을 소비한다.
+pub(crate) fn physical_para_margin_units_from_version(xml: &str) -> bool {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(e) | quick_xml::events::Event::Empty(e)) => {
+                if let Some(value) = e.attributes().flatten().find_map(|attr| {
+                    (attr.key.as_ref() == "xmlVersion").then(|| attr.value.to_string())
+                }) {
+                    return value
+                        .split_once('.')
+                        .and_then(|(major, minor)| {
+                            Some((major.parse::<u32>().ok()?, minor.parse::<u32>().ok()?))
+                        })
+                        .is_some_and(|version| version >= (1, 4));
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) | Err(_) => return false,
+            _ => {}
         }
     }
 }
