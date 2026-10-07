@@ -542,6 +542,8 @@ const GLUE_SAFE: &[&str] = &[
     "underline",
     "bar",
     "vec",
+    // [#7593] dyad(양쪽 화살표) — `rm dyadAB` 처럼 붙여 쓰는 표기가 흔하다.
+    "dyad",
     "hat",
     "tilde",
     "dot",
