@@ -136,13 +136,30 @@ fn maintainer_out_of_column_stored_coordinates_do_not_force_a_bottom_clamp() {
 #[test]
 fn maintainer_synthetic_and_missing_stored_anchors_do_not_supply_a_jump() {
     let missing = maintainer_float_variant(None, 0, false);
+    // A computed line box and a host with no line box are different flow inputs.
+    // Vary only the untrusted coordinate while retaining the same line box.
+    let synthetic_source = maintainer_float_variant(Some(16_306), 0, true);
     let synthetic = maintainer_float_variant(Some(1_000_000), 0, true);
     let missing_table = top_level_table(&missing, 71, 0).expect("사다리 없는 후속 표");
     let synthetic_table = top_level_table(&synthetic, 71, 0).expect("합성 사다리 후속 표");
+    let synthetic_source_table =
+        top_level_table(&synthetic_source, 71, 0).expect("같은 줄 상자의 대조 표");
     assert!(
-        (missing_table.bbox.y - synthetic_table.bbox.y).abs() <= 0.5,
+        (synthetic_source_table.bbox.y - synthetic_table.bbox.y).abs() <= 0.5,
         "합성 사다리의 큰 좌표를 배제 밴드 스냅에 쓰면 안 된다"
     );
+    let owner = top_level_table(&missing, 70, 0).expect("사다리 없는 경로의 앞 float");
+    assert!(
+        missing_table.bbox.y + 0.5 >= owner.bbox.y + owner.bbox.height,
+        "줄 상자가 없는 flow 표도 앞 float의 실제 배제 밴드 뒤에 놓인다"
+    );
+    for (column, table) in [(&missing, missing_table), (&synthetic, synthetic_table)] {
+        assert!(table.bbox.y.is_finite());
+        assert!(
+            table.bbox.y + table.bbox.height < column.bbox.y + column.bbox.height - 0.5,
+            "누락·합성 좌표로 페이지 바닥에 스냅되면 안 된다"
+        );
+    }
 }
 
 /// 정식 fixture는 `MANIFEST.json`의 SHA-256로 고정된다. fixture 부재는 회귀 시험의

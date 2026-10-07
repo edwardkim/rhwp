@@ -36,6 +36,9 @@ pub(in crate::renderer::typeset) struct TableContinuationCursor {
     /// 9346.35px ↔ 정본 상자 합 9345.78px, 1382000 `pi=93/95/99` 도 0.6px 안). 저장 높이는
     /// 칸의 **최소** 높이라, 끝 조각 상자는 `max(내용, 저장 높이 − 이 합)` 이다.
     pub(in crate::renderer::typeset) single_cell_box_sum_px: f64,
+    /// Actual physical space accepted for a source-owned full-width row.
+    /// Content cuts do not encode the blank band used by vertical alignment.
+    pub(in crate::renderer::typeset) stored_row_box_sum: Option<(usize, f64)>,
 }
 
 /// RowBreak 표 셀 각주가 HWP 저장 vpos reset에서 물리 page를 넘을 때의 tail 정보.

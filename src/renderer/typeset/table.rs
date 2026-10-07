@@ -119,6 +119,11 @@ pub(super) fn format(
         )
     };
 
+    let effective_height = if profile().hwp5_stored_pagination_layout() {
+        crate::renderer::height_measurer::unwrapped_table_whole_height(table, effective_height, dpi)
+    } else {
+        effective_height
+    };
     let total_height = effective_height + host_spacing.before + host_spacing.after;
 
     // 표 셀 내 각주 높이 사전 계산 (Paginator engine.rs:565-581 동일)
@@ -181,6 +186,13 @@ pub(super) fn fit_measured_for_host(
     dpi: f64,
     profile: impl Fn() -> LayoutCompatibilityProfile,
 ) -> Option<MeasuredTable> {
+    // An outer wrapper's height is a physical frame, not a target height for
+    // proportional rescaling of the unwrapped child's rows.
+    if profile().hwp5_stored_pagination_layout()
+        && crate::renderer::height_measurer::transparent_table_wrapper_child(table).is_some()
+    {
+        return mt.cloned();
+    }
     if profile().hwpx_stored_layout() && !profile().session_edited() {
         if let Some(fitted) =
             mt.and_then(|measured| fit_stored_inline_picture_frame(measured, table, dpi))
@@ -206,7 +218,8 @@ pub(super) fn fit_measured_for_host(
     // 가 과대 압축/팽창을 차단한다.
     if is_para_topbottom_float(&table.common) {
         mt.map(|measured| {
-            let fitted = fit_measured_table_to_declared_height(measured, table, dpi);
+            let (fitted, shrink_blocked_by_content) =
+                crate::renderer::height_measurer::fit_measured_table_to_declared_height_with_outcome(measured, table, dpi);
             // 빈 앵커는 **확대 방향만**: 한글 규칙 = max(선언, 콘텐츠) — 콘텐츠가
             // 선언보다 큰 표(pi=15 조문대비표 929.6>928.4)를 압축하면 분할 경계가
             // 당겨져 pi16 -1쪽. 압축(fit-down)은 종전대로 비공백 텍스트 앵커 한정.
@@ -229,7 +242,7 @@ pub(super) fn fit_measured_for_host(
             {
                 return measured.clone();
             }
-            if shrunk && !para_has_non_whitespace_text(para) {
+            if (shrunk || shrink_blocked_by_content) && !para_has_non_whitespace_text(para) {
                 // HWP5 빈 TopAndBottom host의 다행 RowBreak 표는 통상 콘텐츠가
                 // 선언높이를 넘으면 축소하지 않는다. 다만 마지막 행 하나가 비-TAC
                 // 1×1 자식 표이고, 그 parent viewport의 Center 정렬이 만든 작은

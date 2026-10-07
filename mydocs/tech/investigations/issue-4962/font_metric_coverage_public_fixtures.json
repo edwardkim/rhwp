@@ -101,13 +101,13 @@
         "areaDotFallback": 22,
         "embeddedMetric": 13891,
         "figureSpace": 187,
-        "heuristicFullwidth": 524,
-        "heuristicHalfwidth": 118,
+        "heuristicFullwidth": 550,
+        "heuristicHalfwidth": 92,
         "metricHalfSpace": 946,
         "metricNarrowPunctuationOverlay": 82,
         "metricSpaceOverlay": 1102
       },
-      "aggregateHash": "9b4a9bdc0ad322dbaba0e135fe680ab1c98bfccee0d93cfde6e39c2f495e51d9",
+      "aggregateHash": "efb71617691f41118fad939b4c38afbabf322823d65cb4015bc38add828918a0",
       "legacyProjectionHash": "dd91cb99ca6a5531428ab12613bcf5a99b6a3df5df90264d2eca16a3ef68d269"
     }
   ],

@@ -251,6 +251,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#4533 HWP3] 현재 문단 다음 문단의 첫 저장 lineseg vpos — 자리차지
     /// 밴드 비예약(사다리 증거) 판별용. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_first_stored_vpos: Option<i32>,
+    /// [#7548] 다음 문단 저장 첫 줄의 차선 증거(어울림 표 옆 시작 판정).
+    pub(in crate::renderer::typeset) next_para_lane_probe:
+        Option<crate::renderer::float_placement::StoredLineLaneProbe>,
     /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
     /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
     pub(in crate::renderer::typeset) next_para_is_empty_float_table_anchor: bool,
@@ -315,6 +318,9 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) vpos_ladder_dirty: bool,
     /// 저장 행을 재조판해 줄인 높이. 같은 쪽의 뒤 저장 vpos도 이만큼 이동한다.
     pub(in crate::renderer::typeset) vpos_compacted_stored_delta: f64,
+    /// 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작 커서 `(문단, y)`.
+    /// 측정 누적의 sb·trailing_ls drift 가 걷힌 실제 앞 커서다.
+    pub(in crate::renderer::typeset) vpos_snapped_flow_start: Option<(usize, f64)>,
     pub(in crate::renderer::typeset) vpos_prev_layout_para: Option<usize>,
     pub(in crate::renderer::typeset) vpos_prev_partial_table: bool,
     /// 컬럼 시작 시점의 current_height (page_path anchor — 렌더러 col_anchor_y 대응).

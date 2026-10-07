@@ -1,0 +1,75 @@
+{
+  "source_sha": "28f4cbbe5799f76a28e3c22ada96b6ee54cea218",
+  "method": "selected portable WASM print SVG via CDP, canonical visual_sweep font-policy/raster/compare/overlay/review helpers",
+  "pages": [
+    22
+  ],
+  "document_page_count": 82,
+  "dpi": 96,
+  "input_sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "reference_pdf_sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d",
+  "wasm_sha256": "e2a7bb788d129628f2c971f3a356441929e78dbde74c432931fcd76ea0c90c77",
+  "raw_wasm_svg_sha256": "d1e4b22d5629cb06bcf9385e331672acc4f8b5cb4118dada0f651c7fca4991b0",
+  "font_recovery_manifest_sha256": "d52f9c88eb04da3d82f0fa851730baf74582590d58aca5ca2c4d6b1542762acf",
+  "raster_command": [
+    "node",
+    "scripts/rasterize-svg-webfonts.mjs",
+    "--input",
+    "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-spacing-wasm/regulatory-p22-spacing/svg/wasm_022.svg",
+    "--output",
+    "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-spacing-wasm/regulatory-p22-spacing/rhwp_png/rhwp_022.png",
+    "--zoom",
+    "1",
+    "--chrome",
+    "/home/edward/.cache/puppeteer/chrome/linux-152.0.7977.54/chrome-linux64/chrome"
+  ],
+  "metrics": [
+    {
+      "page": 22,
+      "rhwp_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-spacing-wasm/regulatory-p22-spacing/rhwp_png/rhwp_022.png",
+      "pdf_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-spacing-native/regulatory-p22-spacing/pdf_png/pdf-22.png",
+      "overlay_png": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p22-spacing-wasm/regulatory-p22-spacing/overlay/overlay_022.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 103358,
+      "diff_ratio": 0.11591612,
+      "pixel_match_percent": 88.40839,
+      "ink_union_pixels": 113129,
+      "ink_diff_pixels": 103358,
+      "ink_diff_ratio": 0.91362957,
+      "ink_match_percent": 8.63704,
+      "visual_accuracy_proxy_percent": 8.63704,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 86.84069,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 113129,
+      "tolerant_content_match_percent": 86.84069,
+      "mean_abs_channel_delta": 14.058,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        76,
+        719,
+        1080
+      ]
+    }
+  ],
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 86.84069
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_png_sha256": "e4b8192d8223d4480bb558da1922f2dda93decfda5f44fb435fdb8dda48b6323",
+  "wasm_png_sha256": "e4b8192d8223d4480bb558da1922f2dda93decfda5f44fb435fdb8dda48b6323"
+}

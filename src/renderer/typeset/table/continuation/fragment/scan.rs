@@ -171,8 +171,21 @@ impl TypesetEngine {
         if source_next_positive_rewind
             && budget.source_complete_frame_last_row.is_none()
             && !table_declared_object_covers_cell_row_frames(table, self.dpi)
-            && split_end_limit <= 0.0
             && source_first_fragment_row_end == Some(end_row)
+            && (split_end_limit <= 0.0
+                || (split_block_start.is_none()
+                    && end_row_height_override.is_some_and(|height| {
+                        layout_engine.row_complete_cut_content_height(table, end_row - 1, styles)
+                            <= height + 0.5
+                    })
+                    && table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == end_row - 1)
+                        .all(|cell| {
+                            cell.row_span == 1
+                                && cell.vertical_align == crate::model::table::VerticalAlign::Top
+                        })))
         {
             if let Some((frame_height, _)) = saved_first_fragment_source_frame {
                 let before_last = cut_row_h
@@ -181,6 +194,9 @@ impl TypesetEngine {
                     .sum::<f64>()
                     + cs * end_row.saturating_sub(2) as f64;
                 end_row_height_override = Some((frame_height - before_last).max(0.0));
+                // 내용이 끝난 일반 행도 같은 저장 물리 프레임을 사용한다.
+                // 내용 예산으로 빈 밴드를 계산하면 다음 쪽이 그 차이만큼
+                // 밀린다. 그리는 쪽 상한 절삭은 별도이며 선언 공간을 줄이지 않는다.
             }
         }
         // [#3674 진단] 표 행 분할 스캔 입력/결과 — 동작 불변.

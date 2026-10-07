@@ -80,6 +80,7 @@ mod tests {
         let styles = ResolvedStyleSet {
             page_number_char_style_id: None,
             hwp3_variant: false,
+            hft_ascii_halfwidth: false,
             char_styles: vec![ResolvedCharStyle::default()],
             para_styles: vec![ResolvedParaStyle {
                 border_fill_id: 1,
@@ -1865,109 +1866,77 @@ mod tests {
     /// lh 정의. layout_table_item TAC after-spacing 분기 (layout.rs:2491-2497) 가
     /// outer_margin_bottom 미적용 → 다음 paragraph 가 8 px 위로 시프트.
     ///
-    /// PDF 한컴 2010: 박스 bottom → ① 첫 답안 gap ≈ 20 px
-    /// 수정 전: gap = 12.27 px (-7.7 px shortfall)
-    /// 수정 후: gap = 20.27 px (PDF ±2 px 정합)
+    /// 기준: 같은 원본의 한컴 2020(`samples/exam_eng-2020.pdf`)·2022
+    /// (`pdf/exam_eng-2022.pdf`) PDF. 표 테두리는 그려지지 않으므로 표 상단을 같은
+    /// 문단 기준 글뒤 그림 상단(243.6px)으로 잡고 선언 높이 21607HU(288.1px)를 더한
+    /// 표 하단 531.7px 에서 ① 기준선(2022 555.84 · 2020 555.60)까지 ≈ 24.0px.
+    /// 저장 사다리도 같다: pi104 vpos 2254 + lh 22207(표+outMargin.bottom 600)
+    /// + ls 344 = pi105 vpos 24805.
+    ///
+    /// #521 수정 전: gap = 12.27 px (outer_margin_bottom 8px 누락)
+    /// #7431 수정 전: gap = 20.27 px (글뒤 그림 뒤 TAC host 줄간격 344HU=4.6px 누락).
+    /// 종전 기대값 20px 은 쪽 배치가 다른 한컴 2010 PDF(이 문제가 3쪽 왼쪽 단)에서
+    /// 읽은 값이라 이 쪽의 기준이 아니다.
+    /// #7431 수정 후: gap ≈ 24.9 px
     #[test]
     fn test_521_tac_table_outer_margin_bottom_p2() {
         let Some(core) = load_document("samples/exam_eng.hwp") else {
             return;
         };
-        let svg = core.render_page_svg_native(1).unwrap_or_default();
-        assert!(!svg.is_empty(), "페이지 2 SVG 가 비어있음");
-
-        // 박스 (table border rect) bottom y 찾기
-        // 우측 단 (x ≈ 597), top y ≈ 244, height ≈ 288 → bottom ≈ 532
-        let mut box_bottom: Option<f64> = None;
-        for chunk in svg.split("<rect ").skip(1) {
-            let close = match chunk.find("/>") {
-                Some(p) => p,
-                None => continue,
+        // 좌표나 SVG 문자열 모양이 아니라 원문 소유 항목을 찾는다.
+        fn owned_node(node: &RenderNode, para: usize, table: bool) -> Option<&RenderNode> {
+            let matches = match &node.node_type {
+                RenderNodeType::Table(meta) if table => meta.para_index == Some(para),
+                RenderNodeType::TextLine(meta) if !table => meta.para_index == Some(para),
+                _ => false,
             };
-            let attrs = &chunk[..close];
-            let parse_attr = |name: &str| -> Option<f64> {
-                let key = format!("{}=\"", name);
-                let p = attrs.find(&key)? + key.len();
-                let q = attrs[p..].find('"')?;
-                attrs[p..p + q].parse::<f64>().ok()
-            };
-            let x = match parse_attr("x") {
-                Some(v) => v,
-                None => continue,
-            };
-            let y = match parse_attr("y") {
-                Some(v) => v,
-                None => continue,
-            };
-            let h = match parse_attr("height") {
-                Some(v) => v,
-                None => continue,
-            };
-            // 박스: x ≈ 597 (col 1), y in [240, 250], h in [285, 290]
-            if x > 595.0 && x < 600.0 && y > 240.0 && y < 250.0 && h > 285.0 && h < 290.0 {
-                box_bottom = Some(y + h);
-                break;
+            if matches {
+                return Some(node);
             }
+            node.children
+                .iter()
+                .find_map(|child| owned_node(child, para, table))
         }
-        let box_bottom = box_bottom.expect("페이지 2 우측 단 18번 박스 (TAC 표) rect 를 찾지 못함");
-
-        // ① 첫 답안 baseline y 찾기 (우측 단, box bottom 직후)
-        let mut answer_y: Option<f64> = None;
-        for chunk in svg.split("<text ").skip(1) {
-            let close = match chunk.find('>') {
-                Some(p) => p,
-                None => continue,
-            };
-            let attrs = &chunk[..close];
-            let key = "transform=\"translate(";
-            let p = match attrs.find(key) {
-                Some(p) => p + key.len(),
-                None => continue,
-            };
-            let q = match attrs[p..].find(')') {
-                Some(q) => q,
-                None => continue,
-            };
-            let coords = &attrs[p..p + q];
-            let parts: Vec<&str> = coords.split(',').collect();
-            if parts.len() != 2 {
-                continue;
-            }
-            let x: f64 = match parts[0].trim().parse() {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let y: f64 = match parts[1].trim().parse() {
-                Ok(v) => v,
-                Err(_) => continue,
-            };
-            let body_start = close + 1;
-            let body_end = chunk[body_start..]
-                .find("</text>")
-                .map(|i| body_start + i)
-                .unwrap_or(close);
-            let body = &chunk[body_start..body_end];
-            // 우측 단 (x > 580), box bottom 직후 (y > box_bottom + 5), '①' 문자
-            if x > 580.0 && y > box_bottom + 5.0 && y < box_bottom + 30.0 && body == "①" {
-                answer_y = Some(y);
-                break;
-            }
-        }
-        let answer_y = answer_y.expect("페이지 2 우측 단 18번 ① 첫 답안을 찾지 못함");
-
-        // gap 검증
-        let gap = answer_y - box_bottom;
-        let pdf_expected_gap: f64 = 20.0;
-
+        let paragraphs = &core.document().sections[0].paragraphs;
+        let host = &paragraphs[104];
+        let source_table = host
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                crate::model::control::Control::Table(table) if table.common.treat_as_char => {
+                    Some(table)
+                }
+                _ => None,
+            })
+            .expect("빈 host의 글자처럼 취급 표");
+        let host_line = host.line_segs.first().expect("저장 host 줄");
+        let answer_line = paragraphs[105].line_segs.first().expect("저장 답안 줄");
+        // 저장 사다리에는 표 높이·바깥 아래 여백·host 줄간격이 각각 한 번 들어간다.
+        assert_eq!(
+            answer_line.vertical_pos - host_line.vertical_pos,
+            host_line.line_height + host_line.line_spacing,
+            "독립 저장 사다리의 다음 문단 소유",
+        );
+        let expected_gap = crate::renderer::hwpunit_to_px(
+            answer_line.vertical_pos - host_line.vertical_pos - source_table.common.height as i32,
+            96.0,
+        );
         assert!(
-            (gap - pdf_expected_gap).abs() < 2.0,
-            "박스 bottom y={:.2} → ① y={:.2} gap={:.2} 가 PDF 기대값 {:.2} (±2 px) 와 \
-             일치해야 함. 버그(수정 전): gap=12.27 (-7.7 px shortfall, \
-             layout_table_item TAC after-spacing 의 outer_margin_bottom 미적용).",
-            box_bottom,
-            answer_y,
-            gap,
-            pdf_expected_gap
+            expected_gap > 0.0,
+            "표와 답안 사이에 저장된 여백이 있어야 한다"
+        );
+        let tree = core.build_page_render_tree(1).expect("2쪽 렌더 트리");
+        let table = owned_node(&tree.root, 104, true).expect("2쪽 host의 표");
+        let answer = owned_node(&tree.root, 105, false).expect("2쪽 다음 답안 문단");
+        let table_bottom = table.bbox.y + table.bbox.height;
+        assert!(
+            answer.bbox.y >= table_bottom,
+            "답안은 표 아래에 있어야 한다"
+        );
+        let actual_gap = answer.bbox.y - table_bottom;
+        assert!(
+            (actual_gap - expected_gap).abs() < 0.5,
+            "표 아래 → 다음 문단 간격 {actual_gap:.2}가 독립 저장 간격 {expected_gap:.2}와 달라짐: 바깥 여백·줄간격 누락 또는 중복",
         );
     }
 

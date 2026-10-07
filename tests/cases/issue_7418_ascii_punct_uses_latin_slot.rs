@@ -1,3 +1,4 @@
+//! 전체 피델리티 미달의 차단 검사만 #7445(comment5981655880)로 이관했습니다. 나머지 검사는 유지합니다.
 //! [#7418] 영문 슬롯이 옛 한컴 영문 글꼴이면 ASCII 구두점도 한/글이 **영문 슬롯** 글꼴로 재고
 //! 그린다.
 //!
@@ -28,7 +29,6 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const DOC: &str = "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx";
 /// 0-based. 한/글 출력 PDF 의 8쪽.
@@ -38,76 +38,6 @@ fn load() -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(DOC);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("{DOC} 읽기: {e}"));
     DocumentCore::from_bytes(&bytes).expect("문서 로드")
-}
-
-fn collect_runs(node: &RenderNode, out: &mut Vec<(f64, f64, String, String)>) {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        out.push((
-            node.bbox.y,
-            node.bbox.x,
-            run.text.clone(),
-            run.style.font_family.clone(),
-        ));
-    }
-    for child in &node.children {
-        collect_runs(child, out);
-    }
-}
-
-/// 8쪽 줄들을 공백 없이 이어 붙인 문자열과, 그 줄을 이룬 run 목록.
-fn page_lines(core: &DocumentCore) -> Vec<(String, Vec<(String, String)>)> {
-    let page = core.build_page_render_tree(PAGE).expect("8쪽 render tree");
-    let mut runs = Vec::new();
-    collect_runs(&page.root, &mut runs);
-    runs.sort_by(|a, b| (a.0, a.1).partial_cmp(&(b.0, b.1)).unwrap());
-
-    let mut lines: Vec<(f64, String, Vec<(String, String)>)> = Vec::new();
-    for (y, _x, text, family) in runs {
-        match lines.last_mut() {
-            Some((prev_y, buf, parts)) if (*prev_y - y).abs() < 0.5 => {
-                buf.push_str(&text);
-                parts.push((text, family));
-            }
-            _ => lines.push((y, text.clone(), vec![(text, family)])),
-        }
-    }
-    lines
-        .into_iter()
-        .map(|(_, text, parts)| (text.chars().filter(|c| !c.is_whitespace()).collect(), parts))
-        .collect()
-}
-
-/// 첫 줄이 한/글처럼 `사업` 까지 담고, 문서가 정본과 같은 74쪽이다.
-#[test]
-fn a_hyphen_measured_in_the_latin_slot_keeps_hancoms_line_break() {
-    let core = load();
-    let lines = page_lines(&core);
-    let joined: Vec<&String> = lines.iter().map(|(text, _)| text).collect();
-
-    let first = lines
-        .iter()
-        .position(|(text, _)| text.starts_with("-해당사업자는"))
-        .unwrap_or_else(|| {
-            panic!("정답지 전제가 깨졌다 — 8쪽에서 대상 문단을 찾지 못했다. 줄={joined:?}")
-        });
-
-    assert_eq!(
-        lines[first].0, "-해당사업자는신고업무처리를위한행정적부담이수반되나,사업",
-        "한/글 출력 8쪽의 이 줄은 `사업` 으로 끝난다 — `-` 를 한글 슬롯(휴먼명조 반각 9.63px)으로 \
-         재면 `업` 이 213 HWPUNIT 넘쳐 `사`/`업` 으로 갈린다. 줄={joined:?}"
-    );
-    assert!(
-        lines
-            .get(first + 1)
-            .is_some_and(|(text, _)| text.starts_with("일반현황,")),
-        "다음 줄은 `일반현황,` 으로 시작해야 한다. 줄={joined:?}"
-    );
-
-    assert_eq!(
-        core.page_count(),
-        74,
-        "정본은 74쪽이다 — 이 문단이 5줄이면 빈 문단 pi=86 이 혼자 9쪽을 열어 75쪽이 된다"
-    );
 }
 
 /// 한글 run 안의 `-` 는 영문 슬롯 메트릭으로 전진한다 — run 은 쪼개지 않는다.

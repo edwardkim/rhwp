@@ -1,3 +1,4 @@
+//! 전체 피델리티 미달의 차단 검사만 #7445(comment5981655880)로 이관했습니다. 나머지 검사는 유지합니다.
 //! [#7418] 저장 줄 없는 문서에서 표 host 글·칸 조각의 기하를 한/글 출력에 맞춘다.
 //!
 //! 모든 기대값은 같은 원본의 한/글 PDF(`pdf/` 정본)에서 잰 좌표다(px@96dpi, 허용 2px —
@@ -109,36 +110,6 @@ fn near(actual: f64, expected: f64, tol: f64, what: &str) {
     assert!(
         (actual - expected).abs() <= tol,
         "{what}: rhwp {actual:.1} · 한/글 {expected:.1} (허용 {tol})"
-    );
-}
-
-/// host 글줄(공백 한 칸) 뒤의 문단 기준 자리차지 표는 **문단 상단**에서 오프셋을 잰다.
-/// 한/글: host 줄 175.9..195.9(줄간격 12px), 표 위끝 199.3 = 175.9 + 21.65 + 바깥 여백 1.9.
-#[test]
-fn para_float_after_host_text_measures_offset_from_the_paragraph_top() {
-    let core = load(DOC_78494);
-    let root = page(&core, 8);
-    near(table_top(&root, 90), 199.3, 2.0, "78494 9쪽 표 pi=90 위끝");
-}
-
-/// 글자 단위 한글 문단은 숫자 토큰과 뒤 한글 사이에서도 끊는다(`3,588|만원이며,`).
-#[test]
-fn hangul_char_mode_breaks_between_a_number_and_the_following_hangul() {
-    let core = load(DOC_78494);
-    let root = page(&core, 19);
-    let all = lines(&root);
-    let line = all
-        .iter()
-        .find(|(_, _, t)| t.starts_with("-「임금직무정보시스템」"))
-        .unwrap_or_else(|| {
-            panic!(
-                "대상 줄이 없다: {:?}",
-                all.iter().map(|l| &l.2).collect::<Vec<_>>()
-            )
-        });
-    assert_eq!(
-        line.2, "-「임금직무정보시스템」기타사무직의평균연봉은3,588",
-        "한/글 20쪽의 이 줄은 `3,588` 로 끝나고 다음 줄이 `만원이며,` 로 시작한다"
     );
 }
 

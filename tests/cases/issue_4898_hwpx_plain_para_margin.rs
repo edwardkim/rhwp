@@ -94,19 +94,38 @@ fn issue_4898_plain_source_keeps_plain_margin_notation() {
 
 #[test]
 fn issue_4898_switch_source_keeps_switch_notation() {
-    let bytes = serialize_hwpx(&document_with_para_shape(false)).expect("HWPX 직렬화 실패");
-    let block = para_pr_block(&header_xml(&bytes));
-
-    assert!(
-        block.contains("<hp:switch>"),
-        "switch 원본은 종전대로 case/default 두 갈래로 써야 한다"
-    );
-    assert!(
-        block.contains(&format!("<hc:left value=\"{}\"", MARGIN_LEFT / 2)),
-        "case 갈래는 HwpUnitChar 1× 스케일(저장값의 절반)이다: {block}"
-    );
-    assert!(
-        block.contains(&format!("<hc:left value=\"{MARGIN_LEFT}\"")),
-        "default 갈래는 저장값 그대로다: {block}"
-    );
+    for (version, physical) in [("1.2", false), ("1.3", false), ("1.4", true)] {
+        let mut doc = document_with_para_shape(false);
+        doc.hwpx_aux_entries.push((
+            "version.xml".into(),
+            format!("<hv:HCFVersion xmlns:hv=\"http://www.hancom.co.kr/hwpml/2011/version\" xmlVersion=\"{version}\"/>").into_bytes(),
+        ));
+        let bytes = serialize_hwpx(&doc).expect("HWPX 직렬화 실패");
+        let block = para_pr_block(&header_xml(&bytes));
+        assert!(block.contains("<hp:switch>"), "switch 표기 보존");
+        let case_margin = if physical {
+            MARGIN_LEFT / 2
+        } else {
+            MARGIN_LEFT
+        };
+        let default_margin = if physical {
+            MARGIN_LEFT
+        } else {
+            MARGIN_LEFT * 2
+        };
+        assert!(
+            block.contains(&format!("<hc:left value=\"{case_margin}\"")),
+            "{version} case 단위: {block}"
+        );
+        assert!(
+            block.contains(&format!("<hc:left value=\"{default_margin}\"")),
+            "{version} default 단위: {block}"
+        );
+        let parsed = rhwp::parser::parse_document(&bytes).expect("switch 여백 왕복 파싱");
+        assert_eq!(parsed.doc_info.para_shapes[0].margin_left, MARGIN_LEFT);
+        assert_eq!(
+            parsed.doc_info.para_shapes[0].line_spacing,
+            LINE_SPACING_FIXED
+        );
+    }
 }

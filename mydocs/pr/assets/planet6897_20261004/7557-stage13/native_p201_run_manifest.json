@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "footnote-lane",
+  "provenance": {
+    "hwp": {
+      "path": "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9"
+    },
+    "pdf": {
+      "path": "pdf/task1725/text_footnote_tail_overpagination-hwp-2024.pdf",
+      "sha256": "03ddf66494ebd1b25cfe49344039f0c6e324a0a837d3d4dce9f26bc14141e8af"
+    },
+    "git_head": "3696f7329e19a1160bde5152a8507670efcfde5f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "6b591e4fa3e4bded1e8ea4a18107bb60dd5c2fd692014fbbece45c8770e52151"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

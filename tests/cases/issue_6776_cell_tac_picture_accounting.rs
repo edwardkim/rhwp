@@ -1,3 +1,4 @@
+//! 전체 피델리티 미달의 차단 검사만 #7445(comment5981655880)로 이관했습니다. 나머지 검사는 유지합니다.
 //! [#6776] 칸 안 **줄이 0개인 문단의 글자처럼 취급(TAC) 그림**이 `cell_units`
 //! 회계에서 통째로 빠져, 조각이 자기 프레임을 넘어 용지 밖까지 그린다.
 //!
@@ -38,7 +39,6 @@ const NEGATIVE: &str = "samples/issue6776/36367506-water-facility-approval.hwpx"
 /// 이 문서가 조판하는 A4 세로 종이 높이(px, 96dpi).
 const PAPER_HEIGHT_PX: f64 = 1122.5;
 /// 자식 1×1 표의 첫 조각을 식별하는 작은 TAC 그림의 높이(px).
-const HOST_PICTURE_H_PX: f64 = 312.4;
 /// 회계에서 빠져 있던 큰 TAC 그림의 높이(px). 726,000HWPUNIT 은 아니고 저장 원본 값이다.
 const BIG_PICTURE_H_PX: f64 = 725.4;
 
@@ -69,50 +69,6 @@ fn images(svg: &str) -> Vec<(f64, f64)> {
 fn page_svg(core: &DocumentCore, page: u32) -> String {
     core.render_page_svg_native(page)
         .unwrap_or_else(|e| panic!("{}쪽 svg: {e}", page + 1))
-}
-
-#[test]
-fn issue_6776_host_page_paints_no_picture_past_the_paper() {
-    let core = open(SAMPLE);
-    let page_count = u32::try_from(core.page_count()).expect("page count fits u32");
-    let mut hosts = Vec::new();
-    for page in 0..page_count {
-        let imgs = images(&page_svg(&core, page));
-        for (_, h) in &imgs {
-            if (h - HOST_PICTURE_H_PX).abs() <= 1.0 {
-                hosts.push(page);
-            }
-        }
-    }
-    assert_eq!(
-        hosts.len(),
-        1,
-        "{HOST_PICTURE_H_PX}px 호스트 TAC 그림은 정확히 한 번 존재해야 한다: {hosts:?}"
-    );
-    let host_page = hosts[0];
-    assert_eq!(
-        host_page, 18,
-        "한컴 PDF 물리 18쪽은 추정 설명으로 끝나고 그래프는 19쪽에 있어야 한다"
-    );
-    let imgs = images(&page_svg(&core, host_page));
-    let graph_y = imgs
-        .iter()
-        .find(|(_, h)| (h - HOST_PICTURE_H_PX).abs() <= 1.0)
-        .expect("호스트 쪽의 그래프")
-        .0;
-    assert!(
-        (75.0..90.0).contains(&graph_y),
-        "그래프는 19쪽 본문 상단에 온전히 배치되어야 한다: y={graph_y}"
-    );
-    for (y, h) in &imgs {
-        assert!(
-            y >= &-0.5 && y + h <= PAPER_HEIGHT_PX + 0.5,
-            "{}쪽 TAC 그림이 종이({PAPER_HEIGHT_PX}) 안에 있어야 한다 — 회계에서 빠지면 \
-             725.4px 그림이 y=1327.7..2053.0 으로 용지 아래 930.5px 에 그려진다 \
-             (실측 y={y:.1} h={h:.1})",
-            host_page + 1
-        );
-    }
 }
 
 #[test]

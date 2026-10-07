@@ -1,0 +1,3 @@
+use rhwp::{document_core::DocumentCore,renderer::render_tree::{RenderNode,RenderNodeType}};
+fn walk(n:&RenderNode, page:u32){if let RenderNodeType::Table(t)=&n.node_type {if t.para_index==Some(325){for c in &n.children{if let RenderNodeType::TableCell(tc)=&c.node_type {if tc.row==6 && tc.col==1{println!("page={} owner={:?}",page,c.bbox);fn child(n:&RenderNode){if let RenderNodeType::Table(t)=&n.node_type{if t.row_count==1 && t.col_count==1{println!("nested={:?}",n.bbox)}} for c in &n.children{child(c)}} child(c);}}}}}for c in &n.children{walk(c,page)}}
+fn main(){let b=std::fs::read("samples/76076_regulatory_analysis.hwp").unwrap();let d=DocumentCore::from_bytes(&b).unwrap();for p in [32,33]{walk(&d.build_page_render_tree(p).unwrap().root,p+1)}}

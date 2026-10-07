@@ -40,20 +40,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         known_square_band,
     );
     let composed = recomposed.as_ref().or(composed);
-    let raw_spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
+    // Reflow has no saved vertical ladder which could restore omitted spacing.
+    // Reserve the same paragraph before-space consumed by the composed paint
+    // path; otherwise the next object's shared origin rewinds into prior text.
+    let spacing_before = para_style.map(|s| s.spacing_before).unwrap_or(0.0);
     let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
-
-    // [Task #998 실험] spacing_before=0 으로 강제 — 효과 측정용
-    // [#2279 실험 전용] RHWP_EXP_BODY_FRESH 시 NO_LS 문단도 sb 를 보존한다
-    // (한글 fresh 는 sb 를 가산 — 생성기 사다리 sb-누락 모사 우회 계측).
-    let spacing_before = if para.line_segs.is_empty()
-        && !para.text.is_empty()
-        && std::env::var("RHWP_EXP_BODY_FRESH").is_err()
-    {
-        0.0
-    } else {
-        raw_spacing_before
-    };
     // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
     // 이전 #866 Stage 2 는 paragraph 위·아래 각 +20px (총 +40px) 을 paragraph 자체 height
     // 에 포함시켰으나, typeset 의 zone 전환 패딩(solo_zone_pad +16px enter +16px leave)

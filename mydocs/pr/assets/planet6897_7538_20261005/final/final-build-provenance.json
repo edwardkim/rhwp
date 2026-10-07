@@ -1,0 +1,11 @@
+{
+  "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+  "base": "1e488ac370ec715a5b97c765542e16fc9bf65714",
+  "source_head": "e4abc99f2de1da071964bb3a86c22e4b3d0a4d64",
+  "native_binary_sha256": "5fae53016d82128bf2bd066a3f50f2f865cc4b5c14889309b8188a27ddb8c4b5",
+  "mac_wasm_mode": "wasm-pack-locked --target web --no-opt; local alternative, not Docker optimized",
+  "validation_head": "cc59be7146142614f9a1f2ca74c2b078668a6f79",
+  "production_source_unchanged_since_build": true,
+  "wasm_js_sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+  "wasm_binary_sha256": "86ac0fe3dbdb4530de34e082459c35035bc9e06bf8e2966f87f8fdcc482b79b4"
+}

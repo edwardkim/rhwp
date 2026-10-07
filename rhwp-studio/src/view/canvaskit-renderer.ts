@@ -3627,10 +3627,17 @@ export class CanvasKitLayerRenderer {
       case 'vec':
       case 'dyad': {
         const lineY = y + fontSize * 0.05;
+        const startX = centerX - halfWidth;
         const endX = centerX + halfWidth;
-        return this.drawEquationLine(canvas, centerX - halfWidth, lineY, endX, lineY, color, strokeWidth)
+        let ok = this.drawEquationLine(canvas, startX, lineY, endX, lineY, color, strokeWidth)
           && this.drawEquationLine(canvas, endX - fontSize * 0.1, lineY - fontSize * 0.06, endX, lineY, color, strokeWidth)
           && this.drawEquationLine(canvas, endX, lineY, endX - fontSize * 0.1, lineY + fontSize * 0.06, color, strokeWidth);
+        if (decoration === 'dyad') {
+          ok = ok
+            && this.drawEquationLine(canvas, startX + fontSize * 0.1, lineY - fontSize * 0.06, startX, lineY, color, strokeWidth)
+            && this.drawEquationLine(canvas, startX, lineY, startX + fontSize * 0.1, lineY + fontSize * 0.06, color, strokeWidth);
+        }
+        return ok;
       }
       case 'dot':
       case 'dDot': {
@@ -3654,6 +3661,38 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderFormObject(canvas: SkCanvas, op: LayerFormObjectOp): void {
+    if (op.drawing) {
+      for (const primitive of op.drawing.primitives) {
+        const paint = primitive.kind === 'polyline' && !primitive.closed
+          ? this.makeStrokePaint(primitive.color, primitive.width)
+          : this.makeFillPaint(primitive.color);
+        try {
+          if (primitive.kind === 'rect') {
+            canvas.drawRect(this.rect(primitive.bbox), paint);
+          } else if (primitive.kind === 'circle') {
+            canvas.drawCircle(primitive.x, primitive.y, primitive.radius, paint);
+          } else {
+            const path = this.canvasKit.Path.MakeFromSVGString(
+              `M ${primitive.points.map(point => point.join(' ')).join(' L ')}${primitive.closed ? ' Z' : ''}`,
+            );
+            if (path) {
+              try { canvas.drawPath(path, paint); } finally { path.delete?.(); }
+            }
+          }
+        } finally { paint.delete?.(); }
+      }
+      const label = op.drawing.label;
+      if (label) {
+        this.renderTextRun(canvas, {
+          type: 'textRun',
+          bbox: { x: label.x, y: label.baseline - label.fontSize, width: op.bbox.width, height: label.fontSize },
+          text: label.text,
+          baseline: label.fontSize,
+          style: { fontFamily: label.fontFamily, fontSize: label.fontSize, color: label.color, bold: label.bold, italic: label.italic },
+        });
+      }
+      return;
+    }
     const fill = op.backColor && op.backColor !== '#000000' ? op.backColor : '#f7f7f7';
     this.drawStyledShape(canvas, op.bbox, {
       fillColor: fill,

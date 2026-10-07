@@ -630,7 +630,7 @@ impl DocumentCore {
         table_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
         table_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
 
-        let table_para = Paragraph {
+        let mut table_para = Paragraph {
             text: String::new(),
             char_count: 9, // 확장 제어문자(8 code units) + 문단끝(1)
             control_mask: 0x00000800,
@@ -703,6 +703,10 @@ impl DocumentCore {
         let mut did_split_for_table = false;
         if is_empty_para {
             // 빈 문단이면 UI에서 넘어온 offset과 무관하게 현재 줄을 표 host로 사용한다.
+            // 같은 문단 자리를 교체하므로 나눔과 그 저장 출처도 유지한다.
+            table_para.column_type = para.column_type;
+            table_para.raw_break_type = para.raw_break_type;
+            table_para.page_break_synthesized = para.page_break_synthesized;
             self.document.sections[section_idx].paragraphs[para_idx] = table_para;
             insert_para_idx = para_idx;
             table_control_idx = 0;

@@ -1190,14 +1190,7 @@ impl LayoutEngine {
         let max_fs = comp_line
             .runs
             .iter()
-            .map(|run| {
-                let ts = run.text_style(styles);
-                if ts.font_size > 0.0 {
-                    ts.font_size
-                } else {
-                    12.0
-                }
-            })
+            .map(|run| run.line_box_font_size(styles))
             .fold(0.0f64, f64::max);
         let para_style = styles.para_styles.get(para_style_id as usize);
         let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
@@ -1701,7 +1694,8 @@ impl LayoutEngine {
                         para_shape_id: None,
                         section_index: Some(marker_section),
                         para_index: Some(marker_para),
-                        char_start: Some(char_offset),
+                        // 번호 대신 그리지 않은 문자는 원본 문단의 주소에는 남는다.
+                        char_start: Some(char_offset + skipped),
                         cell_context: None,
                         is_para_end: false,
                         is_line_break_end: false,

@@ -484,6 +484,7 @@ impl TypesetEngine {
         {
             let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
             layout_engine.set_layout_profile(st.profile);
+            layout_engine.prime_column_layout_env(&st.layout);
             layout_engine.set_render_normalization_overlay(std::sync::Arc::clone(
                 &self.render_normalization,
             ));
