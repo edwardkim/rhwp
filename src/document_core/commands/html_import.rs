@@ -63,8 +63,10 @@ impl DocumentCore {
             )));
         }
 
-        // HTML 파싱 → 문단 목록 생성
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        // HTML 파싱 → 문단 목록 생성. 폭을 적지 않은 표는 이 구역 본문 글이 접히는 폭에 맞춘다.
+        let body_width =
+            crate::renderer::px_to_hwpunit(self.body_wrap_width(section_idx), self.dpi).max(0);
+        let parsed_paras = self.parse_html_to_paragraphs(html, body_width as u32);
         if parsed_paras.is_empty() {
             return Ok("{\"ok\":false,\"error\":\"empty html\"}".to_string());
         }
@@ -334,7 +336,8 @@ impl DocumentCore {
     fn parse_html_to_cell_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
         let bin_content_len = self.document.bin_data_content.len();
         let bin_list_len = self.document.doc_info.bin_data_list.len();
-        let parsed_paras = self.parse_html_to_paragraphs(html);
+        // 셀에는 표를 글로 펼쳐 넣으므로 표 폭은 쓰이지 않는다.
+        let parsed_paras = self.parse_html_to_paragraphs(html, 0);
         self.document.bin_data_content.truncate(bin_content_len);
         self.document.doc_info.bin_data_list.truncate(bin_list_len);
         Self::normalize_html_paragraphs_for_cell_paste(parsed_paras)
@@ -514,8 +517,14 @@ impl DocumentCore {
     /// 2MB(= 한글 본문 약 70만 자)로 올린다. data: URI 페이로드는 아래에서 따로 제외한다.
     const HTML_PASTE_MAX_BYTES: usize = 2_000_000;
 
-    pub(crate) fn parse_html_to_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
-        self.parse_html_to_paragraphs_at_depth(html, 0)
+    /// `container_width` 는 글이 놓일 폭(HWPUNIT)이다 — 본문 글이 접히는 폭이나 바깥 셀 안쪽 폭.
+    /// 폭을 적지 않은 표는 이 폭에 맞춘다.
+    pub(crate) fn parse_html_to_paragraphs(
+        &mut self,
+        html: &str,
+        container_width: u32,
+    ) -> Vec<Paragraph> {
+        self.parse_html_to_paragraphs_at_depth(html, 0, container_width)
     }
 
     /// 크기 상한은 **태그 트리 복잡도**를 막으려는 것이므로 `data:` URI 로 실린
@@ -536,7 +545,12 @@ impl DocumentCore {
         html.len().saturating_sub(payload)
     }
 
-    fn parse_html_to_paragraphs_at_depth(&mut self, html: &str, depth: u32) -> Vec<Paragraph> {
+    fn parse_html_to_paragraphs_at_depth(
+        &mut self,
+        html: &str,
+        depth: u32,
+        container_width: u32,
+    ) -> Vec<Paragraph> {
         if depth >= Self::HTML_PASTE_MAX_RECURSION_DEPTH
             || Self::html_markup_len(html) > Self::HTML_PASTE_MAX_BYTES
         {
@@ -599,7 +613,7 @@ impl DocumentCore {
                     // 표 전체 추출
                     let table_end = find_closing_tag_chars(&chars, pos, "table");
                     let table_html: String = chars[tag_start..table_end.min(len)].iter().collect();
-                    self.parse_table_html(&mut paragraphs, &table_html);
+                    self.parse_table_html(&mut paragraphs, &table_html, container_width);
                     pos = table_end;
                     continue;
                 } else if tag_lower.starts_with("<img") {
@@ -624,7 +638,11 @@ impl DocumentCore {
 
                     // <p> 내부에 <table>이 있으면 재귀적으로 처리
                     if p_inner.to_lowercase().contains("<table") {
-                        let sub_paras = self.parse_html_to_paragraphs_at_depth(p_inner, depth + 1);
+                        let sub_paras = self.parse_html_to_paragraphs_at_depth(
+                            p_inner,
+                            depth + 1,
+                            container_width,
+                        );
                         paragraphs.extend(sub_paras);
                         pos = p_end;
                         continue;
@@ -635,7 +653,7 @@ impl DocumentCore {
 
                     let mut para = Paragraph::default();
                     para.para_shape_id = para_shape_id;
-                    self.parse_inline_content(&mut para, p_inner);
+                    self.parse_inline_content(&mut para, p_inner, &para_style);
                     paragraphs.push(para);
 
                     pos = p_end;
@@ -653,7 +671,11 @@ impl DocumentCore {
                         &div_inner
                     };
 
-                    let sub_paras = self.parse_html_to_paragraphs_at_depth(div_inner, depth + 1);
+                    let sub_paras = self.parse_html_to_paragraphs_at_depth(
+                        div_inner,
+                        depth + 1,
+                        container_width,
+                    );
                     paragraphs.extend(sub_paras);
                     pos = div_end;
                     continue;
@@ -678,7 +700,7 @@ impl DocumentCore {
                     } else {
                         &list_inner
                     };
-                    let sub_paras = self.parse_html_to_paragraphs(list_inner);
+                    let sub_paras = self.parse_html_to_paragraphs(list_inner, container_width);
                     paragraphs.extend(sub_paras);
                     pos = list_end;
                     continue;
@@ -697,7 +719,7 @@ impl DocumentCore {
                         &li_inner
                     };
                     let mut para = Paragraph::default();
-                    self.parse_inline_content(&mut para, li_inner);
+                    self.parse_inline_content(&mut para, li_inner, &parse_inline_style(&tag_str));
                     // 그림만 든 항목도 버리지 않는다 — 버리면 등록한 그림 데이터만 문서에 남는다.
                     if !para.text.trim().is_empty() || !para.controls.is_empty() {
                         para.text = format!("• {}", para.text);
@@ -794,7 +816,7 @@ impl DocumentCore {
             return;
         }
         let mut para = Paragraph::default();
-        self.parse_inline_content(&mut para, run.trim());
+        self.parse_inline_content(&mut para, run.trim(), "");
         if !para.text.trim().is_empty() || !para.controls.is_empty() {
             // HTML 태그 분기도 plain paste와 같은 문자 수 제한을 지킨다.
             // 모델 분할은 UTF-16 서식 원점과 그림 소유를 함께 옮긴다.
