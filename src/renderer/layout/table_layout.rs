@@ -282,6 +282,58 @@ use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
 
+/// 투명 1×1 래퍼 `outer`를 펼쳐 `drawn`을 그릴 때 그 셀 내용이 쓸 주소의 기준.
+///
+/// 화면에서 펼친 래퍼도 논리 주소의 한 단계다. 래퍼 자신의 주소(`enclosing`, 없으면
+/// 본문 `table_meta`)에서 `drawn`까지 래퍼마다 유일한 셀 `(0, 0)`과 그 문단의 첫 표
+/// 컨트롤 단계를 잇는다. 배치 분기와 `TableNode` 좌표는 계속 래퍼의 문맥을 쓴다.
+pub(super) fn unwrapped_table_cell_ctx(
+    enclosing: Option<&CellContext>,
+    table_meta: Option<(usize, usize)>,
+    outer: &crate::model::table::Table,
+    drawn: &crate::model::table::Table,
+) -> Option<CellContext> {
+    let mut ctx = enclosing.cloned().or_else(|| {
+        table_meta.map(|(parent_para_index, control_index)| CellContext {
+            in_textbox: false,
+            parent_para_index,
+            path: vec![CellPathEntry {
+                control_index,
+                cell_index: 0,
+                cell_para_index: 0,
+                text_direction: 0,
+            }],
+        })
+    })?;
+    let mut table = outer;
+    while !std::ptr::eq(table, drawn) {
+        let cell = table.cells.first()?;
+        let (control_index, nested) = cell
+            .paragraphs
+            .first()?
+            .controls
+            .iter()
+            .enumerate()
+            .find_map(|(index, control)| match control {
+                Control::Table(nested) => Some((index, nested.as_ref())),
+                _ => None,
+            })?;
+        if let Some(wrapper) = ctx.path.last_mut() {
+            wrapper.cell_index = 0;
+            wrapper.cell_para_index = 0;
+            wrapper.text_direction = cell.text_direction;
+        }
+        ctx.path.push(CellPathEntry {
+            control_index,
+            cell_index: 0,
+            cell_para_index: 0,
+            text_direction: 0,
+        });
+        table = nested;
+    }
+    Some(ctx)
+}
+
 /// A clipped table cell still has to expose an immediately nested table's
 /// *outer border*. A nested table can begin after the host cell's left padding
 /// while retaining its stored width, which puts that right border just beyond
@@ -2682,6 +2734,7 @@ impl LayoutEngine {
             resolved_table_origin,
             host_char_border_fill_id,
             false,
+            None,
         )
     }
 
@@ -2714,6 +2767,8 @@ impl LayoutEngine {
         resolved_table_origin: Option<(Option<f64>, f64)>,
         host_char_border_fill_id: TableCharBorder,
         wrapper_margin_already_applied: bool,
+        // 펼친 투명 래퍼 대신 그리는 표의 셀 내용 주소 기준. 그 밖에는 None이다.
+        unwrapped_cell_ctx: Option<CellContext>,
     ) -> f64 {
         // [#6929] 진입 시점의 단 상태 — 이후 이 함수가 자식을 붙이므로 먼저 찍어 둔다.
         let column_is_empty_on_entry = col_node.children.is_empty();
@@ -2924,6 +2979,12 @@ impl LayoutEngine {
                         let inner_y_start = y_start + wrapper_frame.child_top;
                         // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
                         let inner_inline_x = inline_x_override.map(|x| x + pad_l + om_l);
+                        let nested_cell_ctx = unwrapped_table_cell_ctx(
+                            unwrapped_cell_ctx.as_ref().or(enclosing_cell_ctx.as_ref()),
+                            table_meta,
+                            table,
+                            nested,
+                        );
 
                         let y_end = self.layout_table_with_wrapper_margin(
                             tree,
@@ -2952,6 +3013,7 @@ impl LayoutEngine {
                             None,
                             TableCharBorder::default(),
                             true,
+                            nested_cell_ctx,
                         );
 
                         // 펼친 자식은 가시 내용의 최소 높이를 결정하지만 더 큰 외곽 선언
@@ -3483,6 +3545,7 @@ impl LayoutEngine {
             table_meta,
             outer_host_stored_vpos_hu,
             enclosing_cell_ctx.clone(),
+            unwrapped_cell_ctx.or_else(|| enclosing_cell_ctx.clone()),
             &row_col_x,
             &row_y,
             independent_col_row_y.as_deref(),
@@ -5780,6 +5843,7 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         table_meta: Option<(usize, usize)>,
         enclosing_cell_ctx: &Option<CellContext>,
+        content_cell_ctx: &Option<CellContext>,
         row_filter: Option<(usize, usize)>,
         row_y: &[f64],
         effective_valign: VerticalAlign,
@@ -5958,7 +6022,7 @@ impl LayoutEngine {
             {
                 continue;
             }
-            let cell_context = if let Some(ref ctx) = enclosing_cell_ctx {
+            let cell_context = if let Some(ref ctx) = content_cell_ctx {
                 let mut new_ctx = ctx.clone();
                 if let Some(last) = new_ctx.path.last_mut() {
                     last.cell_index = cell_idx;
@@ -8398,6 +8462,8 @@ impl LayoutEngine {
         table_meta: Option<(usize, usize)>,
         outer_host_stored_vpos_hu: Option<i32>,
         enclosing_cell_ctx: Option<CellContext>,
+        // 셀 내용 주소의 기준 — 펼친 투명 래퍼 단계까지 담는다.
+        content_cell_ctx: Option<CellContext>,
         row_col_x: &[Vec<f64>],
         row_y: &[f64],
         independent_col_row_y: Option<&[Vec<f64>]>,
@@ -9178,7 +9244,7 @@ impl LayoutEngine {
                     table_meta,
                     cell_idx,
                     table.cells.len(),
-                    enclosing_cell_ctx.clone(),
+                    content_cell_ctx.clone(),
                 );
             } else {
                 self.layout_horizontal_cell_paragraphs(
@@ -9192,6 +9258,7 @@ impl LayoutEngine {
                     bin_data_content,
                     table_meta,
                     &enclosing_cell_ctx,
+                    &content_cell_ctx,
                     row_filter,
                     row_y,
                     effective_valign,

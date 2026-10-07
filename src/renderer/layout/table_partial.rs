@@ -21,7 +21,8 @@ use super::table_layout::{
     border_style_has_diagonal, calc_nested_split_rows, effective_margin_left_line,
     expand_page_fragment_clip_to_own_text_lines, extend_completed_nested_table_border_clips,
     native_terminal_child_host_line_spacing, para_relative_float_table_lead,
-    translate_render_subtree_y, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
+    translate_render_subtree_y, unwrapped_table_cell_ctx, NestedTableSplit,
+    INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::{
@@ -5541,6 +5542,17 @@ impl LayoutEngine {
                 })
         });
         let mut fold_slack = f64::INFINITY;
+        // 펼친 투명 래퍼도 셀 내용 주소의 한 단계다. 배치 분기는 계속 래퍼 문맥을 쓴다.
+        let unwrapped_cell_ctx = if std::ptr::eq(table, outer_table) {
+            None
+        } else {
+            unwrapped_table_cell_ctx(
+                enclosing_cell_ctx,
+                Some((para_index, control_index)),
+                outer_table,
+                table,
+            )
+        };
         self.layout_partial_table_cells(
             tree,
             &mut table_node,
@@ -5577,7 +5589,7 @@ impl LayoutEngine {
             &mut h_span_covered,
             &mut v_span_covered,
             measured_table,
-            enclosing_cell_ctx,
+            unwrapped_cell_ctx.as_ref().or(enclosing_cell_ctx),
             clamp_header_negative_para_offset,
             probe,
             center_pinned_single_cell,
