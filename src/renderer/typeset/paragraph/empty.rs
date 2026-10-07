@@ -16,7 +16,6 @@ pub(in crate::renderer::typeset) struct EmptyTailPage<'a> {
 
 pub(super) enum TailDisposition {
     Continue,
-    Hidden,
     Unadvanced,
 }
 
@@ -72,7 +71,6 @@ pub(super) fn hide_overflowing_empty(
 pub(super) fn trailing_disposition(
     para: &Paragraph,
     fmt: &FormattedParagraph,
-    paragraphs: &[Paragraph],
     is_last_in_section: bool,
     available: f64,
     layout_drift_safety_px: f64,
@@ -95,24 +93,8 @@ pub(super) fn trailing_disposition(
             let fit_fail_only_after_footnote_reserve = page.current_footnote_height > 0.0
                 && total_h > available
                 && total_h <= base_available;
-            let prior_trailing_drift = page.current_height > available
-                && page.current_height <= available + layout_drift_safety_px + 0.5;
-            let previous_item_is_empty_para = page
-                .current_items
-                .last()
-                .and_then(|item| match item {
-                    PageItem::FullParagraph { para_index } => Some(*para_index),
-                    _ => None,
-                })
-                .and_then(|prev_idx| paragraphs.get(prev_idx))
-                .map(|prev_para| {
-                    let trimmed = prev_para.text.replace(|c: char| c.is_control(), "");
-                    trimmed.trim().is_empty() && prev_para.controls.is_empty()
-                })
-                .unwrap_or(false);
-            if prior_trailing_drift && previous_item_is_empty_para {
-                return TailDisposition::Hidden;
-            }
+            // 앞 줄의 누적 간격이 조금 넘쳤어도 다음 줄 상자의 점유는 별개다.
+            // 이 문단 자체가 fit할 때만 흡수하고, 아니면 정상 이월을 진행한다.
             if fit_fail_within_safety || fit_fail_only_after_footnote_reserve {
                 return TailDisposition::Unadvanced;
             }
