@@ -23,7 +23,7 @@ Issue: #7650
 
 - 기존 코드에서 새 Actions coverage 검사가 실패하는지 확인하고, 구현 뒤 classifier·policy·report·controller 계약 Node 검사와 CI/CodeQL workflow Python 검사를 실행한다. YAML·actionlint·diff 검사도 수행한다.
 - 한국어 PR과 self-review로 devel에 통합한다. 실제 Actions Analyze 및 SARIF 업로드 성공을 확인한다.
-- 기본 브랜치 main 적용은 devel 전체 릴리즈와 구분한다. 최소 운영 변경만 적용하고 main의 새 Actions 분석을 확인한다.
+- 기본 브랜치 main 적용은 정규 `devel → main` promotion 절차를 따른다. devel 병합만으로 기본 브랜치 경고가 해소됐다고 보고하지 않는다. main 적용 시 새 Actions 분석을 확인한다.
 - 기존 자동 Actions 구성과 관련 경고·분석 증거를 보존한 다음 해당 구성만 삭제한다. 다른 언어의 자동 구성은 보존한다.
 
 ## 완료·rollback
@@ -33,3 +33,13 @@ Issue: #7650
 ## 증적
 
 기존 구성 진단: 기본 작업공간의 ignored `output/pr-review/codeql-config-cfee-20261007/`. 이번 실행 결과는 이 worktree의 ignored `output/pr-review/codeql-actions-20261007/`에 보존한다. 제품·조판 경로 변경이 없으므로 Rust/WASM 빌드와 Visual Sweep은 비해당이다.
+
+
+## 구현 및 로컬 검증 결과
+
+- classifier version 8 / policy version 7로 전환했다. compact 상태의 Actions 축은 `ac`이며 세 consumer의 지원 버전도 함께 갱신했다.
+- workflow 내 review-only 재사용, shared trusted post-merge 재사용, CI Impact Policy 감사, main promotion 실행 정책에서 Actions를 검사한다.
+- 수정 전 검사: Actions 전체 범위·policy 감사 4개, workflow 선택·legacy candidate 3개, post-merge legacy coverage 1개, promotion 검사 1개(3개 하위 조건)가 의도한 원인으로 실패했다.
+- 수정 후 Node 495개, 주요 CI/CodeQL 계약 Python 115개, 전체 workflow Python 185개, promotion Python 35개가 통과했다. 공식 actionlint 1.7.11 checksum 확인 후 변경한 세 YAML을 검증했고, Node 구문·YAML 파싱·diff 검사도 통과했다. shellcheck는 설치되어 있지 않아 actionlint의 shellcheck 외 검증을 실행했다.
+- fixture 기대값 변경은 정책 버전과 전체 분석의 Actions 추가만 반영한다. 기존 선택적 언어·작업 범위는 변경하지 않았다.
+- GitHub exact-head CI와 main 적용·자동 구성 삭제는 아직 수행하지 않았다. 기존 자동 구성 증거는 보존되어 있다.
