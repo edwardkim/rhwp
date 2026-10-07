@@ -891,6 +891,9 @@ fn collect_glyph_outline_reject_reasons(
     {
         reasons.insert(VariantRejectReason::EmptyGlyphOutlinePayload);
     }
+    if !outline.has_portable_geometry() {
+        reasons.insert(VariantRejectReason::UnsupportedOutlinePayload);
+    }
     if !outline.paint_style.is_fill_only_glyph_replay() {
         reasons.insert(VariantRejectReason::UnsupportedPaintEffect);
     }

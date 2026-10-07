@@ -219,6 +219,12 @@ turning them into default replay paths.
   false before a backend may consider the payload strict.
 - Each `GlyphOutline` op may carry only one payload family. Mixing stroke,
   color-layer, bitmap, and SVG payload fields is a validation error.
+- strict glyph의 경로·affine·baseline·gradient·stroke·bitmap/SVG geometry는
+  유한한 f32 범위(`abs(value) <= f32::MAX`) 안에 있어야 합니다. 사각형은
+  성분과 함께 `x + width`, `y + height`도 검사합니다. 공통 selector와 browser가
+  Native Skia의 scalar 경계를 공유하며, 한 part라도 초과하면 해당 variant 전체를
+  거부하고 `TextRun` fallback을 선택합니다. 이 검사는 자원 준비 또는 변환 후
+  geometry에 대한 backend 검증을 대체하지 않습니다.
 - CanvasKit and Canvas2D report the same high-level reject reasons for advanced
   payload families: `unsupportedColorGlyph`, `unsupportedBitmapGlyph`, and
   `unsupportedSvgGlyph`. Canvas2D can still add
