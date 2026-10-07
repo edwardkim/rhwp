@@ -2,7 +2,7 @@
 kind: working
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-03
+last_verified: 2026-10-07
 ---
 
 # #7486 — 표 뒤 Enter의 확정 쪽 소유 보존
@@ -16,7 +16,7 @@ Branch: `codex/table-enter-page-ownership`. 최초 범위는 로컬 보정·검�
 실제 편집 API로 만든 A4·10pt·160%·10×2 위아래 표 뒤에서 Enter를 반복했다.
 수동 XML·LineSeg 수정 없이 `createTable` → `splitParagraph` → `exportHwpx`로 입력을 보존했다.
 수정 전 Enter33~39의 문단34~40은 페이지 소속이 없고 Enter40에서 다시 나타난다.
-같은 Enter32/33/40 원문을 npx 한컴 MCP의 명시적 2020 엔진으로 출력한 독립 PDF는 각각 1/2/2쪽이다.
+같은 Enter32/33/40 원문의 독립 한컴 PDF는 각각 1/2/2쪽이다.
 저장 제품은 입력 `info`의 `hancom-office-2020`이며 2024 엔진으로 표시하지 않는다.
 
 가시 텍스트 없음은 줄 공간 점유 없음이 아니다. `discard_terminal_blank_only_page`는 이미 fit/배치가
@@ -69,3 +69,24 @@ PR 전 전체 검증·원격 제출은 결과 보고에서 이어 기록한다.
 - 이 기록은 준비 단계다. 정확한 후보에서 Enter·저장/재열기·실제 저장본
   영향 검증을 실행하며 판정은 여전히 머지 보류다. 전체 Rust/lint/CI와
   원격 push·review·merge 완료를 주장하지 않는다.
+
+### 재검증 결과와 남은 범위
+
+로컬 code head `2b034275a53ae7d65c9a4670982d9a23fddc60fa`에서 최신
+`InlineFlowPlan` 필드 초기화 호환성만 추가 보정했다. 반복 Enter4개 원문 전체7쪽은
+Native/fresh WASM 최저100%, 실제 어구21쪽은 양쪽 최저93.22327%다.
+기존 Enter/저장 재열기6개와 #7207 소속3개는 실제9PASS이며 fmt 및
+base `48ff4bb935` 고정 manifest 정책도 통과했다.
+
+교육과정 Native413쪽/독립 PDF415쪽 차이는 남고 guide171/172쪽은
+66.38064/24.14817%다. Native171쪽을 직접 판독해 내용 소속 차이를 확인했다.
+이번 source의 fresh WASM guide·교육과정 전쪽 대응과 전체 Rust/lint/CI는
+미검증이다. 이전 head나 어구의 통과를 이 경로의 증거로 대신하지 않는다.
+저장 guide의 0 전진 의미는 독립 출력으로 입증되지 않아 승인·통합은 보류한다.
+교육과정 전체 구현은 이 후보에 포함하지 않는다.
+
+정확한 후보의 수치·대표 PNG·입력/source 해시는
+[최신 리뷰](../pr/archives/pr_7544_review.md#2026-10-07-범위-분리-후-로컬-후보-재검증)와
+[재검증 원장](assets/issue7486-table-enter/recheck_20261007.json)에 연결한다.
+새 sweep에는 기존 독립 PDF를 재사용했고 사용자 제공 파일은 로컬 검증에만 사용했다.
+원격 PR head·본문·댓글·리뷰·merge 및 이슈 상태는 변경하지 않았다.

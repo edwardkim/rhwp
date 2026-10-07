@@ -2,12 +2,57 @@
 kind: review
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-03
+last_verified: 2026-10-07
 ---
 
 # PR #7544 리뷰 — 표 뒤 Enter의 빈 줄 소속 보존
 
 ## 최종 판정
+
+**머지 보류 — 저장 종료 guide의 독립 출력 근거와 최종 검증이 남아 있다.**
+최신 base `48ff4bb935`에서 #7207 정렬 보정을 먼저 분리하고, 그 후보에 원 PR을
+로컬 병합한 code head `2b034275a53ae7d65c9a4670982d9a23fddc60fa`를 재검증했다.
+#7207 선행 commit `cf2b0508fc`는 아직 devel에 없으며 원격 #7544 head
+`e22b099a28`도 변경하지 않았다. 아래 결과는 이 의존성을 포함한 로컬 후보의 결과다.
+교육과정 전체 보정을 이 PR에 포함하거나 #7445 담당 작업을 인수하지 않는다.
+
+## 2026-10-07 범위 분리 후 로컬 후보 재검증
+
+Rust source의 병합 충돌은 없었고 오늘할일 add/add는 양쪽 기록을 보존해 해소했다.
+최신 `InlineFlowPlan`의 추가 필드 6개를 저장 guide 생성자에 기존 text-only plan과
+같은 기본값으로 초기화했다. guide 수용 규칙·0 전진·분할표 소유 규칙은 추가 변경하지 않았다.
+#7207의 저장 프레임 정렬 소비 보정은 [별도 계획과 검증](../../plans/task_m100_7207_impl.md)에 연결한다.
+
+| 검증 범위 | 정확한 후보의 결과 | 판정 |
+| --- | --- | --- |
+| 반복 Enter 원문4개·독립 PDF | Native/fresh WASM 각각 전체7쪽, 최저100%, 누락0 | 해당 소속 계약 충족; 표 선의 색상 차이는 남음 |
+| 어구 실제 저장본·동일 원문 PDF | Native/fresh WASM 각각 전체21쪽, 최저93.22327%(7쪽), 90% 미만/누락0 | 해당 정량 기준 충족; 잔여 괘선 차이로 #7207 전체 종료는 아님 |
+| 교육과정 guide 영향171/172쪽 | Native 66.38064/24.14817%; 기준415쪽/실제413쪽 | 미충족; `re_review_required`. 이번 source의 fresh WASM guide와 전쪽 대응은 미검증 |
+| 기존 Enter·간격·저장/재열기 검사6개 + #7207 지도 검사3개 | 실제9PASS | 해당 회귀 검사 충족 |
+| fmt·base `48ff4bb935` 고정 manifest 정책 | PASS | 충족 |
+| 전체 Rust 회귀·세 Clippy·workspace build·원격 CI | 새 후보에서는 미완료 | 미검증; 과거 head의 통과를 재사용하지 않음 |
+
+정확한 후보의 fresh WASM17쪽과 Native171쪽 review, Native Enter33쪽 review를
+직접 판독했다. 지도·캡션 위치는 복원됐지만 교육과정171쪽의 내용 소속은 기준 PDF와
+다르다. 같은 내용의 PDF 쪽 번호를 바꾸어 통과시키지 않았다. 반복 Enter7쪽 및
+어구21쪽의 통과는 저장 guide의 0 전진 의미나 교육과정 쪽 대응을 입증하지 않는다.
+따라서 현재 PR의 승인·통합 가능 판정으로 확대하지 않는다.
+
+| 대표 경계 | Native review·overlay | fresh WASM review·overlay |
+| --- | --- | --- |
+| 어구17쪽 | [review](../../working/assets/issue7486-table-enter/recheck_20261007_native-eogu17_review.png) · [overlay](../../working/assets/issue7486-table-enter/recheck_20261007_native-eogu17_overlay.png) | [review](../../working/assets/issue7486-table-enter/recheck_20261007_wasm-eogu17_review.png) · [overlay](../../working/assets/issue7486-table-enter/recheck_20261007_wasm-eogu17_overlay.png) |
+| Enter33 첫 쪽 | [review](../../working/assets/issue7486-table-enter/recheck_20261007_native-enter33_review.png) · [overlay](../../working/assets/issue7486-table-enter/recheck_20261007_native-enter33_overlay.png) | [review](../../working/assets/issue7486-table-enter/recheck_20261007_wasm-enter33_review.png) · [overlay](../../working/assets/issue7486-table-enter/recheck_20261007_wasm-enter33_overlay.png) |
+| guide171쪽 실패 | [review](../../working/assets/issue7486-table-enter/recheck_20261007_native-guide171_review.png) · [overlay](../../working/assets/issue7486-table-enter/recheck_20261007_native-guide171_overlay.png) | 이번 source에서 미검증 |
+
+입력/PDF·source와 대표 PNG 해시 및 전쪽 최저값은 [새 재검증 원장](../../working/assets/issue7486-table-enter/recheck_20261007.json)에
+연결한다. 원문·PDF는 repository blob과 대조했으며 새 변환 없이 기존 독립 출력을 재사용했다.
+Native `release-test`와 루트 wrapper의 새 host web WASM(wasm-opt 성공)을 사용했다.
+Docker 표준 경로 통과로 보고하지 않는다. 정확한 명령·패키지 해시·TSV·로그는
+ignored `output/pr-review/issue7207-7544-focus-20261007`과 해당 임시 sweep 경로에 보존한다.
+사용자 제공 파일의 데이터·경로·메타데이터는 제출용 증적에 포함하지 않는다.
+원격 push·PR 본문 변경·댓글·승인·merge·이슈 종료는 수행하지 않았다.
+
+## 2026-10-03 최종 판정 — 당시 이력
 
 **머지 보류 — 실제 저장본의 Native/fresh WASM 시각 gate 미달.** 재검토 head `3edcbdbe172767d135ce420e459a41fc9b44f12e`의 Full CI와 관련 checks는 성공했다. 이후 빠졌던 실제 저장본 2개의 동일 원문 한컴 PDF 비교를 실행했고, 두 입력 모두 `pr_review_gate=re_review_required`였다. 반복 Enter 합성 계약의 통과와 실제 저장본의 출력 실패를 구분한다. 기존 승인 기록은 검증 범위를 충분히 구분하지 못해 바로잡는다. 본인 PR의 self-review이며 GitHub Approve event가 아니다.
 
@@ -15,14 +60,14 @@ last_verified: 2026-10-03
 
 ## 2026-10-03 실제 저장본 재검증 — 미충족
 
-검증한 production/test source는 `97772d5d40787e77c3238debc2b2576b11713476`이며 원격 head `3edcbdbe…`와 코드가 같다. 실행 당시 문서 commit은 `0e1dd5d4…`였다. root wrapper로 fresh WASM을 다시 만들고 root/public 해시 일치를 확인했다. Native와 fresh WASM은 같은 원문·PDF를 96dpi print profile·고정 2px 관용으로 비교했다. 글꼴 예외·마스킹·허용치 변경은 없다. 명령·입력/출력 SHA-256·MCP job·backend provenance·전후 PNG 해시는 [재검증 원장](../../working/assets/issue7486-table-enter/stored-guide-recheck.json)에 있다.
+검증한 production/test source는 `97772d5d40787e77c3238debc2b2576b11713476`이며 원격 head `3edcbdbe…`와 코드가 같다. 실행 당시 문서 commit은 `0e1dd5d4…`였다. root wrapper로 fresh WASM을 다시 만들고 root/public 해시 일치를 확인했다. Native와 fresh WASM은 같은 원문·PDF를 96dpi print profile·고정 2px 관용으로 비교했다. 글꼴 예외·마스킹·허용치 변경은 없다. 명령·입력/출력 SHA-256·backend provenance·전후 PNG 해시는 [재검증 원장](../../working/assets/issue7486-table-enter/stored-guide-recheck.json)에 있다.
 
 | 실제 입력 | 한컴 PDF / Native / fresh WASM | 전체 쪽 측정과 영향 페이지 | 판정 |
 | --- | --- | --- | --- |
 | `task2097/18095317_eogu_geumji.hwp` | 21 / 21 / 21쪽 | 양쪽 backend 전21쪽 TSV 최저 **14.72666% (19쪽)**, 90% 미만16쪽, 누락0. 영향20/21쪽은 **18.38669% / 19.92770%** | 미충족; 대표 gate `re_review_required` |
 | `task2287/1342000_edu_curriculum_map.hwp` | **415 / 413 / 413쪽** | 양쪽 전체 TSV는 쪽수 불일치로 측정 전 실패. 전체 최저값은 미산출. 같은 쪽171/172 비교는 **66.33053% / 24.00083%** | 미충족; 대표 gate `re_review_required`; 전쪽 일치는 미검증 |
 
-어구 문서는 사용자 승인 후 **npx MCP engine2020**으로 [동일 원문의 한컴 PDF](../../../pdf/18095317_eogu_geumji-2020.pdf)를 확보했다. job `6023e41e-d10c-4ef4-b6ef-49c08d8a100b`, 한컴 `11.0.0.9136`, 전처리 없음, one-up 출력, 21쪽/PDF1.4이며 PDF SHA-256은 `98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab`다. 교육과정은 [기존 정상 한컴 PDF415쪽](../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf)를 재사용했다. 파일명은 2020 bucket이나 실제 Creator는 Hwp2022이며 버전 이름만으로 기준을 폐기하지 않았다.
+어구 문서는 [동일 원문의 한컴 PDF](../../../pdf/18095317_eogu_geumji-2020.pdf)를 확보했다. 한컴 `11.0.0.9136`, 전처리 없음, one-up 출력, 21쪽/PDF1.4이며 PDF SHA-256은 `98a9378f5b3440cc8c56c03dd483e2af95a194b9340ebc916c08474ceea65eab`다. 교육과정은 [기존 정상 한컴 PDF415쪽](../../../pdf/task2287/1342000_edu_curriculum_map-hwp-2020.pdf)를 재사용했다. 파일명은 2020 bucket이나 실제 Creator는 Hwp2022이며 버전 이름만으로 기준을 폐기하지 않았다.
 
 대표 Native/fresh WASM review와 standalone overlay를 직접 판독했다. 어구21쪽은 이전 세로 지도가 다시 배치되고 마지막 `[부도5]` 지도는 아래로 밀려 용지 밖까지 이어진다. 기준 PDF21쪽은 마지막 지도만 본문 상단에 있다. 교육과정171쪽은 본문 행·성취기준 코드의 쪽 소유가 다르며 현재171쪽 내용은 기준PDF172쪽에 대응한다. 기준 페이지를 재번호하거나 잘라 점수를 올리지 않았다. 글꼴 이름으로 그림 배치·쪽 소유 차이를 면제할 수 없다.
 
@@ -92,7 +137,7 @@ last_verified: 2026-10-03
 
 ## 검증 입력과 실행 결과
 
-입력 커밋 확인은 **충족**이다. 실제 사용한 HWPX 4개는 `tests/fixtures/issue7486_table_enter/`, 대응 한컴 PDF 4개는 `pdf/issue7486_*-2020.pdf`이며 `3f1e5c596`부터 검토 history에 있다. 검증 source commit에서 실행 파일과 Git blob의 SHA-256을 대조했다. 파일로 사용한 합성 입력과 비교 PDF는 외부 경로에만 두지 않았다. 실제 기존 문서 8개 및 #2097/#2287 저장본도 기존 repository blob과 대조했다. 경로별 SHA-256·MCP 작업 ID·실제 source/backend 출처는 [validation.json](../../working/assets/issue7486-table-enter/validation.json)에 있다.
+입력 커밋 확인은 **충족**이다. 실제 사용한 HWPX 4개는 `tests/fixtures/issue7486_table_enter/`, 대응 한컴 PDF 4개는 `pdf/issue7486_*-2020.pdf`이며 `3f1e5c596`부터 검토 history에 있다. 검증 source commit에서 실행 파일과 Git blob의 SHA-256을 대조했다. 파일로 사용한 합성 입력과 비교 PDF는 외부 경로에만 두지 않았다. 실제 기존 문서 8개 및 #2097/#2287 저장본도 기존 repository blob과 대조했다. 경로별 SHA-256·실제 source/backend 출처는 [validation.json](../../working/assets/issue7486-table-enter/validation.json)에 있다.
 
 [원인·전후 실행 보고서](../../report/task_m100_7486_table_report.md)와 [단계 기록](../../working/task_m100_7486_table_stage1.md)을 근거로 사용한다.
 

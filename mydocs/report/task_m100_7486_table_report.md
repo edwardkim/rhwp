@@ -2,7 +2,7 @@
 kind: report
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-03
+last_verified: 2026-10-07
 ---
 
 # #7486 — 표 뒤 Enter의 빈 줄 소유권 보정
@@ -10,7 +10,17 @@ last_verified: 2026-10-03
 Issue: [#7486](https://github.com/edwardkim/rhwp/issues/7486). 앞서 병합된 Studio 보고서와 구분하기 위해
 이번 표 경로의 보고서는 `_table_report.md` 이름으로 유지한다.
 
-## 최신 판정 — 실제 저장본 시각 실패로 병합 보류
+## 최신 판정 — 범위 분리 후에도 저장 guide 검증으로 병합 보류
+
+2026-10-07 최신 base `48ff4bb935`에서 #7207 정렬 보정을 분리한 뒤 원 PR을
+로컬 병합한 code head `2b034275a5`를 재검증했다. 선행 #7207 후보는 아직
+devel에 없고 원격 #7544는 변경하지 않았다. Native/fresh WASM의 어구 전21쪽
+최저93.22327%, Enter4개 원문 전7쪽 최저100%이며 관련 기존 검사9개는 통과했다.
+교육과정 guide171/172쪽의 Native 실패 및 전체413/415쪽 차이는 남고, 이 source의
+fresh WASM guide·전체 Rust/lint/CI는 미검증이다. 교육과정 전체 보정을 인수하지 않는다.
+정확한 source·입력·대표 PNG와 판정은 [최신 self-review](../pr/archives/pr_7544_review.md#2026-10-07-범위-분리-후-로컬-후보-재검증)에 연결한다.
+
+## 2026-10-03 실제 저장본 재검증 — 당시 이력
 
 제출 때 합성 반복 Enter 입력 4개의 통과를 실제 저장본 종료 guide 검증과 충분히 구분하지 못했다.
 2026-10-03 누락된 비교를 실행한 결과, Native/fresh WASM 모두 `pr_review_gate=re_review_required`다.
@@ -18,14 +28,14 @@ Issue: [#7486](https://github.com/edwardkim/rhwp/issues/7486). 앞서 병합된 
 교육과정은413/415쪽으로 전쪽 TSV가 쪽수 불일치로 실패했고, 같은171/172쪽은66.33053%/24.00083%다.
 선택2쪽 점수를 전체415쪽의 검증으로 보고하지 않는다. 대표 review·standalone overlay를 직접 판독했다.
 
-어구 PDF는 승인된 npx MCP engine2020으로 새로 확보했으며, 교육과정 PDF는 기존 정상415쪽 기준을
+어구는 동일 원문의 독립 한컴 PDF를 확보했으며, 교육과정 PDF는 기존 정상415쪽 기준을
 재사용했다. 원문·PDF·빌드·전후 출력 해시와 실행 범위는
 [실제 저장본 재검증 원장](../working/assets/issue7486-table-enter/stored-guide-recheck.json)에 보존했다.
 수정 전 base에서도 어구20/21쪽 출력이 동일하고 교육과정의413/415쪽 차이가 존재한다.
 교육과정171쪽은 소량 픽셀 차이가 있어 전체 바이트 동일로 기록하지 않는다.
 기존 결함이라는 분류와 현재 gate 실패를 구분하며, 승인·병합 조건을 충족했다고 보고하지 않는다.
 
-사용자 선택에 따라 이번 보정은 실패 증적·PR 본문·self-review·오늘할일 기록에 한정한다.
+당시 사용자 선택에 따라 보정은 실패 증적·self-review·오늘할일 기록에 한정했다.
 어구 출력은 [#7207](https://github.com/edwardkim/rhwp/issues/7207), 교육과정은
 [#7445의 기존 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5874264216)에 분리해 추적한다.
 renderer·회귀·baseline·허용치는 변경하지 않았다. 자세한 판정·실패 대표 이미지와 초기 리뷰 정정은
@@ -53,13 +63,12 @@ renderer·회귀·baseline·허용치는 변경하지 않았다. 자세한 판�
 
 ## 독립 기준과 시각 선행 조건
 
-실제 편집 API로 생성·저장한 합성 HWPX를 수동 XML 수정 없이 보존했다. 같은 원문은 기존 승인된
-npx MCP 비동기 `start → status → download`로 독립 한컴 PDF를 확보했다.
-입력 저장 제품은 `hancom-office-2020`이므로 engine `2020`을 명시했다. HOffice120 호환 profile의
+실제 편집 API로 생성·저장한 합성 HWPX를 수동 XML 수정 없이 보존했다. 같은 원문의
+독립 한컴 PDF를 확보했다. 입력 저장 제품은 `hancom-office-2020`이다. HOffice120 호환 profile의
 `pdf_output_mode=hancom2020_pdf_driver_one_up`, 한컴 11.0.0.9136, 파일 서명·SHA-256을 확인했다.
-endpoint·token은 증적에 포함하지 않는다.
+변환 인증 정보는 증적에 포함하지 않는다.
 
-합성 편집 fixture는 `tests/fixtures/issue7486_table_enter/`에, 대응 MCP PDF는
+합성 편집 fixture는 `tests/fixtures/issue7486_table_enter/`에, 대응 한컴 PDF는
 `pdf/issue7486_<원문 stem>-2020.pdf`에 보존했다. 최초 assets 경로의 같은 바이트를 옮겼으며
 XML·LineSeg·PDF 내용은 변경하지 않았다. 각 파일의 저장소 경로·SHA-256은 validation.json의
 `inputPaths`와 `files`에 연결했다. 최종 sweep는 이 저장소 경로를 사용한다.
