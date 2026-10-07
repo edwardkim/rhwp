@@ -370,6 +370,21 @@ impl GlyphOutlinePayloadKind {
 }
 
 impl LayerGlyphOutlinePaint {
+    /// Scalar representability shared by strict outline consumers. Resource
+    /// preparation and transformed extents still require backend validation.
+    pub(crate) fn has_portable_geometry(&self) -> bool {
+        layer_affine_is_finite(self.placement.run_to_page)
+            && portable_glyph_scalar(self.placement.baseline_y)
+            && (!matches!(
+                self.payload_kind,
+                GlyphOutlinePayloadKind::MonochromeFill
+                    | GlyphOutlinePayloadKind::MonochromeFillStroke
+            ) || self
+                .paths
+                .iter()
+                .all(|path| path_commands_are_finite(&path.commands)))
+    }
+
     pub fn has_exclusive_payload_family(&self) -> bool {
         let has_stroke = self.stroke.is_some();
         let has_color_layers = self.color_layers.is_some();
@@ -971,16 +986,23 @@ fn glyph_range_is_valid(range: GlyphRange) -> bool {
     range.end >= range.start
 }
 
+// Skia consumes f32 scalars even when the shared IR stores f64 geometry.
+fn portable_glyph_scalar(value: f64) -> bool {
+    value.is_finite() && value.abs() <= f64::from(f32::MAX)
+}
+
 fn path_commands_are_finite(commands: &[PathCommand]) -> bool {
     !commands.is_empty()
         && commands.iter().all(|command| match *command {
-            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => x.is_finite() && y.is_finite(),
-            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                [x1, y1, x2, y2, x, y].into_iter().all(f64::is_finite)
+            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
+                portable_glyph_scalar(x) && portable_glyph_scalar(y)
             }
-            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => {
-                [rx, ry, rotation, x, y].into_iter().all(f64::is_finite)
-            }
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => [x1, y1, x2, y2, x, y]
+                .into_iter()
+                .all(portable_glyph_scalar),
+            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => [rx, ry, rotation, x, y]
+                .into_iter()
+                .all(portable_glyph_scalar),
             PathCommand::ClosePath => true,
         })
 }
@@ -1013,8 +1035,8 @@ fn color_gradient_stops_are_valid(stops: &[ColorGradientStop]) -> bool {
 }
 
 fn color_sweep_is_supported_full_circle(start_angle_degrees: f64, end_angle_degrees: f64) -> bool {
-    start_angle_degrees.is_finite()
-        && end_angle_degrees.is_finite()
+    portable_glyph_scalar(start_angle_degrees)
+        && portable_glyph_scalar(end_angle_degrees)
         && start_angle_degrees < end_angle_degrees
         && (end_angle_degrees - start_angle_degrees - 360.0).abs() <= 1e-9
 }
@@ -1089,10 +1111,10 @@ impl ColorPaintGraphPayload {
                         return false;
                     };
                     return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.x0.is_finite()
-                        && gradient_path.gradient.y0.is_finite()
-                        && gradient_path.gradient.x1.is_finite()
-                        && gradient_path.gradient.y1.is_finite()
+                        && portable_glyph_scalar(gradient_path.gradient.x0)
+                        && portable_glyph_scalar(gradient_path.gradient.y0)
+                        && portable_glyph_scalar(gradient_path.gradient.x1)
+                        && portable_glyph_scalar(gradient_path.gradient.y1)
                         && color_gradient_stops_are_valid(&gradient_path.gradient.stops);
                 }
                 ColorPaintGraphNodeKind::RadialGradientPath => {
@@ -1109,9 +1131,9 @@ impl ColorPaintGraphPayload {
                         return false;
                     };
                     return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.cx.is_finite()
-                        && gradient_path.gradient.cy.is_finite()
-                        && gradient_path.gradient.radius.is_finite()
+                        && portable_glyph_scalar(gradient_path.gradient.cx)
+                        && portable_glyph_scalar(gradient_path.gradient.cy)
+                        && portable_glyph_scalar(gradient_path.gradient.radius)
                         && gradient_path.gradient.radius > 0.0
                         && color_gradient_stops_are_valid(&gradient_path.gradient.stops);
                 }
@@ -1129,8 +1151,8 @@ impl ColorPaintGraphPayload {
                         return false;
                     };
                     return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.cx.is_finite()
-                        && gradient_path.gradient.cy.is_finite()
+                        && portable_glyph_scalar(gradient_path.gradient.cx)
+                        && portable_glyph_scalar(gradient_path.gradient.cy)
                         && color_sweep_is_supported_full_circle(
                             gradient_path.gradient.start_angle_degrees,
                             gradient_path.gradient.end_angle_degrees,
@@ -1189,7 +1211,7 @@ impl ColorLayersPayload {
                 layer
                     .commands
                     .as_ref()
-                    .is_some_and(|commands| !commands.is_empty())
+                    .is_some_and(|commands| path_commands_are_finite(commands))
                     && layer.fill.is_some()
                     && layer.fill_rule.is_some()
                     && layer
@@ -1312,7 +1334,10 @@ impl SvgGlyphPayload {
             && self
                 .intrinsic_size
                 .map(|size| {
-                    size.dx.is_finite() && size.dy.is_finite() && size.dx > 0.0 && size.dy > 0.0
+                    portable_glyph_scalar(size.dx)
+                        && portable_glyph_scalar(size.dy)
+                        && size.dx > 0.0
+                        && size.dy > 0.0
                 })
                 .unwrap_or(true)
             && self.static_sanitized
@@ -1332,21 +1357,23 @@ fn text_source_range_is_non_empty(range: TextSourceRange) -> bool {
 }
 
 fn layer_affine_is_finite(transform: LayerAffineTransform) -> bool {
-    transform.a.is_finite()
-        && transform.b.is_finite()
-        && transform.c.is_finite()
-        && transform.d.is_finite()
-        && transform.e.is_finite()
-        && transform.f.is_finite()
+    portable_glyph_scalar(transform.a)
+        && portable_glyph_scalar(transform.b)
+        && portable_glyph_scalar(transform.c)
+        && portable_glyph_scalar(transform.d)
+        && portable_glyph_scalar(transform.e)
+        && portable_glyph_scalar(transform.f)
 }
 
 fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
-    bbox.x.is_finite()
-        && bbox.y.is_finite()
-        && bbox.width.is_finite()
-        && bbox.height.is_finite()
+    portable_glyph_scalar(bbox.x)
+        && portable_glyph_scalar(bbox.y)
+        && portable_glyph_scalar(bbox.width)
+        && portable_glyph_scalar(bbox.height)
         && bbox.width > 0.0
         && bbox.height > 0.0
+        && portable_glyph_scalar(bbox.x + bbox.width)
+        && portable_glyph_scalar(bbox.y + bbox.height)
 }
 
 #[derive(Debug, Clone)]
@@ -1385,9 +1412,9 @@ pub struct GlyphOutlineStrokeStyle {
 
 impl GlyphOutlineStrokeStyle {
     pub fn is_strict_subset(&self) -> bool {
-        self.width.is_finite()
+        portable_glyph_scalar(self.width)
             && self.width > 0.0
-            && self.miter_limit.is_finite()
+            && portable_glyph_scalar(self.miter_limit)
             && self.miter_limit >= 1.0
             && matches!(self.join, GlyphOutlineStrokeJoin::Miter)
             && matches!(self.cap, GlyphOutlineStrokeCap::Butt)

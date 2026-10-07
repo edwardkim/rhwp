@@ -26,6 +26,13 @@ export interface GlyphOutlinePayloadStatusOptions {
   allowSvgGlyph?: boolean;
 }
 
+// Exact largest finite IEEE-754 binary32 value, shared with native Skia.
+const MAX_GLYPH_SCALAR = 3.4028234663852886e38;
+
+function isPortableGlyphScalar(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= MAX_GLYPH_SCALAR;
+}
+
 const COLRV1_SUPPORTED_NODE_KINDS = new Set([
   'solidPath',
   'linearGradientPath',
@@ -42,9 +49,16 @@ export function glyphOutlinePayloadStatus(
   if (!hasExclusivePayloadFamily(op, payloadKind)) {
     return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload', detail: 'mixedPayloadFamily' };
   }
+  if ((op.placement?.baselineY !== undefined && !isPortableGlyphScalar(op.placement.baselineY))
+    || !isOptionalFiniteAffine(op.placement?.runToPage)
+    || ((payloadKind === 'monochromeFill' || payloadKind === 'monochromeFillStroke')
+      && (!Array.isArray(op.paths) || op.paths.length === 0
+        || !op.paths.every((path) => isValidPathCommands(path?.commands))))) {
+    return { payloadKind, supported: false, reason: 'unsupportedOutlinePayload' };
+  }
   switch (payloadKind) {
     case 'monochromeFill':
-      return { payloadKind, supported: Array.isArray(op.paths) && op.paths.length > 0, reason: op.paths?.length ? undefined : 'unsupportedOutlinePayload' };
+      return { payloadKind, supported: true };
     case 'monochromeFillStroke':
       if (!options.allowMonochromeFillStroke) {
         return { payloadKind, supported: false, reason: 'glyphOutlineStrokeStyleUnsupported', detail: 'gateClosed' };
@@ -101,6 +115,7 @@ function colorLayersStatus(
   }
   if (colorLayers.colorFormat === 'colrV0') {
     return options.allowColrv0ColorLayers && Array.isArray(colorLayers.layers) && colorLayers.layers.length > 0
+      && colorLayers.layers.every((layer) => isValidPathCommands(layer?.commands) && isOptionalFiniteAffine(layer.transformToRun))
       ? { payloadKind, supported: true }
       : { payloadKind, supported: false, reason: 'unsupportedColorGlyph', detail: 'colrV0GateClosed' };
   }
@@ -180,10 +195,10 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
           && node.linearGradientPath !== undefined
           && isLeafMetadataValid(node)
           && isValidPathCommands(node.linearGradientPath.commands)
-          && Number.isFinite(node.linearGradientPath.gradient?.x0)
-          && Number.isFinite(node.linearGradientPath.gradient?.y0)
-          && Number.isFinite(node.linearGradientPath.gradient?.x1)
-          && Number.isFinite(node.linearGradientPath.gradient?.y1)
+          && isPortableGlyphScalar(node.linearGradientPath.gradient?.x0)
+          && isPortableGlyphScalar(node.linearGradientPath.gradient?.y0)
+          && isPortableGlyphScalar(node.linearGradientPath.gradient?.x1)
+          && isPortableGlyphScalar(node.linearGradientPath.gradient?.y1)
           && isValidColorGradientStops(node.linearGradientPath.gradient?.stops)
           && isSupportedFillRule(node.linearGradientPath.fillRule);
       case 'radialGradientPath':
@@ -195,9 +210,9 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
           && node.radialGradientPath !== undefined
           && isLeafMetadataValid(node)
           && isValidPathCommands(node.radialGradientPath.commands)
-          && Number.isFinite(node.radialGradientPath.gradient?.cx)
-          && Number.isFinite(node.radialGradientPath.gradient?.cy)
-          && Number.isFinite(node.radialGradientPath.gradient?.radius)
+          && isPortableGlyphScalar(node.radialGradientPath.gradient?.cx)
+          && isPortableGlyphScalar(node.radialGradientPath.gradient?.cy)
+          && isPortableGlyphScalar(node.radialGradientPath.gradient?.radius)
           && (node.radialGradientPath.gradient?.radius ?? 0) > 0
           && isValidColorGradientStops(node.radialGradientPath.gradient?.stops)
           && isSupportedFillRule(node.radialGradientPath.fillRule);
@@ -210,8 +225,8 @@ function hasSupportedColrv1GraphContract(op: LayerGlyphOutlineOp): boolean {
           && node.sweepGradientPath !== undefined
           && isLeafMetadataValid(node)
           && isValidPathCommands(node.sweepGradientPath.commands)
-          && Number.isFinite(node.sweepGradientPath.gradient?.cx)
-          && Number.isFinite(node.sweepGradientPath.gradient?.cy)
+          && isPortableGlyphScalar(node.sweepGradientPath.gradient?.cx)
+          && isPortableGlyphScalar(node.sweepGradientPath.gradient?.cy)
           && isSupportedFullCircleSweepGradient(
             node.sweepGradientPath.gradient?.startAngleDegrees,
             node.sweepGradientPath.gradient?.endAngleDegrees,
@@ -259,7 +274,7 @@ function hasColrv0ResolvedLayerContract(colorLayers: NonNullable<LayerGlyphOutli
     && colorLayers.paintGraph === undefined
     && layers.length > 0
     && layers.every((layer) => (
-      isValidPathCommands(layer.commands)
+      isValidPathCommands(layer?.commands)
       && isValidResolvedColor(layer.fill)
       && isSupportedFillRule(layer.fillRule)
       && isValidTextRange(layer.sourceRangeUtf8)
@@ -287,13 +302,13 @@ function isNonEmptyTextRange(range: { start?: number; end?: number } | undefined
 }
 
 function isFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
-  return transform !== undefined
-    && Number.isFinite(transform.a)
-    && Number.isFinite(transform.b)
-    && Number.isFinite(transform.c)
-    && Number.isFinite(transform.d)
-    && Number.isFinite(transform.e)
-    && Number.isFinite(transform.f);
+  return transform !== undefined && transform !== null
+    && isPortableGlyphScalar(transform.a)
+    && isPortableGlyphScalar(transform.b)
+    && isPortableGlyphScalar(transform.c)
+    && isPortableGlyphScalar(transform.d)
+    && isPortableGlyphScalar(transform.e)
+    && isPortableGlyphScalar(transform.f);
 }
 
 function isOptionalFiniteAffine(transform: { a?: number; b?: number; c?: number; d?: number; e?: number; f?: number } | undefined): boolean {
@@ -301,7 +316,23 @@ function isOptionalFiniteAffine(transform: { a?: number; b?: number; c?: number;
 }
 
 function isValidPathCommands(commands: unknown[] | undefined): boolean {
-  return Array.isArray(commands) && commands.length > 0;
+  return Array.isArray(commands) && commands.length > 0 && commands.every((value) => {
+    if (!value || typeof value !== 'object') return false;
+    const command = value as Record<string, unknown>;
+    switch (command.type) {
+      case 'moveTo':
+      case 'lineTo':
+        return [command.x, command.y].every(isPortableGlyphScalar);
+      case 'curveTo':
+        return [command.x1, command.y1, command.x2, command.y2, command.x3, command.y3].every(isPortableGlyphScalar);
+      case 'arcTo':
+        return [command.rx, command.ry, command.rotation, command.x, command.y].every(isPortableGlyphScalar);
+      case 'closePath':
+        return true;
+      default:
+        return false;
+    }
+  });
 }
 
 function isValidResolvedColor(color: { rgba?: number[] } | undefined): boolean {
@@ -334,8 +365,8 @@ function isSupportedFullCircleSweepGradient(
   startAngleDegrees: number | undefined,
   endAngleDegrees: number | undefined,
 ): boolean {
-  return Number.isFinite(startAngleDegrees)
-    && Number.isFinite(endAngleDegrees)
+  return isPortableGlyphScalar(startAngleDegrees)
+    && isPortableGlyphScalar(endAngleDegrees)
     && (startAngleDegrees ?? 0) < (endAngleDegrees ?? 0)
     && Math.abs((endAngleDegrees ?? 0) - (startAngleDegrees ?? 0) - 360) <= 1e-9;
 }
@@ -361,11 +392,11 @@ function hasExclusivePayloadFamily(op: LayerGlyphOutlineOp, payloadKind: string)
 
 function isStrictStroke(stroke: LayerGlyphOutlineOp['stroke']): boolean {
   return !!stroke
-    && Number.isFinite(stroke.width)
+    && isPortableGlyphScalar(stroke.width)
     && (stroke.width ?? 0) > 0
     && stroke.join === 'miter'
     && stroke.cap === 'butt'
-    && Number.isFinite(stroke.miterLimit)
+    && isPortableGlyphScalar(stroke.miterLimit)
     && (stroke.miterLimit ?? 0) >= 1
     && (stroke.paintOrder === 'fillThenStroke' || stroke.paintOrder === 'strokeThenFill');
 }
@@ -376,7 +407,8 @@ function hasBitmapGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && typeof glyph.imageRef === 'number'
     && glyph.scalingPolicy !== 'backendDefault'
     && glyph.placement !== undefined
-    && isPositiveBounds(glyph.placement);
+    && isPositiveBounds(glyph.placement)
+    && isOptionalFiniteAffine(glyph.transformToRun);
 }
 
 function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
@@ -389,7 +421,12 @@ function hasSvgGlyphContract(op: LayerGlyphOutlineOp): boolean {
     && glyph.externalResourcesAllowed !== true
     && glyph.interactivityAllowed !== true
     && glyph.viewBox !== undefined
-    && isPositiveBounds(glyph.viewBox);
+    && isPositiveBounds(glyph.viewBox)
+    && (glyph.intrinsicSize === undefined || (glyph.intrinsicSize !== null
+      && isPortableGlyphScalar(glyph.intrinsicSize.width) && glyph.intrinsicSize.width > 0
+      && isPortableGlyphScalar(glyph.intrinsicSize.height) && glyph.intrinsicSize.height > 0
+    ))
+    && isOptionalFiniteAffine(glyph.transformToRun);
 }
 
 function colorLayersResourceKey(colorLayers: NonNullable<LayerGlyphOutlineOp['colorLayers']>): string {
@@ -490,9 +527,13 @@ function fixedBounds(value: number | undefined): string {
   return Number.isFinite(value) ? (value ?? 0).toFixed(3) : '-';
 }
 
-function isPositiveBounds(bounds: { width?: number; height?: number }): boolean {
-  return Number.isFinite(bounds.width)
-    && Number.isFinite(bounds.height)
-    && (bounds.width ?? 0) > 0
-    && (bounds.height ?? 0) > 0;
+function isPositiveBounds(bounds: { x?: number; y?: number; width?: number; height?: number }): boolean {
+  return bounds !== null && isPortableGlyphScalar(bounds.x)
+    && isPortableGlyphScalar(bounds.y)
+    && isPortableGlyphScalar(bounds.width)
+    && isPortableGlyphScalar(bounds.height)
+    && bounds.width > 0
+    && bounds.height > 0
+    && isPortableGlyphScalar(bounds.x + bounds.width)
+    && isPortableGlyphScalar(bounds.y + bounds.height);
 }
