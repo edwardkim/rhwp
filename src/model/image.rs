@@ -307,38 +307,49 @@ const PICTURE_EFFECT_SOFT_EDGE: u32 = 0x4;
 /// 고정된다. 부드러운 가장자리(플래그 4)는 반경 f32 4바이트를 더 둔다(표 111). 고정
 /// 위치 9..17 로 읽으면 반경이 dimwidth 로 읽혀 자르기 영역이 원본의 극히 일부가 된다.
 ///
-/// 효과별 정보 길이를 아는 경우(부드러운 가장자리만)에, 그 길이가 꼬리 길이와 정확히
-/// 맞을 때만 건너뛴다. 그림자·네온·반사처럼 색상 정보가 가변인 효과나 길이가 맞지 않는
-/// 꼬리는 종전 해석을 그대로 쓴다.
+/// 확인한 효과의 가변 색상 레코드를 건너뛰어 크기·alpha의 공용 위치를 구한다.
+/// 기존 soft-edge 처리와 파서·직렬화기의 단일 판정을 유지한다.
 pub(crate) fn picture_extra_layout(extra: &[u8]) -> PictureExtraLayout {
-    const EFFECTS_OFFSET: usize = 5;
-    const FIXED_DIM_OFFSET: usize = EFFECTS_OFFSET + 4;
     let legacy = PictureExtraLayout {
-        dim_offset: (extra.len() >= FIXED_DIM_OFFSET + 8).then_some(FIXED_DIM_OFFSET),
-        alpha_offset: (extra.len() >= FIXED_DIM_OFFSET + 9).then(|| extra.len() - 1),
+        dim_offset: (extra.len() >= 17).then_some(9),
+        alpha_offset: (extra.len() >= 18).then(|| extra.len() - 1),
     };
-    let Some(flags) = extra
-        .get(EFFECTS_OFFSET..FIXED_DIM_OFFSET)
-        .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
-    else {
+    let Some(offset) = picture_dimensions_offset(extra) else {
         return legacy;
     };
-    let effects_len = match flags {
-        PICTURE_EFFECT_SOFT_EDGE => 4,
-        _ => return legacy,
-    };
-    let dim_offset = FIXED_DIM_OFFSET + effects_len;
-    match extra.len().checked_sub(dim_offset) {
-        Some(8) => PictureExtraLayout {
-            dim_offset: Some(dim_offset),
-            alpha_offset: None,
-        },
-        Some(9) => PictureExtraLayout {
-            dim_offset: Some(dim_offset),
-            alpha_offset: Some(dim_offset + 8),
-        },
+    match extra.len().checked_sub(offset) {
+        Some(0) => PictureExtraLayout { dim_offset: None, alpha_offset: None },
+        Some(8) => PictureExtraLayout { dim_offset: Some(offset), alpha_offset: None },
+        Some(9) => PictureExtraLayout { dim_offset: Some(offset), alpha_offset: Some(offset + 8) },
         _ => legacy,
     }
+}
+
+// #7668 원 구현의 효과별 길이 판정을 공용 모델 계층으로 옮긴다.
+// 알 수 없는 색상·잘린 레코드의 길이는 추측하지 않는다.
+fn picture_dimensions_offset(extra: &[u8]) -> Option<usize> {
+    let flags = u32::from_le_bytes(extra.get(5..9)?.try_into().ok()?);
+    if flags & !0x0f != 0 { return None; }
+    let mut remaining = extra.get(9..)?;
+    if flags & 1 != 0 {
+        remaining = remaining.get(44..)?;
+        remaining = skip_picture_effect_color(remaining)?;
+    }
+    if flags & 2 != 0 {
+        remaining = remaining.get(8..)?;
+        remaining = skip_picture_effect_color(remaining)?;
+    }
+    if flags & 4 != 0 { remaining = remaining.get(4..)?; }
+    if flags & 8 != 0 { remaining = remaining.get(14 * 4..)?; }
+    Some(extra.len() - remaining.len())
+}
+
+fn skip_picture_effect_color(bytes: &[u8]) -> Option<&[u8]> {
+    let kind = u32::from_le_bytes(bytes.get(..4)?.try_into().ok()?);
+    if kind != 0 { return None; }
+    let count = u32::from_le_bytes(bytes.get(8..12)?.try_into().ok()?);
+    let length = usize::try_from(count).ok()?.checked_mul(8)?.checked_add(12)?;
+    bytes.get(length..)
 }
 
 /// 이미지 효과
