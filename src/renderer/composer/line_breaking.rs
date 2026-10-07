@@ -3195,6 +3195,15 @@ fn layout_paragraph_in_frame_impl(
     }
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
+    // 문단 끝의 빈 run도 마지막 물리 줄의 글자 상자를 소유한다. 가시 글자와
+    // 별개인 종단 CharShapeRef를 보존해야 줄 높이·간격·베이스라인을 프레임의
+    // 공통 결과로 게시할 수 있다. 앞선 줄이나 개체 마커의 글꼴에는 적용하지 않는다.
+    let paragraph_end_font_size = para
+        .char_shapes
+        .iter()
+        .find(|shape| shape.start_pos == para.char_count.saturating_sub(1))
+        .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+        .map_or(0.0, |style| style.font_size);
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
     // [#7418·#7436] 목록 마커(글머리표·번호)는 줄 앞을 차지한다. 배치가 마커 기하만큼
     // 줄 시작을 옮기고 가용폭을 줄이므로 채움도 각 행의 첫 구간에서 같은 상자로 줄을 나눈다
@@ -3488,6 +3497,9 @@ fn layout_paragraph_in_frame_impl(
                     };
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
+                    if filled.termination == FillTermination::ParagraphEnd {
+                        maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
+                    }
                     for control in inline_controls.iter().filter(|control| {
                         (line.start_idx..line.end_idx).contains(&control.char_position)
                             || (line.end_idx == text_chars.len()
