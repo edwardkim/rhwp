@@ -649,7 +649,7 @@ pub(super) fn try_absorb_rowbreak_guide(
     false
 }
 
-/// 저장 줄 상자가 본문 높이를 넘으면 빈 꼬리 흡수와 끝 쪽 제거 모두에서 보존한다.
+/// 저장 줄 상자가 본문 높이를 넘으면 빈 꼬리 흡수에서 보존한다.
 /// Enter 재조판은 쪽 경계에서 vpos를 되감지 않으므로 이 줄은 실제 흐름을 점유한다.
 pub(super) fn stored_line_overflows_body(para: &Paragraph, body_height: f64, dpi: f64) -> bool {
     let body_height_hu = crate::renderer::px_to_hwpunit(body_height, dpi);
@@ -689,24 +689,32 @@ pub(super) fn try_absorb_empty_paragraph(
         }
     }
     // 마지막 빈 문단도 유효한 줄 상자를 소유한다. 저장 줄이 이미 본문 밖에
-    // 있으면 미세 drift용 Hidden/Unadvanced 처리로 그 소유를 없애지 않는다.
+    // 있으면 미세 drift용 Unadvanced 처리로 그 소유를 없애지 않는다.
     if stored_line_overflows_body(para, st.layout.body_area.height, st.layout.dpi) {
         return false;
+    }
+    if st.current_height + fmt.height_for_fit > available
+        && empty::is_stored_table_closing_guide(
+            para,
+            para_idx,
+            paragraphs,
+            is_last_in_section,
+            st.layout.dpi,
+            &st.paragraph_empty_tail_page(),
+        )
+    {
+        st.place_stored_empty_guide(para_idx, &para.line_segs[0]);
+        return true;
     }
     match empty::trailing_disposition(
         para,
         fmt,
-        paragraphs,
         is_last_in_section,
         available,
         layout_drift_safety_px,
         &st.paragraph_empty_tail_page(),
     ) {
         empty::TailDisposition::Continue => false,
-        empty::TailDisposition::Hidden => {
-            st.hide_empty_paragraph(para_idx);
-            true
-        }
         empty::TailDisposition::Unadvanced => {
             st.place_unadvanced_empty_paragraph(para_idx);
             true

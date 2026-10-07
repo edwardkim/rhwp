@@ -443,13 +443,9 @@ impl TypesetEngine {
         // 플로우를 소비하지 않으므로 후행 문단이 anchor 쪽에 남음).
         st.attach_pending_behind_absorptions();
 
-        // 한컴은 문서의 마지막에 남은 빈 문단 묶음 때문에 별도 빈 쪽을 만들지
-        // 않는다. 일반 흐름에서는 이 문단들이 앞 쪽의 tail로 흡수되지만, 큰 표의
-        // 마지막 fragment 뒤에서는 저장 vpos가 다음 쪽을 가리킬 수 있다. 그 경우
-        // rhwp가 100HU짜리 빈 line-seg만 담은 페이지를 확정하면 실제 출력보다 한
-        // 쪽이 늘어난다 (#3637 HWP 2020 oracle 31쪽 → 32쪽). 명시적인 page/section
-        // break나 가시 컨트롤은 보존하고, 정말 빈 문단만 있는 마지막 쪽만 버린다.
-        st.discard_terminal_blank_only_page(paragraphs);
+        // 빈 줄도 fit/배치가 확정한 본문 항목이다. 가시 텍스트가 없다는 이유로
+        // 확정된 끝 쪽을 제거하면 정상 Enter 흐름의 문단 소유까지 사라진다.
+        // 저장본 guide 흡수는 문단 배치 단계의 근거 있는 판단에서 처리한다.
 
         // 페이지 번호 + 머리말/꼬리말 할당
         st.finalize_pages(&hf_entries, &page_number_pos, paragraphs);

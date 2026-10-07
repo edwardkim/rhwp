@@ -609,6 +609,22 @@ impl TypesetState {
         });
     }
 
+    /// 종료 guide의 저장 줄 원점을 실제 배치에도 전달하고 기존 표 흐름 끝은 유지한다.
+    pub(super) fn place_stored_empty_guide(
+        &mut self,
+        para_idx: usize,
+        line: &crate::model::paragraph::LineSeg,
+    ) {
+        let plan = InlineFlowPlan::stored_empty_guide(
+            line,
+            self.data.current_height,
+            self.data.layout.dpi,
+            self.data.current_zone_y_offset,
+        );
+        self.place_unadvanced_empty_paragraph(para_idx);
+        self.data.inline_flow_plans.insert(para_idx, plan);
+    }
+
     pub(super) fn paragraph_empty_tail_page(&self) -> super::paragraph::empty::EmptyTailPage<'_> {
         super::paragraph::empty::EmptyTailPage {
             col_count: self.data.col_count,
