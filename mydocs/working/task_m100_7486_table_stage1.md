@@ -61,7 +61,8 @@ PR 전 전체 검증·원격 제출은 결과 보고에서 이어 기록한다.
 - 원격 #7544 head `e22b099a28`는 변경하지 않는다.
 - 최신 base `48ff4bb935`와 #7207의 별도 정렬 후보 `cf2b0508fc`를 선행으로 둔
   로컬 브랜치 `codex/pr7544-focus-recheck-20261007`에서 원 PR을 병합한다.
-  선행 후보는 아직 devel에 통합되지 않았으므로 실제 최신 devel의 검증이나
+  최소 선행 후보는 이후 #7627로 `7076f836e2`에 병합됐다. 아래 source 검증은
+  `2b034275a5`의 실행이며 최신 devel을 정렬한 로컬 `4d9889a7f4`와 source/test가 같다.
   현재 원격 PR의 통과 결과로 표현하지 않는다.
 - Rust source의 textual conflict는 없고 `20261003.md` add/add만 양쪽
   기존 작업 기록을 모두 보존해 해소했다. 교육과정 전체 개선은 이 후보에
@@ -89,4 +90,7 @@ base `48ff4bb935` 고정 manifest 정책도 통과했다.
 [최신 리뷰](../pr/archives/pr_7544_review.md#2026-10-07-범위-분리-후-로컬-후보-재검증)와
 [재검증 원장](assets/issue7486-table-enter/recheck_20261007.json)에 연결한다.
 새 sweep에는 기존 독립 PDF를 재사용했고 사용자 제공 파일은 로컬 검증에만 사용했다.
-원격 PR head·본문·댓글·리뷰·merge 및 이슈 상태는 변경하지 않았다.
+원격 PR source·초기 본문·Approve·merge 및 이슈 상태는 유지했다. 이후
+[최신 검토 댓글](https://github.com/edwardkim/rhwp/pull/7544#issuecomment-6031830291)을 게시했고
+[검토 기록](../pr/archives/pr_7544_review.md)에 최소 선행 병합과 분리 실험4PASS/2FAIL,
+6PASS·교육과정414/415쪽 및 진단 source 복원·미실행 범위를 기록했다.

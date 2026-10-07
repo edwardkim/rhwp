@@ -13,8 +13,10 @@ Issue: [#7486](https://github.com/edwardkim/rhwp/issues/7486). 앞서 병합된 
 ## 최신 판정 — 범위 분리 후에도 저장 guide 검증으로 병합 보류
 
 2026-10-07 최신 base `48ff4bb935`에서 #7207 정렬 보정을 분리한 뒤 원 PR을
-로컬 병합한 code head `2b034275a5`를 재검증했다. 선행 #7207 후보는 아직
-devel에 없고 원격 #7544는 변경하지 않았다. Native/fresh WASM의 어구 전21쪽
+로컬 병합한 code head `2b034275a5`를 재검증했다. 최소 선행 후보는
+[#7627](https://github.com/edwardkim/rhwp/pull/7627)로 `7076f836e2`에 병합됐다.
+그 devel을 정렬한 로컬 head `4d9889a7f4`의 source/test는 위 검증 source와 동일하다.
+원격 #7544의 source와 초기 본문은 유지하고 [최신 검토 댓글](https://github.com/edwardkim/rhwp/pull/7544#issuecomment-6031830291)을 게시했다. Native/fresh WASM의 어구 전21쪽
 최저93.22327%, Enter4개 원문 전7쪽 최저100%이며 관련 기존 검사9개는 통과했다.
 교육과정 guide171/172쪽의 Native 실패 및 전체413/415쪽 차이는 남고, 이 source의
 fresh WASM guide·전체 Rust/lint/CI는 미검증이다. 교육과정 전체 보정을 인수하지 않는다.
@@ -198,3 +200,13 @@ Native/fresh WASM·브라우저·회귀·lint를 다시 실행했고 아래 원�
 | 전쪽 Native/fresh WASM sweep / 직접 review·overlay 판독 | 전체7쪽×2backend 최저100%, 대표4gate passed |
 
 모든 Cargo는 같은 절대 `target/pr-review`를 순차 재사용했다. sweep 명령은 `pr-sweep-guide.sh`의 `--silhouette-only` 전체 쪽 및 `--pages 1,2` 대표 review 경로이며 각 실행의 provenance와 입력 해시는 validation.json에 보존했다.
+
+## 최소 선행 병합 후 분리 진단
+
+저장 guide를 제외하고 기존 끝 쪽 제거를 복원하면 기존 Enter6개 중4PASS/2FAIL이었다.
+guide만 제외하고 새 끝 쪽 보존을 유지하면6PASS였으나 Native 교육과정은413→414쪽으로
+바뀌고 기준415쪽과 여전히 달랐다(어구21쪽 유지). 진단 후보의 fresh WASM·Visual Sweep은
+미실행이다. 쪽수 변화만으로 시각 개선이나 새 회귀를 확정하지 않는다. 두 실험 source는
+원래 후보로 복원했고 원격 source push·Approve·merge는 하지 않았다. 이 PR의 저장 guide
+계약 입증 또는 실제 저장본 경로를 유지하는 Enter 범위 분리가 남아 있으며 #7207/#7445
+전체 보정으로 확대하지 않는다. 구체적인 결과는 [검토 기록](../pr/archives/pr_7544_review.md)에 연결한다.
