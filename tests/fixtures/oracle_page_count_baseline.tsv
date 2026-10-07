@@ -592,3 +592,5 @@ samples/nested_tac_table_wrap.hwp	6	6
 # #7626: 원본 HWPX와 한컴 재저장 HWP 각각의 2020 1-up Print 전 2쪽.
 samples/issue7626/sample-document.hwpx	2	2
 samples/issue7626/hancom-resaved.hwp	2	2
+samples/issue7626/end-run-two-lines.hwpx	2	2
+samples/issue7626/end-run-two-lines.hwp	2	2

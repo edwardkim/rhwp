@@ -159,31 +159,59 @@ fn issue_7626_keeps_every_body_paragraph_on_its_hancom_page() {
 
 #[test]
 fn issue_7626_reserves_the_empty_end_run_before_the_table() {
-    let pages = pages("samples/issue7626/sample-document.hwpx");
-    assert_eq!(pages.len(), 2);
-    let nodes = lines(&pages[1]);
-    let find = |pi| *nodes.iter().find(|node| node["pi"] == pi).unwrap();
-    let unit = find(30);
-    let table = find(31);
-    let note = find(32);
-    // 한컴 재저장 p30: lh=1200HU, 다음 p31 vpos 5920 - p30 vpos 4000 = 1920HU.
-    // 글자는 1000HU지만 문단 끝의 빈 run은 1200HU다. bbox는 CLI에서 0.1px로 반올림한다.
-    assert!((coordinate(unit, "h") - 1200.0 * 96.0 / 7200.0).abs() <= 0.1);
-    assert!((coordinate(table, "y") - coordinate(unit, "y") - 1920.0 * 96.0 / 7200.0).abs() <= 0.1);
-    assert!(coordinate(unit, "y") + coordinate(unit, "h") < coordinate(table, "y"));
-    assert!(coordinate(table, "y") + coordinate(table, "h") < coordinate(note, "y"));
+    for (sample, line_count) in [
+        ("samples/issue7626/sample-document.hwpx", 1),
+        ("samples/issue7626/end-run-two-lines.hwpx", 2),
+    ] {
+        let pages = pages(sample);
+        assert_eq!(pages.len(), 2, "{sample}");
+        let nodes = lines(&pages[1]);
+        let find = |pi| *nodes.iter().find(|node| node["pi"] == pi).unwrap();
+        let units = nodes
+            .iter()
+            .copied()
+            .filter(|node| node["type"] == "TextLine" && node["pi"] == 30)
+            .collect::<Vec<_>>();
+        assert_eq!(units.len(), line_count, "{sample}: 표 앞 줄 누락/중복");
+        let unit = *units.last().unwrap();
+        let table = find(31);
+        let note = find(32);
+        // 한컴 재저장 마지막 줄: th=1200HU, 다음 표까지 진행=1920HU.
+        // 두 줄 대조군의 앞줄은 th=1000HU, 다음 줄까지 진행=1600HU다.
+        // 문단 끝의 1200HU 글자 상자를 모든 줄에 적용하면 앞줄 진행이 틀린다.
+        if line_count == 2 {
+            assert!(
+                (coordinate(units[1], "y") - coordinate(units[0], "y") - 1600.0 * 96.0 / 7200.0)
+                    .abs()
+                    <= 0.1,
+                "{sample}: 끝 run 크기는 마지막 물리 줄에만 적용",
+            );
+        }
+        assert!((coordinate(unit, "h") - 1200.0 * 96.0 / 7200.0).abs() <= 0.1);
+        assert!(
+            (coordinate(table, "y") - coordinate(unit, "y") - 1920.0 * 96.0 / 7200.0).abs() <= 0.1
+        );
+        assert!(coordinate(unit, "y") + coordinate(unit, "h") < coordinate(table, "y"));
+        assert!(coordinate(table, "y") + coordinate(table, "h") < coordinate(note, "y"));
+    }
 }
 
 #[test]
 fn issue_7626_preserves_placed_hancom_rows_even_with_a_widthless_table_host() {
-    let pages = pages("samples/issue7626/hancom-resaved.hwp");
-    assert_eq!(pages.len(), 2);
-    let nodes = lines(&pages[1]);
-    let find = |pi| *nodes.iter().find(|node| node["pi"] == pi).unwrap();
-    // 한컴 저장 vpos p29=2080, p30=4000: 유효 저장 높이 사다리를 보존한다.
-    assert!(
-        (coordinate(find(30), "y") - coordinate(find(29), "y") - 1920.0 * 96.0 / 7200.0).abs()
-            <= 0.1
-    );
-    assert_eq!(find(31)["type"], "Table");
+    for sample in [
+        "samples/issue7626/hancom-resaved.hwp",
+        "samples/issue7626/end-run-two-lines.hwp",
+    ] {
+        let pages = pages(sample);
+        assert_eq!(pages.len(), 2, "{sample}");
+        let nodes = lines(&pages[1]);
+        let find = |pi| *nodes.iter().find(|node| node["pi"] == pi).unwrap();
+        // 한컴 저장 vpos p29=2080, p30=4000: 유효 저장 높이 사다리를 보존한다.
+        assert!(
+            (coordinate(find(30), "y") - coordinate(find(29), "y") - 1920.0 * 96.0 / 7200.0).abs()
+                <= 0.1,
+            "{sample}: 저장 줄 진행",
+        );
+        assert_eq!(find(31)["type"], "Table");
+    }
 }

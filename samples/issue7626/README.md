@@ -22,3 +22,29 @@ p31의 표 host 폭은 0이어도 구역의 유효한 높이 사다리를 버리
 
 [조사·시각 검증 기록](../../mydocs/tech/investigations/issue-7626/README.md)에서
 원본 전체 Native/fresh WASM 비교, 명령·페이지별 TSV·최종 PNG와 회귀 결과를 연결한다.
+
+## 마지막 물리 줄 반례
+
+`end-run-two-lines.hwpx`는 원본 ZIP의 `Contents/section0.xml`에 있는
+`({{table_unit}})` 하나를 같은 문자열 두 개와 `<hp:lineBreak/>`로 바꾼 합성 변형이다.
+다른 ZIP entry와 원본의 미배치 저장 줄은 그대로 보존했다. 이 변형을 한컴 2020에서
+HWP로 재저장한 파일이 `end-run-two-lines.hwp`다. 두 형식 각각의 독립 1-up Print는
+`pdf/issue7626/end-run-two-lines-{hwpx,hwp}-2020.pdf`에 보존한다.
+
+한컴 재저장 p30은 첫 줄 `vpos=4000, th=1000, spacing=600`, 마지막 줄
+`vpos=5600, th=1200, spacing=720`이다. 두 줄 모두 선언 `lh=1200`이므로 첫 줄의
+진행을 선언 높이만으로 정하지 않는다. 첫 줄 뒤 진행 1600HU와 마지막 줄 뒤
+표까지 진행 1920HU를 정식 회귀에서 검사한다. 합성 변형을 실제 원본 저장본으로
+분류하거나 그 수동 LineSeg를 캐시 수용 조건의 근거로 삼지 않는다.
+
+| 파일 | SHA-256 |
+| --- | --- |
+| `end-run-two-lines.hwpx` | `444ca7fe666cf64e9d044718f17a20959d1e42a7a318a739e34c3f6e85e7d16f` |
+| `end-run-two-lines.hwp` | `0dd5cf4573901716e58700bfab60f6c308ba58ab5af6d47d7bd6c9e43de11e22` |
+| `end-run-two-lines-hwpx-2020.pdf` | `f79a1795430cf2af645ef8724e8f3a1d2e5bcd0cc1ee0d5a1d4e00c4f214bff8` |
+| `end-run-two-lines-hwp-2020.pdf` | `9f11266aa551d8122fd80ab656c70a3ee9ca00507d3a5f466a8d9ecaaca12f5a` |
+
+회귀 보강 전 Native/fresh WASM 전쪽 실루엣 gate를 확인했다. HWPX는 양쪽 최저
+98.85353%, HWP는 Native 98.85353%·fresh WASM 99.10313%다. 각 입력은 2쪽이며
+누락 쪽과 90% 미만 쪽은 없다. 외부 다운로드 경로의 검증 파일과 위 저장소 파일은
+SHA-256이 같고, 검증 로그와 중간 원장은 ignored `output/pr-review/issue7626/`에 보존한다.
