@@ -28,6 +28,33 @@ impl<'a> TacFlowQuery<'a> {
         self.profile.get().session_edited()
     }
 
+    /// 저장 셀 글줄이 없는 텍스트 표는 현재 줄 구성으로 높이를 정한다.
+    /// host의 옛 저장 줄이 그 새 높이를 제한하는 근거가 될 수는 없다.
+    pub(in crate::renderer::typeset) fn single_tac_line_has_unstored_cell_text(
+        &self,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        fmt: &FormattedParagraph,
+        tac_count: usize,
+    ) -> bool {
+        if tac_count != 1
+            || fmt.line_heights.len() != 1
+            || super::super::para_has_non_whitespace_text(para)
+        {
+            return false;
+        }
+        table
+            .cells
+            .iter()
+            .flat_map(|cell| &cell.paragraphs)
+            .any(super::super::para_has_non_whitespace_text)
+            && table
+                .cells
+                .iter()
+                .flat_map(|cell| &cell.paragraphs)
+                .all(crate::renderer::para_has_no_stored_line_segs)
+    }
+
     pub(in crate::renderer::typeset) fn tac_table_line_index(
         &self,
         para: &Paragraph,

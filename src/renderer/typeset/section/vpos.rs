@@ -29,7 +29,25 @@ impl TypesetEngine {
                 paragraphs
                     .get(para_idx)
                     .and_then(|p| p.line_segs.first())
-                    .map(|s| s.vertical_pos),
+                    .map(|seg| {
+                        // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
+                        let margin_is_page_relative = (st.profile.hwpx_stored_layout()
+                            || st.profile.hwp5_stored_pagination_layout())
+                            && !st.profile.session_edited()
+                            && paragraphs.get(para_idx).is_some_and(|first| {
+                                crate::renderer::layout::stored_first_margin_is_page_relative(
+                                    first,
+                                    paragraphs.get(para_idx + 1),
+                                    styles,
+                                    self.dpi,
+                                )
+                            });
+                        if margin_is_page_relative {
+                            0
+                        } else {
+                            seg.vertical_pos
+                        }
+                    }),
             );
             st.record_vpos_lazy_origin(None);
             // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
@@ -66,6 +84,7 @@ impl TypesetEngine {
             last_compacted_endnote_title_gap: false,
             min_flow_floor: f64::MIN,
             session_edited: self.profile.get().session_edited(),
+            curr_item_is_table_fragment: false,
         };
         let mut y = hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
@@ -197,5 +216,6 @@ impl TypesetEngine {
         st.record_vpos_page_origin(hc.vpos_page_base);
         st.record_vpos_lazy_origin(hc.vpos_lazy_base);
         st.align_flow_to(y);
+        st.record_vpos_snapped_flow_start(para_idx, y);
     }
 }

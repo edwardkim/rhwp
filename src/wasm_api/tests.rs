@@ -19842,7 +19842,10 @@ fn test_get_table_bbox_at_page_for_giant_multi_page_cell() {
             "{path}: current fragment page"
         );
 
-        let click_y = 1057.3;
+        // [#6976] 1057.3 -> 1047.7. 첫 fragment 하단이 접기로 9.6px 올라왔다 — 이 상수는
+        // «첫 fragment 하단 근처» 를 고르는 재현점일 뿐이고, 계약은 그 점이 113쪽 조각의
+        // 경계가 아니라는 것이다.
+        let click_y = 1047.7;
         let legacy_bottom = legacy["y"].as_f64().unwrap() + legacy["height"].as_f64().unwrap();
         let current_bottom = current["y"].as_f64().unwrap() + current["height"].as_f64().unwrap();
         assert!(
@@ -25494,15 +25497,18 @@ fn issue2214_assert_cut_continuity(label: &str, state: &str, cuts: &[Issue2214Ta
     }
 }
 
-/// #2430의 giant-cell target은 원본 형식마다 한컴 2020 편집 후 줄 경계가 다르다.
+/// #2430의 giant-cell target 에 ASCII `1` 을 몇 개 붙이면 fifth line 이 생기는가.
 ///
-/// HWP 저장 LINE_SEG는 56번째 ASCII `1`에서 fifth line으로 전환하지만, HWPX는
-/// 같은 한컴 2020 adapter-save oracle에서 61번째가 전환점이다 (Task #3820 Stage 86).
-/// 이 값을 각 test에 따로 쓰면 HWPX의 실제 61회 경계를 다시 HWP 값으로 회귀시킨다.
+/// [#7418] HWP·HWPX 모두 56 이다. 종전 HWPX 61 은 한/글 2020 이 한양신명조를 함초롬바탕으로
+/// **대체한** 환경의 출력(`pdf/task_m100_3820_stage86_wasm_boundary_oracle/*-2020.pdf`, 글꼴
+/// HCRBatang)에서 정한 값이었다. 한양신명조가 있는 환경에서 이 문단에 글을 붙이고 저장 줄을
+/// 지운 입력을 한/글이 직접 나누면 2024(13.0.0.564)·2020(11.0.0.1623) 모두 **55** 번째에서
+/// 전환한다(`[0, 44, 84, 122, 128]`). rhwp 는 56 번째에서 `[.., 122, 129]` 로 전환해 넷째
+/// 줄에 한 글자를 더 담는다 — 남은 차이다. 두 형식이 같은 문서이므로 경계도 같다.
 fn issue2214_flow_boundary_insert_count(label: &str) -> usize {
     match label {
         "hwp" => 56,
-        "hwpx" => 61,
+        "hwpx" => 56,
         other => panic!("unknown #2214 fixture label: {other}"),
     }
 }
@@ -25589,8 +25595,8 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         // #2195 이후에도 44번째 입력은 target paragraph의 상대 flow advance를 바꾼다.
         // 다만 선언 셀 높이가 증가분을 흡수해 full pagination의 cut/bounds는 불변이다.
         // render_normalized warm tree는 flush 전에도 매 mutation을 즉시 반영해야 한다.
-        // [#2430] HY/한양 ASCII advance는 0.497em이다. 그러나 저장 HWP LINE_SEG와
-        // HWPX adapter layout의 실제 한컴 2020 전환점은 각각 56/61회다.
+        // [#2430] HY/한양 ASCII advance는 0.497em이다. 전환점은
+        // `issue2214_flow_boundary_insert_count` 에 둔다(#7418: 두 형식 모두 56).
         for inserted in 0..boundary_inserts {
             let raw = doc
                 .insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
@@ -25706,11 +25712,19 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .as_f64()
             .expect("flushed bounds h");
         assert!(
-            (transient_bounds_h - 945.9).abs() <= 0.2,
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            (transient_bounds_h - 936.3).abs() <= 0.2,
             "{label}: transient bounds h={transient_bounds_h}"
         );
         assert!(
-            (flushed_bounds_h - 945.9).abs() <= 0.2,
+            // [#6976] 945.9 -> 936.3. 쪽을 끝내는 조각의 마지막 행 상자에서 한/글이 그리지 않는
+            // 마지막 줄 줄간격(9.6px)을 배치 뒤에 접는다. 정본
+            // `pdf/issue1949_giant_cell_nested_tables_perf-hwpx-2020.pdf` 1쪽의 같은 칸은
+            // 높이 938.03 — 접기 전 945.90(+7.87)보다 접기 뒤 936.30(-1.73)이 가깝다.
+            (flushed_bounds_h - 936.3).abs() <= 0.2,
             "{label}: flushed bounds h={flushed_bounds_h}"
         );
         assert_eq!(doc.page_count(), 115, "{label}: page count");

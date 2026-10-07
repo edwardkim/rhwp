@@ -48,6 +48,8 @@ struct FragmentBudget {
     scan_row_count: usize,
     saved_first_fragment_source_frame: Option<(f64, f64)>,
     source_first_fragment_row_end: Option<usize>,
+    /// Complete source frame: the last row's physical remainder, shared by scan and paint.
+    source_complete_frame_last_row: Option<(usize, f64)>,
     source_first_fragment_overflow_allowance: f64,
     header_overhead: f64,
     avail_for_rows: f64,

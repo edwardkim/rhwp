@@ -1,6 +1,11 @@
 # SVG 골든 스냅샷 — 렌더러 생성물(LF)과 바이트 비교하므로 CRLF 변환 금지 (#1786)
 tests/golden_svg/**/*.svg text eol=lf
 
+# WMF/EMF 골든도 같은 계약이다. `wmf_emf_goldens` 는 엔진이 LF 로 만든 문자열과 파일을
+# 통째로 비교하는데, `core.autocrlf=true` 로 클론한 Windows 체크아웃에서는 파일만 CRLF 가
+# 되어 **내용이 같은데 9건 전부 불일치**로 뜬다(리눅스 CI 는 무증상이라 안 잡힌다).
+tests/fixtures/m09x_wmf_emf/*.golden text eol=lf
+
 # Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
 /Cargo.toml text eol=lf
 

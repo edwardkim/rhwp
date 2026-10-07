@@ -812,6 +812,15 @@ jobs:
             printf '| security_sweep_samples_json | `%s` |\n' "${SECURITY_SWEEP_SAMPLES_JSON}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
+  # A new reusable adapter can be verified before registration on main through
+  # this already registered workflow. Local calls use the caller's exact commit.
+  release-operations-contracts:
+    uses: ./.github/workflows/release-operations-contracts.yml
+    needs: [preflight]
+    if: github.event_name == 'workflow_dispatch' && needs.preflight.result == 'success'
+    permissions:
+      contents: read
+
   # [#6205] B/C가 같은 측정 정책 commit을 보도록 CI 시작 때 한 번만 SHA를 고정한다.
   # 데이터 브랜치가 아직 없거나 조회할 수 없으면 committed fallback을 사용한다.
   resolve-nextest-duration-policy:

@@ -1,0 +1,21 @@
+{
+  "status": "visual_score_pass_but_nbsp_ink_blocked",
+  "code_candidate": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+  "native_and_wasm_pages": 8,
+  "minimum_percent": 93.01297,
+  "below_90": 0,
+  "focused_passed": 5,
+  "focused_failed": 0,
+  "replacement_test_521_passed": 1,
+  "replacement_test_521_failed": 0,
+  "unit_tiers": "PASS; added 0 tests",
+  "logs": {
+    "stage7-7534-nextest.log": "8f9ef990d6cbddbb5dadc330e8e05845422089209719e8daf07d72a1a8a84c70",
+    "stage7-521-nextest.log": "ee3a9f4d63ade29df3b36480bf6ca6a8900f001296f5f45dcf1f410a70391c95",
+    "stage7-unit-tiers.log": "bf0c12c04868a08265dbf07367405afbeea4f52e8217655ea20e4fe66122654e"
+  },
+  "remaining": [
+    "NBSP whitespace painted as outlined rectangles on page2",
+    "final integration gates"
+  ]
+}

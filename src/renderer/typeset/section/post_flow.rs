@@ -126,9 +126,18 @@ impl TypesetEngine {
                                     - placement.anchor_y).abs() <= self.dpi / 7200.0
                             })
                     });
+                    // 분할 생산자가 원본 셀의 저장 쪽 재시작으로 확정한 축이다.
+                    // 이전 host의 누적 원점과 달리 새 쪽의 0 기준은 후속 줄도 공유한다.
+                    let resolved_stored_page_frame = st.profile.hwpx_stored_layout()
+                        && st.vpos_page_base_stored
+                        && st.vpos_page_base == Some(0)
+                        && matches!(last, Some(PageItem::PartialTable {
+                            is_continuation: true, start_cut, ..
+                        }) if start_cut.len() == 1 && start_cut[0] > 0);
                     if !host_line_covers_object
                         && !resolved_inline_end
                         && !resolved_stored_wrap_fragment
+                        && !resolved_stored_page_frame
                     {
                         // Para-float TopAndBottom 표 예외(렌더러 2513)는 Stage E.
                         st.record_vpos_page_origin(None);
@@ -218,7 +227,13 @@ impl TypesetEngine {
             // 필러가 자기 줄 높이만큼 정상 흐름으로 전진하게 둔다. 한 문단에
             // shortcut 표와 fragment 표가 공존하는 극단 케이스도 생략 쪽을
             // 택한다(공간 이중 계상보다 유실이 드묾).
-            if has_behind_float_table && st.overlay_shape_shortcut_para != Some(para_idx) {
+            // A committed inline plan owns each physical row and its flow end.
+            // Its overlay table has no fragmented body flow to compensate, so
+            // following empty paragraphs must keep their own line advances.
+            if has_behind_float_table
+                && st.overlay_shape_shortcut_para != Some(para_idx)
+                && !st.inline_flow_plans.contains_key(&para_idx)
+            {
                 st.arm_behind_float_absorption(Some(para_idx));
             }
         }

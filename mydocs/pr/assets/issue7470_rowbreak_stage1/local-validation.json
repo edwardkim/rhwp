@@ -1,0 +1,154 @@
+[
+  {
+    "stage": "fmt-check",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 5.676
+  },
+  {
+    "stage": "clippy-native",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 22.151
+  },
+  {
+    "stage": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 19.522
+  },
+  {
+    "stage": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr-review"
+    ],
+    "exit_code": 0,
+    "seconds": 34.699
+  },
+  {
+    "stage": "clippy-all-targets",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 28.352
+  },
+  {
+    "stage": "manifest-check",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "8497729b4fb0e071c484fc5740f9bb2400bed437"
+    ],
+    "exit_code": 0,
+    "seconds": 0.367
+  },
+  {
+    "stage": "unit-tier-check",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "8497729b4fb0e071c484fc5740f9bb2400bed437"
+    ],
+    "exit_code": 0,
+    "seconds": 6.547
+  },
+  {
+    "stage": "skia-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit_code": 0,
+    "seconds": 119.281
+  },
+  {
+    "stage": "skia-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit_code": 0,
+    "seconds": 72.011
+  },
+  {
+    "stage": "skia-direct-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit_code": 0,
+    "seconds": 4.995
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "status": "individual_regression_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "execution_head": "d78fdc0e0745f10b57e928b50716d298861c7559",
+  "nextest": {
+    "passed": 3,
+    "failed": 0,
+    "log_sha256": "25a2255d0eaf622019d30207c623f122391a7b51e750b4c3fddc1d7acabd5c14"
+  },
+  "native_and_fresh_wasm": {
+    "documents": 2,
+    "pages_per_document": 1,
+    "minimum": 99.78048,
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "direct_review": [
+    "original page 1",
+    "Hancom resaved control page 1"
+  ],
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

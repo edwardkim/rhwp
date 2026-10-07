@@ -20,14 +20,15 @@
 
 ## 빌드 산출물 재사용
 
-- 로컬 Native·WASM·테스트 빌드는 `target/pr-review`을 공용 target directory로 쓴다.
-  이슈별·검토별 `target/<name>`을 새로 만들지 않는다. Native `release`와 WASM
+- macOS·Linux·Windows의 로컬 Native·WASM·테스트 빌드는 각 host의 기본 rhwp 작업공간 아래
+  `target/pr-review` 한 곳을 공용 target directory로 쓴다. review worktree에서도 같은 절대 경로를 전달한다.
+  이슈별·검토별 target, `target/pr-review/<name>`, worktree별 target을 새로 만들지 않는다. Native `release`와 WASM
   `wasm32-unknown-unknown`을 같은 경로에서 재사용해 재빌드를 피한다.
 - `target/pr-review`은 공유 캐시다. 실행 중인 Cargo 작업의 소유·상태를 먼저 확인하고,
   그 경로를 임의로 삭제·초기화하지 않는다. 별도 target은 사용자가 명시한 경우에만 쓴다.
 - `rhwp-studio` 개발 서버에서 Rust/WASM 변경을 확인할 때는 반드시 **저장소 루트
-  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
-  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
   실행한다. `rhwp-studio/` 안에서 실행하면 wrapper 경로와 출력 `pkg/`가 모두 달라져 실패하거나
   개발 서버가 이전 bundle을 읽는다. 이 wrapper가 루트 기본 `pkg/` web package를 만든 뒤 `rhwp.js`와 `rhwp_bg.wasm`을
   `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치와 브라우저 새로고침 뒤 실제
@@ -73,7 +74,12 @@
   완료 보고에는 실제 검사 이름과 수정 전후 결과를 연결한다. CI 녹색은 누락한 assertion을 대신하지 않는다.
 - 렌더링의 공통 결과·반례 검증·baseline 변경 근거는 위 공통 조판 원칙을 따른다.
   차트 변경은 종류와 축 등 해당 변경이 주장한 의미도 직접 확인한다.
-- 페이지별 일치율은 [TSV 전용 절차](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용한다.
+- 조판·렌더링 영향 변경은 파일 경로와 관계없이 Native/fresh WASM Visual Sweep·TSV를 반드시 실행한다.
+  편집 command·parser·model·serializer도 실제 조판 소비 경로에 영향을 주면 적용한다.
+  기준 PDF는 저장 버전에 맞는 한컴 [Print 출력 계약](mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
+  편집 변경은 동일하게 편집한 저장본을 Print 출력한다. PDF 부족은 미검증이며 비해당이 아니다.
+  TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존하고 Git에 커밋하지 않는다.
+- 페이지별 TSV 명령·저장 위치는 [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 따른다. Native/fresh WASM 예제를 각각 실행한다.
   검증 대상 전체 페이지의 Native/fresh WASM TSV에서 최저값·90% 미만·누락 쪽을 기록하고,
   미달/구조 차이/대표 경계만 비교 PNG를 추가 생성해 직접 판독한다. 대표 PR 이미지 제출은 유지한다.
   실루엣 계산 방법·이진화 원값·색상 경계 대조 픽셀 수도 함께 기록한다.
@@ -107,10 +113,12 @@
   파서의 지원 범위로 분류한다. 차트 변경은 값축·범주·계열·백분율·데이터 레이블과
   차트 뒤 캡션 위치를 한컴 PDF에서 확인하고, 값 변경 후 낡은 미리보기 반례를 검사한다.
   상세 분류는 [차트 OLE v1 경계](mydocs/tech/chart_ole_v1_boundary.md)를 따른다.
-  예외는 양쪽 실제 글꼴이 완전히 다르다는 증거 파일을 `--font-mismatch-evidence`로 남긴 경우뿐이며,
-  그 전 PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 대조한다. 위치 차이가
-  있으면 글꼴 예외로 승인하지 않고 배치를 고친 뒤 다시 캡처한다(#7359 p14).
-  이름 추정·anti-aliasing·CI 녹색은 예외가 아니다.
+  검증 대상 TSV의 한 페이지라도 **90% 미만** 또는 측정 불가이면 작성자가 자기 branch에서
+  원인을 재검토·수정하고 새 head로 재실행한다. **정확히 90%는 통과**한다.
+  해결 불가능한 실제 글꼴 문제는 [PR 제출 예외 계약](mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의
+  JSON 증거를 `--font-mismatch-evidence`로 기록해 `font_mismatch_exception`으로 90% 미만이어도 제출할 수 있다.
+  측정 불가·쪽수 불일치·배치 차이는 면제하지 않는다.
+  PDF와 rhwp의 표 괘선·문단 시작·그림 경계를 같은 좌표계에서 대조하고 위치 차이는 먼저 고친다(#7359 p14).
   `RHWP_FONT_PATH`의 모든 경로가 존재하고 입력 face를 공급하는지 확인한다. 존재하지 않는 과거 font
   경로의 fallback은 예외가 아니라 올바른 글꼴 공급으로 재실행할 사유다.
   직접 판독에서 큰 차이가 남으면 비용이 큰 전체 회귀를 시작하기 전에 원인을 수정하고 다시

@@ -1,0 +1,31 @@
+{
+  "status": "incorrect_test_premise_corrected",
+  "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+  "reference_pdf": "pdf/text_footnote_tail_overpagination-2024.pdf",
+  "source_code_head": "bf5eced2a38d5c39dd8227214cf50aba20490ad3",
+  "product_code_changed": false,
+  "tests_before": 4,
+  "tests_after": 4,
+  "focused_passed": 4,
+  "focused_failed": 0,
+  "native_total_pages": 242,
+  "pdf_total_pages": 242,
+  "inspected_pages": [
+    154,
+    155,
+    156
+  ],
+  "minimum_native_and_fresh_wasm_percent": 97.46256,
+  "whole_242_visual": "not_run",
+  "source_empty_footnotes": [
+    46,
+    47
+  ],
+  "source_empty_notes_have_autonum_placeholder": false,
+  "visible_filled_note": 48,
+  "sha256": {
+    "samples/task1725/text_footnote_tail_overpagination.hwp": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+    "pdf/text_footnote_tail_overpagination-2024.pdf": "d8f47fc772556cc15b444fad61deca8b0f260eb82b3bf1691a36cc41036a69ba",
+    "pkg/rhwp_bg.wasm": "e4e2cf90c6ae4101d5ab6782831f881b71c5c800e4669afa25c26d2a85806c4a"
+  }
+}

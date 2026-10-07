@@ -56,6 +56,28 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 개별 정상 회귀와 다른 원장에서는 계속 검사하며 원문은 samples에 유지한다.
 const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
+    // #7445: 이 통합 브랜치의 신규 겹침2건과 Native 전1쪽78.18921%를 이관한다.
+    "basic/KTX-003.hwp",
+    // #7445: 신규 겹침1건, Native 전10쪽 중8쪽 미달·최저0%; 다른 검사는 유지한다.
+    "issue2439/issue2439_repeat_table_overlap.hwp",
+    // #7445: 정확한 한컴2020 정본 전82쪽 중43쪽 미달, 최저14.15%; 6쪽 쪽번호 겹침.
+    "issue1891/76076_regulatory_analysis.hwpx",
+    // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
+    "issue5699/37787_regulatory_impact.hwp",
+    // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
+    "issue1853_caption_precedes_body_split.hwpx",
+    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
+    "hwpctl_ParameterSetID_Item_v1.2.hwp",
+    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
+    "pr-1674.hwp",
+    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
+    "hwpx/156160455-social-pig-farm-income.hwpx",
+    // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
+    "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
+    "86712_regulatory_analysis.hwp",
+    // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.
+    "issue1891/86712_regulatory_analysis.hwpx",
     "hwp3-sample10-hwp5.hwp",
     "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
     "issue1937_rowbreak_footnote_overpagination.hwp",

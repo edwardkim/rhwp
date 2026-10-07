@@ -58,8 +58,6 @@ samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.h
 samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx	21	21
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp	21	21
 samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx	21	21
-samples/80168_regulatory_analysis.hwp	157	157
-samples/86712_regulatory_analysis.hwp	64	64
 samples/SO-SUEOP.hwp	46	46
 samples/SO-SUEOP.hwpx	46	46
 samples/[2027] 온새미로 1 본교재.hwp	47	47
@@ -247,9 +245,6 @@ samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
-samples/issue1853_caption_precedes_body_split.hwpx	52	52
-samples/issue1891/80168_regulatory_analysis.hwpx	157	157
-samples/issue1891/86712_regulatory_analysis.hwpx	64	64
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1949_giant_cell_nested_tables_perf.hwp	115	115
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	115	115
@@ -435,7 +430,6 @@ samples/pic2-2018.hwp	2	2
 samples/pic2.hwp	2	2
 samples/pic2.hwpx	2	2
 samples/pr-149.hwp	1	1
-samples/pr-1674.hwp	35	35
 samples/pua-test.hwp	1	1
 samples/re-01-hangul-only-empty-hancom.hwp	1	1
 samples/re-01-hangul-only-hancom.hwp	1	1
@@ -578,3 +572,25 @@ samples/통합재정통계(2014.8월).hwp	1	1
 samples/표-텍스트.hwpx	1	1
 samples/한셀OLE.hwp	1	1
 samples/한셀OLE.hwpx	1	1
+
+# PR #7482: exact input/PDF SHA-256 and Hancom 2020 jobs in samples/issue7482/provenance.json.
+samples/issue7482/long-boundary-8.hwpx	1	1
+samples/issue7482/margin1034.hwpx	1	1
+samples/issue7482/margin284.hwpx	1	1
+samples/issue7482/original-no-ls-overlay-tac.hwp	1	1
+samples/issue7482/tac-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-explicit-break.hwpx	1	1
+samples/issue7482/tac-mixed-one-row.hwpx	1	1
+samples/issue7482/tac-one-row.hwpx	1	1
+samples/issue7482/tac-two-rows.hwpx	1	1
+samples/issue7482/tac-word-after-pair.hwpx	1	1
+samples/issue7482/tac-after-plain-paragraphs.hwpx	2	2
+
+# PR #7337: samples/pr7337/nested_tac_table_wrap-2020.pdf; 전 6쪽 Native/fresh WASM 비교 통과.
+samples/nested_tac_table_wrap.hwp	6	6
+
+# #7626: 원본 HWPX와 한컴 재저장 HWP 각각의 2020 1-up Print 전 2쪽.
+samples/issue7626/sample-document.hwpx	2	2
+samples/issue7626/hancom-resaved.hwp	2	2
+samples/issue7626/end-run-two-lines.hwpx	2	2
+samples/issue7626/end-run-two-lines.hwp	2	2

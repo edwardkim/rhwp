@@ -24,7 +24,7 @@ import {
   canvasKitImageSourceRect,
   HWPUNIT_PER_PIXEL,
 } from '../src/view/canvaskit/image-replay.ts';
-import { imageCropScale, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
+import { imageCropScale, imageCropSelectionIsEmpty, imageCropSourceRect } from '../src/view/image-crop-scale.ts';
 import {
   CANVASKIT_REPLAY_PLANES,
   layerPaintOpReplayPlane,
@@ -815,6 +815,10 @@ test('CanvasKit image replay cache key includes payload fingerprint with repeate
 // right/bottom 을 원본 전체 범위로 읽는 적응식**을 사이에 넣었는데, studio 만 그대로
 // 남아 있었다.
 test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG replay', () => {
+  // #5731 한컴2020 정본은 역전된 높이 선택에서 원본 전체를 복원하지 않는다.
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 72900, right: 2096, bottom: 21632 }), true);
+  assert.equal(imageCropSelectionIsEmpty({ left: 0, top: 0, right: 100, bottom: 100 }), false);
+  assert.equal(imageCropSelectionIsEmpty(null), false);
   // 자르기 없는 그림 — right/bottom 이 원본 전체 범위라 잘라 올 창이 없다.
   assert.equal(
     canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 102366, bottom: 26580 }),
@@ -822,17 +826,18 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
   );
   assert.equal(canvasKitImageSourceRect(2320, 354, { left: 0, top: 0, right: 174000, bottom: 26580 }), null);
 
-  // 156627451 1쪽 ② 로고 — 실제로 잘린 그림. 고정 75 HU/px 로는 폭이 11% 좁아졌다.
+  // 156627451 1쪽 ② 로고 — 두 축을 모두 자른 그림. #6954 는 여기에 적응 배율을 써서
+  // `x 104.05 / w 739.95` 를 고정했지만, 두 축 모두 crop 이 0 에서 시작하지 않으므로
+  // `right`/`bottom` 은 전체 범위가 아니다(#7015). 한컴 2020 PDF(`pdf/156627451-…-2020.pdf`)
+  // 1쪽 로고의 잉크 폭은 140.50px 이고 75 HU/px 창으로 그린 Native SVG 도 140.50px 이다(#7525).
   const logo = canvasKitImageSourceRect(844, 342, {
     left: 6947, top: 2777, right: 56348, bottom: 24865,
   });
   assert.ok(logo);
-  assert.ok(Math.abs(logo.x - 104.05) < 0.01, `x=${logo.x}`);
-  assert.ok(Math.abs(logo.y - 38.20) < 0.01, `y=${logo.y}`);
-  assert.ok(Math.abs(logo.width - 739.95) < 0.01, `width=${logo.width}`);
-  assert.ok(Math.abs(logo.height - 303.80) < 0.01, `height=${logo.height}`);
-  // 고정 폴백이었다면 658.68 — 11% 좁게 잘라 같은 자리에 늘려 그렸다.
-  assert.ok(Math.abs(logo.width - (56348 - 6947) / HWPUNIT_PER_PIXEL) > 80);
+  assert.ok(Math.abs(logo.x - 92.63) < 0.01, `x=${logo.x}`);
+  assert.ok(Math.abs(logo.y - 37.03) < 0.01, `y=${logo.y}`);
+  assert.ok(Math.abs(logo.width - 658.68) < 0.01, `width=${logo.width}`);
+  assert.ok(Math.abs(logo.height - 294.51) < 0.01, `height=${logo.height}`);
 
   // right/bottom 을 못 쓰면 종전대로 96dpi 가정으로 떨어진다.
   const degenerate = canvasKitImageSourceRect(200, 100, {
@@ -850,36 +855,51 @@ test('CanvasKit image crop source follows the same HWPUNIT crop scale as SVG rep
 test('image crop scale follows the rust fallback chain for both studio backends', () => {
   // ① imgDim 이 있으면 그것 — 축은 전체 좌표 범위를 디코딩 크기에 대응시킨다.
   assert.deepEqual(
-    imageCropScale([144000, 81000], { right: 144000, bottom: 81000 }, 192, 108),
+    imageCropScale([144000, 81000], { left: 0, top: 0, right: 144000, bottom: 81000 }, 192, 108),
     { scaleX: 750, scaleY: 750 },
   );
 
-  // ② imgDim 이 없으면 crop 의 right/bottom 을 원본 전체 범위로 본다(#3239).
-  const adaptive = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
-  assert.ok(Math.abs(adaptive.scaleX - 56348 / 844) < 1e-9);
-  assert.ok(Math.abs(adaptive.scaleY - 24865 / 342) < 1e-9);
+  // ② imgDim 이 없으면 시작이 0 인 축의 right/bottom 을 원본 전체 범위로 본다(#3239·#7015).
+  // #3239 200dpi 스캔 — 두 축 모두 자르지 않았으므로 두 축 모두 적응 배율(36 HU/px).
+  const adaptive = imageCropScale(null, { left: 0, top: 0, right: 59520, bottom: 84240 }, 1654, 2340);
+  assert.ok(Math.abs(adaptive.scaleX - 59520 / 1654) < 1e-9);
+  assert.ok(Math.abs(adaptive.scaleY - 84240 / 2340) < 1e-9);
   assert.ok(adaptive.scaleX < HWPUNIT_PER_PIXEL, `scaleX=${adaptive.scaleX}`);
+
+  // 한 축만 전체 범위가 확인되면 그 배율을 두 축에 쓴다(30442 3쪽: x 축 75.0).
+  const oneAxis = imageCropScale(null, { left: 0, top: 20745, right: 88560, bottom: 45453 }, 1181, 945);
+  assert.ok(Math.abs(oneAxis.scaleX - 88560 / 1181) < 1e-9);
+  assert.equal(oneAxis.scaleY, oneAxis.scaleX);
+  const otherAxis = imageCropScale(null, { left: 20745, top: 0, right: 45453, bottom: 47250 }, 945, 945);
+  assert.equal(otherAxis.scaleX, 50);
+  assert.equal(otherAxis.scaleY, 50);
+
+  // 두 축 모두 잘렸으면 전체 범위를 확인할 축이 없어 ③으로 떨어진다.
+  assert.deepEqual(
+    imageCropScale(null, { left: 6947, top: 2777, right: 56348, bottom: 24865 }, 844, 342),
+    { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
+  );
 
   // ③ 둘 다 못 쓰면 96dpi 가정.
   assert.deepEqual(
-    imageCropScale(null, { right: 0, bottom: 0 }, 200, 100),
+    imageCropScale(null, { left: 0, top: 0, right: 0, bottom: 0 }, 200, 100),
     { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
   );
   assert.deepEqual(
-    imageCropScale([0, 0], { right: -1, bottom: -1 }, 200, 100),
+    imageCropScale([0, 0], { left: 0, top: 0, right: -1, bottom: -1 }, 200, 100),
     { scaleX: HWPUNIT_PER_PIXEL, scaleY: HWPUNIT_PER_PIXEL },
   );
 
   // 한 축만 유효한 imgDim 은 rust 와 같이 **쌍으로** 버린다 — 섞으면 원본에 없는 사영이
   // 된다. 여기서는 ②로 내려가 두 축 모두 crop 범위를 쓴다.
   assert.deepEqual(
-    imageCropScale([144000, 0], { right: 96000, bottom: 54000 }, 192, 108),
+    imageCropScale([144000, 0], { left: 0, top: 0, right: 96000, bottom: 54000 }, 192, 108),
     { scaleX: 500, scaleY: 500 },
   );
 
   // 파리티 게이트 픽스처 `pic-crop-01` 2번 배너 — imgDim 이 없고 crop 이 원본 전체
   // 범위다. 고정 75 HU/px 면 세로로 58.21px 만 잘라 와 70px 프레임에 늘려 그린다(+20%).
-  const banner = imageCropScale(null, { right: 47940, bottom: 4366 }, 639, 70);
+  const banner = imageCropScale(null, { left: 0, top: 0, right: 47940, bottom: 4366 }, 639, 70);
   assert.ok(Math.abs(4366 / banner.scaleY - 70) < 1e-9, `sourceHeight=${4366 / banner.scaleY}`);
   assert.ok(Math.abs(4366 / HWPUNIT_PER_PIXEL - 58.21) < 0.01);
 
@@ -889,15 +909,39 @@ test('image crop scale follows the rust fallback chain for both studio backends'
   assert.equal(imageCropSourceRect(639, 70, { left: 0, top: 0, right: 47940, bottom: 5280 }), null);
 
   // CanvasKit 경로가 그 축척을 그대로 쓴다 — 같은 입력에서 잘라 오는 창이 일치한다.
-  const scale = imageCropScale(null, { right: 56348, bottom: 24865 }, 844, 342);
-  const rect = canvasKitImageSourceRect(844, 342, {
-    left: 6947, top: 2777, right: 56348, bottom: 24865,
-  });
+  const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
+  const scale = imageCropScale(null, crop, 1181, 945);
+  const rect = canvasKitImageSourceRect(1181, 945, crop);
   assert.ok(rect);
-  assert.ok(Math.abs(rect.x - 6947 / scale.scaleX) < 1e-9);
-  assert.ok(Math.abs(rect.y - 2777 / scale.scaleY) < 1e-9);
-  assert.ok(Math.abs(rect.width - (56348 - 6947) / scale.scaleX) < 1e-9);
-  assert.ok(Math.abs(rect.height - (24865 - 2777) / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.y - crop.top / scale.scaleY) < 1e-9);
+  assert.ok(Math.abs(rect.height - (crop.bottom - crop.top) / scale.scaleY) < 1e-9);
+});
+
+// [#7525] 저장 HWPUNIT 자르기 범위와 원본 영상 크기의 관계를 검사한다.
+// 화면 배치 좌표를 고정하지 않으며, 한컴 PDF와 두 Studio 백엔드의 실제 그림도 대조한다.
+test('image crop source matches rust per-axis fallback for issue7525 pictures', () => {
+  const crop = { left: 0, top: 20745, right: 88560, bottom: 45453 };
+  const imageWidth = 1181;
+  const logo = imageCropSourceRect(imageWidth, 945, crop);
+  assert.ok(logo);
+  const confirmedScale = crop.right / imageWidth;
+  assert.equal(logo.x, 0);
+  assert.equal(logo.width, imageWidth);
+  assert.ok(Math.abs(logo.y * confirmedScale - crop.top) < 1e-6, '확인된 가로 축척으로 세로 시작을 환산한다');
+  assert.ok(Math.abs(logo.height * confirmedScale - (crop.bottom - crop.top)) < 1e-6,
+    '확인된 가로 축척으로 세로 자르기 범위를 보존한다');
+
+  // 두 축 모두 시작이 잘린 경우 전체 크기를 추정하지 않고 명세의 기본 환산을 쓴다.
+  const photoCrop = { left: 48247, top: 30284, right: 95750, bottom: 54568 };
+  const photo = imageCropSourceRect(1920, 1080, photoCrop);
+  assert.ok(photo);
+  for (const [actual, stored] of [
+    [photo.x, photoCrop.left], [photo.y, photoCrop.top],
+    [photo.width, photoCrop.right - photoCrop.left],
+    [photo.height, photoCrop.bottom - photoCrop.top],
+  ]) {
+    assert.ok(Math.abs(actual * HWPUNIT_PER_PIXEL - stored) < 1e-6, '저장 자르기 범위의 단위 환산을 보존한다');
+  }
 });
 
 test('CanvasKit image crop source honors issue2817 imgDim coordinates', () => {

@@ -1,0 +1,122 @@
+{
+  "key": "issue1133-hwp",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "2c4fd868f3c47c4940a554a78f8746d0243cc01af364773523120e10c9b4dd48",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/pdf_png/pdf-1.png",
+      "pdf_sha256": "ce7cb559738c1a676e151f796bf35148745509be432d59259e04327efc93a9db"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "ae946ddeb6878e90900a866746d5e524a9fc8ecf0d2c05c75a8fa4da1569c679",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/pdf_png/pdf-2.png",
+      "pdf_sha256": "54826cc97f3246a0155d3dc89c5496f8322a17bebd32c92c6af064d91e968469"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "5fa045fb833fcac994ae826f3015735f33943f978be3fc340c5e0bf7176e1030",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp/pdf_png/pdf-3.png",
+      "pdf_sha256": "5ac05785d1f6c296f30286f792cb5cbdbb94f54fad841c36304fd79adc1890fb"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.99734,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130776,
+      "tolerant_content_match_percent": 97.99734
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.22585,
+      "silhouette_boundary_reconciled_pixels": 17,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 171026,
+      "tolerant_content_match_percent": 99.23579
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26053,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue_1133.hwp",
+      "sha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b"
+    },
+    "pdf": {
+      "path": "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+      "sha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+    },
+    "git_head": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "351b97126f337ba1bd7a05b8b0354577478b5c6056544e5048bdafdd98510125"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "48792fb170fee95c5b94df4a634f465d4de75dd612ef718c79f26c9620c519c4"
+        }
+      ],
+      "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+      "comparison_profile": "print",
+      "font_policy": "same-input native --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "exported_svg_pages": 3,
+  "exported_render_tree_pages": 3,
+  "exported_pdf_pages": 3
+}

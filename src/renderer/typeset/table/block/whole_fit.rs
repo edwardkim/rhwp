@@ -36,6 +36,28 @@ pub(super) struct WholeFit {
 }
 
 impl TypesetEngine {
+    /// A complete source cell can own two physical row frames even when
+    /// sequential measurement would fit both. Whole placement must retain
+    /// the same source boundary consumed by the row scanner and paint.
+    pub(in crate::renderer::typeset) fn stored_two_line_row_frames_require_split(
+        &self,
+        table: &crate::model::table::Table,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> bool {
+        if !self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().session_edited()
+            || table.common.treat_as_char
+            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+        {
+            return false;
+        }
+        let engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        engine.set_layout_profile(self.profile.get());
+        engine.set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
+        (0..usize::from(table.row_count))
+            .any(|row| engine.native_saved_two_line_row_frame(table, row, styles))
+    }
+
     /// 원본 공동 앵커의 첫 수용 원점과 이월 후 소비된 오프셋을 함께 조회한다.
     /// 예약 하단과 출력 원점을 한 계획으로 반환하며, 편집·분할·절대 배치는 제외한다.
     #[allow(clippy::too_many_arguments)]
@@ -193,7 +215,7 @@ impl TypesetEngine {
 
     /// 실제 조각 예산으로 저장된 닫힌 개체 프레임의 유효성을 확인한다.
     /// 통째 배치와 이월 후 스캐너 진입이 이 결과를 함께 소비한다.
-    pub(super) fn query_closed_source_frame_placement(
+    pub(in crate::renderer::typeset) fn query_closed_source_frame_placement(
         &self,
         st: &TypesetState,
         paragraphs: &[crate::model::paragraph::Paragraph],
@@ -230,6 +252,7 @@ impl TypesetEngine {
 
     /// 원본 호스트와 뒤 저장 줄이 닫는 전체 개체 프레임을 조회한다.
     /// 수용 예산 때문에 유효 원점을 버리지 않는다. 호출자가 같은 하단으로 fit을 판정한다.
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn query_original_control_table_frame(
         &self,
         st: &TypesetState,
@@ -238,6 +261,7 @@ impl TypesetEngine {
         ctrl_idx: usize,
         table: &crate::model::table::Table,
         effective_height: f64,
+        host_spacing_before: f64,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         if st.col_count != 1
             || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
@@ -248,21 +272,31 @@ impl TypesetEngine {
         }
         let para = paragraphs.get(para_idx)?;
         let next = paragraphs.get(para_idx + 1)?;
-        let mut placement = crate::renderer::float_placement::stored_interior_control_table_frame(
+        let mut placement = crate::renderer::float_placement::stored_float_frame_before_tac_line(
             para,
-            next,
             ctrl_idx,
             table,
             effective_height,
-            st.vpos_page_base.unwrap_or(0),
             self.dpi,
         )
+        .or_else(|| {
+            crate::renderer::float_placement::stored_interior_control_table_frame(
+                para,
+                next,
+                ctrl_idx,
+                table,
+                effective_height,
+                st.vpos_page_base.unwrap_or(0),
+                self.dpi,
+            )
+        })
         .or_else(|| {
             crate::renderer::float_placement::stored_empty_control_table_frame(
                 para,
                 next,
                 table,
                 effective_height,
+                host_spacing_before,
                 // 빈 호스트의 닫힌 개체 프레임은 물리 쪽 기준 저장 좌표다.
                 // 글줄 호스트의 상대 원점처럼 page base를 다시 빼지 않는다.
                 0,
@@ -450,6 +484,7 @@ impl TypesetEngine {
         {
             let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
             layout_engine.set_layout_profile(st.profile);
+            layout_engine.prime_column_layout_env(&st.layout);
             layout_engine.set_render_normalization_overlay(std::sync::Arc::clone(
                 &self.render_normalization,
             ));
@@ -729,6 +764,7 @@ impl TypesetEngine {
                     ctrl_idx,
                     table,
                     ft.effective_height,
+                    fmt.spacing_before,
                 )
             });
         WholeFit {

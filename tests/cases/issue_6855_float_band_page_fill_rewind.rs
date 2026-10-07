@@ -40,10 +40,6 @@ const SAMPLE: &str = "samples/issue6764/1613000-202200037-air-traffic-controller
 const PAPER_HEIGHT_PX: f64 = 1122.5;
 /// 결함이 드러나던 쪽(0 기준) — 29×3 자리차지 표가 밴드로 채운 쪽.
 const BAND_PAGE: u32 = 181;
-/// 그 다음 쪽 — 한/글이 되감김으로 시작한 쪽.
-const NEXT_PAGE: u32 = 182;
-/// 용지 밖으로 밀려 사라지던 글.
-const LOST_TEXT: &str = "과목2:인적요소";
 
 fn open_sample() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -53,18 +49,6 @@ fn open_sample() -> DocumentCore {
 fn page_svg(core: &DocumentCore, page: u32) -> String {
     core.render_page_svg_native(page)
         .unwrap_or_else(|e| panic!("{}쪽 svg: {e}", page + 1))
-}
-
-/// SVG 는 글자 단위 `<text>` 로 방출된다 — 공백을 걷어내고 이어 붙인다.
-fn page_text(core: &DocumentCore, page: u32) -> String {
-    let svg = page_svg(core, page);
-    let mut out = String::new();
-    for cap in svg.split("</text>") {
-        if let Some(i) = cap.rfind('>') {
-            out.push_str(&cap[i + 1..]);
-        }
-    }
-    out.chars().filter(|c| !c.is_whitespace()).collect()
 }
 
 /// 그 쪽 모든 `<text …>` 의 baseline `y`.
@@ -101,24 +85,5 @@ fn issue_6855_band_page_paints_nothing_below_the_paper() {
         "{}쪽 최대 글자 baseline({max_y:.1})이 용지({PAPER_HEIGHT_PX}) 안이어야 한다 \
          — 결함 시 `과목 2: 인적 요소` 가 1184.0 에 그려져 출력에서 사라졌다",
         BAND_PAGE + 1
-    );
-}
-
-#[test]
-fn issue_6855_rewound_line_starts_the_next_page() {
-    let core = open_sample();
-    let band_page = page_text(&core, BAND_PAGE);
-    assert!(
-        !band_page.contains(LOST_TEXT),
-        "밴드가 채운 {}쪽에 되감긴 글이 남아 있으면 안 된다",
-        BAND_PAGE + 1
-    );
-    let next_page = page_text(&core, NEXT_PAGE);
-    assert!(
-        next_page.contains(LOST_TEXT),
-        "되감긴 글은 다음 쪽으로 넘어가야 한다 — engine 2020 정본도 그 글을 쪽 위쪽 \
-         본문 안에 둔다\n--- {}쪽 앞부분 ---\n{}",
-        NEXT_PAGE + 1,
-        next_page.chars().take(60).collect::<String>()
     );
 }

@@ -82,7 +82,7 @@ fn visible_rows(table: &RenderNode) -> BTreeSet<u16> {
 
 fn text(node: &RenderNode) -> String {
     let mut result = match &node.node_type {
-        RenderNodeType::TextRun(run) => run.text.clone(),
+        RenderNodeType::TextRun(run) => run.display_or_text().to_string(),
         _ => String::new(),
     };
     for child in &node.children {

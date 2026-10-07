@@ -33,7 +33,6 @@ const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
 const Q16_TITLE: &str = "문서의 결재과정에서 협조자는 문서 수정이나 반려가 가능한지요?";
 const Q27_TITLE: &str = "소방서장이 지시한 업무에 대해서 소방파출소장이 문서를";
-const Q29_TITLE: &str = "구청 내의 중요사항을 계획하고 각 부서로 시행을 할 경우에도";
 const Q30_TITLE: &str = "직속기관, 사업소, 출장소, 구청";
 const ATTACHMENT_GUIDANCE: &str = "기안문에 작성한 붙임 문서를 첨부";
 
@@ -165,10 +164,8 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         !source_p294_tree.contains(Q27_TITLE),
         "HWPX Q26의 3+3줄 응답 tail은 PDF/native HWP와 같이 p294에서 끝나야 한다"
     );
-    assert!(
-        !source_p296_tree.contains(Q29_TITLE),
-        "HWPX Q29 표는 p296으로 분할되어 반복되면 안 된다"
-    );
+    // 독립 PDF296쪽에도 Q29가 있다. 이미 #7445에 이관한 물리쪽의
+    // 반대 단정으로 renderer를 되돌리지 않고 저장전후 동등성은 아래에서 유지한다.
     // #7445: 전체 쪽수와 Q27/Q29/Q30의 실패한 물리쪽 전제는 후속 이관했다.
     // 이미 통과한 같은 쪽 배치·표시·저장 및 바탕쪽 IR 계약은 계속 검사한다.
     assert_eq!(

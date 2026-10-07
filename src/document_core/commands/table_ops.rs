@@ -1326,7 +1326,9 @@ impl DocumentCore {
         let (needs_reflow, reflow_para_count) = {
             let mut needs_reflow = false;
             let mut size_changed = false;
+            let mut width_changed = false;
             let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+            let original_width = table.common.width;
             let direct_border_fill_id = if has_border_fill_change {
                 None
             } else {
@@ -1347,7 +1349,8 @@ impl DocumentCore {
 
             if let Some(v) = top_u32("width") {
                 needs_reflow |= cell.width != v;
-                size_changed |= cell.width != v;
+                width_changed = cell.width != v;
+                size_changed |= width_changed;
                 cell.width = v;
             }
             if let Some(v) = top_u32("height") {
@@ -1402,6 +1405,16 @@ impl DocumentCore {
             }
             if size_changed {
                 table.update_ctrl_dimensions();
+                if !width_changed {
+                    // 행마다 칸 경계가 다르면 열별 최댓값 합은 실제 표 너비보다 크다.
+                    // 높이만 바꿀 때 선언 너비와 HWP 원본 헤더는 그대로 둔다.
+                    table.common.width = original_width;
+                    patch_raw_ctrl_field(
+                        &mut table.raw_ctrl_data,
+                        common_obj_offsets::WIDTH,
+                        &original_width.to_le_bytes(),
+                    );
+                }
             }
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };
@@ -2811,6 +2824,8 @@ impl DocumentCore {
         if let Some(v) = json_bool(json, "repeatHeader") {
             table.repeat_header = v;
         }
+        // [#7606] 넘긴 키가 바꾼 attr 비트. raw_ctrl_data FLAGS 에는 이 비트만 옮긴다.
+        let mut touched_attr: u32 = 0;
         if let Some(v) = json_bool(json, "treatAsChar") {
             if v {
                 table.attr |= 0x01;
@@ -2818,6 +2833,7 @@ impl DocumentCore {
                 table.attr &= !0x01;
             }
             table.common.treat_as_char = v;
+            touched_attr |= 0x01;
         }
 
         // 위치 속성: attr 비트 필드
@@ -2830,6 +2846,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 21)) | (bits << 21);
+            touched_attr |= 0x07 << 21;
             table.common.text_wrap = match bits {
                 1 => crate::model::shape::TextWrap::TopAndBottom,
                 2 => crate::model::shape::TextWrap::BehindText,
@@ -2845,6 +2862,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x03 << 3)) | (bits << 3);
+            touched_attr |= 0x03 << 3;
             table.common.vert_rel_to = match bits {
                 1 => crate::model::shape::VertRelTo::Page,
                 2 => crate::model::shape::VertRelTo::Para,
@@ -2861,6 +2879,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 5)) | (bits << 5);
+            touched_attr |= 0x07 << 5;
             table.common.vert_align = match bits {
                 1 => crate::model::shape::VertAlign::Center,
                 2 => crate::model::shape::VertAlign::Bottom,
@@ -2878,6 +2897,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x03 << 8)) | (bits << 8);
+            touched_attr |= 0x03 << 8;
             table.common.horz_rel_to = match bits {
                 1 => crate::model::shape::HorzRelTo::Page,
                 2 => crate::model::shape::HorzRelTo::Column,
@@ -2895,6 +2915,7 @@ impl DocumentCore {
                 _ => 0,
             };
             table.attr = (table.attr & !(0x07 << 10)) | (bits << 10);
+            touched_attr |= 0x07 << 10;
             table.common.horz_align = match bits {
                 1 => crate::model::shape::HorzAlign::Center,
                 2 => crate::model::shape::HorzAlign::Right,
@@ -2933,6 +2954,7 @@ impl DocumentCore {
                 table.common.flow_with_text = false;
             }
             table.common.attr = table.attr;
+            touched_attr |= 1 << 13;
         }
         // allowOverlap → attr bit 14
         if let Some(v) = json_bool(json, "allowOverlap") {
@@ -2944,20 +2966,33 @@ impl DocumentCore {
                 table.common.allow_overlap = false;
             }
             table.common.attr = table.attr;
+            touched_attr |= 1 << 14;
         }
         // attr 비트 변경을 raw_ctrl_data FLAGS(0..4)에도 반영. HWP5 직렬화기
         // (serialize_table)는 raw_ctrl_data 가 있으면 그대로 기록하므로, 여기
         // 반영하지 않으면 글자처럼 취급/배치/기준/정렬/쪽영역제한/겹침 변경이
         // 저장 파일에서 통째로 유실되고 재로드 시 원복된다. V_OFFSET/H_OFFSET/
-        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙 (미변경 시에는 파싱
-        // 원본 attr 를 그대로 다시 쓰는 항등 연산이라 무해).
+        // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙.
+        // [#7606] 넘긴 키의 비트만 옮긴다. `table.attr` 를 통째로 쓰면 `table.attr` 가
+        // raw FLAGS 와 다른 표(생성 경로)에서 손대지 않은 비트까지 덮인다 — 글자처럼
+        // 취급으로 만든 표는 `table.attr` 가 0x04000006 이라 너비·높이 기준(bit 15–19)이
+        // 용지(0)로 저장됐다. 파싱한 표는 `table.attr` 가 raw FLAGS 와 같아(`parse_table`)
+        // 결과가 종전과 같다.
         // [#6388] raw 가 빌 수 있으므로(HWPX 파스본) 가드를 거친다. 종전에는 바로 위
         // 위치 오프셋 블록의 0 확장이 길이 4 를 보장해 무조건 색인해도 됐다.
-        patch_raw_ctrl_field(
-            &mut table.raw_ctrl_data,
-            common_obj_offsets::FLAGS,
-            &table.attr.to_le_bytes(),
-        );
+        let raw_flags = table
+            .raw_ctrl_data
+            .get(common_obj_offsets::FLAGS)
+            .and_then(|b| <[u8; 4]>::try_from(b).ok())
+            .map(u32::from_le_bytes);
+        if let Some(raw_flags) = raw_flags {
+            let flags = (raw_flags & !touched_attr) | (table.attr & touched_attr);
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::FLAGS,
+                &flags.to_le_bytes(),
+            );
+        }
         // keepWithAnchor → prevent_page_break
         // CommonObjAttr::PREVENT_PAGE_BREAK (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {

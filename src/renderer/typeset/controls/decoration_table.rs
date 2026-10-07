@@ -20,6 +20,19 @@ pub(super) fn continuation(
     dpi: f64,
     base_available_height: impl FnOnce() -> f64,
 ) -> Option<OverlayContinuation> {
+    // [#7441] 잔여 행 컷은 흐름을 따라 쪽 하단에 닿는 문단 기준 표만 대상이다(#4568 원 범위).
+    // 아래 앵커 식(흐름 높이 + 오프셋)도 문단 기준에서만 성립한다. 용지 기준 표는 흐름과
+    // 무관한 절대 위치 개체라 한컴은 본문 끝이나 꼬리말을 넘어도 행을 다음 쪽으로 넘기지
+    // 않는다 — table-ipc/table-complex(본문 안, 한컴 기준 PDF)·온새미로 표지 틀(꼬리말 영역까지,
+    // 한컴 2020·2024: 다음 쪽 본문 무이동). 이 식을 용지 기준 표에 쓰면 본문 시작만큼
+    // 표가 아래에 있다고 오판해 본문 안의 표를 잘랐고, 잘린 행은 다음 쪽 표에 가려 사라졌다.
+    // 쪽 기준 표도 본문 영역 기준의 절대 위치라 같은 규칙을 따른다(한컴 출력 미확인).
+    if !matches!(
+        table.common.vert_rel_to,
+        crate::model::shape::VertRelTo::Para
+    ) {
+        return None;
+    }
     let anchor_y = current_height + hwpunit_to_px(table.common.vertical_offset as i32, dpi);
     let room = base_available_height() - anchor_y;
     if room > 0.0 && ft.effective_height > room {

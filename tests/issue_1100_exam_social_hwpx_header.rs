@@ -95,7 +95,8 @@ fn issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership() {
                 assert_eq!(
                     descendants(body)
                         .into_iter()
-                        .filter(|node| node["type"] == "TextRun" && displayed_text(node) == marker)
+                        .filter(|node| node["type"] == "TextRun"
+                            && displayed_text(node).trim_end() == marker.trim_end())
                         .count(),
                     2,
                     "4쪽 보기의 자모 번호를 숫자로 바꾸지 않는다: {marker}"

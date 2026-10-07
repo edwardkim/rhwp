@@ -1,0 +1,10 @@
+{
+  "before_pages": 215,
+  "after_pages": 215,
+  "changed_pages": [
+    91,
+    95
+  ],
+  "unchanged_pages": 213,
+  "comparison": "Native same #7505 font environment, same original and reference PDF"
+}

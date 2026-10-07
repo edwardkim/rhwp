@@ -71,10 +71,12 @@ impl TypesetEngine {
         // 걸려 잘릴 수 있다.
         let mut table_available = (available - st.layout.pagination_tolerance_px).max(0.0);
 
-        // [Task #993] advance_row_cut 호출용 LayoutEngine — 컷 측정은 dpi 와
-        // 셀 패딩/중첩 표 높이 계산에만 의존하므로 ad hoc 인스턴스로 충분하다.
+        // Cut projection also depends on the document's full body height.
+        // Prime it before filling CellUnit caches, as actual paint does, so a
+        // small page cannot cache the 900px fallback's different child ledger.
         let layout_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
         layout_engine.set_layout_profile(st.profile);
+        layout_engine.prime_column_layout_env(&st.layout);
         // 행 컷 측정도 같은 렌더링의 일부이므로 조판기와 동일한 표 출처를 사용한다.
         layout_engine
             .set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
@@ -410,9 +412,8 @@ impl TypesetEngine {
         // 배제 영역을 만들기 전에 변환해 행 예산과 실제 배치에서 함께 소비한다.
         let source_control_frame =
             closed_source_frame_placement.filter(|_| closed_source_frame_key == host_frame);
-        let fragment_host_placement =
-            source_control_frame.or_else(|| {
-                unconstrained_host_placement
+        let fragment_host_placement = source_control_frame.or_else(|| {
+            unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
                     let applied_before = if placement_para_start_height > 0.0 {
@@ -428,34 +429,57 @@ impl TypesetEngine {
                         },
                         |lines| lines.last().map_or(0.0, |line| line.height),
                     );
-                    let mut fragment = placement.for_first_fragment(
-                        table,
-                        applied_before,
-                        host_line_height,
-                        self.dpi,
-                    );
+                    let reflow_empty_host =
+                        crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
+                            para, table, Some(&placement),
+                        );
+                    let mut fragment = if reflow_empty_host {
+                        // No saved text-line anchor supersedes the formatted
+                        // outer box. Keep the origin accepted by whole fit.
+                        placement
+                    } else {
+                        placement.for_first_fragment(
+                            table,
+                            applied_before,
+                            host_line_height,
+                            self.dpi,
+                        )
+                    };
                     // 전체 개체 상자를 첫 조각으로 바꾸면서 빠진 바깥 위 여백도
                     // 예약·배치가 소비할 같은 원점에 한 번만 포함한다.
-                    if crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
+                    if !reflow_empty_host
+                        && (crate::renderer::float_placement::stored_body_filling_rowbreak_frame(
+                        para,
+                        table,
+                        st.layout.body_area.height,
+                        self.dpi,
+                        st.profile.hwpx_stored_layout(),
+                        st.profile.session_edited(),
+                    ) || crate::renderer::float_placement::column_rowbreak_fragment_opens_outer_top(
                         false,
-                        self.profile.get().hwp5_stored_pagination_layout().then_some(para),
+                        (st.profile.hwpx_stored_layout()
+                            || self.profile.get().hwp5_stored_pagination_layout()).then_some(para),
                         table,
                         false,
                         0,
                         &[],
                         false,
-                    ) {
+                    )) {
                         let top_margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
                         fragment.table_top += top_margin;
                         fragment.occupied_bottom += top_margin;
                     }
                     constrain_host_placement.constrain(fragment, st)
                 })
-            });
+        });
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
         let host_owns_text_lines =
-            source_control_frame.is_none() || para_has_non_whitespace_text(para);
+            !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
+                para,
+                table,
+                fragment_host_placement.as_ref(),
+            ) && (source_control_frame.is_none() || para_has_non_whitespace_text(para));
         if host_owns_text_lines
             && fragment_host_placement.is_some()
             && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -475,7 +499,9 @@ impl TypesetEngine {
                 });
                 let host_h = fmt.line_advances_sum(0..fmt.line_heights.len());
                 st.align_flow_to(st.current_height.max(placement_para_start_height + host_h));
-                st.record_pre_emitted_host_height(para_idx, host_h);
+                let host_trailing_spacing =
+                    fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
+                st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
             }
             st.mark_pre_emitted_host(para_idx);
         }
@@ -1008,6 +1034,52 @@ impl TypesetEngine {
         } else {
             (fragment_host_placement, host_frame)
         };
+        // 유효 저장 글 앞 앵커의 빈 띠에 실제로 들어가는 후속 첫 조각을 확정한다.
+        // 표 조각의 원점/예산은 이미 같은 배치 계획으로 결정돼 있으므로 다시 이동시키지 않는다.
+        if st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && crate::renderer::float_placement::ParagraphFloatPlacement::stored_head_host_lines_are_valid(
+                para, table, ctrl_idx,
+            )
+        {
+            if let (Some(placement), Some(next)) =
+                (fragment_host_placement, paragraphs_all.get(para_idx + 1))
+            {
+                let next_idx = para_idx + 1;
+                let next_style_id = composed_all
+                    .get(next_idx)
+                    .map_or(next.para_shape_id as usize, |p| p.para_style_id as usize);
+                if !st.prefilled_line_prefixes.contains_key(&next_idx)
+                    && !st.prefilled_paras.contains(&next_idx)
+                    && !styles
+                        .para_styles
+                        .get(next_style_id)
+                        .is_some_and(|style| style.page_break_before)
+                {
+                    let fmt_next = self.format_paragraph(
+                        next,
+                        composed_all.get(next_idx),
+                        styles,
+                        Some(st.inline_flow_column().width),
+                    );
+                    if let Some(prefix) = super::super::super::paragraph::plan_stored_float_text_prefix(
+                        para,
+                        next,
+                        &fmt_next,
+                        next_idx,
+                        placement,
+                        st.current_height,
+                        self.dpi,
+                    ) {
+                        if let PageItem::PartialParagraph { end_line, .. } = prefix.item {
+                            st.record_prefilled_line_prefix(next_idx, end_line);
+                            st.commit_split_paragraph_fragment(prefix);
+                        }
+                    }
+                }
+            }
+        }
         let prepared = BlockTableContinuationPreparedState {
             first_anchor_offset_consumed,
             host_placement: fragment_host_placement,

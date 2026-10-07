@@ -43,8 +43,9 @@ pub(in crate::renderer::typeset) fn place(
         |item| matches!(item, PageItem::PartialTable { para_index, .. } if *para_index < para_idx),
     );
     let shared_spacing =
-        crate::renderer::float_placement::hwpx_empty_after_partial_table_shared_spacing_px(
-            st.profile.hwpx_stored_layout(),
+        crate::renderer::float_placement::stored_after_partial_table_shared_spacing_px(
+            (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                && !st.profile.session_edited(),
             previous_is_partial_table,
             para,
             fmt.spacing_before,
@@ -72,7 +73,6 @@ pub(in crate::renderer::typeset) fn place(
         para_idx,
         para,
         fmt,
-        paragraphs,
         is_last_in_section,
         available,
         layout_drift_safety_px,
@@ -87,6 +87,26 @@ pub(in crate::renderer::typeset) fn place(
     } = paragraph::prepare_forced_page_boundary(
         st, para_idx, para, fmt, paragraphs, available, dpi,
     );
+    if st.prefilled_line_prefixes.contains_key(&para_idx) {
+        // 앞 쪽의 선행 조각이 소유한 줄을 whole-fit으로 다시 배치하지 않는다.
+        let base_available = (st.base_available_height() - layout_drift_safety_px).max(0.0);
+        paragraph::place_split_paragraph(
+            st,
+            para_idx,
+            para,
+            fmt,
+            paragraphs,
+            fmt.line_count(),
+            base_available,
+            layout_drift_safety_px,
+            forced_page_break_line,
+            native_hwp5_existing_footnote_reset_line,
+            current_page_vpos_base,
+            false,
+            dpi,
+        );
+        return;
+    }
     let paragraph::metrics::ParagraphFlowHints {
         body_bottom_vpos,
         trim_spacing_before_for_flow,

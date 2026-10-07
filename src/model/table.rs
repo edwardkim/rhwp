@@ -310,12 +310,63 @@ impl Cell {
             && table.cells.len() == 1
             && table.common.height < 0x8000_0000
             && table.common.height > self.height
-            && i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
+            && (i64::from(pad.top) + i64::from(pad.bottom) > i64::from(self.height)
+                || self.saved_reset_closes_initial_table_frame(table))
         {
             table.common.height
         } else {
             self.height
         }
+    }
+
+    /// A short first viewport can leave only the padding in cellSz. The
+    /// original monotone source prefix, followed by a reset, identifies the
+    /// actual initial frame; its padding must not be scaled against that stub.
+    pub(crate) fn saved_reset_closes_initial_table_frame(&self, table: &Table) -> bool {
+        // A later edited/reset line cannot authenticate the earlier source frame.
+        if self.paragraphs.iter().any(|para| {
+            para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || !para.controls.is_empty()
+                || para.line_segs.is_empty()
+                || para.line_segs.iter().any(|seg| {
+                    seg.tag & super::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || seg.vertical_pos < 0
+                        || seg.line_height <= 0
+                })
+        }) {
+            return false;
+        }
+        let padding = self.effective_padding(&table.padding);
+        let mut previous: Option<&super::paragraph::LineSeg> = None;
+        for para in &self.paragraphs {
+            if para.stored_text_partition_is_dirty()
+                || para.cell_format_vpos_dirty
+                || !para.controls.is_empty()
+                || para.line_segs.is_empty()
+            {
+                return false;
+            }
+            for seg in &para.line_segs {
+                if seg.tag & super::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || seg.vertical_pos < 0
+                    || seg.line_height <= 0
+                {
+                    return false;
+                }
+                if let Some(prev) = previous {
+                    if seg.vertical_pos < prev.vertical_pos {
+                        let end = i64::from(prev.vertical_pos)
+                            + i64::from(prev.line_height)
+                            + i64::from(padding.top)
+                            + i64::from(padding.bottom);
+                        return end == i64::from(table.common.height);
+                    }
+                }
+                previous = Some(seg);
+            }
+        }
+        false
     }
 
     /// 표 기본 안 여백이 네 축 모두 0인지 확인한다.
@@ -1727,45 +1778,11 @@ impl Table {
             .map(|r| raw_row_heights.get(r as usize).copied().unwrap_or(0))
             .sum();
 
-        // 비주 셀의 비어있지 않은 문단 수집 (모든 메타데이터 보존)
+        // 비주 셀을 제거하며 (한컴 오피스와 동일하게 셀을 실제로 제거) 그 문단을 통째로
+        // 옮긴다. 컨트롤·필드 범위와 빈 문단도 그대로 간다. 빈 셀(컨트롤 없는 빈 문단
+        // 하나)만 보탤 내용이 없어 건너뛴다.
         let mut extra_paragraphs: Vec<Paragraph> = Vec::new();
-        for cell in &self.cells {
-            if cell.col == start_col && cell.row == start_row {
-                continue; // 주 셀 스킵
-            }
-            let in_range = cell.col >= start_col
-                && cell.col <= end_col
-                && cell.row >= start_row
-                && cell.row <= end_row;
-            if in_range {
-                for para in &cell.paragraphs {
-                    if !para.text.is_empty() {
-                        extra_paragraphs.push(Paragraph {
-                            text: para.text.clone(),
-                            char_count: para.char_count,
-                            char_count_msb: para.char_count_msb,
-                            control_mask: para.control_mask,
-                            char_offsets: para.char_offsets.clone(),
-                            char_shapes: para.char_shapes.clone(),
-                            line_segs: para.line_segs.clone(),
-                            hwpx_axis_shift: para.hwpx_axis_shift,
-                            layout_only_fill_lines: para.layout_only_fill_lines,
-                            source_line_seg_vertical_pos: para.source_line_seg_vertical_pos.clone(),
-                            range_tags: para.range_tags.clone(),
-                            para_shape_id: para.para_shape_id,
-                            style_id: para.style_id,
-                            raw_header_extra: para.raw_header_extra.clone(),
-                            has_para_text: para.has_para_text,
-                            stored_text_partition_dirty: para.stored_text_partition_dirty,
-                            ..Default::default()
-                        });
-                    }
-                }
-            }
-        }
-
-        // 비주 셀 제거 (한컴 오피스와 동일하게 셀을 실제로 제거)
-        self.cells.retain(|cell| {
+        self.cells.retain_mut(|cell| {
             if cell.col == start_col && cell.row == start_row {
                 return true; // 주 셀 유지
             }
@@ -1773,7 +1790,17 @@ impl Table {
                 && cell.col <= end_col
                 && cell.row >= start_row
                 && cell.row <= end_row;
-            !in_range // 범위 밖 셀 유지, 범위 내 비주 셀 제거
+            if !in_range {
+                return true; // 범위 밖 셀 유지
+            }
+            let empty_cell = matches!(
+                cell.paragraphs.as_slice(),
+                [para] if para.text.is_empty() && para.controls.is_empty()
+            );
+            if !empty_cell {
+                extra_paragraphs.append(&mut cell.paragraphs);
+            }
+            false
         });
 
         // 주 셀 갱신
@@ -1796,7 +1823,7 @@ impl Table {
         primary.width = new_width;
         primary.height = new_height;
 
-        // 비어있지 않은 문단 추가
+        // 옮긴 문단 추가
         for para in extra_paragraphs {
             primary.paragraphs.push(para);
         }

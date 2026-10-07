@@ -1073,11 +1073,18 @@ impl PaintOp {
                     ",\"formType\":{},\"caption\":{},\"text\":{},\"foreColor\":{},\"backColor\":{},\"value\":{},\"enabled\":{}",
                     json_escape(form_type_str(form.form_type)),
                     json_escape(&form.caption),
-                    json_escape(&form.text),
+                    json_escape(form.display_or_text()),
                     json_escape(&form.fore_color),
                     json_escape(&form.back_color),
                     form.value,
                     form.enabled,
+                );
+                // CanvasKit는 backend 자체에서 크기/여백을 다시 추측하지 않는다.
+                let drawing = crate::renderer::form_appearance::form_drawing(form, *bbox);
+                let _ = write!(
+                    buf,
+                    ",\"drawing\":{}",
+                    serde_json::to_string(&drawing).expect("finite form drawing")
                 );
                 buf.push('}');
             }

@@ -1,0 +1,40 @@
+{
+  "key": "quantum-canvas2d",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/quantum/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/quantum/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "5324107fe9d010da937ae38d59b0d7fa8f9f58b0ec8bbc2e341c8881f1a31c48",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/quantum/pdf_001.png",
+      "pdf_sha256": "72265d3d26038a007d1e1f1e82e9a21bae2d7289e54433653f517cf6665466c8"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.90727,
+      "silhouette_boundary_reconciled_pixels": 2,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 101580,
+      "tolerant_content_match_percent": 98.90923
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

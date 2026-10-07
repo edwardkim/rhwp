@@ -183,7 +183,25 @@ impl TypesetEngine {
                         // 페이지/단에 등록. paragraph 가 페이지 분할되면 이 시점의
                         // st.current_items 는 마지막 페이지 상태이므로, 그대로 push 하면
                         // 박스가 잘못된 페이지에 떠 있게 된다.
-                        let routed = if crate::renderer::pagination::is_routable_treat_as_char_picture_or_shape(ctrl) {
+                        // [#5941] `treat_as_char` 뿐 아니라 **비-TAC 그림/도형**도 앵커 줄이
+                        // 라우팅된 쪽에 등록한다. 바로 위 `#476/#4092` 주석이 적은 실패 모드
+                        // ("paragraph 가 페이지 분할되면 … 박스가 잘못된 페이지에 떠 있게 된다")
+                        // 는 TAC 여부와 무관한데 적용 범위가 TAC 으로 좁아, 자리차지/어울림
+                        // 개체가 **문단이 끝난 쪽**에 붙었다.
+                        //
+                        // 실측 `1490000-201600081_roadmap_research.hwp` `pi=23`(용지 기준
+                        // 자리차지 묶음, 앵커 줄 0): 문단이 161~162쪽으로 나뉘어 개체가 162쪽에
+                        // 붙고, 비워진 161쪽을 본문 34줄이 채워 하단을 555.8px 넘겼다.
+                        // 한/글 정본(`Hancom PDF 1.3.0.534`)은 그 그림을 **161쪽**에 둔다.
+                        //
+                        // 넓혀도 안전하다 — 앵커 줄이 현재 쪽에 있으면
+                        // `find_inline_control_target_page` 의 `in_current` 검사가 `None` 을
+                        // 돌려주므로 제자리 개체는 하나도 움직이지 않는다. 같은 문서의
+                        // `pi=25` 가 그 경우다(`would_route=None`).
+                        let routed =
+                            if crate::renderer::pagination::is_routable_anchored_picture_or_shape(
+                                ctrl,
+                            ) {
                                 crate::renderer::pagination::find_inline_control_target_page(
                                     &st.pages,
                                     &st.current_items,
@@ -303,9 +321,22 @@ impl TypesetEngine {
                                     let base = st.vpos_page_base.unwrap_or(0);
                                     let retained_before = first_before.max(0.0).min(hwpunit_to_px(base.max(0), self.dpi));
                                     let frame_vpos = base - crate::renderer::px_to_hwpunit(retained_before, self.dpi);
+                                    // 실제 앞 커서는 저장 vpos 스냅(VPOS_CORR)을 마친 문단 시작이다.
+                                    // 스냅 전 측정 누적에는 앞 문단의 sb·trailing_ls drift 가 남는다.
+                                    // 스냅 좌표계는 `base` 원점이므로 `frame_vpos` 원점으로 옮긴다.
+                                    let actual_host_flow_y = match st.vpos_snapped_flow_start {
+                                        Some((snapped, y)) if snapped == para_idx => {
+                                            y + hwpunit_to_px(base - frame_vpos, self.dpi)
+                                        }
+                                        _ => picture_host_origin.2,
+                                    };
+                                    let following = paragraphs.get(para_idx + 2).and_then(|f| {
+                                        let sb = styles.para_styles.get(f.para_shape_id as usize)?.spacing_before;
+                                        Some((f, sb))
+                                    });
                                     crate::renderer::float_placement::stored_picture_successor_with_following_placement(
-                                        para, next, paragraphs.get(para_idx + 2), host_style.spacing_before,
-                                        next_style.spacing_before, frame_vpos, picture_host_origin.2, self.dpi,
+                                        para, next, following, host_style.spacing_before,
+                                        next_style.spacing_before, frame_vpos, actual_host_flow_y, self.dpi,
                                     )
                                 });
                                 if let Some(placement) = saved.filter(|p| {
@@ -370,7 +401,26 @@ impl TypesetEngine {
                                 let hl =
                                     hwpunit_to_px(pic.common.horizontal_offset as i32, self.dpi);
                                 let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
-                                Some((h, h + mb, hl, hr))
+                                // [#7470] 그림 띠에 흡수된 빈 host 줄은 이미 흐름에 더한 문단
+                                // 높이에서 돌려준다(배치 `layout_shape_item` #683 과 같은 판별).
+                                let absorbed_host_line = if pic.caption.is_none()
+                                    && crate::renderer::empty_host_line_absorbed_by_topbottom_float(
+                                        para,
+                                        &pic.common,
+                                    ) {
+                                    para.line_segs
+                                        .first()
+                                        .map(|seg| {
+                                            hwpunit_to_px(
+                                                seg.line_height + seg.line_spacing,
+                                                self.dpi,
+                                            )
+                                        })
+                                        .unwrap_or(0.0)
+                                } else {
+                                    0.0
+                                };
+                                Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
                             }
                             Control::Shape(s)
                                 if !s.common().treat_as_char
@@ -438,7 +488,39 @@ impl TypesetEngine {
                                 // 발동은 3장 이상으로 한정 — 2장 스택은 한컴이 razor-full
                                 // 페이지에 압축 유지하는 실측 반례(1051000-201800093 p60,
                                 // 158쪽 정답 유지)가 있어 제외한다.
-                                if pushdown_topbottom_ctrl_count >= 3 {
+                                // [#7470] 그림 1장: 한/글은 문단 기준 그림의 **실제 하단**(문단 시작
+                                // + 세로 오프셋 + 높이)이 본문을 넘으면 host 줄은 두고 그림만 다음 쪽
+                                // 맨 위로 넘긴다(memo_field pi335: 887 + 775 > 971). 흐름 누적이 아니라
+                                // 그림 위치로 판정한다(issue5595: 문단 시작 0 + 506 < 548 이면 유지).
+                                // 단 맨 위에서 시작한 host 는 넘겨도 다음 쪽에서 같은 높이로 넘치므로
+                                // 그대로 둔다(156634833 2쪽: 쪽 맨 위 그림, 한/글도 그 쪽에 둠).
+                                // 그림 뒤 흐름이 다음 쪽에서 시작한다는 저장 사다리의 증언(다음 문단
+                                // vpos 되감김)이 있을 때만 넘긴다. 다음 문단이 같은 쪽 사다리를 이으면
+                                // 한/글은 그림만 다음 쪽 맨 위로 미루고 흐름은 이 쪽에서 계속한다
+                                // (task1725 문단 1402→1403) — 그 이월은 이 경로가 표현하지 못한다.
+                                let single_picture_overflows = pushdown_topbottom_ctrl_count == 1
+                                    && picture_host_origin.0 == st.pages.len()
+                                    && picture_host_origin.1 == st.current_column
+                                    && picture_host_origin.2 > 1.0
+                                    && stored_ladder_restarts_after(
+                                        para,
+                                        paragraphs.get(para_idx + 1),
+                                    )
+                                    && match ctrl {
+                                        Control::Picture(pic) => {
+                                            let v_off = hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                )
+                                                .max(0),
+                                                self.dpi,
+                                            );
+                                            picture_host_origin.2 + v_off + obj_h
+                                                > st.available_height() + 0.5
+                                        }
+                                        _ => false,
+                                    };
+                                if pushdown_topbottom_ctrl_count >= 3 || single_picture_overflows {
                                     let ovl_base = topbottom_cols
                                         .iter()
                                         .filter(|c| c.1 > h_left && c.0 < h_right)
@@ -543,5 +625,19 @@ impl TypesetEngine {
             .get(para.para_shape_id as usize)
             .map_or(0.0, |style| style.spacing_after);
         st.finish_paragraph_float_flow(para_idx, spacing_after);
+    }
+}
+
+/// [#7470] 저장 사다리가 이 문단 뒤에서 되감기는가 — 다음 문단이 새 쪽에서 시작한다는 한/글의 증언.
+fn stored_ladder_restarts_after(para: &Paragraph, next: Option<&Paragraph>) -> bool {
+    let stored = |seg: &&crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    match (
+        para.line_segs.first().filter(stored),
+        next.and_then(|n| n.line_segs.first()).filter(stored),
+    ) {
+        (Some(cur), Some(next)) => next.vertical_pos < cur.vertical_pos,
+        _ => false,
     }
 }

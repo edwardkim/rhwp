@@ -16,6 +16,9 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
     pub(in crate::renderer::typeset) computed_host_lines:
         Option<Vec<crate::renderer::float_placement::ParagraphHostLine>>,
+    /// Shared physical rows for a no-LineSeg Square table host.
+    pub(in crate::renderer::typeset) square_host_plan:
+        Option<crate::renderer::inline_flow::InlineFlowPlan>,
     /// 총 높이 (spacing 포함)
     pub(in crate::renderer::typeset) total_height: f64,
     /// 줄별 콘텐츠 높이 (line_height만)
@@ -34,6 +37,36 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
 }
 
 impl FormattedParagraph {
+    pub(in crate::renderer::typeset) fn use_square_host_plan(
+        &mut self,
+        plan: crate::renderer::inline_flow::InlineFlowPlan,
+        dpi: f64,
+    ) {
+        let Some(rows) = plan.text_rows.as_ref() else {
+            return;
+        };
+        self.spacing_before = plan.text_spacing_before.unwrap_or(self.spacing_before);
+        (self.line_heights, self.line_spacings) = rows
+            .iter()
+            .map(|row| {
+                (
+                    crate::renderer::hwpunit_to_px(row.line_height, dpi),
+                    crate::renderer::hwpunit_to_px(row.line_spacing, dpi),
+                )
+            })
+            .unzip();
+        self.total_height = plan.end - plan.start;
+        let text_fit = rows.last().map_or(0.0, |row| {
+            plan.text_spacing_before.unwrap_or(0.0)
+                + crate::renderer::hwpunit_to_px(row.vertical_pos + row.line_height, dpi)
+        });
+        let object_fit = plan
+            .square_host_placement
+            .map_or(0.0, |p| p.occupied_bottom);
+        self.height_for_fit = text_fit.max(object_fit) + self.spacing_after;
+        self.square_host_plan = Some(plan);
+    }
+
     /// 특정 줄의 advance 높이 (콘텐츠 + 줄간격)
     ///
     /// Issue #3780: 연속 페이지 재배치에서 기록된 줄 인덱스가 새 레이아웃 줄 수를

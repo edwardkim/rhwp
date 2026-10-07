@@ -414,7 +414,8 @@ impl SkiaTextReplay<'_> {
                         text_paint.set_style(paint::Style::Fill);
                     }
                     for (char_idx, cluster) in clusters.iter() {
-                        if cluster == " " || cluster == "\t" || cluster == "\u{2007}" {
+                        // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                        if cluster.chars().all(char::is_whitespace) {
                             continue;
                         }
                         if cluster == "-" {
@@ -445,6 +446,22 @@ impl SkiaTextReplay<'_> {
                         if cluster.starts_with(|ch: char| {
                             ch < '\u{0020}' && !matches!(ch, '\t' | '\n' | '\r')
                         }) {
+                            continue;
+                        }
+                        if let Some((cx, cy, rx, ry)) =
+                            crate::renderer::legacy_hft_bullet_geometry(cluster, style)
+                        {
+                            let left = bbox.x + char_positions[*char_idx] + cx + f64::from(dx);
+                            let top = y + cy + f64::from(dy);
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (left - rx) as f32,
+                                    (top - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
                             continue;
                         }
                         if is_middle_dot(cluster) {

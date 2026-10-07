@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "key": "square-lane",
+  "provenance": {
+    "hwp": {
+      "path": "samples/21_언어_기출_편집가능본.hwp",
+      "sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15"
+    },
+    "pdf": {
+      "path": "pdf/21_언어_기출_편집가능본-2022.pdf",
+      "sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72"
+    },
+    "git_head": "3696f7329e19a1160bde5152a8507670efcfde5f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "6b591e4fa3e4bded1e8ea4a18107bb60dd5c2fd692014fbbece45c8770e52151"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "778dc81dca11ea1b696b1e540864c44185d06a209c4f2ab912e8cc8ee567909e"
+        }
+      ],
+      "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+      "comparison_profile": "print",
+      "font_policy": "same-input native --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

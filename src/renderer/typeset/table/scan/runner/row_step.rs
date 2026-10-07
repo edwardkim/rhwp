@@ -126,6 +126,24 @@ impl TypesetEngine {
                         r, h, rest, visible_height, probe.fully_consumed, row_has_nested
                     );
                     }
+                    if let Some(opening) = layout_engine
+                        .parallel_picture_row_opening_height(
+                            table,
+                            r,
+                            row_start_cut,
+                            &probe.end_cut,
+                            styles,
+                        )
+                        .filter(|height| *height <= rest)
+                    {
+                        consumed += cs_before + opening;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(opening);
+                        split_end_cut = probe.end_cut;
+                        split_end_limit = opening;
+                        return false;
+                    }
                     // Stage 76의 긴 declared-row tail은 내용 뒤에 충분한 물리 blank
                     // band가 남을 때만 현재 fragment에 보존한다. content가 남은
                     // 공간을 거의 전부 쓰는 경우까지 이 경로를 열면 76076 p18의
@@ -199,6 +217,33 @@ impl TypesetEngine {
                     strict_painted_bottom_fit,
                     source_first_fragment_overflow_allowance,
                     source_first_fragment_row_end,
+                    ordinary_declared_band_can_split: mt.allows_row_break_split()
+                        && r > cursor_row
+                        && !rowspan_touched[r]
+                        && row_start_cut.is_empty()
+                        && ordinary_band_row_shape(table, r, row_total, self.dpi)
+                        // 닫힌 저장 프레임의 가운데·아래 정렬은 상자 높이를
+                        // 바꾸면 내용 원점도 움직인다. 위 정렬의 빈 밴드만
+                        // 전체 행 허용량보다 먼저 분할한다.
+                        && table.cells.iter().filter(|cell| cell.row as usize == r).all(
+                            |cell| cell.vertical_align == crate::model::table::VerticalAlign::Top,
+                        )
+                        && {
+                            // 초과 밴드를 자를 때에도 정렬된 전체 내용은 남은
+                            // 예산 안에 있어야 한다. 가운데 정렬의 닫힌 저장
+                            // 프레임은 형상만 보고 일반 빈 밴드로 바꾸지 않는다.
+                            let need = layout_engine
+                                .row_complete_cut_content_height(table, r, styles);
+                            let padding = table::scan::row_entry::RowEntryQuery {
+                                row: &row_query,
+                                row_start_cut,
+                            }
+                            .padding();
+                            need - padding >= MIN_TOP_KEEP_PX
+                                && layout_engine.row_aligned_content_bottom(
+                                    table, r, need, row_total, styles,
+                                ) <= avail_for_rows - consumed - cs_before + 0.5
+                        },
                 },
                 || self.render_normalization.table_text_reflowed(table),
                 |row| Self::row_has_no_text_or_controls(table, row),
@@ -555,6 +600,28 @@ impl TypesetEngine {
                 }
             }
             if res.fully_consumed {
+                // A reflowed row can exhaust its content before its declared physical
+                // minimum fits. Cut the blank tail at the accepted page budget and
+                // carry it with the exhausted content cursor; never force the full
+                // carried height past the page or replay the already consumed units.
+                let rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if layout_engine.row_uses_reflow_physical_frame(table, r)
+                    && (r == cursor_row && start_row_height_override.is_some()
+                        || layout_engine
+                            .reflow_row_physical_minimum(table, r, styles)
+                            .is_some())
+                    && mt.allows_row_break_split()
+                    && row_total > rest + 0.5
+                    && res.consumed_height + padding <= rest + 0.5
+                    && rest > 0.5
+                {
+                    consumed += cs_before + rest;
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut;
+                    split_end_limit = rest;
+                    end_row_height_override = Some(rest);
+                    return false;
+                }
                 // [#2097→#5714] 표를 **완결하는 마지막 행**이 콘텐츠는 잔여에 다
                 // 들어가는데 선언 높이만 소폭 넘을 때, 한글은 행 밴드를 잔여로
                 // 압축해 쪽을 완결한다(1741000 r14: 선언 80.3 → 밴드 69.7, 한글
@@ -566,16 +633,37 @@ impl TypesetEngine {
                 // 상수 그대로(1741000 실측 기반), 중간 블록의 압축/이월 판별
                 // 불가(kps-ai 반증)는 말미-행 한정으로 배제한다.
                 let squeeze_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                // 실제 저장 쪽 경계의 물리 잔여 뒤에서는 종료 행의 모든 내용이
+                // 현재 쪽 밴드에 들어가면 선언 빈 공간만 다음 쪽을 만들지 않는다.
+                // 일반 종료 행의 수치 허용치를 넓히지 않고 같은 컷·안 여백을 소비한다.
+                let stored_terminal_band_fits = is_continuation
+                    && start_row_height_override.is_some()
+                    && layout_engine.row_cut_starts_intra_paragraph_stored_frame(
+                        table, cursor_row, start_cut, styles,
+                    )
+                    && squeeze_rest > 0.0
+                    && res.consumed_height + padding <= squeeze_rest
+                    && table.cells.iter().filter(|cell| cell.row as usize == r).all(|cell| {
+                        cell.paragraphs.iter().all(|para| {
+                            para.controls.is_empty()
+                                && !para.stored_text_partition_is_dirty()
+                                && !para.line_segs.is_empty()
+                                && para.line_segs.iter().all(|line| {
+                                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                })
+                        })
+                    });
                 let terminal_row_bottom_squeeze = r + 1 == row_count
                     && r > cursor_row
                     && mt.allows_row_break_split()
                     && !rowspan_touched[r]
                     && row_start_cut.is_empty()
                     && row_total > squeeze_rest + 0.5
-                    && row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
-                    && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
-                    && squeeze_rest - (res.consumed_height + padding)
-                        >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX
+                    && (stored_terminal_band_fits
+                        || (row_total <= squeeze_rest + TERMINAL_ROW_BOTTOM_SQUEEZE_TOLERANCE_PX
+                            && squeeze_rest <= TERMINAL_ROW_BOTTOM_SQUEEZE_MAX_REST_PX
+                            && squeeze_rest - (res.consumed_height + padding)
+                                >= TERMINAL_ROW_BOTTOM_SQUEEZE_MIN_HEADROOM_PX))
                     && !table.cells.iter().any(|cell| {
                         cell.row as usize == r
                             && cell.paragraphs.iter().any(|paragraph| {
@@ -657,6 +745,49 @@ impl TypesetEngine {
                 {
                     consumed += cs_before + row_total;
                     end_row = row_count;
+                } else if mt.allows_row_break_split()
+                    && r > cursor_row
+                    && !rowspan_touched[r]
+                    && ordinary_band_row_shape(table, r, row_total, self.dpi)
+                    && ordinary_band_content_fits(
+                        &res.end_cut,
+                        res.consumed_height,
+                        layout_engine.row_aligned_content_bottom(
+                            table,
+                            r,
+                            res.consumed_height + padding,
+                            row_total,
+                            styles,
+                        ),
+                        avail_for_rows - consumed - cs_before,
+                    )
+                {
+                    // [#5585] 일반 행의 밴드 컷: «쪽 경계에서 나눔»(값 2) 표에서 행 **내용과
+                    // 안 여백**은 남은 쪽에 다 들어가는데 선언 행 높이만 넘칠 때, 한글은 행을
+                    // 통째로 넘기지 않고 내용을 이 쪽에 둔 채 쪽 경계에서 행을 자른다.
+                    // 선언 높이의 남은 빈 밴드는 다음 쪽 첫머리로 이어진다(148776468 14→15쪽:
+                    // 한글 2020 PDF 는 행 3 의 내용을 14쪽에 두고 15쪽 행 4 를 빈 밴드만큼
+                    // 내려 시작한다 — 통째 이월하던 rhwp 는 14쪽에 186px 를 비워 18쪽).
+                    // 자르는 자리는 이 쪽 내용 영역의 끝(`budget`)이다 — 이 쪽에는 위 안 여백과
+                    // 그 내용 영역이 남고, 아래 안 여백을 포함한 선언 높이의 나머지는 다음
+                    // 조각의 시작 행 높이로 넘어간다(한글 14쪽 행 밴드 178px · 15쪽 빈 밴드
+                    // 17px, 선언 196.3px). 표를 끝내는 마지막 행이면 이어질 물리 행이 없으므로
+                    // 빈 밴드는 쪽 경계에서 끝난다(#5714 와 같은 계약).
+                    end_row = r + 1;
+                    split_end_cut = res.end_cut.clone();
+                    split_end_limit = budget.max(res.consumed_height);
+                    consumed += cs_before + split_end_limit;
+                    if r + 1 < row_count {
+                        let top_padding =
+                            layout_engine.row_visible_top_padding_height(table, r, styles);
+                        end_row_height_override = Some(split_end_limit + top_padding);
+                    }
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN ORDINARY_BAND_CUT r={} content={:.1} padding={:.1} row_total={:.1}",
+                            r, res.consumed_height, padding, row_total
+                        );
+                    }
                 } else {
                     end_row = r;
                 }
@@ -702,6 +833,46 @@ impl TypesetEngine {
                 && res.consumed_height > 0.5
                 && res.end_cut.iter().any(|units| *units > 0)
                 && row_has_stored_same_vpos_split_signal(table, r);
+            // Paragraph-local zero positions alone do not prove a page reset.
+            // Require independently stored row boxes to exceed the original
+            // object frame as well: that frame then describes a fragment, not
+            // the entire table. Keep the complete unit at its saved boundary
+            // without weakening the actual fragment-height budget below.
+            let stored_row_boxes_exceed_object_frame = (0..table.row_count)
+                .try_fold(0_i64, |height, row| {
+                    table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            cell.row == row
+                                && cell.row_span == 1
+                                && cell.height > 0
+                                && cell.height < 0x8000_0000
+                        })
+                        .map(|cell| i64::from(cell.height))
+                        .max()
+                        .map(|row_height| height + row_height)
+                })
+                .is_some_and(|height| {
+                    table.common.height > 0
+                        && height
+                            + i64::from(table.cell_spacing)
+                                * i64::from(table.row_count.saturating_sub(1))
+                            > i64::from(table.common.height)
+                });
+            let stored_plain_reset_boundary_keep = st.profile.hwp5_stored_pagination_layout()
+                && !st.profile.session_edited()
+                && !self.render_normalization.table_text_reflowed(table)
+                && stored_row_boxes_exceed_object_frame
+                && mt.allows_row_break_split()
+                && res.consumed_height > 0.5
+                && layout_engine.row_cut_ends_at_plain_text_saved_reset(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    styles,
+                );
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
             // reset, 그리고 선언 높이보다 큰 1×1 child가 실제 multi-unit으로 검증된
@@ -800,6 +971,7 @@ impl TypesetEngine {
                 }
                 && row_total <= (st.layout.body_area.height - header_overhead).max(0.0)
                 && !cellbreak_complete_unit_keep
+                && !stored_plain_reset_boundary_keep
                 && !landscape_boundary_band_keep
                 && !stored_zero_origin_rewind_keep
                 && !stored_terminal_zero_origin_keep
@@ -809,6 +981,7 @@ impl TypesetEngine {
             if r > cursor_row
                 && (defer_single_unit_row_start
                     || (!cellbreak_complete_unit_keep
+                        && !stored_plain_reset_boundary_keep
                         && !landscape_boundary_band_keep
                         && !stored_zero_origin_rewind_keep
                         && !stored_terminal_zero_origin_keep
@@ -1048,6 +1221,15 @@ impl TypesetEngine {
             }
             false
         })();
+        if start_row_height_override.is_some()
+            && split_end_limit > 0.0
+            && end_row == cursor_row + 1
+            && layout_engine.row_uses_reflow_physical_frame(table, cursor_row)
+        {
+            // The carried minimum belongs to the entire remainder. A new content
+            // cut owns only the accepted footprint, shared by reservation and paint.
+            end_row_height_override = Some(consumed);
+        }
         let scan = BlockTableRowScan {
             consumed,
             end_row,
@@ -1065,4 +1247,75 @@ impl TypesetEngine {
             keep_scanning,
         }
     }
+}
+
+/// [#5585] 일반 행 밴드 컷(내용과 안 여백은 남은 쪽에 다 들어가지만 선언 행 높이가 넘치는
+/// 행을 쪽 경계에서 자름)을 받을 수 있는 행의 형상. rowspan 이 걸친 행은 `#2236` 밴드 컷이
+/// 따로 맡고, 쪽의 첫 행은 이미 강제 배치된다(호출부 조건).
+///
+/// 칸 내용이 글줄 유닛만으로 이뤄진 행만 자른다. 칸 안의 그림·도형·표·수식·각주 등
+/// 개체는 내용 컷(`end_cut`)에 높이가 잡히지 않아, 글줄이 다 들어가도 개체가 선언 높이를
+/// 채우고 있을 수 있다 — 한글도 그런 행은 통째로 넘긴다(1220000-202100003 23쪽 13×7 표
+/// 행 3: 글앞으로 그림 세 장이 선언 247.6px 를 채우고 글줄은 29.3px, 한글 41쪽 유지).
+///
+/// 빈 밴드는 선언 행 높이가 내용보다 클 때만 생긴다 — 측정 행 높이가 칸의 선언 높이를
+/// 넘으면 그 높이는 내용이 만든 것이고 내용 컷이 그 내용을 다 담지 못한 것이므로 기존
+/// 행내 분할 경로에 맡긴다.
+fn ordinary_band_row_shape(
+    table: &crate::model::table::Table,
+    row: usize,
+    row_total: f64,
+    dpi: f64,
+) -> bool {
+    row_content_is_line_units_only(table, row)
+        && row_total <= declared_row_height_px(table, row, dpi) + 0.5
+}
+
+/// [#5585] 일반 행 밴드 컷의 내용이 남은 쪽(`rest`)에 들어가는가. 25px 고아 기준은 다른
+/// 행내 분할과 같다.
+///
+/// 들어가는지는 그려지는 내용의 끝(`aligned_content_bottom`)으로 판정한다. 가운데·아래 정렬
+/// 칸은 내용의 자리가 쪽 경계 너머의 선언 높이로 정해지므로, 내용 높이가 남은 쪽에
+/// 들어가도 그린 내용은 경계를 넘을 수 있다 — 한글도 그런 행은 통째로 넘긴다
+/// (1480000-201900042 표시기준 54→55쪽 `유럽` 행: 가운데 정렬, 내용+여백 56.7px,
+/// 선언 69.2px → 내용 끝 62.95px > 남은 쪽 59.0px).
+fn ordinary_band_content_fits(
+    end_cut: &[usize],
+    content_height: f64,
+    aligned_content_bottom: f64,
+    rest: f64,
+) -> bool {
+    !end_cut.is_empty() && content_height >= MIN_TOP_KEEP_PX && aligned_content_bottom <= rest + 0.5
+}
+/// 행의 선언 높이 — 이 행에서 시작해 이 행에서 끝나는 칸의 저장 높이 중 최댓값(px).
+fn declared_row_height_px(table: &crate::model::table::Table, row: usize, dpi: f64) -> f64 {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span <= 1)
+        .map(|cell| crate::renderer::hwpunit_to_px(cell.height as i32, dpi))
+        .fold(0.0f64, f64::max)
+}
+
+/// 행의 칸들이 글줄 유닛 밖의 개체(표·도형·그림·수식·양식·각주/미주)를 품지 않는가.
+fn row_content_is_line_units_only(table: &crate::model::table::Table, row: usize) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .flat_map(|cell| cell.paragraphs.iter())
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .all(|control| {
+            !matches!(
+                control,
+                Control::Table(_)
+                    | Control::Shape(_)
+                    | Control::Picture(_)
+                    | Control::Equation(_)
+                    | Control::Form(_)
+                    | Control::Footnote(_)
+                    | Control::Endnote(_)
+                    | Control::Unknown(_)
+            )
+        })
 }

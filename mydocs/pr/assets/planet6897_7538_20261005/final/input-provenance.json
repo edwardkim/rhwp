@@ -1,0 +1,114 @@
+[
+  {
+    "path": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+    "git_blob": "1b3b6dbf10a526f0b6974994cc83936db98a7796",
+    "sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+    "bytes": 3819664,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/2912695_civil_petition_form-2020.pdf",
+    "git_blob": "623fecdc7737a261654e2082100e8e46467d5cc7",
+    "sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+    "bytes": 47955,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/float-stack-defer-hwp-2020.pdf",
+    "git_blob": "f9413698ce422f5f7345bb03e221f231058a70ca",
+    "sha256": "42f43f590ba60c30328d797d6154b50acb91acc47ec32dbe991be7b676336268",
+    "bytes": 83769,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/hwpspec-2024.pdf",
+    "git_blob": "af96381eaae76e019f4617d9b37a9f616313b876",
+    "sha256": "9c8110347efd719c75098b97509bd4ddf4c5eb6c838d4a6d78982da5f610512b",
+    "bytes": 1750513,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/pic-in-table-with-toggle-2020.pdf",
+    "git_blob": "379fcff7d8a39129a83d35a6262f75d147228077",
+    "sha256": "ee92c9183ad5afa9f16fe92d3a2a9f1c420493310d19245e29e5196d295f8c1b",
+    "bytes": 76543,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+    "git_blob": "494afce96fa18d679a1ba85f62c4059c45e4a877",
+    "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+    "bytes": 1056768,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/tac_object_host_line_height-2020.pdf",
+    "git_blob": "53e6b0cab816272c380fe82ab7206cf0f5cde06a",
+    "sha256": "f90ea6915a842ac2266f4dd737b2829bbb3b72b927b1658577f6ca8c8b9b6051",
+    "bytes": 719340,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+    "git_blob": "6689b2a131b9b2ae136cf3cc6f0333b4a9e8cd40",
+    "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+    "bytes": 3863918,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/float-stack-defer.hwp",
+    "git_blob": "7804285219af2b4647cd3dd0bd41a00141ad1bc4",
+    "sha256": "e3e721923f2f29ebdc72c031d9ad8dcb9f494b885848db0d2d853117e1d82d9f",
+    "bytes": 32768,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/hwpspec.hwp",
+    "git_blob": "e5911e44427d6c012298ba322ca55431b10833c6",
+    "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+    "bytes": 2752512,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/issue6032/2912695_civil_petition_form.hwp",
+    "git_blob": "6caef5f582d83d9d1e36a78a022bb5ae82b1dc1a",
+    "sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+    "bytes": 14848,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "git_blob": "ad992b6d9cd596c3c68d3d5c19e67e3acd0bdf00",
+    "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+    "bytes": 12851712,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/issue7062/tac_object_host_line_height.hwp",
+    "git_blob": "594a2e67cf6fa08a3e265b3ba5e502875256d77f",
+    "sha256": "2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb",
+    "bytes": 286720,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/pic-in-table-with-toggle.hwp",
+    "git_blob": "46253f79e0f872b406cd8219d7e9cdd8347a97fd",
+    "sha256": "e69b29f30d683d206f100fc36f6cc69a284dbf62aa18e05896684b6c585e2df1",
+    "bytes": 1020416,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/rowbreak-problem-pages.hwp",
+    "git_blob": "635ef71d5031c9eac1666fa93edf81d3f5317db2",
+    "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "bytes": 553984,
+    "tracked_and_matches_validation_head": true
+  },
+  {
+    "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "git_blob": "abd59c88aad15c284aec97328ff5722113dbbb06",
+    "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+    "bytes": 7149056,
+    "tracked_and_matches_validation_head": true
+  }
+]

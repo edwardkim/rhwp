@@ -1,0 +1,131 @@
+{
+  "source": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+  "source_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+  "pdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+  "previous_pdf_sha256": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65",
+  "pdf_sha256": "4d5abf857476fca43befe528d10221b668a85bb2d7497a2165da34e46c11b002",
+  "job_id": "d07de95a-db36-4a63-9c8e-3c5f574e5265",
+  "conversion": {
+    "job_id": "d07de95a-db36-4a63-9c8e-3c5f574e5265",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwp",
+    "format": "pdf",
+    "bytes": 533249,
+    "pdf_page_count": 11,
+    "logical_page_count": null,
+    "elapsed_ms": 22842,
+    "worker_elapsed_ms": 21638,
+    "worker_bits": 32,
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "previous_image_entries": 1,
+  "refreshed_image_entries": 18,
+  "pages": 11,
+  "native_raster_reused_from": "output/pr-review/planet6897-green-20261002/blocker6797-current-native/blocker6797-current-native",
+  "native_binary_sha256": "05d011bef4ce9d4bdddf67845096883495605d95ed520904b0a669c0c9909f5e",
+  "comparison": "scripts/visual_sweep.py --silhouette-only --png-pair; dpi96",
+  "comparison_exit_code": 1,
+  "below90_pages": [
+    1,
+    7
+  ],
+  "rows": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "86.12764",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "86.12764",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "97.35597",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.35597",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "99.41428",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.41428",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "97.66701",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "97.66701",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "95.80181",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "95.79908",
+      "silhouette_boundary_reconciled_pixels": "5"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "98.98843",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.16652",
+      "silhouette_boundary_reconciled_pixels": "1196"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "62.56997",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "62.56580",
+      "silhouette_boundary_reconciled_pixels": "7"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "99.17818",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "98.60138",
+      "silhouette_boundary_reconciled_pixels": "452"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "99.60954",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.60954",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "99.96675",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.96675",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "11",
+      "tolerant_content_match_percent": "99.41939",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.41939",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "wasm_revalidated": false,
+  "code_or_regression_changed": false,
+  "decision": "새 PDF에 사진·그래프가 포함됐음을 5·7쪽 review로 확인했습니다. 1·7쪽 실제 배치 차이는 현재 브랜치에서 보정하며 전체 준비 완료가 아닙니다."
+}

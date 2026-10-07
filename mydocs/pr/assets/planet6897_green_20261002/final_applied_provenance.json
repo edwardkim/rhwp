@@ -1,0 +1,443 @@
+[
+  {
+    "pr": 7385,
+    "source": "8523553bf464611ba271c5d8ba2951259f09348e",
+    "historical_applied": "4fb2e9a75",
+    "current_applied": "29f3460c96dc4038a54592c6b7b6eda7c690c986",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7385,
+    "source": "1118c7a1d914b511f53a272d668e7e800a3fe215",
+    "historical_applied": "651ba8e7989c8a321cf2bc4d5bab5c992cea240d",
+    "current_applied": "9e1dc03fe93ea7e1beb8da0c018023507dbfb0b6",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7404,
+    "source": "c952ef71e8da558ba70244363f9161a0f56ee543",
+    "historical_applied": "2b14bb64de45370a06345cdac5d863e7dc49aa99",
+    "current_applied": "53eefbdefbe397fadcc3835c892ef2d1550afb1d",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7404,
+    "source": "4d80267e7ded2cd5408bcf3a61c4a3a3b56cfcf7",
+    "historical_applied": "e3331cb8d1c1d08070669a93f68e0f04cb1311be",
+    "current_applied": "92e531b2669f15557fe8c76b607d3b1afb38ae6e",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7410,
+    "source": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f",
+    "historical_applied": "b38371ea71d857c983201ca9d87a48280b1b6403",
+    "current_applied": "c431dd7409910ab304a1afca37417e5bb3492775",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7411,
+    "source": "74b6e664e9ff26b7fd4f94bc4ad2c41a32463003",
+    "historical_applied": "413b4dc28551c68431ae22d425af8d585253cec9",
+    "current_applied": "32ded632216f883f6c7ae04a383fcbbda1619052",
+    "maintainer_correction": "Keep KoPub and origin authority fields together; preserve current base baselines and excluded inputs; translate added comments."
+  },
+  {
+    "pr": 7414,
+    "source": "3d18a31ec5000d2d38cc596031e10849d65e74b5",
+    "historical_applied": "b118a3fd9f2c9020b9747ccb7cddca27307fe0a3",
+    "current_applied": "78844b163f2fe5e17f33d6375822b29ae20a8524",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7414,
+    "source": "235aaa6b092f251267ab993cdbc6dc9c15930d50",
+    "historical_applied": "afdc28d4815b18f3849a22051fb567a375463edf",
+    "current_applied": "38288e7ac2c0702f87f9ab2d2608e6c9d252cef6",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7423,
+    "source": "3cb7daba69fc734879e672434f1547c4a7d24100",
+    "historical_applied": "342549b066088c620d0fd0b7957a1aafec962a29",
+    "current_applied": "8cb2ddf00292808ac8ed3c30dcac0c666683a6de",
+    "maintainer_correction": "Preserve semantic issue4771 regression and current baseline instead of obsolete coordinate shifts or excluded row resurrection."
+  },
+  {
+    "pr": 7423,
+    "source": "040fa9b2bf9a343c6117a670235be1f518e06963",
+    "historical_applied": "499ab24e1f704456f46c0e80b9e1fdeb192a5242",
+    "current_applied": "a3af75f3aa26ac0bdc719a9359109274e2fcacd9",
+    "maintainer_correction": "Keep prior held issue6923 absolute-coordinate function omitted and off_canvas baseline unchanged; record d7063_pin constant for review."
+  },
+  {
+    "pr": 7423,
+    "source": "e3a4456bd263884d73fe59f759421b1ce222baf6",
+    "historical_applied": "fa962342645382757d7fec69e50aaf29033f49de",
+    "current_applied": "9c4bef348b2b179f77976bca6d2b833adac0c6db",
+    "maintainer_correction": "Pass both saved-opening alignment and fold state; retain fold postprocessing and open continuation border handling."
+  },
+  {
+    "pr": 7424,
+    "source": "bd0660d312b4247c28f4da7194965c327112009d",
+    "historical_applied": "857e1dd4d023ab5a7c262d42c7f20fa0c10d9165",
+    "current_applied": "fa991c8312a5776308d7463e715431049a0e72ec",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7424,
+    "source": "a8388028a260c5d99e0107f30ba3a8ab2beb3801",
+    "historical_applied": "c3b56215b5f426ec5d0c934547d97a0ca269e334",
+    "current_applied": "68993325e4fb1b46aa5eb597513c213b91966858",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7434,
+    "source": "55a6e010d049af03cc7d8c6e43e32ae21bb1c126",
+    "historical_applied": "81177efeeeccb73d318a45777ce08d7f4f31d781",
+    "current_applied": "b4407401ccc9a120371cf4d6aaf05dca5548621d",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7471,
+    "source": "d481852b4968fdc2f1eee9dd0e6f2d05784c9e74",
+    "historical_applied": "054920bf9206ed4c6d56f237e126eae79ca2b7ab",
+    "current_applied": "dea4855207b403c295e24aa90e2ee0d2334ba943",
+    "maintainer_correction": "Merge shared placement and numbered composition, preserve original autoNum forms and multiple-slot fallback; keep current healthy/held tests and baseline constraints."
+  },
+  {
+    "pr": 7471,
+    "source": "492aef1eefd06240a6a49d52f6b10c4a15acc657",
+    "historical_applied": "d0093e6a725539efbb0370d2f8cca6c0e654a53e",
+    "current_applied": "135c068bda04ad2025709a652bb26f0c98e51879",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "93c73a032efd9c8d72405622cd3d24553bc93f1b",
+    "historical_applied": "09dbb93a0790b726522cc09f9c902e3b0ec6eedd",
+    "current_applied": "1ed6b097139b8643cb7987f6be61a7d21b6cf1dc",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "1752f6fc69bee0dc3d003b202aa84bc3d73ec6e5",
+    "historical_applied": "bb36d3d04c45a4162c97ab02197cc13baafb4ad9",
+    "current_applied": "92fced5656124b37e0923c5c1a0cd177a01b9930",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "c96cc071e93a28fba67daffcc0c786966df0db5b",
+    "historical_applied": "fab532726b47c5239c35ee6c47f3497d4d16bd22",
+    "current_applied": "e5fc57cabd68ebeff5487f27d14b7eab08b06434",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "0928fba0918818bdb0d7a7e7668bac3b093929e2",
+    "historical_applied": "bd7100c11686e0269a9dcb2f2407b6c0fe07f9c2",
+    "current_applied": "e38cdc433947b593cf772936f605456149acc1b8",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "37d2e41891b27559f8b99b03cbbbc1a3a8342400",
+    "historical_applied": "99766a67a851773df29bc18b74d7bef4dee68289",
+    "current_applied": "1bb7afd53fe953813c5bf738d59dab2fb4477104",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "178b658b5e724de7a0ca3631217fac76eaa9986e",
+    "historical_applied": "20c8a294dd63276220011124d0e2fdca9cc1b5e7",
+    "current_applied": "80d9737fcd4d899a2cfa8e8a62f37d54bd714e30",
+    "maintainer_correction": "첫 구간 폭 예약과 이어지는 문단 내어쓰기 공통 폭 보존"
+  },
+  {
+    "pr": 7476,
+    "source": "fc34d8c73d019901854cbb5c8c655635ae000385",
+    "historical_applied": "869b4f0b965543e0432cad8dae496168c48f4428",
+    "current_applied": "ca3fc9131bcb932fde6bfa61014a4f6ace16ff6c",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "055a054ea081b4f6474d64803a8cc49dd35fee13",
+    "historical_applied": "85e7dcf57d908a21b4a92c7ce38c5bab0982eec8",
+    "current_applied": "9eb6321d6a78262618ca7e5a02e9eb262256a096",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "c6dd5efcc22c92affd2a88ce2e9b760026f65b87",
+    "historical_applied": "68496854679e920655074f5e2ba00ac77fa6027c",
+    "current_applied": "20b05dfcf2f0b17fb3ebaf9e081f4177569e4070",
+    "maintainer_correction": "번호·개요 선계산 폭과 이어지는 문단 내어쓰기 유지"
+  },
+  {
+    "pr": 7476,
+    "source": "8d7f57abcce796660614f2ee3602491ba54e69cc",
+    "historical_applied": "c3f338c90824d7164cef83af592dccd446faa744",
+    "current_applied": "a891400fd990713735c3712332176811ed0e3668",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "bd8596aacc562fe98e6199a38d241c1b287f771d",
+    "historical_applied": "ead69683033a97777375da293d258b29f8f60f19",
+    "current_applied": "aca8f3d69239a8eede0ac5deb01b1d1889476d8c",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "66b058c5f4dffa470d5d78b1c70f99ce726b2957",
+    "historical_applied": "31c16161920db0bd4154b7d59fe5ad75c1bfa3be",
+    "current_applied": "57aff66417329997fbaafa53a719ee2e3ce3ff97",
+    "maintainer_correction": "머리 모양 공통 기하 경로로 합침, 이어지는 내어쓰기 유지"
+  },
+  {
+    "pr": 7476,
+    "source": "f18e4e42458296db504043fb8c9802ebf5ee8512",
+    "historical_applied": "c6e77f64c980def744d9758999d2373bb5946cc3",
+    "current_applied": "faf5e5b6bbd35b427cb87da9fb527ddaf71b6691",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "47ccfb7375a479f5461259386d1eca6de3009d09",
+    "historical_applied": "3dc3e9bfa71a968566333f36d0c45b0ea97d9ad9",
+    "current_applied": "43ea689c513326fa8b083516687f72dc857d72fc",
+    "maintainer_correction": "#4961 보류 렌더 핀 복구 방지; 합성 겹침 독립 검증 대기"
+  },
+  {
+    "pr": 7476,
+    "source": "8d98868683ddf7cfaf0d0a999636fa34ac2f8a34",
+    "historical_applied": "272789b19f2274b7f0483d6d9fb5702fd510b4ea",
+    "current_applied": "8c10a12c7bd70bb8110ccde44e9b9f8be1bddbb4",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "5472db690924061b5f75fa4afc731967287b1164",
+    "historical_applied": "ff2c24b1093e22e18752d07a10d77c21e4964b14",
+    "current_applied": "bd235da6b0bae0b69df1109182cd26199325141c",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "5c262e4aca18959268536eb4dab8ce374c4041f6",
+    "historical_applied": "30181a203e396cfa6cfabac6a0812721855841fc",
+    "current_applied": "c01959d59d6184dd50610de45cd3e3f181c7966f",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "38dafafd4af7c9f3e605a94fb58ea6f463720e53",
+    "historical_applied": "8be126095b1d041c58f0dfb684b03bd1e2de2f4e",
+    "current_applied": "cdd288eabd324974eb8653ecb28b046d2e77178c",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "719339ab2db1824eb3c759d9cf5a561577fbedff",
+    "historical_applied": "c6bf6e54cff2684f082a6022f648a6996fdf67f1",
+    "current_applied": "60ff558a89387ddeaf823ee9109bb2023f87eb49",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "7baef3c9dc5ed7696170f2f6ed47354aba8d5f93",
+    "historical_applied": "9b4c4d125f7422e0751c71d6eb2c89d9184da139",
+    "current_applied": "e8978db55f048ae3bb59d0d9ef5768f5d170834b",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "22378bb40280ad325e3502b9d8d6eda557fdc201",
+    "historical_applied": "f8090bd6828a75a0e72bb7286c988932b8b95e76",
+    "current_applied": "b9efba9a2da55c832b0e27bb526a5a35c6b78bf4",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "4bf04154e52f53c10664f76ea9ffd93113118d6e",
+    "historical_applied": "a949751a9f7eb9e8b2ee1d4c5cb05255b54e9db4",
+    "current_applied": "0d7490aabcf8fe8aaa8acd18845654b26be78b84",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "74205c26fb751800a0672c6649fc7eaaa24b8a26",
+    "historical_applied": "2475779df3d997ebc76078dc92ba0f646071108b",
+    "current_applied": "572498877cb06970af8a45f495e9e686bfdea1a1",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "af3a05b926a3ed3bd349f6cd8fdd7a0b24a8ce83",
+    "historical_applied": "4f4c5db7582ff872ba29c0fc64cd978994d38976",
+    "current_applied": "cb3c7c50672b9858a18bf946a8d9bb7556ad630f",
+    "maintainer_correction": "hy_ladder3 7→11 수용 보류, 독립 저장 줄 검증 필요"
+  },
+  {
+    "pr": 7476,
+    "source": "c75bbee725d44e22ef6593c18dcf57e2569cfee8",
+    "historical_applied": "95ebf72ac64a1d290b2e5002055fefb1aa0752f4",
+    "current_applied": "1934908062976600c30f10cdf812e9e8ba438f1d",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "8041f80f113aec2a2717fd75ffc774315c24b11a",
+    "historical_applied": "b09de1c402c368221b73320fa91687629f3ab5eb",
+    "current_applied": "7d7b03c26e7479aa770f7255869f869d68515002",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "ea41e252b047547407908594236cb33b004b32f0",
+    "historical_applied": "8dc7327004a27541c6ccf1cee08f4bbba4b8bf63",
+    "current_applied": "7e7759aaa70941be1988817f8d85973812a5bf04",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "2f0f6ca3c0a23f54392190815bafad7a9ecb5013",
+    "historical_applied": "2bc63758146dff5753fd5db564e66c10a0bcc044",
+    "current_applied": "adf2e58c43d3b964f1173a3319e8b3d4f4023ed0",
+    "maintainer_correction": "언어별 글꼴 크기와 옛 영문 슬롯 판정 모두 유지"
+  },
+  {
+    "pr": 7476,
+    "source": "2d213d5d3e68035f6ce052ebc6328a738d0261d1",
+    "historical_applied": "052afecbce1f551bd31725b9b45427d1c35fa077",
+    "current_applied": "d5b24c0f21745e458cee0c5f112df74d5391705c",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "397a5357c51a5ef40a77834061e81674ca25664c",
+    "historical_applied": "860e6859c7ab609987ea1c6664c4a569dacffb40",
+    "current_applied": "fa74bbb5330b7a590eaca988a94c22c475749274",
+    "maintainer_correction": "구두점 run 보존, 기존 missing-face 렌더 해시 보류 유지"
+  },
+  {
+    "pr": 7476,
+    "source": "6d72723b601ed5a8ef0143be4951a3677bab18e2",
+    "historical_applied": "9e1abeb5dd8d1700c1df3824c28bb64ceb150f00",
+    "current_applied": "35c8c161b116c5f7412f8e837e56d7c45c114ab0",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "853cd9c497fd19274395d6c6d38a2ff2196d0d1e",
+    "historical_applied": "602f5ca71f03ce9aa906e321a6eb0948eaf5f6b0",
+    "current_applied": "21e072f4177c98a22e7dd7d64ab234c58c85d516",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "de25d9512557586d5ac51b8cbd1c9fc202b2ce16",
+    "historical_applied": "1b93243f435c9391900452f29a7a5dbd48d63b5f",
+    "current_applied": "232c6f482f517a9d88d2c54833a126170f2e3970",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "7065555f66ccf0a7a0616cab3ab38c2c9780bf74",
+    "historical_applied": "648fe0c7cea9c2ab41c6d6e76b43a6946b4198ec",
+    "current_applied": "12f3bcafa680bb458c8e0e9634cc3d69f3cf54ad",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "6a9ca07c848abc8aa3203131364e275cb55fc623",
+    "historical_applied": "0de66ae97f6a15fb600e227e2a4e5293a26b288b",
+    "current_applied": "0513cd274d700db74d4a77a97736337c2831c915",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "219687eec48ee77ae6fa41404f6fa8d433cb5c3d",
+    "historical_applied": "3dc241f68fd9d97106518d3a23f2fe4051b03366",
+    "current_applied": "bd2736b6712d45babd2782dae456df972a5415f5",
+    "maintainer_correction": "호스트 내용 끝 공통 적용, 저장 프레임·바깥 여백·캡션 줄간격 계약 유지"
+  },
+  {
+    "pr": 7476,
+    "source": "fe76d00f2682d6e59b5fa4a934aac65913e19664",
+    "historical_applied": "5bd76d8685a712109770c003cebdfc178065ed60",
+    "current_applied": "cc039e6d09723e291754eac1ecd95da9857a7bdc",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "2576efc2d1372889378d36da56fb397bddcd0b80",
+    "historical_applied": "0f24ef0f747ea18db7b2130c315c76c1710884b3",
+    "current_applied": "65b2c3bdc3018bb65966560a4e2f9ff4784bbc46",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "16a78a62f65009a884d46d5422e03b8fcca918c2",
+    "historical_applied": "3654c08f6d360de85edfc50c05f9408de623f9c0",
+    "current_applied": "3e16e325bccd1650fe1a67cebc28f661114f35a9",
+    "maintainer_correction": "임시 분기 제거와 현재 저장 프레임·여백 계약 병합"
+  },
+  {
+    "pr": 7476,
+    "source": "ef1921b2700ac602bba98e81726bd4d123457bee",
+    "historical_applied": "e1db57da1df2d6b5a639461cc6a8889f49926dd8",
+    "current_applied": "ac2a78e4b06514d2dea80ab167ea0ae1116dda2f",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "d18b1c1e84881023edc85edb70484cb5396d0093",
+    "historical_applied": "0f6240ab063e096a0d8682c9eb3aa3424ab849e5",
+    "current_applied": "1085a0bab13d0dd5b21adcf9ae2da3a966e715fe",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "375d701b32fd69fa24c6749e6e9450834649e9ff",
+    "historical_applied": "8bd41a946569a8a902dfab230f266a80ff6ea156",
+    "current_applied": "51ec003d7e90a069c1cd3b69a1d28084ad1ae668",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "e5637516ac3bc42888ec505f87ca139751c656e5",
+    "historical_applied": "30802ad2520c0eba425bc063d1e42f632689267e",
+    "current_applied": "bf5de38647521de72092bf0ace5c834f969d8499",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "d3d829abc86350e1862f8c6a805793366817dbd4",
+    "historical_applied": "9beb865ce4e259cc6d9471f6c8fa75f4605735ce",
+    "current_applied": "c44fb32cbe6b65bb61e9b6355d4497ae6506acd5",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7476,
+    "source": "d0c18feef2e9a13403482d7b8663a66a422bfaa4",
+    "historical_applied": "e20acbe483560323bee2934f31707dd3135636dd",
+    "current_applied": "927c840d7d69446ce1246a585d1ccf9157b5f821",
+    "maintainer_correction": null
+  },
+  {
+    "pr": 7479,
+    "source": "61dac2e5f14c206bc3eb293a67879051476c7004",
+    "historical_applied": "da1b1de03a08f6c449da8a83d9dac607a5c0f7b6",
+    "current_applied": "7984dfcef8af3f8cb6311aa2823c1cd418df186a",
+    "maintainer_correction": "#7445 로드맵 전용 잠정 쪽수 검사 복구 방지"
+  },
+  {
+    "pr": 7479,
+    "source": "1d894b4a05c4e5cf82b428e71ef0ab22de59c1ae",
+    "historical_applied": "9f4fcd3c38e2c97792f7d71c8aaf154b594e87eb",
+    "current_applied": "e29d8a9d38ed59dff5fffa71f9a24d8753435843",
+    "maintainer_correction": null
+  }
+]

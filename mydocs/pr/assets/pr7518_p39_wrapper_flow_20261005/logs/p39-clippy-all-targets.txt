@@ -1,0 +1,2 @@
+    Checking rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.08s

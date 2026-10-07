@@ -1,0 +1,15 @@
+{
+  "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+  "pages": [
+    {
+      "svg": "float-stack-defer_001.svg",
+      "identical": true,
+      "sha256": "d4636b929a4829d2ab9fe09182cc46d6009df6705f5e036a4f74a4b1861545fa"
+    },
+    {
+      "svg": "float-stack-defer_002.svg",
+      "identical": true,
+      "sha256": "3d8f7c13211a41ea542b4f7b64919607a5998aee5f5d6849acbbfba1b5cd3fce"
+    }
+  ]
+}

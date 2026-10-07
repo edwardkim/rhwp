@@ -1,0 +1,30 @@
+{
+  "svg_sha256": "0d90a53e4aef5f5dd3a448f2e677084af853f389fa51b247df9875b07c6f4dcb",
+  "fonts": [
+    {
+      "requested_family": "HCR Dotum",
+      "weight": "default",
+      "actual_family": "HCR Dotum"
+    },
+    {
+      "requested_family": "맑은 고딕",
+      "weight": "default",
+      "actual_family": "Malgun Gothic"
+    },
+    {
+      "requested_family": "한양신명조",
+      "weight": "default",
+      "actual_family": "HYSinMyeongJo-Medium"
+    },
+    {
+      "requested_family": "휴먼명조",
+      "weight": "default",
+      "actual_family": "휴먼명조"
+    },
+    {
+      "requested_family": "휴먼명조",
+      "weight": "bold",
+      "actual_family": "HCR Batang"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "pdf": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+    "sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982",
+    "page": 121,
+    "resource": "T6",
+    "subtype": "Type3",
+    "font_matrix": ".001 0 0 .001 0 0",
+    "glyphs": {
+      "0": {
+        "source_code": 24,
+        "advance_units": 500.0
+      },
+      "4": {
+        "source_code": 25,
+        "advance_units": 500.0
+      },
+      "2": {
+        "source_code": 27,
+        "advance_units": 500.0
+      },
+      "1": {
+        "source_code": 28,
+        "advance_units": 500.0
+      },
+      "3": {
+        "source_code": 29,
+        "advance_units": 500.0
+      },
+      "8": {
+        "source_code": 30,
+        "advance_units": 500.0
+      },
+      "6": {
+        "source_code": 31,
+        "advance_units": 500.0
+      },
+      "9": {
+        "source_code": 37,
+        "advance_units": 500.0
+      },
+      "5": {
+        "source_code": 187,
+        "advance_units": 500.0
+      },
+      "7": {
+        "source_code": 195,
+        "advance_units": 500.0
+      }
+    },
+    "nominal_space_glyph_advance_units": 1000.0,
+    "space_layout_note": "빈 공백 글리프의 /Widths는 실제 줄의 공백 이동량이 아니다. 실제 말미 줄의 위치 간격은 pdf-natural-space-evidence.json으로 별도 검증했다."
+  },
+  {
+    "pdf": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+    "sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744",
+    "page": 121,
+    "resource": "T6",
+    "subtype": "Type3",
+    "font_matrix": ".001 0 0 .001 0 0",
+    "glyphs": {
+      "0": {
+        "source_code": 24,
+        "advance_units": 500.0
+      },
+      "4": {
+        "source_code": 25,
+        "advance_units": 500.0
+      },
+      "2": {
+        "source_code": 27,
+        "advance_units": 500.0
+      },
+      "1": {
+        "source_code": 28,
+        "advance_units": 500.0
+      },
+      "3": {
+        "source_code": 29,
+        "advance_units": 500.0
+      },
+      "8": {
+        "source_code": 30,
+        "advance_units": 500.0
+      },
+      "6": {
+        "source_code": 31,
+        "advance_units": 500.0
+      },
+      "9": {
+        "source_code": 37,
+        "advance_units": 500.0
+      },
+      "5": {
+        "source_code": 186,
+        "advance_units": 500.0
+      },
+      "7": {
+        "source_code": 194,
+        "advance_units": 500.0
+      }
+    },
+    "nominal_space_glyph_advance_units": 1000.0,
+    "space_layout_note": "빈 공백 글리프의 /Widths는 실제 줄의 공백 이동량이 아니다. 실제 말미 줄의 위치 간격은 pdf-natural-space-evidence.json으로 별도 검증했다."
+  }
+]

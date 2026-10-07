@@ -4,6 +4,7 @@ use crate::document_core::helpers::find_control_text_positions;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::{Bookmark, Control};
+use crate::model::paragraph::Paragraph;
 
 /// 책갈피 정보
 #[derive(Debug, Clone)]
@@ -88,10 +89,19 @@ impl DocumentCore {
                 .insert(insert_idx, Some(ctrl_data));
         }
 
-        // char_offsets에 컨트롤 위치 정보 추가
-        if !paragraph.char_offsets.is_empty() {
-            let raw_offset = char_offset_to_raw(paragraph, char_offset, insert_idx);
-            paragraph.char_offsets.insert(insert_idx, raw_offset);
+        // 책갈피도 스트림에서 8유닛을 차지한다. 글자별 배열에 항목을 끼우지 않고 뒤 글자와
+        // 같은 축의 참조를 함께 민다. 삭제와 같은 이유로 저장 줄 경계는 새 조판 결과를 쓴다.
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
+        paragraph.char_count += 8;
+        paragraph.stored_text_partition_dirty = true;
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == sec
+                && active.para_idx == para
+                && active.cell_path.is_none()
+                && active.control_idx >= insert_idx
+            {
+                active.control_idx += 1;
+            }
         }
 
         // 원본 스트림 무효화 — serialize_section 은 raw_stream 이 있으면 IR 을 무시하고
@@ -132,12 +142,61 @@ impl DocumentCore {
             return Ok(r#"{"ok":false,"error":"해당 컨트롤이 책갈피가 아닙니다."}"#.to_string());
         }
 
+        // 글자별 배열에서 컨트롤 번호의 항목을 빼면 글자 하나의 원시 좌표가 사라진다.
+        // 변경 전에 8유닛 슬롯 위치를 확인하고 같은 축의 참조를 함께 당긴다.
+        let start = bookmark_raw_start(paragraph, ctrl_idx)?;
+        if self.active_field.as_ref().is_some_and(|active| {
+            active.section_idx == sec
+                && active
+                    .cell_path
+                    .as_ref()
+                    .is_some_and(|path| path.first().is_some_and(|&(table, _, _)| table > ctrl_idx))
+        }) {
+            // 현재 셀 활성 주소에는 본문 부모 문단 번호가 없어 호스트를 판별할 수 없다.
+            return Err(HwpError::InvalidField(
+                "셀 누름틀 편집을 끝낸 뒤 책갈피를 삭제하세요.".into(),
+            ));
+        }
+        let shift = |position: &mut u32| {
+            if *position > start {
+                *position = position.saturating_sub(8).max(start);
+            }
+        };
+        for position in &mut paragraph.char_offsets {
+            shift(position);
+        }
+        for shape in &mut paragraph.char_shapes {
+            shift(&mut shape.start_pos);
+        }
+        for range in &mut paragraph.range_tags {
+            shift(&mut range.start);
+            shift(&mut range.end);
+        }
+        for mark in &mut paragraph.markpen_marks {
+            if let Some(position) = &mut mark.utf16_pos {
+                shift(position);
+            }
+        }
+        paragraph.char_count -= 8;
+        // 저장 줄 경계는 HWPX 별도 축일 수 있으므로 새 조판 결과를 사용한다.
+        paragraph.stored_text_partition_dirty = true;
         paragraph.controls.remove(ctrl_idx);
         if ctrl_idx < paragraph.ctrl_data_records.len() {
             paragraph.ctrl_data_records.remove(ctrl_idx);
         }
-        if ctrl_idx < paragraph.char_offsets.len() {
-            paragraph.char_offsets.remove(ctrl_idx);
+        for range in &mut paragraph.field_ranges {
+            if range.control_idx > ctrl_idx {
+                range.control_idx -= 1;
+            }
+        }
+        if let Some(active) = self.active_field.as_mut() {
+            if active.section_idx == sec
+                && active.para_idx == para
+                && active.cell_path.is_none()
+                && active.control_idx > ctrl_idx
+            {
+                active.control_idx -= 1;
+            }
         }
 
         // 원본 스트림 무효화 — 비우지 않으면 삭제한 책갈피가 저장 시 원본 바이트로 되살아난다.
@@ -213,6 +272,57 @@ impl DocumentCore {
         }
         result
     }
+}
+
+/// 컨트롤 밖의 숨은 슬롯이 없는 구간에서만 책갈피 원시 위치를 확정한다.
+fn bookmark_raw_start(paragraph: &Paragraph, control_idx: usize) -> Result<u32, HwpError> {
+    let invalid = || HwpError::InvalidField("책갈피의 원시 슬롯 위치를 확인할 수 없습니다.".into());
+    if !paragraph.title_marks.is_empty()
+        || !paragraph.orphan_field_ends.is_empty()
+        || paragraph.text.contains('\u{fffc}')
+        || paragraph.controls[..control_idx].iter().any(|control| {
+            matches!(
+                control,
+                Control::Field(_)
+                    | Control::Hyperlink(_)
+                    | Control::AutoNumber(_)
+                    | Control::NewNumber(_)
+                    | Control::Ruby(_)
+                    | Control::CharOverlap(_)
+                    | Control::Unknown(_)
+            )
+        })
+        || paragraph.char_offsets.len() != paragraph.text.chars().count()
+    {
+        return Err(invalid());
+    }
+    let checked_start = |start: u32| {
+        if start
+            .checked_add(8)
+            .is_none_or(|end| end >= paragraph.char_count)
+        {
+            Err(invalid())
+        } else {
+            Ok(start)
+        }
+    };
+    let mut remaining = u32::try_from(control_idx).map_err(|_| invalid())?;
+    let mut end = 0u32;
+    for (&offset, ch) in paragraph.char_offsets.iter().zip(paragraph.text.chars()) {
+        let gap = offset.checked_sub(end).ok_or_else(invalid)?;
+        if gap % 8 != 0 {
+            return Err(invalid());
+        }
+        if remaining < gap / 8 {
+            return checked_start(end + remaining * 8);
+        }
+        remaining -= gap / 8;
+        end = offset + if ch == '\t' { 8 } else { ch.len_utf16() as u32 };
+    }
+    let start = end
+        .checked_add(remaining.checked_mul(8).ok_or_else(invalid)?)
+        .ok_or_else(invalid)?;
+    checked_start(start)
 }
 
 /// 문단 목록에서 책갈피를 재귀적으로 수집 (표 셀, 글상자 등 중첩 구조 포함)
@@ -316,30 +426,6 @@ fn find_control_insert_index(
     para.controls.len()
 }
 
-/// char_offset을 raw char_offset (파서 원본 기준)으로 변환
-fn char_offset_to_raw(
-    para: &crate::model::paragraph::Paragraph,
-    char_offset: usize,
-    insert_idx: usize,
-) -> u32 {
-    // 기존 char_offsets에서 삽입 위치 주변의 raw offset을 참조
-    if insert_idx > 0 && insert_idx <= para.char_offsets.len() {
-        // 이전 컨트롤의 raw offset + 8 (컨트롤 문자 크기)
-        para.char_offsets[insert_idx - 1] + 8
-    } else if !para.char_offsets.is_empty() {
-        // 첫 위치에 삽입: 기존 첫 번째보다 작은 값
-        let first = para.char_offsets[0];
-        if first >= 8 {
-            first - 8
-        } else {
-            0
-        }
-    } else {
-        // char_offsets가 비어있으면 char_offset * 2 (UTF-16 추정)
-        (char_offset * 2) as u32
-    }
-}
-
 /// 책갈피 CTRL_DATA 바이너리 생성 (ParameterSet 형식)
 ///
 /// 구조: ps_id(2) + count(2) + dummy(2) + item_id(2) + item_type(2) + name_len(2) + name(UTF-16LE)
@@ -431,7 +517,11 @@ mod tests {
     }
 
     fn para_with_bookmark(name: &str) -> Paragraph {
-        let mut p = Paragraph::default();
+        let mut p = Paragraph {
+            // 책갈피 8유닛 + 문단 끝 1유닛
+            char_count: 9,
+            ..Default::default()
+        };
         p.controls.push(Control::Bookmark(Bookmark {
             name: name.to_string(),
         }));

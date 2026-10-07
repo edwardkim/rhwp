@@ -1,11 +1,46 @@
 //! HTML 붙여넣기 + HTML 파싱 관련 native 메서드
 
 use super::super::helpers::*;
+
+mod inline_content;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
+
+/// parse_inline_content 가 서식으로 읽는 span·b·strong·i·em·u 태그면
+/// (태그 이름, 닫는 태그인지)를 돌려준다.
+fn inline_format_tag(tag_lower: &str) -> Option<(&str, bool)> {
+    let tag = tag_lower.strip_prefix('<')?;
+    let (closing, tag) = match tag.strip_prefix('/') {
+        Some(rest) => (true, rest),
+        None => (false, tag),
+    };
+    let name = tag.split(|c: char| !c.is_ascii_alphanumeric()).next()?;
+    matches!(name, "span" | "b" | "strong" | "i" | "em" | "u").then_some((name, closing))
+}
+
+/// 인라인 구간 끝까지 닫히지 않은 서식 여는 태그들을 순서대로 이어 돌려준다.
+fn open_format_tags(run: &str) -> String {
+    let mut open: Vec<(String, &str)> = Vec::new();
+    for (start, _) in run.match_indices('<') {
+        let Some(end) = run[start..].find('>') else {
+            break;
+        };
+        let tag = &run[start..=start + end];
+        match inline_format_tag(&tag.to_lowercase()) {
+            Some((name, true)) => {
+                if let Some(i) = open.iter().rposition(|(open, _)| open == name) {
+                    open.truncate(i);
+                }
+            }
+            Some((name, false)) => open.push((name.to_string(), tag)),
+            None => {}
+        }
+    }
+    open.into_iter().map(|(_, tag)| tag).collect()
+}
 
 impl DocumentCore {
     pub fn paste_html_native(
@@ -543,6 +578,7 @@ impl DocumentCore {
         let mut pos = 0;
         let chars: Vec<char> = content.chars().collect();
         let len = chars.len();
+        // 블록 밖 인라인 구간: 글과 <span>·<b> 등 서식 태그 원문
         let mut pending_text = String::new();
 
         while pos < len {
@@ -558,11 +594,7 @@ impl DocumentCore {
                 let tag_lower = tag_str.to_lowercase();
 
                 if tag_lower.starts_with("<table") {
-                    // 보류 중인 텍스트 처리
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     // 표 전체 추출
                     let table_end = find_closing_tag_chars(&chars, pos, "table");
@@ -571,20 +603,13 @@ impl DocumentCore {
                     pos = table_end;
                     continue;
                 } else if tag_lower.starts_with("<img") {
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     self.parse_img_html(&mut paragraphs, &tag_str);
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("<p") {
-                    // 보류 중인 텍스트 처리
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                    }
-                    pending_text.clear();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
                     // <p> 블록 추출
                     let p_content_start = tag_end + 1;
@@ -616,6 +641,7 @@ impl DocumentCore {
                     pos = p_end;
                     continue;
                 } else if tag_lower.starts_with("<div") {
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     // div 내부의 콘텐츠를 재귀적으로 처리
                     let div_content_start = tag_end + 1;
                     let div_end = find_closing_tag_chars(&chars, pos, "div");
@@ -635,10 +661,7 @@ impl DocumentCore {
                     // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 목록 태그
                     // 자체는 컨테이너일 뿐이라 <div>처럼 내부를 재귀 처리한다 — <li> 각각이
                     // 실제 항목 문단이 된다.
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
-                    }
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     let list_tag_name = if tag_lower.starts_with("<ul") {
                         "ul"
                     } else {
@@ -663,10 +686,7 @@ impl DocumentCore {
                     // <li> 내부 전체(중첩 span/strong 등 포함)를 한 문단으로 묶어
                     // parse_inline_content 로 서식까지 보존해 파싱하고, 글머리 기호를
                     // 앞에 붙인다. 표 없는 최상위 <p> 처리와 동일한 패턴.
-                    if !pending_text.trim().is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
-                    }
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
                     let li_content_start = tag_end + 1;
                     let li_end = find_closing_tag_chars(&chars, pos, "li");
                     let li_inner: String =
@@ -697,14 +717,28 @@ impl DocumentCore {
                     pos = li_end;
                     continue;
                 } else if tag_lower.starts_with("<br") {
-                    // <br> → 문단 구분
-                    if !pending_text.is_empty() {
-                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                        pending_text.clear();
-                    } else {
-                        // 빈 문단 추가
+                    // <br> → 문단 구분. 서식 태그만 든 구간(<b><br></b>)도 빈 줄이다.
+                    let blank = pending_text.is_empty() || pending_text.contains('<');
+                    let reopen = open_format_tags(&pending_text);
+                    let before = paragraphs.len();
+                    self.flush_inline_run(&mut paragraphs, &mut pending_text);
+                    if blank && paragraphs.len() == before {
                         paragraphs.push(Paragraph::default());
                     }
+                    // <b>가<br>나</b> 의 "나" 도 굵게 남도록 열린 서식을 다음 줄에 다시 연다.
+                    pending_text = reopen;
+                    pos = tag_end + 1;
+                    continue;
+                } else if tag_lower.starts_with("<span") {
+                    // Chrome 은 문단 중간부터 고른 글을 <p> 없이 <span style>·<b style> 로 쓴다.
+                    // 서식 태그를 앞뒤 글과 한 인라인 구간에 모아 한 문단으로 읽는다.
+                    // span 은 안쪽 그림까지 통째로 넣는다.
+                    let span_end = find_closing_tag_chars(&chars, pos, "span");
+                    pending_text.extend(&chars[pos..span_end.min(len)]);
+                    pos = span_end;
+                    continue;
+                } else if inline_format_tag(&tag_lower).is_some() {
+                    pending_text.push_str(&tag_str);
                     pos = tag_end + 1;
                     continue;
                 } else if tag_lower.starts_with("</") {
@@ -712,32 +746,7 @@ impl DocumentCore {
                     pos = tag_end + 1;
                     continue;
                 } else {
-                    // 기타 태그 무시 (span 등 인라인은 <p> 밖에서 직접 올 수 있음)
-                    if tag_lower.starts_with("<span") {
-                        // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 예전
-                        // 코드는 span 내부(중첩 <u>/<strong>/주석 포함)를 첫 ">" 뒤부터
-                        // 그대로 pending_text 에 밀어 넣어, 태그 자체가 문서에 문자로
-                        // 그대로 찍혔다. <p> 처리와 같은 방식으로 parse_inline_content 에
-                        // 넘겨 중첩 서식(굵게 등)까지 해석한 문단으로 만든다.
-                        if !pending_text.trim().is_empty() {
-                            self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-                            pending_text.clear();
-                        }
-                        let span_end = find_closing_tag_chars(&chars, pos, "span");
-                        let inner_start = tag_end + 1;
-                        let inner_end = span_end.saturating_sub(7); // "</span>".len()
-                        let span_inner: String = chars
-                            [inner_start..inner_end.max(inner_start).min(len)]
-                            .iter()
-                            .collect();
-                        let mut para = Paragraph::default();
-                        self.parse_inline_content(&mut para, &span_inner);
-                        if !para.text.trim().is_empty() || !para.controls.is_empty() {
-                            paragraphs.push(para);
-                        }
-                        pos = span_end;
-                        continue;
-                    }
+                    // 기타 태그 무시
                     pos = tag_end + 1;
                     continue;
                 }
@@ -749,9 +758,7 @@ impl DocumentCore {
         }
 
         // 남은 텍스트 처리
-        if !pending_text.trim().is_empty() {
-            self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
-        }
+        self.flush_inline_run(&mut paragraphs, &mut pending_text);
 
         // 빈 결과 시 최소 처리 — flush_text_to_paragraphs 재사용으로 줄바꿈 분리와
         // 긴 줄 강제 절단(FLUSH_LINE_CHAR_CAP)을 여기도 동일하게 적용한다.
@@ -775,6 +782,42 @@ impl DocumentCore {
     /// 개행 없는 50만자 이상 단일 문단을 만들어 화면이 겹쳐 보이는 결과로 이어졌다. 문단
     /// 하나가 이 정도로 크면 줄바꿈 계산 등 조판 경로가 원래 가정하지 않은 크기라 무너진다.
     const FLUSH_LINE_CHAR_CAP: usize = 4000;
+
+    /// 블록 밖 인라인 구간을 문단으로 만들고 비운다.
+    /// 서식 태그가 있으면 `<p>` 안처럼 한 문단으로 읽어 서식을 살린다.
+    /// 글뿐이면 종전처럼 줄마다 문단을 나눈다.
+    fn flush_inline_run(&mut self, paragraphs: &mut Vec<Paragraph>, run: &mut String) {
+        let run = std::mem::take(run);
+        // 글 속 '<' 는 엔티티로 남으므로 '<' 가 있으면 서식 태그가 든 구간이다.
+        if !run.contains('<') {
+            self.flush_text_to_paragraphs(paragraphs, &run);
+            return;
+        }
+        let mut para = Paragraph::default();
+        self.parse_inline_content(&mut para, run.trim());
+        if !para.text.trim().is_empty() || !para.controls.is_empty() {
+            // HTML 태그 분기도 plain paste와 같은 문자 수 제한을 지킨다.
+            // 모델 분할은 UTF-16 서식 원점과 그림 소유를 함께 옮긴다.
+            while para.text.chars().count() > Self::FLUSH_LINE_CHAR_CAP {
+                let positions = para.control_text_positions();
+                let pictures_before_cut = positions
+                    .iter()
+                    .filter(|position| **position < Self::FLUSH_LINE_CHAR_CAP)
+                    .count();
+                let pictures_at_cut = positions
+                    .iter()
+                    .filter(|position| **position == Self::FLUSH_LINE_CHAR_CAP)
+                    .count();
+                let mut tail = para.split_at(Self::FLUSH_LINE_CHAR_CAP + pictures_before_cut);
+                // split_at의 문자 원점 뒤로 이동한 경계 그림은 새 문단 선두의
+                // 확장 제어문자 공간을 보유해야 한다. 그림 수는 이미 char_count에 있다.
+                tail.reserve_leading_extended_control_slots(pictures_at_cut);
+                paragraphs.push(para);
+                para = tail;
+            }
+            paragraphs.push(para);
+        }
+    }
 
     /// 텍스트를 문단으로 변환하여 추가한다 (줄바꿈 기준 분리, 개행 없는 긴 줄은 추가 절단).
     pub(crate) fn flush_text_to_paragraphs(&self, paragraphs: &mut Vec<Paragraph>, text: &str) {
@@ -802,572 +845,6 @@ impl DocumentCore {
                 paragraphs.push(para);
             }
         }
-    }
-
-    /// <p> 태그 내부의 인라인 콘텐츠를 파싱하여 Paragraph에 채운다.
-    pub(crate) fn parse_inline_content(&mut self, para: &mut Paragraph, html: &str) {
-        let mut full_text = String::new();
-        // (char_start, char_end, char_shape_id) 형태의 스타일 범위
-        let mut style_runs: Vec<(usize, usize, u32)> = Vec::new();
-        // (그림 앞 글자 수, 그림) — 글 사이에 든 그림
-        let mut pictures: Vec<(usize, crate::model::image::Picture)> = Vec::new();
-
-        let chars: Vec<char> = html.chars().collect();
-        let len = chars.len();
-        let mut pos = 0;
-
-        // 중첩 볼드/이탤릭/밑줄 추적
-        let mut inherited_bold = false;
-        let mut inherited_italic = false;
-        let mut inherited_underline = false;
-
-        while pos < len {
-            if chars[pos] == '<' {
-                let tag_end = find_char(&chars, pos, '>');
-                if tag_end >= len {
-                    break;
-                }
-
-                let tag_str: String = chars[pos..=tag_end].iter().collect();
-                let tag_lower = tag_str.to_lowercase();
-
-                if tag_lower.starts_with("<span") {
-                    // [붙여넣기 무한루프/응답없음 방지] span_end_tag(깊이 인식 탐색)가 이미
-                    // 정확한 닫는 위치를 갖고 있는데, 예전 코드는 그 뒤에 또 "</span>" 리터럴을
-                    // 처음부터 선형 재탐색했다 — 중첩 span이 많은 Gmail류 클립보드(span 수백
-                    // 개)에서 O(n) 재탐색이 span마다 반복돼 실질적으로 O(n²)이 됐고, 게다가
-                    // 깊이를 무시한 첫 "</span>" 매치라 중첩 span에서는 내부 span의 닫는
-                    // 태그를 잘못 집는 경계 버그이기도 했다. span_end_tag 하나로 통일한다
-                    // ("</span>".len() == 7 만큼 빼면 내용 끝 위치).
-                    let span_end_tag = find_closing_tag_chars(&chars, pos, "span");
-                    let inner_start = tag_end + 1;
-                    let inner_end = span_end_tag.saturating_sub(7);
-                    let inner: String = chars[inner_start..inner_end.max(inner_start).min(len)]
-                        .iter()
-                        .collect();
-                    let inner_text = decode_html_entities(&html_strip_tags(&inner));
-
-                    if !inner_text.is_empty() {
-                        let css = parse_inline_style(&tag_str);
-                        let char_shape_id = self.css_to_char_shape_id(
-                            &css,
-                            inherited_bold,
-                            inherited_italic,
-                            inherited_underline,
-                        );
-                        let start = full_text.chars().count();
-                        full_text.push_str(&inner_text);
-                        let end = full_text.chars().count();
-                        style_runs.push((start, end, char_shape_id));
-                    }
-
-                    pos = span_end_tag;
-                    continue;
-                } else if tag_lower.starts_with("<b>") || tag_lower.starts_with("<strong") {
-                    inherited_bold = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</b>") || tag_lower.starts_with("</strong") {
-                    inherited_bold = false;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<i>") || tag_lower.starts_with("<em") {
-                    inherited_italic = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</i>") || tag_lower.starts_with("</em") {
-                    inherited_italic = false;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<u>") {
-                    inherited_underline = true;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("</u>") {
-                    inherited_underline = false;
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<br") {
-                    full_text.push('\n');
-                    pos = tag_end + 1;
-                    continue;
-                } else if tag_lower.starts_with("<img") {
-                    // 글 사이 그림은 그 자리에 글자처럼 취급하는 그림으로 넣는다.
-                    // 종전에는 기타 태그로 버려 `<p>앞<img>뒤</p>` 의 그림이 사라졌다.
-                    if let Some(pic) =
-                        crate::document_core::html_table_import::html_img_src(&tag_str)
-                            .filter(|src| src.starts_with("data:"))
-                            .and_then(|src| self.html_data_img_picture(&tag_str, src))
-                    {
-                        pictures.push((full_text.chars().count(), pic));
-                    }
-                    pos = tag_end + 1;
-                    continue;
-                } else {
-                    // 기타 태그 무시
-                    pos = tag_end + 1;
-                    continue;
-                }
-            } else {
-                // 태그 밖의 일반 텍스트
-                let text_start = pos;
-                while pos < len && chars[pos] != '<' {
-                    pos += 1;
-                }
-                let raw: String = chars[text_start..pos].iter().collect();
-                let decoded = decode_html_entities(&raw);
-                if !decoded.is_empty() {
-                    if inherited_bold || inherited_italic || inherited_underline {
-                        let css_parts: Vec<String> = [
-                            if inherited_bold {
-                                Some("font-weight:bold".to_string())
-                            } else {
-                                None
-                            },
-                            if inherited_italic {
-                                Some("font-style:italic".to_string())
-                            } else {
-                                None
-                            },
-                            if inherited_underline {
-                                Some("text-decoration:underline".to_string())
-                            } else {
-                                None
-                            },
-                        ]
-                        .into_iter()
-                        .flatten()
-                        .collect();
-                        let fake_css = css_parts.join(";");
-                        let char_shape_id =
-                            self.css_to_char_shape_id(&fake_css, false, false, false);
-                        let start = full_text.chars().count();
-                        full_text.push_str(&decoded);
-                        let end = full_text.chars().count();
-                        style_runs.push((start, end, char_shape_id));
-                    } else {
-                        full_text.push_str(&decoded);
-                    }
-                }
-                continue;
-            }
-        }
-
-        para.text = full_text;
-        // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
-        para.char_count = para.text.encode_utf16().count() as u32 + 1;
-        para.char_offsets = para
-            .text
-            .chars()
-            .scan(0u32, |acc, c| {
-                let off = *acc;
-                *acc += c.len_utf16() as u32;
-                Some(off)
-            })
-            .collect();
-
-        // 스타일 범위를 CharShapeRef로 변환
-        for (start, _end, char_shape_id) in &style_runs {
-            // char index → UTF-16 위치
-            let utf16_pos: u32 = para
-                .text
-                .chars()
-                .take(*start)
-                .map(|c| c.len_utf16() as u32)
-                .sum();
-            para.char_shapes
-                .push(crate::model::paragraph::CharShapeRef {
-                    start_pos: utf16_pos,
-                    char_shape_id: *char_shape_id,
-                });
-        }
-
-        // 그림은 확장 제어문자 8칸을 차지한다. 그 자리를 char_offsets 의 갭으로 남겨야
-        // control_text_positions 가 그림을 글 사이에 되짚는다.
-        for (char_idx, pic) in pictures {
-            para.shift_for_inline_control_insert(char_idx);
-            para.char_count += 8;
-            para.controls.push(Control::Picture(Box::new(pic)));
-            para.ctrl_data_records.push(None);
-            para.control_mask |= 0x0000_0800;
-            para.has_para_text = true;
-        }
-    }
-
-    /// CSS 인라인 스타일 → CharShape ID 변환 (기존에서 검색 또는 신규 생성).
-    pub(crate) fn css_to_char_shape_id(
-        &mut self,
-        css: &str,
-        inherited_bold: bool,
-        inherited_italic: bool,
-        inherited_underline: bool,
-    ) -> u32 {
-        use crate::model::style::{CharShape, UnderlineType};
-
-        // 기본 CharShape를 기반으로 수정
-        let base_id = if !self.document.doc_info.char_shapes.is_empty() {
-            0u32
-        } else {
-            self.document
-                .doc_info
-                .char_shapes
-                .push(CharShape::default());
-            0
-        };
-        let mut cs = self.document.doc_info.char_shapes[base_id as usize].clone();
-        // 파싱된 문서의 CharShape 는 원본 CHAR_SHAPE 레코드 바이트를 raw_data 로 들고 있고
-        // (parser/doc_info.rs), 직렬화기는 raw_data 가 있으면 필드 대신 그 바이트를 그대로
-        // 쓴다(serializer/doc_info.rs). 아래에서 굵기·색·크기를 바꿔도 raw_data 를 비우지
-        // 않으면 저장 시 원본 서식 바이트가 나가 붙여넣은 서식이 통째로 사라진다.
-        // PartialEq 가 raw_data 를 비교에서 제외하므로 아래 중복 검색도 이를 걸러내지 못한다.
-        // CharShapeMods::apply_to(model/style.rs)가 같은 이유로 첫 줄에서 raw_data 를 비운다.
-        cs.raw_data = None;
-
-        // CSS 속성 파싱 및 적용
-        let css_lower = css.to_lowercase();
-
-        // font-family
-        //
-        // 문서에 없는 글꼴이면 **새로 등록**한다.
-        // 종전에는 `find_font_id` 가 못 찾으면 조용히 기본 글꼴로 떨어졌다 — 표본 문서의
-        // `바탕` 이 양식의 `맑은 고딕` 으로 바뀌면서 줄 높이가 커져 **표 셀 안 둘째 줄이
-        // 행 경계에 잘렸고**, 글자 폭이 넓어져 쪽수도 어긋났다.
-        // 값은 대소문자를 보존해야 하므로 `css_lower` 가 아니라 원본 `css` 에서 읽는다
-        // (속성 이름은 `parse_css_value` 가 완전일치로 비교하므로
-        // `mso-fareast-font-family` 는 걸리지 않는다).
-        //
-        // 🔴 한글은 **동아시아 글꼴을 `mso-fareast-font-family` 에** 적는다. `font-family` 는
-        // 라틴 글꼴이다(실측: `<span style="font-family:바탕;mso-fareast-font-family:바탕">` 도 있고
-        // `mso-fareast-font-family` 만 있는 span 도 많다). 라틴만 읽으면 **본문 한글이 통째로
-        // 대상 문서 기본 글꼴로 떨어진다** — 표 셀 글자가 고딕으로 바뀌어 줄 높이가 커지고
-        // 셀에서 잘렸다.
-        // 슬롯 순서는 `serializer/hwpx/canonical_defaults.rs` FONTFACE_LANG_NAMES 와 같다:
-        // 0 HANGUL · 1 LATIN · 2 HANJA · 3 JAPANESE · 4 OTHER · 5 SYMBOL · 6 USER.
-        let first_family = |value: String| -> String {
-            value
-                .split(',')
-                .next()
-                .unwrap_or("")
-                .trim()
-                .trim_matches(|c: char| c == '\'' || c == '"')
-                .trim()
-                .to_string()
-        };
-        let latin_name = parse_css_value(css, "font-family")
-            .map(first_family)
-            .filter(|n| !n.is_empty());
-        let east_name = parse_css_value(css, "mso-fareast-font-family")
-            .map(first_family)
-            .filter(|n| !n.is_empty());
-        let east_ids = east_name
-            .as_deref()
-            .or(latin_name.as_deref())
-            .and_then(|n| self.find_or_register_font_ids(n));
-        let latin_ids = latin_name
-            .as_deref()
-            .or(east_name.as_deref())
-            .and_then(|n| self.find_or_register_font_ids(n));
-        if let Some(ids) = east_ids {
-            for lang_idx in [0usize, 2, 3] {
-                cs.font_ids[lang_idx] = ids[lang_idx];
-            }
-        }
-        if let Some(ids) = latin_ids {
-            for lang_idx in [1usize, 4, 5, 6] {
-                cs.font_ids[lang_idx] = ids[lang_idx];
-            }
-        }
-
-        // font-size
-        if let Some(size_str) = parse_css_value(&css_lower, "font-size") {
-            if let Some(pt) = parse_pt_value(&size_str) {
-                // pt → HWPUNIT: 1pt = 100 HWPUNIT (base_size 단위)
-                cs.base_size = (pt * 100.0) as i32;
-            }
-        }
-
-        // letter-spacing(자간)
-        //
-        // 한글은 줄을 맞추려고 글자마다 `letter-spacing:-0.2pt` 같은 음수 자간을 넣어 내보낸다.
-        // 이를 버리면 같은 글이 원본보다 넓어져 **줄바꿈과 쪽수가 어긋난다**
-        // (실측: 원본 11쪽짜리 요약이 붙여넣기 뒤 12쪽, 문단마다 줄 하나씩 늘어남).
-        // `CharShape.spacings` 는 글꼴 크기 대비 **퍼센트**다
-        // (`renderer/style_resolver.rs`: letter_spacing_px = font_size × spacing / 100).
-        // 한글 자간 입력 범위(±50%)로 자른다.
-        if let Some(ls_str) = parse_css_value(&css_lower, "letter-spacing") {
-            if let Some(pt) = parse_pt_value(&ls_str) {
-                let base_pt = (f64::from(cs.base_size) / 100.0).max(1.0);
-                let pct = (pt / base_pt * 100.0).round().clamp(-50.0, 50.0) as i8;
-                cs.spacings = [pct; 7];
-            }
-        }
-
-        // font-weight
-        let is_bold = inherited_bold
-            || css_lower.contains("font-weight:bold")
-            || css_lower.contains("font-weight: bold")
-            || css_lower.contains("font-weight:700")
-            || css_lower.contains("font-weight: 700");
-        cs.bold = is_bold;
-
-        // font-style
-        let is_italic = inherited_italic
-            || css_lower.contains("font-style:italic")
-            || css_lower.contains("font-style: italic");
-        cs.italic = is_italic;
-
-        // color
-        if let Some(color_str) = parse_css_value(&css_lower, "color") {
-            if let Some(bgr) = css_color_to_hwp_bgr(&color_str) {
-                cs.text_color = bgr;
-            }
-        }
-
-        // text-decoration
-        let has_underline = inherited_underline
-            || css_lower.contains("text-decoration:underline")
-            || css_lower.contains("text-decoration: underline")
-            || css_lower.contains("text-decoration-line:underline")
-            || css_lower.contains("text-decoration-line: underline");
-        cs.underline_type = if has_underline {
-            UnderlineType::Bottom
-        } else {
-            UnderlineType::None
-        };
-
-        let has_strikethrough = css_lower.contains("text-decoration:line-through")
-            || css_lower.contains("text-decoration: line-through")
-            || css_lower.contains("line-through");
-        cs.strikethrough = has_strikethrough;
-
-        // 동일한 CharShape 검색
-        for (i, existing) in self.document.doc_info.char_shapes.iter().enumerate() {
-            if *existing == cs {
-                return i as u32;
-            }
-        }
-
-        // 새로 추가
-        let new_id = self.document.doc_info.char_shapes.len() as u32;
-        self.document.doc_info.char_shapes.push(cs);
-        self.document.doc_info.raw_stream_dirty = true;
-        // 스타일 세트 갱신
-        self.rebuild_resolved_styles();
-        new_id
-    }
-
-    /// CSS 인라인 스타일 → ParaShape ID 변환.
-    pub(crate) fn css_to_para_shape_id(&mut self, css: &str) -> u16 {
-        use crate::model::style::{Alignment, LineSpacingType};
-
-        if css.is_empty() && !self.document.doc_info.para_shapes.is_empty() {
-            return 0;
-        }
-
-        let base_id: u16 = 0;
-        let mut ps = self
-            .document
-            .doc_info
-            .para_shapes
-            .get(base_id as usize)
-            .cloned()
-            .unwrap_or_default();
-        // CharShape 쪽과 동일 — 원본 PARA_SHAPE 바이트를 비우지 않으면 정렬·줄간격 변경이
-        // 저장 시 사라진다(ParaShapeMods::apply_to 와 같은 처리).
-        ps.raw_data = None;
-
-        let css_lower = css.to_lowercase();
-
-        // text-align
-        if let Some(align) = parse_css_value(&css_lower, "text-align") {
-            ps.alignment = match align.trim() {
-                "left" => Alignment::Left,
-                "right" => Alignment::Right,
-                "center" => Alignment::Center,
-                "justify" => Alignment::Justify,
-                _ => ps.alignment,
-            };
-        }
-
-        // line-height
-        if let Some(lh) = parse_css_value(&css_lower, "line-height") {
-            let lh = lh.trim();
-            if lh.ends_with('%') {
-                if let Ok(pct) = lh.trim_end_matches('%').parse::<i32>() {
-                    ps.line_spacing = pct;
-                    ps.line_spacing_type = LineSpacingType::Percent;
-                }
-            } else if lh.ends_with("px") {
-                if let Ok(px) = lh.trim_end_matches("px").parse::<f64>() {
-                    // px → HWPUNIT (1px ≈ 75 HWPUNIT at 96dpi)
-                    ps.line_spacing = (px * 7200.0 / 25.4 / (self.dpi / 25.4)).round() as i32;
-                    ps.line_spacing_type = LineSpacingType::Fixed;
-                }
-            }
-        }
-
-        // 여백·들여쓰기 — 한글은 개조식 문단을 `margin-left:15pt;text-indent:-15pt`
-        // 로 내보낸다. 종전에는 이 둘을 무시해 **둘째 줄부터 왼쪽으로 튀어나왔다**.
-        // CSS 길이(pt·px·cm·mm) → ParaShape 여백 단위(= HWPUNIT × 2).
-        //
-        // 🔴 ParaShape 의 margin_left/right·indent·spacing_* 는 **HWPUNIT 의 2배 스케일**로
-        // 저장한다(`renderer/style_resolver.rs` 가 `/2` 로 되돌린다. HWPX 파서도
-        // `hp:case`(HwpUnitChar) 값을 2배로 올려 읽는다 — `parser/hwpx/header.rs`).
-        // 1배로 넣으면 방향은 맞고 **크기가 정확히 절반**이 되어, 개조식 문단의 둘째 줄이
-        // 글머리표 아래로 덜 들어가 "왼쪽으로 튀어나온" 것처럼 보인다.
-        // 실측(2026-09-04): CSS `margin-left:30.3pt;text-indent:-30.3pt`
-        // → 1배 −3030 이면 내어쓰기 20.2px, 한글 원본(`hp:default` −6060)은 40.4px.
-        let css_len_to_hwpunit = |value: &str| -> Option<i32> {
-            let v = value.trim();
-            let (num, unit): (&str, &str) = if let Some(rest) = v.strip_suffix("pt") {
-                (rest, "pt")
-            } else if let Some(rest) = v.strip_suffix("px") {
-                (rest, "px")
-            } else if let Some(rest) = v.strip_suffix("cm") {
-                (rest, "cm")
-            } else if let Some(rest) = v.strip_suffix("mm") {
-                (rest, "mm")
-            } else {
-                (v, "pt")
-            };
-            let n: f64 = num.trim().parse().ok()?;
-            // 마지막 ×2 가 위에서 말한 ParaShape IR 스케일이다.
-            Some(match unit {
-                "px" => (n * 72.0 / 96.0 * 200.0).round() as i32,
-                "cm" => (n * 72.0 / 2.54 * 200.0).round() as i32,
-                "mm" => (n * 72.0 / 25.4 * 200.0).round() as i32,
-                _ => (n * 200.0).round() as i32,
-            })
-        };
-        let css_margin_left =
-            parse_css_value(&css_lower, "margin-left").and_then(|v| css_len_to_hwpunit(&v));
-        let css_text_indent =
-            parse_css_value(&css_lower, "text-indent").and_then(|v| css_len_to_hwpunit(&v));
-        if let Some(v) = parse_css_value(&css_lower, "margin-right") {
-            if let Some(hu) = css_len_to_hwpunit(&v) {
-                ps.margin_right = hu.max(0);
-            }
-        }
-        if css_margin_left.is_some() || css_text_indent.is_some() {
-            // CSS: 첫 줄 x = margin-left + text-indent, 나머지 = margin-left.
-            // HWP: 첫 줄 x = left(+indent 가 양수면 더함), 내어쓰기(indent<0)면 나머지가 left+|indent|.
-            // 따라서 left = margin-left + text-indent(첫 줄 위치), indent = text-indent 로 옮긴다.
-            let ml = css_margin_left.unwrap_or(0);
-            let ti = css_text_indent.unwrap_or(0);
-            ps.margin_left = (ml + ti).max(0);
-            ps.indent = ti;
-            // [#4898] 한컴은 hp:case(HwpUnitChar) 를 먼저 읽는다 — switch 로 되쓰면 여백이 절반이 된다.
-            // 한글이 내보낸 원본처럼 평문 표기로 적어야 내어쓰기가 그대로 보인다(실측: 31.4pt → 15.7pt 로 줄었다).
-            ps.hwpx_plain_para_margin = true;
-        }
-        if let Some(v) = parse_css_value(&css_lower, "margin-top") {
-            if let Some(hu) = css_len_to_hwpunit(&v) {
-                ps.spacing_before = hu.max(0);
-                ps.hwpx_plain_para_margin = true;
-            }
-        }
-        if let Some(v) = parse_css_value(&css_lower, "margin-bottom") {
-            if let Some(hu) = css_len_to_hwpunit(&v) {
-                ps.spacing_after = hu.max(0);
-                ps.hwpx_plain_para_margin = true;
-            }
-        }
-
-        // 동일한 ParaShape 검색
-        for (i, existing) in self.document.doc_info.para_shapes.iter().enumerate() {
-            if *existing == ps {
-                return i as u16;
-            }
-        }
-
-        let new_id = self.document.doc_info.para_shapes.len() as u16;
-        self.document.doc_info.para_shapes.push(ps);
-        self.document.doc_info.raw_stream_dirty = true;
-        self.rebuild_resolved_styles();
-        new_id
-    }
-
-    /// 폰트 이름으로 font_faces에서 ID를 찾는다.
-    pub(crate) fn find_font_id(&self, name: &str) -> Option<u16> {
-        let name_lower = name.to_lowercase();
-        // 한글 폰트 (인덱스 0)를 먼저, 영어 폰트 (인덱스 1)를 다음으로 검색
-        for lang_idx in 0..self.document.doc_info.font_faces.len() {
-            for (font_idx, font) in self.document.doc_info.font_faces[lang_idx]
-                .iter()
-                .enumerate()
-            {
-                if font.name.to_lowercase() == name_lower {
-                    return Some(font_idx as u16);
-                }
-            }
-        }
-        None
-    }
-
-    /// 글꼴 이름으로 ID 를 찾고, 문서에 없으면 **새로 등록**해 그 ID 를 돌려준다.
-    ///
-    /// 붙여넣기 원본의 글꼴이 대상 문서에 없을 때 조용히 기본 글꼴로
-    /// 떨어지면 줄 높이·글자 폭이 달라져 **표 셀 글자가 잘리고 쪽수가 어긋난다**
-    /// (표본: 본문 글꼴 `바탕` 이 대상 문서 기본 글꼴 `맑은 고딕` 으로 바뀌었다).
-    /// `Font` 는 `raw_data` 없이도 HWPX(`serializer/hwpx/header.rs`)·
-    /// HWP5(`serializer/hwp5/doc_info.rs` `serialize_face_name`) 양쪽이 모델 필드로 써낸다.
-    ///
-    /// 🔴 언어 슬롯마다 **글꼴 목록이 다르다**(실측한 문서: HANGUL·LATIN 8개, OTHER·USER 7개.
-    /// 같은 index 가 슬롯마다 다른 글꼴을 가리킨다).
-    /// 그래서 하나의 ID 를 7칸에 복사하면 안 되고, **슬롯마다 찾거나 넣어서 각자의 index** 를 쓴다.
-    fn find_or_register_font_ids(&mut self, name: &str) -> Option<[u16; 7]> {
-        let trimmed = name.trim();
-        // 총칭 글꼴은 등록하지 않는다 — 이름이 아니라 분류다.
-        const GENERIC: [&str; 8] = [
-            "serif",
-            "sans-serif",
-            "monospace",
-            "cursive",
-            "fantasy",
-            "system-ui",
-            "-apple-system",
-            "inherit",
-        ];
-        if trimmed.is_empty()
-            || trimmed.chars().count() > 64
-            || GENERIC.contains(&trimmed.to_lowercase().as_str())
-        {
-            return None;
-        }
-        let name_lower = trimmed.to_lowercase();
-        let faces = &mut self.document.doc_info.font_faces;
-        if faces.is_empty() {
-            return None;
-        }
-        let slot_count = faces.len().min(7);
-        let mut ids = [0u16; 7];
-        for (lang_idx, slot) in faces.iter_mut().take(7).enumerate() {
-            let idx = match slot
-                .iter()
-                .position(|font| font.name.to_lowercase() == name_lower)
-            {
-                Some(found) => found,
-                None => {
-                    // 한 문서에 무한정 늘리지 않는다(중복·악성 CSS 방어).
-                    if slot.len() >= 256 {
-                        return None;
-                    }
-                    slot.push(crate::model::style::Font {
-                        name: trimmed.to_string(),
-                        alt_type: 1, // TTF
-                        ..Default::default()
-                    });
-                    slot.len() - 1
-                }
-            };
-            ids[lang_idx] = u16::try_from(idx).ok()?;
-        }
-        // 슬롯이 7개보다 적은 문서는 남은 칸을 첫 슬롯 값으로 채운다.
-        let first = ids[0];
-        for id in ids.iter_mut().skip(slot_count) {
-            *id = first;
-        }
-        Some(ids)
     }
 }
 
@@ -1400,7 +877,7 @@ mod tests {
     #[test]
     fn html_paste_char_shape_drops_stale_raw_data() {
         let mut core = core_with_parsed_shapes();
-        let id = core.css_to_char_shape_id("font-weight:bold;color:#ff0000", false, false, false);
+        let id = core.css_to_char_shape_id("font-weight:bold;color:#ff0000");
         let cs = &core.document.doc_info.char_shapes[id as usize];
         assert!(cs.bold, "전제: CSS 가 반영돼야 함");
         assert!(
@@ -1434,7 +911,7 @@ mod textdecoline_tests {
         let mut core = DocumentCore::new_empty();
         core.document = doc;
 
-        let id = core.css_to_char_shape_id("text-decoration-line: underline", false, false, false);
+        let id = core.css_to_char_shape_id("text-decoration-line: underline");
         let cs = &core.document.doc_info.char_shapes[id as usize];
         assert_ne!(
             cs.underline_type,

@@ -1559,7 +1559,7 @@ fn shift_for_inline_control_insert_moves_line_starts_too() {
         ..Default::default()
     };
 
-    para.shift_for_inline_control_insert(0);
+    para.shift_for_inline_control_insert(0, 0);
 
     // 첫 줄은 문단 시작에 고정한다 — 넣은 컨트롤이 그 줄에 든다.
     assert_eq!(para.line_segs[0].text_start, 0);
@@ -1592,7 +1592,7 @@ fn shift_for_inline_control_insert_leaves_earlier_lines_alone() {
         ..Default::default()
     };
 
-    para.shift_for_inline_control_insert(6);
+    para.shift_for_inline_control_insert(0, 6);
 
     assert_eq!(para.line_segs[0].text_start, 0);
     assert_eq!(para.line_segs[1].text_start, 4);

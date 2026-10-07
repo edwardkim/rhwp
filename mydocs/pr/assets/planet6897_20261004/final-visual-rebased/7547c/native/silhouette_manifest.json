@@ -1,0 +1,76 @@
+{
+  "key": "png-pair",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/native/compare/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/native/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "2c4fd868f3c47c4940a554a78f8746d0243cc01af364773523120e10c9b4dd48",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/pdf_png/pdf-001.png",
+      "pdf_sha256": "a216acb0669cef84193d31ed707e28c0a9edfb9f0212e9ea71f7203f37308227"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/native/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "ae946ddeb6878e90900a866746d5e524a9fc8ecf0d2c05c75a8fa4da1569c679",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/pdf_png/pdf-002.png",
+      "pdf_sha256": "79df798f0cb89d16582d21fc4f64e5ee9d697aad23103e9519818bec0806b181"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/native/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "5fa045fb833fcac994ae826f3015735f33943f978be3fc340c5e0bf7176e1030",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7547c/pdf_png/pdf-003.png",
+      "pdf_sha256": "5ac05785d1f6c296f30286f792cb5cbdbb94f54fad841c36304fd79adc1890fb"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.00366,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130739,
+      "tolerant_content_match_percent": 98.00366
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.22587,
+      "silhouette_boundary_reconciled_pixels": 17,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 171031,
+      "tolerant_content_match_percent": 99.23581
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26053,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

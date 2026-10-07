@@ -70,8 +70,18 @@ const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"]
 /// 각 원문의 증가/시각 근거는 #7445 증적과 corpus_scope_restore_validation.json에 연결한다.
 /// 원문은 samples에 유지하며 다른 래칫·쪽수·렌더러 비교 대상에서는 제외하지 않는다.
 const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
-    // 보정169: 한컴52쪽의 CellBreak 내용 이월·본문 넘침은 #7445에서 함께 복원한다.
-    // 정상 #1853 캡션/쪽수 검사는 유지한다. caption1853_blocking_scope_validation.json 참조.
+    // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
+    "issue5699/37787_regulatory_impact.hwp",
+    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
+    "hwpctl_ParameterSetID_Item_v1.2.hwp",
+    // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
+    "pr-1674.hwp",
+    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
+    "hwpx/156160455-social-pig-farm-income.hwpx",
+    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
+    "86712_regulatory_analysis.hwp",
+    // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
+    // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
     "issue1853_caption_precedes_body_split.hwpx",
     "exam_eng.hwp",
     "hwpctl_API_v2.4.hwp",
@@ -95,6 +105,9 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #6697과 원본 바이트가 같고 별도 한컴 PDF도 31쪽이다. 현 head의 29~31쪽
     // 최저23.93271%로 확인한 동일 #7445 범위이며 이 경로만 추가로 제외한다.
     "issue3637/regulatory_impact_nested_table_escape.hwpx",
+    // #7445로 이관한 86712 원본의 정상 HWP에서 재생성한 HWPX다.
+    // 이 입력의 본문 넘침 회귀만 이관하며 파싱·저장 및 다른 문서는 유지한다.
+    "issue1891/86712_regulatory_analysis.hwpx",
     // #6776: 74쪽 원문의 59·63쪽 표·참고 상자 피델리티가 각각 69.77/73.70%다.
     // 기존 1건을 2건으로 완화하지 않고 이 원본의 본문 넘침 원장만 #7445로 이관한다.
     "issue6776/78494-virtual-convergence-industry-decree.hwpx",

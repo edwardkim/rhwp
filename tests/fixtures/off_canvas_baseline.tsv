@@ -33,13 +33,12 @@ basic/issue1994_behindtext_table_20200830.hwp	1
 basic/request.hwp	1
 basic/sungeo.hwp	105
 hwp3-sample10-hwp5.hwp	0
-hwp3-sample10-hwpx.hwpx	49
+hwp3-sample10-hwpx.hwpx	0
 hwp3-sample11-hwp5.hwp	4
 hwp3-sample11-hwpx.hwpx	4
 hwp3-sample11.hwp	3
 hwp3-sample16-hwp5.hwpx	3
 hwp3-table-cell-overlap.hwp	2
-hwpctl_ParameterSetID_Item_v1.2.hwp	1
 hwpx/hancom-hwp/mel-001.hwp	1
 hwpx/issue2019_floating_form_74312.hwpx	1
 hwpx/opengov/36385226_결재문서본문_제2처리장 슬러지인발용 에어리프트 브로워 2호기 소모품 교체 보고.hwpx	1
@@ -52,7 +51,6 @@ issue1949_giant_cell_nested_tables_perf.hwp	1
 issue1949_giant_cell_nested_tables_perf.hwpx	1
 issue2217/20200830.hwp	1
 issue2559/1341000_research_report_footnotes.hwp	2
-issue3637/regulatory_impact_nested_table_escape.hwpx	7
 issue4090/156492236_규제샌드박스_min.hwpx	7
 issue4599/36374873_night_guard_log.hwpx	3
 issue4690/30098_indent_over_stored_cs.hwp	13
