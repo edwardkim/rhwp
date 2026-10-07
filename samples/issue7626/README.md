@@ -4,13 +4,16 @@
 | --- | --- | ---: | --- |
 | [sample-document.hwpx](sample-document.hwpx) | 공개 gist Base64를 그대로 디코드한 원본 | 33836 | `8fa018bafb94ae023ed1a9be50cd710bec2a09ee19d76dbc755bb1ba0310ed92` |
 | [hancom-resaved.hwp](hancom-resaved.hwp) | 같은 원본을 한컴 2020에서 HWP로 다시 저장한 대조군 | 34304 | `5856ad9002cce54a53b831dc7ca557e4da6e3a56f652c738ca74072dea640cfe` |
-| [기준 PDF](../../pdf/issue7626-original-2020.pdf) | 원본 HWPX의 한컴 2020 1-up Print 출력, 2쪽 | 104997 | `2fd348b692e2c555bc33dd26c4feb2f5ed5f33e2f3a7ce2214b515836e5d1546` |
+| [기준 PDF](../../pdf/issue7626/sample-document-hwpx-2020.pdf) | 원본 HWPX의 한컴 2020 1-up Print 출력, 2쪽 | 104997 | `2fd348b692e2c555bc33dd26c4feb2f5ed5f33e2f3a7ce2214b515836e5d1546` |
+| [HWP 대조군 PDF](../../pdf/issue7626/hancom-resaved-hwp-2020.pdf) | 재저장 HWP 자체의 한컴 2020 1-up Print 출력, 2쪽 | 104997 | `fd4fac16f44ff0ade3623d48d8d6527f013298df5dd872a50e9556139639124f` |
 
 출처는 [이슈 #7626](https://github.com/edwardkim/rhwp/issues/7626)과
 [원본 gist](https://gist.github.com/flamingo8006/cf171c692b6d4c484027832a060da894)다.
 원본 저장 제품 메타데이터는 한컴 2020이며 실제 작성·치환 과정은 확인되지 않았다.
 2026-10-07 한컴 2020 `11.0.0.9136`에서 전처리 없이 PDF 인쇄와 HWP 재저장을 각각 실행했다.
 재저장 HWP는 원본 HWPX의 시각 검증을 대체하지 않는다.
+PR 준비에서는 재저장 HWP 자체도 같은 제품/빌드에서 전처리 없이 별도로 Print했다.
+PDF 경로는 원본 형식·엔진을 구별하는 canonical 규칙에 맞추었다.
 
 원본의 52개 저장 LineSeg는 모두 폭 0·세로 위치 0이다. 재저장본에는 실제 배치의 폭과
 세로 위치가 있다. 특히 원본 p30의 가시 글자 run은 1000HU, 끝의 빈 run은 1200HU이며,

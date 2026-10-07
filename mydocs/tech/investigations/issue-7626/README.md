@@ -112,8 +112,8 @@ pixel match 최저 96.63763%다. 98.71% 실루엣 지표를 전체 픽셀의 완
 
 ```powershell
 cargo build --locked --bin rhwp --target-dir target/pr-review
-venv/Scripts/python.exe scripts/visual_sweep.py --hwp samples/issue7626/sample-document.hwpx --pdf pdf/issue7626-original-2020.pdf --key issue7626 --rhwp-bin target/pr-review/debug/rhwp.exe --dpi 96 --embed-fonts full --font-path C:\Windows\Fonts --out output/pr-review/issue7626/final-native
-venv/Scripts/python.exe scripts/visual_sweep.py --hwp samples/issue7626/sample-document.hwpx --pdf pdf/issue7626-original-2020.pdf --key issue7626 --wasm-pkg pkg --rhwp-bin target/pr-review/debug/rhwp.exe --dpi 96 --embed-fonts full --font-path C:\Windows\Fonts --out output/pr-review/issue7626/final-wasm
+venv/Scripts/python.exe scripts/visual_sweep.py --hwp samples/issue7626/sample-document.hwpx --pdf pdf/issue7626/sample-document-hwpx-2020.pdf --key issue7626 --rhwp-bin target/pr-review/debug/rhwp.exe --dpi 96 --embed-fonts full --font-path C:\Windows\Fonts --out output/pr-review/issue7626/final-native
+venv/Scripts/python.exe scripts/visual_sweep.py --hwp samples/issue7626/sample-document.hwpx --pdf pdf/issue7626/sample-document-hwpx-2020.pdf --key issue7626 --wasm-pkg pkg --rhwp-bin target/pr-review/debug/rhwp.exe --dpi 96 --embed-fonts full --font-path C:\Windows\Fonts --out output/pr-review/issue7626/final-wasm
 venv/Scripts/python.exe scripts/visual_sweep.py --silhouette-only --png-pair output/pr-review/issue7626/final-native/issue7626/rhwp_png output/pr-review/issue7626/final-native/issue7626/pdf_png --key issue7626-native-final --out output/pr-review/issue7626/final-native-tsv
 venv/Scripts/python.exe scripts/visual_sweep.py --silhouette-only --png-pair output/pr-review/issue7626/final-wasm/issue7626/rhwp_png output/pr-review/issue7626/final-wasm/issue7626/pdf_png --key issue7626-wasm-final --out output/pr-review/issue7626/final-wasm-tsv
 ```
