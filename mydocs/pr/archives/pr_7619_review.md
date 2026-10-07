@@ -126,5 +126,7 @@ source `b87dd201179d5ff6e1dacdf8b7d18c7ce2b0058d`, Native release-test 및 Docke
 - 최종 [CI](https://github.com/edwardkim/rhwp/actions/runs/37702673663) 및 [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/37702673667) 완료. CodeQL JavaScript·Rust·Python·Actions 4개 Analyze가 모두 success. GHAS policy는 neutral이며 실패로 해석하지 않는다. Adapter/Proptest/Render Diff는 정책상 skipped worker와 success preflight를 구분한다.
 - [#7548](https://github.com/edwardkim/rhwp/issues/7548)은 OPEN 확인. 원 PR도 Refs만 사용하며 부분 해결이므로 close하지 않았다.
 - 문서 처리 결정: **maintainer 직접 반영**. 이 archive review·오늘할일만 운영 기록 commit으로 devel에 반영한다. 시각 asset 16 PNG는 원 PR merge commit에 이미 포함되어 있다.
-- 병합 후 `Refresh nextest target duration data` 실행을 관찰 중이다. 후속 Full CI·CodeQL·Adapter·Proptest·Oracle을 시작하거나 재실행하지 않았다.
-- 한국어 issue/PR 후속 comment는 문서 반영·최종 devel sync 뒤 계획에 따라 게시한다.
+- 병합 후 [Refresh nextest target duration data](https://github.com/edwardkim/rhwp/actions/runs/37704454691) success를 확인했다. 로그는 `ready:false`, `reason:no-verified-pr-duration-measurements`이며 새 duration 실측을 갱신하지 않은 정상 보류다. 후속 Full CI·CodeQL·Adapter·Proptest·Oracle을 시작하거나 재실행하지 않았다.
+- 한국어 [부분 해결 issue 안내](https://github.com/edwardkim/rhwp/issues/7548#issuecomment-6049197367)와 [contributor PR 안내](https://github.com/edwardkim/rhwp/pull/7619#issuecomment-6049197741)를 문서 반영·devel sync 뒤 게시하고 API로 UTF-8 본문 일치·BOM/치환 부재를 확인했다.
+
+#7619만을 위한 clean worktree 2개와 local branch 2개를 제거했다. devel에 동일 source·test·fixture·PDF가 보존됨을 사전 대조했다. 8건의 열린 PR 검토 worktree와 공유 `target/pr-review` 및 contributor fork branch는 보존했다.
