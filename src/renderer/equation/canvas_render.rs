@@ -474,7 +474,7 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, y + fs * 0.05);
             ctx.stroke();
         }
-        DecoKind::Vec => {
+        DecoKind::Vec | DecoKind::Dyad => {
             let arrow_y = y + fs * 0.05;
             ctx.begin_path();
             ctx.move_to(mid_x - half_w, arrow_y);
@@ -485,6 +485,13 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, arrow_y);
             ctx.line_to(mid_x + half_w - fs * 0.1, arrow_y + fs * 0.06);
             ctx.stroke();
+            if kind == DecoKind::Dyad {
+                ctx.begin_path();
+                ctx.move_to(mid_x - half_w + fs * 0.1, arrow_y - fs * 0.06);
+                ctx.line_to(mid_x - half_w, arrow_y);
+                ctx.line_to(mid_x - half_w + fs * 0.1, arrow_y + fs * 0.06);
+                ctx.stroke();
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;
