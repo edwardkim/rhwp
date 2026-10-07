@@ -230,6 +230,19 @@ impl DocumentCore {
             ..Default::default()
         }
     }
+    /// 이름이 `local_name`(영문 `english_name`)인 스타일과 그 번호. 각주·미주 스타일
+    /// 번호는 서식마다 다르다(옛 서식 '각주' 11번, 빈 문서 서식 14번).
+    fn note_style(
+        &self,
+        local_name: &str,
+        english_name: &str,
+    ) -> Option<(u8, &crate::model::style::Style)> {
+        let styles = &self.document.doc_info.styles;
+        let idx = styles.iter().position(|style| {
+            style.local_name == local_name || style.english_name.eq_ignore_ascii_case(english_name)
+        })?;
+        Some((u8::try_from(idx).ok()?, &styles[idx]))
+    }
     fn endnote_style_defaults(
         &self,
         section_idx: usize,
@@ -253,14 +266,8 @@ impl DocumentCore {
             }
         }
 
-        for (idx, style) in self.document.doc_info.styles.iter().enumerate() {
-            if style.local_name == "미주" || style.english_name.eq_ignore_ascii_case("Endnote") {
-                return (
-                    style.char_shape_id as u32,
-                    style.para_shape_id,
-                    idx.min(u8::MAX as usize) as u8,
-                );
-            }
+        if let Some((idx, style)) = self.note_style("미주", "Endnote") {
+            return (style.char_shape_id as u32, style.para_shape_id, idx);
         }
 
         // 폴백 — 커서 offset 의 글자모양 기준 (첫 엔트리 아님).
@@ -381,7 +388,7 @@ impl DocumentCore {
 
         // 각주 내부 문단 생성: 기존 각주의 스타일을 참조하여 동일한 스타일 적용
         // 기존 각주가 없으면 본문 문단 스타일 사용
-        let (default_char_shape_id, default_para_shape_id) = {
+        let (default_char_shape_id, default_para_shape_id, default_style_id) = {
             let section = &self.document.sections[section_idx];
             let mut found = None;
             // 본문 문단의 각주에서 스타일 참조
@@ -395,6 +402,7 @@ impl DocumentCore {
                                     .map(|cs| cs.char_shape_id)
                                     .unwrap_or(0),
                                 fp.para_shape_id,
+                                fp.style_id,
                             ));
                             break 'outer;
                         }
@@ -412,6 +420,7 @@ impl DocumentCore {
                                                     .map(|cs| cs.char_shape_id)
                                                     .unwrap_or(0),
                                                 fp.para_shape_id,
+                                                fp.style_id,
                                             ));
                                             break 'outer;
                                         }
@@ -428,13 +437,19 @@ impl DocumentCore {
                 (
                     current_para.char_shape_id_at(char_offset).unwrap_or(0),
                     current_para.para_shape_id,
+                    current_para.style_id,
                 )
             })
         };
+        // 문단 모양과 스타일은 이름이 '각주'인 스타일을 따른다. 번호를 고정하면 빈 문서에서는
+        // 11번 '개요 10'이 붙는다. '각주' 스타일이 없는 문서만 위의 기존 각주·커서 문단 값을 쓴다.
+        let (para_shape_id, style_id) = self
+            .note_style("각주", "Footnote")
+            .map(|(idx, style)| (style.para_shape_id, idx))
+            .unwrap_or((default_para_shape_id, default_style_id));
 
         // [Task #1058 reopen Round 5] 신규 각주 inner paragraph 한컴 contract 정합:
-        //   - style_id = 11 (각주 style, 한컴 DocInfo 기본 각주 style ID)
-        //   - para_shape_id = 0 (각주 default ParaShape)
+        //   - style_id / para_shape_id = '각주' 스타일과 그 문단 모양 (정답지는 11번·0번)
         //   - controls = [AutoNumber] (각주 번호 inline 컨트롤, char index 0 위치)
         //   - text = "  " (placeholder space ×2, AutoNumber 가 두 space 사이 8 cu 차지)
         //   - char_offsets = [0, 8] (첫 space pos 0, AutoNumber anchor 점유 pos 0~7, 두 번째 space pos 8)
@@ -459,8 +474,8 @@ impl DocumentCore {
             char_count_msb: true,
             control_mask: 1u32 << 0x12, // bit 18 (AutoNumber)
             char_offsets: vec![0, 8],   // AutoNumber 가 두 space 사이 8 cu 차지
-            para_shape_id: 0,
-            style_id: 11, // 각주 style
+            para_shape_id,
+            style_id,
             char_shapes: vec![CharShapeRef {
                 start_pos: 0,
                 char_shape_id: default_char_shape_id,
@@ -479,9 +494,6 @@ impl DocumentCore {
             has_para_text: true,
             ..Default::default()
         };
-        // default_para_shape_id 변수가 위에서 unused 가 되지 않도록 (caller paragraph 의 ps 정보는
-        // 본 본문 paragraph 의 contract 보존 — 각주 본문은 ps_id=0 사용)
-        let _ = default_para_shape_id;
 
         let footnote = Footnote {
             number: footnote_number,
