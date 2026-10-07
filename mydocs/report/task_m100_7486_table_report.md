@@ -10,15 +10,17 @@ last_verified: 2026-10-07
 Issue: [#7486](https://github.com/edwardkim/rhwp/issues/7486). 앞서 병합된 Studio 보고서와 구분하기 위해
 이번 표 경로의 보고서는 `_table_report.md` 이름으로 유지한다.
 
-## 최신 판정 — Enter 범위로 보정, 로컬 검증 충족
+## 최신 판정 — Enter 범위 보정·Full CI 통과, 병합 보류 해제
 
 검증 source `5308d4087d5e7ebdc38e14ff715f6b2621d0e108`에서 저장 guide의 새0 전진 계획을
 제외하고 기존 표 꼬리 정리를 직접 종료 문단으로 제한했다. 앞 빈 줄 drift의 Hidden 분기도 제거했다.
 Native/fresh WASM 독립 PDF 전7쪽 최저100%, 미달·누락0이고 대표 review·overlay를 직접 확인했다.
 전체 회귀10,511 PASS·필수 lint·정책·Native Skia3종·최적화 fresh WASM을 통과했다.
-현재 남은 병합 전 조건은 최신 원격 head CI와 mergeability 확인이다.
+동일 source/test의 head `92706070bf`는 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/37584835800)
+성공, checks32 success/5 정책상 skipped·실패/대기0, `MERGEABLE` / `CLEAN`이었다.
+이 후행 문서 head의 CI 재사용·mergeability 최종 확인을 PR 댓글에 남긴다. 실제 병합은 아직 하지 않았다.
 
-어구21쪽·교육과정413쪽·정상 RowBreak18쪽 전체448쪽의 render tree는 Native 및 WASM 각각
+어구21쪽·교육과정413쪽·정상 RowBreak18쪽 전체452쪽의 render tree는 Native 및 WASM 각각
 최신 devel과 동일했다. 교육과정413/415쪽의 기존 문제나 #7207 잔여를 완료로 판정하지 않는다.
 최소 선행 [#7627](https://github.com/edwardkim/rhwp/pull/7627)은 이미 `7076f836e2`에 병합됐다.
 정확한 입력 해시·명령·실패/재실행·최신 이미지·미검증은

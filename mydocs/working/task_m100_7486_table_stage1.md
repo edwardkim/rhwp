@@ -11,7 +11,9 @@ last_verified: 2026-10-07
 
 source `5308d4087d`에서 새 저장 guide 해석을 제외하고 Enter 쪽 소속 보호로 범위를 고정했다.
 독립 PDF Native/fresh WASM 전7쪽 최저100%, 전체10,511 PASS·필수 lint·Skia3종·fresh WASM 통과다.
-저장본448쪽은 각 backend에서 devel과 모든 tree가 동일하다. 최신 원격 CI·mergeability는 확인 전이다.
+저장본452쪽은 각 backend에서 devel과 모든 tree가 동일하다. 동일 source/test의 `92706070bf`
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/37584835800)는 성공했고 checks32 success/5 정책상 skipped,
+실패·대기0 및 `MERGEABLE` / `CLEAN`을 확인했다. 문서 후행 head의 최종 상태는 PR 댓글에 기록한다.
 [최신 self-review](../pr/archives/pr_7544_review.md#2026-10-07-보류-해제-보정과-최종-로컬-검증)를 정본으로 사용한다.
 
 ## 이전 단계 이력 — 2026-10-03 제출과 저장 guide 실험

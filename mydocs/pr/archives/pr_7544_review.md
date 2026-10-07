@@ -9,10 +9,19 @@ last_verified: 2026-10-07
 
 ## 최종 판정
 
-**기술 검토 승인 — 로컬 필수 게이트 충족, 최신 원격 head의 CI·mergeability 확인 대기.**
+**기술 검토 승인 — 로컬 필수 게이트와 코드 head Full CI 충족, 병합 보류 해제.**
 검증 source는 `5308d4087d5e7ebdc38e14ff715f6b2621d0e108`, 비교 base는
 `7076f836e2300f7d760d74b58c468cc0f73098a2`다. 본인 PR의 self-review이며
 GitHub self-Approve나 branch protection 우회를 사용하지 않는다.
+
+동일 source/test의 제출 head `92706070bfad1c46e9a42e62246069b5d6da56f1`에서
+[Full CI run 37584835800](https://github.com/edwardkim/rhwp/actions/runs/37584835800)이 성공했다.
+CI preflight·Build & Test와 CodeQL·Render Diff·Adapter inter-diff·Proptest를 포함한
+최신 checks는 **32 success / 5 정책상 skipped**, 실패·대기0이다.
+조회 시 base는 위 SHA와 같고 Open, non-draft, `MERGEABLE` / `CLEAN`이었다.
+이 후행 commit은 문서 4개만 정정하며 source/test/이미지는 바꾸지 않는다.
+후행 head의 preflight·Build & Test·mergeability는 push 뒤 PR 업데이트 댓글에서
+정확한 SHA로 확인한다. 실제 merge·issue close는 아직 수행하지 않았다.
 
 ## 2026-10-07 보류 해제 보정과 최종 로컬 검증
 
@@ -60,7 +69,7 @@ unit-tier·npm 게이트는 비해당이다. 이번 source의 Studio DOM 재촬�
 
 ### 저장본 범위 분리 대조
 
-어구21쪽·교육과정413쪽·정상 RowBreak18쪽, **448쪽 전체**를 devel과 새 후보의
+어구21쪽·교육과정413쪽·정상 RowBreak18쪽, **452쪽 전체**를 devel과 새 후보의
 Native끼리 및 WASM끼리 각각 비교했다. 쪽수·내용·geometry를 포함한 모든 render tree가
 동일했다. 기준 source `cf2b0508fc`의 production/test는 병합 devel `7076f836e2`와 동일하다.
 이것은 새 guide의 의미·기존 교육과정413/415쪽 차이를 통과시킨 증거가 아니다.
