@@ -3605,7 +3605,13 @@ impl LayoutEngine {
                             // 저장 나눔을 다 쓴 뒤(재래핑 구간)에는 종전대로 폭으로 접는다.
                             false
                         } else {
-                            inline_x + ch_w > right_margin + 0.5 && inline_x > line_start_x + 1.0
+                            // [#7344] 줄 끝 공백은 오른쪽 여백 밖으로 매달린다 — 폭으로 줄을 접는
+                            // 계기가 아니다(일반 문단 조판과 같은 규칙). 정렬 폭에서 말미 공백을
+                            // 빼면 표가 여백 끝까지 붙어, 뒤 공백이 새 줄을 열고 문단 전체를 한 줄
+                            // 밀었다(36414761 오른쪽 정렬 결재란: 표 + 공백 45개, +96pt).
+                            ch != ' '
+                                && inline_x + ch_w > right_margin + 0.5
+                                && inline_x > line_start_x + 1.0
                         };
                         let cs_changed = cs_id != current_cs_id
                             || metric_scope.allows(ch_idx) != metric_scope.allows(line_run_start);
