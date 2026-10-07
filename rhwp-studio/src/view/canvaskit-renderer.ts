@@ -3627,10 +3627,17 @@ export class CanvasKitLayerRenderer {
       case 'vec':
       case 'dyad': {
         const lineY = y + fontSize * 0.05;
+        const startX = centerX - halfWidth;
         const endX = centerX + halfWidth;
-        return this.drawEquationLine(canvas, centerX - halfWidth, lineY, endX, lineY, color, strokeWidth)
+        let ok = this.drawEquationLine(canvas, startX, lineY, endX, lineY, color, strokeWidth)
           && this.drawEquationLine(canvas, endX - fontSize * 0.1, lineY - fontSize * 0.06, endX, lineY, color, strokeWidth)
           && this.drawEquationLine(canvas, endX, lineY, endX - fontSize * 0.1, lineY + fontSize * 0.06, color, strokeWidth);
+        if (decoration === 'dyad') {
+          ok = ok
+            && this.drawEquationLine(canvas, startX + fontSize * 0.1, lineY - fontSize * 0.06, startX, lineY, color, strokeWidth)
+            && this.drawEquationLine(canvas, startX, lineY, startX + fontSize * 0.1, lineY + fontSize * 0.06, color, strokeWidth);
+        }
+        return ok;
       }
       case 'dot':
       case 'dDot': {

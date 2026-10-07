@@ -215,16 +215,19 @@
 ## 문서와 검증
 
 - **로컬 Rust·WASM 산출물 재사용**: 일반 개발·이슈 수정·PR review의 기본
-  `CARGO_TARGET_DIR`/`--target-dir`는 항상 `target/pr-review`다. 이 경로의
+  `CARGO_TARGET_DIR`/`--target-dir`는 모든 운영체제에서 **각 host의 기본 rhwp 작업공간 아래
+  `target/pr-review` 한 곳**이다. worktree 검증에서도 그 동일한 절대 경로를 전달한다. 이 경로의
   `release`, `release-test`, `debug`, `wasm32-unknown-unknown`을 Native와 WASM이 함께
-  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`을 새로 만들지 않는다.
+  재사용한다. 이슈 번호나 review 이름으로 `target/<name>`, `target/pr-review/<name>` 또는
+  worktree별 `target/pr-review`를 새로 만들지 않는다. 준비 방법은
+  [고정 review target](mydocs/manual/pr_review/local_validation.md#고정-review-target과-실행-환경)을 따른다.
   다른 실행 중인 Cargo 작업의 산출물과 충돌할 우려가 있으면 새 경로를 만드는 대신
   실행 중인 작업·소유자를 먼저 확인하고, 필요할 때만 사용자가 별도 경로를 지시한다.
   `target/pr-review`은 공유 캐시이므로 임의로 삭제·초기화하지 않는다.
 - **Studio 개발 서버에 WASM 반영**: Rust/WASM 변경을 `npx vite --host 0.0.0.0 --port 7700`
   같은 `rhwp-studio` 개발 서버에서 확인할 때는 반드시 **저장소 루트
-  (`/Users/tsjang/rhwp`, `scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
-  `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
+  (`scripts/`·`pkg/`·`rhwp-studio/`가 함께 있는 디렉터리)**에서
+  `CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg`를
   실행한다. `rhwp-studio/` 안에서는 `scripts/wasm-pack-locked.sh`가 없고 그곳의 `pkg/`는
   개발 서버 입력이 아니므로 사용하지 않는다. 이 wrapper는 성공한 루트 기본 `pkg/` web package의 `rhwp.js`·`rhwp_bg.wasm`을
   `rhwp-studio/public/`에도 자동 동기화한다. SHA-256 일치 및 브라우저 새로고침 뒤 실제
@@ -241,11 +244,11 @@
   node scripts/rust-test-suite-manifest.mjs --prepare
   cargo fmt --all
   cargo fmt --all -- --check
-  cargo clippy --locked --target-dir target/pr-review -- -D warnings
+  cargo clippy --locked --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
   cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
-    --target-dir target/pr-review -- -D warnings
-  cargo build --locked --workspace --target-dir target/pr-review
-  cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+    --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+  cargo build --locked --workspace --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+  cargo clippy --locked --workspace --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
   node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
   ```
   새 integration test source를 추가한 경우 `--prepare`가 만든 파생 파일은 검증 뒤 review
